@@ -373,7 +373,7 @@ static GB_ERROR perform_conversions(const string& in, string& out, string& out2)
         out             = loc->as_string();
 
         GEN_position *gp = loc->create_GEN_position();
-        TEST_ASSERT(gp);
+        TEST_EXPECT(gp);
 
         LocationPtr reloc = to_Location(gp);
         out2              = reloc->as_string();
@@ -385,115 +385,115 @@ static GB_ERROR perform_conversions(const string& in, string& out, string& out2)
     return error;
 }
 
-#define DO_LOCONV_NOERR(str) string reverse, convReverse; TEST_ASSERT_NO_ERROR(perform_conversions(str, reverse, convReverse));
+#define DO_LOCONV_NOERR(str) string reverse, convReverse; TEST_EXPECT_NO_ERROR(perform_conversions(str, reverse, convReverse));
 
 // the following assertions test
 // - conversion from string->Location->string and
 // - conversion from string->Location->GEN_position->Location->string
 // 
-// TEST_ASSERT___CONV_IDENT     expects both conversions equal input
-// TEST_ASSERT___CONV__INTO     expects 1st conversion changes to 'res'
-// TEST_ASSERT_RECONV__INTO     expects 2nd conversion changes to 'res'
-// TEST_ASSERT_RECONV_INTO2     expects 1st conversion changes to 'res1' and 2nd to 'res2'
+// TEST_EXPECT___CONV_IDENT     expects both conversions equal input
+// TEST_EXPECT___CONV__INTO     expects 1st conversion changes to 'res'
+// TEST_EXPECT_RECONV__INTO     expects 2nd conversion changes to 'res'
+// TEST_EXPECT_RECONV_INTO2     expects 1st conversion changes to 'res1' and 2nd to 'res2'
 
-#define TEST_ASSERT___CONV_IDENT(str) do {              \
+#define TEST_EXPECT___CONV_IDENT(str) do {              \
         DO_LOCONV_NOERR(str);                           \
-        TEST_ASSERT_EQUAL(str, reverse.c_str());        \
-        TEST_ASSERT_EQUAL(str, convReverse.c_str());    \
+        TEST_EXPECT_EQUAL(str, reverse.c_str());        \
+        TEST_EXPECT_EQUAL(str, convReverse.c_str());    \
     } while(0)
 
-#define TEST_ASSERT___CONV_IDENT__BROKEN(str) do {              \
+#define TEST_EXPECT___CONV_IDENT__BROKEN(str) do {              \
         DO_LOCONV_NOERR(str);                                   \
-        TEST_ASSERT_EQUAL__BROKEN(str, reverse.c_str());        \
+        TEST_EXPECT_EQUAL__BROKEN(str, reverse.c_str());        \
     } while(0)
 
-#define TEST_ASSERT___CONV__INTO(str,res) do {          \
+#define TEST_EXPECT___CONV__INTO(str,res) do {          \
         DO_LOCONV_NOERR(str);                           \
-        TEST_ASSERT_EQUAL(res, reverse.c_str());        \
-        TEST_ASSERT_EQUAL(res, convReverse.c_str());    \
+        TEST_EXPECT_EQUAL(res, reverse.c_str());        \
+        TEST_EXPECT_EQUAL(res, convReverse.c_str());    \
     } while(0)
 
-#define TEST_ASSERT_RECONV__INTO(str,res) do {                     \
+#define TEST_EXPECT_RECONV__INTO(str,res) do {                     \
         do {                                                       \
             DO_LOCONV_NOERR(str);                                  \
-            TEST_ASSERT_EQUAL(str, reverse.c_str());               \
-            TEST_ASSERT_EQUAL(res, convReverse.c_str());           \
-            TEST_ASSERT(reverse.length() >= convReverse.length()); \
+            TEST_EXPECT_EQUAL(str, reverse.c_str());               \
+            TEST_EXPECT_EQUAL(res, convReverse.c_str());           \
+            TEST_EXPECT(reverse.length() >= convReverse.length()); \
         } while(0);                                                \
-        TEST_ASSERT___CONV_IDENT(res);                             \
+        TEST_EXPECT___CONV_IDENT(res);                             \
     } while(0)
 
-#define TEST_ASSERT_RECONV__SPAM(str,res) do {                          \
+#define TEST_EXPECT_RECONV__SPAM(str,res) do {                          \
         DO_LOCONV_NOERR(str);                                           \
-        TEST_ASSERT_EQUAL(str, reverse.c_str());                        \
-        TEST_ASSERT_EQUAL(res, convReverse.c_str());                    \
-        TEST_ASSERT__BROKEN(reverse.length() >= convReverse.length());  \
+        TEST_EXPECT_EQUAL(str, reverse.c_str());                        \
+        TEST_EXPECT_EQUAL(res, convReverse.c_str());                    \
+        TEST_EXPECT__BROKEN(reverse.length() >= convReverse.length());  \
     } while(0)
 
-#define TEST_ASSERT_RECONV_INTO2(str,res1,res2) do {               \
+#define TEST_EXPECT_RECONV_INTO2(str,res1,res2) do {               \
         DO_LOCONV_NOERR(str);                                      \
-        TEST_ASSERT_EQUAL(res1, reverse.c_str());                  \
-        TEST_ASSERT_EQUAL(res2, convReverse.c_str());              \
-        TEST_ASSERT(reverse.length() >= convReverse.length());     \
+        TEST_EXPECT_EQUAL(res1, reverse.c_str());                  \
+        TEST_EXPECT_EQUAL(res2, convReverse.c_str());              \
+        TEST_EXPECT(reverse.length() >= convReverse.length());     \
     } while(0)
 
-#define TEST_ASSERT__PARSE_ERROR(str,err) do {                          \
+#define TEST_EXPECT__PARSE_ERROR(str,err) do {                          \
         string reverse, convReverse;                                    \
-        TEST_ASSERT_EQUAL(perform_conversions(str, reverse, convReverse), err); \
+        TEST_EXPECT_EQUAL(perform_conversions(str, reverse, convReverse), err); \
     } while(0)
 
 void TEST_gene_location() {
     // see also ../ARBDB/adGene.cxx@TEST_GEN_position
 
-    TEST_ASSERT___CONV_IDENT("1725");
-    TEST_ASSERT__PARSE_ERROR("3-77", "Unexpected char '-' in '3-77'");
-    TEST_ASSERT___CONV_IDENT("3..77");
-    TEST_ASSERT___CONV_IDENT("77..3"); // @@@ could be interpreted as reverse (but not complement)
+    TEST_EXPECT___CONV_IDENT("1725");
+    TEST_EXPECT__PARSE_ERROR("3-77", "Unexpected char '-' in '3-77'");
+    TEST_EXPECT___CONV_IDENT("3..77");
+    TEST_EXPECT___CONV_IDENT("77..3"); // @@@ could be interpreted as reverse (but not complement)
 
-    TEST_ASSERT___CONV_IDENT("<3..77");
-    TEST_ASSERT___CONV_IDENT("3..>77");
-    TEST_ASSERT___CONV_IDENT(">3..<77");
+    TEST_EXPECT___CONV_IDENT("<3..77");
+    TEST_EXPECT___CONV_IDENT("3..>77");
+    TEST_EXPECT___CONV_IDENT(">3..<77");
     
-    TEST_ASSERT___CONV_IDENT("7^8");
-    TEST_ASSERT__PARSE_ERROR("7^9", "Can only handle 'pos^pos+1'. Can't parse location '7^9'");
+    TEST_EXPECT___CONV_IDENT("7^8");
+    TEST_EXPECT__PARSE_ERROR("7^9", "Can only handle 'pos^pos+1'. Can't parse location '7^9'");
 
-    TEST_ASSERT___CONV_IDENT("complement(3..77)");
-    TEST_ASSERT___CONV_IDENT("complement(77..3)");
-    TEST_ASSERT___CONV_IDENT("complement(77)");
+    TEST_EXPECT___CONV_IDENT("complement(3..77)");
+    TEST_EXPECT___CONV_IDENT("complement(77..3)");
+    TEST_EXPECT___CONV_IDENT("complement(77)");
 
-    TEST_ASSERT___CONV_IDENT("join(3..77,100..200)");
-    TEST_ASSERT_RECONV__INTO("join(3..77)", "3..77");
-    TEST_ASSERT___CONV_IDENT("join(3..77,100,130..177)");
-    TEST_ASSERT__PARSE_ERROR("join(3..77,100..200, 130..177)", "Unparsable location ' 130..177'");
+    TEST_EXPECT___CONV_IDENT("join(3..77,100..200)");
+    TEST_EXPECT_RECONV__INTO("join(3..77)", "3..77");
+    TEST_EXPECT___CONV_IDENT("join(3..77,100,130..177)");
+    TEST_EXPECT__PARSE_ERROR("join(3..77,100..200, 130..177)", "Unparsable location ' 130..177'");
 
-    TEST_ASSERT_RECONV__INTO("order(1)", "1");
-    TEST_ASSERT___CONV_IDENT("order(0,8,15)");
-    TEST_ASSERT___CONV_IDENT("order(10..12,7..9,1^2)");
-    TEST_ASSERT_RECONV__INTO("order(complement(1^2),complement(7..9),complement(10..12))",
+    TEST_EXPECT_RECONV__INTO("order(1)", "1");
+    TEST_EXPECT___CONV_IDENT("order(0,8,15)");
+    TEST_EXPECT___CONV_IDENT("order(10..12,7..9,1^2)");
+    TEST_EXPECT_RECONV__INTO("order(complement(1^2),complement(7..9),complement(10..12))",
                              "complement(order(10..12,7..9,1^2))");
-    TEST_ASSERT___CONV_IDENT("order(10..12,complement(7..9),1^2)");
-    TEST_ASSERT_RECONV__INTO("order(complement(1^2),7..9,complement(10..12))",
+    TEST_EXPECT___CONV_IDENT("order(10..12,complement(7..9),1^2)");
+    TEST_EXPECT_RECONV__INTO("order(complement(1^2),7..9,complement(10..12))",
                              "complement(order(10..12,complement(7..9),1^2))");
 
-    TEST_ASSERT__PARSE_ERROR("join(order(0,8,15),order(3,2,1))", "order() and join() cannot be mixed");
+    TEST_EXPECT__PARSE_ERROR("join(order(0,8,15),order(3,2,1))", "order() and join() cannot be mixed");
 
-    TEST_ASSERT_RECONV__INTO("join(complement(3..77),complement(100..200))",
+    TEST_EXPECT_RECONV__INTO("join(complement(3..77),complement(100..200))",
                              "complement(join(100..200,3..77))");
-    TEST_ASSERT_RECONV__INTO("join(complement(join(3..77,74..83)),complement(100..200))",
+    TEST_EXPECT_RECONV__INTO("join(complement(join(3..77,74..83)),complement(100..200))",
                              "complement(join(100..200,3..77,74..83))");
-    TEST_ASSERT_RECONV__INTO("complement(complement(complement(100..200)))",
+    TEST_EXPECT_RECONV__INTO("complement(complement(complement(100..200)))",
                              "complement(100..200)");
-    TEST_ASSERT_RECONV__INTO("join(complement(join(complement(join(1)))))",
+    TEST_EXPECT_RECONV__INTO("join(complement(join(complement(join(1)))))",
                              "1");
 
     // cover errors
-    TEST_ASSERT__PARSE_ERROR("join(abc()", "Expected 1 closing parenthesis in 'abc('");
+    TEST_EXPECT__PARSE_ERROR("join(abc()", "Expected 1 closing parenthesis in 'abc('");
 
     // strange behavior
-    TEST_ASSERT___CONV__INTO("", "0");
-    TEST_ASSERT_RECONV_INTO2("join()", "join(0)", "0");
-    TEST_ASSERT___CONV__INTO("complement()", "complement(0)");
-    TEST_ASSERT_RECONV_INTO2("complement(complement())", "complement(complement(0))", "0");
+    TEST_EXPECT___CONV__INTO("", "0");
+    TEST_EXPECT_RECONV_INTO2("join()", "join(0)", "0");
+    TEST_EXPECT___CONV__INTO("complement()", "complement(0)");
+    TEST_EXPECT_RECONV_INTO2("complement(complement())", "complement(complement(0))", "0");
 }
 
 #endif // UNIT_TESTS

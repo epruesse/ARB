@@ -798,18 +798,18 @@ static struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
     { 0, "spec", "AUCUCCUAAACCCAACCGUAGUUCGAAUUGAG" },
 };
 
-#define TEST_ASSERT_MEMBER_EQUAL(s1,s2,member) TEST_ASSERT_EQUAL((s1)->member, (s2)->member)
+#define TEST_EXPECT_MEMBER_EQUAL(s1,s2,member) TEST_EXPECT_EQUAL((s1)->member, (s2)->member)
 
-#define TEST_ASSERT_GENPOS_EQUAL(p1,p2) do {                            \
-        TEST_ASSERT_MEMBER_EQUAL(p1, p2, parts);                        \
-        TEST_ASSERT_MEMBER_EQUAL(p1, p2, joinable);                     \
+#define TEST_EXPECT_GENPOS_EQUAL(p1,p2) do {                            \
+        TEST_EXPECT_MEMBER_EQUAL(p1, p2, parts);                        \
+        TEST_EXPECT_MEMBER_EQUAL(p1, p2, joinable);                     \
         for (int p = 0; p<(p1)->parts; ++p) {                           \
-            TEST_ASSERT_MEMBER_EQUAL(p1, p2, start_pos[p]);             \
-            TEST_ASSERT_MEMBER_EQUAL(p1, p2, stop_pos[p]);              \
-            TEST_ASSERT_MEMBER_EQUAL(p1, p2, complement[p]);            \
+            TEST_EXPECT_MEMBER_EQUAL(p1, p2, start_pos[p]);             \
+            TEST_EXPECT_MEMBER_EQUAL(p1, p2, stop_pos[p]);              \
+            TEST_EXPECT_MEMBER_EQUAL(p1, p2, complement[p]);            \
             if ((p1)->start_uncertain) {                                \
-                TEST_ASSERT_MEMBER_EQUAL(p1, p2, start_uncertain[p]);   \
-                TEST_ASSERT_MEMBER_EQUAL(p1, p2, stop_uncertain[p]);    \
+                TEST_EXPECT_MEMBER_EQUAL(p1, p2, start_uncertain[p]);   \
+                TEST_EXPECT_MEMBER_EQUAL(p1, p2, stop_uncertain[p]);    \
             }                                                           \
         }                                                               \
     } while(0)
@@ -823,26 +823,26 @@ static struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
                 error = GB_await_error();                               \
             }                                                           \
             else {                                                      \
-                TEST_ASSERT_GENPOS_EQUAL((pos), rpos);                  \
+                TEST_EXPECT_GENPOS_EQUAL((pos), rpos);                  \
                 GEN_free_position(rpos);                                \
             }                                                           \
         }                                                               \
-        TEST_ASSERT_NULL(error.deliver());                              \
+        TEST_EXPECT_NULL(error.deliver());                              \
     } while(0)
 
 #define TEST_WRITE_GEN_POSITION_ERROR(pos,exp_error) do {               \
         error = GEN_write_position(gb_gene, &*(pos));                   \
-        TEST_ASSERT_EQUAL(error.deliver(), exp_error);                  \
+        TEST_EXPECT_EQUAL(error.deliver(), exp_error);                  \
     } while(0)
     
 #define TEST_GENPOS_FIELD(field,value) do {                             \
         GBDATA *gb_field = GB_entry(gb_gene, (field));                  \
         if ((value)) {                                                  \
-            TEST_ASSERT_NOTNULL(gb_field);                              \
-            TEST_ASSERT_EQUAL(GB_read_char_pntr(gb_field), (value));    \
+            TEST_EXPECT_NOTNULL(gb_field);                              \
+            TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_field), (value));    \
         }                                                               \
         else {                                                          \
-            TEST_ASSERT_NULL(gb_field);                                 \
+            TEST_EXPECT_NULL(gb_field);                                 \
         }                                                               \
     } while(0)
 
@@ -856,10 +856,10 @@ static struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
 #define TEST_GENE_SEQ_AND_LENGTH(werr,wseq,wlen) do {                   \
         size_t len;                                                     \
         char *seq = GBT_read_gene_sequence_and_length(gb_gene, true, '-', &len); \
-        TEST_ASSERT_EQUAL(GB_have_error(), werr);                       \
+        TEST_EXPECT_EQUAL(GB_have_error(), werr);                       \
         if (seq) {                                                      \
-            TEST_ASSERT_EQUAL(len, (size_t)(wlen));                     \
-            TEST_ASSERT_EQUAL(seq, (wseq));                             \
+            TEST_EXPECT_EQUAL(len, (size_t)(wlen));                     \
+            TEST_EXPECT_EQUAL(seq, (wseq));                             \
             free(seq);                                                  \
         }                                                               \
         else {                                                          \
@@ -874,14 +874,14 @@ void TEST_GEN_position() {
     ARB_ERROR  error;
     GBDATA    *gb_main = TEST_CREATE_DB(error, "ali_genom", TestAlignmentData_Genome, false);
 
-    TEST_ASSERT_NULL(error.deliver());
+    TEST_EXPECT_NULL(error.deliver());
 
     {
         GB_transaction ta(gb_main);
 
-        GBDATA *gb_organism  = GBT_find_species(gb_main, "spec"); TEST_ASSERT_NOTNULL(gb_organism);
-        GBDATA *gb_gene_data = GEN_findOrCreate_gene_data(gb_organism); TEST_ASSERT_NOTNULL(gb_gene_data);
-        GBDATA *gb_gene      = GEN_create_nonexisting_gene_rel_gene_data(gb_gene_data, "gene"); TEST_ASSERT_NOTNULL(gb_gene);
+        GBDATA *gb_organism  = GBT_find_species(gb_main, "spec"); TEST_EXPECT_NOTNULL(gb_organism);
+        GBDATA *gb_gene_data = GEN_findOrCreate_gene_data(gb_organism); TEST_EXPECT_NOTNULL(gb_gene_data);
+        GBDATA *gb_gene      = GEN_create_nonexisting_gene_rel_gene_data(gb_gene_data, "gene"); TEST_EXPECT_NOTNULL(gb_gene);
 
         typedef SmartCustomPtr(GEN_position, GEN_free_position) GEN_position_Ptr;
         GEN_position_Ptr pos;

@@ -145,18 +145,18 @@ void TEST_SLOW_ptclean() {
     GBDATA     *gb_main = GB_open("TEST_pt_src.arb", "rw");
     const char *saveas  = "TEST_pt_cleaned.arb";
 
-    TEST_ASSERT_NOTNULL(gb_main);
-    TEST_ASSERT_NO_ERROR(prepare_ptserver_database(gb_main, PTSERVER));
-    TEST_ASSERT_NO_ERROR(GB_save_as(gb_main, saveas, "a"));
+    TEST_EXPECT_NOTNULL(gb_main);
+    TEST_EXPECT_NO_ERROR(prepare_ptserver_database(gb_main, PTSERVER));
+    TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, saveas, "a"));
     GB_close(gb_main);
 
 // #define TEST_AUTO_UPDATE
 #if defined(TEST_AUTO_UPDATE)
     TEST_COPY_FILE("TEST_pt_cleaned.arb", "TEST_pt_cleaned_expected.arb");
 #else
-    TEST_ASSERT_TEXTFILES_EQUAL("TEST_pt_cleaned.arb", "TEST_pt_cleaned_expected.arb");
+    TEST_EXPECT_TEXTFILES_EQUAL("TEST_pt_cleaned.arb", "TEST_pt_cleaned_expected.arb");
 #endif
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 }
 
 #endif // UNIT_TESTS

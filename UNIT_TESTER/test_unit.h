@@ -1091,12 +1091,12 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT_ZERO(cond)            TEST_EXPECTATION(that(cond).is_equal_to(0))
-#define TEST_ASSERT_ZERO__BROKEN(cond)    TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(0))
-#define TEST_ASSERT_NONZERO(cond)         TEST_EXPECTATION(that(cond).does_differ_from(0)) // @@@ elim 'NON'
-#define TEST_ASSERT_NONZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).does_differ_from(0))
+#define TEST_EXPECT_ZERO(cond)            TEST_EXPECTATION(that(cond).is_equal_to(0))
+#define TEST_EXPECT_ZERO__BROKEN(cond)    TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(0))
+#define TEST_EXPECT_NONZERO(cond)         TEST_EXPECTATION(that(cond).does_differ_from(0)) // @@@ elim 'NON'
+#define TEST_EXPECT_NONZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).does_differ_from(0))
 
-#define TEST_ASSERT_ZERO_OR_SHOW_ERRNO(iocond)                  \
+#define TEST_EXPECT_ZERO_OR_SHOW_ERRNO(iocond)                  \
     do {                                                        \
         if ((iocond))                                           \
             TEST_IOERROR("I/O-failure in '%s'", #iocond);       \
@@ -1115,10 +1115,10 @@ namespace arb_test {
     inline match_expectation reported_error_contains(const char *error, const char *part) { return error ? that(error).does_contain(part) : that(error).does_differ_from_NULL(); }
 };
 
-#define TEST_ASSERT_ERROR_CONTAINS(call,part)         TEST_EXPECTATION        (reported_error_contains(call, part))
-#define TEST_ASSERT_ERROR_CONTAINS__BROKEN(call,part) TEST_EXPECTATION__BROKEN(reported_error_contains(call, part))
-#define TEST_ASSERT_NO_ERROR(call)                    TEST_EXPECTATION        (doesnt_report_error(call))
-#define TEST_ASSERT_NO_ERROR__BROKEN(call)            TEST_EXPECTATION__BROKEN(doesnt_report_error(call))
+#define TEST_EXPECT_ERROR_CONTAINS(call,part)         TEST_EXPECTATION        (reported_error_contains(call, part))
+#define TEST_EXPECT_ERROR_CONTAINS__BROKEN(call,part) TEST_EXPECTATION__BROKEN(reported_error_contains(call, part))
+#define TEST_EXPECT_NO_ERROR(call)                    TEST_EXPECTATION        (doesnt_report_error(call))
+#define TEST_EXPECT_NO_ERROR__BROKEN(call)            TEST_EXPECTATION__BROKEN(doesnt_report_error(call))
 
 // --------------------------------------------------------------------------------
 
@@ -1165,18 +1165,18 @@ namespace arb_test {
     };
 };
 
-#define TEST_ASSERT_ERROR_CLEAR() TEST_EXPECTATION(no_forgotten_error_exported())
+#define TEST_EXPECT_ERROR_CLEAR() TEST_EXPECTATION(no_forgotten_error_exported())
 
-#define TEST_ASSERT_RESULT__NOERROREXPORTED(create_result)                                do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECTATION        (calling((create_result)).returns_result_and_doesnt_export_error()); } while(0)
-#define TEST_ASSERT_RESULT__NOERROREXPORTED__BROKEN(create_result)                        do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECTATION__BROKEN(calling((create_result)).returns_result_and_doesnt_export_error()); } while(0)
-#define TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(create_result,expected_part)         do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECTATION        (calling((create_result)).doesnt_return_result_but_exports_error_containing(expected_part)); } while(0)
-#define TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS__BROKEN(create_result,expected_part) do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECTATION__BROKEN(calling((create_result)).doesnt_return_result_but_exports_error_containing(expected_part)); } while(0)
-#define TEST_ASSERT_NORESULT__NOERROREXPORTED(create_result)                              do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECTATION        (calling((create_result)).does_neither_return_result_nor_export_error()); } while(0)
-#define TEST_ASSERT_NORESULT__NOERROREXPORTED__BROKEN(create_result)                      do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECTATION__BROKEN(calling((create_result)).does_neither_return_result_nor_export_error()); } while(0)
+#define TEST_EXPECT_RESULT__NOERROREXPORTED(create_result)                                do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION        (calling((create_result)).returns_result_and_doesnt_export_error()); } while(0)
+#define TEST_EXPECT_RESULT__NOERROREXPORTED__BROKEN(create_result)                        do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION__BROKEN(calling((create_result)).returns_result_and_doesnt_export_error()); } while(0)
+#define TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(create_result,expected_part)         do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION        (calling((create_result)).doesnt_return_result_but_exports_error_containing(expected_part)); } while(0)
+#define TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS__BROKEN(create_result,expected_part) do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION__BROKEN(calling((create_result)).doesnt_return_result_but_exports_error_containing(expected_part)); } while(0)
+#define TEST_EXPECT_NORESULT__NOERROREXPORTED(create_result)                              do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION        (calling((create_result)).does_neither_return_result_nor_export_error()); } while(0)
+#define TEST_EXPECT_NORESULT__NOERROREXPORTED__BROKEN(create_result)                      do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION__BROKEN(calling((create_result)).does_neither_return_result_nor_export_error()); } while(0)
 
 #endif
 // --------------------------------------------------------------------------------
-// TEST_ASSERT_SEGFAULT and TEST_ASSERT_CODE_ASSERTION_FAILS
+// TEST_EXPECT_SEGFAULT and TEST_EXPECT_CODE_ASSERTION_FAILS
 // only work if binary is linked with ARBDB
 
 #ifdef ENABLE_CRASH_TESTS
@@ -1220,61 +1220,61 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 
 # ifdef ASSERTION_USED
 
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, true))
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FAILS_ASSERTION, false))
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
-#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, true)) 
-#  define TEST_ASSERT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, false)) 
-#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, true))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FAILS_ASSERTION, false))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
+#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, true)) 
+#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, false)) 
+#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
 
 # else // ENABLE_CRASH_TESTS but no ASSERTION_USED (test segfaults in NDEBUG mode)
 
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(cb)
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb)
-#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, true)) 
-#  define TEST_ASSERT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, false)) 
-#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, false))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb)
+#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, true)) 
+#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, false)) 
+#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, false))
 
 # endif
 
 #else // not ENABLE_CRASH_TESTS (i.e. skip these tests completely)
 
-# define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
-# define TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(cb)
-# define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb)
-# define TEST_ASSERT_SEGFAULT(cb)
-# define TEST_ASSERT_SEGFAULT__WANTED(cb)
-# define TEST_ASSERT_SEGFAULT__UNWANTED(cb)
+# define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)
+# define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)
+# define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb)
+# define TEST_EXPECT_SEGFAULT(cb)
+# define TEST_EXPECT_SEGFAULT__WANTED(cb)
+# define TEST_EXPECT_SEGFAULT__UNWANTED(cb)
 
 #endif
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT_EQUAL(e1,t2)         TEST_EXPECTATION(that(e1).is_equal_to(t2))
-#define TEST_ASSERT_EQUAL__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).is_equal_to(t2))
+#define TEST_EXPECT_EQUAL(e1,t2)         TEST_EXPECTATION(that(e1).is_equal_to(t2))
+#define TEST_EXPECT_EQUAL__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).is_equal_to(t2))
 
-#define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_EXPECTATION(that(e1).fulfills(epsilon_similar(epsilon), t2))
-#define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECTATION__BROKEN(that(e1).is(epsilon_similar(epsilon), t2))
+#define TEST_EXPECT_SIMILAR(e1,t2,epsilon)         TEST_EXPECTATION(that(e1).fulfills(epsilon_similar(epsilon), t2))
+#define TEST_EXPECT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECTATION__BROKEN(that(e1).is(epsilon_similar(epsilon), t2))
 
-#define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_EXPECTATION(that(e1).does_differ_from(t2));
-#define TEST_ASSERT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).does_differ_from(t2));
+#define TEST_EXPECT_DIFFERENT(e1,t2)         TEST_EXPECTATION(that(e1).does_differ_from(t2));
+#define TEST_EXPECT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).does_differ_from(t2));
 
-#define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_EXPECTATION(that(lower).is_less_or_equal(upper))
-#define TEST_ASSERT_LOWER(lower,upper)        TEST_EXPECTATION(that(lower).is_less_than(upper))
-#define TEST_ASSERT_IN_RANGE(val,lower,upper) TEST_EXPECTATION(all().of(that(val).is_more_or_equal(lower), that(val).is_less_or_equal(upper)))
+#define TEST_EXPECT_LOWER_EQUAL(lower,upper)  TEST_EXPECTATION(that(lower).is_less_or_equal(upper))
+#define TEST_EXPECT_LOWER(lower,upper)        TEST_EXPECTATION(that(lower).is_less_than(upper))
+#define TEST_EXPECT_IN_RANGE(val,lower,upper) TEST_EXPECTATION(all().of(that(val).is_more_or_equal(lower), that(val).is_less_or_equal(upper)))
 
-#define TEST_ASSERT_CONTAINS(str, part) TEST_EXPECTATION(that(str).does_contain(part))
+#define TEST_EXPECT_CONTAINS(str, part) TEST_EXPECTATION(that(str).does_contain(part))
 
-#define TEST_ASSERT_NULL(n)            TEST_ASSERT_EQUAL(n, (typeof(n))NULL)
-#define TEST_ASSERT_NULL__BROKEN(n)    TEST_ASSERT_EQUAL__BROKEN(n, (typeof(n))NULL)
-#define TEST_ASSERT_NOTNULL(n)         TEST_ASSERT_DIFFERENT(n, (typeof(n))NULL) // @@@ elim 'NOT'
-#define TEST_ASSERT_NOTNULL__BROKEN(n) TEST_ASSERT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
+#define TEST_EXPECT_NULL(n)            TEST_EXPECT_EQUAL(n, (typeof(n))NULL)
+#define TEST_EXPECT_NULL__BROKEN(n)    TEST_EXPECT_EQUAL__BROKEN(n, (typeof(n))NULL)
+#define TEST_EXPECT_NOTNULL(n)         TEST_EXPECT_DIFFERENT(n, (typeof(n))NULL) // @@@ elim 'NOT'
+#define TEST_EXPECT_NOTNULL__BROKEN(n) TEST_EXPECT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
 
-#define TEST_ASSERT(cond)               TEST_ASSERT_EQUAL(cond, true)  // @@@ rename into TEST_EXPECT when eliminated
-#define TEST_ASSERT__BROKEN(cond)       TEST_ASSERT_EQUAL__BROKEN(cond, true)
-#define TEST_ASSERT_WRONG(cond)         TEST_ASSERT_EQUAL(cond, false) // @@@ rename into TEST_REJECT when eliminated
-#define TEST_ASSERT_WRONG__BROKEN(cond) TEST_ASSERT_EQUAL__BROKEN(cond, false)
+#define TEST_EXPECT(cond)               TEST_EXPECT_EQUAL(cond, true)  // @@@ rename into TEST_EXPECT when eliminated
+#define TEST_EXPECT__BROKEN(cond)       TEST_EXPECT_EQUAL__BROKEN(cond, true)
+#define TEST_EXPECT_WRONG(cond)         TEST_EXPECT_EQUAL(cond, false) // @@@ rename into TEST_REJECT when eliminated
+#define TEST_EXPECT_WRONG__BROKEN(cond) TEST_EXPECT_EQUAL__BROKEN(cond, false)
 
 // --------------------------------------------------------------------------------
 // the following macros only work when
@@ -1306,32 +1306,32 @@ namespace arb_test {
     }
 };
 
-#define TEST_COPY_FILE(src, dst) TEST_ASSERT_ZERO(system(GBS_global_string("cp '%s' '%s'", src, dst)))
+#define TEST_COPY_FILE(src, dst) TEST_EXPECT_ZERO(system(GBS_global_string("cp '%s' '%s'", src, dst)))
 
-#define TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_ASSERT(arb_test::test_textfile_difflines(f1,f2, diff))
-#define TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_ASSERT__BROKEN(arb_test::test_textfile_difflines(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_EXPECT(arb_test::test_textfile_difflines(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_EXPECT__BROKEN(arb_test::test_textfile_difflines(f1,f2, diff))
 
-#define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         TEST_ASSERT(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
-#define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) TEST_ASSERT__BROKEN(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         TEST_EXPECT(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) TEST_EXPECT__BROKEN(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
 
-#define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::test_files_equal(f1,f2))
-#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::test_files_equal(f1,f2))
+#define TEST_EXPECT_FILES_EQUAL(f1,f2)         TEST_EXPECT(arb_test::test_files_equal(f1,f2))
+#define TEST_EXPECT_FILES_EQUAL__BROKEN(f1,f2) TEST_EXPECT__BROKEN(arb_test::test_files_equal(f1,f2))
 
-#define TEST_ASSERT_TEXTFILES_EQUAL(f1,f2)         TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,0)
-#define TEST_ASSERT_TEXTFILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,0)
+#define TEST_EXPECT_TEXTFILES_EQUAL(f1,f2)         TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,0)
+#define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2) TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,0)
 
 #else
 
 #define WARN_MISS_ADPROT() need_include__ad_prot_h__BEFORE__test_unit_h
 
-#define TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,diff)                      WARN_MISS_ADPROT()
-#define TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff)              WARN_MISS_ADPROT()
-#define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         WARN_MISS_ADPROT()
-#define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) WARN_MISS_ADPROT()
-#define TEST_ASSERT_FILES_EQUAL(f1,f2)                                  WARN_MISS_ADPROT()
-#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2)                          WARN_MISS_ADPROT()
-#define TEST_ASSERT_TEXTFILES_EQUAL(f1,f2)                              WARN_MISS_ADPROT()
-#define TEST_ASSERT_TEXTFILES_EQUAL__BROKEN(f1,f2)                      WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,diff)                      WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff)              WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) WARN_MISS_ADPROT()
+#define TEST_EXPECT_FILES_EQUAL(f1,f2)                                  WARN_MISS_ADPROT()
+#define TEST_EXPECT_FILES_EQUAL__BROKEN(f1,f2)                          WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILES_EQUAL(f1,f2)                              WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2)                      WARN_MISS_ADPROT()
 
 #endif // AD_PROT_H
 
@@ -1339,7 +1339,7 @@ namespace arb_test {
 
 #define TEST_SETUP_GLOBAL_ENVIRONMENT(modulename) do {                                                          \
         arb_test::test_data().raiseLocalFlag(ANY_SETUP);                                                        \
-        TEST_ASSERT_NO_ERROR(GBK_system(GBS_global_string("../test_environment setup %s",  (modulename))));      \
+        TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("../test_environment setup %s",  (modulename))));      \
     } while(0)
 // cleanup is done (by Makefile.suite) after all unit tests have been run
 

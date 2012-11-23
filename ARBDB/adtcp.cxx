@@ -530,12 +530,12 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild) {
 #include <test_unit.h>
 
 void TEST_GBS_servertags() {
-    TEST_ASSERT_EQUAL(GBS_ptserver_tag(0), "ARB_PT_SERVER0");
-    TEST_ASSERT_EQUAL(GBS_ptserver_tag(7), "ARB_PT_SERVER7");
+    TEST_EXPECT_EQUAL(GBS_ptserver_tag(0), "ARB_PT_SERVER0");
+    TEST_EXPECT_EQUAL(GBS_ptserver_tag(7), "ARB_PT_SERVER7");
     
-    TEST_ASSERT_EQUAL(GBS_nameserver_tag(NULL),   "ARB_NAME_SERVER");
-    TEST_ASSERT_EQUAL(GBS_nameserver_tag(""),     "ARB_NAME_SERVER");
-    TEST_ASSERT_EQUAL(GBS_nameserver_tag("test"), "ARB_NAME_SERVER_TEST");
+    TEST_EXPECT_EQUAL(GBS_nameserver_tag(NULL),   "ARB_NAME_SERVER");
+    TEST_EXPECT_EQUAL(GBS_nameserver_tag(""),     "ARB_NAME_SERVER");
+    TEST_EXPECT_EQUAL(GBS_nameserver_tag("test"), "ARB_NAME_SERVER_TEST");
 }
 
 #endif

@@ -272,23 +272,23 @@ int ARB_main(int argc, const char *argv[]) {
 #include <test_unit.h>
 
 void TEST_BASIC_switch_parsing() {
-    TEST_ASSERT(strcasecmp_start("GenBank", "GenBank") == 0);
-    TEST_ASSERT(strcasecmp_start("GEnbaNK", "genBANK") == 0);
-    TEST_ASSERT(strcasecmp_start("Ge", "GenBank") == 0);
-    TEST_ASSERT(strcasecmp_start("GenBank", "NEXUS") < 0);
-    TEST_ASSERT(strcasecmp_start("NEXUS", "GenBank") > 0);
+    TEST_EXPECT(strcasecmp_start("GenBank", "GenBank") == 0);
+    TEST_EXPECT(strcasecmp_start("GEnbaNK", "genBANK") == 0);
+    TEST_EXPECT(strcasecmp_start("Ge", "GenBank") == 0);
+    TEST_EXPECT(strcasecmp_start("GenBank", "NEXUS") < 0);
+    TEST_EXPECT(strcasecmp_start("NEXUS", "GenBank") > 0);
 
-    TEST_ASSERT(!is_abbrev_switch("notAswitch", "notAswitch"));
-    TEST_ASSERT(!is_abbrev_switch("-GenbankPlus", "Genbank"));
-    TEST_ASSERT(!is_abbrev_switch("-Ge", "NEXUS"));
+    TEST_EXPECT(!is_abbrev_switch("notAswitch", "notAswitch"));
+    TEST_EXPECT(!is_abbrev_switch("-GenbankPlus", "Genbank"));
+    TEST_EXPECT(!is_abbrev_switch("-Ge", "NEXUS"));
 
-    TEST_ASSERT(is_abbrev_switch("-Ge", "Genbank"));
-    TEST_ASSERT(is_abbrev_switch("-N", "NEXUS"));
-    TEST_ASSERT(is_abbrev_switch("-NEXUS", "NEXUS"));
+    TEST_EXPECT(is_abbrev_switch("-Ge", "Genbank"));
+    TEST_EXPECT(is_abbrev_switch("-N", "NEXUS"));
+    TEST_EXPECT(is_abbrev_switch("-NEXUS", "NEXUS"));
 
-    TEST_ASSERT_EQUAL(parse_outtype("-PH"), PHYLIP);
-    TEST_ASSERT_EQUAL(parse_outtype("-PHYLIP"), PHYLIP);
-    TEST_ASSERT_EQUAL(parse_outtype("-phylip"), PHYLIP);
+    TEST_EXPECT_EQUAL(parse_outtype("-PH"), PHYLIP);
+    TEST_EXPECT_EQUAL(parse_outtype("-PHYLIP"), PHYLIP);
+    TEST_EXPECT_EQUAL(parse_outtype("-phylip"), PHYLIP);
 }
 
 #endif // UNIT_TESTS

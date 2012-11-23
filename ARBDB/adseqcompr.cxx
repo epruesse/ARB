@@ -1053,7 +1053,7 @@ void TEST_SLOW_sequence_compression() {
 
     {
         GBDATA *gb_main;
-        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open(source, "rw"));
+        TEST_EXPECT_RESULT__NOERROREXPORTED(gb_main = GB_open(source, "rw"));
 
         {
             GB_transaction ta(gb_main);
@@ -1068,18 +1068,18 @@ void TEST_SLOW_sequence_compression() {
             }
         }
 
-        TEST_ASSERT_NO_ERROR(GBT_compress_sequence_tree2(gb_main, "tree_nuc", aliname));
-        TEST_ASSERT_NO_ERROR(GB_save_as(gb_main, compressed, "b"));
+        TEST_EXPECT_NO_ERROR(GBT_compress_sequence_tree2(gb_main, "tree_nuc", aliname));
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, compressed, "b"));
         GB_close(gb_main);
     }
 #if defined(TEST_AUTO_UPDATE)
     TEST_COPY_FILE(compressed, expected);
 #endif
-    TEST_ASSERT_FILES_EQUAL(compressed, expected);
+    TEST_EXPECT_FILES_EQUAL(compressed, expected);
 
     {
         GBDATA *gb_main;
-        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open(compressed, "rw"));
+        TEST_EXPECT_RESULT__NOERROREXPORTED(gb_main = GB_open(compressed, "rw"));
         {
             GB_transaction ta(gb_main);
             int            count = 0;
@@ -1091,7 +1091,7 @@ void TEST_SLOW_sequence_compression() {
                 GBDATA *gb_seq = GBT_read_sequence(gb_species, aliname);
                 char   *seq    = GB_read_string(gb_seq);
 
-                TEST_ASSERT_EQUAL(seq, seq_exp[count]);
+                TEST_EXPECT_EQUAL(seq, seq_exp[count]);
 
                 freenull(seq_exp[count]);
                 free(seq);
@@ -1100,7 +1100,7 @@ void TEST_SLOW_sequence_compression() {
         GB_close(gb_main);
     }
 
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(compressed));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(compressed));
 }
 
 #endif // UNIT_TESTS

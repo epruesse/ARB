@@ -477,34 +477,34 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
 void TEST_BASIC_parseCommandLine() {
     {
         const char *args[] = { NULL, "serverid=0"};
-        TEST_ASSERT(parseCommandLine(ARRAY_ELEMS(args), args));
+        TEST_EXPECT(parseCommandLine(ARRAY_ELEMS(args), args));
 
         // test default values here
-        TEST_ASSERT_EQUAL(P.ACCEPTN, 1);
-        TEST_ASSERT_EQUAL(P.LIMITN, 4);
-        TEST_ASSERT_EQUAL(P.MISMATCHES, 0);
-        TEST_ASSERT_EQUAL(P.MAXRESULT, 1000000);
+        TEST_EXPECT_EQUAL(P.ACCEPTN, 1);
+        TEST_EXPECT_EQUAL(P.LIMITN, 4);
+        TEST_EXPECT_EQUAL(P.MISMATCHES, 0);
+        TEST_EXPECT_EQUAL(P.MAXRESULT, 1000000);
     }
 
     {
         const char *args[] = {NULL, "serverid=4", "matchmismatches=2"};
-        TEST_ASSERT(parseCommandLine(ARRAY_ELEMS(args), args));
-        TEST_ASSERT_EQUAL(P.SERVERID, 4);
-        TEST_ASSERT_EQUAL(P.MISMATCHES, 2);
-        TEST_ASSERT_EQUAL(args[1], "serverid=4"); // check array args was not modified
+        TEST_EXPECT(parseCommandLine(ARRAY_ELEMS(args), args));
+        TEST_EXPECT_EQUAL(P.SERVERID, 4);
+        TEST_EXPECT_EQUAL(P.MISMATCHES, 2);
+        TEST_EXPECT_EQUAL(args[1], "serverid=4"); // check array args was not modified
     }
 
     {
         const char *args[] = { NULL, "matchacceptN=0", "matchlimitN=5"};
-        TEST_ASSERT(parseCommandLine(ARRAY_ELEMS(args), args));
-        TEST_ASSERT_EQUAL(P.ACCEPTN, 0);
-        TEST_ASSERT_EQUAL(P.LIMITN, 5);
+        TEST_EXPECT(parseCommandLine(ARRAY_ELEMS(args), args));
+        TEST_EXPECT_EQUAL(P.ACCEPTN, 0);
+        TEST_EXPECT_EQUAL(P.LIMITN, 5);
     }
 
     {
         const char *args[] = { NULL, "matchmaxresults=100"};
-        TEST_ASSERT(parseCommandLine(ARRAY_ELEMS(args), args));
-        TEST_ASSERT_EQUAL(P.MAXRESULT, 100);
+        TEST_EXPECT(parseCommandLine(ARRAY_ELEMS(args), args));
+        TEST_EXPECT_EQUAL(P.MAXRESULT, 100);
     }
 }
 
@@ -573,30 +573,30 @@ static int test_setup(bool use_gene_ptserver) {
 
 #define TEST_RUN_ARB_PROBE(fake_argc,fake_argv)                                         \
     int       serverid = test_setup(use_gene_ptserver);                                 \
-    TEST_ASSERT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));                    \
-    TEST_ASSERT((serverid == TEST_SERVER_ID)||(serverid == TEST_GENESERVER_ID));        \
+    TEST_EXPECT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));                    \
+    TEST_EXPECT((serverid == TEST_SERVER_ID)||(serverid == TEST_GENESERVER_ID));        \
     P.SERVERID         = serverid;                                                      \
     ARB_ERROR error;                                                                    \
     char      *answer   = execute(error);                                               \
-    TEST_ASSERT_NO_ERROR(error.deliver())
+    TEST_EXPECT_NO_ERROR(error.deliver())
 
 
 #define TEST_ARB_PROBE(fake_argc,fake_argv,expected) do {       \
         TEST_RUN_ARB_PROBE(fake_argc,fake_argv);                \
-        TEST_ASSERT_EQUAL(answer, expected);                    \
+        TEST_EXPECT_EQUAL(answer, expected);                    \
         free(answer);                                           \
     } while(0)
 
 #define TEST_ARB_PROBE__BROKEN(fake_argc,fake_argv,expected) do {       \
         TEST_RUN_ARB_PROBE(fake_argc,fake_argv);                        \
-        TEST_ASSERT_EQUAL__BROKEN(answer, expected);                    \
+        TEST_EXPECT_EQUAL__BROKEN(answer, expected);                    \
         free(answer);                                                   \
     } while(0)
 
 #define TEST_ARB_PROBE_FILT(fake_argc,fake_argv,filter,expected) do {   \
         TEST_RUN_ARB_PROBE(fake_argc,fake_argv);                        \
         char  *filtered   = filter(answer);                             \
-        TEST_ASSERT_EQUAL(filtered, expected);                          \
+        TEST_EXPECT_EQUAL(filtered, expected);                          \
         free(filtered);                                                 \
         free(answer);                                                   \
     } while(0)
@@ -943,7 +943,7 @@ void TEST_SLOW_design_probe() {
 
     {
         char *positions = extract_locations(expected);
-        TEST_ASSERT_EQUAL(positions, "A=17B=94B+1A+1");
+        TEST_EXPECT_EQUAL(positions, "A=17B=94B+1A+1");
         free(positions);
     }
 
@@ -1124,18 +1124,18 @@ void TEST_SLOW_find_unmatched_probes() {
         TEST_RUN_ARB_PROBE(ARRAY_ELEMS(arguments), arguments);
 
         GBT_splitNdestroy_string(fullProbes, answer, ";", false);
-        TEST_ASSERT_EQUAL(fullProbes.size(), 2045);
+        TEST_EXPECT_EQUAL(fullProbes.size(), 2045);
     }
 
     for (size_t lp = 0; lp<fullProbes.size(); ++lp) { // with all 20mers existing in ptserver
         const char *fullProbe = fullProbes[lp];
 
         size_t fullLen = strlen(fullProbe);
-        TEST_ASSERT_EQUAL(fullLen, 20);
+        TEST_EXPECT_EQUAL(fullLen, 20);
 
         Matches fullHits;
         getMatches(fullProbe, fullHits);
-        TEST_ASSERT(fullHits.size()>0);
+        TEST_EXPECT(fullHits.size()>0);
 
         bool fewerHitsSeen = false;
 
@@ -1234,17 +1234,17 @@ void TEST_SLOW_variable_defaults_in_server() {
     test_setup(false);
 
     const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
-    TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag));
+    TEST_EXPECT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag));
 
     const char *servername = GBS_read_arb_tcp(server_tag);;
-    TEST_ASSERT_EQUAL(servername, "localhost:3200"); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER
+    TEST_EXPECT_EQUAL(servername, "localhost:3200"); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER
 
     T_PT_MAIN com;
     T_PT_LOCS locs;
     aisc_com *link = aisc_open(servername, com, AISC_MAGIC_NUMBER);
-    TEST_ASSERT_NOTNULL(link);
+    TEST_EXPECT_NOTNULL(link);
 
-    TEST_ASSERT_ZERO(aisc_create(link, PT_MAIN, com,
+    TEST_EXPECT_ZERO(aisc_create(link, PT_MAIN, com,
                                  MAIN_LOCS, PT_LOCS, locs,
                                  NULL));
 
@@ -1258,12 +1258,12 @@ void TEST_SLOW_variable_defaults_in_server() {
 
 #define TEST__READ(type,rvar,expected)                                  \
         do {                                                            \
-            TEST_ASSERT_ZERO(aisc_get(link, PT_LOCS, locs, rvar, &(LOCAL(rvar)), NULL)); \
-            TEST_ASSERT_EQUAL(LOCAL(rvar), expected);                   \
+            TEST_EXPECT_ZERO(aisc_get(link, PT_LOCS, locs, rvar, &(LOCAL(rvar)), NULL)); \
+            TEST_EXPECT_EQUAL(LOCAL(rvar), expected);                   \
             FREE_LOCAL(type,rvar);                                      \
         } while(0)
 #define TEST_WRITE(type,rvar,val)                                       \
-        TEST_ASSERT_ZERO(aisc_put(link, PT_LOCS, locs, rvar, (type)val, NULL))
+        TEST_EXPECT_ZERO(aisc_put(link, PT_LOCS, locs, rvar, (type)val, NULL))
 #define TEST_CHANGE(type,rvar,val)              \
         do {                                    \
             TEST_WRITE(type, rvar, val);        \
@@ -1285,7 +1285,7 @@ void TEST_SLOW_variable_defaults_in_server() {
         TEST_DEFAULT_CHANGE(ccharp, charp, LOCS_LOGINTIME, "notime", "sometime");
     }
 
-    TEST_ASSERT_ZERO(aisc_close(link, com));
+    TEST_EXPECT_ZERO(aisc_close(link, com));
     link = 0;
 }
 

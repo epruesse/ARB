@@ -1284,15 +1284,15 @@ struct gbcm_get_m_id_TESTER : virtual Noncopyable {
         error = gbcm_get_m_id(path, &name, &id);
     }
     ~gbcm_get_m_id_TESTER() {
-        TEST_ASSERT(!error || !name);               // if error occurs no name should exist!
-        TEST_ASSERT(error || name);                 // either error or result
+        TEST_EXPECT(!error || !name);               // if error occurs no name should exist!
+        TEST_EXPECT(error || name);                 // either error or result
         free(name);
     }
 
     bool no_error() {
         if (error) {
             fprintf(stderr, "Unexpected error for path '%s': %s\n", path, error);
-            TEST_ASSERT(!name);
+            TEST_EXPECT(!name);
         }
         else if (!name) fprintf(stderr, "Neither error nor name for path '%s'\n", path);
         return !error;
@@ -1320,34 +1320,34 @@ struct gbcm_get_m_id_TESTER : virtual Noncopyable {
 };
 
 void TEST_gbcm_get_m_id() {
-    TEST_ASSERT_NOTNULL(gbcm_get_m_id_TESTER(NULL).error);
-    TEST_ASSERT_NOTNULL(gbcm_get_m_id_TESTER("").error);
-    TEST_ASSERT(gbcm_get_m_id_TESTER(":").parsed(ANY_NAME, -1));
+    TEST_EXPECT_NOTNULL(gbcm_get_m_id_TESTER(NULL).error);
+    TEST_EXPECT_NOTNULL(gbcm_get_m_id_TESTER("").error);
+    TEST_EXPECT(gbcm_get_m_id_TESTER(":").parsed(ANY_NAME, -1));
 
-    TEST_ASSERT(gbcm_get_m_id_TESTER("localhost:71").parsed("localhost", 71)); // fixed with [6486]
-    TEST_ASSERT_NOTNULL(gbcm_get_m_id_TESTER("localhost:0").error);
-    TEST_ASSERT(gbcm_get_m_id_TESTER("localhost:4096").error == NULL);
-    TEST_ASSERT_NOTNULL(gbcm_get_m_id_TESTER("localhost:4097").error);
+    TEST_EXPECT(gbcm_get_m_id_TESTER("localhost:71").parsed("localhost", 71)); // fixed with [6486]
+    TEST_EXPECT_NOTNULL(gbcm_get_m_id_TESTER("localhost:0").error);
+    TEST_EXPECT(gbcm_get_m_id_TESTER("localhost:4096").error == NULL);
+    TEST_EXPECT_NOTNULL(gbcm_get_m_id_TESTER("localhost:4097").error);
 
-    TEST_ASSERT(gbcm_get_m_id_TESTER(":/tmp/arb_pt_ralf1").parsed("/tmp/arb_pt_ralf1", -1));
+    TEST_EXPECT(gbcm_get_m_id_TESTER(":/tmp/arb_pt_ralf1").parsed("/tmp/arb_pt_ralf1", -1));
 
     // @@@ no idea what "*" is used for, so the following tests are only descriptive!
-    TEST_ASSERT(gbcm_get_m_id_TESTER("*whatever:bar").parsed("bar", -1));
-    TEST_ASSERT(gbcm_get_m_id_TESTER("*:bar").parsed("bar", -1));
+    TEST_EXPECT(gbcm_get_m_id_TESTER("*whatever:bar").parsed("bar", -1));
+    TEST_EXPECT(gbcm_get_m_id_TESTER("*:bar").parsed("bar", -1));
 }
 
-#define TEST_ASSERT_IS_CANONICAL(file)                  \
+#define TEST_EXPECT_IS_CANONICAL(file)                  \
     do {                                                \
         char *dup = strdup(file);                       \
-        TEST_ASSERT_EQUAL(GB_canonical_path(dup), dup); \
+        TEST_EXPECT_EQUAL(GB_canonical_path(dup), dup); \
         free(dup);                                      \
     } while(0)
 
-#define TEST_ASSERT_CANONICAL_TO(not_cano,cano)                         \
+#define TEST_EXPECT_CANONICAL_TO(not_cano,cano)                         \
     do {                                                                \
         char *arb_not_cano = strdup(GB_concat_path(arbhome, not_cano)); \
         char *arb_cano     = strdup(GB_concat_path(arbhome, cano));     \
-        TEST_ASSERT_EQUAL(GB_canonical_path(arb_not_cano), arb_cano);   \
+        TEST_EXPECT_EQUAL(GB_canonical_path(arb_not_cano), arb_cano);   \
         free(arb_cano);                                                 \
         free(arb_not_cano);                                             \
     } while (0)
@@ -1355,9 +1355,9 @@ void TEST_gbcm_get_m_id() {
 void TEST_paths() {
 
     // test GB_concat_path
-    TEST_ASSERT_EQUAL(GB_concat_path("a", NULL), "a");
-    TEST_ASSERT_EQUAL(GB_concat_path(NULL, "b"), "b");
-    TEST_ASSERT_EQUAL(GB_concat_path("a", "b"), "a/b");
+    TEST_EXPECT_EQUAL(GB_concat_path("a", NULL), "a");
+    TEST_EXPECT_EQUAL(GB_concat_path(NULL, "b"), "b");
+    TEST_EXPECT_EQUAL(GB_concat_path("a", "b"), "a/b");
 
     {
         char        *arbhome    = strdup(GB_getenvARBHOME());
@@ -1369,36 +1369,36 @@ void TEST_paths() {
         char *nosuchpath_in_arbhome = strdup(GB_concat_path(arbhome, "nosuchpath"));
         char *file_in_nosuchpath    = strdup(GB_concat_path(nosuchpath_in_arbhome, "whatever"));
 
-        TEST_ASSERT(!GB_is_directory(nosuchpath_in_arbhome));
+        TEST_EXPECT(!GB_is_directory(nosuchpath_in_arbhome));
 
         // test GB_get_full_path
-        TEST_ASSERT_IS_CANONICAL(somefile_in_arbhome);
-        TEST_ASSERT_IS_CANONICAL(nosuchpath_in_arbhome);
-        TEST_ASSERT_IS_CANONICAL(file_in_nosuchpath);
+        TEST_EXPECT_IS_CANONICAL(somefile_in_arbhome);
+        TEST_EXPECT_IS_CANONICAL(nosuchpath_in_arbhome);
+        TEST_EXPECT_IS_CANONICAL(file_in_nosuchpath);
 
-        TEST_ASSERT_CANONICAL_TO("./WINDOW/./../ARBDB/./arbdb.h",     "ARBDB/arbdb.h"); // test parent-path
-        TEST_ASSERT_CANONICAL_TO("INCLUDE/arbdb.h",                   "ARBDB/arbdb.h"); // test symbolic link to file
-        TEST_ASSERT_CANONICAL_TO("NAMES_COM/AISC/aisc.pa",            "AISC_COM/AISC/aisc.pa"); // test symbolic link to directory
-        TEST_ASSERT_CANONICAL_TO("./NAMES_COM/AISC/..",               "AISC_COM"); // test parent-path through links
-        TEST_ASSERT_CANONICAL_TO("./WINDOW/./../ARBDB/../nosuchpath", "nosuchpath");
-        TEST_ASSERT_CANONICAL_TO("./WINDOW/./../nosuchpath/../ARBDB", "nosuchpath/../ARBDB"); // cannot resolve through non-existing paths!
+        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../ARBDB/./arbdb.h",     "ARBDB/arbdb.h"); // test parent-path
+        TEST_EXPECT_CANONICAL_TO("INCLUDE/arbdb.h",                   "ARBDB/arbdb.h"); // test symbolic link to file
+        TEST_EXPECT_CANONICAL_TO("NAMES_COM/AISC/aisc.pa",            "AISC_COM/AISC/aisc.pa"); // test symbolic link to directory
+        TEST_EXPECT_CANONICAL_TO("./NAMES_COM/AISC/..",               "AISC_COM"); // test parent-path through links
+        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../ARBDB/../nosuchpath", "nosuchpath");
+        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../nosuchpath/../ARBDB", "nosuchpath/../ARBDB"); // cannot resolve through non-existing paths!
 
         // test GB_unfold_path
-        TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", somefile), somefile_in_arbhome);
-        TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", nosuchfile), nosuchfile_in_arbhome);
+        TEST_EXPECT_EQUAL(GB_unfold_path("ARBHOME", somefile), somefile_in_arbhome);
+        TEST_EXPECT_EQUAL(GB_unfold_path("ARBHOME", nosuchfile), nosuchfile_in_arbhome);
 
         char *inhome = strdup(GB_unfold_path("HOME", "whatever"));
-        TEST_ASSERT_EQUAL(inhome, GB_canonical_path("~/whatever"));
+        TEST_EXPECT_EQUAL(inhome, GB_canonical_path("~/whatever"));
         free(inhome);
 
         // test unfolding absolute paths (HOME is ignored)
-        TEST_ASSERT_EQUAL(GB_unfold_path("HOME", arbhome), arbhome);
-        TEST_ASSERT_EQUAL(GB_unfold_path("HOME", somefile_in_arbhome), somefile_in_arbhome);
-        TEST_ASSERT_EQUAL(GB_unfold_path("HOME", nosuchfile_in_arbhome), nosuchfile_in_arbhome);
+        TEST_EXPECT_EQUAL(GB_unfold_path("HOME", arbhome), arbhome);
+        TEST_EXPECT_EQUAL(GB_unfold_path("HOME", somefile_in_arbhome), somefile_in_arbhome);
+        TEST_EXPECT_EQUAL(GB_unfold_path("HOME", nosuchfile_in_arbhome), nosuchfile_in_arbhome);
 
         // test GB_path_in_ARBHOME
-        TEST_ASSERT_EQUAL(GB_path_in_ARBHOME(somefile), somefile_in_arbhome);
-        TEST_ASSERT_EQUAL(GB_path_in_ARBHOME(nosuchfile), nosuchfile_in_arbhome);
+        TEST_EXPECT_EQUAL(GB_path_in_ARBHOME(somefile), somefile_in_arbhome);
+        TEST_EXPECT_EQUAL(GB_path_in_ARBHOME(nosuchfile), nosuchfile_in_arbhome);
 
         free(file_in_nosuchpath);
         free(nosuchpath_in_arbhome);
@@ -1407,7 +1407,7 @@ void TEST_paths() {
         free(arbhome);
     }
 
-    TEST_ASSERT_EQUAL(GB_path_in_ARBLIB("help"), GB_path_in_ARBHOME("lib", "help"));
+    TEST_EXPECT_EQUAL(GB_path_in_ARBLIB("help"), GB_path_in_ARBHOME("lib", "help"));
 }
 
 // ----------------------------------------
@@ -1432,9 +1432,9 @@ void TEST_GB_remove_on_exit() {
     {
         // first test class TestFile
         TestFile file("test1");
-        TEST_ASSERT(file.exists());
-        TEST_ASSERT(TestFile(file.get_name()).exists()); // removes the file
-        TEST_ASSERT(!file.exists());
+        TEST_EXPECT(file.exists());
+        TEST_EXPECT(TestFile(file.get_name()).exists()); // removes the file
+        TEST_EXPECT(!file.exists());
     }
 
     TestFile t("test1");
@@ -1445,7 +1445,7 @@ void TEST_GB_remove_on_exit() {
         GB_remove_on_exit(t.get_name());
         GB_close(gb_main);
     }
-    TEST_ASSERT(!t.exists());
+    TEST_EXPECT(!t.exists());
 }
 
 #endif

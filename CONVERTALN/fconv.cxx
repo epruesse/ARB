@@ -172,11 +172,11 @@ static void test_expected_conversion(const char *file, const char *flavor) {
 
     bool shall_update = want_auto_update(file, expected);
     if (shall_update) {
-        // TEST_ASSERT(0); // completely avoid real update
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(system(GBS_global_string("cp %s %s", file, expected)));
+        // TEST_EXPECT(0); // completely avoid real update
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(system(GBS_global_string("cp %s %s", file, expected)));
     }
     else {
-        TEST_ASSERT(!more_than_date_differs(file, expected));
+        TEST_EXPECT(!more_than_date_differs(file, expected));
     }
     free(expected);
 }
@@ -193,7 +193,7 @@ static const char *test_convert(const char *inf, const char *outf, Format inType
 
 static void test_convert_by_format_num(int from, int to) {
     char *toFile = GBS_global_string_copy("impexp/conv.%s_2_%s", NAME(from), NAME(to));
-    if (GB_is_regularfile(toFile)) TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
+    if (GB_is_regularfile(toFile)) TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
 
     int old_processed_counter = log_processed_counter;
     int old_seq_counter       = log_seq_counter;
@@ -208,20 +208,20 @@ static void test_convert_by_format_num(int from, int to) {
 
     if (me.supported) {
         if (error) TEST_ERROR("convert() reports error: '%s' (for supported conversion)", error);
-        TEST_ASSERT(GB_is_regularfile(toFile));
-        TEST_ASSERT_EQUAL(converted_seqs, expected_seqs);
-        TEST_ASSERT_EQUAL(log_processed_counter, old_processed_counter+1);
+        TEST_EXPECT(GB_is_regularfile(toFile));
+        TEST_EXPECT_EQUAL(converted_seqs, expected_seqs);
+        TEST_EXPECT_EQUAL(log_processed_counter, old_processed_counter+1);
 
-        TEST_ASSERT_LOWER_EQUAL(10, GB_size_of_file(toFile)); // less than 10 bytes
+        TEST_EXPECT_LOWER_EQUAL(10, GB_size_of_file(toFile)); // less than 10 bytes
         test_expected_conversion(toFile, NULL);
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
     }
     else {
         if (!error) TEST_ERROR("No error for unsupported conversion '%s'", GBS_global_string("%s -> %s", NAME(from), NAME(to)));
-        TEST_ASSERT_NOTNULL(strstr(error, "supported")); // wrong error
-        TEST_ASSERT(!GB_is_regularfile(toFile)); // unsupported produced output
+        TEST_EXPECT_NOTNULL(strstr(error, "supported")); // wrong error
+        TEST_EXPECT(!GB_is_regularfile(toFile)); // unsupported produced output
     }
-    TEST_ASSERT(me.supported == !error);
+    TEST_EXPECT(me.supported == !error);
 
 #if defined(TEST_THROW)
     {
@@ -230,11 +230,11 @@ static void test_convert_by_format_num(int from, int to) {
         const char *fromFile = "general/empty.input";
 
         error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
-        TEST_ASSERT_NOTNULL(error);
+        TEST_EXPECT_NOTNULL(error);
 
         fromFile = "general/text.input";
         error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
-        TEST_ASSERT_NOTNULL(error);
+        TEST_EXPECT_NOTNULL(error);
     }
 #endif
 
@@ -252,7 +252,7 @@ static void init_cap() {
     }
 }
 
-#define NOT_SUPPORTED(t1,t2) TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].supported = false
+#define NOT_SUPPORTED(t1,t2) TEST_EXPECT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].supported = false
 
 static int will_convert(int from) {
     int will = 0;
@@ -318,7 +318,7 @@ void TEST_converter() {
             tested-unsupported);
 
     int untested = possible - tested;
-    TEST_ASSERT_EQUAL(untested, neverReturns);
+    TEST_EXPECT_EQUAL(untested, neverReturns);
 }
 
 #endif // UNIT_TESTS

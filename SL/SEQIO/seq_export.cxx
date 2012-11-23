@@ -722,7 +722,7 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
 #define TEST_EXPORT_FORMAT(filename,load_complete_form)                 \
     do {                                                                \
         export_format efo;                                              \
-        TEST_ASSERT_NO_ERROR(read_export_format((&efo),                 \
+        TEST_EXPECT_NO_ERROR(read_export_format((&efo),                 \
                                                 filename,               \
                                                 load_complete_form));   \
     } while(0)                                                          \
@@ -746,7 +746,7 @@ void TEST_sequence_export() {
 
         GBT_mark_all(gb_main, 0);
         GBDATA *gb_species = GBT_find_species(gb_main, "MetMazei");
-        TEST_ASSERT_NOTNULL(gb_species);
+        TEST_EXPECT_NOTNULL(gb_species);
 
         GB_write_flag(gb_species, 1); // mark
         free(ali);
@@ -760,11 +760,11 @@ void TEST_sequence_export() {
 
                 {
                     GB_transaction ta(gb_main);
-                    TEST_ASSERT_NO_ERROR(SEQIO_export_by_format(gb_main, 1, filter, 0, 0, "DBname", eft[e], outname, 0, &used_outname));
+                    TEST_EXPECT_NO_ERROR(SEQIO_export_by_format(gb_main, 1, filter, 0, 0, "DBname", eft[e], outname, 0, &used_outname));
                 }
 
                 const char *name = strrchr(eft[e], '/');
-                TEST_ASSERT_NOTNULL(name);
+                TEST_EXPECT_NOTNULL(name);
                 name++;
 
                 char *expected = GBS_global_string_copy("impexp/%s.exported", name);
@@ -772,7 +772,7 @@ void TEST_sequence_export() {
 #if defined(TEST_AUTO_UPDATE)
 #if defined(TEST_AUTO_UPDATE_ONLY_MISSING)
                 if (GB_is_regularfile(expected)) {
-                    TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
+                    TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
                 }
                 else {
                     system(GBS_global_string("cp %s %s", outname, expected));
@@ -781,10 +781,10 @@ void TEST_sequence_export() {
                 system(GBS_global_string("cp %s %s", outname, expected));
 #endif
 #else
-                TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
+                TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
                 // see ../../UNIT_TESTER/run/impexp
 #endif // TEST_AUTO_UPDATE
-                TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(outname));
+                TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outname));
 
                 free(expected);
                 free(used_outname);

@@ -1762,7 +1762,7 @@ void TEST_io_number() {
 
     {
         FILE *out = fopen(numbers, "wb");
-        TEST_ASSERT_NOTNULL(out);
+        TEST_EXPECT_NOTNULL(out);
 
         long lastPos = 0;
         for (size_t i = 0; i<ARRAY_ELEMS(DATA); ++i) {
@@ -1772,7 +1772,7 @@ void TEST_io_number() {
 
             long pos           = ftell(out);
             long bytes_written = pos-lastPos;
-            TEST_ASSERT_EQUAL(bytes_written, d.size_expd);
+            TEST_EXPECT_EQUAL(bytes_written, d.size_expd);
 
             writeSize += bytes_written;
 
@@ -1784,7 +1784,7 @@ void TEST_io_number() {
 
     {
         FILE *in = fopen(numbers, "rb");
-        TEST_ASSERT_NOTNULL(in);
+        TEST_EXPECT_NOTNULL(in);
 
         long lastPos = 0;
 
@@ -1793,11 +1793,11 @@ void TEST_io_number() {
             TEST_ANNOTATE_ASSERT(GBS_global_string("val=0x%lx", d.val));
 
             long val = gb_get_number(in);
-            TEST_ASSERT_EQUAL(val, d.val);
+            TEST_EXPECT_EQUAL(val, d.val);
 
             long pos        = ftell(in);
             long bytes_read = pos-lastPos;
-            TEST_ASSERT_EQUAL(bytes_read, d.size_expd);
+            TEST_EXPECT_EQUAL(bytes_read, d.size_expd);
 
             readSize += bytes_read;
 
@@ -1807,10 +1807,10 @@ void TEST_io_number() {
         fclose(in);
     }
 
-    TEST_ASSERT_EQUAL(GB_size_of_file(numbers), writeSize);
-    TEST_ASSERT_EQUAL(writeSize, readSize);
+    TEST_EXPECT_EQUAL(GB_size_of_file(numbers), writeSize);
+    TEST_EXPECT_EQUAL(writeSize, readSize);
 
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(numbers));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(numbers));
 }
 
 #endif

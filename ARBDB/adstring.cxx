@@ -995,37 +995,37 @@ static void dont_failassertion() {}
 static void provokesegv_does_not_fail_assertion() {
     // provokesegv does not raise assertion
     // -> the following assertion fails
-    TEST_ASSERT_CODE_ASSERTION_FAILS(provokesegv);
+    TEST_EXPECT_CODE_ASSERTION_FAILS(provokesegv);
 }
 #endif
 #endif
 
 void TEST_signal_tests() {
     // check whether we can test for SEGV and assertion failures
-    TEST_ASSERT_SEGFAULT(provokesegv);
-    TEST_ASSERT_CODE_ASSERTION_FAILS(failassertion);
+    TEST_EXPECT_SEGFAULT(provokesegv);
+    TEST_EXPECT_CODE_ASSERTION_FAILS(failassertion);
 
     // tests whether signal suppression works multiple times (by repeating tests)
-    TEST_ASSERT_CODE_ASSERTION_FAILS(failassertion);
-    TEST_ASSERT_SEGFAULT(provokesegv);
+    TEST_EXPECT_CODE_ASSERTION_FAILS(failassertion);
+    TEST_EXPECT_SEGFAULT(provokesegv);
 
     // test whether SEGV can be distinguished from assertion
-    TEST_ASSERT_CODE_ASSERTION_FAILS(provokesegv_does_not_fail_assertion);
+    TEST_EXPECT_CODE_ASSERTION_FAILS(provokesegv_does_not_fail_assertion);
 
     // following section is disabled since it would spam wanted warnings
     // (enable it when changing any of these TEST_..-macros used here)
 #if 0
-    TEST_ASSERT_SEGFAULT__WANTED(dont_provokesegv);
-    TEST_ASSERT_SEGFAULT__UNWANTED(provokesegv);
-    TEST_ASSERT_SEGFAULT__UNWANTED(failassertion);
+    TEST_EXPECT_SEGFAULT__WANTED(dont_provokesegv);
+    TEST_EXPECT_SEGFAULT__UNWANTED(provokesegv);
+    TEST_EXPECT_SEGFAULT__UNWANTED(failassertion);
 
-    TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
-    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
-    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
+    TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
+    TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
+    TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
 #endif
 }
 
-#define EXPECT_CONTENT(content) TEST_ASSERT_EQUAL(GBS_mempntr(strstr), content)
+#define EXPECT_CONTENT(content) TEST_EXPECT_EQUAL(GBS_mempntr(strstr), content)
 
 void TEST_GBS_strstruct() {
     {
@@ -1036,7 +1036,7 @@ void TEST_GBS_strstruct() {
         GBS_chrcat(strstr, '_');            EXPECT_CONTENT("bbb17_");
         GBS_floatcat(strstr, 3.5);          EXPECT_CONTENT("bbb17_3.500000");
 
-        TEST_ASSERT_EQUAL(GBS_memoffset(strstr), 14);
+        TEST_EXPECT_EQUAL(GBS_memoffset(strstr), 14);
         GBS_str_cut_tail(strstr, 13);       EXPECT_CONTENT("b");
         GBS_strcat(strstr, "utter");        EXPECT_CONTENT("butter");
         GBS_strncat(strstr, "flying", 3);   EXPECT_CONTENT("butterfly");
@@ -1063,7 +1063,7 @@ void TEST_GBS_strstruct() {
         size_t         oldbufsize = strstr->get_buffer_size();
         GBS_chrncat(strstr, 'x', 20);               // trigger reallocation of buffer
 
-        TEST_ASSERT(oldbufsize != strstr->get_buffer_size()); // did we reallocate?
+        TEST_EXPECT(oldbufsize != strstr->get_buffer_size()); // did we reallocate?
         EXPECT_CONTENT("xxxxxxxxxxxxxxxxxxxx");
         GBS_strforget(strstr);
     }
@@ -1072,7 +1072,7 @@ void TEST_GBS_strstruct() {
 #define TEST_SHORTENED_EQUALS(Long,Short) do {  \
         char *buf = strdup(Long);               \
         GBS_shorten_repeated_data(buf);         \
-        TEST_ASSERT_EQUAL(buf, Short);          \
+        TEST_EXPECT_EQUAL(buf, Short);          \
         free(buf);                              \
     } while(0)
 

@@ -552,26 +552,26 @@ int etom(const Embl& embl, Macke& macke, const Seq& seq) { // __ATTR__USERESULT
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
-#define TEST_ASSERT_ETOG_JOURNAL_PARSES(i,o)              \
+#define TEST_EXPECT_ETOG_JOURNAL_PARSES(i,o)              \
     do {                                                  \
         char *dup = strdup(i);                            \
         char *res = etog_journal(dup);                    \
-        TEST_ASSERT_EQUAL(res, o);                        \
+        TEST_EXPECT_EQUAL(res, o);                        \
         free(res);                                        \
         free(dup);                                        \
     } while (0)
 
 void TEST_BASIC_etog_journal() {
     // behavior documented in r6943:
-    TEST_ASSERT_ETOG_JOURNAL_PARSES("Gene 134:283-287(1993).\n",
+    TEST_EXPECT_ETOG_JOURNAL_PARSES("Gene 134:283-287(1993).\n",
                                     "Gene 134, 283-287 (1993)\n");
-    TEST_ASSERT_ETOG_JOURNAL_PARSES("J. Exp. Med. 179:1809-1821(1994).\n",
+    TEST_EXPECT_ETOG_JOURNAL_PARSES("J. Exp. Med. 179:1809-1821(1994).\n",
                                     "J. Exp. Med. 179, 1809-1821 (1994)\n");
-    TEST_ASSERT_ETOG_JOURNAL_PARSES("Unpublished whatever.\n",
+    TEST_EXPECT_ETOG_JOURNAL_PARSES("Unpublished whatever.\n",
                                     "Unpublished whatever\n");
-    TEST_ASSERT_ETOG_JOURNAL_PARSES("bla bla bla.\n",
+    TEST_EXPECT_ETOG_JOURNAL_PARSES("bla bla bla.\n",
                                     "\n"); // skips if can't parse
-    TEST_ASSERT_ETOG_JOURNAL_PARSES("bla bla bla\n",
+    TEST_EXPECT_ETOG_JOURNAL_PARSES("bla bla bla\n",
                                     "\n");
 }
 

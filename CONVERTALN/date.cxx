@@ -264,112 +264,112 @@ const char *gcg_date(const char *input) {
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
-#define TEST_ASSERT_CONVERT(input,expect,CONVERT,ASSERTION) ASSERTION(CONVERT(input), expect);
+#define TEST_EXPECT_CONVERT(input,expect,CONVERT,ASSERTION) ASSERTION(CONVERT(input), expect);
 
-#define TEST_ASSERT_GENBANK_DATE(input,expect)         TEST_ASSERT_CONVERT(input, expect, genbank_date, TEST_ASSERT_EQUAL)
-#define TEST_ASSERT_GENBANK_DATE__BROKEN(input,expect) TEST_ASSERT_CONVERT(input, expect, genbank_date, TEST_ASSERT_EQUAL__BROKEN)
-#define TEST_ASSERT_GCG_DATE(input,expect)             TEST_ASSERT_CONVERT(input, expect, gcg_date, TEST_ASSERT_EQUAL)
-#define TEST_ASSERT_GCG_DATE__BROKEN(input,expect)     TEST_ASSERT_CONVERT(input, expect, gcg_date, TEST_ASSERT_EQUAL__BROKEN)
+#define TEST_EXPECT_GENBANK_DATE(input,expect)         TEST_EXPECT_CONVERT(input, expect, genbank_date, TEST_EXPECT_EQUAL)
+#define TEST_EXPECT_GENBANK_DATE__BROKEN(input,expect) TEST_EXPECT_CONVERT(input, expect, genbank_date, TEST_EXPECT_EQUAL__BROKEN)
+#define TEST_EXPECT_GCG_DATE(input,expect)             TEST_EXPECT_CONVERT(input, expect, gcg_date, TEST_EXPECT_EQUAL)
+#define TEST_EXPECT_GCG_DATE__BROKEN(input,expect)     TEST_EXPECT_CONVERT(input, expect, gcg_date, TEST_EXPECT_EQUAL__BROKEN)
 
-#define TEST_ASSERT_INVALID_ANYDATE(input,finder)                       \
+#define TEST_EXPECT_INVALID_ANYDATE(input,finder)                       \
     do {                                                                \
         int   day_, month_, year_;                                      \
         ASSERT_RESULT(bool, false,                                      \
                       finder(input, &month_, &day_, &year_));           \
     } while(0)
 
-#define TEST_ASSERT_INVALID_LONGDATE(input) TEST_ASSERT_INVALID_ANYDATE(input, find_date_long_form)
+#define TEST_EXPECT_INVALID_LONGDATE(input) TEST_EXPECT_INVALID_ANYDATE(input, find_date_long_form)
 
-#define TEST_ASSERT_FIND_ANYDATE(input,d,m,y,finder) \
+#define TEST_EXPECT_FIND_ANYDATE(input,d,m,y,finder) \
     do {                                                        \
         char *dup_ = strdup(input);                             \
         int   day_, month_, year_;                              \
-        TEST_ASSERT(finder(dup_, &month_, &day_, &year_));      \
-        TEST_ASSERT_EQUAL(day_, d);                             \
-        TEST_ASSERT_EQUAL(month_, m);                           \
-        TEST_ASSERT_EQUAL(year_, y);                            \
+        TEST_EXPECT(finder(dup_, &month_, &day_, &year_));      \
+        TEST_EXPECT_EQUAL(day_, d);                             \
+        TEST_EXPECT_EQUAL(month_, m);                           \
+        TEST_EXPECT_EQUAL(year_, y);                            \
         free(dup_);                                             \
     } while (0)
 
-#define TEST_ASSERT_FIND_____DATE(input,d,m,y) TEST_ASSERT_FIND_ANYDATE(input, d, m, y, find_date)
-#define TEST_ASSERT_FIND_LONGDATE(input,d,m,y) TEST_ASSERT_FIND_ANYDATE(input, d, m, y, find_date_long_form)
+#define TEST_EXPECT_FIND_____DATE(input,d,m,y) TEST_EXPECT_FIND_ANYDATE(input, d, m, y, find_date)
+#define TEST_EXPECT_FIND_LONGDATE(input,d,m,y) TEST_EXPECT_FIND_ANYDATE(input, d, m, y, find_date_long_form)
 
-// #define TEST_ASSERT_FIND_DATE(str,d,m,y) TEST_ASSERT_FIND_DATE_IMPL(str,d,m,y,TEST_ASSERT_EQUAL)
+// #define TEST_EXPECT_FIND_DATE(str,d,m,y) TEST_EXPECT_FIND_DATE_IMPL(str,d,m,y,TEST_EXPECT_EQUAL)
 
 void TEST_BASIC_conv_date() {
-    TEST_ASSERT_EQUAL(ismonth("Apr"), 4);
+    TEST_EXPECT_EQUAL(ismonth("Apr"), 4);
 
-    TEST_ASSERT_FIND_____DATE("19-APR-99", 19, 4, 99);
-    TEST_ASSERT_FIND_____DATE("22-JUN-65", 22, 6, 65);
-    TEST_ASSERT_FIND_____DATE("5-SEP-10",   5, 9, 10);
-    TEST_ASSERT_FIND_____DATE("05-SEP-10",  5, 9, 10);
+    TEST_EXPECT_FIND_____DATE("19-APR-99", 19, 4, 99);
+    TEST_EXPECT_FIND_____DATE("22-JUN-65", 22, 6, 65);
+    TEST_EXPECT_FIND_____DATE("5-SEP-10",   5, 9, 10);
+    TEST_EXPECT_FIND_____DATE("05-SEP-10",  5, 9, 10);
 
-    TEST_ASSERT_FIND_____DATE("19-APR-1999", 19, 4, 1999);
-    TEST_ASSERT_FIND_____DATE("22-JUN-1965", 22, 6, 1965); // test date b4 epoch
-    TEST_ASSERT_FIND_____DATE("5-SEP-2010",   5, 9, 2010);
-    TEST_ASSERT_FIND_____DATE("05-SEP-2010",  5, 9, 2010);
+    TEST_EXPECT_FIND_____DATE("19-APR-1999", 19, 4, 1999);
+    TEST_EXPECT_FIND_____DATE("22-JUN-1965", 22, 6, 1965); // test date b4 epoch
+    TEST_EXPECT_FIND_____DATE("5-SEP-2010",   5, 9, 2010);
+    TEST_EXPECT_FIND_____DATE("05-SEP-2010",  5, 9, 2010);
 
     // --------------------
 
-    TEST_ASSERT_FIND_LONGDATE("05 Sep 2010",  5, 9, 2010);
-    TEST_ASSERT_FIND_LONGDATE("Sep, 05 2010",  5, 9, 2010);
-    TEST_ASSERT_FIND_LONGDATE("Sep 05 2010",  5, 9, 2010);
+    TEST_EXPECT_FIND_LONGDATE("05 Sep 2010",  5, 9, 2010);
+    TEST_EXPECT_FIND_LONGDATE("Sep, 05 2010",  5, 9, 2010);
+    TEST_EXPECT_FIND_LONGDATE("Sep 05 2010",  5, 9, 2010);
 
-    TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 99", 19, 4, 99);
-    TEST_ASSERT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 65", 22, 6, 65);
-    TEST_ASSERT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 10",   5, 9, 10);
-    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 10",  5, 9, 10);
+    TEST_EXPECT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 99", 19, 4, 99);
+    TEST_EXPECT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 65", 22, 6, 65);
+    TEST_EXPECT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 10",   5, 9, 10);
+    TEST_EXPECT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 10",  5, 9, 10);
 
-    TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 4, 1999);
-    TEST_ASSERT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 1965", 22, 6, 1965);
-    TEST_ASSERT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 2010",   5, 9, 2010);
-    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 2010",  5, 9, 2010);
-    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 2010",  5, 9, 2010);
+    TEST_EXPECT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 4, 1999);
+    TEST_EXPECT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 1965", 22, 6, 1965);
+    TEST_EXPECT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 2010",   5, 9, 2010);
+    TEST_EXPECT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 2010",  5, 9, 2010);
+    TEST_EXPECT_FIND_LONGDATE("Wed Sep 05 19:46:25 2010",  5, 9, 2010);
     
-    TEST_ASSERT_FIND_LONGDATE("Sun Oct 31 08:37:14 2010",  31, 10, 2010);
+    TEST_EXPECT_FIND_LONGDATE("Sun Oct 31 08:37:14 2010",  31, 10, 2010);
 
     // --------------------
 
-    TEST_ASSERT_GENBANK_DATE("19 Apr 1999", "19-APR-1999");
-    TEST_ASSERT_GENBANK_DATE("19-APR-1999", "19-APR-1999");
-    TEST_ASSERT_GENBANK_DATE("22-JUN-1965", "22-JUN-1965");
-    TEST_ASSERT_GENBANK_DATE("5-SEP-2010", "05-SEP-2010");
-    TEST_ASSERT_GENBANK_DATE("05-SEP-2010", "05-SEP-2010");
-    TEST_ASSERT_GENBANK_DATE("crap", ERROR_DATE);
+    TEST_EXPECT_GENBANK_DATE("19 Apr 1999", "19-APR-1999");
+    TEST_EXPECT_GENBANK_DATE("19-APR-1999", "19-APR-1999");
+    TEST_EXPECT_GENBANK_DATE("22-JUN-1965", "22-JUN-1965");
+    TEST_EXPECT_GENBANK_DATE("5-SEP-2010", "05-SEP-2010");
+    TEST_EXPECT_GENBANK_DATE("05-SEP-2010", "05-SEP-2010");
+    TEST_EXPECT_GENBANK_DATE("crap", ERROR_DATE);
 
-    TEST_ASSERT_GENBANK_DATE("Mon Apr 19 25:46:19 CEST 1999", "19-APR-1999");
-    TEST_ASSERT_GENBANK_DATE("Tue Jun 22 05:11:00 CEST 1965", "22-JUN-1965");
-    TEST_ASSERT_GENBANK_DATE("Wed Sep 5 19:46:25 CEST 2010",  "05-SEP-2010");
-    TEST_ASSERT_GENBANK_DATE("Wed Sep 05 19:46:25 CEST 2010", "05-SEP-2010");
-    TEST_ASSERT_GENBANK_DATE("Wed Sep 31 19:46:25 CEST 2010", ERROR_DATE);
+    TEST_EXPECT_GENBANK_DATE("Mon Apr 19 25:46:19 CEST 1999", "19-APR-1999");
+    TEST_EXPECT_GENBANK_DATE("Tue Jun 22 05:11:00 CEST 1965", "22-JUN-1965");
+    TEST_EXPECT_GENBANK_DATE("Wed Sep 5 19:46:25 CEST 2010",  "05-SEP-2010");
+    TEST_EXPECT_GENBANK_DATE("Wed Sep 05 19:46:25 CEST 2010", "05-SEP-2010");
+    TEST_EXPECT_GENBANK_DATE("Wed Sep 31 19:46:25 CEST 2010", ERROR_DATE);
 
-    TEST_ASSERT_GENBANK_DATE("Sun Oct 31 08:37:14 2010", "31-OCT-2010");
-    TEST_ASSERT_GENBANK_DATE("Sun 10 31 08:37:14 2010", "31-OCT-2010");
-    TEST_ASSERT_GENBANK_DATE("Sun 31 10 08:37:14 2010", "31-OCT-2010");
-    TEST_ASSERT_GENBANK_DATE("Sun Oct 32 08:37:14 2010", ERROR_DATE);
+    TEST_EXPECT_GENBANK_DATE("Sun Oct 31 08:37:14 2010", "31-OCT-2010");
+    TEST_EXPECT_GENBANK_DATE("Sun 10 31 08:37:14 2010", "31-OCT-2010");
+    TEST_EXPECT_GENBANK_DATE("Sun 31 10 08:37:14 2010", "31-OCT-2010");
+    TEST_EXPECT_GENBANK_DATE("Sun Oct 32 08:37:14 2010", ERROR_DATE);
     
-    TEST_ASSERT_GENBANK_DATE("Fri Dec 31 08:37:14 2010", "31-DEC-2010");
-    TEST_ASSERT_GENBANK_DATE("Fri 12 31 08:37:14 2010", "31-DEC-2010");
-    TEST_ASSERT_GENBANK_DATE("Fri 31 12 08:37:14 2010", "31-DEC-2010");
-    TEST_ASSERT_GENBANK_DATE("Fri 13 31 08:37:14 2010", ERROR_DATE);
-    TEST_ASSERT_GENBANK_DATE("Fri 31 13 08:37:14 2010", ERROR_DATE);
+    TEST_EXPECT_GENBANK_DATE("Fri Dec 31 08:37:14 2010", "31-DEC-2010");
+    TEST_EXPECT_GENBANK_DATE("Fri 12 31 08:37:14 2010", "31-DEC-2010");
+    TEST_EXPECT_GENBANK_DATE("Fri 31 12 08:37:14 2010", "31-DEC-2010");
+    TEST_EXPECT_GENBANK_DATE("Fri 13 31 08:37:14 2010", ERROR_DATE);
+    TEST_EXPECT_GENBANK_DATE("Fri 31 13 08:37:14 2010", ERROR_DATE);
 
-    TEST_ASSERT_GENBANK_DATE("Tue Feb 28 08:37:14 2011", "28-FEB-2011");
-    TEST_ASSERT_GENBANK_DATE("Tue Feb 29 08:37:14 2011", "29-FEB-2011"); // existance not checked
-    TEST_ASSERT_GENBANK_DATE("Tue Feb 30 08:37:14 2011", ERROR_DATE); // existance not checked
+    TEST_EXPECT_GENBANK_DATE("Tue Feb 28 08:37:14 2011", "28-FEB-2011");
+    TEST_EXPECT_GENBANK_DATE("Tue Feb 29 08:37:14 2011", "29-FEB-2011"); // existance not checked
+    TEST_EXPECT_GENBANK_DATE("Tue Feb 30 08:37:14 2011", ERROR_DATE); // existance not checked
 
-    TEST_ASSERT_DIFFERENT(genbank_date(today_date()), ERROR_DATE);
+    TEST_EXPECT_DIFFERENT(genbank_date(today_date()), ERROR_DATE);
 
     // --------------------
 
-    TEST_ASSERT_GCG_DATE("Mon Apr 19 25:46:19 99", "April 19, 99  25:46:19");
+    TEST_EXPECT_GCG_DATE("Mon Apr 19 25:46:19 99", "April 19, 99  25:46:19");
 
-    TEST_ASSERT_GCG_DATE("Mon Apr 19 25:46:19 1999", "April 19, 1999  25:46:19");
-    TEST_ASSERT_GCG_DATE("Tue Jun 22 05:11:00 1965", "June 22, 1965  05:11:00");
-    TEST_ASSERT_GCG_DATE("Wed Sep 5 19:46:25 2010",  "September 5, 2010  19:46:25");
-    TEST_ASSERT_GCG_DATE("Wed Sep 05 19:46:25 2010", "September 5, 2010  19:46:25");
+    TEST_EXPECT_GCG_DATE("Mon Apr 19 25:46:19 1999", "April 19, 1999  25:46:19");
+    TEST_EXPECT_GCG_DATE("Tue Jun 22 05:11:00 1965", "June 22, 1965  05:11:00");
+    TEST_EXPECT_GCG_DATE("Wed Sep 5 19:46:25 2010",  "September 5, 2010  19:46:25");
+    TEST_EXPECT_GCG_DATE("Wed Sep 05 19:46:25 2010", "September 5, 2010  19:46:25");
 
-    TEST_ASSERT_NOTNULL(gcg_date(today_date())); // currently gcg_date is only used like this
+    TEST_EXPECT_NOTNULL(gcg_date(today_date())); // currently gcg_date is only used like this
 }
 
 #endif // UNIT_TESTS

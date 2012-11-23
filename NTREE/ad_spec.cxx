@@ -284,9 +284,9 @@ static uint32_t counted_chars_checksum(GBDATA *gb_main)  {
 
     char *ali_name = GBT_get_default_alignment(gb_main);
 
-    TEST_ASSERT_RESULT__NOERROREXPORTED(gb_sai = GBT_expect_SAI(gb_main, SAI_COUNTED_CHARS));
-    TEST_ASSERT_RESULT__NOERROREXPORTED(gb_ali = GB_entry(gb_sai, ali_name));
-    TEST_ASSERT_RESULT__NOERROREXPORTED(gb_counted_chars = GB_entry(gb_ali, "data"));
+    TEST_EXPECT_RESULT__NOERROREXPORTED(gb_sai = GBT_expect_SAI(gb_main, SAI_COUNTED_CHARS));
+    TEST_EXPECT_RESULT__NOERROREXPORTED(gb_ali = GB_entry(gb_sai, ali_name));
+    TEST_EXPECT_RESULT__NOERROREXPORTED(gb_counted_chars = GB_entry(gb_ali, "data"));
 
     const char *data = GB_read_char_pntr(gb_counted_chars);
 
@@ -303,13 +303,13 @@ void TEST_count_chars() {
 
     for (int prot = 0; prot<2; ++prot) {
         GBDATA *gb_main;
-        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open(prot ? "TEST_prot.arb" : "TEST_nuc.arb", "rw"));
+        TEST_EXPECT_RESULT__NOERROREXPORTED(gb_main = GB_open(prot ? "TEST_prot.arb" : "TEST_nuc.arb", "rw"));
 
         GBT_mark_all(gb_main, 1);
         NT_count_different_chars(NULL, (AW_CL)gb_main, 0);
 
         uint32_t expected = prot ? 0x4fa63fa0 : 0xefb05e4e;
-        TEST_ASSERT_EQUAL(counted_chars_checksum(gb_main), expected);
+        TEST_EXPECT_EQUAL(counted_chars_checksum(gb_main), expected);
 
         GB_close(gb_main);
     }
@@ -350,13 +350,13 @@ void TEST_SLOW_count_chars() {
         ARB_ERROR  error;
         GBDATA    *gb_main = TEST_CREATE_DB(error, "ali_test", data_source, false);
 
-        TEST_ASSERT_NO_ERROR(error.deliver());
+        TEST_EXPECT_NO_ERROR(error.deliver());
 
         NT_count_different_chars(NULL, (AW_CL)gb_main, 0);
 
-        // TEST_ASSERT_EQUAL(counted_chars_checksum(gb_main), 0x1d34a14f);
-        // TEST_ASSERT_EQUAL(counted_chars_checksum(gb_main), 0x609d788b);
-        TEST_ASSERT_EQUAL(counted_chars_checksum(gb_main), 0xccdfa527);
+        // TEST_EXPECT_EQUAL(counted_chars_checksum(gb_main), 0x1d34a14f);
+        // TEST_EXPECT_EQUAL(counted_chars_checksum(gb_main), 0x609d788b);
+        TEST_EXPECT_EQUAL(counted_chars_checksum(gb_main), 0xccdfa527);
 
         for (int c = 0; c<count; ++c) {
             free(longSeq[c]);

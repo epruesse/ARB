@@ -221,12 +221,12 @@ static arb_test::match_expectation correct_world2win_calculation(ED4_foldable& f
     return all().of(precondition, world_2_win_conversion);
 }
 
-#define TEST_ASSERT_WIN_UNFOLDED(xwi,ywi)              TEST_EXPECTATION(correct_win2world_calculation(foldable, xwi, ywi, xwi, ywi))
-#define TEST_ASSERT_WIN_WORLD_FOLDING(xwi,ywi,fx,fy)   TEST_EXPECTATION(correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
-#define TEST_ASSERT_WORLD_WIN_FOLDING(xwo,ywo,xwi,ywi) TEST_EXPECTATION(correct_world2win_calculation(foldable, xwo, ywo, xwi, ywi))
+#define TEST_EXPECT_WIN_UNFOLDED(xwi,ywi)              TEST_EXPECTATION(correct_win2world_calculation(foldable, xwi, ywi, xwi, ywi))
+#define TEST_EXPECT_WIN_WORLD_FOLDING(xwi,ywi,fx,fy)   TEST_EXPECTATION(correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
+#define TEST_EXPECT_WORLD_WIN_FOLDING(xwo,ywo,xwi,ywi) TEST_EXPECTATION(correct_world2win_calculation(foldable, xwo, ywo, xwi, ywi))
 
-#define TEST_ASSERT_WIN_WORLD_FOLDING__BROKEN(xwi,ywi,fx,fy)        TEST_EXPECTATION__BROKEN(correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
-#define TEST_ASSERT_WIN_WORLD_FOLDING__BROKENIF(when,xwi,ywi,fx,fy) TEST_EXPECTATION__BROKENIF(when, correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
+#define TEST_EXPECT_WIN_WORLD_FOLDING__BROKEN(xwi,ywi,fx,fy)        TEST_EXPECTATION__BROKEN(correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
+#define TEST_EXPECT_WIN_WORLD_FOLDING__BROKENIF(when,xwi,ywi,fx,fy) TEST_EXPECTATION__BROKENIF(when, correct_win2world_calculation(foldable, xwi, ywi, (xwi)+(fx), (ywi)+(fy)))
 
 void TEST_win_2_world() {
     ED4_foldable foldable;
@@ -251,17 +251,17 @@ void TEST_win_2_world() {
     const int y12 = (Y1+Y2)/2;
     const int y23 = Y2+y01;
 
-    TEST_ASSERT_WIN_UNFOLDED(x01, y01);
-    TEST_ASSERT_WIN_UNFOLDED(x12, y01);
-    TEST_ASSERT_WIN_UNFOLDED(x23, y01);
+    TEST_EXPECT_WIN_UNFOLDED(x01, y01);
+    TEST_EXPECT_WIN_UNFOLDED(x12, y01);
+    TEST_EXPECT_WIN_UNFOLDED(x23, y01);
 
-    TEST_ASSERT_WIN_UNFOLDED(x01, y12);
-    TEST_ASSERT_WIN_UNFOLDED(x12, y12);
-    TEST_ASSERT_WIN_UNFOLDED(x23, y12);
+    TEST_EXPECT_WIN_UNFOLDED(x01, y12);
+    TEST_EXPECT_WIN_UNFOLDED(x12, y12);
+    TEST_EXPECT_WIN_UNFOLDED(x23, y12);
 
-    TEST_ASSERT_WIN_UNFOLDED(x01, y23);
-    TEST_ASSERT_WIN_UNFOLDED(x12, y23);
-    TEST_ASSERT_WIN_UNFOLDED(x23, y23);
+    TEST_EXPECT_WIN_UNFOLDED(x01, y23);
+    TEST_EXPECT_WIN_UNFOLDED(x12, y23);
+    TEST_EXPECT_WIN_UNFOLDED(x23, y23);
 
     for (int FACTOR = 1; FACTOR <= 100; FACTOR += 7) {
         TEST_ANNOTATE_ASSERT(GBS_global_string("FACTOR=%i", FACTOR));
@@ -275,25 +275,25 @@ void TEST_win_2_world() {
         ver200->set_dimension(V1);
         ver300->set_dimension(V2);
 
-        TEST_ASSERT_WIN_UNFOLDED     (x01, y01); // always in unfolded range
-        TEST_ASSERT_WIN_WORLD_FOLDING(x12, y01, V1,    0);
-        TEST_ASSERT_WIN_WORLD_FOLDING(x23, y01, V1+V2, 0);
+        TEST_EXPECT_WIN_UNFOLDED     (x01, y01); // always in unfolded range
+        TEST_EXPECT_WIN_WORLD_FOLDING(x12, y01, V1,    0);
+        TEST_EXPECT_WIN_WORLD_FOLDING(x23, y01, V1+V2, 0);
 
-        TEST_ASSERT_WIN_WORLD_FOLDING(x01, y12, 0,     H1);
-        TEST_ASSERT_WIN_WORLD_FOLDING(x12, y12, V1,    H1);
-        TEST_ASSERT_WIN_WORLD_FOLDING(x23, y12, V1+V2, H1);
+        TEST_EXPECT_WIN_WORLD_FOLDING(x01, y12, 0,     H1);
+        TEST_EXPECT_WIN_WORLD_FOLDING(x12, y12, V1,    H1);
+        TEST_EXPECT_WIN_WORLD_FOLDING(x23, y12, V1+V2, H1);
 
-        TEST_ASSERT_WIN_WORLD_FOLDING(x01, y23, 0,     H1+H2);
-        TEST_ASSERT_WIN_WORLD_FOLDING(x12, y23, V1,    H1+H2);
-        TEST_ASSERT_WIN_WORLD_FOLDING(x23, y23, V1+V2, H1+H2);
+        TEST_EXPECT_WIN_WORLD_FOLDING(x01, y23, 0,     H1+H2);
+        TEST_EXPECT_WIN_WORLD_FOLDING(x12, y23, V1,    H1+H2);
+        TEST_EXPECT_WIN_WORLD_FOLDING(x23, y23, V1+V2, H1+H2);
 
         // test "folded" world positions.
         // they result in win positions lower than folding line!
-        TEST_ASSERT_WORLD_WIN_FOLDING(X1-1,    Y1-1,    X1-1,    Y1-1);    // left of/above folded range
-        TEST_ASSERT_WORLD_WIN_FOLDING(X1,      Y1,      X1-V1,   Y1-H1);   // left/upper end of folded range
-        TEST_ASSERT_WORLD_WIN_FOLDING(X1+5,    Y1+5,    X1+5-V1, Y1+5-H1); // in folded range
-        TEST_ASSERT_WORLD_WIN_FOLDING(X1+V1,   Y1+H1,   X1,      Y1);      // right/lower end of folded range
-        TEST_ASSERT_WORLD_WIN_FOLDING(X1+V1+1, Y1+H1+1, X1+1,    Y1+1);    // right of/below folded range
+        TEST_EXPECT_WORLD_WIN_FOLDING(X1-1,    Y1-1,    X1-1,    Y1-1);    // left of/above folded range
+        TEST_EXPECT_WORLD_WIN_FOLDING(X1,      Y1,      X1-V1,   Y1-H1);   // left/upper end of folded range
+        TEST_EXPECT_WORLD_WIN_FOLDING(X1+5,    Y1+5,    X1+5-V1, Y1+5-H1); // in folded range
+        TEST_EXPECT_WORLD_WIN_FOLDING(X1+V1,   Y1+H1,   X1,      Y1);      // right/lower end of folded range
+        TEST_EXPECT_WORLD_WIN_FOLDING(X1+V1+1, Y1+H1+1, X1+1,    Y1+1);    // right of/below folded range
     }
 }
 

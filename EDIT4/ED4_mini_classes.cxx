@@ -1185,7 +1185,7 @@ void TEST_char_table() {
     ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
     ED4_init_is_align_character(gapChars);
 
-    TEST_ASSERT(!BK);
+    TEST_EXPECT(!BK);
     BK = new ConsensusBuildParams();
 
     // BK->lower = 70; BK->upper = 95; BK->gapbound = 60; // defaults from awars
@@ -1203,7 +1203,7 @@ void TEST_char_table() {
         for (int c = 0; c<seqlen; ++c) seq[c] = alphabeth[rand()%alphabeth_size];
         seq[seqlen]                           = 0;
 
-        TEST_ASSERT_EQUAL(strlen(seq), size_t(seqlen));
+        TEST_EXPECT_EQUAL(strlen(seq), size_t(seqlen));
 
         const int  add_count = 300;
         char      *added_seqs[add_count];
@@ -1219,12 +1219,12 @@ void TEST_char_table() {
         {
             char *consensus = tab.build_consensus_string();
             switch (seed) {
-                case 677741240: TEST_ASSERT_EQUAL(consensus, ".-s-NW..aWu.NnWYa.R.mgcNK.c..."); break;
-                case 721151648: TEST_ASSERT_EQUAL(consensus, "a.nn..K..-gU.RW-SNcau.WNNacn.u"); break;
-                case 345295160: TEST_ASSERT_EQUAL(consensus, "..-g...MSn...guc.n.u.R.n.-Ng.k"); break;
-                case 346389111: TEST_ASSERT_EQUAL(consensus, ".unAn...gN.kc-cS.Raun...Sa-gY."); break;
-                case 367171911: TEST_ASSERT_EQUAL(consensus, "na.Na.nu.c-.-NU.aYgn-nng-.Wa.M"); break;
-                default: TEST_ASSERT_EQUAL(consensus, "undef");
+                case 677741240: TEST_EXPECT_EQUAL(consensus, ".-s-NW..aWu.NnWYa.R.mgcNK.c..."); break;
+                case 721151648: TEST_EXPECT_EQUAL(consensus, "a.nn..K..-gU.RW-SNcau.WNNacn.u"); break;
+                case 345295160: TEST_EXPECT_EQUAL(consensus, "..-g...MSn...guc.n.u.R.n.-Ng.k"); break;
+                case 346389111: TEST_EXPECT_EQUAL(consensus, ".unAn...gN.kc-cS.Raun...Sa-gY."); break;
+                case 367171911: TEST_EXPECT_EQUAL(consensus, "na.Na.nu.c-.-NU.aYgn-nng-.Wa.M"); break;
+                default: TEST_EXPECT_EQUAL(consensus, "undef");
             }
             free(consensus);
         }
@@ -1235,7 +1235,7 @@ void TEST_char_table() {
         }
         {
             char *consensus = tab.build_consensus_string();
-            TEST_ASSERT_EQUAL(consensus, "??????????????????????????????"); // check tab is empty
+            TEST_EXPECT_EQUAL(consensus, "??????????????????????????????"); // check tab is empty
             free(consensus);
         }
     }

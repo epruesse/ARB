@@ -2845,26 +2845,26 @@ void TEST_OligoCounter() {
     OligoCounter oc3("AGGTCC", 3);
     OligoCounter oc4("AGGTCCAGG", 3);
 
-    TEST_ASSERT(oc1.oligo_count("CCA") == 1);
-    TEST_ASSERT(oc1.oligo_count("CCG") == 0);
-    TEST_ASSERT(oc4.oligo_count("AGG") == 2);
+    TEST_EXPECT(oc1.oligo_count("CCA") == 1);
+    TEST_EXPECT(oc1.oligo_count("CCG") == 0);
+    TEST_EXPECT(oc4.oligo_count("AGG") == 2);
 
     int sc1_2 = oc1.similarity_score(oc2);
     int sc2_1 = oc2.similarity_score(oc1);
-    TEST_ASSERT_EQUAL(sc1_2, sc2_1);
+    TEST_EXPECT_EQUAL(sc1_2, sc2_1);
 
     int sc1_2gaps = oc1.similarity_score(oc2_gaps);
-    TEST_ASSERT_EQUAL(sc1_2, sc1_2gaps);
+    TEST_EXPECT_EQUAL(sc1_2, sc1_2gaps);
     
     int sc1_3 = oc1.similarity_score(oc3);
     int sc2_3 = oc2.similarity_score(oc3);
     int sc3_4 = oc3.similarity_score(oc4);
 
-    TEST_ASSERT_EQUAL(sc1_2, 2); // common oligos (CCA GGT)
-    TEST_ASSERT_EQUAL(sc1_3, 2); // common oligos (AGG GGT)
-    TEST_ASSERT_EQUAL(sc2_3, 3); // common oligos (GGT GTC TCC)
+    TEST_EXPECT_EQUAL(sc1_2, 2); // common oligos (CCA GGT)
+    TEST_EXPECT_EQUAL(sc1_3, 2); // common oligos (AGG GGT)
+    TEST_EXPECT_EQUAL(sc2_3, 3); // common oligos (GGT GTC TCC)
 
-    TEST_ASSERT_EQUAL(sc3_4, 4);
+    TEST_EXPECT_EQUAL(sc3_4, 4);
 }
 
 // -------------------------
@@ -2891,7 +2891,7 @@ public:
     GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) { // @@@ use min_score
         // 'sequence' has to contain full sequence or part corresponding to 'range'
 
-        TEST_ASSERT(compl_mode == FF_FORWARD); // not fit for other modes
+        TEST_EXPECT(compl_mode == FF_FORWARD); // not fit for other modes
 
         delete_family_list();
         
@@ -2980,7 +2980,7 @@ static const char *get_aligned_data_of(GBDATA *gb_main, const char *species_name
         }
     }
 
-    TEST_ASSERT_NULL(error.deliver());
+    TEST_EXPECT_NULL(error.deliver());
     
     return data;
 }
@@ -3082,7 +3082,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     ARB_ERROR  error;
     GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_TargetAndReferenceHandling, false);
 
-    TEST_ASSERT_NULL(error.deliver());
+    TEST_EXPECT_NULL(error.deliver());
 
     SearchRelativeParams search_relative_params(new FakeFamilyFinder(gb_main, test_aliname, false, 8),
                                                 test_aliname,
@@ -3094,7 +3094,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     // bool cont_on_err    = true;
     bool cont_on_err = false;
 
-    TEST_ASSERT_EQUAL(GBT_count_marked_species(gb_main), 3); // we got 3 marked species
+    TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 3); // we got 3 marked species
     {
         Aligner aligner(gb_main,
                         FA_CURRENT,
@@ -3111,9 +3111,9 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_NO_ACTION);
         error = aligner.run();
-        TEST_ASSERT_NULL(error.deliver());
+        TEST_EXPECT_NULL(error.deliver());
     }
-    TEST_ASSERT_EQUAL(GBT_count_marked_species(gb_main), 3); // we still got 3 marked species
+    TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 3); // we still got 3 marked species
     {
         Aligner aligner(gb_main,
                         FA_MARKED,
@@ -3130,9 +3130,9 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_MARK_FAILED);
         error = aligner.run();
-        TEST_ASSERT_NULL(error.deliver());
+        TEST_EXPECT_NULL(error.deliver());
 
-        TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 0); // FA_MARK_FAILED (none failed -> none marked)
+        TEST_EXPECT(!cont_on_err || GBT_count_marked_species(gb_main) == 0); // FA_MARK_FAILED (none failed -> none marked)
     }
     {
         Aligner aligner(gb_main,
@@ -3150,9 +3150,9 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_MARK_ALIGNED);
         error = aligner.run();
-        TEST_ASSERT_NULL(error.deliver());
+        TEST_EXPECT_NULL(error.deliver());
 
-        TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 2); // FA_MARK_ALIGNED (2 selected were aligned)
+        TEST_EXPECT(!cont_on_err || GBT_count_marked_species(gb_main) == 2); // FA_MARK_ALIGNED (2 selected were aligned)
     }
     {
         Aligner aligner(gb_main,
@@ -3171,30 +3171,30 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         FA_MARK_ALIGNED);
 
         error = aligner.run();
-        TEST_ASSERT_NULL(error.deliver());
+        TEST_EXPECT_NULL(error.deliver());
 
-        TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
+        TEST_EXPECT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
     }
     
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C...........");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C...........");
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".......UAG--AGG-A------U-U-UGGGU-UG-G-C-A-U-CAA-GCU--------UAA-C-UCCUG-AC--A-UUGAG...............");
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................");
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C...........");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m1"), ".......UAG--AGG-A------U-U-UGGGU-UG-G-C-A-U-CAA-GCU--------UAA-C-UCCUG-AC--A-UUGAG...............");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C...........");
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C...........");
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U-AA---------C-C-G-UAG-UUC------------C-CCGAA-AC--U-GUAA-CU-C...........");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C...........");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U-AA---------C-C-G-UAG-UUC------------C-CCGAA-AC--U-GUAA-CU-C...........");
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // here sequence shall be turned!
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // here sequence shall be turned!
 
 
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("r1"), "s2:43, s1:1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("r1"), "s2:43, s1:1");
 
     // ----------------------------------------------
     //      now align all others vs next relative
 
     search_relative_params.maxRelatives = 5;
-    TEST_ASSERT_NO_ERROR(forget_used_relatives(gb_main));
+    TEST_EXPECT_NO_ERROR(forget_used_relatives(gb_main));
 
     int species_count = ARRAY_ELEMS(TestAlignmentData_TargetAndReferenceHandling);
     for (int sp = 0; sp<species_count; ++sp) {
@@ -3216,37 +3216,37 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                             FA_MARK_ALIGNED);
 
             error = aligner.run();
-            TEST_ASSERT_NULL(error.deliver());
+            TEST_EXPECT_NULL(error.deliver());
 
-            TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
+            TEST_EXPECT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
         }
     }
 
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "s2");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "s1"); // same as done manually
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m1"), "r1:42");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "m3");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m3"), "m2");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("c1"), "r1");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("c2"), "r1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("s1"), "s2");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("s2"), "s1"); // same as done manually
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m1"), "r1:42");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m2"), "m3");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m3"), "m2");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("c1"), "r1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("c2"), "r1");
 
     //                                       range aligned below (see test_ali_params_partial)
     //                                       "-------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX------------------------------------"
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // 1st aligning of 's1'
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above (again aligned vs 's1')
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("s1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // 1st aligning of 's1'
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above (again aligned vs 's1')
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G---AUUUG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed; @@@ bug: no dots at end
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G---AUUUG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed; @@@ bug: no dots at end
  
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // changed (1st align vs 's1', this align vs 'm3')
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above (1st align vs 's1', this align vs 'm2')
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U--------A-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // changed (1st align vs 's1', this align vs 'm3')
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above (1st align vs 's1', this align vs 'm2')
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U--------A-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed
 
     // --------------------------------------
     //      test partial relative search
 
     search_relative_params.getFamilyFinder()->restrict_2_region(test_ali_params_partial.range);
-    TEST_ASSERT_NO_ERROR(forget_used_relatives(gb_main));
+    TEST_EXPECT_NO_ERROR(forget_used_relatives(gb_main));
 
     for (int sp = 0; sp<species_count; ++sp) {
         const char *name = TestAlignmentData_TargetAndReferenceHandling[sp].name;
@@ -3266,33 +3266,33 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         FA_MARK_ALIGNED);
 
         error = aligner.run();
-        TEST_ASSERT_NULL(error.deliver());
+        TEST_EXPECT_NULL(error.deliver());
 
-        TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
+        TEST_EXPECT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
     }
 
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "s2");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "s1");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m1"), "r1"); // (not really differs)
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "m3");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m3"), "m2");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("c1"), "r1");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("c2"), "r1");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("r1"), "s2:20, c2:3");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("s1"), "s2");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("s2"), "s1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m1"), "r1"); // (not really differs)
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m2"), "m3");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m3"), "m2");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("c1"), "r1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("c2"), "r1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("r1"), "s2:20, c2:3");
 
     //                                       aligned range (see test_ali_params_partial)
     //                                       "-------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX------------------------------------"
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("s1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G-A-UU-UG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // same_as_above
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G-A-UU-UG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C---------UA-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed 
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C---------UA-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
 
     GB_close(gb_main);
 }
@@ -3343,8 +3343,8 @@ void TEST_SLOW_Aligner_checksumError() {
 
         error = aligner.run();
     }
-    TEST_ASSERT_NULL__BROKEN(error.deliver());
-    TEST_ASSERT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???");
+    TEST_EXPECT_NULL__BROKEN(error.deliver());
+    TEST_EXPECT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???");
 
     GB_close(gb_main);
 }
@@ -3364,28 +3364,28 @@ static const char *asstr(LooseBases& ub) {
 
 void TEST_BASIC_UnalignedBases() {
     LooseBases ub;
-    TEST_ASSERT(ub.is_empty());
-    TEST_ASSERT_EQUAL(asstr(ub), "");
+    TEST_EXPECT(ub.is_empty());
+    TEST_EXPECT_EQUAL(asstr(ub), "");
 
     // test add+remove
     ub.memorize(ExplicitRange(5, 7));
-    TEST_ASSERT(!ub.is_empty());
-    TEST_ASSERT_EQUAL(asstr(ub), " 5/7");
+    TEST_EXPECT(!ub.is_empty());
+    TEST_EXPECT_EQUAL(asstr(ub), " 5/7");
     
-    TEST_ASSERT(ub.recall() == ExplicitRange(5, 7));
-    TEST_ASSERT(ub.is_empty());
+    TEST_EXPECT(ub.recall() == ExplicitRange(5, 7));
+    TEST_EXPECT(ub.is_empty());
 
     ub.memorize(ExplicitRange(2, 4));
-    TEST_ASSERT_EQUAL(asstr(ub), " 2/4");
+    TEST_EXPECT_EQUAL(asstr(ub), " 2/4");
 
     ub.memorize(ExplicitRange(4, 9));
-    TEST_ASSERT_EQUAL(asstr(ub), " 2/4 4/9");
+    TEST_EXPECT_EQUAL(asstr(ub), " 2/4 4/9");
     
     ub.memorize(ExplicitRange(8, 10));
     ub.memorize(ExplicitRange(11, 14));
     ub.memorize(ExplicitRange(12, 17));
-    TEST_ASSERT_EQUAL(asstr(ub), " 2/4 4/9 8/10 11/14 12/17");
-    TEST_ASSERT_EQUAL(asstr(ub), " 2/4 4/9 8/10 11/14 12/17"); // check asstr has no side-effect
+    TEST_EXPECT_EQUAL(asstr(ub), " 2/4 4/9 8/10 11/14 12/17");
+    TEST_EXPECT_EQUAL(asstr(ub), " 2/4 4/9 8/10 11/14 12/17"); // check asstr has no side-effect
 
     {
         LooseBases toaddNrecalc;
@@ -3396,22 +3396,22 @@ void TEST_BASIC_UnalignedBases() {
 
         toaddNrecalc.memorize(ExplicitRange(1, 7));
         toaddNrecalc.memorize(ExplicitRange(3, 5));
-        TEST_ASSERT_EQUAL(asstr(toaddNrecalc), " 1/7 3/5");
+        TEST_EXPECT_EQUAL(asstr(toaddNrecalc), " 1/7 3/5");
 
         ub.follow_ali_change_and_append(toaddNrecalc, AliChange(Old, New));
 
-        TEST_ASSERT_EQUAL(asstr(ub), " 3/18 8/15 2/4 4/9 8/10 11/14 12/17");
-        TEST_ASSERT(toaddNrecalc.is_empty());
+        TEST_EXPECT_EQUAL(asstr(ub), " 3/18 8/15 2/4 4/9 8/10 11/14 12/17");
+        TEST_EXPECT(toaddNrecalc.is_empty());
 
         LooseBases selfRecalc;
         selfRecalc.follow_ali_change_and_append(ub, AliChange(New, New));
-        TEST_ASSERT_EQUAL__BROKEN(asstr(selfRecalc), " 3/18 8/15 0/6 3/11 8/11 10/15 10/17"); // wanted behavior? 
-        TEST_ASSERT_EQUAL(asstr(selfRecalc),         " 3/18 8/17 0/6 3/11 8/13 10/15 10/18"); // doc wrong behavior @@@ "8/17", "8/13", "10/18" are wrong
+        TEST_EXPECT_EQUAL__BROKEN(asstr(selfRecalc), " 3/18 8/15 0/6 3/11 8/11 10/15 10/17"); // wanted behavior?
+        TEST_EXPECT_EQUAL(asstr(selfRecalc),         " 3/18 8/17 0/6 3/11 8/13 10/15 10/18"); // doc wrong behavior @@@ "8/17", "8/13", "10/18" are wrong
 
         ub.follow_ali_change_and_append(selfRecalc, AliChange(New, Old));
-        TEST_ASSERT_EQUAL__BROKEN(asstr(ub), " 1/7 3/5 0/1 1/3 3/3 4/5 4/6"); // wanted behavior? (from wanted behavior above)
-        TEST_ASSERT_EQUAL__BROKEN(asstr(ub), " 1/7 3/6 0/1 1/3 3/4 4/5 4/7"); // wanted behavior? (from wrong result above)
-        TEST_ASSERT_EQUAL(asstr(ub),         " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // doc wrong
+        TEST_EXPECT_EQUAL__BROKEN(asstr(ub), " 1/7 3/5 0/1 1/3 3/3 4/5 4/6"); // wanted behavior? (from wanted behavior above)
+        TEST_EXPECT_EQUAL__BROKEN(asstr(ub), " 1/7 3/6 0/1 1/3 3/4 4/5 4/7"); // wanted behavior? (from wrong result above)
+        TEST_EXPECT_EQUAL(asstr(ub),         " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // doc wrong
     }
 }
 

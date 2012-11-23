@@ -238,36 +238,36 @@ void TEST_advice_id_awar_handling() {
     const char *one = "one";
     const char *two = "second";
 
-    TEST_ASSERT(!advice_disabled(one));
-    TEST_ASSERT(!advice_disabled(two));
+    TEST_EXPECT(!advice_disabled(one));
+    TEST_EXPECT(!advice_disabled(two));
 
     disable_advice(one);
-    TEST_ASSERT(advice_disabled(one));
-    TEST_ASSERT(!advice_disabled(two));
+    TEST_EXPECT(advice_disabled(one));
+    TEST_EXPECT(!advice_disabled(two));
 
     disable_advice(two);
-    TEST_ASSERT(advice_disabled(one));
-    TEST_ASSERT(advice_disabled(two));
+    TEST_EXPECT(advice_disabled(one));
+    TEST_EXPECT(advice_disabled(two));
 
 
-    TEST_ASSERT(!advice_currently_shown(one));
-    TEST_ASSERT(!advice_currently_shown(two));
+    TEST_EXPECT(!advice_currently_shown(one));
+    TEST_EXPECT(!advice_currently_shown(two));
 
     toggle_advice_shown(two);
-    TEST_ASSERT(!advice_currently_shown(one));
-    TEST_ASSERT(advice_currently_shown(two));
+    TEST_EXPECT(!advice_currently_shown(one));
+    TEST_EXPECT(advice_currently_shown(two));
 
     toggle_advice_shown(one);
-    TEST_ASSERT(advice_currently_shown(one));
-    TEST_ASSERT(advice_currently_shown(two));
+    TEST_EXPECT(advice_currently_shown(one));
+    TEST_EXPECT(advice_currently_shown(two));
     
     toggle_advice_shown(two);
-    TEST_ASSERT(advice_currently_shown(one));
-    TEST_ASSERT(!advice_currently_shown(two));
+    TEST_EXPECT(advice_currently_shown(one));
+    TEST_EXPECT(!advice_currently_shown(two));
 
     toggle_advice_shown(one);
-    TEST_ASSERT(!advice_currently_shown(one));
-    TEST_ASSERT(!advice_currently_shown(two));
+    TEST_EXPECT(!advice_currently_shown(one));
+    TEST_EXPECT(!advice_currently_shown(two));
 }
 
 void TEST_another_AW_root() {

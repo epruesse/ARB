@@ -1697,7 +1697,7 @@ struct test_basepos : public test_absrel {
 
 #define TEST_ABSREL_EQUALS(tester,expected) do {        \
         char *res = tester.genResult();                 \
-        TEST_ASSERT_EQUAL(res,expected);                \
+        TEST_EXPECT_EQUAL(res,expected);                \
         free(res);                                      \
     } while(0)
 

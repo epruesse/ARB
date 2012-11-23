@@ -248,11 +248,11 @@ struct bind_css {
     }
 };
 
-#define TEST_ASSERT_CSS_SELF_REFLEXIVE(css) do {        \
+#define TEST_EXPECT_CSS_SELF_REFLEXIVE(css) do {        \
         for (int b = 0; b<css.length(); ++b) {          \
             int x = css.expdPosition(b);                \
             int c = css.compPosition(x);                \
-            TEST_ASSERT_EQUAL(c,b);                     \
+            TEST_EXPECT_EQUAL(c,b);                     \
         }                                               \
     } while(0)
 
@@ -260,7 +260,7 @@ struct bind_css {
     int len  = strlen(in);                                              \
     fprintf(stderr, "in='%s'\n", in);                                   \
     CompactedSubSequence css(in, len, "noname", offset);                \
-    TEST_ASSERT_CSS_SELF_REFLEXIVE(css);                                \
+    TEST_EXPECT_CSS_SELF_REFLEXIVE(css);                                \
     bind_css bound_css(css)
 
 #define GEN_COMP_EXPD()                                                 \
@@ -293,19 +293,19 @@ struct bind_css {
     
 #define COMP_EXPD_CHECK(exp_comp,exp_expd)                              \
     GEN_COMP_EXPD();                                                    \
-    TEST_ASSERT_EQUAL(comp, exp_comp);                                  \
-    TEST_ASSERT_EQUAL(expd, exp_expd);                                  \
+    TEST_EXPECT_EQUAL(comp, exp_comp);                                  \
+    TEST_EXPECT_EQUAL(expd, exp_expd);                                  \
     FREE_COMP_EXPD()
 
 #define GAPS_CHECK(exp_before,exp_after)                                \
     GEN_GAPS();                                                         \
-    TEST_ASSERT_EQUAL(gaps_before, exp_before);                         \
-    TEST_ASSERT_EQUAL(gaps_after, exp_after);                           \
+    TEST_EXPECT_EQUAL(gaps_before, exp_before);                         \
+    TEST_EXPECT_EQUAL(gaps_after, exp_after);                           \
     FREE_GAPS()
 
 #define DOTS_CHECK(exp_dots)                                            \
     GEN_DOTS();                                                         \
-    TEST_ASSERT_EQUAL(dots, exp_dots);                                  \
+    TEST_EXPECT_EQUAL(dots, exp_dots);                                  \
     free(dots)
 
 // ------------------------------------------------------------
@@ -333,15 +333,15 @@ struct bind_css {
 #define TEST_CS_TEXT(in,exp_text) do {                                  \
         CSS_COMMON(in, 0);                                              \
         GEN_TEXT(in);                                                   \
-        TEST_ASSERT_EQUAL(text, exp_text);                              \
+        TEST_EXPECT_EQUAL(text, exp_text);                              \
         free(text);                                                     \
     } while(0)
 
 #define TEST_CS_CBROKN(in,exp_comp,exp_expd) do {                       \
         CSS_COMMON(in, 0);                                              \
         GEN_COMP_EXPD();                                                \
-        TEST_ASSERT_EQUAL__BROKEN(comp, exp_comp);                      \
-        TEST_ASSERT_EQUAL(expd, exp_expd);                              \
+        TEST_EXPECT_EQUAL__BROKEN(comp, exp_comp);                      \
+        TEST_EXPECT_EQUAL(expd, exp_expd);                              \
         FREE_COMP_EXPD();                                               \
     } while(0)
 

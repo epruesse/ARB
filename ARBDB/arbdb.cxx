@@ -2808,12 +2808,12 @@ static void test_opendb() { GB_close(GB_open("no.arb", "c")); }
 void TEST_GB_shell() {
     {
         GB_shell *shell = new GB_shell;
-        TEST_ASSERT_SEGFAULT(test_another_shell);
+        TEST_EXPECT_SEGFAULT(test_another_shell);
         test_opendb(); // no SEGV here
         delete shell;
     }
 
-    TEST_ASSERT_SEGFAULT(test_opendb); // should be impossible to open db w/o shell
+    TEST_EXPECT_SEGFAULT(test_opendb); // should be impossible to open db w/o shell
 }
 
 void TEST_GB_number_of_subentries() {
@@ -2824,22 +2824,22 @@ void TEST_GB_number_of_subentries() {
         GB_transaction ta(gb_main);
 
         GBDATA   *gb_cont = GB_create_container(gb_main, "container");
-        TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 0);
+        TEST_EXPECT_EQUAL(GB_number_of_subentries(gb_cont), 0);
 
-        TEST_ASSERT_RESULT__NOERROREXPORTED(GB_create(gb_cont, "entry", GB_STRING));
-        TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 1);
+        TEST_EXPECT_RESULT__NOERROREXPORTED(GB_create(gb_cont, "entry", GB_STRING));
+        TEST_EXPECT_EQUAL(GB_number_of_subentries(gb_cont), 1);
 
         {
             GBDATA *gb_entry;
-            TEST_ASSERT_RESULT__NOERROREXPORTED(gb_entry = GB_create(gb_cont, "entry", GB_STRING));
-            TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 2);
+            TEST_EXPECT_RESULT__NOERROREXPORTED(gb_entry = GB_create(gb_cont, "entry", GB_STRING));
+            TEST_EXPECT_EQUAL(GB_number_of_subentries(gb_cont), 2);
 
-            TEST_ASSERT_NO_ERROR(GB_delete(gb_entry));
-            TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 1);
+            TEST_EXPECT_NO_ERROR(GB_delete(gb_entry));
+            TEST_EXPECT_EQUAL(GB_number_of_subentries(gb_cont), 1);
         }
 
-        TEST_ASSERT_RESULT__NOERROREXPORTED(GB_create(gb_cont, "entry", GB_STRING));
-        TEST_ASSERT_EQUAL(GB_number_of_subentries(gb_cont), 2);
+        TEST_EXPECT_RESULT__NOERROREXPORTED(GB_create(gb_cont, "entry", GB_STRING));
+        TEST_EXPECT_EQUAL(GB_number_of_subentries(gb_cont), 2);
     }
 
     GB_close(gb_main);
