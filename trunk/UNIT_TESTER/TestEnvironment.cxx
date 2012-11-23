@@ -296,11 +296,11 @@ public:
 static void test_ptserver_activate(bool start, int serverid) {
     const char *server_tag = GBS_ptserver_tag(serverid);
     if (start) {
-        TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag));
+        TEST_EXPECT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag));
     }
     else { // stop
         GB_ERROR kill_error = arb_look_and_kill_server(AISC_MAGIC_NUMBER, server_tag);
-        if (kill_error) TEST_ASSERT_EQUAL(kill_error, "Server is not running");
+        if (kill_error) TEST_EXPECT_EQUAL(kill_error, "Server is not running");
     }
 }
 
@@ -317,19 +317,19 @@ static Error ptserver(Mode mode) {
     switch (mode) {
         case SETUP: {
             test_ptserver_activate(false, TEST_SERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
-            TEST_ASSERT_NO_ERROR(GBK_system("cp TEST_pt_src.arb TEST_pt.arb")); // force rebuild
+            TEST_EXPECT_NO_ERROR(GBK_system("cp TEST_pt_src.arb TEST_pt.arb")); // force rebuild
             test_ptserver_activate(true, TEST_SERVER_ID);
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE("TEST_pt.arb.pt", "TEST_pt.arb.pt.expected");
 #else // !defined(TEST_AUTO_UPDATE)
-            TEST_ASSERT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
+            TEST_EXPECT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
 #endif
-            TEST_ASSERT_LOWER_EQUAL(GB_time_of_file("TEST_pt.arb"), GB_time_of_file("TEST_pt.arb.pt"));
+            TEST_EXPECT_LOWER_EQUAL(GB_time_of_file("TEST_pt.arb"), GB_time_of_file("TEST_pt.arb.pt"));
             break;
         }
         case CLEAN: {
             test_ptserver_activate(false, TEST_SERVER_ID);
-            TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt"));
+            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt"));
             break;
         }
         case UNKNOWN:
@@ -355,14 +355,14 @@ static Error ptserver_gene(Mode mode) {
     switch (mode) {
         case SETUP: {
             test_ptserver_activate(false, TEST_GENESERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
-            TEST_ASSERT_NO_ERROR(GBK_system("arb_gene_probe TEST_gpt_src.arb TEST_gpt.arb")); // prepare gene-ptserver-db (forcing rebuild)
+            TEST_EXPECT_NO_ERROR(GBK_system("arb_gene_probe TEST_gpt_src.arb TEST_gpt.arb")); // prepare gene-ptserver-db (forcing rebuild)
 
             // GBK_terminatef("test-crash of test_environment"); 
 
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE("TEST_gpt.arb", "TEST_gpt.arb.expected");
 #else // !defined(TEST_AUTO_UPDATE)
-            TEST_ASSERT_FILES_EQUAL("TEST_gpt.arb.expected", "TEST_gpt.arb");
+            TEST_EXPECT_FILES_EQUAL("TEST_gpt.arb.expected", "TEST_gpt.arb");
 #endif
 
             test_ptserver_activate(true, TEST_GENESERVER_ID);
@@ -370,15 +370,15 @@ static Error ptserver_gene(Mode mode) {
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE("TEST_gpt.arb.pt", "TEST_gpt.arb.pt.expected");
 #else // !defined(TEST_AUTO_UPDATE)
-            TEST_ASSERT_FILES_EQUAL("TEST_gpt.arb.pt.expected", "TEST_gpt.arb.pt");
+            TEST_EXPECT_FILES_EQUAL("TEST_gpt.arb.pt.expected", "TEST_gpt.arb.pt");
 #endif
 
-            TEST_ASSERT_LOWER_EQUAL(GB_time_of_file("TEST_gpt.arb"), GB_time_of_file("TEST_gpt.arb.pt"));
+            TEST_EXPECT_LOWER_EQUAL(GB_time_of_file("TEST_gpt.arb"), GB_time_of_file("TEST_gpt.arb.pt"));
             break;
         }
         case CLEAN: {
             test_ptserver_activate(false, TEST_GENESERVER_ID);
-            TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_gpt.arb.pt"));
+            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink("TEST_gpt.arb.pt"));
             break;
         }
         case UNKNOWN:

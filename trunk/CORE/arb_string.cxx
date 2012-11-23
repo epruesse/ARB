@@ -85,47 +85,47 @@ using namespace std;
 // ----------------------------------------------
 //      some tests for unit-test-code itself
 
-#define TEST_ASSERT_HEAPCOPY_EQUAL(copy,expected) do {  \
+#define TEST_EXPECT_HEAPCOPY_EQUAL(copy,expected) do {  \
         char *theCopy = (copy);                         \
-        TEST_ASSERT_EQUAL(theCopy, expected);           \
+        TEST_EXPECT_EQUAL(theCopy, expected);           \
         free(theCopy);                                  \
     } while(0)
 
 void TEST_arbtest_strf() {
     // tests string formatter from test_unit.h
     using namespace arb_test;
-    TEST_ASSERT_HEAPCOPY_EQUAL(StaticCode::strf("<%i>", 7), "<7>");
-    TEST_ASSERT_HEAPCOPY_EQUAL(StaticCode::strf("<%0*i>", 3, 7), "<007>");
+    TEST_EXPECT_HEAPCOPY_EQUAL(StaticCode::strf("<%i>", 7), "<7>");
+    TEST_EXPECT_HEAPCOPY_EQUAL(StaticCode::strf("<%0*i>", 3, 7), "<007>");
 }
 
 void TEST_arbtest_readable() {
     using namespace arb_test;
 
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy('x')), "'x'");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<unsigned char>('x'))), "'x'");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<signed char>('x'))), "'x'");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy('x')), "'x'");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<unsigned char>('x'))), "'x'");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<signed char>('x'))), "'x'");
 
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy(true)), "true");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy(false)), "false");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(true)), "true");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(false)), "false");
     
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy(1)), "1");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2hex(make_copy(2)), "0x2");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(1)), "1");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2hex(make_copy(2)), "0x2");
 
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy(3L)), "3");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2hex(make_copy(4L)), "0x4");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(3L)), "3");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2hex(make_copy(4L)), "0x4");
 
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy(5U)), "5");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2hex(make_copy(6U)), "0x6");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(5U)), "5");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2hex(make_copy(6U)), "0x6");
     
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy("some\ntext\twhich\"special\\chars")), "\"some\\ntext\\twhich\\\"special\\\\chars\"");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy("a\1\2\x1a\x7e\x7f\x80\xfe\xff")), "\"a\\1\\2\\x1a~\\x7f\\x80\\xfe\\xff\"");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy((const char *)NULL)), "(null)");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy((const unsigned char *)NULL)), "(null)");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy((const signed char *)NULL)), "(null)");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy("some\ntext\twhich\"special\\chars")), "\"some\\ntext\\twhich\\\"special\\\\chars\"");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy("a\1\2\x1a\x7e\x7f\x80\xfe\xff")), "\"a\\1\\2\\x1a~\\x7f\\x80\\xfe\\xff\"");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy((const char *)NULL)), "(null)");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy((const unsigned char *)NULL)), "(null)");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy((const signed char *)NULL)), "(null)");
 
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy(1.7)), "1.700000");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy(177.0e20)),  "17699999999999998951424.000000");
-    TEST_ASSERT_HEAPCOPY_EQUAL(val2readable(make_copy(177.0e20F)), "17699999967695435988992.000000");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(1.7)), "1.700000");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(177.0e20)),  "17699999999999998951424.000000");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(177.0e20F)), "17699999967695435988992.000000");
 }
 
 void TEST_arbtest_copyable() {
@@ -134,16 +134,16 @@ void TEST_arbtest_copyable() {
     int         i = 7;
     const char *s = "servas";
 
-    TEST_ASSERT(make_copy(i) == make_copy(7));
+    TEST_EXPECT(make_copy(i) == make_copy(7));
 
-    TEST_ASSERT(strcmp(make_copy(s), make_copy("servas")) == 0);
+    TEST_EXPECT(strcmp(make_copy(s), make_copy("servas")) == 0);
 }
 
 #define TEST_DESCRIPTIONS(d, tt, tf, ft, ff) do {               \
-        TEST_ASSERT_EQUAL((d).make(true, true), (tt));   \
-        TEST_ASSERT_EQUAL((d).make(true, false), (tf));  \
-        TEST_ASSERT_EQUAL((d).make(false, true), (ft));  \
-        TEST_ASSERT_EQUAL((d).make(false, false), (ff)); \
+        TEST_EXPECT_EQUAL((d).make(true, true), (tt));   \
+        TEST_EXPECT_EQUAL((d).make(true, false), (tf));  \
+        TEST_EXPECT_EQUAL((d).make(false, true), (ft));  \
+        TEST_EXPECT_EQUAL((d).make(false, false), (ff)); \
     } while(0)
 
 #define TEST_SIMPLE_DESCRIPTIONS(d, ae, nae) TEST_DESCRIPTIONS(d, ae, nae, nae, ae)
@@ -238,42 +238,42 @@ void TEST_expectation_groups() {
     TEST_EXPECTATION(all().ofgroup(fulfilled_expectation));
     TEST_EXPECTATION(none().ofgroup(unfulfilled_expectation));
 
-    TEST_ASSERT(none().ofgroup(fulfilled_expectation).unfulfilled());
-    TEST_ASSERT(all().ofgroup(unfulfilled_expectation).unfulfilled());
+    TEST_EXPECT(none().ofgroup(fulfilled_expectation).unfulfilled());
+    TEST_EXPECT(all().ofgroup(unfulfilled_expectation).unfulfilled());
     
-    TEST_ASSERT(all().ofgroup(some_fulfilled_expectations).unfulfilled());
-    TEST_ASSERT(none().ofgroup(some_fulfilled_expectations).unfulfilled());
+    TEST_EXPECT(all().ofgroup(some_fulfilled_expectations).unfulfilled());
+    TEST_EXPECT(none().ofgroup(some_fulfilled_expectations).unfulfilled());
 }
 
-void TEST_replace_old_TEST_ASSERTS_by_expectations() {
+void TEST_replace_old_TEST_EXPECTS_by_expectations() {
     // test various string-types are matchable (w/o casts)
     {
         const char *car_ccp = "Alfa";
         char       *car_cp  = strdup("Alfa");
         string      car_str("Alfa");
 
-        TEST_ASSERT_EQUAL(car_ccp, "Alfa");
-        TEST_ASSERT_EQUAL(car_cp, "Alfa");
-        TEST_ASSERT_EQUAL(car_str, "Alfa");
+        TEST_EXPECT_EQUAL(car_ccp, "Alfa");
+        TEST_EXPECT_EQUAL(car_cp, "Alfa");
+        TEST_EXPECT_EQUAL(car_str, "Alfa");
 
-        TEST_ASSERT_EQUAL("Alfa", car_ccp);
-        TEST_ASSERT_EQUAL("Alfa", car_cp);
-        TEST_ASSERT_EQUAL("Alfa", car_str);
+        TEST_EXPECT_EQUAL("Alfa", car_ccp);
+        TEST_EXPECT_EQUAL("Alfa", car_cp);
+        TEST_EXPECT_EQUAL("Alfa", car_str);
 
-        TEST_ASSERT_EQUAL(car_cp, car_ccp);
-        TEST_ASSERT_EQUAL(car_cp, car_str);
-        TEST_ASSERT_EQUAL(car_ccp, car_cp);
-        TEST_ASSERT_EQUAL(car_ccp, car_str);
-        TEST_ASSERT_EQUAL(car_str, car_cp);
-        TEST_ASSERT_EQUAL(car_str, car_ccp);
+        TEST_EXPECT_EQUAL(car_cp, car_ccp);
+        TEST_EXPECT_EQUAL(car_cp, car_str);
+        TEST_EXPECT_EQUAL(car_ccp, car_cp);
+        TEST_EXPECT_EQUAL(car_ccp, car_str);
+        TEST_EXPECT_EQUAL(car_str, car_cp);
+        TEST_EXPECT_EQUAL(car_str, car_ccp);
 
         char *null = NULL;
-        TEST_ASSERT_NULL((void*)NULL);
-        TEST_ASSERT_NULL(null);
+        TEST_EXPECT_NULL((void*)NULL);
+        TEST_EXPECT_NULL(null);
 
-        TEST_ASSERT_CONTAINS(car_ccp, "lf");
-        TEST_ASSERT_CONTAINS(car_cp, "fa");
-        TEST_ASSERT_CONTAINS(car_str, "Al");
+        TEST_EXPECT_CONTAINS(car_ccp, "lf");
+        TEST_EXPECT_CONTAINS(car_cp, "fa");
+        TEST_EXPECT_CONTAINS(car_str, "Al");
 
         free(car_cp);
     }
@@ -293,22 +293,22 @@ void TEST_replace_old_TEST_ASSERTS_by_expectations() {
         float  f = s;
         double d = i;
 
-        TEST_ASSERT_EQUAL(s, -7);
-        TEST_ASSERT_EQUAL(i, -7);
+        TEST_EXPECT_EQUAL(s, -7);
+        TEST_EXPECT_EQUAL(i, -7);
 
-        TEST_ASSERT_EQUAL(su, 7);  TEST_ASSERT_EQUAL(iu, 7);
-        TEST_ASSERT_EQUAL(su, 7U); TEST_ASSERT_EQUAL(iu, 7U);
-        TEST_ASSERT_EQUAL(su, 7L); TEST_ASSERT_EQUAL(iu, 7L);
+        TEST_EXPECT_EQUAL(su, 7);  TEST_EXPECT_EQUAL(iu, 7);
+        TEST_EXPECT_EQUAL(su, 7U); TEST_EXPECT_EQUAL(iu, 7U);
+        TEST_EXPECT_EQUAL(su, 7L); TEST_EXPECT_EQUAL(iu, 7L);
 
-        TEST_ASSERT_EQUAL(s, -su); TEST_ASSERT_EQUAL(s, -iu);
-        TEST_ASSERT_EQUAL(i, -iu); TEST_ASSERT_EQUAL(i, -su);
-        TEST_ASSERT_EQUAL(l, -lu);
+        TEST_EXPECT_EQUAL(s, -su); TEST_EXPECT_EQUAL(s, -iu);
+        TEST_EXPECT_EQUAL(i, -iu); TEST_EXPECT_EQUAL(i, -su);
+        TEST_EXPECT_EQUAL(l, -lu);
 
-        TEST_ASSERT_EQUAL(f, d);
-        TEST_ASSERT_EQUAL(d, f);
+        TEST_EXPECT_EQUAL(f, d);
+        TEST_EXPECT_EQUAL(d, f);
     }
 
-    TEST_ASSERT_ZERO(7-7);
+    TEST_EXPECT_ZERO(7-7);
 }
 
 // --- simulate user_type (which may be defined anywhere) ---
@@ -362,8 +362,8 @@ void TEST_similarity() {
     TEST_EXPECTATION(that(d1).fulfills(epsilon_similar(epsilon), d3));
     TEST_EXPECTATION(that(d2).contradicts(epsilon_similar(epsilon), d3));
 
-    TEST_ASSERT_SIMILAR(d1, d2, epsilon);
-    TEST_ASSERT_SIMILAR(d1, d3, epsilon);
+    TEST_EXPECT_SIMILAR(d1, d2, epsilon);
+    TEST_EXPECT_SIMILAR(d1, d3, epsilon);
 }
 
 void TEST_less_equal() {
@@ -381,10 +381,10 @@ void TEST_less_equal() {
     TEST_EXPECTATION(that(y).is_more_or_equal(x));
     TEST_EXPECTATION(that(y).is_more_or_equal(y));
 
-    TEST_ASSERT_LOWER_EQUAL(x, y);
-    TEST_ASSERT_LOWER_EQUAL(x, x);
-    TEST_ASSERT_LOWER(x, y);
-    TEST_ASSERT_IN_RANGE(y, x, z);
+    TEST_EXPECT_LOWER_EQUAL(x, y);
+    TEST_EXPECT_LOWER_EQUAL(x, x);
+    TEST_EXPECT_LOWER(x, y);
+    TEST_EXPECT_IN_RANGE(y, x, z);
 }
 
 #endif // UNIT_TESTS

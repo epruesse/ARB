@@ -245,67 +245,67 @@ void TEST_basic_file_checks() {
     const char *someFile  = "general/text.input";
     const char *noFile = "general/nosuch.input";
 
-    TEST_ASSERT_DIFFERENT(GB_mode_of_file(someFile), -1);
-    TEST_ASSERT_DIFFERENT(GB_mode_of_file(someDir), -1);
-    TEST_ASSERT_EQUAL(GB_mode_of_file(noFile), -1);
-    TEST_ASSERT_EQUAL(GB_mode_of_file(NULL), -1);
+    TEST_EXPECT_DIFFERENT(GB_mode_of_file(someFile), -1);
+    TEST_EXPECT_DIFFERENT(GB_mode_of_file(someDir), -1);
+    TEST_EXPECT_EQUAL(GB_mode_of_file(noFile), -1);
+    TEST_EXPECT_EQUAL(GB_mode_of_file(NULL), -1);
 
     {
         const char *linkToFile  = "fileLink";
         const char *linkToDir   = "dirLink";
         const char *linkNowhere = "brokenLink";
 
-        TEST_ASSERT_DIFFERENT(GB_unlink(linkToFile), -1);
-        TEST_ASSERT_DIFFERENT(GB_unlink(linkNowhere), -1);
-        TEST_ASSERT_DIFFERENT(GB_unlink(linkToDir), -1);
+        TEST_EXPECT_DIFFERENT(GB_unlink(linkToFile), -1);
+        TEST_EXPECT_DIFFERENT(GB_unlink(linkNowhere), -1);
+        TEST_EXPECT_DIFFERENT(GB_unlink(linkToDir), -1);
 
-        TEST_ASSERT_NO_ERROR(GB_symlink(someFile, linkToFile));
-        TEST_ASSERT_NO_ERROR(GB_symlink(someDir, linkToDir));
-        TEST_ASSERT_NO_ERROR(GB_symlink(noFile, linkNowhere));
+        TEST_EXPECT_NO_ERROR(GB_symlink(someFile, linkToFile));
+        TEST_EXPECT_NO_ERROR(GB_symlink(someDir, linkToDir));
+        TEST_EXPECT_NO_ERROR(GB_symlink(noFile, linkNowhere));
 
-        TEST_ASSERT(GB_is_link(linkToFile));
-        TEST_ASSERT(GB_is_link(linkToDir));
-        TEST_ASSERT(GB_is_link(linkNowhere));
-        TEST_ASSERT(!GB_is_link(someFile));
-        TEST_ASSERT(!GB_is_link(noFile));
-        TEST_ASSERT(!GB_is_link(someDir));
-        TEST_ASSERT(!GB_is_link(NULL));
+        TEST_EXPECT(GB_is_link(linkToFile));
+        TEST_EXPECT(GB_is_link(linkToDir));
+        TEST_EXPECT(GB_is_link(linkNowhere));
+        TEST_EXPECT(!GB_is_link(someFile));
+        TEST_EXPECT(!GB_is_link(noFile));
+        TEST_EXPECT(!GB_is_link(someDir));
+        TEST_EXPECT(!GB_is_link(NULL));
 
-        TEST_ASSERT(GB_is_regularfile(linkToFile));
-        TEST_ASSERT(!GB_is_regularfile(linkToDir));
-        TEST_ASSERT(!GB_is_regularfile(linkNowhere));
-        TEST_ASSERT(GB_is_regularfile(someFile));
-        TEST_ASSERT(!GB_is_regularfile(someDir));
-        TEST_ASSERT(!GB_is_regularfile(noFile));
-        TEST_ASSERT(!GB_is_regularfile(NULL));
+        TEST_EXPECT(GB_is_regularfile(linkToFile));
+        TEST_EXPECT(!GB_is_regularfile(linkToDir));
+        TEST_EXPECT(!GB_is_regularfile(linkNowhere));
+        TEST_EXPECT(GB_is_regularfile(someFile));
+        TEST_EXPECT(!GB_is_regularfile(someDir));
+        TEST_EXPECT(!GB_is_regularfile(noFile));
+        TEST_EXPECT(!GB_is_regularfile(NULL));
 
-        TEST_ASSERT(!GB_is_directory(linkToFile));
-        TEST_ASSERT(GB_is_directory(linkToDir));
-        TEST_ASSERT(!GB_is_directory(linkNowhere));
-        TEST_ASSERT(!GB_is_directory(someFile));
-        TEST_ASSERT(!GB_is_directory(noFile));
-        TEST_ASSERT(GB_is_directory(someDir));
-        TEST_ASSERT(!GB_is_directory(NULL));
+        TEST_EXPECT(!GB_is_directory(linkToFile));
+        TEST_EXPECT(GB_is_directory(linkToDir));
+        TEST_EXPECT(!GB_is_directory(linkNowhere));
+        TEST_EXPECT(!GB_is_directory(someFile));
+        TEST_EXPECT(!GB_is_directory(noFile));
+        TEST_EXPECT(GB_is_directory(someDir));
+        TEST_EXPECT(!GB_is_directory(NULL));
 
-        TEST_ASSERT(GB_is_readablefile(linkToFile));
-        TEST_ASSERT(!GB_is_readablefile(linkToDir));
-        TEST_ASSERT(!GB_is_readablefile(linkNowhere));
-        TEST_ASSERT(GB_is_readablefile(someFile));
-        TEST_ASSERT(!GB_is_readablefile(noFile));
-        TEST_ASSERT(!GB_is_readablefile(someDir));
-        TEST_ASSERT(!GB_is_readablefile(NULL));
+        TEST_EXPECT(GB_is_readablefile(linkToFile));
+        TEST_EXPECT(!GB_is_readablefile(linkToDir));
+        TEST_EXPECT(!GB_is_readablefile(linkNowhere));
+        TEST_EXPECT(GB_is_readablefile(someFile));
+        TEST_EXPECT(!GB_is_readablefile(noFile));
+        TEST_EXPECT(!GB_is_readablefile(someDir));
+        TEST_EXPECT(!GB_is_readablefile(NULL));
         
-        TEST_ASSERT(GB_is_readable(linkToDir));
-        TEST_ASSERT(GB_is_readable(someDir));
+        TEST_EXPECT(GB_is_readable(linkToDir));
+        TEST_EXPECT(GB_is_readable(someDir));
 
-        TEST_ASSERT_DIFFERENT(GB_mode_of_link(linkToFile), GB_mode_of_file(someFile));
-        TEST_ASSERT_DIFFERENT(GB_mode_of_link(linkToDir), GB_mode_of_file(someDir));
-        TEST_ASSERT_DIFFERENT(GB_mode_of_link(linkNowhere), -1);
-        TEST_ASSERT_EQUAL(GB_mode_of_link(NULL), -1);
+        TEST_EXPECT_DIFFERENT(GB_mode_of_link(linkToFile), GB_mode_of_file(someFile));
+        TEST_EXPECT_DIFFERENT(GB_mode_of_link(linkToDir), GB_mode_of_file(someDir));
+        TEST_EXPECT_DIFFERENT(GB_mode_of_link(linkNowhere), -1);
+        TEST_EXPECT_EQUAL(GB_mode_of_link(NULL), -1);
 
-        TEST_ASSERT_DIFFERENT(GB_unlink(linkToFile), -1);
-        TEST_ASSERT_DIFFERENT(GB_unlink(linkToDir), -1);
-        TEST_ASSERT_DIFFERENT(GB_unlink(linkNowhere), -1);
+        TEST_EXPECT_DIFFERENT(GB_unlink(linkToFile), -1);
+        TEST_EXPECT_DIFFERENT(GB_unlink(linkToDir), -1);
+        TEST_EXPECT_DIFFERENT(GB_unlink(linkNowhere), -1);
     }
 }
 

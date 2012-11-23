@@ -268,27 +268,27 @@ const char* iupac::decode(char iupac, GB_alignment_type ali, int decode_amino_iu
 #include <test_unit.h>
 
 void TEST_amino_groups() {
-    TEST_ASSERT_EQUAL(decode('x', GB_AT_AA, true), "");
-    TEST_ASSERT_EQUAL(decode('A', GB_AT_AA, true), "AGPST");
+    TEST_EXPECT_EQUAL(decode('x', GB_AT_AA, true), "");
+    TEST_EXPECT_EQUAL(decode('A', GB_AT_AA, true), "AGPST");
 
     // each character (A-Z) shall be member of a group:
     for (char c = 'A'; c <= 'Z'; ++c) {
         Amino_Group group = get_amino_group_for(c);
-        TEST_ASSERT_LOWER(group, AA_GROUP_COUNT);
-        TEST_ASSERT_DIFFERENT(group, AA_GROUP_ILLEGAL);
-        TEST_ASSERT_IN_RANGE(group, AA_GROUP_NONE, AA_GROUP_ZETA);
+        TEST_EXPECT_LOWER(group, AA_GROUP_COUNT);
+        TEST_EXPECT_DIFFERENT(group, AA_GROUP_ILLEGAL);
+        TEST_EXPECT_IN_RANGE(group, AA_GROUP_NONE, AA_GROUP_ZETA);
 
         {
             const char * const members = aminoGroupMembers[group];
             const char * const found   = strchr(members, c);
-            TEST_ASSERT_EQUAL(found ? found[0] : 0, c); // char has to be a member of its group
+            TEST_EXPECT_EQUAL(found ? found[0] : 0, c); // char has to be a member of its group
         }
 
         if (group != AA_GROUP_NONE) {
             const char * const decoded = decode(c, GB_AT_AA, true);
             const char * const found   = strchr(decoded, c);
 
-            TEST_ASSERT_EQUAL(found ? found[0] : 0, c); // check char is
+            TEST_EXPECT_EQUAL(found ? found[0] : 0, c); // check char is
         }
     }
 
@@ -297,33 +297,33 @@ void TEST_amino_groups() {
         const char * const member = aminoGroupMembers[group];
         for (int pos = 0; member[pos]; ++pos) {
             Amino_Group groupOfChar = get_amino_group_for(member[pos]);
-            TEST_ASSERT_EQUAL(groupOfChar, group);
+            TEST_EXPECT_EQUAL(groupOfChar, group);
         }
     }
 }
 
 void TEST_nuc_groups() {
     for (int base = 0; base<26; base++) {
-        TEST_ASSERT_EQUAL(nuc_group[base][0].count, nuc_group[base][1].count);
+        TEST_EXPECT_EQUAL(nuc_group[base][0].count, nuc_group[base][1].count);
         for (int alitype = 0; alitype<2; alitype++) {
             const Nuc_Group& group = nuc_group[base][alitype];
             if (group.members) {
                 if ((base+'A') == 'N') {
-                    TEST_ASSERT_EQUAL__BROKEN(group.count, strlen(group.members));
+                    TEST_EXPECT_EQUAL__BROKEN(group.count, strlen(group.members));
                     // @@@ fails because count is 1 for "ACGT" [N]
                     // maybe be expected by resolve_IUPAC_target_string (fix this first)
-                    TEST_ASSERT_EQUAL(group.count, 1U); // fixture for behavior
+                    TEST_EXPECT_EQUAL(group.count, 1U); // fixture for behavior
                 }
                 else {
-                    TEST_ASSERT_EQUAL(group.count, strlen(group.members));
+                    TEST_EXPECT_EQUAL(group.count, strlen(group.members));
                 }
                 
                 for (size_t pos = 1; pos<group.count; ++pos) {
-                    TEST_ASSERT_LOWER(group.members[pos-1], group.members[pos]);
+                    TEST_EXPECT_LOWER(group.members[pos-1], group.members[pos]);
                 }
             }
             else {
-                TEST_ASSERT(!group.count);
+                TEST_EXPECT(!group.count);
             }
         }
     }

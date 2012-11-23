@@ -549,9 +549,9 @@ inline char *array2string(const CharPtrArray& array) {
     return out.release();
 }
 
-#define TEST_ASSERT_ARRAY_EQUALS(array,expected) do {   \
+#define TEST_EXPECT_ARRAY_EQUALS(array,expected) do {   \
         char *arrayAsString = array2string(array);      \
-        TEST_ASSERT_EQUAL(arrayAsString, expected);     \
+        TEST_EXPECT_EQUAL(arrayAsString, expected);     \
         free(arrayAsString);                            \
     } while(0)
 
@@ -585,9 +585,9 @@ void TEST_probe_lists() {
     array2cpa(old_probeDesignSave, ARRAY_ELEMS(old_probeDesignSave), lines);
     {
         StrArray display, value;
-        TEST_ASSERT_NO_ERROR(mp_file2list(lines, display, value));
-        TEST_ASSERT_ARRAY_EQUALS(display, expected);
-        TEST_ASSERT_ARRAY_EQUALS(value, expected);
+        TEST_EXPECT_NO_ERROR(mp_file2list(lines, display, value));
+        TEST_EXPECT_ARRAY_EQUALS(display, expected);
+        TEST_EXPECT_ARRAY_EQUALS(value, expected);
     }
 
     const char *old_multiprobeInputSave[] = { // old multi-probe saved probe (i.e. not target) sequences -> load shall correct that
@@ -602,9 +602,9 @@ void TEST_probe_lists() {
     {
         StrArray display, value;
         LocallyModify<char> TorU(T_or_U_for_load, 'U');
-        TEST_ASSERT_NO_ERROR(mp_file2list(lines, display, value));
-        TEST_ASSERT_ARRAY_EQUALS(display, expected);
-        TEST_ASSERT_ARRAY_EQUALS(value, expected);
+        TEST_EXPECT_NO_ERROR(mp_file2list(lines, display, value));
+        TEST_EXPECT_ARRAY_EQUALS(display, expected);
+        TEST_EXPECT_ARRAY_EQUALS(value, expected);
     }
 
     const char *new_probeDesignSave[] = {
@@ -626,9 +626,9 @@ void TEST_probe_lists() {
     array2cpa(new_probeDesignSave, ARRAY_ELEMS(new_probeDesignSave), lines);
     {
         StrArray display, value;
-        TEST_ASSERT_NO_ERROR(mp_file2list(lines, display, value));
-        TEST_ASSERT_ARRAY_EQUALS(display, expected);
-        TEST_ASSERT_ARRAY_EQUALS(value, expected);
+        TEST_EXPECT_NO_ERROR(mp_file2list(lines, display, value));
+        TEST_EXPECT_ARRAY_EQUALS(display, expected);
+        TEST_EXPECT_ARRAY_EQUALS(value, expected);
     }
 
     const char *new_multiprobeInputSave[] = {
@@ -642,9 +642,9 @@ void TEST_probe_lists() {
     array2cpa(new_multiprobeInputSave, ARRAY_ELEMS(new_multiprobeInputSave), lines);
     {
         StrArray display, value;
-        TEST_ASSERT_NO_ERROR(mp_file2list(lines, display, value));
-        TEST_ASSERT_ARRAY_EQUALS(display, expected);
-        TEST_ASSERT_ARRAY_EQUALS(value, expected);
+        TEST_EXPECT_NO_ERROR(mp_file2list(lines, display, value));
+        TEST_EXPECT_ARRAY_EQUALS(display, expected);
+        TEST_EXPECT_ARRAY_EQUALS(value, expected);
     }
 
 

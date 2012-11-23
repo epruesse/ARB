@@ -833,12 +833,12 @@ static int test_cb2_called;
 static void test_cb1(AW_root *, AW_CL cd1, AW_CL cd2) { test_cb1_called += (cd1+cd2); }
 static void test_cb2(AW_root *, AW_CL cd1, AW_CL cd2) { test_cb2_called += (cd1+cd2); }
 
-#define TEST_ASSERT_CBS_CALLED(cbl, c1,c2)              \
+#define TEST_EXPECT_CBS_CALLED(cbl, c1,c2)              \
     do {                                                \
         test_cb1_called = test_cb2_called = 0;          \
         AW_root_cblist::call(cbl, NULL);                \
-        TEST_ASSERT_EQUAL(test_cb1_called, c1);         \
-        TEST_ASSERT_EQUAL(test_cb2_called, c2);         \
+        TEST_EXPECT_EQUAL(test_cb1_called, c1);         \
+        TEST_EXPECT_EQUAL(test_cb2_called, c2);         \
     } while(0)
 
 void TEST_AW_root_cblist() {
@@ -848,20 +848,20 @@ void TEST_AW_root_cblist() {
     AW_root_callback tcb2(test_cb2, 0, 1);
     AW_root_callback wrong_tcb2(test_cb2, 1, 0);
 
-    AW_root_cblist::add(cb_list, tcb1); TEST_ASSERT_CBS_CALLED(cb_list, 1, 0);
-    AW_root_cblist::add(cb_list, tcb2); TEST_ASSERT_CBS_CALLED(cb_list, 1, 1);
+    AW_root_cblist::add(cb_list, tcb1); TEST_EXPECT_CBS_CALLED(cb_list, 1, 0);
+    AW_root_cblist::add(cb_list, tcb2); TEST_EXPECT_CBS_CALLED(cb_list, 1, 1);
 
-    AW_root_cblist::remove(cb_list, tcb1);       TEST_ASSERT_CBS_CALLED(cb_list, 0, 1);
-    AW_root_cblist::remove(cb_list, wrong_tcb2); TEST_ASSERT_CBS_CALLED(cb_list, 0, 1);
-    AW_root_cblist::remove(cb_list, tcb2);       TEST_ASSERT_CBS_CALLED(cb_list, 0, 0);
+    AW_root_cblist::remove(cb_list, tcb1);       TEST_EXPECT_CBS_CALLED(cb_list, 0, 1);
+    AW_root_cblist::remove(cb_list, wrong_tcb2); TEST_EXPECT_CBS_CALLED(cb_list, 0, 1);
+    AW_root_cblist::remove(cb_list, tcb2);       TEST_EXPECT_CBS_CALLED(cb_list, 0, 0);
 
     AW_root_cblist::add(cb_list, tcb1);
     AW_root_cblist::add(cb_list, tcb1); // add callback twice
-    TEST_ASSERT_CBS_CALLED(cb_list, 1, 0);  // should only be called once
+    TEST_EXPECT_CBS_CALLED(cb_list, 1, 0);  // should only be called once
 
     AW_root_cblist::add(cb_list, tcb2);
     AW_root_cblist::clear(cb_list);
-    TEST_ASSERT_CBS_CALLED(cb_list, 0, 0); // list clear - nothing should be called
+    TEST_EXPECT_CBS_CALLED(cb_list, 0, 0); // list clear - nothing should be called
 }
 
 #endif // UNIT_TESTS

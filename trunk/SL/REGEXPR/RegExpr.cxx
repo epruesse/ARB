@@ -113,24 +113,24 @@ const RegMatch *RegExpr::subexpr_match(size_t subnr) const {
 #define TEST_REGEX_MATCHES(str,regexpr,igCase,exp_match) do {           \
         RegExpr exp(regexpr, igCase);                                   \
         const RegMatch *match = exp.match(str);                         \
-        TEST_ASSERT_NOTNULL(match);                                     \
-        TEST_ASSERT_EQUAL(match->extract(str).c_str(), exp_match);      \
+        TEST_EXPECT_NOTNULL(match);                                     \
+        TEST_EXPECT_EQUAL(match->extract(str).c_str(), exp_match);      \
     } while(0)
 
 #define TEST_REGEX_DOESNT_MATCH(str,regexpr,igCase) do {                \
         RegExpr exp(regexpr, igCase);                                   \
         const RegMatch *match = exp.match(str);                         \
-        TEST_ASSERT_NULL(match);                                        \
+        TEST_EXPECT_NULL(match);                                        \
     } while(0)
 
 #define TEST_REGEX_MATCHES_SUB1(str,regexpr,igCase,exp_match,exp_sub1match) do {        \
         RegExpr exp(regexpr, igCase);                                                   \
         const RegMatch *match = exp.match(str);                                         \
-        TEST_ASSERT_NOTNULL(match);                                                     \
-        TEST_ASSERT_EQUAL(match->extract(str).c_str(), exp_match);                      \
+        TEST_EXPECT_NOTNULL(match);                                                     \
+        TEST_EXPECT_EQUAL(match->extract(str).c_str(), exp_match);                      \
         match = exp.subexpr_match(1);                                                   \
-        TEST_ASSERT_NOTNULL(match);                                                     \
-        TEST_ASSERT_EQUAL(match->extract(str).c_str(), exp_sub1match);                  \
+        TEST_EXPECT_NOTNULL(match);                                                     \
+        TEST_EXPECT_EQUAL(match->extract(str).c_str(), exp_sub1match);                  \
     } while(0)
     
 void TEST_regexpr() {

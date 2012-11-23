@@ -936,31 +936,31 @@ void TEST_alignment() {
     {
         GB_transaction ta(gb_main);
 
-        TEST_ASSERT_EQUAL(GBT_count_alignments(gb_main), 2);
+        TEST_EXPECT_EQUAL(GBT_count_alignments(gb_main), 2);
 
         char *def_ali_name = GBT_get_default_alignment(gb_main);
-        TEST_ASSERT_EQUAL(def_ali_name, "ali_tuf_dna");
+        TEST_EXPECT_EQUAL(def_ali_name, "ali_tuf_dna");
 
         {
             ConstStrArray names;
             GBT_get_alignment_names(names, gb_main);
             {
                 char *joined = GBT_join_names(names, '*');
-                TEST_ASSERT_EQUAL(joined, "ali_tuf_pro*ali_tuf_dna");
+                TEST_EXPECT_EQUAL(joined, "ali_tuf_pro*ali_tuf_dna");
                 free(joined);
             }
 
             for (int i = 0; names[i]; ++i) {
                 long len = GBT_get_alignment_len(gb_main, names[i]);
-                TEST_ASSERT_EQUAL(len, !i ? 473 : 1426);
+                TEST_EXPECT_EQUAL(len, !i ? 473 : 1426);
 
                 char *type_name = GBT_get_alignment_type_string(gb_main, names[i]);
-                TEST_ASSERT_EQUAL(type_name, !i ? "ami" : "dna");
+                TEST_EXPECT_EQUAL(type_name, !i ? "ami" : "dna");
                 free(type_name);
 
                 GB_alignment_type type = GBT_get_alignment_type(gb_main, names[i]);
-                TEST_ASSERT_EQUAL(type, !i ? GB_AT_AA : GB_AT_DNA);
-                TEST_ASSERT(!i == GBT_is_alignment_protein(gb_main, names[i]));
+                TEST_EXPECT_EQUAL(type, !i ? GB_AT_AA : GB_AT_DNA);
+                TEST_EXPECT(!i == GBT_is_alignment_protein(gb_main, names[i]));
             }
         }
 

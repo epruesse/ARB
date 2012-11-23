@@ -161,46 +161,46 @@ void GBT_names_move(CharPtrArray& names, int old_index, int new_index) {
 void TEST_StrArray() {
     StrArray array;
 
-    TEST_ASSERT(array.empty());
-    TEST_ASSERT_EQUAL(array.size(), 0);
-    TEST_ASSERT_NULL(array[0]);
+    TEST_EXPECT(array.empty());
+    TEST_EXPECT_EQUAL(array.size(), 0);
+    TEST_EXPECT_NULL(array[0]);
 
     array.put(strdup("first"));
 
-    TEST_ASSERT(!array.empty());
-    TEST_ASSERT_EQUAL(array.size(), 1);
-    TEST_ASSERT_EQUAL(array[0], "first");
-    TEST_ASSERT_NULL(array[1]);
+    TEST_EXPECT(!array.empty());
+    TEST_EXPECT_EQUAL(array.size(), 1);
+    TEST_EXPECT_EQUAL(array[0], "first");
+    TEST_EXPECT_NULL(array[1]);
 
     array.put(strdup("second"));
     
-    TEST_ASSERT_EQUAL(array.size(), 2);
-    TEST_ASSERT_EQUAL(array[0], "first");
-    TEST_ASSERT_EQUAL(array[1], "second");
-    TEST_ASSERT_NULL(array[2]);
+    TEST_EXPECT_EQUAL(array.size(), 2);
+    TEST_EXPECT_EQUAL(array[0], "first");
+    TEST_EXPECT_EQUAL(array[1], "second");
+    TEST_EXPECT_NULL(array[2]);
 
     array.remove(0);
 
-    TEST_ASSERT_EQUAL(array.size(), 1);
-    TEST_ASSERT_EQUAL(array[0], "second");
-    TEST_ASSERT_NULL(array[1]);
+    TEST_EXPECT_EQUAL(array.size(), 1);
+    TEST_EXPECT_EQUAL(array[0], "second");
+    TEST_EXPECT_NULL(array[1]);
     
     array.remove(0);
 
-    TEST_ASSERT(array.empty());
-    TEST_ASSERT_EQUAL(array.size(), 0);
-    TEST_ASSERT_NULL(array[0]);
+    TEST_EXPECT(array.empty());
+    TEST_EXPECT_EQUAL(array.size(), 0);
+    TEST_EXPECT_NULL(array[0]);
 }
 
 void TEST_StrArray_truncate() {
     ConstStrArray parts;
     GBT_split_string(parts, "test;word;bla", ';');
 
-    TEST_ASSERT_EQUAL(parts.size(), 3);
-    parts.resize(1000); TEST_ASSERT_EQUAL(parts.size(), 3);
-    parts.resize(2); TEST_ASSERT_EQUAL(parts.size(), 2);
-    parts.resize(1); TEST_ASSERT_EQUAL(parts.size(), 1);
-    parts.resize(0); TEST_ASSERT(parts.empty());
+    TEST_EXPECT_EQUAL(parts.size(), 3);
+    parts.resize(1000); TEST_EXPECT_EQUAL(parts.size(), 3);
+    parts.resize(2); TEST_EXPECT_EQUAL(parts.size(), 2);
+    parts.resize(1); TEST_EXPECT_EQUAL(parts.size(), 1);
+    parts.resize(0); TEST_EXPECT(parts.empty());
 }
 
 #define TEST_SPLIT_JOIN(str,sep)                        \
@@ -208,7 +208,7 @@ void TEST_StrArray_truncate() {
         ConstStrArray cnames;                           \
         GBT_split_string(cnames, str, sep);             \
         char *joined = GBT_join_names(cnames, sep);     \
-        TEST_ASSERT_EQUAL(str, joined);                 \
+        TEST_EXPECT_EQUAL(str, joined);                 \
         free(joined);                                   \
     } while(0)
 
@@ -218,25 +218,25 @@ void TEST_GBT_split_join_names() {
         GBT_split_string(names, "a*b*c", '*');
         size_t   count = names.size();
 
-        TEST_ASSERT_EQUAL(count, 3U);
-        TEST_ASSERT_EQUAL(names[0], "a");
-        TEST_ASSERT_EQUAL(names[1], "b");
-        TEST_ASSERT_EQUAL(names[2], "c");
+        TEST_EXPECT_EQUAL(count, 3U);
+        TEST_EXPECT_EQUAL(names[0], "a");
+        TEST_EXPECT_EQUAL(names[1], "b");
+        TEST_EXPECT_EQUAL(names[2], "c");
     }
     {                                               // split string containing empty tokens
         ConstStrArray names;
         GBT_split_string(names, "**a**b*c*", '*');
         size_t   count = names.size();
 
-        TEST_ASSERT_EQUAL(count, 7U);
-        TEST_ASSERT_EQUAL(names[0], "");
-        TEST_ASSERT_EQUAL(names[1], "");
-        TEST_ASSERT_EQUAL(names[2], "a");
-        TEST_ASSERT_EQUAL(names[3], "");
-        TEST_ASSERT_EQUAL(names[4], "b");
-        TEST_ASSERT_EQUAL(names[5], "c");
-        TEST_ASSERT_EQUAL(names[6], "");
-        TEST_ASSERT_NULL(names[7]);
+        TEST_EXPECT_EQUAL(count, 7U);
+        TEST_EXPECT_EQUAL(names[0], "");
+        TEST_EXPECT_EQUAL(names[1], "");
+        TEST_EXPECT_EQUAL(names[2], "a");
+        TEST_EXPECT_EQUAL(names[3], "");
+        TEST_EXPECT_EQUAL(names[4], "b");
+        TEST_EXPECT_EQUAL(names[5], "c");
+        TEST_EXPECT_EQUAL(names[6], "");
+        TEST_EXPECT_NULL(names[7]);
     }
 
     TEST_SPLIT_JOIN("a.b.c", '.');
@@ -253,17 +253,17 @@ void TEST_GBT_names_index_of() {
     ConstStrArray names;
     GBT_split_string(names, "**a**b*c*", '*');
 
-    TEST_ASSERT_EQUAL(GBT_names_index_of(names, "a"), 2);
-    TEST_ASSERT_EQUAL(GBT_names_index_of(names, "b"), 4);
-    TEST_ASSERT_EQUAL(GBT_names_index_of(names, "c"), 5);
-    TEST_ASSERT_EQUAL(GBT_names_index_of(names, ""), 0);
-    TEST_ASSERT_EQUAL(GBT_names_index_of(names, "no"), -1);
+    TEST_EXPECT_EQUAL(GBT_names_index_of(names, "a"), 2);
+    TEST_EXPECT_EQUAL(GBT_names_index_of(names, "b"), 4);
+    TEST_EXPECT_EQUAL(GBT_names_index_of(names, "c"), 5);
+    TEST_EXPECT_EQUAL(GBT_names_index_of(names, ""), 0);
+    TEST_EXPECT_EQUAL(GBT_names_index_of(names, "no"), -1);
 }
 
-#define TEST_ASSERT_NAMES_JOIN_TO(names, sep, expected) \
+#define TEST_EXPECT_NAMES_JOIN_TO(names, sep, expected) \
     do {                                                \
         char *joined = GBT_join_names(names, sep);      \
-        TEST_ASSERT_EQUAL(joined, expected);            \
+        TEST_EXPECT_EQUAL(joined, expected);            \
         free(joined);                                   \
     } while(0)                                          \
     
@@ -271,22 +271,22 @@ void TEST_GBT_names_erase() {
     ConstStrArray names;
     GBT_split_string(names, "a*b*c*d*e", '*');
 
-    TEST_ASSERT_EQUAL(names.size(), 5U);
+    TEST_EXPECT_EQUAL(names.size(), 5U);
 
     GBT_names_erase(names, 0); 
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*c*d*e");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*c*d*e");
 
     GBT_names_erase(names, 3);
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*c*d");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*c*d");
 
     GBT_names_erase(names, 3);                      // index out of range
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*c*d");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*c*d");
 
     GBT_names_erase(names, -1);                     // illegal index
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*c*d");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*c*d");
 
     GBT_names_erase(names, 1);
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*d");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*d");
 }
 
 void TEST_GBT_names_move() {
@@ -294,19 +294,19 @@ void TEST_GBT_names_move() {
     GBT_split_string(names, "a*b*c*dee", '*');
 
     GBT_names_move(names, 0, -1); // -1 means last
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*c*dee*a");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*c*dee*a");
     GBT_names_move(names, -1, 0); 
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*c*dee");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b*c*dee");
     GBT_names_move(names, 2, 3); 
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*dee*c");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b*dee*c");
     GBT_names_move(names, 2, 1); 
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*dee*b*c");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*dee*b*c");
 
     // test wrap arounds
     GBT_names_move(names, 0, -1);
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "dee*b*c*a");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "dee*b*c*a");
     GBT_names_move(names, -1, 99999);
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*dee*b*c");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*dee*b*c");
 }
 
 void TEST_GBT_names_add() { // test after GBT_names_move (cause add depends on move)
@@ -314,22 +314,22 @@ void TEST_GBT_names_add() { // test after GBT_names_move (cause add depends on m
     GBT_split_string(names, "a", '*');
 
     GBT_names_add(names, -1, "b");                  // append at end
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b");
 
     GBT_names_add(names, 2, "c");                   // append at end (using non-existing index)
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*c");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b*c");
 
     GBT_names_add(names, 99, "d");                  // append at end (using even bigger non-existing index)
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*c*d");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b*c*d");
 
     GBT_names_add(names, 2, "b2");                  // insert inside
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*b2*c*d");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b*b2*c*d");
 
     GBT_names_add(names, 0, "a0");                  // insert at beginning
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d");
 
     GBT_names_add(names, 5, "d0");                  // insert before last
-    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d0*d");
+    TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d0*d");
 }
 
 #endif

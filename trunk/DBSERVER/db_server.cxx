@@ -309,8 +309,8 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
 }
 
 #define RUN_TOOL(cmdline)            valgrinded_system(cmdline)
-#define TEST_RUN_TOOL(cmdline)       TEST_ASSERT_NO_ERROR(RUN_TOOL(cmdline))
-#define TEST_RUN_TOOL_FAILS(cmdline) TEST_ASSERT_ERROR_CONTAINS(RUN_TOOL(cmdline), "System call failed")
+#define TEST_RUN_TOOL(cmdline)       TEST_EXPECT_NO_ERROR(RUN_TOOL(cmdline))
+#define TEST_RUN_TOOL_FAILS(cmdline) TEST_EXPECT_ERROR_CONTAINS(RUN_TOOL(cmdline), "System call failed")
 
 inline bool server_is_down(const char *tcp) {
     char     *ping_cmd = strdup(GBS_global_string("arb_db_server -T%s -Cping", tcp));
@@ -339,7 +339,7 @@ void TEST_SLOW_dbserver() {
 // #define DEBUG_SERVER // uncomment when debugging server manually
 
 #if !defined(DEBUG_SERVER)
-    TEST_ASSERT(server_is_down(tcp));
+    TEST_EXPECT(server_is_down(tcp));
 #endif
 
     pid_t child_pid = fork();
@@ -349,7 +349,7 @@ void TEST_SLOW_dbserver() {
         while (down) {
             GB_usleep(25*1000);
             down = server_is_down(tcp);
-            TEST_ASSERT(max_wait-->0);
+            TEST_EXPECT(max_wait-->0);
         }
         // ok - server is up
 
@@ -373,21 +373,21 @@ void TEST_SLOW_dbserver() {
                         GB_transaction  ta(gb_main1);
                         GBDATA         *gb_ecoli = GB_search(gb_main1, "/extended_data/extended/ali_16s/data", GB_FIND);
 
-                        TEST_ASSERT_NOTNULL(gb_ecoli);
+                        TEST_EXPECT_NOTNULL(gb_ecoli);
 
                         const char *ecoli = GB_read_char_pntr(gb_ecoli);
                         if (!ecoli) error = GB_await_error();
-                        else        TEST_ASSERT_EQUAL(GBS_checksum(ecoli, 0, NULL), 0x3558760cU);
+                        else        TEST_EXPECT_EQUAL(GBS_checksum(ecoli, 0, NULL), 0x3558760cU);
                     }
                     {
                         GB_transaction  ta(gb_main2);
                         GBDATA         *gb_alitype = GB_search(gb_main2, "/presets/alignment/alignment_type", GB_FIND);
 
-                        TEST_ASSERT_NOTNULL(gb_alitype);
+                        TEST_EXPECT_NOTNULL(gb_alitype);
 
                         const char *alitype = GB_read_char_pntr(gb_alitype);
                         if (!alitype) error = GB_await_error();
-                        else        TEST_ASSERT_EQUAL(alitype, "rna");
+                        else        TEST_EXPECT_EQUAL(alitype, "rna");
                     }
 
                     // test value written in client1 is changed in client2
@@ -416,7 +416,7 @@ void TEST_SLOW_dbserver() {
                                 error = GB_await_error();
                             }
                             else {
-                                TEST_ASSERT_EQUAL(read_content, test_content);
+                                TEST_EXPECT_EQUAL(read_content, test_content);
                             }
                         }
                     }
@@ -424,19 +424,19 @@ void TEST_SLOW_dbserver() {
                     // test change-callback gets triggered
                     if (!error) {
 
-                        TEST_ASSERT_EQUAL(entry_changed_cb_called, 0);
+                        TEST_EXPECT_EQUAL(entry_changed_cb_called, 0);
                         {
                             GB_transaction ta(gb_entry1);
                             error = GB_add_callback(gb_entry1, GB_CB_CHANGED, entry_changed_cb, NULL);
                         }
-                        TEST_ASSERT_EQUAL(entry_changed_cb_called, 0);
+                        TEST_EXPECT_EQUAL(entry_changed_cb_called, 0);
                         {
                             GB_transaction ta(gb_entry2);
                             GB_touch(gb_entry2);
                         }
-                        TEST_ASSERT_EQUAL(entry_changed_cb_called, 0); // client1 did not transact yet
+                        TEST_EXPECT_EQUAL(entry_changed_cb_called, 0); // client1 did not transact yet
                         delete new GB_transaction(gb_main1);
-                        TEST_ASSERT_EQUAL(entry_changed_cb_called, 1); 
+                        TEST_EXPECT_EQUAL(entry_changed_cb_called, 1);
                     }
 
                     GB_close(gb_main2);
@@ -444,7 +444,7 @@ void TEST_SLOW_dbserver() {
                 GB_close(gb_main1);
             }
 
-            TEST_ASSERT_NO_ERROR(error);
+            TEST_EXPECT_NO_ERROR(error);
         }
 
         // test remote save
@@ -455,15 +455,15 @@ void TEST_SLOW_dbserver() {
             char *bad_savecmd = strdup(GBS_global_string("arb_db_server -T%s -Csave", tcp));
 
             TEST_RUN_TOOL(save_cmd);
-            TEST_ASSERT(GB_is_regularfile(savename));
+            TEST_EXPECT(GB_is_regularfile(savename));
 
 // #define TEST_AUTO_UPDATE
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE(savename, expected);
 #else // !defined(TEST_AUTO_UPDATE)
-            TEST_ASSERT_FILES_EQUAL(savename, expected);
+            TEST_EXPECT_FILES_EQUAL(savename, expected);
 #endif
-            TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename));
+            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename));
 
             TEST_RUN_TOOL_FAILS(bad_savecmd);
             
@@ -485,11 +485,11 @@ void TEST_SLOW_dbserver() {
         exit(EXIT_SUCCESS);
     }
 
-    TEST_ASSERT(server_is_down(tcp));
+    TEST_EXPECT(server_is_down(tcp));
     
 #define socket_disappeared(sock) (GB_time_of_file(sock) == 0)
 
-    TEST_ASSERT(socket_disappeared(sock));
+    TEST_EXPECT(socket_disappeared(sock));
 
     free(shutdown_cmd);
     free(db);

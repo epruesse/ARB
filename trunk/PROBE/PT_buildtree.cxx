@@ -416,14 +416,14 @@ void NOTEST_SLOW_maybe_build_tree() {
 #if 1
         // build
         int res = ARB_main(ARRAY_ELEMS(argv), argv);
-        TEST_ASSERT_EQUAL(res, EXIT_SUCCESS);
+        TEST_EXPECT_EQUAL(res, EXIT_SUCCESS);
 #endif
 
 // #define TEST_AUTO_UPDATE
 #if defined(TEST_AUTO_UPDATE)
         TEST_COPY_FILE(resultPT, expectedPT);
 #else // !defined(TEST_AUTO_UPDATE)
-        TEST_ASSERT_FILES_EQUAL(resultPT, expectedPT);
+        TEST_EXPECT_FILES_EQUAL(resultPT, expectedPT);
 #endif
     }
 }

@@ -217,27 +217,27 @@ void TEST_consensus_tree_1() {
     size_t    species_count;
     GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.7);
 
-    TEST_ASSERT(!error);
-    TEST_ASSERT_NOTNULL(tree);
+    TEST_EXPECT(!error);
+    TEST_EXPECT_NOTNULL(tree);
 
-    TEST_ASSERT_EQUAL(species_count, 22);
-    TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
+    TEST_EXPECT_EQUAL(species_count, 22);
+    TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
 
-    TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 0.925779, LENSUM_EPSILON);
+    TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 0.925779, LENSUM_EPSILON);
         
     char *saveas   = savename(1);
     char *expected = expected_name(1);
 
-    TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, saveas));
+    TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
     // ../UNIT_TESTER/run/consense/1/consense.tree
 
 #if defined(TEST_AUTO_UPDATE)
     system(GBS_global_string("cp %s %s", saveas, expected));
 #else // !defined(TEST_AUTO_UPDATE)
-    TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+    TEST_EXPECT_TEXTFILE_DIFFLINES(saveas, expected, 1);
 #endif
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
         
     free(expected);
     free(saveas);
@@ -252,26 +252,26 @@ void TEST_consensus_tree_1_single() {
     {
         size_t species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.01);
-        TEST_ASSERT(!error);
-        TEST_ASSERT_NOTNULL(tree);
+        TEST_EXPECT(!error);
+        TEST_EXPECT_NOTNULL(tree);
 
-        TEST_ASSERT_EQUAL(species_count, 22);
-        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 0.924610, LENSUM_EPSILON);
+        TEST_EXPECT_EQUAL(species_count, 22);
+        TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
+        TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 0.924610, LENSUM_EPSILON);
 
         char       *saveas   = savename(1);
         const char *expected = "consense/1/consense_expected_single.tree";
 
-        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, saveas));
+        TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
         // ../UNIT_TESTER/run/consense/1/consense.tree
 
 #if defined(TEST_AUTO_UPDATE)
         system(GBS_global_string("cp %s %s", saveas, expected));
 #else // !defined(TEST_AUTO_UPDATE)
-        TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+        TEST_EXPECT_TEXTFILE_DIFFLINES(saveas, expected, 1);
 #endif
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 
         free(saveas);
 
@@ -287,26 +287,26 @@ void TEST_consensus_tree_2() {
     {
         size_t species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.5);
-        TEST_ASSERT(!error);
-        TEST_ASSERT_NOTNULL(tree);
+        TEST_EXPECT(!error);
+        TEST_EXPECT_NOTNULL(tree);
 
-        TEST_ASSERT_EQUAL(species_count, 59);
-        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.789272, LENSUM_EPSILON);
+        TEST_EXPECT_EQUAL(species_count, 59);
+        TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
+        TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 2.789272, LENSUM_EPSILON);
 
         char *saveas   = savename(2);
         char *expected = expected_name(2);
         
-        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, saveas));
+        TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
         // ../UNIT_TESTER/run/consense/2/consense.tree
 
 #if defined(TEST_AUTO_UPDATE)
         system(GBS_global_string("cp %s %s", saveas, expected));
 #else // !defined(TEST_AUTO_UPDATE)
-        TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+        TEST_EXPECT_TEXTFILE_DIFFLINES(saveas, expected, 1);
 #endif
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 
         free(expected);
         free(saveas);
@@ -323,24 +323,24 @@ void TEST_consensus_tree_3() {
     {
         size_t species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
-        TEST_ASSERT(!error);
-        TEST_ASSERT_NOTNULL(tree);
+        TEST_EXPECT(!error);
+        TEST_EXPECT_NOTNULL(tree);
 
-        TEST_ASSERT_EQUAL(species_count, 128);
-        TEST_ASSERT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_ASSERT_SIMILAR(calc_intree_distance(tree), 2.171485, LENSUM_EPSILON);
+        TEST_EXPECT_EQUAL(species_count, 128);
+        TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
+        TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 2.171485, LENSUM_EPSILON);
 
         char *saveas   = savename(3);
         char *expected = expected_name(3);
         
-        TEST_ASSERT_NO_ERROR(save_tree_as_newick(tree, saveas));
+        TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
 #if defined(TEST_AUTO_UPDATE)
         system(GBS_global_string("cp %s %s", saveas, expected));
 #else // !defined(TEST_AUTO_UPDATE)
-        TEST_ASSERT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+        TEST_EXPECT_TEXTFILE_DIFFLINES(saveas, expected, 1);
 #endif
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 
         free(expected);
         free(saveas);
@@ -377,8 +377,8 @@ void TEST_arb_consensus_tree() {
                              ,
                              "database  created");
 
-        TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(saveas, expected, 0);
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+        TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(saveas, expected, 0);
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 
         free(expected);
         free(saveas);
@@ -397,8 +397,8 @@ void TEST_arb_consensus_tree() {
                              ,
                              "database  created");
 
-        TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(saveas, expected, 0);
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+        TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(saveas, expected, 0);
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 
         free(expected);
         free(saveas);

@@ -1196,8 +1196,8 @@ void GB_disable_path(GBDATA *gbd, const char *path) {
 #include <test_unit.h>
 
 #define SAVE_AND_COMPARE(gbd, save_as, savetype, compare_with) \
-    TEST_ASSERT_NO_ERROR(GB_save_as(gbd, save_as, savetype));  \
-    TEST_ASSERT_FILES_EQUAL(save_as, compare_with)
+    TEST_EXPECT_NO_ERROR(GB_save_as(gbd, save_as, savetype));  \
+    TEST_EXPECT_FILES_EQUAL(save_as, compare_with)
 
 static GB_ERROR modify_db(GBDATA *gb_main) {
     GB_transaction ta(gb_main);
@@ -1216,18 +1216,18 @@ static GB_ERROR modify_db(GBDATA *gb_main) {
 
 // #define TEST_AUTO_UPDATE // uncomment to auto-update binary and quicksave testfiles (needed once after changing ascii testfile or modify_db())
 
-#define TEST_loadsave_CLEANUP() TEST_ASSERT(system("rm -f [ab]2[ab]*.* master.* slave.* renamed.* fast.* fast2b.* TEST_loadsave.ARF") == 0)
+#define TEST_loadsave_CLEANUP() TEST_EXPECT(system("rm -f [ab]2[ab]*.* master.* slave.* renamed.* fast.* fast2b.* TEST_loadsave.ARF") == 0)
 
 void TEST_SLOW_loadsave() {
     GB_shell shell;
     TEST_loadsave_CLEANUP();
 
     // test non-existing DB
-    TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_open("nonexisting.arb", "r"), "'nonexisting.arb' not found");
-    TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(GB_open("nonexisting.arb", "rw"), "'nonexisting.arb' not found");
+    TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_open("nonexisting.arb", "r"), "'nonexisting.arb' not found");
+    TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_open("nonexisting.arb", "rw"), "'nonexisting.arb' not found");
     {
         GBDATA *gb_new;
-        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_new = GB_open("nonexisting.arb", "w")); // create new DB
+        TEST_EXPECT_RESULT__NOERROREXPORTED(gb_new = GB_open("nonexisting.arb", "w")); // create new DB
         GB_close(gb_new);
     }
 
@@ -1236,14 +1236,14 @@ void TEST_SLOW_loadsave() {
     const char *asc_db = "TEST_loadsave_ascii.arb";
 
     GBDATA *gb_asc;
-    TEST_ASSERT_RESULT__NOERROREXPORTED(gb_asc = GB_open(asc_db, "rw"));
+    TEST_EXPECT_RESULT__NOERROREXPORTED(gb_asc = GB_open(asc_db, "rw"));
 
 #if defined(TEST_AUTO_UPDATE)
-    TEST_ASSERT_NO_ERROR(GB_save_as(gb_asc, bin_db, "b"));
+    TEST_EXPECT_NO_ERROR(GB_save_as(gb_asc, bin_db, "b"));
 #endif // TEST_AUTO_UPDATE
 
     GBDATA *gb_bin;
-    TEST_ASSERT_RESULT__NOERROREXPORTED(gb_bin = GB_open(bin_db, "rw"));
+    TEST_EXPECT_RESULT__NOERROREXPORTED(gb_bin = GB_open(bin_db, "rw"));
 
     // test ASCII / BINARY compatibility
     SAVE_AND_COMPARE(gb_asc, "a2a.arb", "a", asc_db);
@@ -1254,15 +1254,15 @@ void TEST_SLOW_loadsave() {
 #if (MEMORY_TEST == 0)
     {
         GBDATA *gb_nomap;
-        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_nomap = GB_open(bin_db, "rw"));
-        TEST_ASSERT_NO_ERROR(GB_save_as(gb_nomap, "fast.arb", "bm"));
-        TEST_ASSERT(GB_is_regularfile("fast.ARM")); // assert map file has been saved
+        TEST_EXPECT_RESULT__NOERROREXPORTED(gb_nomap = GB_open(bin_db, "rw"));
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_nomap, "fast.arb", "bm"));
+        TEST_EXPECT(GB_is_regularfile("fast.ARM")); // assert map file has been saved
         GB_close(gb_nomap);
     }
     {
         // open DB with mapfile
         GBDATA *gb_map;
-        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_map = GB_open("fast.arb", "rw"));
+        TEST_EXPECT_RESULT__NOERROREXPORTED(gb_map = GB_open("fast.arb", "rw"));
         SAVE_AND_COMPARE(gb_map, "fast2b.arb", "b", bin_db);
         GB_close(gb_map);
     }
@@ -1278,34 +1278,34 @@ void TEST_SLOW_loadsave() {
 
     {
         // test opening saved DBs
-        GBDATA *gb_a2b = GB_open("a2b.arb", "rw"); TEST_ASSERT_NOTNULL(gb_a2b);
-        GBDATA *gb_b2b = GB_open("b2b.arb", "rw"); TEST_ASSERT_NOTNULL(gb_b2b);
+        GBDATA *gb_a2b = GB_open("a2b.arb", "rw"); TEST_EXPECT_NOTNULL(gb_a2b);
+        GBDATA *gb_b2b = GB_open("b2b.arb", "rw"); TEST_EXPECT_NOTNULL(gb_b2b);
 
         // modify ..
-        TEST_ASSERT_NO_ERROR(modify_db(gb_a2b));
-        TEST_ASSERT_NO_ERROR(modify_db(gb_b2b));
+        TEST_EXPECT_NO_ERROR(modify_db(gb_a2b));
+        TEST_EXPECT_NO_ERROR(modify_db(gb_b2b));
 
         // .. and quicksave
-        TEST_ASSERT_NO_ERROR(GB_save_quick(gb_a2b, "a2b.arb"));
-        TEST_ASSERT_NO_ERROR(GB_save_quick(gb_b2b, "b2b.arb"));
+        TEST_EXPECT_NO_ERROR(GB_save_quick(gb_a2b, "a2b.arb"));
+        TEST_EXPECT_NO_ERROR(GB_save_quick(gb_b2b, "b2b.arb"));
 
 #if defined(TEST_AUTO_UPDATE)
         TEST_COPY_FILE("a2b.a00", "TEST_loadsave_quick.a00");
 #endif // TEST_AUTO_UPDATE
 
-        TEST_ASSERT_FILES_EQUAL("TEST_loadsave_quick.a00", "a2b.a00");
-        TEST_ASSERT_FILES_EQUAL("a2b.a00", "b2b.a00");
+        TEST_EXPECT_FILES_EQUAL("TEST_loadsave_quick.a00", "a2b.a00");
+        TEST_EXPECT_FILES_EQUAL("a2b.a00", "b2b.a00");
 
-        TEST_ASSERT_NO_ERROR(GB_save_quick_as(gb_a2b, "a2b.arb"));
+        TEST_EXPECT_NO_ERROR(GB_save_quick_as(gb_a2b, "a2b.arb"));
 
         // check wether quicksave can be disabled
         GB_disable_quicksave(gb_a2b, "test it");
 
-        TEST_ASSERT_ERROR_CONTAINS(GB_save_quick(gb_a2b, "a2b.arb"), "Save Changes Disabled");
-        TEST_ASSERT_ERROR_CONTAINS(GB_save_quick_as(gb_a2b, "a2b.arb"), "Save Changes Disabled");
+        TEST_EXPECT_ERROR_CONTAINS(GB_save_quick(gb_a2b, "a2b.arb"), "Save Changes Disabled");
+        TEST_EXPECT_ERROR_CONTAINS(GB_save_quick_as(gb_a2b, "a2b.arb"), "Save Changes Disabled");
 
         const char *mod_db = "a2b_modified.arb";
-        TEST_ASSERT_NO_ERROR(GB_save_as(gb_a2b, mod_db, "b")); // save modified DB
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_a2b, mod_db, "b")); // save modified DB
         // test loading quicksave
         {
             GBDATA *gb_quicksaved = GB_open("a2b.arb", "rw"); // this DB has a quicksave
@@ -1315,26 +1315,26 @@ void TEST_SLOW_loadsave() {
 
         {
             // check master/slave DBs
-            TEST_ASSERT_NO_ERROR(GB_save_as(gb_b2b, "master.arb", "b"));
+            TEST_EXPECT_NO_ERROR(GB_save_as(gb_b2b, "master.arb", "b"));
 
-            GBDATA *gb_master = GB_open("master.arb", "rw"); TEST_ASSERT_NOTNULL(gb_master);
-            TEST_ASSERT_NO_ERROR(modify_db(gb_master));
+            GBDATA *gb_master = GB_open("master.arb", "rw"); TEST_EXPECT_NOTNULL(gb_master);
+            TEST_EXPECT_NO_ERROR(modify_db(gb_master));
 
-            TEST_ASSERT_NO_ERROR(GB_save_quick(gb_master, "master.arb"));
-            TEST_ASSERT_NO_ERROR(GB_save_quick_as(gb_master, "master.arb"));
+            TEST_EXPECT_NO_ERROR(GB_save_quick(gb_master, "master.arb"));
+            TEST_EXPECT_NO_ERROR(GB_save_quick_as(gb_master, "master.arb"));
 
-            TEST_ASSERT_ERROR_CONTAINS(GB_save_quick(gb_master, "renamed.arb"), "master file rename"); // quicksave with wrong name
+            TEST_EXPECT_ERROR_CONTAINS(GB_save_quick(gb_master, "renamed.arb"), "master file rename"); // quicksave with wrong name
 
             // check if master gets protected by creating slave-DB
-            TEST_ASSERT_NO_ERROR(GB_save_as(gb_master, "master.arb", "b")); // overwrite
-            TEST_ASSERT_NO_ERROR(GB_save_quick_as(gb_master, "slave.arb")); // create slave -> master now protected
-            TEST_ASSERT_ERROR_CONTAINS(GB_save_as(gb_master, "master.arb", "b"), "already exists and is write protected"); // overwrite should fail now
+            TEST_EXPECT_NO_ERROR(GB_save_as(gb_master, "master.arb", "b")); // overwrite
+            TEST_EXPECT_NO_ERROR(GB_save_quick_as(gb_master, "slave.arb")); // create slave -> master now protected
+            TEST_EXPECT_ERROR_CONTAINS(GB_save_as(gb_master, "master.arb", "b"), "already exists and is write protected"); // overwrite should fail now
 
             {
-                GBDATA *gb_slave = GB_open("slave.arb", "rw"); TEST_ASSERT_NOTNULL(gb_slave); // load slave DB
-                TEST_ASSERT_NO_ERROR(modify_db(gb_slave));
-                TEST_ASSERT_NO_ERROR(GB_save_quick(gb_slave, "slave.arb"));
-                TEST_ASSERT_NO_ERROR(GB_save_quick_as(gb_slave, "renamed.arb"));
+                GBDATA *gb_slave = GB_open("slave.arb", "rw"); TEST_EXPECT_NOTNULL(gb_slave); // load slave DB
+                TEST_EXPECT_NO_ERROR(modify_db(gb_slave));
+                TEST_EXPECT_NO_ERROR(GB_save_quick(gb_slave, "slave.arb"));
+                TEST_EXPECT_NO_ERROR(GB_save_quick_as(gb_slave, "renamed.arb"));
                 GB_close(gb_slave);
             }
             GB_close(gb_master);
@@ -1342,13 +1342,13 @@ void TEST_SLOW_loadsave() {
 
         // test various error conditions:
 
-        TEST_ASSERT_ERROR_CONTAINS(GB_save_as(gb_b2b, "", "b"), "specify a savename"); // empty name
+        TEST_EXPECT_ERROR_CONTAINS(GB_save_as(gb_b2b, "", "b"), "specify a savename"); // empty name
 
-        TEST_ASSERT_NO_ERROR(GB_set_mode_of_file(mod_db, 0444)); // write-protect
-        TEST_ASSERT_ERROR_CONTAINS(GB_save_as(gb_b2b, mod_db, "b"), "already exists and is write protected"); // try to overwrite write-protected DB
+        TEST_EXPECT_NO_ERROR(GB_set_mode_of_file(mod_db, 0444)); // write-protect
+        TEST_EXPECT_ERROR_CONTAINS(GB_save_as(gb_b2b, mod_db, "b"), "already exists and is write protected"); // try to overwrite write-protected DB
 
-        TEST_ASSERT_ERROR_CONTAINS(GB_save_quick_as(gb_b2b, NULL), "specify a file name"); // no name
-        TEST_ASSERT_ERROR_CONTAINS(GB_save_quick_as(gb_b2b, ""), "specify a file name"); // empty name
+        TEST_EXPECT_ERROR_CONTAINS(GB_save_quick_as(gb_b2b, NULL), "specify a file name"); // no name
+        TEST_EXPECT_ERROR_CONTAINS(GB_save_quick_as(gb_b2b, ""), "specify a file name"); // empty name
 
         GB_close(gb_b2b);
         GB_close(gb_a2b);
@@ -1360,7 +1360,7 @@ void TEST_SLOW_loadsave() {
     TEST_loadsave_CLEANUP();
 }
 
-#define TEST_quicksave_CLEANUP() TEST_ASSERT(system("rm -f min_bin.a[0-9]* min_bin.ARF") == 0)
+#define TEST_quicksave_CLEANUP() TEST_EXPECT(system("rm -f min_bin.a[0-9]* min_bin.ARF") == 0)
 
 inline bool quicksave_exists(int i) {
     const char *qsformat = "min_bin.a%02i";
@@ -1371,8 +1371,8 @@ inline bool is_first_quicksave(int i)        { return quicksave_exists(i) && !qu
 inline bool is_last_quicksave(int i)         { return quicksave_exists(i) && !quicksave_exists(i+1); }
 inline bool quicksaves_range(int from, int to) { return is_first_quicksave(from) && is_last_quicksave(to); }
 
-#define TEST_QUICK_RANGE(s,e) TEST_ASSERT(quicksaves_range(s,e))
-#define TEST_QUICK_GONE(i)    TEST_ASSERT(quicksave_missng(i))
+#define TEST_QUICK_RANGE(s,e) TEST_EXPECT(quicksaves_range(s,e))
+#define TEST_QUICK_GONE(i)    TEST_EXPECT(quicksave_missng(i))
 
 void TEST_SLOW_quicksave_names() {
     // check quicksave delete and wrap around
@@ -1385,15 +1385,15 @@ void TEST_SLOW_quicksave_names() {
     {
         // update min_bin.arb from min_ascii.arb
         const char *aname    = "min_ascii.arb";
-        GBDATA     *gb_ascii = GB_open(aname, "rw"); TEST_ASSERT_NOTNULL(gb_ascii);
+        GBDATA     *gb_ascii = GB_open(aname, "rw"); TEST_EXPECT_NOTNULL(gb_ascii);
 
-        TEST_ASSERT_NO_ERROR(GB_save_as(gb_ascii, bname, "b"));
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_ascii, bname, "b"));
         GB_close(gb_ascii);
     }
 #endif
-    GBDATA *gb_bin = GB_open(bname, "rw"); TEST_ASSERT_NOTNULL(gb_bin);
+    GBDATA *gb_bin = GB_open(bname, "rw"); TEST_EXPECT_NOTNULL(gb_bin);
     for (int i = 0; i <= 100; ++i) {
-        TEST_ASSERT_NO_ERROR(GB_save_quick(gb_bin, bname));
+        TEST_EXPECT_NO_ERROR(GB_save_quick(gb_bin, bname));
         switch (i) {
             case  0: TEST_QUICK_RANGE( 0,  0); break;
             case  1: TEST_QUICK_RANGE( 0,  1); break;
@@ -1422,8 +1422,8 @@ void TEST_SLOW_quicksave_names() {
 }
 
 void TEST_db_filenames() {
-    TEST_ASSERT_EQUAL(gb_quicksaveName("nosuch.arb", 0), "nosuch.a00");
-    TEST_ASSERT_EQUAL(gb_quicksaveName("nosuch", 1), "nosuch.a01");
+    TEST_EXPECT_EQUAL(gb_quicksaveName("nosuch.arb", 0), "nosuch.a00");
+    TEST_EXPECT_EQUAL(gb_quicksaveName("nosuch", 1), "nosuch.a01");
 }
 
 #endif

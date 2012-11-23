@@ -1387,8 +1387,8 @@ void TEST_hlp2xml_conversion() {
     Section        title   = help.get_title();
     const Strings& strings = title.Content();
 
-    TEST_ASSERT_EQUAL(strings.front().c_str(), "Alignment Administration");
-    TEST_ASSERT(strings.size() == 1);
+    TEST_EXPECT_EQUAL(strings.front().c_str(), "Alignment Administration");
+    TEST_EXPECT(strings.size() == 1);
 }
 
 #endif // UNIT_TESTS

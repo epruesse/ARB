@@ -186,47 +186,47 @@ ED4_objspec::ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_leve
 
 
 void TEST_objspec_registry() {
-    TEST_ASSERT(level2index(ED4_level(0x1)) == 0);
-    TEST_ASSERT(level2index(ED4_level(0x2)) == 1);
-    TEST_ASSERT(level2index(ED4_level(0x4)) == 2);
-    TEST_ASSERT(level2index(ED4_level(0x10000)) == 16);
+    TEST_EXPECT(level2index(ED4_level(0x1)) == 0);
+    TEST_EXPECT(level2index(ED4_level(0x2)) == 1);
+    TEST_EXPECT(level2index(ED4_level(0x4)) == 2);
+    TEST_EXPECT(level2index(ED4_level(0x10000)) == 16);
 
     for (int i = 0; i<SPECIFIED_OBJECT_TYPES; ++i) {
-        TEST_ASSERT_EQUAL(level2index(index2level(i)), i);
+        TEST_EXPECT_EQUAL(level2index(index2level(i)), i);
     }
 
     ED4_objspec_registry& objspec_registry = get_objspec_registry();
-    TEST_ASSERT(objspec_registry.count_registered()>0);
-    TEST_ASSERT_EQUAL(objspec_registry.count_registered(), SPECIFIED_OBJECT_TYPES);
+    TEST_EXPECT(objspec_registry.count_registered()>0);
+    TEST_EXPECT_EQUAL(objspec_registry.count_registered(), SPECIFIED_OBJECT_TYPES);
 
-    TEST_ASSERT(objspec_registry.get_object_spec(ED4_L_ROOT).allowed_children == ED4_L_ROOTGROUP);
+    TEST_EXPECT(objspec_registry.get_object_spec(ED4_L_ROOT).allowed_children == ED4_L_ROOTGROUP);
 
     ED4_objspec::init_object_specs();
 
     const ED4_objspec& multi_seq = objspec_registry.get_object_spec(ED4_L_MULTI_SEQUENCE);
     const ED4_objspec& seq       = objspec_registry.get_object_spec(ED4_L_SEQUENCE);
 
-    TEST_ASSERT((seq.get_possible_descendants()       & ED4_L_SEQUENCE_STRING) == 0);
-    TEST_ASSERT((multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_STRING) == 0);
+    TEST_EXPECT((seq.get_possible_descendants()       & ED4_L_SEQUENCE_STRING) == 0);
+    TEST_EXPECT((multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_STRING) == 0);
 
-    TEST_ASSERT_NONZERO(seq.get_allowed_descendants()       & ED4_L_SEQUENCE_STRING);
-    TEST_ASSERT_NONZERO(multi_seq.get_allowed_descendants() & ED4_L_SEQUENCE_STRING);
+    TEST_EXPECT_NONZERO(seq.get_allowed_descendants()       & ED4_L_SEQUENCE_STRING);
+    TEST_EXPECT_NONZERO(multi_seq.get_allowed_descendants() & ED4_L_SEQUENCE_STRING);
 
-    TEST_ASSERT((multi_seq.get_allowed_descendants() & ED4_L_ROOTGROUP) == 0);
+    TEST_EXPECT((multi_seq.get_allowed_descendants() & ED4_L_ROOTGROUP) == 0);
 
     // simulate adding sth in the hierarchy
     multi_seq.announce_added(ED4_L_SEQUENCE);
     seq.announce_added(ED4_L_SEQUENCE_STRING);
 
-    TEST_ASSERT_NONZERO(seq.get_possible_descendants()       & ED4_L_SEQUENCE_STRING);
-    TEST_ASSERT_NONZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_STRING);
+    TEST_EXPECT_NONZERO(seq.get_possible_descendants()       & ED4_L_SEQUENCE_STRING);
+    TEST_EXPECT_NONZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_STRING);
 
-    TEST_ASSERT_ZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_INFO);
+    TEST_EXPECT_ZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_INFO);
 
     // add more (checks refresh)
     seq.announce_added(ED4_L_SEQUENCE_INFO);
 
-    TEST_ASSERT_NONZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_INFO);
+    TEST_EXPECT_NONZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_INFO);
 }
 
 #endif // UNIT_TESTS
