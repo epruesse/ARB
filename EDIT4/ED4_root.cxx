@@ -185,8 +185,8 @@ ED4_returncode ED4_root::refresh_all_windows(bool redraw) {
 
 static arb_test::match_expectation correct_win2world_calculation(ED4_foldable& foldable, int xwin_org, int ywin_org, int xwrld_expd, int ywrld_expd) {
     using namespace arb_test;
-    match_expectation precondition(all().of(that(xwrld_expd).more_or_equal(xwin_org),
-                                            that(ywrld_expd).more_or_equal(ywin_org)));
+    match_expectation precondition(all().of(that(xwrld_expd).is_more_or_equal(xwin_org),
+                                            that(ywrld_expd).is_more_or_equal(ywin_org)));
 
     AW_pos xwrld_calc = xwin_org;
     AW_pos ywrld_calc = ywin_org;
@@ -207,8 +207,8 @@ static arb_test::match_expectation correct_win2world_calculation(ED4_foldable& f
 
 static arb_test::match_expectation correct_world2win_calculation(ED4_foldable& foldable, int xwrld_org, int ywrld_org, int xwin_expd, int ywin_expd) {
     using namespace arb_test;
-    match_expectation precondition(all().of(that(xwrld_org).more_or_equal(xwin_expd),
-                                            that(ywrld_org).more_or_equal(ywin_expd)));
+    match_expectation precondition(all().of(that(xwrld_org).is_more_or_equal(xwin_expd),
+                                            that(ywrld_org).is_more_or_equal(ywin_expd)));
 
 
     AW_pos xwin_calc = xwrld_org;

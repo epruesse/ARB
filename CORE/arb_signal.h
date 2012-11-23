@@ -20,7 +20,7 @@
 void GBK_install_SIGSEGV_handler(bool dump_backtrace);
 GB_ERROR GBK_test_address(long *address, long key);
 bool GBK_running_on_valgrind(void);
-bool GBK_raises_SIGSEGV(void (*cb)(void), bool result_in_valgrind);
+bool GBK_raises_SIGSEGV(void (*cb)(void));
 
 #else
 #error arb_signal.h included twice

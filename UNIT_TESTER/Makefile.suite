@@ -43,11 +43,11 @@ PATCHNAMESUFFIX:=$(subst :,_,$(PATCHNAMESUFFIX))
 
 failed_to_clean:
 	@echo "$(TEST_BASE)/Makefile.suite:45: Error: Failed to clean environment"
-	@echo "If there are any changing*.flag files listed here:"
-	@ls -al $(TEST_FLAG_DIR)/changing*.flag
+	@echo "If there are any changing|failed*.flag files listed here:"
+	@ls -al $(TEST_FLAG_DIR)/changing*.flag $(TEST_FLAG_DIR)/failed*.flag
 	@echo "then some test_environment failed to setup or cleanup properly!"
 	@echo "[Note: removing flag-files now to avoid failure of next test-run]"
-	rm $(TEST_FLAG_DIR)/changing*.flag
+	rm $(TEST_FLAG_DIR)/changing*.flag $(TEST_FLAG_DIR)/failed*.flag
 	@echo "$(TEST_BASE)/$(TEST_LOG_DIR):0: Hint: if no error is reported further below, you may also find the cause in these log-files"
 # do NOT fail here, otherwise reporter will get no chance to list failure-reason 
 

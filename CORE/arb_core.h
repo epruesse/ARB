@@ -30,7 +30,7 @@ typedef int (*gb_status_msg_func_type)(const char *val);
 
 bool GBK_running_on_valgrind(void);
 
-bool GBK_raises_SIGSEGV(void (*cb)(void), bool result_in_valgrind);
+bool GBK_raises_SIGSEGV(void (*cb)(void));
 void GBK_install_SIGSEGV_handler(bool dump_backtrace);
 
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);

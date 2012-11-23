@@ -988,8 +988,10 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
 
 #ifdef ENABLE_CRASH_TESTS
 static void provokesegv() { *(int *)0 = 0; }
+static void dont_provokesegv() {}
 #if defined(ASSERTION_USED)
 static void failassertion() { gb_assert(0); }
+static void dont_failassertion() {}
 static void provokesegv_does_not_fail_assertion() {
     // provokesegv does not raise assertion
     // -> the following assertion fails
@@ -1009,6 +1011,18 @@ void TEST_signal_tests() {
 
     // test whether SEGV can be distinguished from assertion
     TEST_ASSERT_CODE_ASSERTION_FAILS(provokesegv_does_not_fail_assertion);
+
+    // following section is disabled since it would spam wanted warnings
+    // (enable it when changing any of these TEST_..-macros used here)
+#if 0
+    TEST_ASSERT_SEGFAULT__WANTED(dont_provokesegv);
+    TEST_ASSERT_SEGFAULT__UNWANTED(provokesegv);
+    TEST_ASSERT_SEGFAULT__UNWANTED(failassertion);
+
+    TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
+#endif
 }
 
 #define EXPECT_CONTENT(content) TEST_ASSERT_EQUAL(GBS_mempntr(strstr), content)

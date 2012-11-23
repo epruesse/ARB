@@ -320,9 +320,9 @@ namespace arb_test {
     class epsilon_similar {
         double epsilon;
     public:
-        epsilon_similar(double epsilon_) : epsilon(epsilon_) {}
+        epsilon_similar(double epsilon_) : epsilon(epsilon_) { arb_assert(epsilon>0.0); }
         bool operator()(const double& d1, const double& d2) const {
-            double diff = d1-d2;
+            double diff        = d1-d2;
             if (diff<0.0) diff = -diff; // do not use fabs() here
             return diff <= epsilon;
         }
@@ -1045,11 +1045,11 @@ namespace arb_test {
 #define is_equal_to_NULL()      null_expectation(true)
 #define does_differ_from_NULL() null_expectation(false)
 
-#define less_than(val) lessThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
-#define more_than(val) moreThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+#define is_less_than(val) lessThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+#define is_more_than(val) moreThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
 
-#define less_or_equal(val) moreThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
-#define more_or_equal(val) lessThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+#define is_less_or_equal(val) moreThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+#define is_more_or_equal(val) lessThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
 
 #define fulfills(pred,arg)    predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 #define contradicts(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
@@ -1196,51 +1196,63 @@ const bool FAILS_ASSERTION     = true;
 const bool FULFILLS_ASSERTIONS = false;
 
 #  ifdef ASSERTION_USED
-inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expect_assert_fail) {
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expect_assert_fail, bool expectation_untestable_under_valgrind) {
     using namespace arb_test;
 
     bool& assertion_failed = test_data().assertion_failed;
     bool  old_state        = assertion_failed;
 
-    expect_assert_fail = expect_assert_fail && !GBK_running_on_valgrind(); // under valgrind assertions never fail
-
-    match_expectation SEGV       = that(GBK_raises_SIGSEGV(cb,true)).is_equal_to(expect_SEGV);
-    match_expectation assertfail = that(assertion_failed).is_equal_to(expect_assert_fail);
-
-    match_expectation expected = all().of(SEGV, assertfail);
+    expectation_group expected;
+    if (GBK_running_on_valgrind()) {
+        GBK_raises_SIGSEGV(cb); // just call
+        expected.add(that(expectation_untestable_under_valgrind).is_equal_to(true));
+    }
+    else {
+        expected.add(that(GBK_raises_SIGSEGV(cb)).is_equal_to(expect_SEGV));
+        expected.add(that(assertion_failed).is_equal_to(expect_assert_fail));
+    }
 
     assertion_failed = old_state;
-    return expected;
+    return all().ofgroup(expected);
 }
 #  else
-inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV) {
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expectation_untestable_under_valgrind) {
     using namespace arb_test;
-    return that(GBK_raises_SIGSEGV(cb,true)).is_equal_to(expect_SEGV);
+    if (GBK_running_on_valgrind()) {
+        return that(expectation_untestable_under_valgrind).is_equal_to(true);
+    }
+    return that(GBK_raises_SIGSEGV(cb)).is_equal_to(expect_SEGV);
 }
 #  endif
 # endif
 
 # ifdef ASSERTION_USED
 
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION))
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS))
-#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS)) 
-#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS))
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, true))
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FAILS_ASSERTION, false))
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
+#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, true)) 
+#  define TEST_ASSERT_SEGFAULT__WANTED(cb)               TEST_EXPECT__WANTED(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, false)) 
+#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
 
 # else // ENABLE_CRASH_TESTS but no ASSERTION_USED (test segfaults in NDEBUG mode)
 
 #  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(cb)
 #  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb)
-#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT)) 
-#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT))
+#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, true)) 
+#  define TEST_ASSERT_SEGFAULT__WANTED(cb)               TEST_EXPECT__WANTED(expect_callback(cb, DOES_SEGFAULT, false)) 
+#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, false))
 
 # endif
 
 #else // not ENABLE_CRASH_TESTS (i.e. skip these tests completely)
 
 # define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
+# define TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(cb)
 # define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb)
 # define TEST_ASSERT_SEGFAULT(cb)
+# define TEST_ASSERT_SEGFAULT__WANTED(cb)
 # define TEST_ASSERT_SEGFAULT__UNWANTED(cb)
 
 #endif
@@ -1256,9 +1268,9 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_EXPECT(that(e1).does_differ_from(t2));
 #define TEST_ASSERT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).does_differ_from(t2));
 
-#define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_EXPECT(that(lower).less_or_equal(upper))
-#define TEST_ASSERT_LOWER(lower,upper)        TEST_EXPECT(that(lower).less_than(upper))
-#define TEST_ASSERT_IN_RANGE(val,lower,upper) TEST_EXPECT(all().of(that(val).more_or_equal(lower), that(val).less_or_equal(upper)))
+#define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_EXPECT(that(lower).is_less_or_equal(upper))
+#define TEST_ASSERT_LOWER(lower,upper)        TEST_EXPECT(that(lower).is_less_than(upper))
+#define TEST_ASSERT_IN_RANGE(val,lower,upper) TEST_EXPECT(all().of(that(val).is_more_or_equal(lower), that(val).is_less_or_equal(upper)))
 
 #define TEST_ASSERT_CONTAINS(str, part) TEST_EXPECT(that(str).does_contain(part))
 
