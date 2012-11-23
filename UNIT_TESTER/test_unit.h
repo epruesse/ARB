@@ -52,8 +52,6 @@
  * see examples in test-unit-tests in ../CORE/arb_string.cxx@UNIT_TESTS
  */
 
-#define TEST_ASSERT(cond) test_assert(cond, false)
-
 #define ANY_SETUP "any_env_setup"
 
 namespace arb_test {
@@ -1093,16 +1091,10 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT__BROKEN(cond)                                       \
-    do {                                                                \
-        if (cond)                                                       \
-            TEST_ERROR("Formerly broken test '%s' succeeds", #cond);    \
-        else                                                            \
-            TEST_WARNING("Known broken behavior ('%s' fails)", #cond);  \
-    } while (0)
-
-#define TEST_ASSERT_ZERO(cond)         TEST_EXPECTATION(that(cond).is_equal_to(0))
-#define TEST_ASSERT_ZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(0))
+#define TEST_ASSERT_ZERO(cond)            TEST_EXPECTATION(that(cond).is_equal_to(0))
+#define TEST_ASSERT_ZERO__BROKEN(cond)    TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(0))
+#define TEST_ASSERT_NONZERO(cond)         TEST_EXPECTATION(that(cond).does_differ_from(0)) // @@@ elim 'NON'
+#define TEST_ASSERT_NONZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).does_differ_from(0))
 
 #define TEST_ASSERT_ZERO_OR_SHOW_ERRNO(iocond)                  \
     do {                                                        \
@@ -1276,8 +1268,13 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 
 #define TEST_ASSERT_NULL(n)            TEST_ASSERT_EQUAL(n, (typeof(n))NULL)
 #define TEST_ASSERT_NULL__BROKEN(n)    TEST_ASSERT_EQUAL__BROKEN(n, (typeof(n))NULL)
-#define TEST_ASSERT_NOTNULL(n)         TEST_ASSERT_DIFFERENT(n, (typeof(n))NULL)
+#define TEST_ASSERT_NOTNULL(n)         TEST_ASSERT_DIFFERENT(n, (typeof(n))NULL) // @@@ elim 'NOT'
 #define TEST_ASSERT_NOTNULL__BROKEN(n) TEST_ASSERT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
+
+#define TEST_ASSERT(cond)               TEST_ASSERT_EQUAL(cond, true)  // @@@ rename into TEST_EXPECT when eliminated
+#define TEST_ASSERT__BROKEN(cond)       TEST_ASSERT_EQUAL__BROKEN(cond, true)
+#define TEST_ASSERT_WRONG(cond)         TEST_ASSERT_EQUAL(cond, false) // @@@ rename into TEST_REJECT when eliminated
+#define TEST_ASSERT_WRONG__BROKEN(cond) TEST_ASSERT_EQUAL__BROKEN(cond, false)
 
 // --------------------------------------------------------------------------------
 // the following macros only work when
@@ -1309,7 +1306,7 @@ namespace arb_test {
     }
 };
 
-#define TEST_COPY_FILE(src, dst) TEST_ASSERT(system(GBS_global_string("cp '%s' '%s'", src, dst)) == 0)
+#define TEST_COPY_FILE(src, dst) TEST_ASSERT_ZERO(system(GBS_global_string("cp '%s' '%s'", src, dst)))
 
 #define TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_ASSERT(arb_test::test_textfile_difflines(f1,f2, diff))
 #define TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_ASSERT__BROKEN(arb_test::test_textfile_difflines(f1,f2, diff))

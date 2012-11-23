@@ -324,7 +324,7 @@ static Error ptserver(Mode mode) {
 #else // !defined(TEST_AUTO_UPDATE)
             TEST_ASSERT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
 #endif
-            TEST_ASSERT(GB_time_of_file("TEST_pt.arb.pt") >= GB_time_of_file("TEST_pt.arb"));
+            TEST_ASSERT_LOWER_EQUAL(GB_time_of_file("TEST_pt.arb"), GB_time_of_file("TEST_pt.arb.pt"));
             break;
         }
         case CLEAN: {
@@ -373,7 +373,7 @@ static Error ptserver_gene(Mode mode) {
             TEST_ASSERT_FILES_EQUAL("TEST_gpt.arb.pt.expected", "TEST_gpt.arb.pt");
 #endif
 
-            TEST_ASSERT(GB_time_of_file("TEST_gpt.arb.pt") >= GB_time_of_file("TEST_gpt.arb"));
+            TEST_ASSERT_LOWER_EQUAL(GB_time_of_file("TEST_gpt.arb"), GB_time_of_file("TEST_gpt.arb.pt"));
             break;
         }
         case CLEAN: {

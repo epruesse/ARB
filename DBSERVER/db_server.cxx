@@ -373,7 +373,7 @@ void TEST_SLOW_dbserver() {
                         GB_transaction  ta(gb_main1);
                         GBDATA         *gb_ecoli = GB_search(gb_main1, "/extended_data/extended/ali_16s/data", GB_FIND);
 
-                        TEST_ASSERT(gb_ecoli);
+                        TEST_ASSERT_NOTNULL(gb_ecoli);
 
                         const char *ecoli = GB_read_char_pntr(gb_ecoli);
                         if (!ecoli) error = GB_await_error();
@@ -383,7 +383,7 @@ void TEST_SLOW_dbserver() {
                         GB_transaction  ta(gb_main2);
                         GBDATA         *gb_alitype = GB_search(gb_main2, "/presets/alignment/alignment_type", GB_FIND);
 
-                        TEST_ASSERT(gb_alitype);
+                        TEST_ASSERT_NOTNULL(gb_alitype);
 
                         const char *alitype = GB_read_char_pntr(gb_alitype);
                         if (!alitype) error = GB_await_error();
