@@ -887,10 +887,10 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE *node, int si
     return all().ofgroup(expected);
 }
 
-#define TEST_SIZE_SAVED_IN_FLAGS(pt,size)         TEST_EXPECT(has_proper_saved_state(pt,size,true))
-#define TEST_SIZE_SAVED_EXTERNAL(pt,size)         TEST_EXPECT(has_proper_saved_state(pt,size,false))
-#define TEST_SIZE_SAVED_IN_FLAGS__BROKEN(pt,size) TEST_EXPECT__BROKEN(has_proper_saved_state(pt,size,true))
-#define TEST_SIZE_SAVED_EXTERNAL__BROKEN(pt,size) TEST_EXPECT__BROKEN(has_proper_saved_state(pt,size,false))
+#define TEST_SIZE_SAVED_IN_FLAGS(pt,size)         TEST_EXPECTATION(has_proper_saved_state(pt,size,true))
+#define TEST_SIZE_SAVED_EXTERNAL(pt,size)         TEST_EXPECTATION(has_proper_saved_state(pt,size,false))
+#define TEST_SIZE_SAVED_IN_FLAGS__BROKEN(pt,size) TEST_EXPECTATION__BROKEN(has_proper_saved_state(pt,size,true))
+#define TEST_SIZE_SAVED_EXTERNAL__BROKEN(pt,size) TEST_EXPECTATION__BROKEN(has_proper_saved_state(pt,size,false))
 
 struct EnterStage1 {
     EnterStage1() {
@@ -964,10 +964,10 @@ void TEST_chains() {
     psg.data_count = 3;
 
     POS_TREE *root = PT_create_leaf(NULL, PT_N, DataLoc(0, 0, 0));
-    TEST_ASSERT_EQUAL(PT_read_type(root), PT_NT_LEAF);
+    TEST_EXPECT_EQUAL(PT_read_type(root), PT_NT_LEAF);
 
     root = PT_change_leaf_to_node(root);
-    TEST_ASSERT_EQUAL(PT_read_type(root), PT_NT_NODE);
+    TEST_EXPECT_EQUAL(PT_read_type(root), PT_NT_NODE);
 
     DataLoc loc1a(1, 200, 200);
     DataLoc loc1b(1, 500, 500);
@@ -977,39 +977,39 @@ void TEST_chains() {
 
     for (int base = PT_A; base <= PT_G; ++base) {
         POS_TREE *leaf = PT_create_leaf(&root, PT_base(base), loc1a);
-        TEST_ASSERT_EQUAL(PT_read_type(leaf), PT_NT_LEAF);
+        TEST_EXPECT_EQUAL(PT_read_type(leaf), PT_NT_LEAF);
 
         POS_TREE *chain = PT_leaf_to_chain(leaf);
-        TEST_ASSERT_EQUAL(PT_read_type(chain), PT_NT_CHAIN);
-        TEST_ASSERT(PT_chain_has_valid_entries(chain));
+        TEST_EXPECT_EQUAL(PT_read_type(chain), PT_NT_CHAIN);
+        TEST_EXPECT(PT_chain_has_valid_entries(chain));
 
         PT_add_to_chain(chain, loc2a);
-        TEST_ASSERT(PT_chain_has_valid_entries(chain));
+        TEST_EXPECT(PT_chain_has_valid_entries(chain));
 
         if (base == PT_A) { // test only once
             ChainIterator entry(chain);
 
-            TEST_ASSERT_EQUAL(bool(entry), true);
-            TEST_ASSERT(entry.at() == loc2a);
+            TEST_EXPECT_EQUAL(bool(entry), true);
+            TEST_EXPECT(entry.at() == loc2a);
             ++entry;
-            TEST_ASSERT_EQUAL(bool(entry), true);
-            TEST_ASSERT(entry.at() == loc1a);
+            TEST_EXPECT_EQUAL(bool(entry), true);
+            TEST_EXPECT(entry.at() == loc1a);
         }
 
         // now chain is 'loc1a,loc2a'
 
 #if defined(TEST_BAD_CHAINS)
         switch (base) {
-            case PT_A: theChain = chain; theLoc = &loc2a; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add same location twice -> fail
-            case PT_C: theChain = chain; theLoc = &loc1b; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add species in wrong order -> fail
-            case PT_G: theChain = chain; theLoc = &loc2b; TEST_ASSERT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add positions in wrong order (should fail)
-            default: TEST_ASSERT(0); break;
+            case PT_A: theChain = chain; theLoc = &loc2a; TEST_EXPECT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add same location twice -> fail
+            case PT_C: theChain = chain; theLoc = &loc1b; TEST_EXPECT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add species in wrong order -> fail
+            case PT_G: theChain = chain; theLoc = &loc2b; TEST_EXPECT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add positions in wrong order (should fail)
+            default: TEST_EXPECT(0); break;
         }
 #endif
     }
     {
         POS_TREE *leaf = PT_create_leaf(&root, PT_QU, loc1a); // PT_QU always produces chain
-        TEST_ASSERT_EQUAL(PT_read_type(leaf), PT_NT_CHAIN);
+        TEST_EXPECT_EQUAL(PT_read_type(leaf), PT_NT_CHAIN);
     }
 
     // since there is no explicit code to free POS_TREE-memory, spool it into /dev/null
@@ -1021,10 +1021,10 @@ void TEST_chains() {
         long pos = PTD_save_lower_tree(out, root, 0, error);
         pos      = PTD_save_upper_tree(out, root, pos, root_pos, error);
 
-        TEST_ASSERT_NO_ERROR(error.deliver());
-        TEST_EXPECT(all().of(that(root_pos).is_equal_to(43), that(pos).is_equal_to(48)));
+        TEST_EXPECT_NO_ERROR(error.deliver());
+        TEST_EXPECTATION(all().of(that(root_pos).is_equal_to(43), that(pos).is_equal_to(48)));
 
-        TEST_ASSERT_EQUAL(PT_read_type(root), PT_NT_SAVED);
+        TEST_EXPECT_EQUAL(PT_read_type(root), PT_NT_SAVED);
         MEM.put(root, get_memsize_of_saved(root));
         
         fclose(out);
@@ -1047,7 +1047,7 @@ void TEST_mem() {
     for (int size = PTM_MIN_SIZE; size <= MAXSIZE; ++size) {
 #if defined(PTM_MEM_CHECKED_FREE)
         if (size <= PTM_MAX_SIZE) {
-            TEST_ASSERT_EQUAL(MEM.block_has_size(ptr[size], size), true);
+            TEST_EXPECT_EQUAL(MEM.block_has_size(ptr[size], size), true);
         }
 #endif
         MEM.put(ptr[size], size);

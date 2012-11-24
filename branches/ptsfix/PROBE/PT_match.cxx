@@ -836,7 +836,7 @@ struct EnterStage3 {
     }
 };
 
-#define TEST_WEIGHTED_MISMATCH(probe,seq,expected) TEST_ASSERT_SIMILAR(weights.get(probe,seq), expected, EPS)
+#define TEST_WEIGHTED_MISMATCH(probe,seq,expected) TEST_EXPECT_SIMILAR(weights.get(probe,seq), expected, EPS)
 
 void TEST_weighted_mismatches() {
     EnterStage3 stage3;

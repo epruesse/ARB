@@ -1744,12 +1744,12 @@ inline const char *test_extract(bool ATTR, const char *str) {
 
     search_comment_for_attribute();
 
-    TEST_ASSERT(!searchResult(!ATTR));
+    TEST_REJECT(searchResult(!ATTR));
     return searchResult(ATTR);
 }
 
-#define TEST_ATTR_____(comment,extracted) TEST_ASSERT_EQUAL(test_extract(true, comment), extracted)
-#define TEST_attribute(comment,extracted) TEST_ASSERT_EQUAL(test_extract(false, comment), extracted)
+#define TEST_ATTR_____(comment,extracted) TEST_EXPECT_EQUAL(test_extract(true, comment), extracted)
+#define TEST_attribute(comment,extracted) TEST_EXPECT_EQUAL(test_extract(false, comment), extracted)
 
 #define TEST_both(c,e) do { TEST_attribute(c,e); TEST_ATTR_____(c,e); } while(0)
 
