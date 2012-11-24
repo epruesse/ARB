@@ -408,20 +408,20 @@ arb_test::match_expectation put_read_num_using_bytes(int num_written, int bytes_
     return all().ofgroup(expected);
 }
 
-#define TEST_PUT_READ_NUMBER(num,expect_bytes)         TEST_EXPECT(put_read_num_using_bytes(num, expect_bytes))
-#define TEST_PUT_READ_NUMBER__BROKEN(num,expect_bytes) TEST_EXPECT__BROKEN(put_read_num_using_bytes(num, expect_bytes))
+#define TEST_PUT_READ_NUMBER(num,expect_bytes)         TEST_EXPECTATION(put_read_num_using_bytes(num, expect_bytes))
+#define TEST_PUT_READ_NUMBER__BROKEN(num,expect_bytes) TEST_EXPECTATION__BROKEN(put_read_num_using_bytes(num, expect_bytes))
 
 #define TEST_PUT_NUMBER_BINARY1(num, byte1) do {                \
         unsigned char buf[1];                                   \
         buf[0] = byte1;                                         \
-        TEST_EXPECT(put_read_num_using_bytes(num, 1, buf));     \
+        TEST_EXPECTATION(put_read_num_using_bytes(num, 1, buf));     \
     } while(0)
 
 #define TEST_PUT_NUMBER_BINARY2(num, byte1, byte2) do {         \
         unsigned char buf[2];                                   \
         buf[0] = byte1;                                         \
         buf[1] = byte2;                                         \
-        TEST_EXPECT(put_read_num_using_bytes(num, 2, buf));     \
+        TEST_EXPECTATION(put_read_num_using_bytes(num, 2, buf));     \
     } while(0)
 
 #define TEST_PUT_NUMBER_BINARY3(num, byte1, byte2, byte3) do {  \
@@ -429,7 +429,7 @@ arb_test::match_expectation put_read_num_using_bytes(int num_written, int bytes_
         buf[0] = byte1;                                         \
         buf[1] = byte2;                                         \
         buf[2] = byte3;                                         \
-        TEST_EXPECT(put_read_num_using_bytes(num, 3, buf));     \
+        TEST_EXPECTATION(put_read_num_using_bytes(num, 3, buf));     \
     } while(0)
 
 #define TEST_PUT_NUMBER_BINARY4(num, byte1, byte2, byte3, byte4) do {   \
@@ -438,7 +438,7 @@ arb_test::match_expectation put_read_num_using_bytes(int num_written, int bytes_
         buf[1] = byte2;                                                 \
         buf[2] = byte3;                                                 \
         buf[3] = byte4;                                                 \
-        TEST_EXPECT(put_read_num_using_bytes(num, 4, buf));             \
+        TEST_EXPECTATION(put_read_num_using_bytes(num, 4, buf));             \
     } while(0)
 
 #define TEST_PUT_NUMBER_BINARY5(num, byte1, byte2, byte3, byte4, byte5) do { \
@@ -448,7 +448,7 @@ arb_test::match_expectation put_read_num_using_bytes(int num_written, int bytes_
         buf[2] = byte3;                                                 \
         buf[3] = byte4;                                                 \
         buf[4] = byte5;                                                 \
-        TEST_EXPECT(put_read_num_using_bytes(num, 5, buf));             \
+        TEST_EXPECTATION(put_read_num_using_bytes(num, 5, buf));             \
     } while(0)
     
 void TEST_put_read_number() {
@@ -1053,7 +1053,7 @@ void TEST_SLOW_sequence_compression() {
 
     {
         GBDATA *gb_main;
-        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open(source, "rw"));
+        TEST_EXPECT_RESULT__NOERROREXPORTED(gb_main = GB_open(source, "rw"));
 
         {
             GB_transaction ta(gb_main);
@@ -1068,18 +1068,18 @@ void TEST_SLOW_sequence_compression() {
             }
         }
 
-        TEST_ASSERT_NO_ERROR(GBT_compress_sequence_tree2(gb_main, "tree_nuc", aliname));
-        TEST_ASSERT_NO_ERROR(GB_save_as(gb_main, compressed, "b"));
+        TEST_EXPECT_NO_ERROR(GBT_compress_sequence_tree2(gb_main, "tree_nuc", aliname));
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, compressed, "b"));
         GB_close(gb_main);
     }
 #if defined(TEST_AUTO_UPDATE)
     TEST_COPY_FILE(compressed, expected);
 #endif
-    TEST_ASSERT_FILES_EQUAL(compressed, expected);
+    TEST_EXPECT_FILES_EQUAL(compressed, expected);
 
     {
         GBDATA *gb_main;
-        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open(compressed, "rw"));
+        TEST_EXPECT_RESULT__NOERROREXPORTED(gb_main = GB_open(compressed, "rw"));
         {
             GB_transaction ta(gb_main);
             int            count = 0;
@@ -1091,7 +1091,7 @@ void TEST_SLOW_sequence_compression() {
                 GBDATA *gb_seq = GBT_read_sequence(gb_species, aliname);
                 char   *seq    = GB_read_string(gb_seq);
 
-                TEST_ASSERT_EQUAL(seq, seq_exp[count]);
+                TEST_EXPECT_EQUAL(seq, seq_exp[count]);
 
                 freenull(seq_exp[count]);
                 free(seq);
@@ -1100,7 +1100,7 @@ void TEST_SLOW_sequence_compression() {
         GB_close(gb_main);
     }
 
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(compressed));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(compressed));
 }
 
 #endif // UNIT_TESTS

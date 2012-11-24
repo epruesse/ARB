@@ -1084,35 +1084,35 @@ inline const char *concat_iteration(PrefixIterator& prefix) {
 
 void TEST_PrefixIterator() {
     // straight-forward permutation
-    PrefixIterator p0(PT_A, PT_T, 0); TEST_ASSERT_EQUAL(p0.steps(), 1);
-    PrefixIterator p1(PT_A, PT_T, 1); TEST_ASSERT_EQUAL(p1.steps(), 4);
-    PrefixIterator p2(PT_A, PT_T, 2); TEST_ASSERT_EQUAL(p2.steps(), 16);
-    PrefixIterator p3(PT_A, PT_T, 3); TEST_ASSERT_EQUAL(p3.steps(), 64);
+    PrefixIterator p0(PT_A, PT_T, 0); TEST_EXPECT_EQUAL(p0.steps(), 1);
+    PrefixIterator p1(PT_A, PT_T, 1); TEST_EXPECT_EQUAL(p1.steps(), 4);
+    PrefixIterator p2(PT_A, PT_T, 2); TEST_EXPECT_EQUAL(p2.steps(), 16);
+    PrefixIterator p3(PT_A, PT_T, 3); TEST_EXPECT_EQUAL(p3.steps(), 64);
 
-    TEST_ASSERT_EQUAL(p1.done(), false);
-    TEST_ASSERT_EQUAL(p0.done(), false);
+    TEST_EXPECT_EQUAL(p1.done(), false);
+    TEST_EXPECT_EQUAL(p0.done(), false);
 
-    TEST_ASSERT_EQUAL(concat_iteration(p0), "");
-    TEST_ASSERT_EQUAL(concat_iteration(p1), "A,C,G,U");
-    TEST_ASSERT_EQUAL(concat_iteration(p2), "AA,AC,AG,AU,CA,CC,CG,CU,GA,GC,GG,GU,UA,UC,UG,UU");
+    TEST_EXPECT_EQUAL(concat_iteration(p0), "");
+    TEST_EXPECT_EQUAL(concat_iteration(p1), "A,C,G,U");
+    TEST_EXPECT_EQUAL(concat_iteration(p2), "AA,AC,AG,AU,CA,CC,CG,CU,GA,GC,GG,GU,UA,UC,UG,UU");
 
     // permutation truncated at PT_QU
-    PrefixIterator q0(PT_QU, PT_T, 0); TEST_ASSERT_EQUAL(q0.steps(), 1);
-    PrefixIterator q1(PT_QU, PT_T, 1); TEST_ASSERT_EQUAL(q1.steps(), 6);
-    PrefixIterator q2(PT_QU, PT_T, 2); TEST_ASSERT_EQUAL(q2.steps(), 31);
-    PrefixIterator q3(PT_QU, PT_T, 3); TEST_ASSERT_EQUAL(q3.steps(), 156);
-    PrefixIterator q4(PT_QU, PT_T, 4); TEST_ASSERT_EQUAL(q4.steps(), 781);
+    PrefixIterator q0(PT_QU, PT_T, 0); TEST_EXPECT_EQUAL(q0.steps(), 1);
+    PrefixIterator q1(PT_QU, PT_T, 1); TEST_EXPECT_EQUAL(q1.steps(), 6);
+    PrefixIterator q2(PT_QU, PT_T, 2); TEST_EXPECT_EQUAL(q2.steps(), 31);
+    PrefixIterator q3(PT_QU, PT_T, 3); TEST_EXPECT_EQUAL(q3.steps(), 156);
+    PrefixIterator q4(PT_QU, PT_T, 4); TEST_EXPECT_EQUAL(q4.steps(), 781);
 
-    TEST_ASSERT_EQUAL(concat_iteration(q0), "");
-    TEST_ASSERT_EQUAL(concat_iteration(q1), ".,N,A,C,G,U");
-    TEST_ASSERT_EQUAL(concat_iteration(q2),
+    TEST_EXPECT_EQUAL(concat_iteration(q0), "");
+    TEST_EXPECT_EQUAL(concat_iteration(q1), ".,N,A,C,G,U");
+    TEST_EXPECT_EQUAL(concat_iteration(q2),
                       ".,"
                       "N.,NN,NA,NC,NG,NU,"
                       "A.,AN,AA,AC,AG,AU,"
                       "C.,CN,CA,CC,CG,CU,"
                       "G.,GN,GA,GC,GG,GU,"
                       "U.,UN,UA,UC,UG,UU");
-    TEST_ASSERT_EQUAL(concat_iteration(q3),
+    TEST_EXPECT_EQUAL(concat_iteration(q3),
                       ".,"
                       "N.,"
                       "NN.,NNN,NNA,NNC,NNG,NNU,"

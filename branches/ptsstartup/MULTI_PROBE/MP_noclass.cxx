@@ -838,14 +838,14 @@ const char *MP_probe_pt_look_for_server() {
 #define MP_GET_COMMENT_EQUAL(which, str, expect)  \
     do {                                          \
         char *got = MP_get_comment(which, str);   \
-        TEST_ASSERT_EQUAL(got, expect);           \
+        TEST_EXPECT_EQUAL(got, expect);           \
         free(got);                                \
     } while(0)                                    \
         
 #define MP_GET_PROBES_EQUAL(str, expect)          \
     do {                                          \
         char *got = MP_get_probes(str);           \
-        TEST_ASSERT_EQUAL(got, expect);           \
+        TEST_EXPECT_EQUAL(got, expect);           \
         free(got);                                \
     } while(0)                                    \
 

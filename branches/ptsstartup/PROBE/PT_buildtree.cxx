@@ -615,38 +615,38 @@ void TEST_PrefixProbabilities() {
 
     const double EPS = 0.00001;
 
-    TEST_ASSERT_SIMILAR(prob0.of(0), 1.0000, EPS); // all
+    TEST_EXPECT_SIMILAR(prob0.of(0), 1.0000, EPS); // all
 
-    TEST_ASSERT_SIMILAR(prob1.of(0), 0.0014, EPS); // PT_QU
-    TEST_ASSERT_SIMILAR(prob1.of(1), 0.0003, EPS); // PT_N
-    TEST_ASSERT_SIMILAR(prob1.of(2), 0.2543, EPS);
-    TEST_ASSERT_SIMILAR(prob1.of(3), 0.2268, EPS);
-    TEST_ASSERT_SIMILAR(prob1.of(4), 0.3074, EPS);
-    TEST_ASSERT_SIMILAR(prob1.of(5), 0.2098, EPS);
+    TEST_EXPECT_SIMILAR(prob1.of(0), 0.0014, EPS); // PT_QU
+    TEST_EXPECT_SIMILAR(prob1.of(1), 0.0003, EPS); // PT_N
+    TEST_EXPECT_SIMILAR(prob1.of(2), 0.2543, EPS);
+    TEST_EXPECT_SIMILAR(prob1.of(3), 0.2268, EPS);
+    TEST_EXPECT_SIMILAR(prob1.of(4), 0.3074, EPS);
+    TEST_EXPECT_SIMILAR(prob1.of(5), 0.2098, EPS);
 
-    TEST_ASSERT_SIMILAR(prob2.of( 0), 0.00140, EPS); // PT_QU
-    TEST_ASSERT_SIMILAR(prob2.of( 1), 0.00000, EPS); // PT_N PT_QU
-    TEST_ASSERT_SIMILAR(prob2.of( 2), 0.00000, EPS); // PT_N PT_N
-    TEST_ASSERT_SIMILAR(prob2.of( 3), 0.00008, EPS); // PT_N PT_A
-    TEST_ASSERT_SIMILAR(prob2.of( 7), 0.00036, EPS); // PT_A PT_QU
-    TEST_ASSERT_SIMILAR(prob2.of( 9), 0.06467, EPS); // PT_A PT_A
-    TEST_ASSERT_SIMILAR(prob2.of(30), 0.04402, EPS); // PT_T PT_T
+    TEST_EXPECT_SIMILAR(prob2.of( 0), 0.00140, EPS); // PT_QU
+    TEST_EXPECT_SIMILAR(prob2.of( 1), 0.00000, EPS); // PT_N PT_QU
+    TEST_EXPECT_SIMILAR(prob2.of( 2), 0.00000, EPS); // PT_N PT_N
+    TEST_EXPECT_SIMILAR(prob2.of( 3), 0.00008, EPS); // PT_N PT_A
+    TEST_EXPECT_SIMILAR(prob2.of( 7), 0.00036, EPS); // PT_A PT_QU
+    TEST_EXPECT_SIMILAR(prob2.of( 9), 0.06467, EPS); // PT_A PT_A
+    TEST_EXPECT_SIMILAR(prob2.of(30), 0.04402, EPS); // PT_T PT_T
 
-    TEST_ASSERT_SIMILAR(prob1.left_of(4), 0.4828, EPS);
-    TEST_ASSERT_SIMILAR(prob1.left_of(6), 1.0000, EPS); // all prefixes together
+    TEST_EXPECT_SIMILAR(prob1.left_of(4), 0.4828, EPS);
+    TEST_EXPECT_SIMILAR(prob1.left_of(6), 1.0000, EPS); // all prefixes together
 
-    TEST_ASSERT_SIMILAR(prob2.left_of(19), 0.4828, EPS);
-    TEST_ASSERT_SIMILAR(prob2.left_of(31), 1.0000, EPS); // all prefixes together
+    TEST_EXPECT_SIMILAR(prob2.left_of(19), 0.4828, EPS);
+    TEST_EXPECT_SIMILAR(prob2.left_of(31), 1.0000, EPS); // all prefixes together
 
-    TEST_ASSERT_EQUAL(prob0.find_index_near_leftsum(1.0), 1);
+    TEST_EXPECT_EQUAL(prob0.find_index_near_leftsum(1.0), 1);
 
-    TEST_ASSERT_EQUAL(prob1.find_index_near_leftsum(0.5), 4);
-    TEST_ASSERT_SIMILAR(prob1.left_of(4), 0.4828, EPS);
-    TEST_ASSERT_SIMILAR(prob1.left_of(5), 0.7902, EPS);
+    TEST_EXPECT_EQUAL(prob1.find_index_near_leftsum(0.5), 4);
+    TEST_EXPECT_SIMILAR(prob1.left_of(4), 0.4828, EPS);
+    TEST_EXPECT_SIMILAR(prob1.left_of(5), 0.7902, EPS);
 
-    TEST_ASSERT_EQUAL(prob2.find_index_near_leftsum(0.5), 21);
-    TEST_ASSERT_SIMILAR(prob2.left_of(21), 0.48332, EPS);
-    TEST_ASSERT_SIMILAR(prob2.left_of(22), 0.56149, EPS);
+    TEST_EXPECT_EQUAL(prob2.find_index_near_leftsum(0.5), 21);
+    TEST_EXPECT_SIMILAR(prob2.left_of(21), 0.48332, EPS);
+    TEST_EXPECT_SIMILAR(prob2.left_of(22), 0.56149, EPS);
 }
 
 static int count_passes(Partition& p) {
@@ -680,39 +680,39 @@ void TEST_MarkedPrefixes() {
     MarkedPrefixes mp2(2);
 
     mp0.predecide();
-    TEST_ASSERT_EQUAL(mp0.isMarked(Compressed(".").seq()), false);
-    TEST_ASSERT_EQUAL(mp0.isMarked(Compressed("T").seq()), false);
+    TEST_EXPECT_EQUAL(mp0.isMarked(Compressed(".").seq()), false);
+    TEST_EXPECT_EQUAL(mp0.isMarked(Compressed("T").seq()), false);
 
     mp0.mark(0, 0);
     mp0.predecide();
-    TEST_ASSERT_EQUAL(mp0.isMarked(Compressed(".").seq()), true);
-    TEST_ASSERT_EQUAL(mp0.isMarked(Compressed("T").seq()), true);
+    TEST_EXPECT_EQUAL(mp0.isMarked(Compressed(".").seq()), true);
+    TEST_EXPECT_EQUAL(mp0.isMarked(Compressed("T").seq()), true);
 
     mp1.mark(3, 5);
     mp1.predecide();
-    TEST_ASSERT_EQUAL(mp1.isMarked(Compressed(".").seq()), false);
-    TEST_ASSERT_EQUAL(mp1.isMarked(Compressed("N").seq()), false);
-    TEST_ASSERT_EQUAL(mp1.isMarked(Compressed("A").seq()), false);
-    TEST_ASSERT_EQUAL(mp1.isMarked(Compressed("C").seq()), true);
-    TEST_ASSERT_EQUAL(mp1.isMarked(Compressed("G").seq()), true);
-    TEST_ASSERT_EQUAL(mp1.isMarked(Compressed("T").seq()), true);
+    TEST_EXPECT_EQUAL(mp1.isMarked(Compressed(".").seq()), false);
+    TEST_EXPECT_EQUAL(mp1.isMarked(Compressed("N").seq()), false);
+    TEST_EXPECT_EQUAL(mp1.isMarked(Compressed("A").seq()), false);
+    TEST_EXPECT_EQUAL(mp1.isMarked(Compressed("C").seq()), true);
+    TEST_EXPECT_EQUAL(mp1.isMarked(Compressed("G").seq()), true);
+    TEST_EXPECT_EQUAL(mp1.isMarked(Compressed("T").seq()), true);
 
     mp2.mark(1, 7);
     mp2.predecide();
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed(".").seq()),  false);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("N.").seq()), true);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("NN").seq()), true);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("NA").seq()), true);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("NC").seq()), true);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("NG").seq()), true);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("NT").seq()), true);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("A.").seq()), true);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("AN").seq()), false);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("AC").seq()), false);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("AG").seq()), false);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("AT").seq()), false);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("GG").seq()), false);
-    TEST_ASSERT_EQUAL(mp2.isMarked(Compressed("TA").seq()), false);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed(".").seq()),  false);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("N.").seq()), true);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("NN").seq()), true);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("NA").seq()), true);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("NC").seq()), true);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("NG").seq()), true);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("NT").seq()), true);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("A.").seq()), true);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("AN").seq()), false);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("AC").seq()), false);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("AG").seq()), false);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("AT").seq()), false);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("GG").seq()), false);
+    TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("TA").seq()), false);
 }
 
 void TEST_Partition() {
@@ -726,153 +726,153 @@ void TEST_Partition() {
 
     {
         Partition P01(p0, 1);
-        TEST_ASSERT_EQUAL(P01.estimate_probes_for_pass(1, BASES_100k), 100000);
-        TEST_ASSERT_EQUAL(P01.estimate_max_probes_for_any_pass(BASES_100k), 100000);
+        TEST_EXPECT_EQUAL(P01.estimate_probes_for_pass(1, BASES_100k), 100000);
+        TEST_EXPECT_EQUAL(P01.estimate_max_probes_for_any_pass(BASES_100k), 100000);
     }
 
     {
         // distributing memory to 6 passes on a level.1 Partitioner doesn't allow much choice:
         Partition P16(p1, 6);
-        TEST_ASSERT_EQUAL(P16.number_of_passes(), 6);
-        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(1, BASES_100k), 140);
-        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(2, BASES_100k), 30);
-        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(3, BASES_100k), 25430);
-        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(4, BASES_100k), 22680);
-        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(5, BASES_100k), 30740);
-        TEST_ASSERT_EQUAL(P16.estimate_probes_for_pass(6, BASES_100k), 20980);
-        TEST_ASSERT_EQUAL(P16.estimate_max_probes_for_any_pass(BASES_100k), 30740);
-        TEST_ASSERT_EQUAL(P16.estimate_max_kb_for_any_pass(BASES_100k), 246463);
+        TEST_EXPECT_EQUAL(P16.number_of_passes(), 6);
+        TEST_EXPECT_EQUAL(P16.estimate_probes_for_pass(1, BASES_100k), 140);
+        TEST_EXPECT_EQUAL(P16.estimate_probes_for_pass(2, BASES_100k), 30);
+        TEST_EXPECT_EQUAL(P16.estimate_probes_for_pass(3, BASES_100k), 25430);
+        TEST_EXPECT_EQUAL(P16.estimate_probes_for_pass(4, BASES_100k), 22680);
+        TEST_EXPECT_EQUAL(P16.estimate_probes_for_pass(5, BASES_100k), 30740);
+        TEST_EXPECT_EQUAL(P16.estimate_probes_for_pass(6, BASES_100k), 20980);
+        TEST_EXPECT_EQUAL(P16.estimate_max_probes_for_any_pass(BASES_100k), 30740);
+        TEST_EXPECT_EQUAL(P16.estimate_max_kb_for_any_pass(BASES_100k), 246463);
     }
 
     {
         // 3 passes
         Partition P13(p1, 3);
-        TEST_ASSERT_EQUAL(P13.number_of_passes(), 3);
-        TEST_ASSERT_EQUAL(count_passes(P13), 3);
+        TEST_EXPECT_EQUAL(P13.number_of_passes(), 3);
+        TEST_EXPECT_EQUAL(count_passes(P13), 3);
 
-        TEST_ASSERT_EQUAL(P13.contains(Compressed(".").seq()), true);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("N").seq()), true);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("A").seq()), true);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("C").seq()), false);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("G").seq()), false);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("T").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed(".").seq()), true);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("N").seq()), true);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("A").seq()), true);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("C").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("G").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("T").seq()), false);
 
-        TEST_ASSERT_EQUAL(P13.next(), true);
+        TEST_EXPECT_EQUAL(P13.next(), true);
 
-        TEST_ASSERT_EQUAL(P13.contains(Compressed(".").seq()), false);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("N").seq()), false);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("A").seq()), false);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("C").seq()), true);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("G").seq()), true);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("T").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed(".").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("N").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("A").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("C").seq()), true);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("G").seq()), true);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("T").seq()), false);
 
-        TEST_ASSERT_EQUAL(P13.next(), true);
+        TEST_EXPECT_EQUAL(P13.next(), true);
 
-        TEST_ASSERT_EQUAL(P13.contains(Compressed(".").seq()), false);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("N").seq()), false);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("A").seq()), false);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("C").seq()), false);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("G").seq()), false);
-        TEST_ASSERT_EQUAL(P13.contains(Compressed("T").seq()), true);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed(".").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("N").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("A").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("C").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("G").seq()), false);
+        TEST_EXPECT_EQUAL(P13.contains(Compressed("T").seq()), true);
 
-        TEST_ASSERT_EQUAL(P13.next(), false);
+        TEST_EXPECT_EQUAL(P13.next(), false);
 
-        TEST_ASSERT_EQUAL(P13.estimate_probes_for_pass(1, BASES_100k), 25600);
-        TEST_ASSERT_EQUAL(P13.estimate_probes_for_pass(2, BASES_100k), 53420);
-        TEST_ASSERT_EQUAL(P13.estimate_probes_for_pass(3, BASES_100k), 20980);
-        TEST_ASSERT_EQUAL(P13.estimate_max_probes_for_any_pass(BASES_100k), 53420);
-        TEST_ASSERT_EQUAL(P13.estimate_max_kb_for_any_pass(BASES_100k), 246894);
+        TEST_EXPECT_EQUAL(P13.estimate_probes_for_pass(1, BASES_100k), 25600);
+        TEST_EXPECT_EQUAL(P13.estimate_probes_for_pass(2, BASES_100k), 53420);
+        TEST_EXPECT_EQUAL(P13.estimate_probes_for_pass(3, BASES_100k), 20980);
+        TEST_EXPECT_EQUAL(P13.estimate_max_probes_for_any_pass(BASES_100k), 53420);
+        TEST_EXPECT_EQUAL(P13.estimate_max_kb_for_any_pass(BASES_100k), 246894);
     }
 
     {
         // 2 passes
         Partition P12(p1, 2);
-        TEST_ASSERT_EQUAL(P12.number_of_passes(), 2);
-        TEST_ASSERT_EQUAL(count_passes(P12), 2);
+        TEST_EXPECT_EQUAL(P12.number_of_passes(), 2);
+        TEST_EXPECT_EQUAL(count_passes(P12), 2);
 
-        TEST_ASSERT_EQUAL(P12.contains(Compressed(".").seq()), true);
-        TEST_ASSERT_EQUAL(P12.contains(Compressed("N").seq()), true);
-        TEST_ASSERT_EQUAL(P12.contains(Compressed("A").seq()), true);
-        TEST_ASSERT_EQUAL(P12.contains(Compressed("C").seq()), true);
-        TEST_ASSERT_EQUAL(P12.contains(Compressed("G").seq()), false);
-        TEST_ASSERT_EQUAL(P12.contains(Compressed("T").seq()), false);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed(".").seq()), true);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed("N").seq()), true);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed("A").seq()), true);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed("C").seq()), true);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed("G").seq()), false);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed("T").seq()), false);
 
-        TEST_ASSERT_EQUAL(P12.next(), true);
+        TEST_EXPECT_EQUAL(P12.next(), true);
 
-        TEST_ASSERT_EQUAL(P12.contains(Compressed(".").seq()), false);
-        TEST_ASSERT_EQUAL(P12.contains(Compressed("N").seq()), false);
-        TEST_ASSERT_EQUAL(P12.contains(Compressed("A").seq()), false);
-        TEST_ASSERT_EQUAL(P12.contains(Compressed("C").seq()), false);
-        TEST_ASSERT_EQUAL(P12.contains(Compressed("G").seq()), true);
-        TEST_ASSERT_EQUAL(P12.contains(Compressed("T").seq()), true);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed(".").seq()), false);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed("N").seq()), false);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed("A").seq()), false);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed("C").seq()), false);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed("G").seq()), true);
+        TEST_EXPECT_EQUAL(P12.contains(Compressed("T").seq()), true);
 
-        TEST_ASSERT_EQUAL(P12.next(), false);
+        TEST_EXPECT_EQUAL(P12.next(), false);
 
-        TEST_ASSERT_EQUAL(P12.estimate_probes_for_pass(1, BASES_100k), 48280);
-        TEST_ASSERT_EQUAL(P12.estimate_probes_for_pass(2, BASES_100k), 51720);
-        TEST_ASSERT_EQUAL(P12.estimate_max_probes_for_any_pass(BASES_100k), 51720);
-        TEST_ASSERT_EQUAL(P12.estimate_max_kb_for_any_pass(BASES_100k), 246862);
+        TEST_EXPECT_EQUAL(P12.estimate_probes_for_pass(1, BASES_100k), 48280);
+        TEST_EXPECT_EQUAL(P12.estimate_probes_for_pass(2, BASES_100k), 51720);
+        TEST_EXPECT_EQUAL(P12.estimate_max_probes_for_any_pass(BASES_100k), 51720);
+        TEST_EXPECT_EQUAL(P12.estimate_max_kb_for_any_pass(BASES_100k), 246862);
     }
 
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   1, BASES_100k), 100000);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   2, BASES_100k), 51720);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   3, BASES_100k), 53420);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   4, BASES_100k), 30740);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   5, BASES_100k), 30740);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p1,   6, BASES_100k), 30740);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p1,   1, BASES_100k), 100000);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p1,   2, BASES_100k), 51720);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p1,   3, BASES_100k), 53420);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p1,   4, BASES_100k), 30740);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p1,   5, BASES_100k), 30740);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p1,   6, BASES_100k), 30740);
 
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   1, BASES_100k), 100000);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   2, BASES_100k), 51668);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   3, BASES_100k), 36879);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   4, BASES_100k), 27429);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   5, BASES_100k), 26571);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   6, BASES_100k), 21270);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   7, BASES_100k), 18958);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   8, BASES_100k), 16578);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,   9, BASES_100k), 15899);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,  10, BASES_100k), 14789);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,  15, BASES_100k), 11730);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,  20, BASES_100k), 9449);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p2,  30, BASES_100k), 9449);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,   1, BASES_100k), 100000);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,   2, BASES_100k), 51668);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,   3, BASES_100k), 36879);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,   4, BASES_100k), 27429);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,   5, BASES_100k), 26571);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,   6, BASES_100k), 21270);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,   7, BASES_100k), 18958);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,   8, BASES_100k), 16578);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,   9, BASES_100k), 15899);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,  10, BASES_100k), 14789);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,  15, BASES_100k), 11730);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,  20, BASES_100k), 9449);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p2,  30, BASES_100k), 9449);
 
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   1, BASES_100k), 100000);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   2, BASES_100k), 50333);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   3, BASES_100k), 33890);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   4, BASES_100k), 25853);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   5, BASES_100k), 20906);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   6, BASES_100k), 17668);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   7, BASES_100k), 15099);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   8, BASES_100k), 13854);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,   9, BASES_100k), 12259);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  10, BASES_100k), 11073);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  15, BASES_100k), 8168);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  20, BASES_100k), 6401);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  30, BASES_100k), 4737);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  40, BASES_100k), 4176);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3,  50, BASES_100k), 2983);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3, 100, BASES_100k), 2905);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p3, 150, BASES_100k), 2905);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,   1, BASES_100k), 100000);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,   2, BASES_100k), 50333);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,   3, BASES_100k), 33890);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,   4, BASES_100k), 25853);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,   5, BASES_100k), 20906);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,   6, BASES_100k), 17668);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,   7, BASES_100k), 15099);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,   8, BASES_100k), 13854);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,   9, BASES_100k), 12259);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,  10, BASES_100k), 11073);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,  15, BASES_100k), 8168);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,  20, BASES_100k), 6401);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,  30, BASES_100k), 4737);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,  40, BASES_100k), 4176);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3,  50, BASES_100k), 2983);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3, 100, BASES_100k), 2905);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p3, 150, BASES_100k), 2905);
 
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   1, BASES_100k), 100000);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   2, BASES_100k), 50084);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   3, BASES_100k), 33425);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   4, BASES_100k), 25072);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   5, BASES_100k), 20145);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   6, BASES_100k), 16837);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   7, BASES_100k), 14528);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   8, BASES_100k), 12606);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,   9, BASES_100k), 11319);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  10, BASES_100k), 10158);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  15, BASES_100k), 6887);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  20, BASES_100k), 5315);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  30, BASES_100k), 3547);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  40, BASES_100k), 2805);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4,  50, BASES_100k), 2336);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4, 100, BASES_100k), 1397);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4, 150, BASES_100k), 1243);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4, 200, BASES_100k), 954);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4, 300, BASES_100k), 893);
-    TEST_ASSERT_EQUAL(max_probes_for_passes(p4, 600, BASES_100k), 893);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,   1, BASES_100k), 100000);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,   2, BASES_100k), 50084);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,   3, BASES_100k), 33425);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,   4, BASES_100k), 25072);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,   5, BASES_100k), 20145);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,   6, BASES_100k), 16837);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,   7, BASES_100k), 14528);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,   8, BASES_100k), 12606);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,   9, BASES_100k), 11319);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,  10, BASES_100k), 10158);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,  15, BASES_100k), 6887);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,  20, BASES_100k), 5315);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,  30, BASES_100k), 3547);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,  40, BASES_100k), 2805);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4,  50, BASES_100k), 2336);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4, 100, BASES_100k), 1397);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4, 150, BASES_100k), 1243);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4, 200, BASES_100k), 954);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4, 300, BASES_100k), 893);
+    TEST_EXPECT_EQUAL(max_probes_for_passes(p4, 600, BASES_100k), 893);
 }
 
 static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_kb, int expected_passes, int expected_depth, size_t expected_passsize, size_t expected_memuse, bool expect_to_swap) {
@@ -898,10 +898,10 @@ static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_
 }
 
 #define TEST_DECIDES_PASSES(bp,memkb,expected_passes,expected_depth,expected_passsize,expected_memuse,expect_to_swap)   \
-    TEST_EXPECT(decides_on_passes(bp, memkb, expected_passes, expected_depth, expected_passsize, expected_memuse, expect_to_swap))
+    TEST_EXPECTATION(decides_on_passes(bp, memkb, expected_passes, expected_depth, expected_passsize, expected_memuse, expect_to_swap))
 
 #define TEST_DECIDES_PASSES__BROKEN(bp,memkb,expected_passes,expected_depth,expected_passsize,expected_memuse,expect_to_swap)   \
-    TEST_EXPECT__BROKEN(decides_on_passes(bp, memkb, expected_passes, expected_depth, expected_passsize, expected_memuse, expect_to_swap))
+    TEST_EXPECTATION__BROKEN(decides_on_passes(bp, memkb, expected_passes, expected_depth, expected_passsize, expected_memuse, expect_to_swap))
 
 void TEST_SLOW_decide_passes_to_use() {
     const ULONG MB = 1024;    // kb
@@ -1001,14 +1001,14 @@ void NOTEST_SLOW_maybe_build_tree() {
 #if 1
         // build
         int res = ARB_main(ARRAY_ELEMS(argv), argv);
-        TEST_ASSERT_EQUAL(res, EXIT_SUCCESS);
+        TEST_EXPECT_EQUAL(res, EXIT_SUCCESS);
 #endif
 
 // #define TEST_AUTO_UPDATE
 #if defined(TEST_AUTO_UPDATE)
         TEST_COPY_FILE(resultPT, expectedPT);
 #else // !defined(TEST_AUTO_UPDATE)
-        TEST_ASSERT_FILES_EQUAL(resultPT, expectedPT);
+        TEST_EXPECT_FILES_EQUAL(resultPT, expectedPT);
 #endif
     }
 }

@@ -2887,13 +2887,13 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
 
 void TEST_nullcmp() {
     const char *whatever = "bla";
-    TEST_ASSERT_EQUAL(ARB_strNULLcmp(NULL, NULL), 0);
-    TEST_ASSERT_EQUAL(ARB_strNULLcmp(whatever, whatever), 0);
-    TEST_ASSERT_EQUAL(ARB_strNULLcmp("a", "b"), -1);
+    TEST_EXPECT_EQUAL(ARB_strNULLcmp(NULL, NULL), 0);
+    TEST_EXPECT_EQUAL(ARB_strNULLcmp(whatever, whatever), 0);
+    TEST_EXPECT_EQUAL(ARB_strNULLcmp("a", "b"), -1);
 
     // document uncommon behavior: NULL is bigger than any other text!
-    TEST_ASSERT_EQUAL(ARB_strNULLcmp(whatever, NULL), -1);
-    TEST_ASSERT_EQUAL(ARB_strNULLcmp(NULL, whatever), 1);
+    TEST_EXPECT_EQUAL(ARB_strNULLcmp(whatever, NULL), -1);
+    TEST_EXPECT_EQUAL(ARB_strNULLcmp(NULL, whatever), 1);
 }
 
 #endif // UNIT_TESTS
