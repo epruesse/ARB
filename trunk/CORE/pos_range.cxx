@@ -197,8 +197,8 @@ void TEST_range_intersection() {
     TEST_EXPECT(intersection(part, from30) == part);
     TEST_EXPECT(intersection(part, part)   == part);
 
-    TEST_EXPECT(intersection(PosRange(20, 40), till50)    == PosRange(20, 40));
-    TEST_EXPECT(intersection(PosRange(40, 60), till50)    == PosRange(40, 50));
+    TEST_EXPECT(intersection(PosRange(20, 40), till50) == PosRange(20, 40));
+    TEST_EXPECT(intersection(PosRange(40, 60), till50) == PosRange(40, 50));
     TEST_EXPECT(intersection(PosRange(60, 80), till50) == empty);
 
     TEST_EXPECT(intersection(PosRange(0,  20), from30) == empty);

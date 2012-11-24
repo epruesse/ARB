@@ -212,7 +212,7 @@ static void test_convert_by_format_num(int from, int to) {
         TEST_EXPECT_EQUAL(converted_seqs, expected_seqs);
         TEST_EXPECT_EQUAL(log_processed_counter, old_processed_counter+1);
 
-        TEST_EXPECT_LOWER_EQUAL(10, GB_size_of_file(toFile)); // less than 10 bytes
+        TEST_EXPECT_LESS_EQUAL(10, GB_size_of_file(toFile)); // less than 10 bytes
         test_expected_conversion(toFile, NULL);
         TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
     }
@@ -221,7 +221,7 @@ static void test_convert_by_format_num(int from, int to) {
         TEST_REJECT_NULL(strstr(error, "supported")); // wrong error
         TEST_REJECT(GB_is_regularfile(toFile)); // unsupported produced output
     }
-    TEST_EXPECT(me.supported == !error);
+    TEST_EXPECT_EQUAL(me.supported, !error);
 
 #if defined(TEST_THROW)
     {

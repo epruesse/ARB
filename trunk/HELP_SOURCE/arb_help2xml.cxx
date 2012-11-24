@@ -1388,7 +1388,7 @@ void TEST_hlp2xml_conversion() {
     const Strings& strings = title.Content();
 
     TEST_EXPECT_EQUAL(strings.front().c_str(), "Alignment Administration");
-    TEST_EXPECT(strings.size() == 1);
+    TEST_EXPECT_EQUAL(strings.size(), 1);
 }
 
 #endif // UNIT_TESTS

@@ -1260,9 +1260,12 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_EXPECT_DIFFERENT(e1,t2)         TEST_EXPECTATION(that(e1).does_differ_from(t2));
 #define TEST_EXPECT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).does_differ_from(t2));
 
-#define TEST_EXPECT_LOWER_EQUAL(lower,upper)  TEST_EXPECTATION(that(lower).is_less_or_equal(upper))
-#define TEST_EXPECT_LOWER(lower,upper)        TEST_EXPECTATION(that(lower).is_less_than(upper))
-#define TEST_EXPECT_IN_RANGE(val,lower,upper) TEST_EXPECTATION(all().of(that(val).is_more_or_equal(lower), that(val).is_less_or_equal(upper)))
+#define TEST_EXPECT_LESS(val,ref)              TEST_EXPECTATION(that(val).is_less_than(ref))
+#define TEST_EXPECT_MORE(val,ref)              TEST_EXPECTATION(that(val).is_more_than(ref))
+#define TEST_EXPECT_LESS_EQUAL(val,ref)        TEST_EXPECTATION(that(val).is_less_or_equal(ref))
+#define TEST_EXPECT_MORE_EQUAL(val,ref)        TEST_EXPECTATION(that(val).is_more_or_equal(ref))
+#define TEST_EXPECT_IN_RANGE(val,lower,higher) TEST_EXPECTATION(all().of(that(val).is_more_or_equal(lower),     \
+                                                                         that(val).is_less_or_equal(higher)))
 
 #define TEST_EXPECT_CONTAINS(str, part) TEST_EXPECTATION(that(str).does_contain(part))
 

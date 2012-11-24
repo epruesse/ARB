@@ -274,7 +274,7 @@ void TEST_amino_groups() {
     // each character (A-Z) shall be member of a group:
     for (char c = 'A'; c <= 'Z'; ++c) {
         Amino_Group group = get_amino_group_for(c);
-        TEST_EXPECT_LOWER(group, AA_GROUP_COUNT);
+        TEST_EXPECT_LESS(group, AA_GROUP_COUNT);
         TEST_EXPECT_DIFFERENT(group, AA_GROUP_ILLEGAL);
         TEST_EXPECT_IN_RANGE(group, AA_GROUP_NONE, AA_GROUP_ZETA);
 
@@ -319,7 +319,7 @@ void TEST_nuc_groups() {
                 }
                 
                 for (size_t pos = 1; pos<group.count; ++pos) {
-                    TEST_EXPECT_LOWER(group.members[pos-1], group.members[pos]);
+                    TEST_EXPECT_LESS(group.members[pos-1], group.members[pos]);
                 }
             }
             else {

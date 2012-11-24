@@ -135,11 +135,10 @@ void TEST_arbtest_copyable() {
     const char *s = "servas";
 
     TEST_EXPECT(make_copy(i) == make_copy(7));
-
-    TEST_EXPECT(strcmp(make_copy(s), make_copy("servas")) == 0);
+    TEST_EXPECT_ZERO(strcmp(make_copy(s), make_copy("servas")));
 }
 
-#define TEST_DESCRIPTIONS(d, tt, tf, ft, ff) do {               \
+#define TEST_DESCRIPTIONS(d, tt, tf, ft, ff) do {        \
         TEST_EXPECT_EQUAL((d).make(true, true), (tt));   \
         TEST_EXPECT_EQUAL((d).make(true, false), (tf));  \
         TEST_EXPECT_EQUAL((d).make(false, true), (ft));  \
@@ -381,9 +380,9 @@ void TEST_less_equal() {
     TEST_EXPECTATION(that(y).is_more_or_equal(x));
     TEST_EXPECTATION(that(y).is_more_or_equal(y));
 
-    TEST_EXPECT_LOWER_EQUAL(x, y);
-    TEST_EXPECT_LOWER_EQUAL(x, x);
-    TEST_EXPECT_LOWER(x, y);
+    TEST_EXPECT_LESS_EQUAL(x, y);
+    TEST_EXPECT_LESS_EQUAL(x, x);
+    TEST_EXPECT_LESS(x, y);
     TEST_EXPECT_IN_RANGE(y, x, z);
 }
 
