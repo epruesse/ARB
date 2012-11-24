@@ -413,32 +413,25 @@ static GB_ERROR perform_conversions(const string& in, string& out, string& out2)
         TEST_EXPECT_EQUAL(res, convReverse.c_str());    \
     } while(0)
 
-#define TEST_EXPECT_RECONV__INTO(str,res) do {                     \
-        do {                                                       \
-            DO_LOCONV_NOERR(str);                                  \
-            TEST_EXPECT_EQUAL(str, reverse.c_str());               \
-            TEST_EXPECT_EQUAL(res, convReverse.c_str());           \
-            TEST_EXPECT(reverse.length() >= convReverse.length()); \
-        } while(0);                                                \
-        TEST_EXPECT___CONV_IDENT(res);                             \
+#define TEST_EXPECT_RECONV__INTO(str,res) do {                                  \
+        do {                                                                    \
+            DO_LOCONV_NOERR(str);                                               \
+            TEST_EXPECT_EQUAL(str, reverse.c_str());                            \
+            TEST_EXPECT_EQUAL(res, convReverse.c_str());                        \
+            TEST_EXPECT_MORE_EQUAL(reverse.length(), convReverse.length());  \
+        } while(0);                                                             \
+        TEST_EXPECT___CONV_IDENT(res);                                          \
     } while(0)
 
-#define TEST_EXPECT_RECONV__SPAM(str,res) do {                          \
-        DO_LOCONV_NOERR(str);                                           \
-        TEST_EXPECT_EQUAL(str, reverse.c_str());                        \
-        TEST_EXPECT_EQUAL(res, convReverse.c_str());                    \
-        TEST_EXPECT__BROKEN(reverse.length() >= convReverse.length());  \
+#define TEST_EXPECT_RECONV_INTO2(str,res1,res2) do {                            \
+        DO_LOCONV_NOERR(str);                                                   \
+        TEST_EXPECT_EQUAL(res1, reverse.c_str());                               \
+        TEST_EXPECT_EQUAL(res2, convReverse.c_str());                           \
+        TEST_EXPECT_MORE_EQUAL(reverse.length(), convReverse.length());      \
     } while(0)
 
-#define TEST_EXPECT_RECONV_INTO2(str,res1,res2) do {               \
-        DO_LOCONV_NOERR(str);                                      \
-        TEST_EXPECT_EQUAL(res1, reverse.c_str());                  \
-        TEST_EXPECT_EQUAL(res2, convReverse.c_str());              \
-        TEST_EXPECT(reverse.length() >= convReverse.length());     \
-    } while(0)
-
-#define TEST_EXPECT__PARSE_ERROR(str,err) do {                          \
-        string reverse, convReverse;                                    \
+#define TEST_EXPECT__PARSE_ERROR(str,err) do {                                  \
+        string reverse, convReverse;                                            \
         TEST_EXPECT_EQUAL(perform_conversions(str, reverse, convReverse), err); \
     } while(0)
 

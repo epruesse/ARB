@@ -272,9 +272,9 @@ int ARB_main(int argc, const char *argv[]) {
 #include <test_unit.h>
 
 void TEST_BASIC_switch_parsing() {
-    TEST_EXPECT(strcasecmp_start("GenBank", "GenBank") == 0);
-    TEST_EXPECT(strcasecmp_start("GEnbaNK", "genBANK") == 0);
-    TEST_EXPECT(strcasecmp_start("Ge", "GenBank") == 0);
+    TEST_EXPECT_ZERO(strcasecmp_start("GenBank", "GenBank"));
+    TEST_EXPECT_ZERO(strcasecmp_start("GEnbaNK", "genBANK"));
+    TEST_EXPECT_ZERO(strcasecmp_start("Ge", "GenBank"));
     TEST_EXPECT(strcasecmp_start("GenBank", "NEXUS") < 0);
     TEST_EXPECT(strcasecmp_start("NEXUS", "GenBank") > 0);
 

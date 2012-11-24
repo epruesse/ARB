@@ -1063,7 +1063,7 @@ void TEST_GBS_strstruct() {
         size_t         oldbufsize = strstr->get_buffer_size();
         GBS_chrncat(strstr, 'x', 20);               // trigger reallocation of buffer
 
-        TEST_EXPECT(oldbufsize != strstr->get_buffer_size()); // did we reallocate?
+        TEST_EXPECT_DIFFERENT(oldbufsize, strstr->get_buffer_size()); // did we reallocate?
         EXPECT_CONTENT("xxxxxxxxxxxxxxxxxxxx");
         GBS_strforget(strstr);
     }

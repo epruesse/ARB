@@ -2845,9 +2845,9 @@ void TEST_OligoCounter() {
     OligoCounter oc3("AGGTCC", 3);
     OligoCounter oc4("AGGTCCAGG", 3);
 
-    TEST_EXPECT(oc1.oligo_count("CCA") == 1);
-    TEST_EXPECT(oc1.oligo_count("CCG") == 0);
-    TEST_EXPECT(oc4.oligo_count("AGG") == 2);
+    TEST_EXPECT_EQUAL(oc1.oligo_count("CCA"), 1);
+    TEST_EXPECT_ZERO(oc1.oligo_count("CCG"));
+    TEST_EXPECT_EQUAL(oc4.oligo_count("AGG"), 2);
 
     int sc1_2 = oc1.similarity_score(oc2);
     int sc2_1 = oc2.similarity_score(oc1);
@@ -2891,7 +2891,7 @@ public:
     GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) { // @@@ use min_score
         // 'sequence' has to contain full sequence or part corresponding to 'range'
 
-        TEST_EXPECT(compl_mode == FF_FORWARD); // not fit for other modes
+        TEST_EXPECT_EQUAL(compl_mode, FF_FORWARD); // not fit for other modes
 
         delete_family_list();
         

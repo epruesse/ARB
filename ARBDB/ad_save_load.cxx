@@ -1216,7 +1216,7 @@ static GB_ERROR modify_db(GBDATA *gb_main) {
 
 // #define TEST_AUTO_UPDATE // uncomment to auto-update binary and quicksave testfiles (needed once after changing ascii testfile or modify_db())
 
-#define TEST_loadsave_CLEANUP() TEST_EXPECT(system("rm -f [ab]2[ab]*.* master.* slave.* renamed.* fast.* fast2b.* TEST_loadsave.ARF") == 0)
+#define TEST_loadsave_CLEANUP() TEST_EXPECT_ZERO(system("rm -f [ab]2[ab]*.* master.* slave.* renamed.* fast.* fast2b.* TEST_loadsave.ARF"))
 
 void TEST_SLOW_loadsave() {
     GB_shell shell;
@@ -1360,7 +1360,7 @@ void TEST_SLOW_loadsave() {
     TEST_loadsave_CLEANUP();
 }
 
-#define TEST_quicksave_CLEANUP() TEST_EXPECT(system("rm -f min_bin.a[0-9]* min_bin.ARF") == 0)
+#define TEST_quicksave_CLEANUP() TEST_EXPECT_ZERO(system("rm -f min_bin.a[0-9]* min_bin.ARF"))
 
 inline bool quicksave_exists(int i) {
     const char *qsformat = "min_bin.a%02i";

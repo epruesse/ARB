@@ -960,7 +960,7 @@ void TEST_alignment() {
 
                 GB_alignment_type type = GBT_get_alignment_type(gb_main, names[i]);
                 TEST_EXPECT_EQUAL(type, !i ? GB_AT_AA : GB_AT_DNA);
-                TEST_EXPECT(!i == GBT_is_alignment_protein(gb_main, names[i]));
+                TEST_EXPECT_EQUAL(GBT_is_alignment_protein(gb_main, names[i]), !i);
             }
         }
 

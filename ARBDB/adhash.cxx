@@ -1016,16 +1016,16 @@ void TEST_GBS_write_hash() {
         GB_HASH *hash = TEST.get_hash(case_sens);
 
         GBS_write_hash(hash, "foo", 1);
-        TEST_EXPECT(GBS_hash_count_elems(hash) == 1);
-        TEST_EXPECT(GBS_read_hash(hash, "foo") == 1);
+        TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 1);
+        TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 1);
 
         GBS_write_hash(hash, "foo", 2);
-        TEST_EXPECT(GBS_hash_count_elems(hash) == 1);
-        TEST_EXPECT(GBS_read_hash(hash, "foo") == 2);
+        TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 1);
+        TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 2);
         
         GBS_write_hash(hash, "foo", 0);
-        TEST_EXPECT(GBS_hash_count_elems(hash) == 0);
-        TEST_EXPECT(GBS_read_hash(hash, "foo") == 0);
+        TEST_EXPECT_ZERO(GBS_hash_count_elems(hash));
+        TEST_EXPECT_ZERO(GBS_read_hash(hash, "foo"));
 
         GBS_write_hash(hash, "foo", 1);
         GBS_write_hash(hash, "FOO", 2);
@@ -1033,34 +1033,34 @@ void TEST_GBS_write_hash() {
         GBS_write_hash(hash, "bar", 2);
 
         if (case_sens) {
-            TEST_EXPECT(GBS_hash_count_elems(hash) == 4);
+            TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 4);
 
-            TEST_EXPECT(GBS_read_hash(hash, "foo") == 1);
-            TEST_EXPECT(GBS_read_hash(hash, "FOO") == 2);
-            TEST_EXPECT(GBS_read_hash(hash, "Foo") == 0);
+            TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 1);
+            TEST_EXPECT_EQUAL(GBS_read_hash(hash, "FOO"), 2);
+            TEST_EXPECT_ZERO(GBS_read_hash(hash, "Foo"));
             
-            TEST_EXPECT(GBS_hash_count_value(hash, 1) == 2);
-            TEST_EXPECT(GBS_hash_count_value(hash, 2) == 2);
+            TEST_EXPECT_EQUAL(GBS_hash_count_value(hash, 1), 2);
+            TEST_EXPECT_EQUAL(GBS_hash_count_value(hash, 2), 2);
         }
         else {
-            TEST_EXPECT(GBS_hash_count_elems(hash) == 2);
+            TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 2);
 
-            TEST_EXPECT(GBS_read_hash(hash, "foo") == 2);
-            TEST_EXPECT(GBS_read_hash(hash, "FOO") == 2);
-            TEST_EXPECT(GBS_read_hash(hash, "Foo") == 2);
+            TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 2);
+            TEST_EXPECT_EQUAL(GBS_read_hash(hash, "FOO"), 2);
+            TEST_EXPECT_EQUAL(GBS_read_hash(hash, "Foo"), 2);
 
-            TEST_EXPECT(GBS_hash_count_value(hash, 1) == 0);
-            TEST_EXPECT(GBS_hash_count_value(hash, 2) == 2);
+            TEST_EXPECT_ZERO(GBS_hash_count_value(hash, 1));
+            TEST_EXPECT_EQUAL(GBS_hash_count_value(hash, 2), 2);
         }
 
         if (case_sens) {
-            TEST_EXPECT(GBS_read_hash(hash, "foobar") == 0);
+            TEST_EXPECT_ZERO(GBS_read_hash(hash, "foobar"));
             GBS_write_hash_no_strdup(hash, strdup("foobar"), 0);
-            TEST_EXPECT(GBS_read_hash(hash, "foobar") == 0);
+            TEST_EXPECT_ZERO(GBS_read_hash(hash, "foobar"));
             GBS_write_hash_no_strdup(hash, strdup("foobar"), 3);
-            TEST_EXPECT(GBS_read_hash(hash, "foobar") == 3);
+            TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foobar"), 3);
             GBS_write_hash_no_strdup(hash, strdup("foobar"), 0);
-            TEST_EXPECT(GBS_read_hash(hash, "foobar") == 0);
+            TEST_EXPECT_ZERO(GBS_read_hash(hash, "foobar"));
         }
     }
 }
@@ -1072,20 +1072,14 @@ void TEST_GBS_incr_hash() {
         GB_HASH *hash = TEST.get_hash(case_sens);
 
         GBS_incr_hash(hash, "foo");
-        TEST_EXPECT(GBS_read_hash(hash, "foo") == 1);
+        TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 1);
 
         GBS_incr_hash(hash, "foo");
-        TEST_EXPECT(GBS_read_hash(hash, "foo") == 2);
+        TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 2);
 
         GBS_incr_hash(hash, "FOO");
-        if (case_sens) {
-            TEST_EXPECT(GBS_read_hash(hash, "foo") == 2);
-            TEST_EXPECT(GBS_read_hash(hash, "FOO") == 1);
-        }
-        else {
-            TEST_EXPECT(GBS_read_hash(hash, "foo") == 3);
-            TEST_EXPECT(GBS_read_hash(hash, "FOO") == 3);
-        }
+        TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), case_sens ? 2 : 3);
+        TEST_EXPECT_EQUAL(GBS_read_hash(hash, "FOO"), case_sens ? 1 : 3);
     }
 }
 
@@ -1174,24 +1168,22 @@ void TEST_numhash() {
             added++;
         }
 
-        TEST_EXPECT(GBS_numhash_count_elems(numhash) == added);
+        TEST_EXPECT_EQUAL(GBS_numhash_count_elems(numhash), added);
 
         for (long key = LOW; key <= HIGH; key += STEP) {
-            long expected_val = key2val(key, pass);
-            long val          = GBS_read_numhash(numhash, key);
-            TEST_EXPECT(expected_val == val);
+            TEST_EXPECT_EQUAL(key2val(key, pass), GBS_read_numhash(numhash, key));
         }
     }
 
-    TEST_EXPECT(GBS_read_numhash(numhash, -4711) == 0); // not-existing entry
+    TEST_EXPECT_ZERO(GBS_read_numhash(numhash, -4711)); // not-existing entry
 
     // erase by overwrite:
     for (long key = LOW; key <= HIGH; key += STEP) {
         GBS_write_numhash(numhash2, key, GBS_read_numhash(numhash, key)); // copy numhash->numhash2
         GBS_write_numhash(numhash, key, (long)NULL);
     }
-    TEST_EXPECT(GBS_numhash_count_elems(numhash2) == added);
-    TEST_EXPECT(GBS_numhash_count_elems(numhash) == 0);
+    TEST_EXPECT_EQUAL(GBS_numhash_count_elems(numhash2), added);
+    TEST_EXPECT_ZERO(GBS_numhash_count_elems(numhash));
 
     GBS_free_numhash(numhash2);                     // free filled hash
     GBS_free_numhash(numhash);                      // free empty hash
@@ -1219,12 +1211,12 @@ void TEST_GBS_dynaval_hash() {
             free(oldval);
         }
 
-        TEST_EXPECT(freeCounter == 0); // overwriting values shall not automatically free them
+        TEST_EXPECT_ZERO(freeCounter); // overwriting values shall not automatically free them
     }
 
     freeCounter = 0;
     GBS_free_hash(dynahash);
-    TEST_EXPECT(freeCounter == ELEMS);
+    TEST_EXPECT_EQUAL(freeCounter, ELEMS);
 }
 
 void TEST_GBS_optimize_hash_and_stats() {
@@ -1248,14 +1240,14 @@ void TEST_GBS_optimize_hash_and_stats() {
                 for (int i = 1; i <= FILL; ++i) {
                     const char *key = GBS_global_string("%i", i);
                     
-                    TEST_EXPECT(GBS_read_hash(hash, key) == i);
+                    TEST_EXPECT_EQUAL(GBS_read_hash(hash, key), i);
                     GBS_write_hash(hash, key, 0);
-                    TEST_EXPECT(GBS_read_hash(hash, key) == 0);
+                    TEST_EXPECT_ZERO(GBS_read_hash(hash, key));
                 }
                 break;
             case 3:                                 // test optimize
                 GBS_optimize_hash(hash);
-                TEST_EXPECT(hash->nelem <= hash->size);
+                TEST_EXPECT_LESS_EQUAL(hash->nelem, hash->size);
                 break;
             default :
                 TEST_EXPECT(0);                     // NEED_NO_COV
@@ -1303,7 +1295,7 @@ void TEST_GBS_hash_next_element_that() {
                 sum += GBS_read_hash(hash, key);
             }
         }
-        TEST_EXPECT(sum == 5); // sum of all values > 1
+        TEST_EXPECT_EQUAL(sum, 5); // sum of all values > 1
     }
 }
 
@@ -1316,13 +1308,13 @@ static void detect_prime_overflow() { get_overflown_prime(); }
 
 void TEST_hash_specials() {
     const size_t SOME_PRIME = 434201;
-    TEST_EXPECT(gbs_get_a_prime(SOME_PRIME) == SOME_PRIME);
-    TEST_EXPECT(gbs_get_a_prime(MAX_PRIME) == MAX_PRIME);
+    TEST_EXPECT_EQUAL(gbs_get_a_prime(SOME_PRIME), SOME_PRIME);
+    TEST_EXPECT_EQUAL(gbs_get_a_prime(MAX_PRIME), MAX_PRIME);
 
 #if defined(ASSERTION_USED)
     TEST_EXPECT_CODE_ASSERTION_FAILS(detect_prime_overflow);
 #else
-    TEST_EXPECT(get_overflown_prime() == MAX_PRIME+1);
+    TEST_EXPECT_EQUAL(get_overflown_prime(), MAX_PRIME+1);
 #endif // ASSERTION_USED
 }
 
