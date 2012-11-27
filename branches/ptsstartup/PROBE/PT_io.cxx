@@ -17,6 +17,7 @@
 #include <BI_basepos.hxx>
 #include <arb_progress.h>
 #include <arb_file.h>
+#include <cache.h>
 
 int compress_data(char *probestring) {
     //! change a sequence with normal bases the PT_? format and delete all other signs
@@ -360,3 +361,108 @@ long PT_abs_2_rel(long pos) {
     return psg.bi_ecoli->abs_2_rel(pos);
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+inline int *intcopy(int i) { int *ip = new int; *ip = i; return ip; }
+
+#define CACHED(p,t) that(p.is_cached()).is_equal_to(t)
+#define CACHED_p123(t1,t2,t3) all().of(CACHED(p1, t1), CACHED(p2, t2), CACHED(p3, t3))
+
+void TEST_CachedPtr() {
+    using namespace cache;
+    {
+        typedef SmartPtr<int> IntPtr;
+
+        CacheHandle<IntPtr> p1;
+        CacheHandle<IntPtr> p2;
+        CacheHandle<IntPtr> p3;
+
+        {
+            Cache<IntPtr> cache(2);
+            TEST_EXPECT_ZERO(cache.entries()); // nothing cached yet
+
+            p1.assign(intcopy(1), cache);
+            TEST_EXPECT_EQUAL(*p1.access(cache), 1);
+            TEST_EXPECT_EQUAL(cache.entries(), 1);
+            TEST_EXPECTATION(CACHED_p123(true, false, false));
+
+            p2.assign(intcopy(2), cache);
+            TEST_EXPECT_EQUAL(*p2.access(cache), 2);
+            TEST_EXPECT_EQUAL(cache.entries(), 2);
+            TEST_EXPECTATION(CACHED_p123(true, true, false));
+
+            p3.assign(intcopy(3), cache);
+            TEST_EXPECT_EQUAL(*p3.access(cache), 3);
+            TEST_EXPECT_EQUAL(cache.entries(), 2);
+            TEST_EXPECTATION(CACHED_p123(false, true, true)); // p1 has been invalidated by caching p3
+
+            p3.assign(intcopy(33), cache); // test re-assignment
+            TEST_EXPECT_EQUAL(*p3.access(cache), 33);
+            TEST_EXPECT_EQUAL(cache.entries(), 2);
+            TEST_EXPECTATION(CACHED_p123(false, true, true)); // p2 still cached
+
+            TEST_EXPECT_EQUAL(*p2.access(cache), 2);          // should make p2 the LRU cache entry
+            TEST_EXPECT_EQUAL(cache.entries(), 2);
+            TEST_EXPECTATION(CACHED_p123(false, true, true)); // p2 still cached
+
+            IntPtr s4;
+            {
+                CacheHandle<IntPtr> p4;
+                p4.assign(intcopy(4), cache);
+                TEST_EXPECT_EQUAL(*p4.access(cache), 4);
+                TEST_EXPECT_EQUAL(cache.entries(), 2);
+
+                s4 = p4.access(cache); // keep data of p4 in s4
+                TEST_EXPECT_EQUAL(s4.references(), 2); // ref'd by s4 and p4
+
+                p4.release(cache); // need to release p4 before destruction (otherwise assertion fails)
+            }
+
+            TEST_EXPECT_EQUAL(*s4, 4);             // check kept value of deleted CacheHandle
+            TEST_EXPECT_EQUAL(s4.references(), 1); // only ref'd by s4
+
+            TEST_EXPECT_EQUAL(cache.entries(), 1);             // contains only p2 (p4 has been released)
+            TEST_EXPECTATION(CACHED_p123(false, true, false)); // p3 has been invalidated by caching p4
+        }
+
+        TEST_EXPECTATION(CACHED_p123(false, false, false)); // Cache was destroyed = > all CacheHandle will be invalid
+        // no need to release p1..p3 (due cache was destroyed)
+    }
+
+    // test cache of SmartCharPtr
+    {
+        Cache<SmartCharPtr> cache(3);
+
+        {
+            const int P = 4;
+            CacheHandle<SmartCharPtr> p[P];
+            const char *word[] = { "apple", "orange", "pie", "juice" };
+
+            for (int i = 0; i<P; ++i) p[i].assign(strdup(word[i]), cache);
+            TEST_REJECT(p[0].is_cached());
+            for (int i = 1; i<P; ++i) TEST_EXPECT_EQUAL(&*p[i].access(cache), word[i]);
+
+            TEST_REJECT(p[0].is_cached());
+            TEST_EXPECT(p[1].is_cached()); // oldest entry
+
+            cache.resize(cache.size()-1);
+            TEST_REJECT(p[1].is_cached()); // invalidated by resize
+
+            for (int i = P-1; i >= 0; --i) p[i].assign(strdup(word[P-1-i]), cache);
+
+            for (int i = 0; i<2; ++i) TEST_EXPECT_EQUAL(&*p[i].access(cache), word[P-1-i]);
+            for (int i = 2; i<P; ++i) TEST_REJECT(p[i].is_cached());
+
+            cache.flush();
+        }
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

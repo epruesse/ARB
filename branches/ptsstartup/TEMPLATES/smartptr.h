@@ -286,6 +286,10 @@ public:
         tpl_assert(other.object);
         return object==other.object;
     }
+
+    unsigned references() const {
+        return isSet() ? object->counter : 0;
+    }
 };
 
 template <class T, class C> bool operator==(const SmartPtr<T, C>& s1, const SmartPtr<T, C>& s2) {
