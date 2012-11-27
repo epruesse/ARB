@@ -73,6 +73,7 @@ GBDATA *GBT_find_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, 
      *
      * @param 'gb_item_data' is a container containing items
      * @param 'id_field' is a field containing a unique identifier for each item (e.g. 'name' for species)
+     * @param 'id_value' expected value of 'id_field'
      *
      * @return a pointer to an item with 'id_field' containing 'id_value'
      * or NULL (in this case an error MAY be exported)

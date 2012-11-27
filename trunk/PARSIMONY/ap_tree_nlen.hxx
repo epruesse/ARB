@@ -143,7 +143,7 @@ public:
     int indexOf(const AP_tree_edge *e) const { int i; for (i=0; i<3; i++) if (edge[i]==e) return i; return -1; }
 
     AP_tree_edge* edgeTo(const AP_tree_nlen *brother) const;
-    AP_tree_edge* nextEdge(const AP_tree_edge *thisEdge=NULL) const;
+    AP_tree_edge* nextEdge(const AP_tree_edge *afterThatEdge=NULL) const;
     int unusedEdgeIndex() const; // [0..2], -1 if none
 
     // more complex edge functions:
@@ -251,7 +251,7 @@ public:
     void testChain(int deep);
 
     int Distance() const { ap_assert(distanceOK()); return (node[0]->distance+node[1]->distance) >> 1; }
-    int distanceToBorder(int maxsearch=INT_MAX, AP_tree_nlen *skip=NULL) const; // obsolete
+    int distanceToBorder(int maxsearch=INT_MAX, AP_tree_nlen *skipNode=NULL) const; // obsolete
 
     static int dumpNNI;             // should NNI dump its values?
     static int distInsertBorder; // distance from insert pos to tree border

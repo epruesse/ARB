@@ -12,7 +12,7 @@
 #include "CT_hash.hxx"
 #include "CT_ntree.hxx"
 
-ConsensusTree::ConsensusTree(const class CharPtrArray& names_)
+ConsensusTree::ConsensusTree(const CharPtrArray& names_)
     : overall_weight(0),
       Name_hash(NULL),
       size(NULL),

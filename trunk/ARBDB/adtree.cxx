@@ -500,6 +500,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
      *
      * Make sure that the first members of your structure look exactly like GBT_TREE!
      *
+     * @param gb_main DB root node
      * @param structure_size sizeof(yourStructure)
      *
      * If structure_size < 0 then the tree is allocated as just one big piece of memory,
@@ -684,6 +685,9 @@ GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *z
     /*! Link a given tree to the database. That means that for all tips the member
      * 'gb_node' is set to the database container holding the species data.
      *
+     * @param tree which will be linked to DB
+     * @param gb_main DB root node
+     * @param show_status show a progress indicator?
      * @param zombies if != NULL -> set to number of zombies (aka non-existing species) in tree
      * @param duplicates if != NULL -> set to number of duplicated species in tree
      *

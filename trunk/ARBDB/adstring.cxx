@@ -187,6 +187,8 @@ char *GBS_escape_string(const char *str, const char *chars_to_escape, char escap
      * uses a special escape-method, which eliminates all 'chars_to_escape' completely
      * from str (this makes further processing of the string more easy)
      *
+     * @param str string to escape
+     *
      * @param escape_char is the character used for escaping. For performance reasons it
      * should be a character rarely used in 'str'.
      *

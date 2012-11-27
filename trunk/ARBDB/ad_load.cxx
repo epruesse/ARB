@@ -1361,13 +1361,17 @@ inline bool is_binary_db_id(int id) {
 static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     /*! open an ARB database
      *
+     * @param cpath arb database. May be
+     * - full path of database. (loads DB plus newest quicksave, if any quicksaves exist)
+     * - full path of a quicksave file (loads DB with specific quicksave)
+     * - ":" connects to a running ARB DB server (e.g. ARB_NT, arb_db_server)
      * @param opent contains one or more of the following characters:
      * - 'r' read
      * - 'w' write (w/o 'r' it overwrites existing database)
      * - 'c' create (if not found)
      * - 's'     read only ???
      * - 'D' looks for default in $ARBHOME/lib/arb_default if file is not found in ~/.arb_prop
-     *       (only works combined with mode 'c') 
+     *       (only works combined with mode 'c')
      * - memory usage:
      *   - 't' small memory usage
      *   - 'm' medium
@@ -1375,8 +1379,9 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
      *   - 'h' huge
      * - 'R' allow corrupt file recovery + opening quicks with no master
      * - 'N' assume new database format (does not check whether to convert old->new compression)
+     * @param user username
      *
-     * @return root node
+     * @return DB root node (or NULL, in which case an error has been exported)
      *
      * @see GB_open() and GBT_open()
      */

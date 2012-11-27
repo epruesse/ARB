@@ -179,6 +179,7 @@ void GBT_splitNdestroy_string(ConstStrArray& names, char*& namelist, const char 
 void GBT_splitNdestroy_string(ConstStrArray& dest, char*& namelist, char separator);
 
 inline void GBT_split_string(ConstStrArray& dest, const char *namelist, const char *separator, bool dropEmptyTokens) {
+    //! same as GBT_splitNdestroy_string, but w/o destroying namelist
     char *dup = strdup(namelist);
     GBT_splitNdestroy_string(dest, dup, separator, dropEmptyTokens);
 }
