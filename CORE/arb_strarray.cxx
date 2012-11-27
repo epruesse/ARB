@@ -36,14 +36,24 @@ void CharPtrArray::sort(CharPtrArray_compare_fun compare, void *client_data) {
 void GBT_splitNdestroy_string(ConstStrArray& names, char*& namelist, const char *separator, bool dropEmptyTokens) {
     /*! Split 'namelist' into an array of substrings at each member of 'separator'.
      *
-     * @param names pointers to splitted parts (into namelist) 
+     * @param names pointers to splitted parts (into namelist)
+     * @param namelist string containing separator delimited parts
+     * @param separator contains all characters handled as separators
      * @param dropEmptyTokens if true, empty tokens will be skipped
+     *
+     * Example:
+     * @code
+     * ConstStrArray array;
+     * char *list = strdup("Peter;Paul;Mary");
+     * GBT_splitNdestroy_string(array, list, ";", false);
+     * // array[1] contains "Paul"
+     * @endcode
      *
      * ownership of namelist is transferred to 'names'
      */
 
     names.set_memblock(namelist);
-     
+
     char *sep = namelist;
     while (sep) {
         size_t nonsepcount = strcspn(sep, separator);
@@ -77,11 +87,10 @@ void GBT_splitNdestroy_string(ConstStrArray& dest, char*& namelist, char separat
 char *GBT_join_names(const CharPtrArray& names, char separator) {
     /*! Joins a NULL-terminated array of 'char*' into one string
      *
+     * @param names array of strings to join (maybe generated using GBT_split_string() or GBT_splitNdestroy_string)
      * @param separator is put between the concatenated strings
      *
      * @return heap-copy of joined strings
-     *
-     * Note: inverse of GBT_split_string()
      */
     GBS_strstruct *out = GBS_stropen(1000);
 

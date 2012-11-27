@@ -540,6 +540,7 @@ static GBDATA *gb_remembered_db() {
 GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
     /*! get data from server.
      *
+     * @param gbd container to unfold
      * @param deep if != 0, then get subitems too.
      * @param index_pos
      * - >= 0, get indexed item from server
@@ -2554,6 +2555,7 @@ int GB_nsons(GBDATA *gbd) {
 
 void GB_disable_quicksave(GBDATA *gbd, const char *reason) {
     /*! Disable quicksaving database
+     * @param gbd any DB node
      * @param reason why quicksaving is not allowed
      */
     freedup(GB_MAIN(gbd)->qs.quick_save_disabled, reason);
