@@ -30,14 +30,14 @@ class Range {
     mutable const DataLoc *curr_match;
     mutable apos_cache     cache;
 
-    int start_pos() const { return curr_match->apos; }
+    int start_pos() const { return curr_match->get_abs_pos(); }
     int min_end_pos() const { return start_pos()+probe_len-1; } // min abs. probe-end-pos
 
     int calc_max_abs_pos() const;
     int max_abs_pos() const {
-        apos_iter found                = cache.find(curr_match->name);
+        apos_iter found                = cache.find(curr_match->get_name());
         if (found != cache.end()) return found->second;
-        return cache[curr_match->name] = calc_max_abs_pos();
+        return cache[curr_match->get_name()] = calc_max_abs_pos();
     }
 
     bool starts_before_start() const { return start != -1 && start_pos() < start; }

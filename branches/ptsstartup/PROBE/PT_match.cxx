@@ -184,10 +184,10 @@ inline PT_local& Mismatches::get_PT_local() const {
 bool MatchRequest::add_hit(const DataLoc& at, const Mismatches& mismatch) {
     PT_probematch *ml = create_PT_probematch();
 
-    ml->name  = at.name;
-    ml->b_pos = at.apos;
+    ml->name  = at.get_name();
+    ml->b_pos = at.get_abs_pos();
     ml->g_pos = -1;
-    ml->rpos  = at.rpos;
+    ml->rpos  = at.get_rel_pos();
 
     ml->mismatches   = mismatch.get_plain()  + accept_N_mismatches(mismatch.get_ambig());
     ml->wmismatches  = mismatch.get_weighted();

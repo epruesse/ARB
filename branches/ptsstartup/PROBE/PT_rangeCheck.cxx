@@ -20,7 +20,7 @@ int Range::calc_max_abs_pos() const {
     //
     // This check is expensive!
 
-    const probe_input_data& pid = psg.data[curr_match->name];
+    const probe_input_data& pid = psg.data[curr_match->get_name()];
 
     pid.preload_rel2abs();
 

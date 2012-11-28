@@ -24,22 +24,22 @@ struct pt_global PT_GLOBAL;
 inline bool locs_in_chain_order(const DataLoc& loc1, const DataLoc& loc2) { 
     pt_assert_stage(STAGE1); // this order is only valid in STAGE1 (STAGE3 has reverse order)
 
-    if (loc1.name < loc2.name) {
+    if (loc1.get_name() < loc2.get_name()) {
 #if defined(DEBUG)
-        fprintf(stderr, "invalid chain: loc1.name<loc2.name (%i<%i)\n", loc1.name, loc2.name);
+        fprintf(stderr, "invalid chain: loc1.name<loc2.name (%i<%i)\n", loc1.get_name(), loc2.get_name());
 #endif
         return false;
     }
-    if (loc1.name == loc2.name) {
-        if (loc1.rpos >= loc2.rpos) {
+    if (loc1.get_name() == loc2.get_name()) {
+        if (loc1.get_rel_pos() >= loc2.get_rel_pos()) {
 #if defined(DEBUG)
-            fprintf(stderr, "invalid chain: loc1.rpos>=loc2.rpos (%i>=%i)\n", loc1.rpos, loc2.rpos);
+            fprintf(stderr, "invalid chain: loc1.rpos>=loc2.rpos (%i>=%i)\n", loc1.get_rel_pos(), loc2.get_rel_pos());
 #endif
             return false;
         }
-        if (loc1.apos >= loc2.apos) {
+        if (loc1.get_abs_pos() >= loc2.get_abs_pos()) {
 #if defined(DEBUG)
-            fprintf(stderr, "invalid chain: loc1.apos>=loc2.apos (%i>=%i)\n", loc1.apos, loc2.apos);
+            fprintf(stderr, "invalid chain: loc1.apos>=loc2.apos (%i>=%i)\n", loc1.get_abs_pos(), loc2.get_abs_pos());
 #endif
             return false;
         }
@@ -145,9 +145,9 @@ void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     PT_write_pointer(p, old_first);
     p += sizeof(PT_PNTR);
 
-    PT_WRITE_NAT(p, loc.name);
-    PT_WRITE_NAT(p, loc.rpos);
-    PT_WRITE_NAT(p, loc.apos);
+    PT_WRITE_NAT(p, loc.get_name());
+    PT_WRITE_NAT(p, loc.get_rel_pos());
+    PT_WRITE_NAT(p, loc.get_abs_pos());
 
     int size = p - buffer;
 
@@ -192,7 +192,7 @@ POS_TREE *PT_leaf_to_chain(POS_TREE *node) {
     POS_TREE      *father = PT_read_father(node);
     const DataLoc  loc(node);
 
-    int       chain_size = (loc.apos>PT_SHORT_SIZE) ? PT_LONG_CHAIN_HEAD_SIZE : PT_SHORT_CHAIN_HEAD_SIZE;
+    int       chain_size = (loc.get_abs_pos()>PT_SHORT_SIZE) ? PT_LONG_CHAIN_HEAD_SIZE : PT_SHORT_CHAIN_HEAD_SIZE;
     POS_TREE *new_elem   = (POS_TREE *)MEM.get(chain_size);
 
     PT_change_link_in_father(father, node, new_elem);
@@ -201,13 +201,13 @@ POS_TREE *PT_leaf_to_chain(POS_TREE *node) {
     PT_set_father(new_elem, father);
 
     char *data = (&new_elem->data)+sizeof(PT_PNTR);
-    if (loc.apos>PT_SHORT_SIZE) {
-        PT_write_int(data, loc.apos);
+    if (loc.get_abs_pos()>PT_SHORT_SIZE) {
+        PT_write_int(data, loc.get_abs_pos());
         data+=4;
         new_elem->flags|=1;
     }
     else {                                                      
-        PT_write_short(data, loc.apos);
+        PT_write_short(data, loc.get_abs_pos());
         data+=2;
     }
     PT_write_pointer(data, NULL);
@@ -222,9 +222,9 @@ POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_base base, const DataLoc& loc) {
 
     int leafsize = PT_EMPTY_LEAF_SIZE;
 
-    if (loc.rpos>PT_SHORT_SIZE) leafsize += 2;
-    if (loc.apos>PT_SHORT_SIZE) leafsize += 2;
-    if (loc.name>PT_SHORT_SIZE) leafsize += 2;
+    if (loc.get_rel_pos()>PT_SHORT_SIZE) leafsize += 2;
+    if (loc.get_abs_pos()>PT_SHORT_SIZE) leafsize += 2;
+    if (loc.get_name()   >PT_SHORT_SIZE) leafsize += 2;
 
     POS_TREE *node = (POS_TREE *)MEM.get(leafsize);
 
@@ -281,31 +281,31 @@ POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_base base, const DataLoc& loc) {
     PT_SET_TYPE(node, PT_NT_LEAF, 0);
 
     char *dest = (&node->data) + sizeof(PT_PNTR);
-    if (loc.name>PT_SHORT_SIZE) {
-        PT_write_int(dest, loc.name);
+    if (loc.get_name()>PT_SHORT_SIZE) {
+        PT_write_int(dest, loc.get_name());
         node->flags |= 1;
         dest += 4;
     }
     else {
-        PT_write_short(dest, loc.name);
+        PT_write_short(dest, loc.get_name());
         dest += 2;
     }
-    if (loc.rpos>PT_SHORT_SIZE) {
-        PT_write_int(dest, loc.rpos);
+    if (loc.get_rel_pos()>PT_SHORT_SIZE) {
+        PT_write_int(dest, loc.get_rel_pos());
         node->flags |= 2;
         dest += 4;
     }
     else {
-        PT_write_short(dest, loc.rpos);
+        PT_write_short(dest, loc.get_rel_pos());
         dest += 2;
     }
-    if (loc.apos>PT_SHORT_SIZE) {
-        PT_write_int(dest, loc.apos);
+    if (loc.get_abs_pos()>PT_SHORT_SIZE) {
+        PT_write_int(dest, loc.get_abs_pos());
         node->flags |= 4;
         dest += 4;
     }
     else {
-        PT_write_short(dest, loc.apos);
+        PT_write_short(dest, loc.get_abs_pos());
         dest += 2;
     }
 
@@ -481,14 +481,14 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
     int           lastname = 0;
     while (entry && !error) {
         const DataLoc& loc = entry.at();
-        if (loc.name<lastname) {
-            error = GBS_global_string("Chain Error: name order error (%i < %i)", loc.name, lastname);
+        if (loc.get_name()<lastname) {
+            error = GBS_global_string("Chain Error: name order error (%i < %i)", loc.get_name(), lastname);
         }
         else {
             static char buffer[100];
 
             char *wp = buffer;
-            wp       = PT_WRITE_CHAIN_ENTRY(wp, mainapos, loc.name-lastname, loc.apos, loc.rpos);
+            wp       = PT_WRITE_CHAIN_ENTRY(wp, mainapos, loc.get_name()-lastname, loc.get_abs_pos(), loc.get_rel_pos());
 
             int size = wp -buffer;
             if (1 != fwrite(buffer, size, 1, out)) {
@@ -496,7 +496,7 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
             }
 
             pos      += size;
-            lastname  = loc.name;
+            lastname  = loc.get_name();
 
             MEM.put((char*)entry.memory(), entry.memsize());
             ++entry;

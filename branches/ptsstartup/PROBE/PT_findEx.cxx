@@ -37,8 +37,8 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
         case PT_NT_LEAF: {
             // here the probe-tree is cut off, because only one species matches
             DataLoc loc(node);
-            int     pos  = loc.rpos + height;
-            int     name = loc.name;
+            int     pos  = loc.get_rel_pos() + height;
+            int     name = loc.get_name();
 
             if (pos + restlen >= psg.data[name].get_size()) // @@@ superfluous ? 
                 break;          // at end-of-sequence -> no probe with wanted length here

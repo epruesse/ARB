@@ -186,127 +186,6 @@ inline int checked_lower_bits(int bits) {
 #define PT_GET_TYPE(pt)            (PT_GLOBAL.flag_2_type[(pt)->flags])
 #define PT_SET_TYPE(pt,type,lbits) ((pt)->flags = ((type)<<FLAG_FREE_BITS)+checked_lower_bits(lbits))
 
-inline const char *PT_READ_CHAIN_ENTRY_stage_1(const char *entry, int *name, int *apos, int *rpos, int *entry_size) {
-    pt_assert_stage(STAGE1);
-
-    if (entry) {
-        const char *rp = entry + sizeof(PT_PNTR);
-
-        PT_READ_NAT(rp, *name);
-        PT_READ_NAT(rp, *rpos);
-        PT_READ_NAT(rp, *apos);
-
-        *entry_size = rp-entry;
-
-        return PT_read_pointer<char>(entry);
-    }
-
-    *name = -1;
-    return NULL;
-}
-
-inline const char *PT_READ_CHAIN_ENTRY_stage_3(const char *ptr, int mainapos, int *name, int *apos, int *rpos) {
-    // Caution: 'name' has to be initialized before first call and shall not be modified between calls
-
-    pt_assert_stage(STAGE3);
-
-    *apos = 0;
-    *rpos = 0;
-
-    unsigned char *rcep = (unsigned char*)ptr;
-    unsigned int   rcei = (*rcep);
-
-    if (rcei==PT_CHAIN_END) {
-        *name = -1;
-        ptr++;
-    }
-    else {
-        if (rcei&0x80) {
-            if (rcei&0x40) {
-                rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
-            }
-            else {
-                rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
-            }
-        }
-        else {
-            rcei &= 0x7f; rcep++;
-        }
-        *name += rcei;
-        rcei   = (*rcep);
-
-        bool isapos = rcei&0x80;
-
-        if (rcei&0x40) {
-            rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
-        }
-        else {
-            rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
-        }
-        *rpos = (int)rcei;
-        if (isapos) {
-            rcei = (*rcep);
-            if (rcei&0x80) {
-                rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x7fffffff;
-            }
-            else {
-                rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x7fff;
-            }
-            *apos = (int)rcei;
-        }
-        else {
-            *apos = (int)mainapos;
-        }
-        ptr = (char *)rcep;
-    }
-
-    return ptr;
-}
-
-inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, int name, const int apos, const int rpos) { // stage 1
-    pt_assert_stage(STAGE1);
-    unsigned char *wcep = (unsigned char *)ptr;
-    if (name < 0x7f) {      // write the name
-        *(wcep++) = name;
-    }
-    else if (name <0x3fff) {
-        name |= 0x8000;
-        PT_write_short(wcep, name);
-        wcep += 2;
-    }
-    else {
-        name |= 0xc0000000;
-        PT_write_int(wcep, name);
-        wcep += 4;
-    }
-
-    int isapos = (apos == mainapos) ? 0 : 0x80;
-    if (rpos < 0x3fff) {        // write the rpos
-        // 0x7fff, mit der rpos vorher verglichen wurde war zu gross
-        PT_write_short(wcep, rpos);
-        *wcep |= isapos;
-        wcep += 2;
-    }
-    else {
-        PT_write_int(wcep, rpos);
-        *wcep |= 0x40+isapos;
-        wcep += 4;
-    }
-
-    if (isapos) {           // write the apos
-        if (apos < 0x7fff) {
-            PT_write_short(wcep, apos);
-            wcep += 2;
-        }
-        else {
-            PT_write_int(wcep, apos);
-            *wcep |= 0x80;
-            wcep += 4;
-        }
-    }
-    return (char *)wcep;
-}
-
 inline const char *node_data_start(const POS_TREE *node) { return &node->data + psg.ptdata->get_offset(); }
 inline char *node_data_start(POS_TREE *node) { return const_cast<char*>(node_data_start(const_cast<const POS_TREE*>(node))); }
 
@@ -426,14 +305,17 @@ inline POS_TREE *PT_read_father(POS_TREE *node) {
     return father;
 }
 
+// -----------------
+//      DataLoc
 
-struct DataLoc {
+class DataLoc {
     int name; // index into psg.data[], aka as species id
     int apos;
     int rpos; // position in data
 
-    mutable SmartCharPtr seq;
+    mutable SmartCharPtr seq; // @@@ move to class ReadableDataLoc
 
+public: 
 #if defined(ASSERTION_USED)
     bool has_valid_name() const { return name >= 0 && name < psg.data_count; }
 #endif
@@ -444,7 +326,9 @@ struct DataLoc {
         seq.SetNull();
     }
 
-    void init_from_leaf(POS_TREE *node) {
+    explicit DataLoc() : name(0), apos(0), rpos(0) {}
+    DataLoc(int name_, int apos_, int rpos_) : name(name_), apos(apos_), rpos(rpos_) { pt_assert(apos >= rpos); }
+    DataLoc(POS_TREE *node) {
         pt_assert(PT_read_type(node) == PT_NT_LEAF);
         const char *data = node_data_start(node);
         if (node->flags&1) { name = PT_read_int(data); data += 4; } else { name = PT_read_short(data); data += 2; }
@@ -456,13 +340,13 @@ struct DataLoc {
         pt_assert(rpos >= 0);
     }
 
-    explicit DataLoc() : name(0), apos(0), rpos(0) {}
-    DataLoc(int name_, int apos_, int rpos_) : name(name_), apos(apos_), rpos(rpos_) {}
-    DataLoc(POS_TREE *pt) { init_from_leaf(pt); }
+    int get_name() const { return name; }
+    int get_abs_pos() const { return apos; }
+    int get_rel_pos() const { return rpos; }
 
     const probe_input_data& get_pid() const { pt_assert(has_valid_name()); return psg.data[name]; }
 
-    PT_base operator[](int offset) const {
+    PT_base operator[](int offset) const { // @@@ move to class ReadableDataLoc
         const probe_input_data& pid = get_pid();
 
         if (!seq.isSet()) seq = pid.get_dataPtr();
@@ -479,11 +363,145 @@ struct DataLoc {
         fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n", apos, rpos, name, psg.data[name].get_name());
     }
 #endif
+
+    bool is_equal(const DataLoc& other) const {
+        return name == other.name && apos == other.apos && rpos == other.rpos;
+    }
 };
 
-inline bool operator == (const DataLoc& loc1, const DataLoc& loc2) {
-    return loc1.name == loc2.name && loc1.apos == loc2.apos && loc1.rpos == loc2.rpos;
+inline bool operator==(const DataLoc& loc1, const DataLoc& loc2) { return loc1.is_equal(loc2); }
+
+// -----------------------
+
+inline const char *PT_READ_CHAIN_ENTRY_stage_1(const char *entry, DataLoc& loc, int *entry_size) {
+    pt_assert_stage(STAGE1);
+
+    if (entry) {
+        const char *rp = entry + sizeof(PT_PNTR);
+
+        int name, rpos, apos;
+        PT_READ_NAT(rp, name);
+        PT_READ_NAT(rp, rpos);
+        PT_READ_NAT(rp, apos);
+
+        loc = DataLoc(name, apos, rpos);
+
+        *entry_size = rp-entry;
+
+        return PT_read_pointer<char>(entry);
+    }
+
+    loc = DataLoc(-1, 0, 0);
+    return NULL;
 }
+
+inline const char *PT_READ_CHAIN_ENTRY_stage_3(const char *ptr, int mainapos, DataLoc& loc) {
+    // Caution: 'name' has to be initialized before first call and shall not be modified between calls
+
+    pt_assert_stage(STAGE3);
+
+    int apos = 0;
+    int rpos = 0;
+
+    unsigned char *rcep = (unsigned char*)ptr;
+    unsigned int   rcei = (*rcep);
+
+    int name = loc.get_name();
+    if (rcei==PT_CHAIN_END) {
+        name = -1;
+        ptr++;
+    }
+    else {
+        if (rcei&0x80) {
+            if (rcei&0x40) {
+                rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
+            }
+            else {
+                rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
+            }
+        }
+        else {
+            rcei &= 0x7f; rcep++;
+        }
+        name += rcei;
+        rcei   = (*rcep);
+
+        bool isapos = rcei&0x80;
+
+        if (rcei&0x40) {
+            rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
+        }
+        else {
+            rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
+        }
+        rpos = (int)rcei;
+        if (isapos) {
+            rcei = (*rcep);
+            if (rcei&0x80) {
+                rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x7fffffff;
+            }
+            else {
+                rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x7fff;
+            }
+            apos = (int)rcei;
+        }
+        else {
+            apos = (int)mainapos;
+        }
+        ptr = (char *)rcep;
+    }
+
+    loc = DataLoc(name, apos, rpos);
+    return ptr;
+}
+
+inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, int name, const int apos, const int rpos) { // stage 1
+    pt_assert_stage(STAGE1);
+    unsigned char *wcep = (unsigned char *)ptr;
+    if (name < 0x7f) {      // write the name
+        *(wcep++) = name;
+    }
+    else if (name <0x3fff) {
+        name |= 0x8000;
+        PT_write_short(wcep, name);
+        wcep += 2;
+    }
+    else {
+        name |= 0xc0000000;
+        PT_write_int(wcep, name);
+        wcep += 4;
+    }
+
+    int isapos = (apos == mainapos) ? 0 : 0x80;
+    if (rpos < 0x3fff) {        // write the rpos
+        // 0x7fff, mit der rpos vorher verglichen wurde war zu gross
+        PT_write_short(wcep, rpos);
+        *wcep |= isapos;
+        wcep += 2;
+    }
+    else {
+        PT_write_int(wcep, rpos);
+        *wcep |= 0x40+isapos;
+        wcep += 4;
+    }
+
+    if (isapos) {           // write the apos
+        if (apos < 0x7fff) {
+            PT_write_short(wcep, apos);
+            wcep += 2;
+        }
+        else {
+            PT_write_int(wcep, apos);
+            *wcep |= 0x80;
+            wcep += 4;
+        }
+    }
+    return (char *)wcep;
+}
+
+
+// -----------------------
+//      ChainIterator
 
 class ChainIterator : virtual Noncopyable {
     const char *data;
@@ -493,14 +511,14 @@ class ChainIterator : virtual Noncopyable {
     int         last_size; // @@@ only used in STAGE1
     int         mainapos;  // @@@ only used in STAGE3
 
-    bool at_end_of_chain() const { return loc.name == -1; }
+    bool at_end_of_chain() const { return loc.get_name() == -1; }
     void set_loc_from_chain() {
         last_data = data;
         if (psg.ptdata->get_stage() == STAGE1) {
-            data = PT_READ_CHAIN_ENTRY_stage_1(data, &loc.name, &loc.apos, &loc.rpos, &last_size);
+            data = PT_READ_CHAIN_ENTRY_stage_1(data, loc, &last_size);
         }
         else {
-            data = PT_READ_CHAIN_ENTRY_stage_3(data, mainapos, &loc.name, &loc.apos, &loc.rpos);
+            data = PT_READ_CHAIN_ENTRY_stage_3(data, mainapos, loc);
         }
         loc.invalidate_seq();
         pt_assert(at_end_of_chain() || loc.has_valid_name());

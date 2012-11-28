@@ -192,9 +192,9 @@ struct ptnd_chain_count_mishits {
         // count all mishits for a probe
 
         const char *probe = psg.probe;
-        psg.abs_pos.announce(probeLoc.apos);
+        psg.abs_pos.announce(probeLoc.get_abs_pos());
 
-        const probe_input_data& pid = psg.data[probeLoc.name];
+        const probe_input_data& pid = psg.data[probeLoc.get_name()];
         if (pid.outside_group()) {
             if (probe) {
                 for (int i = 0; probe[i] && probeLoc[psg.height+i]; ++i) {
@@ -214,8 +214,8 @@ static int ptnd_count_mishits2(POS_TREE *pt) {
     
     if (PT_read_type(pt) == PT_NT_LEAF) {
         DataLoc loc(pt);
-        psg.abs_pos.announce(loc.apos);
-        return psg.data[loc.name].outside_group();
+        psg.abs_pos.announce(loc.get_abs_pos());
+        return psg.data[loc.get_name()].outside_group();
     }
     
     if (PT_read_type(pt) == PT_NT_CHAIN) {
@@ -411,9 +411,9 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
         if (PT_read_type(pt) == PT_NT_LEAF) {
             const DataLoc loc(pt);
 
-            int pos = loc.rpos+height;
+            int pos = loc.get_rel_pos()+height;
             
-            if (pos + (int)(strlen(probe)) >= psg.data[loc.name].get_size()) // after end // @@@ wrong check ? better return from loop below when ref is PT_QU
+            if (pos + (int)(strlen(probe)) >= psg.data[loc.get_name()].get_size()) // after end // @@@ wrong check ? better return from loop below when ref is PT_QU
                 return 0;
 
             for (int i = 0; probe[i] && loc[height+i]; ++i) {
@@ -612,10 +612,10 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const Data
     int         start  = parts->start;
     if (start) {               // look backwards
         char *probe = parts->source->sequence;
-        int   pos   = matchLoc.rpos-1;
+        int   pos   = matchLoc.get_rel_pos()-1;
         start--;                        // test the base left of start
 
-        SmartCharPtr  seqPtr = psg.data[matchLoc.name].get_dataPtr();
+        SmartCharPtr  seqPtr = psg.data[matchLoc.get_name()].get_dataPtr();
         const char   *seq    = &*seqPtr;
 
         bool split = false;
@@ -658,18 +658,18 @@ struct ptnd_chain_check_part {
     ptnd_chain_check_part(int s) : split(s) {}
 
     int operator() (const DataLoc& partLoc) {
-        if (psg.data[partLoc.name].outside_group()) {
+        if (psg.data[partLoc.get_name()].outside_group()) {
             const char *probe = psg.probe;
             double      sbond = ptnd.sum_bonds;
             double      dt    = ptnd.dt;
 
             if (probe) {
-                int    pos    = partLoc.rpos+psg.height;
+                int    pos    = partLoc.get_rel_pos()+psg.height;
                 double h      = 1.0;
                 int    height = psg.height;
                 int    base;
 
-                SmartCharPtr  seqPtr = psg.data[partLoc.name].get_dataPtr();
+                SmartCharPtr  seqPtr = psg.data[partLoc.get_name()].get_dataPtr();
                 const char   *seq    = &*seqPtr;
 
                 while (probe[height] && (base = seq[pos])) {
@@ -699,7 +699,7 @@ static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds) {
         if (PT_read_type(pt) == PT_NT_LEAF) {
             // @@@ dupped code is in ptnd_chain_check_part::operator()
             DataLoc loc(pt);
-            if (psg.data[loc.name].outside_group()) {
+            if (psg.data[loc.get_name()].outside_group()) {
                 ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, loc, dt, sum_bonds);
             }
         }
@@ -761,14 +761,14 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
         if (PT_read_type(pt) == PT_NT_LEAF) {
             // @@@ dupped code is in ptnd_chain_check_part::operator()
             const DataLoc loc(pt);
-            if (psg.data[loc.name].outside_group()) {
-                int pos = loc.rpos + height;
-                if (pos + (int)(strlen(probe+height)) >= psg.data[loc.name].get_size())               // after end
+            if (psg.data[loc.get_name()].outside_group()) {
+                int pos = loc.get_rel_pos() + height;
+                if (pos + (int)(strlen(probe+height)) >= psg.data[loc.get_name()].get_size()) // after end
                     return;
 
                 int ref;
 
-                SmartCharPtr  seqPtr = psg.data[loc.name].get_dataPtr();
+                SmartCharPtr  seqPtr = psg.data[loc.get_name()].get_dataPtr();
                 const char   *seq    = &*seqPtr;
 
                 while (probe[height] && (ref = seq[pos])) {

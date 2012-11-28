@@ -124,7 +124,7 @@ class PT_Traversal {
 
     void count_match(const DataLoc& match) const {
         if (range.contains(match)) {
-            fam_stat.count_match(match.name);
+            fam_stat.count_match(match.get_name());
         }
     }
 
