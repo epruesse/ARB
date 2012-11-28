@@ -615,7 +615,8 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const Data
         int   pos   = matchLoc.rpos-1;
         start--;                        // test the base left of start
 
-        const char *seq = psg.data[matchLoc.name].get_data();
+        SmartCharPtr  seqPtr = psg.data[matchLoc.name].get_dataPtr();
+        const char   *seq    = &*seqPtr;
 
         bool split = false;
         while (start>=0) {
@@ -668,7 +669,8 @@ struct ptnd_chain_check_part {
                 int    height = psg.height;
                 int    base;
 
-                const char *seq = psg.data[partLoc.name].get_data();
+                SmartCharPtr  seqPtr = psg.data[partLoc.name].get_dataPtr();
+                const char   *seq    = &*seqPtr;
 
                 while (probe[height] && (base = seq[pos])) {
                     if (!split && (h = (ptnd_check_split(ptnd.locs, probe, height, base) < 0.0))) {
@@ -764,8 +766,10 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
                 if (pos + (int)(strlen(probe+height)) >= psg.data[loc.name].get_size())               // after end
                     return;
 
-                int         ref;
-                const char *seq = psg.data[loc.name].get_data();
+                int ref;
+
+                SmartCharPtr  seqPtr = psg.data[loc.name].get_dataPtr();
+                const char   *seq    = &*seqPtr;
 
                 while (probe[height] && (ref = seq[pos])) {
                     if (split) {
@@ -958,13 +962,15 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 #endif // DEBUG
 
         for (int g = 0; g<group_count; ++g) {
-            int  name             = group_idx[g];
-            long possible_tprobes = psg.data[name].get_size()-pdc->probelen+1;
+            const probe_input_data& pid = psg.data[group_idx[g]];
 
+            long possible_tprobes = pid.get_size()-pdc->probelen+1;
             if (possible_tprobes<1) possible_tprobes = 1; // avoid wrong hash-size if no/not enough data
 
-            GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
-            ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].get_data(), psg.data[name].get_size(), pdc->probelen, design4prefix);
+            GB_HASH      *hash_one = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE);    // count tprobe occurrences for one group/sequence
+            SmartCharPtr  seqPtr   = pid.get_dataPtr();
+            ptnd_add_sequence_to_hash(pdc, hash_one, &*seqPtr, pid.get_size(), pdc->probelen, design4prefix);
+
             GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash
 #if defined(DEBUG)
             GBS_calc_hash_statistic(hash_one, "inner", 0);

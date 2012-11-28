@@ -180,7 +180,7 @@ static ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATT
         psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
         GB_commit_transaction(psg.gb_main);
         printf("Building PT-Server for alignment '%s'...\n", psg.alignment_name);
-        probe_read_prebuild_alignments();
+        PT_init_input_data();
         PT_build_species_hash();
     }
     return error;

@@ -20,6 +20,9 @@
 #ifndef PT_TOOLS_H
 #include "PT_tools.h"
 #endif
+#ifndef CACHE_H
+#include <cache.h>
+#endif
 
 #define PT_SERVER_MAGIC   0x32108765                // pt server identifier
 #define PT_SERVER_VERSION 2                         // version of pt server database (no versioning till 2009/05/13)
@@ -150,18 +153,18 @@ public:
 //      Probe search
 
 class probe_input_data : virtual Noncopyable { // every taxa's own data
-    char *data; // sequence
-    int   size; // @@@ misleading (contains 1 if no bases in sequence)
+    int size;   // @@@ misleading (contains 1 if no bases in sequence)
 
-    mutable int *rel2abs;
+    mutable int *rel2abs; // @@@ cache me
 
     GBDATA *gb_species;
 
     bool group;           // probe_design: whether species is in group
 
-    // obsolete? methods below @@@ remove them
-    GBDATA *get_gbdata() const { return gb_species; }
-    void set_data(char *assign, int size_) { pt_assert(!data); data = assign; size = size_; }
+    mutable cache::CacheHandle<SmartCharPtr> seq;
+    static cache::Cache<SmartCharPtr>        seq_cache;
+
+    GBDATA *get_gbdata() const { return gb_species; } // @@@ elim
 
     void load_rel2abs() const {
         GB_transaction ta(gb_species);
@@ -181,23 +184,33 @@ class probe_input_data : virtual Noncopyable { // every taxa's own data
         }
     }
 
+    SmartCharPtr loadSeq() const {
+        GB_transaction ta(gb_species);
+        GBDATA *gb_compr = GB_entry(gb_species, "compr");
+        return SmartCharPtr(GB_read_bytes(gb_compr));
+    }
+
 public:
 
     probe_input_data()
-        : data(0),
-          size(0),
+        : size(0),
           rel2abs(0),
           gb_species(0),
           group(false)
     {}
     ~probe_input_data() {
-        free(data);
+        seq.release(seq_cache);
         flush_rel2abs();
     }
 
+    static void set_cache_size(size_t csize) { seq_cache.resize(csize); }
+
     GB_ERROR init(GBDATA *gb_species_, bool& no_data);
 
-    const char *get_data() const { return data; }
+    SmartCharPtr get_dataPtr() const {
+        if (!seq.is_cached()) seq.assign(loadSeq(), seq_cache);
+        return seq.access(seq_cache);
+    }
 
     // @@@ speed up all DB-searches by directly using GBQUARK
     const char *get_name() const {
@@ -222,8 +235,8 @@ public:
     }
     int get_size() const { return size; }
 
-    PT_base base_at(int rpos) const {
-        return rpos >= 0 && rpos<get_size() ? PT_base(get_data()[rpos]) : PT_QU;
+    bool valid_rel_pos(int rel_pos) const { // returns true if rel_pos is inside sequence
+        return rel_pos >= 0 && rel_pos<get_size();
     }
 
     bool inside_group() const { return group; }

@@ -457,12 +457,14 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
                 arb_progress data_progress(GBS_global_string("pass %i/%i", currPass, passes), psg.data_count);
 
                 for (int name = 0; name < psg.data_count; name++) {
-                    const probe_input_data&  pid   = psg.data[name];
-                    const char              *probe = pid.get_data();
+                    const probe_input_data& pid = psg.data[name];
+
+                    SmartCharPtr  seqPtr = pid.get_dataPtr();
+                    const char   *seq    = &*seqPtr;
 
                     pid.preload_rel2abs();
                     for (int rel = pid.get_size() - 1; rel >= 0; rel--) {
-                        if (partition.contains(probe+rel)) {
+                        if (partition.contains(seq+rel)) {
                             pt = build_pos_tree(pt, DataLoc(name, pid.get_abspos(rel), rel));
                         }
                     }

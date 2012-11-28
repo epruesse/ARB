@@ -432,9 +432,17 @@ struct DataLoc {
     int apos;
     int rpos; // position in data
 
+    mutable SmartCharPtr seq;
+
 #if defined(ASSERTION_USED)
     bool has_valid_name() const { return name >= 0 && name < psg.data_count; }
 #endif
+
+    void invalidate_seq() const {
+        // @@@ hack - needed whereever this->name is modified (e.g. in Chain-Iterator)
+        // protect name from direct modification and invalidate in set-method
+        seq.SetNull();
+    }
 
     void init_from_leaf(POS_TREE *node) {
         pt_assert(PT_read_type(node) == PT_NT_LEAF);
@@ -453,7 +461,15 @@ struct DataLoc {
     DataLoc(POS_TREE *pt) { init_from_leaf(pt); }
 
     const probe_input_data& get_pid() const { pt_assert(has_valid_name()); return psg.data[name]; }
-    PT_base operator[](int offset) const { return PT_base(get_pid().base_at(rpos+offset)); }
+
+    PT_base operator[](int offset) const {
+        const probe_input_data& pid = get_pid();
+
+        if (!seq.isSet()) seq = pid.get_dataPtr();
+
+        int ro_pos = rpos+offset;
+        return pid.valid_rel_pos(ro_pos) ? PT_base((&*seq)[ro_pos]) : PT_QU;
+    }
 
     int restlength() const { return get_pid().get_size()-rpos; }
     bool is_shorther_than(int offset) const { return offset >= restlength(); }
@@ -486,6 +502,7 @@ class ChainIterator : virtual Noncopyable {
         else {
             data = PT_READ_CHAIN_ENTRY_stage_3(data, mainapos, &loc.name, &loc.apos, &loc.rpos);
         }
+        loc.invalidate_seq();
         pt_assert(at_end_of_chain() || loc.has_valid_name());
     }
     void inc() {

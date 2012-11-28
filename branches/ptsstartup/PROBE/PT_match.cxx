@@ -566,7 +566,8 @@ char *get_match_overlay(const PT_probematch *ml) {
     char *ref = (char *)calloc(sizeof(char), 21+pr_len);
     memset(ref, '.', 10);
 
-    const char *seq = psg.data[ml->name].get_data();
+    SmartCharPtr  seqPtr = psg.data[ml->name].get_dataPtr();
+    const char   *seq    = &*seqPtr;
 
     for (int pr_pos  = 8, al_pos = ml->rpos-1;
          pr_pos     >= 0 && al_pos >= 0;

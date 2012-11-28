@@ -17,7 +17,6 @@
 #include <BI_basepos.hxx>
 #include <arb_progress.h>
 #include <arb_file.h>
-#include <cache.h>
 
 int compress_data(char *probestring) {
     //! change a sequence with normal bases the PT_? format and delete all other signs
@@ -133,6 +132,8 @@ inline GBDATA *expect_entry(GBDATA *gb_species, const char *entry_name) {
     return gb_entry;
 }
 
+cache::Cache<SmartCharPtr> probe_input_data::seq_cache(1); // resized later
+
 GB_ERROR probe_input_data::init(GBDATA *gb_species_, bool& no_data) {
     GB_ERROR  error   = NULL;
     GBDATA   *gb_ali  = GB_entry(gb_species_, psg.alignment_name);
@@ -152,11 +153,7 @@ GB_ERROR probe_input_data::init(GBDATA *gb_species_, bool& no_data) {
         if (!gb_cs || !gb_compr || !gb_baseoff) error = GB_await_error();
         else {
             gb_species = gb_species_;
-
-            int      csize = GB_read_count(gb_compr);
-            GB_CSTR  compr = GB_read_bytes_pntr(gb_compr);
-
-            set_data(GB_memdup(compr, csize), csize);
+            size       = GB_read_count(gb_compr);
         }
     }
 
@@ -261,7 +258,7 @@ GB_ERROR PT_prepare_data(GBDATA *gb_main) {
     return error;
 }
 
-void probe_read_prebuild_alignments() {
+void PT_init_input_data() {
     // reads sequence data into psg.data
 
     GB_begin_transaction(psg.gb_main);
@@ -282,15 +279,19 @@ void probe_read_prebuild_alignments() {
     }
 
     int icount = GB_number_of_subentries(psg.gb_species_data);
-    
+
     psg.data       = new probe_input_data[icount];
     psg.data_count = 0;
+
+#define CACHE_SEQ_PERCENT 50 // @@@ make global def and use in mem est.
+
+    probe_input_data::set_cache_size(icount*CACHE_SEQ_PERCENT/100+5); // cache about CACHE_SEQ_PERCENT% of seq data
 
     int data_missing = 0;
 
     printf("Database contains %i species\n", icount);
     {
-        arb_progress progress("Preparing sequence data", icount);
+        arb_progress progress("Checking data", icount);
         int count = 0;
 
         for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);

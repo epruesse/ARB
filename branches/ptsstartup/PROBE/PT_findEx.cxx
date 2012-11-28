@@ -46,8 +46,11 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
             pt_assert(probe[restlen] == 0);
 
             const probe_input_data& pid = psg.data[name];
+            SmartCharPtr            seq = pid.get_dataPtr();
+
             for (int r = 0; r<restlen; ++r) {
-                int data = pid.base_at(pos+r);
+                int rel_pos = pos+r;
+                int data = pid.valid_rel_pos(rel_pos) ? PT_base((&*seq)[rel_pos]) : PT_QU;
                 if (data == PT_QU || data == PT_N) return false; // ignore probes that contain 'N' or '.'
                 probe[r] = data;
             }
