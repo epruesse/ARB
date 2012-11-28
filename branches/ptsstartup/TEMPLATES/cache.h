@@ -1,12 +1,16 @@
-// =============================================================== //
-//                                                                 //
-//   File      : cache.h                                           //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+// ================================================================ //
+//                                                                  //
+//   File      : cache.h                                            //
+//   Purpose   : Cache for SmartPtrs                                //
+//                                                                  //
+//   Coded by Ralf Westram (coder@reallysoft.de) in November 2012   //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
+#ifndef CACHE_H
+#define CACHE_H
 
 #ifndef SMARTPTR_H
 #include "smartptr.h"
@@ -14,6 +18,8 @@
 #ifndef _GLIBCXX_LIST
 #include <list>
 #endif
+
+#define DUMP_CACHE_STAT
 
 #define ca_assert(cond)           arb_assert(cond)
 #define ca_assert_expensive(cond) // arb_assert(cond) // uncomment to enable expensive assertions
@@ -77,6 +83,11 @@ namespace cache {
         Entries cached;
         size_t  max_size;
 
+#if defined(DUMP_CACHE_STAT)
+        size_t insert_count;
+        size_t access_count;
+#endif
+
         void keep(size_t kept_elems) {
             ca_assert(kept_elems <= max_size);
             size_t count = entries();
@@ -106,6 +117,9 @@ namespace cache {
             if (my_handle) { // re-assign
                 my_handle->setData(data);
                 touch(*my_handle);
+#if defined(DUMP_CACHE_STAT)
+                --access_count; // do not count above touch as access
+#endif
             }
             else { // initialization
                 cached.push_back(CacheEntry<SMARTPTR>(my_handle, data));
@@ -117,6 +131,9 @@ namespace cache {
                 keep(max_size);
                 ca_assert(my_handle);
             }
+#if defined(DUMP_CACHE_STAT)
+            ++insert_count;
+#endif
         }
         void touch(Entry& entry) {
             EntryIter iter = entry.getIterator();
@@ -126,6 +143,9 @@ namespace cache {
                 ca_assert_expensive(is_member(iter));
                 ca_assert(iter == top());
             }
+#if defined(DUMP_CACHE_STAT)
+            ++access_count;
+#endif
         }
         void remove(EntryPtr& my_handle) {
             ca_assert(my_handle);
@@ -147,13 +167,24 @@ namespace cache {
          *
          * Each cache entry is a SmartPtr (any flavour) which is represented by a CacheHandle.
          */
-        Cache(size_t Size) : max_size(Size) { ca_assert(is_valid_size(Size)); }
+        Cache(size_t Size) : max_size(Size) {
+            ca_assert(is_valid_size(Size));
+#if defined(DUMP_CACHE_STAT)
+            access_count = 0;
+            insert_count = 0;
+#endif
+        }
         /*! destroy the Cache
          *
          * Will invalidate all @ref CacheHandle "CacheHandles" assigned to this Cache.
          *
          */
-        ~Cache() { flush(); }
+        ~Cache() {
+#if defined(DUMP_CACHE_STAT)
+            printf("Cache-Stat: max_size=%zu inserts=%zu accesses=%zu\n", size(), insert_count, access_count);
+#endif
+            flush();
+        }
 
         //! @return the number of currently cached CacheHandles
         size_t entries() const { return cached.size(); }
@@ -214,7 +245,7 @@ namespace cache {
          *  before you can use this function. e.g. like follows
          *
          *  @code
-         *  handle.is_cached() || handle.assign(generateYourData(), cache);
+         *  if (!handle.is_cached()) handle.assign(generateYourData(), cache);
          *  smartptr = handle.access(cache);
          *  @endcode
          *
@@ -251,3 +282,7 @@ namespace cache {
     };
 
 };
+
+#else
+#error cache.h included twice
+#endif // CACHE_H
