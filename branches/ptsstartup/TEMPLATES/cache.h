@@ -81,11 +81,17 @@ namespace cache {
         typedef typename Entries::iterator EntryIter;
 
         Entries cached;
-        size_t  max_size;
+
+        size_t curr_size; // always == cached.size()
+        size_t max_size;
 
 #if defined(DUMP_CACHE_STAT)
         size_t insert_count;
         size_t access_count;
+#endif
+
+#if defined(ASSERTION_USED)
+        bool curr_size_valid() const { return cached.size() == curr_size; }
 #endif
 
         void keep(size_t kept_elems) {
@@ -94,8 +100,11 @@ namespace cache {
             if (count>kept_elems) {
                 size_t    toRemove = count-kept_elems;
                 EntryIter e        = cached.begin();
+
                 while (toRemove--) e++->clearClientPtr();
                 cached.erase(cached.begin(), e);
+                curr_size = kept_elems;
+                ca_assert_expensive(curr_size_valid());
                 ca_assert(entries() == kept_elems);
             }
         }
@@ -123,11 +132,14 @@ namespace cache {
             }
             else { // initialization
                 cached.push_back(CacheEntry<SMARTPTR>(my_handle, data));
+                ++curr_size;
+                ca_assert_expensive(curr_size_valid());
 
                 cached.back().setClientPtr();
                 ca_assert(&cached.back() == my_handle);
 
                 my_handle->setIterator(top());
+
                 keep(max_size);
                 ca_assert(my_handle);
             }
@@ -153,6 +165,8 @@ namespace cache {
             ca_assert_expensive(is_member(iter));
             my_handle->clearClientPtr();
             cached.erase(iter);
+            --curr_size;
+            ca_assert_expensive(curr_size_valid());
             ca_assert(!my_handle);
         }
 
@@ -167,7 +181,7 @@ namespace cache {
          *
          * Each cache entry is a SmartPtr (any flavour) which is represented by a CacheHandle.
          */
-        Cache(size_t Size) : max_size(Size) {
+        Cache(size_t Size) : curr_size(0), max_size(Size) {
             ca_assert(is_valid_size(Size));
 #if defined(DUMP_CACHE_STAT)
             access_count = 0;
@@ -187,7 +201,10 @@ namespace cache {
         }
 
         //! @return the number of currently cached CacheHandles
-        size_t entries() const { return cached.size(); }
+        size_t entries() const {
+            ca_assert_expensive(curr_size_valid());
+            return curr_size;
+        }
         //! @return the maximum number of cached CacheHandles
         size_t size() const { return max_size; }
         /*! change the size of the Cache.
