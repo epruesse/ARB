@@ -130,7 +130,6 @@ inline GB_ERROR clean_ptserver_database(GBDATA *gb_main, Servertype type) {
 
 GB_ERROR cleanup_ptserver_database(GBDATA *gb_main, Servertype type) {
     GB_ERROR error    = GB_request_undo_type(gb_main, GB_UNDO_NONE);
-    if (!error) error = GB_no_transaction(gb_main);
     if (!error) {
         GB_push_my_security(gb_main);
         error = clean_ptserver_database(gb_main, type);

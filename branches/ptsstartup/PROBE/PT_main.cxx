@@ -371,7 +371,6 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
 
                 const char *build_step[] = {
                     "build_clean",
-                    "build_map",
                     "build",
                 };
 
@@ -447,25 +446,16 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
             error = probe_read_data_base(params->db_server, false);
             if (!error) {
                 pt_assert(psg.gb_main);
-                error             = cleanup_ptserver_database(psg.gb_main, PTSERVER);
+
+                error = GB_no_transaction(psg.gb_main); // don't waste memory for transaction (no abort may happen)
+
+                if (!error) error = cleanup_ptserver_database(psg.gb_main, PTSERVER);
                 if (!error) error = PT_prepare_data(psg.gb_main);
+
                 if (!error) {
-                    const char *mode = "bf"; // save PT-server database withOUT! Fastload file
+                    const char *mode = GB_supports_mapfile() ? "bfm" : "bf";
                     error            = GB_save_as(psg.gb_main, params->db_server, mode);
                 }
-            }
-        }
-        else if (strcmp(command, "-build_map") == 0) {  // create a clean mapfile for source DB
-            if (GB_supports_mapfile()) {
-                error = probe_read_data_base(params->db_server, false);
-                if (!error) {
-                    pt_assert(psg.gb_main);
-                    const char *mode = "bfm"; // save PT-server database with Fastload file
-                    error            = GB_save_as(psg.gb_main, params->db_server, mode);
-                }
-            }
-            else {
-                error = "Invalid invocation of -build_map (your ARB version does not support mapfiles)";
             }
         }
         else if (strcmp(command, "-build") == 0) {  // build command
