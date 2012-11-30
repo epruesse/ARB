@@ -45,7 +45,7 @@ ARB_ERROR probe_read_data_base(const char *name, bool readOnly) __ATTR__USERESUL
 size_t probe_compress_sequence(char *seq, size_t seqsize);
 char *readable_probe(const char *compressed_probe, size_t len, char T_or_U);
 GB_ERROR PT_prepare_data(GBDATA *gb_main);
-void PT_init_input_data(void);
+GB_ERROR PT_init_input_data(void);
 void PT_build_species_hash(void);
 long PT_abs_2_rel(long pos);
 

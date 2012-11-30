@@ -205,7 +205,7 @@ public:
 
     static void set_cache_size(size_t csize) { seq_cache.resize(csize); }
 
-    GB_ERROR init(GBDATA *gb_species_, bool& no_data);
+    GB_ERROR init(GBDATA *gb_species_);
 
     SmartCharPtr get_dataPtr() const {
         if (!seq.is_cached()) seq.assign(loadSeq(), seq_cache);

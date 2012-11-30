@@ -176,11 +176,14 @@ static void PT_exit() {
 static ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATTR__USERESULT
     ARB_ERROR error = probe_read_data_base(filename, true);
     if (!error) {
-        GB_begin_transaction(psg.gb_main);
+        GB_transaction ta(psg.gb_main);
         psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
-        GB_commit_transaction(psg.gb_main);
+        if (!psg.alignment_name && GB_have_error()) error = GB_await_error();
+    }
+
+    if (!error) {
         printf("Building PT-Server for alignment '%s'...\n", psg.alignment_name);
-        PT_init_input_data();
+        error = PT_init_input_data();
         PT_build_species_hash();
     }
     return error;

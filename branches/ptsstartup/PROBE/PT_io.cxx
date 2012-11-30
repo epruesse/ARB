@@ -134,27 +134,16 @@ inline GBDATA *expect_entry(GBDATA *gb_species, const char *entry_name) {
 
 cache::Cache<SmartCharPtr> probe_input_data::seq_cache(1); // resized later
 
-GB_ERROR probe_input_data::init(GBDATA *gb_species_, bool& no_data) {
-    GB_ERROR  error   = NULL;
-    GBDATA   *gb_ali  = GB_entry(gb_species_, psg.alignment_name);
-    GBDATA   *gb_data = gb_ali ? GB_entry(gb_ali, "data") : NULL;
+GB_ERROR probe_input_data::init(GBDATA *gb_species_) {
+    GBDATA *gb_cs      = expect_entry(gb_species_, "cs");
+    GBDATA *gb_compr   = expect_entry(gb_species_, "compr");
+    GBDATA *gb_baseoff = expect_entry(gb_species_, "baseoff");
 
-    no_data = false;
-    if (!gb_data) {
-        // @@@ when these are deleted during cleanup, this branch gets impossible
-        error   = GBS_global_string("Species '%s' has no data in '%s'", GBT_read_name(gb_species_), psg.alignment_name);
-        no_data = true;
-    }
+    GB_ERROR error = NULL;
+    if (!gb_cs || !gb_compr || !gb_baseoff) error = GB_await_error();
     else {
-        GBDATA *gb_cs      = expect_entry(gb_species_, "cs");
-        GBDATA *gb_compr   = expect_entry(gb_species_, "compr");
-        GBDATA *gb_baseoff = expect_entry(gb_species_, "baseoff");
-
-        if (!gb_cs || !gb_compr || !gb_baseoff) error = GB_await_error();
-        else {
-            gb_species = gb_species_;
-            size       = GB_read_count(gb_compr);
-        }
+        gb_species = gb_species_;
+        size       = GB_read_count(gb_compr);
     }
 
     return error;
@@ -205,6 +194,8 @@ inline GB_ERROR PT_prepare_species_sequence(GBDATA *gb_species, const char *alig
                     ? GB_write_ints(gb_baseoff, compressed.get_offsets(), compressed.get_size())
                     : GB_await_error();
             }
+
+            if (!error) error = GB_delete(gb_ali); // delete original seq data
         }
     }
 
@@ -231,7 +222,7 @@ GB_ERROR PT_prepare_data(GBDATA *gb_main) {
         {
             arb_progress progress("Preparing sequence data", icount);
             for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
-                 gb_species;
+                 gb_species && !error;
                  gb_species = GBT_next_species(gb_species))
             {
                 bool no_data;
@@ -242,6 +233,12 @@ GB_ERROR PT_prepare_data(GBDATA *gb_main) {
                     error = NULL;
                 }
                 progress.inc();
+            }
+
+            if (!error) {
+                char   *master_data_name  = GBS_global_string_copy("%s/@master_data", GB_SYSTEM_FOLDER);
+                GBDATA *gb_master_data    = GB_search(gb_main, master_data_name, GB_FIND);
+                if (gb_master_data) error = GB_delete(gb_master_data);
             }
         }
         if (data_missing) {
@@ -258,7 +255,7 @@ GB_ERROR PT_prepare_data(GBDATA *gb_main) {
     return error;
 }
 
-void PT_init_input_data() {
+GB_ERROR PT_init_input_data() {
     // reads sequence data into psg.data
 
     GB_begin_transaction(psg.gb_main);
@@ -287,9 +284,9 @@ void PT_init_input_data() {
 
     probe_input_data::set_cache_size(icount*CACHE_SEQ_PERCENT/100+5); // cache about CACHE_SEQ_PERCENT% of seq data
 
-    int data_missing = 0;
-
     printf("Database contains %i species\n", icount);
+
+    GB_ERROR error = NULL;
     {
         arb_progress progress("Checking data", icount);
         int count = 0;
@@ -300,39 +297,20 @@ void PT_init_input_data() {
         {
             probe_input_data& pid = psg.data[count];
 
-            bool     no_data;
-            GB_ERROR error = pid.init(gb_species, no_data);
-
-            if (error) {
-                fputs(error, stderr);
-                fputc('\n', stderr);
-                if (no_data) {
-                    data_missing++;
-                    error = 0;
-                }
-            }
-            else {
-                pt_assert(!no_data);
-                count++;
-            }
+            error = pid.init(gb_species);
+            if (error) break;
+            count++;
             progress.inc();
         }
 
-        pt_assert((count+data_missing) == icount);
-
         psg.data_count = count;
         GB_commit_transaction(psg.gb_main);
+
+        if (error) progress.done();
     }
 
-    
-
-    if (data_missing) {
-        printf("\n%i species were ignored because of missing data.\n", data_missing);
-    }
-    else {
-        printf("\nAll species contain data in alignment '%s'.\n", psg.alignment_name);
-    }
     fflush_all();
+    return error;
 }
 
 void PT_build_species_hash() {
