@@ -144,7 +144,7 @@ class PT_Traversal {
         height++;
     }
 
-    void match_rest_and_mark(const DataLoc& loc) {
+    void match_rest_and_mark(const ReadableDataLoc& loc) {
         do match_one_char(loc[height]); while (match_possible());
         if (did_match()) count_match(loc);
     }
@@ -174,7 +174,7 @@ public:
         //! Increment match_count for matched postree-tips
         if (did_match()) count_match(loc);
         else if (match_possible()) {
-            PT_Traversal(*this).match_rest_and_mark(loc);
+            PT_Traversal(*this).match_rest_and_mark(ReadableDataLoc(loc));
         }
         return 0;
     }

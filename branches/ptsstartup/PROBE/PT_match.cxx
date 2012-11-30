@@ -91,7 +91,7 @@ public:
     DECLARE_ASSIGNMENT_OPERATOR(Mismatches);
 
     inline void count_weighted(char probe, char seq, int height);
-    void        count_versus(const DataLoc& loc, const char *probe, int height);
+    void        count_versus(const ReadableDataLoc& loc, const char *probe, int height);
 
     inline bool accepted() const;
 
@@ -233,7 +233,7 @@ bool MatchRequest::add_hits_for_children(POS_TREE *pt, const Mismatches& mismatc
     return enough;
 }
 
-void Mismatches::count_versus(const DataLoc& loc, const char *probe, int height) {
+void Mismatches::count_versus(const ReadableDataLoc& loc, const char *probe, int height) {
     int base;
     while ((base = probe[height])) {
         int ref = loc[height];
@@ -266,7 +266,7 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches&
     else {
         switch (PT_read_type(pt)) {
             case PT_NT_LEAF: {
-                DataLoc loc(pt);
+                ReadableDataLoc loc(pt);
                 mismatches.count_versus(loc, probe, height);
                 if (mismatches.accepted()) {
                     enough = add_hit(loc, mismatches);
@@ -279,7 +279,7 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches&
                 ChainIterator entry(pt);
                 while (entry && !enough) {
                     Mismatches entry_mismatches(mismatches);
-                    entry_mismatches.count_versus(entry.at(), probe, height);
+                    entry_mismatches.count_versus(ReadableDataLoc(entry.at()), probe, height);
                     if (entry_mismatches.accepted()) {
                         enough = add_hit(entry.at(), entry_mismatches);
                     }

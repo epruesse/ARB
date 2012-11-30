@@ -188,7 +188,7 @@ double ptnd_check_split(PT_local *locs, const char *probe, int pos, char ref) {
 //      primary search for probes
 
 struct ptnd_chain_count_mishits {
-    int operator()(const DataLoc& probeLoc) {
+    int operator()(const ReadableDataLoc& probeLoc) {
         // count all mishits for a probe
 
         const char *probe = psg.probe;
@@ -204,6 +204,9 @@ struct ptnd_chain_count_mishits {
             ptnd.mishits++;
         }
         return 0;
+    }
+    int operator()(const DataLoc& probeLoc) {
+        return (*this)(ReadableDataLoc(probeLoc));
     }
 };
 
@@ -409,7 +412,7 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
     }
     if (*probe) {
         if (PT_read_type(pt) == PT_NT_LEAF) {
-            const DataLoc loc(pt);
+            const ReadableDataLoc loc(pt);
 
             int pos = loc.get_rel_pos()+height;
             

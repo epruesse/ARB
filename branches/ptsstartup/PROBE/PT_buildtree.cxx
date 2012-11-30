@@ -28,7 +28,7 @@
 
 // AISC_MKPT_PROMOTE: class DataLoc;
 
-static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
+static POS_TREE *build_pos_tree(POS_TREE *const root, const ReadableDataLoc& loc) {
     POS_TREE *at = root;
     int       height = 0;
 
@@ -78,7 +78,7 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
 
     // change leaf to node and create two sons
 
-    const DataLoc loc_ref(at);
+    const ReadableDataLoc loc_ref(at);
 
     while (loc[height] == loc_ref[height]) {  // creates nodes until sequences are different
         pt_assert(PT_read_type(at) != PT_NT_NODE);
@@ -463,9 +463,11 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
                     const char   *seq    = &*seqPtr;
 
                     pid.preload_rel2abs();
+                    ReadableDataLoc insertLoc(name, 0, 0);
                     for (int rel = pid.get_size() - 1; rel >= 0; rel--) {
                         if (partition.contains(seq+rel)) {
-                            pt = build_pos_tree(pt, DataLoc(name, pid.get_abspos(rel), rel));
+                            insertLoc.set_position(pid.get_abspos(rel), rel);
+                            pt = build_pos_tree(pt, insertLoc);
                         }
                     }
                     pid.flush_rel2abs();

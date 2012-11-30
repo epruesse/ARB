@@ -313,21 +313,14 @@ class DataLoc {
     int apos;
     int rpos; // position in data
 
-    mutable SmartCharPtr seq; // @@@ move to class ReadableDataLoc
-
-public: 
+public:
 #if defined(ASSERTION_USED)
     bool has_valid_name() const { return name >= 0 && name < psg.data_count; }
+    bool has_valid_positions() const { return apos >= 0 && rpos >= 0 && apos >= rpos; }
 #endif
 
-    void invalidate_seq() const {
-        // @@@ hack - needed whereever this->name is modified (e.g. in Chain-Iterator)
-        // protect name from direct modification and invalidate in set-method
-        seq.SetNull();
-    }
-
     explicit DataLoc() : name(0), apos(0), rpos(0) {}
-    DataLoc(int name_, int apos_, int rpos_) : name(name_), apos(apos_), rpos(rpos_) { pt_assert(apos >= rpos); }
+    DataLoc(int name_, int apos_, int rpos_) : name(name_), apos(apos_), rpos(rpos_) { pt_assert(has_valid_positions()); }
     DataLoc(POS_TREE *node) {
         pt_assert(PT_read_type(node) == PT_NT_LEAF);
         const char *data = node_data_start(node);
@@ -336,24 +329,20 @@ public:
         if (node->flags&4) { apos = PT_read_int(data); data += 4; } else { apos = PT_read_short(data); /*data += 2;*/ }
 
         pt_assert(has_valid_name());
-        pt_assert(apos >= 0);
-        pt_assert(rpos >= 0);
+        pt_assert(has_valid_positions());
     }
 
     int get_name() const { return name; }
     int get_abs_pos() const { return apos; }
     int get_rel_pos() const { return rpos; }
 
-    const probe_input_data& get_pid() const { pt_assert(has_valid_name()); return psg.data[name]; }
-
-    PT_base operator[](int offset) const { // @@@ move to class ReadableDataLoc
-        const probe_input_data& pid = get_pid();
-
-        if (!seq.isSet()) seq = pid.get_dataPtr();
-
-        int ro_pos = rpos+offset;
-        return pid.valid_rel_pos(ro_pos) ? PT_base((&*seq)[ro_pos]) : PT_QU;
+    void set_position(int abs_pos, int rel_pos) {
+        apos = abs_pos;
+        rpos = rel_pos;
+        pt_assert(has_valid_positions());
     }
+
+    const probe_input_data& get_pid() const { pt_assert(has_valid_name()); return psg.data[name]; }
 
     int restlength() const { return get_pid().get_size()-rpos; }
     bool is_shorther_than(int offset) const { return offset >= restlength(); }
@@ -370,6 +359,34 @@ public:
 };
 
 inline bool operator==(const DataLoc& loc1, const DataLoc& loc2) { return loc1.is_equal(loc2); }
+
+// -------------------------
+//      ReadableDataLoc
+
+class ReadableDataLoc : public DataLoc {
+    const probe_input_data& pid;
+    mutable SmartCharPtr    seq;
+    const char&             qseq;
+
+public:
+    ReadableDataLoc(int name_, int apos_, int rpos_)
+        : DataLoc(name_, apos_, rpos_),
+          pid(get_pid()),
+          seq(pid.get_dataPtr()),
+          qseq(*seq)
+    {}
+    explicit ReadableDataLoc(const DataLoc& loc)
+        : DataLoc(loc),
+          pid(get_pid()),
+          seq(pid.get_dataPtr()),
+          qseq(*seq)
+    {}
+
+    PT_base operator[](int offset) const {
+        int ro_pos = get_rel_pos()+offset;
+        return pid.valid_rel_pos(ro_pos) ? PT_base((&qseq)[ro_pos]) : PT_QU;
+    }
+};
 
 // -----------------------
 
@@ -520,7 +537,6 @@ class ChainIterator : virtual Noncopyable {
         else {
             data = PT_READ_CHAIN_ENTRY_stage_3(data, mainapos, loc);
         }
-        loc.invalidate_seq();
         pt_assert(at_end_of_chain() || loc.has_valid_name());
     }
     void inc() {
