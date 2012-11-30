@@ -36,8 +36,6 @@ int Range::calc_max_abs_pos() const {
         }
     }
 
-    pid.flush_rel2abs();
-
     return -1;
 }
 

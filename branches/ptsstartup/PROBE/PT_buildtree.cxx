@@ -470,7 +470,6 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
                             pt = build_pos_tree(pt, insertLoc);
                         }
                     }
-                    pid.flush_rel2abs();
                     ++data_progress;
                 }
 

@@ -132,7 +132,8 @@ inline GBDATA *expect_entry(GBDATA *gb_species, const char *entry_name) {
     return gb_entry;
 }
 
-cache::Cache<SmartCharPtr> probe_input_data::seq_cache(1); // resized later
+cache::Cache<SmartCharPtr>                  probe_input_data::seq_cache(1);     // resized later
+cache::Cache<probe_input_data::SmartIntPtr> probe_input_data::rel2abs_cache(1); // resized later
 
 GB_ERROR probe_input_data::init(GBDATA *gb_species_) {
     GBDATA *gb_cs      = expect_entry(gb_species_, "cs");
@@ -282,7 +283,8 @@ GB_ERROR PT_init_input_data() {
 
 #define CACHE_SEQ_PERCENT 50 // @@@ make global def and use in mem est.
 
-    probe_input_data::set_cache_size(icount*CACHE_SEQ_PERCENT/100+5); // cache about CACHE_SEQ_PERCENT% of seq data
+    probe_input_data::set_cache_sizes(icount*CACHE_SEQ_PERCENT/100+5, // cache about CACHE_SEQ_PERCENT% of seq data
+                                      1);                             // don't cache - only need abspos of currently inserted species
 
     printf("Database contains %i species\n", icount);
 

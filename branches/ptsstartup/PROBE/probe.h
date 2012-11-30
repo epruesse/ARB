@@ -153,36 +153,19 @@ public:
 //      Probe search
 
 class probe_input_data : virtual Noncopyable { // every taxa's own data
-    int size;   // @@@ misleading (contains 1 if no bases in sequence)
-
-    mutable int *rel2abs; // @@@ cache me
-
+    int     size;       // @@@ misleading (contains 1 if no bases in sequence)
     GBDATA *gb_species;
+    bool    group;      // probe_design: whether species is in group
 
-    bool group;           // probe_design: whether species is in group
+    typedef SmartArrayPtr(int) SmartIntPtr;
 
     mutable cache::CacheHandle<SmartCharPtr> seq;
-    static cache::Cache<SmartCharPtr>        seq_cache;
+    mutable cache::CacheHandle<SmartIntPtr>  rel2abs;
+
+    static cache::Cache<SmartCharPtr> seq_cache;
+    static cache::Cache<SmartIntPtr>  rel2abs_cache;
 
     GBDATA *get_gbdata() const { return gb_species; } // @@@ elim
-
-    void load_rel2abs() const {
-        GB_transaction ta(gb_species);
-
-        GBDATA *gb_baseoff = GB_entry(gb_species, "baseoff");
-        pt_assert(gb_baseoff);
-
-        const GB_CUINT4 *baseoff = GB_read_ints_pntr(gb_baseoff);
-
-        pt_assert(!rel2abs);
-        rel2abs = new int[size];
-
-        int abs = 0;
-        for (int rel = 0; rel<size; ++rel) {
-            abs          += baseoff[rel];
-            rel2abs[rel]  = abs;
-        }
-    }
 
     SmartCharPtr loadSeq() const {
         GB_transaction ta(gb_species);
@@ -194,16 +177,18 @@ public:
 
     probe_input_data()
         : size(0),
-          rel2abs(0),
           gb_species(0),
           group(false)
     {}
     ~probe_input_data() {
         seq.release(seq_cache);
-        flush_rel2abs();
+        rel2abs.release(rel2abs_cache);
     }
 
-    static void set_cache_size(size_t csize) { seq_cache.resize(csize); }
+    static void set_cache_sizes(size_t seq_cache_size, size_t abs_cache_size) {
+        seq_cache.resize(seq_cache_size);
+        rel2abs_cache.resize(abs_cache_size);
+    }
 
     GB_ERROR init(GBDATA *gb_species_);
 
@@ -251,13 +236,29 @@ public:
         return -1;
     }
 
-    void preload_rel2abs() const { if (!rel2abs) load_rel2abs(); }
-    void flush_rel2abs() const {
-        if (rel2abs) { delete [] rel2abs; rel2abs = NULL; }
+    void preload_rel2abs() const {
+        if (!rel2abs.is_cached()) {
+            GB_transaction ta(gb_species);
+
+            GBDATA *gb_baseoff = GB_entry(gb_species, "baseoff");
+            pt_assert(gb_baseoff);
+
+            const GB_CUINT4 *baseoff = GB_read_ints_pntr(gb_baseoff);
+
+            int *r2a = new int[size];
+
+            int abs = 0;
+            for (int rel = 0; rel<size; ++rel) {
+                abs      += baseoff[rel];
+                r2a[rel]  = abs;
+            }
+
+            rel2abs.assign(r2a, rel2abs_cache);
+        }
     }
     size_t get_abspos(size_t rel_pos) const {
-        pt_assert(rel2abs); // you need to call preload_rel2abs
-        return rel2abs[rel_pos];
+        pt_assert(rel2abs.is_cached()); // you need to call preload_rel2abs
+        return (&*rel2abs.access(rel2abs_cache))[rel_pos]; // @@@ brute-forced
     }
 
 };
