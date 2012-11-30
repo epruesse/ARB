@@ -807,7 +807,7 @@ bytestring *MP_all_species_string(const PT_local *) {
 
     for (i = 0; i < psg.data_count; i++)
     {
-        GBS_strcat(memfile, psg.data[i].get_name());
+        GBS_strcat(memfile, psg.data[i].get_shortname());
         GBS_chrcat(memfile, (char)1);
     }
 

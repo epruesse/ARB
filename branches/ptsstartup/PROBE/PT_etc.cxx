@@ -54,19 +54,19 @@ const char *virt_name(const PT_probematch *ml)
 {
     // get the name with a virtual function
     if (gene_flag) {
-        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_name());
+        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_shortname());
         return gs ? gs->get_arb_species_name() : "<cantResolveName>";
     }
     else {
-        pt_assert(psg.data[ml->name].get_name());
-        return psg.data[ml->name].get_name();
+        pt_assert(psg.data[ml->name].get_shortname());
+        return psg.data[ml->name].get_shortname();
     }
 }
 
 const char *virt_fullname(const PT_probematch * ml) 
 {
     if (gene_flag) {
-        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_name());
+        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_shortname());
         return gs ? gs->get_arb_gene_name() : "<cantResolveGeneFullname>";
     }
     else {

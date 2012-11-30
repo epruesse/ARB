@@ -130,9 +130,7 @@ public:
     PT_dump_leaf(const char *Prefix, FILE *Out) : prefix(Prefix), out(Out) {}
 
     int operator()(const DataLoc& leaf) {
-        struct probe_input_data& data = psg.data[leaf.get_name()];
-
-        fprintf(out, "%s %i=%s@%i>%i\n", prefix, leaf.get_name(), data.get_name(), leaf.get_abs_pos(), leaf.get_rel_pos());
+        fprintf(out, "%s %i=%s@%i>%i\n", prefix, leaf.get_name(), leaf.get_pid().get_shortname(), leaf.get_abs_pos(), leaf.get_rel_pos());
         return 0;
     }
 };

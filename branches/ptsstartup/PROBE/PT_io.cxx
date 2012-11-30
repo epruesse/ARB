@@ -339,7 +339,7 @@ void PT_build_species_hash() {
     long i;
     psg.namehash = GBS_create_hash(psg.data_count, GB_MIND_CASE);
     for (i=0; i<psg.data_count; i++) {
-        GBS_write_hash(psg.namehash, psg.data[i].get_name(), i+1);
+        GBS_write_hash(psg.namehash, psg.data[i].get_shortname(), i+1);
     }
     unsigned int    max_size;
     max_size = 0;

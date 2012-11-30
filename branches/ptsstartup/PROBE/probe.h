@@ -213,7 +213,7 @@ public:
     }
 
     // @@@ speed up all DB-searches by directly using GBQUARK
-    const char *get_name() const {
+    const char *get_shortname() const {
         GB_transaction ta(gb_species);
 
         GBDATA *gb_name = GB_entry(gb_species, "name");

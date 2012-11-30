@@ -349,7 +349,7 @@ public:
 
 #if defined(DEBUG)
     void dump(FILE *fp) const {
-        fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n", apos, rpos, name, psg.data[name].get_name());
+        fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n", apos, rpos, name, psg.data[name].get_shortname());
     }
 #endif
 
@@ -371,16 +371,18 @@ class ReadableDataLoc : public DataLoc {
 public:
     ReadableDataLoc(int name_, int apos_, int rpos_)
         : DataLoc(name_, apos_, rpos_),
-          pid(get_pid()),
+          pid(DataLoc::get_pid()),
           seq(pid.get_dataPtr()),
           qseq(*seq)
     {}
     explicit ReadableDataLoc(const DataLoc& loc)
         : DataLoc(loc),
-          pid(get_pid()),
+          pid(loc.get_pid()),
           seq(pid.get_dataPtr()),
           qseq(*seq)
     {}
+
+    const probe_input_data& get_pid() const { return pid; }
 
     PT_base operator[](int offset) const {
         int ro_pos = get_rel_pos()+offset;

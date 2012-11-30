@@ -194,8 +194,7 @@ struct ptnd_chain_count_mishits {
         const char *probe = psg.probe;
         psg.abs_pos.announce(probeLoc.get_abs_pos());
 
-        const probe_input_data& pid = psg.data[probeLoc.get_name()];
-        if (pid.outside_group()) {
+        if (probeLoc.get_pid().outside_group()) {
             if (probe) {
                 for (int i = 0; probe[i] && probeLoc[psg.height+i]; ++i) {
                     if (probe[i] != probeLoc[psg.height+i]) return 0;
@@ -218,7 +217,7 @@ static int ptnd_count_mishits2(POS_TREE *pt) {
     if (PT_read_type(pt) == PT_NT_LEAF) {
         DataLoc loc(pt);
         psg.abs_pos.announce(loc.get_abs_pos());
-        return psg.data[loc.get_name()].outside_group();
+        return loc.get_pid().outside_group();
     }
     
     if (PT_read_type(pt) == PT_NT_CHAIN) {
@@ -416,7 +415,7 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
 
             int pos = loc.get_rel_pos()+height;
             
-            if (pos + (int)(strlen(probe)) >= psg.data[loc.get_name()].get_size()) // after end // @@@ wrong check ? better return from loop below when ref is PT_QU
+            if (pos + (int)(strlen(probe)) >= loc.get_pid().get_size()) // after end // @@@ wrong check ? better return from loop below when ref is PT_QU
                 return 0;
 
             for (int i = 0; probe[i] && loc[height+i]; ++i) {
@@ -618,7 +617,7 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const Data
         int   pos   = matchLoc.get_rel_pos()-1;
         start--;                        // test the base left of start
 
-        SmartCharPtr  seqPtr = psg.data[matchLoc.get_name()].get_dataPtr();
+        SmartCharPtr  seqPtr = matchLoc.get_pid().get_dataPtr();
         const char   *seq    = &*seqPtr;
 
         bool split = false;
@@ -661,7 +660,7 @@ struct ptnd_chain_check_part {
     ptnd_chain_check_part(int s) : split(s) {}
 
     int operator() (const DataLoc& partLoc) {
-        if (psg.data[partLoc.get_name()].outside_group()) {
+        if (partLoc.get_pid().outside_group()) {
             const char *probe = psg.probe;
             double      sbond = ptnd.sum_bonds;
             double      dt    = ptnd.dt;
@@ -672,7 +671,7 @@ struct ptnd_chain_check_part {
                 int    height = psg.height;
                 int    base;
 
-                SmartCharPtr  seqPtr = psg.data[partLoc.get_name()].get_dataPtr();
+                SmartCharPtr  seqPtr = partLoc.get_pid().get_dataPtr();
                 const char   *seq    = &*seqPtr;
 
                 while (probe[height] && (base = seq[pos])) {
@@ -702,7 +701,7 @@ static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds) {
         if (PT_read_type(pt) == PT_NT_LEAF) {
             // @@@ dupped code is in ptnd_chain_check_part::operator()
             DataLoc loc(pt);
-            if (psg.data[loc.get_name()].outside_group()) {
+            if (loc.get_pid().outside_group()) {
                 ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, loc, dt, sum_bonds);
             }
         }
@@ -764,14 +763,14 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
         if (PT_read_type(pt) == PT_NT_LEAF) {
             // @@@ dupped code is in ptnd_chain_check_part::operator()
             const DataLoc loc(pt);
-            if (psg.data[loc.get_name()].outside_group()) {
+            if (loc.get_pid().outside_group()) {
                 int pos = loc.get_rel_pos() + height;
-                if (pos + (int)(strlen(probe+height)) >= psg.data[loc.get_name()].get_size()) // after end
+                if (pos + (int)(strlen(probe+height)) >= loc.get_pid().get_size()) // after end
                     return;
 
                 int ref;
 
-                SmartCharPtr  seqPtr = psg.data[loc.get_name()].get_dataPtr();
+                SmartCharPtr  seqPtr = loc.get_pid().get_dataPtr();
                 const char   *seq    = &*seqPtr;
 
                 while (probe[height] && (ref = seq[pos])) {
@@ -908,7 +907,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
                 datasize           += size;
 
                 if (size<1 || size<(unsigned long)pdc->probelen) {
-                    fprintf(stderr, "Warning: impossible design request for '%s' (contains only %lu bp)\n", pid.get_name(), size);
+                    fprintf(stderr, "Warning: impossible design request for '%s' (contains only %lu bp)\n", pid.get_shortname(), size);
                 }
 
                 if (datasize<size) datasize           = ULONG_MAX;  // avoid overflow!
