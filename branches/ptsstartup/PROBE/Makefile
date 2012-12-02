@@ -74,6 +74,8 @@ PT_debug.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_error.h
+PT_debug.o: $(ARBHOME)/INCLUDE/arb_file.h
+PT_debug.o: $(ARBHOME)/INCLUDE/arb_misc.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -24,11 +24,10 @@
 #include "probe.h"
 #endif
 
-#define PT_CHAIN_END          0xff
-#define PT_CHAIN_NTERM        250
-#define PT_SHORT_SIZE         0xffff
-#define PT_BLOCK_SIZE         0x800
-#define PT_INIT_CHAIN_SIZE    20
+#define PT_CHAIN_END       0xff
+#define PT_CHAIN_NTERM     250
+#define PT_SHORT_SIZE      0xffff
+#define PT_INIT_CHAIN_SIZE 20
 
 struct pt_global {
     PT_NODE_TYPE flag_2_type[256];
@@ -189,6 +188,35 @@ inline int checked_lower_bits(int bits) {
 inline const char *node_data_start(const POS_TREE *node) { return &node->data + psg.ptdata->get_offset(); }
 inline char *node_data_start(POS_TREE *node) { return const_cast<char*>(node_data_start(const_cast<const POS_TREE*>(node))); }
 
+inline size_t PT_node_size_stage_3(POS_TREE *node) {
+    size_t size = 1; // flags
+    if ((node->flags & IS_SINGLE_BRANCH_NODE) == 0) {
+        UINT sec = (uchar)node->data; // read second byte for charshort/shortlong info
+        ++size;
+
+        long i = PT_GLOBAL.count_bits[PT_BASES][node->flags] + PT_GLOBAL.count_bits[PT_BASES][sec];
+#ifdef ARB_64
+        if (sec & LONG_SONS) {
+            size += 4*i;
+        }
+        else if (sec & INT_SONS) {
+            size += 2*i;
+        }
+        else {
+            size += i;
+        }
+#else
+        if (sec & LONG_SONS) {
+            size += 2*i;
+        }
+        else {
+            size += i;
+        }
+#endif
+    }
+    return size;
+}
+
 inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_base base) { // stage 3 (no father)
     pt_assert_stage(STAGE3);
     
@@ -303,6 +331,12 @@ inline POS_TREE *PT_read_father(POS_TREE *node) {
     if (father) pt_assert(PT_read_type(father) == PT_NT_NODE);
 #endif
     return father;
+}
+
+inline size_t PT_leaf_size_stage_3(POS_TREE *node) {
+    size_t size = 1;  // flags
+    size += (PT_GLOBAL.count_bits[PT_BASES][node->flags]+3)*2;
+    return size;
 }
 
 // -----------------

@@ -588,7 +588,7 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
             error = GB_IO_error("stat", tname);
         }
         else {
-            printf("- reading Tree %s of size %li from disk\n", tname, size);
+            printf("- mapping ptindex ('%s', %s) from disk\n", tname, GBS_readable_size(size, "b"));
             FILE *in = fopen(tname, "r");
             if (!in) {
                 error = GB_IO_error("read", tname);

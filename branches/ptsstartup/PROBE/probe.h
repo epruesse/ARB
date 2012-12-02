@@ -33,6 +33,8 @@
 // # define PTM_DEBUG_VALIDATE_CHAINS
 #endif // DEBUG
 
+#define CALCULATE_STATS_ON_QUERY // @@@ move into DEBUG section above
+
 #if defined(PTM_DEBUG_STAGE_ASSERTIONS)
 #define pt_assert_stage(s) pt_assert(psg.ptdata->get_stage() == (s))
 #else // !defined(PTM_DEBUG_STAGE_ASSERTIONS)
@@ -364,6 +366,8 @@ public:
     PT_data   *ptdata;
 
     probe_statistic_struct stat;
+
+    bool big_db; // STAGE3 only (true -> uses 8 bit pointers)
 
     void setup();
     void cleanup();

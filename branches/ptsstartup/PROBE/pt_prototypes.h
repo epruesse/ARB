@@ -21,7 +21,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main *, const char *tname, ULONG ARM_size_
 ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) __ATTR__USERESULT;
 
 /* PT_debug.cxx */
-void PT_dump_tree_statistics(void);
+void PT_dump_tree_statistics(const char *indexfilename);
 void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out);
 void PT_dump_POS_TREE(POS_TREE *IF_DEBUG (node), FILE *IF_DEBUG (out));
 int PT_index_dump(const PT_main *main);

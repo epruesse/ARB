@@ -13,111 +13,189 @@
 #include "probe_tree.h"
 #include "pt_prototypes.h"
 
-#if defined(DEBUG)
+#include <arb_misc.h>
+#include <arb_file.h>
 
-#define DEBUG_MAX_CHAIN_SIZE 1000
-#define DEBUG_TREE_DEEP      PT_POS_TREE_HEIGHT+50
+#if defined(CALCULATE_STATS_ON_QUERY)
 
-struct PT_debug {
-    int chainsizes[DEBUG_MAX_CHAIN_SIZE][DEBUG_TREE_DEEP];
-    int chainsizes2[DEBUG_MAX_CHAIN_SIZE];
-    int splits[DEBUG_TREE_DEEP][PT_BASES];
-    int nodes[DEBUG_TREE_DEEP];
-    int tips[DEBUG_TREE_DEEP];
-    int chains[DEBUG_TREE_DEEP];
-    int chaincount;
-};
-static PT_debug *ptds;
+#define DEBUG_MAX_CHAIN_SIZE 10000000
+#define DEBUG_TREE_DEPTH     (PT_POS_TREE_HEIGHT+1)
 
-struct PT_chain_count {
-    int operator() (const DataLoc&) {
-        psg.height++;
-        return 0;
+
+struct PT_statistic {
+    // nodes
+    size_t nodes[DEBUG_TREE_DEPTH];
+    size_t nodes_mem[DEBUG_TREE_DEPTH];
+
+    size_t splits[DEBUG_TREE_DEPTH][PT_BASES];
+
+    // leafs
+    size_t tips[DEBUG_TREE_DEPTH];
+    size_t tips_mem[DEBUG_TREE_DEPTH];
+
+    // chains
+    size_t chains_at_depth[DEBUG_TREE_DEPTH];
+    size_t chains_at_depth_mem[DEBUG_TREE_DEPTH];
+
+    size_t chains_of_size[DEBUG_MAX_CHAIN_SIZE+1];
+    size_t chains_of_size_mem[DEBUG_MAX_CHAIN_SIZE+1];
+
+    size_t chaincount;
+
+    PT_statistic() { memset(this, 0, sizeof(*this)); }
+
+    void analyse(POS_TREE *pt, int height) {
+        pt_assert(height<DEBUG_TREE_DEPTH);
+        switch (PT_read_type(pt)) {
+            case PT_NT_NODE: {
+                int basecnt = 0;
+                for (int i=PT_QU; i<PT_BASES; i++) {
+                    POS_TREE *pt_help = PT_read_son(pt, (PT_base)i);
+                    if (pt_help) {
+                        basecnt++;
+                        analyse(pt_help, height+1);
+                    }
+                }
+
+                nodes[height]++;
+                nodes_mem[height] += PT_node_size_stage_3(pt);
+
+                splits[height][basecnt]++;
+                break;
+            }
+            case PT_NT_LEAF:
+                tips[height]++;
+                tips_mem[height] += PT_leaf_size_stage_3(pt);
+                break;
+
+            case PT_NT_CHAIN: {
+                size_t        size = 1;
+                ChainIterator iter(pt);
+                while (++iter) { ++size; }
+
+                if (size>DEBUG_MAX_CHAIN_SIZE) size = DEBUG_MAX_CHAIN_SIZE;
+
+                size_t mem = iter.memory()-(char*)pt+1; // last_data-start+end of chain marker
+
+                chains_of_size[size]++;
+                chains_of_size_mem[size]    += mem;
+                chains_at_depth[height]++;
+                chains_at_depth_mem[height] += mem;
+
+                chaincount++;
+                break;
+            }
+            default:
+                pt_assert(0);
+                break;
+        }
     }
-};
 
-static void analyse_tree(POS_TREE *pt, int height) {
-    PT_NODE_TYPE type;
-    POS_TREE *pt_help;
-    int i;
-    int basecnt;
-    type = PT_read_type(pt);
-    switch (type) {
-        case PT_NT_NODE:
-            ptds->nodes[height]++;
-            basecnt = 0;
-            for (i=PT_QU; i<PT_BASES; i++) {
-                if ((pt_help = PT_read_son(pt, (PT_base)i)))
-                {
-                    basecnt++;
-                    analyse_tree(pt_help, height+1);
-                };
-            }
-            ptds->splits[height][basecnt]++;
-            break;
-        case PT_NT_LEAF:
-            ptds->tips[height]++;
-            break;
-        default:
-            ptds->chains[height]++;
-            psg.height = 0;
-            PT_forwhole_chain(pt, PT_chain_count());
-            if (psg.height >= DEBUG_MAX_CHAIN_SIZE) psg.height = DEBUG_MAX_CHAIN_SIZE;
-            ptds->chainsizes[psg.height][height]++;
-            ptds->chainsizes2[psg.height]++;
-            ptds->chaincount++;
-            if (ptds->chaincount<20) {
-                printf("\n\n\n\n");
-                PT_forwhole_chain(pt, PTD_chain_print());
-            }
-            break;
-    };
+    void printCountAndMem(size_t count, size_t mem) {
+        printf("%10zu mem:%7s mean:%5.2f b", count, GBS_readable_size(mem, "b"), mem/double(count));
+    }
 
-    fflush_all();
-}
+    void LF() { putchar('\n'); }
+
+    void dump(size_t indexsize) {
+        size_t sum    = 0;
+        size_t mem    = 0;
+        size_t allmem = 0;
+
+        for (int i=0; i<DEBUG_TREE_DEPTH; i++) {
+            size_t k = nodes[i];
+            if (k) {
+                sum += k;
+                mem += nodes_mem[i];
+                printf("nodes at depth  %2i:", i); printCountAndMem(k, nodes_mem[i]);
+                for (int j=0; j<PT_BASES; j++) {
+                    k = splits[i][j];
+                    printf("  [%i]=%-10zu", j, k);
+                }
+                LF();
+            }
+        }
+        fputs("nodes (all):       ", stdout); printCountAndMem(sum, mem); printf(" (%5.2f%%)\n", mem*100.0/indexsize);
+        allmem += mem;
+
+        mem = sum = 0;
+        for (int i=0; i<DEBUG_TREE_DEPTH; i++) {
+            size_t k = tips[i];
+            if (k) {
+                sum += k;
+                mem += tips_mem[i];
+                printf("tips at depth   %2i:", i); printCountAndMem(k, tips_mem[i]); LF();
+            }
+        }
+        fputs("tips (all):        ", stdout); printCountAndMem(sum, mem); printf(" (%5.2f%%)\n", mem*100.0/indexsize);
+        allmem += mem;
+
+        mem = sum = 0;
+        for (int i=0; i<DEBUG_TREE_DEPTH; i++) {
+            size_t k = chains_at_depth[i];
+            if (k) {
+                sum += k;
+                mem += chains_at_depth_mem[i];
+                printf("chains at depth %2i:", i); printCountAndMem(k, chains_at_depth_mem[i]); LF();
+            }
+        }
+        fputs("chains (all):      ", stdout); printCountAndMem(sum, mem); printf(" (%5.2f%%)\n", mem*100.0/indexsize);
+        allmem += mem;
+
+#if defined(ASSERTION_USED)
+        size_t chain_mem1 = mem;
 #endif
 
-void PT_dump_tree_statistics() {
-#if defined(DEBUG)
-    // show various debug information about the tree
-    ptds = (PT_debug *)calloc(sizeof(PT_debug), 1);
-    analyse_tree(psg.pt, 0);
-    int i, j, k;
-    int sum = 0;            // sum of chains
-    for (i=0; i<DEBUG_TREE_DEEP; i++) {
-        k = ptds->nodes[i];
-        if (k) {
-            sum += k;
-            printf("nodes at deep %i: %i        sum %i\t\t", i, k, sum);
-            for (j=0; j<PT_BASES; j++) {
-                k =     ptds->splits[i][j];
-                printf("%i:%i\t", j, k);
+        mem = sum = 0;
+        for (int i=0; i <= DEBUG_MAX_CHAIN_SIZE; i++) {
+            size_t k = chains_of_size[i];
+            if (k) {
+                size_t e  = i*k;
+                sum      += e;
+                mem      += chains_of_size_mem[i];
+                printf("chain of size %5i occur %10zu entries:", i, k); printCountAndMem(e, chains_of_size_mem[i]); LF();
             }
-            printf("\n");
+        }
+        fputs("ch.entries (all):  ", stdout); printCountAndMem(sum, mem); printf(" (%5.2f%%)\n", mem*100.0/indexsize);
+        // Note: chains were already added to allmem above
+        pt_assert(chain_mem1 == mem); // both chain-examinations should result in same mem size
+
+        size_t known_other_mem =
+            1 + // dummy byte at start of file (avoids that address of a node is zero)
+            4 + // PT_SERVER_MAGIC
+            1 + // PT_SERVER_VERSION
+            2 + // info block size
+            (psg.big_db ? 8 : 0) + // big pointer to root node (if final int is 0xffffffff)
+            4;  // final int
+
+        allmem += known_other_mem;
+
+        printf("overall mem:%7s\n", GBS_readable_size(allmem, "b"));
+        printf("indexsize:  %7s\n", GBS_readable_size(indexsize, "b"));
+
+        if (indexsize>allmem) {
+            printf("(file-mem):%7s\n", GBS_readable_size(indexsize-allmem, "b"));
+        }
+        else if (indexsize<allmem) {
+            printf("(mem-file):%7s\n", GBS_readable_size(allmem-indexsize, "b"));
+        }
+        else {
+            puts("indexsize exactly matches counted memory");
         }
     }
-    sum = 0;
-    for (i=0; i<DEBUG_TREE_DEEP; i++) {
-        k = ptds->tips[i];
-        sum += k;
-        if (k)  printf("tips at deep %i: %i     sum %i\n", i, k, sum);
-    }
-    sum = 0;
-    for (i=0; i<DEBUG_TREE_DEEP; i++) {
-        k = ptds->chains[i];
-        if (k) {
-            sum += k;
-            printf("chains at deep %i: %i       sum %i\n", i, k, sum);
-        }
-    }
-    sum = 0;
-    int sume = 0;           // sum of chain entries
-    for (i=0; i<DEBUG_MAX_CHAIN_SIZE; i++) {
-            k =     ptds->chainsizes2[i];
-            sum += k;
-            sume += i*k;
-            if (k) printf("chain of size %i occur %i    sc %i   sce %i\n", i, k, sum, sume);
-    }
+};
+#endif
+
+void PT_dump_tree_statistics(const char *indexfilename) {
+#if defined(CALCULATE_STATS_ON_QUERY)
+    // show various debug information about the tree
+    PT_statistic *stat = new PT_statistic;
+    stat->analyse(psg.pt, 0);
+
+    size_t filesize = GB_size_of_file(indexfilename);
+    stat->dump(filesize);
+
+    delete stat;
 #endif
 }
 

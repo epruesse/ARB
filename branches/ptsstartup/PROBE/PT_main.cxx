@@ -492,11 +492,11 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
             if (error) error = GBS_global_string("Gave up (Reason: %s)", error.deliver());
             else {
                 error = enter_stage_3_load_tree(aisc_main, pt_name); // now stage 3
-#if defined(DEBUG)
+#if defined(CALCULATE_STATS_ON_QUERY)
                 if (!error) {
-                    printf("Tree loaded - performing checks..\n");
-                    PT_dump_tree_statistics();
-                    printf("Checks done");
+                    puts("[index loaded - calculating statistic]");
+                    PT_dump_tree_statistics(pt_name);
+                    puts("[statistic done]");
                 }
 #endif
             }

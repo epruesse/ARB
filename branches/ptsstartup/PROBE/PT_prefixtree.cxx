@@ -754,7 +754,7 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __A
         long  size = GB_size_of_file(fname);
         char *main = &(buffer[size-4]);
 
-        bool big_db = false;
+        psg.big_db = false;
 
         long i = PT_read_int(main);
 #ifdef ARB_64
@@ -762,12 +762,12 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __A
             main -= 8;                            // in the previous 8 byte (in a long long)
             COMPILE_ASSERT(sizeof(PT_PNTR) == 8); // 0xffffffff is used to signalize to be compatible with older pt-servers
             i      = PT_read_big(main);           // this search tree can only be loaded at 64 Bit
-            big_db = true;
+            psg.big_db = true;
         }
 #else
         if (i<0) {
             pt_assert(i == -1);                     // aka 0xffffffff
-            big_db = true;                          // not usable in 32-bit version (fails below)
+            psg.big_db = true;                          // not usable in 32-bit version (fails below)
         }
         pt_assert(i <= INT_MAX);
 #endif
@@ -795,12 +795,11 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __A
         }
 
 #ifdef ARB_64
-        // 64bit version:
-        big_db        = big_db; // only used in 32bit
+        // not used in 64bit version:
         info_detected = info_detected;
 #else
         // 32bit version:
-        if (!error && big_db) {
+        if (!error && psg.big_db) {
             error = "PT-server database can only be used with 64bit-PT-Server";
         }
         if (!error && !info_detected) {
