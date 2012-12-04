@@ -18,8 +18,9 @@
 
 #if defined(CALCULATE_STATS_ON_QUERY)
 
-#define DEBUG_MAX_CHAIN_SIZE 10000000
-#define DEBUG_TREE_DEPTH     (PT_POS_TREE_HEIGHT+1)
+#define DEBUG_MAX_CHAIN_SIZE      10000000
+#define DEBUG_MAX_CHAIN_NAME_DIST 40
+#define DEBUG_TREE_DEPTH          (PT_POS_TREE_HEIGHT+1)
 
 
 struct PT_statistic {
@@ -41,6 +42,8 @@ struct PT_statistic {
     size_t chains_of_size_mem[DEBUG_MAX_CHAIN_SIZE+1];
 
     size_t chaincount;
+
+    size_t chain_name_dist[DEBUG_MAX_CHAIN_NAME_DIST+1];
 
     PT_statistic() { memset(this, 0, sizeof(*this)); }
 
@@ -71,7 +74,20 @@ struct PT_statistic {
             case PT_NT_CHAIN: {
                 size_t        size = 1;
                 ChainIterator iter(pt);
-                while (++iter) { ++size; }
+
+                int lastName = iter.at().get_name();
+                while (++iter) {
+                    {
+                        int thisName = iter.at().get_name();
+                        pt_assert(thisName >= lastName);
+
+                        int nameDist = thisName-lastName;
+                        if (nameDist>DEBUG_MAX_CHAIN_NAME_DIST) nameDist = DEBUG_MAX_CHAIN_NAME_DIST;
+                        ++chain_name_dist[nameDist];
+                        lastName = thisName;
+                    }
+                    ++size;
+                }
 
                 if (size>DEBUG_MAX_CHAIN_SIZE) size = DEBUG_MAX_CHAIN_SIZE;
 
@@ -159,6 +175,20 @@ struct PT_statistic {
         fputs("ch.entries (all):  ", stdout); printCountAndMem(sum, mem); printf(" (%5.2f%%)\n", mem*100.0/indexsize);
         // Note: chains were already added to allmem above
         pt_assert(chain_mem1 == mem); // both chain-examinations should result in same mem size
+
+        {
+            size_t followup_chain_entries = 0;
+            for (int i = 0; i <= DEBUG_MAX_CHAIN_NAME_DIST; ++i) {
+                followup_chain_entries += chain_name_dist[i];
+            }
+            for (int i = 0; i <= DEBUG_MAX_CHAIN_NAME_DIST; ++i) {
+                size_t k = chain_name_dist[i];
+                if (k) {
+                    printf("chain-entry-name-dist of %2zu occurs %10zu (=%5.2f%%)\n", i, k, k*100.0/followup_chain_entries);
+                }
+            }
+            printf("overall followup-chain-entries: %zu\n", followup_chain_entries);
+        }
 
         size_t known_other_mem =
             1 + // dummy byte at start of file (avoids that address of a node is zero)
