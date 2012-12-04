@@ -19,7 +19,6 @@
 #include <cmath>
 #endif
 
-// @@@ update STAGE1_INDEX_BYTES_PER_BASE (values are too high)
 #ifdef ARB_64
 
 # define STAGE1_INDEX_BYTES_PER_BASE 19.5 // size of index (for each oligo inserted in one pass)
@@ -32,8 +31,15 @@
 
 #else
 
-# error usage not determined yet
-# define STAGE1_INDEX_BYTES_PER_BASE 35
+// @@@ determine memusage for 32bit ptserver
+# warning estimated memusage for 32bit is just a copy of 64bit values and is far too high
+# define STAGE1_INDEX_BYTES_PER_BASE 19.5 // size of index (for each oligo inserted in one pass)
+# define STAGE1_OTHER_BYTES_PER_BASE 1.2  // non-index data (for each bp in database)
+
+# define STAGE1_INDEX_EXTRA_MB 200 // additional constant memory used by index (+ a bit safety)
+# define STAGE1_OTHER_EXTRA_MB 40  // additional constant memory used elsewhere (+ a bit safety)
+
+# define PTSERVER_BIN_MB 20       // binary mem footprint of ptserver (incl. libs, w/o DB) detected using pmap
 
 #endif
 
