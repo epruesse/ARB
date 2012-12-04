@@ -145,9 +145,9 @@ void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     PT_write_pointer(p, old_first);
     p += sizeof(PT_PNTR);
 
-    PT_WRITE_NAT(p, loc.get_name());
-    PT_WRITE_NAT(p, loc.get_rel_pos());
-    PT_WRITE_NAT(p, loc.get_abs_pos());
+    PT_write_compact_nat(p, loc.get_name());
+    PT_write_compact_nat(p, loc.get_rel_pos());
+    PT_write_compact_nat(p, loc.get_abs_pos());
 
     int size = p - buffer;
 
@@ -1057,6 +1057,212 @@ void TEST_mem() {
     MEM.dump_stats(true);
 #endif
 
+}
+
+template<int R>
+static arb_test::match_expectation nat_stored_as_expected(uint_32 written_nat, int expected_bytes) {
+    char buffer[5];
+
+    static uint_8 reserved_bits = 0;
+
+    reserved_bits = (reserved_bits+1) & BitsBelowBit<R>::value;
+    uint_8 reserved_bits_read;
+
+    char       *wp = buffer;
+    const char *rp = buffer;
+
+    write_nat_with_reserved_bits<R>(wp, written_nat, reserved_bits);
+    uint_32 read_nat = read_nat_with_reserved_bits<R>(rp, reserved_bits_read);
+
+    int written_bytes = wp-buffer;
+    int read_bytes    = rp-buffer;
+
+    using namespace   arb_test;
+    expectation_group expected;
+    expected.add(that(read_nat).is_equal_to(written_nat));
+    expected.add(that(written_bytes).is_equal_to(expected_bytes));
+    expected.add(that(read_bytes).is_equal_to(written_bytes));
+    expected.add(that(reserved_bits_read).is_equal_to(reserved_bits));
+
+    return all().ofgroup(expected);
+}
+
+template<int R>
+static arb_test::match_expectation int_stored_as_expected(int32_t written_int, int expected_bytes) {
+    char buffer[5];
+
+    static uint_8 reserved_bits = 0;
+
+    reserved_bits = (reserved_bits+1) & BitsBelowBit<R>::value;
+    uint_8 reserved_bits_read;
+
+    char       *wp = buffer;
+    const char *rp = buffer;
+
+    write_int_with_reserved_bits<R>(wp, written_int, reserved_bits);
+    int32_t read_int = read_int_with_reserved_bits<R>(rp, reserved_bits_read);
+
+    int written_bytes = wp-buffer;
+    int read_bytes    = rp-buffer;
+
+    using namespace   arb_test;
+    expectation_group expected;
+    expected.add(that(read_int).is_equal_to(written_int));
+    expected.add(that(written_bytes).is_equal_to(expected_bytes));
+    expected.add(that(read_bytes).is_equal_to(written_bytes));
+    expected.add(that(reserved_bits_read).is_equal_to(reserved_bits));
+
+    return all().ofgroup(expected);
+}
+
+
+#define TEST_COMPACT_NAT_STORAGE(nat,inBytes)          TEST_EXPECTATION(nat_stored_as_expected<0>(nat, inBytes))
+#define TEST_COMPACT_NAT_STORAGE_RESERVE1(nat,inBytes) TEST_EXPECTATION(nat_stored_as_expected<1>(nat, inBytes))
+#define TEST_COMPACT_NAT_STORAGE_RESERVE2(nat,inBytes) TEST_EXPECTATION(nat_stored_as_expected<2>(nat, inBytes))
+#define TEST_COMPACT_NAT_STORAGE_RESERVE3(nat,inBytes) TEST_EXPECTATION(nat_stored_as_expected<3>(nat, inBytes))
+#define TEST_COMPACT_NAT_STORAGE_RESERVE4(nat,inBytes) TEST_EXPECTATION(nat_stored_as_expected<4>(nat, inBytes))
+#define TEST_COMPACT_NAT_STORAGE_RESERVE5(nat,inBytes) TEST_EXPECTATION(nat_stored_as_expected<5>(nat, inBytes))
+
+#define TEST_COMPACT_INT_STORAGE(i,inBytes)          TEST_EXPECTATION(int_stored_as_expected<0>(i, inBytes))
+#define TEST_COMPACT_INT_STORAGE_RESERVE3(i,inBytes) TEST_EXPECTATION(int_stored_as_expected<3>(i, inBytes))
+
+void TEST_compact_storage() {
+    // test natural numbers (w/o reserved bits)
+
+    TEST_COMPACT_NAT_STORAGE(0, 1);
+    TEST_COMPACT_NAT_STORAGE(0x7f, 1);
+
+    TEST_COMPACT_NAT_STORAGE(0x80, 2);
+    TEST_COMPACT_NAT_STORAGE(0x407F, 2);
+
+    TEST_COMPACT_NAT_STORAGE(0x4080, 3);
+    TEST_COMPACT_NAT_STORAGE(0x20407F, 3);
+
+    TEST_COMPACT_NAT_STORAGE(0x204080, 4);
+    TEST_COMPACT_NAT_STORAGE(0x1020407F, 4);
+
+    TEST_COMPACT_NAT_STORAGE(0x10204080, 5);
+    TEST_COMPACT_NAT_STORAGE(0xffffffff, 5);
+
+    // test 1 reserved bit (bit7 is reserved)
+    TEST_COMPACT_NAT_STORAGE_RESERVE1(0, 1);
+    TEST_COMPACT_NAT_STORAGE_RESERVE1(0x3f, 1);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE1(0x40, 2);
+    TEST_COMPACT_NAT_STORAGE_RESERVE1(0x203f, 2);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE1(0x2040, 3);
+    TEST_COMPACT_NAT_STORAGE_RESERVE1(0x10203f, 3);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE1(0x102040, 4);
+    TEST_COMPACT_NAT_STORAGE_RESERVE1(0x0810203f, 4);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE1(0x08102040, 5);
+    TEST_COMPACT_NAT_STORAGE_RESERVE1(0xffffffff, 5);
+
+    // test integers (same as natural numbers with 1 bit reserved for sign)
+    TEST_COMPACT_INT_STORAGE( 0, 1);
+    TEST_COMPACT_INT_STORAGE( 0x3f, 1);
+    TEST_COMPACT_INT_STORAGE(-0x40, 1);
+
+    TEST_COMPACT_INT_STORAGE( 0x40, 2);
+    TEST_COMPACT_INT_STORAGE(-0x41, 2);
+    TEST_COMPACT_INT_STORAGE( 0x203f, 2);
+    TEST_COMPACT_INT_STORAGE(-0x2040, 2);
+
+    TEST_COMPACT_INT_STORAGE( 0x2040, 3);
+    TEST_COMPACT_INT_STORAGE(-0x2041, 3);
+    TEST_COMPACT_INT_STORAGE( 0x10203f, 3);
+    TEST_COMPACT_INT_STORAGE(-0x102040, 3);
+
+    TEST_COMPACT_INT_STORAGE( 0x102040, 4);
+    TEST_COMPACT_INT_STORAGE(-0x102041, 4);
+    TEST_COMPACT_INT_STORAGE( 0x0810203f, 4);
+    TEST_COMPACT_INT_STORAGE(-0x08102040, 4);
+
+    TEST_COMPACT_INT_STORAGE( 0x08102040, 5);
+    TEST_COMPACT_INT_STORAGE(-0x08102041, 5);
+    TEST_COMPACT_INT_STORAGE(INT_MAX, 5);
+    TEST_COMPACT_INT_STORAGE(INT_MIN, 5);
+
+    // test 2 reserved bits (bit7 and bit6 are reserved)
+    TEST_COMPACT_NAT_STORAGE_RESERVE2(0, 1);
+    TEST_COMPACT_NAT_STORAGE_RESERVE2(0x1f, 1);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE2(0x20, 2);
+    TEST_COMPACT_NAT_STORAGE_RESERVE2(0x101f, 2);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE2(0x1020, 3);
+    TEST_COMPACT_NAT_STORAGE_RESERVE2(0x08101f, 3);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE2(0x081020, 4);
+    TEST_COMPACT_NAT_STORAGE_RESERVE2(0x0408101f, 4);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE2(0x04081020, 5);
+    TEST_COMPACT_NAT_STORAGE_RESERVE2(0xffffffff, 5);
+
+    // test 3 reserved bits (bit7 .. bit5 are reserved)
+    TEST_COMPACT_NAT_STORAGE_RESERVE3(0, 1);
+    TEST_COMPACT_NAT_STORAGE_RESERVE3(0xf, 1);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE3(0x10, 2);
+    TEST_COMPACT_NAT_STORAGE_RESERVE3(0x080f, 2);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE3(0x0810, 3);
+    TEST_COMPACT_NAT_STORAGE_RESERVE3(0x04080f, 3);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE3(0x040810, 4);
+    TEST_COMPACT_NAT_STORAGE_RESERVE3(0x0204080f, 4);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE3(0x02040810, 5);
+    TEST_COMPACT_NAT_STORAGE_RESERVE3(0xffffffff, 5);
+
+    // test 4 reserved bits (bit7 .. bit4 are reserved)
+    TEST_COMPACT_NAT_STORAGE_RESERVE4(0, 1);
+    TEST_COMPACT_NAT_STORAGE_RESERVE4(0x07, 1);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE4(0x08, 2);
+    TEST_COMPACT_NAT_STORAGE_RESERVE4(0x0407, 2);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE4(0x0408, 3);
+    TEST_COMPACT_NAT_STORAGE_RESERVE4(0x020407, 3);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE4(0x020408, 4);
+    TEST_COMPACT_NAT_STORAGE_RESERVE4(0x01020407, 4);
+
+    TEST_COMPACT_NAT_STORAGE_RESERVE4(0x01020408, 5);
+    TEST_COMPACT_NAT_STORAGE_RESERVE4(0xffffffff, 5);
+
+    // test integers with 3 reserved bits
+    TEST_COMPACT_INT_STORAGE_RESERVE3( 0, 1);
+    TEST_COMPACT_INT_STORAGE_RESERVE3( 0x07, 1);
+    TEST_COMPACT_INT_STORAGE_RESERVE3(-0x08, 1);
+
+    TEST_COMPACT_INT_STORAGE_RESERVE3( 0x08, 2);
+    TEST_COMPACT_INT_STORAGE_RESERVE3(-0x09, 2);
+    TEST_COMPACT_INT_STORAGE_RESERVE3( 0x0407, 2);
+    TEST_COMPACT_INT_STORAGE_RESERVE3(-0x0408, 2);
+
+    TEST_COMPACT_INT_STORAGE_RESERVE3( 0x0408, 3);
+    TEST_COMPACT_INT_STORAGE_RESERVE3(-0x0409, 3);
+    TEST_COMPACT_INT_STORAGE_RESERVE3( 0x020407, 3);
+    TEST_COMPACT_INT_STORAGE_RESERVE3(-0x020408, 3);
+
+    TEST_COMPACT_INT_STORAGE_RESERVE3( 0x020408, 4);
+    TEST_COMPACT_INT_STORAGE_RESERVE3(-0x020409, 4);
+    TEST_COMPACT_INT_STORAGE_RESERVE3( 0x01020407, 4);
+    TEST_COMPACT_INT_STORAGE_RESERVE3(-0x01020408, 4);
+
+    TEST_COMPACT_INT_STORAGE_RESERVE3( 0x01020408, 5);
+    TEST_COMPACT_INT_STORAGE_RESERVE3(-0x01020409, 5);
+    TEST_COMPACT_INT_STORAGE_RESERVE3(INT_MAX, 5);
+    TEST_COMPACT_INT_STORAGE_RESERVE3(INT_MIN, 5);
+
+#if 0
+    // reserving more than 4 bits does not work (compacting also uses 4 bits)
+    // (compiles, but spits warnings)
+    TEST_COMPACT_NAT_STORAGE_RESERVE5(0, 1);
+#endif
 }
 
 #endif // UNIT_TESTS

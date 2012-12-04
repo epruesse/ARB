@@ -91,32 +91,110 @@ inline void PT_write_big  (void *toMem, uint_big i) { PT_write_int(toMem, i); }
 // ------------------------------------------------
 //      compressed read/write positive numbers
 
-#define PT_WRITE_NAT(ptr, i)                            \
-    do {                                                \
-        pt_assert((i) >= 0);                            \
-        if ((i) >= 0x7FFE) {                            \
-            PT_write_int((ptr), (i)|0x80000000);        \
-            (ptr) += sizeof(int);                       \
-        }                                               \
-        else {                                          \
-            PT_write_short((ptr), (i));                 \
-            (ptr) += sizeof(short);                     \
-        }                                               \
-    } while (0)
+// Note: number of least significant bit is 0 (in template parameters)
 
-#define PT_READ_NAT(ptr, i)                     \
-    do {                                        \
-        if (*(ptr) & 0x80) {                    \
-            (i)    = PT_read_int(ptr);          \
-            (ptr) += sizeof(int);               \
-            (i)   &= 0x7fffffff;                \
-        }                                       \
-        else {                                  \
-            (i)    = PT_read_short(ptr);        \
-            (ptr) += sizeof(short);             \
-        }                                       \
-    } while (0)
+// compile-time generation of mask-values for bit B = [0..31]
+template <int B> struct BitMask { enum { value = (1<<B) }; };
 
+// compile-time generation of mask-values for all bits below bit B = [0..32]
+template <int B> struct BitsBelowBit { enum { value = (BitMask<B>::value-1) }; };
+template <> struct BitsBelowBit<32> { enum { value = 0xffffffff }; }; // avoid shift overflow
+template <> struct BitsBelowBit<31> { enum { value = 0x7fffffff }; }; // avoid int overflow
+
+// compile-time generation of mask-values for all bits in range [LB..HB]
+// 
+template <int HB, int LB> struct BitRange { enum { value = (BitsBelowBit<HB+1>::value-BitsBelowBit<LB>::value) }; };
+
+
+template <int R> // R is number of reserved bits
+inline void write_nat_with_reserved_bits(char*& toMem, uint_32 nat, uint_8 reserved_bits) {
+    pt_assert((reserved_bits&BitsBelowBit<R>::value) == reserved_bits); // reserved_bits exceed allowed value-range
+    reserved_bits = reserved_bits << (8-R);
+    if (nat < BitMask<7-R>::value) {
+        PT_write_char(toMem, nat|reserved_bits);
+        toMem += 1;
+    }
+    else {
+        nat -= BitMask<7-R>::value;
+        if (nat < BitMask<6-R+8>::value) {
+            PT_write_short(toMem, nat|BitMask<7-R+8>::value|(reserved_bits<<8));
+            toMem += 2;
+        }
+        else {
+            nat -= BitMask<6-R+8>::value;
+            if (nat < BitMask<5-R+16>::value) {
+                PT_write_char(toMem, (nat>>16)|BitRange<7-R,6-R>::value|reserved_bits);
+                PT_write_short(toMem+1, nat&0xffff);
+                toMem += 3;
+            }
+            else {
+                nat -= BitMask<5-R+16>::value;
+                if (nat < BitMask<4-R+24>::value) {
+                    PT_write_int(toMem, nat|BitRange<7-R+24,5-R+24>::value|(reserved_bits<<24));
+                    toMem += 4;
+                }
+                else {
+                    PT_write_char(toMem, BitRange<7-R,4-R>::value|reserved_bits);
+                    PT_write_int(toMem+1, nat);
+                    toMem += 5;
+                }
+            }
+        }
+    }
+}
+
+template <int R> // R is number of reserved bits
+inline uint_32 read_nat_with_reserved_bits(const char*& fromMem, uint_8& reserved_bits) {
+    uint_32 nat   = PT_read_char(fromMem);
+    reserved_bits = nat >> (8-R);
+    nat           = nat & BitsBelowBit<8-R>::value;
+
+    if (nat & BitMask<7-R>::value) {
+        if (nat & BitMask<6-R>::value) {
+            if (nat & BitMask<5-R>::value) {
+                if (nat & BitMask<4-R>::value) { // 5 bytes
+                    nat      = PT_read_int(fromMem+1);
+                    fromMem += 5;
+                }
+                else { // 4 bytes
+                    nat      = PT_read_int(fromMem) & (BitMask<4-R+24>::value-1);
+                    fromMem += 4;
+                }
+                nat += BitMask<5-R+16>::value;
+            }
+            else { // 3 bytes
+                nat      = ((nat&(BitMask<6-R>::value-1))<<16)|PT_read_short(fromMem+1);
+                fromMem += 3;
+            }
+            nat += BitMask<6-R+8>::value;
+        }
+        else { // 2 bytes
+            nat      = PT_read_short(fromMem) & (BitMask<7-R+8>::value-1);
+            fromMem += 2;
+        }
+        nat += BitMask<7-R>::value;
+    }
+    else { // 1 byte
+        ++fromMem;
+    }
+    return nat;
+}
+
+template <int R>
+inline void write_int_with_reserved_bits(char*& toMem, int32_t i, uint_8 reserved_bits) {
+    write_nat_with_reserved_bits<R+1>(toMem, i<0 ? -i-1 : i, (reserved_bits<<1)|(i<0));
+}
+template <int R>
+inline int32_t read_int_with_reserved_bits(const char*& fromMem, uint_8& reserved_bits) {
+    uint_32 nat   = read_nat_with_reserved_bits<R+1>(fromMem, reserved_bits);
+    bool    isNeg = reserved_bits&1;
+    reserved_bits = reserved_bits>>1;
+    return isNeg ? -nat-1 : nat;
+}
+
+// read/write uint_32 using variable amount of mem (small numbers use less space than big numbers)
+inline uint_32 PT_read_compact_nat(const char*& fromMem) { uint_8 nothing; return read_nat_with_reserved_bits<0>(fromMem, nothing); }
+inline void PT_write_compact_nat(char*& toMem, uint_32 nat) { write_nat_with_reserved_bits<0>(toMem, nat, 0); }
 
 // -----------------------------
 //      read/write pointers

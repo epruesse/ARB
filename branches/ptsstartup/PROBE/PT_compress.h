@@ -167,7 +167,7 @@ public:
         size = base_count;
         pt_assert(size <= (length+1));
 #ifdef ARB_64
-    pt_assert(!(size & 0xffffffff00000000)); // must fit into 32 bit
+        pt_assert(!(size & 0xffffffff00000000)); // must fit into 32 bit
 #endif
 
     }

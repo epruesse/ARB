@@ -163,8 +163,8 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #define PT_LONG_CHAIN_HEAD_SIZE  (PT_SHORT_CHAIN_HEAD_SIZE+2) // apos uses 4 byte here
 #define PT_EMPTY_NODE_SIZE       (1+sizeof(PT_PNTR))   // tag father
 
-#define PT_MIN_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(short)) // depends on PT_WRITE_NAT
-#define PT_MAX_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(int))
+#define PT_MIN_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(char)) // depends on PT_write_nat
+#define PT_MAX_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*(sizeof(int)+1))
 
 #define PT_NODE_WITHSONS_SIZE(sons) (PT_EMPTY_NODE_SIZE+sizeof(PT_PNTR)*(sons))
 
@@ -432,10 +432,9 @@ inline const char *PT_READ_CHAIN_ENTRY_stage_1(const char *entry, DataLoc& loc, 
     if (entry) {
         const char *rp = entry + sizeof(PT_PNTR);
 
-        int name, rpos, apos;
-        PT_READ_NAT(rp, name);
-        PT_READ_NAT(rp, rpos);
-        PT_READ_NAT(rp, apos);
+        int name = PT_read_compact_nat(rp);
+        int rpos = PT_read_compact_nat(rp);
+        int apos = PT_read_compact_nat(rp);
 
         loc = DataLoc(name, apos, rpos);
 
