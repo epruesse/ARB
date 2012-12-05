@@ -30,7 +30,7 @@ int Range::calc_max_abs_pos() const {
     int max_wanted_abs = min(end, abs_size-1);
 
     for (int rel = 0; rel<rel_size; ++rel) { // @@@ brute forced
-        if (pid.get_abspos(rel)>max_wanted_abs) {
+        if (int(pid.get_abspos(rel))>max_wanted_abs) {
             int max_rel = rel-probe_len;
             return pid.get_abspos(max_rel);
         }

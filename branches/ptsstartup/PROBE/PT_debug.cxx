@@ -184,7 +184,7 @@ struct PT_statistic {
             for (int i = 0; i <= DEBUG_MAX_CHAIN_NAME_DIST; ++i) {
                 size_t k = chain_name_dist[i];
                 if (k) {
-                    printf("chain-entry-name-dist of %2zu occurs %10zu (=%5.2f%%)\n", i, k, k*100.0/followup_chain_entries);
+                    printf("chain-entry-name-dist of %2i occurs %10zu (=%5.2f%%)\n", i, k, k*100.0/followup_chain_entries);
                 }
             }
             printf("overall followup-chain-entries: %zu\n", followup_chain_entries);
