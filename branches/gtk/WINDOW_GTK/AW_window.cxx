@@ -40,6 +40,9 @@
 #include <gtk-2.0/gtk/gtktoolbar.h>
 
 
+
+const int AW_NUMBER_OF_F_KEYS = 20;
+
 /**
  * This class hides all private or gtk dependent attributes.
  * This is done to avoid gtk includes in the header file.
@@ -106,8 +109,14 @@ public:
      */
     AW_cb_struct *focus_cb;
     
+    /*
+     * List of callbacks for the different mode buttons
+     */
+    AW_cb_struct **modes_f_callbacks;
+    
     AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL), help_menu(NULL),
-                      mode_menu(NULL), number_of_modes(0), popup_cb(NULL), focus_cb(NULL) {}
+                      mode_menu(NULL), number_of_modes(0), popup_cb(NULL), focus_cb(NULL),
+                      modes_f_callbacks(NULL){}
     
       
     
@@ -1377,44 +1386,47 @@ void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask 
         insert_sub_menu(name, mnemonic, mask);
 }
 
-int AW_window::create_mode(const char *pixmap, const char */*help_text_*/, AW_active mask, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL/*cd1*/, AW_CL /*cd2*/){
+static void aw_mode_callback(AW_window *aww, long mode, AW_cb_struct *cbs) {
+    aww->select_mode((int)mode);
+    cbs->run_callback();
+}
+
+int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
     
     aw_assert(legal_mask(mask));
     aw_assert(NULL != prvt->mode_menu);
     
 
-    FIXME("help text not implemented");
-    
 
     const char *path = GB_path_in_ARBLIB("pixmaps", pixmap);
     GtkWidget *icon = gtk_image_new_from_file(path);
     GtkToolItem *item = GTK_TOOL_ITEM(gtk_tool_button_new(icon, NULL)); //use icon, not label
-
+    
+    
     gtk_toolbar_insert(prvt->mode_menu, item, -1); //-1 = append
     
+    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
+    AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)prvt->number_of_modes, (AW_CL)cbs, helpText, cbs);
     
-    FIXME("callback not implemented");
+    g_signal_connect((gpointer)item, "clicked", G_CALLBACK(AW_server_callback), (gpointer)cbs);
     
-//    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
-//    AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, helpText, cbs);
-//    XtAddCallback(button, XmNactivateCallback,
-//    (XtCallbackProc) AW_server_callback,
-//    (XtPointer) cb2);
-//
-//    if (!p_w->modes_f_callbacks) {
-//        p_w->modes_f_callbacks = (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
-//    }
+    if (!prvt->modes_f_callbacks) {
+        prvt->modes_f_callbacks = (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
+    }
+    
+    FIXME("prvt->modes_widgets not implemented. Not sure if really needed");
+    
 //    if (!p_w->modes_widgets) {
 //        p_w->modes_widgets = (Widget *)GB_calloc(sizeof(Widget), AW_NUMBER_OF_F_KEYS);
 //    }
-//    if (p_w->number_of_modes<AW_NUMBER_OF_F_KEYS) {
-//        p_w->modes_f_callbacks[p_w->number_of_modes] = cb2;
-//        p_w->modes_widgets[p_w->number_of_modes] = button;
-//    }
+    if (prvt->number_of_modes<AW_NUMBER_OF_F_KEYS) {
+        prvt->modes_f_callbacks[prvt->number_of_modes] = cb2;
+        //p_w->modes_widgets[p_w->number_of_modes] = button;
+    }
 
     root->make_sensitive(GTK_WIDGET(item), mask);
     prvt->number_of_modes++;
-    //return number of modes? no idea why though
+
     return prvt->number_of_modes;
 }
 
@@ -1989,8 +2001,11 @@ bool AW_window::is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL)) {
     return prvt->focus_cb && prvt->focus_cb->contains(f);
 }
 
-void AW_window::tell_scrolled_picture_size(AW_world /*rectangle*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::tell_scrolled_picture_size(AW_world rectangle) {
+    picture->l = (int)rectangle.l;
+    picture->r = (int)rectangle.r;
+    picture->t = (int)rectangle.t;
+    picture->b = (int)rectangle.b;
 }
 
 
@@ -2089,8 +2104,11 @@ void AW_window::auto_increment(int /*dx*/, int /*dy*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::tell_scrolled_picture_size(AW_screen_area /*rectangle*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::tell_scrolled_picture_size(AW_screen_area rectangle) {
+    picture->l = rectangle.l;
+    picture->r = rectangle.r;
+    picture->t = rectangle.t;
+    picture->b = rectangle.b;
 }
 
 void AW_window::d_callback(void (*/*f*/)(AW_window*)) {
@@ -2101,14 +2119,25 @@ AW_window::AW_window() {
     color_table_size = 0;
     color_table = NULL;
     
+    picture = new AW_screen_area;
+    reset_scrolled_picture_size();
+    
     prvt = new AW_window::AW_window_gtk();
     for(int i = 0; i < AW_MAX_AREA; i++ ) {
         prvt->areas.push_back(NULL);
     }
 }
 
+void AW_window::reset_scrolled_picture_size() {
+    picture->l = 0;
+    picture->r = 0;
+    picture->t = 0;
+    picture->b = 0;
+}
+
 AW_window::~AW_window() {
-    FIXME("delete prvt");
+    delete picture;
+    delete prvt;
 }
 
 

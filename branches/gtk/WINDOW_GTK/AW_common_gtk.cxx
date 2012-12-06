@@ -125,7 +125,7 @@ void AW_GC_gtk::wm_set_lineattributes(short lwidth, AW_linestyle lstyle){
             break;
         case AW_DASHED:
         case AW_DOTTED:
-            FIXME("DOTTED lines are converted to DASHED lines");
+            //dotted lines are converted to dashed lines because gtk does not support dotted lines
             lineStyle = GDK_LINE_ON_OFF_DASH;
             break;
         default:
