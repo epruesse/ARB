@@ -24,7 +24,6 @@
 #include "probe.h"
 #endif
 
-#define PT_CHAIN_END       0xff
 #define PT_CHAIN_NTERM     250
 #define PT_SHORT_SIZE      0xffff
 #define PT_INIT_CHAIN_SIZE 20
@@ -129,7 +128,6 @@ extern pt_global PT_GLOBAL;
 [   char/short/int      rel name [ to last name eg. rel names 10 30 20 50 -> abs names = 10 40 60 110
                 if bit[7] then short
                 if bit[7] and bit[6] then integer
-                -1 not allowed
     short/int       rel pos
                 if bit[15] -> the next bytes are the apos else use ref_abs_pos
                 if bit[14] -> this(==rel_pos) is integer
@@ -478,56 +476,49 @@ inline const char *PT_READ_CHAIN_ENTRY_stage_3(const char *ptr, int mainapos, Da
 
     pt_assert_stage(STAGE3);
 
-    int apos = 0;
-    int rpos = 0;
-
     unsigned char *rcep = (unsigned char*)ptr;
     unsigned int   rcei = (*rcep);
 
     int name = loc.get_name();
-    if (rcei==PT_CHAIN_END) {
-        name = -1;
-        ptr++;
-    }
-    else {
-        if (rcei&0x80) {
-            if (rcei&0x40) {
-                rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
-            }
-            else {
-                rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
-            }
-        }
-        else {
-            rcei &= 0x7f; rcep++;
-        }
-        name += rcei;
-        rcei   = (*rcep);
-
-        bool isapos = rcei&0x80;
-
+    if (rcei&0x80) {
         if (rcei&0x40) {
             rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
         }
         else {
             rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
         }
-        rpos = (int)rcei;
-        if (isapos) {
-            rcei = (*rcep);
-            if (rcei&0x80) {
-                rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x7fffffff;
-            }
-            else {
-                rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x7fff;
-            }
-            apos = (int)rcei;
+    }
+    else {
+        rcei &= 0x7f; rcep++;
+    }
+    name += rcei;
+    rcei   = (*rcep);
+
+    bool isapos = rcei&0x80;
+
+    if (rcei&0x40) {
+        rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
+    }
+    else {
+        rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
+    }
+
+    int rpos = (int)rcei;
+    int apos;
+    if (isapos) {
+        rcei = (*rcep);
+        if (rcei&0x80) {
+            rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x7fffffff;
         }
         else {
-            apos = (int)mainapos;
+            rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x7fff;
         }
-        ptr = (char *)rcep;
+        apos = (int)rcei;
     }
+    else {
+        apos = (int)mainapos;
+    }
+    ptr = (char *)rcep;
 
     loc = DataLoc(name, apos, rpos);
     return ptr;
@@ -585,18 +576,32 @@ class ChainIterator : virtual Noncopyable {
     const char *data;
     DataLoc     loc;
 
-    const char *last_data; // @@@ only used in STAGE1 - split class (one for each stage)? 
+    const char *last_data; // @@@ only used in STAGE1 - split class (one for each stage)?
     int         last_size; // @@@ only used in STAGE1
-    int         mainapos;  // @@@ only used in STAGE3
 
-    bool at_end_of_chain() const { return loc.get_name() == -1; }
+    int mainapos;          // @@@ only used in STAGE3
+    int elements_ahead;    // @@@ only used in STAGE3
+
+    bool at_end_of_chain() const {
+        if (psg.ptdata->get_stage() == STAGE1) {
+            return loc.get_name() == -1;
+        }
+        return elements_ahead<0;
+    }
     void set_loc_from_chain() {
         last_data = data;
         if (psg.ptdata->get_stage() == STAGE1) {
             data = PT_READ_CHAIN_ENTRY_stage_1(data, loc, &last_size);
         }
         else {
-            data = PT_READ_CHAIN_ENTRY_stage_3(data, mainapos, loc);
+            if (elements_ahead>0) {
+                data = PT_READ_CHAIN_ENTRY_stage_3(data, mainapos, loc);
+            }
+            else {
+                pt_assert(elements_ahead == 0);
+                loc = DataLoc();
+            }
+            --elements_ahead;
         }
         pt_assert(at_end_of_chain() || loc.has_valid_name());
     }
@@ -624,6 +629,10 @@ public:
 
         if (psg.ptdata->get_stage() == STAGE1) {
             data = PT_read_pointer<char>(data);
+        }
+        else {
+            elements_ahead = PT_read_compact_nat(data);
+            pt_assert(elements_ahead>0); // chain cant be empty
         }
         set_loc_from_chain();
     }

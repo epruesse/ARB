@@ -367,6 +367,20 @@ void PTD_put_byte(FILE *out, ULONG i) {
     fputc(ch, out);
 }
 
+int PTD_put_compact_nat(FILE *out, uint_32 nat) {
+    // returns number of bytes written
+    const size_t MAXSIZE = 5;
+
+    char  buf[MAXSIZE];
+    char *bp = buf;
+
+    PT_write_compact_nat(bp, nat);
+    size_t size = bp-buf;
+    pt_assert(size <= MAXSIZE);
+    ASSERT_RESULT(size_t, size, fwrite(buf, 1, size, out));
+    return size;
+}
+
 const int    BITS_FOR_SIZE = 4;        // size is stored inside POS_TREE->flags, if it fits into lower 4 bits
 const int    SIZE_MASK     = (1<<BITS_FOR_SIZE)-1;
 const size_t MIN_NODE_SIZE = PT_EMPTY_NODE_SIZE;
@@ -425,10 +439,11 @@ static long PTD_write_tip_to_disk(FILE *out, POS_TREE *node, const long oldpos) 
     return pos;
 }
 
-static char *reverse_chain(char *entry, char *successor) {
+static char *reverse_chain(char *entry, char *successor, uint_32& chain_length) {
     while (1) {
         char *nextEntry = PT_read_pointer<char>(entry);
         PT_write_pointer(entry, successor);
+        ++chain_length;
 
         if (!nextEntry) break;
 
@@ -438,15 +453,18 @@ static char *reverse_chain(char *entry, char *successor) {
     return entry;
 }
 
-static void reverse_chain(POS_TREE * const node) {
+static uint_32 reverse_chain(POS_TREE * const node) {
     pt_assert_stage(STAGE1);
     pt_assert(PT_read_type(node) == PT_NT_CHAIN);
 
-    char *data       = node_data_start(node) + ((node->flags&1) ? 4 : 2);
-    char *entry      = PT_read_pointer<char>(data);
-    char *last_entry = reverse_chain(entry, NULL);
+    char *data  = node_data_start(node) + ((node->flags&1) ? 4 : 2);
+    char *entry = PT_read_pointer<char>(data);
+
+    uint_32  length     = 0;
+    char    *last_entry = reverse_chain(entry, NULL, length);
 
     PT_write_pointer(data, last_entry);
+    return length;
 }
 
 static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long oldpos, ARB_ERROR& error) {
@@ -475,10 +493,13 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
         pos  += 2;
     }
 
-    reverse_chain(node);
+    uint_32 chain_length = reverse_chain(node);
+    pt_assert(chain_length>0);
+    pos += PTD_put_compact_nat(out, chain_length);
 
+    uint_32       entries = 0;
     ChainIterator entry(node);
-    int           lastname = 0;
+    int           lastname      = 0;
     while (entry && !error) {
         const DataLoc& loc = entry.at();
         if (loc.get_name()<lastname) {
@@ -501,10 +522,11 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
             MEM.put((char*)entry.memory(), entry.memsize());
             ++entry;
         }
+        ++entries;
     }
 
-    fputc(PT_CHAIN_END, out);
-    pos++;
+    pt_assert(entries == chain_length);
+
     pt_assert(pos >= 0);
     PTD_set_object_to_saved_status(node, oldpos, data+sizeof(PT_PNTR)-(char*)node);
     pt_assert(PT_read_type(node) == PT_NT_SAVED);
