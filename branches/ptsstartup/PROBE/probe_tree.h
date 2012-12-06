@@ -339,57 +339,77 @@ inline size_t PT_leaf_size_stage_3(POS_TREE *node) {
     return size;
 }
 
-// -----------------
-//      DataLoc
+// --------------------------------------
+//      Different types of locations
 
-class DataLoc {
-    int name; // index into psg.data[], aka as species id
-    int apos;
-    int rpos; // position in data
-
-public:
-#if defined(ASSERTION_USED)
-    bool has_valid_name() const { return name >= 0 && name < psg.data_count; }
-    bool has_valid_positions() const { return apos >= 0 && rpos >= 0 && apos >= rpos; }
-#endif
-
-    explicit DataLoc() : name(0), apos(0), rpos(0) {}
-    DataLoc(int name_, int apos_, int rpos_) : name(name_), apos(apos_), rpos(rpos_) { pt_assert(has_valid_positions()); }
-    DataLoc(POS_TREE *node) {
-        pt_assert(PT_read_type(node) == PT_NT_LEAF);
-        const char *data = node_data_start(node);
-        if (node->flags&1) { name = PT_read_int(data); data += 4; } else { name = PT_read_short(data); data += 2; }
-        if (node->flags&2) { rpos = PT_read_int(data); data += 4; } else { rpos = PT_read_short(data); data += 2; }
-        if (node->flags&4) { apos = PT_read_int(data); data += 4; } else { apos = PT_read_short(data); /*data += 2;*/ }
-
+class AbsLoc {
+    int name; // index into psg.data[], aka species id
+    int apos; // absolute position in alignment
+protected:
+    void set_abs_pos(int abs_pos) { apos = abs_pos; }
+    void set_name(int name_) {
+        pt_assert(name == -1); // only allowed if instance has been default constructed
+        name = name_;
         pt_assert(has_valid_name());
-        pt_assert(has_valid_positions());
     }
+public:
+    AbsLoc() : name(-1), apos(0) {}
+    AbsLoc(int name_, int abs_pos) : name(name_), apos(abs_pos) {}
+
+    bool has_valid_name() const { return name >= 0 && name < psg.data_count; }
 
     int get_name() const { return name; }
     int get_abs_pos() const { return apos; }
+
+    const probe_input_data& get_pid() const { pt_assert(has_valid_name()); return psg.data[name]; }
+
+    bool is_equal(const AbsLoc& other) const { return apos == other.apos && name == other.name; }
+
+#if defined(DEBUG)
+    void dump(FILE *fp) const {
+        fprintf(fp, "          apos=%6i  name=%6i='%s'\n",
+                get_abs_pos(), get_name(), get_pid().get_shortname());
+    }
+#endif
+};
+
+class DataLoc : public AbsLoc {
+    int rpos; // relative position in data
+
+public:
+    bool has_valid_positions() const { return get_abs_pos() >= 0 && rpos >= 0 && get_abs_pos() >= rpos; }
+
+    DataLoc() : rpos(0) {}
+    DataLoc(int name_, int apos_, int rpos_) : AbsLoc(name_, apos_), rpos(rpos_) { pt_assert(has_valid_positions()); }
+    explicit DataLoc(const POS_TREE *node) {
+        pt_assert(PT_read_type(node) == PT_NT_LEAF);
+        const char *data = node_data_start(node);
+        if (node->flags&1) { set_name(PT_read_int(data)); data += 4; } else { set_name(PT_read_short(data)); data += 2; }
+        if (node->flags&2) { rpos = PT_read_int(data); data += 4; } else { rpos = PT_read_short(data); data += 2; }
+        if (node->flags&4) { set_abs_pos(PT_read_int(data)); data += 4; } else { set_abs_pos(PT_read_short(data)); /*data += 2;*/ }
+
+        pt_assert(has_valid_positions());
+    }
+
     int get_rel_pos() const { return rpos; }
 
     void set_position(int abs_pos, int rel_pos) {
-        apos = abs_pos;
+        set_abs_pos(abs_pos);
         rpos = rel_pos;
         pt_assert(has_valid_positions());
     }
 
-    const probe_input_data& get_pid() const { pt_assert(has_valid_name()); return psg.data[name]; }
-
     int restlength() const { return get_pid().get_size()-rpos; }
     bool is_shorther_than(int offset) const { return offset >= restlength(); }
 
+    bool is_equal(const DataLoc& other) const { return rpos == other.rpos && AbsLoc::is_equal(other); }
+
 #if defined(DEBUG)
     void dump(FILE *fp) const {
-        fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n", apos, rpos, name, psg.data[name].get_shortname());
+        fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n",
+                get_abs_pos(), rpos, get_name(), get_pid().get_shortname());
     }
 #endif
-
-    bool is_equal(const DataLoc& other) const {
-        return name == other.name && apos == other.apos && rpos == other.rpos;
-    }
 };
 
 inline bool operator==(const DataLoc& loc1, const DataLoc& loc2) { return loc1.is_equal(loc2); }
@@ -411,7 +431,13 @@ public:
     {}
     explicit ReadableDataLoc(const DataLoc& loc)
         : DataLoc(loc),
-          pid(loc.get_pid()),
+          pid(DataLoc::get_pid()),
+          seq(pid.get_dataPtr()),
+          qseq(*seq)
+    {}
+    explicit ReadableDataLoc(const POS_TREE *node)
+        : DataLoc(node),
+          pid(DataLoc::get_pid()),
           seq(pid.get_dataPtr()),
           qseq(*seq)
     {}
@@ -582,7 +608,7 @@ class ChainIterator : virtual Noncopyable {
 public:
     ChainIterator(const POS_TREE *node)
         : data(node_data_start(node)),
-          loc(),
+          loc(0, 0, 0),
           last_size(-1)
     {
         pt_assert(PT_read_type(node) == PT_NT_CHAIN);
