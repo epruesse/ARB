@@ -68,12 +68,12 @@ void aw_initstatus();
 class AW_root : virtual Noncopyable {
 
     // gtk dependent attributes are defined in a different header to keep this header portable
-    AW_root_gtk prvt; /*< Contains all gtk dependent attributes. */
-    GB_HASH     *action_hash; /*< Is used to buffer and replay remote actions. */
-    AW_default  application_database; /*< FIXME */
-    AW_buttons_struct *button_sens_list; /* < FIXME */
-    bool        no_exit; /*< FIXME no idea what this is used for*/
-    
+    AW_root_gtk prvt; /** < Contains all gtk dependent attributes. */
+    GB_HASH     *action_hash; /** < Is used to buffer and replay remote actions. */
+    AW_default  application_database; /** < FIXME */
+    AW_buttons_struct *button_sens_list; /** < FIXME */
+    bool        no_exit; /* < FIXME no idea what this is used for*/
+    bool help_active; /** < true if the help mode is active, false otherwise */ 
 
 
 //    AW_buttons_struct *button_sens_list;
@@ -173,6 +173,24 @@ public:
     void set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2); // any focus callback in any window
     bool is_focus_callback(AW_RCB fcb) const;
 
+    /**
+     * @return true if help mode is active, false otherwise.
+     */
+    bool is_help_active() const;
+    
+    /**
+     * Enable/disable help mode
+     * @param value
+     */
+    void set_help_active(bool value);
+    
+    
+    /**
+     * Set normal cursor
+     * @return 
+     */
+    void normal_cursor();
+    
     /**
      * Allocates a named color in the global colormap.
      * @param colorname

@@ -148,8 +148,16 @@ void AW_normal_cursor(AW_root *) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_help_entry_pressed(AW_window *) {
-    GTK_NOT_IMPLEMENTED;
+void AW_help_entry_pressed(AW_window *window) {
+    aw_assert(NULL != window);
+    //Help mode is global. It is managed by aw_root.
+    //This method should be part of aw_root, not aw_window.
+    FIXME("This method should be moved to aw_root.");
+    AW_root* pRoot = window->get_root();
+    aw_assert(NULL != pRoot);
+    
+    pRoot->set_help_active(true);
+    
 }
 
 void AW_POPDOWN(AW_window *){
@@ -635,46 +643,43 @@ void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
     GTK_PARTLY_IMPLEMENTED;
 
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
+    
+    AW_root *root = cbs->aw->get_root();
+     
+    if (root->is_help_active()) {
+        root->set_help_active(false);
+        root->normal_cursor();
 
-    FIXME("AW_server_callback help not implemented");
-    
-    
-//    AW_root *root = cbs->aw->get_root();
-    // 
-//    if (p_global->help_active) {
-//        p_global->help_active = 0;
-//        p_global->normal_cursor();
-//
-//        if (cbs->help_text && ((GBS_string_matches(cbs->help_text, "*.ps", GB_IGNORE_CASE)) ||
-//                               (GBS_string_matches(cbs->help_text, "*.hlp", GB_IGNORE_CASE)) ||
-//                               (GBS_string_matches(cbs->help_text, "*.help", GB_IGNORE_CASE))))
-//        {
-//            AW_POPUP_HELP(cbs->aw, (AW_CL)cbs->help_text);
-//        }
-//        else {
-//            aw_message("Sorry no help available");
-//        }
-//        return;
-//    }
-   FIXME("AW_server_callback recording not implemented");
+        if (cbs->help_text && ((GBS_string_matches(cbs->help_text, "*.ps", GB_IGNORE_CASE)) ||
+                               (GBS_string_matches(cbs->help_text, "*.hlp", GB_IGNORE_CASE)) ||
+                               (GBS_string_matches(cbs->help_text, "*.help", GB_IGNORE_CASE))))
+        {
+            AW_POPUP_HELP(cbs->aw, (AW_CL)cbs->help_text);
+        }
+        else {
+            aw_message("Sorry no help available");
+        }
+        return;
+    }
+   FIXME("recording not implemented");
    // if (root->prvt->recording) root->prvt->recording->record_action(cbs->id);
 
     if (cbs->f == AW_POPUP) {
         cbs->run_callback();
     }
     else {
-        FIXME("AW_server_callback wait cursor not implemented");
+        FIXME("wait cursor not implemented");
 //        p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
 //                XtWindow(p_aww(cbs->aw)->shell),
 //                p_global->clock_cursor);
         cbs->run_callback();
-        FIXME("AW_server_callback destruction of old events not implemented");
+        FIXME("destruction of old events not implemented");
 //        XEvent event; // destroy all old events !!!
 //        while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
 //        ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
 //        KeyPressMask|KeyReleaseMask|PointerMotionMask, &event)) {
 //        }
-        FIXME("AW_server_callback help not implemented");
+        FIXME("help not implemented");
 //        if (p_global->help_active) {
 //            p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
 //                    XtWindow(p_aww(cbs->aw)->shell),
@@ -1402,13 +1407,13 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     GtkWidget *icon = gtk_image_new_from_file(path);
     GtkToolItem *item = GTK_TOOL_ITEM(gtk_tool_button_new(icon, NULL)); //use icon, not label
     
-    
+   
     gtk_toolbar_insert(prvt->mode_menu, item, -1); //-1 = append
     
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
     AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)prvt->number_of_modes, (AW_CL)cbs, helpText, cbs);
     
-    g_signal_connect((gpointer)item, "clicked", G_CALLBACK(AW_server_callback), (gpointer)cbs);
+    g_signal_connect((gpointer)item, "clicked", G_CALLBACK(AW_server_callback), (gpointer)cb2);
     
     if (!prvt->modes_f_callbacks) {
         prvt->modes_f_callbacks = (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed

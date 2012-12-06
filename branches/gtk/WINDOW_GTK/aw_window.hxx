@@ -147,6 +147,12 @@ struct AW_event {
 
 void AW_POPDOWN(AW_window *);
 void AW_POPUP_HELP(AW_window *, AW_CL /* char */ helpfile);
+
+/**
+ * Switches the window into help mode.
+ * The next button click will open the corresponding help entry.
+ * @param 
+ */
 void AW_help_entry_pressed(AW_window *);
 void AW_clock_cursor(AW_root *);
 void AW_normal_cursor(AW_root *);

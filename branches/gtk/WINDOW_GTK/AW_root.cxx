@@ -217,7 +217,7 @@ void AW_root::init_variables(AW_default database) {
     application_database     = database;
     hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
     hash_for_windows         = GBS_create_hash(100, GB_MIND_CASE);
-
+    help_active              = false;
     FIXME("not sure if aw_fb is still needed");
     
     for (int i=0; aw_fb[i].awar; ++i) {
@@ -499,4 +499,24 @@ AW_root::~AW_root() {
 
 AW_default AW_root::check_properties(AW_default aw_props) {
     return aw_props ? aw_props : application_database;
+}
+
+
+/**
+ * @return true if help mode is active, false otherwise.
+ */
+bool AW_root::is_help_active() const {
+    return help_active;
+}
+
+/**
+ * Enable/disable help mode
+ * @param value
+ */
+void AW_root::set_help_active(bool value) {
+    help_active = value;
+}
+
+void AW_root::normal_cursor() {
+    GTK_NOT_IMPLEMENTED;
 }
