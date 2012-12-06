@@ -146,7 +146,7 @@ struct AW_event {
 };
 
 void AW_POPDOWN(AW_window *);
-void AW_POPUP_HELP(AW_window *, AW_CL /* char */ helpfile);
+
 
 /**
  * Switches the window into help mode.

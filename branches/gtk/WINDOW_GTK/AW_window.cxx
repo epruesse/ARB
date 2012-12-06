@@ -22,6 +22,7 @@
 #include "aw_common.hxx"
 #include "AW_motif_gtk_conversion.hxx"
 #include "AW_modal.hxx"
+#include "aw_help.hxx"
 #include <arbdb.h>
 
 #include <gtk/gtklabel.h>
@@ -161,18 +162,9 @@ void AW_help_entry_pressed(AW_window *window) {
     pRoot->help_cursor();
 }
 
-void AW_POPDOWN(AW_window *){
-    GTK_NOT_IMPLEMENTED;
+void AW_POPDOWN(AW_window *window){
+    window->hide();
 }
-
-void AW_POPUP_HELP(AW_window *, AW_CL /* char */ /*helpfile*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_openURL(AW_root * /*aw_root*/, const char * /*url*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
 
 void AW_window::recalc_pos_atShow(AW_PosRecalc /*pr*/){
     GTK_NOT_IMPLEMENTED;
