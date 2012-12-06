@@ -187,9 +187,18 @@ public:
     
     /**
      * Set normal cursor
-     * @return 
      */
     void normal_cursor();
+    
+    /**
+     * Set help cursor.
+     */
+    void help_cursor();
+    
+    /*
+     * Set wait cursor
+     */
+    void wait_cursor();
     
     /**
      * Allocates a named color in the global colormap.

@@ -520,3 +520,12 @@ void AW_root::set_help_active(bool value) {
 void AW_root::normal_cursor() {
     GTK_NOT_IMPLEMENTED;
 }
+
+void AW_root::help_cursor()  {
+    GTK_NOT_IMPLEMENTED;
+    FIXME("merge help_cursor(), normal_cursor(), wait_cursor() into set_cursor(enum)");
+}
+
+void AW_root::wait_cursor() {
+    GTK_NOT_IMPLEMENTED;
+}

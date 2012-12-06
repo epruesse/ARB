@@ -158,6 +158,7 @@ void AW_help_entry_pressed(AW_window *window) {
     
     pRoot->set_help_active(true);
     
+    pRoot->help_cursor();
 }
 
 void AW_POPDOWN(AW_window *){
@@ -668,27 +669,14 @@ void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
         cbs->run_callback();
     }
     else {
-        FIXME("wait cursor not implemented");
-//        p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-//                XtWindow(p_aww(cbs->aw)->shell),
-//                p_global->clock_cursor);
+        root->wait_cursor();
+        
         cbs->run_callback();
         FIXME("destruction of old events not implemented");
 //        XEvent event; // destroy all old events !!!
 //        while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
 //        ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
 //        KeyPressMask|KeyReleaseMask|PointerMotionMask, &event)) {
-//        }
-        FIXME("help not implemented");
-//        if (p_global->help_active) {
-//            p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-//                    XtWindow(p_aww(cbs->aw)->shell),
-//                    p_global->question_cursor);
-//        }
-//        else {
-//            p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-//                    XtWindow(p_aww(cbs->aw)->shell),
-//                    0);
 //        }
     }
 
