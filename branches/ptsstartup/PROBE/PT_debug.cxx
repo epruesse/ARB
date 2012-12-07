@@ -91,7 +91,7 @@ struct PT_statistic {
 
                 if (size>DEBUG_MAX_CHAIN_SIZE) size = DEBUG_MAX_CHAIN_SIZE;
 
-                size_t mem = iter.memory()-(char*)pt+1; // last_data-start+end of chain marker
+                size_t mem = iter.memory()-(char*)pt; // last_data-start
 
                 chains_of_size[size]++;
                 chains_of_size_mem[size]    += mem;
