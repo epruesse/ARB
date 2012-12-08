@@ -281,11 +281,6 @@ GB_ERROR PT_init_input_data() {
     psg.data       = new probe_input_data[icount];
     psg.data_count = 0;
 
-#define CACHE_SEQ_PERCENT 50 // @@@ make global def and use in mem est.
-
-    probe_input_data::set_cache_sizes(icount*CACHE_SEQ_PERCENT/100+5, // cache about CACHE_SEQ_PERCENT% of seq data
-                                      1);                             // don't cache - only need abspos of currently inserted species
-
     printf("Database contains %i species\n", icount);
 
     GB_ERROR error = NULL;

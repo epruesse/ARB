@@ -418,6 +418,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
             GBS_add_ptserver_logentry(GBS_global_string("Calculating probe tree (%s)", tname));
 
             psg.ptdata = PT_init(STAGE1);
+            PT_init_cache_sizes(STAGE1);
 
             pt = PT_create_leaf(NULL, PT_N, DataLoc(0, 0, 0));  // create main node
             pt = PT_change_leaf_to_node(pt);
@@ -581,6 +582,7 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
     ARB_ERROR error;
 
     psg.ptdata = PT_init(STAGE3);
+    PT_init_cache_sizes(STAGE3);
 
     {
         long size = GB_size_of_file(tname);

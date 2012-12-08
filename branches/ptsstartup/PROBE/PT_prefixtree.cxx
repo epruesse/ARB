@@ -103,6 +103,21 @@ static void init_PT_GLOBAL() {
     }
 }
 
+void PT_init_cache_sizes(Stage stage) {
+    size_t species_count = psg.data_count;
+    pt_assert(species_count>0);
+
+#define CACHE_SEQ_PERCENT 50 // @@@ make global def and use in mem est.
+
+    if (stage == STAGE1) {
+        probe_input_data::set_cache_sizes(species_count*CACHE_SEQ_PERCENT/100+5, // cache about CACHE_SEQ_PERCENT% of seq data
+                                          1);                                    // don't cache - only need abspos of currently inserted species
+    }
+    else {
+        probe_input_data::set_cache_sizes(species_count, species_count); // cache all seq and positional data
+    }
+}
+
 PT_data *PT_init(Stage stage) {
     PT_data *ptdata = new PT_data(stage);
     init_PT_GLOBAL();
