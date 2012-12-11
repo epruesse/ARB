@@ -174,7 +174,15 @@ public:
         //! Increment match_count for matched postree-tips
         if (did_match()) count_match(loc);
         else if (match_possible()) {
-            PT_Traversal(*this).match_rest_and_mark(ReadableDataLoc(loc));
+            PT_Traversal(*this).match_rest_and_mark(ReadableDataLoc(loc)); // @@@ EXPENSIVE_CONVERSION
+        }
+        return 0;
+    }
+    int operator()(const AbsLoc& loc) const {
+        //! Increment match_count for matched postree-tips
+        if (did_match()) count_match(DataLoc(loc)); // @@@ EXPENSIVE_CONVERSION
+        else if (match_possible()) {
+            PT_Traversal(*this).match_rest_and_mark(ReadableDataLoc(DataLoc(loc))); // @@@ EXPENSIVE_CONVERSION (2)
         }
         return 0;
     }

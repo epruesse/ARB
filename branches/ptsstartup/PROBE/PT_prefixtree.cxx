@@ -21,7 +21,7 @@
 
 struct pt_global PT_GLOBAL;
 
-inline bool locs_in_chain_order(const DataLoc& loc1, const DataLoc& loc2) { 
+inline bool locs_in_chain_order(const AbsLoc& loc1, const AbsLoc& loc2) { 
     pt_assert_stage(STAGE1); // this order is only valid in STAGE1 (STAGE3 has reverse order)
 
     if (loc1.get_name() < loc2.get_name()) {
@@ -31,12 +31,6 @@ inline bool locs_in_chain_order(const DataLoc& loc1, const DataLoc& loc2) {
         return false;
     }
     if (loc1.get_name() == loc2.get_name()) {
-        if (loc1.get_rel_pos() >= loc2.get_rel_pos()) {
-#if defined(DEBUG)
-            fprintf(stderr, "invalid chain: loc1.rpos>=loc2.rpos (%i>=%i)\n", loc1.get_rel_pos(), loc2.get_rel_pos());
-#endif
-            return false;
-        }
         if (loc1.get_abs_pos() >= loc2.get_abs_pos()) {
 #if defined(DEBUG)
             fprintf(stderr, "invalid chain: loc1.apos>=loc2.apos (%i>=%i)\n", loc1.get_abs_pos(), loc2.get_abs_pos());
@@ -62,7 +56,7 @@ bool PT_chain_has_valid_entries(const POS_TREE * const node) {
     ChainIterator entry(node);
     if (!entry) return false;
 
-    DataLoc last(entry.at());
+    AbsLoc last(entry.at());
 
     ++entry;
     while (entry && ok) {
@@ -516,15 +510,14 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
     ChainIterator entry(node);
     int           lastname      = 0;
     while (entry && !error) {
-        const DataLoc& loc = entry.at();
+        const AbsLoc& loc = entry.at();
         if (loc.get_name()<lastname) {
             error = GBS_global_string("Chain Error: name order error (%i < %i)", loc.get_name(), lastname);
         }
         else {
             static char buffer[100];
 
-            char *wp = buffer;
-            wp       = PT_WRITE_CHAIN_ENTRY(wp, mainapos, loc.get_name()-lastname, loc.get_abs_pos(), loc.get_rel_pos());
+            char *wp = PT_WRITE_CHAIN_ENTRY(buffer, mainapos, loc.get_name()-lastname, loc.get_abs_pos());
 
             int size = wp -buffer;
             if (1 != fwrite(buffer, size, 1, out)) {
@@ -1058,7 +1051,7 @@ void TEST_chains() {
         pos      = PTD_save_upper_tree(out, root, pos, root_pos, error);
 
         TEST_EXPECT_NO_ERROR(error.deliver());
-        TEST_EXPECTATION(all().of(that(root_pos).is_equal_to(43), that(pos).is_equal_to(48)));
+        TEST_EXPECTATION(all().of(that(root_pos).is_equal_to(29), that(pos).is_equal_to(34)));
 
         TEST_EXPECT_EQUAL(PT_read_type(root), PT_NT_SAVED);
         MEM.put(root, get_memsize_of_saved(root));

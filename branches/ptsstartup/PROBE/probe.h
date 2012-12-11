@@ -263,6 +263,31 @@ public:
         return (&*rel2abs.access(rel2abs_cache))[rel_pos]; // @@@ brute-forced
     }
 
+    size_t calc_relpos(int abs_pos) const { // expensive
+        preload_rel2abs();
+        SmartIntPtr  rel2abs_ptr = rel2abs.access(rel2abs_cache);
+        const int   *r2a     = &*rel2abs_ptr;
+
+        int l = 0;
+        int h = get_size()-1;
+
+        if (r2a[l] == abs_pos) return l;
+        if (r2a[h] == abs_pos) return h;
+
+        while (l<h) {
+            int m = (l+h)/2;
+            if (r2a[m]<abs_pos) {
+                l = m;
+            }
+            else if (r2a[m]>abs_pos) {
+                h = m;
+            }
+            else {
+                return m;
+            }
+        }
+        return l;
+    }
 };
 
 struct probe_statistic_struct {

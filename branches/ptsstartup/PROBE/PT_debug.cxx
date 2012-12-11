@@ -231,14 +231,18 @@ void PT_dump_tree_statistics(const char *indexfilename) {
 
 // --------------------------------------------------------------------------------
 
-class PT_dump_leaf {
+class PT_dump_leaf { // @@@ rename
     const char *prefix;
     FILE       *out;
 public:
     PT_dump_leaf(const char *Prefix, FILE *Out) : prefix(Prefix), out(Out) {}
 
-    int operator()(const DataLoc& leaf) {
-        fprintf(out, "%s %i=%s@%i>%i\n", prefix, leaf.get_name(), leaf.get_pid().get_shortname(), leaf.get_abs_pos(), leaf.get_rel_pos());
+    int operator()(const DataLoc& loc) {
+        fprintf(out, "%s %i=%s@%i>%i\n", prefix, loc.get_name(), loc.get_pid().get_shortname(), loc.get_abs_pos(), loc.get_rel_pos());
+        return 0;
+    }
+    int operator()(const AbsLoc& loc) {
+        fprintf(out, "%s %i=%s@%i\n", prefix, loc.get_name(), loc.get_pid().get_shortname(), loc.get_abs_pos());
         return 0;
     }
 };

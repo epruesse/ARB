@@ -278,7 +278,7 @@ GB_ERROR PT_init_input_data() {
 
     int icount = GB_number_of_subentries(psg.gb_species_data);
 
-    psg.data       = new probe_input_data[icount];
+    psg.data = new probe_input_data[icount];
     psg.data_count = 0;
 
     printf("Database contains %i species\n", icount);

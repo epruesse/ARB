@@ -161,7 +161,7 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #define PT_LONG_CHAIN_HEAD_SIZE  (PT_SHORT_CHAIN_HEAD_SIZE+2) // apos uses 4 byte here
 #define PT_EMPTY_NODE_SIZE       (1+sizeof(PT_PNTR))   // tag father
 
-#define PT_MIN_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(char)) // depends on PT_write_nat
+#define PT_MIN_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(char)) // depends on PT_write_compact_nat
 #define PT_MAX_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*(sizeof(int)+1))
 
 #define PT_NODE_WITHSONS_SIZE(sons) (PT_EMPTY_NODE_SIZE+sizeof(PT_PNTR)*(sons))
@@ -366,7 +366,7 @@ public:
 #if defined(DEBUG)
     void dump(FILE *fp) const {
         fprintf(fp, "          apos=%6i  name=%6i='%s'\n",
-                get_abs_pos(), get_name(), get_pid().get_shortname());
+                get_abs_pos(), get_name(), has_valid_name() ? get_pid().get_shortname() : "<invalid>");
     }
 #endif
 };
@@ -388,6 +388,10 @@ public:
 
         pt_assert(has_valid_positions());
     }
+    explicit DataLoc(const AbsLoc& aloc) // expensive!
+        : AbsLoc(aloc),
+          rpos(get_pid().calc_relpos(get_abs_pos()))
+    {}
 
     int get_rel_pos() const { return rpos; }
 
@@ -405,12 +409,13 @@ public:
 #if defined(DEBUG)
     void dump(FILE *fp) const {
         fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n",
-                get_abs_pos(), rpos, get_name(), get_pid().get_shortname());
+                get_abs_pos(), rpos, get_name(), has_valid_name() ? get_pid().get_shortname() : "<invalid>");
     }
 #endif
 };
 
-inline bool operator==(const DataLoc& loc1, const DataLoc& loc2) { return loc1.is_equal(loc2); }
+inline bool operator==(const AbsLoc& loc1, const AbsLoc& loc2) { return loc1.is_equal(loc2); }
+inline bool operator==(const DataLoc& loc1, const DataLoc& loc2) { return loc1.is_equal(loc2); } // @@@ superfluous?
 
 // -------------------------
 //      ReadableDataLoc
@@ -450,7 +455,7 @@ public:
 
 // -----------------------
 
-inline const char *PT_READ_CHAIN_ENTRY_stage_1(const char *entry, DataLoc& loc, int *entry_size) {
+inline const char *PT_READ_CHAIN_ENTRY_stage_1(const char *entry, AbsLoc& loc, int *entry_size) {
     pt_assert_stage(STAGE1);
 
     if (entry) {
@@ -471,110 +476,33 @@ inline const char *PT_READ_CHAIN_ENTRY_stage_1(const char *entry, DataLoc& loc, 
     return NULL;
 }
 
-inline const char *PT_READ_CHAIN_ENTRY_stage_3(const char *ptr, int mainapos, DataLoc& loc) {
-    // Caution: 'name' has to be initialized before first call and shall not be modified between calls
+inline const char *PT_READ_CHAIN_ENTRY_stage_3(const char *ptr, int mainapos, AbsLoc& loc) {
+    // Caution: 'name' (of AbsLoc) has to be initialized before first call and shall not be modified between calls
 
     pt_assert_stage(STAGE3);
 
-    unsigned char *rcep = (unsigned char*)ptr;
-    unsigned int   rcei = (*rcep);
+    uint_8  has_main_apos;
+    uint_32 name = loc.get_name() + read_nat_with_reserved_bits<1>(ptr, has_main_apos);
 
-    int name = loc.get_name();
-    if (rcei&0x80) {
-        if (rcei&0x40) {
-            rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
-        }
-        else {
-            rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
-        }
-    }
-    else {
-        rcei &= 0x7f; rcep++;
-    }
-    name += rcei;
-    rcei   = (*rcep);
+    loc = AbsLoc(name, has_main_apos ? mainapos : PT_read_compact_nat(ptr));
 
-    bool isapos = rcei&0x80;
-
-    if (rcei&0x40) {
-        rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
-    }
-    else {
-        rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
-    }
-
-    int rpos = (int)rcei;
-    int apos;
-    if (isapos) {
-        rcei = (*rcep);
-        if (rcei&0x80) {
-            rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x7fffffff;
-        }
-        else {
-            rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x7fff;
-        }
-        apos = (int)rcei;
-    }
-    else {
-        apos = (int)mainapos;
-    }
-    ptr = (char *)rcep;
-
-    loc = DataLoc(name, apos, rpos);
     return ptr;
 }
 
-inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, int name, const int apos, const int rpos) { // stage 1
+inline char *PT_WRITE_CHAIN_ENTRY(char *ptr, int mainapos, int name, const int apos) {
     pt_assert_stage(STAGE1);
-    unsigned char *wcep = (unsigned char *)ptr;
-    if (name < 0x7f) {      // write the name
-        *(wcep++) = name;
-    }
-    else if (name <0x3fff) {
-        name |= 0x8000;
-        PT_write_short(wcep, name);
-        wcep += 2;
-    }
-    else {
-        name |= 0xc0000000;
-        PT_write_int(wcep, name);
-        wcep += 4;
-    }
-
-    int isapos = (apos == mainapos) ? 0 : 0x80;
-    if (rpos < 0x3fff) {        // write the rpos
-        // 0x7fff, mit der rpos vorher verglichen wurde war zu gross
-        PT_write_short(wcep, rpos);
-        *wcep |= isapos;
-        wcep += 2;
-    }
-    else {
-        PT_write_int(wcep, rpos);
-        *wcep |= 0x40+isapos;
-        wcep += 4;
-    }
-
-    if (isapos) {           // write the apos
-        if (apos < 0x7fff) {
-            PT_write_short(wcep, apos);
-            wcep += 2;
-        }
-        else {
-            PT_write_int(wcep, apos);
-            *wcep |= 0x80;
-            wcep += 4;
-        }
-    }
-    return (char *)wcep;
+    bool has_main_apos = apos == mainapos;
+    write_nat_with_reserved_bits<1>(ptr, name, has_main_apos);
+    if (!has_main_apos) PT_write_compact_nat(ptr, apos);
+    return ptr;
 }
-
 
 // -----------------------
 //      ChainIterator
 
 class ChainIterator : virtual Noncopyable {
     const char *data;
-    DataLoc     loc;
+    AbsLoc      loc;
 
     const char *last_data; // @@@ only used in STAGE1 - split class (one for each stage)?
     int         last_size; // @@@ only used in STAGE1
@@ -599,7 +527,7 @@ class ChainIterator : virtual Noncopyable {
             }
             else {
                 pt_assert(elements_ahead == 0);
-                loc = DataLoc();
+                loc = AbsLoc();
             }
             --elements_ahead;
         }
@@ -613,7 +541,7 @@ class ChainIterator : virtual Noncopyable {
 public:
     ChainIterator(const POS_TREE *node)
         : data(node_data_start(node)),
-          loc(0, 0, 0),
+          loc(0, 0), // init name with 0 (needed for chain reading in STAGE3)
           last_size(-1)
     {
         pt_assert(PT_read_type(node) == PT_NT_CHAIN);
@@ -628,7 +556,8 @@ public:
         }
 
         if (psg.ptdata->get_stage() == STAGE1) {
-            data = PT_read_pointer<char>(data);
+            data           = PT_read_pointer<char>(data);
+            elements_ahead = -1;
         }
         else {
             elements_ahead = PT_read_compact_nat(data);
@@ -638,7 +567,7 @@ public:
     }
 
     operator bool() const { return !at_end_of_chain(); }
-    const DataLoc& at() const { return loc; }
+    const AbsLoc& at() const { return loc; }
     const ChainIterator& operator++() { inc(); return *this; } // prefix-inc
 
     const char *memory() const { return last_data; }
@@ -667,7 +596,9 @@ int PT_withall_tips(POS_TREE *node, T func) {
 }
 
 #if defined(DEBUG)
-struct PTD_chain_print { int operator()(const DataLoc& loc) { loc.dump(stdout); return 0; } };
+struct PTD_chain_print {
+    int operator()(const AbsLoc& loc) { loc.dump(stdout); return 0; }
+};
 #endif
 
 #else

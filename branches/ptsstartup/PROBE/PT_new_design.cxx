@@ -188,7 +188,7 @@ double ptnd_check_split(PT_local *locs, const char *probe, int pos, char ref) {
 //      primary search for probes
 
 struct ptnd_chain_count_mishits {
-    int operator()(const DataLoc& probeLoc) {
+    int operator()(const AbsLoc& probeLoc) {
         // count all mishits for a probe
 
         const char *probe = psg.probe;
@@ -196,7 +196,10 @@ struct ptnd_chain_count_mishits {
 
         if (probeLoc.get_pid().outside_group()) {
             if (probe) {
-                ReadableDataLoc readableLoc(probeLoc);
+                pt_assert(probe[i]); // if this case occurs, avoid entering this branch
+
+                DataLoc         dataLoc(probeLoc);    // @@@ EXPENSIVE_CONVERSION
+                ReadableDataLoc readableLoc(dataLoc); // @@@ EXPENSIVE_CONVERSION
                 for (int i = 0; probe[i] && readableLoc[psg.height+i]; ++i) {
                     if (probe[i] != readableLoc[psg.height+i]) return 0;
                 }
@@ -687,6 +690,9 @@ struct ptnd_chain_check_part {
             ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, partLoc, dt, sbond);
         }
         return 0;
+    }
+    int operator() (const AbsLoc& partLoc) {
+        return (*this)(DataLoc(partLoc)); // @@@ EXPENSIVE_CONVERSION
     }
 };
 
