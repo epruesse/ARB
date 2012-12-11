@@ -188,7 +188,7 @@ double ptnd_check_split(PT_local *locs, const char *probe, int pos, char ref) {
 //      primary search for probes
 
 struct ptnd_chain_count_mishits {
-    int operator()(const ReadableDataLoc& probeLoc) {
+    int operator()(const DataLoc& probeLoc) {
         // count all mishits for a probe
 
         const char *probe = psg.probe;
@@ -196,16 +196,14 @@ struct ptnd_chain_count_mishits {
 
         if (probeLoc.get_pid().outside_group()) {
             if (probe) {
-                for (int i = 0; probe[i] && probeLoc[psg.height+i]; ++i) {
-                    if (probe[i] != probeLoc[psg.height+i]) return 0;
+                ReadableDataLoc readableLoc(probeLoc);
+                for (int i = 0; probe[i] && readableLoc[psg.height+i]; ++i) {
+                    if (probe[i] != readableLoc[psg.height+i]) return 0;
                 }
             }
             ptnd.mishits++;
         }
         return 0;
-    }
-    int operator()(const DataLoc& probeLoc) {
-        return (*this)(ReadableDataLoc(probeLoc));
     }
 };
 
@@ -226,7 +224,7 @@ static int ptnd_count_mishits2(POS_TREE *pt) {
         PT_forwhole_chain(pt, ptnd_chain_count_mishits());
         return ptnd.mishits;
     }
-    
+
     int mishits = 0;
     for (int base = PT_QU; base< PT_BASES; base++) {
         mishits += ptnd_count_mishits2(PT_read_son(pt, (PT_base)base));
