@@ -196,10 +196,10 @@ struct ptnd_chain_count_mishits {
 
         if (probeLoc.get_pid().outside_group()) {
             if (probe) {
-                pt_assert(probe[i]); // if this case occurs, avoid entering this branch
+                pt_assert(probe[0]); // if this case occurs, avoid entering this branch
 
-                DataLoc         dataLoc(probeLoc);    // @@@ EXPENSIVE_CONVERSION
-                ReadableDataLoc readableLoc(dataLoc); // @@@ EXPENSIVE_CONVERSION
+                DataLoc         dataLoc(probeLoc);
+                ReadableDataLoc readableLoc(dataLoc);
                 for (int i = 0; probe[i] && readableLoc[psg.height+i]; ++i) {
                     if (probe[i] != readableLoc[psg.height+i]) return 0;
                 }
@@ -608,12 +608,14 @@ static void ptnd_remove_duplicated_probepart(PT_pdc *pdc)
     }
 }
 
-static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const DataLoc& matchLoc, double dt, double sum_bonds) {
+static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const AbsLoc& absLoc, double dt, double sum_bonds) {
     //! test the probe parts, search the longest non mismatch string
 
     PT_tprobes *tprobe = parts->source;
     int         start  = parts->start;
     if (start) {               // look backwards
+        DataLoc matchLoc(absLoc);
+
         char *probe = parts->source->sequence;
         int   pos   = matchLoc.get_rel_pos()-1;
         start--;                        // test the base left of start
@@ -660,13 +662,15 @@ struct ptnd_chain_check_part {
 
     ptnd_chain_check_part(int s) : split(s) {}
 
-    int operator() (const DataLoc& partLoc) {
-        if (partLoc.get_pid().outside_group()) {
+    int operator() (const AbsLoc& absLoc) {
+        if (absLoc.get_pid().outside_group()) {
             const char *probe = psg.probe;
             double      sbond = ptnd.sum_bonds;
             double      dt    = ptnd.dt;
 
             if (probe) {
+                DataLoc partLoc(absLoc);
+
                 int    pos    = partLoc.get_rel_pos()+psg.height;
                 double h      = 1.0;
                 int    height = psg.height;
@@ -687,12 +691,9 @@ struct ptnd_chain_check_part {
                     height++; pos++;
                 }
             }
-            ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, partLoc, dt, sbond);
+            ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, absLoc, dt, sbond);
         }
         return 0;
-    }
-    int operator() (const AbsLoc& partLoc) {
-        return (*this)(DataLoc(partLoc)); // @@@ EXPENSIVE_CONVERSION
     }
 };
 
