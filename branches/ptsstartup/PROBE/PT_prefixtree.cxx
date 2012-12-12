@@ -42,18 +42,20 @@ inline bool locs_in_chain_order(const AbsLoc& loc1, const AbsLoc& loc2) {
 }
 
 #if defined(PTM_DEBUG_VALIDATE_CHAINS)
+template <typename CHAINITER>
 inline bool PT_is_empty_chain(const POS_TREE * const node) { 
     pt_assert(PT_read_type(node) == PT_NT_CHAIN);
-    return !ChainIterator(node);
+    return !CHAINITER(node);
 }
 #endif
 
+template <typename CHAINITER>
 bool PT_chain_has_valid_entries(const POS_TREE * const node) {
     pt_assert(PT_read_type(node) == PT_NT_CHAIN);
 
     bool ok = true;
 
-    ChainIterator entry(node);
+    CHAINITER entry(node);
     if (!entry) return false;
 
     AbsLoc last(entry.at());
@@ -138,7 +140,8 @@ static void PT_change_link_in_father(POS_TREE *father, POS_TREE *old_link, POS_T
 void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     pt_assert_stage(STAGE1);
 #if defined(PTM_DEBUG_VALIDATE_CHAINS)
-    pt_assert(PT_is_empty_chain(node) || PT_chain_has_valid_entries(node));
+    pt_assert(PT_is_empty_chain<ChainIteratorStage1>(node) ||
+              PT_chain_has_valid_entries<ChainIteratorStage1>(node));
 #endif
 
     // insert at the beginning of list
@@ -167,7 +170,7 @@ void PT_add_to_chain(POS_TREE *node, const DataLoc& loc) {
     PT_write_pointer(data, p);
     psg.stat.cut_offs ++;
 
-    pt_assert_valid_chain(node);
+    pt_assert_valid_chain_stage1(node);
 }
 
 inline void PT_set_father(POS_TREE *son, const POS_TREE *father) {
@@ -477,7 +480,7 @@ static uint_32 reverse_chain(POS_TREE * const node) {
 }
 
 static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long oldpos, ARB_ERROR& error) {
-    pt_assert_valid_chain(node);
+    pt_assert_valid_chain_stage1(node);
 
     long pos = oldpos;
 
@@ -506,9 +509,9 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE * const node, const long
     pt_assert(chain_length>0);
     pos += PTD_put_compact_nat(out, chain_length);
 
-    uint_32       entries = 0;
-    ChainIterator entry(node);
-    int           lastname      = 0;
+    uint_32             entries  = 0;
+    ChainIteratorStage1 entry(node);
+    int                 lastname = 0;
     while (entry && !error) {
         const AbsLoc& loc = entry.at();
         if (loc.get_name()<lastname) {
@@ -1010,13 +1013,13 @@ void TEST_chains() {
 
         POS_TREE *chain = PT_leaf_to_chain(leaf);
         TEST_EXPECT_EQUAL(PT_read_type(chain), PT_NT_CHAIN);
-        TEST_EXPECT(PT_chain_has_valid_entries(chain));
+        TEST_EXPECT(PT_chain_has_valid_entries<ChainIteratorStage1>(chain));
 
         PT_add_to_chain(chain, loc2a);
-        TEST_EXPECT(PT_chain_has_valid_entries(chain));
+        TEST_EXPECT(PT_chain_has_valid_entries<ChainIteratorStage1>(chain));
 
         if (base == PT_A) { // test only once
-            ChainIterator entry(chain);
+            ChainIteratorStage1 entry(chain);
 
             TEST_EXPECT_EQUAL(bool(entry), true);
             TEST_EXPECT(entry.at() == loc2a);

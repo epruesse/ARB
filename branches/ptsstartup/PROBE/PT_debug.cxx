@@ -72,8 +72,8 @@ struct PT_statistic {
                 break;
 
             case PT_NT_CHAIN: {
-                size_t        size = 1;
-                ChainIterator iter(pt);
+                size_t              size = 1;
+                ChainIteratorStage3 iter(pt);
 
                 int lastName = iter.at().get_name();
                 while (++iter) {
@@ -91,7 +91,7 @@ struct PT_statistic {
 
                 if (size>DEBUG_MAX_CHAIN_SIZE) size = DEBUG_MAX_CHAIN_SIZE;
 
-                size_t mem = iter.memory()-(char*)pt; // last_data-start
+                size_t mem = iter.memptr()-(char*)pt;
 
                 chains_of_size[size]++;
                 chains_of_size_mem[size]    += mem;
@@ -269,7 +269,7 @@ void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
         }
         case PT_NT_CHAIN: {
             char *subPrefix = GBS_global_string_copy("{c} %s", prefix);
-            PT_forwhole_chain(pt, PT_dump_leaf(subPrefix, out));
+            PT_forwhole_chain_anyStage(pt, PT_dump_leaf(subPrefix, out));
             free(subPrefix);
             break;
         }
@@ -309,7 +309,7 @@ void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node), FILE *IF_DEBUG(out)) {
             break;
         case PT_NT_CHAIN:
             fputs("chain:\n", out);
-            PT_forwhole_chain(node, PTD_chain_print());
+            PT_forwhole_chain_anyStage(node, PTD_chain_print());
             break;
         case PT_NT_SAVED:
             fputs("saved:\n", out);

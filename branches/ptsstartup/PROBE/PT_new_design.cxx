@@ -224,7 +224,7 @@ static int ptnd_count_mishits2(POS_TREE *pt) {
     if (PT_read_type(pt) == PT_NT_CHAIN) {
         psg.probe = 0;
         ptnd.mishits = 0;
-        PT_forwhole_chain(pt, ptnd_chain_count_mishits());
+        PT_forwhole_chain_stage3(pt, ptnd_chain_count_mishits()); // @@@ expand
         return ptnd.mishits;
     }
 
@@ -429,7 +429,7 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
             psg.probe = probe;
             psg.height = height;
             ptnd.mishits = 0;
-            PT_forwhole_chain(pt, ptnd_chain_count_mishits());
+            PT_forwhole_chain_stage3(pt, ptnd_chain_count_mishits()); // @@@ expand
             return ptnd.mishits;
         }
     }
@@ -714,7 +714,7 @@ static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds) {
             psg.probe = 0;
             ptnd.dt = dt;
             ptnd.sum_bonds = sum_bonds;
-            PT_forwhole_chain(pt, ptnd_chain_check_part(0));
+            PT_forwhole_chain_stage3(pt, ptnd_chain_check_part(0)); // @@@ expand
         }
         else {
             for (int base = PT_QU; base< PT_BASES; base++) {
@@ -805,7 +805,7 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
             psg.height = height;
             ptnd.dt = dt;
             ptnd.sum_bonds = sum_bonds;
-            PT_forwhole_chain(pt, ptnd_chain_check_part(split));
+            PT_forwhole_chain_stage3(pt, ptnd_chain_check_part(split)); // @@@ expand
             return;
         }
     }

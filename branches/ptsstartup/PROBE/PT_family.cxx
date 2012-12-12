@@ -150,6 +150,7 @@ class PT_Traversal {
     }
 
     void mark_all(POS_TREE *pt) const;
+    inline void mark_chain_or_leaf(POS_TREE *pt) const;
 
 public:
 
@@ -170,7 +171,7 @@ public:
 
     void mark_matching(POS_TREE *pt) const;
 
-    int operator()(const DataLoc& loc) const { 
+    int operator()(const DataLoc& loc) const {
         //! Increment match_count for matched postree-tips
         if (did_match()) count_match(loc);
         else if (match_possible()) {
@@ -190,9 +191,29 @@ public:
 
 Range PT_Traversal::range(-1, -1, -1);
 
+inline void PT_Traversal::mark_chain_or_leaf(POS_TREE *pt) const {
+    pt_assert(pt);
+    switch (PT_read_type(pt)) {
+        case PT_NT_LEAF:
+            (*this)(DataLoc(pt));
+            break;
+
+        case PT_NT_CHAIN: {
+            ChainIteratorStage3 entry(pt);
+            while (entry) {
+                (*this)(entry.at());
+                ++entry;
+            }
+            break;
+        }
+        default :
+            pt_assert(0); // not called with chain or leaf
+            break;
+    }
+}
+
 void PT_Traversal::mark_matching(POS_TREE *pt) const {
     //! Traverse pos(sub)tree through matching branches and increment 'match_count'
-
     pt_assert(pt);
     pt_assert(!too_many_mismatches());
     pt_assert(!did_match()); 
@@ -211,7 +232,7 @@ void PT_Traversal::mark_matching(POS_TREE *pt) const {
         }
     }
     else {
-        PT_withall_tips(pt, *this); // calls operator() 
+        mark_chain_or_leaf(pt);
     }
 }
 
@@ -227,7 +248,7 @@ void PT_Traversal::mark_all(POS_TREE *pt) const {
         }
     }
     else {
-        PT_withall_tips(pt, *this); // calls operator() 
+        mark_chain_or_leaf(pt);
     }
 }
 

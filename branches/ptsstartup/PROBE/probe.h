@@ -42,9 +42,9 @@
 #endif
 
 #if defined(PTM_DEBUG_VALIDATE_CHAINS)
-#define pt_assert_valid_chain(node) pt_assert(PT_chain_has_valid_entries(node))
+#define pt_assert_valid_chain_stage1(node) pt_assert(PT_chain_has_valid_entries<ChainIteratorStage1>(node))
 #else // !defined(PTM_DEBUG_VALIDATE_CHAINS)
-#define pt_assert_valid_chain(node) 
+#define pt_assert_valid_chain_stage1(node) 
 #endif
 
 typedef unsigned long ULONG;

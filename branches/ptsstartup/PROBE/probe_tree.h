@@ -498,39 +498,20 @@ inline char *PT_WRITE_CHAIN_ENTRY(char *ptr, int mainapos, int name, const int a
 }
 
 // -----------------------
-//      ChainIterator
+//      ChainIterators
 
-class ChainIterator : virtual Noncopyable {
+class ChainIteratorStage1 : virtual Noncopyable {
     const char *data;
     AbsLoc      loc;
+    int         mainapos;
 
-    const char *last_data; // @@@ only used in STAGE1 - split class (one for each stage)?
-    int         last_size; // @@@ only used in STAGE1
+    const char *last_data;
+    int         last_size;
 
-    int mainapos;          // @@@ only used in STAGE3
-    int elements_ahead;    // @@@ only used in STAGE3
-
-    bool at_end_of_chain() const {
-        if (psg.ptdata->get_stage() == STAGE1) {
-            return loc.get_name() == -1;
-        }
-        return elements_ahead<0;
-    }
+    bool at_end_of_chain() const { return loc.get_name() == -1; }
     void set_loc_from_chain() {
         last_data = data;
-        if (psg.ptdata->get_stage() == STAGE1) {
-            data = PT_READ_CHAIN_ENTRY_stage_1(data, loc, &last_size);
-        }
-        else {
-            if (elements_ahead>0) {
-                data = PT_READ_CHAIN_ENTRY_stage_3(data, mainapos, loc);
-            }
-            else {
-                pt_assert(elements_ahead == 0);
-                loc = AbsLoc();
-            }
-            --elements_ahead;
-        }
+        data      = PT_READ_CHAIN_ENTRY_stage_1(data, loc, &last_size);
         pt_assert(at_end_of_chain() || loc.has_valid_name());
     }
     void inc() {
@@ -539,11 +520,11 @@ class ChainIterator : virtual Noncopyable {
     }
 
 public:
-    ChainIterator(const POS_TREE *node)
+    ChainIteratorStage1(const POS_TREE *node)
         : data(node_data_start(node)),
-          loc(0, 0), // init name with 0 (needed for chain reading in STAGE3)
           last_size(-1)
     {
+        pt_assert_stage(STAGE1);
         pt_assert(PT_read_type(node) == PT_NT_CHAIN);
 
         if (node->flags&1) {
@@ -555,45 +536,100 @@ public:
             data     += 2;
         }
 
-        if (psg.ptdata->get_stage() == STAGE1) {
-            data           = PT_read_pointer<char>(data);
-            elements_ahead = -1;
-        }
-        else {
-            elements_ahead = PT_read_compact_nat(data);
-            pt_assert(elements_ahead>0); // chain cant be empty
-        }
+        data = PT_read_pointer<char>(data);
         set_loc_from_chain();
     }
 
     operator bool() const { return !at_end_of_chain(); }
     const AbsLoc& at() const { return loc; }
-    const ChainIterator& operator++() { inc(); return *this; } // prefix-inc
+    const ChainIteratorStage1& operator++() { inc(); return *this; } // prefix-inc
 
     const char *memory() const { return last_data; }
     int memsize() const { return last_size; }
 };
 
+class ChainIteratorStage3 : virtual Noncopyable {
+    const char *data;
+    AbsLoc      loc;
+
+    int mainapos;
+    int elements_ahead;
+
+    bool at_end_of_chain() const { return elements_ahead<0; }
+    void set_loc_from_chain() {
+        if (elements_ahead>0) {
+            data = PT_READ_CHAIN_ENTRY_stage_3(data, mainapos, loc);
+        }
+        else {
+            pt_assert(elements_ahead == 0);
+            loc = AbsLoc();
+        }
+        --elements_ahead;
+        pt_assert(at_end_of_chain() || loc.has_valid_name());
+    }
+    void inc() {
+        pt_assert(!at_end_of_chain());
+        set_loc_from_chain();
+    }
+
+public:
+    ChainIteratorStage3(const POS_TREE *node)
+        : data(node_data_start(node)),
+          loc(0, 0) // init name with 0 (needed for chain reading in STAGE3)
+          // last_size(-1)
+    {
+        pt_assert_stage(STAGE3);
+        pt_assert(PT_read_type(node) == PT_NT_CHAIN);
+
+        if (node->flags&1) {
+            mainapos  = PT_read_int(data);
+            data     += 4;
+        }
+        else {
+            mainapos  = PT_read_short(data);
+            data     += 2;
+        }
+
+        elements_ahead = PT_read_compact_nat(data);
+        pt_assert(elements_ahead>0); // chain cant be empty
+        set_loc_from_chain();
+    }
+
+    operator bool() const { return !at_end_of_chain(); }
+    const AbsLoc& at() const { return loc; }
+    const ChainIteratorStage3& operator++() { inc(); return *this; } // prefix-inc
+
+    const char *memptr() const { return data; }
+};
+
 template<typename T>
-int PT_forwhole_chain(POS_TREE *node, T func) {
+int PT_forwhole_chain_stage1(POS_TREE *node, T func) {
+    pt_assert_stage(STAGE1);
     int error = 0;
-    for (ChainIterator entry(node); entry && !error; ++entry) {
+    for (ChainIteratorStage1 entry(node); entry && !error; ++entry) {
         error = func(entry.at());
     }
     return error;
 }
 
 template<typename T>
-int PT_withall_tips(POS_TREE *node, T func) {
-    // like PT_forwhole_chain, but also can handle leafs
-    PT_NODE_TYPE type = PT_read_type(node);
-    if (type == PT_NT_LEAF) {
-        return func(DataLoc(node));
+int PT_forwhole_chain_stage3(POS_TREE *node, T func) {
+    pt_assert_stage(STAGE3);
+    int error = 0;
+    for (ChainIteratorStage3 entry(node); entry && !error; ++entry) {
+        error = func(entry.at());
     }
-
-    pt_assert(type == PT_NT_CHAIN);
-    return PT_forwhole_chain(node, func);
+    return error;
 }
+
+template<typename T>
+int PT_forwhole_chain_anyStage(POS_TREE *node, T func) {
+    if (psg.ptdata->get_stage() == STAGE1) {
+        return PT_forwhole_chain_stage1(node, func);
+    }
+    return PT_forwhole_chain_stage3(node, func);
+}
+
 
 #if defined(DEBUG)
 struct PTD_chain_print {

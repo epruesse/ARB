@@ -72,7 +72,7 @@ char *get_design_hinfo(const PT_tprobes *tprobe);
 int PT_start_design(PT_pdc *pdc, int dummy_1x);
 
 /* PT_prefixtree.cxx */
-bool PT_chain_has_valid_entries(const POS_TREE *const node);
+template <typename CHAINITER >bool PT_chain_has_valid_entries(const POS_TREE *const node);
 void PT_init_cache_sizes(Stage stage);
 PT_data *PT_init(Stage stage);
 void PT_add_to_chain(POS_TREE *node, const DataLoc &loc);
@@ -91,8 +91,9 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) __ATTR__
 const char *get_blocksize_description(int blocksize);
 
 /* probe_tree.h */
-template <typename T >int PT_forwhole_chain(POS_TREE *node, T func);
-template <typename T >int PT_withall_tips(POS_TREE *node, T func);
+template <typename T >int PT_forwhole_chain_stage1(POS_TREE *node, T func);
+template <typename T >int PT_forwhole_chain_stage3(POS_TREE *node, T func);
+template <typename T >int PT_forwhole_chain_anyStage(POS_TREE *node, T func);
 
 #else
 #error pt_prototypes.h included twice

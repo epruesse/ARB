@@ -214,7 +214,7 @@ bool MatchRequest::add_hits_for_children(POS_TREE *pt, const Mismatches& mismatc
             break;
 
         case PT_NT_CHAIN: {
-            ChainIterator entry(pt);
+            ChainIteratorStage3 entry(pt);
             while (entry && !enough) {
                 enough = add_hit(DataLoc(entry.at()), mismatch);
                 ++entry;
@@ -276,7 +276,7 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches&
             case PT_NT_CHAIN: {
                 pt_assert(probe);
 
-                ChainIterator entry(pt);
+                ChainIteratorStage3 entry(pt);
                 while (entry && !enough) {
                     Mismatches entry_mismatches(mismatches);
                     DataLoc dloc(entry.at()); // @@@ EXPENSIVE_CONVERSION
