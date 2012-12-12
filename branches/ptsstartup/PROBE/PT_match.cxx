@@ -521,7 +521,7 @@ static format_props detect_format_props(const PT_local *locs, bool show_gpos) {
         set_max(virt_fullname(ml), format.gene_or_full_width);
         set_max(GBS_global_string("%i", info2bio(ml->b_pos)), format.pos_width);
         if (show_gpos) set_max(GBS_global_string("%i", info2bio(ml->g_pos)), format.gpos_width);
-        if (format.show_ecoli) set_max(GBS_global_string("%li", PT_abs_2_rel(ml->b_pos+1)), format.ecoli_width);
+        if (format.show_ecoli) set_max(GBS_global_string("%li", PT_abs_2_ecoli_rel(ml->b_pos+1)), format.ecoli_width);
     }
 
     return format;
@@ -636,7 +636,7 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
         cat_spaced_right(memfile, GBS_global_string("%i", info2bio(ml->g_pos)), format.gpos_width);
     }
     if (format.show_ecoli) {
-        cat_spaced_right(memfile, GBS_global_string("%li", PT_abs_2_rel(ml->b_pos+1)), format.ecoli_width);
+        cat_spaced_right(memfile, GBS_global_string("%li", PT_abs_2_ecoli_rel(ml->b_pos+1)), format.ecoli_width);
     }
     cat_spaced_left(memfile, GBS_global_string("%i", ml->reversed), format.rev_width());
 

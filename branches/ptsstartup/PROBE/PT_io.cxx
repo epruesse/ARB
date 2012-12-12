@@ -332,7 +332,7 @@ void PT_build_species_hash() {
 }
 
 
-long PT_abs_2_rel(long pos) {
+long PT_abs_2_ecoli_rel(long pos) {
     if (!psg.ecoli) return pos;
     return psg.bi_ecoli->abs_2_rel(pos);
 }

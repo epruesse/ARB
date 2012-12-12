@@ -47,7 +47,7 @@ char *readable_probe(const char *compressed_probe, size_t len, char T_or_U);
 GB_ERROR PT_prepare_data(GBDATA *gb_main);
 GB_ERROR PT_init_input_data(void);
 void PT_build_species_hash(void);
-long PT_abs_2_rel(long pos);
+long PT_abs_2_ecoli_rel(long pos);
 
 /* PT_main.cxx */
 void PT_init_psg(void);

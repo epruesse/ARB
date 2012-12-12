@@ -149,13 +149,8 @@ static double pt_get_temperature(const char *probe)
 }
 
 static void ptnd_calc_quality(PT_pdc *pdc) {
-    PT_tprobes *tprobe;
-    int         i;
-
-    for (tprobe = pdc->tprobes;
-         tprobe;
-         tprobe = tprobe->next)
-    {
+    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
+        int i;
         for (i=0; i< PERC_SIZE-1; i++) {
             if (tprobe->perc[i] > tprobe->mishit) break;
         }
@@ -210,7 +205,7 @@ struct ptnd_chain_count_mishits {
     }
 };
 
-static int ptnd_count_mishits2(POS_TREE *pt) {
+static int count_mishits_for_all(POS_TREE *pt) {
     //! go down the tree to chains and leafs; count the species that are in the non member group
     if (pt == NULL)
         return 0;
@@ -230,7 +225,7 @@ static int ptnd_count_mishits2(POS_TREE *pt) {
 
     int mishits = 0;
     for (int base = PT_QU; base< PT_BASES; base++) {
-        mishits += ptnd_count_mishits2(PT_read_son(pt, (PT_base)base));
+        mishits += count_mishits_for_all(PT_read_son(pt, (PT_base)base));
     }
     return mishits;
 }
@@ -299,7 +294,7 @@ char *get_design_info(const PT_tprobes *tprobe) {
         // le apos ecol
         p += sprintf(p, "%2i %c%c%6i %4li ", tprobe->seq_len, c, cs,
                      apos,
-                     PT_abs_2_rel(tprobe->apos+1)); // ecoli-bases inclusive apos ("bases before apos+1")
+                     PT_abs_2_ecoli_rel(tprobe->apos+1)); // ecoli-bases inclusive apos ("bases before apos+1")
     }
     // grps
     p += sprintf(p, "%4i ", tprobe->groupsize);
@@ -398,7 +393,7 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
     return buffer;
 }
 
-static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
+static int count_mishits_for_matched(char *probe, POS_TREE *pt, int height) {
     //! search down the tree to find matching species for the given probe
     if (!pt) return 0;
     if (PT_read_type(pt) == PT_NT_NODE && *probe) {
@@ -406,7 +401,7 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
         for (int i=PT_A; i<PT_BASES; i++) {
             if (i != *probe) continue;
             POS_TREE *pthelp = PT_read_son(pt, (PT_base)i);
-            if (pthelp) mishits += ptnd_count_mishits(probe+1, pthelp, height+1);
+            if (pthelp) mishits += count_mishits_for_matched(probe+1, pthelp, height+1);
         }
         return mishits;
     }
@@ -433,42 +428,41 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
             return ptnd.mishits;
         }
     }
-    return ptnd_count_mishits2(pt);
+    return count_mishits_for_all(pt);
 }
 
-static void ptnd_first_check(PT_pdc *pdc) {
+static void remove_tprobes_with_too_many_mishits(PT_pdc *pdc) {
     //! Check for direct mishits
 
-    PT_tprobes *tprobe, *tprobe_next;
-    for (tprobe = pdc->tprobes;
-         tprobe;
-         tprobe = tprobe_next) {
-        tprobe_next = tprobe->next;
+    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; ) {
+        PT_tprobes *tprobe_next = tprobe->next;
+
         psg.abs_pos.clear();
-        tprobe->mishit = ptnd_count_mishits(tprobe->sequence, psg.pt, 0);
-        tprobe->apos = psg.abs_pos.get_most_used();
+        tprobe->mishit = count_mishits_for_matched(tprobe->sequence, psg.pt, 0);
+        tprobe->apos   = psg.abs_pos.get_most_used();
         if (tprobe->mishit > pdc->mishit) {
             destroy_PT_tprobes(tprobe);
         }
+        tprobe = tprobe_next;
     }
     psg.abs_pos.clear();
 }
 
-static void ptnd_check_position(PT_pdc *pdc) {
+static void remove_tprobes_outside_ecoli_range(PT_pdc *pdc) {
     //! Check the probes position.
-    PT_tprobes *tprobe, *tprobe_next;
     // if (pdc->min_ecolipos == pdc->max_ecolipos) return; // @@@ wtf was this for?  
 
-    for (tprobe = pdc->tprobes; tprobe; tprobe = tprobe_next) {
-        tprobe_next = tprobe->next;
-        long relpos = PT_abs_2_rel(tprobe->apos+1);
+    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; ) {
+        PT_tprobes *tprobe_next = tprobe->next;
+        long relpos = PT_abs_2_ecoli_rel(tprobe->apos+1);
         if (relpos < pdc->min_ecolipos || (relpos > pdc->max_ecolipos && pdc->max_ecolipos != -1)) {
             destroy_PT_tprobes(tprobe);
         }
+        tprobe = tprobe_next;
     }
 }
 
-static void ptnd_check_bonds(PT_local *locs) {
+static void tprobes_calculate_bonds(PT_local *locs) {
     /*! check the average bond size.
      *
      * @TODO  checks probe hairpin bonds
@@ -643,8 +637,9 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const AbsL
     pt_assert(pos >= 0);
 
     if (pos >= PERC_SIZE) return; // out of observation
-    tprobe->perc[pos] ++;
+    tprobe->perc[pos]++;
 }
+
 static int ptnd_check_inc_mode(PT_pdc *pdc, PT_probeparts *parts, double dt, double sum_bonds)
 {
     PT_tprobes *tprobe = parts->source;
@@ -811,13 +806,9 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
     }
     ptnd_check_part_all(pt, dt, sum_bonds);
 }
-static void ptnd_check_probepart(PT_pdc *pdc)
-{
-    PT_probeparts       *parts;
+static void ptnd_check_probepart(PT_pdc *pdc) {
     ptnd.pdc = pdc;
-    for (parts = pdc->parts;
-                parts;
-                parts = parts->next) {
+    for (PT_probeparts *parts = pdc->parts; parts; parts = parts->next) {
         ptnd.parts = parts;
         ptnd_check_part(parts->sequence, psg.pt, 0, parts->dt, parts->sum_bonds, 0);
     }
@@ -1019,9 +1010,6 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 }
 
 int PT_start_design(PT_pdc *pdc, int /* dummy */) {
-
-    //  IDP probe design
-
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
 
     ptnd.locs = locs;
@@ -1054,9 +1042,9 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     ptnd_build_tprobes(pdc, locs->group_count);
     while (pdc->sequences) destroy_PT_sequence(pdc->sequences);
     ptnd_sort_probes_by(pdc, 1);
-    ptnd_first_check(pdc);
-    ptnd_check_position(pdc);
-    ptnd_check_bonds(locs);
+    remove_tprobes_with_too_many_mishits(pdc);
+    remove_tprobes_outside_ecoli_range(pdc);
+    tprobes_calculate_bonds(locs);
     ptnd_cp_tprobe_2_probepart(pdc);
     ptnd_duplicate_probepart(locs);
     ptnd_sort_parts(pdc);
