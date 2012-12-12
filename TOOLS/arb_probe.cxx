@@ -917,53 +917,111 @@ static char *extract_locations(const char *probe_design_result) {
 
 void TEST_SLOW_design_probe() {
     bool use_gene_ptserver = false;
-    const char *arguments[] = {
-        "prgnamefake",
-        "designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr",
-        "designmintargets=100",
-    };
-    const char *expected = 
-        "Probe design Parameters:\n"
-        "Length of probe      18\n"
-        "Temperature        [ 0.0 -400.0]\n"
-        "GC-Content         [30.0 -80.0]\n"
-        "E.Coli Position    [any]\n"
-        "Max Non Group Hits     0\n"
-        "Min Group Hits       100%\n"
-        "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
-        "AUCAAGUCGAGCGAUGAA 18 A=    17   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "CGAAAGGAAGAUUAAUAC 18 B=    94   82    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "GAAAGGAAGAUUAAUACC 18 B+     1   83    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "UCAAGUCGAGCGAUGAAG 18 A+     1   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n";
-
-    TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
-
-    // ------------------------------------------------------
-    //      design MANY probes to test location specifier
-
     {
-        char *positions = extract_locations(expected);
-        TEST_EXPECT_EQUAL(positions, "A=17B=94B+1A+1");
-        free(positions);
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr",
+            "designmintargets=100",
+        };
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe      18\n"
+            "Temperature        [ 0.0 -400.0]\n"
+            "GC-Content         [30.0 -80.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits     0\n"
+            "Min Group Hits       100%\n"
+            "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
+            "AUCAAGUCGAGCGAUGAA 18 A=    17   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CGAAAGGAAGAUUAAUAC 18 B=    94   82    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GAAAGGAAGAUUAAUACC 18 B+     1   83    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "UCAAGUCGAGCGAUGAAG 18 A+     1   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+
+        // ------------------------------------------------------
+        //      design MANY probes to test location specifier
+
+        {
+            char *positions = extract_locations(expected);
+            TEST_EXPECT_EQUAL(positions, "A=17B=94B+1A+1");
+            free(positions);
+        }
+
+        const char *arguments_loc[] = {
+            "prgnamefake",
+            // "designnames=Stsssola#Stsssola", // @@@ crashes the ptserver
+            "designnames=CPPParap#PsAAAA00",
+            "designmintargets=50", // hit at least 1 of the 2 targets
+            "designmingc=0", "designmaxgc=100", // allow all GCs
+            "designmishit=99999",  // allow enough outgroup hits
+            "designmaxhits=99999", // do not limit results
+            "designprobelength=3",
+        };
+
+        const char *expected_loc =
+            "A=96B=141C=20D=107B+1E=110F=84G=9H=150I=145C+1D+1J=17K=122L=72C-1M=33N=114E+1O=163"
+            "P=24E+2F+1Q=138R=54O+1S=49A-1T=87G+1J-1N-1U=79F+2U-1V=129I+2H-2C+2W=12D-1D+2C-2R+1"
+            "P-1J-2O+2V-2X=92W+2W+1Y=125Z=176D-2H+1a=104H-1L+1";
+
+        TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
     }
 
-    const char *arguments_loc[] = {
-        "prgnamefake",
-        // "designnames=Stsssola#Stsssola", // @@@ crashes the ptserver
-        "designnames=CPPParap#PsAAAA00",
-        "designmintargets=50", // hit at least 1 of the 2 targets
-        "designmingc=0", "designmaxgc=100", // allow all GCs
-        "designmishit=99999",  // allow enough outgroup hits
-        "designmaxhits=99999", // do not limit results
-        "designprobelength=3",
-    };
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=ClnCorin#CPPParap#ClfPerfr",
+            "designprobelength=16",
+            "designmintargets=100",
+            "designmishit=2",
+        };
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe      16\n"
+            "Temperature        [ 0.0 -400.0]\n"
+            "GC-Content         [30.0 -80.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits     2\n"
+            "Min Group Hits       100%\n"
+            "Target           le     apos ecol grps  G+C 4GC+2AT Probe sequence   | Decrease T by n*.3C -> probe matches n non group species\n"
+            "AAGGAAGAUUAAUACC 16 A=    97   85    3 31.2 42.0    GGUAUUAAUCUUCCUU |  1,  1,  1,  2,  2,  2,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,  6,\n"
+            "AAGUCGAGCGAUGAAG 16 B=    20   19    3 50.0 48.0    CUUCAUCGCUCGACUU |  1,  1,  1,  2,  2,  2,  3,  3,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  5,  6,\n"
+            "CAAGUCGAGCGAUGAA 16 B-     1   18    3 50.0 48.0    UUCAUCGCUCGACUUG |  1,  1,  1,  1,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,  6,\n"
+            "CGAAAGGAAGAUUAAU 16 A-     3   82    3 31.2 42.0    AUUAAUCUUCCUUUCG |  1,  1,  1,  1,  2,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  6,\n"
+            "UCAAGUCGAGCGAUGA 16 B-     2   17    3 50.0 48.0    UCAUCGCUCGACUUGA |  1,  1,  1,  2,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  5,  6,\n"
+            "AUCAAGUCGAGCGAUG 16 B-     3   16    3 50.0 48.0    CAUCGCUCGACUUGAU |  1,  1,  1,  2,  2,  2,  3,  3,  3,  3,  3,  4,  4,  4,  4,  5,  5, 12, 13, 13,\n"
+            "GUCGAGCGAUGAAGUU 16 B+     2   21    3 50.0 48.0    AACUUCAUCGCUCGAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  2,  2,  2,  3,  3,\n"
+            "AGUCGAGCGAUGAAGU 16 B+     1   20    3 50.0 48.0    ACUUCAUCGCUCGACU |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  2,  2,  2,  2,  2,  3,  3,  3,  4,  4,\n"
+            "GAUCAAGUCGAGCGAU 16 B-     4   15    3 50.0 48.0    AUCGCUCGACUUGAUC |  0,  2,  2,  2,  2,  5,  5,  5, 13, 15, 15, 15, 24, 25, 25, 25, 33, 35, 35, 42,\n"
+            "UGAUCAAGUCGAGCGA 16 B-     5   14    3 50.0 48.0    UCGCUCGACUUGAUCA |  0,  9,  9,  9, 18, 18, 18, 18, 19, 28, 28, 29, 38, 38, 38, 38, 48, 48, 48, 48,\n";
 
-    const char *expected_loc = 
-        "A=96B=141C=20D=107B+1E=110F=84G=9H=150I=145C+1D+1J=17K=122L=72C-1M=33N=114E+1O=163"
-        "P=24E+2F+1Q=138R=54O+1S=49A-1T=87G+1J-1N-1U=79F+2U-1V=129I+2H-2C+2W=12D-1D+2C-2R+1"
-        "P-1J-2O+2V-2X=92W+2W+1Y=125Z=176D-2H+1a=104H-1L+1";
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=HllHalod#VbhChole#VblVulni#VbrFurni#PtVVVulg",
+            "designprobelength=14",
+            "designmintargets=100",
+            "designmishit=4",
+            "designmingc=70",
+            "designmaxgc=100",
+        };
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe      14\n"
+            "Temperature        [ 0.0 -400.0]\n"
+            "GC-Content         [70.0 -100.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits     4\n"
+            "Min Group Hits       100%\n"
+            "Target         le     apos ecol grps  G+C 4GC+2AT Probe sequence | Decrease T by n*.3C -> probe matches n non group species\n"
+            "AGCGGCGGACGGAC 14 A=    75   64    5 78.6 50.0    GUCCGUCCGCCGCU |  4,  7,  7, 11, 13, 16, 16, 16, 18, 22, 25, 25, 25, 27, 31, 31, 34, 37, 37, 37,\n"
+            "GAGCGGCGGACGGA 14 A-     0   64    5 78.6 50.0    UCCGUCCGCCGCUC |  0,  0,  0,  0,  1,  1,  1,  1,  1,  2,  6,  6, 10, 11, 16, 16, 19, 20, 22, 22,\n"
+            "CGAGCGGCGGACGG 14 A-     1   63    5 85.7 52.0    CCGUCCGCCGCUCG |  0,  0,  0,  0,  2,  2,  2,  2,  2,  4,  4,  4,  4, 11, 13, 13, 13, 20, 22, 22,\n";
 
-    TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
 }
 
 void TEST_SLOW_match_designed_probe() {
