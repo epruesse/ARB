@@ -9,7 +9,7 @@
 // =============================================================== //
 
 
-#include "probe.h"
+#include "pt_split.h"
 #include <PT_server_prototypes.h>
 #include <struct_man.h>
 #include "probe_tree.h"
@@ -170,19 +170,6 @@ static double ptnd_check_max_bond(PT_local *locs, char base) {
 
     int complement = psg.get_complement(base);
     return locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
-}
-
-double ptnd_check_split(PT_local *locs, const char *probe, int pos, char ref) {
-    int    base       = probe[pos];
-    int    complement = psg.get_complement(base);
-    double max_bind   = locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
-    double new_bind   = locs->bond[(complement-(int)PT_A)*4 + ref-(int)PT_A].val;
-
-    // if (new_bind < locs->pdc->split)
-    if (new_bind < locs->split)
-        return new_bind-max_bind; // negative values indicate split
-    // this mismatch splits the probe in several domains
-    return (max_bind - new_bind);
 }
 
 
@@ -506,7 +493,7 @@ static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc) {
     }
 }
 
-static void ptnd_duplicate_probepart_rek(PT_local *locs, char *insequence, int deep, const dt_bondssum& dtbs, PT_probeparts *parts) {
+static void ptnd_duplicate_probepart_rek(PT_local *locs, const Splits& splits, char *insequence, int deep, const dt_bondssum& dtbs, PT_probeparts *parts) {
     PT_pdc *pdc      = locs->pdc;
     char   *sequence = strdup(insequence);
 
@@ -527,21 +514,21 @@ static void ptnd_duplicate_probepart_rek(PT_local *locs, char *insequence, int d
 
         for (int i = PT_A; i <= PT_T; i++) {
             sequence[deep] = i;
-            double split   = ptnd_check_split(locs, insequence, deep, i);
+            double split   = splits.check(insequence[deep], i);
             if (split >= 0.0) { // this mismatch splits the probe in several domains
                 dt_bondssum dtbs_sub(split+dtbs.dt, dtbs.sum_bonds+max_bind-split);
-                ptnd_duplicate_probepart_rek(locs, sequence, deep+1, dtbs_sub, parts);
+                ptnd_duplicate_probepart_rek(locs, splits, sequence, deep+1, dtbs_sub, parts);
             }
         }
         free(sequence);
     }
 }
 
-static void ptnd_duplicate_probepart(PT_local *locs) {
+static void ptnd_duplicate_probepart(PT_local *locs, const Splits& splits) {
     PT_probeparts *parts;
     PT_pdc        *pdc = locs->pdc;
     for (parts = pdc->parts; parts; parts = parts->next)
-        ptnd_duplicate_probepart_rek(locs, parts->sequence, 0, dt_bondssum(parts->dt, 0.0), parts);
+        ptnd_duplicate_probepart_rek(locs, splits, parts->sequence, 0, dt_bondssum(parts->dt, 0.0), parts);
 
     while ((parts = pdc->parts))
         destroy_PT_probeparts(parts);   // delete the source
@@ -611,7 +598,7 @@ inline int calc_centigrade_pos(const PT_pdc *pdc, const PT_tprobes *tprobe, cons
     return pos;
 }
 
-static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const AbsLoc& absLoc, dt_bondssum& dtbs) {
+static void ptnd_check_part_inc_dt(PT_pdc *pdc, const Splits& splits, PT_probeparts *parts, const AbsLoc& absLoc, dt_bondssum& dtbs) {
     //! test the probe parts, search the longest non mismatch string
     // (Note: modifies 'dtbs')
 
@@ -631,7 +618,7 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const AbsL
         while (start>=0) {
             if (pos<0) break;   // out of sight
 
-            double h = ptnd_check_split(ptnd.locs, probe, start, seq[pos]);
+            double h = splits.check(probe[start], seq[pos]);
             if (h>0.0 && !split) return; // there is a longer part matching this
 
             dtbs.dt -= h;
@@ -653,9 +640,10 @@ inline bool centigrade_pos_outofscope(PT_pdc *pdc, PT_probeparts *parts, const d
 }
 
 struct ptnd_chain_check_part {
-    int split;
+    int           split;
+    const Splits& splits;
 
-    ptnd_chain_check_part(int s) : split(s) {}
+    ptnd_chain_check_part(int s, const Splits& splits_) : split(s), splits(splits_) {}
 
     int operator() (const AbsLoc& absLoc) {
         if (absLoc.get_pid().outside_group()) {
@@ -675,7 +663,7 @@ struct ptnd_chain_check_part {
                 const char   *seq    = &*seqPtr;
 
                 while (probe[height] && (base = seq[pos])) {
-                    if (!split && (h = (ptnd_check_split(ptnd.locs, probe, height, base) < 0.0))) {
+                    if (!split && (h = (splits.check(probe[height], base) < 0.0))) { // @@@ seems wrong - check where this comes from
                         dtbs.dt -= h;
                         split = 1;
                     }
@@ -686,13 +674,13 @@ struct ptnd_chain_check_part {
                     height++; pos++;
                 }
             }
-            ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, absLoc, dtbs);
+            ptnd_check_part_inc_dt(ptnd.pdc, splits, ptnd.parts, absLoc, dtbs);
         }
         return 0;
     }
 };
 
-static void ptnd_check_part_all(POS_TREE *pt, const dt_bondssum& dtbs) {
+static void ptnd_check_part_all(POS_TREE *pt, const Splits& splits, const dt_bondssum& dtbs) {
     /*! go down the tree to chains and leafs;
      * check all (for what?)
      */
@@ -703,17 +691,17 @@ static void ptnd_check_part_all(POS_TREE *pt, const dt_bondssum& dtbs) {
             DataLoc loc(pt);
             if (loc.get_pid().outside_group()) {
                 dt_bondssum dtbs_sub(dtbs);
-                ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, loc, dtbs_sub);
+                ptnd_check_part_inc_dt(ptnd.pdc, splits, ptnd.parts, loc, dtbs_sub);
             }
         }
         else if (PT_read_type(pt) == PT_NT_CHAIN) {
             psg.probe = 0;
             ptnd.dtbs = dtbs;
-            PT_forwhole_chain_stage3(pt, ptnd_chain_check_part(0)); // @@@ expand
+            PT_forwhole_chain_stage3(pt, ptnd_chain_check_part(0, splits)); // @@@ expand
         }
         else {
             for (int base = PT_QU; base< PT_BASES; base++) {
-                ptnd_check_part_all(PT_read_son(pt, (PT_base)base), dtbs);
+                ptnd_check_part_all(PT_read_son(pt, (PT_base)base), splits, dtbs);
             }
         }
     }
@@ -726,7 +714,7 @@ struct dt_bondssum_split : public dt_bondssum {
     dt_bondssum_split(double dt_, double sum_bonds_, bool split_) : dt_bondssum(dt_, sum_bonds_), split(split_) {}
 };
 
-static void ptnd_check_part(char *probe, POS_TREE *pt, int height, const dt_bondssum_split& dtbss) {
+static void ptnd_check_part(char *probe, const Splits& splits, POS_TREE *pt, int height, const dt_bondssum_split& dtbss) {
     //! search down the tree to find matching species for the given probe
 
     if (!pt) return;
@@ -742,7 +730,7 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int height, const dt_bond
                     if (i != probe[height]) continue;
                 }
                 else {
-                    double h = ptnd_check_split(ptnd.locs, probe, height, i);
+                    double h = splits.check(probe[height], i);
                     if (dtbss.split) {
                         if (h>0.0) ndtbss.dt += h; else ndtbss.dt -= h;
                     }
@@ -758,7 +746,7 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int height, const dt_bond
                     }
                 }
                 if (!ndtbss.split || height > DOMAIN_MIN_LENGTH) {
-                    ptnd_check_part(probe, pthelp, height+1, ndtbss);
+                    ptnd_check_part(probe, splits, pthelp, height+1, ndtbss);
                 }
             }
         }
@@ -781,7 +769,7 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int height, const dt_bond
                 dt_bondssum_split ndtbss(dtbss);
 
                 while (probe[height] && (ref = seq[pos])) {
-                    double h = ptnd_check_split(ptnd.locs, probe, height, ref);
+                    double h = splits.check(probe[height], ref);
                     if (ndtbss.split) {
                         if (h<0.0) ndtbss.dt -= h; else ndtbss.dt += h;
                     }
@@ -797,26 +785,26 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int height, const dt_bond
                     }
                     height++; pos++;
                 }
-                ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, loc, ndtbss);
+                ptnd_check_part_inc_dt(ptnd.pdc, splits, ptnd.parts, loc, ndtbss);
             }
         }
         else { // chain
             psg.probe  = probe;
             psg.height = height;
             ptnd.dtbs  = dt_bondssum(dtbss.dt, dtbss.sum_bonds);
-            PT_forwhole_chain_stage3(pt, ptnd_chain_check_part(dtbss.split)); // @@@ expand
+            PT_forwhole_chain_stage3(pt, ptnd_chain_check_part(dtbss.split, splits)); // @@@ expand
         }
     }
     else {
-        ptnd_check_part_all(pt, dtbss);
+        ptnd_check_part_all(pt, splits, dtbss);
     }
 }
-static void ptnd_check_probepart(PT_pdc *pdc) {
+static void ptnd_check_probepart(PT_pdc *pdc, const Splits& splits) {
     ptnd.pdc = pdc;
     for (PT_probeparts *parts = pdc->parts; parts; parts = parts->next) {
         ptnd.parts = parts;
         dt_bondssum_split dtbss(parts->dt, parts->sum_bonds, 0);
-        ptnd_check_part(parts->sequence, psg.pt, 0, dtbss);
+        ptnd_check_part(parts->sequence, splits, psg.pt, 0, dtbss);
     }
 }
 inline int ptnd_check_tprobe(PT_pdc *pdc, const char *probe, int len)
@@ -1052,10 +1040,11 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     remove_tprobes_outside_ecoli_range(pdc);
     tprobes_calculate_bonds(locs);
     ptnd_cp_tprobe_2_probepart(pdc);
-    ptnd_duplicate_probepart(locs);
+    Splits splits(locs);
+    ptnd_duplicate_probepart(locs, splits);
     ptnd_sort_parts(pdc);
     ptnd_remove_duplicated_probepart(pdc);
-    ptnd_check_probepart(pdc);
+    ptnd_check_probepart(pdc, splits);
     while (pdc->parts) destroy_PT_probeparts(pdc->parts);
     ptnd_calc_quality(pdc);
     ptnd_sort_probes_by(pdc, 0);

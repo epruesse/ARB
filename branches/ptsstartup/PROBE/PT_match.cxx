@@ -12,6 +12,7 @@
 #include <PT_server_prototypes.h>
 #include <struct_man.h>
 
+#include "pt_split.h"
 #include "probe_tree.h"
 #include "pt_prototypes.h"
 
@@ -19,6 +20,7 @@
 #include <arb_defs.h>
 #include <arb_sort.h>
 #include <cctype>
+#include <map>
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_probematch *match)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
@@ -407,7 +409,9 @@ static void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence) {
     psg.pos_to_weight[slen] = 0;
 }
 
-int probe_match(PT_local * locs, aisc_string probestring) {
+static std::map<PT_local*,Splits> splits_for_match_overlay; // initialized by probe-match, used by match-retrieval (one entry for each match-request); @@@ leaks.. 1 entry for each request
+
+int probe_match(PT_local *locs, aisc_string probestring) {
     //! find out where a given probe matches
 
     freedup(locs->pm_sequence, probestring);
@@ -472,6 +476,7 @@ int probe_match(PT_local * locs, aisc_string probestring) {
         free(rev_pro);
     }
     pt_sort_match_list(locs);
+    splits_for_match_overlay[locs] = Splits(locs);
     free(probestring);
 
     return 0;
@@ -570,6 +575,8 @@ char *get_match_overlay(const PT_probematch *ml) {
     SmartCharPtr  seqPtr = psg.data[ml->name].get_dataPtr();
     const char   *seq    = &*seqPtr;
 
+    const Splits& splits = splits_for_match_overlay[locs];
+
     for (int pr_pos  = 8, al_pos = ml->rpos-1;
          pr_pos     >= 0 && al_pos >= 0;
          pr_pos--, al_pos--)
@@ -594,7 +601,7 @@ char *get_match_overlay(const PT_probematch *ml) {
             if (b) {
                 int r = base_2_readable(b);
                 if (is_std_base(a) && is_std_base(b)) {
-                    double h = ptnd_check_split(locs, ml->sequence, pr_pos, b);
+                    double h = splits.check(ml->sequence[pr_pos], b);
                     if (h>=0.0) r = tolower(r);
                 }
                 ref[pr_pos+10] = r;
