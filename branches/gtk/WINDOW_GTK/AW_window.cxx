@@ -1453,6 +1453,8 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 
     aw_assert(columns == 1); //currently this code only works with one column
     
+    GTK_PARTLY_IMPLEMENTED;
+    
     GtkListStore *pStore;
     GtkWidget *pTree;
     GtkCellRenderer *pRenderer;
@@ -1899,7 +1901,7 @@ void AW_window::update_input_field(GtkWidget */*widget*/, const char */*var_valu
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::refresh_option_menu(AW_option_menu_struct *oms) {
+void AW_window::refresh_option_menu(AW_option_menu_struct */*oms*/) {
 //    if (get_root()->changer_of_variable != oms->label_widget) {
 //        AW_widget_value_pair *active_choice = oms->first_choice;
 //        {
@@ -2428,12 +2430,14 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (!color_table_size) {
         color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
         color_table      = (AW_rgb*)malloc(sizeof(AW_rgb) *color_table_size);
+        FIXME("warning: large integer implicitly truncated to unsigned type");
         for (int i = 0; i<color_table_size; ++i) color_table[i] = AW_NO_COLOR;
     }
     else {
         if (colnum>=color_table_size) {
             long new_size = colnum+8;
             color_table   = (AW_rgb*)realloc(color_table, new_size*sizeof(AW_rgb)); // valgrinders : never freed because AW_window never is freed
+            FIXME("warning: large integer implicitly truncated to unsigned type");
             for (int i = color_table_size; i<new_size; ++i) color_table[i] = AW_NO_COLOR;
             color_table_size = new_size;
         }
@@ -2444,6 +2448,7 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (colnum == AW_DATA_BG) {
         AW_area_management* pMiddleArea = prvt->areas[AW_MIDDLE_AREA];
         if(pMiddleArea) {
+            FIXME("warning: taking address of temporary");
             gtk_widget_modify_bg(pMiddleArea->get_area(),GTK_STATE_NORMAL, &root->getColor(color_table[colnum]));
             FIXME("no idea if this works");
         }

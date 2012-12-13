@@ -69,11 +69,12 @@ AW_common_gtk *AW_area_management::get_common() const {
 /**
  * Handles the drawing areas expose callback.
  */
-static gboolean draw_area_expose_cb(GtkWidget *widget, GdkEventExpose *event, gpointer area_management)
+static gboolean draw_area_expose_cb(GtkWidget */*widget*/, GdkEventExpose */*event*/, gpointer area_management)
 {
     AW_area_management *aram = (AW_area_management *) area_management;
     aram->run_resize_callback();
     aram->run_expose_callback();
+    FIXME("Missing return statement");
 }
 
 /**
@@ -177,6 +178,8 @@ static gboolean input_event_cb(GtkWidget *widget, GdkEvent *event, gpointer cb_s
     if (run_callback && (cbs->help_text == (char*)0)) {
         cbs->run_callback();
     }
+    
+    FIXME("No return statement");
 }
 
 
@@ -256,6 +259,7 @@ AW_area_management::AW_area_management(AW_root* awr, GtkWidget* form,
 bool AW_area_management::is_input_callback(AW_window* aww,
         void (*f)(AW_window*, AW_CL, AW_CL)) {
     GTK_NOT_IMPLEMENTED;
+    return false;
 }
 
 bool AW_area_management::is_double_click_callback(AW_window* aww,
@@ -266,6 +270,7 @@ bool AW_area_management::is_double_click_callback(AW_window* aww,
 bool AW_area_management::is_motion_callback(AW_window* aww,
         void (*f)(AW_window*, AW_CL, AW_CL)) {
     GTK_NOT_IMPLEMENTED;
+    return false;
 }
 
 bool AW_area_management::is_expose_callback(AW_window */*aww*/,

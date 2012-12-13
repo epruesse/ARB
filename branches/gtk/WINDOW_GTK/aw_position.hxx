@@ -79,12 +79,7 @@ namespace AW {
 
     public:
 
-        
-        //Otherwise comparing floats with == is unsafe!
-        bool valid() const {
-            FIXME("comparing doubles with ==");
-            return (x == x) && (y == y);
-        } // fails if one is NAN
+        bool valid() const;
 
         Position(double X, double Y) : x(X), y(Y) {
             ISVALID(*this);

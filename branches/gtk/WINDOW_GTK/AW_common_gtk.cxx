@@ -59,7 +59,7 @@ AW_common_gtk::AW_common_gtk(GdkDisplay *display_in,
              AW_rgb*&   fcolors,
              AW_rgb*&   dcolors,
              long&      dcolors_count,
-             AW_window *window,
+             AW_window *aw_window,
              AW_area    area)
     : AW_common(fcolors, dcolors, dcolors_count),
       display(display_in),
@@ -68,8 +68,8 @@ AW_common_gtk::AW_common_gtk(GdkDisplay *display_in,
 {
     
     
-    window->set_resize_callback(area, AW_window_resize_cb, (AW_CL)this);
-    AW_window_resize_cb(window, (AW_CL)this, 0);//call the resize cb once in the beginning to get the size
+    aw_window->set_resize_callback(area, AW_window_resize_cb, (AW_CL)this);
+    AW_window_resize_cb(aw_window, (AW_CL)this, 0);//call the resize cb once in the beginning to get the size
 }
 
 AW_GC *AW_common_gtk::create_gc() {
@@ -85,7 +85,7 @@ void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
 }
 
 //FIXME initialize gc
-AW_GC_gtk::AW_GC_gtk(AW_common *common, int pixelDepth) : AW_GC(common) {
+AW_GC_gtk::AW_GC_gtk(AW_common *aw_common, int pixelDepth) : AW_GC(aw_common) {
 
     //It is not possible to create a gc without a drawable.
     //The gc can only be used to draw on drawables which use the same colormap and depth
@@ -98,9 +98,9 @@ AW_GC_gtk::~AW_GC_gtk(){};
 
 void AW_GC_gtk::wm_set_foreground_color(AW_rgb col){
 
-    GdkColor color;
-    color.pixel = col;
-    gdk_gc_set_foreground(gc, &color);
+    GdkColor gdk_color;
+    gdk_color.pixel = col;
+    gdk_gc_set_foreground(gc, &gdk_color);
 }
 
 void AW_GC_gtk::wm_set_function(AW_function mode){
@@ -195,7 +195,7 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_si
 
 }
 
-int AW_GC_gtk::get_available_fontsizes(AW_font font_nr, int *available_sizes) const {
+int AW_GC_gtk::get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const {
     GTK_NOT_IMPLEMENTED;
     return 0;
 }

@@ -37,14 +37,14 @@ AW_DEVICE_TYPE AW_device_gtk::type() { return AW_DEVICE_SCREEN; }
 
 
 
-AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *drawingArea) :
+AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *gtk_drawingArea) :
         AW_device(commoni),
-        drawingArea(drawingArea)
+        drawingArea(gtk_drawingArea)
 {
 
-    arb_assert(drawingArea != NULL);
+    arb_assert(gtk_drawingArea != NULL);
     arb_assert(commoni != NULL);
-    gtk_widget_set_app_paintable(drawingArea, true);
+    gtk_widget_set_app_paintable(gtk_drawingArea, true);
 
 }
 
@@ -203,7 +203,7 @@ void AW_device_gtk::clear_part(const Rectangle& rect, AW_bitset filteri) {
 }
 
 
-void AW_device_gtk::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset /*filteri*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void AW_device_gtk::clear_text(int /*gc*/, const char */*string*/, AW_pos /*x*/, AW_pos /*y*/, AW_pos /*alignment*/, AW_bitset /*filteri*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 //    const XFontStruct *xfs     = get_common()->get_xfont(gc);
 //    AW_pos             X, Y;    // Transformed pos
 //    AW_pos             width, height;
