@@ -80,7 +80,7 @@ namespace AW {
 
     public:
 
-        bool valid() const { return (x == x) && (y == y); } // fails if one is NAN
+        bool valid() const { return !std::isnan(x) && !std::isnan(y); }
 
         Position(double X, double Y) : x(X), y(Y) { ISVALID(*this); }
         // Position(const Position& other) : x(other.x), y(other.y) { ISVALID(*this); }
@@ -123,7 +123,7 @@ namespace AW {
         mutable double len;                         // once calculated, length of vector is stored here (negative value means "not calculated")
 
     public:
-        bool valid() const { return end.valid() && (len == len); } // len == len fails if len is NAN
+        bool valid() const { return end.valid() && !std::isnan(len); }
 
         Vector()                                         : len(NAN) {} // default is not a vector
         Vector(const double& X, const double& Y)         : end(X, Y), len(-1) { ISVALID(*this); } // vector (0,0)->(X,Y)

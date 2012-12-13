@@ -16,7 +16,7 @@
 #include "AW_gtk_forward_declarations.hxx"
 #include "aw_root_gtk.hxx"
 #include "aw_assert.hxx"
-
+#include "aw_select.hxx"
 #include <string>
 
 
@@ -98,6 +98,11 @@ class AW_root : virtual Noncopyable {
      * FIXME
      */
     AW_default load_properties(const char *default_name);
+    
+    
+    AW_selection_list *selection_list;
+    AW_selection_list *last_selection_list;
+    
 
 //    void exit_variables();
 
@@ -199,6 +204,17 @@ public:
      * Set wait cursor
      */
     void wait_cursor();
+    
+    /**
+     * Appends the specified list to the list of selection lists
+     */
+    void append_selection_list(AW_selection_list* pList);
+    
+    /**
+     * returns the last selection list
+     */
+    AW_selection_list* get_last_selection_list();
+    
     
     /**
      * Allocates a named color in the global colormap.

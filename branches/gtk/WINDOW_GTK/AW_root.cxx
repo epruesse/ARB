@@ -12,7 +12,9 @@
 #include "aw_gtk_migration_helpers.hxx"
 #include <gtk/gtk.h>
 #include "aw_root.hxx"
+#ifndef ARBDB_H
 #include <arbdb.h>
+#endif
 #include "aw_awar.hxx"
 #include <gdk/gdkx.h>
 #include "aw_xfont.hxx"
@@ -46,7 +48,7 @@ void aw_set_local_message() {
 }
 
 
-void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
+void AW_system(AW_window */*aww*/, const char */*command*/, const char */*auto_help_file*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
@@ -218,11 +220,29 @@ void AW_root::init_variables(AW_default database) {
     hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
     hash_for_windows         = GBS_create_hash(100, GB_MIND_CASE);
     help_active              = false;
+    selection_list           = NULL;
+    last_selection_list      = NULL;
+    
+    
     FIXME("not sure if aw_fb is still needed");
     
     for (int i=0; aw_fb[i].awar; ++i) {
         awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
     }
+}
+
+void AW_root::append_selection_list(AW_selection_list* pList) {
+    if (selection_list) {
+        last_selection_list->next = pList;
+        last_selection_list = last_selection_list->next;
+    }
+    else {
+        last_selection_list = selection_list = pList;
+    }
+}
+
+AW_selection_list* AW_root::get_last_selection_list() {
+    return last_selection_list;
 }
 
 void AW_root::make_sensitive(GtkWidget* w, AW_active mask) {

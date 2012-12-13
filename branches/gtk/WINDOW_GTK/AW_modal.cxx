@@ -17,6 +17,8 @@
 #include "aw_advice.hxx"
 #include "aw_msg.hxx"
 #include "aw_select.hxx"
+#include "aw_help.hxx"
+
 
 #include <arbdbt.h>
 #include <arb_strarray.h>

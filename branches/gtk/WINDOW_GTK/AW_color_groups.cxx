@@ -13,7 +13,10 @@
 #include "aw_color_groups.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_assert.hxx"
+#ifndef ARBDB_H
 #include <arbdb.h>
+#endif
+
 
 
 

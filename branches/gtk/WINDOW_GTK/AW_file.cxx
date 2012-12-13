@@ -14,7 +14,9 @@
 #include <cstring>
 #include "aw_awar.hxx"
 #include "aw_root.hxx"
+#ifndef ARBDB_H
 #include <arbdb.h>
+#endif
 #include <arb_file.h>
 #include "aw_msg.hxx"
 #include "aw_question.hxx"

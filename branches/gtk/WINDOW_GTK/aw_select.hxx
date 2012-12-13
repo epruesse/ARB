@@ -9,18 +9,19 @@
 //                                                                  //
 // ================================================================ //
 
-#ifndef AW_SELECT_HXX
-#define AW_SELECT_HXX
+#pragma once
 
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
-#ifndef ARBDB_H
-#include <arbdb.h>
-#endif
 #ifndef AW_SCALAR_HXX
 #include "aw_scalar.hxx"
 #endif
+
+
+class CharPtrArray;
+class StrArray;
+
 
 // cppcheck-suppress noConstructor
 class AW_selection_list_entry : virtual Noncopyable {
@@ -189,11 +190,7 @@ public:
     virtual ~AW_DB_selection();
     
     GBDATA *get_gbd() { return gbd; }
-    GBDATA *get_gb_main() { return GB_get_root(gbd); }
+    GBDATA *get_gb_main();
 };
 void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *);
 
-
-#else
-#error aw_select.hxx included twice
-#endif // AW_SELECT_HXX

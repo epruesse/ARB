@@ -12,7 +12,10 @@
 #include <aw_device.hxx>
 #include "aw_msg.hxx"
 
+#ifndef ARBDB_H
 #include <arbdb.h>
+#endif
+
 #include <climits>
 
 inline int scaleAndRound(int unscaled, double scaleFactor) {

@@ -16,7 +16,9 @@
 #include "aw_xfont.hxx"
 #include "aw_root.hxx"
 
+#ifndef ARBDB_H
 #include <arbdb.h>
+#endif
 #include <static_assert.h>
 
 #include <cctype>

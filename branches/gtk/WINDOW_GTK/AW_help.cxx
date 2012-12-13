@@ -17,7 +17,9 @@
 #include "aw_select.hxx"
 
 #include <arb_file.h>
-
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 #include <sys/stat.h>
 
 

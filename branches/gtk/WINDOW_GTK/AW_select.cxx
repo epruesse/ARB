@@ -14,6 +14,20 @@
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_root.hxx"
 #include "aw_awar.hxx"
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
+
+AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei, GtkWidget *select_list_widgeti) {
+    // @@@ fix initialization
+    memset((char *)this, 0, sizeof(AW_selection_list));
+    variable_name          = nulldup(variable_namei);
+    variable_type          = (AW_VARIABLE_TYPE)variable_typei;
+    select_list_widget     = select_list_widgeti;
+    list_table             = NULL;
+    last_of_list_table     = NULL;
+    default_select         = NULL;
+}
 
 void AW_selection::refresh() {
     GTK_NOT_IMPLEMENTED;
@@ -241,5 +255,9 @@ AW_DB_selection::AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_)
 
 AW_DB_selection::~AW_DB_selection() {
     GTK_NOT_IMPLEMENTED;
+}
+
+GBDATA *AW_DB_selection::get_gb_main() {
+    return GB_get_root(gbd); 
 }
 
