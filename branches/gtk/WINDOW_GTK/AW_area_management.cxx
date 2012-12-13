@@ -21,6 +21,8 @@
 #include "devices/aw_device_size.hxx"
 #include "devices/aw_device_click.hxx"
 
+#include <iostream>
+
 class AW_area_management::Pimpl {
 public:
     GtkWidget *form; /**< the managing widget */
@@ -74,7 +76,7 @@ static gboolean draw_area_expose_cb(GtkWidget */*widget*/, GdkEventExpose */*eve
     AW_area_management *aram = (AW_area_management *) area_management;
     aram->run_resize_callback();
     aram->run_expose_callback();
-    FIXME("Missing return statement");
+    return false; //forward event, gtk needs to know about expose events as well. Otherwise buttons are not drawn.
 }
 
 /**
