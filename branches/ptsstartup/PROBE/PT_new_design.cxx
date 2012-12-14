@@ -663,13 +663,20 @@ struct ptnd_chain_check_part {
                 const char   *seq    = &*seqPtr;
 
                 while (probe[height] && (base = seq[pos])) {
-                    if (!split && (h = (splits.check(probe[height], base) < 0.0))) { // @@@ seems wrong - check where this comes from
-                        dtbs.dt -= h;
-                        split = 1;
+                    h = splits.check(probe[height], base);
+
+                    if (split) {
+                        if (h<0.0) dtbs.dt -= h; else dtbs.dt += h;
                     }
                     else {
-                        dtbs.dt        += h;
-                        dtbs.sum_bonds += ptnd_check_max_bond(ptnd.locs, probe[height]) - h;
+                        if (h<0.0) {
+                            dtbs.dt -= h;
+                            split = 1;
+                        }
+                        else {
+                            dtbs.dt        += h;
+                            dtbs.sum_bonds += ptnd_check_max_bond(ptnd.locs, probe[height]) - h;
+                        }
                     }
                     height++; pos++;
                 }
