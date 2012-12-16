@@ -100,13 +100,9 @@ void probe_struct_global::setup() {
         complement[i] = calc_complement(i);
     }
 
-    height = 0;
-
     sort_by = 0;
 
-    probe      = NULL;
-    main_probe = NULL;
-
+    main_probe  = NULL;
     server_name = NULL;
     link        = NULL;
 

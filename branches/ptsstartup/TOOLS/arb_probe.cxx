@@ -1450,7 +1450,7 @@ void TEST_SLOW_design_probe() {
             "GUCGAGCGAUGAAGUU 16 B+     2   21    3 50.0 48.0    AACUUCAUCGCUCGAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  2,  2,  2,  3,  3,\n"
             "AGUCGAGCGAUGAAGU 16 B+     1   20    3 50.0 48.0    ACUUCAUCGCUCGACU |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  2,  2,  2,  2,  2,  3,  3,  3,  4,  4,\n"
             "GAUCAAGUCGAGCGAU 16 B-     4   15    3 50.0 48.0    AUCGCUCGACUUGAUC |  0,  2,  2,  2,  2,  5,  5,  5, 13, 15, 15, 15, 24, 25, 25, 25, 33, 35, 35, 42,\n"
-            "UGAUCAAGUCGAGCGA 16 B-     5   14    3 50.0 48.0    UCGCUCGACUUGAUCA |  0,  9,  9,  9, 18, 18, 18, 18, 19, 28, 28, 29, 38, 38, 38, 38, 48, 48, 48, 48,\n";
+            "UGAUCAAGUCGAGCGA 16 B-     5   14    3 50.0 48.0    UCGCUCGACUUGAUCA |  0,  9,  9,  9, 18, 18, 18, 18, 19, 28, 28, 29, 38, 38, 38, 38, 48, 48, 48, 48,\n"; // @@@ wrong (outgroup only contains 19 species!)
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }

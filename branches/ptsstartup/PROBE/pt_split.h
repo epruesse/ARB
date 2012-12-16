@@ -20,7 +20,7 @@ class Splits {
     bool valid;
     double split[PT_BASES][PT_BASES];
 
-    static double calc_split(PT_local *locs, char base, char ref) {
+    static double calc_split(const PT_local *locs, char base, char ref) {
         pt_assert(is_valid_base(base) && is_valid_base(ref));
 
         int    complement = psg.get_complement(base);
@@ -35,7 +35,7 @@ class Splits {
 
 public:
     Splits() : valid(false) {}
-    Splits(PT_local *locs) : valid(true) {
+    Splits(const PT_local *locs) : valid(true) {
         for (int base = PT_QU; base < PT_BASES; ++base) {
             for (int ref = PT_QU; ref < PT_BASES; ++ref) {
                 split[base][ref] = calc_split(locs, base, ref);

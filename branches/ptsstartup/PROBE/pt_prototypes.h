@@ -90,9 +90,9 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) __ATTR__
 const char *get_blocksize_description(int blocksize);
 
 /* probe_tree.h */
-template <typename T >int PT_forwhole_chain_stage1(POS_TREE *node, T func);
-template <typename T >int PT_forwhole_chain_stage3(POS_TREE *node, T func);
-template <typename T >int PT_forwhole_chain_anyStage(POS_TREE *node, T func);
+template <typename T >int PT_forwhole_chain_stage1(POS_TREE *node, T &func);
+template <typename T >int PT_forwhole_chain_stage3(POS_TREE *node, T &func);
+template <typename T >int PT_forwhole_chain_anyStage(POS_TREE *node, T &func);
 
 #else
 #error pt_prototypes.h included twice

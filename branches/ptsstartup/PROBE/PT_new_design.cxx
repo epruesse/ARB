@@ -60,14 +60,12 @@ struct dt_bondssum {
     dt_bondssum(double dt_, double sum_bonds_) : dt(dt_), sum_bonds(sum_bonds_) {}
 };
 
-static struct ptnd_loop_com {
-    PT_pdc        *pdc;
-    PT_local      *locs;
-    PT_probeparts *parts;
-    int            mishits;
-    dt_bondssum    dtbs;
-} ptnd;
+struct dt_bondssum_split : public dt_bondssum {
+    bool split;
 
+    dt_bondssum_split(const dt_bondssum& dtbs, bool split_) : dt_bondssum(dtbs), split(split_) {}
+    dt_bondssum_split(double dt_, double sum_bonds_, bool split_) : dt_bondssum(dt_, sum_bonds_), split(split_) {}
+};
 
 static int ptnd_compare_quality(const void *PT_tprobes_ptr1, const void *PT_tprobes_ptr2, void *) {
     const PT_tprobes *tprobe1 = (const PT_tprobes*)PT_tprobes_ptr1;
@@ -165,7 +163,7 @@ static void ptnd_calc_quality(PT_pdc *pdc) {
     }
 }
 
-static double ptnd_check_max_bond(PT_local *locs, char base) {
+static double ptnd_check_max_bond(const PT_local *locs, char base) {
     //! check the bond val for a probe
 
     int complement = psg.get_complement(base);
@@ -177,10 +175,16 @@ static double ptnd_check_max_bond(PT_local *locs, char base) {
 //      primary search for probes
 
 struct ptnd_chain_count_mishits {
+    int         mishits;
+    const char *probe;
+    int         height;
+
+    ptnd_chain_count_mishits() : mishits(0), probe(NULL), height(0) {}
+    ptnd_chain_count_mishits(const char *probe_, int height_) : mishits(0), probe(probe_), height(height_) {}
+
     int operator()(const AbsLoc& probeLoc) {
         // count all mishits for a probe
 
-        const char *probe = psg.probe;
         psg.abs_pos.announce(probeLoc.get_abs_pos());
 
         if (probeLoc.get_pid().outside_group()) {
@@ -189,11 +193,11 @@ struct ptnd_chain_count_mishits {
 
                 DataLoc         dataLoc(probeLoc);
                 ReadableDataLoc readableLoc(dataLoc);
-                for (int i = 0; probe[i] && readableLoc[psg.height+i]; ++i) {
-                    if (probe[i] != readableLoc[psg.height+i]) return 0;
+                for (int i = 0; probe[i] && readableLoc[height+i]; ++i) {
+                    if (probe[i] != readableLoc[height+i]) return 0;
                 }
             }
-            ptnd.mishits++;
+            mishits++;
         }
         return 0;
     }
@@ -209,12 +213,11 @@ static int count_mishits_for_all(POS_TREE *pt) {
         psg.abs_pos.announce(loc.get_abs_pos());
         return loc.get_pid().outside_group();
     }
-    
+
     if (PT_read_type(pt) == PT_NT_CHAIN) {
-        psg.probe = 0;
-        ptnd.mishits = 0;
-        PT_forwhole_chain_stage3(pt, ptnd_chain_count_mishits()); // @@@ expand
-        return ptnd.mishits;
+        ptnd_chain_count_mishits counter;
+        PT_forwhole_chain_stage3(pt, counter); // @@@ expand
+        return counter.mishits;
     }
 
     int mishits = 0;
@@ -415,11 +418,9 @@ static int count_mishits_for_matched(char *probe, POS_TREE *pt, int height) {
             }
         }
         else {                // chain
-            psg.probe = probe;
-            psg.height = height;
-            ptnd.mishits = 0;
-            PT_forwhole_chain_stage3(pt, ptnd_chain_count_mishits()); // @@@ expand
-            return ptnd.mishits;
+            ptnd_chain_count_mishits counter(probe, height);
+            PT_forwhole_chain_stage3(pt, counter); // @@@ expand
+            return counter.mishits;
         }
     }
     return count_mishits_for_all(pt);
@@ -476,10 +477,17 @@ static void tprobes_calculate_bonds(PT_local *locs) {
     }
 }
 
+#if defined(DEBUG)
+// #define DUMP_PROBEPARTS
+#endif
+
 static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc) {
     //! split the probes into probeparts
     while (pdc->parts) destroy_PT_probeparts(pdc->parts);
     for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
+#if defined(DUMP_PROBEPARTS)
+        char *tprobe_readable = readable_probe(tprobe->sequence, tprobe->seq_len, 'T');
+#endif
         int probelen = strlen(tprobe->sequence)-DOMAIN_MIN_LENGTH;
         for (int pos = 0; pos < probelen; pos ++) {
             PT_probeparts *parts = create_PT_probeparts();
@@ -488,8 +496,17 @@ static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc) {
             parts->source   = tprobe;
             parts->start    = pos;
 
+#if defined(DUMP_PROBEPARTS)
+            char *part_readable = readable_probe(parts->sequence, strlen(parts->sequence), 'T');
+            fprintf(stderr, "[tprobe='%s'] probepart='%s'\n", tprobe_readable, part_readable);
+            free(part_readable);
+#endif
+
             aisc_link(&pdc->pparts, parts);
         }
+#if defined(DUMP_PROBEPARTS)
+        free(tprobe_readable);
+#endif
     }
 }
 
@@ -590,230 +607,256 @@ static void ptnd_remove_duplicated_probepart(PT_pdc *pdc) {
     }
 }
 
-inline int calc_centigrade_pos(const PT_pdc *pdc, const PT_tprobes *tprobe, const dt_bondssum& dtbs) {
-    double ndt = (dtbs.dt * pdc->dt + (tprobe->sum_bonds - dtbs.sum_bonds)*pdc->dte) / tprobe->seq_len;
-    int    pos = (int)ndt;
+class PartCheck_Traversal {
+    const PT_local *const locs;
+    const PT_pdc   *const pdc;
 
-    pt_assert(pos >= 0);
-    return pos;
-}
+    Splits         splits;
+    PT_probeparts *currPart;
 
-static void ptnd_check_part_inc_dt(PT_pdc *pdc, const Splits& splits, PT_probeparts *parts, const AbsLoc& absLoc, dt_bondssum& dtbs) {
-    //! test the probe parts, search the longest non mismatch string
-    // (Note: modifies 'dtbs')
+    int calc_centigrade_pos(const dt_bondssum& dtbs) const {
+        const PT_tprobes *tprobe = currPart->source;
 
-    PT_tprobes *tprobe = parts->source;
-    int         start  = parts->start;
-    if (start) {               // look backwards
+        double ndt = (dtbs.dt * pdc->dt + (tprobe->sum_bonds - dtbs.sum_bonds)*pdc->dte) / tprobe->seq_len;
+        int    pos = (int)ndt;
+
+        pt_assert(pos >= 0);
+        return pos;
+    }
+    bool centigrade_pos_outofscope(const dt_bondssum& dtbs) const {
+        return calc_centigrade_pos(dtbs) >= PERC_SIZE;
+    }
+
+    void check_part_inc_dt_backwards(const AbsLoc& absLoc, const dt_bondssum& dtbs) {
+        int start = currPart->start;
+        pt_assert(start);
+
+        // look backwards
         DataLoc matchLoc(absLoc);
 
-        char *probe = parts->source->sequence;
+        char *probe = currPart->source->sequence;
         int   pos   = matchLoc.get_rel_pos()-1;
         start--;                        // test the base left of start
 
         SmartCharPtr  seqPtr = matchLoc.get_pid().get_dataPtr();
         const char   *seq    = &*seqPtr;
 
-        bool split = false;
+        dt_bondssum_split ndtbss(dtbs, false);
         while (start>=0) {
             if (pos<0) break;   // out of sight
 
-            double h = splits.check(probe[start], seq[pos]);
-            if (h>0.0 && !split) return; // there is a longer part matching this
+            double h = get_splits().check(probe[start], seq[pos]);
+            if (h>0.0 && !ndtbss.split) return; // there is a longer part matching this
 
-            dtbs.dt -= h;
+            ndtbss.dt -= h;
 
             start--;
             pos--;
-            split = true;
+            ndtbss.split = true;
+        }
+
+        int cpos = calc_centigrade_pos(ndtbss);
+        if (cpos<PERC_SIZE) {
+            currPart->source->perc[cpos]++;
         }
     }
 
-    int pos = calc_centigrade_pos(pdc, tprobe, dtbs);
-    if (pos<PERC_SIZE) {
-        tprobe->perc[pos]++;
+    void check_part_inc_dt_basic(const dt_bondssum& dtbs) {
+        pt_assert(!currPart->start);
+        int cpos = calc_centigrade_pos(dtbs);
+        if (cpos<PERC_SIZE) {
+            currPart->source->perc[cpos]++;
+        }
     }
-}
 
-inline bool centigrade_pos_outofscope(PT_pdc *pdc, PT_probeparts *parts, const dt_bondssum& dtbs) {
-    return calc_centigrade_pos(pdc, parts->source, dtbs) >= PERC_SIZE;
-}
+    void check_part_inc_dt(const AbsLoc& absLoc, const dt_bondssum& dtbs) {
+        //! test the probe parts, search the longest non mismatch string
+        // (Note: modifies 'dtbs')
 
-struct ptnd_chain_check_part {
-    int           split;
-    const Splits& splits;
+        int start = currPart->start;
+        if (start) check_part_inc_dt_backwards(absLoc, dtbs);
+        else check_part_inc_dt_basic(dtbs);
+    }
 
-    ptnd_chain_check_part(int s, const Splits& splits_) : split(s), splits(splits_) {}
+    void chain_check_part_no_probe(const AbsLoc& absLoc, const dt_bondssum_split& dtbss) {
+        pt_assert(absLoc.get_pid().outside_group());
+        check_part_inc_dt(absLoc, dtbss);
+    }
 
-    int operator() (const AbsLoc& absLoc) {
-        if (absLoc.get_pid().outside_group()) {
-            const char *probe = psg.probe;
+    void chain_check_part(const AbsLoc& absLoc, const dt_bondssum_split& dtbss, const char *probe, int height) {
+        pt_assert(absLoc.get_pid().outside_group());
+        dt_bondssum_split ndtbss(dtbss);
 
-            dt_bondssum dtbs(ptnd.dtbs);
+        pt_assert(probe);
 
-            if (probe) {
-                DataLoc partLoc(absLoc);
+        DataLoc partLoc(absLoc);
 
-                int    pos    = partLoc.get_rel_pos()+psg.height;
-                double h      = 1.0;
-                int    height = psg.height;
-                int    base;
+        int    spos = partLoc.get_rel_pos()+height;
+        int    ppos = height;
+        double h    = 1.0;
+        int    base;
 
-                SmartCharPtr  seqPtr = partLoc.get_pid().get_dataPtr();
-                const char   *seq    = &*seqPtr;
+        SmartCharPtr  seqPtr = partLoc.get_pid().get_dataPtr();
+        const char   *seq    = &*seqPtr;
 
-                while (probe[height] && (base = seq[pos])) {
-                    h = splits.check(probe[height], base);
+        while (probe[ppos] && (base = seq[spos])) {
+            h = get_splits().check(probe[ppos], base);
 
-                    if (split) {
-                        if (h<0.0) dtbs.dt -= h; else dtbs.dt += h;
-                    }
-                    else {
-                        if (h<0.0) {
-                            dtbs.dt -= h;
-                            split = 1;
-                        }
-                        else {
-                            dtbs.dt        += h;
-                            dtbs.sum_bonds += ptnd_check_max_bond(ptnd.locs, probe[height]) - h;
-                        }
-                    }
-                    height++; pos++;
-                }
+            if (ndtbss.split) {
+                if (h<0.0) ndtbss.dt -= h; else ndtbss.dt += h;
             }
-            ptnd_check_part_inc_dt(ptnd.pdc, splits, ptnd.parts, absLoc, dtbs);
-        }
-        return 0;
-    }
-};
-
-static void ptnd_check_part_all(POS_TREE *pt, const Splits& splits, const dt_bondssum& dtbs) {
-    /*! go down the tree to chains and leafs;
-     * check all (for what?)
-     */
-
-    if (pt) {
-        if (PT_read_type(pt) == PT_NT_LEAF) {
-            // @@@ dupped code is in ptnd_chain_check_part::operator()
-            DataLoc loc(pt);
-            if (loc.get_pid().outside_group()) {
-                dt_bondssum dtbs_sub(dtbs);
-                ptnd_check_part_inc_dt(ptnd.pdc, splits, ptnd.parts, loc, dtbs_sub);
-            }
-        }
-        else if (PT_read_type(pt) == PT_NT_CHAIN) {
-            psg.probe = 0;
-            ptnd.dtbs = dtbs;
-            PT_forwhole_chain_stage3(pt, ptnd_chain_check_part(0, splits)); // @@@ expand
-        }
-        else {
-            for (int base = PT_QU; base< PT_BASES; base++) {
-                ptnd_check_part_all(PT_read_son(pt, (PT_base)base), splits, dtbs);
-            }
-        }
-    }
-}
-
-struct dt_bondssum_split : public dt_bondssum {
-    bool split;
-
-    dt_bondssum_split(const dt_bondssum& dtbs, bool split_) : dt_bondssum(dtbs), split(split_) {}
-    dt_bondssum_split(double dt_, double sum_bonds_, bool split_) : dt_bondssum(dt_, sum_bonds_), split(split_) {}
-};
-
-static void ptnd_check_part(char *probe, const Splits& splits, POS_TREE *pt, int height, const dt_bondssum_split& dtbss) {
-    //! search down the tree to find matching species for the given probe
-
-    if (!pt) return;
-    if (dtbss.dt/ptnd.parts->source->seq_len > PERC_SIZE) return;     // out of scope
-    if (PT_read_type(pt) == PT_NT_NODE && probe[height]) {
-        if (dtbss.split && centigrade_pos_outofscope(ptnd.pdc, ptnd.parts, dtbss)) return;
-        for (int i=PT_A; i<PT_BASES; i++) {
-            POS_TREE *pthelp = PT_read_son(pt, (PT_base)i);
-            if (pthelp) {
-                dt_bondssum_split ndtbss(dtbss);
-
-                if (height < PT_PART_DEEP) {
-                    if (i != probe[height]) continue;
+            else {
+                if (h<0.0) {
+                    ndtbss.dt    -= h;
+                    ndtbss.split  = 1;
                 }
                 else {
-                    double h = splits.check(probe[height], i);
-                    if (dtbss.split) {
-                        if (h>0.0) ndtbss.dt += h; else ndtbss.dt -= h;
-                    }
-                    else {
-                        if (h<0.0) {
-                            ndtbss.dt    -= h;
-                            ndtbss.split  = true;
-                        }
-                        else {
-                            ndtbss.dt        += h;
-                            ndtbss.sum_bonds += ptnd_check_max_bond(ptnd.locs, probe[height]) - h;
-                        }
-                    }
+                    ndtbss.dt        += h;
+                    ndtbss.sum_bonds += ptnd_check_max_bond(locs, probe[ppos]) - h;
                 }
-                if (!ndtbss.split || height > DOMAIN_MIN_LENGTH) {
-                    ptnd_check_part(probe, splits, pthelp, height+1, ndtbss);
+            }
+            ppos++; spos++;
+        }
+        check_part_inc_dt(absLoc, ndtbss);
+    }
+
+    void check_part_all(POS_TREE *pt, const dt_bondssum& dtbs) {
+        /*! go down the tree to chains and leafs;
+         * check all (for what?)
+         */
+
+        if (pt) {
+            if (PT_read_type(pt) == PT_NT_LEAF) {
+                // @@@ dupped code is in chain_check_part
+                DataLoc loc(pt);
+                if (loc.get_pid().outside_group()) {
+                    check_part_inc_dt(loc, dtbs);
+                }
+            }
+            else if (PT_read_type(pt) == PT_NT_CHAIN) {
+                ChainIteratorStage3 entry(pt);
+                do {
+                    const AbsLoc& absLoc = entry.at();
+                    if (absLoc.get_pid().outside_group()) {
+                        chain_check_part_no_probe(entry.at(), dt_bondssum_split(dtbs, 0));
+                    }
+                } while (++entry);
+            }
+            else {
+                for (int base = PT_QU; base< PT_BASES; base++) {
+                    check_part_all(PT_read_son(pt, (PT_base)base), dtbs);
                 }
             }
         }
-        return;
     }
-    if (probe[height]) {
-        if (PT_read_type(pt) == PT_NT_LEAF) {
-            // @@@ dupped code is in ptnd_chain_check_part::operator()
-            const DataLoc loc(pt);
-            if (loc.get_pid().outside_group()) {
-                int pos = loc.get_rel_pos() + height;
-                if (pos + (int)(strlen(probe+height)) >= loc.get_pid().get_size()) // after end
-                    return;
 
-                int ref;
+    void check_part(char *probe, POS_TREE *pt, int height, const dt_bondssum_split& dtbss) {
+        //! search down the tree to find matching species for the given probe
 
-                SmartCharPtr  seqPtr = loc.get_pid().get_dataPtr();
-                const char   *seq    = &*seqPtr;
+        if (!pt) return;
+        if (dtbss.dt/currPart->source->seq_len > PERC_SIZE) return;     // out of scope
+        if (PT_read_type(pt) == PT_NT_NODE && probe[height]) {
+            if (dtbss.split && centigrade_pos_outofscope(dtbss)) return;
+            for (int i=PT_A; i<PT_BASES; i++) {
+                POS_TREE *pthelp = PT_read_son(pt, (PT_base)i);
+                if (pthelp) {
+                    dt_bondssum_split ndtbss(dtbss);
 
-                dt_bondssum_split ndtbss(dtbss);
-
-                while (probe[height] && (ref = seq[pos])) {
-                    double h = splits.check(probe[height], ref);
-                    if (ndtbss.split) {
-                        if (h<0.0) ndtbss.dt -= h; else ndtbss.dt += h;
+                    if (height < PT_PART_DEEP) {
+                        if (i != probe[height]) continue;
                     }
                     else {
-                        if (h<0.0) {
-                            ndtbss.dt -= h;
-                            ndtbss.split = 1;
+                        double h = get_splits().check(probe[height], i);
+                        if (ndtbss.split) {
+                            if (h>0.0) ndtbss.dt += h; else ndtbss.dt -= h;
                         }
                         else {
-                            ndtbss.dt += h;
-                            ndtbss.sum_bonds += ptnd_check_max_bond(ptnd.locs, probe[height]) - h;
+                            if (h<0.0) {
+                                ndtbss.dt    -= h;
+                                ndtbss.split  = true;
+                            }
+                            else {
+                                ndtbss.dt        += h;
+                                ndtbss.sum_bonds += ptnd_check_max_bond(locs, probe[height]) - h;
+                            }
                         }
                     }
-                    height++; pos++;
+                    if (!ndtbss.split || height > DOMAIN_MIN_LENGTH) {
+                        check_part(probe, pthelp, height+1, ndtbss);
+                    }
                 }
-                ptnd_check_part_inc_dt(ptnd.pdc, splits, ptnd.parts, loc, ndtbss);
+            }
+            return;
+        }
+        if (probe[height]) {
+            if (PT_read_type(pt) == PT_NT_LEAF) {
+                // @@@ dupped code is in chain_check_part
+                const DataLoc loc(pt);
+                if (loc.get_pid().outside_group()) {
+                    int pos = loc.get_rel_pos() + height;
+                    if (pos + (int)(strlen(probe+height)) >= loc.get_pid().get_size()) // after end
+                        return;
+
+                    int ref;
+
+                    SmartCharPtr  seqPtr = loc.get_pid().get_dataPtr();
+                    const char   *seq    = &*seqPtr;
+
+                    dt_bondssum_split ndtbss(dtbss);
+
+                    while (probe[height] && (ref = seq[pos])) {
+                        double h = get_splits().check(probe[height], ref);
+                        if (ndtbss.split) {
+                            if (h<0.0) ndtbss.dt -= h; else ndtbss.dt += h;
+                        }
+                        else {
+                            if (h<0.0) {
+                                ndtbss.dt -= h;
+                                ndtbss.split = 1;
+                            }
+                            else {
+                                ndtbss.dt += h;
+                                ndtbss.sum_bonds += ptnd_check_max_bond(locs, probe[height]) - h;
+                            }
+                        }
+                        height++; pos++;
+                    }
+                    check_part_inc_dt(loc, ndtbss);
+                }
+            }
+            else { // chain
+                ChainIteratorStage3 entry(pt);
+                do {
+                    const AbsLoc& absLoc = entry.at();
+                    if (absLoc.get_pid().outside_group()) {
+                        chain_check_part(entry.at(), dtbss, probe, height);
+                    }
+                } while (++entry);
             }
         }
-        else { // chain
-            psg.probe  = probe;
-            psg.height = height;
-            ptnd.dtbs  = dt_bondssum(dtbss.dt, dtbss.sum_bonds);
-            PT_forwhole_chain_stage3(pt, ptnd_chain_check_part(dtbss.split, splits)); // @@@ expand
+        else {
+            check_part_all(pt, dtbss);
         }
     }
-    else {
-        ptnd_check_part_all(pt, splits, dtbss);
+
+public:
+    PartCheck_Traversal(PT_local *locs_, PT_pdc *pdc_)
+        : locs(locs_),
+          pdc(pdc_),
+          splits(locs)
+    {
     }
-}
-static void ptnd_check_probepart(PT_pdc *pdc, const Splits& splits) {
-    ptnd.pdc = pdc;
-    for (PT_probeparts *parts = pdc->parts; parts; parts = parts->next) {
-        ptnd.parts = parts;
-        dt_bondssum_split dtbss(parts->dt, parts->sum_bonds, 0);
-        ptnd_check_part(parts->sequence, splits, psg.pt, 0, dtbss);
+
+    const Splits& get_splits() const { return splits; }
+
+    void check_probeparts() {
+        for (currPart = pdc->parts; currPart; currPart = currPart->next) {
+            dt_bondssum_split dtbss(currPart->dt, currPart->sum_bonds, 0);
+            check_part(currPart->sequence, psg.pt, 0, dtbss);
+        }
     }
-}
+};
+
 inline int ptnd_check_tprobe(PT_pdc *pdc, const char *probe, int len)
 {
     int occ[PT_BASES] = { 0, 0, 0, 0, 0, 0 };
@@ -840,13 +883,25 @@ inline int ptnd_check_tprobe(PT_pdc *pdc, const char *probe, int len)
     return 0;
 }
 
-static long ptnd_build_probes_collect(const char *probe, long count, void*) {
-    if (count >= ptnd.locs->group_count*ptnd.pdc->mintarget) {
+struct probes_collect_data {
+    PT_pdc *pdc;
+    long    min_count;
+
+    probes_collect_data(PT_pdc *pdc_, int group_count)
+        : pdc(pdc_),
+          min_count(group_count*pdc->mintarget)
+    {}
+};
+
+static long ptnd_build_probes_collect(const char *probe, long count, void *cl_collData) {
+    probes_collect_data *collect_data = static_cast<probes_collect_data*>(cl_collData);
+
+    if (count >= collect_data->min_count) {
         PT_tprobes *tprobe = create_PT_tprobes();
         tprobe->sequence = strdup(probe);
         tprobe->temp = pt_get_temperature(probe);
         tprobe->groupsize = (int)count;
-        aisc_link(&ptnd.pdc->ptprobes, tprobe);
+        aisc_link(&collect_data->pdc->ptprobes, tprobe);
     }
     return count;
 }
@@ -992,7 +1047,10 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         GBS_print_hash_statistic_summary("inner");
 #endif // DEBUG
 
-        GBS_hash_do_loop(hash_outer, ptnd_build_probes_collect, NULL);
+        {
+            probes_collect_data collData(pdc, group_count);
+            GBS_hash_do_loop(hash_outer, ptnd_build_probes_collect, &collData);
+        }
 
 #if defined(DEBUG)
         GBS_calc_hash_statistic(hash_outer, "outer", 1);
@@ -1012,9 +1070,6 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 
 int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
-
-    ptnd.locs = locs;
-    ptnd.pdc  = pdc;
 
     const char *error;
     {
@@ -1046,12 +1101,19 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     remove_tprobes_with_too_many_mishits(pdc);
     remove_tprobes_outside_ecoli_range(pdc);
     tprobes_calculate_bonds(locs);
+
     ptnd_cp_tprobe_2_probepart(pdc);
-    Splits splits(locs);
-    ptnd_duplicate_probepart(locs, splits);
-    ptnd_sort_parts(pdc);
-    ptnd_remove_duplicated_probepart(pdc);
-    ptnd_check_probepart(pdc, splits);
+
+    {
+        PartCheck_Traversal pct(locs, pdc);
+
+        ptnd_duplicate_probepart(locs, pct.get_splits()); // @@@ pass pct ? 
+        ptnd_sort_parts(pdc);
+        ptnd_remove_duplicated_probepart(pdc);
+
+        pct.check_probeparts();
+    }
+
     while (pdc->parts) destroy_PT_probeparts(pdc->parts);
     ptnd_calc_quality(pdc);
     ptnd_sort_probes_by(pdc, 0);

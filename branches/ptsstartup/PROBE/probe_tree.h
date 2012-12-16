@@ -353,6 +353,7 @@ protected:
 public:
     AbsLoc() : name(-1), apos(0) {}
     AbsLoc(int name_, int abs_pos) : name(name_), apos(abs_pos) {}
+    virtual ~AbsLoc() {}
 
     bool has_valid_name() const { return name >= 0 && name < psg.data_count; }
 
@@ -391,7 +392,15 @@ public:
     explicit DataLoc(const AbsLoc& aloc) // expensive!
         : AbsLoc(aloc),
           rpos(get_pid().calc_relpos(get_abs_pos()))
-    {}
+    {
+#if 0 // @@@ fix expensive conversions later
+        const DataLoc *dloc = dynamic_cast<const DataLoc*>(&aloc);
+        if (dloc) {
+            GBK_dump_backtrace(stderr, "expensive conversion");
+            // pt_assert(!dloc); // expensive conversion (DataLoc->AbsLoc->DataLoc)
+        }
+#endif
+    }
 
     int get_rel_pos() const { return rpos; }
 
@@ -603,7 +612,7 @@ public:
 };
 
 template<typename T>
-int PT_forwhole_chain_stage1(POS_TREE *node, T func) {
+int PT_forwhole_chain_stage1(POS_TREE *node, T& func) {
     pt_assert_stage(STAGE1);
     int error = 0;
     for (ChainIteratorStage1 entry(node); entry && !error; ++entry) {
@@ -613,7 +622,7 @@ int PT_forwhole_chain_stage1(POS_TREE *node, T func) {
 }
 
 template<typename T>
-int PT_forwhole_chain_stage3(POS_TREE *node, T func) {
+int PT_forwhole_chain_stage3(POS_TREE *node, T& func) {
     pt_assert_stage(STAGE3);
     int error = 0;
     for (ChainIteratorStage3 entry(node); entry && !error; ++entry) {
@@ -623,7 +632,7 @@ int PT_forwhole_chain_stage3(POS_TREE *node, T func) {
 }
 
 template<typename T>
-int PT_forwhole_chain_anyStage(POS_TREE *node, T func) {
+int PT_forwhole_chain_anyStage(POS_TREE *node, T& func) {
     if (psg.ptdata->get_stage() == STAGE1) {
         return PT_forwhole_chain_stage1(node, func);
     }
