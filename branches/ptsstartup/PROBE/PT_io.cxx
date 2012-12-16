@@ -62,11 +62,7 @@ ARB_ERROR probe_read_data_base(const char *name, bool readOnly) { // goes to hea
         if (!gb_main) error = GB_await_error();
         else {
             error = GB_begin_transaction(gb_main);
-            if (!error) {
-                psg.gb_main         = gb_main;
-                psg.gb_species_data = GBT_get_species_data(gb_main);
-                psg.gb_sai_data     = GBT_get_SAI_data(gb_main);
-            }
+            if (!error) psg.gb_main = gb_main;
             error = GB_end_transaction(gb_main, error);
         }
     }
@@ -222,7 +218,7 @@ GB_ERROR PT_prepare_data(GBDATA *gb_main) {
         printf("Database contains %i species\n", icount);
         {
             arb_progress progress("Preparing sequence data", icount);
-            for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
+            for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
                  gb_species && !error;
                  gb_species = GBT_next_species(gb_species))
             {
@@ -263,8 +259,9 @@ GB_ERROR PT_init_input_data() {
 
     // read ref SAI (e.g. ecoli)
     {
-        char   *def_ref = GBT_get_default_ref(psg.gb_main);
-        GBDATA *gb_ref  = GBT_find_SAI_rel_SAI_data(psg.gb_sai_data, def_ref);
+        char   *def_ref     = GBT_get_default_ref(psg.gb_main);
+        GBDATA *gb_sai_data = GBT_get_SAI_data(psg.gb_main);
+        GBDATA *gb_ref      = GBT_find_SAI_rel_SAI_data(gb_sai_data, def_ref);
 
         psg.ecoli = 0;
         if (gb_ref) {
@@ -276,7 +273,8 @@ GB_ERROR PT_init_input_data() {
         free(def_ref);
     }
 
-    int icount = GB_number_of_subentries(psg.gb_species_data);
+    GBDATA *gb_species_data = GBT_get_species_data(psg.gb_main);
+    int     icount          = GB_number_of_subentries(gb_species_data);
 
     psg.data = new probe_input_data[icount];
     psg.data_count = 0;
@@ -288,7 +286,7 @@ GB_ERROR PT_init_input_data() {
         arb_progress progress("Checking data", icount);
         int count = 0;
 
-        for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
+        for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
              gb_species;
              gb_species = GBT_next_species(gb_species))
         {

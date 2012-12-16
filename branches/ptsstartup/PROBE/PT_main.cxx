@@ -78,11 +78,9 @@ static int calc_complement(int base) {
 
 void probe_struct_global::setup() {
     // init uninitialized data
-    
-    gb_shell        = NULL;
-    gb_main         = NULL;
-    gb_species_data = NULL;
-    gb_sai_data     = NULL;
+
+    gb_shell = NULL;
+    gb_main  = NULL;
 
     alignment_name = NULL;
     namehash       = NULL;
@@ -120,9 +118,7 @@ void probe_struct_global::cleanup() {
         delete [] data;
 
         GB_close(gb_main);
-        gb_main         = NULL;
-        gb_species_data = NULL;
-        gb_sai_data     = NULL;
+        gb_main = NULL;
     }
 
     if (gb_shell) {

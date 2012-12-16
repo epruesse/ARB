@@ -138,18 +138,14 @@ struct POS_TREE {
 enum Stage { STAGE1, STAGE3 }; // STAGE2 does not exist
 
 class PT_data {
-    Stage  stage;
-    int    data_offset;
-    char  *data_start; // @@@ change to unsigned long (i.e. use offset)
+    Stage stage;
+    int   data_offset;
 
 public:
     PT_data(Stage stage_);
 
     Stage get_stage() const { return stage; }
-    int get_offset() const { return data_offset; } // @@@ rename
-
-    void use_rel_pointers(char *relStartAddress) { data_start = relStartAddress; }
-    POS_TREE *rel2abs(unsigned long relPtr) const { return (POS_TREE*)(data_start+relPtr); } // @@@ elim (only used in stage1 where it makes no sense)
+    int get_dataoffset() const { return data_offset; }
 };
 
 // ---------------------
@@ -167,8 +163,6 @@ class probe_input_data : virtual Noncopyable { // every taxa's own data
 
     static cache::Cache<SmartCharPtr> seq_cache;
     static cache::Cache<SmartIntPtr>  rel2abs_cache;
-
-    GBDATA *get_gbdata() const { return gb_species; } // @@@ elim
 
     SmartCharPtr loadSeq() const {
         GB_transaction ta(gb_species);
@@ -234,7 +228,7 @@ public:
 
     long get_geneabspos() const {
         pt_assert(gene_flag); // only legal in gene-ptserver
-        GBDATA *gb_pos = GB_entry(get_gbdata(), "abspos");
+        GBDATA *gb_pos = GB_entry(gb_species, "abspos");
         if (gb_pos) return GB_read_int(gb_pos);
         return -1;
     }
@@ -357,8 +351,6 @@ class probe_struct_global {
 public:
     GB_shell *gb_shell;
     GBDATA   *gb_main;                              // ARBDB interface
-    GBDATA   *gb_species_data;
-    GBDATA   *gb_sai_data; // @@@ elim (used once)
     char     *alignment_name;
     GB_HASH  *namehash;                             // name to int
 

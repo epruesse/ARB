@@ -72,8 +72,7 @@ bool PT_chain_has_valid_entries(const POS_TREE * const node) {
 
 PT_data::PT_data(Stage stage_)
     : stage(stage_),
-      data_offset(stage == STAGE1 ? sizeof(PT_PNTR) : 0),
-      data_start(0)
+      data_offset(stage == STAGE1 ? sizeof(PT_PNTR) : 0)
 {}
 
 static void init_PT_GLOBAL() {
@@ -842,11 +841,8 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __A
 
         if (!error) {
             pt_assert(i >= 0);
-
             *pnode = (POS_TREE *)(i+buffer);
-
-            pt_assert(psg.ptdata->get_offset() == 0);
-            psg.ptdata->use_rel_pointers(buffer);
+            pt_assert(psg.ptdata->get_dataoffset() == 0);
         }
     }
 

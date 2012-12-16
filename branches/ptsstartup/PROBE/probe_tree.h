@@ -183,7 +183,7 @@ inline int checked_lower_bits(int bits) {
 #define PT_GET_TYPE(pt)            (PT_GLOBAL.flag_2_type[(pt)->flags])
 #define PT_SET_TYPE(pt,type,lbits) ((pt)->flags = ((type)<<FLAG_FREE_BITS)+checked_lower_bits(lbits))
 
-inline const char *node_data_start(const POS_TREE *node) { return &node->data + psg.ptdata->get_offset(); }
+inline const char *node_data_start(const POS_TREE *node) { return &node->data + psg.ptdata->get_dataoffset(); }
 inline char *node_data_start(POS_TREE *node) { return const_cast<char*>(node_data_start(const_cast<const POS_TREE*>(node))); }
 
 inline size_t PT_node_size_stage_3(POS_TREE *node) {
@@ -424,7 +424,6 @@ public:
 };
 
 inline bool operator==(const AbsLoc& loc1, const AbsLoc& loc2) { return loc1.is_equal(loc2); }
-inline bool operator==(const DataLoc& loc1, const DataLoc& loc2) { return loc1.is_equal(loc2); } // @@@ superfluous?
 
 // -------------------------
 //      ReadableDataLoc

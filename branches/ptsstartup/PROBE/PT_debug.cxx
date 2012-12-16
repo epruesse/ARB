@@ -231,11 +231,11 @@ void PT_dump_tree_statistics(const char *indexfilename) {
 
 // --------------------------------------------------------------------------------
 
-class PT_dump_leaf { // @@@ rename
+class PT_dump_loc {
     const char *prefix;
     FILE       *out;
 public:
-    PT_dump_leaf(const char *Prefix, FILE *Out) : prefix(Prefix), out(Out) {}
+    PT_dump_loc(const char *Prefix, FILE *Out) : prefix(Prefix), out(Out) {}
 
     int operator()(const DataLoc& loc) {
         fprintf(out, "%s %i=%s@%i>%i\n", prefix, loc.get_name(), loc.get_pid().get_shortname(), loc.get_abs_pos(), loc.get_rel_pos());
@@ -261,15 +261,15 @@ void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
             break;
 
         case PT_NT_LEAF: {
-            char         *subPrefix = GBS_global_string_copy("{l} %s", prefix);
-            PT_dump_leaf  dump_leaf(subPrefix, out);
+            char *subPrefix = GBS_global_string_copy("{l} %s", prefix);
+            PT_dump_loc dump_leaf(subPrefix, out);
             dump_leaf(DataLoc(pt));
             free(subPrefix);
             break;
         }
         case PT_NT_CHAIN: {
             char *subPrefix = GBS_global_string_copy("{c} %s", prefix);
-            PT_dump_leaf locDumper(subPrefix, out);
+            PT_dump_loc locDumper(subPrefix, out);
             PT_forwhole_chain_anyStage(pt, locDumper);
             free(subPrefix);
             break;
