@@ -420,6 +420,36 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
     return error;
 }
 
+static int get_DB_state(GBDATA *gb_main, ARB_ERROR& error) {
+    pt_assert(!error);
+    error     = GB_push_transaction(gb_main);
+    int state = -1;
+    if (!error) {
+        GBDATA *gb_ptserver = GBT_find_or_create(gb_main, "ptserver", 7);
+        long   *statePtr    = gb_ptserver ? GBT_readOrCreate_int(gb_ptserver, "dbstate", 0) : NULL;
+        if (!statePtr) {
+            error = GB_await_error();
+        }
+        else {
+            state = *statePtr;
+        }
+    }
+    error = GB_end_transaction(gb_main, error);
+    return state;
+}
+
+static GB_ERROR set_DB_state(GBDATA *gb_main, int dbstate) {
+    GB_ERROR error = GB_push_transaction(gb_main);
+    if (!error) {
+        GBDATA *gb_ptserver  = GBT_find_or_create(gb_main, "ptserver", 7);
+        GBDATA *gb_state     = gb_ptserver ? GB_searchOrCreate_int(gb_ptserver, "dbstate", 0) : NULL;
+        if (!gb_state) error = GB_await_error();
+        else    error        = GB_write_int(gb_state, dbstate);
+    }
+    error = GB_end_transaction(gb_main, error);
+    return error;
+}
+
 __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *command, const arb_params *params) {
     ARB_ERROR  error;
     char      *msg = NULL;
@@ -444,8 +474,16 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
 
                 error = GB_no_transaction(psg.gb_main); // don't waste memory for transaction (no abort may happen)
 
+                if (!error) {
+                    int dbstate = get_DB_state(psg.gb_main, error);
+                    if (!error && dbstate>0) error = "database was already prepared for ptserver";
+                    pt_assert(dbstate == 0 || error);
+                }
+
                 if (!error) error = cleanup_ptserver_database(psg.gb_main, PTSERVER);
                 if (!error) error = PT_prepare_data(psg.gb_main);
+
+                if (!error) error = set_DB_state(psg.gb_main, 1);
 
                 if (!error) {
                     const char *mode = GB_supports_mapfile() ? "bfm" : "bf";
@@ -454,9 +492,16 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
             }
         }
         else if (strcmp(command, "-build") == 0) {  // build command
-            error            = pt_init_main_struct(aisc_main, params->db_server);
+            if (!error) error = pt_init_main_struct(aisc_main, params->db_server);
+            if (!error) {
+                int dbstate = get_DB_state(psg.gb_main, error);
+                if (!error && dbstate != 1) {
+                    error = "database has not been prepared for ptserver";
+                }
+            }
             if (error) error = GBS_global_string("Gave up (Reason: %s)", error.deliver());
-            else {
+
+            if (!error) {
                 ULONG ARM_size_kb = 0;
                 {
                     const char *mapfile = GB_mapfile(psg.gb_main);
