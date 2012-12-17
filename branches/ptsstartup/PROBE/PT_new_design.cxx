@@ -208,13 +208,13 @@ static int count_mishits_for_all(POS_TREE *pt) {
     if (pt == NULL)
         return 0;
     
-    if (PT_read_type(pt) == PT_NT_LEAF) {
+    if (pt->is_leaf()) {
         DataLoc loc(pt);
         psg.abs_pos.announce(loc.get_abs_pos());
         return loc.get_pid().outside_group();
     }
 
-    if (PT_read_type(pt) == PT_NT_CHAIN) {
+    if (pt->is_chain()) {
         ptnd_chain_count_mishits counter;
         PT_forwhole_chain_stage3(pt, counter); // @@@ expand
         return counter.mishits;
@@ -393,7 +393,7 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
 static int count_mishits_for_matched(char *probe, POS_TREE *pt, int height) {
     //! search down the tree to find matching species for the given probe
     if (!pt) return 0;
-    if (PT_read_type(pt) == PT_NT_NODE && *probe) {
+    if (pt->is_node() && *probe) {
         int mishits = 0;
         for (int i=PT_A; i<PT_BASES; i++) {
             if (i != *probe) continue;
@@ -403,7 +403,7 @@ static int count_mishits_for_matched(char *probe, POS_TREE *pt, int height) {
         return mishits;
     }
     if (*probe) {
-        if (PT_read_type(pt) == PT_NT_LEAF) {
+        if (pt->is_leaf()) {
             const ReadableDataLoc loc(pt);
 
             int pos = loc.get_rel_pos()+height;
@@ -726,14 +726,14 @@ class PartCheck_Traversal {
          */
 
         if (pt) {
-            if (PT_read_type(pt) == PT_NT_LEAF) {
+            if (pt->is_leaf()) {
                 // @@@ dupped code is in chain_check_part
                 DataLoc loc(pt);
                 if (loc.get_pid().outside_group()) {
                     check_part_inc_dt(loc, dtbs);
                 }
             }
-            else if (PT_read_type(pt) == PT_NT_CHAIN) {
+            else if (pt->is_chain()) {
                 ChainIteratorStage3 entry(pt);
                 do {
                     const AbsLoc& absLoc = entry.at();
@@ -755,7 +755,7 @@ class PartCheck_Traversal {
 
         if (!pt) return;
         if (dtbss.dt/currPart->source->seq_len > PERC_SIZE) return;     // out of scope
-        if (PT_read_type(pt) == PT_NT_NODE && probe[height]) {
+        if (pt->is_node() && probe[height]) {
             if (dtbss.split && centigrade_pos_outofscope(dtbss)) return;
             for (int i=PT_A; i<PT_BASES; i++) {
                 POS_TREE *pthelp = PT_read_son(pt, (PT_base)i);
@@ -789,7 +789,7 @@ class PartCheck_Traversal {
             return;
         }
         if (probe[height]) {
-            if (PT_read_type(pt) == PT_NT_LEAF) {
+            if (pt->is_leaf()) {
                 // @@@ dupped code is in chain_check_part
                 const DataLoc loc(pt);
                 if (loc.get_pid().outside_group()) {

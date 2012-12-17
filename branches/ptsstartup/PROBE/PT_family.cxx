@@ -193,7 +193,7 @@ Range PT_Traversal::range(-1, -1, -1);
 
 inline void PT_Traversal::mark_chain_or_leaf(POS_TREE *pt) const {
     pt_assert(pt);
-    switch (PT_read_type(pt)) {
+    switch (pt->get_type()) {
         case PT_NT_LEAF:
             (*this)(DataLoc(pt));
             break;
@@ -218,7 +218,7 @@ void PT_Traversal::mark_matching(POS_TREE *pt) const {
     pt_assert(!too_many_mismatches());
     pt_assert(!did_match()); 
 
-    if (PT_read_type(pt) == PT_NT_NODE) {
+    if (pt->is_node()) {
         for (int base = PT_N; base < PT_BASES; base++) {
             POS_TREE *pt_son = PT_read_son(pt, (PT_base)base);
             if (pt_son && !at_end()) {
@@ -241,7 +241,7 @@ void PT_Traversal::mark_all(POS_TREE *pt) const {
     pt_assert(!too_many_mismatches());
     pt_assert(did_match());
 
-    if (PT_read_type(pt) == PT_NT_NODE) {
+    if (pt->is_node()) {
         for (int base = PT_N; base < PT_BASES; base++) {
             POS_TREE *pt_son = PT_read_son(pt, (PT_base)base);
             if (pt_son) mark_all(pt_son);

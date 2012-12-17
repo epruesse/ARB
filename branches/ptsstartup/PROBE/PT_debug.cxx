@@ -49,7 +49,7 @@ struct PT_statistic {
 
     void analyse(POS_TREE *pt, int height) {
         pt_assert(height<DEBUG_TREE_DEPTH);
-        switch (PT_read_type(pt)) {
+        switch (pt->get_type()) {
             case PT_NT_NODE: {
                 int basecnt = 0;
                 for (int i=PT_QU; i<PT_BASES; i++) {
@@ -248,7 +248,7 @@ public:
 };
 
 void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
-    switch (PT_read_type(pt)) {
+    switch (pt->get_type()) {
         case PT_NT_NODE:
             for (int b = PT_QU; b<PT_BASES; b++) {
                 POS_TREE *son = PT_read_son(pt, PT_base(b));
@@ -297,7 +297,7 @@ void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node), FILE *IF_DEBUG(out)) {
         fprintf(out, "node father %p\n", father);
     }
 
-    switch (PT_read_type(node)) {
+    switch (node->get_type()) {
         case PT_NT_LEAF: {
             DataLoc loc(node);
             fprintf(out, "leaf %i:%i,%i\n", loc.get_name(), loc.get_rel_pos(), loc.get_abs_pos());

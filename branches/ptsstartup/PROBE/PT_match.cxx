@@ -210,7 +210,7 @@ bool MatchRequest::add_hits_for_children(POS_TREE *pt, const Mismatches& mismatc
     pt_assert(!hit_limit_reached());
 
     bool enough = false;
-    switch (PT_read_type(pt)) {
+    switch (pt->get_type()) {
         case PT_NT_LEAF:
             enough = add_hit(DataLoc(pt), mismatch);
             break;
@@ -266,7 +266,7 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches&
         enough = add_hits_for_children(pt, mismatches);
     }
     else {
-        switch (PT_read_type(pt)) {
+        switch (pt->get_type()) {
             case PT_NT_LEAF: {
                 ReadableDataLoc loc(pt);
                 mismatches.count_versus(loc, probe, height);

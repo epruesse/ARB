@@ -17,7 +17,7 @@
 static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int height) {
     if (restlen==0) return true;
 
-    switch (PT_read_type(node)) {
+    switch (node->get_type()) {
         case PT_NT_NODE:
             for (int i=PT_A; i<PT_BASES; ++i) { // Note: does not iterate probes containing N
                 POS_TREE *son = PT_read_son(node, PT_base(i));
@@ -72,7 +72,7 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
     if (restlen==0) return false;  // in this case we found the recent probe
     // returning false upwards takes the next after
 
-    switch (PT_read_type(node)) {
+    switch (node->get_type()) {
         case PT_NT_NODE: {
             if (!is_std_base(probe[0])) return false;
 

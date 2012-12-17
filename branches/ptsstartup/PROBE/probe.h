@@ -119,22 +119,7 @@ inline void reverse_probe(char *seq, int len) {
     while (i<j) std::swap(seq[i++], seq[j--]);
 }
 
-// -----------------
-//      POS TREE
-
-enum PT_NODE_TYPE {
-    PT_NT_LEAF  = 0,
-    PT_NT_CHAIN = 1,
-    PT_NT_NODE  = 2,
-    PT_NT_SAVED = 3, // stage 1 only
-    PT_NT_UNDEF = 4
-};
-
-struct POS_TREE {
-    uchar flags;
-    char  data;
-};
-
+struct POS_TREE;
 enum Stage { STAGE1, STAGE3 }; // STAGE2 does not exist
 
 class PT_data {

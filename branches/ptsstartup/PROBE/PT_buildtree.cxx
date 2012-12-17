@@ -32,7 +32,7 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const ReadableDataLoc& loc
     POS_TREE *at = root;
     int       height = 0;
 
-    while (PT_read_type(at) == PT_NT_NODE) {    // now we got an inner node
+    while (at->is_node()) {    // now we got an inner node
         POS_TREE *pt_next = PT_read_son_stage_1(at, loc[height]);
         if (!pt_next) { // there is no son of that type -> simply add the new son to that path
             POS_TREE *new_root = root;
@@ -62,7 +62,7 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const ReadableDataLoc& loc
             if (loc.is_shorther_than(height)) {
                 // end of sequence reached -> change node to chain and add
                 pt_assert(loc[height-1] == PT_QU);
-                pt_assert(PT_read_type(at) == PT_NT_CHAIN);
+                pt_assert(at->is_chain());
 
                 PT_add_to_chain(at, loc);
                 return root;
@@ -71,7 +71,7 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const ReadableDataLoc& loc
     }
 
     // type == leaf or chain
-    if (PT_read_type(at) == PT_NT_CHAIN) {      // old chain reached
+    if (at->is_chain()) {      // old chain reached
         PT_add_to_chain(at, loc);
         return root;
     }
@@ -81,20 +81,20 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const ReadableDataLoc& loc
     const ReadableDataLoc loc_ref(at);
 
     while (loc[height] == loc_ref[height]) {  // creates nodes until sequences are different
-        pt_assert(PT_read_type(at) != PT_NT_NODE);
+        pt_assert(!at->is_node());
 
-        if (PT_read_type(at) == PT_NT_CHAIN) {
+        if (at->is_chain()) {
             PT_add_to_chain(at, loc);
             return root;
         }
         if (height >= PT_POS_TREE_HEIGHT) {
-            if (PT_read_type(at) == PT_NT_LEAF) at = PT_leaf_to_chain(at);
-            pt_assert(PT_read_type(at) == PT_NT_CHAIN);
+            if (at->is_leaf()) at = PT_leaf_to_chain(at);
+            pt_assert(at->is_chain());
             PT_add_to_chain(at, loc);
             return root;
         }
 
-        pt_assert(PT_read_type(at) == PT_NT_LEAF);
+        pt_assert(at->is_leaf());
 
         bool loc_done = loc.is_shorther_than(height+1);
         bool ref_done = loc_ref.is_shorther_than(height+1);
@@ -121,11 +121,11 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const ReadableDataLoc& loc
     pt_assert(loc[height] != loc_ref[height]);
 
     if (height >= PT_POS_TREE_HEIGHT) {
-        if (PT_read_type(at) == PT_NT_LEAF) at = PT_leaf_to_chain(at);
+        if (at->is_leaf()) at = PT_leaf_to_chain(at);
         PT_add_to_chain(at, loc);
         return root;
     }
-    if (PT_read_type(at) == PT_NT_CHAIN) {
+    if (at->is_chain()) {
         // not covered by test - but looks similar to case in top-loop
         PT_add_to_chain(at, loc);
     }
@@ -175,18 +175,17 @@ inline void get_abs_align_pos(char *seq, int &pos) {
 }
 
 static bool all_sons_saved(POS_TREE *node);
-inline bool is_saved(POS_TREE *node) {
-    PT_NODE_TYPE type = PT_read_type(node);
-    return (type == PT_NT_NODE) ? all_sons_saved(node) : (type == PT_NT_SAVED);
+inline bool has_unsaved_sons(POS_TREE *node) {
+    PT_NODE_TYPE type = node->get_type();
+    return (type == PT_NT_NODE) ? !all_sons_saved(node) : (type != PT_NT_SAVED);
 }
-inline bool is_completely_saved(POS_TREE *node) { return PT_read_type(node) == PT_NT_SAVED; }
 static bool all_sons_saved(POS_TREE *node) {
-    pt_assert(PT_read_type(node) == PT_NT_NODE);
+    pt_assert(node->is_node());
 
     for (int i = PT_QU; i < PT_BASES; i++) {
         POS_TREE *son = PT_read_son_stage_1(node, (PT_base)i);
         if (son) {
-            if (!is_saved(son)) return false;
+            if (has_unsaved_sons(son)) return false;
         }
     }
     return true;
@@ -204,7 +203,7 @@ static long save_lower_subtree(FILE *out, POS_TREE *node, long pos, int height, 
         pos = write_subtree(out, node, pos, &dummy, error);
     }
     else {
-        switch (PT_read_type(node)) {
+        switch (node->get_type()) {
             case PT_NT_NODE:
                 for (int i = PT_QU; i<PT_BASES; ++i) {
                     POS_TREE *son = PT_read_son_stage_1(node, PT_base(i));
@@ -232,7 +231,7 @@ static long save_upper_tree(FILE *out, POS_TREE *node, long pos, long& node_pos,
 
 inline void check_tree_was_saved(POS_TREE *node, const char *whatTree, bool completely, ARB_ERROR& error) {
     if (!error) {
-        bool saved = completely ? is_completely_saved(node) : is_saved(node);
+        bool saved = completely ? node->is_saved() : !has_unsaved_sons(node);
         if (!saved) {
 #if defined(DEBUG)
             fprintf(stderr, "%s was not completely saved:\n", whatTree);
@@ -250,7 +249,7 @@ long PTD_save_lower_tree(FILE *out, POS_TREE *node, long pos, ARB_ERROR& error) 
 }
 
 long PTD_save_upper_tree(FILE *out, POS_TREE *node, long pos, long& node_pos, ARB_ERROR& error) {
-    pt_assert(is_saved(node)); // forgot to call PTD_save_lower_tree?
+    pt_assert(!has_unsaved_sons(node)); // forgot to call PTD_save_lower_tree?
     pos = save_upper_tree(out, node, pos, node_pos, error);
     check_tree_was_saved(node, "tree", true, error);
     return pos;
