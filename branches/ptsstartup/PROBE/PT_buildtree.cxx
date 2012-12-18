@@ -28,15 +28,15 @@
 
 // AISC_MKPT_PROMOTE: class DataLoc;
 
-static POS_TREE *build_pos_tree(POS_TREE *const root, const ReadableDataLoc& loc) {
-    POS_TREE *at = root;
-    int       height = 0;
+static POS_TREE1 *build_pos_tree(POS_TREE1 *const root, const ReadableDataLoc& loc) {
+    POS_TREE1 *at     = root;
+    int        height = 0;
 
     while (at->is_node()) {    // now we got an inner node
-        POS_TREE *pt_next = PT_read_son_stage_1(at, loc[height]);
+        POS_TREE1 *pt_next = PT_read_son(at, loc[height]);
         if (!pt_next) { // there is no son of that type -> simply add the new son to that path
-            POS_TREE *new_root = root;
-            POS_TREE *leaf;
+            POS_TREE1 *new_root = root;
+            POS_TREE1 *leaf;
             {
                 bool atRoot = (at == root);
 
@@ -174,16 +174,16 @@ inline void get_abs_align_pos(char *seq, int &pos) {
     pos+=q_exists;
 }
 
-static bool all_sons_saved(POS_TREE *node);
-inline bool has_unsaved_sons(POS_TREE *node) {
+static bool all_sons_saved(POS_TREE1 *node);
+inline bool has_unsaved_sons(POS_TREE1 *node) {
     PT_NODE_TYPE type = node->get_type();
     return (type == PT_NT_NODE) ? !all_sons_saved(node) : (type != PT_NT_SAVED);
 }
-static bool all_sons_saved(POS_TREE *node) {
+static bool all_sons_saved(POS_TREE1 *node) {
     pt_assert(node->is_node());
 
     for (int i = PT_QU; i < PT_BASES; i++) {
-        POS_TREE *son = PT_read_son_stage_1(node, (PT_base)i);
+        POS_TREE1 *son = PT_read_son(node, (PT_base)i);
         if (son) {
             if (has_unsaved_sons(son)) return false;
         }
@@ -191,13 +191,13 @@ static bool all_sons_saved(POS_TREE *node) {
     return true;
 }
 
-static long write_subtree(FILE *out, POS_TREE *node, long pos, long *node_pos, ARB_ERROR& error) {
+static long write_subtree(FILE *out, POS_TREE1 *node, long pos, long *node_pos, ARB_ERROR& error) {
     pt_assert_stage(STAGE1);
     PTD_clear_fathers(node);
     return PTD_write_leafs_to_disk(out, node, pos, node_pos, error);
 }
 
-static long save_lower_subtree(FILE *out, POS_TREE *node, long pos, int height, ARB_ERROR& error) {
+static long save_lower_subtree(FILE *out, POS_TREE1 *node, long pos, int height, ARB_ERROR& error) {
     if (height >= PT_MIN_TREE_HEIGHT) { // in lower part of tree
         long dummy;
         pos = write_subtree(out, node, pos, &dummy, error);
@@ -206,7 +206,7 @@ static long save_lower_subtree(FILE *out, POS_TREE *node, long pos, int height, 
         switch (node->get_type()) {
             case PT_NT_NODE:
                 for (int i = PT_QU; i<PT_BASES; ++i) {
-                    POS_TREE *son = PT_read_son_stage_1(node, PT_base(i));
+                    POS_TREE1 *son = PT_read_son(node, PT_base(i));
                     if (son) pos = save_lower_subtree(out, son, pos, height+1, error);
                 }
                 break;
@@ -224,12 +224,12 @@ static long save_lower_subtree(FILE *out, POS_TREE *node, long pos, int height, 
     return pos;
 }
 
-static long save_upper_tree(FILE *out, POS_TREE *node, long pos, long& node_pos, ARB_ERROR& error) {
+static long save_upper_tree(FILE *out, POS_TREE1 *node, long pos, long& node_pos, ARB_ERROR& error) {
     pos = write_subtree(out, node, pos, &node_pos, error);
     return pos;
 }
 
-inline void check_tree_was_saved(POS_TREE *node, const char *whatTree, bool completely, ARB_ERROR& error) {
+inline void check_tree_was_saved(POS_TREE1 *node, const char *whatTree, bool completely, ARB_ERROR& error) {
     if (!error) {
         bool saved = completely ? node->is_saved() : !has_unsaved_sons(node);
         if (!saved) {
@@ -242,13 +242,13 @@ inline void check_tree_was_saved(POS_TREE *node, const char *whatTree, bool comp
     }
 }
 
-long PTD_save_lower_tree(FILE *out, POS_TREE *node, long pos, ARB_ERROR& error) {
+long PTD_save_lower_tree(FILE *out, POS_TREE1 *node, long pos, ARB_ERROR& error) {
     pos = save_lower_subtree(out, node, pos, 0, error);
     check_tree_was_saved(node, "lower tree", false, error);
     return pos;
 }
 
-long PTD_save_upper_tree(FILE *out, POS_TREE *node, long pos, long& node_pos, ARB_ERROR& error) {
+long PTD_save_upper_tree(FILE *out, POS_TREE1 *node, long pos, long& node_pos, ARB_ERROR& error) {
     pt_assert(!has_unsaved_sons(node)); // forgot to call PTD_save_lower_tree?
     pos = save_upper_tree(out, node, pos, node_pos, error);
     check_tree_was_saved(node, "tree", true, error);
@@ -400,7 +400,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
             error = GBS_global_string("Cannot open %s", t2name);
         }
         else {
-            POS_TREE *pt = NULL;
+            POS_TREE1 *pt = NULL;
             
             {
                 GB_ERROR sm_error = GB_set_mode_of_file(t2name, 0666);
@@ -544,7 +544,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
                     GB_ERROR sm_error = GB_set_mode_of_file(tname, 00666);
                     if (sm_error) GB_warning(sm_error);
 
-                    psg.pt = pt;
+                    psg.pt = (POS_TREE*)pt;
                 }
             }
 

@@ -203,7 +203,7 @@ struct ptnd_chain_count_mishits {
     }
 };
 
-static int count_mishits_for_all(POS_TREE *pt) {
+static int count_mishits_for_all(POS_TREE3 *pt) {
     //! go down the tree to chains and leafs; count the species that are in the non member group
     if (pt == NULL)
         return 0;
@@ -216,7 +216,7 @@ static int count_mishits_for_all(POS_TREE *pt) {
 
     if (pt->is_chain()) {
         ptnd_chain_count_mishits counter;
-        PT_forwhole_chain_stage3(pt, counter); // @@@ expand
+        PT_forwhole_chain(pt, counter); // @@@ expand
         return counter.mishits;
     }
 
@@ -390,14 +390,14 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
     return buffer;
 }
 
-static int count_mishits_for_matched(char *probe, POS_TREE *pt, int height) {
+static int count_mishits_for_matched(char *probe, POS_TREE3 *pt, int height) {
     //! search down the tree to find matching species for the given probe
     if (!pt) return 0;
     if (pt->is_node() && *probe) {
         int mishits = 0;
         for (int i=PT_A; i<PT_BASES; i++) {
             if (i != *probe) continue;
-            POS_TREE *pthelp = PT_read_son(pt, (PT_base)i);
+            POS_TREE3 *pthelp = PT_read_son(pt, (PT_base)i);
             if (pthelp) mishits += count_mishits_for_matched(probe+1, pthelp, height+1);
         }
         return mishits;
@@ -419,7 +419,7 @@ static int count_mishits_for_matched(char *probe, POS_TREE *pt, int height) {
         }
         else {                // chain
             ptnd_chain_count_mishits counter(probe, height);
-            PT_forwhole_chain_stage3(pt, counter); // @@@ expand
+            PT_forwhole_chain(pt, counter); // @@@ expand
             return counter.mishits;
         }
     }
@@ -433,7 +433,7 @@ static void remove_tprobes_with_too_many_mishits(PT_pdc *pdc) {
         PT_tprobes *tprobe_next = tprobe->next;
 
         psg.abs_pos.clear();
-        tprobe->mishit = count_mishits_for_matched(tprobe->sequence, psg.pt, 0);
+        tprobe->mishit = count_mishits_for_matched(tprobe->sequence, TREE_ROOT3(), 0);
         tprobe->apos   = psg.abs_pos.get_most_used();
         if (tprobe->mishit > pdc->mishit) {
             destroy_PT_tprobes(tprobe);
@@ -720,7 +720,7 @@ class PartCheck_Traversal {
         check_part_inc_dt(absLoc, ndtbss);
     }
 
-    void check_part_all(POS_TREE *pt, const dt_bondssum& dtbs) {
+    void check_part_all(POS_TREE3 *pt, const dt_bondssum& dtbs) {
         /*! go down the tree to chains and leafs;
          * check all (for what?)
          */
@@ -750,7 +750,7 @@ class PartCheck_Traversal {
         }
     }
 
-    void check_part(char *probe, POS_TREE *pt, int height, const dt_bondssum_split& dtbss) {
+    void check_part(char *probe, POS_TREE3 *pt, int height, const dt_bondssum_split& dtbss) {
         //! search down the tree to find matching species for the given probe
 
         if (!pt) return;
@@ -758,7 +758,7 @@ class PartCheck_Traversal {
         if (pt->is_node() && probe[height]) {
             if (dtbss.split && centigrade_pos_outofscope(dtbss)) return;
             for (int i=PT_A; i<PT_BASES; i++) {
-                POS_TREE *pthelp = PT_read_son(pt, (PT_base)i);
+                POS_TREE3 *pthelp = PT_read_son(pt, (PT_base)i);
                 if (pthelp) {
                     dt_bondssum_split ndtbss(dtbss);
 
@@ -852,7 +852,7 @@ public:
     void check_probeparts() {
         for (currPart = pdc->parts; currPart; currPart = currPart->next) {
             dt_bondssum_split dtbss(currPart->dt, currPart->sum_bonds, 0);
-            check_part(currPart->sequence, psg.pt, 0, dtbss);
+            check_part(currPart->sequence, TREE_ROOT3(), 0, dtbss);
         }
     }
 };

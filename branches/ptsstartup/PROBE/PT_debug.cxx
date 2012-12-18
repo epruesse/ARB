@@ -47,13 +47,13 @@ struct PT_statistic {
 
     PT_statistic() { memset(this, 0, sizeof(*this)); }
 
-    void analyse(POS_TREE *pt, int height) {
+    void analyse(POS_TREE3 *pt, int height) {
         pt_assert(height<DEBUG_TREE_DEPTH);
         switch (pt->get_type()) {
             case PT_NT_NODE: {
                 int basecnt = 0;
                 for (int i=PT_QU; i<PT_BASES; i++) {
-                    POS_TREE *pt_help = PT_read_son(pt, (PT_base)i);
+                    POS_TREE3 *pt_help = PT_read_son(pt, (PT_base)i);
                     if (pt_help) {
                         basecnt++;
                         analyse(pt_help, height+1);
@@ -61,14 +61,14 @@ struct PT_statistic {
                 }
 
                 nodes[height]++;
-                nodes_mem[height] += PT_node_size_stage_3(pt);
+                nodes_mem[height] += PT_node_size(pt);
 
                 splits[height][basecnt]++;
                 break;
             }
             case PT_NT_LEAF:
                 tips[height]++;
-                tips_mem[height] += PT_leaf_size_stage_3(pt);
+                tips_mem[height] += PT_leaf_size(pt);
                 break;
 
             case PT_NT_CHAIN: {
@@ -218,7 +218,7 @@ void PT_dump_tree_statistics(const char *indexfilename) {
 #if defined(CALCULATE_STATS_ON_QUERY)
     // show various debug information about the tree
     PT_statistic *stat = new PT_statistic;
-    stat->analyse(psg.pt, 0);
+    stat->analyse(TREE_ROOT3(), 0);
 
     size_t filesize = GB_size_of_file(indexfilename);
     stat->dump(filesize);
@@ -245,11 +245,12 @@ public:
     }
 };
 
-void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
+template <typename PT>
+void PT_dump_POS_TREE_recursive(PT *pt, const char *prefix, FILE *out) {
     switch (pt->get_type()) {
         case PT_NT_NODE:
             for (int b = PT_QU; b<PT_BASES; b++) {
-                POS_TREE *son = PT_read_son(pt, PT_base(b));
+                PT *son = PT_read_son<PT>(pt, PT_base(b));
                 if (son) {
                     char *subPrefix = GBS_global_string_copy("%s%c", prefix, base_2_readable(b));
                     PT_dump_POS_TREE_recursive(son, subPrefix, out);
@@ -268,7 +269,7 @@ void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
         case PT_NT_CHAIN: {
             char *subPrefix = GBS_global_string_copy("{c} %s", prefix);
             PT_dump_loc locDumper(subPrefix, out);
-            PT_forwhole_chain_anyStage(pt, locDumper);
+            PT_forwhole_chain(pt, locDumper);
             free(subPrefix);
             break;
         }
@@ -285,13 +286,13 @@ void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
 
 // --------------------------------------------------------------------------------
 
-void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node), FILE *IF_DEBUG(out)) {
+void PT_dump_POS_TREE(POS_TREE1 *IF_DEBUG(node), FILE *IF_DEBUG(out)) {
     // Debug function for all stages
 #if defined(DEBUG)
     if (!node) fputs("<zero node>\n", out);
 
     {
-        POS_TREE *father = PT_read_father(node);
+        POS_TREE1 *father = PT_read_father(node);
         fprintf(out, "node father %p\n", father);
     }
 
@@ -309,7 +310,7 @@ void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node), FILE *IF_DEBUG(out)) {
         case PT_NT_CHAIN:
             fputs("chain:\n", out);
             PTD_chain_print chainPrinter;
-            PT_forwhole_chain_anyStage(node, chainPrinter);
+            PT_forwhole_chain(node, chainPrinter);
             break;
         case PT_NT_SAVED:
             fputs("saved:\n", out);
@@ -327,7 +328,12 @@ static void PT_dump_POS_TREE_to_file(const char *dumpfile) {
     if (!dump) {
         GBK_terminate(GB_IO_error("writing", dumpfile));
     }
-    PT_dump_POS_TREE_recursive(psg.pt, "", dump);
+    if (psg.ptdata->get_stage() == STAGE1) {
+        PT_dump_POS_TREE_recursive(TREE_ROOT1(), "", dump);
+    }
+    else {
+        PT_dump_POS_TREE_recursive(TREE_ROOT3(), "", dump);
+    }
     fclose(dump);
 
     fprintf(stderr, "Note: index has been dumped to '%s'\n", dumpfile);

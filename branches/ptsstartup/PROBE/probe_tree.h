@@ -187,7 +187,7 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #define FLAG_FREE_BITS_MASK ((1<<FLAG_TYPE_BITS)-1)
 #define FLAG_TYPE_BITS_MASK (0xFF^FLAG_FREE_BITS_MASK)
 
-struct POS_TREE {
+struct POS_TREE1 {
     uchar flags;
     char  data;
 
@@ -204,10 +204,37 @@ struct POS_TREE {
     bool is_saved() const { return get_type() == PT_NT_SAVED; }
 };
 
-inline const char *node_data_start(const POS_TREE *node) { return &node->data + psg.ptdata->get_dataoffset(); }
-inline char *node_data_start(POS_TREE *node) { return const_cast<char*>(node_data_start(const_cast<const POS_TREE*>(node))); }
+struct POS_TREE3 { // pos-tree (stage 3)
+    uchar flags;
+    char  data;
 
-inline size_t PT_node_size_stage_3(POS_TREE *node) {
+    void set_type(PT_NODE_TYPE type) {
+        // sets user bits to zero
+        pt_assert(type != PT_NT_UNDEF && type != PT_NT_SAVED); // does not work for saved nodes (done manually)
+        flags = type<<FLAG_FREE_BITS;
+    }
+    PT_NODE_TYPE get_type() const { return (PT_NODE_TYPE)PT_GLOBAL.flag_2_type[flags]; }
+
+    bool is_node() const { return get_type() == PT_NT_NODE; }
+    bool is_leaf() const { return get_type() == PT_NT_LEAF; }
+    bool is_chain() const { return get_type() == PT_NT_CHAIN; }
+};
+
+union POS_TREE {
+    POS_TREE1 p1;
+    POS_TREE3 p3;
+};
+
+inline POS_TREE1 *TREE_ROOT1() { return &psg.pt->p1; }
+inline POS_TREE3 *TREE_ROOT3() { return &psg.pt->p3; }
+
+inline const char *node_data_start(const POS_TREE1 *node) { return &node->data + DATA_OFFSET1; }
+inline const char *node_data_start(const POS_TREE3 *node) { return &node->data + DATA_OFFSET3; }
+
+inline char *node_data_start(POS_TREE1 *node) { return const_cast<char*>(node_data_start(const_cast<const POS_TREE1*>(node))); }
+inline char *node_data_start(POS_TREE3 *node) { return const_cast<char*>(node_data_start(const_cast<const POS_TREE3*>(node))); }
+
+inline size_t PT_node_size(POS_TREE3 *node) {
     size_t size = 1; // flags
     if ((node->flags & IS_SINGLE_BRANCH_NODE) == 0) {
         UINT sec = (uchar)node->data; // read second byte for charshort/shortlong info
@@ -236,7 +263,9 @@ inline size_t PT_node_size_stage_3(POS_TREE *node) {
     return size;
 }
 
-inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_base base) { // stage 3 (no father)
+template <typename PT> inline PT *PT_read_son(PT *node, PT_base base);
+
+template <> inline POS_TREE3 *PT_read_son<POS_TREE3>(POS_TREE3 *node, PT_base base) { // stage 3 (no father)
     pt_assert_stage(STAGE3);
     pt_assert(node->is_node());
 
@@ -245,7 +274,7 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_base base) { // stage 3 
         long i    = (node->flags >> 3)&0x7;      // this son
         if (!i) i = 1; else i+=2;                // offset mapping
         pt_assert(i >= 0);
-        return (POS_TREE *)(((char *)node)-i);
+        return (POS_TREE3 *)(((char *)node)-i);
     }
     if (!((1<<base) & node->flags)) { // bit not set
         return NULL;
@@ -318,38 +347,38 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_base base) { // stage 3 
     }
 #endif
     pt_assert(i >= 0);
-    return (POS_TREE *)(((char*)node)-i);
+    return (POS_TREE3 *)(((char*)node)-i);
 }
 
-inline POS_TREE *PT_read_son_stage_1(POS_TREE *node, PT_base base) {
+template<> inline POS_TREE1 *PT_read_son<POS_TREE1>(POS_TREE1 *node, PT_base base) {
     pt_assert_stage(STAGE1);
     if (!((1<<base) & node->flags)) return NULL;   // bit not set
     base = (PT_base)PT_GLOBAL.count_bits[base][node->flags];
-    return PT_read_pointer<POS_TREE>(node_data_start(node) + sizeof(PT_PNTR)*base);
+    return PT_read_pointer<POS_TREE1>(node_data_start(node) + sizeof(PT_PNTR)*base);
 }
 
-inline POS_TREE *PT_read_son(POS_TREE *node, PT_base base) {
+template<> inline POS_TREE *PT_read_son<POS_TREE>(POS_TREE *node, PT_base base) {
     PT_data *ptdata = psg.ptdata;
     if (ptdata->get_stage() == STAGE3) {
-        return PT_read_son_stage_3(node, base);
+        return (POS_TREE*)PT_read_son(&node->p3, base);
     }
     else {
-        return PT_read_son_stage_1(node, base);
+        return (POS_TREE*)PT_read_son(&node->p1, base);
     }
 }
 
-inline POS_TREE *PT_read_father(POS_TREE *node) {
+inline POS_TREE1 *PT_read_father(POS_TREE1 *node) {
     pt_assert_stage(STAGE1); // in STAGE3 POS_TREE has no father
     pt_assert(!node->is_saved()); // saved nodes do not know their father
 
-    POS_TREE *father = PT_read_pointer<POS_TREE>(&node->data);
+    POS_TREE1 *father = PT_read_pointer<POS_TREE1>(&node->data);
 #if defined(ASSERTION_USED)
     if (father) pt_assert(father->is_node());
 #endif
     return father;
 }
 
-inline size_t PT_leaf_size_stage_3(POS_TREE *node) {
+inline size_t PT_leaf_size(POS_TREE3 *node) {
     size_t size = 1;  // flags
     size += (PT_GLOBAL.count_bits[PT_BASES][node->flags]+3)*2;
     return size;
@@ -393,12 +422,13 @@ public:
 class DataLoc : public AbsLoc {
     int rpos; // relative position in data
 
+    DataLoc(const POS_TREE*); // you need to be explicit
 public:
     bool has_valid_positions() const { return get_abs_pos() >= 0 && rpos >= 0 && get_abs_pos() >= rpos; }
 
     DataLoc() : rpos(0) {}
     DataLoc(int name_, int apos_, int rpos_) : AbsLoc(name_, apos_), rpos(rpos_) { pt_assert(has_valid_positions()); }
-    explicit DataLoc(const POS_TREE *node) {
+    template <typename PT> explicit DataLoc(const PT *node) {
         pt_assert(node->is_leaf());
         const char *data = node_data_start(node);
         if (node->flags&1) { set_name(PT_read_int(data)); data += 4; } else { set_name(PT_read_short(data)); data += 2; }
@@ -464,7 +494,7 @@ public:
           seq(pid.get_dataPtr()),
           qseq(*seq)
     {}
-    explicit ReadableDataLoc(const POS_TREE *node)
+    template <typename PT> explicit ReadableDataLoc(const PT *node)
         : DataLoc(node),
           pid(DataLoc::get_pid()),
           seq(pid.get_dataPtr()),
@@ -546,7 +576,9 @@ class ChainIteratorStage1 : virtual Noncopyable {
     }
 
 public:
-    ChainIteratorStage1(const POS_TREE *node)
+    typedef POS_TREE1 POS_TREE_TYPE;
+
+    ChainIteratorStage1(const POS_TREE1 *node)
         : data(node_data_start(node)),
           last_size(-1)
     {
@@ -601,7 +633,9 @@ class ChainIteratorStage3 : virtual Noncopyable {
     }
 
 public:
-    ChainIteratorStage3(const POS_TREE *node)
+    typedef POS_TREE3 POS_TREE_TYPE;
+
+    ChainIteratorStage3(const POS_TREE3 *node)
         : data(node_data_start(node)),
           loc(0, 0) // init name with 0 (needed for chain reading in STAGE3)
     {
@@ -630,8 +664,9 @@ public:
     const char *memptr() const { return data; }
 };
 
-template<typename T>
-int PT_forwhole_chain_stage1(POS_TREE *node, T& func) {
+template<typename PT, typename T> int PT_forwhole_chain(PT *node, T& func);
+
+template<typename T> int PT_forwhole_chain(POS_TREE1 *node, T& func) {
     pt_assert_stage(STAGE1);
     int error = 0;
     for (ChainIteratorStage1 entry(node); entry && !error; ++entry) {
@@ -640,8 +675,7 @@ int PT_forwhole_chain_stage1(POS_TREE *node, T& func) {
     return error;
 }
 
-template<typename T>
-int PT_forwhole_chain_stage3(POS_TREE *node, T& func) {
+template<typename T> int PT_forwhole_chain(POS_TREE3 *node, T& func) {
     pt_assert_stage(STAGE3);
     int error = 0;
     for (ChainIteratorStage3 entry(node); entry && !error; ++entry) {
@@ -650,12 +684,11 @@ int PT_forwhole_chain_stage3(POS_TREE *node, T& func) {
     return error;
 }
 
-template<typename T>
-int PT_forwhole_chain_anyStage(POS_TREE *node, T& func) {
+template<typename T> int PT_forwhole_chain(POS_TREE *node, T& func) {
     if (psg.ptdata->get_stage() == STAGE1) {
-        return PT_forwhole_chain_stage1(node, func);
+        return PT_forwhole_chain(&node->p1, func);
     }
-    return PT_forwhole_chain_stage3(node, func);
+    return PT_forwhole_chain(&node->p3, func);
 }
 
 

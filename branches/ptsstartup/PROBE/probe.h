@@ -119,18 +119,21 @@ inline void reverse_probe(char *seq, int len) {
     while (i<j) std::swap(seq[i++], seq[j--]);
 }
 
-struct POS_TREE;
+union  POS_TREE;
+struct POS_TREE1;
+struct POS_TREE3;
+
 enum Stage { STAGE1, STAGE3 }; // STAGE2 does not exist
 
-class PT_data {
+const int DATA_OFFSET1 = sizeof(PT_PNTR);
+const int DATA_OFFSET3 = 0;
+
+class PT_data { // @@@ inline
     Stage stage;
-    int   data_offset;
 
 public:
-    PT_data(Stage stage_);
-
+    PT_data(Stage stage_) : stage(stage_) {}
     Stage get_stage() const { return stage; }
-    int get_dataoffset() const { return data_offset; }
 };
 
 // ---------------------
@@ -362,8 +365,10 @@ public:
     aisc_com  *link;
     T_PT_MAIN  main;
     Hs_struct *com_so;                              // the communication socket
-    POS_TREE  *pt;
-    PT_data   *ptdata;
+
+    POS_TREE *pt;
+
+    PT_data *ptdata;
 
     probe_statistic_struct stat;
 
