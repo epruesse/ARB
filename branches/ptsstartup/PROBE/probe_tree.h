@@ -220,15 +220,7 @@ struct POS_TREE3 { // pos-tree (stage 3)
     bool is_chain() const { return get_type() == PT_NT_CHAIN; }
 };
 
-union POS_TREE {
-    POS_TREE1 p1;
-    POS_TREE3 p3;
-};
-
-inline POS_TREE1 *TREE_ROOT1() { return &psg.pt->p1; }
-inline POS_TREE3 *TREE_ROOT3() { return &psg.pt->p3; }
-
-inline const char *node_data_start(const POS_TREE1 *node) { return &node->data + DATA_OFFSET1; }
+inline const char *node_data_start(const POS_TREE1 *node) { return &node->data + DATA_OFFSET1; } // @@@ become member
 inline const char *node_data_start(const POS_TREE3 *node) { return &node->data + DATA_OFFSET3; }
 
 inline char *node_data_start(POS_TREE1 *node) { return const_cast<char*>(node_data_start(const_cast<const POS_TREE1*>(node))); }
@@ -357,17 +349,8 @@ template<> inline POS_TREE1 *PT_read_son<POS_TREE1>(POS_TREE1 *node, PT_base bas
     return PT_read_pointer<POS_TREE1>(node_data_start(node) + sizeof(PT_PNTR)*base);
 }
 
-template<> inline POS_TREE *PT_read_son<POS_TREE>(POS_TREE *node, PT_base base) {
-    if (psg.get_stage() == STAGE3) {
-        return (POS_TREE*)PT_read_son(&node->p3, base);
-    }
-    else {
-        return (POS_TREE*)PT_read_son(&node->p1, base);
-    }
-}
-
-inline POS_TREE1 *PT_read_father(POS_TREE1 *node) {
-    pt_assert_stage(STAGE1); // in STAGE3 POS_TREE has no father
+inline POS_TREE1 *PT_read_father(POS_TREE1 *node) { // @@@ become method of POS_TREE1
+    pt_assert_stage(STAGE1);
     pt_assert(!node->is_saved()); // saved nodes do not know their father
 
     POS_TREE1 *father = PT_read_pointer<POS_TREE1>(&node->data);
@@ -421,7 +404,6 @@ public:
 class DataLoc : public AbsLoc {
     int rpos; // relative position in data
 
-    DataLoc(const POS_TREE*); // you need to be explicit
 public:
     bool has_valid_positions() const { return get_abs_pos() >= 0 && rpos >= 0 && get_abs_pos() >= rpos; }
 
@@ -682,14 +664,6 @@ template<typename T> int PT_forwhole_chain(POS_TREE3 *node, T& func) {
     }
     return error;
 }
-
-template<typename T> int PT_forwhole_chain(POS_TREE *node, T& func) {
-    if (psg.get_stage() == STAGE1) {
-        return PT_forwhole_chain(&node->p1, func);
-    }
-    return PT_forwhole_chain(&node->p3, func);
-}
-
 
 #if defined(DEBUG)
 struct PTD_chain_print {

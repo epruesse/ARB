@@ -433,7 +433,7 @@ static void remove_tprobes_with_too_many_mishits(PT_pdc *pdc) {
         PT_tprobes *tprobe_next = tprobe->next;
 
         psg.abs_pos.clear();
-        tprobe->mishit = count_mishits_for_matched(tprobe->sequence, TREE_ROOT3(), 0);
+        tprobe->mishit = count_mishits_for_matched(tprobe->sequence, psg.TREE_ROOT3(), 0);
         tprobe->apos   = psg.abs_pos.get_most_used();
         if (tprobe->mishit > pdc->mishit) {
             destroy_PT_tprobes(tprobe);
@@ -852,7 +852,7 @@ public:
     void check_probeparts() {
         for (currPart = pdc->parts; currPart; currPart = currPart->next) {
             dt_bondssum_split dtbss(currPart->dt, currPart->sum_bonds, 0);
-            check_part(currPart->sequence, TREE_ROOT3(), 0, dtbss);
+            check_part(currPart->sequence, psg.TREE_ROOT3(), 0, dtbss);
         }
     }
 };

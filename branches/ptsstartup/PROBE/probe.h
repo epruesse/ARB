@@ -119,7 +119,6 @@ inline void reverse_probe(char *seq, int len) {
     while (i<j) std::swap(seq[i++], seq[j--]);
 }
 
-union  POS_TREE;
 struct POS_TREE1;
 struct POS_TREE3;
 
@@ -329,6 +328,11 @@ class probe_struct_global {
     char complement[256];                           // complement
     Stage stage;
 
+    union {
+        POS_TREE1 *p1;
+        POS_TREE3 *p3;
+    } pt;
+
 public:
     GB_shell *gb_shell;
     GBDATA   *gb_main;                              // ARBDB interface
@@ -359,8 +363,6 @@ public:
     T_PT_MAIN  main;
     Hs_struct *com_so;                              // the communication socket
 
-    POS_TREE *pt;
-
     probe_statistic_struct stat;
 
     bool big_db; // STAGE3 only (true -> uses 8 bit pointers)
@@ -382,6 +384,8 @@ public:
         }
     }
 
+    POS_TREE1*& TREE_ROOT1() { pt_assert(stage == STAGE1); return pt.p1; }
+    POS_TREE3*& TREE_ROOT3() { pt_assert(stage == STAGE3); return pt.p3; }
 };
 
 extern probe_struct_global psg;

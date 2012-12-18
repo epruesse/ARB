@@ -385,7 +385,7 @@ int PTD_put_compact_nat(FILE *out, uint_32 nat) {
     return size;
 }
 
-const int    BITS_FOR_SIZE = 4;        // size is stored inside POS_TREE->flags, if it fits into lower 4 bits
+const int    BITS_FOR_SIZE = 4;        // size is stored inside POS_TREEx->flags, if it fits into lower 4 bits
 const int    SIZE_MASK     = (1<<BITS_FOR_SIZE)-1;
 const size_t MIN_NODE_SIZE = PT_EMPTY_NODE_SIZE;
 
@@ -766,8 +766,7 @@ long PTD_write_leafs_to_disk(FILE *out, POS_TREE1 * const node, long pos, long *
 // --------------------------------------
 //      functions for stage 2-3: load
 
-
-ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __ATTR__USERESULT
+ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE3*& root_ptr) { // __ATTR__USERESULT
     pt_assert_stage(STAGE3);
 
     GB_ERROR  error  = NULL;
@@ -835,7 +834,7 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) { // __A
 
         if (!error) {
             pt_assert(i >= 0);
-            *pnode = (POS_TREE *)(i+buffer);
+            root_ptr  = (POS_TREE3*)(i+buffer);
         }
     }
 
@@ -967,13 +966,13 @@ void TEST_saved_state() {
 
 #if defined(TEST_BAD_CHAINS)
 
-static POS_TREE *theChain = NULL;
-static DataLoc  *theLoc   = NULL;
+static POS_TREE1 *theChain = NULL;
+static DataLoc   *theLoc   = NULL;
 
 static void bad_add_to_chain() {
     PT_add_to_chain(theChain, *theLoc);
 #if !defined(PTM_DEBUG_VALIDATE_CHAINS)
-    pt_assert(PT_chain_has_valid_entries(theChain));
+    pt_assert(PT_chain_has_valid_entries<ChainIteratorStage1>(theChain));
 #endif
     theChain = NULL;
     theLoc   = NULL;

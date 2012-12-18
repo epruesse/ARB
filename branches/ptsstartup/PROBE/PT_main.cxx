@@ -107,7 +107,7 @@ void probe_struct_global::setup() {
     main.clear();
 
     com_so = NULL;
-    pt     = NULL;
+    pt.p1 = NULL;
 
     stat.setup();
 }

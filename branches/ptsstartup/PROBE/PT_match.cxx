@@ -463,7 +463,7 @@ int probe_match(PT_local *locs, aisc_string probestring) {
 
     pt_assert(req.allowed_mismatches() >= 0); // till [8011] value<0 was used to trigger "new match" (feature unused)
     Mismatches mismatch(req);
-    req.collect_hits_for(probestring, TREE_ROOT3(), mismatch, 0);
+    req.collect_hits_for(probestring, psg.TREE_ROOT3(), mismatch, 0);
 
     if (locs->pm_reversed) {
         psg.reversed  = 1;
@@ -472,7 +472,7 @@ int probe_match(PT_local *locs, aisc_string probestring) {
         freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
 
         Mismatches rev_mismatch(req);
-        req.collect_hits_for(rev_pro, TREE_ROOT3(), rev_mismatch, 0);
+        req.collect_hits_for(rev_pro, psg.TREE_ROOT3(), rev_mismatch, 0);
         free(rev_pro);
     }
     pt_sort_match_list(locs);

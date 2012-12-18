@@ -453,7 +453,7 @@ int find_family(PT_family *ffinder, bytestring *species) {
         int         occur_count = o->second;
 
         famStat.limit_hits_for_next_traversal(occur_count);
-        PT_Traversal(oligo, oligo_len, mismatch_nr, famStat).mark_matching(TREE_ROOT3());
+        PT_Traversal(oligo, oligo_len, mismatch_nr, famStat).mark_matching(psg.TREE_ROOT3());
     }
 
     famStat.calc_rel_matches(ffinder->pr_len, sequence_len);

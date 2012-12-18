@@ -544,7 +544,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
                     GB_ERROR sm_error = GB_set_mode_of_file(tname, 00666);
                     if (sm_error) GB_warning(sm_error);
 
-                    psg.pt = (POS_TREE*)pt;
+                    psg.TREE_ROOT1() = pt;
                 }
             }
 
@@ -595,7 +595,7 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
                 error = GB_IO_error("read", tname);
             }
             else {
-                error = PTD_read_leafs_from_disk(tname, &psg.pt);
+                error = PTD_read_leafs_from_disk(tname, psg.TREE_ROOT3());
                 fclose(in);
             }
         }

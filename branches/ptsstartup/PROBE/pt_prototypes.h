@@ -85,13 +85,12 @@ void PTD_put_byte(FILE *out, ULONG i);
 int PTD_put_compact_nat(FILE *out, uint_32 nat);
 void PTD_debug_nodes(void);
 long PTD_write_leafs_to_disk(FILE *out, POS_TREE1 *const node, long pos, long *node_pos, ARB_ERROR &error);
-ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) __ATTR__USERESULT;
+ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE3 *&root_ptr) __ATTR__USERESULT;
 const char *get_blocksize_description(int blocksize);
 
 /* probe_tree.h */
 template <typename T >int PT_forwhole_chain(POS_TREE1 *node, T &func);
 template <typename T >int PT_forwhole_chain(POS_TREE3 *node, T &func);
-template <typename T >int PT_forwhole_chain(POS_TREE *node, T &func);
 
 #else
 #error pt_prototypes.h included twice

@@ -218,7 +218,7 @@ void PT_dump_tree_statistics(const char *indexfilename) {
 #if defined(CALCULATE_STATS_ON_QUERY)
     // show various debug information about the tree
     PT_statistic *stat = new PT_statistic;
-    stat->analyse(TREE_ROOT3(), 0);
+    stat->analyse(psg.TREE_ROOT3(), 0);
 
     size_t filesize = GB_size_of_file(indexfilename);
     stat->dump(filesize);
@@ -329,10 +329,10 @@ static void PT_dump_POS_TREE_to_file(const char *dumpfile) {
         GBK_terminate(GB_IO_error("writing", dumpfile));
     }
     if (psg.get_stage() == STAGE1) {
-        PT_dump_POS_TREE_recursive(TREE_ROOT1(), "", dump);
+        PT_dump_POS_TREE_recursive(psg.TREE_ROOT1(), "", dump);
     }
     else {
-        PT_dump_POS_TREE_recursive(TREE_ROOT3(), "", dump);
+        PT_dump_POS_TREE_recursive(psg.TREE_ROOT3(), "", dump);
     }
     fclose(dump);
 
