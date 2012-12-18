@@ -328,7 +328,7 @@ static void PT_dump_POS_TREE_to_file(const char *dumpfile) {
     if (!dump) {
         GBK_terminate(GB_IO_error("writing", dumpfile));
     }
-    if (psg.ptdata->get_stage() == STAGE1) {
+    if (psg.get_stage() == STAGE1) {
         PT_dump_POS_TREE_recursive(TREE_ROOT1(), "", dump);
     }
     else {

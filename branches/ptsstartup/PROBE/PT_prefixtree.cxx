@@ -112,11 +112,10 @@ void PT_init_cache_sizes(Stage stage) {
     }
 }
 
-PT_data *PT_init(Stage stage) {
-    PT_data *ptdata = new PT_data(stage);
+void probe_struct_global::init(Stage stage_) {
+    stage = stage_;
     PT_GLOBAL.init(stage);
     pt_assert(MEM.is_clear());
-    return ptdata;
 }
 
 // ------------------------------
@@ -917,7 +916,7 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE1 *node, int s
 struct EnterStage1 {
     EnterStage1() {
         PT_init_psg();
-        psg.ptdata = PT_init(STAGE1);
+        psg.init(STAGE1);
     }
     ~EnterStage1() {
         PT_exit_psg();

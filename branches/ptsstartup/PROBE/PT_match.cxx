@@ -838,7 +838,7 @@ int MP_count_all_species(const PT_local *) {
 struct EnterStage3 {
     EnterStage3() {
         PT_init_psg();
-        psg.ptdata = PT_init(STAGE3);
+        psg.init(STAGE3);
     }
     ~EnterStage3() {
         PT_exit_psg();

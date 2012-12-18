@@ -73,7 +73,6 @@ int PT_start_design(PT_pdc *pdc, int dummy_1x);
 /* PT_prefixtree.cxx */
 template <typename CHAINITER >bool PT_chain_has_valid_entries(const typename CHAINITER ::POS_TREE_TYPE *const node);
 void PT_init_cache_sizes(Stage stage);
-PT_data *PT_init(Stage stage);
 void PT_add_to_chain(POS_TREE1 *node, const DataLoc &loc);
 POS_TREE1 *PT_change_leaf_to_node(POS_TREE1 *node);
 POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node);

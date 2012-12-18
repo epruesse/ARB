@@ -358,8 +358,7 @@ template<> inline POS_TREE1 *PT_read_son<POS_TREE1>(POS_TREE1 *node, PT_base bas
 }
 
 template<> inline POS_TREE *PT_read_son<POS_TREE>(POS_TREE *node, PT_base base) {
-    PT_data *ptdata = psg.ptdata;
-    if (ptdata->get_stage() == STAGE3) {
+    if (psg.get_stage() == STAGE3) {
         return (POS_TREE*)PT_read_son(&node->p3, base);
     }
     else {
@@ -685,7 +684,7 @@ template<typename T> int PT_forwhole_chain(POS_TREE3 *node, T& func) {
 }
 
 template<typename T> int PT_forwhole_chain(POS_TREE *node, T& func) {
-    if (psg.ptdata->get_stage() == STAGE1) {
+    if (psg.get_stage() == STAGE1) {
         return PT_forwhole_chain(&node->p1, func);
     }
     return PT_forwhole_chain(&node->p3, func);

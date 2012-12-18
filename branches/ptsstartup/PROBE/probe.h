@@ -36,7 +36,7 @@
 #define CALCULATE_STATS_ON_QUERY // @@@ move into DEBUG section above
 
 #if defined(PTM_DEBUG_STAGE_ASSERTIONS)
-#define pt_assert_stage(s) pt_assert(psg.ptdata->get_stage() == (s))
+#define pt_assert_stage(s) pt_assert(psg.get_stage() == (s))
 #else // !defined(PTM_DEBUG_STAGE_ASSERTIONS)
 #define pt_assert_stage(s) 
 #endif
@@ -127,14 +127,6 @@ enum Stage { STAGE1, STAGE3 }; // STAGE2 does not exist
 
 const int DATA_OFFSET1 = sizeof(PT_PNTR);
 const int DATA_OFFSET3 = 0;
-
-class PT_data { // @@@ inline
-    Stage stage;
-
-public:
-    PT_data(Stage stage_) : stage(stage_) {}
-    Stage get_stage() const { return stage; }
-};
 
 // ---------------------
 //      Probe search
@@ -335,6 +327,7 @@ public:
 
 class probe_struct_global {
     char complement[256];                           // complement
+    Stage stage;
 
 public:
     GB_shell *gb_shell;
@@ -368,14 +361,15 @@ public:
 
     POS_TREE *pt;
 
-    PT_data *ptdata;
-
     probe_statistic_struct stat;
 
     bool big_db; // STAGE3 only (true -> uses 8 bit pointers)
 
     void setup();
     void cleanup();
+
+    void init(Stage stage_);
+    Stage get_stage() const { return stage; }
 
     int get_complement(int base) {
         pt_assert(base >= 0 && base <= 256);

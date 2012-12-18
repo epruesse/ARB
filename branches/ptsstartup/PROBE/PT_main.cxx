@@ -108,7 +108,6 @@ void probe_struct_global::setup() {
 
     com_so = NULL;
     pt     = NULL;
-    ptdata = NULL;
 
     stat.setup();
 }
@@ -132,7 +131,6 @@ void probe_struct_global::cleanup() {
     delete bi_ecoli;
     delete [] pos_to_weight;
     free(alignment_name);
-    delete ptdata;
     free(com_so);
 
     setup();
