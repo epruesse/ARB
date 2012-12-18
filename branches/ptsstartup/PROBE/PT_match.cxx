@@ -230,7 +230,7 @@ bool MatchRequest::add_hits_for_children(POS_TREE *pt, const Mismatches& mismatc
             }
             break;
 
-        default: pt_assert(0); break;
+        case PT_NT_SAVED: pt_assert(0); break;
     }
     return enough;
 }
@@ -325,7 +325,7 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE *pt, Mismatches&
                 }
                 break;
 
-            default: pt_assert(0); break;
+            case PT_NT_SAVED: pt_assert(0); break;
         }
     }
 

@@ -33,12 +33,14 @@ enum PT_NODE_TYPE {
     PT_NT_CHAIN = 1,
     PT_NT_NODE  = 2,
     PT_NT_SAVED = 3, // stage 1 only
-    PT_NT_UNDEF = 4
 };
+const PT_NODE_TYPE PT_NT_UNDEF = PT_NODE_TYPE(4); // logically also belongs to PT_NODE_TYPE, but does not fit into bits reserved in node.flags
 
 struct pt_global {
     PT_NODE_TYPE flag_2_type[256];
     char         count_bits[PT_BASES+1][256]; // returns how many bits are set (e.g. PT_count_bits[3][n] is the number of the 3 lsb bits)
+
+    void init(Stage stage);
 };
 
 extern pt_global PT_GLOBAL;
@@ -189,7 +191,11 @@ struct POS_TREE {
     uchar flags;
     char  data;
 
-    void set_type(PT_NODE_TYPE type) { flags = type<<FLAG_FREE_BITS; } // sets user bits to zero
+    void set_type(PT_NODE_TYPE type) {
+        // sets user bits to zero
+        pt_assert(type != PT_NT_UNDEF && type != PT_NT_SAVED); // does not work for saved nodes (done manually)
+        flags = type<<FLAG_FREE_BITS;
+    }
     PT_NODE_TYPE get_type() const { return (PT_NODE_TYPE)PT_GLOBAL.flag_2_type[flags]; }
 
     bool is_node() const { return get_type() == PT_NT_NODE; }

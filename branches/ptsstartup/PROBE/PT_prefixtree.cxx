@@ -75,13 +75,18 @@ PT_data::PT_data(Stage stage_)
       data_offset(stage == STAGE1 ? sizeof(PT_PNTR) : 0)
 {}
 
-static void init_PT_GLOBAL() {
+
+void pt_global::init(Stage stage) {
     for (int i=0; i<256; i++) {
-        if      ((i&0xe0) == 0x20) PT_GLOBAL.flag_2_type[i] = PT_NT_SAVED;
-        else if ((i&0xe0) == 0x00) PT_GLOBAL.flag_2_type[i] = PT_NT_LEAF;
-        else if ((i&0x80) == 0x80) PT_GLOBAL.flag_2_type[i] = PT_NT_NODE;
-        else if ((i&0xe0) == 0x40) PT_GLOBAL.flag_2_type[i] = PT_NT_CHAIN;
-        else                       PT_GLOBAL.flag_2_type[i] = PT_NT_UNDEF;
+        if (i&0x80) { // bit 8 marks a node
+            flag_2_type[i] = PT_NT_NODE;
+        }
+        else if (stage == STAGE1 && i&0x20) { // in STAGE1 bit 6 is used to mark PT_NT_SAVED (in STAGE3 that bit may be used otherwise)
+            flag_2_type[i] = (i&0x40) ? PT_NT_UNDEF : PT_NT_SAVED;
+        }
+        else { // bit 7 distinguishes between chain and leaf
+            flag_2_type[i] = (i&0x40) ? PT_NT_CHAIN : PT_NT_LEAF;
+        }
     }
 
     for (unsigned base = PT_QU; base <= PT_BASES; base++) {
@@ -93,7 +98,7 @@ static void init_PT_GLOBAL() {
                 if (h&1) count++;
                 h = h>>1;
             }
-            PT_GLOBAL.count_bits[base][i] = count;
+            count_bits[base][i] = count;
         }
     }
 }
@@ -115,7 +120,7 @@ void PT_init_cache_sizes(Stage stage) {
 
 PT_data *PT_init(Stage stage) {
     PT_data *ptdata = new PT_data(stage);
-    init_PT_GLOBAL();
+    PT_GLOBAL.init(stage);
     pt_assert(MEM.is_clear());
     return ptdata;
 }

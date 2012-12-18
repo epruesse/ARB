@@ -58,7 +58,7 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
             pt_assert(strlen(probe) == (size_t)restlen);
             return true;
         }
-        default: pt_assert(0); break;  // oops
+        case PT_NT_SAVED: pt_assert(0); break;  // oops
     }
 
     return false;
@@ -100,7 +100,7 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
             // species list or single species reached
             return false;
         }
-        default: pt_assert(0); break;  // oops
+        case PT_NT_SAVED: pt_assert(0); break;  // oops
     }
 
     pt_assert(0);

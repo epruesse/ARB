@@ -101,9 +101,7 @@ struct PT_statistic {
                 chaincount++;
                 break;
             }
-            default:
-                pt_assert(0);
-                break;
+            case PT_NT_SAVED: pt_assert(0); break;
         }
     }
 
@@ -278,8 +276,8 @@ void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
             fprintf(out, "{x} %s [saved]\n", prefix);
             break;
 
-        default:
-            fprintf(out, "{?} %s [unhandled]\n", prefix);
+        case PT_NT_UNDEF:
+            fprintf(out, "{?} %s [undefined]\n", prefix);
             pt_assert(0);
             break;
     }
@@ -316,7 +314,7 @@ void PT_dump_POS_TREE(POS_TREE * IF_DEBUG(node), FILE *IF_DEBUG(out)) {
         case PT_NT_SAVED:
             fputs("saved:\n", out);
             break;
-        default:
+        case PT_NT_UNDEF:
             fputs("<invalid node type>\n", out);
             break;
     }

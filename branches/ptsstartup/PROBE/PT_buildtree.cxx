@@ -218,7 +218,7 @@ static long save_lower_subtree(FILE *out, POS_TREE *node, long pos, int height, 
             }
             case PT_NT_LEAF: pt_assert(0); break; // leafs shall not occur above PT_MIN_TREE_HEIGHT
             case PT_NT_SAVED: break; // ok - saved by previous call
-            default: pt_assert(0); break;
+            case PT_NT_UNDEF: pt_assert(0); break;
         }
     }
     return pos;
