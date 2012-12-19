@@ -67,7 +67,7 @@ extern "C" {
 #endif
 
 struct pollfd;
-struct Hs_struct {
+struct Hs_struct : virtual Noncopyable {
     int            hso;
     Socinf        *soci;
     struct pollfd *fds;
@@ -76,6 +76,9 @@ struct Hs_struct {
     int            timeout;
     int            fork;
     char          *unix_name;
+
+    Hs_struct() { memset(this, 0, sizeof(*this)); }
+    ~Hs_struct() { freenull(unix_name); }
 };
 
 struct aisc_bytes_list {
@@ -275,35 +278,38 @@ static const char *aisc_get_object_attribute(long i, long j)
 }
 
 Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
-    Hs_struct *hs = (Hs_struct *)calloc(sizeof(Hs_struct), 1);
-    if (!hs) return 0;
+    Hs_struct *hs = new Hs_struct;
+    if (hs) {
+        hs->timeout = timeout;
+        hs->fork    = fork;
 
-    hs->timeout = timeout;
-    hs->fork    = fork;
-    
-    static int  so;
-    const char *err = aisc_server_open_socket(path, TCP_NODELAY, 0, &so, &hs->unix_name);
+        static int  so;
+        const char *err = aisc_server_open_socket(path, TCP_NODELAY, 0, &so, &hs->unix_name);
 
-    if (err) {
-        if (*err) printf("Error in open_aisc_server: %s\n", err);
-        shutdown(so, SHUT_RDWR);
-        close(so);
-        return 0;
+        if (err) {
+            if (*err) printf("Error in open_aisc_server: %s\n", err);
+            shutdown(so, SHUT_RDWR);
+            close(so);
+            delete hs; hs = NULL;
+        }
+        else {
+            // install signal handlers
+            fprintf(stderr, "Installing signal handler from open_aisc_server\n"); fflush(stderr);
+            old_sigsegv_handler = INSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, "open_aisc_server");
+            ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, aisc_server_sigpipe, "open_aisc_server"));
+
+            aisc_server_bytes_first = 0;
+            aisc_server_bytes_last  = 0;
+            // simply take first address
+            if (listen(so, MAX_QUEUE_LEN) < 0) {
+                printf("Error in open_aisc_server: could not listen (errno=%i)\n", errno);
+                delete hs; hs = NULL;
+            }
+            else {
+                hs->hso = so;
+            }
+        }
     }
-
-    // install signal handlers
-    fprintf(stderr, "Installing signal handler from open_aisc_server\n"); fflush(stderr);
-    old_sigsegv_handler = INSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, "open_aisc_server");
-    ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, aisc_server_sigpipe, "open_aisc_server"));
-
-    aisc_server_bytes_first = 0;
-    aisc_server_bytes_last  = 0;
-    // simply take first address
-    if (listen(so, MAX_QUEUE_LEN) < 0) {
-        printf("Error in open_aisc_server: could not listen (errno=%i)\n", errno);
-        return NULL;
-    }
-    hs->hso = so;
     return hs;
 }
 
@@ -1194,7 +1200,7 @@ Hs_struct *aisc_accept_calls(Hs_struct *hs)
     return hs;
 }
 
-void aisc_server_shutdown(Hs_struct *hs) {
+void aisc_server_shutdown(Hs_struct*& hs) {
     Socinf *si;
 
     for (si=hs->soci; si; si=si->next) {
@@ -1204,6 +1210,7 @@ void aisc_server_shutdown(Hs_struct *hs) {
     shutdown(hs->hso, SHUT_RDWR);
     close(hs->hso);
     if (hs->unix_name) unlink(hs->unix_name);
+    delete hs; hs = NULL;
 }
 
 void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {

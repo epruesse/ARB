@@ -131,7 +131,8 @@ void probe_struct_global::cleanup() {
     delete bi_ecoli;
     delete [] pos_to_weight;
     free(alignment_name);
-    free(com_so);
+
+    pt_assert(!com_so);
 
     setup();
 }
