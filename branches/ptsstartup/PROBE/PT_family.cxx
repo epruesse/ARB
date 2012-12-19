@@ -429,9 +429,12 @@ int find_family(PT_family *ffinder, bytestring *species) {
         }
 
         if ((complement&cmode) != 0) {
-            seq[seq_count] = (char*)malloc(sequence_len+1);
-            memcpy(seq[seq_count], sequence, sequence_len+1);
-            seq_count++;
+            char *s = (char*)malloc(sequence_len+1);
+
+            memcpy(s, sequence, sequence_len);
+            s[sequence_len] = 0;
+
+            seq[seq_count++] = s;
         }
     }
 

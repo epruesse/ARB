@@ -583,11 +583,11 @@ static long aisc_talking_sets(long *in_buf, int size, long *out_buf, long *objec
                 AISC_DUMP(aisc_talking_sets, int, bsize);
 
                 if (bsize) {
-                    long *ptr;
-                    ptr = (long*)calloc(sizeof(char), bsize);
+                    long *ptr = (long*)calloc(sizeof(char), bsize);
                     blen = aisc_s_read(aisc_server_con, (char *)ptr, bsize);
                     if (bsize!=blen) {
                         aisc_server_error = "CONNECTION PROBLEMS IN BYTESTRING";
+                        free(ptr);
                     }
                     else {
                         bytestring bs;
