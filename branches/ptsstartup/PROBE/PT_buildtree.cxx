@@ -248,10 +248,11 @@ long PTD_save_lower_tree(FILE *out, POS_TREE1 *node, long pos, ARB_ERROR& error)
     return pos;
 }
 
-long PTD_save_upper_tree(FILE *out, POS_TREE1 *node, long pos, long& node_pos, ARB_ERROR& error) {
+long PTD_save_upper_tree(FILE *out, POS_TREE1*& node, long pos, long& node_pos, ARB_ERROR& error) {
     pt_assert(!has_unsaved_sons(node)); // forgot to call PTD_save_lower_tree?
     pos = save_upper_tree(out, node, pos, node_pos, error);
     check_tree_was_saved(node, "tree", true, error);
+    PTD_delete_saved_node(node);
     return pos;
 }
 
@@ -489,6 +490,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
             long last_obj = 0;
             if (!error) {
                 pos = PTD_save_upper_tree(out, pt, pos, last_obj, error);
+                pt_assert(!pt);
             }
             if (!error) {
                 bool need64bit = false; // does created db need a 64bit ptserver ?
@@ -543,8 +545,6 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
                 if (!error) {
                     GB_ERROR sm_error = GB_set_mode_of_file(tname, 00666);
                     if (sm_error) GB_warning(sm_error);
-
-                    psg.TREE_ROOT1() = pt;
                 }
             }
 

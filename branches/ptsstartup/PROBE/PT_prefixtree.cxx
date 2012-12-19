@@ -233,7 +233,7 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
     if (pfather) {
         POS_TREE1 *father = *pfather;
 
-        int       oldfathersize  = PT_NODE_SIZE(father);
+        int        oldfathersize  = PT_NODE_SIZE(father);
         POS_TREE1 *new_elemfather = (POS_TREE1 *)MEM.get(oldfathersize + sizeof(PT_PNTR));
         new_elemfather->set_type(PT_NT_NODE);
 
@@ -241,9 +241,6 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
         if (gfather) {
             PT_change_link_in_father(gfather, father, new_elemfather);
             new_elemfather->set_father(gfather);
-        }
-        else {
-            pt_assert(father->get_father() == NULL);
         }
 
         long sbase   = 0;
@@ -548,6 +545,11 @@ void PTD_debug_nodes() {
 #ifdef ARB_64
     printf ("   maxdiff:        %6li\n", psg.stat.maxdiff);
 #endif
+}
+
+void PTD_delete_saved_node(POS_TREE1*& node) {
+    MEM.put(node, get_memsize_of_saved(node));
+    node = NULL;
 }
 
 static long PTD_write_node_to_disk(FILE *out, POS_TREE1 *node, long *r_poss, const long oldpos) {

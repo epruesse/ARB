@@ -16,7 +16,7 @@
  class DataLoc;
 
 long PTD_save_lower_tree(FILE *out, POS_TREE1 *node, long pos, ARB_ERROR &error);
-long PTD_save_upper_tree(FILE *out, POS_TREE1 *node, long pos, long &node_pos, ARB_ERROR &error);
+long PTD_save_upper_tree(FILE *out, POS_TREE1 *&node, long pos, long &node_pos, ARB_ERROR &error);
 ARB_ERROR enter_stage_1_build_tree(PT_main *, const char *tname, ULONG ARM_size_kb) __ATTR__USERESULT;
 ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) __ATTR__USERESULT;
 
@@ -83,6 +83,7 @@ void PTD_put_short(FILE *out, ULONG i);
 void PTD_put_byte(FILE *out, ULONG i);
 int PTD_put_compact_nat(FILE *out, uint_32 nat);
 void PTD_debug_nodes(void);
+void PTD_delete_saved_node(POS_TREE1 *&node);
 long PTD_write_leafs_to_disk(FILE *out, POS_TREE1 *const node, long pos, long *node_pos, ARB_ERROR &error);
 ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE3 *&root_ptr) __ATTR__USERESULT;
 const char *get_blocksize_description(int blocksize);
