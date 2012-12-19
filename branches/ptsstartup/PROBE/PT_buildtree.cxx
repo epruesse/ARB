@@ -193,7 +193,7 @@ static bool all_sons_saved(POS_TREE1 *node) {
 
 static long write_subtree(FILE *out, POS_TREE1 *node, long pos, long *node_pos, ARB_ERROR& error) {
     pt_assert_stage(STAGE1);
-    PTD_clear_fathers(node);
+    node->clear_fathers();
     return PTD_write_leafs_to_disk(out, node, pos, node_pos, error);
 }
 

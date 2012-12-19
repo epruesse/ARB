@@ -123,11 +123,11 @@ void probe_struct_global::init(Stage stage_) {
 
 static void PT_change_link_in_father(POS_TREE1 *father, POS_TREE1 *old_link, POS_TREE1 *new_link) {
     pt_assert_stage(STAGE1);
-    long i = PT_GLOBAL.count_bits[PT_BASES][father->flags];
-    for (; i>0; i--) {
-        POS_TREE1 *link = PT_read_pointer<POS_TREE1>(&father->data+sizeof(PT_PNTR)*i);
+    long i = PT_GLOBAL.count_bits[PT_BASES][father->flags]-1;
+    for (; i >= 0; i--) {
+        POS_TREE1 *link = PT_read_pointer<POS_TREE1>(node_data_start(father)+sizeof(PT_PNTR)*i);
         if (link==old_link) {
-            PT_write_pointer(&father->data+sizeof(PT_PNTR)*i, new_link);
+            PT_write_pointer(node_data_start(father)+sizeof(PT_PNTR)*i, new_link);
             return;
         }
     }
@@ -170,26 +170,17 @@ void PT_add_to_chain(POS_TREE1 *node, const DataLoc& loc) {
     pt_assert_valid_chain_stage1(node);
 }
 
-inline void PT_set_father(POS_TREE1 *son, const POS_TREE1 *father) {
-    pt_assert_stage(STAGE1); // otherwise there are no fathers
-    pt_assert(!father || father->is_node());
-
-    PT_write_pointer(&son->data, father);
-
-    pt_assert(PT_read_father(son) == father);
-}
-
 POS_TREE1 *PT_change_leaf_to_node(POS_TREE1 *node) {
     pt_assert_stage(STAGE1);
     pt_assert(node->is_leaf());
 
-    POS_TREE1 *father = PT_read_father(node);
+    POS_TREE1 *father = node->get_father();
 
     POS_TREE1 *new_elem = (POS_TREE1 *)MEM.get(PT_EMPTY_NODE_SIZE);
     if (father) PT_change_link_in_father(father, node, new_elem);
     MEM.put(node, PT_LEAF_SIZE(node));
     new_elem->set_type(PT_NT_NODE);
-    PT_set_father(new_elem, father);
+    new_elem->set_father(father);
 
     return new_elem;
 }
@@ -198,7 +189,7 @@ POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node) {
     pt_assert_stage(STAGE1);
     pt_assert(node->is_leaf());
 
-    POS_TREE1     *father = PT_read_father(node);
+    POS_TREE1     *father = node->get_father();
     const DataLoc  loc(node);
 
     int        chain_size = (loc.get_abs_pos()>PT_SHORT_SIZE) ? PT_LONG_CHAIN_HEAD_SIZE : PT_SHORT_CHAIN_HEAD_SIZE;
@@ -207,9 +198,9 @@ POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node) {
     PT_change_link_in_father(father, node, new_elem);
     MEM.put(node, PT_LEAF_SIZE(node));
     new_elem->set_type(PT_NT_CHAIN);
-    PT_set_father(new_elem, father);
+    new_elem->set_father(father);
 
-    char *data = (&new_elem->data)+sizeof(PT_PNTR);
+    char *data = node_data_start(new_elem);
     if (loc.get_abs_pos()>PT_SHORT_SIZE) {
         PT_write_int(data, loc.get_abs_pos());
         data+=4;
@@ -237,7 +228,7 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
 
     POS_TREE1 *node = (POS_TREE1 *)MEM.get(leafsize);
 
-    pt_assert(PT_read_father(node) == NULL); // cause memory is cleared
+    pt_assert(node->get_father() == NULL); // cause memory is cleared
 
     if (pfather) {
         POS_TREE1 *father = *pfather;
@@ -246,34 +237,34 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
         POS_TREE1 *new_elemfather = (POS_TREE1 *)MEM.get(oldfathersize + sizeof(PT_PNTR));
         new_elemfather->set_type(PT_NT_NODE);
 
-        POS_TREE1 *gfather = PT_read_father(father);
+        POS_TREE1 *gfather = father->get_father();
         if (gfather) {
             PT_change_link_in_father(gfather, father, new_elemfather);
-            PT_set_father(new_elemfather, gfather);
+            new_elemfather->set_father(gfather);
         }
         else {
-            pt_assert(PT_read_father(father) == NULL);
+            pt_assert(father->get_father() == NULL);
         }
 
-        long sbase   = sizeof(PT_PNTR);
-        long dbase   = sizeof(PT_PNTR);
+        long sbase   = 0;
+        long dbase   = 0;
         int  basebit = 1 << base;
 
         pt_assert((father->flags&basebit) == 0); // son already exists!
 
         for (int i = 1; i < (1<<FLAG_FREE_BITS); i = i << 1) {
             if (i & father->flags) { // existing son
-                POS_TREE1 *son = PT_read_pointer<POS_TREE1>(&father->data+sbase);
-                if (!son->is_saved()) PT_set_father(son, new_elemfather);
+                POS_TREE1 *son = PT_read_pointer<POS_TREE1>(node_data_start(father)+sbase);
+                if (!son->is_saved()) son->set_father(new_elemfather);
 
-                PT_write_pointer(&new_elemfather->data+dbase, son);
+                PT_write_pointer(node_data_start(new_elemfather)+dbase, son);
 
                 sbase += sizeof(PT_PNTR);
                 dbase += sizeof(PT_PNTR);
             }
             else if (i & basebit) { // newly created leaf
-                PT_write_pointer(&new_elemfather->data+dbase, node);
-                PT_set_father(node, new_elemfather);
+                PT_write_pointer(node_data_start(new_elemfather)+dbase, node);
+                node->set_father(new_elemfather);
                 dbase += sizeof(PT_PNTR);
             }
         }
@@ -284,7 +275,7 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
     }
     node->set_type(PT_NT_LEAF);
 
-    char *dest = (&node->data) + sizeof(PT_PNTR);
+    char *dest = node_data_start(node);
     if (loc.get_name()>PT_SHORT_SIZE) {
         PT_write_int(dest, loc.get_name());
         node->flags |= 1;
@@ -319,15 +310,13 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
 // ------------------------------------
 //      functions for stage 1: save
 
-void PTD_clear_fathers(POS_TREE1 *node) {
-    pt_assert_stage(STAGE1);
-    PT_NODE_TYPE type = node->get_type();
-    if (type != PT_NT_SAVED) {
-        PT_set_father(node, NULL);
-        if (type == PT_NT_NODE) {
+void POS_TREE1::clear_fathers() {
+    if (!is_saved()) {
+        set_father(NULL);
+        if (is_node()) {
             for (int i = PT_QU; i < PT_BASES; i++) {
-                POS_TREE1 *son = PT_read_son(node, (PT_base)i);
-                if (son) PTD_clear_fathers(son);
+                POS_TREE1 *son = PT_read_son(this, (PT_base)i);
+                if (son) son->clear_fathers();
             }
         }
     }
@@ -402,7 +391,7 @@ static void PTD_set_object_to_saved_status(POS_TREE1 *node, long pos_start, int 
     pt_assert_stage(STAGE1);
     node->flags = 0x20; // sets node type to PT_NT_SAVED; see PT_prefixtree.cxx@PT_NT_SAVED
 
-    PT_write_big(&node->data, pos_start);
+    PT_write_big(&node->father, pos_start);
 
     pt_assert(former_size >= int(MIN_NODE_SIZE));
 
@@ -414,7 +403,7 @@ static void PTD_set_object_to_saved_status(POS_TREE1 *node, long pos_start, int 
     }
     else {
         pt_assert(former_size >= int(sizeof(uint_big)+sizeof(int)));
-        PT_write_int((&node->data)+sizeof(uint_big), former_size);
+        PT_write_int(((char*)&node->father)+sizeof(uint_big), former_size);
     }
 }
 
@@ -424,7 +413,7 @@ inline int get_memsize_of_saved(const POS_TREE1 *node) {
         memsize += FLAG_SIZE_REDUCTION;
     }
     else {
-        memsize = PT_read_int(&node->data+sizeof(PT_PNTR));
+        memsize = PT_read_int(node_data_start(node));
     }
     return memsize;
 }
@@ -435,7 +424,7 @@ static long PTD_write_tip_to_disk(FILE *out, POS_TREE1 *node, const long oldpos)
     // write 4 bytes when not in stage 2 save mode
 
     size_t cnt = size-sizeof(PT_PNTR)-1;               // no father; type already saved
-    ASSERT_RESULT(size_t, cnt, fwrite(&node->data + sizeof(PT_PNTR), 1, cnt, out)); // write name rpos apos
+    ASSERT_RESULT(size_t, cnt, fwrite(node_data_start(node), 1, cnt, out)); // write name rpos apos
 
     long pos = oldpos+size-sizeof(PT_PNTR);                // no father
     pt_assert(pos >= 0);
@@ -726,7 +715,7 @@ long PTD_write_leafs_to_disk(FILE *out, POS_TREE1 * const node, long pos, long *
 
     switch (node->get_type()) {
         case PT_NT_SAVED:
-            *node_pos = PT_read_big(&node->data);
+            *node_pos = PT_read_big(&node->father);
             break;
 
         case PT_NT_LEAF:
@@ -887,7 +876,7 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE1 *node, int s
     using namespace arb_test;
 
     int unmodified = 0xffffffff;
-    PT_write_int((&node->data)+sizeof(PT_PNTR), unmodified);
+    PT_write_int(node_data_start(node), unmodified);
 
     PTD_set_object_to_saved_status(node, 0, size);
 
@@ -895,7 +884,7 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE1 *node, int s
     expected.add(that(node->get_type()).is_equal_to(PT_NT_SAVED));
     expected.add(that(get_memsize_of_saved(node)).is_equal_to(size));
 
-    int data_after = PT_read_int(&node->data+sizeof(PT_PNTR));
+    int data_after = PT_read_int(node_data_start(node));
 
     if (expect_in_flags) {
         expected.add(that(data_after).is_equal_to(unmodified));
@@ -925,7 +914,7 @@ struct EnterStage1 {
 void TEST_saved_state() {
     EnterStage1 env;
 
-    POS_TREE1 *node = (POS_TREE1*)malloc(sizeof(POS_TREE1)+sizeof(PT_PNTR)+5);
+    POS_TREE1 *node = (POS_TREE1*)malloc(sizeof(POS_TREE1)+5);
 
     TEST_SIZE_SAVED_IN_FLAGS(node, MIN_NODE_SIZE);
 

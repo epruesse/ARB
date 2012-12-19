@@ -124,9 +124,6 @@ struct POS_TREE3;
 
 enum Stage { STAGE1, STAGE3 }; // STAGE2 does not exist
 
-const int DATA_OFFSET1 = sizeof(PT_PNTR);
-const int DATA_OFFSET3 = 0;
-
 // ---------------------
 //      Probe search
 

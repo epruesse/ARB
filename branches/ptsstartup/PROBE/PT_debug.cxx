@@ -291,10 +291,7 @@ void PT_dump_POS_TREE(POS_TREE1 *IF_DEBUG(node), FILE *IF_DEBUG(out)) {
 #if defined(DEBUG)
     if (!node) fputs("<zero node>\n", out);
 
-    {
-        POS_TREE1 *father = PT_read_father(node);
-        fprintf(out, "node father %p\n", father);
-    }
+    fprintf(out, "node father %p\n", node->get_father());
 
     switch (node->get_type()) {
         case PT_NT_LEAF: {

@@ -165,11 +165,13 @@ only few functions can be used, when the tree is reloaded (stage 3):
 // -----------------------------------------------
 //      Get the size of entries (stage 1) only
 
-#define PT_EMPTY_LEAF_SIZE       (1+sizeof(PT_PNTR)+6) // tag father name rel apos
-#define PT_LEAF_SIZE(leaf)       (1+sizeof(PT_PNTR)+6+2*PT_GLOBAL.count_bits[3][leaf->flags])
-#define PT_SHORT_CHAIN_HEAD_SIZE (1+sizeof(PT_PNTR)+2+sizeof(PT_PNTR)) // tag father apos first_elem
+#define PT_BASE_SIZE (sizeof(POS_TREE1)-1) // flag + father
+
+#define PT_EMPTY_LEAF_SIZE       (PT_BASE_SIZE+6) // name rel apos
+#define PT_LEAF_SIZE(leaf)       (PT_BASE_SIZE+6+2*PT_GLOBAL.count_bits[3][leaf->flags])
+#define PT_SHORT_CHAIN_HEAD_SIZE (PT_BASE_SIZE+2+sizeof(PT_PNTR)) // apos first_elem
 #define PT_LONG_CHAIN_HEAD_SIZE  (PT_SHORT_CHAIN_HEAD_SIZE+2) // apos uses 4 byte here
-#define PT_EMPTY_NODE_SIZE       (1+sizeof(PT_PNTR))   // tag father
+#define PT_EMPTY_NODE_SIZE       PT_BASE_SIZE
 
 #define PT_MIN_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(char)) // depends on PT_write_compact_nat
 #define PT_MAX_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*(sizeof(int)+1))
@@ -188,8 +190,19 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #define FLAG_TYPE_BITS_MASK (0xFF^FLAG_FREE_BITS_MASK)
 
 struct POS_TREE1 {
-    uchar flags;
-    char  data;
+    uchar      flags;
+    POS_TREE1 *father;
+    char       data; // @@@ elim
+
+    POS_TREE1 *get_father() const {
+        pt_assert(!is_saved());
+        return father;
+    }
+    void set_father(POS_TREE1 *new_father) {
+        pt_assert(!new_father || new_father->is_node());
+        father = new_father;
+    }
+    void clear_fathers();
 
     void set_type(PT_NODE_TYPE type) {
         // sets user bits to zero
@@ -202,7 +215,7 @@ struct POS_TREE1 {
     bool is_leaf() const { return get_type() == PT_NT_LEAF; }
     bool is_chain() const { return get_type() == PT_NT_CHAIN; }
     bool is_saved() const { return get_type() == PT_NT_SAVED; }
-};
+} __attribute__((packed));
 
 struct POS_TREE3 { // pos-tree (stage 3)
     uchar flags;
@@ -218,10 +231,10 @@ struct POS_TREE3 { // pos-tree (stage 3)
     bool is_node() const { return get_type() == PT_NT_NODE; }
     bool is_leaf() const { return get_type() == PT_NT_LEAF; }
     bool is_chain() const { return get_type() == PT_NT_CHAIN; }
-};
+} __attribute__((packed));
 
-inline const char *node_data_start(const POS_TREE1 *node) { return &node->data + DATA_OFFSET1; } // @@@ become member
-inline const char *node_data_start(const POS_TREE3 *node) { return &node->data + DATA_OFFSET3; }
+inline const char *node_data_start(const POS_TREE1 *node) { return &node->data; } // @@@ become member
+inline const char *node_data_start(const POS_TREE3 *node) { return &node->data; }
 
 inline char *node_data_start(POS_TREE1 *node) { return const_cast<char*>(node_data_start(const_cast<const POS_TREE1*>(node))); }
 inline char *node_data_start(POS_TREE3 *node) { return const_cast<char*>(node_data_start(const_cast<const POS_TREE3*>(node))); }
@@ -255,7 +268,7 @@ inline size_t PT_node_size(POS_TREE3 *node) {
     return size;
 }
 
-template <typename PT> inline PT *PT_read_son(PT *node, PT_base base);
+template <typename PT> inline PT *PT_read_son(PT *node, PT_base base); // @@@ become member
 
 template <> inline POS_TREE3 *PT_read_son<POS_TREE3>(POS_TREE3 *node, PT_base base) { // stage 3 (no father)
     pt_assert_stage(STAGE3);
@@ -347,17 +360,6 @@ template<> inline POS_TREE1 *PT_read_son<POS_TREE1>(POS_TREE1 *node, PT_base bas
     if (!((1<<base) & node->flags)) return NULL;   // bit not set
     base = (PT_base)PT_GLOBAL.count_bits[base][node->flags];
     return PT_read_pointer<POS_TREE1>(node_data_start(node) + sizeof(PT_PNTR)*base);
-}
-
-inline POS_TREE1 *PT_read_father(POS_TREE1 *node) { // @@@ become method of POS_TREE1
-    pt_assert_stage(STAGE1);
-    pt_assert(!node->is_saved()); // saved nodes do not know their father
-
-    POS_TREE1 *father = PT_read_pointer<POS_TREE1>(&node->data);
-#if defined(ASSERTION_USED)
-    if (father) pt_assert(father->is_node());
-#endif
-    return father;
 }
 
 inline size_t PT_leaf_size(POS_TREE3 *node) {

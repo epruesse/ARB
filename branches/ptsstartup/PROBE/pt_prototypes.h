@@ -77,7 +77,6 @@ void PT_add_to_chain(POS_TREE1 *node, const DataLoc &loc);
 POS_TREE1 *PT_change_leaf_to_node(POS_TREE1 *node);
 POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node);
 POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc &loc);
-void PTD_clear_fathers(POS_TREE1 *node);
 void PTD_put_longlong(FILE *out, ULONG i);
 void PTD_put_int(FILE *out, ULONG i);
 void PTD_put_short(FILE *out, ULONG i);
