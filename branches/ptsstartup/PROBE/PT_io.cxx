@@ -236,6 +236,7 @@ GB_ERROR PT_prepare_data(GBDATA *gb_main) {
                 char   *master_data_name  = GBS_global_string_copy("%s/@master_data", GB_SYSTEM_FOLDER);
                 GBDATA *gb_master_data    = GB_search(gb_main, master_data_name, GB_FIND);
                 if (gb_master_data) error = GB_delete(gb_master_data);
+                free(master_data_name);
             }
         }
         if (data_missing) {
