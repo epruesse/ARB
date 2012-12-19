@@ -1034,9 +1034,7 @@ void TEST_chains() {
 
         TEST_EXPECT_NO_ERROR(error.deliver());
         TEST_EXPECTATION(all().of(that(root_pos).is_equal_to(29), that(pos).is_equal_to(34)));
-
-        TEST_EXPECT_EQUAL(root->get_type(), PT_NT_SAVED);
-        MEM.put(root, get_memsize_of_saved(root));
+        TEST_EXPECT_EQUAL(root, NULL); // nulled by PTD_save_upper_tree
         
         fclose(out);
     }
