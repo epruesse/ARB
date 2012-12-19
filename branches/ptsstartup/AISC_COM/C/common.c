@@ -30,62 +30,71 @@ inline const char *who(ClientOrServer cos) {
     }
 }
 
-static GB_ERROR common_get_m_id(ClientOrServer cos, const char *path, char **m_name, int *id) {
-    // @@@ one exit point; prepare error message there!
-
+static GB_ERROR common_get_m_id(const char *path, char **m_name, int *id) {
+    GB_ERROR error = NULL;
     if (!path) {
-        return GBS_global_string("%s ERROR: missing hostname:socketid", who(cos)); // @@@ 
+        error = "missing hostname:socketid";
     }
-    if (!strcmp(path, ":")) {
-        path = getenv("SOCKET");
-        if (!path) return "environment socket not found"; // @@@ 
-    }
-
-    const char *p = strchr(path, ':');
-    if (path[0] == '*' || path[0] == ':') {     // UNIX MODE
-        char buffer[128];
-        if (!p) {
-            return GBS_global_string("%s ERROR: missing ':' in *:socketid", who(cos)); // @@@ 
+    else {
+        if (strcmp(path, ":") == 0) {
+            path = getenv("SOCKET");
+            if (!path) {
+                error = "expected environment variable 'SOCKET' (needed to connect to ':')";
+            }
         }
-        if (p[1] == '~') {
-            sprintf(buffer, "%s%s", getenv("HOME"), p+2);
-            *m_name = (char *)strdup(buffer);
+
+        if (!error) {
+            const char *p = strchr(path, ':');
+            if (path[0] == '*' || path[0] == ':') {     // UNIX MODE
+                char buffer[128];
+                if (!p) {
+                    error = "missing ':' in *:socketid";
+                }
+                else {
+                    if (p[1] == '~') {
+                        sprintf(buffer, "%s%s", getenv("HOME"), p+2);
+                        *m_name = (char *)strdup(buffer);
+                    }
+                    else {
+                        *m_name = (char *)strdup(p+1);
+                    }
+                    *id = -1;
+                }
+            }
+            else {
+                if (!p) {
+                    error = "missing ':' in netname:socketid";
+                }
+                else {
+                    char *mn = (char *) calloc(sizeof(char), p - path + 1);
+                    strncpy(mn, path, p - path);
+
+                    /* @@@ falls hier in mn ein der Bereich von path bis p stehen soll, fehlt eine abschliesende 0 am String-Ende
+                       auf jeden Fall erzeugt der folgende strcmp einen (rui) */
+
+                    if (strcmp(mn, "localhost") == 0) freedup(mn, arb_gethostname());
+
+                    *m_name = mn;
+                    int i   = atoi(p + 1);
+                    if ((i < 1024) || (i > 32000)) {
+                        error = "socketnumber is not in range [1024..32000]";
+                    }
+                    else {
+                        *id = i;
+                    }
+                }
+            }
         }
-        else {
-            *m_name = (char *)strdup(p+1);
-        }
-        *id = -1;
-        return 0; // @@@ 
     }
-    if (!p) {
-        return "OPEN_ARB_DB_CLIENT ERROR: missing ':' in netname:socketid"; // @@@ 
-    }
-
-    char *mn = (char *) calloc(sizeof(char), p - path + 1);
-    strncpy(mn, path, p - path);
-
-    /* @@@ falls hier in mn ein der Bereich von path bis p stehen soll, fehlt eine abschliesende 0 am String-Ende
-       auf jeden Fall erzeugt der folgende strcmp einen (rui) */
-
-    if (strcmp(mn, "localhost") == 0) freedup(mn, arb_gethostname());
-
-    *m_name = mn;
-    int i   = atoi(p + 1);
-    if ((i < 1024) || (i > 32000)) {
-        return "OPEN_ARB_DB_CLIENT ERROR: socketnumber not in [1024..32000]"; // @@@ 
-    }
-    *id = i;
-    return 0;
+    return error;
 }
 
-static GB_ERROR common_open_socket(ClientOrServer cos, const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
-    struct in_addr  addr; // union -> u_long
-    struct hostent *he;
-    int             socket_id;
-    char           *mach_name = NULL;
-    FILE           *test;
+#define SOCKET_EXISTS_AND_CONNECT_WORKED ""
 
-    GB_ERROR error = common_get_m_id(cos, path, &mach_name, &socket_id);
+static GB_ERROR common_open_socket(ClientOrServer cos, const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
+    char     *mach_name = NULL;
+    int       socket_id;
+    GB_ERROR  error     = common_get_m_id(path, &mach_name, &socket_id);
 
     // @@@ mem assigned to mach_name is leaked often
     // @@@ refactor aisc_client_open_socket -> one exit point
@@ -97,84 +106,95 @@ static GB_ERROR common_open_socket(ClientOrServer cos, const char *path, int del
             memset((char *)&so_ad, 0, sizeof(sockaddr_in));
             *psocket = socket(PF_INET, SOCK_STREAM, 0);
             if (*psocket <= 0) {
-                return "CANNOT CREATE SOCKET"; // @@@ 
-            }
-
-            arb_gethostbyname(mach_name, he, error);
-            if (error) {
-                free(mach_name);
-                return error; // @@@ 
-            }
-            // simply take first address
-            addr.s_addr = *(int *) (he->h_addr);
-            so_ad.sin_addr = addr;
-            so_ad.sin_family = AF_INET;
-            so_ad.sin_port = htons(socket_id);      // @@@ = pb_socket
-            if (do_connect) {
-                if (connect(*psocket, (struct sockaddr*)&so_ad, 16)) {
-                    return ""; // @@@ 
-                }
+                error = "failed to create socket"; // @@@ reason why
             }
             else {
-                setsockopt(*psocket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-                if (bind(*psocket, (struct sockaddr*)&so_ad, 16)) {
-                    return "Could not open socket on Server (1)"; // @@@ 
+                struct hostent *he;
+                arb_gethostbyname(mach_name, he, error);
+                if (!error) {
+                    // simply take first address
+                    struct in_addr addr;
+                    addr.s_addr      = *(int *) (he->h_addr);
+                    so_ad.sin_addr   = addr;
+                    so_ad.sin_family = AF_INET;
+                    so_ad.sin_port   = htons(socket_id);    // @@@ = pb_socket
+                    if (do_connect) {
+                        if (connect(*psocket, (struct sockaddr*)&so_ad, 16)) {
+                            error = SOCKET_EXISTS_AND_CONNECT_WORKED;
+                        }
+                    }
+                    else {
+                        setsockopt(*psocket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+                        if (bind(*psocket, (struct sockaddr*)&so_ad, 16)) {
+                            error = "Could not open socket on Server (1)";
+                        }
+                    }
+                    if (!error) {
+                        if (delay == TCP_NODELAY) {
+                            static int optval;
+                            optval = 1;
+                            setsockopt(*psocket, IPPROTO_TCP, TCP_NODELAY, (char *)&optval, 4);
+                        }
+                        *unix_name = 0;
+                    }
                 }
             }
-            if (delay == TCP_NODELAY) {
-                static int      optval;
-                optval = 1;
-                setsockopt(*psocket, IPPROTO_TCP, TCP_NODELAY, (char *)&optval, 4);
-            }
-            *unix_name = 0;
         }
         else {
             struct sockaddr_un so_ad;
             *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
             if (*psocket <= 0) {
-                return "CANNOT CREATE SOCKET"; // @@@ 
-            }
-            so_ad.sun_family = AF_UNIX;
-            strcpy(so_ad.sun_path, mach_name);
-            if (do_connect) {
-                if (connect(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
-                    return ""; // @@@ 
-                }
+                error = "cannot create socket"; // @@@ reason why
             }
             else {
-                test = fopen(mach_name, "r");
-                if (test) {
-                    struct stat stt;
-                    fclose(test);
-                    if (!stat(path, &stt)) {
-                        if (S_ISREG(stt.st_mode)) {
-                            fprintf(stderr, "%X\n", stt.st_mode);
-                            return "Socket already exists as a file"; // @@@ 
+                so_ad.sun_family = AF_UNIX;
+                strcpy(so_ad.sun_path, mach_name);
+                if (do_connect) {
+                    if (connect(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
+                        error = SOCKET_EXISTS_AND_CONNECT_WORKED;
+                    }
+                }
+                else {
+                    FILE *test = fopen(mach_name, "r");
+                    if (test) {
+                        struct stat stt;
+                        if (!stat(path, &stt)) {
+                            if (S_ISREG(stt.st_mode)) {
+                                fprintf(stderr, "%X\n", stt.st_mode);
+                                error = "Socket already exists as a file";
+                            }
+                        }
+                        fclose(test);
+                    }
+
+                    if (!error) {
+                        if (unlink(mach_name) != 0) {
+                            printf("Warning: old socket file '%s' failed to unlink\n", mach_name);
+                        }
+                        if (cos == AISC_SERVER) {
+                            setsockopt(*psocket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+                        }
+                        if (bind(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
+                            error = "Could not open socket on Server (2)"; // @@@ reasons ?
+                        }
+                        if (!error && cos == AISC_SERVER) {
+                            if (chmod(mach_name, 0777)) {
+                                error = "Cannot change mode of socket"; // @@@ reasons!
+                            }
                         }
                     }
                 }
-                if (unlink(mach_name)) {
-                    ;
-                }
-                else {
-                    printf("old socket found\n");
-                }
-                if (cos == AISC_SERVER) {
-                    setsockopt(*psocket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-                }
-                if (bind(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
-                    return "Could not open socket on Server (2)"; // @@@ 
-                }
-                if (cos == AISC_SERVER) {
-                    if (chmod(mach_name, 0777)) return "Cannot change mode of socket"; // @@@ 
-                }
-            }
 
-            reassign(*unix_name, mach_name);
+                if (!error) reassign(*unix_name, mach_name);
+            }
         }
-        arb_assert(!error);
     }
+
     free(mach_name);
+
+    if (error && *error) { // real error (see SOCKET_EXISTS_AND_CONNECT_WORKED)
+        error = GBS_global_string("%s-Error: %s", who(cos), error);
+    }
     return error;
 }
 
