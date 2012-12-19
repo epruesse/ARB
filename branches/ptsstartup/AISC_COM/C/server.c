@@ -282,7 +282,7 @@ Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
     hs->fork    = fork;
     
     static int  so;
-    const char *err = aisc_open_socket(path, TCP_NODELAY, 0, &so, &hs->unix_name);
+    const char *err = aisc_server_open_socket(path, TCP_NODELAY, 0, &so, &hs->unix_name);
 
     if (err) {
         if (*err) printf("Error in open_aisc_server: %s\n", err);

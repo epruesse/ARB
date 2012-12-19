@@ -12,10 +12,8 @@
 
 
 /* common.c */
-const char *aisc_client_get_m_id(const char *path, char **m_name, int *id);
-const char *aisc_get_m_id(const char *path, char **m_name, int *id);
 const char *aisc_client_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name);
-const char *aisc_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name);
+const char *aisc_server_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name);
 
 #else
 #error common.h included twice
