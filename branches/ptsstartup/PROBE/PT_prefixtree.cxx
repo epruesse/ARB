@@ -125,9 +125,9 @@ static void PT_change_link_in_father(POS_TREE1 *father, POS_TREE1 *old_link, POS
     pt_assert_stage(STAGE1);
     long i = PT_GLOBAL.count_bits[PT_BASES][father->flags]-1;
     for (; i >= 0; i--) {
-        POS_TREE1 *link = PT_read_pointer<POS_TREE1>(node_data_start(father)+sizeof(PT_PNTR)*i);
+        POS_TREE1 *link = PT_read_pointer<POS_TREE1>(father->udata()+sizeof(PT_PNTR)*i);
         if (link==old_link) {
-            PT_write_pointer(node_data_start(father)+sizeof(PT_PNTR)*i, new_link);
+            PT_write_pointer(father->udata()+sizeof(PT_PNTR)*i, new_link);
             return;
         }
     }
@@ -143,7 +143,7 @@ void PT_add_to_chain(POS_TREE1 *node, const DataLoc& loc) {
 
     // insert at the beginning of list
 
-    char *data      = node_data_start(node) + ((node->flags&1) ? 4 : 2);
+    char *data      = node->udata() + ((node->flags&1) ? 4 : 2);
     void *old_first = PT_read_void_pointer(data);
 
     const int MAX_CHAIN_ENTRY_SIZE = sizeof(PT_PNTR)+3*sizeof(int);
@@ -200,7 +200,7 @@ POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node) {
     new_elem->set_type(PT_NT_CHAIN);
     new_elem->set_father(father);
 
-    char *data = node_data_start(new_elem);
+    char *data = new_elem->udata();
     if (loc.get_abs_pos()>PT_SHORT_SIZE) {
         PT_write_int(data, loc.get_abs_pos());
         data+=4;
@@ -251,16 +251,16 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
 
         for (int i = 1; i < (1<<FLAG_FREE_BITS); i = i << 1) {
             if (i & father->flags) { // existing son
-                POS_TREE1 *son = PT_read_pointer<POS_TREE1>(node_data_start(father)+sbase);
+                POS_TREE1 *son = PT_read_pointer<POS_TREE1>(father->udata()+sbase);
                 if (!son->is_saved()) son->set_father(new_elemfather);
 
-                PT_write_pointer(node_data_start(new_elemfather)+dbase, son);
+                PT_write_pointer(new_elemfather->udata()+dbase, son);
 
                 sbase += sizeof(PT_PNTR);
                 dbase += sizeof(PT_PNTR);
             }
             else if (i & basebit) { // newly created leaf
-                PT_write_pointer(node_data_start(new_elemfather)+dbase, node);
+                PT_write_pointer(new_elemfather->udata()+dbase, node);
                 node->set_father(new_elemfather);
                 dbase += sizeof(PT_PNTR);
             }
@@ -272,7 +272,7 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
     }
     node->set_type(PT_NT_LEAF);
 
-    char *dest = node_data_start(node);
+    char *dest = node->udata();
     if (loc.get_name()>PT_SHORT_SIZE) {
         PT_write_int(dest, loc.get_name());
         node->flags |= 1;
@@ -410,7 +410,7 @@ inline int get_memsize_of_saved(const POS_TREE1 *node) {
         memsize += FLAG_SIZE_REDUCTION;
     }
     else {
-        memsize = PT_read_int(node_data_start(node));
+        memsize = PT_read_int(node->udata());
     }
     return memsize;
 }
@@ -421,7 +421,7 @@ static long PTD_write_tip_to_disk(FILE *out, POS_TREE1 *node, const long oldpos)
     // write 4 bytes when not in stage 2 save mode
 
     size_t cnt = size-sizeof(PT_PNTR)-1;               // no father; type already saved
-    ASSERT_RESULT(size_t, cnt, fwrite(node_data_start(node), 1, cnt, out)); // write name rpos apos
+    ASSERT_RESULT(size_t, cnt, fwrite(node->udata(), 1, cnt, out)); // write name rpos apos
 
     long pos = oldpos+size-sizeof(PT_PNTR);                // no father
     pt_assert(pos >= 0);
@@ -447,7 +447,7 @@ static uint_32 reverse_chain(POS_TREE1 * const node) {
     pt_assert_stage(STAGE1);
     pt_assert(node->is_chain());
 
-    char *data  = node_data_start(node) + ((node->flags&1) ? 4 : 2);
+    char *data  = node->udata() + ((node->flags&1) ? 4 : 2);
     char *entry = PT_read_pointer<char>(data);
 
     uint_32  length     = 0;
@@ -878,7 +878,7 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE1 *node, int s
     using namespace arb_test;
 
     int unmodified = 0xffffffff;
-    PT_write_int(node_data_start(node), unmodified);
+    PT_write_int(node->udata(), unmodified);
 
     PTD_set_object_to_saved_status(node, 0, size);
 
@@ -886,7 +886,7 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE1 *node, int s
     expected.add(that(node->get_type()).is_equal_to(PT_NT_SAVED));
     expected.add(that(get_memsize_of_saved(node)).is_equal_to(size));
 
-    int data_after = PT_read_int(node_data_start(node));
+    int data_after = PT_read_int(node->udata());
 
     if (expect_in_flags) {
         expected.add(that(data_after).is_equal_to(unmodified));
@@ -916,7 +916,7 @@ struct EnterStage1 {
 void TEST_saved_state() {
     EnterStage1 env;
 
-    POS_TREE1 *node = (POS_TREE1*)malloc(sizeof(POS_TREE1)+5);
+    POS_TREE1 *node = (POS_TREE1*)malloc(PT_BASE_SIZE+6);
 
     TEST_SIZE_SAVED_IN_FLAGS(node, MIN_NODE_SIZE);
 
