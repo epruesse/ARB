@@ -182,7 +182,7 @@ extern pt_global PT_GLOBAL;
 #define FLAG_FREE_BITS_MASK ((1<<FLAG_TYPE_BITS)-1)
 #define FLAG_TYPE_BITS_MASK (0xFF^FLAG_FREE_BITS_MASK)
 
-struct POS_TREE1 {
+struct POS_TREE1 { // pos-tree (stage 1)
     uchar      flags;
     POS_TREE1 *father;
 
@@ -214,10 +214,9 @@ struct POS_TREE1 {
 
 struct POS_TREE3 { // pos-tree (stage 3)
     uchar flags;
-    char  data;
 
-    const char *udata() const { return &data; }
-    char *udata() { return &data; }
+    const char *udata() const { return ((const char*)this)+sizeof(*this); }
+    char *udata() { return ((char*)this)+sizeof(*this); }
 
     void set_type(PT_NODE_TYPE type) {
         // sets user bits to zero
@@ -234,7 +233,7 @@ struct POS_TREE3 { // pos-tree (stage 3)
 inline size_t PT_node_size(POS_TREE3 *node) {
     size_t size = 1; // flags
     if ((node->flags & IS_SINGLE_BRANCH_NODE) == 0) {
-        UINT sec = (uchar)node->data; // read second byte for charshort/shortlong info
+        UINT sec = (uchar)*node->udata(); // read second byte for charshort/shortlong info
         ++size;
 
         long i = PT_GLOBAL.count_bits[PT_BASES][node->flags] + PT_GLOBAL.count_bits[PT_BASES][sec];
@@ -277,9 +276,11 @@ template <> inline POS_TREE3 *PT_read_son<POS_TREE3>(POS_TREE3 *node, PT_base ba
         return NULL;
     }
 
-    UINT sec  = (uchar)node->data;   // read second byte for charshort/shortlong info
+    UINT sec  = (uchar)*node->udata();   // read second byte for charshort/shortlong info
     long i    = PT_GLOBAL.count_bits[base][node->flags];
     i        += PT_GLOBAL.count_bits[base][sec];
+
+    char *sons = node->udata()+1;
 
 #ifdef ARB_64
     if (sec & LONG_SONS) {
@@ -295,10 +296,10 @@ template <> inline POS_TREE3 *PT_read_son<POS_TREE3>(POS_TREE3 *node, PT_base ba
 #endif
             UINT offset = 4 * i;
             if ((1<<base) & sec) {              // long
-                i = PT_read_long(&node->data+1+offset);
+                i = PT_read_long(sons+offset);
             }
             else {                                              // int
-                i = PT_read_int(&node->data+1+offset);
+                i = PT_read_int(sons+offset);
             }
         }
 
@@ -307,19 +308,19 @@ template <> inline POS_TREE3 *PT_read_son<POS_TREE3>(POS_TREE3 *node, PT_base ba
         if (sec & INT_SONS) {                                   // int/short
             UINT offset = i+i;
             if ((1<<base) & sec) {                              // int
-                i = PT_read_int(&node->data+1+offset);
+                i = PT_read_int(sons+offset);
             }
             else {                                              // short
-                i = PT_read_short(&node->data+1+offset);
+                i = PT_read_short(sons+offset);
             }
         }
         else {                                                  // short/char
             UINT offset = i;
             if ((1<<base) & sec) {                              // short
-                i = PT_read_short(&node->data+1+offset);
+                i = PT_read_short(sons+offset);
             }
             else {                                              // char
-                i = PT_read_char(&node->data+1+offset);
+                i = PT_read_char(sons+offset);
             }
         }
     }
@@ -327,19 +328,19 @@ template <> inline POS_TREE3 *PT_read_son<POS_TREE3>(POS_TREE3 *node, PT_base ba
     if (sec & LONG_SONS) {
         UINT offset = i+i;
         if ((1<<base) & sec) {
-            i = PT_read_int(&node->data+1+offset);
+            i = PT_read_int(sons+offset);
         }
         else {
-            i = PT_read_short(&node->data+1+offset);
+            i = PT_read_short(sons+offset);
         }
     }
     else {
         UINT offset = i;
         if ((1<<base) & sec) {
-            i = PT_read_short(&node->data+1+offset);
+            i = PT_read_short(sons+offset);
         }
         else {
-            i = PT_read_char(&node->data+1+offset);
+            i = PT_read_char(sons+offset);
         }
     }
 #endif
