@@ -56,7 +56,6 @@ struct dt_bondssum {
     double dt;        // sum of mismatches
     double sum_bonds; // sum of bonds of longest non mismatch string
 
-    dt_bondssum() : dt(0.0), sum_bonds(0.0) {} // @@@ elim later
     dt_bondssum(double dt_, double sum_bonds_) : dt(dt_), sum_bonds(sum_bonds_) {}
 };
 
