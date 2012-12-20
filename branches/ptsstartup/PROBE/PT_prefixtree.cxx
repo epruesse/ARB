@@ -22,7 +22,7 @@
 struct pt_global PT_GLOBAL;
 
 inline bool locs_in_chain_order(const AbsLoc& loc1, const AbsLoc& loc2) { 
-    pt_assert_stage(STAGE1); // this order is only valid in STAGE1 (STAGE3 has reverse order)
+    pt_assert_stage(STAGE1); // this order is only valid in STAGE1 (STAGE2 has reverse order)
 
     if (loc1.get_name() < loc2.get_name()) {
 #if defined(DEBUG)
@@ -75,7 +75,7 @@ void pt_global::init(Stage stage) {
         if (i&0x80) { // bit 8 marks a node
             flag_2_type[i] = PT_NT_NODE;
         }
-        else if (stage == STAGE1 && i&0x20) { // in STAGE1 bit 6 is used to mark PT_NT_SAVED (in STAGE3 that bit may be used otherwise)
+        else if (stage == STAGE1 && i&0x20) { // in STAGE1 bit 6 is used to mark PT_NT_SAVED (in STAGE2 that bit may be used otherwise)
             flag_2_type[i] = (i&0x40) ? PT_NT_UNDEF : PT_NT_SAVED;
         }
         else { // bit 7 distinguishes between chain and leaf
@@ -755,11 +755,8 @@ long PTD_write_leafs_to_disk(FILE *out, POS_TREE1 * const node, long pos, long *
     return pos;
 }
 
-// --------------------------------------
-//      functions for stage 2-3: load
-
-ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE3*& root_ptr) { // __ATTR__USERESULT
-    pt_assert_stage(STAGE3);
+ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE2*& root_ptr) { // __ATTR__USERESULT
+    pt_assert_stage(STAGE2);
 
     GB_ERROR  error  = NULL;
     char     *buffer = GB_map_file(fname, 0);
@@ -826,7 +823,7 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE3*& root_ptr) { //
 
         if (!error) {
             pt_assert(i >= 0);
-            root_ptr  = (POS_TREE3*)(i+buffer);
+            root_ptr  = (POS_TREE2*)(i+buffer);
         }
     }
 

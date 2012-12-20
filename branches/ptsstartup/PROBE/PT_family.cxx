@@ -149,8 +149,8 @@ class PT_Traversal {
         if (did_match()) count_match(loc);
     }
 
-    void mark_all(POS_TREE3 *pt) const;
-    inline void mark_chain_or_leaf(POS_TREE3 *pt) const;
+    void mark_all(POS_TREE2 *pt) const;
+    inline void mark_chain_or_leaf(POS_TREE2 *pt) const;
 
 public:
 
@@ -169,7 +169,7 @@ public:
           fam_stat(fam_stat_)
     { }
 
-    void mark_matching(POS_TREE3 *pt) const;
+    void mark_matching(POS_TREE2 *pt) const;
 
     int operator()(const DataLoc& loc) const {
         //! Increment match_count for matched postree-tips
@@ -191,7 +191,7 @@ public:
 
 Range PT_Traversal::range(-1, -1, -1);
 
-inline void PT_Traversal::mark_chain_or_leaf(POS_TREE3 *pt) const {
+inline void PT_Traversal::mark_chain_or_leaf(POS_TREE2 *pt) const {
     pt_assert(pt);
     switch (pt->get_type()) {
         case PT_NT_LEAF:
@@ -199,7 +199,7 @@ inline void PT_Traversal::mark_chain_or_leaf(POS_TREE3 *pt) const {
             break;
 
         case PT_NT_CHAIN: {
-            ChainIteratorStage3 entry(pt);
+            ChainIteratorStage2 entry(pt);
             while (entry) {
                 (*this)(entry.at());
                 ++entry;
@@ -212,7 +212,7 @@ inline void PT_Traversal::mark_chain_or_leaf(POS_TREE3 *pt) const {
     }
 }
 
-void PT_Traversal::mark_matching(POS_TREE3 *pt) const {
+void PT_Traversal::mark_matching(POS_TREE2 *pt) const {
     //! Traverse pos(sub)tree through matching branches and increment 'match_count'
     pt_assert(pt);
     pt_assert(!too_many_mismatches());
@@ -220,7 +220,7 @@ void PT_Traversal::mark_matching(POS_TREE3 *pt) const {
 
     if (pt->is_node()) {
         for (int base = PT_N; base < PT_BASES; base++) {
-            POS_TREE3 *pt_son = PT_read_son(pt, (PT_base)base);
+            POS_TREE2 *pt_son = PT_read_son(pt, (PT_base)base);
             if (pt_son && !at_end()) {
                 PT_Traversal sub(*this);
                 sub.match_one_char(base);
@@ -236,14 +236,14 @@ void PT_Traversal::mark_matching(POS_TREE3 *pt) const {
     }
 }
 
-void PT_Traversal::mark_all(POS_TREE3 *pt) const {
+void PT_Traversal::mark_all(POS_TREE2 *pt) const {
     pt_assert(pt);
     pt_assert(!too_many_mismatches());
     pt_assert(did_match());
 
     if (pt->is_node()) {
         for (int base = PT_N; base < PT_BASES; base++) {
-            POS_TREE3 *pt_son = PT_read_son(pt, (PT_base)base);
+            POS_TREE2 *pt_son = PT_read_son(pt, (PT_base)base);
             if (pt_son) mark_all(pt_son);
         }
     }
@@ -456,7 +456,7 @@ int find_family(PT_family *ffinder, bytestring *species) {
         int         occur_count = o->second;
 
         famStat.limit_hits_for_next_traversal(occur_count);
-        PT_Traversal(oligo, oligo_len, mismatch_nr, famStat).mark_matching(psg.TREE_ROOT3());
+        PT_Traversal(oligo, oligo_len, mismatch_nr, famStat).mark_matching(psg.TREE_ROOT2());
     }
 
     famStat.calc_rel_matches(ffinder->pr_len, sequence_len);

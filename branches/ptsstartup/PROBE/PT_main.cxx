@@ -397,7 +397,7 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
                 free(reserved_for_mmap);
             }
 
-            if (!error) error = enter_stage_3_load_tree(aisc_main, pt_name);
+            if (!error) error = enter_stage_2_load_tree(aisc_main, pt_name);
             if (!error) error = PT_init_map();
 
             if (!error) {
@@ -527,7 +527,7 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
             error = pt_init_main_struct(aisc_main, params->db_server);
             if (error) error = GBS_global_string("Gave up (Reason: %s)", error.deliver());
             else {
-                error = enter_stage_3_load_tree(aisc_main, pt_name); // now stage 3
+                error = enter_stage_2_load_tree(aisc_main, pt_name); // now stage 2
 #if defined(CALCULATE_STATS_ON_QUERY)
                 if (!error) {
                     puts("[index loaded - calculating statistic]");

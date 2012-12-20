@@ -576,12 +576,12 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
     return error;
 }
 
-ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USERESULT
+ARB_ERROR enter_stage_2_load_tree(PT_main *, const char *tname) { // __ATTR__USERESULT
     // load tree from disk
     ARB_ERROR error;
 
-    psg.init(STAGE3);
-    PT_init_cache_sizes(STAGE3);
+    psg.init(STAGE2);
+    PT_init_cache_sizes(STAGE2);
 
     {
         long size = GB_size_of_file(tname);
@@ -595,7 +595,7 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
                 error = GB_IO_error("read", tname);
             }
             else {
-                error = PTD_read_leafs_from_disk(tname, psg.TREE_ROOT3());
+                error = PTD_read_leafs_from_disk(tname, psg.TREE_ROOT2());
                 fclose(in);
             }
         }

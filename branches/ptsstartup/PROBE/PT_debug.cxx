@@ -47,13 +47,13 @@ struct PT_statistic {
 
     PT_statistic() { memset(this, 0, sizeof(*this)); }
 
-    void analyse(POS_TREE3 *pt, int height) {
+    void analyse(POS_TREE2 *pt, int height) {
         pt_assert(height<DEBUG_TREE_DEPTH);
         switch (pt->get_type()) {
             case PT_NT_NODE: {
                 int basecnt = 0;
                 for (int i=PT_QU; i<PT_BASES; i++) {
-                    POS_TREE3 *pt_help = PT_read_son(pt, (PT_base)i);
+                    POS_TREE2 *pt_help = PT_read_son(pt, (PT_base)i);
                     if (pt_help) {
                         basecnt++;
                         analyse(pt_help, height+1);
@@ -73,7 +73,7 @@ struct PT_statistic {
 
             case PT_NT_CHAIN: {
                 size_t              size = 1;
-                ChainIteratorStage3 iter(pt);
+                ChainIteratorStage2 iter(pt);
 
                 int lastName = iter.at().get_name();
                 while (++iter) {
@@ -218,7 +218,7 @@ void PT_dump_tree_statistics(const char *indexfilename) {
 #if defined(CALCULATE_STATS_ON_QUERY)
     // show various debug information about the tree
     PT_statistic *stat = new PT_statistic;
-    stat->analyse(psg.TREE_ROOT3(), 0);
+    stat->analyse(psg.TREE_ROOT2(), 0);
 
     size_t filesize = GB_size_of_file(indexfilename);
     stat->dump(filesize);
@@ -329,7 +329,7 @@ static void PT_dump_POS_TREE_to_file(const char *dumpfile) {
         PT_dump_POS_TREE_recursive(psg.TREE_ROOT1(), "", dump);
     }
     else {
-        PT_dump_POS_TREE_recursive(psg.TREE_ROOT3(), "", dump);
+        PT_dump_POS_TREE_recursive(psg.TREE_ROOT2(), "", dump);
     }
     fclose(dump);
 

@@ -14,13 +14,13 @@
 #include "pt_prototypes.h"
 #include <arb_strbuf.h>
 
-static bool findLeftmostProbe(POS_TREE3 *node, char *probe, int restlen, int height) {
+static bool findLeftmostProbe(POS_TREE2 *node, char *probe, int restlen, int height) {
     if (restlen==0) return true;
 
     switch (node->get_type()) {
         case PT_NT_NODE:
             for (int i=PT_A; i<PT_BASES; ++i) { // Note: does not iterate probes containing N
-                POS_TREE3 *son = PT_read_son(node, PT_base(i));
+                POS_TREE2 *son = PT_read_son(node, PT_base(i));
                 if (son) {
                     probe[0] = PT_base(i); // write leftmost probe into result
                     bool found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
@@ -64,7 +64,7 @@ static bool findLeftmostProbe(POS_TREE3 *node, char *probe, int restlen, int hei
     return false;
 }
 
-static bool findNextProbe(POS_TREE3 *node, char *probe, int restlen, int height) {
+static bool findNextProbe(POS_TREE2 *node, char *probe, int restlen, int height) {
     // searches next probe after 'probe' ('probe' itself may not exist)
     // returns: true if next probe was found
     // 'probe' is modified to next probe
@@ -76,7 +76,7 @@ static bool findNextProbe(POS_TREE3 *node, char *probe, int restlen, int height)
         case PT_NT_NODE: {
             if (!is_std_base(probe[0])) return false;
 
-            POS_TREE3 *son   = PT_read_son(node, PT_base(probe[0]));
+            POS_TREE2 *son   = PT_read_son(node, PT_base(probe[0]));
             bool       found = (son != 0) && findNextProbe(son, probe+1, restlen-1, height+1);
 
             pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
@@ -108,7 +108,7 @@ static bool findNextProbe(POS_TREE3 *node, char *probe, int restlen, int height)
 }
 
 int PT_find_exProb(PT_exProb *pep, int) {
-    POS_TREE3     *pt      = psg.TREE_ROOT3();  // start search at root
+    POS_TREE2     *pt      = psg.TREE_ROOT2();  // start search at root
     GBS_strstruct *gbs_str = GBS_stropen(pep->numget*(pep->plength+1)+1);
     bool           first   = true;
 

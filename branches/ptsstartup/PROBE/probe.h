@@ -120,9 +120,9 @@ inline void reverse_probe(char *seq, int len) {
 }
 
 struct POS_TREE1;
-struct POS_TREE3;
+struct POS_TREE2;
 
-enum Stage { STAGE1, STAGE3 }; // STAGE2 does not exist
+enum Stage { STAGE1, STAGE2 };
 
 // ---------------------
 //      Probe search
@@ -327,7 +327,7 @@ class probe_struct_global {
 
     union {
         POS_TREE1 *p1;
-        POS_TREE3 *p3;
+        POS_TREE2 *p2;
     } pt;
 
 public:
@@ -362,7 +362,7 @@ public:
 
     probe_statistic_struct stat;
 
-    bool big_db; // STAGE3 only (true -> uses 8 bit pointers)
+    bool big_db; // STAGE2 only (true -> uses 8 bit pointers)
 
     void setup();
     void cleanup();
@@ -382,7 +382,7 @@ public:
     }
 
     POS_TREE1*& TREE_ROOT1() { pt_assert(stage == STAGE1); return pt.p1; }
-    POS_TREE3*& TREE_ROOT3() { pt_assert(stage == STAGE3); return pt.p3; }
+    POS_TREE2*& TREE_ROOT2() { pt_assert(stage == STAGE2); return pt.p2; }
 };
 
 extern probe_struct_global psg;

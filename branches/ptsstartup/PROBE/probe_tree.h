@@ -86,7 +86,7 @@ extern pt_global PT_GLOBAL;
     ...                     ...
     [PT_PNTR son5]          if bit[5] 
 
-/ ********************* inner node (3-22    +4) (stage 3 only) *********************** /
+/ ********************* inner node (3-22    +4) (stage 2 only) *********************** /
     byte                bit[7] = 1  bit[6] = 0
     byte2               bit2[7] = 0  bit2[6] = 0  -->  short/char
                         bit2[7] = 1  bit2[6] = 0  -->  int/short
@@ -107,7 +107,7 @@ extern pt_global PT_GLOBAL;
     example3:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
                 byte2 = 0x44    --> son2 is a long; son0 and son3 are ints
 
-/ ********************* inner nodesingle (1)    (stage3 only) *********************** /
+/ ********************* inner nodesingle (1)    (stage 2 only) *********************** /
     byte                bit[7] = 1  bit[6] = 1
                     bit[0-2]    base
                     bit[3-5]    offset 0->1 1->3 2->4 3->5 ....
@@ -130,7 +130,7 @@ extern pt_global PT_GLOBAL;
 ]
 
 
-/ ********************* chain (8-n +4) stage 2/3 *********************** /
+/ ********************* chain (8-n +4) stage 2 *********************** /
 
     byte =64/65         bit[7] = 0, bit[6] = 1  bit[5] = 0
     [PT_PNTR    father]     if main->mode
@@ -212,7 +212,7 @@ struct POS_TREE1 { // pos-tree (stage 1)
     bool is_saved() const { return get_type() == PT_NT_SAVED; }
 } __attribute__((packed));
 
-struct POS_TREE3 { // pos-tree (stage 3)
+struct POS_TREE2 { // pos-tree (stage 2)
     uchar flags;
 
     const char *udata() const { return ((const char*)this)+sizeof(*this); }
@@ -230,7 +230,7 @@ struct POS_TREE3 { // pos-tree (stage 3)
     bool is_chain() const { return get_type() == PT_NT_CHAIN; }
 } __attribute__((packed));
 
-inline size_t PT_node_size(POS_TREE3 *node) {
+inline size_t PT_node_size(POS_TREE2 *node) {
     size_t size = 1; // flags
     if ((node->flags & IS_SINGLE_BRANCH_NODE) == 0) {
         UINT sec = (uchar)*node->udata(); // read second byte for charshort/shortlong info
@@ -261,8 +261,8 @@ inline size_t PT_node_size(POS_TREE3 *node) {
 
 template <typename PT> inline PT *PT_read_son(PT *node, PT_base base); // @@@ become member
 
-template <> inline POS_TREE3 *PT_read_son<POS_TREE3>(POS_TREE3 *node, PT_base base) { // stage 3 (no father)
-    pt_assert_stage(STAGE3);
+template <> inline POS_TREE2 *PT_read_son<POS_TREE2>(POS_TREE2 *node, PT_base base) { // stage 2 (no father)
+    pt_assert_stage(STAGE2);
     pt_assert(node->is_node());
 
     if (node->flags & IS_SINGLE_BRANCH_NODE) {
@@ -270,7 +270,7 @@ template <> inline POS_TREE3 *PT_read_son<POS_TREE3>(POS_TREE3 *node, PT_base ba
         long i    = (node->flags >> 3)&0x7;      // this son
         if (!i) i = 1; else i+=2;                // offset mapping
         pt_assert(i >= 0);
-        return (POS_TREE3 *)(((char *)node)-i);
+        return (POS_TREE2 *)(((char *)node)-i);
     }
     if (!((1<<base) & node->flags)) { // bit not set
         return NULL;
@@ -345,7 +345,7 @@ template <> inline POS_TREE3 *PT_read_son<POS_TREE3>(POS_TREE3 *node, PT_base ba
     }
 #endif
     pt_assert(i >= 0);
-    return (POS_TREE3 *)(((char*)node)-i);
+    return (POS_TREE2 *)(((char*)node)-i);
 }
 
 template<> inline POS_TREE1 *PT_read_son<POS_TREE1>(POS_TREE1 *node, PT_base base) {
@@ -355,7 +355,7 @@ template<> inline POS_TREE1 *PT_read_son<POS_TREE1>(POS_TREE1 *node, PT_base bas
     return PT_read_pointer<POS_TREE1>(node->udata() + sizeof(PT_PNTR)*base);
 }
 
-inline size_t PT_leaf_size(POS_TREE3 *node) {
+inline size_t PT_leaf_size(POS_TREE2 *node) {
     size_t size = 1;  // flags
     size += (PT_GLOBAL.count_bits[PT_BASES][node->flags]+3)*2;
     return size;
@@ -508,10 +508,10 @@ inline const char *PT_READ_CHAIN_ENTRY_stage_1(const char *entry, AbsLoc& loc, i
     return NULL;
 }
 
-inline const char *PT_READ_CHAIN_ENTRY_stage_3(const char *ptr, int mainapos, AbsLoc& loc) {
+inline const char *PT_READ_CHAIN_ENTRY_stage_2(const char *ptr, int mainapos, AbsLoc& loc) {
     // Caution: 'name' (of AbsLoc) has to be initialized before first call and shall not be modified between calls
 
-    pt_assert_stage(STAGE3);
+    pt_assert_stage(STAGE2);
 
     uint_8  has_main_apos;
     uint_32 name = loc.get_name() + read_nat_with_reserved_bits<1>(ptr, has_main_apos);
@@ -584,7 +584,7 @@ public:
     int get_mainapos() const { return mainapos; }
 };
 
-class ChainIteratorStage3 : virtual Noncopyable {
+class ChainIteratorStage2 : virtual Noncopyable {
     const char *data;
     AbsLoc      loc;
 
@@ -594,7 +594,7 @@ class ChainIteratorStage3 : virtual Noncopyable {
     bool at_end_of_chain() const { return elements_ahead<0; }
     void set_loc_from_chain() {
         if (elements_ahead>0) {
-            data = PT_READ_CHAIN_ENTRY_stage_3(data, mainapos, loc);
+            data = PT_READ_CHAIN_ENTRY_stage_2(data, mainapos, loc);
         }
         else {
             pt_assert(elements_ahead == 0);
@@ -609,13 +609,13 @@ class ChainIteratorStage3 : virtual Noncopyable {
     }
 
 public:
-    typedef POS_TREE3 POS_TREE_TYPE;
+    typedef POS_TREE2 POS_TREE_TYPE;
 
-    ChainIteratorStage3(const POS_TREE3 *node)
+    ChainIteratorStage2(const POS_TREE2 *node)
         : data(node->udata()),
-          loc(0, 0) // init name with 0 (needed for chain reading in STAGE3)
+          loc(0, 0) // init name with 0 (needed for chain reading in STAGE2)
     {
-        pt_assert_stage(STAGE3);
+        pt_assert_stage(STAGE2);
         pt_assert(node->is_chain());
 
         if (node->flags&1) {
@@ -635,7 +635,7 @@ public:
 
     operator bool() const { return !at_end_of_chain(); }
     const AbsLoc& at() const { return loc; }
-    const ChainIteratorStage3& operator++() { inc(); return *this; } // prefix-inc
+    const ChainIteratorStage2& operator++() { inc(); return *this; } // prefix-inc
 
     const char *memptr() const { return data; }
 };
@@ -651,10 +651,10 @@ template<typename T> int PT_forwhole_chain(POS_TREE1 *node, T& func) {
     return error;
 }
 
-template<typename T> int PT_forwhole_chain(POS_TREE3 *node, T& func) {
-    pt_assert_stage(STAGE3);
+template<typename T> int PT_forwhole_chain(POS_TREE2 *node, T& func) {
+    pt_assert_stage(STAGE2);
     int error = 0;
-    for (ChainIteratorStage3 entry(node); entry && !error; ++entry) {
+    for (ChainIteratorStage2 entry(node); entry && !error; ++entry) {
         error = func(entry.at());
     }
     return error;

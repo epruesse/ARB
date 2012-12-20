@@ -132,8 +132,8 @@ public:
     int accept_N_mismatches(int ambig) const { return accepted_N_mismatches[ambig]; }
 
     bool add_hit(const DataLoc& at, const Mismatches& mismatch);
-    bool add_hits_for_children(POS_TREE3 *pt, const Mismatches& mismatch);
-    bool collect_hits_for(const char *probe, POS_TREE3 *pt, Mismatches& mismatch, int height);
+    bool add_hits_for_children(POS_TREE2 *pt, const Mismatches& mismatch);
+    bool collect_hits_for(const char *probe, POS_TREE2 *pt, Mismatches& mismatch, int height);
 
     int allowed_mismatches() const { return pt_local.pm_max; }
     double get_mismatch_weight(char probe, char seq) const { return weights.get(probe, seq); }
@@ -203,7 +203,7 @@ bool MatchRequest::add_hit(const DataLoc& at, const Mismatches& mismatch) {
     return hit_limit_reached();
 }
 
-bool MatchRequest::add_hits_for_children(POS_TREE3 *pt, const Mismatches& mismatch) {
+bool MatchRequest::add_hits_for_children(POS_TREE2 *pt, const Mismatches& mismatch) {
     //! go down the tree to chains and leafs; copy names, positions and mismatches in locs structure
 
     pt_assert(pt && mismatch.accepted()); // invalid or superfluous call
@@ -216,7 +216,7 @@ bool MatchRequest::add_hits_for_children(POS_TREE3 *pt, const Mismatches& mismat
             break;
 
         case PT_NT_CHAIN: {
-            ChainIteratorStage3 entry(pt);
+            ChainIteratorStage2 entry(pt);
             while (entry && !enough) {
                 enough = add_hit(DataLoc(entry.at()), mismatch);
                 ++entry;
@@ -225,7 +225,7 @@ bool MatchRequest::add_hits_for_children(POS_TREE3 *pt, const Mismatches& mismat
         }
         case PT_NT_NODE:
             for (int base = PT_QU; base < PT_BASES && !enough; base++) {
-                POS_TREE3 *son  = PT_read_son(pt, (PT_base)base);
+                POS_TREE2 *son  = PT_read_son(pt, (PT_base)base);
                 if (son) enough = add_hits_for_children(son, mismatch);
             }
             break;
@@ -255,7 +255,7 @@ void Mismatches::count_versus(const ReadableDataLoc& loc, const char *probe, int
     }
 }
 
-bool MatchRequest::collect_hits_for(const char *probe, POS_TREE3 *pt, Mismatches& mismatches, const int height) {
+bool MatchRequest::collect_hits_for(const char *probe, POS_TREE2 *pt, Mismatches& mismatches, const int height) {
     //! search down the tree to find matching species for the given probe
 
     pt_assert(pt && mismatches.accepted()); // invalid or superfluous call
@@ -278,7 +278,7 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE3 *pt, Mismatches
             case PT_NT_CHAIN: {
                 pt_assert(probe);
 
-                ChainIteratorStage3 entry(pt);
+                ChainIteratorStage2 entry(pt);
                 while (entry && !enough) {
                     Mismatches entry_mismatches(mismatches);
                     DataLoc dloc(entry.at()); // @@@ EXPENSIVE_CONVERSION
@@ -292,7 +292,7 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE3 *pt, Mismatches
             }
             case PT_NT_NODE:
                 for (int i=PT_QU; i<PT_BASES && !enough; i++) {
-                    POS_TREE3 *son = PT_read_son(pt, (PT_base)i);
+                    POS_TREE2 *son = PT_read_son(pt, (PT_base)i);
                     if (son) {
                         Mismatches son_mismatches(mismatches);
                         son_mismatches.count_weighted(probe[height], i, height);
@@ -463,7 +463,7 @@ int probe_match(PT_local *locs, aisc_string probestring) {
 
     pt_assert(req.allowed_mismatches() >= 0); // till [8011] value<0 was used to trigger "new match" (feature unused)
     Mismatches mismatch(req);
-    req.collect_hits_for(probestring, psg.TREE_ROOT3(), mismatch, 0);
+    req.collect_hits_for(probestring, psg.TREE_ROOT2(), mismatch, 0);
 
     if (locs->pm_reversed) {
         psg.reversed  = 1;
@@ -472,7 +472,7 @@ int probe_match(PT_local *locs, aisc_string probestring) {
         freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
 
         Mismatches rev_mismatch(req);
-        req.collect_hits_for(rev_pro, psg.TREE_ROOT3(), rev_mismatch, 0);
+        req.collect_hits_for(rev_pro, psg.TREE_ROOT2(), rev_mismatch, 0);
         free(rev_pro);
     }
     pt_sort_match_list(locs);
@@ -835,12 +835,12 @@ int MP_count_all_species(const PT_local *) {
 #include <test_unit.h>
 #endif
 
-struct EnterStage3 {
-    EnterStage3() {
+struct EnterStage2 {
+    EnterStage2() {
         PT_init_psg();
-        psg.init(STAGE3);
+        psg.init(STAGE2);
     }
-    ~EnterStage3() {
+    ~EnterStage2() {
         PT_exit_psg();
     }
 };
@@ -848,7 +848,7 @@ struct EnterStage3 {
 #define TEST_WEIGHTED_MISMATCH(probe,seq,expected) TEST_EXPECT_SIMILAR(weights.get(probe,seq), expected, EPS)
 
 void TEST_weighted_mismatches() {
-    EnterStage3 stage3;
+    EnterStage2 stage2;
     PT_bond bonds[16] = {
         { 0.0 }, { 0.0 }, { 0.5 }, { 1.1 },
         { 0.0 }, { 0.0 }, { 1.5 }, { 0.0 },
