@@ -1449,24 +1449,79 @@ AW_option_menu_struct *AW_window::create_option_menu(const char */*awar_name*/, 
     return 0;
 }
 
+
+GType AW_window::convert_aw_type_to_gtk_type(AW_VARIABLE_TYPE aw_type){
+
+    switch(aw_type) {
+        //inconvertable types
+        case AW_NONE:
+        case AW_TYPE_MAX:
+        case AW_DB:
+            return G_TYPE_INVALID;
+        case AW_BIT:
+            FIXME("Not sure if AW_BIT and G_TYPE_FLAGS are the same");
+            return G_TYPE_FLAGS;
+        case AW_BYTE:
+            return G_TYPE_UCHAR;
+        case AW_INT:
+            return G_TYPE_INT;
+        case AW_FLOAT:
+            return G_TYPE_FLOAT;
+        case AW_POINTER:
+            return G_TYPE_POINTER;
+        case AW_BITS:
+            return G_TYPE_FLAGS;
+        case AW_BYTES:
+            return G_TYPE_BYTE_ARRAY;
+        case AW_INTS:
+            FIXME("Warning: AW_INTS converted to G_TYPE_ARRAY.");
+            return G_TYPE_ARRAY;
+        case AW_FLOATS:
+            FIXME("Warning: AW_FLOATS converted to G_TYPE_ARRAY.");
+            return G_TYPE_ARRAY;      
+        case AW_STRING:
+            return G_TYPE_STRING;
+        default:
+            aw_assert(false);
+            return G_TYPE_INVALID;
+    }
+}
+
+
 AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows) {
 
-    aw_assert(columns == 1); //currently this code only works with one column
-    
     GTK_PARTLY_IMPLEMENTED;
+    GtkListStore *store;
+    GtkWidget *tree;
+    GtkCellRenderer *renderer;
+    GtkTreeViewColumn *column;
+    AW_awar *vs = 0;
     
-    GtkListStore *pStore;
-    GtkWidget *pTree;
-    GtkCellRenderer *pRenderer;
-    GtkTreeViewColumn *pColumn;
+    aw_assert(var_name); // @@@ case where var_name == NULL is relict from multi-selection-list (not used; removed)
+    vs = root->awar(var_name);
+    //GType type; // gtk type for the list column
     
+//    if(NULL == vs) 
+//    {
+//        type = G_TYPE_STRING;
+//    }
+//    else
+//    {
+//        type = convert_aw_type_to_gtk_type(vs->variable_type);
+//    }
     
-    pStore = gtk_list_store_new(1, G_TYPE_STRING);
-    pTree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (pStore));
-    pRenderer = gtk_cell_renderer_text_new ();
-    pColumn = gtk_tree_view_column_new_with_attributes("TODO", pRenderer,
-                                                       "text", 0,
-                                                       NULL);
+//    aw_assert(type != G_TYPE_NONE);
+    
+    tree = gtk_tree_view_new();
+    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
+    renderer = gtk_cell_renderer_text_new ();
+    column = gtk_tree_view_column_new_with_attributes("List Items",
+             renderer, "text", 0, NULL); //column headers are disabled, text does not matter
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+    store = gtk_list_store_new(1, G_TYPE_STRING);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(store));
+
+    
     //    Widget         scrolledWindowList; // @@@ fix locals
 //    Widget         scrolledList;
     VarUpdateInfo *vui;
@@ -1479,15 +1534,10 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 
     aw_assert(!_at.label_for_inputfield); // labels have no effect for selection lists
 
-    AW_awar *vs = 0;
-
-    aw_assert(var_name); // @@@ case where var_name == NULL is relict from multi-selection-list (not used; removed)
-
-    if (var_name) vs = root->awar(var_name);
-
     width_of_list  = this->calculate_string_width(columns) + 9;
     height_of_list = this->calculate_string_height(rows, 4*rows) + 9;
-
+    gtk_widget_set_size_request(GTK_WIDGET(tree), width_of_list, height_of_list);
+    
     {
 //        aw_xargs args(7);
 //        args.add(XmNvisualPolicy,           XmVARIABLE);
@@ -1500,9 +1550,9 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
             if (_at.y_for_next_button  < _at.to_position_y - 18) {
                 height_of_list = _at.to_position_y - _at.y_for_next_button - 18;
             }
-
+            gtk_widget_set_size_request(GTK_WIDGET(tree), width_of_list, height_of_list);
             FIXME("Attaching list widget not implemented");
-            gtk_fixed_put(prvt->fixed_size_area, pTree, 10, _at.y_for_next_button);
+            gtk_fixed_put(prvt->fixed_size_area, tree, 10, _at.y_for_next_button);
             //scrolledWindowList = XtVaCreateManagedWidget("scrolledWindowList1", xmScrolledWindowWidgetClass, p_w->areas[AW_INFO_AREA]->get_form(), NULL);
 
            // args.assign_to_widget(scrolledWindowList);
@@ -1514,8 +1564,8 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
         else {
 //            scrolledWindowList = XtVaCreateManagedWidget("scrolledWindowList1", xmScrolledWindowWidgetClass, p_w->areas[AW_INFO_AREA]->get_area(), NULL);
 //
-              
-            gtk_fixed_put(prvt->fixed_size_area, pTree, 10, _at.y_for_next_button);
+            
+            gtk_fixed_put(prvt->fixed_size_area, tree, 10, _at.y_for_next_button);
             
 //            args.add(XmNscrollingPolicy, XmAPPLICATION_DEFINED);
 //            args.add(XmNx, 10);
@@ -1525,6 +1575,16 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     }
 
     {
+        
+        GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
+        if(NULL == vs) {
+            gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
+        }
+        else
+        {
+            gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
+        }
+        
 //        int select_type = XmMULTIPLE_SELECT;
 //        if (vs) select_type = XmBROWSE_SELECT;
 
@@ -1587,13 +1647,14 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
         int type = GB_STRING;
         if (vs)  type = vs->variable_type;
 
-        root->append_selection_list(new AW_selection_list(var_name, type, pTree));
+        root->append_selection_list(new AW_selection_list(var_name, type, GTK_TREE_VIEW(tree)));
     }
 
 
     // user-own callback
     cbs = _callback;
 
+    FIXME("enter callback not implemented");
     // callback for enter
 //    if (vs) {
 //        vui = new VarUpdateInfo(this, scrolledList, AW_WIDGET_SELECTION_LIST, vs, cbs);
@@ -1615,7 +1676,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     this->unset_at_commands();
     this->increment_at_commands(width_of_last_widget, height_of_last_widget);
     
-    gtk_widget_show(pTree);
+    gtk_widget_show(tree);
     
     return root->get_last_selection_list();
 }

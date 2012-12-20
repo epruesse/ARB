@@ -18,15 +18,34 @@
 #include <arbdb.h>
 #endif
 
-AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei, GtkWidget *select_list_widgeti) {
-    // @@@ fix initialization
-    memset((char *)this, 0, sizeof(AW_selection_list));
-    variable_name          = nulldup(variable_namei);
-    variable_type          = (AW_VARIABLE_TYPE)variable_typei;
-    select_list_widget     = select_list_widgeti;
-    list_table             = NULL;
-    last_of_list_table     = NULL;
-    default_select         = NULL;
+#include <gtk-2.0/gtk/gtktreeview.h>
+#include <string>
+#include <vector>
+#include <gtk-2.0/gtk/gtktreestore.h>
+
+__ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *intoWhat) {
+    GBK_terminatef("Cannot insert %s into %s which uses a non-%s AWAR", triedType, intoWhat, triedType);
+}
+
+__ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { type_mismatch(triedType, "selection-list"); }
+__ATTR__NORETURN inline void option_type_mismatch(const char *triedType) { type_mismatch(triedType, "option-menu"); }
+__ATTR__NORETURN inline void toggle_type_mismatch(const char *triedType) { type_mismatch(triedType, "toggle"); }
+
+
+AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei,
+                                     GtkTreeView *select_list_widgeti) :
+        variable_name(nulldup(variable_namei)),
+        variable_type((AW_VARIABLE_TYPE)variable_typei),
+        select_list_widget(select_list_widgeti),
+        list_table(NULL),
+        last_of_list_table(NULL),
+        default_select(NULL),
+        list_model(GTK_LIST_STORE(gtk_tree_view_get_model(select_list_widgeti))),
+        next(NULL)
+{
+    aw_assert(NULL != select_list_widget);
+    aw_assert(NULL != list_model);
+
 }
 
 void AW_selection::refresh() {
@@ -34,8 +53,22 @@ void AW_selection::refresh() {
 }
 
 
-void AW_selection_list::clear(bool clear_default/* = true*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::clear(bool clear_default) {
+    while (list_table) {
+        AW_selection_list_entry *nextEntry = list_table->next;
+        delete list_table;
+        list_table = nextEntry;
+    }
+    list_table = NULL;
+    last_of_list_table = NULL;
+
+    if (clear_default && default_select) {
+        delete default_select;
+        default_select = NULL;
+    }
+    
+    gtk_tree_store_clear(GTK_TREE_STORE(gtk_tree_view_get_model(select_list_widget)));
+    
 }
 
 bool AW_selection_list::default_is_selected() const {
@@ -85,28 +118,72 @@ void AW_selection_list::init_from_array(const CharPtrArray& /*entries*/, const c
 
 }
 
-void AW_selection_list::insert(const char */*displayed*/, const char */*value*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::insert(const char *displayed, const char *value) {
+    
+    AW_selection_list_entry* entry = insert_generic(displayed, value, AW_STRING);
+    if(NULL != entry)
+    {
+        appendToListStore(last_of_list_table);
+    }
 }
 
-void AW_selection_list::insert_default(const char */*displayed*/, const char */*value*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::appendToListStore(AW_selection_list_entry* entry)
+{
+    GtkListStore *store;
+    GtkTreeIter iter;
+
+    aw_assert(NULL != entry);
+    
+    //note: gtk crashes if the store is an attribute.
+    store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(select_list_widget)));
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, entry->get_displayed(), -1);    
 }
 
-void AW_selection_list::insert(const char */*displayed*/, int32_t /*value*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::insert_default(const char *displayed, const char *value) {
+    if (variable_type != AW_STRING) {
+        selection_type_mismatch("string");
+        return;
+    }
+    if (default_select) delete default_select;
+    default_select = new AW_selection_list_entry(displayed, value);
 }
 
-void AW_selection_list::insert_default(const char */*displayed*/, int32_t /*value*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::insert(const char *displayed, int32_t value) {
+    AW_selection_list_entry* entry = insert_generic(displayed, value, AW_INT);
+    if(NULL != entry)
+    {
+        appendToListStore(last_of_list_table);
+    }
 }
 
-void AW_selection_list::insert(const char */*displayed*/, GBDATA */*pointer*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::insert_default(const char *displayed, int32_t value) {
+    if (variable_type != AW_INT) {
+        selection_type_mismatch("int");
+        return;
+    }
+    if (default_select) {
+        delete default_select;
+    }
+    default_select = new AW_selection_list_entry(displayed, value);
 }
 
-void AW_selection_list::insert_default(const char */*displayed*/, GBDATA */*pointer*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::insert(const char *displayed, GBDATA *pointer) {
+    AW_selection_list_entry* entry = insert_generic(displayed, value, AW_POINTER);
+    if(NULL != entry)
+    {
+        appendToListStore(last_of_list_table);
+    }
+}
+
+void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
+    if (variable_type != AW_POINTER) {
+        selection_type_mismatch("pointer");
+        return;
+    }
+    if (default_select) delete default_select;
+    default_select = new AW_selection_list_entry(displayed, pointer);
 }
 
 
@@ -131,8 +208,14 @@ void AW_selection_list::set_file_suffix(char const */*suffix*/) {
 }
 
 size_t AW_selection_list::size() {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+    AW_selection_list_entry *lt    = list_table;
+    size_t                  count = 0;
+
+    while (lt) {
+        ++count;
+        lt = lt->next;
+    }
+    return count;
 }
 
 void AW_selection_list::sort(bool /*backward*/, bool /*case_sensitive*/) {
@@ -148,13 +231,22 @@ GB_HASH *AW_selection_list::to_hash(bool /*case_sens*/) {
     return 0;
 }
 
-void AW_selection_list::update() {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::update() {      
+    //note: This method is deprecated
 }
 
-char *AW_selection_list_entry::copy_string_for_display(char const */*str*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+char *AW_selection_list_entry::copy_string_for_display(const char *str) {
+    char *out = strdup(str);
+    char *p   = out;
+    int   ch;
+
+    while ((ch=*(p++)) != 0) {
+        if (ch==',')
+            p[-1] = ';';
+        if (ch=='\n')
+            p[-1] = '#';
+    }
+    return out;
 }
 
 void AW_selection_list::refresh() {

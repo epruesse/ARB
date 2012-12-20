@@ -606,6 +606,13 @@ public:
     void clear_option_menu(AW_option_menu_struct *oms);  // used to redefine available options
 
 private:
+    /**
+     * Converts a aw variable type to gtk variable type
+     * @param aw_type
+     * @return The converted type or G_TYPE_INVALID if the conversion fails.
+     */
+    GType convert_aw_type_to_gtk_type(AW_VARIABLE_TYPE aw_type);
+    
     void insert_option_internal(AW_label choice_label, const char *mnemonic, const char *var_value,  const char *name_of_color, bool default_option);
     void insert_option_internal(AW_label choice_label, const char *mnemonic, int var_value,          const char *name_of_color, bool default_option);
     void insert_option_internal(AW_label choice_label, const char *mnemonic, float var_value,        const char *name_of_color, bool default_option);

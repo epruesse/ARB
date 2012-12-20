@@ -18,6 +18,7 @@
 #include "aw_scalar.hxx"
 #endif
 
+#include "AW_gtk_forward_declarations.hxx"
 
 class CharPtrArray;
 class StrArray;
@@ -51,21 +52,39 @@ public:
     void set_displayed(const char *displayed_) { freeset(displayed, copy_string_for_display(displayed_)); }
 };
 
+
 class AW_selection_list {
    // AW_selection_list_entry *get_entry_at(int index);
     
+    
+    /**
+     * Appends the specified entry to the list store
+     */
+    void appendToListStore(AW_selection_list_entry* entry);
+    
+    /**
+     * Inserts a value into this selection list.
+     * @param displayed The value that should be displayed
+     * @param value The actual value
+     * @param expectedType The type of this variable. This is only used for type checking hence the name 'expectedType'
+     * @return The newly added list entry. NULL in case of error.
+     */
+    template <class T>
+    AW_selection_list_entry* insert_generic(const char* displayed, T value, AW_VARIABLE_TYPE expectedType);
+    
 public:
-    AW_selection_list(const char *variable_namei, int variable_typei, GtkWidget *select_list_widgeti);
+    AW_selection_list(const char *variable_namei, int variable_typei, GtkTreeView *select_list_widgeti);
 
     char             *variable_name;
     AW_VARIABLE_TYPE  variable_type;
-    GtkWidget        *select_list_widget;
+    GtkTreeView      *select_list_widget;
 
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;
     AW_selection_list_entry *default_select;
-    AW_selection_list      *next;
-
+    GtkListStore            *list_model; /** < the list model of this selection list */
+    AW_selection_list       *next;
+    
     // ******************** real public ***************
     
     void selectAll();
@@ -82,7 +101,7 @@ public:
 
     void init_from_array(const CharPtrArray& entries, const char *defaultEntry);
     
-    void update();
+    void update() __attribute__ ((deprecated));
     void refresh(); 
 
     void sort(bool backward, bool case_sensitive); // uses displayed value!
@@ -194,3 +213,21 @@ public:
 };
 void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *);
 
+
+    template <class T>
+    AW_selection_list_entry* AW_selection_list::insert_generic(const char* displayed, T value, AW_VARIABLE_TYPE expectedType) {
+        if (variable_type != expectedType) {
+        selection_type_mismatch(typeid(T).name()); //note: gcc mangles the name, however this error will only occur during development.
+        return NULL;
+        }
+        if (list_table) {
+            last_of_list_table->next = new AW_selection_list_entry(displayed, value);
+            last_of_list_table = last_of_list_table->next;
+            last_of_list_table->next = NULL;
+        }
+        else {
+            last_of_list_table = list_table = new AW_selection_list_entry(displayed, value);
+        }
+        
+        return last_of_list_table;
+    }

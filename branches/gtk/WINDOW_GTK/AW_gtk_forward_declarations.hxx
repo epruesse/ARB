@@ -11,7 +11,11 @@
 struct _GtkWidget; 
 struct _GtkMenuBar;
 struct _GdkEventKey;
+struct _GtkTreeView;
+struct _GtkListStore;
 
 typedef struct _GtkWidget      GtkWidget;
 typedef struct _GtkMenuBar     GtkMenuBar;
 typedef struct _GdkEventKey    GdkEventKey;
+typedef struct _GtkTreeView    GtkTreeView;
+typedef struct _GtkListStore   GtkListStore;
