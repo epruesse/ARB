@@ -9,8 +9,7 @@
 //                                                              //
 // ============================================================ //
 
-#ifndef AW_SCALAR_HXX
-#define AW_SCALAR_HXX
+#pragma once
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -79,8 +78,3 @@ public:
     }
     bool operator != (const AW_scalar& other) const { return !(*this == other); }
 };
-
-
-#else
-#error aw_scalar.hxx included twice
-#endif // AW_SCALAR_HXX

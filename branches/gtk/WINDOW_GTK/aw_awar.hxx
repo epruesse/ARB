@@ -9,8 +9,7 @@
 //                                                                   //
 // ================================================================= //
 
-#ifndef AW_AWAR_HXX
-#define AW_AWAR_HXX
+#pragma once
 
 #ifndef AW_BASE_HXX
 #include "aw_base.hxx"
@@ -180,11 +179,3 @@ public:
     GB_ERROR make_global() __ATTR__USERESULT;       // should be used by ARB_init_global_awars only
     void set_temp_if_is_default(GBDATA *gb_main);
 };
-
-
-
-#else
-#error aw_awar.hxx included twice
-#endif // AW_AWAR_HXX
-
-

@@ -22,6 +22,8 @@
 #include <string>
 #include <vector>
 #include <gtk-2.0/gtk/gtktreestore.h>
+#include <gtk-2.0/gtk/gtkliststore.h>
+
 
 __ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *intoWhat) {
     GBK_terminatef("Cannot insert %s into %s which uses a non-%s AWAR", triedType, intoWhat, triedType);
@@ -30,6 +32,7 @@ __ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *in
 __ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { type_mismatch(triedType, "selection-list"); }
 __ATTR__NORETURN inline void option_type_mismatch(const char *triedType) { type_mismatch(triedType, "option-menu"); }
 __ATTR__NORETURN inline void toggle_type_mismatch(const char *triedType) { type_mismatch(triedType, "toggle"); }
+
 
 
 AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei,
@@ -67,7 +70,7 @@ void AW_selection_list::clear(bool clear_default) {
         default_select = NULL;
     }
     
-    gtk_tree_store_clear(GTK_TREE_STORE(gtk_tree_view_get_model(select_list_widget)));
+    gtk_list_store_clear(GTK_LIST_STORE(gtk_tree_view_get_model(select_list_widget)));
     
 }
 
@@ -170,7 +173,7 @@ void AW_selection_list::insert_default(const char *displayed, int32_t value) {
 }
 
 void AW_selection_list::insert(const char *displayed, GBDATA *pointer) {
-    AW_selection_list_entry* entry = insert_generic(displayed, value, AW_POINTER);
+    AW_selection_list_entry* entry = insert_generic(displayed, pointer, AW_POINTER);
     if(NULL != entry)
     {
         appendToListStore(last_of_list_table);

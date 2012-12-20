@@ -8,7 +8,7 @@
 //   http://www.arb-home.de/                                     //
 //                                                               //
 // ============================================================= //
- 
+   
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_window.hxx"
 #include "AW_area_management.hxx"
@@ -23,6 +23,8 @@
 #include "AW_motif_gtk_conversion.hxx"
 #include "AW_modal.hxx"
 #include "aw_help.hxx"
+#include "aw_varUpdateInfo.hxx" 
+
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
@@ -122,37 +124,6 @@ public:
                       modes_f_callbacks(NULL){}
 
     
-};
-
-
-class VarUpdateInfo : virtual Noncopyable { // used to refresh single items on change
-    AW_window         *aw_parent;
-    GtkWidget         *widget;
-    AW_widget_type     widget_type;
-    AW_awar           *awar;
-    AW_scalar          value;
-    AW_cb_struct      *cbs;
-    AW_selection_list *sellist;
-
-public:
-    VarUpdateInfo(AW_window *aw, GtkWidget *w, AW_widget_type wtype, AW_awar *a, AW_cb_struct *cbs_)
-        : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
-          value(a),
-          cbs(cbs_), sellist(NULL)
-    {
-    }
-    template<typename T>
-    VarUpdateInfo(AW_window *aw, GtkWidget *w, AW_widget_type wtype, AW_awar *a, T t, AW_cb_struct *cbs_)
-        : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
-          value(t),
-          cbs(cbs_), sellist(NULL)
-    {
-    }
-
-//    void change_from_widget(XtPointer call_data);
-
-    void set_widget(GtkWidget *w) { widget = w; }
-    void set_sellist(AW_selection_list *asl) { sellist = asl; }
 };
 
 
@@ -1159,7 +1130,7 @@ void AW_window::create_toggle(const char */*awar_name*/, const char */*nobitmap*
 void AW_window::create_text_toggle(const char */*var_name*/, const char */*noText*/, const char */*yesText*/, int /*buttonWidth*/ /*= 0*/) {
     GTK_NOT_IMPLEMENTED;
 }
-void AW_window::allow_delete_window(bool allow_close) {
+void AW_window::allow_delete_window(bool /*allow_close*/) {
     GTK_NOT_IMPLEMENTED;
     //aw_set_delete_window_cb(this, p_w->shell, allow_close);
 }
@@ -1524,7 +1495,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     
     //    Widget         scrolledWindowList; // @@@ fix locals
 //    Widget         scrolledList;
-    VarUpdateInfo *vui;
+    AW_varUpdateInfo *vui;
     AW_cb_struct  *cbs;
     
     int width_of_list;
@@ -1563,14 +1534,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
         }
         else {
 //            scrolledWindowList = XtVaCreateManagedWidget("scrolledWindowList1", xmScrolledWindowWidgetClass, p_w->areas[AW_INFO_AREA]->get_area(), NULL);
-//
-            
             gtk_fixed_put(prvt->fixed_size_area, tree, 10, _at.y_for_next_button);
-            
-//            args.add(XmNscrollingPolicy, XmAPPLICATION_DEFINED);
-//            args.add(XmNx, 10);
-//            args.add(XmNy, _at.y_for_next_button);
-//            args.assign_to_widget(scrolledWindowList);
         }
     }
 
@@ -1584,41 +1548,10 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
         {
             gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
         }
-        
-//        int select_type = XmMULTIPLE_SELECT;
-//        if (vs) select_type = XmBROWSE_SELECT;
-
-        //TuneBackground(scrolledWindowList, TUNE_INPUT);
-//        scrolledList = XtVaCreateManagedWidget("scrolledList1",
-//                                               xmListWidgetClass,
-//                                               scrolledWindowList,
-//                                               XmNwidth, (int)width_of_list,
-//                                               XmNheight, (int) height_of_list,
-//                                               XmNscrollBarDisplayPolicy, XmSTATIC,
-//                                               XmNselectionPolicy, select_type,
-//                                               XmNlistSizePolicy, XmCONSTANT,
-//                                               XmNfontList, p_global->fontlist,
-//                                               XmNbackground, _at.background_color,
-//                                               NULL);
-
-//        static bool actionsAdded = false;
-//        if (!actionsAdded) {
-//            struct _XtActionsRec actions[2] = {
-//                {(char*)"scroll_sellist_up", scroll_sellist_up},
-//                {(char*)"scroll_sellist_dn", scroll_sellist_dn}
-//            };
-//
-//            XtAppAddActions(p_global->context, actions, 2);
-//        }
-//
-//        XtTranslations translations = XtParseTranslationTable(
-//            "<Btn4Down>:scroll_sellist_up()\n"
-//            "<Btn5Down>:scroll_sellist_dn()\n"
-//            );
-//        XtAugmentTranslations(scrolledList, translations);
     }
 
-//    if (!_at.to_position_exists) {
+    if (!_at.to_position_exists) {
+        FIXME("selection list alignment not implemented");
 //        short height;
 //        XtVaGetValues(scrolledList, XmNheight, &height, NULL);
 //        height_of_last_widget = height + 20;
@@ -1639,9 +1572,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 //                XtVaSetValues(scrolledWindowList, XmNx, (int)(_at.x_for_next_button - width_of_list - 18), NULL);
 //                width_of_last_widget = 0;
 //                break;
-//        }
-
-  //  }
+        }
 
     {
         int type = GB_STRING;
@@ -1656,22 +1587,22 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 
     FIXME("enter callback not implemented");
     // callback for enter
-//    if (vs) {
-//        vui = new VarUpdateInfo(this, scrolledList, AW_WIDGET_SELECTION_LIST, vs, cbs);
-//        vui->set_sellist(p_global->last_selection_list);
-//
-//        XtAddCallback(scrolledList, XmNbrowseSelectionCallback,
-//                      (XtCallbackProc) AW_variable_update_callback,
-//                      (XtPointer) vui);
-//
+    if (vs) {
+        vui = new AW_varUpdateInfo(this, tree, AW_WIDGET_SELECTION_LIST, vs, cbs);
+        vui->set_sellist(root->get_last_selection_list());
+
+        GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
+        g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), (gpointer) vui);
+
+        FIXME("double click callback not implemented");
 //        if (_d_callback) {
 //            XtAddCallback(scrolledList, XmNdefaultActionCallback,
 //                          (XtCallbackProc) AW_server_callback,
 //                          (XtPointer) _d_callback);
 //        }
-//        vs->tie_widget((AW_CL)p_global->last_selection_list, scrolledList, AW_WIDGET_SELECTION_LIST, this);
-//        root->make_sensitive(scrolledList, _at.widget_mask);
-//    }
+        vs->tie_widget((AW_CL)root->get_last_selection_list(), tree, AW_WIDGET_SELECTION_LIST, this);
+        root->make_sensitive(tree, _at.widget_mask);
+    }
 
     this->unset_at_commands();
     this->increment_at_commands(width_of_last_widget, height_of_last_widget);

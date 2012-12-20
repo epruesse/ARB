@@ -19,7 +19,7 @@
 #endif
 
 #include "AW_gtk_forward_declarations.hxx"
-
+#include <typeinfo>
 class CharPtrArray;
 class StrArray;
 
@@ -213,21 +213,23 @@ public:
 };
 void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *);
 
+    
+__ATTR__NORETURN inline void selection_type_mismatch(const char *triedType);
 
-    template <class T>
-    AW_selection_list_entry* AW_selection_list::insert_generic(const char* displayed, T value, AW_VARIABLE_TYPE expectedType) {
-        if (variable_type != expectedType) {
-        selection_type_mismatch(typeid(T).name()); //note: gcc mangles the name, however this error will only occur during development.
-        return NULL;
-        }
-        if (list_table) {
-            last_of_list_table->next = new AW_selection_list_entry(displayed, value);
-            last_of_list_table = last_of_list_table->next;
-            last_of_list_table->next = NULL;
-        }
-        else {
-            last_of_list_table = list_table = new AW_selection_list_entry(displayed, value);
-        }
-        
-        return last_of_list_table;
+template <class T>
+AW_selection_list_entry* AW_selection_list::insert_generic(const char* displayed, T value, AW_VARIABLE_TYPE expectedType) {
+    if (variable_type != expectedType) {
+    selection_type_mismatch(typeid(T).name()); //note: gcc mangles the name, however this error will only occur during development.
+    return NULL;
     }
+    if (list_table) {
+        last_of_list_table->next = new AW_selection_list_entry(displayed, value);
+        last_of_list_table = last_of_list_table->next;
+        last_of_list_table->next = NULL;
+    }
+    else {
+        last_of_list_table = list_table = new AW_selection_list_entry(displayed, value);
+    }
+
+    return last_of_list_table;
+}
