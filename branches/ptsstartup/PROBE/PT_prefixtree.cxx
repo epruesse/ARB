@@ -70,18 +70,36 @@ bool PT_chain_has_valid_entries(const typename CHAINITER::POS_TREE_TYPE * const 
     return ok;
 }
 
-void pt_global::init(Stage stage) {
+PT_NODE_TYPE POS_TREE1::flag_2_type[256];
+PT_NODE_TYPE POS_TREE2::flag_2_type[256];
+
+void POS_TREE1::init_static() {
     for (int i=0; i<256; i++) {
         if (i&0x80) { // bit 8 marks a node
             flag_2_type[i] = PT_NT_NODE;
         }
-        else if (stage == STAGE1 && i&0x20) { // in STAGE1 bit 6 is used to mark PT_NT_SAVED (in STAGE2 that bit may be used otherwise)
+        else if (i&0x20) { // in STAGE1 bit 6 is used to mark PT_NT_SAVED (in STAGE2 that bit may be used otherwise)
             flag_2_type[i] = (i&0x40) ? PT_NT_UNDEF : PT_NT_SAVED;
         }
         else { // bit 7 distinguishes between chain and leaf
             flag_2_type[i] = (i&0x40) ? PT_NT_CHAIN : PT_NT_LEAF;
         }
     }
+}
+void POS_TREE2::init_static() {
+    for (int i=0; i<256; i++) {
+        if (i&0x80) { // bit 8 marks a node
+            flag_2_type[i] = PT_NT_NODE;
+        }
+        else { // bit 7 distinguishes between chain and leaf
+            flag_2_type[i] = (i&0x40) ? PT_NT_CHAIN : PT_NT_LEAF;
+        }
+    }
+}
+
+void pt_global::init() {
+    POS_TREE1::init_static();
+    POS_TREE2::init_static();
 
     for (unsigned base = PT_QU; base <= PT_BASES; base++) {
         for (unsigned i=0; i<256; i++) {
@@ -112,9 +130,9 @@ void PT_init_cache_sizes(Stage stage) {
     }
 }
 
-void probe_struct_global::init(Stage stage_) {
+void probe_struct_global::enter_stage(Stage stage_) {
     stage = stage_;
-    PT_GLOBAL.init(stage);
+    PT_GLOBAL.init();
     pt_assert(MEM.is_clear());
 }
 
@@ -170,7 +188,7 @@ void PT_add_to_chain(POS_TREE1 *node, const DataLoc& loc) {
     pt_assert_valid_chain_stage1(node);
 }
 
-POS_TREE1 *PT_change_leaf_to_node(POS_TREE1 *node) {
+POS_TREE1 *PT_change_leaf_to_node(POS_TREE1 *node) { // @@@ become member
     pt_assert_stage(STAGE1);
     pt_assert(node->is_leaf());
 
@@ -185,7 +203,7 @@ POS_TREE1 *PT_change_leaf_to_node(POS_TREE1 *node) {
     return new_elem;
 }
 
-POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node) {
+POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node) { // @@@ become member
     pt_assert_stage(STAGE1);
     pt_assert(node->is_leaf());
 
@@ -902,7 +920,7 @@ struct EnterStage1 {
     EnterStage1() {
         if (initialized) PT_exit_psg();
         PT_init_psg();
-        psg.init(STAGE1);
+        psg.enter_stage(STAGE1);
         initialized = true;
     }
     ~EnterStage1() {

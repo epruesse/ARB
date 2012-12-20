@@ -367,7 +367,7 @@ public:
     void setup();
     void cleanup();
 
-    void init(Stage stage_);
+    void enter_stage(Stage stage_);
     Stage get_stage() const { return stage; }
 
     int get_complement(int base) {

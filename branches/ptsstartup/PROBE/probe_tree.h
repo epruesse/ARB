@@ -37,10 +37,9 @@ enum PT_NODE_TYPE {
 const PT_NODE_TYPE PT_NT_UNDEF = PT_NODE_TYPE(4); // logically also belongs to PT_NODE_TYPE, but does not fit into bits reserved in node.flags
 
 struct pt_global {
-    PT_NODE_TYPE flag_2_type[256];
-    char         count_bits[PT_BASES+1][256]; // returns how many bits are set (e.g. PT_count_bits[3][n] is the number of the 3 lsb bits)
+    char count_bits[PT_BASES+1][256];         // returns how many bits are set (e.g. PT_count_bits[3][n] is the number of the 3 lsb bits)
 
-    void init(Stage stage);
+    void init();
 };
 
 extern pt_global PT_GLOBAL;
@@ -186,6 +185,9 @@ struct POS_TREE1 { // pos-tree (stage 1)
     uchar      flags;
     POS_TREE1 *father;
 
+    static PT_NODE_TYPE flag_2_type[256];
+    static void init_static();
+
     const char *udata() const { return ((const char*)this)+sizeof(*this); }
     char *udata() { return ((char*)this)+sizeof(*this); }
 
@@ -204,7 +206,7 @@ struct POS_TREE1 { // pos-tree (stage 1)
         pt_assert(type != PT_NT_UNDEF && type != PT_NT_SAVED); // does not work for saved nodes (done manually)
         flags = type<<FLAG_FREE_BITS;
     }
-    PT_NODE_TYPE get_type() const { return (PT_NODE_TYPE)PT_GLOBAL.flag_2_type[flags]; }
+    PT_NODE_TYPE get_type() const { return flag_2_type[flags]; }
 
     bool is_node() const { return get_type() == PT_NT_NODE; }
     bool is_leaf() const { return get_type() == PT_NT_LEAF; }
@@ -215,6 +217,9 @@ struct POS_TREE1 { // pos-tree (stage 1)
 struct POS_TREE2 { // pos-tree (stage 2)
     uchar flags;
 
+    static PT_NODE_TYPE flag_2_type[256];
+    static void init_static();
+
     const char *udata() const { return ((const char*)this)+sizeof(*this); }
     char *udata() { return ((char*)this)+sizeof(*this); }
 
@@ -223,14 +228,14 @@ struct POS_TREE2 { // pos-tree (stage 2)
         pt_assert(type != PT_NT_UNDEF && type != PT_NT_SAVED); // does not work for saved nodes (done manually)
         flags = type<<FLAG_FREE_BITS;
     }
-    PT_NODE_TYPE get_type() const { return (PT_NODE_TYPE)PT_GLOBAL.flag_2_type[flags]; }
+    PT_NODE_TYPE get_type() const { return flag_2_type[flags]; }
 
     bool is_node() const { return get_type() == PT_NT_NODE; }
     bool is_leaf() const { return get_type() == PT_NT_LEAF; }
     bool is_chain() const { return get_type() == PT_NT_CHAIN; }
 } __attribute__((packed));
 
-inline size_t PT_node_size(POS_TREE2 *node) {
+inline size_t PT_node_size(POS_TREE2 *node) { // @@@ become member
     size_t size = 1; // flags
     if ((node->flags & IS_SINGLE_BRANCH_NODE) == 0) {
         UINT sec = (uchar)*node->udata(); // read second byte for charshort/shortlong info
@@ -355,7 +360,7 @@ template<> inline POS_TREE1 *PT_read_son<POS_TREE1>(POS_TREE1 *node, PT_base bas
     return PT_read_pointer<POS_TREE1>(node->udata() + sizeof(PT_PNTR)*base);
 }
 
-inline size_t PT_leaf_size(POS_TREE2 *node) {
+inline size_t PT_leaf_size(POS_TREE2 *node) { // @@@ become member
     size_t size = 1;  // flags
     size += (PT_GLOBAL.count_bits[PT_BASES][node->flags]+3)*2;
     return size;
