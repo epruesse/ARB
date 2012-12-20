@@ -144,13 +144,6 @@ extern pt_global PT_GLOBAL;
     [short/int]     [apos short if bit[15] = 0]
 ]
     char -1         end flag
-
-only few functions can be used, when the tree is reloaded (stage 3):
-    PT_get_type
-    PT_read_son
-    PT_read_xpos
-    PT_read_name
-    PT_forwhole_chain
 */
 #endif
 
@@ -165,21 +158,21 @@ only few functions can be used, when the tree is reloaded (stage 3):
 // -----------------------------------------------
 //      Get the size of entries (stage 1) only
 
-#define PT_BASE_SIZE (sizeof(POS_TREE1)-1) // flag + father
+#define PT1_BASE_SIZE (sizeof(POS_TREE1)-1) // flag + father
 
-#define PT_EMPTY_LEAF_SIZE       (PT_BASE_SIZE+6) // name rel apos
-#define PT_LEAF_SIZE(leaf)       (PT_BASE_SIZE+6+2*PT_GLOBAL.count_bits[3][leaf->flags])
-#define PT_SHORT_CHAIN_HEAD_SIZE (PT_BASE_SIZE+2+sizeof(PT_PNTR)) // apos first_elem
-#define PT_LONG_CHAIN_HEAD_SIZE  (PT_SHORT_CHAIN_HEAD_SIZE+2) // apos uses 4 byte here
-#define PT_EMPTY_NODE_SIZE       PT_BASE_SIZE
+#define PT1_EMPTY_LEAF_SIZE       (PT1_BASE_SIZE+6)                 // name rel apos
+#define PT1_LEAF_SIZE(leaf)       (PT1_BASE_SIZE+6+2*PT_GLOBAL.count_bits[3][(leaf)->flags])
+#define PT1_CHAIN_SHORT_HEAD_SIZE (PT1_BASE_SIZE+2+sizeof(PT_PNTR)) // apos first_elem
+#define PT1_CHAIN_LONG_HEAD_SIZE  (PT1_CHAIN_SHORT_HEAD_SIZE+2)     // apos uses 4 byte here
+#define PT1_EMPTY_NODE_SIZE       PT1_BASE_SIZE
 
-#define PT_MIN_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(char)) // depends on PT_write_compact_nat
-#define PT_MAX_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*(sizeof(int)+1))
+#define PT1_MIN_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(char)) // depends on PT_write_compact_nat
+#define PT1_MAX_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*(sizeof(int)+1))
 
-#define PT_NODE_WITHSONS_SIZE(sons) (PT_EMPTY_NODE_SIZE+sizeof(PT_PNTR)*(sons))
+#define PT1_NODE_WITHSONS_SIZE(sons) (PT1_EMPTY_NODE_SIZE+sizeof(PT_PNTR)*(sons))
 
 #define PT_NODE_SON_COUNT(node) (PT_GLOBAL.count_bits[PT_BASES][node->flags])
-#define PT_NODE_SIZE(node)      PT_NODE_WITHSONS_SIZE(PT_NODE_SON_COUNT(node))
+#define PT1_NODE_SIZE(node)     PT1_NODE_WITHSONS_SIZE(PT_NODE_SON_COUNT(node))
 
 // -----------------
 //      POS TREE

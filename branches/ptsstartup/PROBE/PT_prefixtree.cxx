@@ -176,9 +176,9 @@ POS_TREE1 *PT_change_leaf_to_node(POS_TREE1 *node) {
 
     POS_TREE1 *father = node->get_father();
 
-    POS_TREE1 *new_elem = (POS_TREE1 *)MEM.get(PT_EMPTY_NODE_SIZE);
+    POS_TREE1 *new_elem = (POS_TREE1 *)MEM.get(PT1_EMPTY_NODE_SIZE);
     if (father) PT_change_link_in_father(father, node, new_elem);
-    MEM.put(node, PT_LEAF_SIZE(node));
+    MEM.put(node, PT1_LEAF_SIZE(node));
     new_elem->set_type(PT_NT_NODE);
     new_elem->set_father(father);
 
@@ -192,11 +192,11 @@ POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node) {
     POS_TREE1     *father = node->get_father();
     const DataLoc  loc(node);
 
-    int        chain_size = (loc.get_abs_pos()>PT_SHORT_SIZE) ? PT_LONG_CHAIN_HEAD_SIZE : PT_SHORT_CHAIN_HEAD_SIZE;
+    int        chain_size = (loc.get_abs_pos()>PT_SHORT_SIZE) ? PT1_CHAIN_LONG_HEAD_SIZE : PT1_CHAIN_SHORT_HEAD_SIZE;
     POS_TREE1 *new_elem   = (POS_TREE1 *)MEM.get(chain_size);
 
     PT_change_link_in_father(father, node, new_elem);
-    MEM.put(node, PT_LEAF_SIZE(node));
+    MEM.put(node, PT1_LEAF_SIZE(node));
     new_elem->set_type(PT_NT_CHAIN);
     new_elem->set_father(father);
 
@@ -220,7 +220,7 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
     pt_assert_stage(STAGE1);
     if (base >= PT_BASES) PT_CORE;
 
-    int leafsize = PT_EMPTY_LEAF_SIZE;
+    int leafsize = PT1_EMPTY_LEAF_SIZE;
 
     if (loc.get_rel_pos()>PT_SHORT_SIZE) leafsize += 2;
     if (loc.get_abs_pos()>PT_SHORT_SIZE) leafsize += 2;
@@ -233,7 +233,7 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
     if (pfather) {
         POS_TREE1 *father = *pfather;
 
-        int        oldfathersize  = PT_NODE_SIZE(father);
+        int        oldfathersize  = PT1_NODE_SIZE(father);
         POS_TREE1 *new_elemfather = (POS_TREE1 *)MEM.get(oldfathersize + sizeof(PT_PNTR));
         new_elemfather->set_type(PT_NT_NODE);
 
@@ -371,26 +371,25 @@ int PTD_put_compact_nat(FILE *out, uint_32 nat) {
     return size;
 }
 
-const int    BITS_FOR_SIZE = 4;        // size is stored inside POS_TREEx->flags, if it fits into lower 4 bits
-const int    SIZE_MASK     = (1<<BITS_FOR_SIZE)-1;
-const size_t MIN_NODE_SIZE = PT_EMPTY_NODE_SIZE;
+const int BITS_FOR_SIZE = 4; // size is stored inside POS_TREEx->flags, if it fits into lower 4 bits
+const int SIZE_MASK     = (1<<BITS_FOR_SIZE)-1;
 
-COMPILE_ASSERT(MIN_NODE_SIZE <= PT_EMPTY_LEAF_SIZE);
-COMPILE_ASSERT(MIN_NODE_SIZE <= PT_SHORT_CHAIN_HEAD_SIZE);
-COMPILE_ASSERT(MIN_NODE_SIZE <= PT_EMPTY_NODE_SIZE);
+COMPILE_ASSERT(PT1_BASE_SIZE <= PT1_EMPTY_LEAF_SIZE);
+COMPILE_ASSERT(PT1_BASE_SIZE <= PT1_CHAIN_SHORT_HEAD_SIZE);
+COMPILE_ASSERT(PT1_BASE_SIZE <= PT1_EMPTY_NODE_SIZE);
 
-const int MIN_SIZE_IN_FLAGS = MIN_NODE_SIZE;
-const int MAX_SIZE_IN_FLAGS = MIN_NODE_SIZE+SIZE_MASK-1;
+const uint_32 MIN_SIZE_IN_FLAGS = PT1_BASE_SIZE;
+const uint_32 MAX_SIZE_IN_FLAGS = PT1_BASE_SIZE+SIZE_MASK-1;
 
 const int FLAG_SIZE_REDUCTION = MIN_SIZE_IN_FLAGS-1;
 
-static void PTD_set_object_to_saved_status(POS_TREE1 *node, long pos_start, int former_size) {
+static void PTD_set_object_to_saved_status(POS_TREE1 *node, long pos_start, uint_32 former_size) {
     pt_assert_stage(STAGE1);
     node->flags = 0x20; // sets node type to PT_NT_SAVED; see PT_prefixtree.cxx@PT_NT_SAVED
 
     PT_write_big(&node->father, pos_start);
 
-    pt_assert(former_size >= int(MIN_NODE_SIZE));
+    pt_assert(former_size >= PT1_BASE_SIZE);
 
     COMPILE_ASSERT((MAX_SIZE_IN_FLAGS-MIN_SIZE_IN_FLAGS+1) == SIZE_MASK); // ????0000 means "size not stored in flags"
 
@@ -417,7 +416,7 @@ inline int get_memsize_of_saved(const POS_TREE1 *node) {
 
 static long PTD_write_tip_to_disk(FILE *out, POS_TREE1 *node, const long oldpos) {
     fputc(node->flags, out);         // save type
-    int size = PT_LEAF_SIZE(node);
+    int size = PT1_LEAF_SIZE(node);
     // write 4 bytes when not in stage 2 save mode
 
     size_t cnt = size-sizeof(PT_PNTR)-1;               // no father; type already saved
@@ -513,7 +512,7 @@ static long PTD_write_chain_to_disk(FILE *out, POS_TREE1 * const node, const lon
     pt_assert(pos >= 0);
 
     {
-        int chain_head_size = node->flags&1 ? PT_LONG_CHAIN_HEAD_SIZE : PT_SHORT_CHAIN_HEAD_SIZE;
+        int chain_head_size = node->flags&1 ? PT1_CHAIN_LONG_HEAD_SIZE : PT1_CHAIN_SHORT_HEAD_SIZE;
         PTD_set_object_to_saved_status(node, oldpos, chain_head_size);
         pt_assert(node->is_saved());
     }
@@ -560,8 +559,8 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE1 *node, long *r_poss, con
     long max_diff = 0;
     int  lasti    = 0;
     int  count    = 0;
-    int  size     = PT_EMPTY_NODE_SIZE;
-    int  mysize   = PT_EMPTY_NODE_SIZE;
+    int  size     = PT1_EMPTY_NODE_SIZE;
+    int  mysize   = PT1_EMPTY_NODE_SIZE;
 
     for (int i = PT_QU; i < PT_BASES; i++) {    // free all sons
         POS_TREE1 *son = PT_read_son(node, (PT_base)i);
@@ -836,32 +835,28 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE3*& root_ptr) { //
 
 #if defined(PTM_MEM_DUMP_STATS)
 const char *get_blocksize_description(int blocksize) {
-#if defined(ARB_64)
-#else // 32bit:
-    COMPILE_ASSERT(PT_SHORT_CHAIN_HEAD_SIZE == PT_EMPTY_LEAF_SIZE);
-    COMPILE_ASSERT(PT_LONG_CHAIN_HEAD_SIZE == PT_NODE_WITHSONS_SIZE(2));
-#endif
     const char *known = NULL;
     switch (blocksize) {
-        case PT_EMPTY_NODE_SIZE:       known = "PT_EMPTY_NODE_SIZE"; break;
+        case PT1_EMPTY_NODE_SIZE:       known = "PT1_EMPTY_NODE_SIZE"; break;
+        case PT1_MIN_CHAIN_ENTRY_SIZE:  known = "PT1_MIN_CHAIN_ENTRY_SIZE"; break;
+        case PT1_MAX_CHAIN_ENTRY_SIZE:  known = "PT1_MAX_CHAIN_ENTRY_SIZE"; break;
 #if defined(ARB_64)
-        case PT_EMPTY_LEAF_SIZE:       known = "PT_EMPTY_LEAF_SIZE"; break;
-        case PT_SHORT_CHAIN_HEAD_SIZE: known = "PT_SHORT_CHAIN_HEAD_SIZE"; break;
-        case PT_LONG_CHAIN_HEAD_SIZE:  known = "PT_LONG_CHAIN_HEAD_SIZE"; break;
-        case PT_MIN_CHAIN_ENTRY_SIZE:  known = "PT_MIN_CHAIN_ENTRY_SIZE"; break;
-        case PT_MAX_CHAIN_ENTRY_SIZE:  known = "PT_MAX_CHAIN_ENTRY_SIZE"; break;
-        case PT_NODE_WITHSONS_SIZE(2): known = "PT_NODE_WITHSONS_SIZE(2)"; break;
+        case PT1_EMPTY_LEAF_SIZE:       known = "PT1_EMPTY_LEAF_SIZE"; break;
+        case PT1_CHAIN_SHORT_HEAD_SIZE: known = "PT1_CHAIN_SHORT_HEAD_SIZE"; break;
+        case PT1_CHAIN_LONG_HEAD_SIZE:  known = "PT1_CHAIN_LONG_HEAD_SIZE"; break;
+        case PT1_NODE_WITHSONS_SIZE(2): known = "PT1_NODE_WITHSONS_SIZE(2)"; break;
 #else // 32bit:
-        case PT_EMPTY_LEAF_SIZE:       known = "PT_EMPTY_LEAF_SIZE       and PT_SHORT_CHAIN_HEAD_SIZE"; break;
-        case PT_MIN_CHAIN_ENTRY_SIZE:  known = "PT_MIN_CHAIN_ENTRY_SIZE"; break;
-        case PT_MAX_CHAIN_ENTRY_SIZE:  known = "PT_MAX_CHAIN_ENTRY_SIZE"; break;
-        case PT_NODE_WITHSONS_SIZE(2): known = "PT_NODE_WITHSONS_SIZE(2) and PT_LONG_CHAIN_HEAD_SIZE"; break;
+        case PT1_EMPTY_LEAF_SIZE:       known = "PT1_EMPTY_LEAF_SIZE      and PT1_CHAIN_SHORT_HEAD_SIZE"; break;
+        case PT1_NODE_WITHSONS_SIZE(2): known = "PT1_NODE_WITHSONS_SIZE(2) and PT1_CHAIN_LONG_HEAD_SIZE"; break;
+
+        COMPILE_ASSERT(PT1_CHAIN_SHORT_HEAD_SIZE == PT1_EMPTY_LEAF_SIZE);
+        COMPILE_ASSERT(PT1_CHAIN_LONG_HEAD_SIZE == PT1_NODE_WITHSONS_SIZE(2));
 #endif
-        case PT_NODE_WITHSONS_SIZE(1): known = "PT_NODE_WITHSONS_SIZE(1)"; break;
-        case PT_NODE_WITHSONS_SIZE(3): known = "PT_NODE_WITHSONS_SIZE(3)"; break;
-        case PT_NODE_WITHSONS_SIZE(4): known = "PT_NODE_WITHSONS_SIZE(4)"; break;
-        case PT_NODE_WITHSONS_SIZE(5): known = "PT_NODE_WITHSONS_SIZE(5)"; break;
-        case PT_NODE_WITHSONS_SIZE(6): known = "PT_NODE_WITHSONS_SIZE(6)"; break;
+        case PT1_NODE_WITHSONS_SIZE(1): known = "PT1_NODE_WITHSONS_SIZE(1)"; break;
+        case PT1_NODE_WITHSONS_SIZE(3): known = "PT1_NODE_WITHSONS_SIZE(3)"; break;
+        case PT1_NODE_WITHSONS_SIZE(4): known = "PT1_NODE_WITHSONS_SIZE(4)"; break;
+        case PT1_NODE_WITHSONS_SIZE(5): known = "PT1_NODE_WITHSONS_SIZE(5)"; break;
+        case PT1_NODE_WITHSONS_SIZE(6): known = "PT1_NODE_WITHSONS_SIZE(6)"; break;
     }
     return known;
 }
@@ -877,7 +872,7 @@ const char *get_blocksize_description(int blocksize) {
 static arb_test::match_expectation has_proper_saved_state(POS_TREE1 *node, int size, bool expect_in_flags) {
     using namespace arb_test;
 
-    int unmodified = 0xffffffff;
+    uint_32 unmodified = 0xffffffff;
     PT_write_int(node->udata(), unmodified);
 
     PTD_set_object_to_saved_status(node, 0, size);
@@ -886,7 +881,7 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE1 *node, int s
     expected.add(that(node->get_type()).is_equal_to(PT_NT_SAVED));
     expected.add(that(get_memsize_of_saved(node)).is_equal_to(size));
 
-    int data_after = PT_read_int(node->udata());
+    uint_32 data_after = PT_read_int(node->udata());
 
     if (expect_in_flags) {
         expected.add(that(data_after).is_equal_to(unmodified));
@@ -904,21 +899,30 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE1 *node, int s
 #define TEST_SIZE_SAVED_EXTERNAL__BROKEN(pt,size) TEST_EXPECTATION__BROKEN(has_proper_saved_state(pt,size,false))
 
 struct EnterStage1 {
+    static bool initialized;
     EnterStage1() {
+        if (initialized) PT_exit_psg();
         PT_init_psg();
         psg.init(STAGE1);
+        initialized = true;
     }
     ~EnterStage1() {
+        pt_assert(initialized);
         PT_exit_psg();
+        initialized = false;
     }
 };
+bool EnterStage1::initialized = false;
 
 void TEST_saved_state() {
     EnterStage1 env;
 
-    POS_TREE1 *node = (POS_TREE1*)malloc(PT_BASE_SIZE+6);
+    const size_t SIZE = PT1_BASE_SIZE+6;
+    COMPILE_ASSERT(SIZE >= (1+sizeof(uint_big)+sizeof(int)));
 
-    TEST_SIZE_SAVED_IN_FLAGS(node, MIN_NODE_SIZE);
+    POS_TREE1 *node = (POS_TREE1*)malloc(SIZE);
+
+    TEST_SIZE_SAVED_IN_FLAGS(node, PT1_BASE_SIZE);
 
     TEST_SIZE_SAVED_IN_FLAGS(node, MIN_SIZE_IN_FLAGS);
     TEST_SIZE_SAVED_IN_FLAGS(node, MAX_SIZE_IN_FLAGS);
@@ -938,14 +942,14 @@ void TEST_saved_state() {
     TEST_SIZE_SAVED_IN_FLAGS(node, 9);
 
 #ifdef ARB_64
-    COMPILE_ASSERT(MIN_NODE_SIZE == 9);
+    COMPILE_ASSERT(PT1_BASE_SIZE == 9);
 #else
     TEST_SIZE_SAVED_IN_FLAGS(node, 8);
     TEST_SIZE_SAVED_IN_FLAGS(node, 7);
     TEST_SIZE_SAVED_IN_FLAGS(node, 6);
     TEST_SIZE_SAVED_IN_FLAGS(node, 5);
 
-    COMPILE_ASSERT(MIN_NODE_SIZE == 5);
+    COMPILE_ASSERT(PT1_BASE_SIZE == 5);
 #endif
 
     free(node);
