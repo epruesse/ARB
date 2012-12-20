@@ -194,11 +194,11 @@ Range PT_Traversal::range(-1, -1, -1);
 inline void PT_Traversal::mark_chain_or_leaf(POS_TREE2 *pt) const {
     pt_assert(pt);
     switch (pt->get_type()) {
-        case PT_NT_LEAF:
+        case PT2_LEAF:
             (*this)(DataLoc(pt));
             break;
 
-        case PT_NT_CHAIN: {
+        case PT2_CHAIN: {
             ChainIteratorStage2 entry(pt);
             while (entry) {
                 (*this)(entry.at());
@@ -206,7 +206,7 @@ inline void PT_Traversal::mark_chain_or_leaf(POS_TREE2 *pt) const {
             }
             break;
         }
-        default :
+        case PT2_NODE:
             pt_assert(0); // not called with chain or leaf
             break;
     }

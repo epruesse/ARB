@@ -70,29 +70,29 @@ bool PT_chain_has_valid_entries(const typename CHAINITER::POS_TREE_TYPE * const 
     return ok;
 }
 
-PT_NODE_TYPE POS_TREE1::flag_2_type[256];
-PT_NODE_TYPE POS_TREE2::flag_2_type[256];
+PT1_TYPE POS_TREE1::flag_2_type[256];
+PT2_TYPE POS_TREE2::flag_2_type[256];
 
 void POS_TREE1::init_static() {
     for (int i=0; i<256; i++) {
         if (i&0x80) { // bit 8 marks a node
-            flag_2_type[i] = PT_NT_NODE;
+            flag_2_type[i] = PT1_NODE;
         }
-        else if (i&0x20) { // in STAGE1 bit 6 is used to mark PT_NT_SAVED (in STAGE2 that bit may be used otherwise)
-            flag_2_type[i] = (i&0x40) ? PT_NT_UNDEF : PT_NT_SAVED;
+        else if (i&0x20) { // in STAGE1 bit 6 is used to mark PT1_SAVED (in STAGE2 that bit may be used otherwise)
+            flag_2_type[i] = (i&0x40) ? PT1_UNDEF : PT1_SAVED;
         }
         else { // bit 7 distinguishes between chain and leaf
-            flag_2_type[i] = (i&0x40) ? PT_NT_CHAIN : PT_NT_LEAF;
+            flag_2_type[i] = (i&0x40) ? PT1_CHAIN : PT1_LEAF;
         }
     }
 }
 void POS_TREE2::init_static() {
     for (int i=0; i<256; i++) {
         if (i&0x80) { // bit 8 marks a node
-            flag_2_type[i] = PT_NT_NODE;
+            flag_2_type[i] = PT2_NODE;
         }
         else { // bit 7 distinguishes between chain and leaf
-            flag_2_type[i] = (i&0x40) ? PT_NT_CHAIN : PT_NT_LEAF;
+            flag_2_type[i] = (i&0x40) ? PT2_CHAIN : PT2_LEAF;
         }
     }
 }
@@ -197,7 +197,7 @@ POS_TREE1 *PT_change_leaf_to_node(POS_TREE1 *node) { // @@@ become member
     POS_TREE1 *new_elem = (POS_TREE1 *)MEM.get(PT1_EMPTY_NODE_SIZE);
     if (father) PT_change_link_in_father(father, node, new_elem);
     MEM.put(node, PT1_LEAF_SIZE(node));
-    new_elem->set_type(PT_NT_NODE);
+    new_elem->set_type(PT1_NODE);
     new_elem->set_father(father);
 
     return new_elem;
@@ -215,7 +215,7 @@ POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node) { // @@@ become member
 
     PT_change_link_in_father(father, node, new_elem);
     MEM.put(node, PT1_LEAF_SIZE(node));
-    new_elem->set_type(PT_NT_CHAIN);
+    new_elem->set_type(PT1_CHAIN);
     new_elem->set_father(father);
 
     char *data = new_elem->udata();
@@ -253,7 +253,7 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
 
         int        oldfathersize  = PT1_NODE_SIZE(father);
         POS_TREE1 *new_elemfather = (POS_TREE1 *)MEM.get(oldfathersize + sizeof(PT_PNTR));
-        new_elemfather->set_type(PT_NT_NODE);
+        new_elemfather->set_type(PT1_NODE);
 
         POS_TREE1 *gfather = father->get_father();
         if (gfather) {
@@ -288,7 +288,7 @@ POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc)
         MEM.put(father, oldfathersize);
         *pfather = new_elemfather;
     }
-    node->set_type(PT_NT_LEAF);
+    node->set_type(PT1_LEAF);
 
     char *dest = node->udata();
     if (loc.get_name()>PT_SHORT_SIZE) {
@@ -403,7 +403,7 @@ const int FLAG_SIZE_REDUCTION = MIN_SIZE_IN_FLAGS-1;
 
 static void PTD_set_object_to_saved_status(POS_TREE1 *node, long pos_start, uint_32 former_size) {
     pt_assert_stage(STAGE1);
-    node->flags = 0x20; // sets node type to PT_NT_SAVED; see PT_prefixtree.cxx@PT_NT_SAVED
+    node->flags = 0x20; // sets node type to PT1_SAVED; see PT_prefixtree.cxx@PT1_SAVED
 
     char *no_father = (char*)(&node->father);
 
@@ -729,28 +729,28 @@ static long PTD_write_node_to_disk(FILE *out, POS_TREE1 *node, long *r_poss, con
 }
 
 long PTD_write_leafs_to_disk(FILE *out, POS_TREE1 * const node, long pos, long *node_pos, ARB_ERROR& error) { 
-    // returns new position in index-file (unchanged for type PT_NT_SAVED)
+    // returns new position in index-file (unchanged for type PT1_SAVED)
     // *node_pos is set to the start-position of the most recent object written
 
     pt_assert_stage(STAGE1);
 
     switch (node->get_type()) {
-        case PT_NT_SAVED:
+        case PT1_SAVED:
             *node_pos = PT_read_big(&node->father);
             break;
 
-        case PT_NT_LEAF:
+        case PT1_LEAF:
             *node_pos = pos;
             pos       = PTD_write_tip_to_disk(out, node, pos);
             break;
 
-        case PT_NT_CHAIN:
+        case PT1_CHAIN:
             *node_pos = pos;
             pos       = PTD_write_chain_to_disk(out, node, pos, error);
             pt_assert(node->is_saved());
             break;
 
-        case PT_NT_NODE: {
+        case PT1_NODE: {
             long son_pos[PT_BASES];
             for (int i = PT_QU; i < PT_BASES && !error; i++) { // save all sons
                 POS_TREE1 *son = PT_read_son(node, (PT_base)i);
@@ -767,6 +767,9 @@ long PTD_write_leafs_to_disk(FILE *out, POS_TREE1 * const node, long pos, long *
             }
             break;
         }
+        case PT1_UNDEF:
+            pt_assert(0);
+            break;
     }
 
     pt_assert(error || node->is_saved());
@@ -895,7 +898,7 @@ static arb_test::match_expectation has_proper_saved_state(POS_TREE1 *node, int s
     PTD_set_object_to_saved_status(node, 0, size);
 
     expectation_group expected;
-    expected.add(that(node->get_type()).is_equal_to(PT_NT_SAVED));
+    expected.add(that(node->get_type()).is_equal_to(PT1_SAVED));
     expected.add(that(get_memsize_of_saved(node)).is_equal_to(size));
 
     uint_32 data_after = PT_read_int(node->udata());
@@ -996,10 +999,10 @@ void TEST_chains() {
     psg.data_count = 3;
 
     POS_TREE1 *root = PT_create_leaf(NULL, PT_N, DataLoc(0, 0, 0));
-    TEST_EXPECT_EQUAL(root->get_type(), PT_NT_LEAF);
+    TEST_EXPECT_EQUAL(root->get_type(), PT1_LEAF);
 
     root = PT_change_leaf_to_node(root);
-    TEST_EXPECT_EQUAL(root->get_type(), PT_NT_NODE);
+    TEST_EXPECT_EQUAL(root->get_type(), PT1_NODE);
 
     DataLoc loc1a(1, 200, 200);
     DataLoc loc1b(1, 500, 500);
@@ -1009,10 +1012,10 @@ void TEST_chains() {
 
     for (int base = PT_A; base <= PT_G; ++base) {
         POS_TREE1 *leaf = PT_create_leaf(&root, PT_base(base), loc1a);
-        TEST_EXPECT_EQUAL(leaf->get_type(), PT_NT_LEAF);
+        TEST_EXPECT_EQUAL(leaf->get_type(), PT1_LEAF);
 
         POS_TREE1 *chain = PT_leaf_to_chain(leaf);
-        TEST_EXPECT_EQUAL(chain->get_type(), PT_NT_CHAIN);
+        TEST_EXPECT_EQUAL(chain->get_type(), PT1_CHAIN);
         TEST_EXPECT(PT_chain_has_valid_entries<ChainIteratorStage1>(chain));
 
         PT_add_to_chain(chain, loc2a);
@@ -1041,7 +1044,7 @@ void TEST_chains() {
     }
     {
         POS_TREE1 *leaf = PT_create_leaf(&root, PT_QU, loc1a); // PT_QU always produces chain
-        TEST_EXPECT_EQUAL(leaf->get_type(), PT_NT_CHAIN);
+        TEST_EXPECT_EQUAL(leaf->get_type(), PT1_CHAIN);
     }
 
     // since there is no explicit code to free POS_TREE-memory, spool it into /dev/null

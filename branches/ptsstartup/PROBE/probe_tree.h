@@ -28,14 +28,6 @@
 #define PT_SHORT_SIZE      0xffff
 #define PT_INIT_CHAIN_SIZE 20
 
-enum PT_NODE_TYPE {
-    PT_NT_LEAF  = 0,
-    PT_NT_CHAIN = 1,
-    PT_NT_NODE  = 2,
-    PT_NT_SAVED = 3, // stage 1 only
-};
-const PT_NODE_TYPE PT_NT_UNDEF = PT_NODE_TYPE(4); // logically also belongs to PT_NODE_TYPE, but does not fit into bits reserved in node.flags
-
 struct pt_global {
     char count_bits[PT_BASES+1][256];         // returns how many bits are set (e.g. PT_count_bits[3][n] is the number of the 3 lsb bits)
 
@@ -181,11 +173,27 @@ extern pt_global PT_GLOBAL;
 #define FLAG_FREE_BITS_MASK ((1<<FLAG_TYPE_BITS)-1)
 #define FLAG_TYPE_BITS_MASK (0xFF^FLAG_FREE_BITS_MASK)
 
+enum PT1_TYPE {
+    PT1_LEAF  = 0,
+    PT1_CHAIN = 1,
+    PT1_NODE  = 2,
+    PT1_SAVED = 3,
+    PT1_UNDEF = 4,
+};
+
+enum PT2_TYPE {
+    PT2_LEAF  = PT1_LEAF,
+    PT2_CHAIN = PT1_CHAIN,
+    PT2_NODE  = PT1_NODE,
+};
+
 struct POS_TREE1 { // pos-tree (stage 1)
     uchar      flags;
     POS_TREE1 *father;
 
-    static PT_NODE_TYPE flag_2_type[256];
+    typedef PT1_TYPE TYPE;
+
+    static TYPE flag_2_type[256];
     static void init_static();
 
     const char *udata() const { return ((const char*)this)+sizeof(*this); }
@@ -201,38 +209,36 @@ struct POS_TREE1 { // pos-tree (stage 1)
     }
     void clear_fathers();
 
-    void set_type(PT_NODE_TYPE type) {
+    void set_type(TYPE type) {
         // sets user bits to zero
-        pt_assert(type != PT_NT_UNDEF && type != PT_NT_SAVED); // does not work for saved nodes (done manually)
+        pt_assert(type != PT1_UNDEF && type != PT1_SAVED); // does not work for saved nodes (done manually)
         flags = type<<FLAG_FREE_BITS;
     }
-    PT_NODE_TYPE get_type() const { return flag_2_type[flags]; }
+    TYPE get_type() const { return flag_2_type[flags]; }
 
-    bool is_node() const { return get_type() == PT_NT_NODE; }
-    bool is_leaf() const { return get_type() == PT_NT_LEAF; }
-    bool is_chain() const { return get_type() == PT_NT_CHAIN; }
-    bool is_saved() const { return get_type() == PT_NT_SAVED; }
+    bool is_node() const { return get_type() == PT1_NODE; }
+    bool is_leaf() const { return get_type() == PT1_LEAF; }
+    bool is_chain() const { return get_type() == PT1_CHAIN; }
+    bool is_saved() const { return get_type() == PT1_SAVED; }
 } __attribute__((packed));
 
 struct POS_TREE2 { // pos-tree (stage 2)
     uchar flags;
 
-    static PT_NODE_TYPE flag_2_type[256];
+    typedef PT2_TYPE TYPE;
+
+    static TYPE flag_2_type[256];
     static void init_static();
 
     const char *udata() const { return ((const char*)this)+sizeof(*this); }
     char *udata() { return ((char*)this)+sizeof(*this); }
 
-    void set_type(PT_NODE_TYPE type) {
-        // sets user bits to zero
-        pt_assert(type != PT_NT_UNDEF && type != PT_NT_SAVED); // does not work for saved nodes (done manually)
-        flags = type<<FLAG_FREE_BITS;
-    }
-    PT_NODE_TYPE get_type() const { return flag_2_type[flags]; }
+    void set_type(TYPE type) { flags = type<<FLAG_FREE_BITS; } // sets user bits to zero
+    TYPE get_type() const { return flag_2_type[flags]; }
 
-    bool is_node() const { return get_type() == PT_NT_NODE; }
-    bool is_leaf() const { return get_type() == PT_NT_LEAF; }
-    bool is_chain() const { return get_type() == PT_NT_CHAIN; }
+    bool is_node() const { return get_type() == PT2_NODE; }
+    bool is_leaf() const { return get_type() == PT2_LEAF; }
+    bool is_chain() const { return get_type() == PT2_CHAIN; }
 } __attribute__((packed));
 
 inline size_t PT_node_size(POS_TREE2 *node) { // @@@ become member

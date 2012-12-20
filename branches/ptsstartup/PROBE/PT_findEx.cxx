@@ -18,7 +18,7 @@ static bool findLeftmostProbe(POS_TREE2 *node, char *probe, int restlen, int hei
     if (restlen==0) return true;
 
     switch (node->get_type()) {
-        case PT_NT_NODE:
+        case PT2_NODE:
             for (int i=PT_A; i<PT_BASES; ++i) { // Note: does not iterate probes containing N
                 POS_TREE2 *son = PT_read_son(node, PT_base(i));
                 if (son) {
@@ -30,11 +30,11 @@ static bool findLeftmostProbe(POS_TREE2 *node, char *probe, int restlen, int hei
             }
             break;
 
-        case PT_NT_CHAIN:
+        case PT2_CHAIN:
             // probe cut-off in index -> do not iterate
             break;
 
-        case PT_NT_LEAF: {
+        case PT2_LEAF: {
             // here the probe-tree is cut off, because only one species matches
             DataLoc loc(node);
             int     pos  = loc.get_rel_pos() + height;
@@ -58,7 +58,6 @@ static bool findLeftmostProbe(POS_TREE2 *node, char *probe, int restlen, int hei
             pt_assert(strlen(probe) == (size_t)restlen);
             return true;
         }
-        case PT_NT_SAVED: pt_assert(0); break;  // oops
     }
 
     return false;
@@ -73,7 +72,7 @@ static bool findNextProbe(POS_TREE2 *node, char *probe, int restlen, int height)
     // returning false upwards takes the next after
 
     switch (node->get_type()) {
-        case PT_NT_NODE: {
+        case PT2_NODE: {
             if (!is_std_base(probe[0])) return false;
 
             POS_TREE2 *son   = PT_read_son(node, PT_base(probe[0]));
@@ -95,12 +94,11 @@ static bool findNextProbe(POS_TREE2 *node, char *probe, int restlen, int height)
             }
             return found;
         }
-        case PT_NT_CHAIN:
-        case PT_NT_LEAF: {
+        case PT2_CHAIN:
+        case PT2_LEAF: {
             // species list or single species reached
             return false;
         }
-        case PT_NT_SAVED: pt_assert(0); break;  // oops
     }
 
     pt_assert(0);

@@ -211,11 +211,11 @@ bool MatchRequest::add_hits_for_children(POS_TREE2 *pt, const Mismatches& mismat
 
     bool enough = false;
     switch (pt->get_type()) {
-        case PT_NT_LEAF:
+        case PT2_LEAF:
             enough = add_hit(DataLoc(pt), mismatch);
             break;
 
-        case PT_NT_CHAIN: {
+        case PT2_CHAIN: {
             ChainIteratorStage2 entry(pt);
             while (entry && !enough) {
                 enough = add_hit(DataLoc(entry.at()), mismatch);
@@ -223,14 +223,12 @@ bool MatchRequest::add_hits_for_children(POS_TREE2 *pt, const Mismatches& mismat
             }
             break;
         }
-        case PT_NT_NODE:
+        case PT2_NODE:
             for (int base = PT_QU; base < PT_BASES && !enough; base++) {
                 POS_TREE2 *son  = PT_read_son(pt, (PT_base)base);
                 if (son) enough = add_hits_for_children(son, mismatch);
             }
             break;
-
-        case PT_NT_SAVED: pt_assert(0); break;
     }
     return enough;
 }
@@ -267,7 +265,7 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE2 *pt, Mismatches
     }
     else {
         switch (pt->get_type()) {
-            case PT_NT_LEAF: {
+            case PT2_LEAF: {
                 ReadableDataLoc loc(pt);
                 mismatches.count_versus(loc, probe, height);
                 if (mismatches.accepted()) {
@@ -275,7 +273,7 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE2 *pt, Mismatches
                 }
                 break;
             }
-            case PT_NT_CHAIN: {
+            case PT2_CHAIN: {
                 pt_assert(probe);
 
                 ChainIteratorStage2 entry(pt);
@@ -290,7 +288,7 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE2 *pt, Mismatches
                 }
                 break;
             }
-            case PT_NT_NODE:
+            case PT2_NODE:
                 for (int i=PT_QU; i<PT_BASES && !enough; i++) {
                     POS_TREE2 *son = PT_read_son(pt, (PT_base)i);
                     if (son) {
@@ -324,8 +322,6 @@ bool MatchRequest::collect_hits_for(const char *probe, POS_TREE2 *pt, Mismatches
                     }
                 }
                 break;
-
-            case PT_NT_SAVED: pt_assert(0); break;
         }
     }
 

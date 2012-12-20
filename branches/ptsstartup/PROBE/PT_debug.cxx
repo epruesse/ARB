@@ -50,7 +50,7 @@ struct PT_statistic {
     void analyse(POS_TREE2 *pt, int height) {
         pt_assert(height<DEBUG_TREE_DEPTH);
         switch (pt->get_type()) {
-            case PT_NT_NODE: {
+            case PT2_NODE: {
                 int basecnt = 0;
                 for (int i=PT_QU; i<PT_BASES; i++) {
                     POS_TREE2 *pt_help = PT_read_son(pt, (PT_base)i);
@@ -66,12 +66,12 @@ struct PT_statistic {
                 splits[height][basecnt]++;
                 break;
             }
-            case PT_NT_LEAF:
+            case PT2_LEAF:
                 tips[height]++;
                 tips_mem[height] += PT_leaf_size(pt);
                 break;
 
-            case PT_NT_CHAIN: {
+            case PT2_CHAIN: {
                 size_t              size = 1;
                 ChainIteratorStage2 iter(pt);
 
@@ -101,7 +101,6 @@ struct PT_statistic {
                 chaincount++;
                 break;
             }
-            case PT_NT_SAVED: pt_assert(0); break;
         }
     }
 
@@ -245,42 +244,43 @@ public:
     }
 };
 
-template <typename PT>
-void PT_dump_POS_TREE_recursive(PT *pt, const char *prefix, FILE *out) {
-    switch (pt->get_type()) {
-        case PT_NT_NODE:
-            for (int b = PT_QU; b<PT_BASES; b++) {
-                PT *son = PT_read_son<PT>(pt, PT_base(b));
-                if (son) {
-                    char *subPrefix = GBS_global_string_copy("%s%c", prefix, base_2_readable(b));
-                    PT_dump_POS_TREE_recursive(son, subPrefix, out);
-                    free(subPrefix);
-                }
+template <typename PT> inline void dump_POS_TREE_special(PT *pt, const char *prefix, FILE *out);
+template <> inline void dump_POS_TREE_special(POS_TREE1 *pt, const char *prefix, FILE *out) {
+    if (pt->is_saved()) {
+        fprintf(out, "{x} %s [saved]\n", prefix);
+    }
+    else {
+        pt_assert(pt->get_type() == PT1_UNDEF);
+        fprintf(out, "{?} %s [undefined]\n", prefix);
+    }
+}
+template <> inline void dump_POS_TREE_special(POS_TREE2 *, const char *, FILE *) {}
+
+template <typename PT> void PT_dump_POS_TREE_recursive(PT *pt, const char *prefix, FILE *out) {
+    if (pt->is_node()) {
+        for (int b = PT_QU; b<PT_BASES; b++) {
+            PT *son = PT_read_son<PT>(pt, PT_base(b));
+            if (son) {
+                char *subPrefix = GBS_global_string_copy("%s%c", prefix, base_2_readable(b));
+                PT_dump_POS_TREE_recursive(son, subPrefix, out);
+                free(subPrefix);
             }
-            break;
-
-        case PT_NT_LEAF: {
-            char *subPrefix = GBS_global_string_copy("{l} %s", prefix);
-            PT_dump_loc dump_leaf(subPrefix, out);
-            dump_leaf(DataLoc(pt));
-            free(subPrefix);
-            break;
         }
-        case PT_NT_CHAIN: {
-            char *subPrefix = GBS_global_string_copy("{c} %s", prefix);
-            PT_dump_loc locDumper(subPrefix, out);
-            PT_forwhole_chain(pt, locDumper);
-            free(subPrefix);
-            break;
-        }
-        case PT_NT_SAVED:
-            fprintf(out, "{x} %s [saved]\n", prefix);
-            break;
-
-        case PT_NT_UNDEF:
-            fprintf(out, "{?} %s [undefined]\n", prefix);
-            pt_assert(0);
-            break;
+    }
+    else if (pt->is_leaf()) {
+        char *subPrefix = GBS_global_string_copy("{l} %s", prefix);
+        PT_dump_loc dump_leaf(subPrefix, out);
+        dump_leaf(DataLoc(pt));
+        free(subPrefix);
+    }
+    else if (pt->is_chain()) {
+        char *subPrefix = GBS_global_string_copy("{c} %s", prefix);
+        PT_dump_loc locDumper(subPrefix, out);
+        PT_forwhole_chain(pt, locDumper);
+        free(subPrefix);
+    }
+    else {
+        dump_POS_TREE_special(pt, prefix, out);
     }
 }
 
@@ -294,25 +294,25 @@ void PT_dump_POS_TREE(POS_TREE1 *IF_DEBUG(node), FILE *IF_DEBUG(out)) {
     fprintf(out, "node father %p\n", node->get_father());
 
     switch (node->get_type()) {
-        case PT_NT_LEAF: {
+        case PT1_LEAF: {
             DataLoc loc(node);
             fprintf(out, "leaf %i:%i,%i\n", loc.get_name(), loc.get_rel_pos(), loc.get_abs_pos());
             break;
         }
-        case PT_NT_NODE:
+        case PT1_NODE:
             for (long i = 0; i < PT_BASES; i++) {
                 fprintf(out, "%6li:0x%p\n", i, PT_read_son(node, (PT_base)i));
             }
             break;
-        case PT_NT_CHAIN:
+        case PT1_CHAIN:
             fputs("chain:\n", out);
             PTD_chain_print chainPrinter;
             PT_forwhole_chain(node, chainPrinter);
             break;
-        case PT_NT_SAVED:
+        case PT1_SAVED:
             fputs("saved:\n", out);
             break;
-        case PT_NT_UNDEF:
+        case PT1_UNDEF:
             fputs("<invalid node type>\n", out);
             break;
     }

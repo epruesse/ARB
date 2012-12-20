@@ -176,8 +176,8 @@ inline void get_abs_align_pos(char *seq, int &pos) {
 
 static bool all_sons_saved(POS_TREE1 *node);
 inline bool has_unsaved_sons(POS_TREE1 *node) {
-    PT_NODE_TYPE type = node->get_type();
-    return (type == PT_NT_NODE) ? !all_sons_saved(node) : (type != PT_NT_SAVED);
+    POS_TREE1::TYPE type = node->get_type();
+    return (type == PT1_NODE) ? !all_sons_saved(node) : (type != PT1_SAVED);
 }
 static bool all_sons_saved(POS_TREE1 *node) {
     pt_assert(node->is_node());
@@ -204,21 +204,21 @@ static long save_lower_subtree(FILE *out, POS_TREE1 *node, long pos, int height,
     }
     else {
         switch (node->get_type()) {
-            case PT_NT_NODE:
+            case PT1_NODE:
                 for (int i = PT_QU; i<PT_BASES; ++i) {
                     POS_TREE1 *son = PT_read_son(node, PT_base(i));
                     if (son) pos = save_lower_subtree(out, son, pos, height+1, error);
                 }
                 break;
 
-            case PT_NT_CHAIN: {
+            case PT1_CHAIN: {
                 long dummy;
                 pos = write_subtree(out, node, pos, &dummy, error);
                 break;
             }
-            case PT_NT_LEAF: pt_assert(0); break; // leafs shall not occur above PT_MIN_TREE_HEIGHT
-            case PT_NT_SAVED: break; // ok - saved by previous call
-            case PT_NT_UNDEF: pt_assert(0); break;
+            case PT1_LEAF: pt_assert(0); break; // leafs shall not occur above PT_MIN_TREE_HEIGHT
+            case PT1_SAVED: break; // ok - saved by previous call
+            case PT1_UNDEF: pt_assert(0); break;
         }
     }
     return pos;
