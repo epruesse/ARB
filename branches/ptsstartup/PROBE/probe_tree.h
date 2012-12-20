@@ -158,7 +158,7 @@ extern pt_global PT_GLOBAL;
 // -----------------------------------------------
 //      Get the size of entries (stage 1) only
 
-#define PT1_BASE_SIZE (sizeof(POS_TREE1)-1) // flag + father
+#define PT1_BASE_SIZE sizeof(POS_TREE1) // flag + father
 
 #define PT1_EMPTY_LEAF_SIZE       (PT1_BASE_SIZE+6)                 // name rel apos
 #define PT1_LEAF_SIZE(leaf)       (PT1_BASE_SIZE+6+2*PT_GLOBAL.count_bits[3][(leaf)->flags])
@@ -185,10 +185,9 @@ extern pt_global PT_GLOBAL;
 struct POS_TREE1 {
     uchar      flags;
     POS_TREE1 *father;
-    char       data; // @@@ elim
 
-    const char *udata() const { return &data; }
-    char *udata() { return &data; }
+    const char *udata() const { return ((const char*)this)+sizeof(*this); }
+    char *udata() { return ((char*)this)+sizeof(*this); }
 
     POS_TREE1 *get_father() const {
         pt_assert(!is_saved());

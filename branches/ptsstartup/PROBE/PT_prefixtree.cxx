@@ -387,7 +387,9 @@ static void PTD_set_object_to_saved_status(POS_TREE1 *node, long pos_start, uint
     pt_assert_stage(STAGE1);
     node->flags = 0x20; // sets node type to PT_NT_SAVED; see PT_prefixtree.cxx@PT_NT_SAVED
 
-    PT_write_big(&node->father, pos_start);
+    char *no_father = (char*)(&node->father);
+
+    PT_write_big(no_father, pos_start);
 
     pt_assert(former_size >= PT1_BASE_SIZE);
 
@@ -399,7 +401,7 @@ static void PTD_set_object_to_saved_status(POS_TREE1 *node, long pos_start, uint
     }
     else {
         pt_assert(former_size >= int(sizeof(uint_big)+sizeof(int)));
-        PT_write_int(((char*)&node->father)+sizeof(uint_big), former_size);
+        PT_write_int(no_father+sizeof(uint_big), former_size);
     }
 }
 
