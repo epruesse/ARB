@@ -171,7 +171,9 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_si
     std::string fontname(name);
     std::string iso = "ISO10646";
     size_t start = fontname.find(iso);
-    fontname.replace(start, iso.length(), "*");
+    if (start != std::string::npos) {
+        fontname.replace(start, iso.length(), "*");
+    }
 
 
     //load a gdk font corresponding to the XLDF name
