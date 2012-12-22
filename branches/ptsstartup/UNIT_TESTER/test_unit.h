@@ -237,7 +237,7 @@ namespace arb_test {
 
     inline char *val2readable(double d) { return StaticCode::strf("%f", d); }
 
-    inline char *val2readable(unsigned char c) { return c<32 ? StaticCode::strf(" ^%c", c+'A'-1) : StaticCode::strf("'%c'", c); }
+    inline char *val2readable(unsigned char c) { return c<32 ? StaticCode::strf(" ^%c (=0x%02x)", c+'A'-1, int(c)) : StaticCode::strf("'%c' (=0x%02x)", c, int(c)); }
     inline char *val2readable(const char *s) { return StaticCode::readable_string(s); }
 
 #ifdef TESTS_KNOW_STRING
