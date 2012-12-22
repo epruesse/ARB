@@ -2367,6 +2367,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 
     //create help menu
     FIXME("HELP button is not the rightmost button");
+    // I bet HELP button needs to be "appended" last to be on the right side... -- ep
     GtkMenuItem *help_item = GTK_MENU_ITEM(gtk_menu_item_new_with_mnemonic(help_button));
     prvt->help_menu = GTK_MENU_SHELL(gtk_menu_new());
     gtk_menu_item_set_submenu(help_item, GTK_WIDGET(prvt->help_menu));
@@ -2501,8 +2502,54 @@ AW_window_simple_menu::~AW_window_simple_menu() {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window_simple_menu::init(AW_root */*root*/, const char */*wid*/, const char */*windowname*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname) {
+    GtkWidget *vbox;
+
+    const char *help_button   = "_HELP"; //underscore + mnemonic  
+
+    root = root_in; // for macro
+    window_name = strdup(windowname);
+    window_defaults_name = GBS_string_2_key(wid);
+  
+    int width = 100;
+    int height = 100;
+
+    // create window with top level vbox
+    prvt->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    gtk_window_set_title(prvt->window, window_name);
+    gtk_window_set_default_size(prvt->window, width, height);
+    vbox = gtk_vbox_new(false, 1); FIXME("constant");
+    gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
+                                     
+    // add menu bar with help menu
+    prvt->menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->menu_bar), false, false, 2);
+    prvt->menus.push(GTK_MENU_SHELL(prvt->menu_bar));
+    GtkMenuItem *help_item = GTK_MENU_ITEM(gtk_menu_item_new_with_mnemonic(help_button));
+    prvt->help_menu = GTK_MENU_SHELL(gtk_menu_new());
+    gtk_menu_item_set_submenu(help_item, GTK_WIDGET(prvt->help_menu));
+    gtk_menu_shell_append(GTK_MENU_SHELL(prvt->menu_bar), GTK_WIDGET(help_item));
+
+    // add drawing area in fixed_size_area
+    prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
+    prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); 
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
+    
+    GtkWidget* drawing_area = gtk_drawing_area_new();
+    gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), 3000, 3000); FIXME("pixel constants in gui init code");
+    GtkWidget *scrollArea = gtk_scrolled_window_new(NULL, NULL); //NULL causes the scrolledWindow to create its own scroll adjustments
+    gtk_box_pack_start(GTK_BOX(vbox), scrollArea, true, true, 0);   
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrollArea), drawing_area);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollArea), GTK_POLICY_ALWAYS, GTK_POLICY_ALWAYS);
+
+    gtk_widget_realize(GTK_WIDGET(drawing_area));
+    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area);              
+  
+    gtk_widget_realize(GTK_WIDGET(prvt->window));
+    create_devices();
+
+    FIXME("AW_window_simple_menu::init partially redundant with AW_window_simple::init");
+    GTK_PARTLY_IMPLEMENTED;
 }
 
 AW_window_simple::AW_window_simple() : AW_window() {
