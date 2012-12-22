@@ -2440,8 +2440,10 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (colnum == AW_DATA_BG) {
         AW_area_management* pMiddleArea = prvt->areas[AW_MIDDLE_AREA];
         if(pMiddleArea) {
-            FIXME("warning: taking address of temporary");
-            gtk_widget_modify_bg(pMiddleArea->get_area(),GTK_STATE_NORMAL, &root->getColor(color_table[colnum]));
+            // FIXME("warning: taking address of temporary");
+            // I suppose, copying a color once too often isn't an issue -- ep
+            GdkColor color = root->getColor(color_table[colnum]);
+            gtk_widget_modify_bg(pMiddleArea->get_area(),GTK_STATE_NORMAL, &color);
             FIXME("no idea if this works");
         }
     }
