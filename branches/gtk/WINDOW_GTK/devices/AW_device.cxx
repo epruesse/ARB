@@ -17,6 +17,9 @@
 #include "aw_position.hxx"
 
 
+#if defined(DEBUG)
+// #define SHOW_CLIP_STACK_CHANGES
+#endif // DEBUG
 
 class AW_clip_scale_stack {
     // completely private, but accessible by AW_device
@@ -31,7 +34,27 @@ class AW_clip_scale_stack {
     class AW_clip_scale_stack *next;
 };
 
+#if defined(SHOW_CLIP_STACK_CHANGES)
+static const char *clipstatestr(AW_device *device) {
+    static char buffer[1024];
 
+    const AW_screen_area&  clip_rect = device->get_cliprect();
+    const AW_font_overlap& fo        = device->get_font_overlap();
+    const AW::Vector&          offset    = device->get_offset();
+
+    sprintf(buffer,
+            "clip_rect={t=%i, b=%i, l=%i, r=%i} "
+            "font_overlap={t=%i, b=%i, l=%i, r=%i} "
+            "scale=%f unscale=%f "
+            "offset={x=%f y=%f}" ,
+            clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r,
+            fo.top, fo.bottom, fo.left, fo.right,
+            device->get_scale(), device->get_unscale(), 
+            offset.x(), offset.y());
+
+    return buffer;
+}
+#endif // SHOW_CLIP_STACK_CHANGES
 
 const AW_screen_area& AW_device::get_area_size() const {
     return get_common()->get_screen();
