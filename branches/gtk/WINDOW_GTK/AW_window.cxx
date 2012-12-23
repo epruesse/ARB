@@ -86,6 +86,15 @@ public:
      */
     GtkToolbar *mode_menu;
   
+    /**
+     * The last created radio button. NULL if no open group.
+     */
+    GtkWidget *radio_last;
+
+    /*
+     * The box for the current radio group. NULL if no open group.
+     */
+    GtkWidget *radio_box;
 
     /**
      * A window consists of several areas.
@@ -120,7 +129,8 @@ public:
     AW_cb_struct **modes_f_callbacks;
     
     AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL), help_menu(NULL),
-                      mode_menu(NULL), number_of_modes(0), popup_cb(NULL), focus_cb(NULL),
+                      mode_menu(NULL), radio_last(NULL), radio_box(NULL), number_of_modes(0), 
+                      popup_cb(NULL), focus_cb(NULL),
                       modes_f_callbacks(NULL){}
 
     
@@ -689,6 +699,7 @@ void AW_window::_set_activate_callback(GtkWidget *widget) {
 }
 
 int AW_window::calculate_string_width(int columns) const {
+
     if (xfig_data) {
         AW_xfig *xfig = (AW_xfig *)xfig_data;
         return (int)(columns * xfig->font_scale * XFIG_DEFAULT_FONT_WIDTH);   // stdfont 8x13
@@ -1130,6 +1141,25 @@ void AW_window::create_toggle(const char */*awar_name*/, const char */*nobitmap*
 void AW_window::create_text_toggle(const char */*var_name*/, const char */*noText*/, const char */*yesText*/, int /*buttonWidth*/ /*= 0*/) {
     GTK_NOT_IMPLEMENTED;
 }
+
+
+void AW_window::update_toggle(GtkWidget */*widget*/, const char */*var*/, AW_CL /*cd_toggle_data*/) {
+//    aw_toggle_data *tdata = (aw_toggle_data*)cd_toggle_data;
+//    const char     *text  = tdata->bitmapOrText[(var[0] == '0' || var[0] == 'n') ? 0 : 1];
+//
+//    if (tdata->isTextToggle) {
+//        XtVaSetValues(widget, RES_CONVERT(XmNlabelString, text), NULL);
+//    }
+//    else {
+//        char *path = pixmapPath(text+1);
+//        XtVaSetValues(widget, RES_CONVERT(XmNlabelPixmap, path), NULL);
+//        free(path);
+//    }
+    GTK_NOT_IMPLEMENTED;
+}
+
+
+
 void AW_window::allow_delete_window(bool /*allow_close*/) {
     GTK_NOT_IMPLEMENTED;
     //aw_set_delete_window_cb(this, p_w->shell, allow_close);
@@ -1349,10 +1379,10 @@ static void exit_duplicate_mnemonic() {
 
 
 void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
-        aw_assert(legal_mask(mask));
+    aw_assert(legal_mask(mask));
         
-        GTK_PARTLY_IMPLEMENTED;
-        FIXME("debug code for duplicate mnemonics missing");
+    GTK_PARTLY_IMPLEMENTED;
+    FIXME("debug code for duplicate mnemonics missing");
 
 
 //    #ifdef DEBUG
@@ -1362,12 +1392,12 @@ void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask 
 //        dumpCloseAllSubMenus();
 //    #endif // DUMP_MENU_LIST
         
-        //The user might leave sub menus open. Close them before creating a new top level menu.
-        while(prvt->menus.size() > 1) {
-            close_sub_menu();
-        }
-        
-        insert_sub_menu(name, mnemonic, mask);
+    // The user might leave sub menus open. Close them before creating a new top level menu.
+    while(prvt->menus.size() > 1) {
+        close_sub_menu();
+    }
+    
+    insert_sub_menu(name, mnemonic, mask);
 }
 
 static void aw_mode_callback(AW_window *aww, long mode, AW_cb_struct *cbs) {
@@ -1612,15 +1642,105 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     return root->get_last_selection_list();
 }
 
+// BEGIN TOGGLE FIELD STUFF
+
+void AW_window::create_toggle_field(const char */*awar_name*/, int orientation /*= 0*/){
+    FIXME("rename create_toggle_field -- creates radio-button-group");
+    // orientation = 0 -> vertical else horizontal layout
+
+    GtkWidget *parent_widget = GTK_WIDGET(prvt->fixed_size_area);
+    GtkWidget *label_for_toggle;
+    GtkWidget *toggle_field;
+
+    int xoff_for_label           = 0;
+    int width_of_label           = 0;
+    int x_for_position_of_option = 0;
+
+    const char *tmp_label = "";
+
+    if (_at.label_for_inputfield) {
+        tmp_label = _at.label_for_inputfield;
+    }
+
+    if (_at.correct_for_at_center) {
+        _at.saved_x = _at.x_for_next_button;
+        x_for_position_of_option = 10;
+    }
+    else {
+        x_for_position_of_option = _at.x_for_next_button;
+    }
 
 
-void AW_window::create_toggle_field(const char */*awar_name*/, int /*orientation*/ /*= 0*/){
+    if (tmp_label) {
+        int height_of_label;
+        calculate_label_size(this, &width_of_label, &height_of_label, true, tmp_label);
+        // @@@ FIXME: use height_of_label for Y-alignment
+        // width_of_label = this->calculate_string_width( this->calculate_label_length() );
+        label_for_toggle = gtk_label_new(tmp_label);
+        gtk_fixed_put(GTK_FIXED(parent_widget), label_for_toggle, 
+                      _at.x_for_next_button, 
+                      _at.y_for_next_button + get_root()->y_correction_for_input_labels);
+        
+        _at.saved_xoff_for_label = xoff_for_label = width_of_label + 10;
+        // prvt->toggle_label = label_for_toggle;
+    }
+    else {
+        _at.saved_xoff_for_label = 0;
+        // prvt->toggle_label = NULL;
+    }
+
+    if (orientation == 0) {
+      prvt->radio_box = gtk_vbox_new(true, 2);
+    } 
+    else {
+      prvt->radio_box = gtk_hbox_new(true, 2);
+    }
+}
+
+void AW_window::create_toggle_field(const char *var_name, AW_label labeli, const char */*mnemonic*/) {
+    if (labeli) this->label(labeli);
+    this->create_toggle_field(var_name);
+}
+
+void AW_window::insert_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, const char */*var_value*/){
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::create_toggle_field(const char */*awar_name*/, AW_label /*label*/, const char */*mnemonic*/) {
+void AW_window::insert_toggle(AW_label toggle_label, const char */*mnemonic*/, int /*var_value*/){
+    GtkWidget *radio;  
+    // create and chain radio button
+    radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(prvt->radio_last), toggle_label);
+    prvt->radio_last = radio;
+
+    gtk_box_pack_start(GTK_BOX(prvt->radio_box), radio, true, true, 2);
+}
+
+void AW_window::insert_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, float /*var_value*/){
     GTK_NOT_IMPLEMENTED;
 }
+
+void AW_window::insert_default_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, const char */*var_value*/){
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::insert_default_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, int /*var_value*/){
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::refresh_toggle_field(int /*toggle_field_number*/) {
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::update_toggle_field() { 
+    GtkWidget *parent_widget = GTK_WIDGET(prvt->fixed_size_area);
+    gtk_fixed_put(GTK_FIXED(parent_widget), prvt->radio_box, 
+                      _at.x_for_next_button + _at.saved_xoff_for_label, 
+                      _at.y_for_next_button);
+    gtk_widget_show_all(prvt->radio_box);
+    prvt->radio_last = NULL; // end of radio group
+}
+
+// END TOGGLE FIELD STUFF
 
 
 void AW_window::d_callback(void (*/*f*/)(AW_window*, AW_CL), AW_CL /*cd1*/){
@@ -1741,13 +1861,6 @@ void AW_window::insert_default_option (AW_label /*choice_label*/, const char */*
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::insert_default_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, const char */*var_value*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::insert_default_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, int /*var_value*/){
-    GTK_NOT_IMPLEMENTED;
-}
 
 
 void AW_window::insert_help_topic(AW_label name, const char */*mnemonic*/, const char */*help_text_*/, AW_active /*mask*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/){
@@ -1774,10 +1887,9 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const cha
    
    GtkWidget *item = gtk_menu_item_new_with_mnemonic(topicName.c_str());
    aw_assert(prvt->menus.size() > 0); //closed too many menus
+
    gtk_menu_shell_append(prvt->menus.top(), item);  
    
-   
-
 #if defined(DUMP_MENU_LIST)
  //   dumpMenuEntry(name);
 #endif // DUMP_MENU_LIST
@@ -1810,11 +1922,7 @@ void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*
 }
 
 
-
-
 void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
-
-    
     aw_assert(legal_mask(mask));
     aw_assert(NULL != prvt->menus.top());
     
@@ -1826,9 +1934,19 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active m
     GtkMenuItem *item = GTK_MENU_ITEM(gtk_menu_item_new_with_mnemonic(menuName.c_str()));
     
     gtk_menu_item_set_submenu(item, GTK_WIDGET(submenu));
-    
-    //append the new submenu to the current menu shell
-    gtk_menu_shell_append(prvt->menus.top(), GTK_WIDGET(item));
+
+    if (prvt->menus.size() == 1) { // Insert new menu second-to-last (last is HELP)
+      // Count entries in menu
+      GList *menu_items =  gtk_container_get_children(GTK_CONTAINER(prvt->menus.top()));
+      int menu_item_cnt = g_list_length(menu_items); 
+      g_list_free(menu_items);
+      // Insert at n-1
+      gtk_menu_shell_insert(prvt->menus.top(), GTK_WIDGET(item), menu_item_cnt-1);
+    } 
+    else {
+      // Append the new submenu to the current menu shell
+      gtk_menu_shell_append(prvt->menus.top(), GTK_WIDGET(item));
+    }
     
     //use the new submenu as current menu shell.
     prvt->menus.push(GTK_MENU_SHELL(submenu));
@@ -1846,45 +1964,20 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active m
 }
 
 
-void AW_window::insert_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, const char */*var_value*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::insert_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, int /*var_value*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::insert_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, float /*var_value*/){
-    GTK_NOT_IMPLEMENTED;
-}
 
 bool AW_window::is_shown() const{
     GTK_NOT_IMPLEMENTED;
     return false;
 }
 
-void AW_window::label(const char */*label*/){
-    GTK_NOT_IMPLEMENTED;
-
+/* set label for next button 
+ */
+void AW_window::label(const char *_label){
+    freedup(_at.label_for_inputfield, _label);
 }
 
 void AW_window::update_text_field(GtkWidget */*widget*/, const char */*var_value*/) {
    // XtVaSetValues(widget, XmNvalue, var_value, NULL);
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::update_toggle(GtkWidget */*widget*/, const char */*var*/, AW_CL /*cd_toggle_data*/) {
-//    aw_toggle_data *tdata = (aw_toggle_data*)cd_toggle_data;
-//    const char     *text  = tdata->bitmapOrText[(var[0] == '0' || var[0] == 'n') ? 0 : 1];
-//
-//    if (tdata->isTextToggle) {
-//        XtVaSetValues(widget, RES_CONVERT(XmNlabelString, text), NULL);
-//    }
-//    else {
-//        char *path = pixmapPath(text+1);
-//        XtVaSetValues(widget, RES_CONVERT(XmNlabelPixmap, path), NULL);
-//        free(path);
-//    }
     GTK_NOT_IMPLEMENTED;
 }
 
@@ -1909,82 +2002,6 @@ void AW_window::refresh_option_menu(AW_option_menu_struct */*oms*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::refresh_toggle_field(int /*toggle_field_number*/) {
-    GTK_NOT_IMPLEMENTED;
-//#if defined(DEBUG)
-//    static int inside_here = 0;
-//    aw_assert(!inside_here);
-//    inside_here++;
-//#endif // DEBUG
-//
-//    AW_toggle_field_struct *toggle_field_list = p_global->toggle_field_list;
-//    {
-//        while (toggle_field_list) {
-//            if (toggle_field_number == toggle_field_list->toggle_field_number) {
-//                break;
-//            }
-//            toggle_field_list = toggle_field_list->next;
-//        }
-//    }
-//
-//    if (toggle_field_list) {
-//        AW_widget_value_pair *active_toggle = toggle_field_list->first_toggle;
-//        {
-//            AW_scalar global_value(root->awar(toggle_field_list->variable_name));
-//            while (active_toggle && active_toggle->value != global_value) {
-//                active_toggle = active_toggle->next;
-//            }
-//            if (!active_toggle) active_toggle = toggle_field_list->default_toggle;
-//        }
-//
-//        // iterate over all toggles including default_toggle and set their state
-//        for (AW_widget_value_pair *toggle = toggle_field_list->first_toggle; toggle;) {
-//            XmToggleButtonSetState(toggle->widget, toggle == active_toggle, False);
-//
-//            if (toggle->next)                                     toggle = toggle->next;
-//            else if (toggle != toggle_field_list->default_toggle) toggle = toggle_field_list->default_toggle;
-//            else                                                  toggle = 0;
-//        }
-//
-//        // @@@ code below should go to update_toggle_field
-//        {
-//            short length;
-//            short height;
-//            XtVaGetValues(p_w->toggle_field, XmNwidth, &length, XmNheight, &height, NULL);
-//            length                += (short)_at.saved_xoff_for_label;
-//
-//            int width_of_last_widget  = length;
-//            int height_of_last_widget = height;
-//
-//            if (toggle_field_list->correct_for_at_center_intern) {
-//                if (toggle_field_list->correct_for_at_center_intern == 1) {   // middle centered
-//                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at.saved_x - (short)(length/2) + (short)_at.saved_xoff_for_label), NULL);
-//                    if (p_w->toggle_label) {
-//                        XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at.saved_x - (short)(length/2)), NULL);
-//                    }
-//                    width_of_last_widget = width_of_last_widget / 2;
-//                }
-//                if (toggle_field_list->correct_for_at_center_intern == 2) {   // right centered
-//                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at.saved_x - length + (short)_at.saved_xoff_for_label), NULL);
-//                    if (p_w->toggle_label) {
-//                        XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at.saved_x - length),    NULL);
-//                    }
-//                    width_of_last_widget = 0;
-//                }
-//            }
-//
-//            this->unset_at_commands();
-//            this->increment_at_commands(width_of_last_widget, height_of_last_widget);
-//        }
-//    }
-//    else {
-//        GBK_terminatef("update_toggle_field: toggle field %i does not exist", toggle_field_number);
-//    }
-//
-//#if defined(DEBUG)
-//    inside_here--;
-//#endif // DEBUG
-}
 
 
 static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
@@ -2001,15 +2018,14 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 
 void AW_window::load_xfig(const char *file, bool resize /*= true*/){
 
-    AW_xfig *xfig;
+    AW_xfig *xfig = 0;
 
     if (file)   xfig = new AW_xfig(file, get_root()->font_width, get_root()->font_height);
     else        xfig = new AW_xfig(get_root()->font_width, get_root()->font_height); // create an empty xfig
-
+ 
     xfig_data = xfig;
 
 
-    set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data, 0);
     //TODO remove color mode
     xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1); 
 
@@ -2029,6 +2045,8 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
         device->get_common()->set_screen_size(_at.max_x_size, _at.max_y_size);
 
     }
+
+    set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data, 0);
 }
 
 const char *AW_window::local_id(const char */*id*/) const{
@@ -2255,9 +2273,7 @@ void AW_window::update_option_menu() {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::update_toggle_field() {
-    GTK_NOT_IMPLEMENTED;
-}
+
 
 void AW_window::window_fit() {
     GTK_NOT_IMPLEMENTED;
@@ -2297,6 +2313,8 @@ AW_window::AW_window() {
     for(int i = 0; i < AW_MAX_AREA; i++ ) {
         prvt->areas.push_back(NULL);
     }
+
+    xfig_data = 0; // otherwise -> infrequent segfault in calculate_string_width()
 }
 
 void AW_window::reset_scrolled_picture_size() {
@@ -2336,86 +2354,70 @@ void aw_create_help_entry(AW_window *aww) {
 }
 
 void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) {
-
-    GtkWidget *vbox;
-    GtkWidget *hbox;
-
-    const char *help_button   = "_HELP"; //underscore + mnemonic 
-
-
 #if defined(DUMP_MENU_LIST)
     initMenuListing(windowname);
 #endif // DUMP_MENU_LIST
+    const char *help_button   = "_HELP"; //underscore + mnemonic 
+
     root = root_in; // for macro
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
     
+    // create window
     prvt->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     gtk_window_set_title(prvt->window, window_name);
     gtk_window_set_default_size(prvt->window, width, height);
-    vbox = gtk_vbox_new(false, 1); FIXME("pixel constants in gui init code");
-    gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
 
-    GTK_PARTLY_IMPLEMENTED;
-    
+    // create menu bar
     prvt->menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
-    prvt->menus.push(GTK_MENU_SHELL(prvt->menu_bar));//The menu bar is the top level menu shell.
-
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->menu_bar), false,
-                       false, //has no effect if the third parameter is false
-                       2); FIXME("pixel constants in gui init code");
-
+    prvt->menus.push(GTK_MENU_SHELL(prvt->menu_bar)); //The menu bar is the top level menu shell.
     //create help menu
-    FIXME("HELP button is not the rightmost button");
-    // I bet HELP button needs to be "appended" last to be on the right side... -- ep
     GtkMenuItem *help_item = GTK_MENU_ITEM(gtk_menu_item_new_with_mnemonic(help_button));
     prvt->help_menu = GTK_MENU_SHELL(gtk_menu_new());
     gtk_menu_item_set_submenu(help_item, GTK_WIDGET(prvt->help_menu));
     gtk_menu_item_set_right_justified(help_item, true);
-    
     gtk_menu_shell_append(GTK_MENU_SHELL(prvt->menu_bar), GTK_WIDGET(help_item));
-    
-    
-    hbox = gtk_hbox_new(false, 1);FIXME("pixel constants in gui init code");
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), true, true, 0);
-    
+
+    // create vertical toolbar ('mode menu')
     prvt->mode_menu = GTK_TOOLBAR(gtk_toolbar_new());
     gtk_toolbar_set_orientation(prvt->mode_menu, GTK_ORIENTATION_VERTICAL);
-    
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prvt->mode_menu), false, false, 0);
 
-    GtkWidget *vbox2 = gtk_vbox_new(false, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), vbox2, true, true, 0);
-    
-//    GtkWidget *hbox2 = gtk_hbox_new(false, 0);
-//    gtk_box_pack_start(GTK_BOX(vbox2), hbox2, true, true, 0);
-    
-    
-    //The buttons are above the drawing are
+    // create area for buttons at top ('info area')
     prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
     FIXME("form should be a frame around area?!");
     prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); 
-    gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
-    
-    
+
+    // create main drawing area ('middle area')
     GtkWidget* drawing_area = gtk_drawing_area_new();
     gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), 3000, 3000); FIXME("pixel constants in gui init code");
-    GtkWidget *scrollArea = gtk_scrolled_window_new(NULL, NULL); //NULL causes the scrolledWindow to create its own scroll adjustments
-    gtk_box_pack_start(GTK_BOX(vbox2), scrollArea, true, true, 0);   
+    GtkWidget *scrollArea = gtk_scrolled_window_new(NULL, NULL); 
+    // NULL,NULL causes the scrolledWindow to create its own scroll adjustments
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrollArea), drawing_area);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollArea), GTK_POLICY_ALWAYS, GTK_POLICY_ALWAYS);
-    
-    //gtk_box_pack_end(GTK_BOX(vbox2), scrollArea, true, true, 0);
     gtk_widget_realize(GTK_WIDGET(drawing_area));
+    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); 
+    //FIXME form should be a frame around the area.
 
-    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); //FIXME form should be a frame around the area.
-    
+    // Layout:
+    // fixed_size_area ('info') goes above scrollArea ('middle')
+    GtkWidget *vbox2 = gtk_vbox_new(false, 0);
+    gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
+    gtk_box_pack_start(GTK_BOX(vbox2), scrollArea, true, true, 0);   
+    // Both go right of the mode_menu / vert. toolbar
+    GtkWidget *hbox = gtk_hbox_new(false, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prvt->mode_menu), false, false, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), vbox2, true, true, 0);
+    // And above those goes the menu          
+    GtkWidget *vbox = gtk_vbox_new(false, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->menu_bar), false, false, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), true, true, 0);
+    gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
 
-    gtk_widget_realize(GTK_WIDGET(prvt->window)); //realizes everything
+    // make-it-so:
+    gtk_widget_realize(GTK_WIDGET(prvt->window)); 
     create_devices();
     aw_create_help_entry(this);
     create_window_variables();
-    
 }
 
 
@@ -2503,8 +2505,6 @@ AW_window_simple_menu::~AW_window_simple_menu() {
 }
 
 void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname) {
-    GtkWidget *vbox;
-
     const char *help_button   = "_HELP"; //underscore + mnemonic  
 
     root = root_in; // for macro
@@ -2514,42 +2514,34 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     int width = 100;
     int height = 100;
 
-    // create window with top level vbox
+    // create window
     prvt->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     gtk_window_set_title(prvt->window, window_name);
     gtk_window_set_default_size(prvt->window, width, height);
-    vbox = gtk_vbox_new(false, 1); FIXME("constant");
-    gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
                                      
-    // add menu bar with help menu
+    // create menu bar
     prvt->menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->menu_bar), false, false, 2);
     prvt->menus.push(GTK_MENU_SHELL(prvt->menu_bar));
     GtkMenuItem *help_item = GTK_MENU_ITEM(gtk_menu_item_new_with_mnemonic(help_button));
     prvt->help_menu = GTK_MENU_SHELL(gtk_menu_new());
     gtk_menu_item_set_submenu(help_item, GTK_WIDGET(prvt->help_menu));
     gtk_menu_shell_append(GTK_MENU_SHELL(prvt->menu_bar), GTK_WIDGET(help_item));
 
-    // add drawing area in fixed_size_area
-    prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
-    prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); 
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
-    
-    GtkWidget* drawing_area = gtk_drawing_area_new();
-    gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), 3000, 3000); FIXME("pixel constants in gui init code");
-    GtkWidget *scrollArea = gtk_scrolled_window_new(NULL, NULL); //NULL causes the scrolledWindow to create its own scroll adjustments
-    gtk_box_pack_start(GTK_BOX(vbox), scrollArea, true, true, 0);   
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrollArea), drawing_area);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollArea), GTK_POLICY_ALWAYS, GTK_POLICY_ALWAYS);
+    // create drawing/info area
+    GtkWidget *fixed_size_area = gtk_fixed_new();
+    prvt->fixed_size_area = GTK_FIXED(fixed_size_area);
+    prvt->areas[AW_INFO_AREA] = new AW_area_management(root, fixed_size_area, fixed_size_area); 
 
-    gtk_widget_realize(GTK_WIDGET(drawing_area));
-    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area);              
-  
+    // put menu+drawing area into vbox into window
+    GtkWidget *vbox = gtk_vbox_new(false, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->menu_bar), false, false, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), fixed_size_area, false, false, 0);
+    gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
+
     gtk_widget_realize(GTK_WIDGET(prvt->window));
     create_devices();
 
     FIXME("AW_window_simple_menu::init partially redundant with AW_window_simple::init");
-    GTK_PARTLY_IMPLEMENTED;
 }
 
 AW_window_simple::AW_window_simple() : AW_window() {
