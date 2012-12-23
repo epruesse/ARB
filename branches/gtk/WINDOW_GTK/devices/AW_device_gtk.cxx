@@ -64,15 +64,24 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
         
          
         if (drawflag) {
+            //FIXME("GtkAllocation mapping unfinished");
+            // a) it's only implemented for line and text
+            // b) I don't think this is the right place
+            // -- ep
+
+            // Figure out where the drawingArea is with respect to the window.
+            // allocation.x and ...y need to be added to x/y coords. 
+            GtkAllocation allocation;
+            gtk_widget_get_allocation(drawingArea, &allocation);
 
             aw_assert(clippedLine.valid());
               //this is the version that should be used if clipping is active
-            gdk_draw_line(GDK_DRAWABLE(drawingArea->window),
+            gdk_draw_line(GDK_DRAWABLE(gtk_widget_get_window(GTK_WIDGET(drawingArea))),
                          get_common()->get_GC(gc),
-                         int(clippedLine.start().xpos()),
-                         int(clippedLine.start().ypos()),
-                         int(clippedLine.head().xpos()),
-                         int(clippedLine.head().ypos()));
+                         int(clippedLine.start().xpos()) + allocation.x,
+                         int(clippedLine.start().ypos()) + allocation.y,
+                         int(clippedLine.head().xpos())  + allocation.x,
+                         int(clippedLine.head().ypos())  + allocation.y);
 
             AUTO_FLUSH(this);
         }
@@ -90,6 +99,10 @@ bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char
     aw_assert(size <= strlen(str));
     AW_device_gtk *device_gtk = DOWNCAST(AW_device_gtk*, device);
 
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(device_gtk->drawingArea, &allocation);
+    X += allocation.x;
+    Y += allocation.y;
 
     GdkGCValues values;
     GdkGC *gdkGc = device_gtk->get_common()->get_GC(gc);
@@ -98,7 +111,7 @@ bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char
     ASSERT_FALSE(values.font == NULL);
     //TODO according to the gtk documentation it should be possible to use NULL as font.
     //      NULL means: use the gc font. However that does not work. Maybe it will in a newer gtk version.
-    gdk_draw_string(GDK_DRAWABLE(device_gtk->drawingArea->window),
+    gdk_draw_string(GDK_DRAWABLE(gtk_widget_get_window(device_gtk->drawingArea)),
                     values.font,
                     gdkGc,
                     AW_INT(X),
