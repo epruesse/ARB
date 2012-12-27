@@ -103,7 +103,9 @@ $(RUNDIR):
 makedirs: $(DESTDIR) $(RUNDIR)
 
 $(SYMLIST) : $(FULLLIB) Makefile makedirs show_test_header
-	nm -C -l $< > $@
+# temp workaround for using gcc 4.8 on dwarf 3 system
+	( nm -C -l $< > $@ ) 2>&1 | grep -v 'this reader only handles version 2 and 3 information'
+#	nm -C -l $< > $@ 2> /dev/null
 
 $(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test
 	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $< $@ $(WARN_LEVEL)
