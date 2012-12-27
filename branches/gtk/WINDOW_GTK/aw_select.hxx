@@ -58,9 +58,15 @@ class AW_selection_list {
     AW_selection_list_entry *get_entry_at(int index);
     
     /**
+     * 
+     * @return The index of the selected item or -1 
+     */
+    int get_selected_index() const;
+    
+    /**
      * Appends the specified entry to the list store
      */
-    void appendToListStore(AW_selection_list_entry* entry);
+    void append_to_liststore(AW_selection_list_entry* entry);
     
     /**
      * Inserts a value into this selection list.

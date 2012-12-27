@@ -111,7 +111,8 @@ AW_default AW_root::load_properties(const char *default_name) {
 }
 
 static void destroy_AW_root() {
-    delete AW_root::SINGLETON; AW_root::SINGLETON = NULL;
+    delete AW_root::SINGLETON;
+    AW_root::SINGLETON = NULL;
 }
 
 

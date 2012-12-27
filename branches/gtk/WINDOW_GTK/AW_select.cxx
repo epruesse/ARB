@@ -20,7 +20,7 @@
 #include <list>
 #include <gtk/gtktreestore.h>
 #include <gtk/gtkliststore.h>
-
+#include <gtk/gtktreeselection.h>
 
 #ifndef ARBDB_H
 #include <arbdb.h>
@@ -28,6 +28,14 @@
 
 #ifndef ARB_STRBUF_H
 #include <arb_strbuf.h>
+#endif
+
+#ifndef ARB_SORT_H
+#include <arb_sort.h>
+#endif
+
+#ifndef ARB_STRARRAY_H
+#include <arb_strarray.h>
 #endif
 
 __ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *intoWhat) {
@@ -84,23 +92,40 @@ bool AW_selection_list::default_is_selected() const {
 }
 
 
+int AW_selection_list::get_selected_index() const {
+    //note: copy&paste from http://ubuntuforums.org/showthread.php?t=1208655
+    GtkTreeSelection *tsel = gtk_tree_view_get_selection (select_list_widget);
+    GtkTreeIter iter;
+    GtkTreeModel *tm;
+    GtkTreePath *path;
+    int *i;
+    if (gtk_tree_selection_get_selected (tsel , &tm , &iter))
+        {
+        path = gtk_tree_model_get_path (tm , &iter);
+        i = gtk_tree_path_get_indices(path);
+        return i[0];
+        }
+    return -1;
+}
+
 const char *AW_selection_list::get_selected_value() const { // @@@ refactor
-    GTK_NOT_IMPLEMENTED;
-    return "NOT IMPL";
-//    int                      i;
-//    AW_selection_list_entry *lt;
-//    AW_selection_list_entry *found = 0;
-//    
-//    for (i=1, lt = list_table; lt; i++, lt = lt->next) {
-//        lt->is_selected = XmListPosSelected(select_list_widget, i);
-//        if (lt->is_selected && !found) found = lt;
-//    }
-//
-//    if (default_select) {
-//        default_select->is_selected = XmListPosSelected(select_list_widget, i);
-//        if (default_select->is_selected && !found) found = default_select;
-//    }
-//    return found ? found->value.get_string() : NULL;
+    FIXME("untested code");
+    AW_selection_list_entry *lt;
+    AW_selection_list_entry *found = 0;
+    GtkTreeIter              iter;
+    GtkTreeModel             *model = GTK_TREE_MODEL(gtk_tree_view_get_model(select_list_widget));
+    GtkTreeSelection         *selection = GTK_TREE_SELECTION(gtk_tree_view_get_selection(select_list_widget));
+
+    //note: this loop only works if the iter walks the items in order
+    if(gtk_tree_model_get_iter_first(model, &iter)) {//if the model is not empty
+        for( lt = list_table; lt; lt=lt->next, gtk_tree_model_iter_next(model, &iter)) {
+            lt->is_selected = gtk_tree_selection_iter_is_selected(selection, &iter);
+            
+            if(lt->is_selected && !found) found = lt;
+        }
+    }
+    if (found) printf("selected : %s\n", found->value.get_string());
+    return found ? found->value.get_string() : NULL;
 }
 
 AW_selection_list_entry *AW_selection_list::get_entry_at(int index) {
@@ -140,8 +165,9 @@ void AW_selection_list::delete_element_at(const int index) {
 }
 
 
-void AW_selection_list::delete_value(char const */*value*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::delete_value(const char *value) {
+    int index = get_index_of(value);
+    delete_element_at(index);
 }
 
 const char *AW_selection_list::get_awar_value() const {
@@ -167,9 +193,8 @@ const char *AW_selection_list::get_default_display() const {
         return default_select ? default_select->get_displayed() : NULL;
 }
 
-const char * AW_selection_list::get_default_value() const {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+const char *AW_selection_list::get_default_value() const {
+    return default_select ? default_select->value.get_string() : NULL;
 }
 
 int AW_selection_list::get_index_of(const char *searched_value) {
@@ -201,7 +226,7 @@ void AW_selection_list::insert(const char *displayed, const char *value) {
     aw_assert(NULL != entry);
 }
 
-void AW_selection_list::appendToListStore(AW_selection_list_entry* entry)
+void AW_selection_list::append_to_liststore(AW_selection_list_entry* entry)
 {
     GtkListStore *store;
     GtkTreeIter iter;
@@ -267,12 +292,17 @@ void AW_selection_list::select_element_at(int /*wanted_index*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_selection_list::set_awar_value(char const */*new_value*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::set_awar_value(const char *new_value) {
+    AW_root::SINGLETON->awar(variable_name)->write_string(new_value);
 }
 
-void AW_selection_list::set_file_suffix(char const */*suffix*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::set_file_suffix(const char *suffix) {
+    AW_root *aw_root = AW_root::SINGLETON;
+    char     filter[200];
+    sprintf(filter, "tmp/save_box_sel_%li/filter", (long)this);
+    aw_root->awar_string(filter, suffix);
+    sprintf(filter, "tmp/load_box_sel_%li/filter", (long)this);
+    aw_root->awar_string(filter, suffix);
 }
 
 size_t AW_selection_list::size() {
@@ -286,17 +316,67 @@ size_t AW_selection_list::size() {
     return count;
 }
 
-void AW_selection_list::sort(bool /*backward*/, bool /*case_sensitive*/) {
+void AW_selection_list::sort(bool backward, bool case_sensitive) {
     GTK_NOT_IMPLEMENTED;
+//    size_t count = size();
+//    if (count) {
+//        AW_selection_list_entry **tables = new AW_selection_list_entry *[count];
+//        count = 0;
+//        for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
+//            tables[count++] = lt;
+//        }
+//
+//        gb_compare_function comparator;
+//        if (backward) {
+//            if (case_sensitive) comparator = AW_sort_AW_select_table_struct_backward;
+//            else comparator                = AW_isort_AW_select_table_struct_backward;
+//        }
+//        else {
+//            if (case_sensitive) comparator = AW_sort_AW_select_table_struct;
+//            else comparator                = AW_isort_AW_select_table_struct;
+//        }
+//
+//        GB_sort((void**)tables, 0, count, comparator, 0);
+//
+//        size_t i;
+//        for (i=0; i<count-1; i++) {
+//            tables[i]->next = tables[i+1];
+//        }
+//        tables[i]->next = 0;
+//        list_table = tables[0];
+//        last_of_list_table = tables[i];
+//
+//        delete [] tables;
+//    }
 }
 
-void AW_selection_list::to_array(StrArray& /*array*/, bool /*values*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::to_array(StrArray& array, bool values) {
+    /*! read contents of selection list into an array.
+     * @param values true->read values, false->read displayed strings
+     * Use GBT_free_names() to free the result.
+     *
+     * Note: if 'values' is true, this function only works for string selection lists!
+     */
+
+    array.reserve(size());
+    
+    for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
+        array.put(strdup(values ? lt->value.get_string() : lt->get_displayed()));
+    }
+    aw_assert(array.size() == size());
 }
 
-GB_HASH *AW_selection_list::to_hash(bool /*case_sens*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+GB_HASH *AW_selection_list::to_hash(bool case_sens) {
+    // creates a hash (key = value of selection list, value = display string from selection list)
+    // (Warning: changing the selection list will render the hash invalid!)
+
+    GB_HASH *hash = GBS_create_hash(size(), case_sens ? GB_MIND_CASE : GB_IGNORE_CASE);
+
+    for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
+        GBS_write_hash(hash, lt->value.get_string(), (long)lt->get_displayed());
+    }
+
+    return hash;
 }
 
 void AW_selection_list::update() {      
@@ -307,11 +387,11 @@ void AW_selection_list::update() {
     gtk_list_store_clear(GTK_LIST_STORE(gtk_tree_view_get_model(select_list_widget)));
     
     for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
-        appendToListStore(lt);
+        append_to_liststore(lt);
     }
 
     if (default_select) {
-        appendToListStore(default_select);
+        append_to_liststore(default_select);
     }
 
     refresh();
@@ -332,78 +412,80 @@ char *AW_selection_list_entry::copy_string_for_display(const char *str) {
 }
 
 void AW_selection_list::refresh() {
-    GTK_NOT_IMPLEMENTED;
-//    if (!variable_name) return;     // not connected to awar
-//
-//    AW_root *root  = AW_root::SINGLETON;
-//    bool     found = false;
-//    int      pos   = 0;
-//    AW_awar *awar  = root->awar(variable_name);
-//
-//    AW_selection_list_entry *lt;
-//
-//    switch (variable_type) {
-//        case AW_STRING: {
-//            char *var_value = awar->read_string();
-//            for (lt = list_table; lt; lt = lt->next) {
-//                if (strcmp(var_value, lt->value.get_string()) == 0) {
-//                    found = true;
-//                    break;
-//                }
-//                pos++;
-//            }
-//            free(var_value);
-//            break;
-//        }
-//        case AW_INT: {
-//            int var_value = awar->read_int();
-//            for (lt = list_table; lt; lt = lt->next) {
-//                if (var_value == lt->value.get_int()) {
-//                    found = true;
-//                    break;
-//                }
-//                pos++;
-//            }
-//            break;
-//        }
-//        case AW_FLOAT: {
-//            float var_value = awar->read_float();
-//            for (lt = list_table; lt; lt = lt->next) {
-//                if (var_value == lt->value.get_float()) {
-//                    found = true;
-//                    break;
-//                }
-//                pos++;
-//            }
-//            break;
-//        }
-//        case AW_POINTER: {
-//            GBDATA *var_value = awar->read_pointer();
-//            for (lt = list_table; lt; lt = lt->next) {
-//                if (var_value == lt->value.get_pointer()) {
-//                    found = true;
-//                    break;
-//                }
-//                pos++;
-//            }
-//            break;
-//        }
-//        default:
-//            aw_assert(0);
-//            GB_warning("Unknown AWAR type");
-//            break;
-//    }
-//
-//    if (found || default_select) {
-//        pos++;
+//select the item that matches the awars value
+   if (!variable_name) return;     // not connected to awar
+
+   
+    AW_root *root  = AW_root::SINGLETON;
+    bool     found = false;
+    AW_awar *awar  = root->awar(variable_name);
+    GtkTreeIter iter;
+    GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_view_get_model(select_list_widget));
+    AW_selection_list_entry *lt;
+    gtk_tree_model_get_iter_first(model, &iter);
+    
+    switch (variable_type) {
+        case AW_STRING: {
+            char *var_value = awar->read_string();
+            for (lt = list_table; lt; lt = lt->next) {
+                if (strcmp(var_value, lt->value.get_string()) == 0) {
+                    found = true;
+                    break;
+                }
+                gtk_tree_model_iter_next(model, &iter);
+            }
+            free(var_value);
+            break;
+        }
+        case AW_INT: {
+            int var_value = awar->read_int();
+            for (lt = list_table; lt; lt = lt->next) {
+                if (var_value == lt->value.get_int()) {
+                    found = true;
+                    break;
+                }
+                gtk_tree_model_iter_next(model, &iter);
+            }
+            break;
+        }
+        case AW_FLOAT: {
+            float var_value = awar->read_float();
+            for (lt = list_table; lt; lt = lt->next) {
+                if (var_value == lt->value.get_float()) {
+                    found = true;
+                    break;
+                }
+                gtk_tree_model_iter_next(model, &iter);
+            }
+            break;
+        }
+        case AW_POINTER: {
+            GBDATA *var_value = awar->read_pointer();
+            for (lt = list_table; lt; lt = lt->next) {
+                if (var_value == lt->value.get_pointer()) {
+                    found = true;
+                    break;
+                }
+                gtk_tree_model_iter_next(model, &iter);
+            }
+            break;
+        }
+        default:
+            aw_assert(0);
+            GB_warning("Unknown AWAR type");
+            break;
+    }
+
+    if (found || default_select) {
 //        int top;
 //        int vis;
 //        XtVaGetValues(select_list_widget,
 //                      XmNvisibleItemCount, &vis,
 //                      XmNtopItemPosition, &top,
 //                      NULL);
-//        XmListSelectPos(select_list_widget, pos, False);
-//
+         gtk_tree_selection_select_iter(GTK_TREE_SELECTION(gtk_tree_view_get_selection(select_list_widget)), &iter);
+
+        FIXME("position adjustment not implemented."); //NO why XmListSetPos is called here....
 //        if (pos < top) {
 //            if (pos > 1) pos --;
 //            XmListSetPos(select_list_widget, pos);
@@ -411,10 +493,10 @@ void AW_selection_list::refresh() {
 //        if (pos >= top + vis) {
 //            XmListSetBottomPos(select_list_widget, pos + 1);
 //        }
-//    }
-//    else {
-//        GBK_terminatef("Selection list '%s' has no default selection", variable_name);
-//    }
+    }
+    else {
+        GBK_terminatef("Selection list '%s' has no default selection", variable_name);
+    }
 }
 
 
