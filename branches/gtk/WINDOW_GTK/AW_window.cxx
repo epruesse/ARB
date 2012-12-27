@@ -1165,8 +1165,142 @@ void AW_window::allow_delete_window(bool /*allow_close*/) {
     //aw_set_delete_window_cb(this, p_w->shell, allow_close);
 }
 
-void AW_window::create_input_field(const char */*awar_name*/, int /*columns*/ /* = 0 */){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::create_input_field(const char *var_name,   int columns) {
+    GtkWidget     *textField      = 0;
+    GtkWidget     *tmp_label      = 0;
+    AW_cb_struct  *cbs;
+//    VarUpdateInfo *vui;
+    char          *str;
+    int            xoff_for_label = 0;
+
+    if (!columns) columns = _at.length_of_buttons;
+
+    AW_awar *vs = root->awar(var_name);
+    str         = root->awar(var_name)->read_as_string();
+
+    int width_of_input_label, height_of_input_label;
+    calculate_label_size(this, &width_of_input_label, &height_of_input_label, true, 0);
+    // @@@ FIXME: use height_of_input_label for propper Y-adjusting of label
+    // width_of_input_label = this->calculate_string_width( calculate_label_length() );
+
+    int width_of_input = this->calculate_string_width(columns+1) + 9;
+    // calculate width for 1 additional character (input field is not completely used)
+    // + 4 pixel for shadow + 4 unknown missing pixels + 1 add. pixel needed for visible text area
+
+    //Widget parentWidget = _at.attach_any ? INFO_FORM : INFO_WIDGET;
+
+    if (_at.label_for_inputfield) {
+        tmp_label = gtk_label_new(_at.label_for_inputfield);
+        gtk_fixed_put(prvt->fixed_size_area, tmp_label, _at.x_for_next_button, (int)(_at.y_for_next_button) + root->y_correction_for_input_labels -1);
+        gtk_widget_show(tmp_label);
+//        tmp_label = XtVaCreateManagedWidget("label",
+//                                            xmLabelWidgetClass,
+//                                            parentWidget,
+//                                            XmNwidth, (int)(width_of_input_label + 2),
+//                                            XmNhighlightThickness, 0,
+//                                            RES_CONVERT(XmNlabelString, _at.label_for_inputfield),
+//                                            XmNrecomputeSize, false,
+//                                            XmNalignment, XmALIGNMENT_BEGINNING,
+//                                            XmNfontList, p_global->fontlist,
+//                                            (_at.attach_any) ? NULL : XmNx, (int)_at.x_for_next_button,
+//                                            XmNy, (int)(_at.y_for_next_button) + root->y_correction_for_input_labels -1,
+//                                            NULL);
+        if (_at.attach_any)
+        {
+            FIXME("input field label attaching not implemented");
+            //aw_attach_widget(tmp_label, _at);
+        }
+        xoff_for_label = width_of_input_label + 10;
+    }
+
+
+    int width_of_last_widget = xoff_for_label + width_of_input + 2;
+
+    if (_at.to_position_exists) {
+        width_of_input = _at.to_position_x - _at.x_for_next_button - xoff_for_label + 2;
+        width_of_last_widget = _at.to_position_x - _at.x_for_next_button;
+    }
+
+    {
+        //TuneBackground(parentWidget, TUNE_INPUT);
+        textField = gtk_entry_new();
+        gtk_fixed_put(prvt->fixed_size_area, textField, (int)(_at.x_for_next_button + xoff_for_label), (int)(_at.y_for_next_button + 5) - 8);
+//        textField = XtVaCreateManagedWidget("textField",
+//                                            xmTextFieldWidgetClass,
+//                                            parentWidget,
+//                                            XmNwidth, (int)width_of_input,
+//                                            XmNrows, 1,
+//                                            XmNvalue, str,
+//                                            XmNfontList, p_global->fontlist,
+//                                            XmNbackground, _at.background_color,
+//                                            (_at.attach_any) ? NULL : XmNx, (int)(_at.x_for_next_button + xoff_for_label),
+//                                            XmNy, (int)(_at.y_for_next_button + 5) - 8,
+//                                            NULL);
+        if (_at.attach_any) {
+            FIXME("attaching imput field not implemented");
+//            _at.x_for_next_button += xoff_for_label;
+//            aw_attach_widget(textField, _at);
+//            _at.x_for_next_button -= xoff_for_label;
+        }
+    }
+
+    free(str);
+    FIXME("input field callback not implemented");
+    
+    // user-own callback
+//    cbs = _callback;
+//
+//    // callback for enter
+//    vui = new VarUpdateInfo(this, textField, AW_WIDGET_INPUT_FIELD, vs, cbs);
+//
+//    XtAddCallback(textField, XmNactivateCallback,
+//                  (XtCallbackProc) AW_variable_update_callback,
+//                  (XtPointer) vui);
+//    if (_d_callback) {
+//        XtAddCallback(textField, XmNactivateCallback,
+//                      (XtCallbackProc) AW_server_callback,
+//                      (XtPointer) _d_callback);
+//        _d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
+//        get_root()->define_remote_command(_d_callback);
+//    }
+//
+//    // callback for losing focus
+//    XtAddCallback(textField, XmNlosingFocusCallback,
+//                  (XtCallbackProc) AW_variable_update_callback,
+//                  (XtPointer) vui);
+//    // callback for value changed
+//    XtAddCallback(textField, XmNvalueChangedCallback,
+//                  (XtCallbackProc) AW_value_changed_callback,
+//                  (XtPointer) root);
+//
+//    vs->tie_widget(0, textField, AW_WIDGET_INPUT_FIELD, this);
+    
+    FIXME("alignment of input field not implemented.Following at positions probably wrong!");
+//    root->make_sensitive(textField, _at.widget_mask);
+//
+    short height = 0;
+//    XtVaGetValues(textField, XmNheight, &height, NULL);
+    int height_of_last_widget = height;
+//
+//    if (_at.correct_for_at_center == 1) {   // middle centered
+//        XtVaSetValues(textField, XmNx, ((int)(_at.x_for_next_button + xoff_for_label) - (int)(width_of_last_widget/2) + 1), NULL);
+//        if (tmp_label) {
+//            XtVaSetValues(tmp_label, XmNx, ((int)(_at.x_for_next_button) - (int)(width_of_last_widget/2) + 1), NULL);
+//        }
+//        width_of_last_widget = width_of_last_widget / 2;
+//    }
+//    if (_at.correct_for_at_center == 2) {   // right centered
+//        XtVaSetValues(textField, XmNx, (int)(_at.x_for_next_button + xoff_for_label - width_of_last_widget + 3), NULL);
+//        if (tmp_label) {
+//            XtVaSetValues(tmp_label, XmNx, (int)(_at.x_for_next_button - width_of_last_widget + 3), NULL);
+//        }
+//        width_of_last_widget = 0;
+//    }
+//    width_of_last_widget -= 2;
+
+    this->unset_at_commands();
+    this->increment_at_commands(width_of_last_widget, height_of_last_widget);
+
 }
 
 void AW_window::create_text_field(const char */*awar_name*/, int /*columns*/ /* = 20 */, int /*rows*/ /*= 4*/){
