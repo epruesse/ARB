@@ -54,8 +54,8 @@ public:
 
 
 class AW_selection_list {
-   // AW_selection_list_entry *get_entry_at(int index);
     
+    AW_selection_list_entry *get_entry_at(int index);
     
     /**
      * Appends the specified entry to the list store
@@ -82,7 +82,6 @@ public:
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;
     AW_selection_list_entry *default_select;
-    GtkListStore            *list_model; /** < the list model of this selection list */
     AW_selection_list       *next;
     
     // ******************** real public ***************
@@ -101,7 +100,7 @@ public:
 
     void init_from_array(const CharPtrArray& entries, const char *defaultEntry);
     
-    void update() __attribute__ ((deprecated));
+    void update();
     void refresh(); 
 
     void sort(bool backward, bool case_sensitive); // uses displayed value!
@@ -115,7 +114,7 @@ public:
     const char *get_default_value() const;
     const char *get_default_display() const;
 
-    void select_default() { set_awar_value(get_default_value()); }
+    void select_default();
 
     const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default_selection)
 

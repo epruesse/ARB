@@ -14,16 +14,21 @@
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_root.hxx"
 #include "aw_awar.hxx"
+
+#include <gtk/gtktreeview.h>
+#include <string>
+#include <list>
+#include <gtk/gtktreestore.h>
+#include <gtk/gtkliststore.h>
+
+
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
 
-#include <gtk-2.0/gtk/gtktreeview.h>
-#include <string>
-#include <vector>
-#include <gtk-2.0/gtk/gtktreestore.h>
-#include <gtk-2.0/gtk/gtkliststore.h>
-
+#ifndef ARB_STRBUF_H
+#include <arb_strbuf.h>
+#endif
 
 __ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *intoWhat) {
     GBK_terminatef("Cannot insert %s into %s which uses a non-%s AWAR", triedType, intoWhat, triedType);
@@ -43,16 +48,16 @@ AW_selection_list::AW_selection_list(const char *variable_namei, int variable_ty
         list_table(NULL),
         last_of_list_table(NULL),
         default_select(NULL),
-        list_model(GTK_LIST_STORE(gtk_tree_view_get_model(select_list_widgeti))),
         next(NULL)
 {
     aw_assert(NULL != select_list_widget);
-    aw_assert(NULL != list_model);
 
 }
 
 void AW_selection::refresh() {
-    GTK_NOT_IMPLEMENTED;
+    sellist->clear();
+    fill();
+    sellist->update();
 }
 
 
@@ -75,30 +80,91 @@ void AW_selection_list::clear(bool clear_default) {
 }
 
 bool AW_selection_list::default_is_selected() const {
-    GTK_NOT_IMPLEMENTED;
-    return false;
+    return strcmp(get_selected_value(), get_default_value()) == 0;
 }
 
-void AW_selection_list::delete_element_at(int /*index*/) {
+
+const char *AW_selection_list::get_selected_value() const { // @@@ refactor
     GTK_NOT_IMPLEMENTED;
+    return "NOT IMPL";
+//    int                      i;
+//    AW_selection_list_entry *lt;
+//    AW_selection_list_entry *found = 0;
+//    
+//    for (i=1, lt = list_table; lt; i++, lt = lt->next) {
+//        lt->is_selected = XmListPosSelected(select_list_widget, i);
+//        if (lt->is_selected && !found) found = lt;
+//    }
+//
+//    if (default_select) {
+//        default_select->is_selected = XmListPosSelected(select_list_widget, i);
+//        if (default_select->is_selected && !found) found = default_select;
+//    }
+//    return found ? found->value.get_string() : NULL;
 }
+
+AW_selection_list_entry *AW_selection_list::get_entry_at(int index) {
+    AW_selection_list_entry *entry = list_table;
+    while (index && entry) {
+        entry = entry->next;
+        index--;
+    }
+    return entry;
+}
+
+
+void AW_selection_list::select_default() {
+    set_awar_value(get_default_value()); 
+}
+
+void AW_selection_list::delete_element_at(const int index) {
+    if (index<0) return;
+    
+    AW_selection_list_entry *prev = NULL;
+    if (index>0) {
+        prev = get_entry_at(index-1);
+        if (!prev) return; // invalid index
+    }
+    
+    int selected_index = get_index_of_selected();
+    if (index == selected_index) select_default();
+
+    AW_selection_list_entry *toDel = prev ? prev->next : list_table;
+    aw_assert(toDel != default_select);
+
+    (prev ? prev->next : list_table) = toDel->next;
+    delete toDel;
+
+    if (last_of_list_table == toDel) last_of_list_table = prev;
+    
+}
+
 
 void AW_selection_list::delete_value(char const */*value*/) {
     GTK_NOT_IMPLEMENTED;
 }
+
 const char *AW_selection_list::get_awar_value() const {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+    return AW_root::SINGLETON->awar(variable_name)->read_char_pntr();
 }
 
-char *AW_selection_list::get_content_as_string(long /*number_of_lines*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+char *AW_selection_list::get_content_as_string(long number_of_lines) {
+    // number_of_lines == 0 -> print all
+
+    AW_selection_list_entry *lt;
+    GBS_strstruct *fd = GBS_stropen(10000);
+
+    for (lt = list_table; lt; lt = lt->next) {
+        number_of_lines--;
+        GBS_strcat(fd, lt->get_displayed());
+        GBS_chrcat(fd, '\n');
+        if (!number_of_lines) break;
+    }
+    return GBS_strclose(fd);
 }
 
 const char *AW_selection_list::get_default_display() const {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+        return default_select ? default_select->get_displayed() : NULL;
 }
 
 const char * AW_selection_list::get_default_value() const {
@@ -106,14 +172,22 @@ const char * AW_selection_list::get_default_value() const {
     return 0;
 }
 
-int AW_selection_list::get_index_of(char const */*searched_value*/) {
-    GTK_NOT_IMPLEMENTED;
-        return 0;
+int AW_selection_list::get_index_of(const char *searched_value) {
+    /*! get index of an entry in the selection list
+     * @return 0..n-1 index of matching element (or -1)
+     */
+    int element_index = 0;
+    for (AW_selection_list_iterator entry(this); entry; ++entry) {
+        if (strcmp(entry.get_value(), searched_value) == 0) return element_index;
+        ++element_index;
+    }
+    return -1;
 }
 
 int AW_selection_list::get_index_of_selected() {
-    GTK_NOT_IMPLEMENTED;
-        return 0;
+    // returns index of element (or index of default)
+    const char *awar_value = get_awar_value();
+    return get_index_of(awar_value);
 }
 
 void AW_selection_list::init_from_array(const CharPtrArray& /*entries*/, const char */*defaultEntry*/) {
@@ -124,10 +198,7 @@ void AW_selection_list::init_from_array(const CharPtrArray& /*entries*/, const c
 void AW_selection_list::insert(const char *displayed, const char *value) {
     
     AW_selection_list_entry* entry = insert_generic(displayed, value, AW_STRING);
-    if(NULL != entry)
-    {
-        appendToListStore(last_of_list_table);
-    }
+    aw_assert(NULL != entry);
 }
 
 void AW_selection_list::appendToListStore(AW_selection_list_entry* entry)
@@ -155,10 +226,7 @@ void AW_selection_list::insert_default(const char *displayed, const char *value)
 
 void AW_selection_list::insert(const char *displayed, int32_t value) {
     AW_selection_list_entry* entry = insert_generic(displayed, value, AW_INT);
-    if(NULL != entry)
-    {
-        appendToListStore(last_of_list_table);
-    }
+    aw_assert(NULL != entry);
 }
 
 void AW_selection_list::insert_default(const char *displayed, int32_t value) {
@@ -174,10 +242,7 @@ void AW_selection_list::insert_default(const char *displayed, int32_t value) {
 
 void AW_selection_list::insert(const char *displayed, GBDATA *pointer) {
     AW_selection_list_entry* entry = insert_generic(displayed, pointer, AW_POINTER);
-    if(NULL != entry)
-    {
-        appendToListStore(last_of_list_table);
-    }
+    aw_assert(NULL != entry);
 }
 
 void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
@@ -235,7 +300,21 @@ GB_HASH *AW_selection_list::to_hash(bool /*case_sens*/) {
 }
 
 void AW_selection_list::update() {      
-    //note: This method is deprecated
+    // Warning:
+    // update() will not set the connected awar to the default value
+    // if it contains a value which is not associated with a list entry!
+
+    gtk_list_store_clear(GTK_LIST_STORE(gtk_tree_view_get_model(select_list_widget)));
+    
+    for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
+        appendToListStore(lt);
+    }
+
+    if (default_select) {
+        appendToListStore(default_select);
+    }
+
+    refresh();
 }
 
 char *AW_selection_list_entry::copy_string_for_display(const char *str) {
