@@ -48,7 +48,7 @@ public:
     void set_widget(GtkWidget *w);
     void set_sellist(AW_selection_list *asl);
     
-    static void AW_variable_update_callback(GtkTreeSelection *selection, gpointer variable_update_struct);
+    static void AW_variable_update_callback(GtkWidget *selection, gpointer variable_update_struct);
     
 };
 

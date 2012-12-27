@@ -1165,11 +1165,18 @@ void AW_window::allow_delete_window(bool /*allow_close*/) {
     //aw_set_delete_window_cb(this, p_w->shell, allow_close);
 }
 
+
+static bool AW_value_changed_callback(GtkWidget* /*wgt*/,  gpointer rooti) {
+    AW_root *root = (AW_root *)rooti;
+    root->value_changed = true;
+    return false; //this event should propagate further
+}
+
 void AW_window::create_input_field(const char *var_name,   int columns) {
     GtkWidget     *textField      = 0;
     GtkWidget     *tmp_label      = 0;
     AW_cb_struct  *cbs;
-//    VarUpdateInfo *vui;
+    AW_varUpdateInfo *vui;
     char          *str;
     int            xoff_for_label = 0;
 
@@ -1245,58 +1252,57 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     }
 
     free(str);
-    FIXME("input field callback not implemented");
-    
+
     // user-own callback
-//    cbs = _callback;
-//
-//    // callback for enter
-//    vui = new VarUpdateInfo(this, textField, AW_WIDGET_INPUT_FIELD, vs, cbs);
-//
-//    XtAddCallback(textField, XmNactivateCallback,
-//                  (XtCallbackProc) AW_variable_update_callback,
-//                  (XtPointer) vui);
-//    if (_d_callback) {
+    cbs = _callback;
+
+    // callback for enter
+    vui = new AW_varUpdateInfo(this, textField, AW_WIDGET_INPUT_FIELD, vs, cbs);
+
+    g_signal_connect(G_OBJECT(textField), "activate", G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), (gpointer) vui);
+    
+    if (_d_callback) {
+        FIXME("_d_callback not implemented for input field");
 //        XtAddCallback(textField, XmNactivateCallback,
 //                      (XtCallbackProc) AW_server_callback,
 //                      (XtPointer) _d_callback);
 //        _d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
 //        get_root()->define_remote_command(_d_callback);
-//    }
-//
-//    // callback for losing focus
-//    XtAddCallback(textField, XmNlosingFocusCallback,
-//                  (XtCallbackProc) AW_variable_update_callback,
-//                  (XtPointer) vui);
-//    // callback for value changed
-//    XtAddCallback(textField, XmNvalueChangedCallback,
-//                  (XtCallbackProc) AW_value_changed_callback,
-//                  (XtPointer) root);
-//
-//    vs->tie_widget(0, textField, AW_WIDGET_INPUT_FIELD, this);
+    }
+   
+    // callback for losing focus
+    g_signal_connect(G_OBJECT(textField), "focus-out-event",  G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), (gpointer) root);
+    // callback for value changed
+    g_signal_connect(G_OBJECT(textField), "changed",  G_CALLBACK(AW_value_changed_callback), (gpointer) root);
+
+
+    vs->tie_widget(0, textField, AW_WIDGET_INPUT_FIELD, this);
     
-    FIXME("alignment of input field not implemented.Following at positions probably wrong!");
-//    root->make_sensitive(textField, _at.widget_mask);
+    
+    root->make_sensitive(textField, _at.widget_mask);
 //
-    short height = 0;
+    short height = textField->allocation.height;
+    
 //    XtVaGetValues(textField, XmNheight, &height, NULL);
     int height_of_last_widget = height;
-//
-//    if (_at.correct_for_at_center == 1) {   // middle centered
-//        XtVaSetValues(textField, XmNx, ((int)(_at.x_for_next_button + xoff_for_label) - (int)(width_of_last_widget/2) + 1), NULL);
-//        if (tmp_label) {
-//            XtVaSetValues(tmp_label, XmNx, ((int)(_at.x_for_next_button) - (int)(width_of_last_widget/2) + 1), NULL);
-//        }
-//        width_of_last_widget = width_of_last_widget / 2;
-//    }
-//    if (_at.correct_for_at_center == 2) {   // right centered
-//        XtVaSetValues(textField, XmNx, (int)(_at.x_for_next_button + xoff_for_label - width_of_last_widget + 3), NULL);
-//        if (tmp_label) {
-//            XtVaSetValues(tmp_label, XmNx, (int)(_at.x_for_next_button - width_of_last_widget + 3), NULL);
-//        }
-//        width_of_last_widget = 0;
-//    }
-//    width_of_last_widget -= 2;
+
+    
+    if (_at.correct_for_at_center == 1) {   // middle centered
+        gtk_fixed_move(prvt->fixed_size_area, textField, (int)(_at.x_for_next_button + xoff_for_label) - (int)(width_of_last_widget/2) + 1, textField->allocation.y);
+        
+        if (tmp_label) {
+            gtk_fixed_move(prvt->fixed_size_area, tmp_label,  ((int)(_at.x_for_next_button) - (int)(width_of_last_widget/2) + 1), tmp_label->allocation.y);
+        }
+        width_of_last_widget = width_of_last_widget / 2;
+    }
+    if (_at.correct_for_at_center == 2) {   // right centered
+        gtk_fixed_move(prvt->fixed_size_area, textField, (int)(_at.x_for_next_button + xoff_for_label - width_of_last_widget + 3), textField->allocation.y);
+        if (tmp_label) {
+            gtk_fixed_move(prvt->fixed_size_area, tmp_label,  (int)(_at.x_for_next_button - width_of_last_widget + 3), tmp_label->allocation.y);
+        }
+        width_of_last_widget = 0;
+    }
+    width_of_last_widget -= 2;
 
     this->unset_at_commands();
     this->increment_at_commands(width_of_last_widget, height_of_last_widget);

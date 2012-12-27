@@ -15,16 +15,25 @@
 #include "aw_msg.hxx"
 
 
-void AW_varUpdateInfo::AW_variable_update_callback(GtkTreeSelection *selection, gpointer variable_update_struct) {
+void AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer variable_update_struct) {
     AW_varUpdateInfo *vui = (AW_varUpdateInfo *) variable_update_struct;
     aw_assert(vui);
 
-    //this event occurs if the selection changes in any way (including deselect).
-    //we don't want to handle deselect.
-    if(gtk_tree_selection_count_selected_rows(selection) > 0)
-    {
-       vui->change_from_widget((gpointer)selection); 
+
+    if(GTK_IS_TREE_SELECTION(widget)) {
+        //if this event is coming from a tree view widget
+        //it is called twice, once for deselecting the old item and once for selecting
+        //the new one. We dont want to handle the deselect
+        if(gtk_tree_selection_count_selected_rows(GTK_TREE_SELECTION(widget)) > 0)
+        {
+            vui->change_from_widget((gpointer)widget); 
+        }
     }
+    else
+    { //for now forward all other events.
+        vui->change_from_widget((gpointer)widget); 
+    }
+    
 }
 
 void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
