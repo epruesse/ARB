@@ -38,6 +38,10 @@
 #include <arb_strarray.h>
 #endif
 
+#ifndef ARB_STR_H
+#include <arb_str.h>
+#endif
+
 __ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *intoWhat) {
     GBK_terminatef("Cannot insert %s into %s which uses a non-%s AWAR", triedType, intoWhat, triedType);
 }
@@ -45,6 +49,23 @@ __ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *in
 __ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { type_mismatch(triedType, "selection-list"); }
 __ATTR__NORETURN inline void option_type_mismatch(const char *triedType) { type_mismatch(triedType, "option-menu"); }
 __ATTR__NORETURN inline void toggle_type_mismatch(const char *triedType) { type_mismatch(triedType, "toggle"); }
+
+static int AW_sort_AW_select_table_struct(const void *t1, const void *t2, void *) {
+    return strcmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
+                  static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
+}
+static int AW_sort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
+    return strcmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
+                  static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
+}
+static int AW_isort_AW_select_table_struct(const void *t1, const void *t2, void *) {
+    return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
+                       static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
+}
+static int AW_isort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
+    return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
+                       static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
+}
 
 
 
@@ -215,9 +236,33 @@ int AW_selection_list::get_index_of_selected() {
     return get_index_of(awar_value);
 }
 
-void AW_selection_list::init_from_array(const CharPtrArray& /*entries*/, const char */*defaultEntry*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::init_from_array(const CharPtrArray& entries, const char *defaultEntry) {
+    // update selection list with contents of NULL-terminated array 'entries'
+    // 'defaultEntry' is used as default selection
+    // awar value will be changed to 'defaultEntry' if it does not match any other entry
+    // Note: This works only with selection lists bound to AW_STRING awars.
 
+    aw_assert(defaultEntry);
+    char *defaultEntryCopy = strdup(defaultEntry); // use a copy (just in case defaultEntry point to a value free'd by clear_selection_list())
+    bool  defInserted      = false;
+
+    clear();
+    for (int i = 0; entries[i]; ++i) {
+        if (!defInserted && strcmp(entries[i], defaultEntryCopy) == 0) {
+            insert_default(defaultEntryCopy, defaultEntryCopy);
+            defInserted = true;
+        }
+        else {
+            insert(entries[i], entries[i]);
+        }
+    }
+    if (!defInserted) insert_default(defaultEntryCopy, defaultEntryCopy);
+    update();
+
+    const char *selected = get_selected_value();
+    if (selected) set_awar_value(selected);
+
+    free(defaultEntryCopy);
 }
 
 void AW_selection_list::insert(const char *displayed, const char *value) {
@@ -280,16 +325,54 @@ void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
 }
 
 
-void AW_selection_list::move_content_to(AW_selection_list */*target_list*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::move_content_to(AW_selection_list *target_list) {
+    // @@@ instead of COPYING, it could simply move the entries (may cause problems with iterator)
+
+    AW_selection_list_entry *entry = list_table;
+    while (entry) {
+        aw_assert(default_select != entry); // should not be possible
+        
+        if (!target_list->list_table) {
+            target_list->last_of_list_table = target_list->list_table = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
+        }
+        else {
+            target_list->last_of_list_table->next = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
+            target_list->last_of_list_table = target_list->last_of_list_table->next;
+            target_list->last_of_list_table->next = NULL;
+        }
+
+        entry = entry->next;
+    }
+
+    clear(false);
 }
 
-void AW_selection_list::move_selection(int /*offset*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_selection_list::move_selection(int offset) {
+    /*! move selection 'offset' position
+     *  offset == 1  -> select next element
+     *  offset == -1 -> select previous element
+     */
+    
+    int index = get_index_of_selected();
+    select_element_at(index+offset);
 }
 
-void AW_selection_list::select_element_at(int /*wanted_index*/) {
-    GTK_NOT_IMPLEMENTED;
+const char *AW_selection_list::get_value_at(int index) {
+    // get value of the entry at position 'index' [0..n-1] of the 'selection_list'
+    // returns NULL if index is out of bounds
+    AW_selection_list_entry *entry = get_entry_at(index);
+    return entry ? entry->value.get_string() : NULL;
+}
+
+void AW_selection_list::select_element_at(int wanted_index) {
+    const char *wanted_value = get_value_at(wanted_index);
+
+    if (!wanted_value) {
+        wanted_value = get_default_value();
+        if (!wanted_value) wanted_value = "";
+    }
+
+    set_awar_value(wanted_value);
 }
 
 void AW_selection_list::set_awar_value(const char *new_value) {
@@ -317,37 +400,36 @@ size_t AW_selection_list::size() {
 }
 
 void AW_selection_list::sort(bool backward, bool case_sensitive) {
-    GTK_NOT_IMPLEMENTED;
-//    size_t count = size();
-//    if (count) {
-//        AW_selection_list_entry **tables = new AW_selection_list_entry *[count];
-//        count = 0;
-//        for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
-//            tables[count++] = lt;
-//        }
-//
-//        gb_compare_function comparator;
-//        if (backward) {
-//            if (case_sensitive) comparator = AW_sort_AW_select_table_struct_backward;
-//            else comparator                = AW_isort_AW_select_table_struct_backward;
-//        }
-//        else {
-//            if (case_sensitive) comparator = AW_sort_AW_select_table_struct;
-//            else comparator                = AW_isort_AW_select_table_struct;
-//        }
-//
-//        GB_sort((void**)tables, 0, count, comparator, 0);
-//
-//        size_t i;
-//        for (i=0; i<count-1; i++) {
-//            tables[i]->next = tables[i+1];
-//        }
-//        tables[i]->next = 0;
-//        list_table = tables[0];
-//        last_of_list_table = tables[i];
-//
-//        delete [] tables;
-//    }
+    size_t count = size();
+    if (count) {
+        AW_selection_list_entry **tables = new AW_selection_list_entry *[count];
+        count = 0;
+        for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
+            tables[count++] = lt;
+        }
+
+        gb_compare_function comparator;
+        if (backward) {
+            if (case_sensitive) comparator = AW_sort_AW_select_table_struct_backward;
+            else comparator                = AW_isort_AW_select_table_struct_backward;
+        }
+        else {
+            if (case_sensitive) comparator = AW_sort_AW_select_table_struct;
+            else comparator                = AW_isort_AW_select_table_struct;
+        }
+
+        GB_sort((void**)tables, 0, count, comparator, 0);
+
+        size_t i;
+        for (i=0; i<count-1; i++) {
+            tables[i]->next = tables[i+1];
+        }
+        tables[i]->next = 0;
+        list_table = tables[0];
+        last_of_list_table = tables[i];
+
+        delete [] tables;
+    }
 }
 
 void AW_selection_list::to_array(StrArray& array, bool values) {
@@ -499,6 +581,10 @@ void AW_selection_list::refresh() {
     }
 }
 
+static void AW_DB_selection_refresh_cb(GBDATA *, int *cl_selection, GB_CB_TYPE) {
+    AW_DB_selection *selection = (AW_DB_selection*)cl_selection;;
+    selection->refresh();
+}
 
 //AW_DB_selection
 //TODO move to own file
@@ -506,11 +592,13 @@ AW_DB_selection::AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_)
     : AW_selection(sellist_)
     , gbd(gbd_)
 {
-    GTK_NOT_IMPLEMENTED;
+    GB_transaction ta(gbd);
+    GB_add_callback(gbd, GB_CB_CHANGED, AW_DB_selection_refresh_cb, (int*)this);
 }
 
 AW_DB_selection::~AW_DB_selection() {
-    GTK_NOT_IMPLEMENTED;
+    GB_transaction ta(gbd);
+    GB_remove_callback(gbd, GB_CB_CHANGED, AW_DB_selection_refresh_cb, (int*)this);
 }
 
 GBDATA *AW_DB_selection::get_gb_main() {
