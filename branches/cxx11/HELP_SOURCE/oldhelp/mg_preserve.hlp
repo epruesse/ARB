@@ -1,0 +1,54 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Select species to use for alignment adaption
+
+OCCURRENCE	ARB_MERGE/TRANSFER SPECIES (Adapt alignment/SELECT)
+
+DESCRIPTION     Helps you finding candidates for alignment preservation.
+
+                Normally people have inserted new gaps in one of the two databases.
+                ARB Merge tries to adapt the alignment.
+
+                To be able to do this, you have to specify one or more species or SAIs
+                existing in BOTH databases. ARB Merge then creates a column reference list
+                and realigns all transferred species according to this list.
+
+                Press the 'Find candidates' button to search both databases for candidate
+                species/SAIs and rate them.
+
+                A list of species/SAIs shows up. The first column contains the name,
+                the second column the number of alignments containing data for this species/SAI,
+                the third column shows the position-count-difference (see below),
+                the fourth column is the score (higher value means better).
+
+                The list is sorted by score, i.e. best candidates are listed at the top.
+
+                The term 'position-count-difference' is calculated like follows:
+                For all alignments the number of non-gaps (i.e. neither '-' nor '.') are counted and
+                the differences between these counts are summarized for all alignments.
+                Best value is 0, which normally means the sequence data of the species (or the SAI data)
+                didn't change. A high value means that species changed data and isn't a good candidate
+                for alignment preservation.
+
+                To enable this feature, enable the 'Adapt alignment' toggle.
+
+NOTES		In our database releases we provide SAIs named 'gaps_...'.
+                These SAIs are the best candidates for alignment preservation.
+
+                When merging similar databases with many species, searching adapt candidates
+                may take a long time. Press KILL in the status window to abort the process.
+
+EXAMPLES	None
+
+WARNINGS	Calculated SAIs (like MAX_FREQUENCY or POS_VAR_BY_PARSIMONY) show up on top
+                but they are normally NO good candidates for preservation.
+
+BUGS		No bugs known

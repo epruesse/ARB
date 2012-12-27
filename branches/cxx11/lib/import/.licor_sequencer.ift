@@ -1,0 +1,12 @@
+AUTODETECT      "*Model 4000*IMAGE INFORMATION*\n..*"
+                #Global settings:
+KEYWIDTH        1
+
+BEGIN           "*IMAGE INFORMATION*"
+
+SEQUENCEAFTER   ".."
+SEQUENCEEND     "//"
+
+END             "//"
+# DONT_GEN_NAMES
+CREATE_ACC_FROM_SEQUENCE
