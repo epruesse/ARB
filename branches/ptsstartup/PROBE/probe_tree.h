@@ -36,107 +36,115 @@ struct pt_global {
 
 extern pt_global PT_GLOBAL;
 
-#if 0
-/*
-
-/ ****************
-    Their are 3 stages of data format:
-        1st:        Creation of the tree
-        2nd:        find equal or nearly equal subtrees
-        3rd:        minimum sized tree
-
-    The generic pointer (father):
-        1st create:     Pointer to the father
-        1st save:
-        2nd load        rel ptr of 'this' in the output file
-                    (==0 indicates not saved)
-
-**************** /
-/ * data format: * /
-
-/ ********************* Written object *********************** /
-    byte    =32         bit[7] = bit[6] = 0; bit[5] = 1
-                    bit[4] free
-                    bit[0-3] size of former entry -4
-                    if ==0 then size follows
-    PT_PNTR     rel start of the real object       // actually it's a pointer to the objects father
-    [int        size]       if bit[0-3] == 0;
-
-/ ********************* tip / leaf (7-13   +4)  *********************** /
-    byte    <32         bit[7] = bit[6] = bit[5] = 0
-                        bit[3-4] free
-    [PT_PNTR    father]     if main->mode
-    short/int   name        int if bit[0]
-    short/int   rel pos     int if bit[1]
-    short/int   abs pos     int if bit[2]
-
-/ ********************* inner node (1 + 4*[1-6] +4) (stage 1 + 2) *********************** /
-    byte    >128        bit[7] = 1  bit[6] = 0
-    [PT_PNTR father]        if main->mode (STAGE1)
-    [PT_PNTR son0]          if bit[0] 
-    ...                     ...
-    [PT_PNTR son5]          if bit[5] 
-
-/ ********************* inner node (3-22    +4) (stage 2 only) *********************** /
-    byte                bit[7] = 1  bit[6] = 0
-    byte2               bit2[7] = 0  bit2[6] = 0  -->  short/char
-                        bit2[7] = 1  bit2[6] = 0  -->  int/short
-                        bit2[7] = 0  bit2[6] = 1  -->  long/int         // atm only if ARB_64 is set
-                        bit2[7] = 1  bit2[6] = 1  -->  undefined        // atm only if ARB_64 is set
-    [char/short/int/long son0]  if bit[0]   left (bigger) type if bit2[0] else right (smaller) type
-    [char/short/int/long son1]  if bit[1]   left (bigger) type if bit2[1] else right (smaller) type
-    ...
-    [char/short/int/long son5]  if bit[5]   left (bigger) type if bit2[5] else right (smaller) type
-
-    example1:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
-                byte2 = 0x05    --> son0 and son2 are shorts; son3 is a char
-
-    example2:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
-                byte2 = 0x81    --> son0 is a int; son2 and son3 are shorts
-
-// example3 atm only if ARB_64 is set
-    example3:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
-                byte2 = 0x44    --> son2 is a long; son0 and son3 are ints
-
-/ ********************* inner nodesingle (1)    (stage 2 only) *********************** /
-    byte                bit[7] = 1  bit[6] = 1
-                    bit[0-2]    base
-                    bit[3-5]    offset 0->1 1->3 2->4 3->5 ....
-
-
-/ ********************* chain (8-n +4) stage 1 *********************** /
-    byte =64/65         bit[7] = 0, bit[6] = 1  bit[5] = 0
-    [PT_PNTR    father]     if main->mode
-    short/int   ref abs pos int if bit[0]
-    PT_PNTR     firstelem
-
-    / **** chain elems *** /
-        PT_PNTR     next element
-        short/int   name
-                if bit[15] then integer
-                -1 not allowed
-        short/int   rel pos
-                if bit[15] then integer
-        short/int   apos short if bit[15] = 0]
-]
-
-
-/ ********************* chain (8-n +4) stage 2 *********************** /
-
-    byte =64/65         bit[7] = 0, bit[6] = 1  bit[5] = 0
-    [PT_PNTR    father]     if main->mode
-    short/int   ref abs pos int if bit[0]
-[   char/short/int      rel name [ to last name eg. rel names 10 30 20 50 -> abs names = 10 40 60 110
-                if bit[7] then short
-                if bit[7] and bit[6] then integer
-    short/int       rel pos
-                if bit[15] -> the next bytes are the apos else use ref_abs_pos
-                if bit[14] -> this(==rel_pos) is integer
-    [short/int]     [apos short if bit[15] = 0]
-]
-    char -1         end flag
-*/
-#endif
+/* --------------------------------------------------------------------------------
+ *
+ *  Their are 3 stages of data format:
+ *      1st:        Creation of the tree
+ *      2nd:        Tree saved to disk
+ *
+ *  In stage 1 every element has a father pointer directly behind
+ *  the 1st byte (flags). Exception: Nodes of type PT1_SAVED.
+ *
+ * --------------------
+ * Data format:
+ *
+ * ---------- Written object (PT1_SAVED)
+ *
+ *  flags       bit[7]   = 0
+ *              bit[6]   = 0
+ *              bit[5]   = 1
+ *              bit[4]   = unused
+ *              bit[3-0] = size of former entry-4 (if ==0 then size follows)
+ *  PT_PNTR     rel start of the object in the saved index
+ *  [int        size]      (if flagsbit[3-0] == 0)
+ *
+ * ---------- leaf (PT1_LEAF and PT2_LEAF)
+ *
+ *  byte        flags       bit[7]   = 0
+ *                          bit[6]   = 0
+ *                          bit[5]   = 0
+ *                          bit[4-3] = unused
+ *                          bit[2-0] = used to indicate sizes of entries below
+ *  [PT_PNTR    father]     only if type is PT1_LEAF
+ *  short/int   name        int if bit[0]
+ *  short/int   relpos      int if bit[1]
+ *  short/int   abspos      int if bit[2]
+ *
+ * ---------- inner node (PT1_NODE)
+ *
+ *  byte        flags       bit[7]   = 1
+ *                          bit[6]   = 0
+ *                          bit[5-0] = indicate existing sons
+ *  PT_PNTR     father
+ *  [PT_PNTR son0]          if bit[0]
+ *  ...                     ...
+ *  [PT_PNTR son5]          if bit[5]
+ *
+ * ---------- inner node with more than one child (PT2_NODE)
+ *
+ *  byte        flags       bit[7]   = 1
+ *                          bit[6]   = 0
+ *                          bit[5-0] = indicate existing sons
+ *  byte2                   bit2[7] = 0  bit2[6] = 0  -->  short/char
+ *                          bit2[7] = 1  bit2[6] = 0  -->  int/short
+ *                          bit2[7] = 0  bit2[6] = 1  -->  long/int         (only if ARB_64 is set)
+ *                          bit2[7] = 1  bit2[6] = 1  -->  undefined        (only if ARB_64 is set)
+ *
+ *  [char/short/int/long son0]  if bit[0]; uses left (bigger) type if bit2[0] else right (smaller) type
+ *  [char/short/int/long son1]  if bit[1]; uses left (bigger) type if bit2[1] else right (smaller) type
+ *  ...
+ *  [char/short/int/long son5]  if bit[5]; uses left (bigger) type if bit2[5] else right (smaller) type
+ *
+ *  example1:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
+ *              byte2 = 0x05    --> son0 and son2 are shorts; son3 is a char
+ *
+ *  example2:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
+ *              byte2 = 0x81    --> son0 is a int; son2 and son3 are shorts
+ *
+ *  [example3 atm only if ARB_64 is set]
+ *  example3:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
+ *              byte2 = 0x44    --> son2 is a long; son0 and son3 are ints
+ *
+ * ---------- inner node with single child (PT2_NODE)
+ *
+ *  byte        flags       bit[7]   = 1
+ *                          bit[6]   = 1
+ *                          bit[5-3] = offset 0->1 1->3 2->4 3->5 ....
+ *                          bit[2-0] = base
+ *
+ * ---------- chain (PT1_CHAIN)
+ *
+ *  byte        flags       bit[7]   = 0
+ *                          bit[6]   = 1
+ *                          bit[5]   = 0
+ *                          bit[4-1] = unused
+ *                          bit[0]   = flag for refabspos
+ *  PT_PNTR     father
+ *  short/int   refabspos (int if bit[0])
+ *  PT_PNTR     firstelem
+ *
+ *  for each chain element:
+ *
+ *  PT_PNTR     nextelem
+ *  short/int   name        if bit[15] then integer (-1 not allowed)
+ *  short/int   relpos      if bit[15] then integer
+ *  short/int   abspos      if bit[15] then integer
+ *
+ * ---------- chain (PT2_CHAIN)
+ *
+ *  byte        flags       bit[7]   = 0
+ *                          bit[6]   = 1
+ *                          bit[5-1] = unused
+ *                          bit[0]   = flag for refabspos
+ *  short/int   refabspos   (int if bit[0])
+ *  compactNAT  chainsize
+ *
+ *  for each chain element:
+ *
+ *  compactNAT  namediff    (relative to previous name in chain; first bit reserved : 1 -> has refabspos )
+ *  [compactNAT abspos]     (only if not has refabspos)
+ *
+ */
 
 #define IS_SINGLE_BRANCH_NODE 0x40
 #ifdef ARB_64
