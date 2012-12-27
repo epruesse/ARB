@@ -129,6 +129,7 @@ arb_signal.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_signal.o: $(ARBHOME)/INCLUDE/SigHandler.h
 arb_signal.o: $(ARBHOME)/INCLUDE/SuppressOutput.h
 arb_signal.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_signal.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_signal.o: $(ARBHOME)/INCLUDE/valgrind.h
 
 arb_sort.o: arb_sort.h
