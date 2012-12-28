@@ -55,6 +55,7 @@ convert.o: $(ARBHOME)/INCLUDE/arbtools.h
 convert.o: $(ARBHOME)/INCLUDE/attributes.h
 convert.o: $(ARBHOME)/INCLUDE/dupstr.h
 convert.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+convert.o: $(ARBHOME)/INCLUDE/gccver.h
 convert.o: $(ARBHOME)/INCLUDE/smartptr.h
 convert.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -68,6 +69,7 @@ date.o: $(ARBHOME)/INCLUDE/arbtools.h
 date.o: $(ARBHOME)/INCLUDE/attributes.h
 date.o: $(ARBHOME)/INCLUDE/dupstr.h
 date.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+date.o: $(ARBHOME)/INCLUDE/gccver.h
 date.o: $(ARBHOME)/INCLUDE/smartptr.h
 date.o: $(ARBHOME)/INCLUDE/test_global.h
 date.o: $(ARBHOME)/INCLUDE/test_unit.h
@@ -93,6 +95,7 @@ embl.o: $(ARBHOME)/INCLUDE/arbtools.h
 embl.o: $(ARBHOME)/INCLUDE/attributes.h
 embl.o: $(ARBHOME)/INCLUDE/dupstr.h
 embl.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+embl.o: $(ARBHOME)/INCLUDE/gccver.h
 embl.o: $(ARBHOME)/INCLUDE/smartptr.h
 embl.o: $(ARBHOME)/INCLUDE/test_global.h
 embl.o: $(ARBHOME)/INCLUDE/test_unit.h
@@ -117,6 +120,7 @@ fconv.o: $(ARBHOME)/INCLUDE/arbtools.h
 fconv.o: $(ARBHOME)/INCLUDE/attributes.h
 fconv.o: $(ARBHOME)/INCLUDE/dupstr.h
 fconv.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+fconv.o: $(ARBHOME)/INCLUDE/gccver.h
 fconv.o: $(ARBHOME)/INCLUDE/smartptr.h
 fconv.o: $(ARBHOME)/INCLUDE/static_assert.h
 fconv.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -142,6 +146,7 @@ gcg.o: $(ARBHOME)/INCLUDE/arbtools.h
 gcg.o: $(ARBHOME)/INCLUDE/attributes.h
 gcg.o: $(ARBHOME)/INCLUDE/dupstr.h
 gcg.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+gcg.o: $(ARBHOME)/INCLUDE/gccver.h
 gcg.o: $(ARBHOME)/INCLUDE/smartptr.h
 gcg.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -164,6 +169,7 @@ genbank.o: $(ARBHOME)/INCLUDE/arbtools.h
 genbank.o: $(ARBHOME)/INCLUDE/attributes.h
 genbank.o: $(ARBHOME)/INCLUDE/dupstr.h
 genbank.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+genbank.o: $(ARBHOME)/INCLUDE/gccver.h
 genbank.o: $(ARBHOME)/INCLUDE/smartptr.h
 genbank.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -185,6 +191,7 @@ macke.o: $(ARBHOME)/INCLUDE/arbtools.h
 macke.o: $(ARBHOME)/INCLUDE/attributes.h
 macke.o: $(ARBHOME)/INCLUDE/dupstr.h
 macke.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+macke.o: $(ARBHOME)/INCLUDE/gccver.h
 macke.o: $(ARBHOME)/INCLUDE/smartptr.h
 macke.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -199,6 +206,7 @@ main.o: $(ARBHOME)/INCLUDE/arbtools.h
 main.o: $(ARBHOME)/INCLUDE/attributes.h
 main.o: $(ARBHOME)/INCLUDE/dupstr.h
 main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+main.o: $(ARBHOME)/INCLUDE/gccver.h
 main.o: $(ARBHOME)/INCLUDE/smartptr.h
 main.o: $(ARBHOME)/INCLUDE/test_global.h
 main.o: $(ARBHOME)/INCLUDE/test_unit.h
@@ -222,6 +230,7 @@ mg.o: $(ARBHOME)/INCLUDE/arbtools.h
 mg.o: $(ARBHOME)/INCLUDE/attributes.h
 mg.o: $(ARBHOME)/INCLUDE/dupstr.h
 mg.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+mg.o: $(ARBHOME)/INCLUDE/gccver.h
 mg.o: $(ARBHOME)/INCLUDE/smartptr.h
 mg.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -241,6 +250,7 @@ paup.o: $(ARBHOME)/INCLUDE/arbtools.h
 paup.o: $(ARBHOME)/INCLUDE/attributes.h
 paup.o: $(ARBHOME)/INCLUDE/dupstr.h
 paup.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+paup.o: $(ARBHOME)/INCLUDE/gccver.h
 paup.o: $(ARBHOME)/INCLUDE/smartptr.h
 paup.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -259,6 +269,7 @@ phylip.o: $(ARBHOME)/INCLUDE/arbtools.h
 phylip.o: $(ARBHOME)/INCLUDE/attributes.h
 phylip.o: $(ARBHOME)/INCLUDE/dupstr.h
 phylip.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+phylip.o: $(ARBHOME)/INCLUDE/gccver.h
 phylip.o: $(ARBHOME)/INCLUDE/smartptr.h
 phylip.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -277,6 +288,7 @@ printable.o: $(ARBHOME)/INCLUDE/arbtools.h
 printable.o: $(ARBHOME)/INCLUDE/attributes.h
 printable.o: $(ARBHOME)/INCLUDE/dupstr.h
 printable.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+printable.o: $(ARBHOME)/INCLUDE/gccver.h
 printable.o: $(ARBHOME)/INCLUDE/smartptr.h
 printable.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -295,6 +307,7 @@ rdp_info.o: $(ARBHOME)/INCLUDE/arbtools.h
 rdp_info.o: $(ARBHOME)/INCLUDE/attributes.h
 rdp_info.o: $(ARBHOME)/INCLUDE/dupstr.h
 rdp_info.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+rdp_info.o: $(ARBHOME)/INCLUDE/gccver.h
 rdp_info.o: $(ARBHOME)/INCLUDE/smartptr.h
 rdp_info.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -312,6 +325,7 @@ reader.o: $(ARBHOME)/INCLUDE/arbtools.h
 reader.o: $(ARBHOME)/INCLUDE/attributes.h
 reader.o: $(ARBHOME)/INCLUDE/dupstr.h
 reader.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+reader.o: $(ARBHOME)/INCLUDE/gccver.h
 reader.o: $(ARBHOME)/INCLUDE/smartptr.h
 reader.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -330,6 +344,7 @@ seq.o: $(ARBHOME)/INCLUDE/arbtools.h
 seq.o: $(ARBHOME)/INCLUDE/attributes.h
 seq.o: $(ARBHOME)/INCLUDE/dupstr.h
 seq.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+seq.o: $(ARBHOME)/INCLUDE/gccver.h
 seq.o: $(ARBHOME)/INCLUDE/smartptr.h
 seq.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -347,6 +362,7 @@ util.o: $(ARBHOME)/INCLUDE/arbtools.h
 util.o: $(ARBHOME)/INCLUDE/attributes.h
 util.o: $(ARBHOME)/INCLUDE/dupstr.h
 util.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+util.o: $(ARBHOME)/INCLUDE/gccver.h
 util.o: $(ARBHOME)/INCLUDE/smartptr.h
 util.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -365,5 +381,6 @@ wrap.o: $(ARBHOME)/INCLUDE/arbtools.h
 wrap.o: $(ARBHOME)/INCLUDE/attributes.h
 wrap.o: $(ARBHOME)/INCLUDE/dupstr.h
 wrap.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+wrap.o: $(ARBHOME)/INCLUDE/gccver.h
 wrap.o: $(ARBHOME)/INCLUDE/smartptr.h
 wrap.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -49,6 +49,7 @@ BI_basepos.o: $(ARBHOME)/INCLUDE/arbdbt.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arbtools.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/attributes.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/dupstr.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/gccver.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/smartptr.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -66,5 +67,6 @@ BI_helix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arbtools.h
 BI_helix.o: $(ARBHOME)/INCLUDE/attributes.h
 BI_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
+BI_helix.o: $(ARBHOME)/INCLUDE/gccver.h
 BI_helix.o: $(ARBHOME)/INCLUDE/smartptr.h
 BI_helix.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -57,6 +57,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/cb.h
 db_scanner.o: $(ARBHOME)/INCLUDE/dupstr.h
+db_scanner.o: $(ARBHOME)/INCLUDE/gccver.h
 db_scanner.o: $(ARBHOME)/INCLUDE/items.h
 db_scanner.o: $(ARBHOME)/INCLUDE/smartptr.h
 db_scanner.o: $(ARBHOME)/INCLUDE/test_global.h

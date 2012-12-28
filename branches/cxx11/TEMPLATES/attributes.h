@@ -3,7 +3,6 @@
 //   File      : attributes.h                                           //
 //   Purpose   : declare attribute macros                               //
 //                                                                      //
-//                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in June 2005             //
 // Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                      //
@@ -12,6 +11,10 @@
 // ==================================================================== //
 #ifndef ATTRIBUTES_H
 #define ATTRIBUTES_H
+
+#ifndef GCCVER_H
+#include "gccver.h"
+#endif
 
 // ------------------------------------------------------------
 // short description of attributes defined:

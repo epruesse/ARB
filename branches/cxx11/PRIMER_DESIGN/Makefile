@@ -64,6 +64,7 @@ PRD_Design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arbtools.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/dupstr.h
+PRD_Design.o: $(ARBHOME)/INCLUDE/gccver.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/smartptr.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -156,6 +157,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/cb.h
 primer_design.o: $(ARBHOME)/INCLUDE/dupstr.h
+primer_design.o: $(ARBHOME)/INCLUDE/gccver.h
 primer_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/items.h
 primer_design.o: $(ARBHOME)/INCLUDE/smartptr.h
