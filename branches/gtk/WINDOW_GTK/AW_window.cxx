@@ -1175,9 +1175,9 @@ static bool AW_value_changed_callback(GtkWidget* /*wgt*/,  gpointer rooti) {
 void AW_window::create_input_field(const char *var_name,   int columns) {
     GtkWidget     *textField      = 0;
     GtkWidget     *tmp_label      = 0;
-    AW_cb_struct  *cbs;
-    AW_varUpdateInfo *vui;
-    char          *str;
+    AW_cb_struct  *cbs            = 0;
+    AW_varUpdateInfo *vui         = 0;
+    char          *str            = 0;
     int            xoff_for_label = 0;
 
     if (!columns) columns = _at.length_of_buttons;
@@ -1185,6 +1185,8 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     AW_awar *vs = root->awar(var_name);
     str         = root->awar(var_name)->read_as_string();
 
+    aw_assert(NULL != vs);
+    
     int width_of_input_label, height_of_input_label;
     calculate_label_size(this, &width_of_input_label, &height_of_input_label, true, 0);
     // @@@ FIXME: use height_of_input_label for propper Y-adjusting of label
@@ -1232,6 +1234,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
         //TuneBackground(parentWidget, TUNE_INPUT);
         textField = gtk_entry_new();
         gtk_fixed_put(prvt->fixed_size_area, textField, (int)(_at.x_for_next_button + xoff_for_label), (int)(_at.y_for_next_button + 5) - 8);
+        gtk_widget_show(textField);
 //        textField = XtVaCreateManagedWidget("textField",
 //                                            xmTextFieldWidgetClass,
 //                                            parentWidget,
@@ -1244,7 +1247,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 //                                            XmNy, (int)(_at.y_for_next_button + 5) - 8,
 //                                            NULL);
         if (_at.attach_any) {
-            FIXME("attaching imput field not implemented");
+            FIXME("attaching input field not implemented");
 //            _at.x_for_next_button += xoff_for_label;
 //            aw_attach_widget(textField, _at);
 //            _at.x_for_next_button -= xoff_for_label;
@@ -1258,35 +1261,32 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 
     // callback for enter
     vui = new AW_varUpdateInfo(this, textField, AW_WIDGET_INPUT_FIELD, vs, cbs);
-
-    g_signal_connect(G_OBJECT(textField), "activate", G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), (gpointer) vui);
+    g_signal_connect(G_OBJECT(textField), "activate",
+                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
+                     (gpointer) vui);
     
     if (_d_callback) {
-        FIXME("_d_callback not implemented for input field");
-//        XtAddCallback(textField, XmNactivateCallback,
-//                      (XtCallbackProc) AW_server_callback,
-//                      (XtPointer) _d_callback);
-//        _d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
-//        get_root()->define_remote_command(_d_callback);
+        g_signal_connect(G_OBJECT(textField), "activate",
+                         G_CALLBACK(AW_server_callback),
+                         (gpointer) _d_callback);
+        _d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
+        get_root()->define_remote_command(_d_callback);
     }
    
     // callback for losing focus
-    g_signal_connect(G_OBJECT(textField), "focus-out-event",  G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), (gpointer) root);
+    g_signal_connect(G_OBJECT(textField), "focus-out-event",
+                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback_event),
+                     (gpointer) vui);  
     // callback for value changed
-    g_signal_connect(G_OBJECT(textField), "changed",  G_CALLBACK(AW_value_changed_callback), (gpointer) root);
-
-
+    g_signal_connect(G_OBJECT(textField), "changed",
+                     G_CALLBACK(AW_value_changed_callback),
+                     (gpointer) root);
     vs->tie_widget(0, textField, AW_WIDGET_INPUT_FIELD, this);
-    
-    
-    root->make_sensitive(textField, _at.widget_mask);
-//
-    short height = textField->allocation.height;
-    
-//    XtVaGetValues(textField, XmNheight, &height, NULL);
-    int height_of_last_widget = height;
 
+    root->make_sensitive(textField, _at.widget_mask);
     
+    int height_of_last_widget = textField->allocation.height;
+
     if (_at.correct_for_at_center == 1) {   // middle centered
         gtk_fixed_move(prvt->fixed_size_area, textField, (int)(_at.x_for_next_button + xoff_for_label) - (int)(width_of_last_widget/2) + 1, textField->allocation.y);
         

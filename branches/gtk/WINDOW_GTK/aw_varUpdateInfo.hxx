@@ -48,7 +48,20 @@ public:
     void set_widget(GtkWidget *w);
     void set_sellist(AW_selection_list *asl);
     
-    static void AW_variable_update_callback(GtkWidget *selection, gpointer variable_update_struct);
+    //signal and event callbacks
     
+    /**
+     * Use this callback for events that only provide user data and no additional parameter
+     * @param selection
+     * @param variable_update_struct
+     */
+    static void AW_variable_update_callback(GtkWidget *selection, gpointer variable_update_struct);
+    /**
+     * Use this callback for events that provide an additional GdkEvent struct.
+     * @param widget
+     * @param event
+     * @param variable_update_struct
+     */
+    static void AW_variable_update_callback_event(GtkWidget *widget, GdkEvent *event, gpointer variable_update_struct);
 };
 

@@ -15,6 +15,14 @@
 #include "aw_msg.hxx"
 
 
+void AW_varUpdateInfo::AW_variable_update_callback_event(GtkWidget *widget, GdkEvent */*event*/, gpointer variable_update_struct) {
+    AW_varUpdateInfo *vui = (AW_varUpdateInfo *) variable_update_struct;
+    aw_assert(vui);
+    
+    vui->change_from_widget((gpointer)widget); 
+}
+
+
 void AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer variable_update_struct) {
     AW_varUpdateInfo *vui = (AW_varUpdateInfo *) variable_update_struct;
     aw_assert(vui);
@@ -23,17 +31,16 @@ void AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer v
     if(GTK_IS_TREE_SELECTION(widget)) {
         //if this event is coming from a tree view widget
         //it is called twice, once for deselecting the old item and once for selecting
-        //the new one. We dont want to handle the deselect
+        //the new one. We don't want to handle the deselect
         if(gtk_tree_selection_count_selected_rows(GTK_TREE_SELECTION(widget)) > 0)
         {
             vui->change_from_widget((gpointer)widget); 
         }
     }
     else
-    { //for now forward all other events.
+    { 
         vui->change_from_widget((gpointer)widget); 
     }
-    
 }
 
 void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
@@ -58,22 +65,20 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
     bool run_cb = true;
     switch (widget_type) {
         case AW_WIDGET_INPUT_FIELD:
-            FIXME("AW_WIDGET_INPUT_FIELD handling not implemented");
         case AW_WIDGET_TEXT_FIELD:
-            FIXME("AW_WIDGET_TEXT_FIELD handling not implemented");
-//            if (!root->value_changed) {
-//                run_cb = false;
-//            }
-//            else {
-//                char *new_text = XmTextGetString((widget));
-//                error          = awar->write_as_string(new_text);
-//                XtFree(new_text);
-//            }
-//            break;
-//
-//        case AW_WIDGET_TOGGLE:
-//            root->changer_of_variable = 0;
-//            error = awar->toggle_toggle();
+            if (!root->value_changed) {
+                run_cb = false;
+            }
+            else {
+                GtkEditable *field = GTK_EDITABLE(widget);
+                char *new_text = gtk_editable_get_chars(field, 0, -1); //-1 = get text until end
+                error = awar->write_as_string(new_text);
+            }
+            break;
+
+        case AW_WIDGET_TOGGLE:
+            root->changer_of_variable = 0;
+            error = awar->toggle_toggle();
             break;
 
         case AW_WIDGET_TOGGLE_FIELD:
@@ -90,10 +95,7 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
             GtkTreeSelection* selection = GTK_TREE_SELECTION(call_data);
             GtkTreeIter iter;
             GtkTreeModel *model;
-            
-            if(gtk_tree_selection_get_selected(selection, &model, &iter))
-                
-            
+
             //if this assert fails no rows are selected, which should be impossible because
             //this method is called when the selection changes.
             aw_assert(gtk_tree_selection_get_selected(selection, &model, &iter));
