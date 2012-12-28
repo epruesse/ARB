@@ -569,6 +569,7 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/gccver.h

@@ -202,6 +202,7 @@ ad_load.o: $(ARBHOME)/INCLUDE/arb_str.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_load.o: $(ARBHOME)/INCLUDE/attributes.h
+ad_load.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_load.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_load.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_load.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -231,6 +232,7 @@ ad_save_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/attributes.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -377,6 +379,7 @@ adcompr.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adcompr.o: $(ARBHOME)/INCLUDE/arb_string.h
 adcompr.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcompr.o: $(ARBHOME)/INCLUDE/attributes.h
+adcompr.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adcompr.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcompr.o: $(ARBHOME)/INCLUDE/gccver.h
 adcompr.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -570,6 +573,7 @@ adlang1.o: $(ARBHOME)/INCLUDE/arb_string.h
 adlang1.o: $(ARBHOME)/INCLUDE/arbtools.h
 adlang1.o: $(ARBHOME)/INCLUDE/attributes.h
 adlang1.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
+adlang1.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adlang1.o: $(ARBHOME)/INCLUDE/dupstr.h
 adlang1.o: $(ARBHOME)/INCLUDE/gccver.h
 adlang1.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -643,6 +647,7 @@ admap.o: $(ARBHOME)/INCLUDE/arb_msg.h
 admap.o: $(ARBHOME)/INCLUDE/arb_string.h
 admap.o: $(ARBHOME)/INCLUDE/arbtools.h
 admap.o: $(ARBHOME)/INCLUDE/attributes.h
+admap.o: $(ARBHOME)/INCLUDE/cxxforward.h
 admap.o: $(ARBHOME)/INCLUDE/dupstr.h
 admap.o: $(ARBHOME)/INCLUDE/gccver.h
 admap.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -824,6 +829,7 @@ adseqcompr.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_string.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arbtools.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/attributes.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/dupstr.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/gccver.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -63,7 +63,7 @@ void awt_create_aww_vars(AW_root *aw_root, AW_default aw_def) {
 
     const int DEFAULT_SELECT = 1; // SILVA
     const int EXAMPLE_COUNT  = ARRAY_ELEMS(example);
-    COMPILE_ASSERT(EXAMPLE_COUNT <= WWW_COUNT);
+    STATIC_ASSERT(EXAMPLE_COUNT <= WWW_COUNT);
 
     bool example_url_seen[EXAMPLE_COUNT];
     for (int x = 0; x<EXAMPLE_COUNT; ++x) example_url_seen[x] = false;

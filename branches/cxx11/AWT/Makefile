@@ -428,6 +428,7 @@ AWT_www.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_www.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_www.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_www.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_www.o: $(ARBHOME)/INCLUDE/smartptr.h

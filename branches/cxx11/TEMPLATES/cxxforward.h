@@ -18,16 +18,16 @@
 #endif
 
 #if (GCC_VERSION_CODE >= 408)
-#define Cxx11 // use Cxx11 to insert conditional sections using full C++11
+#define Cxx11 1 // use Cxx11 to insert conditional sections using full C++11
 #endif
 
 // -------------------
 //      constexpr
 
 // allows static member initialisation in class definition:
-#if defined(Cxx11)
+#if Cxx11
 # define CONSTEXPR constexpr
-#else // !defined(Cxx11)
+#else
 # define CONSTEXPR const
 #endif
 
