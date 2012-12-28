@@ -86,6 +86,10 @@ struct SimpleFormatReader : public Reader, public FormatReader {
 
 // --------------------------------------------------------------------------------
 
+#if defined(ASSERTION_USED)
+#define ENFORCE_CHECKED_WRITTEN
+#endif
+
 class Writer {
 public:
     Writer() {}
@@ -107,6 +111,12 @@ class FileWriter : public Writer, virtual Noncopyable {
     char *filename;
     int   written; // count written sequences
 
+#if defined(ENFORCE_CHECKED_WRITTEN)
+    bool checked_written;
+#endif
+
+    bool is_fine() const { return ofp && !Convaln_exception::exception_thrown(); }
+
 public:
     FileWriter(const char *outf);
     ~FileWriter();
@@ -122,6 +132,8 @@ public:
 
     void seq_done() { ++written; }
     void seq_done(int count) { ca_assert(count >= 0); written += count; }
+
+    void expect_written();
 };
 
 #else
