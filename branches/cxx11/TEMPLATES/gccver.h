@@ -34,10 +34,6 @@
 # error Wrong compiler version (need at least gcc 4.3 or clang 4.2)
 #endif
 
-#if GCC_VERSION_CODE >= 408 // gcc 4.8++
-#else
-#endif
-
 #else
 #error gccver.h included twice
 #endif // GCCVER_H

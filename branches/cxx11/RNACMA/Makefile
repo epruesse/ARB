@@ -57,6 +57,7 @@ AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arbtools.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/attributes.h
+AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/dupstr.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/gccver.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -78,12 +79,15 @@ Analyser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Analyser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 Analyser.o: $(ARBHOME)/INCLUDE/arbtools.h
 Analyser.o: $(ARBHOME)/INCLUDE/attributes.h
+Analyser.o: $(ARBHOME)/INCLUDE/cxxforward.h
 Analyser.o: $(ARBHOME)/INCLUDE/dupstr.h
 Analyser.o: $(ARBHOME)/INCLUDE/gccver.h
 Analyser.o: $(ARBHOME)/INCLUDE/smartptr.h
 Analyser.o: $(ARBHOME)/INCLUDE/test_global.h
 
 Cma.o: Cma.h
+Cma.o: $(ARBHOME)/INCLUDE/cxxforward.h
+Cma.o: $(ARBHOME)/INCLUDE/gccver.h
 
 dbconn.o: dbconn.h
 dbconn.o: $(ARBHOME)/INCLUDE/ad_prot.h
