@@ -23,8 +23,10 @@
 #include <cstring>
 #include <cstdarg>
 
-#define SIMPLE_ARB_ASSERT
+#include <arb_early_check.h>
 #include <attributes.h>
+
+#define SIMPLE_ARB_ASSERT
 #include <arb_assert.h>
 #include <arbtools.h>
 

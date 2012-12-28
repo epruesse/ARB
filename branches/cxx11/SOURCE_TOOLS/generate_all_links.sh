@@ -148,6 +148,7 @@ symlink_file ../TEMPLATES/arb_algo.h INCLUDE/arb_algo.h &&
 symlink_file ../TEMPLATES/arb_backtrace.h INCLUDE/arb_backtrace.h &&
 symlink_file ../TEMPLATES/arb_debug.h INCLUDE/arb_debug.h &&
 symlink_file ../TEMPLATES/arb_defs.h INCLUDE/arb_defs.h &&
+symlink_file ../TEMPLATES/arb_early_check.h INCLUDE/arb_early_check.h &&
 symlink_file ../TEMPLATES/arb_global_defs.h INCLUDE/arb_global_defs.h &&
 symlink_file ../TEMPLATES/arb_error.h INCLUDE/arb_error.h &&
 symlink_file ../TEMPLATES/arb_str.h INCLUDE/arb_str.h &&
