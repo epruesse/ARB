@@ -1004,36 +1004,48 @@ void TEST_chains() {
     root = PT_change_leaf_to_node(root);
     TEST_EXPECT_EQUAL(root->get_type(), PT1_NODE);
 
+    DataLoc loc0a(0, 500, 500);
+    DataLoc loc0b(0, 555, 555);
+
     DataLoc loc1a(1, 200, 200);
     DataLoc loc1b(1, 500, 500);
 
     DataLoc loc2a(2, 300, 300);
     DataLoc loc2b(2, 700, 700);
+    DataLoc loc2c(2, 701, 701);
 
     for (int base = PT_A; base <= PT_G; ++base) {
-        POS_TREE1 *leaf = PT_create_leaf(&root, PT_base(base), loc1a);
+        POS_TREE1 *leaf = PT_create_leaf(&root, PT_base(base), loc0b);
         TEST_EXPECT_EQUAL(leaf->get_type(), PT1_LEAF);
 
         POS_TREE1 *chain = PT_leaf_to_chain(leaf);
         TEST_EXPECT_EQUAL(chain->get_type(), PT1_CHAIN);
         TEST_EXPECT(PT_chain_has_valid_entries<ChainIteratorStage1>(chain));
 
-        PT_add_to_chain(chain, loc2a);
-        TEST_EXPECT(PT_chain_has_valid_entries<ChainIteratorStage1>(chain));
+        PT_add_to_chain(chain, loc0a); TEST_EXPECT(PT_chain_has_valid_entries<ChainIteratorStage1>(chain));
+        PT_add_to_chain(chain, loc1b); TEST_EXPECT(PT_chain_has_valid_entries<ChainIteratorStage1>(chain));
+        PT_add_to_chain(chain, loc1a); TEST_EXPECT(PT_chain_has_valid_entries<ChainIteratorStage1>(chain));
+        PT_add_to_chain(chain, loc2c); TEST_EXPECT(PT_chain_has_valid_entries<ChainIteratorStage1>(chain));
+        PT_add_to_chain(chain, loc2b); TEST_EXPECT(PT_chain_has_valid_entries<ChainIteratorStage1>(chain));
+        PT_add_to_chain(chain, loc2a); TEST_EXPECT(PT_chain_has_valid_entries<ChainIteratorStage1>(chain));
+
+        // now chain is 'loc0b,loc0a,loc1b,loc1a,loc2b,loc2a'
 
         if (base == PT_A) { // test only once
             ChainIteratorStage1 entry(chain);
 
-            TEST_EXPECT_EQUAL(bool(entry), true);
-            TEST_EXPECT(entry.at() == loc2a);
-            ++entry;
-            TEST_EXPECT_EQUAL(bool(entry), true);
-            TEST_EXPECT(entry.at() == loc1a);
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc2a); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc2b); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc2c); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc1a); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc1b); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc0a); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc0b); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), false);
         }
 
-        // now chain is 'loc1a,loc2a'
-
 #if defined(TEST_BAD_CHAINS)
+        // out-of-date
         switch (base) {
             case PT_A: theChain = chain; theLoc = &loc2a; TEST_EXPECT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add same location twice -> fail
             case PT_C: theChain = chain; theLoc = &loc1b; TEST_EXPECT_CODE_ASSERTION_FAILS(bad_add_to_chain); break; // add species in wrong order -> fail
@@ -1057,7 +1069,7 @@ void TEST_chains() {
         pos      = PTD_save_upper_tree(out, root, pos, root_pos, error);
 
         TEST_EXPECT_NO_ERROR(error.deliver());
-        TEST_EXPECTATION(all().of(that(root_pos).is_equal_to(29), that(pos).is_equal_to(34)));
+        TEST_EXPECTATION(all().of(that(root_pos).is_equal_to(74), that(pos).is_equal_to(79)));
         TEST_EXPECT_EQUAL(root, NULL); // nulled by PTD_save_upper_tree
         
         fclose(out);
