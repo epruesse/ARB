@@ -22,18 +22,16 @@
 struct pt_global PT_GLOBAL;
 
 inline bool locs_in_chain_order(const AbsLoc& loc1, const AbsLoc& loc2) { 
-    pt_assert_stage(STAGE1); // this order is only valid in STAGE1 (STAGE2 has reverse order)
-
-    if (loc1.get_name() < loc2.get_name()) {
+    if (loc1.get_name() > loc2.get_name()) {
 #if defined(DEBUG)
-        fprintf(stderr, "invalid chain: loc1.name<loc2.name (%i<%i)\n", loc1.get_name(), loc2.get_name());
+        fprintf(stderr, "invalid chain: loc1.name>loc2.name (%i>%i)\n", loc1.get_name(), loc2.get_name());
 #endif
         return false;
     }
     if (loc1.get_name() == loc2.get_name()) {
-        if (loc1.get_abs_pos() >= loc2.get_abs_pos()) {
+        if (loc1.get_abs_pos() <= loc2.get_abs_pos()) {
 #if defined(DEBUG)
-            fprintf(stderr, "invalid chain: loc1.apos>=loc2.apos (%i>=%i)\n", loc1.get_abs_pos(), loc2.get_abs_pos());
+            fprintf(stderr, "invalid chain: loc1.apos<=loc2.apos (%i<=%i)\n", loc1.get_abs_pos(), loc2.get_abs_pos());
 #endif
             return false;
         }
@@ -152,6 +150,42 @@ static void PT_change_link_in_father(POS_TREE1 *father, POS_TREE1 *old_link, POS
     pt_assert(0); // father did not contain 'old_link'
 }
 
+class ChainEntryBuffer : virtual Noncopyable {
+    const size_t size;
+    char *const  mem;
+    const int    refabspos;
+
+    char *write_pos;
+    int   lastname;
+
+    static const int MAXSIZEPERELEMENT = 2*5; // size for 2 compactNAT's
+public:
+    ChainEntryBuffer(int forElements, int refabspos_, int lastname_)
+        : size(forElements*MAXSIZEPERELEMENT),
+          mem((char*)MEM.get(size)),
+          refabspos(refabspos_),
+          write_pos(mem),
+          lastname(lastname_)
+    {}
+    ~ChainEntryBuffer() { MEM.put(mem, size); }
+
+    void add(const AbsLoc& loc) {
+        int namediff = loc.get_name()-lastname;
+        pt_assert(namediff >= 0);
+
+        uint_8 has_refabspos = (loc.get_abs_pos() == refabspos);
+        write_nat_with_reserved_bits<1>(write_pos, namediff, has_refabspos);
+        if (!has_refabspos) PT_write_compact_nat(write_pos, loc.get_abs_pos());
+
+        lastname = loc.get_name();
+    }
+
+    size_t get_size() const { return write_pos-mem; }
+    const char *get_mem() const { return mem; }
+    int get_refabspos() const { return refabspos; }
+    int get_lastname() const { return lastname; }
+};
+
 void PT_add_to_chain(POS_TREE1 *node, const DataLoc& loc) {
     pt_assert_stage(STAGE1);
 #if defined(PTM_DEBUG_VALIDATE_CHAINS)
@@ -159,33 +193,76 @@ void PT_add_to_chain(POS_TREE1 *node, const DataLoc& loc) {
               PT_chain_has_valid_entries<ChainIteratorStage1>(node));
 #endif
 
-    // insert at the beginning of list
+    if (node->flags & SHORT_CHAIN_HEADER_FLAG_BIT) {
+        PT_short_chain_header *sheader = reinterpret_cast<PT_short_chain_header*>(node->udata());
+        int                    entries = node->flags & SHORT_CHAIN_HEADER_SIZE_MASK;
 
-    char *data      = node->udata() + ((node->flags&1) ? 4 : 2);
-    void *old_first = PT_read_void_pointer(data);
+        if (entries<SHORT_CHAIN_HEADER_ELEMS) { // store entries in header
+            sheader->name[entries]   = loc.get_name();
+            sheader->abspos[entries] = loc.get_abs_pos();
 
-    const int MAX_CHAIN_ENTRY_SIZE = sizeof(PT_PNTR)+3*sizeof(int);
+            node->flags = (node->flags & (~SHORT_CHAIN_HEADER_SIZE_MASK)) | (entries+1);
+        }
+        else {
+            // short header is filled -> convert into long header
+            // @@@ detect most used abspos!
+            ChainEntryBuffer buf(entries+1, sheader->abspos[0], 0);
 
-    static char  buffer[MAX_CHAIN_ENTRY_SIZE];
-    char        *p = buffer;
+            for (int e = 0; e<entries; ++e) {
+                buf.add(AbsLoc(sheader->name[e], sheader->abspos[e]));
+            }
+            buf.add(loc);
 
-    PT_write_pointer(p, old_first);
-    p += sizeof(PT_PNTR);
+            sheader                       = NULL; // no further access possible (is reused as lheader)
+            PT_long_chain_header *lheader = reinterpret_cast<PT_long_chain_header*>(node->udata());
 
-    PT_write_compact_nat(p, loc.get_name());
-    PT_write_compact_nat(p, loc.get_rel_pos());
-    PT_write_compact_nat(p, loc.get_abs_pos());
+            lheader->entries   = entries+1;
+            lheader->memused   = buf.get_size();
+            lheader->memsize   = std::max(size_t(PTM_MIN_SIZE), buf.get_size());
+            lheader->refabspos = buf.get_refabspos();
+            lheader->lastname  = buf.get_lastname();
+            lheader->entrymem  = (char*)MEM.get(lheader->memsize);
 
-    int size = p - buffer;
+            memcpy(lheader->entrymem, buf.get_mem(), buf.get_size());
 
-    pt_assert(size <= MAX_CHAIN_ENTRY_SIZE);
+            node->flags = (node->flags & ~(SHORT_CHAIN_HEADER_SIZE_MASK|SHORT_CHAIN_HEADER_FLAG_BIT));
+        }
+    }
+    else {
+        PT_long_chain_header *header = reinterpret_cast<PT_long_chain_header*>(node->udata());
 
-    p = (char*)MEM.get(size);
-    memcpy(p, buffer, size);
-    PT_write_pointer(data, p);
-    psg.stat.cut_offs ++;
+        ChainEntryBuffer buf(1, header->refabspos, header->lastname);
+        buf.add(loc);
+        header->lastname = buf.get_lastname();
 
-    pt_assert_valid_chain_stage1(node);
+        unsigned memfree = header->memsize-header->memused;
+        if (memfree >= buf.get_size()) {
+            memcpy(header->entrymem+header->memused, buf.get_mem(), buf.get_size());
+        }
+        else {
+            unsigned new_memsize = header->memused+buf.get_size();
+
+            if (header->entries>10) new_memsize *= 1.25; // alloctate 25% more memory than needed // @@@ test with diff percentages
+
+            // @@@ check for better refabspos if memsize per entry is too high
+
+            char *new_mem = (char*)MEM.get(new_memsize);
+            memcpy(new_mem, header->entrymem, header->memused);
+            memcpy(new_mem+header->memused, buf.get_mem(), buf.get_size());
+
+            MEM.put(header->entrymem, header->memsize);
+
+            header->entrymem = new_mem;
+            header->memsize  = new_memsize;
+        }
+        header->memused += buf.get_size();
+        header->entries++;
+    }
+
+#if defined(PTM_DEBUG_VALIDATE_CHAINS)
+    pt_assert(!PT_is_empty_chain<ChainIteratorStage1>(node));
+    pt_assert(PT_chain_has_valid_entries<ChainIteratorStage1>(node));
+#endif
 }
 
 POS_TREE1 *PT_change_leaf_to_node(POS_TREE1 *node) { // @@@ become member
@@ -210,25 +287,19 @@ POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node) { // @@@ become member
     POS_TREE1     *father = node->get_father();
     const DataLoc  loc(node);
 
-    int        chain_size = (loc.get_abs_pos()>PT_SHORT_SIZE) ? PT1_CHAIN_LONG_HEAD_SIZE : PT1_CHAIN_SHORT_HEAD_SIZE;
-    POS_TREE1 *new_elem   = (POS_TREE1 *)MEM.get(chain_size);
+    const size_t  chain_size = sizeof(POS_TREE1)+sizeof(PT_short_chain_header);
+    POS_TREE1    *new_elem   = (POS_TREE1 *)MEM.get(chain_size);
 
     PT_change_link_in_father(father, node, new_elem);
     MEM.put(node, PT1_LEAF_SIZE(node));
+
     new_elem->set_type(PT1_CHAIN);
     new_elem->set_father(father);
 
-    char *data = new_elem->udata();
-    if (loc.get_abs_pos()>PT_SHORT_SIZE) {
-        PT_write_int(data, loc.get_abs_pos());
-        data+=4;
-        new_elem->flags|=1;
-    }
-    else {                                                      
-        PT_write_short(data, loc.get_abs_pos());
-        data+=2;
-    }
-    PT_write_pointer(data, NULL);
+    new_elem->flags |= SHORT_CHAIN_HEADER_FLAG_BIT; // "has short header"
+
+    pt_assert((new_elem->flags & SHORT_CHAIN_HEADER_SIZE_MASK) == 0); // zero elements
+
     PT_add_to_chain(new_elem, loc);
 
     return new_elem;
@@ -448,91 +519,58 @@ static long PTD_write_tip_to_disk(FILE *out, POS_TREE1 *node, const long oldpos)
     return pos;
 }
 
-static char *reverse_chain(char *entry, char *successor, uint_32& chain_length) {
-    while (1) {
-        char *nextEntry = PT_read_pointer<char>(entry);
-        PT_write_pointer(entry, successor);
-        ++chain_length;
-
-        if (!nextEntry) break;
-
-        successor = entry;
-        entry     = nextEntry;
-    }
-    return entry;
-}
-
-static uint_32 reverse_chain(POS_TREE1 * const node) {
-    pt_assert_stage(STAGE1);
-    pt_assert(node->is_chain());
-
-    char *data  = node->udata() + ((node->flags&1) ? 4 : 2);
-    char *entry = PT_read_pointer<char>(data);
-
-    uint_32  length     = 0;
-    char    *last_entry = reverse_chain(entry, NULL, length);
-
-    PT_write_pointer(data, last_entry);
-    return length;
-}
-
 static long PTD_write_chain_to_disk(FILE *out, POS_TREE1 * const node, const long oldpos, ARB_ERROR& error) {
     pt_assert_valid_chain_stage1(node);
 
-    long pos = oldpos;
+    long                pos          = oldpos;
+    ChainIteratorStage1 entry(node);
+    uint_32             chain_length = 1+entry.get_elements_ahead();
 
-    PTD_put_byte(out, node->flags); // save type
-    pos++;
-
-    uint_32 chain_length = reverse_chain(node);
     pt_assert(chain_length>0);
 
-    ChainIteratorStage1 entry(node);
+    int    refabspos     = entry.get_refabspos(); // @@@ search for better apos?
+    uint_8 has_long_apos = refabspos>0xffff;
 
-    int mainapos = entry.get_mainapos();
+    PTD_put_byte(out, (node->flags & 0xc0) | has_long_apos); // save type
+    pos++;
 
-    if (node->flags&1) {
-        PTD_put_int(out, mainapos);
-        pos  += 4;
-    }
-    else {
-        PTD_put_short(out, mainapos);
-        pos  += 2;
-    }
+    if (has_long_apos) { PTD_put_int  (out, refabspos); pos += 4; }
+    else               { PTD_put_short(out, refabspos); pos += 2; }
 
     pos += PTD_put_compact_nat(out, chain_length);
 
+    ChainEntryBuffer buf(chain_length, refabspos, 0);
     uint_32 entries  = 0;
-    int     lastname = 0;
+
     while (entry && !error) {
         const AbsLoc& loc = entry.at();
-        if (loc.get_name()<lastname) {
-            error = GBS_global_string("Chain Error: name order error (%i < %i)", loc.get_name(), lastname);
+        if (loc.get_name()<buf.get_lastname()) {
+            error = GBS_global_string("Chain Error: name order error (%i < %i)", loc.get_name(), buf.get_lastname());
         }
         else {
-            static char buffer[100];
-
-            char *wp = PT_WRITE_CHAIN_ENTRY(buffer, mainapos, loc.get_name()-lastname, loc.get_abs_pos());
-
-            int size = wp -buffer;
-            if (1 != fwrite(buffer, size, 1, out)) {
-                error = GB_IO_error("writing chains to", "ptserver-index");
-            }
-
-            pos      += size;
-            lastname  = loc.get_name();
-
-            MEM.put((char*)entry.memory(), entry.memsize());
+            buf.add(loc);
             ++entry;
         }
         ++entries;
     }
 
+    if (buf.get_size() != fwrite(buf.get_mem(), 1, buf.get_size(), out)) {
+        error = GB_IO_error("writing chains to", "ptserver-index");
+    }
+    pos += buf.get_size();
+
     pt_assert(entries == chain_length);
     pt_assert(pos >= 0);
 
     {
-        int chain_head_size = node->flags&1 ? PT1_CHAIN_LONG_HEAD_SIZE : PT1_CHAIN_SHORT_HEAD_SIZE;
+        bool is_short        = node->flags&SHORT_CHAIN_HEADER_FLAG_BIT;
+        int  chain_head_size = sizeof(POS_TREE1)+(is_short ? sizeof(PT_short_chain_header) : sizeof(PT_long_chain_header));
+
+        if (!is_short) {
+            PT_long_chain_header *header = reinterpret_cast<PT_long_chain_header*>(node->udata());
+            MEM.put(header->entrymem, header->memsize);
+        }
+
         PTD_set_object_to_saved_status(node, oldpos, chain_head_size);
         pt_assert(node->is_saved());
     }
@@ -1034,13 +1072,13 @@ void TEST_chains() {
         if (base == PT_A) { // test only once
             ChainIteratorStage1 entry(chain);
 
-            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc2a); ++entry;
-            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc2b); ++entry;
-            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc2c); ++entry;
-            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc1a); ++entry;
-            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc1b); ++entry;
-            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc0a); ++entry;
             TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc0b); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc0a); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc1b); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc1a); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc2c); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc2b); ++entry;
+            TEST_EXPECT_EQUAL(bool(entry), true); TEST_EXPECT(entry.at() == loc2a); ++entry;
             TEST_EXPECT_EQUAL(bool(entry), false);
         }
 
