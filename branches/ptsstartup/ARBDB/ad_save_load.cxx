@@ -968,7 +968,8 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
                             if (error) unlinkMapfiles = true;
                             else if (sec_mappath) {
                                 error             = GB_rename_file(sec_mappath, mappath);
-                                if (!error) error = GB_set_mode_of_file(mappath, GB_mode_of_file(path)); // set mapfile to same mode as DB file
+                                if (!error) error = GB_set_mode_of_file(mappath, GB_mode_of_file(path)); // set mapfile to same mode ...
+                                if (!error) error = GB_set_time_of_file(mappath, GB_time_of_file(path)); // ... and same time as DB file
                                 if (error) {
                                     GB_warningf("Error: %s\n[Falling back to non-fastload-save]", error);
                                     error          = 0;
