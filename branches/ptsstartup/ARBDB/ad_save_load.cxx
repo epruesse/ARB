@@ -1265,6 +1265,7 @@ void TEST_SLOW_loadsave() {
         TEST_EXPECT_RESULT__NOERROREXPORTED(gb_nomap = GB_open(bin_db, "rw"));
         TEST_EXPECT_NO_ERROR(GB_save_as(gb_nomap, "fast.arb", "bm"));
         TEST_EXPECT(GB_is_regularfile("fast.ARM")); // assert map file has been saved
+        TEST_EXPECT_EQUAL(GB_time_of_file("fast.ARM"), GB_time_of_file("fast.arb"));
         GB_close(gb_nomap);
     }
     {
