@@ -340,7 +340,10 @@ public:
     Partition partition() const { return Partition(depth, passes); }
 };
 
-static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable) {
+static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable, int forced_passes) {
+    // if 'forced_passes' == 0 -> decide number of passes such that estimated memuse is hard up for 'max_kb_usable'
+    // if 'forced_passes' > 0 -> ignore available memory (for DEBUGGING memory estimation)
+
     fflush_all();
 
     PartitionSpec best;
@@ -349,16 +352,26 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable)
         PrefixProbabilities prob(depth);
 
         int maxPasses = prob.get_prefix_count();
-        for (int passes = 1; passes <= maxPasses; ++passes) {
-            PartitionSpec curr(passes, max_kb_for_passes(prob, passes, overallBases), depth);
-            if (curr.isBetterThan(best, max_kb_usable)) {
-                best = curr;
-                best.dump(stdout, max_kb_usable);
+        if (forced_passes) {
+            if (maxPasses >= forced_passes) {
+                PartitionSpec curr(forced_passes, max_kb_for_passes(prob, forced_passes, overallBases), depth);
+                if (curr.isBetterThan(best, max_kb_usable)) {
+                    best = curr;
+                    best.dump(stdout, max_kb_usable);
+                }
             }
-            if (!curr.willUseMoreThan(max_kb_usable)) break;
+        }
+        else {
+            for (int passes = 1; passes <= maxPasses; ++passes) {
+                PartitionSpec curr(passes, max_kb_for_passes(prob, passes, overallBases), depth);
+                if (curr.isBetterThan(best, max_kb_usable)) {
+                    best = curr;
+                    best.dump(stdout, max_kb_usable);
+                }
+                if (!curr.willUseMoreThan(max_kb_usable)) break;
+            }
         }
     }
-
     fflush(stdout);
 
     if (best.willUseMoreThan(max_kb_usable)) {
@@ -375,7 +388,7 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable)
                 "  amounts of memory and will possibly run for days, weeks or even months.\n"
                 "\n", allowed_passes);
 
-                fflush(stderr);
+        fflush(stderr);
     }
 
     return best.partition();
@@ -428,20 +441,19 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
             ULONG available_memory = GB_get_usable_memory() - ARM_size_kb - PTSERVER_BIN_MB*1024;
             printf("Memory available for build: %s\n", GBS_readable_size(available_memory*1024, "b"));
 
-            Partition partition = decide_passes_to_use(psg.char_count, available_memory);
-
-// #define FORCE_PASSES 13
-#if defined(FORCE_PASSES)
-            for (int depth = 0; depth <= PT_MAX_PARTITION_DEPTH; ++depth) {
-                PrefixProbabilities prob(depth);
-                if (prob.get_prefix_count() >= FORCE_PASSES) {
-                    partition = Partition(prob, FORCE_PASSES);
+            int forcedPasses = 0; // means "do not force"
+            {
+                const char *forced = GB_getenv("ARB_PTS_FORCE_PASSES");
+                if (forced) {
+                    int f = atoi(forced);
+                    if (f >= 1) {
+                        forcedPasses = f;
+                        printf("Warning: Forcing %i passes (by envvar ARB_PTS_FORCE_PASSES='%s')\n", forcedPasses, forced);
+                    }
                 }
             }
-            printf("Warning: Forcing %i passes (for DEBUG reasons)\n", FORCE_PASSES);
-            printf("Estimated memusage: %s\n", GBS_readable_size(partition.estimate_max_kb_for_any_pass(psg.char_count)*1024, "b"));
-#endif
 
+            Partition partition = decide_passes_to_use(psg.char_count, available_memory, forcedPasses);
             {
                 size_t max_part = partition.estimate_max_probes_for_any_pass(psg.char_count);
                 printf("Overall bases:       %s\n", GBS_readable_size(psg.char_count, "bp"));
@@ -884,7 +896,7 @@ static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_
 
     avail_mem_kb -= ARM_size_kb + PTSERVER_BIN_MB*1024;
 
-    Partition part             = decide_passes_to_use(bp, avail_mem_kb);
+    Partition part             = decide_passes_to_use(bp, avail_mem_kb, 0);
     int       decided_passes   = part.number_of_passes();
     int       decided_depth    = part.split_depth();
     size_t    decided_passsize = part.estimate_max_probes_for_any_pass(bp);
