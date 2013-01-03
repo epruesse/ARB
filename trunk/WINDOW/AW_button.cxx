@@ -160,7 +160,7 @@ static void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_updat
     vui->change_from_widget(call_data);
 }
 
-static void record_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE IF_DEBUG(cb_type)) {
+static void record_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
     AW_awar *awar = (AW_awar*)cl_awar;
     aw_assert(cb_type == GB_CB_CHANGED);
     awar->root->prvt->recording->record_awar_change(awar);
@@ -1972,7 +1972,7 @@ void AW_window::clear_option_menu(AW_option_menu_struct *oms) {
     oms->last_choice    = 0;
 }
 
-void *AW_window::_create_option_entry(AW_VARIABLE_TYPE IF_DEBUG(type), const char *name, const char */*mnemonic*/, const char *name_of_color) {
+void *AW_window::_create_option_entry(AW_VARIABLE_TYPE IF_ASSERTION_USED(type), const char *name, const char */*mnemonic*/, const char *name_of_color) {
     Widget                 entry;
     AW_option_menu_struct *oms = p_global->current_option_menu;
 
