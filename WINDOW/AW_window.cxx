@@ -3420,7 +3420,7 @@ public:
 
 ExecutingMacro *ExecutingMacro::head = NULL;
 
-static void macro_terminated(GBDATA */*gb_terminated*/, int *, GB_CB_TYPE IF_DEBUG(cb_type)) {
+static void macro_terminated(GBDATA */*gb_terminated*/, int *, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
     aw_assert(cb_type == GB_CB_CHANGED);
     ExecutingMacro::done();
 }
