@@ -568,7 +568,7 @@ public:
         const int   BUFSIZE = 100;
         static char buf[BUFSIZE];
 
-        IF_DEBUG(int printed =) sprintf(buf, "tmp/loc/%s/%s", tag, aname);
+        IF_ASSERTION_USED(int printed =) sprintf(buf, "tmp/loc/%s/%s", tag, aname);
         gen_assert(printed<BUFSIZE);
 
         return buf;
