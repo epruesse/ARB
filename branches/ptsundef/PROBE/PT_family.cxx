@@ -318,9 +318,11 @@ static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
 
 inline bool contains_ambiguities(char *oligo, int oligo_len) {
     //! Check the oligo for ambiguities
-    for (int i = 0; i < oligo_len; i++)
-        if (oligo[i] < PT_A || oligo[i] > PT_T)
+    for (int i = 0; i < oligo_len; i++) {
+        if (!is_std_base(oligo[i])) {
             return true;
+        }
+    }
     return false;
 }
 

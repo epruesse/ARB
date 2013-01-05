@@ -548,7 +548,7 @@ char *get_match_overlay(PT_probematch *ml) {
         else {
             if (b) {
                 ref[pr_pos+10] = b;
-                if (a >= PT_A && a <= PT_T && b >= PT_A && b<=PT_T) {
+                if (is_std_base(a) && is_std_base(b)) {
                     double h = ptnd_check_split(locs, ml->sequence, pr_pos, b);
                     if (h>=0.0) {
                         ref[pr_pos+10] = " nacgu"[b];

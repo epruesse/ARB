@@ -85,7 +85,7 @@ enum PT_BASES {
     PT_B_UNDEF,
 };
 
-inline bool PT_is_std_base(PT_BASES b) { return b >= PT_A && b <= PT_T; }
+inline bool is_std_base(char b) { return b >= PT_A && b <= PT_T; }
 
 inline char PT_base_2_char(PT_BASES base) {
     static char table[] = "0NACGU";
