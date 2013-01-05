@@ -25,7 +25,7 @@ inline void aisc_link(dll_public *dll, PT_probematch *match)   { aisc_link(reint
 static double ptnd_get_wmismatch(PT_local *locs, char *probe, int pos, char ref)
 {
     int base       = probe[pos];
-    int complement = psg.get_complement(base);
+    int complement = psg.complement[base];
     int rowIdx     = (complement-(int)PT_A)*4;
     int maxIdx     = rowIdx + base-(int)PT_A;
     int newIdx     = rowIdx + ref-(int)PT_A;
@@ -310,14 +310,39 @@ static void pt_sort_match_list(PT_local * locs) {
         }
     }
 }
-char *create_reversed_probe(char *probe, int len) {
+char *reverse_probe(char *probe) {
     //! reverse order of bases in a probe
-    char *rev_probe = GB_strduplen(probe, len);
-    reverse_probe(rev_probe, len);
+
+    const int  probe_length = strlen(probe);
+    char      *rev_probe    = (char *)malloc(probe_length * sizeof(char)+1);
+    const int  end          = probe_length-1;
+
+    for (int i=0; i< probe_length; i++) {
+        rev_probe[end-i] = probe[i];
+    }
+
+    rev_probe[probe_length] = 0;
     return rev_probe;
 }
+int PT_complement(int base)
+{
+    switch (base) {
+        case PT_A:      return PT_T;
+        case PT_C:      return PT_G;
+        case PT_G:      return PT_C;
+        case PT_T:      return PT_A;
+        default:        return base;
+    }
+}
+void complement_probe(char *probe) {
+    //! build the complement of a probe
+    for (int i=0; probe[i]; i++) {
+        probe[i] = PT_complement(probe[i]);
+    }
+}
 
-static double calc_position_wmis(int pos, int seq_len, double y1, double y2) {
+static double calc_position_wmis(int pos, int seq_len, double y1, double y2)
+{
     return (double)(((double)(pos * (seq_len - 1 - pos)) / (double)((seq_len - 1) * (seq_len - 1)))* (double)(y2*4.0) + y1);
 }
 
@@ -357,31 +382,33 @@ int probe_match(PT_local * locs, aisc_string probestring) {
     }
 #endif // DEBUG
 
-    int probe_len = strlen(probestring);
-    if ((probe_len - 2*locs->pm_max) < MIN_PROBE_LENGTH) {
-        if (probe_len >= MIN_PROBE_LENGTH) {
-            int max_pos_mismatches = (probe_len-MIN_PROBE_LENGTH)/2;
-            if (max_pos_mismatches>0) {
-                if (max_pos_mismatches>1) {
-                    pt_export_error(locs, GBS_global_string("Max. %i mismatches are allowed for probes of length %i", max_pos_mismatches, probe_len));
+    {
+        int probe_len = strlen(probestring);
+        if ((probe_len - 2*locs->pm_max) < MIN_PROBE_LENGTH) {
+            if (probe_len >= MIN_PROBE_LENGTH) {
+                int max_pos_mismatches = (probe_len-MIN_PROBE_LENGTH)/2;
+                if (max_pos_mismatches>0) {
+                    if (max_pos_mismatches>1) {
+                        pt_export_error(locs, GBS_global_string("Max. %i mismatches are allowed for probes of length %i", max_pos_mismatches, probe_len));
+                    }
+                    else {
+                        pt_export_error(locs, GBS_global_string("Max. 1 mismatch is allowed for probes of length %i", probe_len));
+                    }
                 }
                 else {
-                    pt_export_error(locs, GBS_global_string("Max. 1 mismatch is allowed for probes of length %i", probe_len));
+                    pt_export_error(locs, "No mismatches allowed for that short probes.");
                 }
             }
             else {
-                pt_export_error(locs, "No mismatches allowed for that short probes.");
+                pt_export_error(locs, GBS_global_string("Min. probe length is %i", MIN_PROBE_LENGTH));
             }
+            return 0;
         }
-        else {
-            pt_export_error(locs, GBS_global_string("Min. probe length is %i", MIN_PROBE_LENGTH));
-        }
-        return 0;
     }
 
     set_table_for_PT_N_mis(locs->pm_nmatches_ignored, locs->pm_nmatches_limit);
     if (locs->pm_complement) {
-        psg.complement_probe(probestring, probe_len);
+        complement_probe(probestring);
     }
     psg.reversed = 0;
 
@@ -396,8 +423,8 @@ int probe_match(PT_local * locs, aisc_string probestring) {
 
     if (locs->pm_reversed) {
         psg.reversed  = 1;
-        char *rev_pro = create_reversed_probe(probestring, probe_len);
-        psg.complement_probe(rev_pro, probe_len);
+        char *rev_pro = reverse_probe(probestring);
+        complement_probe(rev_pro);
         freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
 
         get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
@@ -521,7 +548,7 @@ char *get_match_overlay(PT_probematch *ml) {
         else {
             if (b) {
                 ref[pr_pos+10] = b;
-                if (is_std_base(a) && is_std_base(b)) {
+                if (a >= PT_A && a <= PT_T && b >= PT_A && b<=PT_T) {
                     double h = ptnd_check_split(locs, ml->sequence, pr_pos, b);
                     if (h>=0.0) {
                         ref[pr_pos+10] = " nacgu"[b];
@@ -545,7 +572,7 @@ char *get_match_overlay(PT_probematch *ml) {
         ref[pr_pos+11+pr_len] = psg.data[ml->name].get_data()[al_pos];
     }
     ref[10+pr_len] = '-';
-    probe_2_readable(ref);
+    PT_base_2_string(ref);
 
     return ref;
 }
@@ -604,7 +631,7 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
 
         if (ml->N_mismatches >= 0) { //
             char *seq = strdup(ml->sequence);
-            probe_2_readable(seq);
+            PT_base_2_string(seq);
 
             GBS_strcat(memfile, "         '");
             GBS_strcat(memfile, seq);

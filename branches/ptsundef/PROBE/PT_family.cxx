@@ -318,12 +318,27 @@ static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
 
 inline bool contains_ambiguities(char *oligo, int oligo_len) {
     //! Check the oligo for ambiguities
-    for (int i = 0; i < oligo_len; i++) {
-        if (!is_std_base(oligo[i])) {
+    for (int i = 0; i < oligo_len; i++)
+        if (oligo[i] < PT_A || oligo[i] > PT_T)
             return true;
-        }
-    }
     return false;
+}
+
+inline void revert_sequence(char *seq, int len) {
+    int i = 0;
+    int j = len-1;
+
+    while (i<j) std::swap(seq[i++], seq[j--]);
+}
+
+inline void complement_sequence(char *seq, int len) {
+    PT_BASES complement[PT_B_MAX];
+    for (PT_BASES b = PT_QU; b<PT_B_MAX; b = PT_BASES(b+1)) { complement[b] = b; }
+
+    std::swap(complement[PT_A], complement[PT_T]);
+    std::swap(complement[PT_C], complement[PT_G]);
+
+    for (int i = 0; i<len; i++) seq[i] = complement[int(seq[i])];
 }
 
 class oligo_comparator {
@@ -392,10 +407,10 @@ int find_family(PT_family *ffinder, bytestring *species) {
                 break;
             case FF_REVERSE:
             case FF_COMPLEMENT:
-                reverse_probe(sequence, sequence_len); // build reverse sequence
+                revert_sequence(sequence, sequence_len); // build reverse sequence
                 break;
             case FF_REVERSE_COMPLEMENT:
-                psg.complement_probe(sequence, sequence_len); // build complement sequence
+                complement_sequence(sequence, sequence_len); // build complement sequence
                 break;
         }
 
