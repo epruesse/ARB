@@ -245,7 +245,7 @@ MatrixOrder::MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name)
             leafs    = size+1;
             name2pos = GBS_create_hash(leafs, GB_IGNORE_CASE);
 
-            IF_DEBUG(int leafsLoaded = leafs);
+            IF_ASSERTION_USED(int leafsLoaded = leafs);
             leafs = 0;
             insert_in_hash(sort_tree);
 

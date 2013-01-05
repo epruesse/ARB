@@ -251,7 +251,7 @@ const char *gcg_date(const char *input) {
 
     char time[SIZE];
     int  day, year;
-    IF_DEBUG(int  scanned = )
+    IF_ASSERTION_USED(int scanned = )
         sscanf(input+DAY_POS, "%d %s %d", &day, time, &year);
     ca_assert(scanned == 3);
 
