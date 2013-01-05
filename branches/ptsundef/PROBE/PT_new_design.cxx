@@ -263,7 +263,7 @@ char *get_design_info(PT_tprobes  *tprobe) {
 
     // target
     strcpy(probe, tprobe->sequence);
-    PT_base_2_string(probe); // convert probe to real ASCII
+    probe_2_readable(probe); // convert probe to real ASCII
     sprintf(p, "%-*s", pdc->probelen+1, probe);
     p += strlen(p);
 
@@ -318,7 +318,7 @@ char *get_design_info(PT_tprobes  *tprobe) {
     // probe string
     probe  = reverse_probe(tprobe->sequence);
     complement_probe(probe);
-    PT_base_2_string(probe); // convert probe to real ASCII
+    probe_2_readable(probe); // convert probe to real ASCII
     p     += sprintf(p, "%-*s |", pdc->probelen, probe);
     free(probe);
 

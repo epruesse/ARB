@@ -87,15 +87,16 @@ enum PT_BASES {
 
 inline bool is_std_base(char b) { return b >= PT_A && b <= PT_T; }
 
-inline char PT_base_2_char(PT_BASES base) {
-    static char table[] = "0NACGU";
-    return base<PT_B_MAX ? table[base] : (char)base;
+inline char base_2_readable(char base) {
+    static char table[] = ".NACGU";
+    return base<PT_B_MAX ? table[safeCharIndex(base)] : base;
 }
 
-inline void PT_base_2_string(char *id_string) {
+inline void probe_2_readable(char *id_string) {
     //! get a string with readable bases from a string with PT_?
+    // caution if 'id_string' contains PT_QU ( == zero == EOS)
     for (int i = 0; id_string[i]; ++i) {
-        id_string[i] = PT_base_2_char(PT_BASES(id_string[i]));
+        id_string[i] = base_2_readable(id_string[i]);
     }
 }
 

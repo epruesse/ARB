@@ -572,7 +572,7 @@ char *get_match_overlay(PT_probematch *ml) {
         ref[pr_pos+11+pr_len] = psg.data[ml->name].get_data()[al_pos];
     }
     ref[10+pr_len] = '-';
-    PT_base_2_string(ref);
+    probe_2_readable(ref);
 
     return ref;
 }
@@ -631,7 +631,7 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
 
         if (ml->N_mismatches >= 0) { //
             char *seq = strdup(ml->sequence);
-            PT_base_2_string(seq);
+            probe_2_readable(seq);
 
             GBS_strcat(memfile, "         '");
             GBS_strcat(memfile, seq);
