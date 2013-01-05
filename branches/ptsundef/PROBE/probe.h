@@ -100,6 +100,12 @@ inline void probe_2_readable(char *id_string) {
     }
 }
 
+inline void reverse_probe(char *seq, int len) {
+    int i = 0;
+    int j = len-1;
+
+    while (i<j) std::swap(seq[i++], seq[j--]);
+}
 
 // -----------------
 //      POS TREE

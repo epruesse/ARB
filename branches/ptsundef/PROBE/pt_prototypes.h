@@ -59,7 +59,7 @@ int broadcast(PT_main *main, int dummy_1x);
 int ARB_main(int argc, const char *argv[]);
 
 /* PT_match.cxx */
-char *reverse_probe(char *probe);
+char *create_reversed_probe(char *probe, int len);
 int PT_complement(int base);
 void complement_probe(char *probe);
 int probe_match(PT_local *locs, aisc_string probestring);
@@ -71,7 +71,7 @@ int MP_count_all_species(PT_local *);
 
 /* PT_new_design.cxx */
 double ptnd_check_split(PT_local *locs, char *probe, int pos, char ref);
-char *get_design_info(PT_tprobes *tprobe);
+char *get_design_info(PT_tprobes *const_tprobe);
 char *get_design_hinfo(PT_tprobes *tprobe);
 int PT_start_design(PT_pdc *pdc, int dummy_1x);
 

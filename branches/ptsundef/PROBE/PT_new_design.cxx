@@ -251,21 +251,20 @@ inline char hitgroup_idx2char(int idx) {
     return c;
 }
 
-char *get_design_info(PT_tprobes  *tprobe) {
+char *get_design_info(PT_tprobes *const_tprobe) {
+    const PT_tprobes *tprobe = const_tprobe; // is const in fact (but AISC interface does not provide; @@@ true?)
     char   *buffer = (char *)GB_give_buffer(2000);
-    char   *probe  = (char *)GB_give_buffer2(tprobe->seq_len + 10);
     PT_pdc *pdc    = (PT_pdc *)tprobe->mh.parent->parent;
-    char   *p;
-    int     i;
-    int     sum;
-
-    p = buffer;
+    char   *p      = buffer;
 
     // target
-    strcpy(probe, tprobe->sequence);
-    probe_2_readable(probe); // convert probe to real ASCII
-    sprintf(p, "%-*s", pdc->probelen+1, probe);
-    p += strlen(p);
+    {
+        char *probe  = (char *)GB_give_buffer2(tprobe->seq_len + 10);
+        strcpy(probe, tprobe->sequence);
+        probe_2_readable(probe); // convert probe to real ASCII
+        sprintf(p, "%-*s", pdc->probelen+1, probe);
+        p += strlen(p);
+    }
 
     {
         int apos = info2bio(tprobe->apos);
@@ -316,14 +315,17 @@ char *get_design_info(PT_tprobes  *tprobe) {
     p += sprintf(p, "%-7.1f ", pt_get_temperature(tprobe->sequence));
 
     // probe string
-    probe  = reverse_probe(tprobe->sequence);
-    complement_probe(probe);
-    probe_2_readable(probe); // convert probe to real ASCII
-    p     += sprintf(p, "%-*s |", pdc->probelen, probe);
-    free(probe);
+    {
+        char *probe  = create_reversed_probe(tprobe->sequence, tprobe->seq_len);
+        complement_probe(probe);
+        probe_2_readable(probe); // convert probe to real ASCII
+        p     += sprintf(p, "%-*s |", pdc->probelen, probe);
+        free(probe);
+    }
 
     // non-group hits by temp. decrease
-    for (sum=i=0; i<PERC_SIZE; i++) {
+    int sum = 0;
+    for (int i = 0; i<PERC_SIZE; i++) {
         sum += tprobe->perc[i];
         p   += sprintf(p, "%3i,", sum);
     }
