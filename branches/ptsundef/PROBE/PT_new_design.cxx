@@ -168,13 +168,13 @@ static void ptnd_calc_quality(PT_pdc *pdc) {
 static double ptnd_check_max_bond(PT_local *locs, char base) {
     //! check the bond val for a probe
 
-    int complement = PT_complement(base);
+    int complement = psg.get_complement(base);
     return locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
 }
 
 double ptnd_check_split(PT_local *locs, char *probe, int pos, char ref) {
     int    base       = probe[pos];
-    int    complement = PT_complement(base);
+    int    complement = psg.get_complement(base);
     double max_bind   = locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
     double new_bind   = locs->bond[(complement-(int)PT_A)*4 + ref-(int)PT_A].val;
 
@@ -251,21 +251,21 @@ inline char hitgroup_idx2char(int idx) {
     return c;
 }
 
-char *get_design_info(PT_tprobes  *tprobe) {
-    char   *buffer = (char *)GB_give_buffer(2000);
-    char   *probe  = (char *)GB_give_buffer2(tprobe->seq_len + 10);
-    PT_pdc *pdc    = (PT_pdc *)tprobe->mh.parent->parent;
-    char   *p;
-    int     i;
-    int     sum;
+char *get_design_info(PT_tprobes *const_tprobe) {
+    const PT_tprobes *tprobe = const_tprobe; // is const in fact (but AISC interface does not provide; @@@ true?)
 
-    p = buffer;
+    char   *buffer = (char *)GB_give_buffer(2000);
+    PT_pdc *pdc    = (PT_pdc *)tprobe->mh.parent->parent;
+    char   *p      = buffer;
 
     // target
-    strcpy(probe, tprobe->sequence);
-    PT_base_2_string(probe); // convert probe to real ASCII
-    sprintf(p, "%-*s", pdc->probelen+1, probe);
-    p += strlen(p);
+    {
+        char *probe  = (char *)GB_give_buffer2(tprobe->seq_len + 10);
+        strcpy(probe, tprobe->sequence);
+        probe_2_readable(probe); // convert probe to real ASCII
+        sprintf(p, "%-*s", pdc->probelen+1, probe);
+        p           += strlen(p);
+    }
 
     {
         int apos = info2bio(tprobe->apos);
@@ -316,14 +316,17 @@ char *get_design_info(PT_tprobes  *tprobe) {
     p += sprintf(p, "%-7.1f ", pt_get_temperature(tprobe->sequence));
 
     // probe string
-    probe  = reverse_probe(tprobe->sequence);
-    complement_probe(probe);
-    PT_base_2_string(probe); // convert probe to real ASCII
-    p     += sprintf(p, "%-*s |", pdc->probelen, probe);
-    free(probe);
+    {
+        char *probe  = create_reversed_probe(tprobe->sequence, tprobe->seq_len);
+        psg.complement_probe(probe, tprobe->seq_len);
+        probe_2_readable(probe); // convert probe to real ASCII
+        p     += sprintf(p, "%-*s |", pdc->probelen, probe);
+        free(probe);
+    }
 
     // non-group hits by temp. decrease
-    for (sum=i=0; i<PERC_SIZE; i++) {
+    int sum = 0;
+    for (int i = 0; i<PERC_SIZE; i++) {
         sum += tprobe->perc[i];
         p   += sprintf(p, "%3i,", sum);
     }

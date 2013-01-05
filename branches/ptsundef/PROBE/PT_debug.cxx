@@ -138,11 +138,10 @@ public:
 void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out) {
     switch (PT_read_type(pt)) {
         case PT_NT_NODE:
-            for (int i = PT_QU; i<PT_B_MAX; i++) {
-                PT_BASES  b   = PT_BASES(i);
-                POS_TREE *son = PT_read_son(pt, b);
+            for (int b = PT_QU; b<PT_B_MAX; b++) {
+                POS_TREE *son = PT_read_son(pt, PT_BASES(b));
                 if (son) {
-                    char *subPrefix = GBS_global_string_copy("%s%c", prefix, b == PT_QU ? '.' : PT_base_2_char(b));
+                    char *subPrefix = GBS_global_string_copy("%s%c", prefix, base_2_readable(b));
                     PT_dump_POS_TREE_recursive(son, subPrefix, out);
                     free(subPrefix);
                 }

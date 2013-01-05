@@ -85,20 +85,27 @@ enum PT_BASES {
     PT_B_UNDEF,
 };
 
-inline bool PT_is_std_base(PT_BASES b) { return b >= PT_A && b <= PT_T; }
+inline bool is_std_base(char b) { return b >= PT_A && b <= PT_T; }
 
-inline char PT_base_2_char(PT_BASES base) {
-    static char table[] = "0NACGU";
-    return base<PT_B_MAX ? table[base] : (char)base;
+inline char base_2_readable(char base) {
+    static char table[] = ".NACGU";
+    return base<PT_B_MAX ? table[safeCharIndex(base)] : base;
 }
 
-inline void PT_base_2_string(char *id_string) {
+inline void probe_2_readable(char *id_string) {
     //! get a string with readable bases from a string with PT_?
+    // caution if 'id_string' contains PT_QU ( == zero == EOS)
     for (int i = 0; id_string[i]; ++i) {
-        id_string[i] = PT_base_2_char(PT_BASES(id_string[i]));
+        id_string[i] = base_2_readable(id_string[i]);
     }
 }
 
+inline void reverse_probe(char *seq, int len) {
+    int i = 0;
+    int j = len-1;
+
+    while (i<j) std::swap(seq[i++], seq[j--]);
+}
 
 // -----------------
 //      POS TREE
@@ -256,7 +263,10 @@ public:
     int get_most_used() const { return pos; }
 };
 
-extern struct probe_struct_global {
+class probe_struct_global {
+    char complement[256];                           // complement
+
+public:
     GB_shell *gb_shell;
     GBDATA   *gb_main;                              // ARBDB interface
     GBDATA   *gb_species_data;
@@ -281,7 +291,6 @@ extern struct probe_struct_global {
     int reversed;                                   // tell the matcher whether probe is reversed
 
     double *pos_to_weight;                          // position to weight
-    char    complement[256];                        // complement
 
     int deep;                                       // for probe matching
     int height;
@@ -306,7 +315,20 @@ extern struct probe_struct_global {
     void setup();
     void cleanup();
 
-} psg;
+    int get_complement(int base) {
+        pt_assert(base >= 0 && base <= 256);
+        return complement[base];
+    }
+
+    void complement_probe(char *Probe, int len) {
+        for (int i = 0; i<len; i++) {
+            Probe[i] = get_complement(Probe[i]);
+        }
+    }
+
+};
+
+extern probe_struct_global psg;
 
 class gene_struct {
     char       *gene_name;

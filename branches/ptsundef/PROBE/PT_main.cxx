@@ -65,6 +65,16 @@ void probe_statistic_struct::setup() {
 #endif
 }
 
+static int calc_complement(int base) {
+    switch (base) {
+        case PT_A:      return PT_T;
+        case PT_C:      return PT_G;
+        case PT_G:      return PT_C;
+        case PT_T:      return PT_A;
+        default:        return base;
+    }
+}
+
 void probe_struct_global::setup() {
     // init uninitialized data
     
@@ -94,7 +104,7 @@ void probe_struct_global::setup() {
 
     pos_to_weight = NULL;
     for (size_t i=0; i<ARRAY_ELEMS(complement); i++) {
-        complement[i] = PT_complement(i);
+        complement[i] = calc_complement(i);
     }
 
     deep   = 0;
