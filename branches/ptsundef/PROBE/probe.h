@@ -263,10 +263,7 @@ public:
     int get_most_used() const { return pos; }
 };
 
-class probe_struct_global {
-    char complement[256];                           // complement
-
-public:
+struct probe_struct_global {
     GB_shell *gb_shell;
     GBDATA   *gb_main;                              // ARBDB interface
     GBDATA   *gb_species_data;
@@ -314,26 +311,6 @@ public:
 
     void setup();
     void cleanup();
-
-    int get_complement(int base) {
-        pt_assert(base >= 0 && base <= 255);
-        if (base<0) GBK_terminate("base<0");
-        if (base>255) GBK_terminate("base>255");
-
-        const int simple = complement[base];
-#define BEHAVIOR
-#if defined(BEHAVIOR)
-        int calc_complement(int base); // prototype
-        int expensive = calc_complement(base);
-        if (simple != expensive) GBK_terminate("simple != expensive");
-#endif
-        return simple;
-    }
-    void complement_probe(char *Probe, int len) {
-        for (int i = 0; i<len; i++) {
-            Probe[i] = get_complement(Probe[i]);
-        }
-    }
 };
 
 extern probe_struct_global psg;

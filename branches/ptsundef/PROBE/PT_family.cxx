@@ -14,6 +14,8 @@
 #include <struct_man.h>
 #include <PT_server_prototypes.h>
 #include "PT_global_defs.h"
+#include "PT_complement.h"
+
 #include <arbdbt.h>
 
 #include <algorithm>
@@ -395,7 +397,7 @@ int find_family(PT_family *ffinder, bytestring *species) {
                 reverse_probe(sequence, sequence_len); // build reverse sequence
                 break;
             case FF_REVERSE_COMPLEMENT:
-                psg.complement_probe(sequence, sequence_len); // build complement sequence
+                complement_probe(sequence, sequence_len); // build complement sequence
                 break;
         }
 
