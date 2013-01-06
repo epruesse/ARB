@@ -326,16 +326,6 @@ inline bool contains_ambiguities(char *oligo, int oligo_len) {
     return false;
 }
 
-inline void complement_sequence(char *seq, int len) {
-    PT_BASES complement[PT_B_MAX];
-    for (PT_BASES b = PT_QU; b<PT_B_MAX; b = PT_BASES(b+1)) { complement[b] = b; }
-
-    std::swap(complement[PT_A], complement[PT_T]);
-    std::swap(complement[PT_C], complement[PT_G]);
-
-    for (int i = 0; i<len; i++) seq[i] = complement[int(seq[i])];
-}
-
 class oligo_comparator {
     int oligo_len;
 public:
@@ -405,7 +395,7 @@ int find_family(PT_family *ffinder, bytestring *species) {
                 reverse_probe(sequence, sequence_len); // build reverse sequence
                 break;
             case FF_REVERSE_COMPLEMENT:
-                complement_sequence(sequence, sequence_len); // build complement sequence
+                psg.complement_probe(sequence, sequence_len); // build complement sequence
                 break;
         }
 

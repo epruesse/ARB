@@ -52,6 +52,7 @@ void PT_build_species_hash(void);
 long PT_abs_2_rel(long pos);
 
 /* PT_main.cxx */
+int calc_complement(int base);
 void PT_init_psg(void);
 void PT_exit_psg(void);
 int server_shutdown(PT_main *pm, aisc_string passwd);
@@ -60,8 +61,6 @@ int ARB_main(int argc, const char *argv[]);
 
 /* PT_match.cxx */
 char *create_reversed_probe(char *probe, int len);
-int PT_complement(int base);
-void complement_probe(char *probe);
 int probe_match(PT_local *locs, aisc_string probestring);
 char *get_match_overlay(PT_probematch *ml);
 bytestring *match_string(PT_local *locs);

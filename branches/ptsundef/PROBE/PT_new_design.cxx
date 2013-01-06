@@ -168,13 +168,13 @@ static void ptnd_calc_quality(PT_pdc *pdc) {
 static double ptnd_check_max_bond(PT_local *locs, char base) {
     //! check the bond val for a probe
 
-    int complement = PT_complement(base);
+    int complement = psg.get_complement(base);
     return locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
 }
 
 double ptnd_check_split(PT_local *locs, char *probe, int pos, char ref) {
     int    base       = probe[pos];
-    int    complement = PT_complement(base);
+    int    complement = psg.get_complement(base);
     double max_bind   = locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
     double new_bind   = locs->bond[(complement-(int)PT_A)*4 + ref-(int)PT_A].val;
 
@@ -317,7 +317,7 @@ char *get_design_info(PT_tprobes *const_tprobe) {
     // probe string
     {
         char *probe  = create_reversed_probe(tprobe->sequence, tprobe->seq_len);
-        complement_probe(probe);
+        psg.complement_probe(probe, tprobe->seq_len);
         probe_2_readable(probe); // convert probe to real ASCII
         p     += sprintf(p, "%-*s |", pdc->probelen, probe);
         free(probe);
