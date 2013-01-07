@@ -254,7 +254,7 @@ struct POS_TREE2 { // pos-tree (stage 2)
 #if defined(ARB_64)
 #define SHORT_CHAIN_HEADER_ELEMS 4
 #else // !defined(ARB_64)
-#define SHORT_CHAIN_HEADER_ELEMS 2
+#define SHORT_CHAIN_HEADER_ELEMS 3
 #endif
 
 #define SHORT_CHAIN_HEADER_FLAG_BIT  (1<<4)
