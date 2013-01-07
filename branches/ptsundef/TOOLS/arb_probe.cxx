@@ -1094,12 +1094,7 @@ void TEST_SLOW_design_probe() {
             "AUCAAGUCGAGCGAUG 16 B-     3   16    3 50.0 48.0    CAUCGCUCGACUUGAU |  1,  1,  1,  2,  2,  2,  3,  3,  3,  3,  3,  4,  4,  4,  4,  5,  5, 12, 13, 13,\n"
             "GUCGAGCGAUGAAGUU 16 B+     2   21    3 50.0 48.0    AACUUCAUCGCUCGAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  2,  2,  2,  3,  3,\n"
             "AGUCGAGCGAUGAAGU 16 B+     1   20    3 50.0 48.0    ACUUCAUCGCUCGACU |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  2,  2,  2,  2,  2,  3,  3,  3,  4,  4,\n"
-#if defined(NDEBUG) && !defined(ARB_64)
-            // 32bit NDEBUG-version produces different result: 
             "GAUCAAGUCGAGCGAU 16 B-     4   15    3 50.0 48.0    AUCGCUCGACUUGAUC |  0,  2,  2,  2,  2,  5,  5,  5, 13, 15, 15, 15, 24, 25, 25, 25, 33, 35, 35, 42,\n"
-#else // !defined(DEBUG)
-            "GAUCAAGUCGAGCGAU 16 B-     4   15    3 50.0 48.0    AUCGCUCGACUUGAUC |  0,  2,  2,  2,  2,  5,  5,  5, 13, 15, 15, 15, 24, 25, 25, 25, 33, 35, 35, 42,\n"
-#endif
             "UGAUCAAGUCGAGCGA 16 B-     5   14    3 50.0 48.0    UCGCUCGACUUGAUCA |  0,  9,  9,  9, 18, 18, 18, 18, 19, 28, 28, 29, 38, 38, 38, 38, 48, 48, 48, 48,\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
