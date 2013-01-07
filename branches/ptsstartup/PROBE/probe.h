@@ -322,7 +322,6 @@ public:
 };
 
 class probe_struct_global {
-    char complement[256];                           // complement
     Stage stage;
 
     union {
@@ -369,17 +368,6 @@ public:
 
     void enter_stage(Stage stage_);
     Stage get_stage() const { return stage; }
-
-    int get_complement(int base) {
-        pt_assert(base >= 0 && base <= 256);
-        return complement[base];
-    }
-
-    void complement_probe(char *Probe, int len) {
-        for (int i = 0; i<len; i++) {
-            Probe[i] = get_complement(Probe[i]);
-        }
-    }
 
     POS_TREE1*& TREE_ROOT1() { pt_assert(stage == STAGE1); return pt.p1; }
     POS_TREE2*& TREE_ROOT2() { pt_assert(stage == STAGE2); return pt.p2; }

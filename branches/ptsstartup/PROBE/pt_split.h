@@ -15,6 +15,9 @@
 #ifndef PROBE_H
 #include "probe.h"
 #endif
+#ifndef PT_COMPLEMENT_H
+#include "PT_complement.h"
+#endif
 
 class Splits {
     bool valid;
@@ -23,7 +26,7 @@ class Splits {
     static double calc_split(const PT_local *locs, char base, char ref) {
         pt_assert(is_valid_base(base) && is_valid_base(ref));
 
-        int    complement = psg.get_complement(base);
+        int    complement = get_complement(base);
         double max_bind   = locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
         double new_bind   = locs->bond[(complement-(int)PT_A)*4 + ref-(int)PT_A].val;
 

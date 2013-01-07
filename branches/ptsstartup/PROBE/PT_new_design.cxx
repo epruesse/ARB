@@ -11,9 +11,9 @@
 
 #include "pt_split.h"
 #include <PT_server_prototypes.h>
+
 #include <struct_man.h>
 #include "probe_tree.h"
-#include "pt_prototypes.h"
 #include "PT_prefixIter.h"
 
 #include <arb_str.h>
@@ -22,6 +22,16 @@
 #include <arb_strbuf.h>
 
 #include <climits>
+
+int Complement::calc_complement(int base) {
+    switch (base) {
+        case PT_A: return PT_T;
+        case PT_C: return PT_G;
+        case PT_G: return PT_C;
+        case PT_T: return PT_A;
+        default:   return base;
+    }
+}
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_tprobes *tprobe)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(tprobe)); }
@@ -165,10 +175,9 @@ static void ptnd_calc_quality(PT_pdc *pdc) {
 static double ptnd_check_max_bond(const PT_local *locs, char base) {
     //! check the bond val for a probe
 
-    int complement = psg.get_complement(base);
+    int complement = get_complement(base);
     return locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
 }
-
 
 // ----------------------------------
 //      primary search for probes
@@ -250,7 +259,7 @@ char *get_design_info(const PT_tprobes *tprobe) {
         strcpy(probe, tprobe->sequence);
         probe_2_readable(probe, pdc->probelen); // convert probe to real ASCII
         sprintf(p, "%-*s", pdc->probelen+1, probe);
-        p           += strlen(p);
+        p += strlen(p);
     }
 
     {
@@ -304,7 +313,7 @@ char *get_design_info(const PT_tprobes *tprobe) {
     // probe string
     {
         char *probe  = create_reversed_probe(tprobe->sequence, tprobe->seq_len);
-        psg.complement_probe(probe, tprobe->seq_len);
+        complement_probe(probe, tprobe->seq_len);
         probe_2_readable(probe, tprobe->seq_len); // convert probe to real ASCII
         p     += sprintf(p, "%-*s |", pdc->probelen, probe);
         free(probe);

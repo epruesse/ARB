@@ -119,6 +119,7 @@ PT_etc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_family.o: probe.h
 PT_family.o: probe_tree.h
+PT_family.o: PT_complement.h
 PT_family.o: PT_global_defs.h
 PT_family.o: pt_prototypes.h
 PT_family.o: PT_rangeCheck.h
@@ -244,6 +245,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
 
 PT_match.o: probe.h
 PT_match.o: probe_tree.h
+PT_match.o: PT_complement.h
 PT_match.o: pt_prototypes.h
 PT_match.o: pt_split.h
 PT_match.o: PT_tools.h
@@ -275,6 +277,7 @@ PT_match.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 PT_new_design.o: probe.h
 PT_new_design.o: probe_tree.h
+PT_new_design.o: PT_complement.h
 PT_new_design.o: PT_prefixIter.h
 PT_new_design.o: pt_prototypes.h
 PT_new_design.o: pt_split.h
