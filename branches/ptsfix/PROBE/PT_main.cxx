@@ -96,9 +96,6 @@ void probe_struct_global::setup() {
     reversed = 0;
 
     pos_to_weight = NULL;
-    for (size_t i=0; i<ARRAY_ELEMS(complement); i++) {
-        complement[i] = calc_complement(i);
-    }
 
     height = 0;
 

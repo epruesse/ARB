@@ -14,6 +14,7 @@
 
 #include "probe_tree.h"
 #include "pt_prototypes.h"
+#include "PT_complement.h"
 
 #include <arb_strbuf.h>
 #include <arb_defs.h>
@@ -31,7 +32,7 @@ class MismatchWeights {
         pt_assert(is_std_base(probe));
         pt_assert(is_std_base(seq));
 
-        int complement = psg.get_complement(probe);
+        int complement = get_complement(probe);
 
         int rowIdx = (complement-int(PT_A))*4;
         int maxIdx = rowIdx + probe-(int)PT_A;
@@ -445,7 +446,7 @@ int probe_match(PT_local * locs, aisc_string probestring) {
     }
 
     if (locs->pm_complement) {
-        psg.complement_probe(probestring, probe_len);
+        complement_probe(probestring, probe_len);
     }
     psg.reversed = 0;
 
@@ -463,7 +464,7 @@ int probe_match(PT_local * locs, aisc_string probestring) {
     if (locs->pm_reversed) {
         psg.reversed  = 1;
         char *rev_pro = create_reversed_probe(probestring, probe_len);
-        psg.complement_probe(rev_pro, probe_len);
+        complement_probe(rev_pro, probe_len);
         freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
 
         Mismatches rev_mismatch(req);
