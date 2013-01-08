@@ -128,6 +128,10 @@ public:
      */
     AW_cb_struct **modes_f_callbacks;
     
+    /** Contains the last callback struct created by AW_window::callback(). */
+    AW_cb_struct *callback; 
+    
+    
     /**
      * Adjustment of the horizontal scrollbar.
      * @note might not be present in every window. Check for NULL before use.
@@ -142,7 +146,8 @@ public:
     
     AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL), help_menu(NULL),
                       mode_menu(NULL), radio_last(NULL), radio_box(NULL), number_of_modes(0), 
-                      popup_cb(NULL), focus_cb(NULL),modes_f_callbacks(NULL), hAdjustment(NULL),
+                      popup_cb(NULL), focus_cb(NULL),modes_f_callbacks(NULL), callback(NULL),
+                      hAdjustment(NULL),
                       vAdjustment(NULL) {} 
 };
 
@@ -487,21 +492,23 @@ void AW_window::calculate_scrollbars(){
 }
 
 void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    _callback = new AW_cb_struct(this, (AW_CB)f, cd1, cd2);
+    FIXME("Callback newed every time, possible memory leak");
+    prvt->callback = new AW_cb_struct(this, (AW_CB)f, cd1, cd2);
 }
 
 void AW_window::callback(void (*f)(AW_window*)){
-    _callback = new AW_cb_struct(this, (AW_CB)f);
+    FIXME("Callback newed every time, possible memory leak");
+    prvt->callback = new AW_cb_struct(this, (AW_CB)f);
 }
 
 
 void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
     FIXME("Callback newed every time, possible memory leak");
-    _callback = new AW_cb_struct(this, (AW_CB)f, cd1);
+    prvt->callback = new AW_cb_struct(this, (AW_CB)f, cd1);
 }
 
 void AW_window::callback(AW_cb_struct * /* owner */ awcbs) {
-    _callback = awcbs;
+    prvt->callback = awcbs;
 }
 
 
@@ -810,18 +817,18 @@ void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
 }
 
 void AW_window::_set_activate_callback(GtkWidget *widget) {
-    if (_callback && (long)_callback != 1) {
-        if (!_callback->help_text && _at.helptext_for_next_button) {
-            _callback->help_text = _at.helptext_for_next_button;
+    if (prvt->callback && (long)prvt->callback != 1) {
+        if (!prvt->callback->help_text && _at.helptext_for_next_button) {
+            prvt->callback->help_text = _at.helptext_for_next_button;
             _at.helptext_for_next_button = 0;
         }
         
         FIXME("this assumes that widget is a button");
         FIXME("investigate why this code works but the commented one does not");
-        g_signal_connect((gpointer)widget, "clicked", G_CALLBACK(AW_server_callback), (gpointer)_callback);
+        g_signal_connect((gpointer)widget, "clicked", G_CALLBACK(AW_server_callback), (gpointer)prvt->callback);
         //g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(AW_server_callback), G_OBJECT(_callback));
     }
-    _callback = NULL;
+    prvt->callback = NULL;
 }
 
 int AW_window::calculate_string_width(int columns) const {
@@ -864,14 +871,14 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     printf("x_for_next_button=%i y_for_next_button=%i\n", _at.x_for_next_button, _at.y_for_next_button);
 #endif // DUMP_BUTTON_CREATION
 
-    if (_callback && ((long)_callback != 1))
+    if (prvt->callback && ((long)prvt->callback != 1))
     {
         if (macro_name) {
-            _callback->id = GBS_global_string_copy("%s/%s", this->window_defaults_name, macro_name);
-            get_root()->define_remote_command(_callback);
+            prvt->callback->id = GBS_global_string_copy("%s/%s", this->window_defaults_name, macro_name);
+            get_root()->define_remote_command(prvt->callback);
         }
         else {
-            _callback->id = 0;
+            prvt->callback->id = 0;
         }
     }
 
@@ -923,7 +930,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
             GB_ERROR err = detect_bitmap_size(buttonlabel+1, &width, &height);
 
             if (!err) {
-                int gpadding = _callback ? BUTTON_GRAPHIC_PADDING : FLAT_GRAPHIC_PADDING;
+                int gpadding = prvt->callback ? BUTTON_GRAPHIC_PADDING : FLAT_GRAPHIC_PADDING;
 
                 width_of_button  = width+gpadding;
                 height_of_button = height+gpadding;
@@ -976,7 +983,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     }
 
     // correct label Y position
-    if (_callback) {            // only if button is a real 3D-button
+    if (prvt->callback) {            // only if button is a real 3D-button
         y_label += (height_of_button-height_of_label)/2;
     }
 
@@ -1023,7 +1030,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     GtkWidget* buttonOrLabel  = 0;
 
     {
-        if (_callback) {//button
+        if (prvt->callback) {//button
 
             buttonOrLabel = gtk_button_new();
             this->_set_activate_callback(buttonOrLabel);
@@ -1095,12 +1102,12 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         gtk_widget_show(buttonOrLabel);
 
 
-        //if (!_at.attach_any || !_callback) args.add(XmNrecomputeSize, false);
+        //if (!_at.attach_any || !prvt->_callback) args.add(XmNrecomputeSize, false);
 
 
         if (_at.attach_any) aw_attach_widget(buttonOrLabel, _at);
 
-        if (_callback) {
+        if (prvt->callback) {
             root->make_sensitive(buttonOrLabel, _at.widget_mask);
         }
         else {
@@ -1167,7 +1174,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 }
 
 void AW_window::unset_at_commands() {
-    _callback   = NULL;
+    prvt->callback   = NULL;
     _d_callback = NULL;
 
     _at.correct_for_at_center = 0;
@@ -1383,7 +1390,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     free(str);
 
     // user-own callback
-    cbs = _callback;
+    cbs = prvt->callback;
 
     // callback for enter
     vui = new AW_varUpdateInfo(this, textField, AW_WIDGET_INPUT_FIELD, vs, cbs);
@@ -1766,18 +1773,6 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     
     aw_assert(var_name); // @@@ case where var_name == NULL is relict from multi-selection-list (not used; removed)
     vs = root->awar(var_name);
-    //GType type; // gtk type for the list column
-    
-//    if(NULL == vs) 
-//    {
-//        type = G_TYPE_STRING;
-//    }
-//    else
-//    {
-//        type = convert_aw_type_to_gtk_type(vs->variable_type);
-//    }
-    
-//    aw_assert(type != G_TYPE_NONE);
     
     tree = gtk_tree_view_new();
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
@@ -1789,10 +1784,8 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(store));
 
     
-    //    Widget         scrolledWindowList; // @@@ fix locals
-//    Widget         scrolledList;
-    AW_varUpdateInfo *vui;
-    AW_cb_struct  *cbs;
+    AW_varUpdateInfo *vui = 0;
+    AW_cb_struct  *cbs = 0;
     
     int width_of_list;
     int height_of_list;
@@ -1879,9 +1872,9 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 
 
     // user-own callback
-    cbs = _callback;
+    cbs = prvt->callback;
 
-    FIXME("enter callback not implemented");
+    
     // callback for enter
     if (vs) {
         vui = new AW_varUpdateInfo(this, tree, AW_WIDGET_SELECTION_LIST, vs, cbs);
@@ -2602,7 +2595,6 @@ AW_window::AW_window() {
     color_table = NULL;
     slider_pos_vertical = 0;
     slider_pos_horizontal = 0;
-    
     picture = new AW_screen_area;
     reset_scrolled_picture_size();
     

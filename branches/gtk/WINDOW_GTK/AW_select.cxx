@@ -567,7 +567,7 @@ void AW_selection_list::refresh() {
 //                      NULL);
          gtk_tree_selection_select_iter(GTK_TREE_SELECTION(gtk_tree_view_get_selection(select_list_widget)), &iter);
 
-        FIXME("position adjustment not implemented."); //NO why XmListSetPos is called here....
+        FIXME("position adjustment not implemented."); //NO IDEA why XmListSetPos is called here....
 //        if (pos < top) {
 //            if (pos > 1) pos --;
 //            XmListSetPos(select_list_widget, pos);

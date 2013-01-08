@@ -299,8 +299,7 @@ public:
     // ************ This is not the public section *************
     //FIXME move aw_at into pimpl
     //FIXME make _at private. Right now some global functions want to access it. Remove those global functions.
-    AW_at _at; /*< Some kind of cursor? FIXME */
-    AW_cb_struct    *_callback; /**< Contains the last callback struct created by AW_window::callback().  */
+    AW_at _at; /** < Defines the next position at which something will be inserted into the window.  */
     AW_cb_struct    *_d_callback; //FIXME what is this?
 
     AW_window();
