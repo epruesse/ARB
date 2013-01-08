@@ -70,7 +70,7 @@ ALLOWED_GCC_4xx_VERSIONS=\
 	4.4 4.4.1 4.4.3 4.4.5 \
 	4.5.2 \
 	4.6 4.6.1 \
-	4.7.1 
+	4.7 4.7.1 4.7.2
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
@@ -315,10 +315,12 @@ cflags += -fstrict-aliasing# gcc 3.4
 
 #---------------------- GTK 
 
+ifeq ($(GTK),1)
 	GTKCFLAGS:= $(shell pkg-config --cflags gtk+-2.0) -fPIC
 	GTKLIBS:= $(shell pkg-config --libs gtk+-2.0 | sed 's/-pthread//')
 
 	cflags += $(GTKCFLAGS)
+endif
 
 #---------------------- X11 location
 
@@ -850,7 +852,11 @@ ARCHS_AP_TREE = \
 
 link_core:	core
 link_db:	db link_core
-link_aw:	aw link_db
+ifeq ($(GTK),1)
+  link_aw:	aw_gtk link_db
+else
+  link_aw:	aw link_db
+endif
 link_awt:	awt link_aw
 
 #***************************************************************************************
