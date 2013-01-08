@@ -70,7 +70,7 @@ ALLOWED_GCC_4xx_VERSIONS=\
 	4.4.1       4.4.3       4.4.5 4.4.6 \
 	      4.5.2 \
 	4.6.1       4.6.3 \
-	4.7.1 
+	4.7.1 4.7.2
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
