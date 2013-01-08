@@ -11,17 +11,20 @@
 #ifndef PHYLO_HXX
 #define PHYLO_HXX
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
+#ifndef PH_FILTER_HXX
+#include "PH_filter.hxx"
 #endif
 #ifndef AP_MATRIX_HXX
 #include <AP_matrix.hxx>
 #endif
-#ifndef PH_FILTER_HXX
-#include "PH_filter.hxx"
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
 
 #define ph_assert(cond) arb_assert(cond)
@@ -104,14 +107,33 @@ enum PH_TRANSFORMATION {
 // ---------------------------
 //      class definitions
 
-class PH_root {
-private:
-    char    *use;
+class AWT_graphic;
+
+class PH_root : virtual Noncopyable {
+    char        *use;
+    AWT_graphic *display;
+    GBDATA      *gb_main;
+
+    static PH_root *SINGLETON;
 
 public:
-    class AWT_graphic *display;
+
+    PH_root()
+        : use(NULL),
+          display(NULL),
+          gb_main(NULL)
+    {
+        ph_assert(!SINGLETON);
+        SINGLETON = this;
+    }
+    ~PH_root() {
+        ph_assert(this == SINGLETON);
+        SINGLETON = NULL;
+        free(use);
+    }
+
     GB_ERROR open(const char *db_server);
-    GBDATA *gb_main;
+    GBDATA *get_gb_main() const { ph_assert(gb_main); return gb_main; }
 };
 
 

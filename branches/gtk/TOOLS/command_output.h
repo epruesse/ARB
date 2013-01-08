@@ -116,29 +116,29 @@ public:
 #define TEST_OUTPUT_EQUALS(cmd, expected_std, expected_err)                                             \
     do {                                                                                                \
         bool try_valgrind = (expected_err == NULL);                                                     \
-        TEST_EXPECT(CommandOutput(cmd, try_valgrind).Equals(expected_std, expected_err));               \
+        TEST_EXPECTATION(CommandOutput(cmd, try_valgrind).Equals(expected_std, expected_err));               \
     } while(0)
 
 #define TEST_OUTPUT_EQUALS__BROKEN(cmd, expected_std, expected_err)                                     \
     do {                                                                                                \
         bool try_valgrind = (expected_err == NULL);                                                     \
-        TEST_EXPECT__BROKEN(CommandOutput(cmd, try_valgrind).Equals(expected_std, expected_err));       \
+        TEST_EXPECTATION__BROKEN(CommandOutput(cmd, try_valgrind).Equals(expected_std, expected_err));       \
     } while(0)
 
 #define TEST_OUTPUT_CONTAINS(cmd, expected_std, expected_err)                                           \
     do {                                                                                                \
         bool try_valgrind = (expected_err == NULL);                                                     \
-        TEST_EXPECT(CommandOutput(cmd, try_valgrind).Contains(expected_std, expected_err));             \
+        TEST_EXPECTATION(CommandOutput(cmd, try_valgrind).Contains(expected_std, expected_err));             \
     } while(0)
 
 #define TEST_OUTPUT_CONTAINS__BROKEN(cmd, expected_std, expected_err)                                   \
     do {                                                                                                \
         bool try_valgrind = (expected_err == NULL);                                                     \
-        TEST_EXPECT__BROKEN(CommandOutput(cmd, try_valgrind).Contains(expected_std, expected_err));     \
+        TEST_EXPECTATION__BROKEN(CommandOutput(cmd, try_valgrind).Contains(expected_std, expected_err));     \
     } while(0)
 
-#define TEST_OUTPUT_HAS_CHECKSUM(cmd,checksum)         TEST_EXPECT        (CommandOutput(cmd, false).has_checksum(checksum))
-#define TEST_OUTPUT_HAS_CHECKSUM__BROKEN(cmd,checksum) TEST_EXPECT__BROKEN(CommandOutput(cmd, false).has_checksum(checksum))
+#define TEST_OUTPUT_HAS_CHECKSUM(cmd,checksum)         TEST_EXPECTATION        (CommandOutput(cmd, false).has_checksum(checksum))
+#define TEST_OUTPUT_HAS_CHECKSUM__BROKEN(cmd,checksum) TEST_EXPECTATION__BROKEN(CommandOutput(cmd, false).has_checksum(checksum))
 
 #define TEST_STDOUT_EQUALS(cmd, expected_std) TEST_OUTPUT_EQUALS(cmd, expected_std, (const char *)NULL)
 #define TEST_STDERR_EQUALS(cmd, expected_err) TEST_OUTPUT_EQUALS(cmd, (const char *)NULL, expected_err)

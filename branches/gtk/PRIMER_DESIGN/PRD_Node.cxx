@@ -57,7 +57,7 @@ Node::~Node ()
 // recursively print Node and its children
 //
 void Node::print () {
-  printf ("[%c,%li,%li,%i (", base, last_base_index, offset, child_bits);
+  printf ("[%c,%li,%li,%u (", base, last_base_index, offset, child_bits);
   if (child[0]) { child[0]->print(); printf(","); }
   if (child[1]) { child[1]->print(); printf(","); }
   if (child[2]) { child[2]->print(); printf(","); }

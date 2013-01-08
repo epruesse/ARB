@@ -21,6 +21,7 @@
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
 #include <aw_select.hxx>
+#include <aw_advice.hxx>
 
 #include <arb_str.h>
 
@@ -1033,6 +1034,7 @@ AW_root *AWT_create_root(const char *properties, const char *program) {
 #if defined(DEBUG)
     AWT_announce_properties_to_browser(AW_ROOT_DEFAULT, properties);
 #endif // DEBUG
+    init_Advisor(aw_root);
     return aw_root;
 }
 

@@ -335,10 +335,7 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
     if (!error && gb_seq) {
         SequenceIterator *i          = 0;
         PRD_Sequence_Pos  length     = 0;
-        PRD_Sequence_Pos  left_min, left_max;
-        PRD_Sequence_Pos  right_min, right_max;
         PRD_Sequence_Pos  add_offset = 0;           // offset to add to positions (used for genes)
-        long int          dist_min, dist_max;
         char             *sequence   = 0;
 
         if (gb_gene) {
@@ -362,17 +359,21 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
         }
 
         if (!error) {
+            long int dist_min;
+            long int dist_max;
+
             // find reasonable parameters
             // left pos (first base from start)
 
             long int left_len = root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->read_int();
             if (left_len == 0 || left_len<0) left_len = 100;
 
-            i                     = new SequenceIterator(sequence, 0, SequenceIterator::IGNORE, left_len, SequenceIterator::FORWARD);
-            i->nextBase();          // find first base from start
-            left_min              = i->pos; // store pos. of first base
-            while (i->nextBase() != SequenceIterator::EOS) ;  // step to 'left_len'th base from start
-            left_max              = i->pos; // store pos. of 'left_len'th base
+            i = new SequenceIterator(sequence, 0, SequenceIterator::IGNORE, left_len, SequenceIterator::FORWARD);
+
+            i->nextBase();                                        // find first base from start
+            PRD_Sequence_Pos left_min = i->pos;                   // store pos. of first base
+            while (i->nextBase() != SequenceIterator::EOS) ;      // step to 'left_len'th base from start
+            PRD_Sequence_Pos left_max = i->pos;                   // store pos. of 'left_len'th base
 
             root->awar(AWAR_PRIMER_DESIGN_LEFT_POS)->write_int(left_min+add_offset);
             root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->write_int(left_len);
@@ -382,10 +383,11 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
 
             // right pos ('right_len'th base from end)
             i->restart(length, 0, right_len, SequenceIterator::BACKWARD);
-            i->nextBase();                  // find last base
-            right_max             = i->pos; // store pos. of last base
-            while (i->nextBase() != SequenceIterator::EOS) ;  // step to 'right_len'th base from end
-            right_min             = i->pos; // store pos of 'right_len'th base from end
+
+            i->nextBase();                                   // find last base
+            PRD_Sequence_Pos right_max = i->pos;             // store pos. of last base
+            while (i->nextBase() != SequenceIterator::EOS) ; // step to 'right_len'th base from end
+            PRD_Sequence_Pos right_min = i->pos;             // store pos of 'right_len'th base from end
 
             root->awar(AWAR_PRIMER_DESIGN_RIGHT_POS)->write_int(right_min+add_offset);
             root->awar(AWAR_PRIMER_DESIGN_RIGHT_LENGTH)->write_int(right_len);
@@ -462,17 +464,15 @@ static void primer_design_restore_config(AW_window *aww, const char *stored_stri
 }
 
 AW_window *create_primer_design_window(AW_root *root, AW_CL cl_gb_main) {
-    GB_ERROR  error   = 0;
-    GBDATA   *gb_main = (GBDATA*)cl_gb_main;
-    bool      is_genome_db;
+    GBDATA *gb_main = (GBDATA*)cl_gb_main;
+    bool    is_genome_db;
     {
         GB_transaction  dummy(gb_main);
         char           *selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();
         GBDATA         *gb_species       = GBT_find_species(gb_main, selected_species);
 
         if (!gb_species) {
-            error = "You have to select a species!";
-            aw_message(error);
+            aw_message("You have to select a species!");
         }
 
         is_genome_db = GEN_is_genome_db(gb_main, -1);

@@ -140,8 +140,8 @@ class ED4_SearchResults : virtual Noncopyable {
     int is_list() const { return arraySize==0; }
     int is_array() const { return arraySize>0; }
 
-    void to_array() const;      // ensures that result is in array-format (used to improve search performance)
-    void to_list() const;       // ensures that result is in list-format (used to improve insert performance)
+    void to_array();      // ensures that result is in array-format (used to improve search performance)
+    void to_list();       // ensures that result is in list-format (used to improve insert performance)
 
 public:
 

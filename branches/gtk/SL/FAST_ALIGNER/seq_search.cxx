@@ -29,8 +29,7 @@ inline int check_equal(int o, int n) {
 }
 #endif
 
-__ATTR__FORMAT(1) static void messagef(const char *format, ...)
-{
+__ATTR__FORMAT(1) static void messagef(const char *format, ...) {
     va_list argp;
     char buffer[MESSAGE_BUFFERSIZE];
 
@@ -54,8 +53,8 @@ CompactedSequence::CompactedSequence(const char *Text, int Length, const char *n
     : basepos(Text, Length, pred_is_ali_gap),
       myName(strdup(name)),
       myStartOffset(0),  // corrected at end of ctor (otherwise calculations below go wrong)
-      dots(NULL),
-      referred(1)
+      dots(NULL)
+      // referred(1)
 {
     fa_assert(Length>0);
 
@@ -91,27 +90,23 @@ CompactedSequence::CompactedSequence(const char *Text, int Length, const char *n
 }
 
 CompactedSequence::~CompactedSequence() {
-    fa_assert(referred==0);
     delete [] myText;
     delete[] gapsBeforePosition;
     free(myName);
     delete dots;
 }
 
-FastAlignInsertion::~FastAlignInsertion()
-{
+FastAlignInsertion::~FastAlignInsertion() {
     if (myNext) delete myNext;
 }
 
-FastSearchSequence::FastSearchSequence(const CompactedSubSequence& seq)
-{
+FastSearchSequence::FastSearchSequence(const CompactedSubSequence& seq) {
     memset((char*)myOffset, 0, MAX_TRIPLES*sizeof(*myOffset));
     SequencePosition triple(seq);
 
     mySequence = &seq;
 
-    while (triple.rightOf()>=3) // enough text for triple?
-    {
+    while (triple.rightOf()>=3) { // enough text for triple?
         int tidx = triple_index(triple.text());
         TripleOffset *top = new TripleOffset(triple.leftOf(), myOffset[tidx]);
 
@@ -126,8 +121,7 @@ FastSearchSequence::~FastSearchSequence() {
     }
 }
 
-void AlignBuffer::correctUnalignedPositions()
-{
+void AlignBuffer::correctUnalignedPositions() {
     long off  = 0;
     long rest = used;
 
@@ -151,18 +145,14 @@ void AlignBuffer::correctUnalignedPositions()
         if (b_off<=0) before = LONG_MAX;
         if (a_off>=used) after = LONG_MAX;
 
-        if (before<after)               // move to the left
-        {
-            if (before)
-            {
+        if (before<after) { // move to the left
+            if (before) {
                 long to = from-before;
                 while (cnt--) moveUnaligned(from++, to++);
             }
         }
-        else if (after!=LONG_MAX)       // move to the right
-        {
-            if (after)
-            {
+        else if (after!=LONG_MAX) { // move to the right
+            if (after) {
                 from += cnt-1;          // copy from right to left!
                 long to = from+after;
 
@@ -175,23 +165,20 @@ void AlignBuffer::correctUnalignedPositions()
     }
 }
 
-void AlignBuffer::restoreDots(CompactedSubSequence& slaveSequence)
-{
+void AlignBuffer::restoreDots(CompactedSubSequence& slaveSequence) {
     long rest = used;
     long off = 0;               // real position in sequence
     long count = 0;             // # of bases left of this position
     long nextDot = slaveSequence.firstDotPosition();
 
-    while (nextDot!=-1 && rest)
-    {
+    while (nextDot!=-1 && rest) {
         unsigned char gap = myBuffer[off];
         if (gap=='-' || gap=='.') {
             if (nextDot==count) {
                 myBuffer[off] = '.';
             }
         }
-        else
-        {
+        else {
             count++;
             if (nextDot==count) {
                 messagef("Couldn't restore dots at offset %li of '%s' (gap removed by aligner)",
@@ -261,11 +248,11 @@ struct bind_css {
     }
 };
 
-#define TEST_ASSERT_CSS_SELF_REFLEXIVE(css) do {        \
+#define TEST_EXPECT_CSS_SELF_REFLEXIVE(css) do {        \
         for (int b = 0; b<css.length(); ++b) {          \
             int x = css.expdPosition(b);                \
             int c = css.compPosition(x);                \
-            TEST_ASSERT_EQUAL(c,b);                     \
+            TEST_EXPECT_EQUAL(c,b);                     \
         }                                               \
     } while(0)
 
@@ -273,7 +260,7 @@ struct bind_css {
     int len  = strlen(in);                                              \
     fprintf(stderr, "in='%s'\n", in);                                   \
     CompactedSubSequence css(in, len, "noname", offset);                \
-    TEST_ASSERT_CSS_SELF_REFLEXIVE(css);                                \
+    TEST_EXPECT_CSS_SELF_REFLEXIVE(css);                                \
     bind_css bound_css(css)
 
 #define GEN_COMP_EXPD()                                                 \
@@ -306,19 +293,19 @@ struct bind_css {
     
 #define COMP_EXPD_CHECK(exp_comp,exp_expd)                              \
     GEN_COMP_EXPD();                                                    \
-    TEST_ASSERT_EQUAL(comp, exp_comp);                                  \
-    TEST_ASSERT_EQUAL(expd, exp_expd);                                  \
+    TEST_EXPECT_EQUAL(comp, exp_comp);                                  \
+    TEST_EXPECT_EQUAL(expd, exp_expd);                                  \
     FREE_COMP_EXPD()
 
 #define GAPS_CHECK(exp_before,exp_after)                                \
     GEN_GAPS();                                                         \
-    TEST_ASSERT_EQUAL(gaps_before, exp_before);                         \
-    TEST_ASSERT_EQUAL(gaps_after, exp_after);                           \
+    TEST_EXPECT_EQUAL(gaps_before, exp_before);                         \
+    TEST_EXPECT_EQUAL(gaps_after, exp_after);                           \
     FREE_GAPS()
 
 #define DOTS_CHECK(exp_dots)                                            \
     GEN_DOTS();                                                         \
-    TEST_ASSERT_EQUAL(dots, exp_dots);                                  \
+    TEST_EXPECT_EQUAL(dots, exp_dots);                                  \
     free(dots)
 
 // ------------------------------------------------------------
@@ -346,15 +333,15 @@ struct bind_css {
 #define TEST_CS_TEXT(in,exp_text) do {                                  \
         CSS_COMMON(in, 0);                                              \
         GEN_TEXT(in);                                                   \
-        TEST_ASSERT_EQUAL(text, exp_text);                              \
+        TEST_EXPECT_EQUAL(text, exp_text);                              \
         free(text);                                                     \
     } while(0)
 
 #define TEST_CS_CBROKN(in,exp_comp,exp_expd) do {                       \
         CSS_COMMON(in, 0);                                              \
         GEN_COMP_EXPD();                                                \
-        TEST_ASSERT_EQUAL__BROKEN(comp, exp_comp);                      \
-        TEST_ASSERT_EQUAL(expd, exp_expd);                              \
+        TEST_EXPECT_EQUAL__BROKEN(comp, exp_comp);                      \
+        TEST_EXPECT_EQUAL(expd, exp_expd);                              \
         FREE_COMP_EXPD();                                               \
     } while(0)
 

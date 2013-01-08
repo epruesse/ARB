@@ -337,34 +337,33 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
 
     gb_assert(gbd->flags.temporary==0);
 
-    if (type==GB_DB)    // CONTAINER
-    {
-        GBCONTAINER *gbc = (GBCONTAINER*)gbd, gbccopy = *gbc;
-        long headeroffset, ifsoffset;
+    if (type==GB_DB) { // CONTAINER
+        GBCONTAINER *gbc     = (GBCONTAINER*)gbd;
+        GBCONTAINER  gbccopy = *gbc;
+
+        long headeroffset;
+        long ifsoffset;
 
         // header
 
         {
-            gb_header_list *header, *headercopy;
+            gb_header_list *header        = GB_DATA_LIST_HEADER(gbc->d);
             long            headermemsize = ALIGN(gbc->d.headermemsize*sizeof(*header));
-            int             item, nitems  = gbc->d.nheader;
+            int             nitems        = gbc->d.nheader;
 
             headeroffset = *offset;
-            header       = GB_DATA_LIST_HEADER(gbc->d);
 
             gb_assert(PTR_DIFF(&(header[1]), &(header[0])) == sizeof(*header)); // @@@@
 
             if (headermemsize) {     // if container is non-empty
-
                 if (out) {
-                    int valid  = 0;                 // no of non-temporary items
-                    headercopy = (gb_header_list*) malloc(headermemsize);
+                    int             valid      = 0; // no of non-temporary items
+                    gb_header_list *headercopy = (gb_header_list*) malloc(headermemsize);
 
                     COMPILE_ASSERT(sizeof(*headercopy) == ALIGN(sizeof(*headercopy)));
                     memset(headercopy, 0x0, headermemsize);
 
-                    for (item=0; item<nitems; item++)
-                    {
+                    for (int item = 0; item<nitems; item++) {
                         GBDATA *gbd2 = GB_HEADER_LIST_GBD(header[item]);
                         long hs_offset;
 
@@ -396,8 +395,7 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
                 }
                 else {                              // Calc new indices and size of header
                     int valid = 0;                  // no of non-temporary items
-                    for (item=0; item<nitems; item++)
-                    {
+                    for (int item = 0; item<nitems; item++) {
                         GBDATA *gbd2 = GB_HEADER_LIST_GBD(header[item]);
                         gbdata_offset *dof;
                         if (!gbd2 || gbd2->flags.temporary) continue;
@@ -450,8 +448,7 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
             *offset += gbccopy_size;
         }
     }
-    else        // GBDATA
-    {
+    else { // GBDATA
         int     ex = gbd->flags2.extern_data;
         GBDATA  gbdcopy = *gbd; // make copy to avoid change of mem
 
@@ -626,7 +623,7 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
         gb_assert(ADMAP_ID_LEN <= strlen(ADMAP_ID));
 
         if (!writeError) {
-            IF_DEBUG(long calcOffset=)
+            IF_ASSERTION_USED(long calcOffset=)
                 calcGbdOffsets(Main, gb_gbk);
 
             gb_map_header mheader;
@@ -646,7 +643,7 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
             gb_assert(GB_FATHER(Main->data) == Main->dummy_father);
             SET_GB_FATHER(Main->data, NULL);
     
-            IF_DEBUG(long writeOffset =)
+            IF_ASSERTION_USED(long writeOffset =)
                 writeGbdByKey(Main, gb_gbk, out, main_idx_4_save);
             SET_GB_FATHER(Main->data, Main->dummy_father);
 
@@ -654,8 +651,6 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
 
             freeGbdByKey(Main, gb_gbk);
             gb_gbk = NULL;
-
-            if (fclose(out) != 0) writeError = true;
 
             {
                 GB_MAIN_IDX org_main_idx     = Main->dummy_father->main_idx;
@@ -665,6 +660,8 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
             }
         }
 
+        if (out && fclose(out) != 0) writeError = true;
+        
         if (writeError) {
             error = GB_IO_error("saving fastloadfile", path);
             GB_unlink_or_warn(path, &error);

@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "ntree.hxx"
 #include "nt_internal.h"
 
 #include <awt_sel_boxes.hxx>
@@ -15,7 +16,6 @@
 #include <AP_codon_table.hxx>
 #include <AP_pro_a_nucs.hxx>
 #include <aw_awars.hxx>
-#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <aw_msg.hxx>
@@ -25,8 +25,6 @@
 #include <arb_defs.h>
 
 #define nt_assert(bed) arb_assert(bed)
-
-extern GBDATA *GLOBAL_gb_main;
 
 static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, int selected_startpos,
                         bool    translate_all, const char *ali_source, const char *ali_dest)
@@ -213,7 +211,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 #define AWAR_TRANSPRO_WRITE  AWAR_TRANSPRO_PREFIX "write"
 
 static void transpro_event(AW_window *aww) {
-    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+    GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
     if (!error) {
 #if defined(DEBUG) && 0
         test_AWT_get_codons();
@@ -226,14 +224,14 @@ static void transpro_event(AW_window *aww) {
         bool     save2fields   = aw_root->awar(AWAR_TRANSPRO_WRITE)->read_int();
         bool     translate_all = aw_root->awar(AWAR_TRANSPRO_XSTART)->read_int();
 
-        error             = arb_r2a(GLOBAL_gb_main, strcmp(mode, "fields") == 0, save2fields, startpos, translate_all, ali_source, ali_dest);
-        if (!error) error = GBT_check_data(GLOBAL_gb_main, 0);
+        error             = arb_r2a(GLOBAL.gb_main, strcmp(mode, "fields") == 0, save2fields, startpos, translate_all, ali_source, ali_dest);
+        if (!error) error = GBT_check_data(GLOBAL.gb_main, 0);
 
         free(mode);
         free(ali_dest);
         free(ali_source);
     }
-    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+    GB_end_transaction_show_error(GLOBAL.gb_main, error, aw_message);
 }
 
 static void nt_trans_cursorpos_changed(AW_root *awr) {
@@ -243,7 +241,7 @@ static void nt_trans_cursorpos_changed(AW_root *awr) {
 }
 
 AW_window *NT_create_dna_2_pro_window(AW_root *root) {
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction dummy(GLOBAL.gb_main);
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "TRANSLATE_DNA_TO_PRO", "TRANSLATE DNA TO PRO");
@@ -259,12 +257,12 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("source");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
+    awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
 
     aws->at("dest");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
+    awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
 
-    root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL_gb_main);
+    root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL.gb_main);
     aws->at("table");
     aws->create_option_menu(AWAR_PROTEIN_TYPE);
     for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
@@ -688,18 +686,18 @@ static void transdna_event(AW_window *aww) {
     GB_ERROR  error        = 0;
 
     while (!error && neededLength) {
-        error = GB_begin_transaction(GLOBAL_gb_main);
-        if (!error) error = arb_transdna(GLOBAL_gb_main, ali_source, ali_dest, &neededLength);
-        error = GB_end_transaction(GLOBAL_gb_main, error);
+        error = GB_begin_transaction(GLOBAL.gb_main);
+        if (!error) error = arb_transdna(GLOBAL.gb_main, ali_source, ali_dest, &neededLength);
+        error = GB_end_transaction(GLOBAL.gb_main, error);
 
         if (!error && neededLength>0) {
             if (retrying || !aw_ask_sure("increase_ali_length", GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength))) {
                 error = GBS_global_string("Missing %li columns in alignment '%s'", neededLength, ali_dest);
             }
             else {
-                error             = GB_begin_transaction(GLOBAL_gb_main);
-                if (!error) error = GBT_set_alignment_len(GLOBAL_gb_main, ali_dest, neededLength); // @@@ has no effect ? ? why ?
-                error             = GB_end_transaction(GLOBAL_gb_main, error);
+                error             = GB_begin_transaction(GLOBAL.gb_main);
+                if (!error) error = GBT_set_alignment_len(GLOBAL.gb_main, ali_dest, neededLength); // @@@ has no effect ? ? why ?
+                error             = GB_end_transaction(GLOBAL.gb_main, error);
 
                 if (!error) {
                     aw_message(GBS_global_string("Alignment length of '%s' has been set to %li\n"
@@ -735,9 +733,9 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("source");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
+    awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
     aws->at("dest");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
+    awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
 
     aws->at("realign");
     aws->callback(transdna_event);

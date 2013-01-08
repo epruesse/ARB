@@ -49,6 +49,7 @@ ClustalV.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ClustalV.o: $(ARBHOME)/INCLUDE/dupstr.h
 ClustalV.o: $(ARBHOME)/INCLUDE/smartptr.h
 ClustalV.o: $(ARBHOME)/INCLUDE/test_global.h
+ClustalV.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 fast_aligner.o: ClustalV.hxx
 fast_aligner.o: fast_aligner.hxx

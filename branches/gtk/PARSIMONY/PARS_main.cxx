@@ -23,6 +23,7 @@
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
 #include <arb_progress.h>
+#include <arb_misc.h>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <gui_aliview.hxx>
@@ -373,10 +374,11 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
         ASSERT_VALID_TREE(tree);
 
         AP_tree_nlen **branchlist;
-        long           bsum = 0;
 
         {
             AP_tree **blist;
+            long      bsum = 0;
+
             tree->buildBranchList(blist, bsum, true, -1); // get all branches
             branchlist = (AP_tree_nlen**)blist;
         }
@@ -764,18 +766,20 @@ static long push_partial(const char *, long val, void *cd_partial) {
 
 static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
     GB_begin_transaction(GLOBAL_gb_main);
-    GB_ERROR error                    = 0;
-    int      full_marked_sequences    = 0;
-    int      partial_marked_sequences = 0;
-    int      no_data                  = 0; // no data in alignment
+    GB_ERROR error = 0;
 
-    arb_progress("Adding partial sequences");
+    int full_marked_sequences = 0;
+
+    arb_progress part_add_progress("Adding partial sequences");
 
     {
         list<PartialSequence> partial;
         {
             GB_HASH *partial_hash = GBS_create_hash(GBT_get_species_count(GLOBAL_gb_main), GB_MIND_CASE);
-            int      marked_found = 0;
+
+            int marked_found             = 0;
+            int partial_marked_sequences = 0;
+            int no_data                  = 0;      // no data in alignment
 
             for (GBDATA *gb_marked = GBT_first_marked_species(GLOBAL_gb_main);
                  !error && gb_marked;

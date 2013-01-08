@@ -184,7 +184,9 @@ class PersistantFlag {
             GB_ERROR error = GB_IO_error("creating flag", flagfile);
             HERE.errorf(true, "%s\n", error);
         }
-        fclose(fp);
+        else {
+            fclose(fp);
+        }
         env_assert(flagFileExists());
     }
     void removeFlagFile() const {
@@ -294,11 +296,11 @@ public:
 static void test_ptserver_activate(bool start, int serverid) {
     const char *server_tag = GBS_ptserver_tag(serverid);
     if (start) {
-        TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag));
+        TEST_EXPECT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag));
     }
     else { // stop
         GB_ERROR kill_error = arb_look_and_kill_server(AISC_MAGIC_NUMBER, server_tag);
-        if (kill_error) TEST_ASSERT_EQUAL(kill_error, "Server is not running");
+        if (kill_error) TEST_EXPECT_EQUAL(kill_error, "Server is not running");
     }
 }
 
@@ -309,19 +311,25 @@ static Error ptserver(Mode mode) {
     // every unit-test using the test-ptserver should simply call
     // TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
 
+// #define TEST_AUTO_UPDATE
+
     Error error;
     switch (mode) {
         case SETUP: {
             test_ptserver_activate(false, TEST_SERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
-            TEST_ASSERT_NO_ERROR(GBK_system("cp TEST_pt_src.arb TEST_pt.arb")); // force rebuild
+            TEST_EXPECT_NO_ERROR(GBK_system("cp TEST_pt_src.arb TEST_pt.arb")); // force rebuild
             test_ptserver_activate(true, TEST_SERVER_ID);
-            TEST_ASSERT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
-            TEST_ASSERT(GB_time_of_file("TEST_pt.arb.pt") >= GB_time_of_file("TEST_pt.arb"));
+#if defined(TEST_AUTO_UPDATE)
+            TEST_COPY_FILE("TEST_pt.arb.pt", "TEST_pt.arb.pt.expected");
+#else // !defined(TEST_AUTO_UPDATE)
+            TEST_EXPECT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
+#endif
+            TEST_EXPECT_LESS_EQUAL(GB_time_of_file("TEST_pt.arb"), GB_time_of_file("TEST_pt.arb.pt"));
             break;
         }
         case CLEAN: {
             test_ptserver_activate(false, TEST_SERVER_ID);
-            TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt"));
+            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt"));
             break;
         }
         case UNKNOWN:
@@ -330,6 +338,8 @@ static Error ptserver(Mode mode) {
     }
 
     return error;
+    
+#undef TEST_AUTO_UPDATE
 }
 
 static Error ptserver_gene(Mode mode) {
@@ -345,14 +355,14 @@ static Error ptserver_gene(Mode mode) {
     switch (mode) {
         case SETUP: {
             test_ptserver_activate(false, TEST_GENESERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
-            TEST_ASSERT_NO_ERROR(GBK_system("arb_gene_probe TEST_gpt_src.arb TEST_gpt.arb")); // prepare gene-ptserver-db (forcing rebuild)
+            TEST_EXPECT_NO_ERROR(GBK_system("arb_gene_probe TEST_gpt_src.arb TEST_gpt.arb")); // prepare gene-ptserver-db (forcing rebuild)
 
             // GBK_terminatef("test-crash of test_environment"); 
 
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE("TEST_gpt.arb", "TEST_gpt.arb.expected");
 #else // !defined(TEST_AUTO_UPDATE)
-            TEST_ASSERT_FILES_EQUAL("TEST_gpt.arb.expected", "TEST_gpt.arb");
+            TEST_EXPECT_FILES_EQUAL("TEST_gpt.arb.expected", "TEST_gpt.arb");
 #endif
 
             test_ptserver_activate(true, TEST_GENESERVER_ID);
@@ -360,15 +370,15 @@ static Error ptserver_gene(Mode mode) {
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE("TEST_gpt.arb.pt", "TEST_gpt.arb.pt.expected");
 #else // !defined(TEST_AUTO_UPDATE)
-            TEST_ASSERT_FILES_EQUAL("TEST_gpt.arb.pt.expected", "TEST_gpt.arb.pt");
+            TEST_EXPECT_FILES_EQUAL("TEST_gpt.arb.pt.expected", "TEST_gpt.arb.pt");
 #endif
 
-            TEST_ASSERT(GB_time_of_file("TEST_gpt.arb.pt") >= GB_time_of_file("TEST_gpt.arb"));
+            TEST_EXPECT_LESS_EQUAL(GB_time_of_file("TEST_gpt.arb"), GB_time_of_file("TEST_gpt.arb.pt"));
             break;
         }
         case CLEAN: {
             test_ptserver_activate(false, TEST_GENESERVER_ID);
-            TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_gpt.arb.pt"));
+            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink("TEST_gpt.arb.pt"));
             break;
         }
         case UNKNOWN:
@@ -396,10 +406,12 @@ class FunInfo {
     string             name;
     LazyPersistantFlag is_setup;
     LazyPersistantFlag changing; // some process is currently setting up/cleaning the environment
+    LazyPersistantFlag failed;   // some process failed to setup the environment
 
     void all_get_lazy_again() {
         changing.get_lazy_again();
         is_setup.get_lazy_again();
+        failed.get_lazy_again();
     }
 
     Error set_to(Mode mode) {
@@ -471,7 +483,8 @@ public:
         : cb(cb_),
           name(name_),
           is_setup(name_),
-          changing(GBS_global_string("changing_%s", name_))
+          changing(GBS_global_string("changing_%s", name_)),
+          failed(GBS_global_string("failed_%s", name_))
     {}
 
     Error switch_to(Mode mode) { // @@@ need to return allocated msg (it gets overwritten)
@@ -506,20 +519,37 @@ public:
 
         env_assert(!(perform_change && wait_for_change));
 
-        if (perform_change) error = set_to(mode);
+        if (perform_change) {
+            error = set_to(mode);
+            if (error.isSet()) {
+                {
+                    Mutex m(FLAG_MUTEX);
+                    failed = true;
+                    all_get_lazy_again();
+                }
+                Error clean_error = set_to(CLEAN);
+                if (clean_error.isSet()) {
+                    StaticCode::printf("[environment '%s' failed to reach '%s' after failure (Reason: %s)]\n",
+                                       get_name(), mode_command[CLEAN], &*clean_error);
+                }
+            }
+        }
 
         if (wait_for_change) {
             bool reached = false;
-            while (!reached) {
+            while (!reached && !error.isSet()) {
                 StaticCode::printf("[waiting until environment '%s' reaches '%s']\n", get_name(), mode_command[mode]);
                 sleep(1);
                 {
                     Mutex m(FLAG_MUTEX);
                     if (!changing && is_setup == want_setup) reached = true;
+                    if (failed) {
+                        error = GBS_global_string_copy("[environment '%s' failed to reach '%s' (in another process)]", get_name(), mode_command[mode]);
+                    }
                     all_get_lazy_again();
                 }
             }
-            StaticCode::printf("[environment '%s' has reached '%s']\n", get_name(), mode_command[mode]);
+            if (reached) StaticCode::printf("[environment '%s' has reached '%s']\n", get_name(), mode_command[mode]);
         }
 
         return error;

@@ -67,10 +67,8 @@ int ARB_main(int argc, const char *argv[]) {
         data = GB_read_file(fname);
         if (data) {
             if (patchmode) {
-                unsigned long  size    = GB_size_of_file(fname);
-                char          *evaldup = strdup(eval);
-                char          *right   = strchr(evaldup, '=');
-                int            patched = false;
+                char *evaldup = strdup(eval);
+                char *right   = strchr(evaldup, '=');
 
                 int result = 0;
                 if (!right) {
@@ -84,10 +82,12 @@ int ARB_main(int argc, const char *argv[]) {
                     }
                     else {
                         *(right++) = 0;
-                        unsigned long i;
-                        int leftsize = strlen(evaldup);
-                        size -= leftsize;
-                        for (i=0; i<size; i++) {
+
+                        int           leftsize = strlen(evaldup);
+                        unsigned long size     = GB_size_of_file(fname)-leftsize;
+
+                        bool patched = false;
+                        for (unsigned long i=0; i<size; i++) {
                             if (!strncmp(data+i, evaldup, leftsize)) {
                                 strcpy(data+i, right);
                                 patched = true;

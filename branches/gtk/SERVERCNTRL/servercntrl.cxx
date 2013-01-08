@@ -399,7 +399,7 @@ void free_arb_params(arb_params *params) {
 #include <test_unit.h>
 
 void TEST_servercntrl() {
-    // TEST_ASSERT(0);
+    // TEST_EXPECT(0);
 }
 
 #endif

@@ -11,20 +11,20 @@
 class PS_BitMap : virtual Noncopyable {
 protected:
 
-    PS_BitSet **data;                   // array of pointers to PS_BitSet
-    bool bias;                          // preset for bitmap
-    long max_row;                       // max used row index
-    long capacity;                      // number of allocated rows (and columns)
+    PS_BitSet **data; // array of pointers to PS_BitSet
+    
+    bool bias;     // preset for bitmap
+    long max_row;  // max used row index
+    long capacity; // number of allocated rows (and columns)
 
     virtual bool do_reserve(const long _capacity, const bool _init_sets);
 
-    PS_BitMap(const PS_BitMap&);
-    PS_BitMap();
-    PS_BitMap(const bool _bias, const long _max_row, const long _capacity) {
-        bias     = _bias;
-        max_row  = _max_row;
-        capacity = _capacity;
-    }
+    PS_BitMap(const bool _bias, const long _max_row, const long _capacity)
+        : data(NULL),
+          bias(_bias),
+          max_row(_max_row),
+          capacity(_capacity)
+    {}
 
 public:
 
@@ -263,7 +263,7 @@ bool PS_BitMap::copy(const PS_BitMap *_other_bitmap) {
     bias = _other_bitmap->bias;
     if (!do_reserve(_other_bitmap->capacity, false)) return false;
     for (long i = 0; i < capacity; ++i) {
-        if (!data[i]) data[i] = new PS_BitSet(bias, _other_bitmap->data[i]->capacity);
+        if (!data[i]) data[i] = new PS_BitSet(bias, _other_bitmap->data[i]->getCapacity());
         if (!data[i]->copy(_other_bitmap->data[i])) return false;
     }
     max_row = _other_bitmap->max_row;
@@ -419,7 +419,7 @@ bool PS_BitMap_Fast::copy(const PS_BitMap_Fast *_other_bitmap) {
     bias = _other_bitmap->bias;
     if (!do_reserve(_other_bitmap->capacity, false)) return false;
     for (long i = 0; i < capacity; ++i) {
-        if (!data[i]) data[i] = new PS_BitSet_Fast(bias, _other_bitmap->data[i]->capacity);
+        if (!data[i]) data[i] = new PS_BitSet_Fast(bias, _other_bitmap->data[i]->getCapacity());
         if (!data[i]->copy(_other_bitmap->data[i])) return false;
     }
     max_row = _other_bitmap->max_row;
@@ -565,7 +565,7 @@ bool PS_BitMap_Counted::copy(const PS_BitMap_Counted *_other_bitmap) {
     if (!do_reserve(_other_bitmap->capacity, false)) return false;
     memcpy(count_true_per_index, _other_bitmap->count_true_per_index, (capacity * sizeof(long)));
     for (long i = 0; i < capacity; ++i) {
-        if (!data[i]) data[i] = new PS_BitSet_Fast(bias, _other_bitmap->data[i]->capacity);
+        if (!data[i]) data[i] = new PS_BitSet_Fast(bias, _other_bitmap->data[i]->getCapacity());
         if (!data[i]->copy(_other_bitmap->data[i])) return false;
     }
     max_row = _other_bitmap->max_row;

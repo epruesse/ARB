@@ -254,60 +254,49 @@ ED4_returncode ED4_members::remove_member(ED4_base *member_to_del)
     return (ED4_R_OK);
 }
 
-ED4_returncode  ED4_members::shift_list(ED4_index start_index, int length)              // shifts member_list of current object by |length| positions starting with start_index,
-{                                                                                       // if length is positive shift is to the right, allocating new memory if necessary
+ED4_returncode  ED4_members::shift_list(ED4_index start_index, int length) {
+    // shifts member_list of current object by |length| positions starting with start_index,
+    // if length is positive shift is to the right, allocating new memory if necessary
     // if length is negative shift is to the left (up to position 0) without freeing memory
-    ED4_index   i = 0;
-    ED4_base    **tmp_ptr;
-    unsigned int        new_alloc_size = 0;
 
     if (length>0) { // shift list to the right
         if ((no_of_members + length) >= size_of_list) {   // member_list is full => allocate more memory
-            new_alloc_size = (unsigned int) ((size_of_list + length) * 1.3); // calculate new size of member_list for realloc()
+            unsigned int   new_alloc_size = (unsigned int) ((size_of_list + length) * 1.3); // calculate new size of member_list for realloc()
+            ED4_base     **tmp_ptr        = (ED4_base **) realloc((char *) memberList, (new_alloc_size * sizeof(ED4_base *))); // try to realloc memory
 
-            tmp_ptr = (ED4_base **) realloc((char *) memberList, (new_alloc_size * sizeof(ED4_base *))); // try to realloc memory
-
-            if (! tmp_ptr) { // realloc() failed => try malloc() and copy member_list
+            if (! tmp_ptr) { // realloc() failed = > try malloc() and copy member_list
                 aw_message("ED4_members::shift_list: realloc problem!");
                 tmp_ptr = (ED4_base **) malloc((new_alloc_size * sizeof(ED4_base *)));
 
-                if (! tmp_ptr)                                                                  // malloc has failed, too
-                    return (ED4_R_DESASTER);
-                else
-                    tmp_ptr = (ED4_base **) memcpy((char *) tmp_ptr,                    // malloc was successfull, now copy memory
-                                                    (char *) memberList,
-                                                    (new_alloc_size * sizeof(ED4_base *)));
+                if (!tmp_ptr) return ED4_R_DESASTER; // malloc has failed, too
+
+                tmp_ptr = (ED4_base **) memcpy((char *) tmp_ptr,                    // malloc was successfull, now copy memory
+                                               (char *) memberList,
+                                               (new_alloc_size * sizeof(ED4_base *)));
             }
             memberList = tmp_ptr;
             size_of_list = new_alloc_size;
-            for (i = no_of_members; i < size_of_list; i++)                              // clear free entries at the end of the list
-                memberList[i] = NULL;
+            for (ED4_index i = no_of_members; i < size_of_list; i++) memberList[i] = NULL; // clear free entries at the end of the list
         }
 
-        for (i = (no_of_members + length); i > start_index; i--)                                // start shifting to the right
-        {
+        for (ED4_index i = (no_of_members + length); i > start_index; i--) { // start shifting to the right
             memberList[i] = memberList[i - length];
-            if (memberList[i] != NULL)
-                (memberList[i])->index = i;
+            if (memberList[i] != NULL) (memberList[i])->index = i;
         }
     }
-    else if (length<0)                                                                                  // shift list to the left, thereby not freeing any memory !
-    {
-        if ((start_index + length) < 0)
-        {
+    else if (length<0) { // shift list to the left, thereby not freeing any memory !
+        if ((start_index + length) < 0) {
             aw_message("ED4_members::shift_list: shift is too far to the left!");
-            return (ED4_R_WARNING);
+            return ED4_R_WARNING;
         }
 
-        for (i = (start_index + length); i <= (no_of_members + length); i++)                    // start shifting left
-        {
-            memberList[i] = memberList[i - length];                                     // length is negative
-            if (memberList[i] != NULL)
-                (memberList[i])->index = i;
+        for (ED4_index i = (start_index + length); i <= (no_of_members + length); i++) { // start shifting left
+            memberList[i] = memberList[i - length]; // length is negative
+            if (memberList[i] != NULL) (memberList[i])->index = i;
         }
     }
 
-    return (ED4_R_OK);
+    return ED4_R_OK;
 }
 
 

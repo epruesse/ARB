@@ -78,10 +78,12 @@ my %used_extensions = map { $_ => 1; } (
                                         'f',
                                         'footer',
                                         'head', 'header',
+                                        'i',  # swig input
                                         'inc',
                                         'java', 'manifest',
                                         'makefile',
                                         'pl', 'pm', 'PL', 'cgi',
+                                        'py',
                                         'script',
                                         'sh',
                                         'source', 'menu',
@@ -340,44 +342,83 @@ sub useFile($$) {
 
 # ------------------------------------------------------------
 
+my $VC_FILE    = 1;
+my $VC_DIR     = 2;
+my $VC_UNKNOWN = 3; # in SVN, but unknown whether dir or file
+
+my $svn_entries_read = 0;
+my %all_svn_entries = ();
+
 sub getSVNEntries($\%) {
   my ($dir,$SVN_r) = @_;
 
-  my $svnentries = $dir.'/.svn/entries';
-  if (-f $svnentries) {
-    open(SVN,'<'.$svnentries) || die "can't read '$svnentries' (Reason: $!)";
-    # print "reading $svnentries\n";
-
-    my $line;
-  LINE: while (defined($line=<SVN>)) {
-      if (length($line)==2 and ord($line)==12) { # entrymarker (^L)
-        my $name=<SVN>;
-        my $type=<SVN>;
-
-        defined $name or last LINE;
-        defined $type or die "Expected two or no lines after ^L";
-
-        chomp($name);
-        chomp($type);
-
-        if ($type eq 'file') {
-          $$SVN_r{$name} = 1;
-        }
-        elsif ($type eq 'dir') {
-          $$SVN_r{$name} = 2;
-        }
-        else {
-          die "Unknown type '$type' for '$name' in $svnentries";
-        }
-        # print "name='$name' type='$type'\n";
-      }
+  if ($svn_entries_read==0) { # first call
+    my $svnentries = $dir.'/.svn/entries';
+    if (not -f $svnentries) {
+      return 0;
     }
 
-    close(SVN);
-    return 1;
+    my $cmd = "svn status -v $dir";
+    open(SVNSTATUS, "$cmd|") || die "failed to execute '$cmd' (Reason: $!)";
+
+    eval {
+      my $reg_status_line = qr/^(.*)\s+[0-9]+\s+[0-9]+\s+[^\s]+\s+([^\s]+)$/;
+
+      my $line;
+      while (defined($line=<SVNSTATUS>)) {
+        chomp($line);
+        if ($line =~ $reg_status_line) {
+          my ($flags,$name) = ($1,$2);
+          if (-f $name) {
+            $all_svn_entries{$name} = $VC_FILE;
+          }
+          elsif (-d $name) {
+            $all_svn_entries{$name} = $VC_DIR;
+          }
+          else {
+            $all_svn_entries{$name} = $VC_UNKNOWN;
+          }
+        }
+        else {
+          if ($line =~ /^?/) {
+            ; # silently ignore unknown files
+          }
+          else {
+            die "Cant parse line '$line'";
+          }
+        }
+      }
+    };
+    if ($@) {
+      die "Failed to read svn status: $@";
+    }
+
+    close(SVNSTATUS);
+    $svn_entries_read = 1;
   }
-  print "No such file: '$svnentries'\n";
-  return 0;
+
+  if ($dir eq '.') {
+    foreach (keys %all_svn_entries) {
+      if (not /\//) { # root entry
+        $$SVN_r{$_} = $all_svn_entries{$_};
+      }
+    }
+  }
+  else {
+    if (not $dir =~ /^\.\//) { die "expected '$dir' to start with './'"; }
+    my $sdir = $';
+    my $reg_matchdir = qr/^$sdir\//;
+    foreach (keys %all_svn_entries) {
+      if ($_ =~ $reg_matchdir) {
+        my $rest = $';
+        if (not $rest =~ /\//) { # in $dir (not below)
+          $$SVN_r{$rest} = $all_svn_entries{$_};
+        }
+      }
+    }
+  }
+
+  return 1;
 }
 
 sub getCVSEntries($\%) {
@@ -390,10 +431,10 @@ sub getCVSEntries($\%) {
       foreach (<CVS>) {
         chomp;
         if (/^D\/([^\/]+)\//o) { # directory
-          $$CVS_r{$1} = 2;
+          $$CVS_r{$1} = $VC_DIR;
         }
         elsif (/^\/([^\/]+)\//o) { # file
-          $$CVS_r{$1} = 1;
+          $$CVS_r{$1} = $VC_FILE;
         }
         elsif (/^D$/o) {
           ;

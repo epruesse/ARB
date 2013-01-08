@@ -364,8 +364,6 @@ void ParseMenu() {
 
             thisitem->output      = (GfileFormat*)resize;
             thisoutput            = &(thisitem->output)[curoutput];
-            thisitem->output      = (GfileFormat*)resize;
-            thisoutput            = &(thisitem->output)[curoutput];
             thisoutput->save      = FALSE;
             thisoutput->overwrite = FALSE;
             thisoutput->format    = 0;
@@ -427,47 +425,20 @@ void ParseMenu() {
     return;
 }
 
-
-
-/*
-  Find(): Search the target string for the given key
-*/
-
 int Find(const char *target, const char *key) {
-    int i, j, len1, dif, flag = FALSE;
-    dif                       = (strlen(target)) - (len1 = strlen(key)) + 1;
-
-    if (len1>0)
-        for (j=0; j<dif && flag == FALSE; j++)
-        {
-            flag = TRUE;
-            for (i=0; i<len1 && flag; i++)
-                flag = (key[i] == target[i+j]) ? TRUE : FALSE;
-
-        }
-    return (flag);
+    // Search the target string for the given key
+    return strstr(target, key) ? TRUE : FALSE;
 }
-
 
 int Find2(const char *target, const char *key) {
-    /* Like find, but returns the index of the leftmost
+    /* Like Find(), but returns the index of the leftmost
      * occurrence, and -1 if not found.
      */
-    int i, j, len1, dif, flag = FALSE;
-    dif = (strlen(target)) - (len1 = strlen(key)) + 1;
-
-    if (len1>0) {
-        for (j=0; j<dif && flag == FALSE; j++) {
-            flag = TRUE;
-            for (i=0; i<len1 && flag; i++)
-                flag = (key[i] == target[i+j]) ? TRUE : FALSE;
-        }
-
-        return (flag ? j-1 : -1);
-    }
-
-    return -1;
+    const char *found = strstr(target, key);
+    return found ? int(found-target) : -1;
 }
+
+// --------------------------------------------------------------------------------
 
 
 void Error(const char *msg) {

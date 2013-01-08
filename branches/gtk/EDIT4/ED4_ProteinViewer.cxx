@@ -754,9 +754,8 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
             new_SeqInfoTerminal->set_links(seqInfoTerminal, seqInfoTerminal);
             new_SeqManager->children->append_member(new_SeqInfoTerminal);
 
-            ED4_orf_terminal *AA_SeqTerminal = 0;
             sprintf(namebuffer, "AA_Sequence_Term%ld.%d", ED4_counter, count++);
-            AA_SeqTerminal = new ED4_orf_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
+            ED4_orf_terminal *AA_SeqTerminal = new ED4_orf_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
             AA_SeqTerminal->set_links(seqTerminal, seqTerminal);
 
             char       *speciesName    = seqTerminal->species_name;

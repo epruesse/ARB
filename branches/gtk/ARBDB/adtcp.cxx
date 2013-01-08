@@ -200,9 +200,11 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
         }
 
         content = (char**)realloc(entry, (entries+1)*sizeof(*entry));
+
         if (!content) {
-            error   = "Out of memory";
+            error       = "Out of memory";
             serverCount = 0;
+            free(entry);
         }
         else {
             content[entries] = 0;
@@ -403,9 +405,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
     static const char **matchingEntries     = 0;
     static int          matchingEntriesSize = 0;
 
-    GB_ERROR error = 0;
-
-    error = arb_tcp_dat.update();
+    GB_ERROR error = arb_tcp_dat.update();
     if (!error) {
         int count = arb_tcp_dat.get_server_count();
 
@@ -530,12 +530,12 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild) {
 #include <test_unit.h>
 
 void TEST_GBS_servertags() {
-    TEST_ASSERT_EQUAL(GBS_ptserver_tag(0), "ARB_PT_SERVER0");
-    TEST_ASSERT_EQUAL(GBS_ptserver_tag(7), "ARB_PT_SERVER7");
+    TEST_EXPECT_EQUAL(GBS_ptserver_tag(0), "ARB_PT_SERVER0");
+    TEST_EXPECT_EQUAL(GBS_ptserver_tag(7), "ARB_PT_SERVER7");
     
-    TEST_ASSERT_EQUAL(GBS_nameserver_tag(NULL),   "ARB_NAME_SERVER");
-    TEST_ASSERT_EQUAL(GBS_nameserver_tag(""),     "ARB_NAME_SERVER");
-    TEST_ASSERT_EQUAL(GBS_nameserver_tag("test"), "ARB_NAME_SERVER_TEST");
+    TEST_EXPECT_EQUAL(GBS_nameserver_tag(NULL),   "ARB_NAME_SERVER");
+    TEST_EXPECT_EQUAL(GBS_nameserver_tag(""),     "ARB_NAME_SERVER");
+    TEST_EXPECT_EQUAL(GBS_nameserver_tag("test"), "ARB_NAME_SERVER_TEST");
 }
 
 #endif

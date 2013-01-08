@@ -5,6 +5,7 @@ OBJECTS=$(subst .cxx,.o,$(wildcard *.cxx))
 
 GENERATED_HEADERS= \
 	arb_msg.h \
+	arb_misc.h \
 	arb_string.h \
 	arb_signal.h \
 	arb_file.h \
@@ -76,6 +77,7 @@ arb_file.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_handlers.o: arb_core.h
 arb_handlers.o: arb_handlers.h
+arb_handlers.o: arb_misc.h
 arb_handlers.o: arb_msg.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -83,6 +85,14 @@ arb_handlers.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/test_global.h
+
+arb_misc.o: arb_core.h
+arb_misc.o: arb_misc.h
+arb_misc.o: arb_msg.h
+arb_misc.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_misc.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_misc.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_misc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_msg.o: arb_core.h
 arb_msg.o: arb_handlers.h

@@ -341,13 +341,11 @@ static const char *read_name(GBDATA *gbd) {
     return gbd ? GBT_read_name(gbd) : "GROUP-CONSENSUS";
 }
 
-static inline int relatedBases(char base1, char base2)
-{
+inline int relatedBases(char base1, char base2) {
     return baseMatch(base1, base2)==1;
 }
 
-static inline char alignQuality(char slave, char master)
-{
+inline char alignQuality(char slave, char master) {
     fa_assert(slave);
     fa_assert(master);
     char result = '#';
@@ -362,8 +360,7 @@ static inline char alignQuality(char slave, char master)
 //      Debugging stuff
 
 #ifdef DEBUG
-static char *lstr(const char *s, int len)
-{
+static char *lstr(const char *s, int len) {
     static int alloc;
     static char *buffer;
 
@@ -380,20 +377,19 @@ static char *lstr(const char *s, int len)
 
 #define BUFLEN 120
 
-static inline char compareChar(char base1, char base2)
-{
+inline char compareChar(char base1, char base2) {
     return base1==base2 ? '=' : (relatedBases(base1, base2) ? 'x' : 'X');
 }
 
 #if defined(TRACE_COMPRESSED_ALIGNMENT)
     
-static void dump_n_compare_one(const char *seq1, const char *seq2, long len, long offset)
-{
+static void dump_n_compare_one(const char *seq1, const char *seq2, long len, long offset) {
     fa_assert(len<=BUFLEN);
     char compare[BUFLEN+1];
 
-    for (long l=0; l<len; l++)
+    for (long l=0; l<len; l++) {
         compare[l] = (is_ali_gap(seq1[l]) && is_ali_gap(seq2[l])) ? ' ' : compareChar(seq1[l], seq2[l]);
+    }
 
     compare[len] = 0;
 
@@ -402,11 +398,9 @@ static void dump_n_compare_one(const char *seq1, const char *seq2, long len, lon
     printf(" %li '%s'\n", offset, compare);
 }
 
-static inline void dump_rest(const char *seq, long len, int idx, long offset)
-{
+inline void dump_rest(const char *seq, long len, int idx, long offset) {
     printf(" Rest von Sequenz %i:\n", idx);
-    while (len>BUFLEN)
-    {
+    while (len>BUFLEN) {
         printf(" %li '%s'\n", offset, lstr(seq, BUFLEN));
         seq += BUFLEN;
         len -= BUFLEN;
@@ -417,22 +411,18 @@ static inline void dump_rest(const char *seq, long len, int idx, long offset)
     printf(" '%s'\n", lstr(seq, len));
 }
 
-static void dump_n_compare(const char *text, const char *seq1, long len1, const char *seq2, long len2)
-{
+static void dump_n_compare(const char *text, const char *seq1, long len1, const char *seq2, long len2) {
     long offset = 0;
 
     printf(" Comparing %s:\n", text);
 
-    while (len1>0 && len2>0)
-    {
+    while (len1>0 && len2>0) {
         long done = 0;
 
-        if (len1>=BUFLEN && len2>=BUFLEN)
-        {
+        if (len1>=BUFLEN && len2>=BUFLEN) {
             dump_n_compare_one(seq1, seq2, done=BUFLEN, offset);
         }
-        else
-        {
+        else {
             long min = len1<len2 ? len1 : len2;
             dump_n_compare_one(seq1, seq2, done=min, offset);
         }
@@ -449,16 +439,14 @@ static void dump_n_compare(const char *text, const char *seq1, long len1, const 
     printf(" -------------------\n");
 }
 
-static void dump_n_compare(const char *text, const CompactedSubSequence& seq1, const CompactedSubSequence& seq2)
-{
+static void dump_n_compare(const char *text, const CompactedSubSequence& seq1, const CompactedSubSequence& seq2) {
     dump_n_compare(text, seq1.text(), seq1.length(), seq2.text(), seq2.length());
 }
 #endif // TRACE_COMPRESSED_ALIGNMENT
 
 #undef BUFLEN
 
-static inline void dumpSeq(const char *seq, long len, long pos)
-{
+inline void dumpSeq(const char *seq, long len, long pos) {
     printf("'%s' ", lstr(seq, len));
     printf("(Pos=%li,Len=%li)", pos, len);
 }
@@ -474,8 +462,7 @@ static inline void dumpSeq(const char *seq, long len, long pos)
                " Slave  = ");                                           \
         dumpSeq(bestSlaveLeft.text(), bestLength, bestSlaveLeft.leftOf()); \
         printf("\n");                                                   \
-    }                                                                   \
-    while (0)
+    } while (0)
 
 #endif //DEBUG
 
@@ -483,14 +470,12 @@ static inline void dumpSeq(const char *seq, long len, long pos)
 // ------------------------------------------------
 //      INLINE-functions used in fast_align():
 
-static inline double log3(double d)
-{
+inline double log3(double d) {
     return log(d)/log(3.0);
 }
-static inline double partSignificance(long seq1len, long seq2len, long partlen)
+inline double partSignificance(long seq1len, long seq2len, long partlen) {
     // returns log3 of significance of the part
     // usage: partSignificance(...) < log3(maxAllowedSignificance)
-{
     return log3((seq1len-partlen)*(seq2len-partlen)) - partlen;
 }
 
@@ -498,8 +483,7 @@ inline ARB_ERROR bufferTooSmall() {
     return "Cannot align - reserved buffer is to small";
 }
 
-static inline long insertsToNextBase(AlignBuffer *alignBuffer, const SequencePosition& master)
-{
+inline long insertsToNextBase(AlignBuffer *alignBuffer, const SequencePosition& master) {
     int inserts;
     int nextBase;
 
@@ -514,7 +498,7 @@ static inline long insertsToNextBase(AlignBuffer *alignBuffer, const SequencePos
     return inserts;
 }
 
-static inline void insertBase(AlignBuffer *alignBuffer,
+inline void insertBase(AlignBuffer *alignBuffer,
                               SequencePosition& master, SequencePosition& slave,
                               FastAlignReport *report)
 {
@@ -527,7 +511,7 @@ static inline void insertBase(AlignBuffer *alignBuffer,
     ++master;
 }
 
-static inline void insertSlaveBases(AlignBuffer *alignBuffer,
+inline void insertSlaveBases(AlignBuffer *alignBuffer,
                                     SequencePosition& slave,
                                     int length,
                                     FastAlignReport *report)
@@ -537,7 +521,7 @@ static inline void insertSlaveBases(AlignBuffer *alignBuffer,
     slave += length;
 }
 
-static inline void insertGap(AlignBuffer *alignBuffer,
+inline void insertGap(AlignBuffer *alignBuffer,
                              SequencePosition& master,
                              FastAlignReport *report)
 {
@@ -553,8 +537,8 @@ static ARB_ERROR insertClustalValigned(AlignBuffer *alignBuffer,
                                        SequencePosition& slave,
                                        const char *masterAlignment, const char *slaveAlignment, long alignmentLength,
                                        FastAlignReport *report)
-    // inserts bases of 'slave' to 'alignBuffer' according to alignment in 'masterAlignment' and 'slaveAlignment'
 {
+    // inserts bases of 'slave' to 'alignBuffer' according to alignment in 'masterAlignment' and 'slaveAlignment'
 #define ACID '*'    // contents of 'masterAlignment' and 'slaveAlignment'
 #define GAP  '-'
 
@@ -623,8 +607,8 @@ static ARB_ERROR insertClustalValigned(AlignBuffer *alignBuffer,
 static ARB_ERROR insertAligned(AlignBuffer *alignBuffer,
                                SequencePosition& master, SequencePosition& slave, long partLength,
                                FastAlignReport *report)
-    // insert bases of 'slave' to 'alignBuffer' according to 'master'
 {
+    // insert bases of 'slave' to 'alignBuffer' according to 'master'
     if (partLength) {
         long insert = insertsToNextBase(alignBuffer, master);
 
@@ -690,14 +674,10 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
 {
     const char *mtext = master.text(moffset);
     const char *stext = slaveSequence.text(soffset);
-    char       *maligned, *saligned;
-    int         len;
     ARB_ERROR   error = 0;
 
     if (slength) {
         if (mlength) { // if slave- and master-sequences contain bases, we call the slow aligner
-            int score;
-
 #ifdef TRACE_CLUSTAL_DATA
             printf("ClustalV-Align:\n");
             printf(" mseq = '%s'\n", lstr(mtext, mlength));
@@ -713,13 +693,16 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
                 default: error = "Unknown alignment type - aligner aborted"; break;
             }
 
+            const char *maligned, *saligned;
+            int         len;
             if (!error) {
+                int score; // unused
                 error = ClustalV_align(is_dna,
                                        1,
                                        mtext, mlength, stext, slength,
                                        master.gapsBefore(moffset), 
                                        max_seq_length,
-                                       &maligned, &saligned, &len, &score);
+                                       maligned, saligned, len, score);
             }
 
             if (!error) {
@@ -799,8 +782,7 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
             bestMasterLeft = masterLeft;                                \
             bestSlaveLeft = slaveLeft;                                  \
         }                                                               \
-    }                                                                   \
-    while (0)
+    } while (0)
 
 #define CAN_SCORE_LEFT()    (masterLeft.leftOf() && slaveLeft.leftOf())
 #define CAN_SCORE_RIGHT()   (masterRight.rightOf() && slaveRight.rightOf())
@@ -809,15 +791,13 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
     do {                                                                \
         score += *(--masterLeft).text()==*(--slaveLeft).text() ? match : mismatch; \
         TEST_BETTER_SCORE();                                            \
-    }                                                                   \
-    while (0)
+    } while (0)
 
 #define SCORE_RIGHT()                                                   \
     do {                                                                \
         score += *(++masterRight).text()==*(++slaveRight).text() ? match : mismatch; \
         TEST_BETTER_SCORE();                                            \
-    }                                                                   \
-    while (0)
+    } while (0)
 
 
 ARB_ERROR FastSearchSequence::fast_align(const CompactedSubSequence& slaveSequence,
@@ -1004,8 +984,7 @@ static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
     
     gbd = GBT_read_sequence(gb_species, ali);       // get sequence
 
-    if (gbd)
-    {
+    if (gbd) {
         long length = GB_read_string_count(gbd);
         char *data = GB_read_string(gbd);
         long partLength;
@@ -1100,9 +1079,9 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                                   GBDATA                   *gb_toAlign,
                                   GBDATA                   *gb_alignTo, // may be NULL
                                   const AlignParams&        ali_params)
-// if only part of the sequence should be aligned, then this functions already gets only the part
-// (i.o.w.: toAlignSequence, alignTo and toAlignChksum refer to the partial sequence)
 {
+    // if only part of the sequence should be aligned, then this functions already gets only the part
+    // (i.o.w.: toAlignSequence, alignTo and toAlignChksum refer to the partial sequence)
     AlignBuffer alignBuffer(max_seq_length);
     if (ali_params.range.start()>0) {
         alignBuffer.set(GAP_CHAR, alignQuality(GAP_CHAR, GAP_CHAR), ali_params.range.start());
@@ -1241,8 +1220,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                         buffer[buflen] = 0;
 
                         const FastAlignInsertion *inserts = report.insertion();
-                        while (inserts)
-                        {
+                        while (inserts) {
                             memset(buffer+inserts->offset(), '>', inserts->gaps());
                             afterLast = buffer+inserts->offset()+inserts->gaps();
                             inserts = inserts->next();
@@ -1267,8 +1245,7 @@ ARB_ERROR FastAligner_delete_temp_entries(GBDATA *gb_species, const char *alignm
     GBDATA    *gb_ali = GB_search(gb_species, alignment, GB_FIND);
     ARB_ERROR  error  = NULL;
 
-    if (gb_ali)
-    {
+    if (gb_ali) {
         GBDATA *gb_name = GB_search(gb_ali, QUALITY_NAME, GB_FIND);
         if (gb_name) {
             error = GB_delete(gb_name);
@@ -1329,8 +1306,7 @@ static ARB_ERROR alignTo(GBDATA                   *gb_toAlign,
 
 
 
-    if (!error)
-    {
+    if (!error) {
         error = alignCompactedTo(toAlignSequence, alignTo, max_seq_length, alignment, chksum, gb_toAlign, gb_alignTo, ali_params);
         if (error) error = align_error(error, gb_toAlign, gb_alignTo);
         delete toAlignSequence;
@@ -1505,9 +1481,10 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
 
                 char T_or_U;
                 error = GBT_determine_T_or_U(global_alignmentType, &T_or_U, "reverse-complement");
-                GBT_reverseComplementNucSequence(mirroredSequence, length, T_or_U);
-
-                error = familyFinder->searchFamily(mirroredSequence, FF_FORWARD, relativesToTest+1, 0); // @@@ make min_score configurable
+                if (!error) {
+                    GBT_reverseComplementNucSequence(mirroredSequence, length, T_or_U);
+                    error = familyFinder->searchFamily(mirroredSequence, FF_FORWARD, relativesToTest+1, 0); // @@@ make min_score configurable
+                }
                 if (!error) {
 #if defined(DEBUG)
                     double lastScore = -1;
@@ -1695,6 +1672,8 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                                         long                  part_chksum;
                                         CompactedSubSequence *toAlignPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, &part_chksum, partRange);
 
+                                        fa_assert(contradicted(error, toAlignPart));
+
                                         if (!error) {
                                             AlignParams loose_ali_params = { ali_params.report, ali_params.showGapsMessages, partRange };
 
@@ -1709,8 +1688,8 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                                                 }
                                                 delete alignedPart;
                                             }
-                                            delete toAlignPart;
                                         }
+                                        delete toAlignPart;
                                     }
                                     delete alignToPart;
                                 }
@@ -1933,6 +1912,8 @@ public:
           turnAllowed(turnAllowed_),
           ali_params(ali_params_),
           maxProtection(maxProtection_),
+          wasNotAllowedToAlign(0),
+          err_count(0),
           continue_on_error(continue_on_error_),
           error_action(continue_on_error ? error_action_ : FA_NO_ACTION)
     {}
@@ -2864,26 +2845,26 @@ void TEST_OligoCounter() {
     OligoCounter oc3("AGGTCC", 3);
     OligoCounter oc4("AGGTCCAGG", 3);
 
-    TEST_ASSERT(oc1.oligo_count("CCA") == 1);
-    TEST_ASSERT(oc1.oligo_count("CCG") == 0);
-    TEST_ASSERT(oc4.oligo_count("AGG") == 2);
+    TEST_EXPECT_EQUAL(oc1.oligo_count("CCA"), 1);
+    TEST_EXPECT_ZERO(oc1.oligo_count("CCG"));
+    TEST_EXPECT_EQUAL(oc4.oligo_count("AGG"), 2);
 
     int sc1_2 = oc1.similarity_score(oc2);
     int sc2_1 = oc2.similarity_score(oc1);
-    TEST_ASSERT_EQUAL(sc1_2, sc2_1);
+    TEST_EXPECT_EQUAL(sc1_2, sc2_1);
 
     int sc1_2gaps = oc1.similarity_score(oc2_gaps);
-    TEST_ASSERT_EQUAL(sc1_2, sc1_2gaps);
+    TEST_EXPECT_EQUAL(sc1_2, sc1_2gaps);
     
     int sc1_3 = oc1.similarity_score(oc3);
     int sc2_3 = oc2.similarity_score(oc3);
     int sc3_4 = oc3.similarity_score(oc4);
 
-    TEST_ASSERT_EQUAL(sc1_2, 2); // common oligos (CCA GGT)
-    TEST_ASSERT_EQUAL(sc1_3, 2); // common oligos (AGG GGT)
-    TEST_ASSERT_EQUAL(sc2_3, 3); // common oligos (GGT GTC TCC)
+    TEST_EXPECT_EQUAL(sc1_2, 2); // common oligos (CCA GGT)
+    TEST_EXPECT_EQUAL(sc1_3, 2); // common oligos (AGG GGT)
+    TEST_EXPECT_EQUAL(sc2_3, 3); // common oligos (GGT GTC TCC)
 
-    TEST_ASSERT_EQUAL(sc3_4, 4);
+    TEST_EXPECT_EQUAL(sc3_4, 4);
 }
 
 // -------------------------
@@ -2910,7 +2891,7 @@ public:
     GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) { // @@@ use min_score
         // 'sequence' has to contain full sequence or part corresponding to 'range'
 
-        TEST_ASSERT(compl_mode == FF_FORWARD); // not fit for other modes
+        TEST_EXPECT_EQUAL(compl_mode, FF_FORWARD); // not fit for other modes
 
         delete_family_list();
         
@@ -2999,7 +2980,7 @@ static const char *get_aligned_data_of(GBDATA *gb_main, const char *species_name
         }
     }
 
-    TEST_ASSERT_NULL(error.deliver());
+    TEST_EXPECT_NULL(error.deliver());
     
     return data;
 }
@@ -3101,7 +3082,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     ARB_ERROR  error;
     GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_TargetAndReferenceHandling, false);
 
-    TEST_ASSERT_NULL(error.deliver());
+    TEST_EXPECT_NULL(error.deliver());
 
     SearchRelativeParams search_relative_params(new FakeFamilyFinder(gb_main, test_aliname, false, 8),
                                                 test_aliname,
@@ -3113,7 +3094,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     // bool cont_on_err    = true;
     bool cont_on_err = false;
 
-    TEST_ASSERT_EQUAL(GBT_count_marked_species(gb_main), 3); // we got 3 marked species
+    TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 3); // we got 3 marked species
     {
         Aligner aligner(gb_main,
                         FA_CURRENT,
@@ -3130,9 +3111,9 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_NO_ACTION);
         error = aligner.run();
-        TEST_ASSERT_NULL(error.deliver());
+        TEST_EXPECT_NULL(error.deliver());
     }
-    TEST_ASSERT_EQUAL(GBT_count_marked_species(gb_main), 3); // we still got 3 marked species
+    TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 3); // we still got 3 marked species
     {
         Aligner aligner(gb_main,
                         FA_MARKED,
@@ -3149,9 +3130,9 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_MARK_FAILED);
         error = aligner.run();
-        TEST_ASSERT_NULL(error.deliver());
+        TEST_EXPECT_NULL(error.deliver());
 
-        TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 0); // FA_MARK_FAILED (none failed -> none marked)
+        TEST_EXPECT(!cont_on_err || GBT_count_marked_species(gb_main) == 0); // FA_MARK_FAILED (none failed -> none marked)
     }
     {
         Aligner aligner(gb_main,
@@ -3169,9 +3150,9 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_MARK_ALIGNED);
         error = aligner.run();
-        TEST_ASSERT_NULL(error.deliver());
+        TEST_EXPECT_NULL(error.deliver());
 
-        TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 2); // FA_MARK_ALIGNED (2 selected were aligned)
+        TEST_EXPECT(!cont_on_err || GBT_count_marked_species(gb_main) == 2); // FA_MARK_ALIGNED (2 selected were aligned)
     }
     {
         Aligner aligner(gb_main,
@@ -3190,30 +3171,30 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         FA_MARK_ALIGNED);
 
         error = aligner.run();
-        TEST_ASSERT_NULL(error.deliver());
+        TEST_EXPECT_NULL(error.deliver());
 
-        TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
+        TEST_EXPECT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
     }
     
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C...........");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C...........");
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".......UAG--AGG-A------U-U-UGGGU-UG-G-C-A-U-CAA-GCU--------UAA-C-UCCUG-AC--A-UUGAG...............");
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................");
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C...........");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m1"), ".......UAG--AGG-A------U-U-UGGGU-UG-G-C-A-U-CAA-GCU--------UAA-C-UCCUG-AC--A-UUGAG...............");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C...........");
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C...........");
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U-AA---------C-C-G-UAG-UUC------------C-CCGAA-AC--U-GUAA-CU-C...........");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C...........");
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U-AA---------C-C-G-UAG-UUC------------C-CCGAA-AC--U-GUAA-CU-C...........");
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // here sequence shall be turned!
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // here sequence shall be turned!
 
 
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("r1"), "s2:43, s1:1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("r1"), "s2:43, s1:1");
 
     // ----------------------------------------------
     //      now align all others vs next relative
 
     search_relative_params.maxRelatives = 5;
-    TEST_ASSERT_NO_ERROR(forget_used_relatives(gb_main));
+    TEST_EXPECT_NO_ERROR(forget_used_relatives(gb_main));
 
     int species_count = ARRAY_ELEMS(TestAlignmentData_TargetAndReferenceHandling);
     for (int sp = 0; sp<species_count; ++sp) {
@@ -3235,37 +3216,37 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                             FA_MARK_ALIGNED);
 
             error = aligner.run();
-            TEST_ASSERT_NULL(error.deliver());
+            TEST_EXPECT_NULL(error.deliver());
 
-            TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
+            TEST_EXPECT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
         }
     }
 
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "s2");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "s1"); // same as done manually
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m1"), "r1:42");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "m3");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m3"), "m2");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("c1"), "r1");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("c2"), "r1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("s1"), "s2");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("s2"), "s1"); // same as done manually
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m1"), "r1:42");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m2"), "m3");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m3"), "m2");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("c1"), "r1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("c2"), "r1");
 
     //                                       range aligned below (see test_ali_params_partial)
     //                                       "-------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX------------------------------------"
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // 1st aligning of 's1'
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above (again aligned vs 's1')
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("s1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // 1st aligning of 's1'
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above (again aligned vs 's1')
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G---AUUUG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed; @@@ bug: no dots at end
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G---AUUUG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed; @@@ bug: no dots at end
  
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // changed (1st align vs 's1', this align vs 'm3')
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above (1st align vs 's1', this align vs 'm2')
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U--------A-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // changed (1st align vs 's1', this align vs 'm3')
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above (1st align vs 's1', this align vs 'm2')
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U--------A-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed
 
     // --------------------------------------
     //      test partial relative search
 
     search_relative_params.getFamilyFinder()->restrict_2_region(test_ali_params_partial.range);
-    TEST_ASSERT_NO_ERROR(forget_used_relatives(gb_main));
+    TEST_EXPECT_NO_ERROR(forget_used_relatives(gb_main));
 
     for (int sp = 0; sp<species_count; ++sp) {
         const char *name = TestAlignmentData_TargetAndReferenceHandling[sp].name;
@@ -3285,33 +3266,33 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         FA_MARK_ALIGNED);
 
         error = aligner.run();
-        TEST_ASSERT_NULL(error.deliver());
+        TEST_EXPECT_NULL(error.deliver());
 
-        TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
+        TEST_EXPECT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
     }
 
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "s2");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "s1");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m1"), "r1"); // (not really differs)
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "m3");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m3"), "m2");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("c1"), "r1");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("c2"), "r1");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("r1"), "s2:20, c2:3");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("s1"), "s2");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("s2"), "s1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m1"), "r1"); // (not really differs)
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m2"), "m3");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("m3"), "m2");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("c1"), "r1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("c2"), "r1");
+    TEST_EXPECT_EQUAL(USED_RELS_FOR("r1"), "s2:20, c2:3");
 
     //                                       aligned range (see test_ali_params_partial)
     //                                       "-------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX------------------------------------"
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("s1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G-A-UU-UG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // same_as_above
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G-A-UU-UG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C---------UA-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed 
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C---------UA-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed
 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_EXPECT_EQUAL(ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
 
     GB_close(gb_main);
 }
@@ -3362,8 +3343,8 @@ void TEST_SLOW_Aligner_checksumError() {
 
         error = aligner.run();
     }
-    TEST_ASSERT_NULL__BROKEN(error.deliver());
-    TEST_ASSERT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???");
+    TEST_EXPECT_NULL__BROKEN(error.deliver());
+    TEST_EXPECT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???");
 
     GB_close(gb_main);
 }
@@ -3383,28 +3364,28 @@ static const char *asstr(LooseBases& ub) {
 
 void TEST_BASIC_UnalignedBases() {
     LooseBases ub;
-    TEST_ASSERT(ub.is_empty());
-    TEST_ASSERT_EQUAL(asstr(ub), "");
+    TEST_EXPECT(ub.is_empty());
+    TEST_EXPECT_EQUAL(asstr(ub), "");
 
     // test add+remove
     ub.memorize(ExplicitRange(5, 7));
-    TEST_ASSERT(!ub.is_empty());
-    TEST_ASSERT_EQUAL(asstr(ub), " 5/7");
+    TEST_REJECT(ub.is_empty());
+    TEST_EXPECT_EQUAL(asstr(ub), " 5/7");
     
-    TEST_ASSERT(ub.recall() == ExplicitRange(5, 7));
-    TEST_ASSERT(ub.is_empty());
+    TEST_EXPECT(ub.recall() == ExplicitRange(5, 7));
+    TEST_EXPECT(ub.is_empty());
 
     ub.memorize(ExplicitRange(2, 4));
-    TEST_ASSERT_EQUAL(asstr(ub), " 2/4");
+    TEST_EXPECT_EQUAL(asstr(ub), " 2/4");
 
     ub.memorize(ExplicitRange(4, 9));
-    TEST_ASSERT_EQUAL(asstr(ub), " 2/4 4/9");
+    TEST_EXPECT_EQUAL(asstr(ub), " 2/4 4/9");
     
     ub.memorize(ExplicitRange(8, 10));
     ub.memorize(ExplicitRange(11, 14));
     ub.memorize(ExplicitRange(12, 17));
-    TEST_ASSERT_EQUAL(asstr(ub), " 2/4 4/9 8/10 11/14 12/17");
-    TEST_ASSERT_EQUAL(asstr(ub), " 2/4 4/9 8/10 11/14 12/17"); // check asstr has no side-effect
+    TEST_EXPECT_EQUAL(asstr(ub), " 2/4 4/9 8/10 11/14 12/17");
+    TEST_EXPECT_EQUAL(asstr(ub), " 2/4 4/9 8/10 11/14 12/17"); // check asstr has no side-effect
 
     {
         LooseBases toaddNrecalc;
@@ -3415,22 +3396,22 @@ void TEST_BASIC_UnalignedBases() {
 
         toaddNrecalc.memorize(ExplicitRange(1, 7));
         toaddNrecalc.memorize(ExplicitRange(3, 5));
-        TEST_ASSERT_EQUAL(asstr(toaddNrecalc), " 1/7 3/5");
+        TEST_EXPECT_EQUAL(asstr(toaddNrecalc), " 1/7 3/5");
 
         ub.follow_ali_change_and_append(toaddNrecalc, AliChange(Old, New));
 
-        TEST_ASSERT_EQUAL(asstr(ub), " 3/18 8/15 2/4 4/9 8/10 11/14 12/17");
-        TEST_ASSERT(toaddNrecalc.is_empty());
+        TEST_EXPECT_EQUAL(asstr(ub), " 3/18 8/15 2/4 4/9 8/10 11/14 12/17");
+        TEST_EXPECT(toaddNrecalc.is_empty());
 
         LooseBases selfRecalc;
         selfRecalc.follow_ali_change_and_append(ub, AliChange(New, New));
-        TEST_ASSERT_EQUAL__BROKEN(asstr(selfRecalc), " 3/18 8/15 0/6 3/11 8/11 10/15 10/17"); // wanted behavior? 
-        TEST_ASSERT_EQUAL(asstr(selfRecalc),         " 3/18 8/17 0/6 3/11 8/13 10/15 10/18"); // doc wrong behavior @@@ "8/17", "8/13", "10/18" are wrong
+        TEST_EXPECT_EQUAL__BROKEN(asstr(selfRecalc), " 3/18 8/15 0/6 3/11 8/11 10/15 10/17"); // wanted behavior?
+        TEST_EXPECT_EQUAL(asstr(selfRecalc),         " 3/18 8/17 0/6 3/11 8/13 10/15 10/18"); // doc wrong behavior @@@ "8/17", "8/13", "10/18" are wrong
 
         ub.follow_ali_change_and_append(selfRecalc, AliChange(New, Old));
-        TEST_ASSERT_EQUAL__BROKEN(asstr(ub), " 1/7 3/5 0/1 1/3 3/3 4/5 4/6"); // wanted behavior? (from wanted behavior above)
-        TEST_ASSERT_EQUAL__BROKEN(asstr(ub), " 1/7 3/6 0/1 1/3 3/4 4/5 4/7"); // wanted behavior? (from wrong result above)
-        TEST_ASSERT_EQUAL(asstr(ub),         " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // doc wrong
+        TEST_EXPECT_EQUAL__BROKEN(asstr(ub), " 1/7 3/5 0/1 1/3 3/3 4/5 4/6"); // wanted behavior? (from wanted behavior above)
+        TEST_EXPECT_EQUAL__BROKEN(asstr(ub), " 1/7 3/6 0/1 1/3 3/4 4/5 4/7"); // wanted behavior? (from wrong result above)
+        TEST_EXPECT_EQUAL(asstr(ub),         " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // doc wrong
     }
 }
 

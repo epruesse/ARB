@@ -225,31 +225,35 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
 }
 
 static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode) {
-    char buffer[40];        // just real numbers
-    char    *c1;
-
-    if ((c1 = node->remark_branch)) {
-        int c;
-        if (mode == GBT_PUT_DATA) {
-            *(dest++) = 'R';
-            while ((c = *(c1++))) {
-                if (c == 1) continue;
-                *(dest++) = c;
+    {
+        char *c1 = node->remark_branch;
+        if (c1) {
+            if (mode == GBT_PUT_DATA) {
+                int c;
+                *(dest++) = 'R';
+                while ((c = *(c1++))) {
+                    if (c == 1) continue;
+                    *(dest++) = c;
+                }
+                *(dest++) = 1;
             }
-            *(dest++) = 1;
-        }
-        else {
-            dest += strlen(c1) + 2;
+            else {
+                dest += strlen(c1) + 2;
+            }
         }
     }
-
     if (node->is_leaf) {
         if (mode == GBT_PUT_DATA) {
             *(dest++) = 'L';
             if (node->name) strcpy(dest, node->name);
-            while ((c1 = (char *)strchr(dest, 1))) *c1 = 2;
-            dest += strlen(dest);
-            *(dest++) = 1;
+
+            char *c1;
+            while ((c1 = (char *)strchr(dest, 1))) {
+                *c1 = 2;
+            }
+            dest      += strlen(dest);
+            *(dest++)  = 1;
+            
             return dest;
         }
         else {
@@ -258,6 +262,7 @@ static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode)
         }
     }
     else {
+        char buffer[40];
         sprintf(buffer, "%g,%g;", node->leftlen, node->rightlen);
         if (mode == GBT_PUT_DATA) {
             *(dest++) = 'N';
@@ -370,19 +375,15 @@ GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *
 //      tree read functions
 
 static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error) {
-    GBT_TREE    *node;
-    GBDATA      *gb_group_name;
-    char         c;
-    char        *p1;
-    static char *membase;
-
     gb_assert(error);
     if (*error) return NULL;
 
+    GBT_TREE *node;
     if (structure_size>0) {
         node = (GBT_TREE *)GB_calloc(1, (size_t)structure_size);
     }
     else {
+        static char *membase;
         if (!startid[0]) {
             membase = (char *)GB_calloc(size_of_tree+1, (size_t)(-2*structure_size)); // because of inner nodes
         }
@@ -391,7 +392,8 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
         membase -= structure_size;
     }
 
-    c = *((*data)++);
+    char  c = *((*data)++);
+    char *p1;
 
     if (c=='R') {
         p1 = strchr(*data, 1);
@@ -412,7 +414,7 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
         node->rightlen = GB_atof(*data);
         *data = p1;
         if ((*startid < size_of_tree) && (node->gb_node = gb_tree_nodes[*startid])) {
-            gb_group_name = GB_entry(node->gb_node, "group_name");
+            GBDATA *gb_group_name = GB_entry(node->gb_node, "group_name");
             if (gb_group_name) {
                 node->name = GB_read_string(gb_group_name);
             }
@@ -498,6 +500,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
      *
      * Make sure that the first members of your structure look exactly like GBT_TREE!
      *
+     * @param gb_main DB root node
      * @param structure_size sizeof(yourStructure)
      *
      * If structure_size < 0 then the tree is allocated as just one big piece of memory,
@@ -682,6 +685,9 @@ GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *z
     /*! Link a given tree to the database. That means that for all tips the member
      * 'gb_node' is set to the database container holding the species data.
      *
+     * @param tree which will be linked to DB
+     * @param gb_main DB root node
+     * @param show_status show a progress indicator?
      * @param zombies if != NULL -> set to number of zombies (aka non-existing species) in tree
      * @param duplicates if != NULL -> set to number of duplicated species in tree
      *
@@ -1200,12 +1206,12 @@ static const char *getTreeOrder(GBDATA *gb_main) {
 }
 
 void TEST_tree_names() {
-    TEST_ASSERT_ERROR_CONTAINS(GBT_check_tree_name(""),               "not a valid treename");
-    TEST_ASSERT_ERROR_CONTAINS(GBT_check_tree_name("not_a_treename"), "not a valid treename");
-    TEST_ASSERT_ERROR_CONTAINS(GBT_check_tree_name("tree_bad.dot"),   "not a valid treename");
+    TEST_EXPECT_ERROR_CONTAINS(GBT_check_tree_name(""),               "not a valid treename");
+    TEST_EXPECT_ERROR_CONTAINS(GBT_check_tree_name("not_a_treename"), "not a valid treename");
+    TEST_EXPECT_ERROR_CONTAINS(GBT_check_tree_name("tree_bad.dot"),   "not a valid treename");
 
-    TEST_ASSERT_NO_ERROR(GBT_check_tree_name("tree_")); // ugly but ok
-    TEST_ASSERT_NO_ERROR(GBT_check_tree_name("tree_ok"));
+    TEST_EXPECT_NO_ERROR(GBT_check_tree_name("tree_")); // ugly but ok
+    TEST_EXPECT_NO_ERROR(GBT_check_tree_name("tree_ok"));
 }
 
 void TEST_tree() {
@@ -1216,22 +1222,22 @@ void TEST_tree() {
         GB_transaction ta(gb_main);
 
         {
-            TEST_ASSERT_NULL(GBT_get_tree_name(NULL));
+            TEST_EXPECT_NULL(GBT_get_tree_name(NULL));
             
-            TEST_ASSERT_EQUAL(GBT_name_of_largest_tree(gb_main), "tree_test");
+            TEST_EXPECT_EQUAL(GBT_name_of_largest_tree(gb_main), "tree_test");
 
-            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_test");
-            TEST_ASSERT_EQUAL(GBT_name_of_bottom_tree(gb_main), "tree_nj_bs");
+            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_test");
+            TEST_EXPECT_EQUAL(GBT_name_of_bottom_tree(gb_main), "tree_nj_bs");
 
             long inner_nodes = GBT_size_of_tree(gb_main, "tree_nj_bs");
-            TEST_ASSERT_EQUAL(inner_nodes, 5);
-            TEST_ASSERT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", -1), "tree_nj_bs       (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
-            TEST_ASSERT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
+            TEST_EXPECT_EQUAL(inner_nodes, 5);
+            TEST_EXPECT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", -1), "tree_nj_bs       (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
+            TEST_EXPECT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
 
             {
                 GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", sizeof(GBT_TREE));
 
-                TEST_ASSERT(tree);
+                TEST_REJECT_NULL(tree);
 
                 size_t leaf_count = GBT_count_leafs(tree);
 
@@ -1241,82 +1247,82 @@ void TEST_tree() {
                 StrArray  species2;
                 for (int i = 0; species[i]; ++i) species2.put(strdup(species[i]));
 
-                TEST_ASSERT_EQUAL(species_count, leaf_count);
-                TEST_ASSERT_EQUAL(long(species_count), inner_nodes+1);
+                TEST_EXPECT_EQUAL(species_count, leaf_count);
+                TEST_EXPECT_EQUAL(long(species_count), inner_nodes+1);
                 char *joined = GBT_join_names(species2, '*');
-                TEST_ASSERT_EQUAL(joined, "CloButyr*CloButy2*CorGluta*CorAquat*CurCitre*CytAquat");
+                TEST_EXPECT_EQUAL(joined, "CloButyr*CloButy2*CorGluta*CorAquat*CurCitre*CytAquat");
                 free(joined);
                 free(species);
 
                 GBT_delete_tree(tree);
             }
 
-            TEST_ASSERT_EQUAL(GBT_existing_tree(gb_main, "tree_nj_bs"), "tree_nj_bs");
-            TEST_ASSERT_EQUAL(GBT_existing_tree(gb_main, "tree_nosuch"), "tree_test");
+            TEST_EXPECT_EQUAL(GBT_existing_tree(gb_main, "tree_nj_bs"), "tree_nj_bs");
+            TEST_EXPECT_EQUAL(GBT_existing_tree(gb_main, "tree_nosuch"), "tree_test");
         }
 
         // changing tree order
         {
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "4:tree_test|tree_tree2|tree_nj|tree_nj_bs");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_test|tree_tree2|tree_nj|tree_nj_bs");
 
             GBDATA *gb_test  = GBT_find_tree(gb_main, "tree_test");
             GBDATA *gb_tree2 = GBT_find_tree(gb_main, "tree_tree2");
             GBDATA *gb_nj    = GBT_find_tree(gb_main, "tree_nj");
             GBDATA *gb_nj_bs = GBT_find_tree(gb_main, "tree_nj_bs");
 
-            TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_nj_bs)); // move to bottom
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_nj|tree_nj_bs|tree_test");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_nj_bs)); // move to bottom
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_nj|tree_nj_bs|tree_test");
 
-            TEST_ASSERT_EQUAL(GBT_tree_behind(gb_tree2), gb_nj);
-            TEST_ASSERT_EQUAL(GBT_tree_behind(gb_nj), gb_nj_bs);
-            TEST_ASSERT_EQUAL(GBT_tree_behind(gb_nj_bs), gb_test);
-            TEST_ASSERT_NULL(GBT_tree_behind(gb_test));
+            TEST_EXPECT_EQUAL(GBT_tree_behind(gb_tree2), gb_nj);
+            TEST_EXPECT_EQUAL(GBT_tree_behind(gb_nj), gb_nj_bs);
+            TEST_EXPECT_EQUAL(GBT_tree_behind(gb_nj_bs), gb_test);
+            TEST_EXPECT_NULL(GBT_tree_behind(gb_test));
 
-            TEST_ASSERT_NULL(GBT_tree_infrontof(gb_tree2));
-            TEST_ASSERT_EQUAL(GBT_tree_infrontof(gb_nj), gb_tree2);
-            TEST_ASSERT_EQUAL(GBT_tree_infrontof(gb_nj_bs), gb_nj);
-            TEST_ASSERT_EQUAL(GBT_tree_infrontof(gb_test), gb_nj_bs);
+            TEST_EXPECT_NULL(GBT_tree_infrontof(gb_tree2));
+            TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_nj), gb_tree2);
+            TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_nj_bs), gb_nj);
+            TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_test), gb_nj_bs);
 
-            TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_test, GBT_INFRONTOF, gb_tree2)); // move to top
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "4:tree_test|tree_tree2|tree_nj|tree_nj_bs");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_INFRONTOF, gb_tree2)); // move to top
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_test|tree_tree2|tree_nj|tree_nj_bs");
 
-            TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_tree2));
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj|tree_nj_bs");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_tree2));
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj|tree_nj_bs");
 
-            TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_nj_bs, GBT_INFRONTOF, gb_nj));
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj_bs|tree_nj");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_nj_bs, GBT_INFRONTOF, gb_nj));
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj_bs|tree_nj");
 
-            TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_nj_bs, GBT_INFRONTOF, gb_nj_bs)); // noop
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj_bs|tree_nj");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_nj_bs, GBT_INFRONTOF, gb_nj_bs)); // noop
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj_bs|tree_nj");
 
-            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_tree2");
+            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_tree2");
 
-            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj_bs)), "tree_nj");
-            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj)), "tree_tree2"); // last -> first
+            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj_bs)), "tree_nj");
+            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj)), "tree_tree2"); // last -> first
         }
 
         // check tree order is maintained by copy, rename and delete
 
         {
             // copy
-            TEST_ASSERT_ERROR_CONTAINS(GBT_copy_tree(gb_main, "tree_nosuch", "tree_whatever"), "tree 'tree_nosuch' not found");
-            TEST_ASSERT_ERROR_CONTAINS(GBT_copy_tree(gb_main, "tree_test",   "tree_test"),     "source- and dest-tree are the same");
-            TEST_ASSERT_ERROR_CONTAINS(GBT_copy_tree(gb_main, "tree_tree2",  "tree_test"),     "tree 'tree_test' already exists");
+            TEST_EXPECT_ERROR_CONTAINS(GBT_copy_tree(gb_main, "tree_nosuch", "tree_whatever"), "tree 'tree_nosuch' not found");
+            TEST_EXPECT_ERROR_CONTAINS(GBT_copy_tree(gb_main, "tree_test",   "tree_test"),     "source- and dest-tree are the same");
+            TEST_EXPECT_ERROR_CONTAINS(GBT_copy_tree(gb_main, "tree_tree2",  "tree_test"),     "tree 'tree_test' already exists");
 
-            TEST_ASSERT_NO_ERROR(GBT_copy_tree(gb_main, "tree_test", "tree_test_copy"));
-            TEST_ASSERT(GBT_find_tree(gb_main, "tree_test_copy"));
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_nj");
+            TEST_EXPECT_NO_ERROR(GBT_copy_tree(gb_main, "tree_test", "tree_test_copy"));
+            TEST_REJECT_NULL(GBT_find_tree(gb_main, "tree_test_copy"));
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_nj");
 
             // rename
-            TEST_ASSERT_NO_ERROR(GBT_rename_tree(gb_main, "tree_nj", "tree_renamed_nj"));
-            TEST_ASSERT(GBT_find_tree(gb_main, "tree_renamed_nj"));
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_renamed_nj");
+            TEST_EXPECT_NO_ERROR(GBT_rename_tree(gb_main, "tree_nj", "tree_renamed_nj"));
+            TEST_REJECT_NULL(GBT_find_tree(gb_main, "tree_renamed_nj"));
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_renamed_nj");
 
-            TEST_ASSERT_NO_ERROR(GBT_rename_tree(gb_main, "tree_tree2", "tree_renamed_tree2"));
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "5:tree_renamed_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_renamed_nj");
+            TEST_EXPECT_NO_ERROR(GBT_rename_tree(gb_main, "tree_tree2", "tree_renamed_tree2"));
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_renamed_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_renamed_nj");
 
-            TEST_ASSERT_NO_ERROR(GBT_rename_tree(gb_main, "tree_test_copy", "tree_renamed_test_copy"));
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "5:tree_renamed_tree2|tree_test|tree_renamed_test_copy|tree_nj_bs|tree_renamed_nj");
+            TEST_EXPECT_NO_ERROR(GBT_rename_tree(gb_main, "tree_test_copy", "tree_renamed_test_copy"));
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_renamed_tree2|tree_test|tree_renamed_test_copy|tree_nj_bs|tree_renamed_nj");
 
             // delete
 
@@ -1326,55 +1332,55 @@ void TEST_tree() {
             GBDATA *gb_renamed_tree2     = GBT_find_tree(gb_main, "tree_renamed_tree2");
             GBDATA *gb_test              = GBT_find_tree(gb_main, "tree_test");
 
-            TEST_ASSERT_NO_ERROR(GB_delete(gb_renamed_tree2));
-            TEST_ASSERT_NO_ERROR(GB_delete(gb_renamed_test_copy));
-            TEST_ASSERT_NO_ERROR(GB_delete(gb_renamed_nj));
+            TEST_EXPECT_NO_ERROR(GB_delete(gb_renamed_tree2));
+            TEST_EXPECT_NO_ERROR(GB_delete(gb_renamed_test_copy));
+            TEST_EXPECT_NO_ERROR(GB_delete(gb_renamed_nj));
 
             // .. two trees left
 
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "2:tree_test|tree_nj_bs");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "2:tree_test|tree_nj_bs");
 
-            TEST_ASSERT_EQUAL(GBT_find_largest_tree(gb_main), gb_test);
-            TEST_ASSERT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
-            TEST_ASSERT_EQUAL(GBT_find_bottom_tree(gb_main), gb_nj_bs);
+            TEST_EXPECT_EQUAL(GBT_find_largest_tree(gb_main), gb_test);
+            TEST_EXPECT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
+            TEST_EXPECT_EQUAL(GBT_find_bottom_tree(gb_main), gb_nj_bs);
             
-            TEST_ASSERT_EQUAL(GBT_find_next_tree(gb_test), gb_nj_bs);
-            TEST_ASSERT_EQUAL(GBT_find_next_tree(gb_nj_bs), gb_test);
+            TEST_EXPECT_EQUAL(GBT_find_next_tree(gb_test), gb_nj_bs);
+            TEST_EXPECT_EQUAL(GBT_find_next_tree(gb_nj_bs), gb_test);
 
-            TEST_ASSERT_NULL (GBT_tree_infrontof(gb_test));
-            TEST_ASSERT_EQUAL(GBT_tree_behind   (gb_test), gb_nj_bs);
+            TEST_EXPECT_NULL (GBT_tree_infrontof(gb_test));
+            TEST_EXPECT_EQUAL(GBT_tree_behind   (gb_test), gb_nj_bs);
             
-            TEST_ASSERT_EQUAL(GBT_tree_infrontof(gb_nj_bs), gb_test);
-            TEST_ASSERT_NULL (GBT_tree_behind   (gb_nj_bs));
+            TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_nj_bs), gb_test);
+            TEST_EXPECT_NULL (GBT_tree_behind   (gb_nj_bs));
 
-            TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_nj_bs)); // move to bottom
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "2:tree_nj_bs|tree_test");
-            TEST_ASSERT_NO_ERROR(GBT_move_tree(gb_test, GBT_INFRONTOF, gb_nj_bs)); // move to top
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "2:tree_test|tree_nj_bs");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_nj_bs)); // move to bottom
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "2:tree_nj_bs|tree_test");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_INFRONTOF, gb_nj_bs)); // move to top
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "2:tree_test|tree_nj_bs");
             
-            TEST_ASSERT_NO_ERROR(GB_delete(gb_nj_bs));
+            TEST_EXPECT_NO_ERROR(GB_delete(gb_nj_bs));
 
             // .. one tree left
 
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "1:tree_test");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "1:tree_test");
 
-            TEST_ASSERT_EQUAL(GBT_find_largest_tree(gb_main), gb_test);
-            TEST_ASSERT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
-            TEST_ASSERT_EQUAL(GBT_find_bottom_tree(gb_main), gb_test);
+            TEST_EXPECT_EQUAL(GBT_find_largest_tree(gb_main), gb_test);
+            TEST_EXPECT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
+            TEST_EXPECT_EQUAL(GBT_find_bottom_tree(gb_main), gb_test);
             
-            TEST_ASSERT_NULL(GBT_find_next_tree(gb_test)); // no other tree left
-            TEST_ASSERT_NULL(GBT_tree_behind(gb_test));
-            TEST_ASSERT_NULL(GBT_tree_infrontof(gb_test));
+            TEST_EXPECT_NULL(GBT_find_next_tree(gb_test)); // no other tree left
+            TEST_EXPECT_NULL(GBT_tree_behind(gb_test));
+            TEST_EXPECT_NULL(GBT_tree_infrontof(gb_test));
 
-            TEST_ASSERT_NO_ERROR(GB_delete(gb_test));
+            TEST_EXPECT_NO_ERROR(GB_delete(gb_test));
 
             // .. no tree left
             
-            TEST_ASSERT_EQUAL(getTreeOrder(gb_main), "0:");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "0:");
 
-            TEST_ASSERT_NULL(GBT_find_tree(gb_main, "tree_test"));
-            TEST_ASSERT_NULL(GBT_existing_tree(gb_main, "tree_whatever"));
-            TEST_ASSERT_NULL(GBT_find_largest_tree(gb_main));
+            TEST_EXPECT_NULL(GBT_find_tree(gb_main, "tree_test"));
+            TEST_EXPECT_NULL(GBT_existing_tree(gb_main, "tree_whatever"));
+            TEST_EXPECT_NULL(GBT_find_largest_tree(gb_main));
         }
     }
 

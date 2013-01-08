@@ -155,55 +155,55 @@ void di_protdist::cats(di_cattype      wcat)
     aas             b;
 
     // fundamental subgroups
-    cat[(long) cys - (long) ala] = 1;
-    cat[(long) met - (long) ala] = 2;
-    cat[(long) val - (long) ala] = 3;
-    cat[(long) leu - (long) ala] = 3;
-    cat[(long) ileu - (long) ala] = 3;
-    cat[(long) gly - (long) ala] = 4;
+    cat[(long) CYS - (long) ALA] = 1;
+    cat[(long) MET - (long) ALA] = 2;
+    cat[(long) VAL - (long) ALA] = 3;
+    cat[(long) LEU - (long) ALA] = 3;
+    cat[(long) ILEU - (long) ALA] = 3;
+    cat[(long) GLY - (long) ALA] = 4;
     cat[0] = 4;
-    cat[(long) ser - (long) ala] = 4;
-    cat[(long) thr - (long) ala] = 4;
-    cat[(long) pro - (long) ala] = 5;
-    cat[(long) phe - (long) ala] = 6;
-    cat[(long) tyr - (long) ala] = 6;
-    cat[(long) trp - (long) ala] = 6;
-    cat[(long) glu - (long) ala] = 7;
-    cat[(long) gln - (long) ala] = 7;
-    cat[(long) asp - (long) ala] = 7;
-    cat[(long) asn - (long) ala] = 7;
-    cat[(long) lys - (long) ala] = 8;
-    cat[(long) arg - (long) ala] = 8;
-    cat[(long) his - (long) ala] = 8;
-    if (wcat == george) {
+    cat[(long) SER - (long) ALA] = 4;
+    cat[(long) THR - (long) ALA] = 4;
+    cat[(long) PRO - (long) ALA] = 5;
+    cat[(long) PHE - (long) ALA] = 6;
+    cat[(long) TYR - (long) ALA] = 6;
+    cat[(long) TRP - (long) ALA] = 6;
+    cat[(long) GLU - (long) ALA] = 7;
+    cat[(long) GLN - (long) ALA] = 7;
+    cat[(long) ASP - (long) ALA] = 7;
+    cat[(long) ASN - (long) ALA] = 7;
+    cat[(long) LYS - (long) ALA] = 8;
+    cat[(long) ARG - (long) ALA] = 8;
+    cat[(long) HIS - (long) ALA] = 8;
+    if (wcat == GEORGE) {
         /* George, Hunt and Barker: sulfhydryl, small hydrophobic,
          * small hydrophilic, aromatic, acid/acid-amide/hydrophilic,
          * basic
          */
-        for (b = ala; (long) b <= (long) val; b = (aas) ((long) b + 1)) {
-            if (cat[(long) b - (long) ala] == 3)
-                cat[(long) b - (long) ala] = 2;
-            if (cat[(long) b - (long) ala] == 5)
-                cat[(long) b - (long) ala] = 4;
+        for (b = ALA; (long) b <= (long) VAL; b = (aas) ((long) b + 1)) {
+            if (cat[(long) b - (long) ALA] == 3)
+                cat[(long) b - (long) ALA] = 2;
+            if (cat[(long) b - (long) ALA] == 5)
+                cat[(long) b - (long) ALA] = 4;
         }
     }
-    if (wcat == chemical) {
+    if (wcat == CHEMICAL) {
         /* Conn and Stumpf:  monoamino, aliphatic, heterocyclic,
          * aromatic, dicarboxylic, basic
          */
-        for (b = ala; (long) b <= (long) val; b = (aas) ((long) b + 1)) {
-            if (cat[(long) b - (long) ala] == 2)
-                cat[(long) b - (long) ala] = 1;
-            if (cat[(long) b - (long) ala] == 4)
-                cat[(long) b - (long) ala] = 3;
+        for (b = ALA; (long) b <= (long) VAL; b = (aas) ((long) b + 1)) {
+            if (cat[(long) b - (long) ALA] == 2)
+                cat[(long) b - (long) ALA] = 1;
+            if (cat[(long) b - (long) ALA] == 4)
+                cat[(long) b - (long) ALA] = 3;
         }
     }
     // Ben Hall's personal opinion
-    if (wcat != hall)
+    if (wcat != HALL)
         return;
-    for (b = ala; (long) b <= (long) val; b = (aas) ((long) b + 1)) {
-        if (cat[(long) b - (long) ala] == 3)
-            cat[(long) b - (long) ala] = 2;
+    for (b = ALA; (long) b <= (long) VAL; b = (aas) ((long) b + 1)) {
+        if (cat[(long) b - (long) ALA] == 3)
+            cat[(long) b - (long) ALA] = 2;
     }
 }
 
@@ -239,7 +239,7 @@ void di_protdist::maketrans() {
     for (i = 0; i <= 3; i++) {
         for (j = 0; j <= 3; j++) {
             for (k = 0; k <= 3; k++) {
-                if (trans[i][j][k] != stop)
+                if (trans[i][j][k] != STOP)
                     sum += f[i] * f[j] * f[k];
             }
         }
@@ -263,9 +263,9 @@ void di_protdist::maketrans() {
                         else
                             x *= xi * f[n - 1] / g[n - 1] + xv * f[n - 1];
                         b2 = trans[newsub[0] - 1][newsub[1] - 1][newsub[2] - 1];
-                        if (b1 != stop) {
+                        if (b1 != STOP) {
                             pi[b1] += x;
-                            if (b2 != stop) {
+                            if (b2 != STOP) {
                                 if (cat[b1] != cat[b2]) {
                                     prob[b1][b2] += x * ease;
                                     prob[b1][b1] += x * (1.0 - ease);
@@ -292,87 +292,98 @@ void di_protdist::code()
 {
     // make up table of the code 0 = u, 1 = c, 2 = a, 3 = g
 
-    trans[0][0][0] = phe;
-    trans[0][0][1] = phe;
-    trans[0][0][2] = leu;
-    trans[0][0][3] = leu;
-    trans[0][1][0] = ser;
-    trans[0][1][1] = ser;
-    trans[0][1][2] = ser;
-    trans[0][1][3] = ser;
-    trans[0][2][0] = tyr;
-    trans[0][2][1] = tyr;
-    trans[0][2][2] = stop;
-    trans[0][2][3] = stop;
-    trans[0][3][0] = cys;
-    trans[0][3][1] = cys;
-    trans[0][3][2] = stop;
-    trans[0][3][3] = trp;
-    trans[1][0][0] = leu;
-    trans[1][0][1] = leu;
-    trans[1][0][2] = leu;
-    trans[1][0][3] = leu;
-    trans[1][1][0] = pro;
-    trans[1][1][1] = pro;
-    trans[1][1][2] = pro;
-    trans[1][1][3] = pro;
-    trans[1][2][0] = his;
-    trans[1][2][1] = his;
-    trans[1][2][2] = gln;
-    trans[1][2][3] = gln;
-    trans[1][3][0] = arg;
-    trans[1][3][1] = arg;
-    trans[1][3][2] = arg;
-    trans[1][3][3] = arg;
-    trans[2][0][0] = ileu;
-    trans[2][0][1] = ileu;
-    trans[2][0][2] = ileu;
-    trans[2][0][3] = met;
-    trans[2][1][0] = thr;
-    trans[2][1][1] = thr;
-    trans[2][1][2] = thr;
-    trans[2][1][3] = thr;
-    trans[2][2][0] = asn;
-    trans[2][2][1] = asn;
-    trans[2][2][2] = lys;
-    trans[2][2][3] = lys;
-    trans[2][3][0] = ser;
-    trans[2][3][1] = ser;
-    trans[2][3][2] = arg;
-    trans[2][3][3] = arg;
-    trans[3][0][0] = val;
-    trans[3][0][1] = val;
-    trans[3][0][2] = val;
-    trans[3][0][3] = val;
-    trans[3][1][0] = ala;
-    trans[3][1][1] = ala;
-    trans[3][1][2] = ala;
-    trans[3][1][3] = ala;
-    trans[3][2][0] = asp;
-    trans[3][2][1] = asp;
-    trans[3][2][2] = glu;
-    trans[3][2][3] = glu;
-    trans[3][3][0] = gly;
-    trans[3][3][1] = gly;
-    trans[3][3][2] = gly;
-    trans[3][3][3] = gly;
-    if (whichcode == mito)
-        trans[0][3][2] = trp;
-    if (whichcode == vertmito) {
-        trans[0][3][2] = trp;
-        trans[2][3][2] = stop;
-        trans[2][3][3] = stop;
-        trans[2][0][2] = met;
-    }
-    if (whichcode == flymito) {
-        trans[0][3][2] = trp;
-        trans[2][0][2] = met;
-        trans[2][3][2] = ser;
-    }
-    if (whichcode == yeastmito) {
-        trans[0][3][2] = trp;
-        trans[1][0][2] = thr;
-        trans[2][0][2] = met;
+    trans[0][0][0] = PHE;
+    trans[0][0][1] = PHE;
+    trans[0][0][2] = LEU;
+    trans[0][0][3] = LEU;
+    trans[0][1][0] = SER;
+    trans[0][1][1] = SER;
+    trans[0][1][2] = SER;
+    trans[0][1][3] = SER;
+    trans[0][2][0] = TYR;
+    trans[0][2][1] = TYR;
+    trans[0][2][2] = STOP;
+    trans[0][2][3] = STOP;
+    trans[0][3][0] = CYS;
+    trans[0][3][1] = CYS;
+    trans[0][3][2] = STOP;
+    trans[0][3][3] = TRP;
+    trans[1][0][0] = LEU;
+    trans[1][0][1] = LEU;
+    trans[1][0][2] = LEU;
+    trans[1][0][3] = LEU;
+    trans[1][1][0] = PRO;
+    trans[1][1][1] = PRO;
+    trans[1][1][2] = PRO;
+    trans[1][1][3] = PRO;
+    trans[1][2][0] = HIS;
+    trans[1][2][1] = HIS;
+    trans[1][2][2] = GLN;
+    trans[1][2][3] = GLN;
+    trans[1][3][0] = ARG;
+    trans[1][3][1] = ARG;
+    trans[1][3][2] = ARG;
+    trans[1][3][3] = ARG;
+    trans[2][0][0] = ILEU;
+    trans[2][0][1] = ILEU;
+    trans[2][0][2] = ILEU;
+    trans[2][0][3] = MET;
+    trans[2][1][0] = THR;
+    trans[2][1][1] = THR;
+    trans[2][1][2] = THR;
+    trans[2][1][3] = THR;
+    trans[2][2][0] = ASN;
+    trans[2][2][1] = ASN;
+    trans[2][2][2] = LYS;
+    trans[2][2][3] = LYS;
+    trans[2][3][0] = SER;
+    trans[2][3][1] = SER;
+    trans[2][3][2] = ARG;
+    trans[2][3][3] = ARG;
+    trans[3][0][0] = VAL;
+    trans[3][0][1] = VAL;
+    trans[3][0][2] = VAL;
+    trans[3][0][3] = VAL;
+    trans[3][1][0] = ALA;
+    trans[3][1][1] = ALA;
+    trans[3][1][2] = ALA;
+    trans[3][1][3] = ALA;
+    trans[3][2][0] = ASP;
+    trans[3][2][1] = ASP;
+    trans[3][2][2] = GLU;
+    trans[3][2][3] = GLU;
+    trans[3][3][0] = GLY;
+    trans[3][3][1] = GLY;
+    trans[3][3][2] = GLY;
+    trans[3][3][3] = GLY;
+
+    switch (whichcode) {
+        case UNIVERSAL:
+        case CILIATE:
+            break; // use default code above
+
+        case MITO:
+            trans[0][3][2] = TRP;
+            break;
+
+        case VERTMITO:
+            trans[0][3][2] = TRP;
+            trans[2][3][2] = STOP;
+            trans[2][3][3] = STOP;
+            trans[2][0][2] = MET;
+            break;
+
+        case FLYMITO:
+            trans[0][3][2] = TRP;
+            trans[2][0][2] = MET;
+            trans[2][3][2] = SER;
+            break;
+
+        case YEASTMITO:
+            trans[0][3][2] = TRP;
+            trans[1][0][2] = THR;
+            trans[2][0][2] = MET;
+            break;
     }
 }
 
@@ -543,26 +554,26 @@ void di_protdist::build_predikt_table(int pos) {
     akt_curves = curves[pos] = (di_paa_matrix *) calloc(sizeof(di_paa_matrix), 1);
     akt_infs = infs[pos] = (di_bool_matrix *) calloc(sizeof(di_bool_matrix), 1);
 
-    for (b1 = ala; b1 < di_max_paa; b1++) {
-        for (b2 = ala; b2 <= b1; b2++) {
-            if (b1 != stop && b1 != del && b1 != quest && b1 != unk &&
-                b2 != stop && b2 != del && b2 != quest && b2 != unk) {
+    for (b1 = ALA; b1 < DI_MAX_PAA; b1++) {
+        for (b2 = ALA; b2 <= b1; b2++) {
+            if (b1 != STOP && b1 != DEL && b1 != QUEST && b1 != UNK &&
+                b2 != STOP && b2 != DEL && b2 != QUEST && b2 != UNK) {
                 p = 0.0;
                 dp = 0.0;
                 d2p = 0.0;
-                if (b1 != asx && b1 != glx && b2 != asx && b2 != glx) {
+                if (b1 != ASX && b1 != GLX && b2 != ASX && b2 != GLX) {
                     predict(tt, b1, b2);
                 }
                 else {
-                    if (b1 == asx) {
-                        if (b2 == asx) {
+                    if (b1 == ASX) {
+                        if (b2 == ASX) {
                             predict(tt, 2L, 2L);
                             predict(tt, 2L, 3L);
                             predict(tt, 3L, 2L);
                             predict(tt, 3L, 3L);
                         }
                         else {
-                            if (b2 == glx) {
+                            if (b2 == GLX) {
                                 predict(tt, 2L, 5L);
                                 predict(tt, 2L, 6L);
                                 predict(tt, 3L, 5L);
@@ -575,15 +586,15 @@ void di_protdist::build_predikt_table(int pos) {
                         }
                     }
                     else {
-                        if (b1 == glx) {
-                            if (b2 == asx) {
+                        if (b1 == GLX) {
+                            if (b2 == ASX) {
                                 predict(tt, 5L, 2L);
                                 predict(tt, 5L, 3L);
                                 predict(tt, 6L, 2L);
                                 predict(tt, 6L, 3L);
                             }
                             else {
-                                if (b2 == glx) {
+                                if (b2 == GLX) {
                                     predict(tt, 5L, 5L);
                                     predict(tt, 5L, 6L);
                                     predict(tt, 6L, 5L);
@@ -596,13 +607,13 @@ void di_protdist::build_predikt_table(int pos) {
                             }
                         }
                         else {
-                            if (b2 == asx) {
+                            if (b2 == ASX) {
                                 predict(tt, b1, 2L);
                                 predict(tt, b1, 3L);
                                 predict(tt, b1, 2L);
                                 predict(tt, b1, 3L);
                             }
-                            else if (b2 == glx) {
+                            else if (b2 == GLX) {
                                 predict(tt, b1, 5L);
                                 predict(tt, b1, 6L);
                                 predict(tt, b1, 5L);
@@ -629,16 +640,16 @@ void di_protdist::build_predikt_table(int pos) {
 }
 
 int di_protdist::tt_2_pos(double tt) {
-    int pos = (int)(tt * fracchange * di_resolution);
-    if (pos >= di_resolution * di_max_dist)
-        pos = di_resolution * di_max_dist - 1;
+    int pos = (int)(tt * fracchange * DI_RESOLUTION);
+    if (pos >= DI_RESOLUTION * DI_MAX_DIST)
+        pos = DI_RESOLUTION * DI_MAX_DIST - 1;
     if (pos < 0)
         pos = 0;
     return pos;
 }
 
 double di_protdist::pos_2_tt(int pos) {
-    double tt =  pos / (fracchange * di_resolution);
+    double tt =  pos / (fracchange * DI_RESOLUTION);
     return tt+epsilon;
 }
 
@@ -676,15 +687,15 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
             ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
             for (k = 0; k <chars;  k++) {
                 b1 = seq1[k];
-                if (b1 <= val) continue;
-                if (b1 == asx || b1 == glx) continue;
-                seq1[k] = del;
+                if (b1 <= VAL) continue;
+                if (b1 == ASX || b1 == GLX) continue;
+                seq1[k] = DEL;
             }
         }
 
         for (j = 0; j < i;  j++) {
-            if (whichcat > kimura) {
-                if (whichcat == pam)
+            if (whichcat > KIMURA) {
+                if (whichcat == PAM)
                     tt = 10.0;
                 else
                     tt = 1.0;
@@ -747,7 +758,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
                 for (k = chars; k >0; k--) {
                     b1 = *(seq1++);
                     b2 = *(seq2++);
-                    if (b1 <= val && b2 <= val) {
+                    if (b1 <= VAL && b2 <= VAL) {
                         if (b1 == b2)   m++;
                         n++;
                     }
@@ -757,7 +768,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
                 }
                 else {
                     switch (whichcat) {
-                        case kimura:
+                        case KIMURA:
                             {
                                 double rel = 1 - (double) m / n;
                                 double drel = 1.0 - rel - 0.2 * rel * rel;
@@ -770,10 +781,10 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
                                 }
                             }
                             break;
-                        case none:
+                        case NONE:
                             tt = (n-m)/(double)n;
                             break;
-                        case similarity:
+                        case SIMILARITY:
                             tt = m/(double)n;
                             break;
                         default:
@@ -792,7 +803,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
 
 
 void di_protdist::clean_slopes() {
-    for (int i=0; i<di_resolution*di_max_dist; i++) {
+    for (int i=0; i<DI_RESOLUTION*DI_MAX_DIST; i++) {
         freenull(slopes[i]);
         freenull(curves[i]);
         freenull(infs[i]);
@@ -822,12 +833,12 @@ di_protdist::di_protdist(di_codetype codei, di_cattype cati, long nentries, DI_E
     whichcode = codei;
     whichcat = cati;
     switch (cati) {
-        case none:
-        case similarity:
-        case kimura:
+        case NONE:
+        case SIMILARITY:
+        case KIMURA:
             fracchange = 1.0;
             break;
-        case pam:
+        case PAM:
             code();
             pameigen();
             break;

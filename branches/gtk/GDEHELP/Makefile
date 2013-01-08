@@ -19,9 +19,15 @@ MENUS/%.genmenu : genmenu.header
 MENUS/%.genmenu : MENUS/%.menu
 		( cat genmenu.header; sed -e "s/^[ ]*//" ) < $< > $@
 
-$(MENUS) : $(MENUS_SRC) $(GENMENUS) Makefile $(PPP) $(CLEAN)
+MENUS_DIRTY=$(MENUS).dirty
+
+$(MENUS_DIRTY) : $(MENUS_SRC) $(GENMENUS) Makefile $(PPP)
+	$(PPP) -IMENUS $(MENUS_SRC) >$@
+
+$(MENUS) : $(MENUS_DIRTY) $(CLEAN)
 	-chmod a+w $@
-	$(PPP) -IMENUS $(MENUS_SRC) | $(CLEAN) >$@
+	$(CLEAN) <$(MENUS_DIRTY) >$@
+	rm $(MENUS_DIRTY)
 	chmod a-w $@
 
 # ------------------------------------------------------------

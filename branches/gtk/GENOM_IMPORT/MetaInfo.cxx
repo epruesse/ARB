@@ -134,9 +134,7 @@ void References::add_dbid(const string& content) {
     // * Multiple database references may be concatenated (each starts on it's own line)
     // * 'id' is possibly split up on several lines
 
-    RegExpr reg_dbid("^([A-Z]+);\\s+|\n([A-Z]+);\\s+", false);
-    size_t  offset = 0;
-
+    RegExpr         reg_dbid("^([A-Z]+);\\s+|\n([A-Z]+);\\s+", false);
     const RegMatch *dbid_start = reg_dbid.match(content);
 
     if (!dbid_start) {
@@ -152,8 +150,7 @@ void References::add_dbid(const string& content) {
             string dbid     = sub->extract(content);
             size_t id_start = dbid_start->posBehindMatch();
 
-            offset     = id_start;
-            dbid_start = reg_dbid.match(content, offset); // search for start of next db-id
+            dbid_start = reg_dbid.match(content, id_start); // search for start of next db-id
 
             DBID_TYPE   type      = DBID_ILLEGAL;
             const char *arb_field = 0;

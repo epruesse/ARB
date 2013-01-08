@@ -32,39 +32,47 @@ sub parseOneParam(\$) {
 
   while ($$code_r =~ /[()[\],\"\']/o) {
     my ($before,$sep,$after) = ($`,$&,$');
+    my ($do_pop,$do_shift) = (0,0);
 
-    if ($before =~ /\\$/o) { goto SHIFT; }
-    if ($inside eq '"' or $inside eq '\'') {
-      if ($sep eq $inside) { goto POP; }
-      goto SHIFT;
-    }
-    if ($sep eq ',') {
-      $$code_r = $after;
-      return $param.$before;
-    }
-    if ($sep eq '\'' or $sep eq '"' or $sep eq '(' or $sep eq '[') {
-      push @instack, $inside;
-      $inside = $sep;
-      goto SHIFT;
-    }
-    if ($sep eq ')') {
-      if ($inside eq '') {
-        $$code_r = $sep.$after;
-        return $param.$before;
-      }
-      if ($inside ne '(') { die "Misplaced ')' in '$$code_r'\n"; }
-      goto POP;
-    }
-    if ($sep eq ']') {
-      if ($inside ne '[') { die "Misplaced ']' in '$$code_r'\n"; }
-    POP:
-      $inside = pop @instack;
-    SHIFT:
-      $param .= $before.$sep;
-      $$code_r = $after;
+    if ($before =~ /\\$/o) { $do_shift = 1; }
+    elsif ($inside eq '"' or $inside eq '\'') {
+      if ($sep eq $inside) { $do_pop = 1; }
+      else { $do_shift = 1; }
     }
     else {
-      die "unhandled separator: param='$param'\nbefore='$before'\nsep='$sep'\nafter='$after'\ncode_r='$$code_r'";
+      if ($sep eq ',') {
+        $$code_r = $after;
+        return $param.$before;
+      }
+      if ($sep eq '\'' or $sep eq '"' or $sep eq '(' or $sep eq '[') {
+        push @instack, $inside;
+        $inside = $sep;
+        $do_shift = 1;
+      }
+      elsif ($sep eq ')') {
+        if ($inside eq '') {
+          $$code_r = $sep.$after;
+          return $param.$before;
+        }
+        if ($inside ne '(') { die "Misplaced ')' in '$$code_r'\n"; }
+        $do_pop = 1;
+      }
+      elsif ($sep eq ']') {
+        if ($inside ne '[') { die "Misplaced ']' in '$$code_r'\n"; }
+        $do_pop = 1;
+      }
+      else {
+        die "unhandled separator: param='$param'\nbefore='$before'\nsep='$sep'\nafter='$after'\ncode_r='$$code_r'";
+      }
+    }
+
+    if ($do_pop==1) {
+      $inside = pop @instack;
+      $do_shift = 1;
+    }
+    if ($do_shift==1) {
+      $param .= $before.$sep;
+      $$code_r = $after;
     }
   }
 

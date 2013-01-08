@@ -416,13 +416,10 @@ static char *g_b_check_undo_size2(g_b_undo_header *uhs, long size, long max_cnt)
 }
 
 static char *g_b_check_undo_size(GB_MAIN_TYPE *Main) {
-    char *error = 0;
-    long maxsize = Main->undo->max_size_of_all_undos;
-    error = g_b_check_undo_size2(Main->undo->u, maxsize/2, GB_MAX_UNDO_CNT);
-    if (error) return error;
-    error = g_b_check_undo_size2(Main->undo->r, maxsize/2, GB_MAX_REDO_CNT);
-    if (error) return error;
-    return 0;
+    long  maxsize     = Main->undo->max_size_of_all_undos;
+    char *error       = g_b_check_undo_size2(Main->undo->u, maxsize/2, GB_MAX_UNDO_CNT);
+    if (!error) error = g_b_check_undo_size2(Main->undo->r, maxsize/2, GB_MAX_REDO_CNT);
+    return error;
 }
 
 

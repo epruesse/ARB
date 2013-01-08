@@ -75,8 +75,7 @@ static void delete_matrix_cb(AW_root *) {
 }
 
 static AW_window *create_dna_matrix_window(AW_root *aw_root) {
-    AW_window_simple *aws = 0;
-    aws = new AW_window_simple;
+    AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SET_DNA_MATRIX", "SET MATRIX");
     aws->auto_increment(50, 50);
     aws->button_length(10);
@@ -96,18 +95,11 @@ static AW_window *create_dna_matrix_window(AW_root *aw_root) {
 void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
 {
     GB_transaction dummy(db);
-    DI_dna_matrix.set_description("", "");
-    DI_dna_matrix.x_description[AP_A] = strdup("A");
-    DI_dna_matrix.x_description[AP_C] = strdup("C");
-    DI_dna_matrix.x_description[AP_G] = strdup("G");
-    DI_dna_matrix.x_description[AP_T] = strdup("TU");
-    DI_dna_matrix.x_description[AP_S] = strdup("GAP");
-
-    DI_dna_matrix.y_description[AP_A] = strdup("A");
-    DI_dna_matrix.y_description[AP_C] = strdup("C");
-    DI_dna_matrix.y_description[AP_G] = strdup("G");
-    DI_dna_matrix.y_description[AP_T] = strdup("TU");
-    DI_dna_matrix.y_description[AP_S] = strdup("GAP");
+    DI_dna_matrix.set_descriptions(AP_A, "A");   
+    DI_dna_matrix.set_descriptions(AP_C, "C");   
+    DI_dna_matrix.set_descriptions(AP_G, "G");   
+    DI_dna_matrix.set_descriptions(AP_T, "TU");  
+    DI_dna_matrix.set_descriptions(AP_S, "GAP"); 
 
     DI_dna_matrix.create_awars(aw_root, AWAR_DIST_MATRIX_DNA_BASE);
 
@@ -253,7 +245,7 @@ MatrixOrder::MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name)
             leafs    = size+1;
             name2pos = GBS_create_hash(leafs, GB_IGNORE_CASE);
 
-            IF_DEBUG(int leafsLoaded = leafs);
+            IF_ASSERTION_USED(int leafsLoaded = leafs);
             leafs = 0;
             insert_in_hash(sort_tree);
 
@@ -275,7 +267,7 @@ void MatrixOrder::applyTo(TreeOrderedSpecies **species_array, size_t array_size)
     GB_sort((void**)species_array, 0, array_size, TreeOrderedSpecies_cmp, NULL);
 }
 
-char *DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warnings, GBDATA **species_list) {
+GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warnings, GBDATA **species_list) {
     GBDATA     *gb_main = get_gb_main();
     const char *use     = get_aliname();
 
@@ -353,7 +345,8 @@ char *DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warning
 
     if (no_of_species>entries_mem_size) {
         entries_mem_size = no_of_species;
-        entries = (DI_ENTRY **)realloc(entries, (size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
+        realloc_unleaked(entries, (size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
+        if (!entries) return "out of memory";
     }
 
     for (int i = 0; i<no_of_species; ++i) {
@@ -370,7 +363,7 @@ char *DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warning
     }
 
     GB_pop_transaction(gb_main);
-    return 0;
+    return NULL;
 }
 
 void DI_MATRIX::clear(DI_MUT_MATR &hits)
@@ -817,30 +810,16 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
 
 GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag) {
     di_cattype whichcat;
-    di_codetype whichcode = universal;
+    di_codetype whichcode = UNIVERSAL;
 
     switch (transformation) {
-        case DI_TRANSFORMATION_NONE:
-            whichcat = none;
-            break;
-        case DI_TRANSFORMATION_SIMILARITY:
-            whichcat = similarity;
-            break;
-        case DI_TRANSFORMATION_KIMURA:
-            whichcat = kimura;
-            break;
-        case DI_TRANSFORMATION_PAM:
-            whichcat = pam;
-            break;
-        case DI_TRANSFORMATION_CATEGORIES_HALL:
-            whichcat = hall;
-            break;
-        case DI_TRANSFORMATION_CATEGORIES_BARKER:
-            whichcat = george;
-            break;
-        case DI_TRANSFORMATION_CATEGORIES_CHEMICAL:
-            whichcat = chemical;
-            break;
+        case DI_TRANSFORMATION_NONE:                whichcat = NONE;       break;
+        case DI_TRANSFORMATION_SIMILARITY:          whichcat = SIMILARITY; break;
+        case DI_TRANSFORMATION_KIMURA:              whichcat = KIMURA;     break;
+        case DI_TRANSFORMATION_PAM:                 whichcat = PAM;        break;
+        case DI_TRANSFORMATION_CATEGORIES_HALL:     whichcat = HALL;       break;
+        case DI_TRANSFORMATION_CATEGORIES_BARKER:   whichcat = GEORGE;     break;
+        case DI_TRANSFORMATION_CATEGORIES_CHEMICAL: whichcat = CHEMICAL;   break;
         default:
             return "This correction is not available for protein data";
     }
@@ -890,21 +869,24 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_window *aww, const Weig
             last_order = new MatrixOrder(GLOBAL_gb_main, sort_tree_name);
         }
         di_assert(last_order);
-        phm->load(all_flag, *last_order, show_warnings, NULL);
+        error = phm->load(all_flag, *last_order, show_warnings, NULL);
 
         free(sort_tree_name);
         GB_pop_transaction(GLOBAL_gb_main);
-        bool aborted = false;
-        if (progress.aborted()) {
-            phm->unload();
-            error   = "Aborted by user";
-            aborted = true;
-        }
-        else {
-            DI_TRANSFORMATION trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
 
-            if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
-            else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
+        bool aborted = false;
+        if (!error) {
+            if (progress.aborted()) {
+                phm->unload();
+                error   = "Aborted by user";
+                aborted = true;
+            }
+            else {
+                DI_TRANSFORMATION trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
+
+                if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
+                else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
+            }
         }
 
         if (aborted) {
@@ -981,33 +963,39 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                         phm->matrix_type       = DI_MATRIX_FULL;
                         GBDATA *species_pair[] = { gb_selected, gb_species, NULL };
 
-                        phm->load(DI_LOAD_LIST, order, false, species_pair);
+                        error = phm->load(DI_LOAD_LIST, order, false, species_pair);
 
-                        if (phm->is_AA) {
-                            error = phm->calculate_pro(trans, NULL);
+                        if (!error) {
+                            if (phm->is_AA) {
+                                error = phm->calculate_pro(trans, NULL);
+                            }
+                            else {
+                                error = phm->calculate(aw_root, cancel, 0.0, trans, NULL);
+                            }
                         }
-                        else {
-                            error = phm->calculate(aw_root, cancel, 0.0, trans, NULL);
-                        }
 
-                        double dist_value = phm->matrix->get(0, 1);                         // distance or conformance
-                        bool   mark       = (lowerBound <= dist_value && dist_value <= upperBound);
-                        GB_write_flag(gb_species, mark);
+                        if (!error) {
+                            double dist_value = phm->matrix->get(0, 1);                         // distance or conformance
+                            bool   mark       = (lowerBound <= dist_value && dist_value <= upperBound);
+                            GB_write_flag(gb_species, mark);
 
-                        if (!markedSelected) {
-                            dist_value = phm->matrix->get(0, 0);                                     // distance or conformance to self
-                            mark       = (lowerBound <= dist_value && dist_value <= upperBound);
-                            GB_write_flag(gb_selected, mark);
+                            if (!markedSelected) {
+                                dist_value = phm->matrix->get(0, 0);                                     // distance or conformance to self
+                                mark       = (lowerBound <= dist_value && dist_value <= upperBound);
+                                GB_write_flag(gb_selected, mark);
 
-                            markedSelected = true;
+                                markedSelected = true;
+                            }
                         }
 
                         delete phm;
-                        progress.inc_and_check_user_abort(error);
+                        if (!error) progress.inc_and_check_user_abort(error);
                     }
 
                     di_assert(!GLOBAL_MATRIX.exists());
                     ASSERT_RESULT(DI_MATRIX*, NULL, GLOBAL_MATRIX.swap(prev_global));
+
+                    if (error) progress.done();
                 }
 
                 delete aliview;
@@ -1316,6 +1304,7 @@ static void di_autodetect_callback(AW_window *aww)
 
     {
         DI_MATRIX phm(*aliview, aw_root);
+        GB_ERROR  error = NULL;
 
         {
             char *load_what      = aw_root->awar(AWAR_DIST_WHICH_SPECIES)->read_string();
@@ -1326,7 +1315,7 @@ static void di_autodetect_callback(AW_window *aww)
             GLOBAL_MATRIX.forget();
 
             MatrixOrder order(GLOBAL_gb_main, sort_tree_name);
-            phm.load(all_flag, order, true, NULL);
+            error = phm.load(all_flag, order, true, NULL);
 
             free(sort_tree_name);
             free(load_what);
@@ -1334,9 +1323,10 @@ static void di_autodetect_callback(AW_window *aww)
 
         GB_pop_transaction(GLOBAL_gb_main);
 
-        progress.subtitle("Search Correction");
-
-        phm.analyse();
+        if (!error) {
+            progress.subtitle("Search Correction");
+            phm.analyse();
+        }
     }
 
     free(cancel);

@@ -28,12 +28,12 @@ public:
             ali_fatal_error("Out of memory");
     }
     ALI_TARRAY(ALI_TLIST<T>* list) {
-        unsigned long l = 0;
         size_of_array = list->cardinality();
         array = (T (*) []) calloc((unsigned int) size_of_array, sizeof(T));
         if (array == 0)
             ali_fatal_error("Out of memory");
         if (!list->is_empty()) {
+            unsigned long l = 0;
             (*array)[l++] = list->first();
             while (list->is_next() && l < size_of_array)
                 (*array)[l++] = list->next();

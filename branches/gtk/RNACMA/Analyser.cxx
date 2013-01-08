@@ -5,6 +5,9 @@
  *
  *  Created on: Feb 15, 2010
  *      Author: breno
+ *
+ *  Institute of Microbiology (Technical University Munich)
+ *  http://www.arb-home.de/ 
  */
 
 #include "Analyser.h"

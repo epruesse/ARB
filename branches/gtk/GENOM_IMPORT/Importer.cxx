@@ -119,9 +119,10 @@ bool FeatureLine::reinterpret_as_continued_line() {
 // --------------------------------------------------------------------------------
 
 Importer::Importer(FileBuffer& Flatfile, DBwriter& DB_writer, const MetaTag *meta_description)
-    : db_writer(DB_writer)
-    , flatfile(Flatfile)
-    , tagTranslator(meta_description)
+    : db_writer(DB_writer), 
+      flatfile(Flatfile), 
+      tagTranslator(meta_description), 
+      expectedSeqLength(-1)
 {}
 
 void Importer::warning(const char *msg) {

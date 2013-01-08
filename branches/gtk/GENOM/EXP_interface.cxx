@@ -276,10 +276,9 @@ static void experiment_delete_cb(AW_window *aww, AW_CL cl_gb_main) {
     if (aw_ask_sure("experiment_delete", "Are you sure to delete the experiment")) {
         GBDATA         *gb_main       = (GBDATA*)cl_gb_main;
         GB_transaction  ta(gb_main);
-        GB_ERROR        error         = 0;
         GBDATA         *gb_experiment = EXP_get_current_experiment(gb_main, aww->get_root());
 
-        error = gb_experiment ? GB_delete(gb_experiment) : "Please select a experiment first";
+        GB_ERROR error = gb_experiment ? GB_delete(gb_experiment) : "Please select a experiment first";
         if (error) {
             error = ta.close(error);
             aw_message(error);
@@ -288,18 +287,18 @@ static void experiment_delete_cb(AW_window *aww, AW_CL cl_gb_main) {
 }
 
 static void experiment_create_cb(AW_window *aww, AW_CL cl_gb_main) {
-    AW_root  *aw_root = aww->get_root();
-    char     *dest    = aw_root->awar(AWAR_EXPERIMENT_DEST)->read_string();
     GBDATA   *gb_main = (GBDATA*)cl_gb_main;
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
     if (!error) {
-        GBDATA *gb_experiment_data = EXP_get_current_experiment_data(gb_main, aw_root);
+        AW_root *aw_root            = aww->get_root();
+        GBDATA  *gb_experiment_data = EXP_get_current_experiment_data(gb_main, aw_root);
 
         if (!gb_experiment_data) {
             error = "Please select an organism";
         }
         else {
+            char   *dest    = aw_root->awar(AWAR_EXPERIMENT_DEST)->read_string();
             GBDATA *gb_dest = EXP_find_experiment_rel_exp_data(gb_experiment_data, dest);
 
             if (gb_dest) {
@@ -310,11 +309,11 @@ static void experiment_create_cb(AW_window *aww, AW_CL cl_gb_main) {
                 if (!gb_dest) error = GB_await_error();
                 else aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
             }
+            free(dest);
         }
     }
 
     GB_end_transaction_show_error(gb_main, error, aw_message);
-    free(dest);
 }
 
 static void experiment_rename_cb(AW_window *aww, AW_CL cl_gb_main) {

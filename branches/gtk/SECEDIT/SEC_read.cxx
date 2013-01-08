@@ -233,7 +233,7 @@ GB_ERROR SEC_helix_strand::read(SEC_loop *loop_, istream & in, int version) {
 
             if (!error) {
                 error = strand2->get_region()->read(in, root, version); // Loop is complete, now trailing SEQ information must be read
-                string_buffer = sec_read_line(in);    // remove closing } from input-stream
+                sec_read_line(in);    // remove closing } from input-stream
             }
 
             if (error) {

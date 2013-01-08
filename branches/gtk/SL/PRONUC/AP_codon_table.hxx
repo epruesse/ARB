@@ -48,7 +48,7 @@ class AWT_allowedCode {
         }
     }
 
-    void legal(int IF_DEBUG(nr)) const { pn_assert(nr >= 0 && nr<AWT_CODON_TABLES); }
+    void legal(int IF_ASSERTION_USED(nr)) const { pn_assert(nr >= 0 && nr<AWT_CODON_TABLES); }
 
 public:
     AWT_allowedCode() { set(1); }

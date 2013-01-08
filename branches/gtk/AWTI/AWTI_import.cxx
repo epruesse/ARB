@@ -29,6 +29,7 @@
 #include <arb_file.h>
 
 #include <climits>
+#include <unistd.h>
 
 using namespace std;
 

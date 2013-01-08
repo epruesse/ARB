@@ -23,12 +23,12 @@
 
 #define TEST_HEXDUMP_EQUAL(width,gap,off,hex,ascii,space,expected) do {       \
         DO_HEXDUMP(off,hex,ascii,width,gap,space);                            \
-        TEST_ASSERT_EQUAL(str.get_data(), expected);                    \
+        TEST_EXPECT_EQUAL(str.get_data(), expected);                    \
     } while(0)
 
 #define TEST_HEXDUMP_EQUAL__BROKEN(width,gap,off,hex,ascii,space,expected) do {       \
         DO_HEXDUMP(off,hex,ascii,width,gap,space);                                    \
-        TEST_ASSERT_EQUAL__BROKEN(str.get_data(), expected);                    \
+        TEST_EXPECT_EQUAL__BROKEN(str.get_data(), expected);                    \
     } while(0)
 
 void TEST_hexdump() {

@@ -240,8 +240,6 @@ GB_ERROR GB_export_errorf(const char *templat, ...) {
     char    *p = buffer;
     va_list  parg;
 
-    memset(buffer, 0, 1000);
-
 #if defined(WARN_TODO)
 #warning dont prepend ARB ERROR here
 #endif
@@ -490,7 +488,8 @@ void GB_informationf(const char *templat, ...) {
 
 void GBS_reuse_buffer(const char *global_buffer) {
     // If you've just shortely used a buffer, you can put it back here
-    gbs_vglobal_string(global_buffer, 0, -1); // omg hax
+    va_list empty;
+    gbs_vglobal_string(global_buffer, empty, -1); // omg hax
 }
 
 #if defined(WARN_TODO)

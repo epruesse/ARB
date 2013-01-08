@@ -14,6 +14,7 @@
 #include "pt_prototypes.h"
 #include <arb_defs.h>
 #include <arb_file.h>
+#include <arb_misc.h>
 
 #include <arb_progress.h>
 
@@ -54,7 +55,7 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
         return root;
     }
 
-    // change leave to node and create two sons
+    // change leaf to node and create two sons
 
     const DataLoc loc_ref(at);
 
@@ -415,14 +416,14 @@ void NOTEST_SLOW_maybe_build_tree() {
 #if 1
         // build
         int res = ARB_main(ARRAY_ELEMS(argv), argv);
-        TEST_ASSERT_EQUAL(res, EXIT_SUCCESS);
+        TEST_EXPECT_EQUAL(res, EXIT_SUCCESS);
 #endif
 
 // #define TEST_AUTO_UPDATE
 #if defined(TEST_AUTO_UPDATE)
         TEST_COPY_FILE(resultPT, expectedPT);
 #else // !defined(TEST_AUTO_UPDATE)
-        TEST_ASSERT_FILES_EQUAL(resultPT, expectedPT);
+        TEST_EXPECT_FILES_EQUAL(resultPT, expectedPT);
 #endif
     }
 }

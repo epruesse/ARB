@@ -99,6 +99,34 @@ inline size_t count_gaps_and_dots(const char *seq, int seqsize) {
     return count;
 }
 
+// uncomment next line to count all bases compressed by ptserver and dump them when program terminates
+// #define COUNT_COMPRESSES_BASES
+#if defined(COUNT_COMPRESSES_BASES)
+class BaseCounter {
+    long count[PT_BASES];
+public:
+    BaseCounter() {
+        for (int i = 0; i<PT_BASES; ++i) {
+            count[i] = 0;
+        }
+    }
+    ~BaseCounter() {
+        fflush_all();
+        fputs("\nBaseCounter:\n", stderr);
+        for (int i = 0; i<PT_BASES; ++i) {
+            fprintf(stderr, "count[%i]=%li\n", i, count[i]);
+        }
+    }
+
+    void inc(uchar base) {
+        pt_assert(base >= 0 && base<PT_BASES);
+        ++count[base];
+    }
+};
+
+static BaseCounter base_counter;
+#endif
+
 int probe_compress_sequence(char *seq, int seqsize) {
     static SmartMallocPtr(uchar) smart_tab;
     uchar *tab = NULL;
@@ -142,6 +170,34 @@ int probe_compress_sequence(char *seq, int seqsize) {
 #endif
 
     return dest - seq;
+}
+
+char *readable_probe(char *compressed_probe, size_t len, char T_or_U) {
+    static SmartMallocPtr(uchar) smart_tab;
+    uchar *tab = NULL;
+
+    if (smart_tab.isNull()) {
+        tab = (uchar *) malloc(256);
+        memset(tab, '?', 256);
+
+        tab[PT_A] = 'A';
+        tab[PT_C] = 'C';
+        tab[PT_G] = 'G';
+        tab[PT_QU]      = 0;
+        tab[PT_B_UNDEF] = '!';
+
+        smart_tab = tab;
+    }
+
+    tab = &*smart_tab;
+    tab[PT_T] = T_or_U;
+    
+    char *result = (char*)malloc(len+1);
+    for (size_t i = 0; i<len; ++i) {
+        result[i] = tab[safeCharIndex(compressed_probe[i])];
+    }
+    result[len] = 0;
+    return result;
 }
 
 static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
@@ -280,7 +336,7 @@ void probe_read_alignments() {
     else {
         printf("\nAll species contain data in alignment '%s'.\n", psg.alignment_name);
     }
-    fflush(stdout);
+    fflush_all();
 }
 
 void PT_build_species_hash() {

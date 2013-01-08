@@ -35,16 +35,17 @@ void FileContent::init() {
 GB_ERROR FileContent::save() {
     arb_assert(!has_error());
 
-    FILE *out        = fopen(path, "wt");
-    bool  failed     = false;
-    if (!out) failed = true;
-    else {
+    FILE *out    = fopen(path, "wt");
+    bool  failed = !out;
+    
+    if (out) {
         for (size_t i = 0; i<Lines.size(); ++i) {
             fputs(Lines[i], out);
             fputc('\n', out);
         }
-        failed = (fclose(out) != 0) || failed;
+        failed = fclose(out) != 0;
     }
+    
     if (failed) error = GB_IO_error("saving", path);
     return error;
 }
@@ -70,9 +71,9 @@ arb_test::match_expectation arrays_equal(const StrArray& expected, const StrArra
     return same_size;
 }
 
-#define TEST_ASSERT_READS_SAME(fc,name) do {                     \
+#define TEST_EXPECT_READS_SAME(fc,name) do {                     \
         FileContent oc(name);                                    \
-        TEST_EXPECT(arrays_equal(fc.lines(), oc.lines()));       \
+        TEST_EXPECTATION(arrays_equal(fc.lines(), oc.lines()));       \
     } while(0)
 
 void TEST_linefeed_conversion() {
@@ -84,15 +85,15 @@ void TEST_linefeed_conversion() {
     const int LINES = 6;
 
     FileContent cunix(funix);
-    TEST_ASSERT_EQUAL(cunix.lines().size(), LINES);
+    TEST_EXPECT_EQUAL(cunix.lines().size(), LINES);
 
-    TEST_ASSERT_EQUAL(GB_size_of_file(fmac),    GB_size_of_file(funix));
-    TEST_ASSERT_EQUAL(GB_size_of_file(fdos),    GB_size_of_file(funix)+LINES);
-    TEST_ASSERT_EQUAL(GB_size_of_file(fbroken), GB_size_of_file(fdos));
+    TEST_EXPECT_EQUAL(GB_size_of_file(fmac),    GB_size_of_file(funix));
+    TEST_EXPECT_EQUAL(GB_size_of_file(fdos),    GB_size_of_file(funix)+LINES);
+    TEST_EXPECT_EQUAL(GB_size_of_file(fbroken), GB_size_of_file(fdos));
 
-    TEST_ASSERT_READS_SAME(cunix,fdos);
-    TEST_ASSERT_READS_SAME(cunix,fmac);
-    TEST_ASSERT_READS_SAME(cunix,fbroken);
+    TEST_EXPECT_READS_SAME(cunix,fdos);
+    TEST_EXPECT_READS_SAME(cunix,fmac);
+    TEST_EXPECT_READS_SAME(cunix,fbroken);
 }
 
 #endif // UNIT_TESTS

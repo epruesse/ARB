@@ -31,6 +31,7 @@ XString::XString(size_t ali_length)
     memset(x_string, '.', len);
     x_string[len] = 0;
     set_length(len);
+    initialize();
 }
 
 XString::XString(const char *saved_x_string, size_t saved_length, size_t ali_length)

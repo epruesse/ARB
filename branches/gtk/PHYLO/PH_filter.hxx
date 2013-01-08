@@ -11,6 +11,10 @@
 #ifndef PH_FILTER_HXX
 #define PH_FILTER_HXX
 
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
 enum {
     OPT_START_COL    = 0,
     OPT_STOP_COL     = 1,

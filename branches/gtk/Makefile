@@ -66,15 +66,15 @@ endif
 
 ALLOWED_GCC_4xx_VERSIONS=\
 	4.2.1 \
-	4.3 4.3.1 4.3.2 4.3.3 4.3.4 \
-	4.4 4.4.1 4.4.3 4.4.5 \
-	4.5.2 \
-	4.6 4.6.1 \
+	4.3.1 4.3.2 4.3.3 4.3.4 \
+	4.4.1       4.4.3       4.4.5 4.4.6 \
+	      4.5.2 \
+	4.6.1       4.6.3 \
 	4.7 4.7.1 4.7.2
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
-GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
+GCC_VERSION_FOUND=$(shell SOURCE_TOOLS/arb_gcc_version.pl)
 GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
 
 #---------------------- split gcc version 
@@ -1662,6 +1662,13 @@ perl_clean:
 PERL2ARB/PERL2ARB.clean:
 	$(MAKE) perl_clean
 
+# ---------------------------------------- bindings to script languages
+
+bindings: lib/libCORE.so lib/libARBDB.so
+	$(MAKE) -C BINDINGS all ARBDEPENDS="$(^:%=../%)" DFLAGS="$(dflags)"
+
+bindings_clean:
+	$(MAKE) -C BINDINGS clean
 
 # ----------------------------------------
 
@@ -1831,11 +1838,13 @@ do_release:
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) testsave
 	$(MAKE) templ # auto upgrades version early
-	$(MAKE) tarfile sourcetarfile
+	$(MAKE) tarfile 
+	$(MAKE) sourcetarfile
 
 release_quick:
 	-rm arb.tgz arbsrc.tgz
-	$(MAKE) tarfile_quick sourcetarfile
+	$(MAKE) tarfile_quick
+	$(MAKE) sourcetarfile
 
 # --------------------------------------------------------------------------------
 

@@ -64,7 +64,6 @@ char *GBT_get_default_ref     (GBDATA *) { return strdup("ECOLI"); }
 struct GB_DbScanner : virtual Noncopyable {
     GB_HASH   *hash_table;
     StrArray&  result; // not owned!
-    GB_TYPES   type;
     char      *buffer;
 
     GB_DbScanner(StrArray& result_)
@@ -83,14 +82,11 @@ struct GB_DbScanner : virtual Noncopyable {
 
 static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, GB_DbScanner *scanner) {
     GB_TYPES type = GB_read_type(gbd);
-    GBDATA *gb2;
-    const char *key;
-    int len_of_prefix;
     if (type == GB_DB) {
-        len_of_prefix = strlen(prefix);
-        for (gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {  // find everything
+        int len_of_prefix = strlen(prefix);
+        for (GBDATA *gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {  // find everything
             if (deep) {
-                key = GB_read_key_pntr(gb2);
+                const char *key = GB_read_key_pntr(gb2);
                 sprintf(&prefix[len_of_prefix], "/%s", key);
                 gbt_scan_db_rek(gb2, prefix, 1, scanner);
             }
@@ -676,12 +672,11 @@ GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char 
     
     remote_awars  awars;
     GBDATA       *gb_action;
-    GB_ERROR      error = NULL;
 
     gbt_build_remote_awars(&awars, application);
     gb_action = gbt_remote_search_awar(gb_main, awars.awar_action);
 
-    error             = GB_begin_transaction(gb_main);
+    GB_ERROR error    = GB_begin_transaction(gb_main);
     if (!error) error = GB_write_string(gb_action, action_name); // write command
     error             = GB_end_transaction(gb_main, error);
 
@@ -696,15 +691,14 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
 
     remote_awars  awars;
     GBDATA       *gb_awar;
-    GB_ERROR      error = NULL;
 
     gbt_build_remote_awars(&awars, application);
     gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
 
-    error = GB_begin_transaction(gb_main);
+    GB_ERROR error    = GB_begin_transaction(gb_main);
     if (!error) error = GB_write_string(gb_awar, awar_name);
     if (!error) error = GBT_write_string(gb_main, awars.awar_value, value);
-    error = GB_end_transaction(gb_main, error);
+    error             = GB_end_transaction(gb_main, error);
 
     if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_result);
 
@@ -718,12 +712,11 @@ GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const ch
 
     remote_awars  awars;
     GBDATA       *gb_awar;
-    GB_ERROR      error = NULL;
 
     gbt_build_remote_awars(&awars, application);
     gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
 
-    error             = GB_begin_transaction(gb_main);
+    GB_ERROR error    = GB_begin_transaction(gb_main);
     if (!error) error = GB_write_string(gb_awar, awar_name);
     if (!error) error = GBT_write_string(gb_main, awars.awar_action, "AWAR_REMOTE_READ");
     error             = GB_end_transaction(gb_main, error);
@@ -758,10 +751,10 @@ static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
         GB_remove_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info);
     }
 
-    int       cb_done = 0;
     NotifyCb *pending = (NotifyCb*)cb_info;
 
     if (cb_type == GB_CB_CHANGED) {
+        int         cb_done = 0;
         GB_ERROR    error   = 0;
         const char *message = GB_read_char_pntr(gb_message);
         if (!message) error = GB_await_error();
@@ -945,12 +938,12 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
-#define TEST_ASSERT_SCANNED_EQUALS(path,expected) do {  \
+#define TEST_EXPECT_SCANNED_EQUALS(path,expected) do {  \
         GB_transaction ta(gb_main);                     \
         StrArray fields;                                \
         GBT_scan_db(fields, gb_main, path);             \
         char  *joined = GBT_join_names(fields, ',');    \
-        TEST_ASSERT_EQUAL(joined, expected);            \
+        TEST_EXPECT_EQUAL(joined, expected);            \
         free(joined);                                   \
     } while (0)
 
@@ -959,7 +952,7 @@ void TEST_scan_db() {
     GBDATA   *gb_main = GB_open("TEST_loadsave.arb", "r");
 
 
-    TEST_ASSERT_SCANNED_EQUALS(NULL, 
+    TEST_EXPECT_SCANNED_EQUALS(NULL,
                                "alignment/aligned,alignment/alignment_len,alignment/alignment_name,alignment/alignment_rem,alignment/alignment_type,alignment/alignment_write_security,alignment/auto_format,"
                                "byte,bytes,bytes,bytes,"
                                "extended/acc,extended/ali_16s/data,extended/aligned,extended/errors,extended/full_name,extended/name,"
@@ -968,9 +961,9 @@ void TEST_scan_db() {
                                "species/AL,species/ARB_color,species/acc,species/ali_16s/data,species/bits_test,species/float_test,species/full_name,species/name,species/seqcheck,species/tax,"
                                "str,str_percent,use");
 
-    TEST_ASSERT_SCANNED_EQUALS("species", "/AL,/ARB_color,/acc,/ali_16s/data,/bits_test,/float_test,/full_name,/name,/seqcheck,/tax");
+    TEST_EXPECT_SCANNED_EQUALS("species", "/AL,/ARB_color,/acc,/ali_16s/data,/bits_test,/float_test,/full_name,/name,/seqcheck,/tax");
 
-    TEST_ASSERT(!GB_have_error());
+    TEST_REJECT(GB_have_error());
     
     GB_close(gb_main);
 }

@@ -101,7 +101,6 @@ static GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment, G
                 GBDATA     *gb_name        = GB_entry(gb_species, "name");
                 const char *name           = 0;
                 int         alignment_seen = 0;
-                GBDATA     *gb_ali         = 0;
 
                 if (!gb_name) {
                     // fatal: name is missing -> create a unique name
@@ -133,7 +132,7 @@ static GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment, G
                     if (!error) error = GB_write_security_write(gb_name, 6);
 
                     if (!error) {
-                        gb_ali = GB_entry(gb_species, ali_name);
+                        GBDATA *gb_ali = GB_entry(gb_species, ali_name);
                         if (gb_ali) {
                             GBDATA *gb_data = GB_entry(gb_ali, "data");
                             if (!gb_data) {
@@ -256,12 +255,11 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
 
     if (!alignment_name && !error) {
         // if all alignments are checked -> use species_name_hash to detect duplicated species and species w/o data
-        GBDATA *gb_species;
         long    duplicates = 0;
         species_name_hash  = GBS_create_hash(GBT_get_species_count(Main), GB_IGNORE_CASE);
 
         if (!error) {
-            for (gb_species = GBT_first_species_rel_species_data(gb_sd);
+            for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_sd);
                  gb_species;
                  gb_species = GBT_next_species(gb_species))
             {
@@ -283,9 +281,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
     }
 
     if (!error) {
-        GBDATA *gb_ali;
-
-        for (gb_ali = GB_entry(gb_presets, "alignment");
+        for (GBDATA *gb_ali = GB_entry(gb_presets, "alignment");
              gb_ali && !error;
              gb_ali = GB_nextEntry(gb_ali))
         {
@@ -940,31 +936,31 @@ void TEST_alignment() {
     {
         GB_transaction ta(gb_main);
 
-        TEST_ASSERT_EQUAL(GBT_count_alignments(gb_main), 2);
+        TEST_EXPECT_EQUAL(GBT_count_alignments(gb_main), 2);
 
         char *def_ali_name = GBT_get_default_alignment(gb_main);
-        TEST_ASSERT_EQUAL(def_ali_name, "ali_tuf_dna");
+        TEST_EXPECT_EQUAL(def_ali_name, "ali_tuf_dna");
 
         {
             ConstStrArray names;
             GBT_get_alignment_names(names, gb_main);
             {
                 char *joined = GBT_join_names(names, '*');
-                TEST_ASSERT_EQUAL(joined, "ali_tuf_pro*ali_tuf_dna");
+                TEST_EXPECT_EQUAL(joined, "ali_tuf_pro*ali_tuf_dna");
                 free(joined);
             }
 
             for (int i = 0; names[i]; ++i) {
                 long len = GBT_get_alignment_len(gb_main, names[i]);
-                TEST_ASSERT_EQUAL(len, !i ? 473 : 1426);
+                TEST_EXPECT_EQUAL(len, !i ? 473 : 1426);
 
                 char *type_name = GBT_get_alignment_type_string(gb_main, names[i]);
-                TEST_ASSERT_EQUAL(type_name, !i ? "ami" : "dna");
+                TEST_EXPECT_EQUAL(type_name, !i ? "ami" : "dna");
                 free(type_name);
 
                 GB_alignment_type type = GBT_get_alignment_type(gb_main, names[i]);
-                TEST_ASSERT_EQUAL(type, !i ? GB_AT_AA : GB_AT_DNA);
-                TEST_ASSERT(!i == GBT_is_alignment_protein(gb_main, names[i]));
+                TEST_EXPECT_EQUAL(type, !i ? GB_AT_AA : GB_AT_DNA);
+                TEST_EXPECT_EQUAL(GBT_is_alignment_protein(gb_main, names[i]), !i);
             }
         }
 

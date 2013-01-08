@@ -126,17 +126,16 @@ char *GB_find_all_files(const char *dir, const char *mask, bool filename_only) {
     */
 
     DIR         *dirp;
-    dirent      *dp;
     struct stat  st;
     char        *result = 0;
-    char         buffer[FILE_PATH_MAX];
 
     dirp = opendir(dir);
     if (dirp) {
         GBS_string_matcher *matcher = GBS_compile_matcher(mask, GB_IGNORE_CASE);
         if (matcher) {
-            for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
+            for (dirent *dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
                 if (GBS_string_matches_regexp(dp->d_name, matcher)) {
+                    char buffer[FILE_PATH_MAX];
                     sprintf(buffer, "%s/%s", dir, dp->d_name);
                     if (stat(buffer, &st) == 0  && S_ISREG(st.st_mode)) { // regular file ?
                         if (filename_only) strcpy(buffer, dp->d_name);
@@ -166,18 +165,17 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
      */
 
     DIR         *dirp;
-    dirent      *dp;
-    char         buffer[FILE_PATH_MAX];
     struct stat  st;
-    GB_ULONG     newest = 0;
     char        *result = 0;
 
     dirp = opendir(dir);
     if (dirp) {
         GBS_string_matcher *matcher = GBS_compile_matcher(mask, GB_IGNORE_CASE);
         if (matcher) {
-            for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
+            GB_ULONG newest = 0;
+            for (dirent *dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
                 if (GBS_string_matches_regexp(dp->d_name, matcher)) {
+                    char buffer[FILE_PATH_MAX];
                     sprintf(buffer, "%s/%s", dir, dp->d_name);
                     if (stat(buffer, &st) == 0) {
                         if ((GB_ULONG)st.st_mtime > newest) {
@@ -514,7 +512,7 @@ bool GB_test_textfile_difflines(const char *file1, const char *file2, int expect
             DiffLines     diff_lines;
             difflineMode  mode(special_mode);
 
-            TEST_ASSERT_NO_ERROR(mode.get_error());
+            TEST_EXPECT_NO_ERROR(mode.get_error());
 
             while (!feof(diffout)) {
                 char *line = fgets(buffer, BUFSIZE, diffout);
@@ -657,19 +655,19 @@ void TEST_diff_files() {
     const char *file_date_swapped = "diff/date_swapped.input";
     const char *file_date_changed = "diff/date_changed.input";
 
-    TEST_ASSERT(GB_test_textfile_difflines(file, file, 0, 0)); // check identity
+    TEST_EXPECT(GB_test_textfile_difflines(file, file, 0, 0)); // check identity
 
     // check if swapped lines are detected properly
-    TEST_ASSERT(GB_test_textfile_difflines(file, file_swapped, 1, 0));
-    TEST_ASSERT(GB_test_textfile_difflines(file, file_swapped, 1, 1));
-    TEST_ASSERT(GB_test_textfile_difflines(file, file_date_swapped, 3, 0));
-    TEST_ASSERT(GB_test_textfile_difflines(file, file_date_swapped, 3, 1));
+    TEST_EXPECT(GB_test_textfile_difflines(file, file_swapped, 1, 0));
+    TEST_EXPECT(GB_test_textfile_difflines(file, file_swapped, 1, 1));
+    TEST_EXPECT(GB_test_textfile_difflines(file, file_date_swapped, 3, 0));
+    TEST_EXPECT(GB_test_textfile_difflines(file, file_date_swapped, 3, 1));
 
-    TEST_ASSERT(GB_test_textfile_difflines(file, file_date_changed, 0, 1));
-    TEST_ASSERT(GB_test_textfile_difflines(file, file_date_changed, 6, 0));
+    TEST_EXPECT(GB_test_textfile_difflines(file, file_date_changed, 0, 1));
+    TEST_EXPECT(GB_test_textfile_difflines(file, file_date_changed, 6, 0));
     
-    TEST_ASSERT(GB_test_textfile_difflines(file_date_swapped, file_date_changed, 6, 0));
-    TEST_ASSERT(GB_test_textfile_difflines(file_date_swapped, file_date_changed, 0, 1));
+    TEST_EXPECT(GB_test_textfile_difflines(file_date_swapped, file_date_changed, 6, 0));
+    TEST_EXPECT(GB_test_textfile_difflines(file_date_swapped, file_date_changed, 0, 1));
 }
 
 static char *remove_path(const char *fullname, void *cl_path) {
@@ -688,7 +686,7 @@ static void GBT_transform_names(StrArray& dest, const StrArray& source, char *tr
         StrArray  contents_no_path;                                     \
         GBT_transform_names(contents_no_path, contents, remove_path, (void*)fulldir); \
         char     *joined  = GBT_join_names(contents_no_path, '!');      \
-        TEST_ASSERT_EQUAL(joined, expected);                            \
+        TEST_EXPECT_EQUAL(joined, expected);                            \
         free(joined);                                                   \
         free(fulldir);                                                  \
     } while(0)
@@ -701,17 +699,17 @@ void TEST_GBS_read_dir() {
 }
 
 void TEST_find_file() {
-    TEST_ASSERT_EQUAL(GB_existing_file("min_ascii.arb", false), "min_ascii.arb");
-    TEST_ASSERT_NULL(GB_existing_file("nosuchfile", false));
+    TEST_EXPECT_EQUAL(GB_existing_file("min_ascii.arb", false), "min_ascii.arb");
+    TEST_EXPECT_NULL(GB_existing_file("nosuchfile", false));
     
     char *tcporg = GB_lib_file(false, "", "arb_tcp_org.dat");
-    TEST_ASSERT_EQUAL(tcporg, GB_path_in_ARBHOME("lib/arb_tcp_org.dat"));
-    TEST_ASSERT_NULL(GB_lib_file(true, "bla", "blub"));
+    TEST_EXPECT_EQUAL(tcporg, GB_path_in_ARBHOME("lib/arb_tcp_org.dat"));
+    TEST_EXPECT_NULL(GB_lib_file(true, "bla", "blub"));
     free(tcporg);
 
     char *status = GB_property_file(false, "status.arb");
-    TEST_ASSERT_EQUAL(status, GB_path_in_ARBHOME("lib/arb_default/status.arb"));
-    TEST_ASSERT_NULL(GB_property_file(true, "undhepp"));
+    TEST_EXPECT_EQUAL(status, GB_path_in_ARBHOME("lib/arb_default/status.arb"));
+    TEST_EXPECT_NULL(GB_property_file(true, "undhepp"));
     free(status);
 }
 
@@ -728,38 +726,38 @@ void TEST_find_file() {
 void TEST_logic() {
 #define FOR_ANY_BOOL(name) for (int name = 0; name<2; ++name)
 
-    TEST_ASSERT(implicated(true, true));
+    TEST_EXPECT(implicated(true, true));
     // for (int any = 0; any<2; ++any) {
     FOR_ANY_BOOL(any) {
-        TEST_ASSERT(implicated(false, any)); // "..aus Falschem folgt Beliebiges.."
-        TEST_ASSERT(implicated(any, any));
+        TEST_EXPECT(implicated(false, any)); // "..aus Falschem folgt Beliebiges.."
+        TEST_EXPECT(implicated(any, any));
 
-        TEST_ASSERT( correlated(any, any));
-        TEST_ASSERT(!correlated(any, !any));
-        TEST_ASSERT(!contradicted(any, any));
-        TEST_ASSERT( contradicted(any, !any));
+        TEST_EXPECT(correlated(any, any));
+        TEST_REJECT(correlated(any, !any));
+        TEST_REJECT(contradicted(any, any));
+        TEST_EXPECT(contradicted(any, !any));
     }
 
-    TEST_ASSERT(correlated(false, false));
+    TEST_EXPECT(correlated(false, false));
 
-    TEST_ASSERT(contradicted(true, false));
-    TEST_ASSERT(contradicted(false, true));
+    TEST_EXPECT(contradicted(true, false));
+    TEST_EXPECT(contradicted(false, true));
 
     FOR_ANY_BOOL(kermitIsFrog) {
         FOR_ANY_BOOL(kermitIsGreen) {
             bool allFrogsAreGreen  = implicated(kermitIsFrog, kermitIsGreen);
             bool onlyFrogsAreGreen = implicated(kermitIsGreen, kermitIsFrog);
 
-            TEST_ASSERT(implicated( kermitIsFrog  && allFrogsAreGreen,  kermitIsGreen));
-            TEST_ASSERT(implicated(!kermitIsGreen && allFrogsAreGreen, !kermitIsFrog));
+            TEST_EXPECT(implicated( kermitIsFrog  && allFrogsAreGreen,  kermitIsGreen));
+            TEST_EXPECT(implicated(!kermitIsGreen && allFrogsAreGreen, !kermitIsFrog));
 
-            TEST_ASSERT(implicated( kermitIsGreen && onlyFrogsAreGreen,  kermitIsFrog));
-            TEST_ASSERT(implicated(!kermitIsFrog  && onlyFrogsAreGreen, !kermitIsGreen));
+            TEST_EXPECT(implicated( kermitIsGreen && onlyFrogsAreGreen,  kermitIsFrog));
+            TEST_EXPECT(implicated(!kermitIsFrog  && onlyFrogsAreGreen, !kermitIsGreen));
 
-            TEST_ASSERT(implicated(kermitIsFrog  && !kermitIsGreen, !allFrogsAreGreen));
-            TEST_ASSERT(implicated(kermitIsGreen && !kermitIsFrog,  !onlyFrogsAreGreen));
+            TEST_EXPECT(implicated(kermitIsFrog  && !kermitIsGreen, !allFrogsAreGreen));
+            TEST_EXPECT(implicated(kermitIsGreen && !kermitIsFrog,  !onlyFrogsAreGreen));
 
-            TEST_ASSERT(correlated(
+            TEST_EXPECT(correlated(
                             correlated(kermitIsGreen, kermitIsFrog), 
                             allFrogsAreGreen && onlyFrogsAreGreen
                             ));

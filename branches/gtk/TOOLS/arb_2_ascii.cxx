@@ -21,11 +21,13 @@ int ARB_main(int argc, const char *argv[]) {
     if (argc<2 || strcmp(argv[1], "--help") == 0) {
         fprintf(stderr,
                 "\n"
-                "Usage:   arb_2_ascii <source.arb> [<dest.arb>|-]\n"
+                "Usage:   arb_2_ascii [-r] <source.arb> [<dest.arb>|-]\n"
                 "Purpose: Converts a database to ascii format\n"
                 "\n"
-                "if <dest.arb> is set, try to fix problems of <source.arb> and write to <dest.arb>\n"
-                "if the second parameter is '-' print to console.\n"
+                "if '-r' (=recovery) is specified, try to fix problems while reading <source.arb>.\n"
+                "\n"
+                "if <dest.arb> is set, write to <dest.arb>\n"
+                "if the second parameter is '-' write to console.\n"
                 "else replace <source.arb> by ascii version (backup first)\n"
                 "\n"
                 );
@@ -33,18 +35,23 @@ int ARB_main(int argc, const char *argv[]) {
         if (strcmp(argv[1], "--help") != 0) { error = "Missing arguments"; }
     }
     else {
+        bool recovery = false; // try to recover corrupt data ?
+        if (strcmp(argv[1], "-r") == 0) {
+            recovery = true;
+            argv++; argc--;
+        }
+
         const char *in  = argv[1];
         const char *out = NULL;
 
-        const char *readflags = "rw";
+        const char *readflags = recovery ? "rwR" : "rw";
         const char *saveflags = "a";
 
         if (argc == 2) {
             out = in;
         }
         else {
-            readflags = "rwR";      // try to recover corrupt data
-            out       = argv[2];
+            out = argv[2];
 
             if (!out || strcmp(out, "-") == 0) {
                 saveflags = "aS";

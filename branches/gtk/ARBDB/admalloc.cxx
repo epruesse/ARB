@@ -111,7 +111,7 @@ NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize)
         memset(mem, 0, size);
     }
     else {
-        fprintf(stderr, "Panic Error: insufficient memory: tried to get %i*%i bytes\n", nelem, elsize);
+        fprintf(stderr, "Panic Error: insufficient memory: tried to get %u*%u bytes\n", nelem, elsize);
     }
     return mem;
 }
@@ -135,7 +135,7 @@ NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, un
         }
     }
     else {
-        fprintf(stderr, "Panic Error: insufficient memory: tried to get %i*%i bytes\n", nelem, elsize);
+        fprintf(stderr, "Panic Error: insufficient memory: tried to get %u*%u bytes\n", nelem, elsize);
     }
 
     return mem;
@@ -500,41 +500,34 @@ inline void *GB_MEMALIGN(size_t alignment, size_t size) {
 }
 
 void *gbmGetMemImpl(size_t size, long index) {
-    unsigned long  nsize, pos;
-    char          *erg;
-    gbm_data      *gds;
-    gbm_pool      *ggi;
-
     if (size < sizeof(gbm_data)) size = sizeof(gbm_data);
     index &= GBM_MAX_INDEX-1;
-    ggi = & gbm_pool4idx[index];
-    nsize = (size + (GBM_ALIGNED - 1)) & (-GBM_ALIGNED);
 
-    if (nsize > GBM_MAX_SIZE)
-    {
+    gbm_pool      *ggi   = &gbm_pool4idx[index];
+    unsigned long  nsize = (size + (GBM_ALIGNED - 1)) & (-GBM_ALIGNED);
+
+    char *result;
+    if (nsize > GBM_MAX_SIZE) {
         ggi->extern_data_size += nsize;
         ggi->extern_data_items++;
 
-        erg = gbm_get_memblk((size_t)nsize);
+        result = gbm_get_memblk((size_t)nsize);
     }
     else {
-        pos = nsize >> GBM_LD_ALIGNED;
-        if ((gds = ggi->tables[pos]))
-        {
+        unsigned long  pos = nsize >> GBM_LD_ALIGNED;
+        gbm_data      *gds = ggi->tables[pos];
+        if (gds) {
             ggi->tablecnt[pos]--;
-            erg = (char *)gds;
-            if (gds->magic != GBM_MAGIC)
-            {
+            result = (char *)gds;
+            if (gds->magic != GBM_MAGIC) {
                 printf("%lX!= %lX\n", gds->magic, (long)GBM_MAGIC);
                 GB_internal_error("Dangerous internal error: Inconsistent database: "
                                   "Do not overwrite old files with this database");
             }
             ggi->tables[pos] = ggi->tables[pos]->next;
         }
-        else
-        {
-            if (ggi->size < nsize)
-            {
+        else {
+            if (ggi->size < nsize) {
                 gbm_table *gts = (gbm_table *)GB_MEMALIGN(GBM_SYSTEM_PAGE_SIZE, GBM_TABLE_SIZE);
 
                 if (!gts) { GB_memerr(); return NULL; }
@@ -546,52 +539,46 @@ void *gbmGetMemImpl(size_t size, long index) {
                 ggi->size = GBM_TABLE_SIZE - sizeof(void *);
                 ggi->allsize += GBM_TABLE_SIZE;
             }
-            erg = (char *)ggi->gds;
+            result = (char *)ggi->gds;
             ggi->gds = (gbm_data *)(((char *)ggi->gds) + nsize);
             ggi->size -= (size_t)nsize;
         }
 
         ggi->useditems[pos]++;
-        memset(erg, 0, nsize); // act like calloc()
+        memset(result, 0, nsize); // act like calloc()
     }
 
 #ifdef TRACE_ALLOCS
     allocLogger.allocated(erg, size, index);
 #endif
-    return erg;
+    return result;
 }
 
 void gbmFreeMemImpl(void *data, size_t size, long index) {
-    long      nsize, pos;
-    gbm_pool *ggi;
-
     if (size < sizeof(gbm_data)) size = sizeof(gbm_data);
-
     index &= GBM_MAX_INDEX-1;
-    ggi = & gbm_pool4idx[index];
-    nsize = (size + (GBM_ALIGNED - 1)) & (-GBM_ALIGNED);
+    
+    gbm_pool *ggi   = &gbm_pool4idx[index];
+    long      nsize = (size + (GBM_ALIGNED - 1)) & (-GBM_ALIGNED);
 
 #ifdef TRACE_ALLOCS
     allocLogger.freed(data, size, index);
 #endif
 
-    if (nsize > GBM_MAX_SIZE)
-    {
+    if (nsize > GBM_MAX_SIZE) {
         gbb_data *block;
 
-        if (gb_isMappedMemory(data))
-        {
+        if (gb_isMappedMemory(data)) {
             block = (gbb_data *)data;
 
             block->size = size-GBB_HEADER_SIZE;
             block->allocFromSystem = 0;
 
-            if (size>=(GBB_HEADER_SIZE+GBB_MINSIZE))
+            if (size>=(GBB_HEADER_SIZE+GBB_MINSIZE)) {
                 gbm_put_memblk((char*)block, size);
-
+            }
         }
-        else
-        {
+        else {
             block = (gbb_data *)((char*)data-GBB_HEADER_SIZE);
 
             ggi->extern_data_size -= (size_t)nsize;
@@ -612,17 +599,19 @@ void gbmFreeMemImpl(void *data, size_t size, long index) {
     else
     {
         if (gb_isMappedMemory(data)) return;    //   @@@ reason: size may be shorter
-        if (((gbm_data *)data)->magic == GBM_MAGIC)
-            // double free
-        {
+
+        gbm_data *gdata = (gbm_data*)data;
+        
+        if (gdata->magic == GBM_MAGIC) {
             imemerr("double free");
             return;
         }
 
-        pos = nsize >> GBM_LD_ALIGNED;
-        ((gbm_data *) data)->next = ggi->tables[pos];
-        ((gbm_data *) data)->magic = GBM_MAGIC;
-        ggi->tables[pos] = ((gbm_data *) data);
+        long pos = nsize >> GBM_LD_ALIGNED;
+
+        gdata->next      = ggi->tables[pos];
+        gdata->magic     = GBM_MAGIC;
+        ggi->tables[pos] = gdata;
         ggi->tablecnt[pos]++;
         ggi->useditems[pos]--;
     }

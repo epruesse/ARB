@@ -49,8 +49,7 @@ AP_UPDATE_FLAGS AP_tree_nlen::check_update() {
     return res == AP_UPDATE_RELOADED ? AP_UPDATE_OK : res;
 }
 
-void AP_tree_nlen::copy(AP_tree_nlen *tree)
-{
+void AP_tree_nlen::copy(AP_tree_nlen *tree) {
     // like = operator
     // but copies sequence if is leaf
 
@@ -79,10 +78,7 @@ void AP_tree_nlen::copy(AP_tree_nlen *tree)
     }
 }
 
-ostream& operator<<(ostream& out, const AP_tree_nlen& node)
-{
-    static int notTooDeep;
-
+ostream& operator<<(ostream& out, const AP_tree_nlen& node) {
     out << ' ';
 
     if (&node==NULL) {
@@ -92,6 +88,8 @@ ostream& operator<<(ostream& out, const AP_tree_nlen& node)
         out << ((void *)&node) << '(' << node.name << ')';
     }
     else {
+        static int notTooDeep;
+
         if (notTooDeep) {
             out << ((void *)&node);
             if (!node.father) out << " (ROOT)";
@@ -676,7 +674,7 @@ bool AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count) {
     // - false          if it is copied into the previous level
     // according if user_buffer is greater than datum (wot?)
 
-    if (!stack_level == datum) {
+    if (stack_level != datum) {
         ap_assert(0); // internal control number check failed
         return false;
     }
@@ -765,7 +763,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     return ret;
 }
 
-void AP_tree_nlen::pop(unsigned long IF_DEBUG(datum)) { // pop old tree costs
+void AP_tree_nlen::pop(unsigned long IF_ASSERTION_USED(datum)) { // pop old tree costs
     ap_assert(stack_level == datum); // error in node stack
 
     AP_tree_buffer *buff = stack.pop();
@@ -1204,7 +1202,7 @@ AP_CO_LIST * AP_tree_nlen::createList(int *size) {
 
 const char* AP_tree_nlen::sortByName()
 {
-    if (name) return name;  // leaves
+    if (name) return name;  // leafs
 
     const char *n1 = get_leftson()->sortByName();
     const char *n2 = get_rightson()->sortByName();

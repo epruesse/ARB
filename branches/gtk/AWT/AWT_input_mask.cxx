@@ -320,12 +320,10 @@ void awt_script_viewport::build_widget(AW_window *aws)
     aws->create_input_field(awar_name().c_str(), field_width);
 }
 
-void awt_script_viewport::db_changed()
-{
-    GB_ERROR error = 0;
+void awt_script_viewport::db_changed() {
     awt_assert(script);
-    string current_value = script->get_value();
-    error                = awt_mask_awar_item::set_value(current_value);
+    string   current_value = script->get_value();
+    GB_ERROR error         = awt_mask_awar_item::set_value(current_value);
 
     if (error) aw_message(error);
 }
@@ -1375,12 +1373,9 @@ void awt_marked_checkbox::awar_changed() { // called when awar changes
 }
 
 void awt_marked_checkbox::db_changed() {
-    bool marked = false;
-
     if (item()) {
         GB_transaction dummy(mask_global().get_gb_main());
-        if (GB_read_flag(item())) marked = true;
-        set_value(marked ? "yes" : "no"); // @@@ TEST: moved into if (was below)
+        set_value(GB_read_flag(item()) ? "yes" : "no");
     }
 }
 
@@ -2035,7 +2030,8 @@ void awt_input_mask::link_to(GBDATA *gb_item) {
 
 
 awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_) {
-    title                = strdup(title_);
+    title = strdup(title_);
+    // cppcheck-suppress copyCtorNoAllocation (fails to detect strdup as allocation)
     internal_maskname    = (char*)malloc(strlen(maskname_)+2);
     internal_maskname[0] = local ? '0' : '1';
     strcpy(internal_maskname+1, maskname_);

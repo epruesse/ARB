@@ -129,15 +129,16 @@ public:
     operator bool() const { return occurred(); } // needed for 'if (!error)' and similar
 
     void set_handled() const {
-        arb_assert(occurred());                     // oops - tried to handle an error that did not occur
-        deliver();                                  // deliver and drop
+        arb_assert(occurred()); // oops - tried to handle an error that did not occur
+        deliver();              // deliver and drop
     }
 
     void expect_no_error() const {
-        arb_assert(!occurred());                    // oops - no error expected here
-        deliver();                                  // mark impossible errors as "used"
+        arb_assert(!occurred()); // oops - no error expected here
+        deliver();               // mark impossible errors as "used"
     }
 
+    GB_ERROR preserve() const { return look(); } // look, but do not deliver
 
 #if defined(DEBUG)
     void dump() const {

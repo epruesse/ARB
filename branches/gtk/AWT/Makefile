@@ -178,6 +178,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -271,6 +272,7 @@ AWT_map_key.o: awt_map_key.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/attributes.h

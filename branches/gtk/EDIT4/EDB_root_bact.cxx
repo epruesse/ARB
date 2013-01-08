@@ -19,28 +19,25 @@
 
 #define NAME_BUFFERSIZE 100
 
-void EDB_root_bact::calc_no_of_all(char *string_to_scan, long *group, long *species)
-{
-    long i=0;
-
+void EDB_root_bact::calc_no_of_all(const char *string_to_scan, long *group, long *species) {
     *group = 0;
     *species = 0;
 
-    if (!string_to_scan)
-        return;
-
-    while (string_to_scan[i]) {
-        if (string_to_scan[i] == 1) {
-            if (string_to_scan[i+1] == 'L' || string_to_scan[i+1] == 'S') {
-                (*species)++;
-                i++;
+    if (string_to_scan) {
+        long i = 0;
+        while (string_to_scan[i]) {
+            if (string_to_scan[i] == 1) {
+                if (string_to_scan[i+1] == 'L' || string_to_scan[i+1] == 'S') {
+                    (*species)++;
+                    i++;
+                }
+                else if (string_to_scan[i+1] == 'F' || string_to_scan[i+1] == 'G') {
+                    (*group)++;
+                    i++;
+                }
             }
-            else if (string_to_scan[i+1] == 'F' || string_to_scan[i+1] == 'G') {
-                (*group)++;
-                i++;
-            }
+            i++;
         }
-        i++;
     }
 }
 
@@ -54,44 +51,29 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
                                         int                         group_depth,
                                         ED4_datamode                datamode)
 {
-    ED4_species_manager        *species_manager;
-    ED4_multi_name_manager     *multi_name_manager;
-    ED4_name_manager           *name_manager;
-    ED4_species_name_terminal  *species_name_terminal;
-    ED4_multi_sequence_manager *multi_sequence_manager;
-    char                        namebuffer[NAME_BUFFERSIZE];
-    int                         count_too   = 0;
-    ED4_index                   seq_coords = 0, local_count_position = 0, terminal_height;
-    GBDATA                     *gb_datamode = NULL;
-
+    GBDATA *gb_datamode = NULL;
     switch (datamode) {
-        case ED4_D_EXTENDED: {
-            gb_datamode = GBT_find_SAI(GLOBAL_gb_main, str);
-            break;
-        }
-        case ED4_D_SPECIES: {
-            gb_datamode = GBT_find_species(GLOBAL_gb_main, str);
-            break;
-        }
+        case ED4_D_EXTENDED: gb_datamode = GBT_find_SAI(GLOBAL_gb_main, str); break;
+        case ED4_D_SPECIES:  gb_datamode = GBT_find_species(GLOBAL_gb_main, str); break;
     }
 
     if (!gb_datamode) { // didn't find this species
-        char dummy[150];
         not_found_counter++;
         if (not_found_counter <= MAX_SHOWN_MISSING_SPECIES) {
+            char dummy[150];
             sprintf(dummy, "%zu. %s\n", not_found_counter, str);
             GBS_strcat(not_found_message, dummy);
         }
         return ED4_R_BREAK;
     }
 
-        // check whether sequence has data in desired alignment
+    // check whether sequence has data in desired alignment
     bool has_alignment = 0 != GB_entry(gb_datamode, ED4_ROOT->alignment_name);
     if (!has_alignment) {
         if (datamode == ED4_D_SPECIES) { // only warn about species w/o data (SAIs are skipped silently)
-            char dummy[150];
             not_found_counter++;
             if (not_found_counter <= MAX_SHOWN_MISSING_SPECIES) {
+                char dummy[150];
                 sprintf(dummy, "%zu. %s (no data in alignment)\n", not_found_counter, str);
                 GBS_strcat(not_found_message, dummy);
             }
@@ -99,49 +81,58 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
         return ED4_R_BREAK;
     }
 
-    terminal_height = TERMINALHEIGHT;
-    local_count_position = curr_local_position;
+    const ED4_index  terminal_height      = TERMINALHEIGHT;
+    ED4_index        local_count_position = curr_local_position;
+    ED4_species_type spec_type            = (datamode == ED4_D_EXTENDED) ? ED4_SP_SAI : ED4_SP_SPECIES;
 
-    sprintf(namebuffer, "Species_Manager.%ld.%d", ED4_counter, count_too);
 
-    ED4_species_type spec_type = (datamode == ED4_D_EXTENDED) ? ED4_SP_SAI : ED4_SP_SPECIES;
-    species_manager            = new ED4_species_manager(spec_type, namebuffer, 0, local_count_position, 0, 0, multi_species_manager);
+    {
+        char namebuffer[NAME_BUFFERSIZE];
+        int count_two = 0;
 
-    species_manager->set_property(ED4_P_MOVABLE);
-    if (spec_type == ED4_SP_SAI) {
-        ED4_abstract_group_manager *group_man = species_manager->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
-        group_man->table().ignore_me(); // ignore SAI tables (does not work - instead ignore SAIs when calculating consensus)
+        sprintf(namebuffer, "Species_Manager.%ld.%d", ED4_counter, count_two);
+        ED4_species_manager *species_manager = new ED4_species_manager(spec_type, namebuffer, 0, local_count_position, 0, 0, multi_species_manager);
+
+        species_manager->set_property(ED4_P_MOVABLE);
+        if (spec_type == ED4_SP_SAI) {
+            ED4_abstract_group_manager *group_man = species_manager->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
+            group_man->table().ignore_me(); // ignore SAI tables (does not work - instead ignore SAIs when calculating consensus)
+        }
+        species_manager->set_species_pointer(gb_datamode);
+        multi_species_manager->children->append_member(species_manager);
+
+        sprintf(namebuffer, "MultiName_Manager.%ld.%d", ED4_counter, count_two);
+        ED4_multi_name_manager *multi_name_manager = new ED4_multi_name_manager(namebuffer, 0, 0, 0, 0, species_manager);
+        species_manager->children->append_member(multi_name_manager);
+
+        sprintf(namebuffer, "MultiSeq_Manager.%ld.%d", ED4_counter, count_two++);
+        ED4_multi_sequence_manager *multi_sequence_manager = new ED4_multi_sequence_manager(namebuffer, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), 0, 0, 0, species_manager);
+        species_manager->children->append_member(multi_sequence_manager);
+        
+        sprintf(namebuffer, "Name_Manager%ld.%d", ED4_counter, count_two++);                          // hier fehlt noch y
+        ED4_name_manager *name_manager = new ED4_name_manager(namebuffer, 0, 0*terminal_height, 0, 0, multi_name_manager);            // hier fehlt noch y
+        name_manager->set_property(ED4_P_MOVABLE);                            // only Speciesname should be movable !!!!
+        multi_name_manager->children->append_member(name_manager);
+
+        {
+            sprintf(namebuffer, "Species_Name_Term%ld.%d", ED4_counter, count_two++);
+            ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(namebuffer, 0, 0, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), terminal_height, name_manager);
+            species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+            species_name_terminal->set_links(NULL, ref_sequence_terminal);
+            species_name_terminal->set_species_pointer(GB_entry(gb_datamode, "name"));
+            name_manager->children->append_member(species_name_terminal);
+        }
+
+        {
+            ED4_index name_coords = terminal_height;
+            ED4_index seq_coords  = 0;
+
+            search_sequence_data_rek(multi_sequence_manager, ref_sequence_info_terminal, ref_sequence_terminal, gb_datamode,
+                                     count_two, &seq_coords, &max_seq_terminal_length, ED4_A_DEFAULT, datamode == ED4_D_EXTENDED);
+
+            local_count_position += max(name_coords, seq_coords);
+        }
     }
-    species_manager->set_species_pointer(gb_datamode);
-    multi_species_manager->children->append_member(species_manager);
-
-    sprintf(namebuffer, "MultiName_Manager.%ld.%d", ED4_counter, count_too);
-    multi_name_manager = new ED4_multi_name_manager(namebuffer, 0, 0, 0, 0, species_manager);
-    species_manager->children->append_member(multi_name_manager);
-
-    sprintf(namebuffer, "MultiSeq_Manager.%ld.%d", ED4_counter, count_too++);
-    multi_sequence_manager = new ED4_multi_sequence_manager(namebuffer, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), 0, 0, 0, species_manager);
-    species_manager->children->append_member(multi_sequence_manager);
-
-    sprintf(namebuffer, "Name_Manager%ld.%d", ED4_counter, count_too ++);                          // hier fehlt noch y
-    name_manager = new ED4_name_manager(namebuffer, 0, 0*terminal_height, 0, 0, multi_name_manager);            // hier fehlt noch y
-    name_manager->set_property(ED4_P_MOVABLE);                            // only Speciesname should be movable !!!!
-    multi_name_manager->children->append_member(name_manager);
-
-    sprintf(namebuffer, "Species_Name_Term%ld.%d", ED4_counter, count_too ++);
-    species_name_terminal = new ED4_species_name_terminal(namebuffer, 0, 0, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), terminal_height, name_manager);
-    species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-    species_name_terminal->set_links(NULL, ref_sequence_terminal);
-    species_name_terminal->set_species_pointer(GB_entry(gb_datamode, "name"));
-    name_manager->children->append_member(species_name_terminal);
-
-    ED4_index name_coords = terminal_height;
-
-    search_sequence_data_rek(multi_sequence_manager, ref_sequence_info_terminal, ref_sequence_terminal, gb_datamode,
-                             count_too, &seq_coords, &max_seq_terminal_length, ED4_A_DEFAULT, datamode == ED4_D_EXTENDED);
-
-    local_count_position += max(name_coords, seq_coords);
-    seq_coords = 0;
 
     if (!(multi_species_manager->flag.hidden)) {
         *length_of_terminals = local_count_position-curr_local_position;
@@ -345,16 +336,16 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
 {
 #define SHIPSIZE 1024
 
-    char         *ship;
-    int           lauf                        = 0;
-    ED4_index     local_count_position        = 0;
-    ED4_index     height_of_created_terminals = 0;
-    bool          word                        = 0;
-    ED4_datamode  datamode                    = ED4_D_SPECIES;
-    ED4_returncode retCode                    = ED4_R_OK;
+    int  lauf = 0;
+    bool word = 0;
 
-    ship = (char*)GB_calloc(SHIPSIZE, sizeof(*ship));
-    local_count_position = curr_local_position;
+    ED4_index height_of_created_terminals = 0;
+
+    ED4_datamode datamode  = ED4_D_SPECIES;
+    ED4_returncode retCode = ED4_R_OK;
+
+    char      *ship                 = (char*)GB_calloc(SHIPSIZE, sizeof(*ship));
+    ED4_index  local_count_position = curr_local_position;
 
     do {
         if (word == 0) { // word is needed for jump over separator
@@ -515,27 +506,13 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
                                                   bool                         is_folded,
                                                   ED4_index                    local_count_position)
 {
-    ED4_species_manager        *species_manager        = NULL;
-    ED4_species_name_terminal  *species_name_terminal  = NULL;
-    ED4_sequence_manager       *sequence_manager       = NULL;
-    ED4_sequence_info_terminal *sequence_info_terminal = NULL;
-    ED4_sequence_terminal      *sequence_terminal      = NULL;
-    ED4_spacer_terminal        *group_spacer_terminal  = NULL;
-    ED4_group_manager          *group_manager          = NULL;
-
+    const int height_terminal = TERMINALHEIGHT;
+    const int height_spacer   = SPACERHEIGHT;
 
     char namebuffer[NAME_BUFFERSIZE];
-    int height_spacer;
-    int height_terminal;
-    int pixel_length;
-    AW_device *device;
-
-
-    height_terminal = TERMINALHEIGHT;
-    height_spacer   = SPACERHEIGHT;
 
     sprintf(namebuffer, "Group_Manager.%ld", ED4_counter);                              // create new group manager
-    group_manager = new ED4_group_manager(namebuffer, 0, local_count_position, 0, 0, parent);
+    ED4_group_manager *group_manager = new ED4_group_manager(namebuffer, 0, local_count_position, 0, 0, parent);
     parent->children->append_member(group_manager);
 
     sprintf(namebuffer, "Bracket_Terminal.%ld", ED4_counter);
@@ -546,76 +523,78 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     *multi_species_manager = new ED4_multi_species_manager(namebuffer, BRACKETWIDTH, 0, 0, 0, group_manager);   // Objekt Gruppen name_terminal noch
     group_manager->children->append_member(*multi_species_manager);                     // auszeichnen
 
-    if (is_folded)                                              // only set FOLDED-flag if group
-    {                                                   // is folded
+    if (is_folded) { // only set FOLDED-flag if group is folded
         group_manager->set_property((ED4_properties) (ED4_P_IS_FOLDED | ED4_P_MOVABLE));
         (*multi_species_manager)->set_property((ED4_properties) (ED4_P_IS_FOLDED | ED4_P_IS_HANDLE));
         (*bracket_terminal)->set_property((ED4_properties) (ED4_P_IS_FOLDED | ED4_P_IS_HANDLE));
     }
-    else
-    {
+    else {
         group_manager->set_property(ED4_P_MOVABLE);
         (*multi_species_manager)->set_property(ED4_P_IS_HANDLE);
         (*bracket_terminal)->set_property(ED4_P_IS_HANDLE);
     }
 
-    sprintf(namebuffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter);                      // Spacer at beginning of group
-    group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 0, 0, 10, height_spacer, *multi_species_manager);     // For better Overview
-    (*multi_species_manager)->children->append_member(group_spacer_terminal);
+    {
+        sprintf(namebuffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter);                      // Spacer at beginning of group
+        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 0, 0, 10, height_spacer, *multi_species_manager); // For better Overview
+        (*multi_species_manager)->children->append_member(group_spacer_terminal);
+    }
 
-    sprintf(namebuffer, "Consensus_Manager.%ld", ED4_counter);                             // Create competence terminal
-    species_manager = new ED4_species_manager(ED4_SP_CONSENSUS, namebuffer, 0, height_spacer, 0, 0, *multi_species_manager);
-    species_manager->set_property(ED4_P_MOVABLE);
-    (*multi_species_manager)->children->append_member(species_manager);
+    {
+        sprintf(namebuffer, "Consensus_Manager.%ld", ED4_counter);                             // Create competence terminal
+        ED4_species_manager *species_manager = new ED4_species_manager(ED4_SP_CONSENSUS, namebuffer, 0, height_spacer, 0, 0, *multi_species_manager);
+        species_manager->set_property(ED4_P_MOVABLE);
+        (*multi_species_manager)->children->append_member(species_manager);
 
-    species_name_terminal = new ED4_species_name_terminal(groupname, 0, 0, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH),   height_terminal, species_manager);
-    species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));      // only some terminals
-    species_name_terminal->set_links(NULL, ref_sequence_terminal);
-    species_manager->children->append_member(species_name_terminal);                            // properties
+        ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(groupname, 0, 0, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH),   height_terminal, species_manager);
+        species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));      // only some terminals
+        species_name_terminal->set_links(NULL, ref_sequence_terminal);
+        species_manager->children->append_member(species_name_terminal);                                                  // properties
 
-    sprintf(namebuffer, "Consensus_Seq_Manager.%ld", ED4_counter);
-    sequence_manager = new ED4_sequence_manager(namebuffer, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), 0, 0, 0, species_manager);
-    sequence_manager->set_property(ED4_P_MOVABLE);
-    species_manager->children->append_member(sequence_manager);
+        {
+            sprintf(namebuffer, "Consensus_Seq_Manager.%ld", ED4_counter);
+            ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(namebuffer, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), 0, 0, 0, species_manager);
+            sequence_manager->set_property(ED4_P_MOVABLE);
+            species_manager->children->append_member(sequence_manager);
 
-    sequence_info_terminal = new ED4_sequence_info_terminal("CONS", 0, 0, SEQUENCEINFOSIZE, height_terminal, sequence_manager);  // Info fuer Gruppe
-    sequence_info_terminal->set_links(ref_sequence_info_terminal, ref_sequence_info_terminal);
-    sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-    sequence_manager->children->append_member(sequence_info_terminal);
+            ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal("CONS", 0, 0, SEQUENCEINFOSIZE, height_terminal, sequence_manager);  // Info fuer Gruppe
+            sequence_info_terminal->set_links(ref_sequence_info_terminal, ref_sequence_info_terminal);
+            sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+            sequence_manager->children->append_member(sequence_info_terminal);
 
-    device = ED4_ROOT->first_window->get_device();
-    pixel_length = device->get_string_size(ED4_G_SEQUENCES, CONSENSUS,   0);
+            {
+                AW_device             *device            = ED4_ROOT->first_window->get_device();
+                int                    pixel_length      = device->get_string_size(ED4_G_SEQUENCES, CONSENSUS,   0);
+                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(CONSENSUS, SEQUENCEINFOSIZE, 0, pixel_length + 10, height_terminal, sequence_manager);
 
-    sequence_terminal = new ED4_consensus_sequence_terminal(CONSENSUS, SEQUENCEINFOSIZE, 0, pixel_length + 10, height_terminal, sequence_manager);
-    sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
-    sequence_terminal->set_links(ref_sequence_terminal, ref_sequence_terminal);
-    sequence_manager->children->append_member(sequence_terminal);
+                sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
+                sequence_terminal->set_links(ref_sequence_terminal, ref_sequence_terminal);
+                sequence_manager->children->append_member(sequence_terminal);
+            }
+        }
+    }
 
     (*y) += height_terminal + height_spacer;
 
     return ED4_R_OK;
 }
 
-char *EDB_root_bact::generate_config_string(char *confname)                 // and save it in database
-{
-    int i;
-    long string_length;
+char *EDB_root_bact::generate_config_string(char *confname) { // and save it in database
     char *generated_string = NULL;
-    int counter = 0;
-    GBDATA *gb_area;
+    int   counter          = 0;
+
     ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
 
-    for (i=0; i<device_manager->children->members(); i++) {
+    for (int i=0; i<device_manager->children->members(); i++) {
         if (device_manager->children->member(i)->is_area_manager()) {
             GB_begin_transaction(GLOBAL_gb_main);
             device_manager->children->member(i)->generate_configuration_string(&generated_string);
 
-            string_length = strlen(generated_string);
-            if (generated_string[string_length - 1] == 1)
-                generated_string[string_length - 1] = '\0';
+            long string_length = strlen(generated_string);
+            if (generated_string[string_length - 1] == 1) generated_string[string_length - 1] = '\0';
 
             GBDATA *gb_configuration = GBT_create_configuration(GLOBAL_gb_main, confname);
-
+            GBDATA *gb_area;
             if (counter == 0) {
                 gb_area = GB_search(gb_configuration, "top_area", GB_STRING);
                 counter ++;
@@ -624,8 +603,7 @@ char *EDB_root_bact::generate_config_string(char *confname)                 // a
                 gb_area = GB_search(gb_configuration, "middle_area", GB_STRING);
             }
 
-            GB_ERROR error = 0;
-            error = GB_write_string(gb_area, generated_string);
+            GB_ERROR error = GB_write_string(gb_area, generated_string);
             if (error) aw_message(error);
 
             GB_commit_transaction(GLOBAL_gb_main);

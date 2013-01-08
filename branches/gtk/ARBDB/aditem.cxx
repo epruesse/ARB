@@ -73,6 +73,7 @@ GBDATA *GBT_find_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, 
      *
      * @param 'gb_item_data' is a container containing items
      * @param 'id_field' is a field containing a unique identifier for each item (e.g. 'name' for species)
+     * @param 'id_value' expected value of 'id_field'
      *
      * @return a pointer to an item with 'id_field' containing 'id_value'
      * or NULL (in this case an error MAY be exported)
@@ -343,17 +344,9 @@ void GBT_mark_all_that(GBDATA *gb_main, int flag, int (*condition)(GBDATA*, void
     GB_pop_transaction(gb_main);
 }
 
-long GBT_count_marked_species(GBDATA *gb_main)
-{
-    long    cnt = 0;
-    GBDATA *gb_species_data;
-
-    GB_push_transaction(gb_main);
-    gb_species_data = GBT_get_species_data(gb_main);
-    GB_pop_transaction(gb_main);
-
-    cnt = GB_number_of_marked_subentries(gb_species_data);
-    return cnt;
+long GBT_count_marked_species(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+    return GB_number_of_marked_subentries(GBT_get_species_data(gb_main));
 }
 
 char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all)

@@ -236,6 +236,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+PARS_main.o: $(ARBHOME)/INCLUDE/arb_misc.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_string.h

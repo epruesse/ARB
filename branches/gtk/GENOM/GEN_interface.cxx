@@ -560,7 +560,7 @@ public:
         }
     }
     void set_status(const char *status_) {
-        if (status != status) freedup(status, status_);
+        if (status != status_) freedup(status, status_);
         loc_awar(GLE_STATUS)->write_string(status ? status : (pos ? "Ok" : "No data"));
     }
 
@@ -568,7 +568,7 @@ public:
         const int   BUFSIZE = 100;
         static char buf[BUFSIZE];
 
-        IF_DEBUG(int printed =) sprintf(buf, "tmp/loc/%s/%s", tag, aname);
+        IF_ASSERTION_USED(int printed =) sprintf(buf, "tmp/loc/%s/%s", tag, aname);
         gen_assert(printed<BUFSIZE);
 
         return buf;
@@ -912,10 +912,9 @@ static void gene_delete_cb(AW_window *aww, AW_CL cl_gb_main) {
     if (aw_ask_sure("gene_delete", "Are you sure to delete the gene?")) {
         GBDATA         *gb_main = (GBDATA*)cl_gb_main;
         GB_transaction  ta(gb_main);
-        GB_ERROR        error   = 0;
         GBDATA         *gb_gene = GEN_get_current_gene(gb_main, aww->get_root());
 
-        error = gb_gene ? GB_delete(gb_gene) : "Please select a gene first";
+        GB_ERROR error = gb_gene ? GB_delete(gb_gene) : "Please select a gene first";
         if (error) {
             error = ta.close(error);
             aw_message(error);

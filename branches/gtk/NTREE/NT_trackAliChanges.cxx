@@ -9,18 +9,16 @@
 //                                                                 //
 // =============================================================== //
 
+#include "ntree.hxx"
 #include "NT_trackAliChanges.h"
 
 #include <awt_sel_boxes.hxx>
-#include <aw_window.hxx>
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <arbdbt.h>
 #include <ctime>
-
-extern GBDATA *GLOBAL_gb_main;
 
 #define AWAR_TRACK_BASE     "track/"
 #define AWAR_TRACK_ALI      AWAR_TRACK_BASE "ali"
@@ -55,7 +53,7 @@ static GB_ERROR writeHistory(GBDATA *gb_species, const char *stamp, const char *
 }
 
 static void trackAlignmentChanges(AW_window *aww) {
-    GB_transaction ta(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
 
     AW_root  *root           = aww->get_root();
     char     *ali            = root->awar(AWAR_TRACK_ALI)->read_string();
@@ -78,9 +76,9 @@ static void trackAlignmentChanges(AW_window *aww) {
         free(initials);
     }
 
-    arb_progress progress(GBS_global_string("Tracking changes in '%s'", ali), GBT_get_species_count(GLOBAL_gb_main));
+    arb_progress progress(GBS_global_string("Tracking changes in '%s'", ali), GBT_get_species_count(GLOBAL.gb_main));
 
-    for (GBDATA *gb_species = GBT_first_species(GLOBAL_gb_main);
+    for (GBDATA *gb_species = GBT_first_species(GLOBAL.gb_main);
          gb_species && !error;
          gb_species = GBT_next_species(gb_species))
     {
@@ -153,7 +151,7 @@ static void trackAlignmentChanges(AW_window *aww) {
 }
 
 void NT_create_trackAliChanges_Awars(AW_root *root, AW_default properties) {
-    root->awar_string(AWAR_TRACK_ALI, "???", GLOBAL_gb_main);
+    root->awar_string(AWAR_TRACK_ALI, "???", GLOBAL.gb_main);
     root->awar_string(AWAR_TRACK_INITIALS, GB_getenvUSER(), properties);
 }
 
@@ -174,7 +172,7 @@ AW_window *NT_create_trackAliChanges_window(AW_root *root) {
     aws->create_input_field(AWAR_TRACK_INITIALS);
 
     aws->at("ali_sel");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_main, aws, AWAR_TRACK_ALI, "*=");
+    awt_create_selection_list_on_alignments(GLOBAL.gb_main, aws, AWAR_TRACK_ALI, "*=");
 
     aws->at("go");
     aws->callback(trackAlignmentChanges);

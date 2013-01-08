@@ -1,5 +1,15 @@
+// ================================================================= //
+//                                                                   //
+//   File      : PH_root.cxx                                         //
+//   Institute of Microbiology (Technical University Munich)         //
+//   http://www.arb-home.de/                                         //
+//                                                                   //
+// ================================================================= //
+
 #include "phylo.hxx"
-#include <arbdb.h>
+#include <arbdbt.h>
+
+PH_root *PH_root::SINGLETON = NULL;
 
 GB_ERROR PH_root::open(const char *db_server) {
     GB_ERROR error = 0;

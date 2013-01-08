@@ -145,6 +145,7 @@ void GenePositionMap::announceGene(PositionPair gene)
 
             usedRanges.erase(found);
 
+            // cppcheck-suppress unreadVariable
             gene_length = combined_length;
             found       = usedRanges.find(gene); // search for further overlaps
         } while (found != usedRanges.end());
@@ -458,11 +459,11 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
 
         if (new_splitted_genes) {
 
-            printf("  - %s: %u genes (%u splitted), %u intergenes",
+            printf("  - %s: %i genes (%i splitted), %i intergenes",
                    organism_name, new_genes+new_splitted_genes, new_splitted_genes, new_intergenes);
         }
         else {
-            printf("  - %s: %u genes, %u intergenes",
+            printf("  - %s: %i genes, %i intergenes",
                    organism_name, new_genes, new_intergenes);
         }
         printf(" (data grow: %5.2f%%, gene overlap: %5.2f%%=%lu bp)\n", data_grow, gene_overlap, overlaps);

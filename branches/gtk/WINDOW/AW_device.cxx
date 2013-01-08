@@ -320,9 +320,10 @@ AW_GC *AW_common_Xm::create_gc() {
 void AW_GC_set::add_gc(int gi, AW_GC *agc) {
     if (gi >= count) {
         int new_count = gi+10;
-        gcs           = (AW_GC **)realloc((char *)gcs, sizeof(*gcs)*new_count);
+        realloc_unleaked(gcs, sizeof(*gcs)*new_count);
+        if (!gcs) GBK_terminate("out of memory");
         memset(&gcs[count], 0, sizeof(*gcs)*(new_count-count));
-        count         = new_count;
+        count = new_count;
     }
     if (gcs[gi]) delete gcs[gi];
     gcs[gi] = agc;

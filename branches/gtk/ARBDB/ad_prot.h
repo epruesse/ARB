@@ -279,7 +279,6 @@ char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi);
 void GBS_fwrite_string(const char *strngi, FILE *out);
 char *GBS_fconvert_string(char *buffer);
 char *GBS_replace_tabs_by_spaces(const char *text);
-const char *GBS_readable_size(unsigned long long size, const char *unit_suffix);
 char *GBS_trim(const char *str);
 char *GBS_log_dated_action_to(const char *comment, const char *action);
 
@@ -390,7 +389,7 @@ bool GB_in_temporary_branch(GBDATA *gbd);
 GB_ERROR GB_push_transaction(GBDATA *gbd);
 GB_ERROR GB_pop_transaction(GBDATA *gbd);
 GB_ERROR GB_begin_transaction(GBDATA *gbd);
-GB_ERROR GB_no_transaction(GBDATA *gbd);
+GB_ERROR GB_no_transaction(GBDATA *gbd) __ATTR__USERESULT;
 GB_ERROR GB_abort_transaction(GBDATA *gbd);
 GB_ERROR GB_commit_transaction(GBDATA *gbd);
 GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error);

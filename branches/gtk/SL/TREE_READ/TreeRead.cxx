@@ -438,12 +438,13 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
                                                          bootstrap_scale, reader->max_found_bootstrap);
                 }
             }
-            if (reader->max_found_branchlen >= 1.01) { // assume branchlengths have range [0;100]
+            if (reader->max_found_branchlen >= 1.1) { // assume branchlengths have range [0;100]
                 if (allow_length_scaling) {
                     branchlen_scale = 0.01;
                     if (warningPtr) {
-                        char *w = GBS_global_string_copy("Auto-scaling branchlengths by factor %.2f (max. found branchlength = %5.2f)",
-                                                         branchlen_scale, reader->max_found_branchlen);
+                        char *w = GBS_global_string_copy("Auto-scaling branchlengths by factor %.2f (max. found branchlength = %.2f)\n"
+                                                         "(use ARB_NT/Tree/Modify branches/Scale branchlengths with factor %.2f to undo auto-scaling)",
+                                                         branchlen_scale, reader->max_found_branchlen, 1.0/branchlen_scale);
                         if (*warningPtr) {
                             char *w2 = GBS_global_string_copy("%s\n%s", *warningPtr, w);
 

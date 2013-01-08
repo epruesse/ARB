@@ -292,6 +292,7 @@ arb_probe.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_probe.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbdb.h

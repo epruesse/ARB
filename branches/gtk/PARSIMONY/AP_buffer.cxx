@@ -101,17 +101,6 @@ unsigned long AP_STACK::size() {
 // ----------------
 //      AP_LIST
 
-AP_LIST::AP_LIST() {
-    list_len = 0;
-    first =  0;
-    last = 0;
-    akt = 0;
-}
-
-AP_LIST::~AP_LIST() {
-}
-
-
 AP_list_elem * AP_LIST::element(void * elem) {
     AP_list_elem *pntr = first;
     while (pntr != 0) {

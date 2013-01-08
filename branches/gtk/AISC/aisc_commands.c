@@ -17,8 +17,10 @@ int      Location::global_error_count = 0;
 const Location& Location::guess_pc() {
     if (exit_pc.valid()) return exit_pc;
 
-    const Code *pc = Interpreter::instance->at();
-    if (pc) return pc->source;
+    if (Interpreter::instance) {
+        const Code *pc = Interpreter::instance->at();
+        if (pc) return pc->source;
+    }
 
     static Location dummy(0, "no_idea_where");
     return dummy;
@@ -38,11 +40,13 @@ void Location::print_internal(const char *msg, const char *msg_type, const char 
 
     if (msg) {
         fputs(msg, stderr);
-        const Data& data = Interpreter::instance->get_data();
-        if (data.get_cursor()) {
-            fputs(" (cursor ", stderr);
-            data.dump_cursor_pos(stderr);
-            fputs(")", stderr);
+        if (Interpreter::instance) {
+            const Data& data = Interpreter::instance->get_data();
+            if (data.get_cursor()) {
+                fputs(" (cursor ", stderr);
+                data.dump_cursor_pos(stderr);
+                fputs(")", stderr);
+            }
         }
         fputc('\n', stderr);
     }
@@ -679,6 +683,7 @@ int Interpreter::do_for(const char *str) {
                         fd.forstr = strdup(ident);
                     }
                 }
+                // cppcheck-suppress memleak (fd.forstr is released from Interpreter::do_next)
             }
         }
         else {
@@ -692,6 +697,7 @@ int Interpreter::do_for(const char *str) {
                 fd.forstr    = strdup(p ? p+1 : ident);
                 fd.forcursor = data.get_cursor();
                 data.set_cursor(fo);
+                // cppcheck-suppress memleak (fd.forstr is released from Interpreter::do_next)
             }
             err = 0;
         }

@@ -48,11 +48,9 @@
  * All macros named 'XXX__BROKEN' are intended to be used, when a
  * test is known to fail, but cannot be fixed atm for some reason
  *
- * Recommended test-assertion is TEST_EXPECT(that(..).xxx())
+ * Recommended test-assertion is TEST_EXPECTATION(that(..).xxx())
  * see examples in test-unit-tests in ../CORE/arb_string.cxx@UNIT_TESTS
  */
-
-#define TEST_ASSERT(cond) test_assert(cond, false)
 
 #define ANY_SETUP "any_env_setup"
 
@@ -299,7 +297,11 @@ namespace arb_test {
     }
 
 
-    template <typename T> inline void print(const T& t) { fputs(val2readable(make_copy(t)), stderr); }
+    template <typename T> inline void print(const T& t) {
+        char *r = val2readable(make_copy(t));
+        fputs(r, stderr);
+        free(r);
+    }
     template <typename T> inline void print_hex(const T& t) { fputs(val2hex(make_copy(t)), stderr); }
 
     template <typename T1, typename T2> inline void print_pair(T1 t1, T2 t2) {
@@ -316,9 +318,9 @@ namespace arb_test {
     class epsilon_similar {
         double epsilon;
     public:
-        epsilon_similar(double epsilon_) : epsilon(epsilon_) {}
+        epsilon_similar(double epsilon_) : epsilon(epsilon_) { arb_assert(epsilon>0.0); }
         bool operator()(const double& d1, const double& d2) const {
-            double diff = d1-d2;
+            double diff        = d1-d2;
             if (diff<0.0) diff = -diff; // do not use fabs() here
             return diff <= epsilon;
         }
@@ -619,6 +621,7 @@ namespace arb_test {
     public:
         predicate_description(const char *primary_) : primary(primary_), inverse(NULL) {}
         predicate_description(const char *primary_, const char *inverse_) : primary(primary_), inverse(inverse_) {}
+        // cppcheck-suppress uninitMemberVar (fails to detect default ctor of 'str')
         predicate_description(const predicate_description& other) : primary(other.primary), inverse(other.inverse) {}
         DECLARE_ASSIGNMENT_OPERATOR(predicate_description);
 
@@ -760,6 +763,7 @@ namespace arb_test {
 
 
     template <typename T, typename FUNC>
+    // cppcheck-suppress noConstructor (fails to detect template ctor)
     class predicate_matcher : public value_matcher<T> {
         predicate<FUNC> pred;
         bool            expected_result;
@@ -788,7 +792,7 @@ namespace arb_test {
     // ------------------------------------------------
     //      matchable + matcher (for expectations)
 
-    const int MAX_GROUP_SIZE = 4;
+    const int MAX_GROUP_SIZE = 5;
     class expectation_group : public matchable //! group of expectation. matchable with group_matcher
     {
         int          count;
@@ -798,7 +802,7 @@ namespace arb_test {
     protected:
 
     public:
-        expectation_group() : count(0) {}
+        expectation_group() : count(0) { depend_on[0] = NULL; }
         expectation_group(const expectation& e) : count(1) {
             depend_on[0] = e.clone();
         }
@@ -818,7 +822,7 @@ namespace arb_test {
         }
         MAKE_CLONABLE(expectation_group);
 
-        expectation_group& add(const expectation& e) { depend_on[count++] = e.clone(); return *this; }
+        expectation_group& add(const expectation& e) { depend_on[count++] = e.clone(); arb_assert(count <= MAX_GROUP_SIZE); return *this; }
 
         const char *name() const {
             return "<expectation_group>";
@@ -1039,26 +1043,26 @@ namespace arb_test {
 #define is_equal_to_NULL()      null_expectation(true)
 #define does_differ_from_NULL() null_expectation(false)
 
-#define less_than(val) lessThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
-#define more_than(val) moreThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+#define is_less_than(val) lessThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+#define is_more_than(val) moreThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
 
-#define less_or_equal(val) moreThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
-#define more_or_equal(val) lessThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+#define is_less_or_equal(val) moreThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+#define is_more_or_equal(val) lessThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
 
-#define is(pred,arg)     predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
-#define is_not(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
+#define fulfills(pred,arg)    predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
+#define contradicts(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 
-#define does_contain(val) is(containing(),val)
+#define does_contain(val) fulfills(containing(),val)
 
 #define that(thing) CREATE_matchable(MATCHABLE_ARGS_TYPED(thing))
 
-#define TEST_EXPECT(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_that(); } while(0)
-#define TEST_EXPECT__BROKEN(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_broken(); } while(0)
-#define TEST_EXPECT__WANTED(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_wanted_behavior(); } while(0)
+#define TEST_EXPECTATION(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_that(); } while(0)
+#define TEST_EXPECTATION__BROKEN(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_broken(); } while(0)
+#define TEST_EXPECTATION__WANTED(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_wanted_behavior(); } while(0)
 
-#define TEST_EXPECT__BROKENIF(COND,EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_brokenif(COND,#COND); } while(0)
+#define TEST_EXPECTATION__BROKENIF(COND,EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_brokenif(COND,#COND); } while(0)
 
-#define DEBUG_TEST_EXPECT(EXPCTN) do {                                                  \
+#define DEBUG_TEST_EXPECTATION(EXPCTN) do {                                             \
         using namespace arb_test;                                                       \
         debug_asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).                            \
             debug_expectations();                                                       \
@@ -1087,18 +1091,12 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT__BROKEN(cond)                                       \
-    do {                                                                \
-        if (cond)                                                       \
-            TEST_ERROR("Formerly broken test '%s' succeeds", #cond);    \
-        else                                                            \
-            TEST_WARNING("Known broken behavior ('%s' fails)", #cond);  \
-    } while (0)
+#define TEST_EXPECT_ZERO(cond)         TEST_EXPECTATION(that(cond).is_equal_to(0))
+#define TEST_EXPECT_ZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(0))
+#define TEST_REJECT_ZERO(cond)         TEST_EXPECTATION(that(cond).does_differ_from(0))
+#define TEST_REJECT_ZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).does_differ_from(0))
 
-#define TEST_ASSERT_ZERO(cond)         TEST_EXPECT(that(cond).is_equal_to(0))
-#define TEST_ASSERT_ZERO__BROKEN(cond) TEST_EXPECT__BROKEN(that(cond).is_equal_to(0))
-
-#define TEST_ASSERT_ZERO_OR_SHOW_ERRNO(iocond)                  \
+#define TEST_EXPECT_ZERO_OR_SHOW_ERRNO(iocond)                  \
     do {                                                        \
         if ((iocond))                                           \
             TEST_IOERROR("I/O-failure in '%s'", #iocond);       \
@@ -1117,10 +1115,10 @@ namespace arb_test {
     inline match_expectation reported_error_contains(const char *error, const char *part) { return error ? that(error).does_contain(part) : that(error).does_differ_from_NULL(); }
 };
 
-#define TEST_ASSERT_ERROR_CONTAINS(call,part)         TEST_EXPECT        (reported_error_contains(call, part))
-#define TEST_ASSERT_ERROR_CONTAINS__BROKEN(call,part) TEST_EXPECT__BROKEN(reported_error_contains(call, part))
-#define TEST_ASSERT_NO_ERROR(call)                    TEST_EXPECT        (doesnt_report_error(call))
-#define TEST_ASSERT_NO_ERROR__BROKEN(call)            TEST_EXPECT__BROKEN(doesnt_report_error(call))
+#define TEST_EXPECT_ERROR_CONTAINS(call,part)         TEST_EXPECTATION        (reported_error_contains(call, part))
+#define TEST_EXPECT_ERROR_CONTAINS__BROKEN(call,part) TEST_EXPECTATION__BROKEN(reported_error_contains(call, part))
+#define TEST_EXPECT_NO_ERROR(call)                    TEST_EXPECTATION        (doesnt_report_error(call))
+#define TEST_EXPECT_NO_ERROR__BROKEN(call)            TEST_EXPECTATION__BROKEN(doesnt_report_error(call))
 
 // --------------------------------------------------------------------------------
 
@@ -1167,18 +1165,18 @@ namespace arb_test {
     };
 };
 
-#define TEST_ASSERT_ERROR_CLEAR() TEST_EXPECT(no_forgotten_error_exported())
+#define TEST_EXPECT_ERROR_CLEAR() TEST_EXPECTATION(no_forgotten_error_exported())
 
-#define TEST_ASSERT_RESULT__NOERROREXPORTED(create_result)                                do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT        (calling((create_result)).returns_result_and_doesnt_export_error()); } while(0)
-#define TEST_ASSERT_RESULT__NOERROREXPORTED__BROKEN(create_result)                        do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT__BROKEN(calling((create_result)).returns_result_and_doesnt_export_error()); } while(0)
-#define TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS(create_result,expected_part)         do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT        (calling((create_result)).doesnt_return_result_but_exports_error_containing(expected_part)); } while(0)
-#define TEST_ASSERT_NORESULT__ERROREXPORTED_CONTAINS__BROKEN(create_result,expected_part) do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT__BROKEN(calling((create_result)).doesnt_return_result_but_exports_error_containing(expected_part)); } while(0)
-#define TEST_ASSERT_NORESULT__NOERROREXPORTED(create_result)                              do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT        (calling((create_result)).does_neither_return_result_nor_export_error()); } while(0)
-#define TEST_ASSERT_NORESULT__NOERROREXPORTED__BROKEN(create_result)                      do { TEST_ASSERT_ERROR_CLEAR(); TEST_EXPECT__BROKEN(calling((create_result)).does_neither_return_result_nor_export_error()); } while(0)
+#define TEST_EXPECT_RESULT__NOERROREXPORTED(create_result)                                do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION        (calling((create_result)).returns_result_and_doesnt_export_error()); } while(0)
+#define TEST_EXPECT_RESULT__NOERROREXPORTED__BROKEN(create_result)                        do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION__BROKEN(calling((create_result)).returns_result_and_doesnt_export_error()); } while(0)
+#define TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(create_result,expected_part)         do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION        (calling((create_result)).doesnt_return_result_but_exports_error_containing(expected_part)); } while(0)
+#define TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS__BROKEN(create_result,expected_part) do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION__BROKEN(calling((create_result)).doesnt_return_result_but_exports_error_containing(expected_part)); } while(0)
+#define TEST_EXPECT_NORESULT__NOERROREXPORTED(create_result)                              do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION        (calling((create_result)).does_neither_return_result_nor_export_error()); } while(0)
+#define TEST_EXPECT_NORESULT__NOERROREXPORTED__BROKEN(create_result)                      do { TEST_EXPECT_ERROR_CLEAR(); TEST_EXPECTATION__BROKEN(calling((create_result)).does_neither_return_result_nor_export_error()); } while(0)
 
 #endif
 // --------------------------------------------------------------------------------
-// TEST_ASSERT_SEGFAULT and TEST_ASSERT_CODE_ASSERTION_FAILS
+// TEST_EXPECT_SEGFAULT and TEST_EXPECT_CODE_ASSERTION_FAILS
 // only work if binary is linked with ARBDB
 
 #ifdef ENABLE_CRASH_TESTS
@@ -1190,76 +1188,96 @@ const bool FAILS_ASSERTION     = true;
 const bool FULFILLS_ASSERTIONS = false;
 
 #  ifdef ASSERTION_USED
-inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expect_assert_fail) {
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expect_assert_fail, bool expectation_untestable_under_valgrind) {
     using namespace arb_test;
 
     bool& assertion_failed = test_data().assertion_failed;
     bool  old_state        = assertion_failed;
 
-    expect_assert_fail = expect_assert_fail && !GBK_running_on_valgrind(); // under valgrind assertions never fail
-
-    match_expectation SEGV       = that(GBK_raises_SIGSEGV(cb,true)).is_equal_to(expect_SEGV);
-    match_expectation assertfail = that(assertion_failed).is_equal_to(expect_assert_fail);
-
-    match_expectation expected = all().of(SEGV, assertfail);
+    expectation_group expected;
+    if (GBK_running_on_valgrind()) {
+        GBK_raises_SIGSEGV(cb); // just call
+        expected.add(that(expectation_untestable_under_valgrind).is_equal_to(true));
+    }
+    else {
+        expected.add(that(GBK_raises_SIGSEGV(cb)).is_equal_to(expect_SEGV));
+        expected.add(that(assertion_failed).is_equal_to(expect_assert_fail));
+    }
 
     assertion_failed = old_state;
-    return expected;
+    return all().ofgroup(expected);
 }
 #  else
-inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV) {
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expectation_untestable_under_valgrind) {
     using namespace arb_test;
-    return that(GBK_raises_SIGSEGV(cb,true)).is_equal_to(expect_SEGV);
+    if (GBK_running_on_valgrind()) {
+        return that(expectation_untestable_under_valgrind).is_equal_to(true);
+    }
+    return that(GBK_raises_SIGSEGV(cb)).is_equal_to(expect_SEGV);
 }
 #  endif
 # endif
 
 # ifdef ASSERTION_USED
 
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION))
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS))
-#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS)) 
-#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, true))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FAILS_ASSERTION, false))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
+#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, true)) 
+#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, false)) 
+#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
 
 # else // ENABLE_CRASH_TESTS but no ASSERTION_USED (test segfaults in NDEBUG mode)
 
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
-#  define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb)
-#  define TEST_ASSERT_SEGFAULT(cb)                       TEST_EXPECT(expect_callback(cb, DOES_SEGFAULT)) 
-#  define TEST_ASSERT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT__WANTED(expect_callback(cb, DOESNT_SEGFAULT))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb)
+#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, true)) 
+#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, false)) 
+#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, false))
 
 # endif
 
 #else // not ENABLE_CRASH_TESTS (i.e. skip these tests completely)
 
-# define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
-# define TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(cb)
-# define TEST_ASSERT_SEGFAULT(cb)
-# define TEST_ASSERT_SEGFAULT__UNWANTED(cb)
+# define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)
+# define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)
+# define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb)
+# define TEST_EXPECT_SEGFAULT(cb)
+# define TEST_EXPECT_SEGFAULT__WANTED(cb)
+# define TEST_EXPECT_SEGFAULT__UNWANTED(cb)
 
 #endif
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT_EQUAL(e1,t2)         TEST_EXPECT(that(e1).is_equal_to(t2))
-#define TEST_ASSERT_EQUAL__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).is_equal_to(t2))
+#define TEST_EXPECT_EQUAL(e1,t2)         TEST_EXPECTATION(that(e1).is_equal_to(t2))
+#define TEST_EXPECT_EQUAL__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).is_equal_to(t2))
 
-#define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_EXPECT(that(e1).is(epsilon_similar(epsilon), t2))
-#define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECT__BROKEN(that(e1).is(epsilon_similar(epsilon), t2))
+#define TEST_EXPECT_SIMILAR(e1,t2,epsilon)         TEST_EXPECTATION(that(e1).fulfills(epsilon_similar(epsilon), t2))
+#define TEST_EXPECT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECTATION__BROKEN(that(e1).is(epsilon_similar(epsilon), t2))
 
-#define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_EXPECT(that(e1).does_differ_from(t2));
-#define TEST_ASSERT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).does_differ_from(t2));
+#define TEST_EXPECT_DIFFERENT(e1,t2)         TEST_EXPECTATION(that(e1).does_differ_from(t2));
+#define TEST_EXPECT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).does_differ_from(t2));
 
-#define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_EXPECT(that(lower).less_or_equal(upper))
-#define TEST_ASSERT_LOWER(lower,upper)        TEST_EXPECT(that(lower).less_than(upper))
-#define TEST_ASSERT_IN_RANGE(val,lower,upper) TEST_EXPECT(all().of(that(val).more_or_equal(lower), that(val).less_or_equal(upper)))
+#define TEST_EXPECT_LESS(val,ref)              TEST_EXPECTATION(that(val).is_less_than(ref))
+#define TEST_EXPECT_MORE(val,ref)              TEST_EXPECTATION(that(val).is_more_than(ref))
+#define TEST_EXPECT_LESS_EQUAL(val,ref)        TEST_EXPECTATION(that(val).is_less_or_equal(ref))
+#define TEST_EXPECT_MORE_EQUAL(val,ref)        TEST_EXPECTATION(that(val).is_more_or_equal(ref))
+#define TEST_EXPECT_IN_RANGE(val,lower,higher) TEST_EXPECTATION(all().of(that(val).is_more_or_equal(lower),     \
+                                                                         that(val).is_less_or_equal(higher)))
 
-#define TEST_ASSERT_CONTAINS(str, part) TEST_EXPECT(that(str).does_contain(part))
+#define TEST_EXPECT_CONTAINS(str, part) TEST_EXPECTATION(that(str).does_contain(part))
 
-#define TEST_ASSERT_NULL(n)            TEST_ASSERT_EQUAL(n, (typeof(n))NULL)
-#define TEST_ASSERT_NULL__BROKEN(n)    TEST_ASSERT_EQUAL__BROKEN(n, (typeof(n))NULL)
-#define TEST_ASSERT_NOTNULL(n)         TEST_ASSERT_DIFFERENT(n, (typeof(n))NULL)
-#define TEST_ASSERT_NOTNULL__BROKEN(n) TEST_ASSERT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
+#define TEST_EXPECT_NULL(n)         TEST_EXPECT_EQUAL(n, (typeof(n))NULL)
+#define TEST_EXPECT_NULL__BROKEN(n) TEST_EXPECT_EQUAL__BROKEN(n, (typeof(n))NULL)
+#define TEST_REJECT_NULL(n)         TEST_EXPECT_DIFFERENT(n, (typeof(n))NULL)
+#define TEST_REJECT_NULL__BROKEN(n) TEST_EXPECT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
+
+#define TEST_EXPECT(cond)         TEST_EXPECT_EQUAL(cond, true)
+#define TEST_EXPECT__BROKEN(cond) TEST_EXPECT_EQUAL__BROKEN(cond, true)
+#define TEST_REJECT(cond)         TEST_EXPECT_EQUAL(cond, false)
+#define TEST_REJECT__BROKEN(cond) TEST_EXPECT_EQUAL__BROKEN(cond, false)
 
 // --------------------------------------------------------------------------------
 // the following macros only work when
@@ -1291,35 +1309,32 @@ namespace arb_test {
     }
 };
 
-#define TEST_COPY_FILE(src, dst) TEST_ASSERT(system(GBS_global_string("cp '%s' '%s'", src, dst)) == 0)
+#define TEST_COPY_FILE(src, dst) TEST_EXPECT_ZERO(system(GBS_global_string("cp '%s' '%s'", src, dst)))
 
-#define TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_ASSERT(arb_test::test_textfile_difflines(f1,f2, diff))
-#define TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_ASSERT__BROKEN(arb_test::test_textfile_difflines(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_EXPECT(arb_test::test_textfile_difflines(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_EXPECT__BROKEN(arb_test::test_textfile_difflines(f1,f2, diff))
 
-#define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         TEST_ASSERT(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
-#define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) TEST_ASSERT__BROKEN(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         TEST_EXPECT(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) TEST_EXPECT__BROKEN(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
 
-#define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::test_files_equal(f1,f2))
-#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::test_files_equal(f1,f2))
+#define TEST_EXPECT_FILES_EQUAL(f1,f2)         TEST_EXPECT(arb_test::test_files_equal(f1,f2))
+#define TEST_EXPECT_FILES_EQUAL__BROKEN(f1,f2) TEST_EXPECT__BROKEN(arb_test::test_files_equal(f1,f2))
 
-#define TEST_ASSERT_MEM_EQUAL(m1,m2,size)         TEST_ASSERT(arb_test::test_mem_equal(m1,m2,size))
-#define TEST_ASSERT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_ASSERT__BROKEN(arb_test::test_mem_equal(m1,m2,size))
-
-#define TEST_ASSERT_TEXTFILES_EQUAL(f1,f2)         TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,0)
-#define TEST_ASSERT_TEXTFILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,0)
+#define TEST_EXPECT_TEXTFILES_EQUAL(f1,f2)         TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,0)
+#define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2) TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,0)
 
 #else
 
 #define WARN_MISS_ADPROT() need_include__ad_prot_h__BEFORE__test_unit_h
 
-#define TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,diff)                      WARN_MISS_ADPROT()
-#define TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff)              WARN_MISS_ADPROT()
-#define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         WARN_MISS_ADPROT()
-#define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) WARN_MISS_ADPROT()
-#define TEST_ASSERT_FILES_EQUAL(f1,f2)                                  WARN_MISS_ADPROT()
-#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2)                          WARN_MISS_ADPROT()
-#define TEST_ASSERT_TEXTFILES_EQUAL(f1,f2)                              WARN_MISS_ADPROT()
-#define TEST_ASSERT_TEXTFILES_EQUAL__BROKEN(f1,f2)                      WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,diff)                      WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff)              WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) WARN_MISS_ADPROT()
+#define TEST_EXPECT_FILES_EQUAL(f1,f2)                                  WARN_MISS_ADPROT()
+#define TEST_EXPECT_FILES_EQUAL__BROKEN(f1,f2)                          WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILES_EQUAL(f1,f2)                              WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2)                      WARN_MISS_ADPROT()
 
 #endif // AD_PROT_H
 
@@ -1327,7 +1342,7 @@ namespace arb_test {
 
 #define TEST_SETUP_GLOBAL_ENVIRONMENT(modulename) do {                                                          \
         arb_test::test_data().raiseLocalFlag(ANY_SETUP);                                                        \
-        TEST_ASSERT_NO_ERROR(GBK_system(GBS_global_string("../test_environment setup %s",  (modulename))));      \
+        TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("../test_environment setup %s",  (modulename))));      \
     } while(0)
 // cleanup is done (by Makefile.suite) after all unit tests have been run
 

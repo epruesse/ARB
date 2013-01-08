@@ -25,7 +25,7 @@ inline void PS_printProbe(const PS_Probe *p) {
     printf("%+i_%u_%u", p->quality, p->length, p->GC_content);
 }
 
-inline void PS_printProbe(const PS_ProbePtr p) {
+inline void PS_printProbe(const PS_ProbePtr& p) {
     printf("%+i_%u_%u", p->quality, p->length, p->GC_content);
 }
 

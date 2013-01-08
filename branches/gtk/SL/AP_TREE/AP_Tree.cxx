@@ -16,6 +16,8 @@
 
 #include <math.h>
 #include <map>
+#include <climits>
+#include <arb_progress.h>
 
 using namespace std;
 
@@ -792,17 +794,17 @@ int AP_tree::arb_tree_set_leafsum_viewsum() // count all visible leafs
     int l, r;
     if (is_leaf) {
         gr.view_sum = 1;
-        gr.leave_sum = 1;
+        gr.leaf_sum = 1;
         return 1;
     }
     l =  get_leftson()->arb_tree_set_leafsum_viewsum();
     r =  get_rightson()->arb_tree_set_leafsum_viewsum();
-    gr.leave_sum = r+l;
+    gr.leaf_sum = r+l;
     gr.view_sum = get_leftson()->gr.view_sum + get_rightson()->gr.view_sum;
     if (gr.grouped) {
-        gr.view_sum = (int)pow((double)(gr.leave_sum - GROUPED_SUM + 9), .33);
+        gr.view_sum = (int)pow((double)(gr.leaf_sum - GROUPED_SUM + 9), .33);
     }
-    return gr.leave_sum;
+    return gr.leaf_sum;
 }
 
 int AP_tree::arb_tree_leafsum2()    // count all leafs
@@ -821,7 +823,6 @@ void AP_tree::calc_hidden_flag(int father_is_hidden) {
 }
 
 int AP_tree::calc_color() {
-    int l, r;
     int res;
     if (is_leaf) {
         if (gb_node) {
@@ -844,8 +845,8 @@ int AP_tree::calc_color() {
         }
     }
     else {
-        l = get_leftson()->calc_color();
-        r = get_rightson()->calc_color();
+        int l = get_leftson()->calc_color();
+        int r = get_rightson()->calc_color();
 
         if (l == r) res = l;
 
@@ -878,7 +879,6 @@ int AP_tree::calc_color() {
 // faerbt Bakterien die darin vorkommen mit den entsprechenden Farben
 // in der Hashtabelle ist eine Struktur aus Bak.namen und Farben(GC's)
 int AP_tree::calc_color_probes(GB_HASH *hashptr) {
-    int l, r;
     int res;
 
     if (is_leaf) {
@@ -893,8 +893,8 @@ int AP_tree::calc_color_probes(GB_HASH *hashptr) {
         }
     }
     else {
-        l = get_leftson()->calc_color_probes(hashptr);
-        r = get_rightson()->calc_color_probes(hashptr);
+        int l = get_leftson()->calc_color_probes(hashptr);
+        int r = get_rightson()->calc_color_probes(hashptr);
 
         if      (l == r)                      res = l;
         else if (l == AWT_GC_SOME_MISMATCHES) res = r;
@@ -1285,45 +1285,420 @@ AP_tree ** AP_tree::getRandomNodes(int anzahl) {
     return retlist;
 }
 
-static double ap_search_strange_species_rek(AP_tree *at, double min_rel_diff, double min_abs_diff, bool& marked) {
-    marked = false;
-    if (at->is_leaf) return 0.0;
+// --------------------------------------------------------------------------------
 
-    bool   max_is_left = true;
-    bool   marked_left;
-    bool   marked_right;
-    double max         = ap_search_strange_species_rek(at->get_leftson(),  min_rel_diff, min_abs_diff, marked_left) + at->leftlen;
-    double min         = ap_search_strange_species_rek(at->get_rightson(), min_rel_diff, min_abs_diff, marked_right) + at->rightlen;
+template <typename T>
+class ValueCounter {
+    T   min, max, sum;
+    int count;
 
-    if (max<min) {
-        double h = max; max = min; min = h;
-        max_is_left = false;
+    char *mean_min_max_impl() const;
+    char *mean_min_max_percent_impl() const;
+
+    mutable char *buf;
+    const char *set_buf(char *content) const { freeset(buf, content); return buf; }
+
+public:
+    ValueCounter()
+        : min(INT_MAX),
+          max(INT_MIN),
+          sum(0),
+          count(0),
+          buf(NULL)
+    {}
+    ValueCounter(const ValueCounter<T>& other)
+        : min(other.min),
+          max(other.max),
+          sum(other.sum),
+          count(other.count),
+          buf(NULL)
+    {}
+    ~ValueCounter() { free(buf); }
+
+    DECLARE_ASSIGNMENT_OPERATOR(ValueCounter<T>);
+
+    void count_value(T val) {
+        count++;
+        min  = std::min(min, val);
+        max  = std::max(max, val);
+        sum += val;
     }
 
-    if ((max-min)>min_abs_diff && max > (min * (1.0 + min_rel_diff))) {
-        if (max_is_left) {
-            if (!marked_left) {
-                at->leftson->mark_subtree();
-                marked = true;
+    int get_count() const { return count; }
+    T get_min() const { return min; }
+    T get_max() const { return max; }
+    double get_mean() const { return sum/double(count); }
+
+    const char *mean_min_max()         const { return count ? set_buf(mean_min_max_impl())         : "<not available>"; }
+    const char *mean_min_max_percent() const { return count ? set_buf(mean_min_max_percent_impl()) : "<not available>"; }
+
+    ValueCounter<T>& operator += (const T& inc) {
+        min += inc;
+        max += inc;
+        sum += inc*count;
+        return *this;
+    }
+    ValueCounter<T>& operator += (const ValueCounter<T>& other) {
+        min    = std::min(min, other.min);
+        max    = std::max(max, other.max);
+        sum   += other.sum;
+        count += other.count;
+        return *this;
+    }
+};
+
+template<typename T>
+inline ValueCounter<T> operator+(const ValueCounter<T>& c1, const ValueCounter<T>& c2) {
+    return ValueCounter<T>(c1) += c2;
+}
+template<typename T>
+inline ValueCounter<T> operator+(const ValueCounter<T>& c, const T& inc) {
+    return ValueCounter<T>(c) += inc;
+}
+
+template<> char *ValueCounter<int>::mean_min_max_impl() const {
+    return GBS_global_string_copy("%.2f (range: %i .. %i)", get_mean(), get_min(), get_max());
+}
+template<> char *ValueCounter<double>::mean_min_max_impl() const {
+    return GBS_global_string_copy("%.2f (range: %.2f .. %.2f)", get_mean(), get_min(), get_max());
+}
+template<> char *ValueCounter<double>::mean_min_max_percent_impl() const {
+    return GBS_global_string_copy("%.2f%% (range: %.2f%% .. %.2f%%)", get_mean()*100.0, get_min()*100.0, get_max()*100.0);
+}
+
+class LongBranchMarker {
+    double min_rel_diff;
+    double min_abs_diff;
+
+    int furcs;
+
+    ValueCounter<double> absdiff;
+    ValueCounter<double> reldiff;
+    ValueCounter<double> absdiff_marked;
+    ValueCounter<double> reldiff_marked;
+
+    double perform_marking(AP_tree *at, bool& marked) {
+        furcs++;
+
+        marked = false;
+        if (at->is_leaf) return 0.0;
+
+        bool marked_left;
+        bool marked_right;
+
+        double max = perform_marking(at->get_leftson(),  marked_left)  + at->leftlen;
+        double min = perform_marking(at->get_rightson(), marked_right) + at->rightlen;
+
+        bool max_is_left = true;
+        if (max<min) {
+            double h = max; max = min; min = h;
+            max_is_left = false;
+        }
+
+        double abs_diff = max-min;
+        absdiff.count_value(abs_diff);
+
+        double rel_diff = (max == 0.0) ? 0.0 : abs_diff/max;
+        reldiff.count_value(rel_diff);
+
+        if (abs_diff>min_abs_diff && rel_diff>min_rel_diff) {
+            if (max_is_left) {
+                if (!marked_left) {
+                    at->leftson->mark_subtree();
+                    marked = true;
+                }
+            }
+            else {
+                if (!marked_right) {
+                    at->rightson->mark_subtree();
+                    marked = true;
+                }
+            }
+        }
+
+        if (marked) { // just marked one of my subtrees
+            absdiff_marked.count_value(abs_diff);
+            reldiff_marked.count_value(rel_diff);
+        }
+        else {
+            marked = marked_left||marked_right;
+        }
+
+        return min; // use minimal distance for whole subtree
+    }
+
+    static char *meanDiffs(const ValueCounter<double>& abs, const ValueCounter<double>& rel) {
+        return GBS_global_string_copy(
+            "Mean absolute diff: %s\n"
+            "Mean relative diff: %s",
+            abs.mean_min_max(), 
+            rel.mean_min_max_percent());
+    }
+
+public:
+    LongBranchMarker(AP_tree *root, double min_rel_diff_, double min_abs_diff_)
+        : min_rel_diff(min_rel_diff_),
+          min_abs_diff(min_abs_diff_),
+          furcs(0)
+    {
+        bool UNUSED;
+        perform_marking(root, UNUSED);
+    }
+
+    const char *get_report() const {
+        char *diffs_all    = meanDiffs(absdiff, reldiff);
+        char *diffs_marked = meanDiffs(absdiff_marked, reldiff_marked);
+
+        const char *msg = GBS_global_string(
+            "Tree contains %i furcations.\n"
+            "\n"
+            "%s\n"
+            "\n"
+            "%i subtrees have been marked:\n"
+            "%s\n"
+            "\n",
+            furcs-1, // no furcation at root!
+            diffs_all,
+            absdiff_marked.get_count(), 
+            diffs_marked);
+
+        free(diffs_all);
+        free(diffs_marked);
+
+        return msg;
+    }
+};
+
+struct DepthMarker {
+    // limits (marked if depth and dist are above)
+    int    min_depth;
+    double min_rootdist;
+
+    // current values (for recursion)
+    int    depth;
+    double dist;
+
+    // results
+    ValueCounter<int>    depths,    depths_marked;
+    ValueCounter<double> distances, distances_marked;
+
+    void perform_marking(AP_tree *at, AP_FLOAT atLen) {
+        int depthInc = atLen == 0.0 ? 0 : 1;  // do NOT increase depth at multifurcations
+
+        depth += depthInc;
+        dist  += atLen;
+
+        if (at->is_leaf) {
+            depths.count_value(depth);
+            distances.count_value(dist);
+
+            int mark = depth >= min_depth && dist >= min_rootdist;
+            if (at->gb_node) {
+                GB_write_flag(at->gb_node, mark);
+                if (mark) {
+                    depths_marked.count_value(depth);
+                    distances_marked.count_value(dist);
+                }
             }
         }
         else {
-            if (!marked_right) {
-                at->rightson->mark_subtree();
-                marked = true;
-            }
+            perform_marking(at->get_leftson(), at->leftlen);
+            perform_marking(at->get_rightson(), at->rightlen);
         }
+
+        depth -= depthInc;
+        dist  -= atLen;
     }
-    if (!marked && (marked_left||marked_right)) marked = true;
-    return (max + min) *.5;
+
+public:
+    DepthMarker(AP_tree *root, int min_depth_, double min_rootdist_)
+        : min_depth(min_depth_),
+          min_rootdist(min_rootdist_),
+          depth(0),
+          dist(0.0)
+    {
+        perform_marking(root, 0.0);
+    }
+
+    const char *get_report() const {
+        int    leafs          = depths.get_count();
+        int    marked         = depths_marked.get_count();
+        double balanced_depth = log10(leafs) / log10(2);
+
+        const char *msg = GBS_global_string(
+            "The optimal mean depth of a tree with %i leafs\n"
+            "      would be %.2f\n"
+            "\n"
+            "Your tree:\n"
+            "mean depth:    %s\n"
+            "mean distance: %s\n"
+            "\n"
+            "%i species (%.2f%%) have been marked:\n"
+            "mean depth:    %s\n"
+            "mean distance: %s\n"
+            ,
+            leafs,
+            balanced_depth,
+            depths.mean_min_max(),
+            distances.mean_min_max(), 
+            marked, marked/double(leafs)*100.0,
+            depths_marked.mean_min_max(), 
+            distances_marked.mean_min_max()
+            );
+        return msg;
+    }
+};
+
+const char *AP_tree::mark_long_branches(double min_rel_diff, double min_abs_diff) {
+    // look for asymmetric parts of the tree and mark all species with long branches
+    return LongBranchMarker(this, min_rel_diff, min_abs_diff).get_report();
+}
+const char *AP_tree::mark_deep_leafs(int min_depth, double min_rootdist) {
+    // mark all leafs with min_depth and min_rootdist
+    return DepthMarker(this, min_depth, min_rootdist).get_report();
 }
 
-void AP_tree::mark_long_branches(GBDATA *gb_main, double min_rel_diff, double min_abs_diff) {
-    // look for asymmetric parts of the tree and mark all species with long branches
-    GB_transaction dummy(gb_main);
-    bool           marked;
-    ap_search_strange_species_rek(this, min_rel_diff, min_abs_diff, marked);
-}
+// --------------------------------------------------------------------------------
+
+typedef ValueCounter<double> Distance;
+
+class DistanceCounter {
+    ValueCounter<double> min, max, mean;
+public:
+
+    void count_distance(const Distance& d) {
+        mean.count_value(d.get_mean());
+        min.count_value(d.get_min());
+        max.count_value(d.get_max());
+    }
+
+    int get_count() const { return mean.get_count(); }
+
+    char *get_report() const {
+        return GBS_global_string_copy(
+            "Mean mean distance: %s\n"
+            "Mean min. distance: %s\n"
+            "Mean max. distance: %s",
+            mean.mean_min_max(), 
+            min.mean_min_max(), 
+            max.mean_min_max()
+            );
+    }
+};
+
+class EdgeDistances {
+    typedef map<AP_tree*, Distance> DistanceMap;
+
+    DistanceMap downdist; // inclusive length of branch itself
+    DistanceMap updist;   // inclusive length of branch itself
+
+    arb_progress progress;
+
+    const Distance& calc_downdist(AP_tree *at, AP_FLOAT len) {
+        if (at->is_leaf) {
+            Distance d;
+            d.count_value(len);
+            downdist[at] = d;
+
+            progress.inc();
+        }
+        else {
+            downdist[at] =
+                calc_downdist(at->get_leftson(), at->leftlen) +
+                calc_downdist(at->get_rightson(), at->rightlen) +
+                len;
+        }
+        return downdist[at];
+    }
+
+    const Distance& calc_updist(AP_tree *at, AP_FLOAT len) {
+        ap_assert(at->father); // impossible - root has no updist!
+
+        AP_tree *father  = at->get_father();
+        AP_tree *brother = at->get_brother();
+
+        if (father->father) {
+            ap_assert(updist.find(father) != updist.end());
+            ap_assert(downdist.find(brother) != downdist.end());
+
+            updist[at] = updist[father] + downdist[brother] + len;
+        }
+        else {
+            ap_assert(downdist.find(brother) != downdist.end());
+
+            updist[at] = downdist[brother]+len;
+        }
+
+        if (!at->is_leaf) {
+            calc_updist(at->get_leftson(), at->leftlen);
+            calc_updist(at->get_rightson(), at->rightlen);
+        }
+        else {
+            progress.inc();
+        }
+        
+        return updist[at];
+    }
+
+    DistanceCounter alldists, markeddists;
+
+    void calc_distance_stats(AP_tree *at) {
+        if (at->is_leaf) {
+            ap_assert(updist.find(at) != updist.end());
+
+            const Distance& upwards = updist[at];
+
+            alldists.count_distance(upwards);
+            if (at->gb_node && GB_read_flag(at->gb_node)) {
+                markeddists.count_distance(upwards);
+            }
+
+            progress.inc();
+        }
+        else {
+            calc_distance_stats(at->get_leftson());
+            calc_distance_stats(at->get_rightson());
+        }
+    }
+
+public:
+
+    EdgeDistances(AP_tree *root)
+        : progress("Analysing distances", root->arb_tree_leafsum2()*3)
+    {
+        calc_downdist(root->get_leftson(),  root->leftlen);
+        calc_downdist(root->get_rightson(), root->rightlen);
+
+        calc_updist(root->get_leftson(),  root->leftlen);
+        calc_updist(root->get_rightson(), root->rightlen);
+
+        calc_distance_stats(root);
+    }
+
+    const char *get_report() const {
+        char *alldists_report    = alldists.get_report();
+        char *markeddists_report = markeddists.get_report();
+
+        const char *msg = GBS_global_string(
+            "Distance statistic for %i leafs:\n"
+            "(each leaf to all other leafs)\n"
+            "\n"
+            "%s\n"
+            "\n"
+            "Distance statistic for %i marked leafs:\n"
+            "\n"
+            "%s\n", 
+            alldists.get_count(), alldists_report,
+            markeddists.get_count(), markeddists_report);
+        free(markeddists_report);
+        free(alldists_report);
+        return msg;
+    }
+};
+
+const char *AP_tree::analyse_distances() { return EdgeDistances(this).get_report(); }
+
+// --------------------------------------------------------------------------------
 
 static int ap_mark_degenerated(AP_tree *at, double degeneration_factor, double& max_degeneration) {
     // returns number of species in subtree
@@ -1356,74 +1731,14 @@ static int ap_mark_degenerated(AP_tree *at, double degeneration_factor, double& 
     return lSons+rSons;
 }
 
-void AP_tree::mark_degenerated_branches(GBDATA *, double degeneration_factor) {
+const char *AP_tree::mark_degenerated_branches(double degeneration_factor) {
     // marks all species in degenerated branches.
     // For all nodes, where one branch contains 'degeneration_factor' more species than the
     // other branch, the smaller branch is considered degenerated.
 
     double max_degeneration = 0;
     ap_mark_degenerated(this, degeneration_factor, max_degeneration);
-    aw_message(GBS_global_string("Maximum degeneration = %.2f", max_degeneration));
-}
-
-static void ap_mark_below_depth(AP_tree *at, int mark_depth, long *marked, long *marked_depthsum) {
-    if (at->is_leaf) {
-        if (mark_depth <= 0) {
-            if (at->gb_node) {
-                GB_write_flag(at->gb_node, 1);
-                (*marked)++;
-                (*marked_depthsum) += mark_depth;
-            }
-        }
-    }
-    else {
-        ap_mark_below_depth(at->get_leftson(),  mark_depth-1, marked, marked_depthsum);
-        ap_mark_below_depth(at->get_rightson(), mark_depth-1, marked, marked_depthsum);
-    }
-}
-
-static void ap_check_depth(AP_tree *at, int depth, long *depthsum, long *leafs, long *maxDepth) {
-    if (at->is_leaf) {
-        (*leafs)++;
-        (*depthsum) += depth;
-        if (depth>*maxDepth) *maxDepth = depth;
-    }
-    else {
-        ap_check_depth(at->get_leftson(),  depth+1, depthsum, leafs, maxDepth);
-        ap_check_depth(at->get_rightson(), depth+1, depthsum, leafs, maxDepth);
-    }
-}
-
-void AP_tree::mark_deep_branches(GBDATA *, int mark_depth) {
-    // mark all species below mark_depth
-
-    long depthsum  = 0;
-    long leafs     = 0;
-    long max_depth = 0;
-
-    ap_check_depth(this, 0, &depthsum, &leafs, &max_depth);
-
-    double balanced_depth = log10(leafs) / log10(2);
-
-    long marked_depthsum = 0;
-    long marked          = 0;
-    ap_mark_below_depth(this, mark_depth, &marked, &marked_depthsum);
-
-    marked_depthsum = -marked_depthsum + marked*mark_depth;
-
-    aw_message(GBS_global_string(
-                                 "optimal depth would be %.2f\n"
-                                 "mean depth = %.2f\n"
-                                 "max depth  = %li\n"
-                                 "marked species  = %li\n"
-                                 "mean depth of marked  = %.2f\n"
-                                 ,
-                                 balanced_depth,
-                                 depthsum/(double)leafs,
-                                 max_depth,
-                                 marked,
-                                 marked_depthsum/(double)marked
-                                 ));
+    return GBS_global_string("Maximum degeneration = %.2f", max_degeneration);
 }
 
 static int ap_mark_duplicates_rek(AP_tree *at, GB_HASH *seen_species) {
@@ -1450,9 +1765,8 @@ static int ap_mark_duplicates_rek(AP_tree *at, GB_HASH *seen_species) {
     return 0;
 }
 
-void AP_tree::mark_duplicates(GBDATA *gb_main) {
-    GB_transaction  ta(gb_main);
-    GB_HASH        *seen_species = GBS_create_hash(gr.leave_sum, GB_IGNORE_CASE);
+void AP_tree::mark_duplicates() {
+    GB_HASH *seen_species = GBS_create_hash(gr.leaf_sum, GB_IGNORE_CASE);
 
     int dup_zombies = ap_mark_duplicates_rek(this, seen_species);
     if (dup_zombies) {

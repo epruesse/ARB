@@ -120,24 +120,28 @@ int PT_find_exProb(PT_exProb *pep, int) {
             pep->next_probe.size = pep->plength+1;
 
             found = findLeftmostProbe(pt, pep->next_probe.data, pep->plength, 0);
-
-            pt_assert(pep->next_probe.data[pep->plength] == 0);
-            pt_assert(strlen(pep->next_probe.data) == (size_t)pep->plength);
         }
-
-        if (!found) {
+        else {
             found = findNextProbe(pt, pep->next_probe.data, pep->plength, 0);
-
-            pt_assert(pep->next_probe.data[pep->plength] == 0);
-            pt_assert(strlen(pep->next_probe.data) == (size_t)pep->plength);
         }
+        
+        pt_assert(pep->next_probe.data[pep->plength] == 0);
+        pt_assert(strlen(pep->next_probe.data) == (size_t)pep->plength);
+
         if (!found) break;
 
         // append the probe to the probe list
 
-        if (!first) GBS_strcat(gbs_str, ";");
+        if (!first) GBS_chrcat(gbs_str, (char)pep->separator);
         first = false;
-        GBS_strcat(gbs_str, pep->next_probe.data);
+        if (pep->readable) {
+            char *readable = readable_probe(pep->next_probe.data, pep->next_probe.size, pep->tu);
+            GBS_strcat(gbs_str, readable);
+            free(readable);
+        }
+        else {
+            GBS_strcat(gbs_str, pep->next_probe.data);
+        }
     }
 
     pep->result = GBS_strclose(gbs_str);

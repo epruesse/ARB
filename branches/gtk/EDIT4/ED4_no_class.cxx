@@ -1178,8 +1178,9 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
                                 createGroupFromSelected(field_content, field_name, field_content);
                                 tryAgain = 1;
 
-                                int newlen = doneLen + field_content_len + 1;
+                                int   newlen  = doneLen + field_content_len + 1;
                                 char *newDone = (char*)malloc(newlen+1);
+
                                 GBS_global_string_to_buffer(newDone, newlen+1, "%s%s;", doneContents, field_content);
                                 freeset(doneContents, newDone);
                                 doneLen = newlen;
@@ -1913,8 +1914,6 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
         }
 
         if (!error) {
-            GBDATA *gb_new_species = 0;
-
             if (!error) {
                 if (creation_mode==CREATE_NEW_SPECIES) {
                     GBDATA *gb_created_species = GBT_find_or_create_species(GLOBAL_gb_main, new_species_name);
@@ -1944,6 +1943,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                             error = "Please choose a none empty group!";
                         }
 
+                        GBDATA *gb_new_species = 0;
                         if (!error) {
                             GBDATA *gb_source = sml->species;
                             gb_new_species = GB_create_container(gb_species_data, "species");
@@ -2143,10 +2143,10 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                     GBDATA                    *gb_source   = GBT_find_species_rel_species_data(gb_species_data, source_name);
 
                     if (gb_source) {
-                        gb_new_species    = GB_create_container(gb_species_data, "species");
-                        error             = GB_copy(gb_new_species, gb_source);
-                        if (!error) error = GBT_write_string(gb_new_species, "name", new_species_name);
-                        if (!error) error = GBT_write_string(gb_new_species, "full_name", new_species_full_name); // insert new 'full_name'
+                        GBDATA *gb_new_species = GB_create_container(gb_species_data, "species");
+                        error                  = GB_copy(gb_new_species, gb_source);
+                        if (!error) error      = GBT_write_string(gb_new_species, "name", new_species_name);
+                        if (!error) error      = GBT_write_string(gb_new_species, "full_name", new_species_full_name); // insert new 'full_name'
                         if (!error && creation_mode==CREATE_FROM_CONSENSUS) {
                             ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
                             error = createDataFromConsensus(gb_new_species, group_man);
