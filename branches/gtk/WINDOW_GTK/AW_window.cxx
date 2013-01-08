@@ -128,12 +128,22 @@ public:
      */
     AW_cb_struct **modes_f_callbacks;
     
+    /**
+     * Adjustment of the horizontal scrollbar.
+     * @note might not be present in every window. Check for NULL before use.
+     */
+    GtkAdjustment *hAdjustment;
+    
+     /**
+     * Adjustment of the vertical scrollbar.
+     * @note might not be present in every window. Check for NULL before use.
+     */   
+    GtkAdjustment *vAdjustment;
+    
     AW_window_gtk() : window(NULL), fixed_size_area(NULL), menu_bar(NULL), help_menu(NULL),
                       mode_menu(NULL), radio_last(NULL), radio_box(NULL), number_of_modes(0), 
-                      popup_cb(NULL), focus_cb(NULL),
-                      modes_f_callbacks(NULL){}
-
-    
+                      popup_cb(NULL), focus_cb(NULL),modes_f_callbacks(NULL), hAdjustment(NULL),
+                      vAdjustment(NULL) {} 
 };
 
 
@@ -357,8 +367,123 @@ int  AW_window::get_button_length() const {
     return _at.length_of_buttons; 
 }
 
+void AW_window::get_scrollarea_size(AW_screen_area *square) {
+    _get_area_size(AW_MIDDLE_AREA, square);
+    FIXME("left indent and right indent not implemented");
+//    square->r -= left_indent_of_horizontal_scrollbar;
+//    square->b -= top_indent_of_vertical_scrollbar;
+}
+
 void AW_window::calculate_scrollbars(){
-    GTK_NOT_IMPLEMENTED;
+
+    GTK_PARTLY_IMPLEMENTED;
+    AW_screen_area scrollArea;
+    get_scrollarea_size(&scrollArea);
+
+    // HORIZONTAL
+    {
+        const int picture_width = (int)get_scrolled_picture_width();
+        const int scrollArea_width = scrollArea.r - scrollArea.l;
+        
+        gtk_adjustment_set_lower(prvt->hAdjustment, 0);
+        gtk_adjustment_set_step_increment(prvt->hAdjustment, 1);
+        gtk_adjustment_set_page_increment(prvt->hAdjustment, 10);
+        gtk_adjustment_set_upper(prvt->hAdjustment, picture_width);
+        gtk_adjustment_set_page_size(prvt->hAdjustment, scrollArea_width);
+        gtk_adjustment_changed(prvt->hAdjustment);
+        //gtk_adjustment_set_value()
+        
+        
+        
+//        int slider_max = 
+//        if (slider_max <1) {
+//            slider_max = 1;
+//        }
+//   
+//
+//        bool use_horizontal_bar     = true;
+//        int  slider_size_horizontal = scrollArea.r;
+//
+//        if (slider_size_horizontal < 1) slider_size_horizontal = 1; // ist der slider zu klein (<1) ?
+//        if (slider_size_horizontal > slider_max) { // Schirm groesser als Bild
+//            slider_size_horizontal = slider_max; // slider nimmt ganze laenge ein
+//            gtk_adjustment_set_value(prvt->hAdjustment, 0);// slider ganz links setzen
+//            use_horizontal_bar = false; // kein horizontaler slider mehr
+//        }
+//
+//        // check wether XmNValue is to big
+//        double position_of_slider = gtk_adjustment_get_value(prvt->hAdjustment);
+//        
+//        if (position_of_slider > (slider_max - slider_size_horizontal)) { // steht der slider fuer slidergroesse zu rechts ?
+//            position_of_slider = slider_max - slider_size_horizontal; // -1 ? vielleicht !
+//            if (position_of_slider < 0) position_of_slider = 0;
+//            gtk_adjustment_set_value(prvt->hAdjustment, position_of_slider);
+//        }
+//        // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
+//        int max_slider_pos = (int)(get_scrolled_picture_width() - scrollArea.r);
+//        if (slider_pos_horizontal>max_slider_pos) {
+//            slider_pos_horizontal = use_horizontal_bar ? max_slider_pos : 0;
+//        }
+//
+//        gtk_adjustment_set_upper(prvt->hAdjustment, slider_max);
+//        XtVaSetValues(p_w->scroll_bar_horizontal, XmNmaximum, slider_max, NULL);
+//        XtVaSetValues(p_w->scroll_bar_horizontal, XmNsliderSize, slider_size_horizontal, NULL);
+
+        update_scrollbar_settings_from_awars(AW_HORIZONTAL);
+    }
+
+    // VERTICAL
+    {
+        
+        const int picture_height = (int)get_scrolled_picture_height();
+        const int scrollArea_height= scrollArea.b - scrollArea.t;
+        
+        gtk_adjustment_set_lower(prvt->vAdjustment, 0);
+        gtk_adjustment_set_step_increment(prvt->vAdjustment, 1);
+        gtk_adjustment_set_page_increment(prvt->vAdjustment, 10);
+        gtk_adjustment_set_upper(prvt->vAdjustment, picture_height);
+        gtk_adjustment_set_page_size(prvt->vAdjustment, scrollArea_height);
+        gtk_adjustment_changed(prvt->vAdjustment);
+
+//        
+//        
+//        
+//        int slider_max = (int)get_scrolled_picture_height();
+//        if (slider_max <1) {
+//            slider_max = 1;
+//            XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, 1, NULL);
+//        }
+//
+//        bool use_vertical_bar     = true;
+//        int  slider_size_vertical = scrollArea.b;
+//
+//        if (slider_size_vertical < 1) slider_size_vertical = 1;
+//        if (slider_size_vertical > slider_max) {
+//            slider_size_vertical = slider_max;
+//            XtVaSetValues(p_w->scroll_bar_vertical, XmNvalue, 0, NULL);
+//            use_vertical_bar = false;
+//        }
+//
+//        // check wether XmNValue is to big
+//        int position_of_slider;
+//        XtVaGetValues(p_w->scroll_bar_vertical, XmNvalue, &position_of_slider, NULL);
+//        if (position_of_slider > (slider_max-slider_size_vertical)) {
+//            position_of_slider = slider_max-slider_size_vertical; // -1 ? vielleicht !
+//            if (position_of_slider < 0) position_of_slider = 0;
+//            XtVaSetValues(p_w->scroll_bar_vertical, XmNvalue, position_of_slider, NULL);
+//        }
+//        // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
+//        int max_slider_pos = (int)(get_scrolled_picture_height() - scrollArea.b);
+//        if (slider_pos_vertical>max_slider_pos) {
+//            slider_pos_vertical = use_vertical_bar ? max_slider_pos : 0;
+//        }
+//
+//        XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, 1, NULL);
+//        XtVaSetValues(p_w->scroll_bar_vertical, XmNmaximum, slider_max, NULL);
+//        XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, slider_size_vertical, NULL);
+
+        update_scrollbar_settings_from_awars(AW_VERTICAL);
+    }
 }
 
 void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
@@ -390,8 +515,9 @@ void AW_window::close_sub_menu(){
 
 
 
-void AW_window::_get_area_size(AW_area /*area*/, AW_screen_area */*square*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
+    AW_area_management *aram = prvt->areas[area];
+    *square = aram->get_common()->get_screen();
 }
 
 
@@ -1893,12 +2019,11 @@ void AW_window::d_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*
 
 
 AW_pos AW_window::get_scrolled_picture_width() const {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+    return (picture->r - picture->l);
 }
+
 AW_pos AW_window::get_scrolled_picture_height() const {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+    return (picture->b - picture->t);
 }
 
 void AW_window::set_horizontal_scrollbar_left_indent(int /*indent*/) {
@@ -2245,12 +2370,26 @@ void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd
     }
 }
 
-void AW_window::set_horizontal_change_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    GTK_NOT_IMPLEMENTED;
+static void value_changed_scroll_bar_horizontal(GtkAdjustment *adjustment, gpointer user_data){
+    AW_cb_struct *cbs = (AW_cb_struct *) user_data;
+    (cbs->aw)->slider_pos_horizontal = gtk_adjustment_get_value(adjustment);
+    cbs->run_callback();
 }
 
-void AW_window::set_horizontal_scrollbar_position(int /*position*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    g_signal_connect((gpointer)prvt->hAdjustment, "value_changed",
+                     G_CALLBACK(value_changed_scroll_bar_horizontal),
+                     (gpointer)new AW_cb_struct(this, f, cd1, cd2, ""));
+}
+
+void AW_window::set_horizontal_scrollbar_position(int position) {
+#if defined(DEBUG) && 0
+    fprintf(stderr, "set_horizontal_scrollbar_position to %i\n", position);
+#endif
+    // @@@ test and constrain against limits
+    slider_pos_horizontal = position;
+    gtk_adjustment_set_value(prvt->hAdjustment, position);
+
 }
 
 void AW_window::set_info_area_height(int /*height*/) {
@@ -2282,12 +2421,29 @@ void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
     aram->set_resize_callback(this, f, cd1, cd2);
 }
 
-void AW_window::set_vertical_change_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    GTK_NOT_IMPLEMENTED;
+static void value_changed_scroll_bar_vertical(GtkAdjustment *adjustment, gpointer user_data){
+    AW_cb_struct *cbs = (AW_cb_struct *) user_data;
+    cbs->aw->slider_pos_vertical = gtk_adjustment_get_value(adjustment); // setzt Scrollwerte im AW_window
+    cbs->run_callback();
+    
 }
 
-void AW_window::set_vertical_scrollbar_position(int /*position*/) {
-    GTK_NOT_IMPLEMENTED;
+
+void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+
+    g_signal_connect((gpointer)prvt->vAdjustment, "value_changed",
+                     G_CALLBACK(value_changed_scroll_bar_vertical),
+                     (gpointer)new AW_cb_struct(this, f, cd1, cd2, ""));
+
+}
+
+void AW_window::set_vertical_scrollbar_position(int position){
+#if defined(DEBUG) && 0
+    fprintf(stderr, "set_vertical_scrollbar_position to %i\n", position);
+#endif
+    // @@@ test and constrain against limits
+    slider_pos_vertical = position;
+    gtk_adjustment_set_value(prvt->vAdjustment, position);
 }
 
 void AW_window::set_window_size(int width, int height) {
@@ -2445,6 +2601,8 @@ void AW_window::d_callback(void (*/*f*/)(AW_window*)) {
 AW_window::AW_window() {
     color_table_size = 0;
     color_table = NULL;
+    slider_pos_vertical = 0;
+    slider_pos_horizontal = 0;
     
     picture = new AW_screen_area;
     reset_scrolled_picture_size();
@@ -2527,13 +2685,26 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     FIXME("form should be a frame around area?!");
     prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); 
 
+    //create a table that will contain the drawing area and scrollbars
+    GtkWidget *table = gtk_table_new(2, 2, false);
+
+    
     // create main drawing area ('middle area')
     GtkWidget* drawing_area = gtk_drawing_area_new();
-    gtk_drawing_area_size(GTK_DRAWING_AREA(drawing_area), 3000, 3000); FIXME("pixel constants in gui init code");
-    GtkWidget *scrollArea = gtk_scrolled_window_new(NULL, NULL); 
-    // NULL,NULL causes the scrolledWindow to create its own scroll adjustments
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrollArea), drawing_area);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollArea), GTK_POLICY_ALWAYS, GTK_POLICY_ALWAYS);
+  
+    //These adjustments will be attached to the scrollbars.
+    prvt->hAdjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 0, 0, 0));
+    prvt->vAdjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 0, 0, 0));
+      
+    //put drawing area into top left table cell
+    gtk_table_attach(GTK_TABLE(table), drawing_area, 0, 1, 0, 1,(GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL), (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL), 0, 0);
+    GtkWidget *hscrollbar = gtk_hscrollbar_new(prvt->hAdjustment); 
+    gtk_table_attach(GTK_TABLE(table), hscrollbar, 0, 1, 1, 2, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL), GTK_FILL, 0, 0);
+    GtkWidget *vscrollbar = gtk_vscrollbar_new(prvt->vAdjustment); 
+    gtk_table_attach(GTK_TABLE(table), vscrollbar, 1, 2, 0, 1, GTK_FILL, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL) , 0, 0);
+    
+    
+    
     gtk_widget_realize(GTK_WIDGET(drawing_area));
     prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); 
     //FIXME form should be a frame around the area.
@@ -2542,7 +2713,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     // fixed_size_area ('info') goes above scrollArea ('middle')
     GtkWidget *vbox2 = gtk_vbox_new(false, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), scrollArea, true, true, 0);   
+    gtk_box_pack_start(GTK_BOX(vbox2), table, true, true, 0);   
     // Both go right of the mode_menu / vert. toolbar
     GtkWidget *hbox = gtk_hbox_new(false, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prvt->mode_menu), false, false, 0);

@@ -25,8 +25,8 @@
 
 class AW_area_management::Pimpl {
 public:
-    GtkWidget *form; /**< the managing widget */
-    GtkWidget *area; /**< the drawing area */
+    GtkWidget *form; /** < the managing widget */
+    GtkWidget *area; /** < the drawing area */
 
     AW_common_gtk *common;
 
@@ -36,7 +36,7 @@ public:
     AW_device_click *click_device;
     long click_time;
 
-    AW_cb_struct *resize_cb; /**<A list of callback functions that are called whenever this area is resized. */
+    AW_cb_struct *resize_cb; /** < A list of callback functions that are called whenever this area is resized. */
     AW_cb_struct *double_click_cb;
     AW_cb_struct *expose_cb;
     AW_cb_struct *input_cb;
@@ -63,7 +63,7 @@ GtkWidget *AW_area_management::get_form() const {
 GtkWidget *AW_area_management::get_area() const {
     return GTK_WIDGET(prvt->area);
 }
-AW_common_gtk *AW_area_management::get_common() const {
+AW_common *AW_area_management::get_common() const {
     return prvt->common; 
 }
 
@@ -225,7 +225,7 @@ void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*
     prvt->input_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, prvt->input_cb);
 }
 
-void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_motion_callback(AW_window */*aww*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
@@ -269,8 +269,8 @@ bool AW_area_management::is_double_click_callback(AW_window* aww,
     return prvt->double_click_cb && prvt->double_click_cb->contains(f);
 }
 
-bool AW_area_management::is_motion_callback(AW_window* aww,
-        void (*f)(AW_window*, AW_CL, AW_CL)) {
+bool AW_area_management::is_motion_callback(AW_window* /*aww*/,
+        void (*/*f*/)(AW_window*, AW_CL, AW_CL)) {
     GTK_NOT_IMPLEMENTED;
     return false;
 }
@@ -289,7 +289,7 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     GdkScreen* screen = gtk_widget_get_screen (prvt->area);
     GdkDisplay* pDisplay = gdk_screen_get_display(screen);
     //FIXME font stuff
-    //FIXME parameter global colortable is wrong.
+    FIXME("parameter global colortable is wrong.");
     prvt->common = new AW_common_gtk(pDisplay, prvt->area, root->getColorTable(), aww->color_table, aww->color_table_size, aww, ar);
     prvt->screen_device = new AW_device_gtk(prvt->common, prvt->area);
 

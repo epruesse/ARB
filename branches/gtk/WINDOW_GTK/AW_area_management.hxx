@@ -17,6 +17,7 @@ class AW_device_size;
 class AW_device_print;
 class AW_device_click;
 class AW_cb_struct;
+class AW_common;
 /**
  * Contains information about one area inside a window.
  */
@@ -30,7 +31,7 @@ public:
 
     GtkWidget *get_form() const;
     GtkWidget *get_area() const;
-    AW_common_gtk *get_common() const;
+    AW_common *get_common() const;
 
     AW_device_gtk *get_screen_device();
     AW_device_size *get_size_device();

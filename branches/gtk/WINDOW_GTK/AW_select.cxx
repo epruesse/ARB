@@ -582,7 +582,7 @@ void AW_selection_list::refresh() {
 }
 
 static void AW_DB_selection_refresh_cb(GBDATA *, int *cl_selection, GB_CB_TYPE) {
-    AW_DB_selection *selection = (AW_DB_selection*)cl_selection;;
+    AW_DB_selection *selection = (AW_DB_selection*)cl_selection;
     selection->refresh();
 }
 

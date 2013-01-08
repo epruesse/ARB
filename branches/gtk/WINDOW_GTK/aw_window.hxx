@@ -364,8 +364,9 @@ public:
     char *window_defaults_name;
     bool  window_is_shown;
 
-    int slider_pos_vertical;
-    int slider_pos_horizontal;
+
+    int slider_pos_vertical; /** < current position of the vertical slider */
+    int slider_pos_horizontal;/** < current position of the horizontal slider */
     int main_drag_gc;
 
     AW_screen_area *picture;      // the result of tell scrolled
