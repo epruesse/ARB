@@ -2423,11 +2423,10 @@ void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
 
 static void value_changed_scroll_bar_vertical(GtkAdjustment *adjustment, gpointer user_data){
     AW_cb_struct *cbs = (AW_cb_struct *) user_data;
-    cbs->aw->slider_pos_vertical = gtk_adjustment_get_value(adjustment); // setzt Scrollwerte im AW_window
+    cbs->aw->slider_pos_vertical = gtk_adjustment_get_value(adjustment);
     cbs->run_callback();
     
 }
-
 
 void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
 
