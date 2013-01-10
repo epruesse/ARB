@@ -2089,8 +2089,11 @@ GB_ERROR GB_abort_transaction(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     gbd = (GBDATA *)Main->data;
     if (Main->transaction<=0) {
-        GB_internal_error("No running Transaction");
-        return GB_export_error("GB_abort_transaction: No running Transaction");
+        const char *err = Main->transaction<0
+            ? "Attempt to abort transaction in no-transaction-mode"
+            : "No running transaction";
+        GB_internal_error(err);
+        return GB_export_errorf("GB_abort_transaction: %s", err);
     }
     if (Main->transaction>1) {
         Main->aborted_transaction = 1;
@@ -2182,11 +2185,19 @@ GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error) {
      * - if NULL commit transaction
      * - else abort transaction
      *
+     * always commits in no-transaction-mode
+     *
      * @return error or transaction error
      * @see GB_push_transaction() for example
      */
-    if (error) GB_abort_transaction(gbd);
-    else error = GB_pop_transaction(gbd);
+
+    if (GB_get_transaction_level(gbd)<0) {
+        ASSERT_RESULT(GB_ERROR, NULL, GB_pop_transaction(gbd));
+    }
+    else {
+        if (error) GB_abort_transaction(gbd);
+        else error = GB_pop_transaction(gbd);
+    }
     return error;
 }
 
@@ -2198,9 +2209,10 @@ void GB_end_transaction_show_error(GBDATA *gbd, GB_ERROR error, void (*error_han
 
 int GB_get_transaction_level(GBDATA *gbd) {
     /*! @return transaction level
-     * - 0 -> not in transaction
-     * - 1 -> one single transaction
-     * - 2, ... -> nested transactions
+     * <0 -> in no-transaction-mode (abort is impossible)
+     *  0 -> not in transaction
+     *  1 -> one single transaction
+     *  2, ... -> nested transactions
      */
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     return Main->transaction;

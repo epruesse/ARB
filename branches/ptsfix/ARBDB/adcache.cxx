@@ -108,7 +108,7 @@ void gb_init_cache(GB_MAIN_TYPE *Main) {
     if (!cache.entries) {
         cache.entries = (gb_cache_entry *)GB_calloc(sizeof(gb_cache_entry), GB_MAX_CACHED_ENTRIES);
 
-        cache.max_entries       = GB_MAX_CACHED_ENTRIES;
+        // cache.max_entries       = GB_MAX_CACHED_ENTRIES;
         cache.max_data_size     = GB_TOTAL_CACHE_SIZE;
         cache.big_data_min_size = cache.max_data_size / 4;
 
@@ -280,7 +280,7 @@ char *gb_alloc_cache_index(GBDATA *gbd, size_t size) {
     link_cache_entry_to_top(cache, index);
     cache.sum_data_size += size; 
 
-        return data;
+    return data;
 }
 
 char *GB_set_cache_size(GBDATA *gbd, size_t size) {
