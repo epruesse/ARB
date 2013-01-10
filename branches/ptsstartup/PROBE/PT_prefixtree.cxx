@@ -861,8 +861,8 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE2*& root_ptr) { //
 
             if (magic == PT_SERVER_MAGIC) {
                 info_detected = true;
-                if (version>PT_SERVER_VERSION) {
-                    error = "PT-server database was built with a newer version of PT-Server";
+                if (version != PT_SERVER_VERSION) {
+                    error = "PT-server database has different version (rebuild necessary)";
                 }
             }
         }

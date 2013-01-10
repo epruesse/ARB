@@ -307,12 +307,14 @@ static GB_ERROR PT_init_map() { // goes to header: __ATTR__USERESULT
 __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, const char *arbdb_name, const char *pt_name, const char *exename) {
     ARB_ERROR error;
 
-    fputs("\n"
-          "TUM POS_TREE SERVER (Oliver Strunk) V 1.0 (C) 1993 \n"
-          "initializing:\n"
-          "- opening connection...\n", stdout);
+    fprintf(stdout,
+            "\n"
+            "ARB POS_TREE SERVER (O.Strunk, J.Boehnel, R.Westram) v%i (C)1993-2013\n"
+            "initializing:\n"
+            "- opening connection...\n",
+            PT_SERVER_VERSION);
     sleep(1);
-    
+
     Hs_struct *so = NULL;
     for (int i = 0; (i < MAX_TRY) && (!so); i++) {
         so = open_aisc_server(socket_name, TIME_OUT, 0);
