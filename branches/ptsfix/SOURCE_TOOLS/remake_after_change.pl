@@ -25,8 +25,8 @@ my %dir2dirs = (
 
 my %dir2libs = (
 
-                'NAMES_COM' => 'NAMES_COM/client.a NAMES_COM/server.a',
-                'PROBE_COM' => 'PROBE_COM/client.a PROBE_COM/server.a',
+                'NAMES_COM' => 'NAMES_COM/client.a NAMES_COM/common.a NAMES_COM/server.a',
+                'PROBE_COM' => 'PROBE_COM/client.a PROBE_COM/common.a PROBE_COM/server.a',
                 'GL/glAW'   => 'GL/glAW/libglAW.a',
                 'GL/glpng'  => 'GL/glpng/libglpng_arb.a',
                 'ptpan'     => 'ptpan/PROBE.a',
@@ -118,8 +118,9 @@ sub changedlibs2targets($) {
 
   my %targets = ();
   foreach (split / /,$changed_lib) {
-    # all client.a libs are identical (the client.a in PROBE_COM is used in dependencies)
+    # all client.a and common.a libs are identical (the libs in PROBE_COM are used in dependencies)
     if ($_ eq 'NAMES_COM/client.a') { $_ = 'PROBE_COM/client.a'; }
+    if ($_ eq 'NAMES_COM/common.a') { $_ = 'PROBE_COM/common.a'; }
 
     my $cmd = $SOURCE_TOOLS.'/needed_libs.pl -F -U -I -T '.$_;
     my $base_targets = `$cmd`;

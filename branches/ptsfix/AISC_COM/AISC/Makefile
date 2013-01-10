@@ -22,11 +22,14 @@ S_GEN_SERVER_PROTO = GENC/aisc_server.c
 
 SERVER_OBJECTS = O/server.o O/struct_man.o O/aisc_extern.o
 GEN_SERVER_OBJECTS = GENC/aisc_global.o GENC/aisc_server.o
-GEN_SERVER_INCLUDES = C/aisc_server.h
+GEN_SERVER_INCLUDES = C/aisc_server.h C/common.h
 GEN_SERVER_EXTERN_PROTO = GENH/aisc_server_extern.h
 
-CLIENT_OBJECTS = O/client.o 
-CLIENT_INCLUDES = C/client_privat.h C/client.h
+CLIENT_OBJECTS = O/client.o
+CLIENT_INCLUDES = C/client_privat.h C/client.h C/common.h
+
+COMMON_OBJECTS = O/common.o
+COMMON_INCLUDES = C/common.h
 
 AISC_EXTERNALS = C/aisc_extern.c $(PRIVATE_SERVER_OBJECTS:.o=.c)
 GLOBALS_AISC = GENH/global.aisc
@@ -37,6 +40,7 @@ IMPORT_PROTO = GENH/import_proto.h
 
 SERVER = server.a
 CLIENT = client.a
+COMMON = common.a
 
 AISC_SERVER_EXTERN = GENH/aisc_server_extern.aisc
 
@@ -56,7 +60,7 @@ ifeq ($(FAIL_ON_CHANGE),0)
 REGR_FAILURE=(echo "$(THIS):57: Warning: regression on generated code (ignored)" || true)
 else
 REGR_FAILURE=(	echo "$(THIS):59: Error: regression on generated AISC code"; \
-		rm $(SERVER) $(CLIENT); \
+		rm $(SERVER) $(CLIENT) $(COMMON); \
 		false) 
 endif
 endif
@@ -73,7 +77,7 @@ all: directories
 
 endif
 
-realall: $(CLIENT) $(SERVER) Makefile $(THIS)
+realall: $(CLIENT) $(SERVER) $(COMMON) Makefile $(THIS)
 ifeq ($(COMPARE_WITH_OTHER_ARB),)
 	@echo "AISC regression tests are disabled ($(LINK_TO_OTHER_ARB) not found from AISC_COM/$(THIS))"
 else
@@ -105,6 +109,9 @@ $(SERVER): $(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
 
 $(CLIENT): $(CLIENT_OBJECTS) $(GEN_CLIENT_OBJECTS)
+	$(LINK_STATIC_LIB) $@ $^
+
+$(COMMON): $(COMMON_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
 
 $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
