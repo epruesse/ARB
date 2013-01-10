@@ -17,7 +17,6 @@
 #include <BI_basepos.hxx>
 #include <arb_progress.h>
 #include <arb_file.h>
-#include <cache.h>
 
 int compress_data(char *probestring) {
     //! change a sequence with normal bases the PT_? format and delete all other signs
