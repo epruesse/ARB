@@ -309,7 +309,7 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
 
     fprintf(stdout,
             "\n"
-            "ARB POS_TREE SERVER (O.Strunk, J.Boehnel, R.Westram) v%i (C)1993-2013\n"
+            "ARB POS_TREE SERVER v%i (C)1993-2013 by O.Strunk, J.Boehnel, R.Westram\n"
             "initializing:\n"
             "- opening connection...\n",
             PT_SERVER_VERSION);
