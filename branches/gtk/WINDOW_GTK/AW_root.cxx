@@ -22,7 +22,7 @@
 #include "aw_window.hxx"
 #include "aw_global_awars.hxx"
 #include "aw_nawar.hxx"
-
+#include "aw_msg.hxx"
 
 
 //globals
@@ -40,17 +40,11 @@ static int      declared_awar_count = 0;
 static AW_awar *declared_awar[MAX_GLOBAL_AWARS];
 
 
-
-
-
-void aw_set_local_message() {
-    GTK_NOT_IMPLEMENTED;
+void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
+    if (auto_help_file) AW_POPUP_HELP(aww, (AW_CL)auto_help_file);
+    aw_message_if(GBK_system(command));
 }
 
-
-void AW_system(AW_window */*aww*/, const char */*command*/, const char */*auto_help_file*/) {
-    GTK_NOT_IMPLEMENTED;
-}
 
 
 inline void declare_awar_global(AW_awar *awar) {
@@ -408,13 +402,58 @@ void AW_root::window_hide(AW_window */*aww*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_root::add_timed_callback(int /*ms*/, AW_RCB2 /*f*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    GTK_NOT_IMPLEMENTED;
+/// begin timer stuff 
+
+// internal struct to pass data to handler
+struct AW_timer_cb_struct : virtual Noncopyable {
+    AW_root *ar;
+    AW_RCB   f;
+    AW_CL    cd1;
+    AW_CL    cd2;
+
+    AW_timer_cb_struct(AW_root *ari, AW_RCB cb, AW_CL cd1i, AW_CL cd2i) 
+      : ar(ari), f(cb), cd1(cd1i), cd2(cd2i) {}
+};
+
+
+static gboolean AW_timer_callback(gpointer aw_timer_cb_struct) {
+    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
+    if (!tcbs)
+        return false;
+
+    AW_root *root = tcbs->ar;
+    if (root->disable_callbacks) {
+        // delay the timer callback for 25ms
+        g_timeout_add(25, AW_timer_callback, aw_timer_cb_struct);
+    }
+    else {
+        tcbs->f(root, tcbs->cd1, tcbs->cd2);
+        delete tcbs; // timer only once
+    }
+    return false;
 }
 
-void AW_root::add_timed_callback_never_disabled(int /*ms*/, AW_RCB2 /*f*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    GTK_NOT_IMPLEMENTED;
+static gboolean AW_timer_callback_never_disabled(gpointer aw_timer_cb_struct) {
+    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
+    if (!tcbs)
+        return false;
+
+    tcbs->f(tcbs->ar, tcbs->cd1, tcbs->cd2);
+    delete tcbs; // timer only once
+    return false;
 }
+
+void AW_root::add_timed_callback(int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2) {
+    g_timeout_add(ms, AW_timer_callback, 
+                  new AW_timer_cb_struct(this, f, cd1, cd2));
+}
+
+void AW_root::add_timed_callback_never_disabled(int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2) {
+    g_timeout_add(ms,  AW_timer_callback_never_disabled,
+                  new AW_timer_cb_struct(this, f, cd1, cd2));
+}
+/// end timer stuff
+
 
 #if defined(DEBUG)
 size_t AW_root::callallcallbacks(int mode) {

@@ -14,6 +14,8 @@
 
 class AW_window;
 
+void aw_set_local_message();
+
 
 bool AW_status(const char *text); // return 1 if exit button is pressed + set statustext
 bool AW_status(double gauge);     // return 1 if exit button is pressed + set progress bar

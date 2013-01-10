@@ -49,7 +49,7 @@ typedef float     AW_grey_level; // <0 don't fill  0.0 white 1.0 black
 
 typedef const char *AWAR;
 
-#define AW_NO_COLOR (-1UL)
+#define AW_NO_COLOR (-1U)
 typedef guint32 AW_rgb;
 
 enum AW_VARIABLE_TYPE {

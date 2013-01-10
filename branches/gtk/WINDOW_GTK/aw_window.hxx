@@ -668,16 +668,11 @@ public:
     void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
 };
 
-/**
- * A window that contains a canvas in its MIDDLE_AREA.
- */
-class AW_window_menu : public AW_window {
-private:
-public:
-    AW_window_menu();
-    ~AW_window_menu();
-    void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
-};
+// AW_window_menu is the same as AW_window_menu_modes
+// except for a line separating the left toolbar from
+// the window content. It's only used by DI_view_matrix
+// and SaiView anyway. 
+typedef AW_window_menu_modes AW_window_menu;
 
 class AW_window_simple_menu : public AW_window {
 private:
