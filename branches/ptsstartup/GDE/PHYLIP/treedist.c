@@ -128,7 +128,7 @@ long tree_diff(group_type **tree1, group_type **tree2,
           else 
             {
               /* Tentatively set match_found; will be changed later if
-                 neccessary. . . */
+                 necessary. . . */
               match_found = true ;  
 
               for (i = 0 ; i < setsz ; i++) {
