@@ -399,29 +399,29 @@ static AW_window *CreateDisplayBases_window(AW_root *aw_root) {
 
         aws->at("spHelix");
         aws->create_toggle_field(AWAR_3D_SHAPES_HELIX, 1);
-        aws->insert_toggle("#circle.bitmap",    "C", 0);
-        aws->insert_toggle("#diamond.bitmap",   "D", 1);
-        aws->insert_toggle("#polygon.bitmap",   "P", 2);
-        aws->insert_toggle("#star.bitmap",      "S", 3);
-        aws->insert_toggle("#rectangle.bitmap", "R", 4);
+        aws->insert_toggle("#circle.xpm",    "C", 0);
+        aws->insert_toggle("#diamond.xpm",   "D", 1);
+        aws->insert_toggle("#polygon.xpm",   "P", 2);
+        aws->insert_toggle("#star.xpm",      "S", 3);
+        aws->insert_toggle("#rectangle.xpm", "R", 4);
         aws->update_toggle_field();
 
         aws->at("spUnpairedHelix");
         aws->create_toggle_field(AWAR_3D_SHAPES_UNPAIRED_HELIX, 1);
-        aws->insert_toggle("#circle.bitmap",    "C", 0);
-        aws->insert_toggle("#diamond.bitmap",   "D", 1);
-        aws->insert_toggle("#polygon.bitmap",   "P", 2);
-        aws->insert_toggle("#star.bitmap",      "S", 3);
-        aws->insert_toggle("#rectangle.bitmap", "R", 4);
+        aws->insert_toggle("#circle.xpm",    "C", 0);
+        aws->insert_toggle("#diamond.xpm",   "D", 1);
+        aws->insert_toggle("#polygon.xpm",   "P", 2);
+        aws->insert_toggle("#star.xpm",      "S", 3);
+        aws->insert_toggle("#rectangle.xpm", "R", 4);
         aws->update_toggle_field();
 
         aws->at("spNonHelix");
         aws->create_toggle_field(AWAR_3D_SHAPES_NON_HELIX, 1);
-        aws->insert_toggle("#circle.bitmap",    "C", 0);
-        aws->insert_toggle("#diamond.bitmap",   "D", 1);
-        aws->insert_toggle("#polygon.bitmap",   "P", 2);
-        aws->insert_toggle("#star.bitmap",      "S", 3);
-        aws->insert_toggle("#rectangle.bitmap", "R", 4);
+        aws->insert_toggle("#circle.xpm",    "C", 0);
+        aws->insert_toggle("#diamond.xpm",   "D", 1);
+        aws->insert_toggle("#polygon.xpm",   "P", 2);
+        aws->insert_toggle("#star.xpm",      "S", 3);
+        aws->insert_toggle("#rectangle.xpm", "R", 4);
         aws->update_toggle_field();
     }
 

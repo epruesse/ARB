@@ -312,7 +312,7 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
         awm->shadow_width(1);
         awm->at("icon");
         awm->callback(AW_POPUP_HELP, (AW_CL)"mg_main.hlp");
-        awm->create_button("HELP_MERGE", "#merge/icon.bitmap");
+        awm->create_button("HELP_MERGE", "#merge/icon.xpm");
 
         awm->activate();
     }
@@ -412,7 +412,7 @@ static AW_window *create_merge_init_window(AW_root *awr)
     aws->button_length(0);
     aws->shadow_width(1);
     aws->at("icon");
-    aws->create_button("GO", "#merge/icon_vertical.bitmap", "G");
+    aws->create_button("GO", "#merge/icon_vertical.xpm", "G");
 
     return (AW_window *)aws;
 }

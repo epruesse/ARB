@@ -1657,9 +1657,9 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     // ----------------------
     //      mode buttons
 
-    create_mode("select.bitmap", "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_SELECT);
-    create_mode("pzoom.bitmap",  "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_ZOOM);
-    create_mode("info.bitmap",   "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_EDIT);
+    create_mode("select.xpm", "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_SELECT);
+    create_mode("pzoom.xpm",  "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_ZOOM);
+    create_mode("info.xpm",   "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_EDIT);
 
     // -------------------
     //      info area
@@ -1733,11 +1733,11 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     at(dtype_x1, first_line_y);
     help_text("gen_disp_radial.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_RADIAL);
-    create_button("RADIAL_DISPLAY_TYPE", "#gen_radial.bitmap", 0);
+    create_button("RADIAL_DISPLAY_TYPE", "#gen_radial.xpm", 0);
 
     help_text("gen_disp_book.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_BOOK);
-    create_button("BOOK_DISPLAY_TYPE", "#gen_book.bitmap", 0);
+    create_button("BOOK_DISPLAY_TYPE", "#gen_book.xpm", 0);
 
     get_at_position(&cur_x, &cur_y);
     int jump_x = cur_x;
@@ -1745,7 +1745,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     at(dtype_x1, second_line_y);
     help_text("gen_disp_vertical.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_VERTICAL);
-    create_button("VERTICAL_DISPLAY_TYPE", "#gen_vertical.bitmap", 0);
+    create_button("VERTICAL_DISPLAY_TYPE", "#gen_vertical.xpm", 0);
 
     // jump button:
 

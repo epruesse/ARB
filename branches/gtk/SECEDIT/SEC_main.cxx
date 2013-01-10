@@ -759,14 +759,14 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->sep______________();
     awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p", "savedef.hlp", AWM_ALL, (AW_CB) AW_POPUP_HELP, (AW_CL)"sec_props.hlp", 0);
 
-    awm->create_mode("pzoom.bitmap",       "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode("sec_modify.bitmap",  "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_MOVE);
-    awm->create_mode("setroot.bitmap",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_SETROOT);
-    awm->create_mode("rot.bitmap",         "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ROT);
-    awm->create_mode("stretch.bitmap",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_STRETCH);
-    awm->create_mode("info.bitmap",        "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_EDIT);
-    awm->create_mode("sec_setcurs.bitmap", "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_LINE);
-    awm->create_mode("probeInfo.bitmap",   "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_PROINFO);
+    awm->create_mode("pzoom.xpm",       "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ZOOM);
+    awm->create_mode("sec_modify.xpm",  "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_MOVE);
+    awm->create_mode("setroot.xpm",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_SETROOT);
+    awm->create_mode("rot.xpm",         "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ROT);
+    awm->create_mode("stretch.xpm",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_STRETCH);
+    awm->create_mode("info.xpm",        "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_EDIT);
+    awm->create_mode("sec_setcurs.xpm", "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_LINE);
+    awm->create_mode("probeInfo.xpm",   "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_PROINFO);
 
     awm->set_info_area_height(250);
     awm->at(5, 2);
@@ -783,11 +783,11 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
 
     awm->callback(SEC_undo_cb, (AW_CL)db, (AW_CL)GB_UNDO_UNDO);
     awm->help_text("undo.hlp");
-    awm->create_button("Undo", "#undo.bitmap");
+    awm->create_button("Undo", "#undo.xpm");
 
     awm->callback(SEC_undo_cb, (AW_CL)db, (AW_CL)GB_UNDO_REDO);
     awm->help_text("undo.hlp");
-    awm->create_button("Redo", "#redo.bitmap");
+    awm->create_button("Redo", "#redo.xpm");
 
     awm->callback(SEC_toggle_cb, (AW_CL)root, 0);
     awm->help_text("sec_main.hlp");

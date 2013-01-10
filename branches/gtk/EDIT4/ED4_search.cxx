@@ -1757,11 +1757,11 @@ AW_window *ED4_create_search_window(AW_root *root, AW_CL cl_type_and_ed4w) {
 
     aws->at("next");
     aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(+1, type), (AW_CL)ed4w);
-    aws->create_button("SEARCH_NEXT", "#edit/next.bitmap", "N");
+    aws->create_button("SEARCH_NEXT", "#edit/next.xpm", "N");
 
     aws->at("previous");
     aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(-1, type), (AW_CL)ed4w);
-    aws->create_button("SEARCH_LAST", "#edit/last.bitmap", "L");
+    aws->create_button("SEARCH_LAST", "#edit/last.xpm", "L");
 
     aws->at("mark");
     aws->callback(ED4_mark_matching_species, (AW_CL)type);

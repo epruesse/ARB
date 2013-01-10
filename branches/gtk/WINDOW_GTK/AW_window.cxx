@@ -1264,7 +1264,7 @@ void AW_window::create_toggle(const char */*var_name*/){
     this->increment_at_commands(width + SPACE_BEHIND_BUTTON, height);
 
     //old code:
-    //create_toggle(var_name, "#no.bitmap", "#yes.bitmap");
+    //create_toggle(var_name, "#no.xpm", "#yes.xpm");
 }
 
 void AW_window::create_toggle(const char */*awar_name*/, const char */*nobitmap*/, const char */*yesbitmap*/, int /*buttonWidth*/ /* = 0 */){

@@ -100,11 +100,11 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
 
         result_window->at("ct_back");
         result_window->callback(MP_show_probes_in_tree_move, (AW_CL)1, (AW_CL)result_probes_list);
-        result_window->create_button("COLOR_TREE_BACKWARD", "#rightleft_small.bitmap");
+        result_window->create_button("COLOR_TREE_BACKWARD", "#rightleft_small.xpm");
 
         result_window->at("ct_fwd");
         result_window->callback(MP_show_probes_in_tree_move, (AW_CL)0, (AW_CL)result_probes_list);
-        result_window->create_button("COLOR_TREE_FORWARD", "#leftright_small.bitmap");
+        result_window->create_button("COLOR_TREE_FORWARD", "#leftright_small.xpm");
 
         result_window->button_length(8);
 
