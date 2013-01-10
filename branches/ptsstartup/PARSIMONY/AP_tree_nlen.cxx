@@ -763,7 +763,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     return ret;
 }
 
-void AP_tree_nlen::pop(unsigned long IF_DEBUG(datum)) { // pop old tree costs
+void AP_tree_nlen::pop(unsigned long IF_ASSERTION_USED(datum)) { // pop old tree costs
     ap_assert(stack_level == datum); // error in node stack
 
     AP_tree_buffer *buff = stack.pop();
