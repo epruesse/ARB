@@ -186,12 +186,14 @@ PT_io.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_io.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_io.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 PT_io.o: $(ARBHOME)/INCLUDE/bytestring.h
+PT_io.o: $(ARBHOME)/INCLUDE/cache.h
 PT_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_io.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_io.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_io.o: $(ARBHOME)/INCLUDE/test_global.h
+PT_io.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 PT_main.o: probe.h
 PT_main.o: PT_mem.h
