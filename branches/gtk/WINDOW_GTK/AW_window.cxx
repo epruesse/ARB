@@ -2261,18 +2261,28 @@ void AW_window::refresh_option_menu(AW_option_menu_struct */*oms*/) {
 }
 
 
-
 static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
-
     AW_device *device = aww->get_device(AW_INFO_AREA);
     device->reset();
 
-    device->set_offset(AW::Vector(-xfig->minx, -xfig->miny));
+    // The INFO_AREA must be gtk_fixed or the window itself for both
+    // the buttons and the lines/text from xfig to show. For some
+    // reason, button placement is relative to the widget origin,
+    // while lines/text are placed relative to the window origin. 
+    // Possibly, this is because the window hasn't been 'exposed' 
+    // at that time yet, whereas we are now at expose time.
+    // Whatever the cause, if the INFO_AREA is not placed exactly
+    // at the origin of the window, lines and text need to be
+    // rendered with offset to appear in the right places. So
+    // that's what we do find out here:
+    GtkAllocation allocation;
+    GtkWidget *area = aww->get_area(AW_INFO_AREA)->get_area();
+    gtk_widget_get_allocation(area, &allocation); 
+    
+    device->set_offset(AW::Vector(-xfig->minx + allocation.x, 
+                                  -xfig->miny + allocation.y));
     xfig->print(device);
 }
-
-
-
 
 void AW_window::load_xfig(const char *file, bool resize /*= true*/){
 
