@@ -19,35 +19,37 @@
 #include <cmath>
 #endif
 
+// --------------------------------------------------------------------------------
+// central settings for memory estimations
+// 
+
 #ifdef ARB_64
 
 # define STAGE1_INDEX_BYTES_PER_PASS_OLIGO 3.7  // size of index (for each oligo inserted in one pass)
+# define STAGE1_INDEX_BYTES_PER_BASE       0.1  // size of index (for each bp in database)
 # define STAGE1_OTHER_BYTES_PER_PASS_OLIGO 1.0  // non-index data (for each oligo inserted in one pass)
-# define STAGE1_OTHER_BYTES_PER_BASE       1.7  // non-index data (for each bp in database)
+# define STAGE1_OTHER_BYTES_PER_BASE       1.15 // non-index data (for each bp in database)
 
 # define STAGE1_INDEX_EXTRA_MB 350 // additional constant memory used by index (+ a bit safety)
-# define STAGE1_OTHER_EXTRA_MB 30  // additional constant memory used elsewhere (+ a bit safety)
-
-# define PTSERVER_BIN_MB 20       // binary mem footprint of ptserver (incl. libs, w/o DB) detected using pmap
+# define STAGE1_OTHER_EXTRA_MB 80  // additional constant memory used elsewhere (+ a bit safety)
 
 #else
 
-// @@@ determine memusage for 32bit ptserver
-# warning estimated memusage for 32bit is just a copy of 64bit values and is far too high
-# define STAGE1_INDEX_BYTES_PER_PASS_OLIGO 3.7  // size of index (for each oligo inserted in one pass)
-# define STAGE1_OTHER_BYTES_PER_PASS_OLIGO 1.0  // non-index data (for each oligo inserted in one pass)
-# define STAGE1_OTHER_BYTES_PER_BASE       1.7  // non-index data (for each bp in database)
+# define STAGE1_INDEX_BYTES_PER_PASS_OLIGO 3.2  // size of index (for each oligo inserted in one pass)
+# define STAGE1_INDEX_BYTES_PER_BASE       0    // size of index (for each bp in database)
+# define STAGE1_OTHER_BYTES_PER_PASS_OLIGO 0.7  // non-index data (for each oligo inserted in one pass)
+# define STAGE1_OTHER_BYTES_PER_BASE       1    // non-index data (for each bp in database)
 
-# define STAGE1_INDEX_EXTRA_MB 350 // additional constant memory used by index (+ a bit safety)
-# define STAGE1_OTHER_EXTRA_MB 30  // additional constant memory used elsewhere (+ a bit safety)
-
-# define PTSERVER_BIN_MB 20       // binary mem footprint of ptserver (incl. libs, w/o DB) detected using pmap
+# define STAGE1_INDEX_EXTRA_MB 150 // additional constant memory used by index (+ a bit safety)
+# define STAGE1_OTHER_EXTRA_MB 50  // additional constant memory used elsewhere (+ a bit safety)
 
 #endif
 
+# define PTSERVER_BIN_MB 20       // binary mem footprint of ptserver (incl. libs, w/o DB) detected using pmap
+
 #define STAGE1_BYTES_PER_PASS_OLIGO (STAGE1_INDEX_BYTES_PER_PASS_OLIGO + STAGE1_OTHER_BYTES_PER_PASS_OLIGO)
-#define STAGE1_BYTES_PER_BASE       STAGE1_OTHER_BYTES_PER_BASE
-#define STAGE1_EXTRA_MB             (STAGE1_INDEX_EXTRA_MB+STAGE1_OTHER_EXTRA_MB)
+#define STAGE1_BYTES_PER_BASE       (STAGE1_INDEX_BYTES_PER_BASE       + STAGE1_OTHER_BYTES_PER_BASE)
+#define STAGE1_EXTRA_MB             (STAGE1_INDEX_EXTRA_MB             + STAGE1_OTHER_EXTRA_MB)
 
 inline ULONG estimate_stage1_memusage_kb(ULONG all_bp, ULONG partition_bp) {
     return ULONG(STAGE1_BYTES_PER_PASS_OLIGO * partition_bp / 1024.0 +
