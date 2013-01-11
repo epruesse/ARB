@@ -70,7 +70,7 @@ static void AWAR_AWM_MASK_changed_cb(AW_root *awr) {
 
 
 void AW_root::process_events() {
-    GTK_NOT_IMPLEMENTED;
+    gtk_main_iteration();
 }
 
 
@@ -554,7 +554,11 @@ void AW_root::unlink_awars_from_DB(GBDATA *gb_main) {
     GTK_NOT_IMPLEMENTED;
 }
 AW_root::~AW_root() {
-    GTK_NOT_IMPLEMENTED;
+    if (application_database) {
+        GB_close(application_database);
+        application_database = NULL;
+    }
+    GTK_PARTLY_IMPLEMENTED;
 }
 
 AW_default AW_root::check_properties(AW_default aw_props) {
