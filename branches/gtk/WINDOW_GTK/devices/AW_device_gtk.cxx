@@ -240,11 +240,10 @@ void AW_device_gtk::flush() {
     gdk_flush();
 }
 
-void AW_device_gtk::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y) {
-//    int gc = 0;
-//    XCopyArea(get_common()->get_display(), get_common()->get_window_id(), get_common()->get_window_id(), get_common()->get_GC(gc),
-//              AW_INT(src_x), AW_INT(src_y), AW_INT(width), AW_INT(height),
-//              AW_INT(dest_x), AW_INT(dest_y));
-//    AUTO_FLUSH(this);
-    GTK_NOT_IMPLEMENTED;
+void AW_device_gtk::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height,
+                                AW_pos dest_x, AW_pos dest_y) {
+  GdkRectangle rect;
+  rect.x = AW_INT(src_x), rect.y = AW_INT(src_y), rect.width=AW_INT(width), rect.height=AW_INT(height);
+  gdk_window_move_region(drawingArea->window, gdk_region_rectangle(&rect), AW_INT(dest_x), AW_INT(dest_y));
+  AUTO_FLUSH(this);
 }
