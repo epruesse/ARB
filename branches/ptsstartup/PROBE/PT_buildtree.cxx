@@ -731,6 +731,12 @@ void TEST_MarkedPrefixes() {
     TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("TA").seq()), false);
 }
 
+#if defined(ARB_64)
+#define VAL_64_32_BITDEP(val64,val32) (val64)
+#else // !defined(ARB_64)
+#define VAL_64_32_BITDEP(val64,val32) (val32)
+#endif
+    
 void TEST_Partition() {
     PrefixProbabilities p0(0);
     PrefixProbabilities p1(1);
@@ -757,7 +763,7 @@ void TEST_Partition() {
         TEST_EXPECT_EQUAL(P16.estimate_probes_for_pass(5, BASES_100k), 30740);
         TEST_EXPECT_EQUAL(P16.estimate_probes_for_pass(6, BASES_100k), 20980);
         TEST_EXPECT_EQUAL(P16.estimate_max_probes_for_any_pass(BASES_100k), 30740);
-        TEST_EXPECT_EQUAL(P16.estimate_max_kb_for_any_pass(BASES_100k), 440583);
+        TEST_EXPECT_EQUAL(P16.estimate_max_kb_for_any_pass(BASES_100k), VAL_64_32_BITDEP(440583, 205015));
     }
 
     {
@@ -797,7 +803,7 @@ void TEST_Partition() {
         TEST_EXPECT_EQUAL(P13.estimate_probes_for_pass(2, BASES_100k), 53420);
         TEST_EXPECT_EQUAL(P13.estimate_probes_for_pass(3, BASES_100k), 20980);
         TEST_EXPECT_EQUAL(P13.estimate_max_probes_for_any_pass(BASES_100k), 53420);
-        TEST_EXPECT_EQUAL(P13.estimate_max_kb_for_any_pass(BASES_100k), 440687);
+        TEST_EXPECT_EQUAL(P13.estimate_max_kb_for_any_pass(BASES_100k), VAL_64_32_BITDEP(440687, 205101));
     }
 
     {
@@ -827,7 +833,7 @@ void TEST_Partition() {
         TEST_EXPECT_EQUAL(P12.estimate_probes_for_pass(1, BASES_100k), 48280);
         TEST_EXPECT_EQUAL(P12.estimate_probes_for_pass(2, BASES_100k), 51720);
         TEST_EXPECT_EQUAL(P12.estimate_max_probes_for_any_pass(BASES_100k), 51720);
-        TEST_EXPECT_EQUAL(P12.estimate_max_kb_for_any_pass(BASES_100k), 440679);
+        TEST_EXPECT_EQUAL(P12.estimate_max_kb_for_any_pass(BASES_100k), VAL_64_32_BITDEP(440679, 205095));
     }
 
     TEST_EXPECT_EQUAL(max_probes_for_passes(p1,   1, BASES_100k), 100000);
@@ -930,6 +936,7 @@ void TEST_SLOW_decide_passes_to_use() {
 
     const ULONG MINI_PC       =   2 *GB;
     const ULONG SMALL_PC      =   4 *GB;
+#if defined(ARB_64)
     const ULONG SMALL_SERVER  =  12 *GB; // "bilbo"
     const ULONG MEDIUM_SERVER =  20 *GB; // "boarisch"
     const ULONG BIG_SERVER    =  64 *GB;
@@ -939,6 +946,7 @@ void TEST_SLOW_decide_passes_to_use() {
     const ULONG MEM2 = ULONG(18.7*GB+0.5);
     const ULONG MEM3 = ULONG(11.23*GB+0.5);
     const ULONG MEM4 = ULONG(8*GB+0.5);
+#endif
     const ULONG MEM5 = ULONG(4*GB+0.5);
 
     const ULONG LMEM1 = 3072*MB;
@@ -951,6 +959,7 @@ void TEST_SLOW_decide_passes_to_use() {
 
     const int SWAPS = 1;
 
+#if defined(ARB_64)
     // ---------------- database --------- machine -- passes depth ---- probes ----- memuse - swap?
 
     TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEM1,           1,    0, 3593147643UL,  21318473,  0);
@@ -1004,6 +1013,35 @@ void TEST_SLOW_decide_passes_to_use() {
     TEST_DECIDES_PASSES(BP_SILVA_108_REF,  HUGE_SERVER,    1,    0,  891481251,     5620314,  0);
     TEST_DECIDES_PASSES(BP_SILVA_108_40K,  HUGE_SERVER,    1,    0,   56223289,      767008,  0);
     TEST_DECIDES_PASSES(BP_SILVA_108_12K,  HUGE_SERVER,    1,    0,   17622233,      542715,  0);
+
+#else // !defined(ARB_64)  =>  only test for situations with at most 4Gb
+    // ---------------- database --------- machine -- passes depth ---- probes ----- memuse - swap?
+
+    // @@@ just an excerpt from 64bit section above 
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_REF,  MEM5,           2,    1,  461074103,     3644812,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_REF,  LMEM1,          4,    3,  230472727,     2586388,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_REF,  LMEM2,          8,    3,  123505999,     2095427,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_REF,  LMEM3,        111,    4,   11443798,     1581079,  0);
+
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_40K,  LMEM1,          1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_40K,  LMEM2,          1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_40K,  LMEM3,          1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_40K,  LMEM4,          1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_40K,  LMEM5,          1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_40K,  LMEM6,          2,    1,   29078685,      642419,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_40K,  LMEM7,        194,    4,     502032,      511256,  SWAPS);
+
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_PARC, MINI_PC,      194,    4,   32084148,     4973748,  SWAPS);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_REF,  MINI_PC,      111,    4,   11443798,     1581079,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_40K,  MINI_PC,        1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_12K,  MINI_PC,        1,    0,   17622233,      542715,  0);
+
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_PARC, SMALL_PC,     194,    4,   32084148,     4973748,  SWAPS);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_REF,  SMALL_PC,       2,    1,  461074103,     3644812,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_40K,  SMALL_PC,       1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES__BROKEN(BP_SILVA_108_12K,  SMALL_PC,       1,    0,   17622233,      542715,  0);
+
+#endif
 }
 
 void NOTEST_SLOW_maybe_build_tree() {
