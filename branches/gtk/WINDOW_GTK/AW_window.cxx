@@ -1177,10 +1177,15 @@ void AW_window::update_toggle(GtkWidget */*widget*/, const char */*var*/, AW_CL 
 }
 
 
+static gboolean noop_signal_handler(GtkWidget* /*wgt*/, gpointer /*user_data*/) {
+  return true; // stop signal
+}
 
-void AW_window::allow_delete_window(bool /*allow_close*/) {
-    GTK_NOT_IMPLEMENTED;
-    //aw_set_delete_window_cb(this, p_w->shell, allow_close);
+void AW_window::allow_delete_window(bool allow_close) {
+    gtk_window_set_deletable(prvt->window, allow_close);
+    // the window manager might still show the close button
+    // => do nothing if clicked
+    g_signal_connect(prvt->window, "delete-event", G_CALLBACK(noop_signal_handler), NULL);
 }
 
 
