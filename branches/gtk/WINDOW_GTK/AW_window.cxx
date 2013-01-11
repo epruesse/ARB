@@ -1469,7 +1469,11 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     store = gtk_list_store_new(1, G_TYPE_STRING);
     gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(store));
 
-    
+    GtkWidget *scrolled_win = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_win),
+                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_win), tree);
+
     AW_varUpdateInfo *vui = 0;
     AW_cb_struct  *cbs = 0;
     
@@ -1482,35 +1486,23 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 
     width_of_list  = this->calculate_string_width(columns) + 9;
     height_of_list = this->calculate_string_height(rows, 4*rows) + 9;
-    gtk_widget_set_size_request(GTK_WIDGET(tree), width_of_list, height_of_list);
+    gtk_widget_set_usize(scrolled_win, width_of_list, height_of_list);
     
-    {
-//        aw_xargs args(7);
-//        args.add(XmNvisualPolicy,           XmVARIABLE);
-//        args.add(XmNscrollBarDisplayPolicy, XmSTATIC);
-//        args.add(XmNshadowThickness,        0);
-//        args.add(XmNfontList,               (XtArgVal)p_global->fontlist);
-
-        if (_at.to_position_exists) {
-            width_of_list = _at.to_position_x - _at.x_for_next_button - 18;
-            if (_at.y_for_next_button  < _at.to_position_y - 18) {
-                height_of_list = _at.to_position_y - _at.y_for_next_button - 18;
-            }
-            gtk_widget_set_size_request(GTK_WIDGET(tree), width_of_list, height_of_list);
-            FIXME("Attaching list widget not implemented");
-            gtk_fixed_put(prvt->fixed_size_area, tree, 10, _at.y_for_next_button);
-            //scrolledWindowList = XtVaCreateManagedWidget("scrolledWindowList1", xmScrolledWindowWidgetClass, p_w->areas[AW_INFO_AREA]->get_form(), NULL);
-
-           // args.assign_to_widget(scrolledWindowList);
-            //aw_attach_widget(scrolledWindowList, _at);
-
-            width_of_last_widget = _at.to_position_x - _at.x_for_next_button;
-            height_of_last_widget = _at.to_position_y - _at.y_for_next_button;
+    if (_at.to_position_exists) {
+        width_of_list = _at.to_position_x - _at.x_for_next_button - 18;
+        if (_at.y_for_next_button  < _at.to_position_y - 18) {
+            height_of_list = _at.to_position_y - _at.y_for_next_button - 18;
         }
-        else {
-//            scrolledWindowList = XtVaCreateManagedWidget("scrolledWindowList1", xmScrolledWindowWidgetClass, p_w->areas[AW_INFO_AREA]->get_area(), NULL);
-            gtk_fixed_put(prvt->fixed_size_area, tree, 10, _at.y_for_next_button);
-        }
+        gtk_widget_set_usize(scrolled_win, width_of_list, height_of_list);
+        FIXME("Attaching list widget not implemented");
+        gtk_fixed_put(prvt->fixed_size_area, scrolled_win, 
+                      _at.x_for_next_button, _at.y_for_next_button);
+
+        width_of_last_widget = _at.to_position_x - _at.x_for_next_button;
+        height_of_last_widget = _at.to_position_y - _at.y_for_next_button;
+    }
+    else {
+        gtk_fixed_put(prvt->fixed_size_area, scrolled_win, 10, _at.y_for_next_button);
     }
 
     {
@@ -1582,7 +1574,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     this->unset_at_commands();
     this->increment_at_commands(width_of_last_widget, height_of_last_widget);
     
-    gtk_widget_show(tree);
+    gtk_widget_show(scrolled_win);
     
     return root->get_last_selection_list();
 }
