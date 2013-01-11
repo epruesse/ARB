@@ -2216,7 +2216,7 @@ void AW_window::window_fit() {
 }
 
 void AW_window::wm_activate() {
-    GTK_NOT_IMPLEMENTED;
+  gtk_window_present(prvt->window);
 }
 
 void AW_window::create_inverse_toggle(const char */*awar_name*/) {
