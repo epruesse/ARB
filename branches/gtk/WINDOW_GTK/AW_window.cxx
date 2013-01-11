@@ -50,12 +50,12 @@ AW_buttons_struct::~AW_buttons_struct() {
     delete next;
 }
 
-void AW_clock_cursor(AW_root *) {
-    GTK_NOT_IMPLEMENTED;
+void AW_clock_cursor(AW_root *awr) {
+  awr->wait_cursor();
 }
 
-void AW_normal_cursor(AW_root *) {
-    GTK_NOT_IMPLEMENTED;
+void AW_normal_cursor(AW_root *awr) {
+  awr->normal_cursor();
 }
 
 void AW_help_entry_pressed(AW_window *window) {
