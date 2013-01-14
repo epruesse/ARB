@@ -2102,8 +2102,9 @@ void AW_window::set_window_size(int width, int height) {
     gtk_window_set_default_size(prvt->window, width, height);
 }
 
-void AW_window::set_window_title(const char */*title*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::set_window_title(const char *title){
+    gtk_window_set_title(prvt->window, title);
+    freedup(window_name, title);
 }
 
 void AW_window::shadow_width (int /*shadow_thickness*/) {

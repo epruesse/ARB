@@ -25,12 +25,10 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     const char *help_button   = "_HELP"; //underscore + mnemonic 
 
     root = root_in; // for macro
-    window_name = strdup(windowname);
+    set_window_title(windowname);
+    set_window_size(width, height);
     window_defaults_name = GBS_string_2_key(wid);
-    
-    // create window
-    gtk_window_set_title(prvt->window, window_name);
-    gtk_window_set_default_size(prvt->window, width, height);
+
 
     // create menu bar
     prvt->menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
