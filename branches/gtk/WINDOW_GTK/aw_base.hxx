@@ -88,7 +88,7 @@ enum AW_color_idx {
     AW_WINDOW_C1,
     AW_WINDOW_C2,
     AW_WINDOW_C3,
-    AW_WINDOW_DRAG,
+    AW_WINDOW_DRAG, // unused
     AW_DATA_BG,
     AW_STD_COLOR_IDX_MAX
 };

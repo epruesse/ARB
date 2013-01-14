@@ -2314,18 +2314,9 @@ void AW_window::create_window_variables() {
     get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
 }
 
-
-
-
 void AW_window::create_devices() {
-
-    GTK_PARTLY_IMPLEMENTED;
-
- //   unsigned long background_color;
     if (prvt->areas[AW_INFO_AREA]) {
         prvt->areas[AW_INFO_AREA]->create_devices(this, AW_INFO_AREA);
-//        XtVaGetValues(p_w->areas[AW_INFO_AREA]->get_area(), XmNbackground, &background_color, NULL);
-//        p_global->color_table[AW_WINDOW_DRAG] = background_color ^ p_global->color_table[AW_WINDOW_FG];
     }
     if (prvt->areas[AW_MIDDLE_AREA]) {
         prvt->areas[AW_MIDDLE_AREA]->create_devices(this, AW_MIDDLE_AREA);
