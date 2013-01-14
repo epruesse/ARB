@@ -124,7 +124,7 @@ class PT_Traversal {
     
     FamilyStat& fam_stat;
 
-    void count_match(const DataLoc& match) const {
+    void count_match(const AbsLoc& match) const {
         if (range.contains(match)) {
             fam_stat.count_match(match.get_name());
         }
@@ -183,9 +183,9 @@ public:
     }
     int operator()(const AbsLoc& loc) const {
         //! Increment match_count for matched postree-tips
-        if (did_match()) count_match(DataLoc(loc)); // @@@ EXPENSIVE_CONVERSION
+        if (did_match()) count_match(loc);
         else if (match_possible()) {
-            PT_Traversal(*this).match_rest_and_mark(ReadableDataLoc(DataLoc(loc))); // @@@ EXPENSIVE_CONVERSION (2)
+            PT_Traversal(*this).match_rest_and_mark(ReadableDataLoc(DataLoc(loc))); // @@@ VERY EXPENSIVE_CONVERSION (2)
         }
         return 0;
     }
