@@ -13,8 +13,6 @@
 #include "aw_nawar.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 
-AW_var_target::AW_var_target(void */*pntr*/, AW_var_target */*next*/) {
-
-    GTK_NOT_IMPLEMENTED;
-}
+AW_var_target::AW_var_target(void *pntr, AW_var_target *nexti) 
+  : pointer(pntr), next(nexti) {} 
 

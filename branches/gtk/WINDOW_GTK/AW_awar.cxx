@@ -270,7 +270,9 @@ static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
     awar->update();
 }
 
-AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *rooti) {
+AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, 
+                 const char *var_value, double var_double_value,
+                 AW_default default_file, AW_root *rooti) {
     memset((char *)this, 0, sizeof(AW_awar));
     GB_transaction ta(default_file);
 
