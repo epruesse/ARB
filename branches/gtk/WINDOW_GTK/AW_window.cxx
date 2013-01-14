@@ -31,11 +31,7 @@
 #endif
 
 
-
-
-
 const int AW_NUMBER_OF_F_KEYS = 20;
-
 
 AW_buttons_struct::AW_buttons_struct(AW_active maski, GtkWidget* w, AW_buttons_struct *prev_button) {
     aw_assert(w);
@@ -50,30 +46,6 @@ AW_buttons_struct::~AW_buttons_struct() {
     delete next;
 }
 
-void AW_clock_cursor(AW_root *awr) {
-  awr->wait_cursor();
-}
-
-void AW_normal_cursor(AW_root *awr) {
-  awr->normal_cursor();
-}
-
-void AW_help_entry_pressed(AW_window *window) {
-    aw_assert(NULL != window);
-    //Help mode is global. It is managed by aw_root.
-    //This method should be part of aw_root, not aw_window.
-    FIXME("This method should be moved to aw_root.");
-    AW_root* pRoot = window->get_root();
-    aw_assert(NULL != pRoot);
-    
-    pRoot->set_help_active(true);
-    
-    pRoot->help_cursor();
-}
-
-void AW_POPDOWN(AW_window *window){
-    window->hide();
-}
 
 void AW_window::recalc_pos_atShow(AW_PosRecalc /*pr*/){
     GTK_NOT_IMPLEMENTED;
@@ -602,7 +574,7 @@ static void aw_attach_widget(GtkWidget* /*w*/, AW_at& /*_at*/, int /*default_wid
 }
 
 
-void AW_label_in_awar_list(AW_window *aww, GtkWidget* widget, const char *str) {
+static void AW_label_in_awar_list(AW_window *aww, GtkWidget* widget, const char *str) {
     AW_awar *is_awar = aww->get_root()->label_is_awar(str);
     if (is_awar) {
         char *var_value = is_awar->read_as_string();
@@ -659,7 +631,7 @@ int AW_window::calculate_string_height(int rows, int offset) const {
 }
 
 
-void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
+static void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
     GTK_PARTLY_IMPLEMENTED;
 
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
@@ -2215,8 +2187,9 @@ void AW_window::window_fit() {
     GTK_NOT_IMPLEMENTED;
 }
 
+/* pops window to front */
 void AW_window::wm_activate() {
-  gtk_window_present(prvt->window);
+    gtk_window_present(prvt->window);
 }
 
 void AW_window::create_inverse_toggle(const char */*awar_name*/) {
