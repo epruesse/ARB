@@ -29,7 +29,7 @@
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
-
+#define DUMP_BUTTON_CREATION
 
 const int AW_NUMBER_OF_F_KEYS = 20;
 
@@ -67,47 +67,22 @@ void AW_window::on_hide(aw_hide_cb /*call_on_hide*/){
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::at(int x, int y){
-    at_x(x);
-    at_y(y);
+void AW_window::at(int x, int y){ _at.at(x,y); }
+void AW_window::at_x(int x) { _at.at_x(x); }
+void AW_window::at_y(int y){ _at.at_y(y); }
+void AW_window::at_shift(int x, int y){ _at.at_shift(x,y); }
+void AW_window::at_newline(){ _at.at_newline(); }
+void AW_window::unset_at_commands() { _at.unset_at_commands(); }
+bool AW_window::at_ifdef(const  char *id){  return _at.at_ifdef(id); }
+void AW_window::at_set_to(bool attach_x, bool attach_y, int xoff, int yoff) {
+  _at.at_set_to(attach_x, attach_y, xoff, yoff);
 }
-
-void AW_window::at_x(int x){
-    if (_at.x_for_next_button > _at.max_x_size) _at.max_x_size = _at.x_for_next_button;
-    _at.x_for_next_button = x;
-    if (_at.x_for_next_button > _at.max_x_size) _at.max_x_size = _at.x_for_next_button;
-}
-
-void AW_window::at_y(int y){
-    if (_at.y_for_next_button + _at.biggest_height_of_buttons > _at.max_y_size)
-        _at.max_y_size = _at.y_for_next_button + _at.biggest_height_of_buttons;
-    _at.biggest_height_of_buttons = _at.biggest_height_of_buttons + _at.y_for_next_button - y;
-    if (_at.biggest_height_of_buttons<0) {
-        _at.biggest_height_of_buttons = 0;
-        if (_at.max_y_size < y)    _at.max_y_size = y;
-    }
-    _at.y_for_next_button = y;
-}
-
-void AW_window::at_shift(int x, int y){
-    at(x + _at.x_for_next_button, y + _at.y_for_next_button);
-}
-
-void AW_window::at_newline(){
-    if (_at.do_auto_increment) {
-        at_y(_at.auto_increment_y + _at.y_for_next_button);
-    }
-    else {
-        if (_at.do_auto_space) {
-            at_y(_at.y_for_next_button + _at.auto_space_y + _at.biggest_height_of_buttons);
-        }
-        else {
-            GBK_terminate("neither auto_space nor auto_increment activated while using at_newline");
-        }
-    }
-    at_x(_at.x_for_newline);
-}
-
+void AW_window::at_unset_to() { _at.at_unset_to(); }
+void AW_window::at_set_min_size(int xmin, int ymin) { _at.at_set_min_size(xmin, ymin); }
+void AW_window::auto_space(int x, int y){ _at.auto_space(x,y); }
+void AW_window::label_length(int length){ _at.label_length(length); }
+void AW_window::button_length(int length){ _at.button_length(length); }
+int AW_window::get_button_length() const { return _at.get_button_length(); }
 
 void AW_window::at(const char *at_id) {
     char to_position[100];
@@ -175,59 +150,6 @@ void AW_window::at(const char *at_id) {
     }
 }
 
-
-
-bool AW_window::at_ifdef(const  char * /*id*/){
-    GTK_NOT_IMPLEMENTED;
-    return false;
-}
-
-
-void AW_window::at_set_to(bool attach_x, bool attach_y, int xoff, int yoff) {
-    _at.attach_any = attach_x || attach_y;
-    _at.attach_x   = attach_x;
-    _at.attach_y   = attach_y;
-
-    _at.to_position_exists = true;
-    _at.to_position_x      = xoff >= 0 ? _at.x_for_next_button + xoff : _at.max_x_size+xoff;
-    _at.to_position_y      = yoff >= 0 ? _at.y_for_next_button + yoff : _at.max_y_size+yoff;
-
-    if (_at.to_position_x > _at.max_x_size) _at.max_x_size = _at.to_position_x;
-    if (_at.to_position_y > _at.max_y_size) _at.max_y_size = _at.to_position_y;
-
-    _at.correct_for_at_center = 0;
-}
-
-void AW_window::at_unset_to(){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::at_set_min_size(int /*xmin*/, int /*ymin*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::auto_space(int x, int y){
-    _at.do_auto_space = true;
-    _at.auto_space_x  = x;
-    _at.auto_space_y  = y;
-    
-    _at.do_auto_increment = false;
-
-    _at.x_for_newline = _at.x_for_next_button;
-    _at.biggest_height_of_buttons = 0;
-}
-
-
-void AW_window::label_length(int /*length*/){
-    GTK_NOT_IMPLEMENTED;
-}
-void AW_window::button_length(int length) {
-    _at.length_of_buttons = length; 
-}
-
-int  AW_window::get_button_length() const {
-    return _at.length_of_buttons; 
-}
 
 void AW_window::get_scrollarea_size(AW_screen_area *square) {
     _get_area_size(AW_MIDDLE_AREA, square);
@@ -445,86 +367,6 @@ static char *pixmapPath(const char *pixmapName) {
     return nulldup(GB_path_in_ARBLIB("pixmaps", pixmapName));
 }
 
-//TODO this method was originally defined in AW_button.cxx.
-//TODO I think this method should be transformed into a private member
-#define MAX_LINE_LENGTH 200
-__ATTR__USERESULT static GB_ERROR detect_bitmap_size(const char *pixmapname, int *width, int *height) {
-    GB_ERROR err = 0;
-
-    *width  = 0;
-    *height = 0;
-
-    char *path = pixmapPath(pixmapname);
-    FILE *in   = fopen(path, "rt");
-    if (in) {
-        const char *subdir = strrchr(pixmapname, '/');
-        char       *name   = strdup(subdir ? subdir+1 : pixmapname);
-        {
-            char *dot       = strrchr(name, '.');
-            if (dot) dot[0] = 0;
-            else  err       = "'.' expected";
-        }
-        int  namelen = strlen(name);
-        char buffer[MAX_LINE_LENGTH];
-        bool done    = false;
-
-        while (!done && !err) {
-            if (!fgets(buffer, MAX_LINE_LENGTH, in)) {
-                err = GB_IO_error("reading", pixmapname);
-            }
-            else if (strchr(buffer, 0)[-1] != '\n') {
-                err = GBS_global_string("Line too long ('%s')", buffer); // increase MAX_LINE_LENGTH above
-            }
-            else if (strncmp(buffer, "#define", 7) != 0) {
-                done = true;
-            }
-            else {
-                char *name_pos = strstr(buffer+7, name);
-                if (name_pos) {
-                    char *behind = name_pos+namelen;
-                    if (strncmp(behind, "_width ", 7) == 0) *width = atoi(behind+7);
-                    else if (strncmp(behind, "_height ", 8) == 0) *height = atoi(behind+8);
-                }
-            }
-        }
-
-        if (done && ((*width == 0) || (*height == 0))) {
-            if (strstr(buffer, "XPM") != NULL) {
-                if (!fgets(buffer, MAX_LINE_LENGTH, in) || !fgets(buffer, MAX_LINE_LENGTH, in)) {
-                    err = GB_IO_error("reading", pixmapname);
-                }
-                else {
-                    char *temp = strtok(buffer+1, " ");
-                    *width     = atoi(temp);
-                    temp       = strtok(NULL,  " ");
-                    *height    = atoi(temp);
-                }
-            }
-            else {
-                err = "can't detect size";
-            }
-        }
-
-        free(name);
-        fclose(in);
-    }
-    else {
-        err = "no such file";
-    }
-
-    if (err) {
-        err = GBS_global_string("%s: %s", pixmapname, err);
-    }
-
-#if defined(DUMP_BUTTON_CREATION)
-    printf("Bitmap '%s' has size %i/%i\n", pixmapname, *width, *height);
-#endif // DUMP_BUTTON_CREATION
-
-    free(path);
-    return err;
-}
-#undef MAX_LINE_LENGTH
-
 
 //TODO I think this should be a private member
 const char *aw_str_2_label(const char *str, AW_window *aww) {
@@ -708,28 +550,25 @@ AW_area_management* AW_window::get_area(int index) {
     return NULL;
 }
 
-void AW_window::create_button(const char *macro_name, AW_label buttonlabel, const char */*mnemonic*/, const char */*color*/) {
+void AW_window::create_button(const char *macro_name, AW_label button_text, const char */*mnemonic*/, const char */*color*/) {
     // Create a button or text display.
     //
     // If a callback is bound via at->callback(), a button is created.
     // Otherwise a text display is created.
     //
-    // if buttonlabel starts with '#' the rest of buttonlabel is used as name of bitmap file used for button
-    // if buttonlabel contains a '/' it's interpreted as AWAR name and the button displays the content of the awar
-    // otherwise buttonlabel is interpreted as button label (may contain '\n').
+    // if button_text starts with '#' the rest of button_text is used as name of bitmap file used for button
+    // if button_text contains a '/' it's interpreted as AWAR name and the button displays the content of the awar
+    // otherwise button_text is interpreted as pure text (may contain '\n').
     //
-    // Note 1: Button width 0 does not work together with labels!
-
-    GTK_PARTLY_IMPLEMENTED;
-
+    // If a label has been set, the button/text will be prefixed with a label. 
 
 #if defined(DUMP_BUTTON_CREATION)
-    printf("------------------------------ Button '%s'\n", buttonlabel);
+    printf("------------------------------ Button '%s'\n", button_text);
     printf("x_for_next_button=%i y_for_next_button=%i\n", _at.x_for_next_button, _at.y_for_next_button);
 #endif // DUMP_BUTTON_CREATION
 
-    if (prvt->callback && ((long)prvt->callback != 1))
-    {
+    // register macro
+    if (prvt->callback && ((long)prvt->callback != 1)) {
         if (macro_name) {
             prvt->callback->id = GBS_global_string_copy("%s/%s", this->window_defaults_name, macro_name);
             get_root()->define_remote_command(prvt->callback);
@@ -748,299 +587,135 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     #define BUTTON_GRAPHIC_PADDING 12
     #define FLAT_GRAPHIC_PADDING   4 // for buttons w/o callback
 
-    bool is_graphical_button = buttonlabel[0] == '#';
+    GtkWidget *buttonOrLabel;
+    if (prvt->callback) { // this is a real button
+        buttonOrLabel = gtk_button_new();
+        this->_set_activate_callback(buttonOrLabel);
+        
+        if (_at.highlight) {
+            gtk_widget_grab_default(buttonOrLabel);
+        }
 
-    int width_of_button = -1, height_of_button = -1;
+        if (button_text[0] == '#') {
+            GtkWidget *button_image = gtk_image_new_from_file(aw_str_2_label(button_text, this));
+            gtk_button_set_image(GTK_BUTTON(buttonOrLabel), button_image);
+        } else {
+            gtk_button_set_label(GTK_BUTTON(buttonOrLabel), aw_str_2_label(button_text, this));
+        }
+        // _at.shadow_thickness
+    } 
+    else { // this 'button' can't be clicked 
+        if (button_text[0] == '#') {
+            buttonOrLabel = gtk_image_new_from_file(aw_str_2_label(button_text, this));
+        } else {
+            buttonOrLabel = gtk_label_new(aw_str_2_label(button_text, this));
+        }
+         //args.add(XmNalignment, (org_correct_for_at_center == 1) ? XmALIGNMENT_CENTER : XmALIGNMENT_BEGINNING);
+    }
+    // args.add(XmNfontList,   (XtArgVal)p_global->fontlist);
+    // _at.background_color);
+     
+    GtkWidget *label = NULL;
+    if (_at.label_for_inputfield) {
+        if (_at.label_for_inputfield[0] == '#') {
+            label = gtk_image_new_from_file(aw_str_2_label(_at.label_for_inputfield, this));
+        } else {
+            label = gtk_label_new(aw_str_2_label(_at.label_for_inputfield, this));
+        }
+    }
+        
+    // determine natural sizes
+    GtkRequisition requisition;
+    gtk_widget_size_request(GTK_WIDGET(buttonOrLabel), &requisition);
+    int width_of_button = requisition.width;
+    int height_of_button = requisition.height;
+    int width_of_label = 0, height_of_label = 0, width_of_label_and_spacer = 0;
+    if (label) {
+        gtk_widget_size_request(GTK_WIDGET(label), &requisition);
+        width_of_label = requisition.width;
+        height_of_label = requisition.height;
+        width_of_label_and_spacer = width_of_label + SPACE_BEHIND_LABEL;
+    }
 
-    int width_of_label, height_of_label;
-    calculate_label_size(this, &width_of_label, &height_of_label, true, 0);
-    int width_of_label_and_spacer = _at.label_for_inputfield ? width_of_label+SPACE_BEHIND_LABEL : 0;
-
-    bool let_motif_choose_size  = false;
-
+    // if size specified in xfig, scale button width and height accordingly
     if (_at.to_position_exists) { // size has explicitly been specified in xfig -> calculate
         width_of_button  = _at.to_position_x - _at.x_for_next_button - width_of_label_and_spacer;
         height_of_button = _at.to_position_y - _at.y_for_next_button;
     }
-    else if (_at.length_of_buttons) { // button width specified from client code
+    else if (_at.length_of_buttons) { // if button width specified via at(), calculate
         width_of_button  = BUTTON_TEXT_X_PADDING + calculate_string_width(_at.length_of_buttons+1);
-
-        if (!is_graphical_button) {
+       
+        if (button_text[0] != '#') {
+            // if not image button, get calculate height from configured rows
             if (_at.height_of_buttons) { // button height specified from client code
                 height_of_button = BUTTON_TEXT_Y_PADDING + calculate_string_height(_at.height_of_buttons, 0);
             }
-            else {
+            else { // or actual rows (\n based)
                 int textwidth, textheight;
-                calculate_textsize(buttonlabel, &textwidth, &textheight);
+                calculate_textsize(button_text, &textwidth, &textheight);
                 height_of_button = BUTTON_TEXT_Y_PADDING + calculate_string_height(textheight, 0);
             }
         }
-        else {
+        else { // all images have one text line height if there is 'length-of-buttons' ?!
             height_of_button = BUTTON_TEXT_Y_PADDING + calculate_string_height(1, 0);
         }
     }
-    else { // no button_length() specified
-   
 
-        if (is_graphical_button) {
-            int      width, height;
-            GB_ERROR err = detect_bitmap_size(buttonlabel+1, &width, &height);
-
-            if (!err) {
-                int gpadding = prvt->callback ? BUTTON_GRAPHIC_PADDING : FLAT_GRAPHIC_PADDING;
-
-                width_of_button  = width+gpadding;
-                height_of_button = height+gpadding;
-            }
-            else {
-                err = GBS_global_string("button gfx error: %s", err);
-                aw_message(err);
-                let_motif_choose_size = true;
-            }
-        }
-        else {
-            int textwidth, textheight;
-            calculate_textsize(buttonlabel, &textwidth, &textheight);
-
-            width_of_button  = BUTTON_TEXT_X_PADDING + calculate_string_width(textwidth+1);
-            height_of_button = BUTTON_TEXT_Y_PADDING + calculate_string_height(textheight, 0);
-        }
+    // button can't be less tall than label
+    if (height_of_label && height_of_button<height_of_label) {
+        height_of_button = height_of_label;
     }
 
-    if (!let_motif_choose_size) {
-        if (height_of_button<height_of_label) height_of_button = height_of_label;
-        aw_assert(width_of_button && height_of_button);
-    }
+    gtk_widget_set_size_request(buttonOrLabel, width_of_button, height_of_button);
 
+    // determine x/y positions 
     int x_label  = _at.x_for_next_button;
     int y_label  = _at.y_for_next_button;
     int x_button = x_label + width_of_label_and_spacer;
     int y_button = y_label;
-
-    int org_correct_for_at_center = _at.correct_for_at_center; // store original justification
-    int org_y_for_next_button     = _at.y_for_next_button; // store original y pos (modified while creating label)
-
-    if (!let_motif_choose_size) { // don't correct position of button w/o known size
-        // calculate justification manually
-
-        int width_of_button_and_highlight = width_of_button + (_at.highlight ? 2*(_at.shadow_thickness+1)+1 : 0);
-        int width_of_label_and_button     = width_of_label_and_spacer+width_of_button_and_highlight;
-
-        if (_at.correct_for_at_center) { // not if left justified
-            int shiftback = width_of_label_and_button; // shiftback for right justification
-            if (_at.correct_for_at_center == 1) { // center justification
-                shiftback /= 2;
-            }
-            x_label  -= shiftback;
-            x_button -= shiftback;
-        }
-
-        // we already did the justification by calculating all positions manually, so..
-        _at.correct_for_at_center = 0; // ..from now on act like "left justified"!
+    
+    // do center/right align
+    if (_at.correct_for_at_center) {
+        int total_width = width_of_label_and_spacer + width_of_button;
+        if (_at.correct_for_at_center == 1) total_width /= 2; // center
+        x_label -= total_width;
+        x_button -= total_width;
     }
 
-    // correct label Y position
-    if (prvt->callback) {            // only if button is a real 3D-button
-        y_label += (height_of_button-height_of_label)/2;
-    }
-
-    //GtkWidget* parent_widget = (_at.attach_any) ? prvt->areas[AW_INFO_AREA]->get_form() : prvt->areas[AW_INFO_AREA]->get_area();
-
-    GtkWidget* parent_widget = GTK_WIDGET(prvt->fixed_size_area);
-
-    GtkWidget* tmp_label = 0;
-
-    if (_at.label_for_inputfield) {
-        _at.x_for_next_button = x_label;
-        _at.y_for_next_button = y_label;
-
-        tmp_label = gtk_label_new(NULL); //NULL means: create label without text
-        gtk_fixed_put(GTK_FIXED(parent_widget), tmp_label, x_label, y_label); 
-
-        FIXME("width_of_label is no longer used and can be deleted (just not yet, am not sure if i will need it in the future?");
-
-
-        if(_at.label_for_inputfield[0]=='#') {
-            //is pixmap label
-            gtk_label_set_text(GTK_LABEL(tmp_label), "pixmap not implemented");
-        }
-        else {
-            //is string label
-            gtk_label_set_text(GTK_LABEL(tmp_label), aw_str_2_label(_at.label_for_inputfield, this));
-
-        }
-        gtk_widget_show(tmp_label);
-
+    // finish up the label
+    if (label) {
+        gtk_fixed_put(prvt->fixed_size_area, label, x_label, y_label);
+        gtk_widget_show(label);
 
         if (_at.attach_any) {
-            aw_attach_widget(tmp_label, _at);
+            // we might need to set x/y for this
+            aw_attach_widget(label, _at);
         }
 
-        AW_label_in_awar_list(this, tmp_label, _at.label_for_inputfield);
+        AW_label_in_awar_list(this, label, _at.label_for_inputfield);
     }
 
-    _at.x_for_next_button = x_button;
-    _at.y_for_next_button = y_button;
+    // finish up the button
+    gtk_fixed_put(prvt->fixed_size_area, buttonOrLabel, x_button, y_button);
+    gtk_widget_realize(buttonOrLabel);
+    gtk_widget_show(buttonOrLabel);
 
-    GtkWidget* fatherwidget = parent_widget; // used as father for button below
+    //if (!_at.attach_any || !prvt->_callback) args.add(XmNrecomputeSize, false);
+    if (_at.attach_any) aw_attach_widget(buttonOrLabel, _at);
 
-    GtkWidget* buttonOrLabel  = 0;
-
-    {
-        if (prvt->callback) {//button
-
-            buttonOrLabel = gtk_button_new();
-            this->_set_activate_callback(buttonOrLabel);
-
-            //highlight selected button
-            if (_at.highlight) {
-                if (_at.attach_any) {
-                    #if defined(DEBUG)
-                                printf("Attaching highlighted buttons does not work - "
-                                       "highlight ignored for button '%s'!\n", buttonlabel);
-                    #endif // DEBUG
-                                _at.highlight = false;
-                }
-                else {
-                    FIXME("Highlight button not implemented");
-                }
-            }
-
-            if(buttonlabel[0]=='#') {
-                //pixmap button
-                
-                GtkWidget* image = gtk_image_new_from_file(aw_str_2_label(buttonlabel, this));//note: aw_str_2_label only returns a path if buttonlabel[0]=='#'
-                gtk_button_set_image(GTK_BUTTON(buttonOrLabel), image);
-            }
-            else {
-                //label button
-                gtk_button_set_label(GTK_BUTTON(buttonOrLabel), aw_str_2_label(buttonlabel, this));
-            }
-
-            FIXME("Button shadow thickness not implemented");
-            //gtkbutton does not have shadow thickness. Maybe gtk_button_set_relief
-            //args.add(XmNshadowThickness, _at.shadow_thickness);
-            FIXME("label alignment inside gtk button not implemented");
-            //args.add(XmNalignment,       XmALIGNMENT_CENTER);
-
-        }
-        else { // button w/o callback (a label)
-
-
-            if(buttonlabel[0]=='#') {
-                //in motif this was a label with pixmap (XmNlabelPixmap)
-                //In gtk it is replaced by a pixmap.
-                buttonOrLabel = gtk_image_new_from_file(aw_str_2_label(buttonlabel, this));//note: aw_str_2_label only returns a path if buttonlabel[0]=='#'
-            }
-            else {
-                //just a lable
-                buttonOrLabel = gtk_label_new(NULL);
-                gtk_label_set_label(GTK_LABEL(buttonOrLabel), aw_str_2_label(buttonlabel, this));
-            }
-
-//            button = XtVaCreateManagedWidget("label", xmLabelWidgetClass, parent_widget, RES_LABEL_CONVERT(buttonlabel), NULL);
-//            args.add(XmNalignment, (org_correct_for_at_center == 1) ? XmALIGNMENT_CENTER : XmALIGNMENT_BEGINNING);
-        }
-
-        FIXME("Button is not using fontlist");
-        //args.add(XmNfontList,   (XtArgVal)p_global->fontlist);
-
-        FIXME("Background color for buttons is missing");
-        //args.add(XmNbackground, _at.background_color);
-
-        //TODO this is probably useless
-        if (!let_motif_choose_size) {
-            gtk_widget_set_size_request(GTK_WIDGET(buttonOrLabel), width_of_button, height_of_button);
-        }
-
-        gtk_fixed_put(GTK_FIXED(fatherwidget), buttonOrLabel, x_button, y_button);
-        gtk_widget_realize(buttonOrLabel);
-        gtk_widget_show(buttonOrLabel);
-
-
-        //if (!_at.attach_any || !prvt->_callback) args.add(XmNrecomputeSize, false);
-
-
-        if (_at.attach_any) aw_attach_widget(buttonOrLabel, _at);
-
-        if (prvt->callback) {
-            root->make_sensitive(buttonOrLabel, _at.widget_mask);
-        }
-        else {
-            aw_assert(_at.correct_for_at_center == 0);
-            FIXME("button justify label, what is this?");
-           // AW_JUSTIFY_LABEL(button, _at.correct_for_at_center); // @@@ strange, again sets XmNalignment (already done above). maybe some relict. does nothing if (_at.correct_for_at_center == 0)
-        }
-
-        AW_label_in_awar_list(this, buttonOrLabel, buttonlabel);
+    if (prvt->callback) {
+        root->make_sensitive(buttonOrLabel, _at.widget_mask);
+        // should we also enable/disable the label?
     }
 
-    short height = 0;
-    short width  = 0;
-
-    if (_at.to_position_exists) {
-        // size has explicitly been specified in xfig -> calculate
-        height = _at.to_position_y - _at.y_for_next_button;
-        width  = _at.to_position_x - _at.x_for_next_button;
-    }
-
-
-    {
-        //Widget  toRecenter   = 0;
-//        int     recenterSize = 0;
-
-        if (!height || !width) {
-            // ask gtk for real button size. (note that we use the requested size not the real one.
-            //because the real one might be smaller depending on the current window size)
-            GtkRequisition requisition;
-            gtk_widget_size_request(GTK_WIDGET(buttonOrLabel), &requisition);
-            
-            height = requisition.height;
-            width = requisition.width;
-
-            FIXME("let motif choose size not implemented");
-//            if (let_motif_choose_size) {
-//                if (_at.correct_for_at_center) {
-//                    toRecenter   = ButOrHigh;
-//                    recenterSize = width;
-//                }
-//                width = 0;          // ignore the used size (because it may use more than the window size)
-//            }
-        }
-        FIXME("button shiftback not implemented");
-//        if (toRecenter) {
-//            int shiftback = 0;
-//            switch (_at.correct_for_at_center) {
-//                case 1: shiftback = recenterSize/2; break;
-//                case 2: shiftback = recenterSize; break;
-//            }
-//            if (shiftback) {
-//                XtVaSetValues(toRecenter, XmNx, x_button-shiftback, NULL);
-//            }
-//        }
-    }
-
-    _at.correct_for_at_center = org_correct_for_at_center; // restore original justification
-    _at.y_for_next_button     = org_y_for_next_button;
+    AW_label_in_awar_list(this, buttonOrLabel, button_text);
+  
     FIXME("prvt->toggle_field not set. What is it's purpose anyway?");
    // p_w->toggle_field = button;
 
     this->unset_at_commands();
-    this->increment_at_commands(width+SPACE_BEHIND_BUTTON, height);
-}
-
-void AW_window::unset_at_commands() {
-    prvt->callback   = NULL;
-    _d_callback = NULL;
-
-    _at.correct_for_at_center = 0;
-    _at.to_position_exists    = false;
-    _at.highlight             = false;
-
-    freenull(_at.helptext_for_next_button);
-    freenull(_at.label_for_inputfield);
-
-    _at.background_color = 0;
+    this->increment_at_commands(width_of_label_and_spacer + width_of_button + SPACE_BEHIND_BUTTON, 
+                                height_of_button);
 }
 
 

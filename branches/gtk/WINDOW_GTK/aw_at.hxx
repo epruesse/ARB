@@ -52,5 +52,20 @@ public:
     bool attach_any;
 
     AW_at();
+    void at(int x, int y);
+    void at_x(int x);
+    void at_y(int y);
+    void at_shift(int x, int y);
+    void at_newline();
+    bool at_ifdef(const char* id);
+    void at_set_to(bool attach_x, bool attach_y, int xoff, int yoff);
+    void at_unset_to();
+    void unset_at_commands();
+    void at_set_min_size(int xmin, int ymin);
+    void auto_space(int x, int y);
+    void label_length(int length);
+    void button_length(int length);
+    int get_button_length() const;
 };
+
 
