@@ -2305,14 +2305,6 @@ void AW_window::create_window_variables() {
     get_root()->awar_int(buffer, 50);
     get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
 
-    sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
-    get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
-
-    sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
-    get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
-
     sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 9);
     get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
@@ -2343,34 +2335,29 @@ void AW_window::create_devices() {
     }
 }
 
-void AW_window::update_scrollbar_settings_from_awars(AW_orientation /*orientation*/) {
-//    AW_screen_area scrolled;
-//    get_scrollarea_size(&scrolled);
-//
-//    // @@@ DRY awar code
-//
-//    char buffer[200];
-//    if (orientation == AW_HORIZONTAL) {
-//        sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name); 
-//        XtVaSetValues(p_w->scroll_bar_horizontal, XmNpageIncrement, (int)(scrolled.r*(get_root()->awar(buffer)->read_int()*0.01)), NULL);
-//
-//        sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
-//        XtVaSetValues(p_w->scroll_bar_horizontal, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
-//
-//        sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
-//        XtVaSetValues(p_w->scroll_bar_horizontal, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
-//    }
-//    else {
-//        sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
-//        XtVaSetValues(p_w->scroll_bar_vertical, XmNpageIncrement, (int)(scrolled.b*(get_root()->awar(buffer)->read_int()*0.01)), NULL);
-//
-//        sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
-//        XtVaSetValues(p_w->scroll_bar_vertical, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
-//
-//        sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
-//        XtVaSetValues(p_w->scroll_bar_vertical, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
-//    }
-    GTK_NOT_IMPLEMENTED;
+void AW_window::update_scrollbar_settings_from_awars(AW_orientation orientation) {
+    AW_screen_area scrolled;
+    get_scrollarea_size(&scrolled);
+
+   char buffer[200];
+    if (orientation == AW_HORIZONTAL) {
+        sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
+        int page_increment = scrolled.r * get_root()->awar(buffer)->read_int() / 100;
+        gtk_adjustment_set_page_increment(prvt->hAdjustment, page_increment);
+
+        sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
+        int step_increment = get_root()->awar(buffer)->read_int();
+        gtk_adjustment_set_step_increment(prvt->hAdjustment, step_increment);
+    }
+    else {
+        sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);   
+        int page_increment = scrolled.b * get_root()->awar(buffer)->read_int() / 100;
+        gtk_adjustment_set_page_increment(prvt->vAdjustment, page_increment);
+
+        sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
+        int step_increment = get_root()->awar(buffer)->read_int();
+        gtk_adjustment_set_step_increment(prvt->vAdjustment, step_increment);
+    }
 }
 
 
