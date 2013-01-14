@@ -949,10 +949,9 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         //args.add(XmNbackground, _at.background_color);
 
         //TODO this is probably useless
-//        if (!let_motif_choose_size) {
-//            args.add(XmNwidth,  width_of_button);
-//            args.add(XmNheight, height_of_button);
-//        }
+        if (!let_motif_choose_size) {
+            gtk_widget_set_size_request(GTK_WIDGET(buttonOrLabel), width_of_button, height_of_button);
+        }
 
         gtk_fixed_put(GTK_FIXED(fatherwidget), buttonOrLabel, x_button, y_button);
         gtk_widget_realize(buttonOrLabel);
@@ -1062,7 +1061,8 @@ void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
     }
 }
 
-void AW_window::create_autosize_button(const char *macro_name, AW_label buttonlabel, const char *mnemonic /* = 0*/, unsigned xtraSpace /* = 1 */){
+void AW_window::create_autosize_button(const char *macro_name, AW_label buttonlabel, 
+                                       const char *mnemonic /* = 0*/, unsigned xtraSpace /* = 1 */){
     aw_assert(buttonlabel[0] != '#');    // use create_button() for graphical buttons!
     aw_assert(!_at.to_position_exists); // wont work if to-position exists
 
@@ -1088,6 +1088,7 @@ void AW_window::create_autosize_button(const char *macro_name, AW_label buttonla
     _at.length_of_buttons = length_of_buttons;
     _at.height_of_buttons = height_of_buttons;
 }
+
 GtkWidget* AW_window::get_last_widget() const{
     GTK_NOT_IMPLEMENTED;
     return 0;
@@ -1103,25 +1104,22 @@ void AW_window::create_toggle(const char */*var_name*/){
 
 
     short height = 0;
-     short width  = 0;
+    short width  = 0;
 
-     if (_at.to_position_exists) {
-         // size has explicitly been specified in xfig -> calculate
-         height = _at.to_position_y - _at.y_for_next_button;
-         width  = _at.to_position_x - _at.x_for_next_button;
-     }
+    if (_at.to_position_exists) {
+        // size has explicitly been specified in xfig -> calculate
+        height = _at.to_position_y - _at.y_for_next_button;
+        width  = _at.to_position_x - _at.x_for_next_button;
+    }
 
 
-     if (!height || !width) {
-         // ask gtk for real button size
-         width = checkButton->allocation.width;
-         height = checkButton->allocation.height;
+    if (!height || !width) {
+        // ask gtk for real button size
+        width = checkButton->allocation.width;
+        height = checkButton->allocation.height;
 
-     }
+    }
     this->increment_at_commands(width + SPACE_BEHIND_BUTTON, height);
-
-    //old code:
-    //create_toggle(var_name, "#no.xpm", "#yes.xpm");
 }
 
 void AW_window::create_toggle(const char */*awar_name*/, const char */*nobitmap*/, const char */*yesbitmap*/, int /*buttonWidth*/ /* = 0 */){
@@ -2274,8 +2272,6 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (colnum == AW_DATA_BG) {
         AW_area_management* pMiddleArea = prvt->areas[AW_MIDDLE_AREA];
         if(pMiddleArea) {
-            // FIXME("warning: taking address of temporary");
-            // I suppose, copying a color once too often isn't an issue -- ep
             GdkColor color = root->getColor(color_table[colnum]);
             gtk_widget_modify_bg(pMiddleArea->get_area(),GTK_STATE_NORMAL, &color);
             FIXME("no idea if this works");
@@ -2351,5 +2347,10 @@ void AW_window::update_scrollbar_settings_from_awars(AW_orientation orientation)
     }
 }
 
+void AW_window::create_font_button(const char* awar_name, AW_label label) {
+  GTK_NOT_IMPLEMENTED;
+}
 
-
+void AW_window::create_color_button(const char* awar_name, AW_label label) {
+  GTK_NOT_IMPLEMENTED;
+}

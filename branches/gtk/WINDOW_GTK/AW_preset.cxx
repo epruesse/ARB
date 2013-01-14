@@ -584,21 +584,102 @@ AW_gc_manager AW_manage_GC(AW_window *aww,
 }
 
 
-AW_window *AW_preset_window(AW_root */*root*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+AW_window *AW_preset_window(AW_root *root) {
+    GTK_PARTLY_IMPLEMENTED;
+    AW_window_simple *aws = new AW_window_simple;
+    const int   tabstop = 400;
+    aws->init(root, "PROPS_FRAME", "WINDOW_PROPERTIES");
+
+    aws->label_length(25);
+    aws->button_length(20);
+
+    aws->at           (10, 10);
+    aws->auto_space(10, 10);
+
+    aws->callback     (AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->callback(AW_POPUP_HELP, (AW_CL)"props_frame.hlp");
+    aws->create_button("HELP", "HELP", "H");
+
+    aws->at_newline();
+
+    aws->create_font_button("window/font", "Main Menu Font");
+    aws->at_x(tabstop);
+    aws->create_input_field("window/font", 12);
+
+    aws->at_newline();
+
+    aws->button_length(10);
+    aws->create_color_button("window/background", "Application Background");
+    aws->at_x(tabstop);
+    aws->create_input_field("window/background", 12);
+
+    aws->at_newline();
+
+    aws->create_color_button("window/foreground", "Application Foreground");
+    aws->at_x(tabstop);
+    aws->create_input_field("window/foreground", 12);
+
+    aws->at_newline();
+
+    aws->create_color_button("window/color_1", "Color 1");
+    aws->at_x(tabstop);
+    aws->create_input_field("window/color_1", 12);
+
+    aws->at_newline();
+
+    aws->create_color_button("window/color_2", "Color 2");
+    aws->at_x(tabstop);
+    aws->create_input_field("window/color_2", 12);
+
+    aws->at_newline();
+
+    aws->create_color_button("window/color_3", "Color 3");
+    //AW_preset_create_color_chooser(aws, "window/color_3", "Color 3", true, true);
+    aws->at_x(tabstop);
+    aws->create_input_field("window/color_3", 12);
+    
+    aws->at_newline();
+
+    aws->window_fit();
+    return (AW_window *)aws;
+}
+
+AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id_par) {
+    return AW_create_gc_window_named(aw_root, id_par, "PROPS_GC", "Colors and Fonts");
 }
 
 
-AW_window *AW_create_gc_window(AW_root */*aw_root*/, AW_gc_manager /*id*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
+AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, const char *wid, 
+                                     const char *windowname){
+    AW_window_simple * aws = new AW_window_simple;
 
+    aws->init(aw_root, wid, windowname);
 
-AW_window *AW_create_gc_window_named(AW_root * /*aw_root*/, AW_gc_manager /*id_par*/, const char */*wid*/, const char */*windowname*/){
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+    aw_gc_manager *gcmgr = (aw_gc_manager *)id_par;
+
+    aws->at(10, 10);
+    aws->auto_space(5, 5);
+
+    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->callback(AW_POPUP_HELP, (AW_CL)"color_props.hlp");
+    aws->create_button("HELP", "HELP", "H");
+
+    aws->at_newline();
+
+    bool has_color_groups = false;//aw_insert_gcs(aw_root, aws, gcmgr, false);
+
+    if (has_color_groups) {
+        // aws->callback((AW_CB)AW_create_gc_color_groups_window, (AW_CL)aw_root, (AW_CL)id_par);
+        aws->create_autosize_button("EDIT_COLOR_GROUP", "Edit color groups", "E");
+        aws->at_newline();
+    }
+
+    aws->window_fit();
+    return (AW_window *) aws;
 }
 
 
