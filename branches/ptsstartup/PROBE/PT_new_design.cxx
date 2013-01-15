@@ -15,6 +15,7 @@
 #include <struct_man.h>
 #include "probe_tree.h"
 #include "PT_prefixIter.h"
+#include "pt_probepart.h"
 
 #include <arb_str.h>
 #include <arb_defs.h>
@@ -35,7 +36,6 @@ int Complement::calc_complement(int base) {
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_tprobes *tprobe)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(tprobe)); }
-inline void aisc_link(dll_public *dll, PT_probeparts *parts) { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(parts)); }
 inline void aisc_link(dll_public *dll, PT_probematch *match) { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
 
 extern "C" {
@@ -489,28 +489,25 @@ static void tprobes_calculate_bonds(PT_local *locs) {
 // #define DUMP_PROBEPARTS
 #endif
 
-static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc) {
+static void ptnd_cp_tprobe_2_probepart(Parts& parts, PT_pdc *pdc) {
     //! split the probes into probeparts
-    while (pdc->parts) destroy_PT_probeparts(pdc->parts);
+    pt_assert(parts.empty());
     for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
 #if defined(DUMP_PROBEPARTS)
         char *tprobe_readable = readable_probe(tprobe->sequence, tprobe->seq_len, 'T');
 #endif
         int probelen = strlen(tprobe->sequence)-DOMAIN_MIN_LENGTH;
         for (int pos = 0; pos < probelen; pos ++) {
-            PT_probeparts *parts = create_PT_probeparts();
-
-            parts->sequence = strdup(tprobe->sequence+pos);
-            parts->source   = tprobe;
-            parts->start    = pos;
+            ProbePart part(SmartCharPtr(strdup(tprobe->sequence+pos)), *tprobe, pos);
 
 #if defined(DUMP_PROBEPARTS)
-            char *part_readable = readable_probe(parts->sequence, strlen(parts->sequence), 'T');
+            // @@@ move into member fun of ProbePart
+            const char *seq           = &*part.get_sequence();
+            char       *part_readable = readable_probe(seq, strlen(seq), 'T');
             fprintf(stderr, "[tprobe='%s'] probepart='%s'\n", tprobe_readable, part_readable);
             free(part_readable);
 #endif
-
-            aisc_link(&pdc->pparts, parts);
+            parts.push_back(part);
         }
 #if defined(DUMP_PROBEPARTS)
         free(tprobe_readable);
@@ -518,20 +515,13 @@ static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc) {
     }
 }
 
-static void ptnd_duplicate_probepart_rek(PT_local *locs, const Splits& splits, char *insequence, int deep, const dt_bondssum& dtbs, PT_probeparts *parts) {
-    PT_pdc *pdc      = locs->pdc;
-    char   *sequence = strdup(insequence);
+static void ptnd_duplicate_probepart_rek(PT_local *locs, const Splits& splits, const char *insequence, int deep, const dt_bondssum& dtbs, ProbePart& part2dup, Parts& result) {
+    char *sequence = strdup(insequence);
 
     if (deep >= PT_PART_DEEP) { // now do it
-        PT_probeparts *newparts = create_PT_probeparts();
-
-        newparts->sequence  = sequence;
-        newparts->source    = parts->source;
-        newparts->dt        = dtbs.dt;
-        newparts->start     = parts->start;
-        newparts->sum_bonds = dtbs.sum_bonds;
-
-        aisc_link(&pdc->pdparts, newparts);
+        ProbePart part(sequence, part2dup.get_source(), part2dup.get_start());
+        part.set_dt_and_bonds(dtbs.dt, dtbs.sum_bonds);
+        result.push_back(part);
     }
     else {
         int    base     = sequence[deep];
@@ -542,76 +532,49 @@ static void ptnd_duplicate_probepart_rek(PT_local *locs, const Splits& splits, c
             double split   = splits.check(insequence[deep], i);
             if (split >= 0.0) { // this mismatch splits the probe in several domains
                 dt_bondssum dtbs_sub(split+dtbs.dt, dtbs.sum_bonds+max_bind-split);
-                ptnd_duplicate_probepart_rek(locs, splits, sequence, deep+1, dtbs_sub, parts);
+                ptnd_duplicate_probepart_rek(locs, splits, sequence, deep+1, dtbs_sub, part2dup, result);
             }
         }
         free(sequence);
     }
 }
 
-static void ptnd_duplicate_probepart(PT_local *locs, const Splits& splits) {
-    PT_probeparts *parts;
-    PT_pdc        *pdc = locs->pdc;
-    for (parts = pdc->parts; parts; parts = parts->next)
-        ptnd_duplicate_probepart_rek(locs, splits, parts->sequence, 0, dt_bondssum(parts->dt, 0.0), parts);
-
-    while ((parts = pdc->parts))
-        destroy_PT_probeparts(parts);   // delete the source
-
-    while ((parts = pdc->dparts))
-    {
-        aisc_unlink((dllheader_ext*)parts);
-        aisc_link(&pdc->pparts, parts);
+static void ptnd_duplicate_probepart(PT_local *locs, const Splits& splits, Parts& parts) {
+    Parts duplicates;
+    for (PartsIter p = parts.begin(); p != parts.end(); ++p) {
+        ProbePart& part = *p;
+        ptnd_duplicate_probepart_rek(locs, splits, &*part.get_sequence(), 0, dt_bondssum(part.get_dt(), 0.0), part, duplicates);
     }
+    parts = duplicates;
 }
 
-static int ptnd_compare_parts(const void *PT_probeparts_ptr1, const void *PT_probeparts_ptr2, void*) {
-    const PT_probeparts *tprobe1 = (const PT_probeparts*)PT_probeparts_ptr1;
-    const PT_probeparts *tprobe2 = (const PT_probeparts*)PT_probeparts_ptr2;
-
-    return strcmp(tprobe1->sequence, tprobe2->sequence);
+inline bool partsLess(const ProbePart& p1, const ProbePart& p2) {
+    return strcmp(&*p1.get_sequence(), &*p2.get_sequence())<0; // @@@ dont use sequence directly, instead delegate to ProbePart
+}
+inline void ptnd_sort_parts(Parts& parts) {
+    parts.sort(partsLess);
 }
 
-static void ptnd_sort_parts(PT_pdc *pdc) {
-    //! sort the parts and check for duplicated parts
+static void ptnd_remove_duplicated_probepart(Parts& parts) {
+    PartsIter end = parts.end();
+    PartsIter p1  = parts.begin();
 
-    PT_probeparts **my_list;
-    int             list_len;
-    PT_probeparts  *tprobe;
-    int             i;
+    while (p1 != end) {
+        PartsIter p2 = p1;
+        if (++p2 == end) break;
 
-    if (!pdc->parts) return;
-    list_len = pdc->parts->get_count();
-    if (list_len <= 1) return;
-    my_list = (PT_probeparts **)calloc(sizeof(void *), list_len);
-    for (i=0,           tprobe = pdc->parts;
-                tprobe;
-                i++, tprobe=tprobe->next) {
-        my_list[i] = tprobe;
-    }
-    GB_sort((void **)my_list, 0, list_len, ptnd_compare_parts, 0);
-
-    for (i=0; i<list_len; i++) {
-        aisc_unlink((dllheader_ext*)my_list[i]);
-        aisc_link(&pdc->pparts, my_list[i]);
-    }
-    free(my_list);
-}
-static void ptnd_remove_duplicated_probepart(PT_pdc *pdc) {
-    for (PT_probeparts *parts = pdc->parts; parts; ) {
-        PT_probeparts *parts_next = parts->next;
-        if (parts_next) {
-            if ((parts->source == parts_next->source) && !strcmp(parts->sequence, parts_next->sequence)) {      // equal sequence
-                if (parts->dt < parts_next->dt) {       // delete higher dt
-                    destroy_PT_probeparts(parts_next);
-                    parts_next = parts;
-                }
-                else {
-                    destroy_PT_probeparts(parts);
-                }
+        if (p1->is_same_part_as(*p2)) {
+            // delete higher dt
+            if (p1->get_dt() < p2->get_dt()) {
+                parts.erase(p2);
+                p2 = p1;
+            }
+            else {
+                parts.erase(p1);
             }
         }
-        parts = parts_next;
+        p1 = p2;
+        ++p2;
     }
 }
 
@@ -619,11 +582,11 @@ class PartCheck_Traversal {
     const PT_local *const locs;
     const PT_pdc   *const pdc;
 
-    Splits         splits;
-    PT_probeparts *currPart;
+    Splits    splits;
+    PartsIter currPart;
 
     int calc_centigrade_pos(const dt_bondssum& dtbs) const {
-        const PT_tprobes *tprobe = currPart->source;
+        const PT_tprobes *tprobe = &currPart->get_source();
 
         double ndt = (dtbs.dt * pdc->dt + (tprobe->sum_bonds - dtbs.sum_bonds)*pdc->dte) / tprobe->seq_len;
         int    pos = (int)ndt;
@@ -636,13 +599,13 @@ class PartCheck_Traversal {
     }
 
     void check_part_inc_dt_backwards(const AbsLoc& absLoc, const dt_bondssum& dtbs) {
-        int start = currPart->start;
+        int start = currPart->get_start();
         pt_assert(start);
 
         // look backwards
         DataLoc matchLoc(absLoc);
 
-        char *probe = currPart->source->sequence;
+        char *probe = currPart->get_source().sequence;
         int   pos   = matchLoc.get_rel_pos()-1;
         start--;                        // test the base left of start
 
@@ -665,15 +628,15 @@ class PartCheck_Traversal {
 
         int cpos = calc_centigrade_pos(ndtbss);
         if (cpos<PERC_SIZE) {
-            currPart->source->perc[cpos]++;
+            currPart->get_source().perc[cpos]++;
         }
     }
 
     void check_part_inc_dt_basic(const dt_bondssum& dtbs) {
-        pt_assert(!currPart->start);
+        pt_assert(!currPart->get_start());
         int cpos = calc_centigrade_pos(dtbs);
         if (cpos<PERC_SIZE) {
-            currPart->source->perc[cpos]++;
+            currPart->get_source().perc[cpos]++;
         }
     }
 
@@ -681,7 +644,7 @@ class PartCheck_Traversal {
         //! test the probe parts, search the longest non mismatch string
         // (Note: modifies 'dtbs')
 
-        int start = currPart->start;
+        int start = currPart->get_start();
         if (start) check_part_inc_dt_backwards(absLoc, dtbs);
         else check_part_inc_dt_basic(dtbs);
     }
@@ -762,7 +725,7 @@ class PartCheck_Traversal {
         //! search down the tree to find matching species for the given probe
 
         if (!pt) return;
-        if (dtbss.dt/currPart->source->seq_len > PERC_SIZE) return;     // out of scope
+        if (dtbss.dt/currPart->get_source().seq_len > PERC_SIZE) return;     // out of scope
         if (pt->is_node() && probe[height]) {
             if (dtbss.split && centigrade_pos_outofscope(dtbss)) return;
             for (int i=PT_A; i<PT_BASES; i++) {
@@ -857,10 +820,13 @@ public:
 
     const Splits& get_splits() const { return splits; }
 
-    void check_probeparts() {
-        for (currPart = pdc->parts; currPart; currPart = currPart->next) {
-            dt_bondssum_split dtbss(currPart->dt, currPart->sum_bonds, 0);
-            check_part(currPart->sequence, psg.TREE_ROOT2(), 0, dtbss);
+    void check_probeparts(Parts& parts) {
+        currPart      = parts.begin();
+        PartsIter end = parts.end();
+
+        for (; currPart != end; ++currPart) {
+            dt_bondssum_split dtbss(currPart->get_dt(), currPart->get_sum_bonds(), 0);
+            check_part(&*currPart->get_sequence(), psg.TREE_ROOT2(), 0, dtbss);
         }
     }
 };
@@ -1110,19 +1076,19 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     remove_tprobes_outside_ecoli_range(pdc);
     tprobes_calculate_bonds(locs);
 
-    ptnd_cp_tprobe_2_probepart(pdc);
-
     {
+        Parts probeparts;
+        ptnd_cp_tprobe_2_probepart(probeparts, pdc);
+
         PartCheck_Traversal pct(locs, pdc);
 
-        ptnd_duplicate_probepart(locs, pct.get_splits()); // @@@ pass pct ? 
-        ptnd_sort_parts(pdc);
-        ptnd_remove_duplicated_probepart(pdc);
+        ptnd_duplicate_probepart(locs, pct.get_splits(), probeparts);
+        ptnd_sort_parts(probeparts);
+        ptnd_remove_duplicated_probepart(probeparts);
 
-        pct.check_probeparts();
+        pct.check_probeparts(probeparts);
     }
 
-    while (pdc->parts) destroy_PT_probeparts(pdc->parts);
     ptnd_calc_quality(pdc);
     ptnd_sort_probes_by(pdc, 0);
     ptnd_probe_delete_all_but(pdc, pdc->clipresult);

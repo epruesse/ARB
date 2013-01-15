@@ -51,16 +51,6 @@ dll_header,     COMMON, 0,      (~link header (should be head of each function)~
 
 # new probe design/match:
 
-PT_probeparts, TPROBEPARTS,     11,      (~a part of a probe to search in the prefix tree~), {
-    @TYPE,      @IDENT,   @REF, @ACC,   @KEY,  @KEYC,  @INIT, @DOCU;
-    dllh,       mh,       t,    ,       (~~),  0,      ,      (~Header~);
-    aisc_string,sequence, t,    ,       ,      ,       ,      (~The Sequence to check~);
-    PT_tprobes, source,   fl,   ,       ,      ,       ,      (~A pointer to the source~);
-    int,        start,    t,    ,       ,      ,       ,      (~The number of characters cut off at the start of the tprobe~);
-    double,     dt,       t,    ,       ,      ,       ,      (~Add this temperature to the result~);
-    double,     sum_bonds,t,    ,       ,      ,       ,      (~The sum of bonds of the longest non mismatch string~);
-};
-
 PT_tprobes, TPROBE,     9,     (~the probe we want to test~), {
     @TYPE,      @IDENT,          @REF, @ACC, @KEY,        @KEYC, @INIT, @DOCU;
     dllh,       mh,              t,    ,     (~~),        0,     ,      (~Header~);
@@ -94,8 +84,6 @@ PT_sequence, SEQUENCE,  8,     (~the additional sequences~), {
 PT_pdc, PDC,    7,     (~probe design~), {
     @TYPE,          @IDENT,         @REF,   @ACC,   @KEY,           @KEYC,  @INIT,                  @DOCU;
     dllh,           mh,             t,      ,       (~~),           0,      ,                       (~Header~);
-    PT_probeparts,  parts,          d,      ,       ,               ,       ,                       (~The parts of the probes~);
-    PT_probeparts,  dparts,         d,      ,       ,               ,       ,                       (~The duplicated parts of the probes~);
     double,         dte,            t,      ,       DTEDGE,         9,      50.0,                   (~The Temperature drop per percent mismatch on the edge of the probe~);
     double,         dt,             t,      ,       DT,             10,     50.0,                   (~The temperature drop per percent mismatch~);
     int,            looplen,        t,      ,       LOOPLEN,        14,     4,                      (~The Loop Length of a probe~);
