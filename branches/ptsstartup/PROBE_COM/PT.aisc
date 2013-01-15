@@ -61,17 +61,6 @@ PT_probeparts, TPROBEPARTS,     11,      (~a part of a probe to search in the pr
     double,     sum_bonds,t,    ,       ,      ,       ,      (~The sum of bonds of the longest non mismatch string~);
 };
 
-PT_pdc_specials, SPECIALS,      10,     (~non standard substrings of a probe~), {
-    @TYPE,  @IDENT, @REF,   @ACC,   @KEY,           @KEYC,  @INIT,          @DOCU;
-    dllh,   mh,     t,      ,       (~~),           0,      ,               (~Header~);
-    int,    mode,   t,      ,       MODE,           8,      ,               (~==1 -> split domains; ==0 -> don't split domains~);
-    double, ll,     t,      ,       LLEFT,          9,      ,               (~the bond value of the character left of the left~);
-    double, l,      t,      ,       LEFT,           10,     ,               (~The bond value left character~);
-    double, c,      t,      ,       CENTER,         11,     ,               (~The center character~);
-    double, r,      t,      ,       RIGHT,          12,     ,               (~...~);
-    double, rr,     t,      ,       RRIGHT,         13,     ,               (~...~);
-};
-
 PT_tprobes, TPROBE,     9,     (~the probe we want to test~), {
     @TYPE,      @IDENT,          @REF, @ACC, @KEY,        @KEYC, @INIT, @DOCU;
     dllh,       mh,              t,    ,     (~~),        0,     ,      (~Header~);
@@ -109,7 +98,6 @@ PT_pdc, PDC,    7,     (~probe design~), {
     PT_probeparts,  dparts,         d,      ,       ,               ,       ,                       (~The duplicated parts of the probes~);
     double,         dte,            t,      ,       DTEDGE,         9,      50.0,                   (~The Temperature drop per percent mismatch on the edge of the probe~);
     double,         dt,             t,      ,       DT,             10,     50.0,                   (~The temperature drop per percent mismatch~);
-    PT_pdc_specials,specials,       d,      ,       SPECIALS,       12,     ,                       (~Exceptions of splitting domains~);
     int,            looplen,        t,      ,       LOOPLEN,        14,     4,                      (~The Loop Length of a probe~);
     int,            probelen,       t,      ,       PROBELENGTH,    15,     18,                     (~the length of the probe~);
     double,         mintemp,        t,      ,       MINTEMP,        16,     30.0,                   (~minimum temperature~);
