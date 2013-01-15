@@ -219,6 +219,7 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
 
     // now clip right side
     if (font_limits.is_monospaced()) {
+        aw_assert(font_limits.width != 0); //division by zero
         h = ((int)clipRect.r - xi) / font_limits.width;
         if (h < textlen) {
             if (inside_clipping_right) {

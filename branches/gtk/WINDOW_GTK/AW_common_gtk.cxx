@@ -136,6 +136,14 @@ void AW_GC_gtk::wm_set_lineattributes(short lwidth, AW_linestyle lstyle){
     gdk_gc_set_line_attributes(gc, lwidth, lineStyle, GDK_CAP_BUTT, GDK_JOIN_BEVEL);
 }
 
+void AW_GC_gtk::replaceInString(const std::string& what,const std::string& with, std::string& text){
+ 
+    size_t start = text.find(what);
+    if (start != std::string::npos) {
+        text.replace(start, what.length(), with);
+    }
+}
+
 void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_size) {
     // if found_size != 0 -> return value for used font size
 
@@ -169,16 +177,14 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_si
     //However it works fine if the "ISO10646" is replaced with a wildcard.
     //This is most likely due to the very old gtk version on this system :)
     std::string fontname(name);
-    std::string iso = "ISO10646";
-    size_t start = fontname.find(iso);
-    if (start != std::string::npos) {
-        fontname.replace(start, iso.length(), "*");
-    }
-
+    
+    replaceInString("ISO10646","*", fontname);
+    replaceInString("iso10646","*", fontname); //for some reason ISO is sometimes written in small letters
+ 
 
     //load a gdk font corresponding to the XLDF name
     GdkFont *font = gdk_font_load(fontname.c_str());
-    ASSERT_FALSE(font == NULL);
+    ASSERT_FALSE(NULL == font);
     gdk_gc_set_font(gc, font);
 
     //set char size for each ascii char
@@ -194,7 +200,6 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_si
         set_char_size(j, ascent, descent, width);
         //else    set_no_char_size(i);
     }
-
 }
 
 int AW_GC_gtk::get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const {

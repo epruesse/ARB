@@ -1617,7 +1617,7 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
     xfig_data = xfig;
 
 
-    //TODO remove color mode
+    FIXME("Remove color mode");
     xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1); 
 
     int xsize = xfig->maxx - xfig->minx;

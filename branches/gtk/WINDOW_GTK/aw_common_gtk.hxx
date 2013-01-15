@@ -12,6 +12,9 @@
 #pragma once
 #include "aw_common.hxx"
 #include "AW_gtk_forward_declarations.hxx"
+#include <string> 
+
+
 class AW_common_gtk;
 
 /**
@@ -30,6 +33,11 @@ class AW_GC_gtk : public AW_GC { // derived from Noncopyable
     virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle);
     virtual void wm_set_font(AW_font font_nr, int size, int *found_size);
 
+    /**
+     * Searches for the first occurrence of 'what' in 'text' and replaces it with 'with'.
+     */
+    void replaceInString(const std::string& what,const std::string& with, std::string& text);
+    
 public:
 
     /**

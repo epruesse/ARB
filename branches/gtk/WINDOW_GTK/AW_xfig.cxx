@@ -523,6 +523,7 @@ void AW_xfig::create_gcs(AW_device *device, int depth)
     gc = 0;
     device->new_gc(gc);   // create at least one gc ( 0 ) for the lines
     device->set_foreground_color(gc, AW_WINDOW_FG);
+    FIXME("Remove support for devices with pixel depth 1");
     if (depth<=1) device->set_function(gc, AW_XOR);
     device->set_line_attributes(gc, 1, AW_SOLID);
     gc = 1;         // create gc for texts
@@ -533,6 +534,7 @@ void AW_xfig::create_gcs(AW_device *device, int depth)
             device->set_line_attributes(gc, 1, AW_SOLID);
             device->set_font(gc, xtext->font, scaleAndRound(xtext->fontsize, font_scale), 0);
             device->set_foreground_color(gc, AW_WINDOW_FG);
+            FIXME("Remove support for devices with pixel depth 1");
             if (depth<=1) device->set_function(gc, AW_XOR);
             xtext->gc = gc;
             GBS_write_hash(gchash, fontstring, gc);
