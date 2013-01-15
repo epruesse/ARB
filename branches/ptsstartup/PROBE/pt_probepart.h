@@ -18,17 +18,27 @@
 #ifndef SMARTPTR_H
 #include <smartptr.h>
 #endif
+#ifndef PT_PROTOTYPES_H
+#include "pt_prototypes.h"
+#endif
+
+#if defined(DEBUG)
+// #define DUMP_PROBEPARTS
+#endif
 
 class ProbePart {
-    SmartCharPtr  sequence;      // sequence of part // @@@ use const char as basic type?
-    PT_tprobes   *source;
-    int           start;         // the number of characters cut off at the start of the 'source'
-    double        dt;            // add this temperature to the result
-    double        sum_bonds;     // the sum of bonds of the longest non mismatch string
+    const SmartCharPtr  sequence; // sequence of part
+    PT_tprobes         *source;
+    int                 start;   // the number of characters cut off at the start of the 'source'
+
+    double dt;                   // add this temperature to the result
+    double sum_bonds;            // the sum of bonds of the longest non mismatch string
+
+    int cmp_seq(const ProbePart& other) const { return strcmp(&*sequence, &*other.sequence); }
 
 public:
 
-    ProbePart(SmartCharPtr seq, PT_tprobes& src, int pos)
+    ProbePart(const SmartCharPtr seq, PT_tprobes& src, int pos)
         : sequence(seq),
           source(&src),
           start(pos),
@@ -44,7 +54,7 @@ public:
     {}
     DECLARE_ASSIGNMENT_OPERATOR(ProbePart);
 
-    SmartCharPtr get_sequence() const { return sequence; }
+    const SmartCharPtr get_sequence() const { return sequence; }
     PT_tprobes& get_source() const { return *source; }
     int get_start() const { return start; }
 
@@ -56,9 +66,15 @@ public:
         sum_bonds = sum_bonds_;
     }
 
-    bool is_same_part_as(const ProbePart& other) const {
-        return &source == &other.source && strcmp(&*sequence, &*other.get_sequence()) == 0;
+    bool is_same_part_as(const ProbePart& other) const { return &source == &other.source && cmp_seq(other) == 0; }
+    bool seq_less(const ProbePart& other) const { return cmp_seq(other)<0; }
+
+#if defined(DUMP_PROBEPARTS)
+    SmartCharPtr get_readable_sequence() const {
+        const char *seq      = &*get_sequence();
+        return readable_probe(seq, strlen(seq), 'T');
     }
+#endif
 };
 
 typedef std::list<ProbePart> Parts;

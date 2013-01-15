@@ -485,33 +485,23 @@ static void tprobes_calculate_bonds(PT_local *locs) {
     }
 }
 
-#if defined(DEBUG)
-// #define DUMP_PROBEPARTS
-#endif
-
 static void ptnd_cp_tprobe_2_probepart(Parts& parts, PT_pdc *pdc) {
     //! split the probes into probeparts
     pt_assert(parts.empty());
     for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
 #if defined(DUMP_PROBEPARTS)
-        char *tprobe_readable = readable_probe(tprobe->sequence, tprobe->seq_len, 'T');
+        SmartCharPtr tprobe_readable = readable_probe(tprobe->sequence, tprobe->seq_len, 'T');
 #endif
         int probelen = strlen(tprobe->sequence)-DOMAIN_MIN_LENGTH;
         for (int pos = 0; pos < probelen; pos ++) {
             ProbePart part(SmartCharPtr(strdup(tprobe->sequence+pos)), *tprobe, pos);
 
 #if defined(DUMP_PROBEPARTS)
-            // @@@ move into member fun of ProbePart
-            const char *seq           = &*part.get_sequence();
-            char       *part_readable = readable_probe(seq, strlen(seq), 'T');
-            fprintf(stderr, "[tprobe='%s'] probepart='%s'\n", tprobe_readable, part_readable);
-            free(part_readable);
+            SmartCharPtr part_readable = part.get_readable_sequence();
+            fprintf(stderr, "[tprobe='%s'] probepart='%s'\n", &*tprobe_readable, &*part_readable);
 #endif
             parts.push_back(part);
         }
-#if defined(DUMP_PROBEPARTS)
-        free(tprobe_readable);
-#endif
     }
 }
 
@@ -549,7 +539,7 @@ static void ptnd_duplicate_probepart(PT_local *locs, const Splits& splits, Parts
 }
 
 inline bool partsLess(const ProbePart& p1, const ProbePart& p2) {
-    return strcmp(&*p1.get_sequence(), &*p2.get_sequence())<0; // @@@ dont use sequence directly, instead delegate to ProbePart
+    return p1.seq_less(p2);
 }
 inline void ptnd_sort_parts(Parts& parts) {
     parts.sort(partsLess);
@@ -721,7 +711,7 @@ class PartCheck_Traversal {
         }
     }
 
-    void check_part(char *probe, POS_TREE2 *pt, int height, const dt_bondssum_split& dtbss) {
+    void check_part(const char *probe, POS_TREE2 *pt, int height, const dt_bondssum_split& dtbss) {
         //! search down the tree to find matching species for the given probe
 
         if (!pt) return;
