@@ -15,6 +15,9 @@
 #ifndef _GLIBCXX_LIST
 #include <list>
 #endif
+#ifndef _GLIBCXX_MAP
+#include <map>
+#endif
 #ifndef SMARTPTR_H
 #include <smartptr.h>
 #endif
@@ -29,7 +32,7 @@
 class ProbePart {
     const SmartCharPtr  sequence; // sequence of part
     PT_tprobes         *source;
-    int                 start;   // the number of characters cut off at the start of the 'source'
+    int                 start;    // the number of characters cut off at the start of the 'source'
 
     double dt;                   // add this temperature to the result
     double sum_bonds;            // the sum of bonds of the longest non mismatch string
@@ -42,6 +45,13 @@ public:
         : sequence(seq),
           source(&src),
           start(pos),
+          dt(0.0),
+          sum_bonds(0.0)
+    {}
+    ProbePart(const SmartCharPtr seq, const ProbePart& ref)
+        : sequence(seq),
+          source(&ref.get_source()),
+          start(ref.get_start()),
           dt(0.0),
           sum_bonds(0.0)
     {}

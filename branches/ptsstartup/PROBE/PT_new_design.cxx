@@ -509,7 +509,7 @@ static void ptnd_duplicate_probepart_rek(PT_local *locs, const Splits& splits, c
     char *sequence = strdup(insequence);
 
     if (deep >= PT_PART_DEEP) { // now do it
-        ProbePart part(sequence, part2dup.get_source(), part2dup.get_start());
+        ProbePart part(sequence, part2dup);
         part.set_dt_and_bonds(dtbs.dt, dtbs.sum_bonds);
         result.push_back(part);
     }
@@ -568,12 +568,29 @@ static void ptnd_remove_duplicated_probepart(Parts& parts) {
     }
 }
 
+typedef std::map<int, int> CentigradePos; // key = outgroup-species-id; value = min. centigrade position for any ProbePart
+
+typedef std::map<PT_tprobes*, CentigradePos> TprobeCentPos;
+
 class PartCheck_Traversal {
     const PT_local *const locs;
     const PT_pdc   *const pdc;
 
-    Splits    splits;
-    PartsIter currPart;
+    Splits         splits;
+    PartsIter      currPart;
+    CentigradePos *currCentigrade; // = CentigradePos for tprobe of 'currPart'
+
+    void setCentigradePos(int name, int centPos) {
+        pt_assert(centPos >= 0 && centPos<PERC_SIZE);
+
+        CentigradePos::iterator found = currCentigrade->find(name);
+        if (found == currCentigrade->end()) {
+            (*currCentigrade)[name] = centPos;
+        }
+        else if (centPos<found->second) {
+            found->second = centPos;
+        }
+    }
 
     int calc_centigrade_pos(const dt_bondssum& dtbs) const {
         const PT_tprobes *tprobe = &currPart->get_source();
@@ -618,15 +635,15 @@ class PartCheck_Traversal {
 
         int cpos = calc_centigrade_pos(ndtbss);
         if (cpos<PERC_SIZE) {
-            currPart->get_source().perc[cpos]++;
+            setCentigradePos(absLoc.get_name(), cpos);
         }
     }
 
-    void check_part_inc_dt_basic(const dt_bondssum& dtbs) {
+    void check_part_inc_dt_basic(const AbsLoc& absLoc, const dt_bondssum& dtbs) {
         pt_assert(!currPart->get_start());
         int cpos = calc_centigrade_pos(dtbs);
         if (cpos<PERC_SIZE) {
-            currPart->get_source().perc[cpos]++;
+            setCentigradePos(absLoc.get_name(), cpos);
         }
     }
 
@@ -636,7 +653,7 @@ class PartCheck_Traversal {
 
         int start = currPart->get_start();
         if (start) check_part_inc_dt_backwards(absLoc, dtbs);
-        else check_part_inc_dt_basic(dtbs);
+        else check_part_inc_dt_basic(absLoc, dtbs);
     }
 
     void chain_check_part_no_probe(const AbsLoc& absLoc, const dt_bondssum_split& dtbss) {
@@ -810,11 +827,16 @@ public:
 
     const Splits& get_splits() const { return splits; }
 
-    void check_probeparts(Parts& parts) {
+    void check_probeparts(Parts& parts, TprobeCentPos& tcp) {
         currPart      = parts.begin();
         PartsIter end = parts.end();
 
         for (; currPart != end; ++currPart) {
+            TprobeCentPos::iterator tcp4part = tcp.find(&currPart->get_source());
+            pt_assert(tcp4part != tcp.end()); // missing CentigradePos for tprobe of 'currPart'
+
+            currCentigrade = &tcp4part->second;
+
             dt_bondssum_split dtbss(currPart->get_dt(), currPart->get_sum_bonds(), 0);
             check_part(&*currPart->get_sequence(), psg.TREE_ROOT2(), 0, dtbss);
         }
@@ -1032,6 +1054,15 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 #endif // DEBUG
 }
 
+static void writeCentigradeHits(const CentigradePos& cpos, int *centigrade_percent) {
+    for (int i = 0; i<PERC_SIZE; ++i) centigrade_percent[i] = 0;
+    for (CentigradePos::const_iterator p = cpos.begin(); p != cpos.end(); ++p) {
+        int pos  = p->second;
+        pt_assert(pos<PERC_SIZE); // otherwise it should not be put into CentigradePos
+        centigrade_percent[pos]++;
+    }
+}
+
 int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
 
@@ -1076,7 +1107,21 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
         ptnd_sort_parts(probeparts);
         ptnd_remove_duplicated_probepart(probeparts);
 
-        pct.check_probeparts(probeparts);
+        // track minimum outgroup centigrade position for each tprobe
+        TprobeCentPos tcp;
+        for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
+            tcp[tprobe] = CentigradePos();
+        }
+
+        pct.check_probeparts(probeparts, tcp);
+
+        // set perc[] of all tprobes
+        for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
+            TprobeCentPos::iterator cpos = tcp.find(tprobe);
+            pt_assert(cpos != tcp.end());
+
+            writeCentigradeHits(cpos->second, tprobe->perc);
+        }
     }
 
     ptnd_calc_quality(pdc);

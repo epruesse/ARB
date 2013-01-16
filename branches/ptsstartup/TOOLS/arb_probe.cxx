@@ -1368,7 +1368,8 @@ void TEST_SLOW_design_probe() {
             "designmingc=60", "designmaxgc=75", // specific GC range
         };
 
-        const char *expected = "Probe design Parameters:\n"
+        const char *expected =
+            "Probe design Parameters:\n"
             "Length of probe      18\n"
             "Temperature        [ 0.0 -400.0]\n"
             "GC-Content         [60.0 -75.0]\n"
@@ -1379,7 +1380,7 @@ void TEST_SLOW_design_probe() {
             "AGUCGAGCGGCAGCACAG 18 A=    21   20    2 66.7 60.0    CUGUGCUGCCGCUCGACU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
             "GUCGAGCGGCAGCACAGA 18 A+     1   21    2 66.7 60.0    UCUGUGCUGCCGCUCGAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
             "UCGAGCGGCAGCACAGAG 18 A+     2   21    2 66.7 60.0    CUCUGUGCUGCCGCUCGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "AAGUCGAGCGGCAGCACA 18 A-     1   19    2 61.1 58.0    UGUGCUGCCGCUCGACUU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  2,  2,  2,  3,  3,\n"
+            "AAGUCGAGCGGCAGCACA 18 A-     1   19    2 61.1 58.0    UGUGCUGCCGCUCGACUU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,\n"
             "AGCGGCAGCACAGAGGAA 18 A+     5   21    1 61.1 58.0    UUCCUCUGUGCUGCCGCU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
             "CGAGCGGCAGCACAGAGA 18 A+     3   21    1 66.7 60.0    UCUCUGUGCUGCCGCUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
             "CGAGCGGCAGCACAGAGG 18 A+     3   21    1 72.2 62.0    CCUCUGUGCUGCCGCUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
@@ -1397,8 +1398,8 @@ void TEST_SLOW_design_probe() {
             "UGUUUCUCGGGUGGCGAG 18 B+     2   49    1 61.1 58.0    CUCGCCACCCGAGAAACA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
             "UUCCUUGGGUGGCGAGCG 18 B+    10   57    1 66.7 60.0    CGCUCGCCACCCAAGGAA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
             "UUCUCGGGUGGCGAGCGG 18 B+    11   58    1 72.2 62.0    CCGCUCGCCACCCGAGAA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "CAAGUCGAGCGGCAGCAC 18 A-     2   18    2 66.7 60.0    GUGCUGCCGCUCGACUUG |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,\n"
-            "UCAAGUCGAGCGGCAGCA 18 A-     3   17    2 61.1 58.0    UGCUGCCGCUCGACUUGA |  0,  1,  1,  1,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  5,  5,  5,  5,  6,  6,\n";
+            "CAAGUCGAGCGGCAGCAC 18 A-     2   18    2 66.7 60.0    GUGCUGCCGCUCGACUUG |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "UCAAGUCGAGCGGCAGCA 18 A-     3   17    2 61.1 58.0    UGCUGCCGCUCGACUUGA |  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
@@ -1441,16 +1442,16 @@ void TEST_SLOW_design_probe() {
             "Max Non Group Hits     2\n"
             "Min Group Hits       100%\n"
             "Target           le     apos ecol grps  G+C 4GC+2AT Probe sequence   | Decrease T by n*.3C -> probe matches n non group species\n"
-            "AAGGAAGAUUAAUACC 16 A=    97   85    3 31.2 42.0    GGUAUUAAUCUUCCUU |  1,  1,  1,  2,  2,  2,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,  6,\n"
-            "AAGUCGAGCGAUGAAG 16 B=    20   19    3 50.0 48.0    CUUCAUCGCUCGACUU |  1,  1,  1,  2,  2,  2,  3,  3,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  5,  6,\n"
-            "CAAGUCGAGCGAUGAA 16 B-     1   18    3 50.0 48.0    UUCAUCGCUCGACUUG |  1,  1,  1,  1,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,  6,\n"
-            "CGAAAGGAAGAUUAAU 16 A-     3   82    3 31.2 42.0    AUUAAUCUUCCUUUCG |  1,  1,  1,  1,  2,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  6,\n"
-            "UCAAGUCGAGCGAUGA 16 B-     2   17    3 50.0 48.0    UCAUCGCUCGACUUGA |  1,  1,  1,  2,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  5,  6,\n"
-            "AUCAAGUCGAGCGAUG 16 B-     3   16    3 50.0 48.0    CAUCGCUCGACUUGAU |  1,  1,  1,  2,  2,  2,  3,  3,  3,  3,  3,  4,  4,  4,  4,  5,  5, 12, 13, 13,\n"
-            "GUCGAGCGAUGAAGUU 16 B+     2   21    3 50.0 48.0    AACUUCAUCGCUCGAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  2,  2,  2,  3,  3,\n"
-            "AGUCGAGCGAUGAAGU 16 B+     1   20    3 50.0 48.0    ACUUCAUCGCUCGACU |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  2,  2,  2,  2,  2,  3,  3,  3,  4,  4,\n"
-            "GAUCAAGUCGAGCGAU 16 B-     4   15    3 50.0 48.0    AUCGCUCGACUUGAUC |  0,  2,  2,  2,  2,  5,  5,  5, 13, 15, 15, 15, 24, 25, 25, 25, 33, 35, 35, 42,\n"
-            "UGAUCAAGUCGAGCGA 16 B-     5   14    3 50.0 48.0    UCGCUCGACUUGAUCA |  0,  9,  9,  9, 18, 18, 18, 18, 19, 28, 28, 29, 38, 38, 38, 38, 48, 48, 48, 48,\n"; // @@@ wrong (outgroup only contains 19 species!)
+            "AAGGAAGAUUAAUACC 16 A=    97   85    3 31.2 42.0    GGUAUUAAUCUUCCUU |  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "AAGUCGAGCGAUGAAG 16 B=    20   19    3 50.0 48.0    CUUCAUCGCUCGACUU |  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "CAAGUCGAGCGAUGAA 16 B-     1   18    3 50.0 48.0    UUCAUCGCUCGACUUG |  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "CGAAAGGAAGAUUAAU 16 A-     3   82    3 31.2 42.0    AUUAAUCUUCCUUUCG |  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "UCAAGUCGAGCGAUGA 16 B-     2   17    3 50.0 48.0    UCAUCGCUCGACUUGA |  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "AUCAAGUCGAGCGAUG 16 B-     3   16    3 50.0 48.0    CAUCGCUCGACUUGAU |  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  8,  8,  8,\n"
+            "GUCGAGCGAUGAAGUU 16 B+     2   21    3 50.0 48.0    AACUUCAUCGCUCGAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "AGUCGAGCGAUGAAGU 16 B+     1   20    3 50.0 48.0    ACUUCAUCGCUCGACU |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "GAUCAAGUCGAGCGAU 16 B-     4   15    3 50.0 48.0    AUCGCUCGACUUGAUC |  0,  2,  2,  2,  2,  3,  3,  3, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,\n"
+            "UGAUCAAGUCGAGCGA 16 B-     5   14    3 50.0 48.0    UCGCUCGACUUGAUCA |  0,  9,  9,  9,  9,  9,  9,  9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
@@ -1473,9 +1474,9 @@ void TEST_SLOW_design_probe() {
             "Max Non Group Hits     4\n"
             "Min Group Hits       100%\n"
             "Target         le     apos ecol grps  G+C 4GC+2AT Probe sequence | Decrease T by n*.3C -> probe matches n non group species\n"
-            "AGCGGCGGACGGAC 14 A=    75   64    5 78.6 50.0    GUCCGUCCGCCGCU |  4,  7,  7, 11, 13, 16, 16, 16, 18, 22, 25, 25, 25, 27, 31, 31, 34, 37, 37, 37,\n"
-            "GAGCGGCGGACGGA 14 A-     0   64    5 78.6 50.0    UCCGUCCGCCGCUC |  0,  0,  0,  0,  1,  1,  1,  1,  1,  2,  6,  6, 10, 11, 16, 16, 19, 20, 22, 22,\n"
-            "CGAGCGGCGGACGG 14 A-     1   63    5 85.7 52.0    CCGUCCGCCGCUCG |  0,  0,  0,  0,  2,  2,  2,  2,  2,  4,  4,  4,  4, 11, 13, 13, 13, 20, 22, 22,\n";
+            "AGCGGCGGACGGAC 14 A=    75   64    5 78.6 50.0    GUCCGUCCGCCGCU |  4,  7,  7,  7,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9, 10, 10, 10,\n"
+            "GAGCGGCGGACGGA 14 A-     0   64    5 78.6 50.0    UCCGUCCGCCGCUC |  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  5,  5,  9,  9, 10, 10, 10, 10, 10, 10,\n"
+            "CGAGCGGCGGACGG 14 A-     1   63    5 85.7 52.0    CCGUCCGCCGCUCG |  0,  0,  0,  0,  2,  2,  2,  2,  2,  2,  2,  2,  2,  9,  9,  9,  9,  9,  9,  9,\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
