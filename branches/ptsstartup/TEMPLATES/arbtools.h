@@ -74,7 +74,7 @@ public:
 #define DEFINE_ITERATORS(type) DEFINE_NAMED_ITERATORS(type,type)
 
 template<typename T>
-class LocallyModify {
+class LocallyModify : virtual Noncopyable {
     T& var;
     T  prevValue;
 public:
