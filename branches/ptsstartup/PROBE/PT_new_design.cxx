@@ -93,7 +93,7 @@ static int ptnd_compare_sequence(const void *PT_tprobes_ptr1, const void *PT_tpr
     return strcmp(tprobe1->sequence, tprobe2->sequence);
 }
 
-static void ptnd_sort_probes_by(PT_pdc *pdc, int mode)  // mode 0 quality, mode 1 sequence
+static void sort_tprobes_by(PT_pdc *pdc, int mode)  // mode 0 quality, mode 1 sequence
 {
     PT_tprobes **my_list;
     int          list_len;
@@ -125,7 +125,7 @@ static void ptnd_sort_probes_by(PT_pdc *pdc, int mode)  // mode 0 quality, mode 
     }
     free(my_list);
 }
-static void ptnd_probe_delete_all_but(PT_pdc *pdc, int count)
+static void clip_tprobes(PT_pdc *pdc, int count)
 {
     PT_tprobes *tprobe;
     int         i;
@@ -162,7 +162,7 @@ static double pt_get_temperature(const char *probe)
     return t;
 }
 
-static void ptnd_calc_quality(PT_pdc *pdc) {
+static void tprobes_calc_quality(PT_pdc *pdc) {
     for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
         int i;
         for (i=0; i< PERC_SIZE-1; i++) {
@@ -1092,7 +1092,7 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     while (pdc->tprobes) destroy_PT_tprobes(pdc->tprobes);
     ptnd_build_tprobes(pdc, locs->group_count);
     while (pdc->sequences) destroy_PT_sequence(pdc->sequences);
-    ptnd_sort_probes_by(pdc, 1);
+    sort_tprobes_by(pdc, 1);
     remove_tprobes_with_too_many_mishits(pdc);
     remove_tprobes_outside_ecoli_range(pdc);
     tprobes_calculate_bonds(locs);
@@ -1124,9 +1124,9 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
         }
     }
 
-    ptnd_calc_quality(pdc);
-    ptnd_sort_probes_by(pdc, 0);
-    ptnd_probe_delete_all_but(pdc, pdc->clipresult);
+    tprobes_calc_quality(pdc);
+    sort_tprobes_by(pdc, 0);
+    clip_tprobes(pdc, pdc->clipresult);
 
     return 0;
 }
