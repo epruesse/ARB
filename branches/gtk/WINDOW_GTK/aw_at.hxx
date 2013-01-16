@@ -66,6 +66,9 @@ public:
     void label_length(int length);
     void button_length(int length);
     int get_button_length() const;
+    void get_at_position(int *x, int *y) const;
+    int get_at_xposition() const;
+    int get_at_yposition() const;
 };
 
 

@@ -63,6 +63,11 @@ public:
      */
     GtkWidget *radio_box;
 
+    /*
+     * The current ComboBox, NULL if none under construction
+     */
+    GtkWidget *combo_box;
+
     /**
      * A window consists of several areas.
      * Some of those areas are named, some are unnamed.

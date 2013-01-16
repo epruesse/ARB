@@ -22,7 +22,6 @@ AW_at::AW_at() {
     shadow_thickness  = 2;
     widget_mask       = AWM_ALL;
     
-    FIXME("Not sure if members initialized correctly");
     shadow_thickness = 0;
     length_of_buttons = 0;
     height_of_buttons = 0;
@@ -175,4 +174,15 @@ void AW_at::button_length(int length) {
 
 int  AW_at::get_button_length() const {
     return length_of_buttons; 
+}
+void AW_at::get_at_position(int *x, int *y) const {
+    *x = x_for_next_button; *y = y_for_next_button; 
+}
+
+int AW_at::get_at_xposition() const {
+    return x_for_next_button; 
+}
+
+int AW_at::get_at_yposition() const {
+    return y_for_next_button; 
 }

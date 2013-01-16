@@ -83,6 +83,9 @@ void AW_window::auto_space(int x, int y){ _at.auto_space(x,y); }
 void AW_window::label_length(int length){ _at.label_length(length); }
 void AW_window::button_length(int length){ _at.button_length(length); }
 int AW_window::get_button_length() const { return _at.get_button_length(); }
+void AW_window::get_at_position(int *x, int *y) const { _at.get_at_position(x,y); }
+int AW_window::get_at_xposition() const { return _at.get_at_xposition(); }
+int AW_window::get_at_yposition() const { return _at.get_at_yposition(); }
 
 void AW_window::at(const char *at_id) {
     char to_position[100];
@@ -307,9 +310,6 @@ void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
 }
 
 
-void AW_window::clear_option_menu(AW_option_menu_struct */*oms*/) {
-    GTK_NOT_IMPLEMENTED;
-}
 
 
 
@@ -1048,11 +1048,138 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     return prvt->number_of_modes;
 }
 
+char *AW_window::align_string(const char *label_text, int columns) {
+    // shortens or expands 'label_text' to 'columns' columns
+    // if label_text contains '\n', each "line" is handled separately
 
-AW_option_menu_struct *AW_window::create_option_menu(const char */*awar_name*/, AW_label /*label*/ /*= 0*/, const char */*mnemonic*/ /*= 0*/){
+    const char *lf     = strchr(label_text, '\n');
+    char       *result = 0;
+
+    if (!lf) {
+        result = (char*)malloc(columns+1);
+
+        int len              = strlen(label_text);
+        if (len>columns) len = columns;
+
+        memcpy(result, label_text, len);
+        if (len<columns) memset(result+len, ' ', columns-len);
+        result[columns] = 0;
+    }
+    else {
+        char *part1    = GB_strpartdup(label_text, lf-1);
+        char *aligned1 = align_string(part1, columns);
+        char *aligned2 = align_string(lf+1, columns);
+
+        result = GBS_global_string_copy("%s\n%s", aligned1, aligned2);
+
+        free(aligned2);
+        free(aligned1);
+        free(part1);
+    }
+    return result;
+}
+
+AW_option_menu_struct *AW_window::create_option_menu(const char */*awar_name*/, 
+                                                     AW_label tmp_label /*= 0*/, 
+                                                     const char */*mnemonic*/ /*= 0*/){
+    int x_for_position_of_menu;
+
+    if (_at.label_for_inputfield) {
+        tmp_label = _at->label_for_inputfield;
+    }
+    if (tmp_label && !tmp_label[0]) {
+        aw_assert(0); // do not specify empty labels (causes misalignment)
+        tmp_label = NULL;
+    }
+
+    _at.saved_x = _at.x_for_next_button - (tmp_label ? 0 : 10);
+    x_for_position_of_menu = 10;
+
+    prvt->combo_box = gtk_combo_box_text_new();
+
+    // if (!_at->attach_x && !_at->attach_lx) args.add(XmNx, x_for_position_of_menu);
+    // if (!_at->attach_y && !_at->attach_ly) args.add(XmNy, _at->y_for_next_button-5);
+
+    if (tmp_label) {
+        int   width_help_label, height_help_label;
+        calculate_label_size(this, &width_help_label, &height_help_label, false, tmp_label);
+#if defined(DUMP_BUTTON_CREATION)
+        printf("width_help_label=%i label='%s'\n", width_help_label, tmp_label);
+#endif // DUMP_BUTTON_CREATION
+
+        char *help_label = this->align_string(tmp_label, width_help_label);
+        GtkWidget *label = gtk_label_new(help_label);
+        free(help_label);
+    }
+    else {
+        _at.x_for_next_button = _at.saved_x;
+
+        /*
+            optionMenu1 = XtVaCreateManagedWidget("optionMenu1",
+                                                  xmRowColumnWidgetClass,
+                                                  (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
+                                                  XmNrowColumnType, XmMENU_OPTION,
+                                                  XmNsubMenuId, optionMenu,
+                                                  NULL);
+        }
+        args.assign_to_widget(optionMenu1);
+    }
+
+
+        */
     GTK_NOT_IMPLEMENTED;
     return 0;
 }
+
+void AW_window::insert_default_option (AW_label /*choice_label*/, const char */*mnemonic*/, const char */*var_value*/, const char */*name_of_color*/ /*= 0*/){
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::insert_default_option (AW_label /*choice_label*/, const char */*mnemonic*/, int /*var_value*/,          const char */*name_of_color*/ /*= 0*/){
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::insert_default_option (AW_label /*choice_label*/, const char */*mnemonic*/, float /*var_value*/,        const char */*name_of_color*/ /*= 0*/){
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*/, const char */*var_value*/, const char */*name_of_color*/ /*= 0*/){
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*/, int /*var_value*/, const char */*name_of_color*/ /*= 0*/){
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*/, float /*var_value*/, const char */*name_of_color*/ /*= 0*/){
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::update_option_menu() {
+    GTK_NOT_IMPLEMENTED;
+}
+
+
+void AW_window::refresh_option_menu(AW_option_menu_struct */*oms*/) {
+//    if (get_root()->changer_of_variable != oms->label_widget) {
+//        AW_widget_value_pair *active_choice = oms->first_choice;
+//        {
+//            AW_scalar global_var_value(root->awar(oms->variable_name));
+//            while (active_choice && global_var_value != active_choice->value) {
+//                active_choice = active_choice->next;
+//            }
+//        }
+//
+//        if (!active_choice) active_choice = oms->default_choice;
+//        if (active_choice) XtVaSetValues(oms->label_widget, XmNmenuHistory, active_choice->widget, NULL);
+//    }
+    GTK_NOT_IMPLEMENTED;
+}
+
+void AW_window::clear_option_menu(AW_option_menu_struct */*oms*/) {
+    GTK_NOT_IMPLEMENTED;
+}
+
 
 
 GType AW_window::convert_aw_type_to_gtk_type(AW_VARIABLE_TYPE aw_type){
@@ -1227,7 +1354,6 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 // BEGIN TOGGLE FIELD STUFF
 
 void AW_window::create_toggle_field(const char */*awar_name*/, int orientation /*= 0*/){
-    FIXME("rename create_toggle_field -- creates radio-button-group");
     // orientation = 0 -> vertical else horizontal layout
 
     GtkWidget *parent_widget = GTK_WIDGET(prvt->fixed_size_area);
@@ -1359,17 +1485,6 @@ void AW_window::draw_line(int /*x1*/, int /*y1*/, int /*x2*/, int /*y2*/, int /*
    GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::get_at_position(int *x, int *y) const {
-    *x = _at.x_for_next_button; *y = _at.y_for_next_button; 
-}
-
-int AW_window::get_at_xposition() const {
-    return _at.x_for_next_button; 
-}
-
-int AW_window::get_at_yposition() const {
-    return _at.y_for_next_button; 
-}
 
 AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey,
                                              AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos radi) {
@@ -1430,17 +1545,6 @@ void AW_window::highlight(){
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::insert_default_option (AW_label /*choice_label*/, const char */*mnemonic*/, const char */*var_value*/, const char */*name_of_color*/ /*= 0*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::insert_default_option (AW_label /*choice_label*/, const char */*mnemonic*/, int /*var_value*/,          const char */*name_of_color*/ /*= 0*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::insert_default_option (AW_label /*choice_label*/, const char */*mnemonic*/, float /*var_value*/,        const char */*name_of_color*/ /*= 0*/){
-    GTK_NOT_IMPLEMENTED;
-}
 
 
 
@@ -1490,17 +1594,6 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const cha
     root->make_sensitive(item, mask);
 }
 
-void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*/, const char */*var_value*/, const char */*name_of_color*/ /*= 0*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*/, int /*var_value*/, const char */*name_of_color*/ /*= 0*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*/, float /*var_value*/, const char */*name_of_color*/ /*= 0*/){
-    GTK_NOT_IMPLEMENTED;
-}
 
 
 void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
@@ -1567,21 +1660,6 @@ void AW_window::update_input_field(GtkWidget */*widget*/, const char */*var_valu
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::refresh_option_menu(AW_option_menu_struct */*oms*/) {
-//    if (get_root()->changer_of_variable != oms->label_widget) {
-//        AW_widget_value_pair *active_choice = oms->first_choice;
-//        {
-//            AW_scalar global_var_value(root->awar(oms->variable_name));
-//            while (active_choice && global_var_value != active_choice->value) {
-//                active_choice = active_choice->next;
-//            }
-//        }
-//
-//        if (!active_choice) active_choice = oms->default_choice;
-//        if (active_choice) XtVaSetValues(oms->label_widget, XmNmenuHistory, active_choice->widget, NULL);
-//    }
-    GTK_NOT_IMPLEMENTED;
-}
 
 
 static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
@@ -1849,10 +1927,6 @@ void AW_window::update_label(GtkWidget* widget, const char *var_value) {
     else {
         get_root()->changer_of_variable = 0;
     }
-}
-
-void AW_window::update_option_menu() {
-    GTK_NOT_IMPLEMENTED;
 }
 
 
