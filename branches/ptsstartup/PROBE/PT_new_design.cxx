@@ -24,6 +24,10 @@
 
 #include <climits>
 
+#if defined(DEBUG)
+// #define DUMP_DESIGNED_PROBES 
+#endif
+
 int Complement::calc_complement(int base) {
     switch (base) {
         case PT_A: return PT_T;
@@ -1072,6 +1076,23 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 #endif // DEBUG
 }
 
+#if defined(DUMP_DESIGNED_PROBES)
+static void dump_tprobe(PT_tprobes *tprobe, int idx) {
+    char *readable = readable_probe(tprobe->sequence, tprobe->seq_len, 'T');
+    fprintf(stderr, "tprobe='%s' idx=%i len=%i\n", readable, idx, tprobe->seq_len);
+    free(readable);
+}
+static void DUMP_TPROBES(const char *where, PT_pdc *pdc) {
+    int idx = 0;
+    fprintf(stderr, "dumping tprobes %s:\n", where);
+    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
+        dump_tprobe(tprobe, idx++);
+    }
+}
+#else
+#define DUMP_TPROBES(a,b)
+#endif
+
 int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
 
@@ -1099,12 +1120,15 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     }
 
     while (pdc->tprobes) destroy_PT_tprobes(pdc->tprobes);
+
     ptnd_build_tprobes(pdc, locs->group_count);
     while (pdc->sequences) destroy_PT_sequence(pdc->sequences);
+
     sort_tprobes_by(pdc, 1);
     remove_tprobes_with_too_many_mishits(pdc);
     remove_tprobes_outside_ecoli_range(pdc);
     tprobes_calculate_bonds(locs);
+    DUMP_TPROBES("after tprobes_calculate_bonds", pdc);
 
     {
         Parts probeparts;
