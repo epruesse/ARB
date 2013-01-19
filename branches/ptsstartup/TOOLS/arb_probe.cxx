@@ -1429,21 +1429,134 @@ void TEST_SLOW_design_probe() {
             "designnames=CPPParap#PsAAAA00",
             "designmintargets=50", // hit at least 1 of the 2 targets
             "designmingc=0", "designmaxgc=100", // allow all GCs
-            "designmishit=99999",  // allow enough outgroup hits
+            "designmintemp=30", "designmaxtemp=100", // allow all temp above 30 deg
+            "designmishit=7",  // allow enough outgroup hits
+            "designmaxhits=99999", // do not limit results
+            "designprobelength=9",
+        };
+
+        const char *expected_loc =
+            "A=84B=111C=24C+4D=125B+1A-4E=99F=37A-1C+5D-1A-5G=52G-3E-5A-2A-2G-6F+8G-2C-1G-1H=73I=61"
+            "G-1E-2A+4A+5A+3A+2E-1E-3A-1A+1G+3G+4E+1G+2A-0A+8E-6A+1A+4A+3A+2I+2I+1H+1E-4J=152C-2J+1";
+
+        TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
+    }
+
+    // same as above
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=CPPParap#PsAAAA00",
+            "designmintargets=50", // hit at least 1 of the 2 targets
+            "designmingc=0", "designmaxgc=100", // allow all GCs
+            "designmintemp=30", "designmaxtemp=100", // allow all temp above 30 deg
+            "designmishit=7",  // allow enough outgroup hits
+            "designmaxhits=99999", // do not limit results
+            "designprobelength=9",
+        };
+
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe       9\n"
+            "Temperature        [30.0 -100.0]\n"
+            "GC-Content         [ 0.0 -100.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits     7\n"
+            "Min Group Hits        50%\n"
+            "Target    le     apos ecol grps  G+C 4GC+2AT Probe sequence | Decrease T by n*.3C -> probe matches n non group species\n"
+            "ACGGGCCUU  9 A=    84   72    1 66.7 30.0    AAGGCCCGU |  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,\n"
+            "CCGCAUACG  9 B=   111   99    1 66.7 30.0    CGUAUGCGG |  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  4,  4,  4,  4,  5,  5,  5,  5,  5,\n"
+            "CGAGCGAUG  9 C=    24   21    1 66.7 30.0    CAUCGCUCG |  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,\n"
+            "CGAGCGGAU  9 C+     4   23    1 66.7 30.0    AUCCGCUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CGAUUGGGG  9 D=   125  112    1 66.7 30.0    CCCCAAUCG |  3,  3,  3,  3,  3,  3,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,\n"
+            "CGCAUACGC  9 B+     1  100    1 66.7 30.0    GCGUAUGCG |  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,\n"
+            "CGGACGGGC  9 A-     4   69    1 88.9 34.0    GCCCGUCCG |  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,\n"
+            "CGGGCGCUA  9 E=    99   87    1 77.8 32.0    UAGCGCCCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GAAGGGAGC  9 F=    37   32    1 66.7 30.0    GCUCCCUUC |  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "GACGGGCCU  9 A-     1   71    1 77.8 32.0    AGGCCCGUC |  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,\n"
+            "GAGCGGAUG  9 C+     5   24    1 66.7 30.0    CAUCCGCUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GCGAUUGGG  9 D-     1  111    1 66.7 30.0    CCCAAUCGC |  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,\n"
+            "GCGGACGGG  9 A-     5   68    1 88.9 34.0    CCCGUCCGC |  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,\n"
+            "GCUCCUGGA  9 G=    52   47    1 66.7 30.0    UCCAGGAGC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GCUUGCUCC  9 G-     3   44    1 66.7 30.0    GGAGCAAGC |  4,  4,  4,  4,  4,  4,  5,  5,  5,  5,  5,  5,  5,  7,  7,  7,  7,  8,  8,  8,\n"
+            "GGAAACGGG  9 E-     5   82    1 66.7 30.0    CCCGUUUCC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GGACGGACG  9 A-     2   70    1 77.8 32.0    CGUCCGUCC |  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,\n"
+            "GGACGGGCC  9 A-     2   70    1 88.9 34.0    GGCCCGUCC |  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,\n"
+            "GGAGCUUGC  9 G-     6   41    1 66.7 30.0    GCAAGCUCC |  4,  4,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,\n"
+            "GGGAGCUUG  9 F+     8   40    1 66.7 30.0    CAAGCUCCC |  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,\n"
+            "UCCUUCGGG  9 G-     2   45    1 66.7 30.0    CCCGAAGGA |  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  3,  3,  3,  3,  3,  3,  3,\n"
+            "UCGAGCGGA  9 C-     1   21    1 66.7 30.0    UCCGCUCGA |  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,\n"
+            "UGCUCCUGG  9 G-     1   46    1 66.7 30.0    CCAGGAGCA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "UUAGCGGCG  9 H=    73   62    1 66.7 30.0    CGCCGCUAA |  4,  4,  4,  4,  4,  4,  4,  4,  5,  5,  5,  5,  5,  5,  5,  6,  6,  6,  6,  6,\n"
+            "UUCAGCGGC  9 I=    61   56    1 66.7 30.0    GCCGCUGAA |  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,  3,  3,  3,  3,  3,  3,  3,\n"
+            "CCUUCGGGA  9 G-     1   46    1 66.7 30.0    UCCCGAAGG |  2,  2,  3,  3,  3,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  5,  5, 13,\n"
+            "AACGGGCGC  9 E-     2   85    1 77.8 32.0    GCGCCCGUU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  2,\n"
+            "ACGUCCGGA  9 A+     4   76    1 66.7 30.0    UCCGGACGU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1, 11, 11, 12, 12, 17,\n"
+            "CGUCCGGAA  9 A+     5   77    1 66.7 30.0    UUCCGGACG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  2,  2,  2,\n"
+            "GACGUCCGG  9 A+     3   75    1 77.8 32.0    CCGGACGUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  2,  2, 14,\n"
+            "GGACGUCCG  9 A+     2   74    1 77.8 32.0    CGGACGUCC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  3,  3,  3,\n"
+            "ACGGGCGCU  9 E-     1   86    1 77.8 32.0    AGCGCCCGU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  2,  2,  2,\n"
+            "AAACGGGCG  9 E-     3   84    1 66.7 30.0    CGCCCGUUU |  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "GACGGACGU  9 A-     1   71    1 66.7 30.0    ACGUCCGUC |  2,  2,  2,  2,  2,  2,  2,  2, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14, 14,\n"
+            "CGGACGUCC  9 A+     1   73    1 77.8 32.0    GGACGUCCG |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  3,  3,  3,  3, 12, 12, 12,\n"
+            "CGGGAACGG  9 G+     3   50    1 77.8 32.0    CCGUUCCCG |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "GGGAACGGA  9 G+     4   51    1 66.7 30.0    UCCGUUCCC |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "GGGCGCUAA  9 E+     1   88    1 66.7 30.0    UUAGCGCCC |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "UCGGGAACG  9 G+     2   49    1 66.7 30.0    CGUUCCCGA |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "ACGGACGUC  9 A-     0   72    1 66.7 30.0    GACGUCCGU |  0,  0,  0,  0,  0,  0,  2,  2,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  5, 13,\n"
+            "CCGGAAACG  9 A+     8   80    1 66.7 30.0    CGUUUCCGG |  0,  0,  0,  0,  0,  0,  2,  2,  2,  2,  2,  2,  2,  6,  6,  8,  8,  9,  9,  9,\n"
+            "CGGAAACGG  9 E-     6   81    1 66.7 30.0    CCGUUUCCG |  0,  0,  0,  0,  0,  0,  2,  2,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,\n"
+            "CGGGCCUUC  9 A+     1   73    1 77.8 32.0    GAAGGCCCG |  1,  1,  1,  1,  1,  1,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,\n"
+            "GCCUUCCGA  9 A+     4   76    1 66.7 30.0    UCGGAAGGC |  0,  0,  0,  0,  0,  0,  2,  2,  2,  2,  2,  3,  3,  3,  3,  3,  3,  3,  3,  3,\n"
+            "GGCCUUCCG  9 A+     3   75    1 77.8 32.0    CGGAAGGCC |  0,  0,  0,  0,  0,  0,  2,  2,  2,  2,  2,  3,  3,  3,  3,  3,  3,  3,  3,  3,\n"
+            "GGGCCUUCC  9 A+     2   74    1 77.8 32.0    GGAAGGCCC |  0,  0,  0,  0,  0,  0,  2,  2,  2,  2,  2,  3,  3,  3,  3,  3,  3,  3,  3,  4,\n"
+            "CAGCGGCGG  9 I+     2   58    1 88.9 34.0    CCGCCGCUG |  2,  2,  2,  2,  2,  2,  6,  6,  6,  6,  6,  6,  6,  7,  7,  7,  7,  7,  7,  7,\n"
+            "UCAGCGGCG  9 I+     1   57    1 77.8 32.0    CGCCGCUGA |  2,  2,  2,  2,  2,  2,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,\n"
+            "UAGCGGCGG  9 H+     1   63    1 77.8 32.0    CCGCCGCUA |  4,  4,  4,  4,  4,  4, 10, 10, 10, 10, 10, 10, 10, 12, 12, 12, 12, 12, 12, 12,\n"
+            "GAAACGGGC  9 E-     4   83    1 66.7 30.0    GCCCGUUUC |  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,\n"
+            "GCCGUAGGA  9 J=   152  138    1 66.7 30.0    UCCUACGGC |  1,  1,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,\n"
+            "GUCGAGCGA  9 C-     2   21    1 66.7 30.0    UCGCUCGAC |  3,  3, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 12, 12, 12, 12, 14,\n"
+            "CCGUAGGAG  9 J+     1  139    1 66.7 30.0    CUCCUACGG |  1,  1, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,\n";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+
+    // same as above (with probelen == 8)
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=CPPParap#PsAAAA00",
+            "designmintargets=50", // hit at least 1 of the 2 targets
+            "designmingc=0", "designmaxgc=100", // allow all GCs
+            "designmintemp=30", "designmaxtemp=100", // allow all temp above 30 deg
+            // "designmishit=7",
+            "designmishit=15", // @@@ reports more results than with 7 mishits, but no mishits reported below!
             "designmaxhits=99999", // do not limit results
             "designprobelength=8",
         };
 
-        const char *expected_loc =
-            "A=20B=107B+3C=9D=75A+1C+2B+1A-3A-1D+2C+1A-4D+4D+1D+3E=139A+2C+3E+1B-1B+2A-2A-5A-6A-7F=96F-0E+2E+2G=161H=59"
-            "F+1C+3I=117B-6E+5F+1J=41E+5E-5J+5E+3E+3K=177G+1I-0L=84H+7L-0F+2L+4C-1G-1I+1B-5M=150A+6I+6N=30J+6E+6F+2G-4"
-            "J+1E+6E-4J+6I-2I-2K-3I+3J-6J-4I+5B-3D-3H+1O=125E+4E+4K-1I+5H+4B+7B+7I+4F-3B+4B+4F-4M+3H-4F-7P=51F-2A+4A+4"
-            "J-6O-0B+5B+5I+1B-4N-2D+5D+5L+1B+5Q=67H-4L+1F+3E-1G-7F-7B-2H-6C-0H-3F-6H-7P-1F-1F-1G-1H-1C+2B-7J-4J+4L-1L-1"
-            "L+3G-2C-2A+5N-1J+6K-4I+2J-7J-5B-4D-6H-0O+1B+6B+6I+2M+1L+4A+7I+7B-5N+1B-3H-7P-2F-2G-2H-2F+3D+7D+7L+2G-3J+5"
-            "K-5B+6D-7H-1L+3B-6H-3J+4L+2B-7O+5O+6O+5E-7M-3E-6M-2G-6F-6E-3J+7I-1E-5I-1C-2M-1D-1G-5K-2I+4H+3F-4F-5H-5P-1"
-            "A+3A+3H-5E-2C+1J-5J+1P-0K-6H-2O+4I+6B-2D-2H+2F-5P-2H-6P-1O+3";
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe       8\n"
+            "Temperature        [30.0 -100.0]\n"
+            "GC-Content         [ 0.0 -100.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits    15\n"
+            "Min Group Hits        50%\n"
+            "Target   le     apos ecol grps  G+C 4GC+2AT Probe sequence | Decrease T by n*.3C -> probe matches n non group species\n"
+            "AGCGGCGG  8 A=    75   64    2 87.5 30.0    CCGCCGCU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n" // @@@ outgroup hit detection obviously fails for probelength 8!
+            "CGGCGGAC  8 A+     2   66    2 87.5 30.0    GUCCGCCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GCGGACGG  8 A+     4   68    2 87.5 30.0    CCGUCCGC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GCGGCGGA  8 A+     1   65    2 87.5 30.0    UCCGCCGC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GGCGGACG  8 A+     3   67    2 87.5 30.0    CGUCCGCC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "ACGGGCGC  8 B=    98   86    1 87.5 30.0    GCGCCCGU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CAGCGGCG  8 C=    63   58    1 87.5 30.0    CGCCGCUG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CGGACGGG  8 A+     5   69    1 87.5 30.0    CCCGUCCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "CGGGCGCU  8 B+     1   87    1 87.5 30.0    AGCGCCCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GACGGGCC  8 D=    83   71    1 87.5 30.0    GGCCCGUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+            "GGACGGGC  8 A+     7   70    1 87.5 30.0    GCCCGUCC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n";
 
-        TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
 
     {
