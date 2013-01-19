@@ -79,6 +79,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/items.h
 probe_design.o: $(ARBHOME)/INCLUDE/iupac.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
+probe_design.o: $(ARBHOME)/INCLUDE/PT_server.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 probe_design.o: $(ARBHOME)/INCLUDE/smartptr.h
 probe_design.o: $(ARBHOME)/INCLUDE/test_global.h
