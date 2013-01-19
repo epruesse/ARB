@@ -1167,6 +1167,10 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     sort_tprobes_by(pdc, 0);
     clip_tprobes(pdc, pdc->clipresult);
 
+#if defined(DEBUG)
+    sort_tprobes_by(pdc, 1); // @@@ remove me - just here make upcoming changes more obvious
+#endif
+
     return 0;
 }
 
