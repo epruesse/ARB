@@ -283,9 +283,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
                     error = "Connection to PT_SERVER lost (2)";
                 }
                 else {
-                    if (*locs_error) {
-                        error = locs_error;
-                    }
+                    if (*locs_error) error = GBS_static_string(locs_error);
                     free(locs_error);
                 }
             }
@@ -605,15 +603,22 @@ static int test_setup(bool use_gene_ptserver) {
 // ----------------------------------
 //      test probe design / match
 
-#define TEST_RUN_ARB_PROBE(fake_argc,fake_argv)                                         \
-    int       serverid = test_setup(use_gene_ptserver);                                 \
+#define TEST_RUN_ARB_PROBE__INT(fake_argc,fake_argv)                                    \
+    int serverid = test_setup(use_gene_ptserver);                                       \
     TEST_EXPECT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));                    \
     TEST_EXPECT((serverid == TEST_SERVER_ID)||(serverid == TEST_GENESERVER_ID));        \
-    P.SERVERID         = serverid;                                                      \
+    P.SERVERID = serverid;                                                              \
     ARB_ERROR error;                                                                    \
-    char      *answer   = execute(error);                                               \
-    TEST_EXPECT_NO_ERROR(error.deliver())
+    char *answer = execute(error)
 
+#define TEST_RUN_ARB_PROBE__REPORTS_ERROR(fake_argc,fake_argv,expected_error)   \
+    TEST_RUN_ARB_PROBE__INT(fake_argc,fake_argv);                               \
+    free(answer);                                                               \
+    TEST_EXPECT_ERROR_CONTAINS(error.deliver(), expected_error)
+
+#define TEST_RUN_ARB_PROBE(fake_argc,fake_argv)                 \
+    TEST_RUN_ARB_PROBE__INT(fake_argc,fake_argv);               \
+    TEST_EXPECT_NO_ERROR(error.deliver())
 
 #define TEST_ARB_PROBE(fake_argc,fake_argv,expected) do {       \
         TEST_RUN_ARB_PROBE(fake_argc,fake_argv);                \
@@ -1404,6 +1409,18 @@ void TEST_SLOW_design_probe() {
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
 
+    // test error case
+    {
+        const char *arguments_bad_design[] = {
+            "prgnamefake",
+            "designnames=CPPParap#PsAAAA00",
+            "designprobelength=3",
+        };
+        const char *expected_error = "Probe length 3 is below the minimum probe length of 8";
+
+        TEST_RUN_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments_bad_design), arguments_bad_design, expected_error);
+    }
+
     // design MANY probes to test location specifier
     {
         const char *arguments_loc[] = {
@@ -1414,13 +1431,17 @@ void TEST_SLOW_design_probe() {
             "designmingc=0", "designmaxgc=100", // allow all GCs
             "designmishit=99999",  // allow enough outgroup hits
             "designmaxhits=99999", // do not limit results
-            "designprobelength=3",
+            "designprobelength=8",
         };
 
         const char *expected_loc =
-            "A=96B=141C=20D=107B+1E=110F=84G=9H=150I=145C+1D+1J=17K=122L=72C-1M=33N=114E+1O=178"
-            "P=24E+2F+1Q=138O+1R=170S=182A-1T=87G+1J-1N-1U=79F+2U-1V=129I+2H-2C+2W=12D-1D+2C-2O+2"
-            "P-1J-2X=165R+1Y=92W+2W+1Z=125O-2D-2H+1a=104H-1L+1";
+            "A=20B=107B+3C=9D=75A+1C+2B+1A-3A-1D+2C+1A-4D+4D+1D+3E=139A+2C+3E+1B-1B+2A-2A-5A-6A-7F=96F-0E+2E+2G=161H=59"
+            "F+1C+3I=117B-6E+5F+1J=41E+5E-5J+5E+3E+3K=177G+1I-0L=84H+7L-0F+2L+4C-1G-1I+1B-5M=150A+6I+6N=30J+6E+6F+2G-4"
+            "J+1E+6E-4J+6I-2I-2K-3I+3J-6J-4I+5B-3D-3H+1O=125E+4E+4K-1I+5H+4B+7B+7I+4F-3B+4B+4F-4M+3H-4F-7P=51F-2A+4A+4"
+            "J-6O-0B+5B+5I+1B-4N-2D+5D+5L+1B+5Q=67H-4L+1F+3E-1G-7F-7B-2H-6C-0H-3F-6H-7P-1F-1F-1G-1H-1C+2B-7J-4J+4L-1L-1"
+            "L+3G-2C-2A+5N-1J+6K-4I+2J-7J-5B-4D-6H-0O+1B+6B+6I+2M+1L+4A+7I+7B-5N+1B-3H-7P-2F-2G-2H-2F+3D+7D+7L+2G-3J+5"
+            "K-5B+6D-7H-1L+3B-6H-3J+4L+2B-7O+5O+6O+5E-7M-3E-6M-2G-6F-6E-3J+7I-1E-5I-1C-2M-1D-1G-5K-2I+4H+3F-4F-5H-5P-1"
+            "A+3A+3H-5E-2C+1J-5J+1P-0K-6H-2O+4I+6B-2D-2H+2F-5P-2H-6P-1O+3";
 
         TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
     }

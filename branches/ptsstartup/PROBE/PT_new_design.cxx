@@ -28,6 +28,8 @@
 // #define DUMP_DESIGNED_PROBES 
 #endif
 
+#define MIN_DESIGN_PROBE_LENGTH DOMAIN_MIN_LENGTH
+
 int Complement::calc_complement(int base) {
     switch (base) {
         case PT_A: return PT_T;
@@ -1107,15 +1109,19 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
         return 0;
     }
 
-    PT_sequence *seq;
+    PT_sequence *seq; // @@@ move into for loop?
     for (seq = pdc->sequences; seq; seq = seq->next) {  // Convert all external sequence to internal format
         seq->seq.size = probe_compress_sequence(seq->seq.data, seq->seq.size);
         locs->group_count++;
     }
 
     if (locs->group_count <= 0) {
-        pt_export_error(locs, GBS_global_string("No %s marked - no probes designed",
-                                                gene_flag ? "genes" : "species"));
+        pt_export_error(locs, GBS_global_string("No %s marked - no probes designed", gene_flag ? "genes" : "species"));
+        return 0;
+    }
+
+    if (pdc->probelen < MIN_DESIGN_PROBE_LENGTH) {
+        pt_export_error(locs, GBS_global_string("Probe length %i is below the minimum probe length of %i", pdc->probelen, MIN_DESIGN_PROBE_LENGTH));
         return 0;
     }
 

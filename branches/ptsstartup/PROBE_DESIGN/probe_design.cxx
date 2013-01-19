@@ -565,7 +565,10 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
         progress.subtitle("Reading results from server");
         {
             char *locs_error = 0;
-            if (aisc_get(PD.link, PT_LOCS, PD.locs, LOCS_ERROR, &locs_error, NULL)) {
+            if (aisc_get(PD.link, PT_LOCS, PD.locs,
+                         LOCS_ERROR, &locs_error,
+                         NULL))
+            {
                 aw_message ("Connection to PT_SERVER lost (1)");
                 abort = true;
             }
