@@ -279,7 +279,6 @@ PT_new_design.o: probe.h
 PT_new_design.o: probe_tree.h
 PT_new_design.o: PT_complement.h
 PT_new_design.o: PT_prefixIter.h
-PT_new_design.o: pt_probepart.h
 PT_new_design.o: pt_prototypes.h
 PT_new_design.o: pt_split.h
 PT_new_design.o: PT_tools.h
