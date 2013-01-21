@@ -283,37 +283,43 @@ static int ptnd_compare_sequence(const void *PT_tprobes_ptr1, const void *PT_tpr
     return strcmp(tprobe1->sequence, tprobe2->sequence);
 }
 
-static void sort_tprobes_by(PT_pdc *pdc, int mode)  // mode 0 quality, mode 1 sequence
-{
-    PT_tprobes **my_list;
-    int          list_len;
-    PT_tprobes  *tprobe;
-    int          i;
+enum ProbeSortMode {
+    PSM_QUALITY,
+    PSM_SEQUENCE,
+};
 
-    if (!pdc->tprobes) return;
-    list_len = pdc->tprobes->get_count();
-    if (list_len <= 1) return;
-    my_list = (PT_tprobes **)calloc(sizeof(void *), list_len);
-    for (i=0, tprobe = pdc->tprobes;
-         tprobe;
-         i++, tprobe=tprobe->next)
-    {
-        my_list[i] = tprobe;
-    }
-    switch (mode) {
-        case 0:
-            GB_sort((void **)my_list, 0, list_len, ptnd_compare_quality, 0);
-            break;
-        case 1:
-            GB_sort((void **)my_list, 0, list_len, ptnd_compare_sequence, 0);
-            break;
-    }
+static void sort_tprobes_by(PT_pdc *pdc, ProbeSortMode mode) {
+    if (pdc->tprobes) {
+        int list_len = pdc->tprobes->get_count();
+        if (list_len > 1) {
+            PT_tprobes **my_list = (PT_tprobes **)calloc(sizeof(void *), list_len);
+            {
+                PT_tprobes *tprobe;
+                int         i;
 
-    for (i=0; i<list_len; i++) {
-        aisc_unlink(reinterpret_cast<dllheader_ext*>(my_list[i]));
-        aisc_link(&pdc->ptprobes, my_list[i]);
+                for (i = 0, tprobe = pdc->tprobes; tprobe; i++, tprobe = tprobe->next) {
+                    my_list[i] = tprobe;
+                }
+            }
+
+            switch (mode) {
+                case PSM_QUALITY:
+                    GB_sort((void **)my_list, 0, list_len, ptnd_compare_quality, 0);
+                    break;
+
+                case PSM_SEQUENCE:
+                    GB_sort((void **)my_list, 0, list_len, ptnd_compare_sequence, 0);
+                    break;
+            }
+
+            for (int i=0; i<list_len; i++) {
+                aisc_unlink(reinterpret_cast<dllheader_ext*>(my_list[i]));
+                aisc_link(&pdc->ptprobes, my_list[i]);
+            }
+
+            free(my_list);
+        }
     }
-    free(my_list);
 }
 static void clip_tprobes(PT_pdc *pdc, int count)
 {
@@ -1219,7 +1225,7 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     ptnd_build_tprobes(pdc, locs->group_count);
     while (pdc->sequences) destroy_PT_sequence(pdc->sequences);
 
-    sort_tprobes_by(pdc, 1);
+    sort_tprobes_by(pdc, PSM_SEQUENCE);
     remove_tprobes_with_too_many_mishits(pdc);
     remove_tprobes_outside_ecoli_range(pdc);
     tprobes_calculate_bonds(locs);
@@ -1233,11 +1239,11 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     }
 
     tprobes_calc_quality(pdc);
-    sort_tprobes_by(pdc, 0);
+    sort_tprobes_by(pdc, PSM_QUALITY);
     clip_tprobes(pdc, pdc->clipresult);
 
 #if defined(DEVEL_RALF)
-    sort_tprobes_by(pdc, 1); // @@@ remove me - just here make upcoming changes more obvious!
+    sort_tprobes_by(pdc, PSM_SEQUENCE); // @@@ remove me - just here make upcoming changes more obvious!
 #endif
 
     return 0;
