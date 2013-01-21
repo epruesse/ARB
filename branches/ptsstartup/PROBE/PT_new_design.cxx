@@ -255,17 +255,18 @@ inline char hitgroup_idx2char(int idx) {
 }
 
 char *get_design_info(const PT_tprobes *tprobe) {
-    char   *buffer = (char *)GB_give_buffer(2000);
-    PT_pdc *pdc    = (PT_pdc *)tprobe->mh.parent->parent;
-    char   *p      = buffer;
+    const int  BUFFERSIZE = 2000;
+    char      *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
+    PT_pdc    *pdc        = (PT_pdc *)tprobe->mh.parent->parent;
+    char      *p          = buffer;
 
     // target
     {
-        char *probe  = (char *)GB_give_buffer2(tprobe->seq_len + 10);
+        char *probe = (char *)GB_give_buffer2(tprobe->seq_len + 10);
         strcpy(probe, tprobe->sequence);
+
         probe_2_readable(probe, pdc->probelen); // convert probe to real ASCII
-        sprintf(p, "%-*s", pdc->probelen+1, probe);
-        p += strlen(p);
+        p += sprintf(p, "%-*s", pdc->probelen+1, probe);
     }
 
     {
@@ -307,14 +308,10 @@ char *get_design_info(const PT_tprobes *tprobe) {
                      apos,
                      PT_abs_2_ecoli_rel(tprobe->apos+1)); // ecoli-bases inclusive apos ("bases before apos+1")
     }
-    // grps
-    p += sprintf(p, "%4i ", tprobe->groupsize);
 
-    // G+C
-    p += sprintf(p, "%-4.1f ", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0);
-
-    // 4GC+2AT
-    p += sprintf(p, "%-7.1f ", pt_get_temperature(tprobe->sequence));
+    p += sprintf(p, "%4i ", tprobe->groupsize);                       // grps
+    p += sprintf(p, "%-4.1f ", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0); // G+C
+    p += sprintf(p, "%-7.1f ", pt_get_temperature(tprobe->sequence)); // 4GC+2AT
 
     // probe string
     {
@@ -332,6 +329,8 @@ char *get_design_info(const PT_tprobes *tprobe) {
         p   += sprintf(p, "%3i,", sum);
     }
 
+    pt_assert((p-buffer)<BUFFERSIZE);
+
     return buffer;
 }
 
@@ -340,9 +339,10 @@ char *get_design_info(const PT_tprobes *tprobe) {
 #endif
 
 char *get_design_hinfo(const PT_tprobes *tprobe) {
-    char   *buffer = (char *)GB_give_buffer(2000);
-    char   *s      = buffer;
-    PT_pdc *pdc;
+    const int  BUFFERSIZE = 2000;
+    char      *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
+    char      *s          = buffer;
+    PT_pdc    *pdc;
 
     if (!tprobe) {
         return (char*)"Sorry, there are no probes for your selection !!!";
@@ -368,38 +368,30 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
             }
         }
 
-        sprintf(buffer,
-                "Probe design Parameters:\n"
-                "Length of probe    %4i\n"
-                "Temperature        [%4.1f -%4.1f]\n"
-                "GC-Content         [%4.1f -%4.1f]\n"
-                "E.Coli Position    [%s]\n"
-                "Max Non Group Hits  %4i\n"
-                "Min Group Hits      %4.0f%%\n",
-                pdc->probelen,
-                pdc->mintemp, pdc->maxtemp,
-                pdc->min_gc*100.0, pdc->max_gc*100.0,
-                ecolipos,
-                pdc->mishit, pdc->mintarget*100.0);
+        s += sprintf(s,
+                     "Probe design Parameters:\n"
+                     "Length of probe    %4i\n"
+                     "Temperature        [%4.1f -%4.1f]\n"
+                     "GC-Content         [%4.1f -%4.1f]\n"
+                     "E.Coli Position    [%s]\n"
+                     "Max Non Group Hits  %4i\n"
+                     "Min Group Hits      %4.0f%%\n",
+                     pdc->probelen,
+                     pdc->mintemp, pdc->maxtemp,
+                     pdc->min_gc*100.0, pdc->max_gc*100.0,
+                     ecolipos,
+                     pdc->mishit, pdc->mintarget*100.0);
 
         free(ecolipos);
     }
 
-    s += strlen(s);
+    s += sprintf(s, "%-*s", pdc->probelen+1, "Target");
+    s += sprintf(s, "%2s %8s %4s ", "le", "apos", "ecol");
+    s += sprintf(s, "%4s ", "grps"); // groupsize
+    s += sprintf(s, "%-4s %-7s %-*s | ", " G+C", "4GC+2AT", pdc->probelen, "Probe sequence");
+    s += sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
 
-    sprintf(s, "%-*s", pdc->probelen+1, "Target");
-    s += strlen(s);
-
-    sprintf(s, "%2s %8s %4s ", "le", "apos", "ecol");
-    s += strlen(s);
-
-    sprintf(s, "%4s ", "grps"); // groupsize
-    s += strlen(s);
-
-    sprintf(s, "%-4s %-7s %-*s | ", " G+C", "4GC+2AT", pdc->probelen, "Probe sequence");
-    s += strlen(s);
-
-    sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
+    pt_assert((s-buffer)<BUFFERSIZE);
 
     return buffer;
 }
