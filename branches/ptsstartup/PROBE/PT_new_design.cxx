@@ -1242,10 +1242,6 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     sort_tprobes_by(pdc, PSM_QUALITY);
     clip_tprobes(pdc, pdc->clipresult);
 
-#if defined(DEVEL_RALF)
-    sort_tprobes_by(pdc, PSM_SEQUENCE); // @@@ remove me - just here make upcoming changes more obvious!
-#endif
-
     return 0;
 }
 
