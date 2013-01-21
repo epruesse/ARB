@@ -309,9 +309,10 @@ char *get_design_info(const PT_tprobes *tprobe) {
                      PT_abs_2_ecoli_rel(tprobe->apos+1)); // ecoli-bases inclusive apos ("bases before apos+1")
     }
 
-    p += sprintf(p, "%4i ", tprobe->groupsize);                       // grps
-    p += sprintf(p, "%-4.1f ", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0); // G+C
-    p += sprintf(p, "%-7.1f ", pt_get_temperature(tprobe->sequence)); // 4GC+2AT
+    p += sprintf(p, "%4i ", int(tprobe->quality+0.5));
+    p += sprintf(p, "%4i ", tprobe->groupsize);
+    p += sprintf(p, "%4.1f ", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0); // G+C
+    p += sprintf(p, "%7.1f ", pt_get_temperature(tprobe->sequence));                                // 4GC+2AT
 
     // probe string
     {
@@ -386,9 +387,8 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
     }
 
     s += sprintf(s, "%-*s", pdc->probelen+1, "Target");
-    s += sprintf(s, "%2s %8s %4s ", "le", "apos", "ecol");
-    s += sprintf(s, "%4s ", "grps"); // groupsize
-    s += sprintf(s, "%-4s %-7s %-*s | ", " G+C", "4GC+2AT", pdc->probelen, "Probe sequence");
+    s += sprintf(s, "le     apos ecol qual grps  G+C 4GC+2AT ");
+    s += sprintf(s, "%-*s | ", pdc->probelen, "Probe sequence");
     s += sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
 
     pt_assert((s-buffer)<BUFFERSIZE);
