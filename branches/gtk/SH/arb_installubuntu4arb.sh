@@ -88,6 +88,7 @@ else
             echo \
                 valgrind \
                 ctags \
+                libgtk2.0-dev \
 
         elif [ "$2" == "devdox" ]; then
             $0 echo develop
