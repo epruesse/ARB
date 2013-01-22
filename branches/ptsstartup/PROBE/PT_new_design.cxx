@@ -360,12 +360,22 @@ static double pt_get_temperature(const char *probe)
     return t;
 }
 
-static void tprobes_calc_quality(PT_pdc *pdc) {
+static void tprobes_sumup_perc_and_calc_quality(PT_pdc *pdc) {
     for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
+        int sum = 0;
         int i;
-        for (i=0; i< PERC_SIZE-1; i++) {
-            if (tprobe->perc[i] > tprobe->misHits) break;
+        for (i=0; i<PERC_SIZE; ++i) {
+            sum             += tprobe->perc[i];
+            tprobe->perc[i]  = sum;
         }
+
+        pt_assert(tprobe->perc[0] == tprobe->misHits); // OutgroupMatcher and count_mishits_for_matched do not agree!
+
+        int limit = 2*tprobe->misHits;
+        for (i=0; i<(PERC_SIZE-1); ++i) {
+            if (tprobe->perc[i]>limit) break;
+        }
+
         tprobe->quality = ((double)tprobe->groupsize * i) + 1000.0/(1000.0 + tprobe->perc[i]);
     }
 }
@@ -460,10 +470,8 @@ char *get_design_info(const PT_tprobes *tprobe) {
     }
 
     // non-group hits by temp. decrease
-    int sum = 0;
     for (int i = 0; i<PERC_SIZE; i++) {
-        sum += tprobe->perc[i];
-        p   += sprintf(p, "%3i,", sum);
+        p += sprintf(p, "%3i,", tprobe->perc[i]);
     }
 
     pt_assert((p-buffer)<BUFFERSIZE);
@@ -1240,7 +1248,7 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
         }
     }
 
-    tprobes_calc_quality(pdc);
+    tprobes_sumup_perc_and_calc_quality(pdc);
     sort_tprobes_by(pdc, PSM_QUALITY);
     clip_tprobes(pdc, pdc->clipresult);
 
