@@ -63,7 +63,7 @@ PT_tprobes, TPROBE,     9,     (~the probe we want to test~), {
     double,     whairpin,        t,    r,    WHAIRPIN,    12,    ,      (~Weighted Hairpins~);
     int,        perc,            vt,   r,    PERC,        13,    ,      (~Result: How many non group hits per centigrade~), SIZE PERC_SIZE;
     double,     temp,            t,    r,    TEMPERATURE, 14,    ,      (~The temperature of the probe~);
-    int,        mishit,          t,    r,    MISHIT,      15,    ,      (~How many non group members hit~);
+    int,        misHits,         t,    r,    MISHIT,      15,    ,      (~How many outgroup members hit~);
     int,        apos,            t,    ,     APOS,        16,    ,      (~The absolute position of probe~);
     int,        get_r_pos,       t,    ,     ECOLI_POS,   17,    ,      (~The ecoli based position of probe~);
     aisc_string,get_design_hinfo,%,    r,    INFO_HEADER, 18,    ,      (~the combined info text of a probe design~);
@@ -96,7 +96,7 @@ PT_pdc, PDC,    7,     (~probe design~), {
     int,            min_ecolipos,   t,      ,       MIN_ECOLIPOS,   21,     -1,                     (~the minimum ecoli position [1..N]. -1 means 'no restriction'~);
     int,            max_ecolipos,   t,      ,       MAX_ECOLIPOS,   22,     -1,                     (~the maximum ecoli position [1..N]. -1 means 'no restriction'~);
     double,         mintarget,      t,      ,       MINTARGETS,     23,     .7,                     (~the minimum targets for a group of species~);
-    int,            mishit,         t,      ,       MISHIT,         24,     0,                      (~the maximum mis hits~);
+    int,            maxMisHits,     t,      ,       MISHIT,         24,     0,                      (~the maximum mishits~);
     int,            clipresult,     t,      ,       CLIPRESULT,     25,     40,                     (~Clip the Result list~);
     int,            pos_groups,     vt,     ,       ,               ,       ,                       (~Position of Groups~), SIZE ALPHA_SIZE;
     bytestring,     checksums,      t,      w,      CHECKSUMS,      26,     ,                       (~a list of sequence checksums separated by '#' is optional~);

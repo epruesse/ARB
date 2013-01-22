@@ -362,7 +362,7 @@ static void tprobes_calc_quality(PT_pdc *pdc) {
     for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
         int i;
         for (i=0; i< PERC_SIZE-1; i++) {
-            if (tprobe->perc[i] > tprobe->mishit) break;
+            if (tprobe->perc[i] > tprobe->misHits) break;
         }
         tprobe->quality = ((double)tprobe->groupsize * i) + 1000.0/(1000.0 + tprobe->perc[i]);
     }
@@ -515,7 +515,7 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
                      pdc->mintemp, pdc->maxtemp,
                      pdc->min_gc*100.0, pdc->max_gc*100.0,
                      ecolipos,
-                     pdc->mishit, pdc->mintarget*100.0);
+                     pdc->maxMisHits, pdc->mintarget*100.0);
 
         free(ecolipos);
     }
@@ -626,9 +626,9 @@ static void remove_tprobes_with_too_many_mishits(PT_pdc *pdc) {
         PT_tprobes *tprobe_next = tprobe->next;
 
         psg.abs_pos.clear();
-        tprobe->mishit = count_mishits_for_matched(tprobe->sequence, psg.TREE_ROOT2(), 0);
+        tprobe->misHits = count_mishits_for_matched(tprobe->sequence, psg.TREE_ROOT2(), 0);
         tprobe->apos   = psg.abs_pos.get_most_used();
-        if (tprobe->mishit > pdc->mishit) {
+        if (tprobe->misHits > pdc->maxMisHits) {
             destroy_PT_tprobes(tprobe);
         }
         tprobe = tprobe_next;
