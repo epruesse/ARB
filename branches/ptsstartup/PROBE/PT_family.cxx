@@ -25,11 +25,6 @@
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
 
-inline int double_cmp(double d1, const double d2) {
-    double d = d1-d2;
-    return d<0 ? -1 : (d>0 ? 1 : 0);
-}
-
 struct TraversalHitLimit {
     int id;    // "unique" for each traversal
     int limit; // max hits allowed to each target seq for this traversal

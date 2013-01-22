@@ -266,21 +266,23 @@ public:
 #endif
 };
 
-static int ptnd_compare_quality(const void *PT_tprobes_ptr1, const void *PT_tprobes_ptr2, void *) {
-    const PT_tprobes *tprobe1 = (const PT_tprobes*)PT_tprobes_ptr1;
-    const PT_tprobes *tprobe2 = (const PT_tprobes*)PT_tprobes_ptr2;
+static int ptnd_compare_quality(const void *vtp1, const void *vtp2, void *) {
+    const PT_tprobes *tp1 = (const PT_tprobes*)vtp1;
+    const PT_tprobes *tp2 = (const PT_tprobes*)vtp2;
 
-    // sort best quality first
-    if (tprobe1->quality < tprobe2->quality) return 1;
-    if (tprobe1->quality > tprobe2->quality) return -1;
-    return 0;
+    int cmp = double_cmp(tp2->quality, tp1->quality);         // high quality first
+    if (!cmp) {
+        cmp           = tp1->apos - tp2->apos;                // low abs.pos first
+        if (!cmp) cmp = strcmp(tp1->sequence, tp2->sequence); // alphabetically by probe
+    }
+    return cmp;
 }
 
-static int ptnd_compare_sequence(const void *PT_tprobes_ptr1, const void *PT_tprobes_ptr2, void*) {
-    const PT_tprobes *tprobe1 = (const PT_tprobes*)PT_tprobes_ptr1;
-    const PT_tprobes *tprobe2 = (const PT_tprobes*)PT_tprobes_ptr2;
+static int ptnd_compare_sequence(const void *vtp1, const void *vtp2, void*) {
+    const PT_tprobes *tp1 = (const PT_tprobes*)vtp1;
+    const PT_tprobes *tp2 = (const PT_tprobes*)vtp2;
 
-    return strcmp(tprobe1->sequence, tprobe2->sequence);
+    return strcmp(tp1->sequence, tp2->sequence);
 }
 
 enum ProbeSortMode {

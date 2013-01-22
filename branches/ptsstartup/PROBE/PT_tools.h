@@ -213,6 +213,10 @@ inline void fflush_all() {
     fflush(stdout);
 }
 
+inline int double_cmp(double d1, const double d2) {
+    double d = d1-d2;
+    return d<0 ? -1 : (d>0 ? 1 : 0);
+}
 
 #else
 #error PT_tools.h included twice
