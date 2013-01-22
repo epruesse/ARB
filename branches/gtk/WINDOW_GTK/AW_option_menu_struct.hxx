@@ -16,6 +16,7 @@
 #include "aw_scalar.hxx"
 #include "aw_base.hxx"
 
+
 struct AW_widget_value_pair : virtual Noncopyable {
     template<typename T> explicit AW_widget_value_pair(T t, GtkWidget* w) : value(t), widget(w), next(NULL) {}
     ~AW_widget_value_pair() { aw_assert(!next); } // has to be unlinked from list BEFORE calling dtor

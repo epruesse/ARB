@@ -26,6 +26,7 @@
 #include "aw_help.hxx"
 #include "aw_varUpdateInfo.hxx" 
 #include "AW_option_menu_struct.hxx"
+#include "aw_type_checking.hxx"
 #include <gtk/gtk.h>
 
 #ifndef ARBDB_H
@@ -1081,11 +1082,21 @@ char *AW_window::align_string(const char *label_text, int columns) {
     return result;
 }
 
+/**
+ * Is called whenever the selection of a combobox changes
+ */
+void AW_combo_box_changed(GtkComboBox* box, gpointer user_data) {
+    
+    AW_option_menu_struct *oms = (AW_option_menu_struct*) user_data;
+    aw_assert(NULL != oms);
+
+}
+
 AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name, 
                                                      AW_label tmp_label /*= 0*/, 
                                                      const char */*mnemonic*/ /*= 0*/){
     int x_for_position_of_menu;
-
+    FIXME("mnemonic not implemented");
     if (_at.label_for_inputfield) {
         tmp_label = _at.label_for_inputfield;
     }
@@ -1136,17 +1147,6 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
     }
     else {
         _at.x_for_next_button = _at.saved_x;
-
-        /*
-            optionMenu1 = XtVaCreateManagedWidget("optionMenu1",
-                                                  xmRowColumnWidgetClass,
-                                                  (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
-                                                  XmNrowColumnType, XmMENU_OPTION,
-                                                  XmNsubMenuId, optionMenu,
-                                                  NULL);
-        }
-        args.assign_to_widget(optionMenu1);
-         */
     }
     gtk_box_pack_start(GTK_BOX(hbox), prvt->combo_box, false, false, 0);    
     gtk_fixed_put(prvt->fixed_size_area, GTK_WIDGET(hbox), hbox_x, hbox_y);
@@ -1155,77 +1155,168 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
 
     
     AW_awar *vs = root->awar(awar_name);
-    {
-        AW_option_menu_struct *next =
-            new AW_option_menu_struct(root->number_of_option_menus,
-                                      awar_name,
-                                      vs->variable_type,
-                                      label,
-                                      prvt->combo_box,
-                                      _at.x_for_next_button - 7,
-                                      _at.y_for_next_button,
-                                      _at.correct_for_at_center);
 
-        if (root->option_menu_list) {
-            root->last_option_menu->next = next;
-            root->last_option_menu = root->last_option_menu->next;
-        }
-        else {
-            root->last_option_menu = root->option_menu_list = next;
-        }
+    AW_option_menu_struct *next =
+        new AW_option_menu_struct(root->number_of_option_menus,
+                                  awar_name,
+                                  vs->variable_type,
+                                  label,
+                                  prvt->combo_box,
+                                  _at.x_for_next_button - 7,
+                                  _at.y_for_next_button,
+                                  _at.correct_for_at_center);
+
+    if (root->option_menu_list) {
+        root->last_option_menu->next = next;
+        root->last_option_menu = root->last_option_menu->next;
     }
+    else {
+        root->last_option_menu = root->option_menu_list = next;
+    }
+
 
     root->current_option_menu = root->last_option_menu;
 
     vs->tie_widget((AW_CL)root->current_option_menu, prvt->combo_box, AW_WIDGET_CHOICE_MENU, this);
+    
+    //connect changed signal
+    g_signal_connect(G_OBJECT(prvt->combo_box), "changed", G_CALLBACK(AW_combo_box_changed), (gpointer) next);
+    
+    
     root->make_sensitive(hbox, _at.widget_mask);
 
     return root->current_option_menu;
 }
 
-void AW_window::insert_default_option (AW_label /*choice_label*/, const char */*mnemonic*/, const char */*var_value*/, const char */*name_of_color*/ /*= 0*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::insert_option(AW_label on, const char *mn, const char *vv, const char *noc) {
+        insert_option_internal(on, mn, vv, noc, false); 
 }
 
-void AW_window::insert_default_option (AW_label /*choice_label*/, const char */*mnemonic*/, int /*var_value*/,          const char */*name_of_color*/ /*= 0*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::insert_default_option(AW_label on, const char *mn, const char *vv, const char *noc) { 
+    insert_option_internal(on, mn, vv, noc, true); 
+
+}
+void AW_window::insert_option(AW_label on, const char *mn, int vv, const char *noc) { 
+    insert_option_internal(on, mn, vv, noc, false);
 }
 
-void AW_window::insert_default_option (AW_label /*choice_label*/, const char */*mnemonic*/, float /*var_value*/,        const char */*name_of_color*/ /*= 0*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::insert_default_option(AW_label on, const char *mn, int vv, const char *noc) { 
+    insert_option_internal(on, mn, vv, noc, true); 
+
+}
+void AW_window::insert_option(AW_label on, const char *mn, float vv, const char *noc) { 
+    insert_option_internal(on, mn, vv, noc, false); 
 }
 
-void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*/, const char */*var_value*/, const char */*name_of_color*/ /*= 0*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::insert_default_option(AW_label on, const char *mn, float vv, const char *noc) { 
+    insert_option_internal(on, mn, vv, noc, true); 
 }
 
-void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*/, int /*var_value*/, const char */*name_of_color*/ /*= 0*/){
+
+
+
+void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, const char *var_value, const char *name_of_color, bool default_option) {
+    AW_option_menu_struct *oms = root->current_option_menu;
+    if (oms->variable_type != AW_STRING) {
+        option_type_mismatch("string");
+    }
+    else {
+        FIXME("background color not implemented");
+        gtk_combo_box_append_text(GTK_COMBO_BOX(oms->menu_widget), option_name);
+        
+        FIXME("callback not implemented");
+//        Widget entry = (Widget)_create_option_entry(AW_STRING, option_name, mnemonic, name_of_color);
+//        AW_cb_struct *cbs   = _callback; // user-own callback
+//
+//        // callback for new choice
+//        XtAddCallback(entry, XmNactivateCallback,
+//                      (XtCallbackProc) AW_variable_update_callback,
+//                      (XtPointer) new VarUpdateInfo(this, NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
+//
+//        option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
+//        root->make_sensitive(entry, _at->widget_mask);
+        this->unset_at_commands();
+    }
+    
+    GTK_PARTLY_IMPLEMENTED;
+    
+}
+void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, int var_value, const char *name_of_color, bool default_option) {
     GTK_NOT_IMPLEMENTED;
+    AW_option_menu_struct *oms = root->current_option_menu;
+
+    if (oms->variable_type != AW_INT) {
+        option_type_mismatch("int");
+    }
+    else {
+        FIXME("background color not implemented");
+        gtk_combo_box_append_text(GTK_COMBO_BOX(oms->menu_widget), option_name);
+        
+        FIXME("callback not implemented");
+//        Widget        entry = (Widget)_create_option_entry(AW_INT, option_name, mnemonic, name_of_color);
+//        AW_cb_struct *cbs   = _callback; // user-own callback
+//
+//        // callback for new choice
+//        XtAddCallback(entry, XmNactivateCallback,
+//                      (XtCallbackProc) AW_variable_update_callback,
+//                      (XtPointer) new VarUpdateInfo(this, NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
+//
+//        option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
+//        root->make_sensitive(entry, _at->widget_mask);
+        this->unset_at_commands();
+    }
+}
+void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, float var_value, const char *name_of_color, bool default_option) {
+        GTK_NOT_IMPLEMENTED;
+    AW_option_menu_struct *oms = root->current_option_menu;
+
+    if (oms->variable_type != AW_FLOAT) {
+        option_type_mismatch("float");
+    }
+    else {
+        FIXME("background color not implemented");
+        gtk_combo_box_append_text(GTK_COMBO_BOX(oms->menu_widget), option_name);
+        
+        FIXME("callback not implemented");
+//        Widget        entry = (Widget)_create_option_entry(AW_FLOAT, option_name, mnemonic, name_of_color);
+//        AW_cb_struct *cbs   = _callback; // user-own callback
+//
+//        // callback for new choice
+//        XtAddCallback(entry, XmNactivateCallback,
+//                      (XtCallbackProc) AW_variable_update_callback,
+//                      (XtPointer) new VarUpdateInfo(this, NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
+//
+//        option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
+//        root->make_sensitive(entry, _at->widget_mask);
+        this->unset_at_commands();
+    }
 }
 
-void AW_window::insert_option(AW_label /*choice_label*/, const char */*mnemonic*/, float /*var_value*/, const char */*name_of_color*/ /*= 0*/){
-    GTK_NOT_IMPLEMENTED;
-}
+
+
+
+
+
 
 void AW_window::update_option_menu() {
     GTK_NOT_IMPLEMENTED;
 }
 
 
-void AW_window::refresh_option_menu(AW_option_menu_struct */*oms*/) {
-//    if (get_root()->changer_of_variable != oms->label_widget) {
-//        AW_widget_value_pair *active_choice = oms->first_choice;
-//        {
-//            AW_scalar global_var_value(root->awar(oms->variable_name));
-//            while (active_choice && global_var_value != active_choice->value) {
-//                active_choice = active_choice->next;
-//            }
-//        }
-//
-//        if (!active_choice) active_choice = oms->default_choice;
-//        if (active_choice) XtVaSetValues(oms->label_widget, XmNmenuHistory, active_choice->widget, NULL);
-//    }
-    GTK_NOT_IMPLEMENTED;
+void AW_window::refresh_option_menu(AW_option_menu_struct *oms) {
+    if (root->changer_of_variable != oms->label_widget) {
+        AW_widget_value_pair *active_choice = oms->first_choice;
+        {
+            AW_scalar global_var_value(root->awar(oms->variable_name));
+            while (active_choice && global_var_value != active_choice->value) {
+                active_choice = active_choice->next;
+            }
+        }
+
+        if (!active_choice) active_choice = oms->default_choice;
+        //if (active_choice) XtVaSetValues(oms->label_widget, XmNmenuHistory, active_choice->widget, NULL);
+    }
+  
 }
 
 void AW_window::clear_option_menu(AW_option_menu_struct */*oms*/) {

@@ -222,7 +222,7 @@ void AW_root::init_variables(AW_default database) {
     last_option_menu         = NULL;
     current_option_menu      = NULL;
     number_of_option_menus   = 0;
-    
+    changer_of_variable      = NULL;
     
     FIXME("not sure if aw_fb is still needed");
     
