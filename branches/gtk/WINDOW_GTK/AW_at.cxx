@@ -9,14 +9,20 @@
 //                                                               //
 // ============================================================= //
 
-
+ 
 #include "aw_at.hxx"
 #include "aw_window.hxx"
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 
-
-AW_at::AW_at() {
+AW_at::AW_at(AW_window* pWindow) {
     memset((char*)this, 0, sizeof(AW_at));
 
+    
+    aw_assert(NULL != pWindow);
+    window = pWindow;
+    
     length_of_buttons = 10;
     height_of_buttons = 0;
     shadow_thickness  = 2;
@@ -104,9 +110,33 @@ void AW_at::at_newline(){
     at_x(x_for_newline);
 }
 
-bool AW_at::at_ifdef(const char *id) {
-  GTK_NOT_IMPLEMENTED;
-  return false;
+bool AW_at::at_ifdef(const char *at_id) {
+    
+    AW_xfig *xfig = window->get_xfig_data();
+    
+    if (NULL == xfig)
+    {
+        return false;
+    }
+    
+    char buffer[100];
+
+    #if defined(DEBUG)
+        int printed =
+    #endif // DEBUG
+    sprintf(buffer, "XY:%s", at_id);
+        
+    #if defined(DEBUG)
+        aw_assert(printed<100);
+    #endif // DEBUG
+
+    if (GBS_read_hash(xfig->at_pos_hash, buffer+3)) return true; // "tag"
+    if (GBS_read_hash(xfig->at_pos_hash, buffer+1)) return true; // "Y:tag"
+    if (GBS_read_hash(xfig->at_pos_hash, buffer)) return true; // "XY:tag"
+    buffer[1] = 'X';
+    if (GBS_read_hash(xfig->at_pos_hash, buffer+1)) return true; // "X:tag"
+
+    return false;
 }
 
 void AW_at::at_set_to(bool attach_x_i, bool attach_y_i, int xoff, int yoff) {

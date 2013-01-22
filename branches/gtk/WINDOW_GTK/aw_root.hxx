@@ -72,10 +72,11 @@ class AW_root : virtual Noncopyable {
     GB_HASH     *action_hash; /** < Is used to buffer and replay remote actions. */
     AW_default  application_database; /** < FIXME */
     AW_buttons_struct *button_sens_list; /** < FIXME */
-    bool        no_exit; /* < FIXME no idea what this is used for*/
+    bool        no_exit; /** < FIXME no idea what this is used for*/
     bool help_active; /** < true if the help mode is active, false otherwise */ 
 
 
+    
 //    AW_buttons_struct *button_sens_list;
 
     /**
@@ -123,13 +124,17 @@ public:
     GB_HASH       *hash_table_for_variables;
     bool           variable_set_by_toggle_field;
     int            number_of_toggle_fields;
-    int            number_of_option_menus;
-
+   
 
     bool            disable_callbacks;
     AW_window      *current_modal_window;
     AW_root_cblist *focus_callback_list;
 
+    AW_option_menu_struct *option_menu_list;
+    AW_option_menu_struct *last_option_menu;
+    AW_option_menu_struct *current_option_menu;
+    int number_of_option_menus;
+    
     int  active_windows;
     void window_show();         // a window is set to screen
     void window_hide(AW_window *aww);
@@ -142,6 +147,9 @@ public:
 
     // the real public section:
 
+    
+    
+    
 
     AW_rgb*& getColorTable() {
         return prvt.color_table;
@@ -178,6 +186,8 @@ public:
     void set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2); // any focus callback in any window
     bool is_focus_callback(AW_RCB fcb) const;
 
+    
+    
     /**
      * @return true if help mode is active, false otherwise.
      */

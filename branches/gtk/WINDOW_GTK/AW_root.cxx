@@ -218,6 +218,10 @@ void AW_root::init_variables(AW_default database) {
     help_active              = false;
     selection_list           = NULL;
     last_selection_list      = NULL;
+    option_menu_list         = NULL;
+    last_option_menu         = NULL;
+    current_option_menu      = NULL;
+    number_of_option_menus   = 0;
     
     
     FIXME("not sure if aw_fb is still needed");
@@ -674,3 +678,4 @@ void AW_root::help_cursor()  {
 void AW_root::wait_cursor() {
     GTK_NOT_IMPLEMENTED;
 }
+

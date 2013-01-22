@@ -5,7 +5,16 @@
 #include "aw_base.hxx"
 #endif
 
+
+class AW_window;
+
+/**
+ * A cursor that describes where and how gui elements should be placed 
+ * in a window.
+ */
 class AW_at {
+private:
+    AW_window* window; /** < The window this cursor belongs to */
 public:
     short shadow_thickness;
     short length_of_buttons;
@@ -51,7 +60,7 @@ public:
     bool attach_ly;
     bool attach_any;
 
-    AW_at();
+    AW_at(AW_window* pWindow);
     void at(int x, int y);
     void at_x(int x);
     void at_y(int y);

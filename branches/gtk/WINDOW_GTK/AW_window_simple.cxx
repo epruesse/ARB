@@ -24,7 +24,9 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
     gtk_window_set_resizable(prvt->window, true);
     set_window_title(windowname);
 
+    
     prvt->areas.reserve(AW_MAX_AREA);
+    prvt->areas[0] = NULL;
     prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->window), GTK_WIDGET(prvt->window));
 
     create_devices();

@@ -8,8 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#ifndef AW_XFIG_HXX
-#define AW_XFIG_HXX
+#pragma once
 
 #ifndef AW_BASE_HXX
 #include "aw_base.hxx"
@@ -102,7 +101,3 @@ lines::
 x y x y 9999 9999
 
 */
-
-#else
-#error aw_xfig.hxx included twice
-#endif // AW_XFIG_HXX

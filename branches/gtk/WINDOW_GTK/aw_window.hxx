@@ -26,6 +26,7 @@
 #include "devices/aw_device_print.hxx" 
 #include "devices/aw_device_click.hxx"
 #include "devices/aw_device_size.hxx"
+#include "aw_xfig.hxx"
 
 class AW_window;
 class AW_xfig;
@@ -328,6 +329,10 @@ public:
     void allow_delete_window(bool allow_close);
     void on_hide(aw_hide_cb call_on_hide);
 
+    /**
+     * @return The current xfig data or NULL.
+     */
+    AW_xfig* get_xfig_data();
 
     void show_modal();
     void set_window_title_intern(char *title);
