@@ -714,7 +714,7 @@ else
 		CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)	
 endif	
 
-MAKEDEPENDFLAGS := -- $(cflags) -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
+MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
 ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # Some code in ARB depends on the location of the vtable pointer
