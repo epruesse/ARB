@@ -21,7 +21,7 @@ enum Servertype {
     PTPAN
 };
 
-GB_ERROR prepare_ptserver_database(GBDATA *gb_main, Servertype type);
+GB_ERROR cleanup_ptserver_database(GBDATA *gb_main, Servertype type);
 
 #else
 #error ptclean.h included twice

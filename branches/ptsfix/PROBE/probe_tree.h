@@ -24,128 +24,128 @@
 #include "probe.h"
 #endif
 
-#define PT_CHAIN_END          0xff
-#define PT_CHAIN_NTERM        250
-#define PT_SHORT_SIZE         0xffff
-#define PT_BLOCK_SIZE         0x800
-#define PT_INIT_CHAIN_SIZE    20
+#define PT_CHAIN_NTERM     250
+#define PT_SHORT_SIZE      0xffff
+#define PT_INIT_CHAIN_SIZE 20
 
 struct pt_global {
-    PT_NODE_TYPE flag_2_type[256];
-    char         count_bits[PT_BASES+1][256]; // returns how many bits are set (e.g. PT_count_bits[3][n] is the number of the 3 lsb bits)
+    char count_bits[PT_BASES+1][256];         // returns how many bits are set (e.g. PT_count_bits[3][n] is the number of the 3 lsb bits)
+
+    void init();
 };
 
 extern pt_global PT_GLOBAL;
 
-#if 0
-/*
-
-/ ****************
-    Their are 3 stages of data format:
-        1st:        Creation of the tree
-        2nd:        find equal or nearly equal subtrees
-        3rd:        minimum sized tree
-
-    The generic pointer (father):
-        1st create:     Pointer to the father
-        1st save:
-        2nd load        rel ptr of 'this' in the output file
-                    (==0 indicates not saved)
-
-**************** /
-/ * data format: * /
-
-/ ********************* Written object *********************** /
-    byte    =32         bit[7] = bit[6] = 0; bit[5] = 1
-                    bit[4] free
-                    bit[0-3] size of former entry -4
-                    if ==0 then size follows
-    PT_PNTR     rel start of the real object       // actually it's a pointer to the objects father
-    [int        size]       if bit[0-3] == 0;
-
-/ ********************* tip / leaf (7-13   +4)  *********************** /
-    byte    <32         bit[7] = bit[6] = bit[5] = 0
-                        bit[3-4] free
-    [PT_PNTR    father]     if main->mode
-    short/int   name        int if bit[0]
-    short/int   rel pos     int if bit[1]
-    short/int   abs pos     int if bit[2]
-
-/ ********************* inner node (1 + 4*[1-6] +4) (stage 1 + 2) *********************** /
-    byte    >128        bit[7] = 1  bit[6] = 0
-    [PT_PNTR father]        if main->mode (STAGE1)
-    [PT_PNTR son0]          if bit[0] 
-    ...                     ...
-    [PT_PNTR son5]          if bit[5] 
-
-/ ********************* inner node (3-22    +4) (stage 3 only) *********************** /
-    byte                bit[7] = 1  bit[6] = 0
-    byte2               bit2[7] = 0  bit2[6] = 0  -->  short/char
-                        bit2[7] = 1  bit2[6] = 0  -->  int/short
-                        bit2[7] = 0  bit2[6] = 1  -->  long/int         // atm only if ARB_64 is set
-                        bit2[7] = 1  bit2[6] = 1  -->  undefined        // atm only if ARB_64 is set
-    [char/short/int/long son0]  if bit[0]   left (bigger) type if bit2[0] else right (smaller) type
-    [char/short/int/long son1]  if bit[1]   left (bigger) type if bit2[1] else right (smaller) type
-    ...
-    [char/short/int/long son5]  if bit[5]   left (bigger) type if bit2[5] else right (smaller) type
-
-    example1:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
-                byte2 = 0x05    --> son0 and son2 are shorts; son3 is a char
-
-    example2:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
-                byte2 = 0x81    --> son0 is a int; son2 and son3 are shorts
-
-// example3 atm only if ARB_64 is set
-    example3:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
-                byte2 = 0x44    --> son2 is a long; son0 and son3 are ints
-
-/ ********************* inner nodesingle (1)    (stage3 only) *********************** /
-    byte                bit[7] = 1  bit[6] = 1
-                    bit[0-2]    base
-                    bit[3-5]    offset 0->1 1->3 2->4 3->5 ....
-
-
-/ ********************* chain (8-n +4) stage 1 *********************** /
-    byte =64/65         bit[7] = 0, bit[6] = 1  bit[5] = 0
-    [PT_PNTR    father]     if main->mode
-    short/int   ref abs pos int if bit[0]
-    PT_PNTR     firstelem
-
-    / **** chain elems *** /
-        PT_PNTR     next element
-        short/int   name
-                if bit[15] then integer
-                -1 not allowed
-        short/int   rel pos
-                if bit[15] then integer
-        short/int   apos short if bit[15] = 0]
-]
-
-
-/ ********************* chain (8-n +4) stage 2/3 *********************** /
-
-    byte =64/65         bit[7] = 0, bit[6] = 1  bit[5] = 0
-    [PT_PNTR    father]     if main->mode
-    short/int   ref abs pos int if bit[0]
-[   char/short/int      rel name [ to last name eg. rel names 10 30 20 50 -> abs names = 10 40 60 110
-                if bit[7] then short
-                if bit[7] and bit[6] then integer
-                -1 not allowed
-    short/int       rel pos
-                if bit[15] -> the next bytes are the apos else use ref_abs_pos
-                if bit[14] -> this(==rel_pos) is integer
-    [short/int]     [apos short if bit[15] = 0]
-]
-    char -1         end flag
-
-only few functions can be used, when the tree is reloaded (stage 3):
-    PT_read_type
-    PT_read_son
-    PT_read_xpos
-    PT_read_name
-    PT_forwhole_chain
-*/
-#endif
+/* --------------------------------------------------------------------------------
+ *
+ *  Their are 3 stages of data format:
+ *      1st:        Creation of the tree
+ *      2nd:        Tree saved to disk
+ *
+ *  In stage 1 every element has a father pointer directly behind
+ *  the 1st byte (flags). Exception: Nodes of type PT1_SAVED.
+ *
+ * --------------------
+ * Data format:
+ *
+ * for 'compactNAT' see PT_write_compact_nat / PT_read_compact_nat
+ *
+ * ---------- Written object (PT1_SAVED)
+ *
+ *  flags       bit[7]   = 0
+ *              bit[6]   = 0
+ *              bit[5]   = 1
+ *              bit[4]   = unused
+ *              bit[3-0] = size of former entry-4 (if ==0 then size follows)
+ *  PT_PNTR     rel start of the object in the saved index
+ *  [int        size]      (if flagsbit[3-0] == 0)
+ *
+ * ---------- leaf (PT1_LEAF and PT2_LEAF)
+ *
+ *  byte        flags       bit[7]   = 0
+ *                          bit[6]   = 0
+ *                          bit[5]   = 0
+ *                          bit[4-3] = unused
+ *                          bit[2-0] = used to indicate sizes of entries below
+ *  [PT_PNTR    father]     only if type is PT1_LEAF
+ *  short/int   name        int if bit[0]
+ *  short/int   relpos      int if bit[1]
+ *  short/int   abspos      int if bit[2]
+ *
+ * ---------- inner node (PT1_NODE)
+ *
+ *  byte        flags       bit[7]   = 1
+ *                          bit[6]   = 0
+ *                          bit[5-0] = indicate existing sons
+ *  PT_PNTR     father
+ *  [PT_PNTR son0]          if bit[0]
+ *  ...                     ...
+ *  [PT_PNTR son5]          if bit[5]
+ *
+ * ---------- inner node with more than one child (PT2_NODE)
+ *
+ *  byte        flags       bit[7]   = 1
+ *                          bit[6]   = 0
+ *                          bit[5-0] = indicate existing sons
+ *  byte2                   bit2[7] = 0  bit2[6] = 0  -->  short/char
+ *                          bit2[7] = 1  bit2[6] = 0  -->  int/short
+ *                          bit2[7] = 0  bit2[6] = 1  -->  long/int         (only if ARB_64 is set)
+ *                          bit2[7] = 1  bit2[6] = 1  -->  undefined        (only if ARB_64 is set)
+ *
+ *  [char/short/int/long son0]  if bit[0]; uses left (bigger) type if bit2[0] else right (smaller) type
+ *  [char/short/int/long son1]  if bit[1]; uses left (bigger) type if bit2[1] else right (smaller) type
+ *  ...
+ *  [char/short/int/long son5]  if bit[5]; uses left (bigger) type if bit2[5] else right (smaller) type
+ *
+ *  example1:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
+ *              byte2 = 0x05    --> son0 and son2 are shorts; son3 is a char
+ *
+ *  example2:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
+ *              byte2 = 0x81    --> son0 is a int; son2 and son3 are shorts
+ *
+ *  [example3 atm only if ARB_64 is set]
+ *  example3:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
+ *              byte2 = 0x44    --> son2 is a long; son0 and son3 are ints
+ *
+ * ---------- inner node with single child (PT2_NODE)
+ *
+ *  byte        flags       bit[7]   = 1
+ *                          bit[6]   = 1
+ *                          bit[5-3] = offset 0->1 1->3 2->4 3->5 ....
+ *                          bit[2-0] = base
+ *
+ * ---------- chain (PT1_CHAIN)
+ *
+ *  byte        flags       bit[7]   = 0
+ *                          bit[6]   = 1
+ *                          bit[5]   = 0
+ *                          bit[4]   = uses PT_short_chain_header (see SHORT_CHAIN_HEADER_FLAG_BIT)
+ *                          bit[3]   = unused
+ *                          bit[2-0] = entries in PT_short_chain_header, see SHORT_CHAIN_HEADER_SIZE_MASK (unused otherwise)
+ *  PT_PNTR     father
+ *  PT_short_chain_header or PT_long_chain_header
+ *
+ *  if PT_long_chain_header is used, the memory pointed-to by its 'entrymem'
+ *  contains for each chain element:
+ *
+ *  compactNAT  namediff    (1 bit reserved for 'hasrefapos')
+ *  [compactNAT abspos]     (if 'hasrefapos'; otherwise entry has refabspos as in PT_long_chain_header)
+ *
+ * ---------- chain (PT2_CHAIN)
+ *
+ *  byte        flags       bit[7]   = 0
+ *                          bit[6]   = 1
+ *                          bit[5-1] = unused
+ *                          bit[0]   = flag for refabspos
+ *  short/int   refabspos   (int if bit[0])
+ *  compactNAT  chainsize
+ *
+ *  for each chain element:
+ *
+ *  compactNAT  namediff    (relative to previous name in chain; first bit reserved : 1 -> has refabspos )
+ *  [compactNAT abspos]     (only if not has refabspos)
+ *
+ */
 
 #define IS_SINGLE_BRANCH_NODE 0x40
 #ifdef ARB_64
@@ -158,175 +158,179 @@ only few functions can be used, when the tree is reloaded (stage 3):
 // -----------------------------------------------
 //      Get the size of entries (stage 1) only
 
-#define PT_EMPTY_LEAF_SIZE       (1+sizeof(PT_PNTR)+6) // tag father name rel apos
-#define PT_LEAF_SIZE(leaf)       (1+sizeof(PT_PNTR)+6+2*PT_GLOBAL.count_bits[3][leaf->flags])
-#define PT_SHORT_CHAIN_HEAD_SIZE (1+sizeof(PT_PNTR)+2+sizeof(PT_PNTR)) // tag father apos first_elem
-#define PT_LONG_CHAIN_HEAD_SIZE  (PT_SHORT_CHAIN_HEAD_SIZE+2) // apos uses 4 byte here
-#define PT_EMPTY_NODE_SIZE       (1+sizeof(PT_PNTR))   // tag father
+#define PT1_BASE_SIZE sizeof(POS_TREE1) // flag + father
 
-#define PT_MIN_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(short)) // depends on PT_WRITE_NAT
-#define PT_MAX_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(int))
+#define PT1_EMPTY_LEAF_SIZE       (PT1_BASE_SIZE+6)                 // name rel apos
+#define PT1_LEAF_SIZE(leaf)       (PT1_BASE_SIZE+6+2*PT_GLOBAL.count_bits[3][(leaf)->flags])
+#define PT1_CHAIN_SHORT_HEAD_SIZE (PT1_BASE_SIZE+2+sizeof(PT_PNTR)) // apos first_elem
+#define PT1_CHAIN_LONG_HEAD_SIZE  (PT1_CHAIN_SHORT_HEAD_SIZE+2)     // apos uses 4 byte here
+#define PT1_EMPTY_NODE_SIZE       PT1_BASE_SIZE
 
-#define PT_NODE_WITHSONS_SIZE(sons) (PT_EMPTY_NODE_SIZE+sizeof(PT_PNTR)*(sons))
+#define PT1_MIN_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*sizeof(char)) // depends on PT_write_compact_nat
+#define PT1_MAX_CHAIN_ENTRY_SIZE  (sizeof(PT_PNTR)+3*(sizeof(int)+1))
+
+#define PT1_NODE_WITHSONS_SIZE(sons) (PT1_EMPTY_NODE_SIZE+sizeof(PT_PNTR)*(sons))
 
 #define PT_NODE_SON_COUNT(node) (PT_GLOBAL.count_bits[PT_BASES][node->flags])
-#define PT_NODE_SIZE(node)      PT_NODE_WITHSONS_SIZE(PT_NODE_SON_COUNT(node))
+#define PT1_NODE_SIZE(node)     PT1_NODE_WITHSONS_SIZE(PT_NODE_SON_COUNT(node))
 
-// ----------------------------
-//      Read and write type
+// -----------------
+//      POS TREE
 
-#define FLAG_TYPE_BITS 2
-#define FLAG_FREE_BITS (8-FLAG_TYPE_BITS)
+#define FLAG_TYPE_BITS      2
+#define FLAG_FREE_BITS      (8-FLAG_TYPE_BITS)
+#define FLAG_FREE_BITS_MASK ((1<<FLAG_TYPE_BITS)-1)
+#define FLAG_TYPE_BITS_MASK (0xFF^FLAG_FREE_BITS_MASK)
 
-inline int checked_lower_bits(int bits) {
-    pt_assert(bits >= 0 && bits<(1<<FLAG_FREE_BITS));
-    return bits;
-}
+enum PT1_TYPE {
+    PT1_LEAF  = 0,
+    PT1_CHAIN = 1,
+    PT1_NODE  = 2,
+    PT1_SAVED = 3,
+    PT1_UNDEF = 4,
+};
 
-#define PT_GET_TYPE(pt)            (PT_GLOBAL.flag_2_type[(pt)->flags])
-#define PT_SET_TYPE(pt,type,lbits) ((pt)->flags = ((type)<<FLAG_FREE_BITS)+checked_lower_bits(lbits))
+enum PT2_TYPE {
+    PT2_LEAF  = PT1_LEAF,
+    PT2_CHAIN = PT1_CHAIN,
+    PT2_NODE  = PT1_NODE,
+};
 
-inline const char *PT_READ_CHAIN_ENTRY_stage_1(const char *entry, int *name, int *apos, int *rpos, int *entry_size) {
-    pt_assert_stage(STAGE1);
+struct POS_TREE1 { // pos-tree (stage 1)
+    uchar      flags;
+    POS_TREE1 *father;
 
-    if (entry) {
-        const char *rp = entry + sizeof(PT_PNTR);
+    typedef PT1_TYPE TYPE;
 
-        PT_READ_NAT(rp, *name);
-        PT_READ_NAT(rp, *rpos);
-        PT_READ_NAT(rp, *apos);
+    static TYPE flag_2_type[256];
+    static void init_static();
 
-        *entry_size = rp-entry;
+    const char *udata() const { return ((const char*)this)+sizeof(*this); }
+    char *udata() { return ((char*)this)+sizeof(*this); }
 
-        return PT_read_pointer<char>(entry);
+    POS_TREE1 *get_father() const {
+        pt_assert(!is_saved());
+        return father;
     }
-
-    *name = -1;
-    return NULL;
-}
-
-inline const char *PT_READ_CHAIN_ENTRY_stage_3(const char *ptr, int mainapos, int *name, int *apos, int *rpos) {
-    // Caution: 'name' has to be initialized before first call and shall not be modified between calls
-
-    pt_assert_stage(STAGE3);
-
-    *apos = 0;
-    *rpos = 0;
-
-    unsigned char *rcep = (unsigned char*)ptr;
-    unsigned int   rcei = (*rcep);
-
-    if (rcei==PT_CHAIN_END) {
-        *name = -1;
-        ptr++;
+    void set_father(POS_TREE1 *new_father) {
+        pt_assert(!new_father || new_father->is_node());
+        father = new_father;
     }
-    else {
-        if (rcei&0x80) {
-            if (rcei&0x40) {
-                rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
-            }
-            else {
-                rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
-            }
+    void clear_fathers();
+
+    void set_type(TYPE type) {
+        // sets user bits to zero
+        pt_assert(type != PT1_UNDEF && type != PT1_SAVED); // does not work for saved nodes (done manually)
+        flags = type<<FLAG_FREE_BITS;
+    }
+    TYPE get_type() const { return flag_2_type[flags]; }
+
+    bool is_node() const { return get_type() == PT1_NODE; }
+    bool is_leaf() const { return get_type() == PT1_LEAF; }
+    bool is_chain() const { return get_type() == PT1_CHAIN; }
+    bool is_saved() const { return get_type() == PT1_SAVED; }
+} __attribute__((packed));
+
+struct POS_TREE2 { // pos-tree (stage 2)
+    uchar flags;
+
+    typedef PT2_TYPE TYPE;
+
+    static TYPE flag_2_type[256];
+    static void init_static();
+
+    const char *udata() const { return ((const char*)this)+sizeof(*this); }
+    char *udata() { return ((char*)this)+sizeof(*this); }
+
+    void set_type(TYPE type) { flags = type<<FLAG_FREE_BITS; } // sets user bits to zero
+    TYPE get_type() const { return flag_2_type[flags]; }
+
+    bool is_node() const { return get_type() == PT2_NODE; }
+    bool is_leaf() const { return get_type() == PT2_LEAF; }
+    bool is_chain() const { return get_type() == PT2_CHAIN; }
+} __attribute__((packed));
+
+
+#if defined(ARB_64)
+#define SHORT_CHAIN_HEADER_ELEMS 4
+#else // !defined(ARB_64)
+#define SHORT_CHAIN_HEADER_ELEMS 3
+#endif
+
+#define SHORT_CHAIN_HEADER_FLAG_BIT  (1<<4)
+#define SHORT_CHAIN_HEADER_SIZE_MASK 0x07
+
+COMPILE_ASSERT(SHORT_CHAIN_HEADER_SIZE_MASK >= SHORT_CHAIN_HEADER_ELEMS);
+COMPILE_ASSERT((SHORT_CHAIN_HEADER_SIZE_MASK & SHORT_CHAIN_HEADER_FLAG_BIT) == 0);
+
+struct PT_short_chain_header {
+    unsigned name[SHORT_CHAIN_HEADER_ELEMS];
+    unsigned abspos[SHORT_CHAIN_HEADER_ELEMS];
+};
+
+struct PT_long_chain_header {
+    unsigned  entries;
+    unsigned  memsize;
+    unsigned  memused;
+    unsigned  refabspos;
+    unsigned  lastname;
+    char     *entrymem;
+};
+
+COMPILE_ASSERT(sizeof(PT_long_chain_header) >= sizeof(PT_short_chain_header)); // SHORT_CHAIN_HEADER_ELEMS is too big
+COMPILE_ASSERT((sizeof(PT_short_chain_header)/SHORT_CHAIN_HEADER_ELEMS*(SHORT_CHAIN_HEADER_ELEMS+1)) > sizeof(PT_long_chain_header)); // SHORT_CHAIN_HEADER_ELEMS is too small
+
+inline size_t PT_node_size(POS_TREE2 *node) { // @@@ become member
+    size_t size = 1; // flags
+    if ((node->flags & IS_SINGLE_BRANCH_NODE) == 0) {
+        UINT sec = (uchar)*node->udata(); // read second byte for charshort/shortlong info
+        ++size;
+
+        long i = PT_GLOBAL.count_bits[PT_BASES][node->flags] + PT_GLOBAL.count_bits[PT_BASES][sec];
+#ifdef ARB_64
+        if (sec & LONG_SONS) {
+            size += 4*i;
+        }
+        else if (sec & INT_SONS) {
+            size += 2*i;
         }
         else {
-            rcei &= 0x7f; rcep++;
+            size += i;
         }
-        *name += rcei;
-        rcei   = (*rcep);
-
-        bool isapos = rcei&0x80;
-
-        if (rcei&0x40) {
-            rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x3fffffff;
+#else
+        if (sec & LONG_SONS) {
+            size += 2*i;
         }
         else {
-            rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x3fff;
+            size += i;
         }
-        *rpos = (int)rcei;
-        if (isapos) {
-            rcei = (*rcep);
-            if (rcei&0x80) {
-                rcei = PT_read_int(rcep); rcep+=4; rcei &= 0x7fffffff;
-            }
-            else {
-                rcei = PT_read_short(rcep); rcep+=2; rcei &= 0x7fff;
-            }
-            *apos = (int)rcei;
-        }
-        else {
-            *apos = (int)mainapos;
-        }
-        ptr = (char *)rcep;
+#endif
     }
-
-    return ptr;
+    return size;
 }
 
-inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, int name, const int apos, const int rpos) { // stage 1
-    pt_assert_stage(STAGE1);
-    unsigned char *wcep = (unsigned char *)ptr;
-    if (name < 0x7f) {      // write the name
-        *(wcep++) = name;
-    }
-    else if (name <0x3fff) {
-        name |= 0x8000;
-        PT_write_short(wcep, name);
-        wcep += 2;
-    }
-    else {
-        name |= 0xc0000000;
-        PT_write_int(wcep, name);
-        wcep += 4;
-    }
+template <typename PT> inline PT *PT_read_son(PT *node, PT_base base); // @@@ become member
 
-    int isapos = (apos == mainapos) ? 0 : 0x80;
-    if (rpos < 0x3fff) {        // write the rpos
-        // 0x7fff, mit der rpos vorher verglichen wurde war zu gross
-        PT_write_short(wcep, rpos);
-        *wcep |= isapos;
-        wcep += 2;
-    }
-    else {
-        PT_write_int(wcep, rpos);
-        *wcep |= 0x40+isapos;
-        wcep += 4;
-    }
+template <> inline POS_TREE2 *PT_read_son<POS_TREE2>(POS_TREE2 *node, PT_base base) { // stage 2 (no father)
+    pt_assert_stage(STAGE2);
+    pt_assert(node->is_node());
 
-    if (isapos) {           // write the apos
-        if (apos < 0x7fff) {
-            PT_write_short(wcep, apos);
-            wcep += 2;
-        }
-        else {
-            PT_write_int(wcep, apos);
-            *wcep |= 0x80;
-            wcep += 4;
-        }
-    }
-    return (char *)wcep;
-}
-
-inline const char *node_data_start(const POS_TREE *node) { return &node->data + psg.ptdata->get_offset(); }
-inline char *node_data_start(POS_TREE *node) { return const_cast<char*>(node_data_start(const_cast<const POS_TREE*>(node))); }
-
-inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_base base) { // stage 3 (no father)
-    pt_assert_stage(STAGE3);
-    
     if (node->flags & IS_SINGLE_BRANCH_NODE) {
-        if (base != (node->flags & 0x7)) return NULL;  // no son
-        long i = (node->flags >> 3)&0x7;         // this son
-        if (!i) i = 1; else i+=2;           // offset mapping
+        if (base != (node->flags & 0x7)) return NULL; // no son
+        long i    = (node->flags >> 3)&0x7;      // this son
+        if (!i) i = 1; else i+=2;                // offset mapping
         pt_assert(i >= 0);
-        return (POS_TREE *)(((char *)node)-i);
+        return (POS_TREE2 *)(((char *)node)-i);
     }
     if (!((1<<base) & node->flags)) { // bit not set
         return NULL;
     }
 
-    UINT sec  = (uchar)node->data;   // read second byte for charshort/shortlong info
+    UINT sec  = (uchar)*node->udata();   // read second byte for charshort/shortlong info
     long i    = PT_GLOBAL.count_bits[base][node->flags];
     i        += PT_GLOBAL.count_bits[base][sec];
+
+    char *sons = node->udata()+1;
 
 #ifdef ARB_64
     if (sec & LONG_SONS) {
@@ -342,10 +346,10 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_base base) { // stage 3 
 #endif
             UINT offset = 4 * i;
             if ((1<<base) & sec) {              // long
-                i = PT_read_long(&node->data+1+offset);
+                i = PT_read_long(sons+offset);
             }
             else {                                              // int
-                i = PT_read_int(&node->data+1+offset);
+                i = PT_read_int(sons+offset);
             }
         }
 
@@ -354,19 +358,19 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_base base) { // stage 3 
         if (sec & INT_SONS) {                                   // int/short
             UINT offset = i+i;
             if ((1<<base) & sec) {                              // int
-                i = PT_read_int(&node->data+1+offset);
+                i = PT_read_int(sons+offset);
             }
             else {                                              // short
-                i = PT_read_short(&node->data+1+offset);
+                i = PT_read_short(sons+offset);
             }
         }
         else {                                                  // short/char
             UINT offset = i;
             if ((1<<base) & sec) {                              // short
-                i = PT_read_short(&node->data+1+offset);
+                i = PT_read_short(sons+offset);
             }
             else {                                              // char
-                i = PT_read_char(&node->data+1+offset);
+                i = PT_read_char(sons+offset);
             }
         }
     }
@@ -374,118 +378,230 @@ inline POS_TREE *PT_read_son_stage_3(POS_TREE *node, PT_base base) { // stage 3 
     if (sec & LONG_SONS) {
         UINT offset = i+i;
         if ((1<<base) & sec) {
-            i = PT_read_int(&node->data+1+offset);
+            i = PT_read_int(sons+offset);
         }
         else {
-            i = PT_read_short(&node->data+1+offset);
+            i = PT_read_short(sons+offset);
         }
     }
     else {
         UINT offset = i;
         if ((1<<base) & sec) {
-            i = PT_read_short(&node->data+1+offset);
+            i = PT_read_short(sons+offset);
         }
         else {
-            i = PT_read_char(&node->data+1+offset);
+            i = PT_read_char(sons+offset);
         }
     }
 #endif
     pt_assert(i >= 0);
-    return (POS_TREE *)(((char*)node)-i);
+    return (POS_TREE2 *)(((char*)node)-i);
 }
 
-inline POS_TREE *PT_read_son_stage_1(POS_TREE *node, PT_base base) {
+template<> inline POS_TREE1 *PT_read_son<POS_TREE1>(POS_TREE1 *node, PT_base base) {
     pt_assert_stage(STAGE1);
     if (!((1<<base) & node->flags)) return NULL;   // bit not set
     base = (PT_base)PT_GLOBAL.count_bits[base][node->flags];
-    return PT_read_pointer<POS_TREE>(node_data_start(node) + sizeof(PT_PNTR)*base);
+    return PT_read_pointer<POS_TREE1>(node->udata() + sizeof(PT_PNTR)*base);
 }
 
-inline POS_TREE *PT_read_son(POS_TREE *node, PT_base base) {
-    PT_data *ptdata = psg.ptdata;
-    if (ptdata->get_stage() == STAGE3) {
-        return PT_read_son_stage_3(node, base);
-    }
-    else {
-        return PT_read_son_stage_1(node, base);
-    }
+inline size_t PT_leaf_size(POS_TREE2 *node) { // @@@ become member
+    size_t size = 1;  // flags
+    size += (PT_GLOBAL.count_bits[PT_BASES][node->flags]+3)*2;
+    return size;
 }
 
-inline PT_NODE_TYPE PT_read_type(const POS_TREE *node) {
-    return (PT_NODE_TYPE)PT_GET_TYPE(node);
-}
+// --------------------------------------
+//      Different types of locations
 
-inline POS_TREE *PT_read_father(POS_TREE *node) {
-    pt_assert_stage(STAGE1); // in STAGE3 POS_TREE has no father
-    pt_assert(PT_read_type(node) != PT_NT_SAVED); // saved nodes do not know their father
-
-    POS_TREE *father = PT_read_pointer<POS_TREE>(&node->data);
-#if defined(ASSERTION_USED)
-    if (father) pt_assert(PT_read_type(father) == PT_NT_NODE);
-#endif
-    return father;
-}
-
-
-struct DataLoc {
-    int name; // index into psg.data[], aka as species id
-    int apos;
-    int rpos; // position in data
-
-#if defined(ASSERTION_USED)
-    bool has_valid_name() const { return name >= 0 && name < psg.data_count; }
-#endif
-
-    void init_from_leaf(POS_TREE *node) {
-        pt_assert(PT_read_type(node) == PT_NT_LEAF);
-        const char *data = node_data_start(node);
-        if (node->flags&1) { name = PT_read_int(data); data += 4; } else { name = PT_read_short(data); data += 2; }
-        if (node->flags&2) { rpos = PT_read_int(data); data += 4; } else { rpos = PT_read_short(data); data += 2; }
-        if (node->flags&4) { apos = PT_read_int(data); data += 4; } else { apos = PT_read_short(data); /*data += 2;*/ }
-
+class AbsLoc {
+    int name; // index into psg.data[], aka species id
+    int apos; // absolute position in alignment
+protected:
+    void set_abs_pos(int abs_pos) { apos = abs_pos; }
+    void set_name(int name_) {
+        pt_assert(name == -1); // only allowed if instance has been default constructed
+        name = name_;
         pt_assert(has_valid_name());
-        pt_assert(apos >= 0);
-        pt_assert(rpos >= 0);
     }
+public:
+    AbsLoc() : name(-1), apos(0) {}
+    AbsLoc(int name_, int abs_pos) : name(name_), apos(abs_pos) {}
+    virtual ~AbsLoc() {}
 
-    explicit DataLoc() : name(0), apos(0), rpos(0) {}
-    DataLoc(int name_, int apos_, int rpos_) : name(name_), apos(apos_), rpos(rpos_) {}
-    DataLoc(POS_TREE *pt) { init_from_leaf(pt); }
+    bool has_valid_name() const { return name >= 0 && name < psg.data_count; }
+
+    int get_name() const { return name; }
+    int get_abs_pos() const { return apos; }
 
     const probe_input_data& get_pid() const { pt_assert(has_valid_name()); return psg.data[name]; }
-    PT_base operator[](int offset) const { return PT_base(get_pid().base_at(rpos+offset)); }
 
-    int restlength() const { return get_pid().get_size()-rpos; }
-    bool is_shorther_than(int offset) const { return offset >= restlength(); }
+    bool is_equal(const AbsLoc& other) const { return apos == other.apos && name == other.name; }
 
 #if defined(DEBUG)
     void dump(FILE *fp) const {
-        fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n", apos, rpos, name, psg.data[name].get_name());
+        fprintf(fp, "          apos=%6i  name=%6i='%s'\n",
+                get_abs_pos(), get_name(), has_valid_name() ? get_pid().get_shortname() : "<invalid>");
     }
 #endif
 };
 
-inline bool operator == (const DataLoc& loc1, const DataLoc& loc2) {
-    return loc1.name == loc2.name && loc1.apos == loc2.apos && loc1.rpos == loc2.rpos;
+class DataLoc : public AbsLoc {
+    int rpos; // relative position in data
+
+public:
+    bool has_valid_positions() const { return get_abs_pos() >= 0 && rpos >= 0 && get_abs_pos() >= rpos; }
+
+    DataLoc() : rpos(0) {}
+    DataLoc(int name_, int apos_, int rpos_) : AbsLoc(name_, apos_), rpos(rpos_) { pt_assert(has_valid_positions()); }
+    template <typename PT> explicit DataLoc(const PT *node) {
+        pt_assert(node->is_leaf());
+        const char *data = node->udata();
+        if (node->flags&1) { set_name(PT_read_int(data)); data += 4; } else { set_name(PT_read_short(data)); data += 2; }
+        if (node->flags&2) { rpos = PT_read_int(data); data += 4; } else { rpos = PT_read_short(data); data += 2; }
+        if (node->flags&4) { set_abs_pos(PT_read_int(data)); data += 4; } else { set_abs_pos(PT_read_short(data)); /*data += 2;*/ }
+
+        pt_assert(has_valid_positions());
+    }
+    explicit DataLoc(const AbsLoc& aloc) // expensive!
+        : AbsLoc(aloc),
+          rpos(get_pid().calc_relpos(get_abs_pos()))
+    {
+#if 0 // @@@ fix expensive conversions later
+        const DataLoc *dloc = dynamic_cast<const DataLoc*>(&aloc);
+        if (dloc) {
+            GBK_dump_backtrace(stderr, "expensive conversion");
+            // pt_assert(!dloc); // expensive conversion (DataLoc->AbsLoc->DataLoc)
+        }
+#endif
+    }
+
+    int get_rel_pos() const { return rpos; }
+
+    void set_position(int abs_pos, int rel_pos) {
+        set_abs_pos(abs_pos);
+        rpos = rel_pos;
+        pt_assert(has_valid_positions());
+    }
+
+    int restlength() const { return get_pid().get_size()-rpos; }
+    bool is_shorther_than(int offset) const { return offset >= restlength(); }
+
+    bool is_equal(const DataLoc& other) const { return rpos == other.rpos && AbsLoc::is_equal(other); }
+
+#if defined(DEBUG)
+    void dump(FILE *fp) const {
+        fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n",
+                get_abs_pos(), rpos, get_name(), has_valid_name() ? get_pid().get_shortname() : "<invalid>");
+    }
+#endif
+};
+
+inline bool operator==(const AbsLoc& loc1, const AbsLoc& loc2) { return loc1.is_equal(loc2); }
+
+// -------------------------
+//      ReadableDataLoc
+
+class ReadableDataLoc : public DataLoc {
+    const probe_input_data& pid;
+    mutable SmartCharPtr    seq;
+    const char&             qseq;
+
+public:
+    ReadableDataLoc(int name_, int apos_, int rpos_)
+        : DataLoc(name_, apos_, rpos_),
+          pid(DataLoc::get_pid()),
+          seq(pid.get_dataPtr()),
+          qseq(*seq)
+    {}
+    explicit ReadableDataLoc(const DataLoc& loc)
+        : DataLoc(loc),
+          pid(DataLoc::get_pid()),
+          seq(pid.get_dataPtr()),
+          qseq(*seq)
+    {}
+    template <typename PT> explicit ReadableDataLoc(const PT *node)
+        : DataLoc(node),
+          pid(DataLoc::get_pid()),
+          seq(pid.get_dataPtr()),
+          qseq(*seq)
+    {}
+
+    const probe_input_data& get_pid() const { return pid; }
+
+    PT_base operator[](int offset) const {
+        int ro_pos = get_rel_pos()+offset;
+        return pid.valid_rel_pos(ro_pos) ? PT_base((&qseq)[ro_pos]) : PT_QU;
+    }
+};
+
+// -----------------------
+
+inline const char *PT_READ_CHAIN_ENTRY_stage_2(const char *ptr, int refabspos, AbsLoc& loc) {
+    // Caution: 'name' (of AbsLoc) has to be initialized before first call and shall not be modified between calls
+
+    pt_assert_stage(STAGE2);
+
+    uint_8  has_main_apos;
+    uint_32 name = loc.get_name() + read_nat_with_reserved_bits<1>(ptr, has_main_apos);
+
+    loc = AbsLoc(name, has_main_apos ? refabspos : PT_read_compact_nat(ptr));
+
+    return ptr;
 }
 
-class ChainIterator : virtual Noncopyable {
-    const char *data;
-    DataLoc     loc;
+inline char *PT_WRITE_CHAIN_ENTRY(char *ptr, int refabspos, int name, const int apos) {
+    pt_assert_stage(STAGE1);
+    bool has_main_apos = (apos == refabspos);
+    write_nat_with_reserved_bits<1>(ptr, name, has_main_apos);
+    if (!has_main_apos) PT_write_compact_nat(ptr, apos);
+    return ptr;
+}
 
-    const char *last_data; // @@@ only used in STAGE1 - split class (one for each stage)? 
-    int         last_size; // @@@ only used in STAGE1
-    int         mainapos;  // @@@ only used in STAGE3
+// -----------------------
+//      ChainIterators
 
-    bool at_end_of_chain() const { return loc.name == -1; }
+class ChainIteratorStage1 : virtual Noncopyable {
+    bool is_short;
+    union {
+        struct {
+            const PT_short_chain_header *header;
+            int                          next_entry;
+
+            void set_loc(AbsLoc& loc) {
+                pt_assert(next_entry<SHORT_CHAIN_HEADER_ELEMS);
+                loc = AbsLoc(header->name[next_entry], header->abspos[next_entry]);
+                ++next_entry;
+            }
+        } S;
+        struct {
+            int         refabspos;
+            const char *read_pos;
+
+            void set_loc(AbsLoc& loc) {
+                uint_8  has_refabspos;
+                uint_32 name   = loc.get_name()+read_nat_with_reserved_bits<1>(read_pos, has_refabspos);
+                uint_32 abspos = has_refabspos ? refabspos : PT_read_compact_nat(read_pos);
+                loc = AbsLoc(name, abspos);
+            }
+        } L;
+    } iter;
+
+    AbsLoc loc;
+    int    elements_ahead;
+
+    bool at_end_of_chain() const { return elements_ahead<0; }
     void set_loc_from_chain() {
-        last_data = data;
-        if (psg.ptdata->get_stage() == STAGE1) {
-            data = PT_READ_CHAIN_ENTRY_stage_1(data, &loc.name, &loc.apos, &loc.rpos, &last_size);
+        pt_assert(!at_end_of_chain());
+        if (elements_ahead>0) {
+            if (is_short) iter.S.set_loc(loc);
+            else          iter.L.set_loc(loc);
         }
         else {
-            data = PT_READ_CHAIN_ENTRY_stage_3(data, mainapos, &loc.name, &loc.apos, &loc.rpos);
+            pt_assert(elements_ahead == 0);
+            loc = AbsLoc();
         }
+        --elements_ahead;
         pt_assert(at_end_of_chain() || loc.has_valid_name());
     }
     void inc() {
@@ -494,59 +610,119 @@ class ChainIterator : virtual Noncopyable {
     }
 
 public:
-    ChainIterator(const POS_TREE *node)
-        : data(node_data_start(node)),
-          loc(),
-          last_size(-1)
-    {
-        pt_assert(PT_read_type(node) == PT_NT_CHAIN);
+    typedef POS_TREE1 POS_TREE_TYPE;
 
-        if (node->flags&1) {
-            mainapos  = PT_read_int(data);
-            data     += 4;
+    ChainIteratorStage1(const POS_TREE1 *node)
+        : loc(0, 0)
+    {
+        pt_assert_stage(STAGE1);
+        pt_assert(node->is_chain());
+
+        is_short = node->flags & SHORT_CHAIN_HEADER_FLAG_BIT;
+        if (is_short) {
+            elements_ahead    = node->flags & SHORT_CHAIN_HEADER_SIZE_MASK;
+            iter.S.next_entry = 0;
+            iter.S.header     = reinterpret_cast<const PT_short_chain_header*>(node->udata());
         }
         else {
-            mainapos  = PT_read_short(data);
-            data     += 2;
+            const PT_long_chain_header *header = reinterpret_cast<const PT_long_chain_header*>(node->udata());
+
+            elements_ahead = header->entries;
+
+            iter.L.refabspos = header->refabspos;
+            iter.L.read_pos  = header->entrymem;
         }
 
-        if (psg.ptdata->get_stage() == STAGE1) {
-            data = PT_read_pointer<char>(data);
-        }
         set_loc_from_chain();
     }
 
     operator bool() const { return !at_end_of_chain(); }
-    const DataLoc& at() const { return loc; }
-    const ChainIterator& operator++() { inc(); return *this; } // prefix-inc
+    const AbsLoc& at() const { return loc; }
+    const ChainIteratorStage1& operator++() { inc(); return *this; } // prefix-inc
 
-    const char *memory() const { return last_data; }
-    int memsize() const { return last_size; }
+    int get_elements_ahead() const { return elements_ahead; }
+
+    int get_refabspos() const {
+        return is_short
+            ? iter.S.header->abspos[0] // @@@ returns any abspos, optimize for SHORT_CHAIN_HEADER_ELEMS >= 3 only
+            : iter.L.refabspos;
+    }
 };
 
-template<typename T>
-int PT_forwhole_chain(POS_TREE *node, T func) {
+class ChainIteratorStage2 : virtual Noncopyable {
+    const char *data;
+    AbsLoc      loc;
+
+    int refabspos;
+    int elements_ahead;
+
+    bool at_end_of_chain() const { return elements_ahead<0; }
+    void set_loc_from_chain() {
+        if (elements_ahead>0) {
+            data = PT_READ_CHAIN_ENTRY_stage_2(data, refabspos, loc);
+        }
+        else {
+            pt_assert(elements_ahead == 0);
+            loc = AbsLoc();
+        }
+        --elements_ahead;
+        pt_assert(at_end_of_chain() || loc.has_valid_name());
+    }
+    void inc() {
+        pt_assert(!at_end_of_chain());
+        set_loc_from_chain();
+    }
+
+public:
+    typedef POS_TREE2 POS_TREE_TYPE;
+
+    ChainIteratorStage2(const POS_TREE2 *node)
+        : data(node->udata()),
+          loc(0, 0) // init name with 0 (needed for chain reading in STAGE2)
+    {
+        pt_assert_stage(STAGE2);
+        pt_assert(node->is_chain());
+
+        if (node->flags&1) { refabspos = PT_read_int(data);   data += 4; }
+        else               { refabspos = PT_read_short(data); data += 2; }
+
+        elements_ahead = PT_read_compact_nat(data);
+
+        pt_assert(elements_ahead>0); // chain cant be empty
+        set_loc_from_chain();
+    }
+
+    operator bool() const { return !at_end_of_chain(); }
+    const AbsLoc& at() const { return loc; }
+    const ChainIteratorStage2& operator++() { inc(); return *this; } // prefix-inc
+
+    const char *memptr() const { return data; }
+};
+
+template<typename PT, typename T> int PT_forwhole_chain(PT *node, T& func);
+
+template<typename T> int PT_forwhole_chain(POS_TREE1 *node, T& func) {
+    pt_assert_stage(STAGE1);
     int error = 0;
-    for (ChainIterator entry(node); entry && !error; ++entry) {
+    for (ChainIteratorStage1 entry(node); entry && !error; ++entry) {
         error = func(entry.at());
     }
     return error;
 }
 
-template<typename T>
-int PT_withall_tips(POS_TREE *node, T func) {
-    // like PT_forwhole_chain, but also can handle leafs
-    PT_NODE_TYPE type = PT_read_type(node);
-    if (type == PT_NT_LEAF) {
-        return func(DataLoc(node));
+template<typename T> int PT_forwhole_chain(POS_TREE2 *node, T& func) {
+    pt_assert_stage(STAGE2);
+    int error = 0;
+    for (ChainIteratorStage2 entry(node); entry && !error; ++entry) {
+        error = func(entry.at());
     }
-
-    pt_assert(type == PT_NT_CHAIN);
-    return PT_forwhole_chain(node, func);
+    return error;
 }
 
 #if defined(DEBUG)
-struct PTD_chain_print { int operator()(const DataLoc& loc) { loc.dump(stdout); return 0; } };
+struct PTD_chain_print {
+    int operator()(const AbsLoc& loc) { loc.dump(stdout); return 0; }
+};
 #endif
 
 #else

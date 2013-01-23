@@ -15,28 +15,27 @@
 using namespace std;
 
 int Range::calc_max_abs_pos() const {
-    // expensive!
-    pt_assert(end != -1);
+    // returns the max abs startpos of a specific species,
+    // such that a probe of length 'probe_len' hits inside this Range.
+    //
+    // This check is expensive!
 
-    int   size;
-    char *data = probe_read_alignment(curr_match->name, &size);
-    int   pos  = min(end, size-1);
-    int   skip = probe_len; // bases to skip
+    const probe_input_data& pid = curr_match->get_pid();
 
-    pt_assert(skip);
+    pid.preload_rel2abs();
 
-    while (pos >= start) {
-        if (data[pos] != '-') {
-            if (!--skip) break;
+    int rel_size = pid.get_size();
+    int abs_size = pid.get_abspos(rel_size-1)+1;
+
+    int max_wanted_abs = min(end, abs_size-1);
+
+    for (int rel = 0; rel<rel_size; ++rel) { // @@@ brute forced
+        if (int(pid.get_abspos(rel))>max_wanted_abs) {
+            int max_rel = rel-probe_len;
+            return pid.get_abspos(max_rel);
         }
-        --pos;
     }
-    pt_assert(!skip || pos<start);
 
-    free(data);
-
-    if (skip) pos = -1; // not enough bases in range
-
-    return pos;
+    return -1;
 }
 

@@ -283,9 +283,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
                     error = "Connection to PT_SERVER lost (2)";
                 }
                 else {
-                    if (*locs_error) {
-                        error = locs_error;
-                    }
+                    if (*locs_error) error = GBS_static_string(locs_error);
                     free(locs_error);
                 }
             }
@@ -605,15 +603,22 @@ static int test_setup(bool use_gene_ptserver) {
 // ----------------------------------
 //      test probe design / match
 
-#define TEST_RUN_ARB_PROBE(fake_argc,fake_argv)                                         \
-    int       serverid = test_setup(use_gene_ptserver);                                 \
+#define TEST_RUN_ARB_PROBE__INT(fake_argc,fake_argv)                                    \
+    int serverid = test_setup(use_gene_ptserver);                                       \
     TEST_EXPECT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));                    \
     TEST_EXPECT((serverid == TEST_SERVER_ID)||(serverid == TEST_GENESERVER_ID));        \
-    P.SERVERID         = serverid;                                                      \
+    P.SERVERID = serverid;                                                              \
     ARB_ERROR error;                                                                    \
-    char      *answer   = execute(error);                                               \
-    TEST_EXPECT_NO_ERROR(error.deliver())
+    char *answer = execute(error)
 
+#define TEST_RUN_ARB_PROBE__REPORTS_ERROR(fake_argc,fake_argv,expected_error)   \
+    TEST_RUN_ARB_PROBE__INT(fake_argc,fake_argv);                               \
+    free(answer);                                                               \
+    TEST_EXPECT_ERROR_CONTAINS(error.deliver(), expected_error)
+
+#define TEST_RUN_ARB_PROBE(fake_argc,fake_argv)                 \
+    TEST_RUN_ARB_PROBE__INT(fake_argc,fake_argv);               \
+    TEST_EXPECT_NO_ERROR(error.deliver())
 
 #define TEST_ARB_PROBE(fake_argc,fake_argv,expected) do {       \
         TEST_RUN_ARB_PROBE(fake_argc,fake_argv);                \
@@ -1343,18 +1348,18 @@ void TEST_SLOW_design_probe() {
             "E.Coli Position    [any]\n"
             "Max Non Group Hits     0\n"
             "Min Group Hits       100%\n"
-            "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
-            "AUCAAGUCGAGCGAUGAA 18 A=    17   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "CGAAAGGAAGAUUAAUAC 18 B=    94   82    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "GAAAGGAAGAUUAAUACC 18 B+     1   83    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "UCAAGUCGAGCGAUGAAG 18 A+     1   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n";
+            "Target             le     apos ecol qual grps   G+C temp Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
+            "CGAAAGGAAGAUUAAUAC 18 A=    94   82   77    4  33.3 48.0 GUAUUAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -\n"
+            "GAAAGGAAGAUUAAUACC 18 A+     1   83   77    4  33.3 48.0 GGUAUUAAUCUUCCUUUC | - - - - - - - - - - - - - - - - - - - -\n"
+            "UCAAGUCGAGCGAUGAAG 18 B=    18   17   61    4  50.0 54.0 CUUCAUCGCUCGACUUGA | - - - - - - - - - - - - - - - 2 2 2 2 2\n"
+            "AUCAAGUCGAGCGAUGAA 18 B-     1   16   45    4  44.4 52.0 UUCAUCGCUCGACUUGAU | - - - - - - - - - - - 2 2 2 2 2 2 2 2 2\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
 
         // test extraction of positions:
         {
             char *positions = extract_locations(expected);
-            TEST_EXPECT_EQUAL(positions, "A=17B=94B+1A+1");
+            TEST_EXPECT_EQUAL(positions, "A=94A+1B=18B-1");
             free(positions);
         }
     }
@@ -1368,39 +1373,52 @@ void TEST_SLOW_design_probe() {
             "designmingc=60", "designmaxgc=75", // specific GC range
         };
 
-        const char *expected = "Probe design Parameters:\n"
+        const char *expected =
+            "Probe design Parameters:\n"
             "Length of probe      18\n"
             "Temperature        [ 0.0 -400.0]\n"
             "GC-Content         [60.0 -75.0]\n"
             "E.Coli Position    [any]\n"
             "Max Non Group Hits     0\n"
             "Min Group Hits        50%\n"
-            "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
-            "AGUCGAGCGGCAGCACAG 18 A=    21   20    2 66.7 60.0    CUGUGCUGCCGCUCGACU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "GUCGAGCGGCAGCACAGA 18 A+     1   21    2 66.7 60.0    UCUGUGCUGCCGCUCGAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "UCGAGCGGCAGCACAGAG 18 A+     2   21    2 66.7 60.0    CUCUGUGCUGCCGCUCGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "AAGUCGAGCGGCAGCACA 18 A-     1   19    2 61.1 58.0    UGUGCUGCCGCUCGACUU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  2,  2,  2,  3,  3,\n"
-            "AGCGGCAGCACAGAGGAA 18 A+     5   21    1 61.1 58.0    UUCCUCUGUGCUGCCGCU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "CGAGCGGCAGCACAGAGA 18 A+     3   21    1 66.7 60.0    UCUCUGUGCUGCCGCUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "CGAGCGGCAGCACAGAGG 18 A+     3   21    1 72.2 62.0    CCUCUGUGCUGCCGCUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "CGGCAGCACAGAGGAACU 18 A+     7   23    1 61.1 58.0    AGUUCCUCUGUGCUGCCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "CUUGUUCCUUGGGUGGCG 18 B=    52   47    1 61.1 58.0    CGCCACCCAAGGAACAAG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "CUUGUUUCUCGGGUGGCG 18 B-     0   47    1 61.1 58.0    CGCCACCCGAGAAACAAG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "GAGCGGCAGCACAGAGAA 18 A+     4   21    1 61.1 58.0    UUCUCUGUGCUGCCGCUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "GAGCGGCAGCACAGAGGA 18 A+     4   21    1 66.7 60.0    UCCUCUGUGCUGCCGCUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "GCGGCAGCACAGAGAAAC 18 A+     6   22    1 61.1 58.0    GUUUCUCUGUGCUGCCGC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "GCGGCAGCACAGAGGAAC 18 A+     6   22    1 66.7 60.0    GUUCCUCUGUGCUGCCGC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "GUUCCUUGGGUGGCGAGC 18 B+     3   50    1 66.7 60.0    GCUCGCCACCCAAGGAAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "GUUUCUCGGGUGGCGAGC 18 B+     3   50    1 66.7 60.0    GCUCGCCACCCGAGAAAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "UCCUUGGGUGGCGAGCGG 18 B+    11   58    1 72.2 62.0    CCGCUCGCCACCCAAGGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "UGUUCCUUGGGUGGCGAG 18 B+     2   49    1 61.1 58.0    CUCGCCACCCAAGGAACA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "UGUUUCUCGGGUGGCGAG 18 B+     2   49    1 61.1 58.0    CUCGCCACCCGAGAAACA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "UUCCUUGGGUGGCGAGCG 18 B+    10   57    1 66.7 60.0    CGCUCGCCACCCAAGGAA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "UUCUCGGGUGGCGAGCGG 18 B+    11   58    1 72.2 62.0    CCGCUCGCCACCCGAGAA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-            "CAAGUCGAGCGGCAGCAC 18 A-     2   18    2 66.7 60.0    GUGCUGCCGCUCGACUUG |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,\n"
-            "UCAAGUCGAGCGGCAGCA 18 A-     3   17    2 61.1 58.0    UGCUGCCGCUCGACUUGA |  0,  1,  1,  1,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  5,  5,  5,  5,  6,  6,\n";
+            "Target             le     apos ecol qual grps   G+C temp Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
+            "AGUCGAGCGGCAGCACAG 18 A=    21   20   39    2  66.7 60.0 CUGUGCUGCCGCUCGACU | - - - - - - - - - - - - - - - - - - - -\n"
+            "GUCGAGCGGCAGCACAGA 18 A+     1   21   39    2  66.7 60.0 UCUGUGCUGCCGCUCGAC | - - - - - - - - - - - - - - - - - - - -\n"
+            "UCGAGCGGCAGCACAGAG 18 A+     2   21   39    2  66.7 60.0 CUCUGUGCUGCCGCUCGA | - - - - - - - - - - - - - - - - - - - -\n"
+            "AAGUCGAGCGGCAGCACA 18 A-     1   19   25    2  61.1 58.0 UGUGCUGCCGCUCGACUU | - - - - - - - - - - - - 1 1 1 1 1 1 1 1\n"
+            "CGAGCGGCAGCACAGAGA 18 A+     3   21   20    1  66.7 60.0 UCUCUGUGCUGCCGCUCG | - - - - - - - - - - - - - - - - - - - -\n"
+            "CGAGCGGCAGCACAGAGG 18 A+     3   21   20    1  72.2 62.0 CCUCUGUGCUGCCGCUCG | - - - - - - - - - - - - - - - - - - - -\n"
+            "GAGCGGCAGCACAGAGAA 18 A+     4   21   20    1  61.1 58.0 UUCUCUGUGCUGCCGCUC | - - - - - - - - - - - - - - - - - - - -\n"
+            "GAGCGGCAGCACAGAGGA 18 A+     4   21   20    1  66.7 60.0 UCCUCUGUGCUGCCGCUC | - - - - - - - - - - - - - - - - - - - -\n"
+            "AGCGGCAGCACAGAGGAA 18 A+     5   21   20    1  61.1 58.0 UUCCUCUGUGCUGCCGCU | - - - - - - - - - - - - - - - - - - - -\n"
+            "GCGGCAGCACAGAGAAAC 18 A+     6   22   20    1  61.1 58.0 GUUUCUCUGUGCUGCCGC | - - - - - - - - - - - - - - - - - - - -\n"
+            "GCGGCAGCACAGAGGAAC 18 A+     6   22   20    1  66.7 60.0 GUUCCUCUGUGCUGCCGC | - - - - - - - - - - - - - - - - - - - -\n"
+            "CGGCAGCACAGAGGAACU 18 A+     7   23   20    1  61.1 58.0 AGUUCCUCUGUGCUGCCG | - - - - - - - - - - - - - - - - - - - -\n"
+            "CUUGUUCCUUGGGUGGCG 18 B=    52   47   20    1  61.1 58.0 CGCCACCCAAGGAACAAG | - - - - - - - - - - - - - - - - - - - -\n"
+            "CUUGUUUCUCGGGUGGCG 18 B-     0   47   20    1  61.1 58.0 CGCCACCCGAGAAACAAG | - - - - - - - - - - - - - - - - - - - -\n"
+            "UGUUCCUUGGGUGGCGAG 18 B+     2   49   20    1  61.1 58.0 CUCGCCACCCAAGGAACA | - - - - - - - - - - - - - - - - - - - -\n"
+            "UGUUUCUCGGGUGGCGAG 18 B+     2   49   20    1  61.1 58.0 CUCGCCACCCGAGAAACA | - - - - - - - - - - - - - - - - - - - -\n"
+            "GUUCCUUGGGUGGCGAGC 18 B+     3   50   20    1  66.7 60.0 GCUCGCCACCCAAGGAAC | - - - - - - - - - - - - - - - - - - - -\n"
+            "GUUUCUCGGGUGGCGAGC 18 B+     3   50   20    1  66.7 60.0 GCUCGCCACCCGAGAAAC | - - - - - - - - - - - - - - - - - - - -\n"
+            "UUCCUUGGGUGGCGAGCG 18 B+    10   57   20    1  66.7 60.0 CGCUCGCCACCCAAGGAA | - - - - - - - - - - - - - - - - - - - -\n"
+            "UCCUUGGGUGGCGAGCGG 18 B+    11   58   20    1  72.2 62.0 CCGCUCGCCACCCAAGGA | - - - - - - - - - - - - - - - - - - - -\n"
+            "UUCUCGGGUGGCGAGCGG 18 B+    11   58   20    1  72.2 62.0 CCGCUCGCCACCCGAGAA | - - - - - - - - - - - - - - - - - - - -\n"
+            "CAAGUCGAGCGGCAGCAC 18 A-     2   18   13    2  66.7 60.0 GUGCUGCCGCUCGACUUG | - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1\n"
+            "UCAAGUCGAGCGGCAGCA 18 A-     3   17    3    2  61.1 58.0 UGCUGCCGCUCGACUUGA | - 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 3 3 3\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+
+    // test error case
+    {
+        const char *arguments_bad_design[] = {
+            "prgnamefake",
+            "designnames=CPPParap#PsAAAA00",
+            "designprobelength=3",
+        };
+        const char *expected_error = "Probe length 3 is below the minimum probe length of 8";
+
+        TEST_RUN_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments_bad_design), arguments_bad_design, expected_error);
     }
 
     // design MANY probes to test location specifier
@@ -1411,17 +1429,133 @@ void TEST_SLOW_design_probe() {
             "designnames=CPPParap#PsAAAA00",
             "designmintargets=50", // hit at least 1 of the 2 targets
             "designmingc=0", "designmaxgc=100", // allow all GCs
-            "designmishit=99999",  // allow enough outgroup hits
+            "designmintemp=30", "designmaxtemp=100", // allow all temp above 30 deg
+            "designmishit=7",  // allow enough outgroup hits
             "designmaxhits=99999", // do not limit results
-            "designprobelength=3",
+            "designprobelength=9",
         };
 
         const char *expected_loc =
-            "A=96B=141C=20D=107B+1E=110F=84G=9H=150I=145C+1D+1J=17K=122L=72C-1M=33N=114E+1O=178"
-            "P=24E+2F+1Q=138O+1R=170S=182A-1T=87G+1J-1N-1U=79F+2U-1V=129I+2H-2C+2W=12D-1D+2C-2O+2"
-            "P-1J-2X=165R+1Y=92W+2W+1Z=125O-2D-2H+1a=104H-1L+1";
+            "A=29B=51B+1C=99A+8D=112E=80E+2E+3E+4B-1A-5B-6B-5F=124F+1B-2E-7B-0C-5E+2E-1D-1E+6E+7E+8G=89C-2A-1H=61A-6C-1C-3E+3B+3B+4B+5E+5C+1E+4E+6E+7E+8C-7C-6E+5H+1H+2E-6C-4I=152I+1A-7";
 
         TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
+    }
+
+    // same as above
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=CPPParap#PsAAAA00",
+            "designmintargets=50", // hit at least 1 of the 2 targets
+            "designmingc=0", "designmaxgc=100", // allow all GCs
+            "designmintemp=30", "designmaxtemp=100", // allow all temp above 30 deg
+            "designmishit=7",  // allow enough outgroup hits
+            "designmaxhits=99999", // do not limit results
+            "designprobelength=9",
+        };
+
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe       9\n"
+            "Temperature        [30.0 -100.0]\n"
+            "GC-Content         [ 0.0 -100.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits     7\n"
+            "Min Group Hits        50%\n"
+            "Target    le     apos ecol qual grps   G+C temp Probe     | Decrease T by n*.3C -> probe matches n non group species\n"
+            "GAGCGGAUG  9 A=    29   24   20    1  66.7 30.0 CAUCCGCUC | - -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -\n"
+            "UGCUCCUGG  9 B=    51   46   20    1  66.7 30.0 CCAGGAGCA | - -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -\n"
+            "GCUCCUGGA  9 B+     1   47   20    1  66.7 30.0 UCCAGGAGC | - -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -\n"
+            "CGGGCGCUA  9 C=    99   87   20    1  77.8 32.0 UAGCGCCCG | - -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -\n"
+            "GAAGGGAGC  9 A+     8   32   20    1  66.7 30.0 GCUCCCUUC | 1 1  1  1  1  1  1  1  1  1  2  2  2  2  2  2  2  2  2  2\n"
+            "CGCAUACGC  9 D=   112  100   20    1  66.7 30.0 GCGUAUGCG | 2 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2\n"
+            "CGGACGGGC  9 E=    80   69   20    1  88.9 34.0 GCCCGUCCG | 2 2  2  2  2  2  2  2  2  2  2  2  2  2  3  3  3  3  3  3\n"
+            "GGACGGGCC  9 E+     2   70   20    1  88.9 34.0 GGCCCGUCC | 3 3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
+            "GACGGGCCU  9 E+     3   71   20    1  77.8 32.0 AGGCCCGUC | 3 3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
+            "ACGGGCCUU  9 E+     4   72   20    1  66.7 30.0 AAGGCCCGU | 3 3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
+            "UCCUUCGGG  9 B-     1   45   20    1  66.7 30.0 CCCGAAGGA | 2 2  2  2  2  2  2  2  2  2  2  2  3  4  4  4  4  4  4  4\n"
+            "CGAGCGAUG  9 A-     5   21   20    1  66.7 30.0 CAUCGCUCG | 3 3  3  3  3  3  3  3  3  3  5  5  5  5  5  5  5  5  5  5\n"
+            "GGGAGCUUG  9 B-     6   40   20    1  66.7 30.0 CAAGCUCCC | 4 4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  5  5\n"
+            "GGAGCUUGC  9 B-     5   41   20    1  66.7 30.0 GCAAGCUCC | 4 4  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5\n"
+            "GCGAUUGGG  9 F=   124  111   20    1  66.7 30.0 CCCAAUCGC | 3 3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  6  6\n"
+            "CGAUUGGGG  9 F+     1  112   20    1  66.7 30.0 CCCCAAUCG | 3 3  3  3  3  3  6  6  6  6  6  6  6  6  6  6  6  6  6  6\n"
+            "GCUUGCUCC  9 B-     2   44   20    1  66.7 30.0 GGAGCAAGC | 4 4  4  4  4  4  5  5  5  5  5  5  5  7  7  7  7  8  8  8\n"
+            "UUAGCGGCG  9 E-     7   62   19    1  66.7 30.0 CGCCGCUAA | 4 4  4  4  4  4  4  4  5  5  5  5  5  5  5  6  6  6 11 11\n"
+            "CCUUCGGGA  9 B-     0   46   18    1  66.7 30.0 UCCCGAAGG | 2 2  3  3  3  3  4  4  4  4  4  4  4  4  4  4  4  5  5 13\n"
+            "GGAAACGGG  9 C-     5   82   17    1  66.7 30.0 CCCGUUUCC | - -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  3  3  3  3\n"
+            "GGACGGACG  9 E+     2   70   17    1  77.8 32.0 CGUCCGUCC | 2 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2 10 10 14 14\n"
+            "GCGGACGGG  9 E-     1   68   17    1  88.9 34.0 CCCGUCCGC | 2 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2 13 13 13 13\n"
+            "CCGCAUACG  9 D-     1   99   16    1  66.7 30.0 CGUAUGCGG | 2 2  2  2  2  2  2  2  2  2  2  4  4  4  4  5  5  5  5  5\n"
+            "GGACGUCCG  9 E+     6   74   14    1  77.8 32.0 CGGACGUCC | - -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  3  3  3\n"
+            "GACGUCCGG  9 E+     7   75   14    1  77.8 32.0 CCGGACGUC | - -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  2  2 14\n"
+            "ACGUCCGGA  9 E+     8   76   14    1  66.7 30.0 UCCGGACGU | - -  -  -  -  -  -  -  -  -  -  -  -  1  1 11 11 12 12 17\n"
+            "CGUCCGGAA  9 G=    89   77   14    1  66.7 30.0 UUCCGGACG | - -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  2  2  2\n"
+            "AACGGGCGC  9 C-     2   85   14    1  77.8 32.0 GCGCCCGUU | - -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  2\n"
+            "CGAGCGGAU  9 A-     1   23   13    1  66.7 30.0 AUCCGCUCG | - -  -  -  -  -  -  -  -  -  -  -  3  3  3  3  3  3  3  3\n"
+            "UUCAGCGGC  9 H=    61   56   13    1  66.7 30.0 GCCGCUGAA | 1 1  1  1  1  1  2  2  2  2  2  2  3  4  4  4  4  4  7  7\n"
+            "UCGAGCGGA  9 A-     6   21   13    1  66.7 30.0 UCCGCUCGA | 3 3  3  3  3  3  3  3  3  3  3  3  8  8  8  8  8  8  8  8\n"
+            "ACGGGCGCU  9 C-     1   86   12    1  77.8 32.0 AGCGCCCGU | - -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  2  2  2\n"
+            "AAACGGGCG  9 C-     3   84    9    1  66.7 30.0 CGCCCGUUU | - -  -  -  -  -  -  -  1  1  1  1  1  1  1  1  1  1  1  1\n"
+            "GACGGACGU  9 E+     3   71    9    1  66.7 30.0 ACGUCCGUC | 2 2  2  2  2  2  2  2 13 13 13 13 13 13 13 14 14 14 14 14\n"
+            "UCGGGAACG  9 B+     3   49    7    1  66.7 30.0 CGUUCCCGA | - -  -  -  -  -  1  1  1  1  1  1  1  1  1  1  1  1  1  1\n"
+            "CGGGAACGG  9 B+     4   50    7    1  77.8 32.0 CCGUUCCCG | - -  -  -  -  -  1  1  1  1  1  1  1  1  1  1  1  1  1  1\n"
+            "GGGAACGGA  9 B+     5   51    7    1  66.7 30.0 UCCGUUCCC | - -  -  -  -  -  1  1  1  1  1  1  1  1  1  1  1  1  1  1\n"
+            "CGGACGUCC  9 E+     5   73    7    1  77.8 32.0 GGACGUCCG | - -  -  -  -  -  1  1  1  1  1  1  1  3  3  3  3 12 12 12\n"
+            "GGGCGCUAA  9 C+     1   88    7    1  66.7 30.0 UUAGCGCCC | - -  -  -  -  -  1  1  1  1  1  1  1  1  1  1  1  1  1  1\n"
+            "ACGGACGUC  9 E+     4   72    7    1  66.7 30.0 GACGUCCGU | - -  -  -  -  -  2  2  3  3  3  4  4  4  4  5  5  5  5 13\n"
+            "GGGCCUUCC  9 E+     6   74    7    1  77.8 32.0 GGAAGGCCC | - -  -  -  -  -  2  2  2  2  2  3  3  3  3  3  3  3  3  4\n"
+            "GGCCUUCCG  9 E+     7   75    7    1  77.8 32.0 CGGAAGGCC | - -  -  -  -  -  2  2  2  2  2  3  3  3  3  3  3  3  3  3\n"
+            "GCCUUCCGA  9 E+     8   76    7    1  66.7 30.0 UCGGAAGGC | - -  -  -  -  -  2  2  2  2  2  3  3  3  3  3  3  3  3  3\n"
+            "CCGGAAACG  9 C-     7   80    7    1  66.7 30.0 CGUUUCCGG | - -  -  -  -  -  2  2  2  2  2  2  2  6  7  9  9 10 10 10\n"
+            "CGGAAACGG  9 C-     6   81    7    1  66.7 30.0 CCGUUUCCG | - -  -  -  -  -  2  2  4  4  4  4  4  4  5  5  6  6  6  6\n"
+            "CGGGCCUUC  9 E+     5   73    7    1  77.8 32.0 GAAGGCCCG | 1 1  1  1  1  1  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
+            "UCAGCGGCG  9 H+     1   57    7    1  77.8 32.0 CGCCGCUGA | 2 2  2  2  2  2  6  6  6  6  6  6  6  6  6  6  7  7  7  7\n"
+            "CAGCGGCGG  9 H+     2   58    7    1  88.9 34.0 CCGCCGCUG | 2 2  2  2  2  2  6  6  6  6  6  6  6  7 12 12 12 12 12 12\n"
+            "UAGCGGCGG  9 E-     6   63    7    1  77.8 32.0 CCGCCGCUA | 4 4  4  4  4  4 10 10 10 10 10 10 12 14 14 14 14 14 14 14\n"
+            "GAAACGGGC  9 C-     4   83    5    1  66.7 30.0 GCCCGUUUC | - -  -  -  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1\n"
+            "GCCGUAGGA  9 I=   152  138    3    1  66.7 30.0 UCCUACGGC | 1 1  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9 12 12\n"
+            "CCGUAGGAG  9 I+     1  139    3    1  66.7 30.0 CUCCUACGG | 1 1 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 11 11\n"
+            "GUCGAGCGA  9 A-     7   21    3    1  66.7 30.0 UCGCUCGAC | 3 3 11 11 11 11 11 11 11 11 11 11 11 11 11 12 12 12 12 14\n";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+
+    // same as above (with probelen == 8)
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=CPPParap#PsAAAA00",
+            "designmintargets=50", // hit at least 1 of the 2 targets
+            "designmingc=0", "designmaxgc=100", // allow all GCs
+            "designmintemp=30", "designmaxtemp=100", // allow all temp above 30 deg
+            // "designmishit=7",
+            "designmishit=15", // @@@ reports more results than with 7 mishits, but no mishits reported below!
+            "designmaxhits=99999", // do not limit results
+            "designprobelength=8",
+        };
+
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe       8\n"
+            "Temperature        [30.0 -100.0]\n"
+            "GC-Content         [ 0.0 -100.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits    15\n"
+            "Min Group Hits        50%\n"
+            "Target   le     apos ecol qual grps   G+C temp Probe    | Decrease T by n*.3C -> probe matches n non group species\n"
+            "GGCGGACG  8 A=    78   67   39    2  87.5 30.0 CGUCCGCC | 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13\n"
+            "GCGGACGG  8 A+     1   68   39    2  87.5 30.0 CCGUCCGC | 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13\n"
+            "AGCGGCGG  8 A-     3   64   39    2  87.5 30.0 CCGCCGCU | 11 11 11 11 11 11 11 14 14 14 14 14 14 14 14 14 14 14 14 14\n"
+            "GCGGCGGA  8 A-     2   65   39    2  87.5 30.0 UCCGCCGC | 10 10 11 11 11 11 11 14 14 14 14 14 14 14 14 14 14 14 14 14\n"
+            "CGGCGGAC  8 A-     1   66   39    2  87.5 30.0 GUCCGCCG | 10 10 10 10 10 10 10 13 13 13 13 13 13 13 14 14 14 14 14 14\n"
+            "CGGACGGG  8 A+     2   69   20    1  87.5 30.0 CCCGUCCG |  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2\n"
+            "GGACGGGC  8 A+     4   70   20    1  87.5 30.0 GCCCGUCC |  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
+            "GACGGGCC  8 A+     5   71   20    1  87.5 30.0 GGCCCGUC |  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
+            "ACGGGCGC  8 B=    98   86   13    1  87.5 30.0 GCGCCCGU |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  1\n"
+            "CGGGCGCU  8 B+     1   87   13    1  87.5 30.0 AGCGCCCG |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  1\n"
+            "CAGCGGCG  8 C=    63   58    8    1  87.5 30.0 CGCCGCUG |  2  2  2  2  2  2  2  6  6  6  6  6  6  6  8  8  8  8  8  8\n";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
 
     {
@@ -1440,17 +1574,43 @@ void TEST_SLOW_design_probe() {
             "E.Coli Position    [any]\n"
             "Max Non Group Hits     2\n"
             "Min Group Hits       100%\n"
-            "Target           le     apos ecol grps  G+C 4GC+2AT Probe sequence   | Decrease T by n*.3C -> probe matches n non group species\n"
-            "AAGGAAGAUUAAUACC 16 A=    97   85    3 31.2 42.0    GGUAUUAAUCUUCCUU |  1,  1,  1,  2,  2,  2,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,  6,\n"
-            "AAGUCGAGCGAUGAAG 16 B=    20   19    3 50.0 48.0    CUUCAUCGCUCGACUU |  1,  1,  1,  2,  2,  2,  3,  3,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  5,  6,\n"
-            "CAAGUCGAGCGAUGAA 16 B-     1   18    3 50.0 48.0    UUCAUCGCUCGACUUG |  1,  1,  1,  1,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,  6,\n"
-            "CGAAAGGAAGAUUAAU 16 A-     3   82    3 31.2 42.0    AUUAAUCUUCCUUUCG |  1,  1,  1,  1,  2,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  6,\n"
-            "UCAAGUCGAGCGAUGA 16 B-     2   17    3 50.0 48.0    UCAUCGCUCGACUUGA |  1,  1,  1,  2,  2,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  5,  6,\n"
-            "AUCAAGUCGAGCGAUG 16 B-     3   16    3 50.0 48.0    CAUCGCUCGACUUGAU |  1,  1,  1,  2,  2,  2,  3,  3,  3,  3,  3,  4,  4,  4,  4,  5,  5, 12, 13, 13,\n"
-            "GUCGAGCGAUGAAGUU 16 B+     2   21    3 50.0 48.0    AACUUCAUCGCUCGAC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  2,  2,  2,  3,  3,\n"
-            "AGUCGAGCGAUGAAGU 16 B+     1   20    3 50.0 48.0    ACUUCAUCGCUCGACU |  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  2,  2,  2,  2,  2,  3,  3,  3,  4,  4,\n"
-            "GAUCAAGUCGAGCGAU 16 B-     4   15    3 50.0 48.0    AUCGCUCGACUUGAUC |  0,  2,  2,  2,  2,  5,  5,  5, 13, 15, 15, 15, 24, 25, 25, 25, 33, 35, 35, 42,\n"
-            "UGAUCAAGUCGAGCGA 16 B-     5   14    3 50.0 48.0    UCGCUCGACUUGAUCA |  0,  9,  9,  9, 18, 18, 18, 18, 19, 28, 28, 29, 38, 38, 38, 38, 48, 48, 48, 48,\n";
+            "Target           le     apos ecol qual grps   G+C temp Probe sequence   | Decrease T by n*.3C -> probe matches n non group species\n"
+            "CGAAAGGAAGAUUAAU 16 A=    94   82   58    3  31.2 42.0 AUUAAUCUUCCUUUCG | 1 1 1 1 1 1 1 1  1  1  1  1  1  1  1  1  1  1  1  1\n"
+            "AAGGAAGAUUAAUACC 16 A+     3   85   58    3  31.2 42.0 GGUAUUAAUCUUCCUU | 1 1 1 1 1 1 1 1  1  1  1  1  1  1  1  1  1  1  1  1\n"
+            "AAGUCGAGCGAUGAAG 16 B=    20   19   52    3  50.0 48.0 CUUCAUCGCUCGACUU | 1 1 1 1 1 1 1 1  1  1  1  1  1  1  1  1  1  3  3  3\n"
+            "CAAGUCGAGCGAUGAA 16 B-     1   18   37    3  50.0 48.0 UUCAUCGCUCGACUUG | 1 1 1 1 1 1 1 1  1  1  1  1  3  3  3  3  3  3  3  3\n"
+            "GUCGAGCGAUGAAGUU 16 B+     2   21   31    3  50.0 48.0 AACUUCAUCGCUCGAC | - - - - - - - -  -  -  1  1  1  1  1  1  1  1  1  1\n"
+            "UCAAGUCGAGCGAUGA 16 B-     2   17   28    3  50.0 48.0 UCAUCGCUCGACUUGA | 1 1 1 1 1 1 1 1  1  3  3  3  3  3  3  3  3  3  3  3\n"
+            "AGUCGAGCGAUGAAGU 16 B+     1   20   19    3  50.0 48.0 ACUUCAUCGCUCGACU | - - - - - - 1 1  1  1  1  1  1  1  1  1  1  1  1  1\n"
+            "AUCAAGUCGAGCGAUG 16 B-     3   16   16    3  50.0 48.0 CAUCGCUCGACUUGAU | 1 1 1 1 1 3 3 3  3  3  3  3  3  3  3  3  3 10 10 10\n"
+            "GAUCAAGUCGAGCGAU 16 B-     4   15    4    3  50.0 48.0 AUCGCUCGACUUGAUC | - 2 2 2 3 3 3 3 10 10 10 10 10 10 10 10 10 10 10 10\n"
+            "UGAUCAAGUCGAGCGA 16 B-     5   14    4    3  50.0 48.0 UCGCUCGACUUGAUCA | - 9 9 9 9 9 9 9 10 10 10 10 10 10 10 10 10 10 10 10\n";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=VbrFurni",
+            "designprobelength=8",
+            "designmingc=80",
+            "designmaxgc=100",
+        };
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe       8\n"
+            "Temperature        [ 0.0 -400.0]\n"
+            "GC-Content         [80.0 -100.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits     0\n"
+            "Min Group Hits        50%\n"
+            "Target   le     apos ecol qual grps   G+C temp Probe    | Decrease T by n*.3C -> probe matches n non group species\n"
+            "CGGCAGCG  8 A=    28   23   20    1  87.5 30.0 CGCUGCCG | - - - - - - - - - - - - - - - - - - - -\n"
+            "UGGGCGGC  8 B=    67   60    8    1  87.5 30.0 GCCGCCCA | - - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1\n"
+            "CGGCGAGC  8 B+     4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 4\n"
+            "GGGCGGCG  8 B+     1   60    8    1 100.0 32.0 CGCCGCCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"
+            "GGCGGCGA  8 B+     2   60    8    1  87.5 30.0 UCGCCGCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"
+            "GCGGCGAG  8 B+     3   60    3    1  87.5 30.0 CUCGCCGC | - - 1 1 1 1 1 4 4 4 4 4 4 4 4 4 4 4 4 4\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
@@ -1472,10 +1632,10 @@ void TEST_SLOW_design_probe() {
             "E.Coli Position    [any]\n"
             "Max Non Group Hits     4\n"
             "Min Group Hits       100%\n"
-            "Target         le     apos ecol grps  G+C 4GC+2AT Probe sequence | Decrease T by n*.3C -> probe matches n non group species\n"
-            "AGCGGCGGACGGAC 14 A=    75   64    5 78.6 50.0    GUCCGUCCGCCGCU |  4,  7,  7, 11, 13, 16, 16, 16, 18, 22, 25, 25, 25, 27, 31, 31, 34, 37, 37, 37,\n"
-            "GAGCGGCGGACGGA 14 A-     0   64    5 78.6 50.0    UCCGUCCGCCGCUC |  0,  0,  0,  0,  1,  1,  1,  1,  1,  2,  6,  6, 10, 11, 16, 16, 19, 20, 22, 22,\n"
-            "CGAGCGGCGGACGG 14 A-     1   63    5 85.7 52.0    CCGUCCGCCGCUCG |  0,  0,  0,  0,  2,  2,  2,  2,  2,  4,  4,  4,  4, 11, 13, 13, 13, 20, 22, 22,\n";
+            "Target         le     apos ecol qual grps   G+C temp Probe sequence | Decrease T by n*.3C -> probe matches n non group species\n"
+            "GAGCGGCGGACGGA 14 A=    75   64   21    5  78.6 50.0 UCCGUCCGCCGCUC | - - - - 1 1 1 1 1 1 5 5 9 9 10 10 10 10 10 10\n"
+            "CGAGCGGCGGACGG 14 A-     1   63   21    5  85.7 52.0 CCGUCCGCCGCUCG | - - - - 2 2 2 2 2 2 2 2 2 2  2  2  2  2  9  9\n"
+            "AGCGGCGGACGGAC 14 A-     0   64   21    5  78.6 50.0 GUCCGUCCGCCGCU | 4 7 7 7 9 9 9 9 9 9 9 9 9 9  9  9  9 10 10 10\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }

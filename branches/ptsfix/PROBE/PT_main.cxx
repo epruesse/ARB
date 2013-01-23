@@ -66,23 +66,11 @@ void probe_statistic_struct::setup() {
 #endif
 }
 
-static int calc_complement(int base) {
-    switch (base) {
-        case PT_A:      return PT_T;
-        case PT_C:      return PT_G;
-        case PT_G:      return PT_C;
-        case PT_T:      return PT_A;
-        default:        return base;
-    }
-}
-
 void probe_struct_global::setup() {
     // init uninitialized data
-    
-    gb_shell        = NULL;
-    gb_main         = NULL;
-    gb_species_data = NULL;
-    gb_sai_data     = NULL;
+
+    gb_shell = NULL;
+    gb_main  = NULL;
 
     alignment_name = NULL;
     namehash       = NULL;
@@ -97,21 +85,16 @@ void probe_struct_global::setup() {
 
     pos_to_weight = NULL;
 
-    height = 0;
-
     sort_by = 0;
 
-    probe      = NULL;
-    main_probe = NULL;
-
+    main_probe  = NULL;
     server_name = NULL;
     link        = NULL;
 
     main.clear();
 
     com_so = NULL;
-    pt     = NULL;
-    ptdata = NULL;
+    pt.p1 = NULL;
 
     stat.setup();
 }
@@ -121,9 +104,7 @@ void probe_struct_global::cleanup() {
         delete [] data;
 
         GB_close(gb_main);
-        gb_main         = NULL;
-        gb_species_data = NULL;
-        gb_sai_data     = NULL;
+        gb_main = NULL;
     }
 
     if (gb_shell) {
@@ -137,8 +118,8 @@ void probe_struct_global::cleanup() {
     delete bi_ecoli;
     delete [] pos_to_weight;
     free(alignment_name);
-    delete ptdata;
-    free(com_so);
+
+    pt_assert(!com_so);
 
     setup();
 }
@@ -173,11 +154,14 @@ static void PT_exit() {
 static ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATTR__USERESULT
     ARB_ERROR error = probe_read_data_base(filename, true);
     if (!error) {
-        GB_begin_transaction(psg.gb_main);
+        GB_transaction ta(psg.gb_main);
         psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
-        GB_commit_transaction(psg.gb_main);
+        if (!psg.alignment_name && GB_have_error()) error = GB_await_error();
+    }
+
+    if (!error) {
         printf("Building PT-Server for alignment '%s'...\n", psg.alignment_name);
-        probe_read_alignments();
+        error = PT_init_input_data();
         PT_build_species_hash();
     }
     return error;
@@ -323,12 +307,14 @@ static GB_ERROR PT_init_map() { // goes to header: __ATTR__USERESULT
 __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, const char *arbdb_name, const char *pt_name, const char *exename) {
     ARB_ERROR error;
 
-    fputs("\n"
-          "TUM POS_TREE SERVER (Oliver Strunk) V 1.0 (C) 1993 \n"
-          "initializing:\n"
-          "- opening connection...\n", stdout);
+    fprintf(stdout,
+            "\n"
+            "ARB POS_TREE SERVER v%i (C)1993-2013 by O.Strunk, J.Boehnel, R.Westram\n"
+            "initializing:\n"
+            "- opening connection...\n",
+            PT_SERVER_VERSION);
     sleep(1);
-    
+
     Hs_struct *so = NULL;
     for (int i = 0; (i < MAX_TRY) && (!so); i++) {
         so = open_aisc_server(socket_name, TIME_OUT, 0);
@@ -368,7 +354,6 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
 
                 const char *build_step[] = {
                     "build_clean",
-                    "build_map",
                     "build",
                 };
 
@@ -401,7 +386,7 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
                 free(reserved_for_mmap);
             }
 
-            if (!error) error = enter_stage_3_load_tree(aisc_main, pt_name);
+            if (!error) error = enter_stage_2_load_tree(aisc_main, pt_name);
             if (!error) error = PT_init_map();
 
             if (!error) {
@@ -420,6 +405,36 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
         }
         aisc_server_shutdown(so);
     }
+    return error;
+}
+
+static int get_DB_state(GBDATA *gb_main, ARB_ERROR& error) {
+    pt_assert(!error);
+    error     = GB_push_transaction(gb_main);
+    int state = -1;
+    if (!error) {
+        GBDATA *gb_ptserver = GBT_find_or_create(gb_main, "ptserver", 7);
+        long   *statePtr    = gb_ptserver ? GBT_readOrCreate_int(gb_ptserver, "dbstate", 0) : NULL;
+        if (!statePtr) {
+            error = GB_await_error();
+        }
+        else {
+            state = *statePtr;
+        }
+    }
+    error = GB_end_transaction(gb_main, error);
+    return state;
+}
+
+static GB_ERROR set_DB_state(GBDATA *gb_main, int dbstate) {
+    GB_ERROR error = GB_push_transaction(gb_main);
+    if (!error) {
+        GBDATA *gb_ptserver  = GBT_find_or_create(gb_main, "ptserver", 7);
+        GBDATA *gb_state     = gb_ptserver ? GB_searchOrCreate_int(gb_ptserver, "dbstate", 0) : NULL;
+        if (!gb_state) error = GB_await_error();
+        else    error        = GB_write_int(gb_state, dbstate);
+    }
+    error = GB_end_transaction(gb_main, error);
     return error;
 }
 
@@ -444,30 +459,37 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
             error = probe_read_data_base(params->db_server, false);
             if (!error) {
                 pt_assert(psg.gb_main);
-                error = prepare_ptserver_database(psg.gb_main, PTSERVER);
+
+                error = GB_no_transaction(psg.gb_main); // don't waste memory for transaction (no abort may happen)
+
                 if (!error) {
-                    const char *mode = "bf"; // save PT-server database withOUT! Fastload file
+                    int dbstate = get_DB_state(psg.gb_main, error);
+                    if (!error && dbstate>0) error = "database was already prepared for ptserver";
+                    pt_assert(dbstate == 0 || error);
+                }
+
+                if (!error) error = cleanup_ptserver_database(psg.gb_main, PTSERVER);
+                if (!error) error = PT_prepare_data(psg.gb_main);
+
+                if (!error) error = set_DB_state(psg.gb_main, 1);
+
+                if (!error) {
+                    const char *mode = GB_supports_mapfile() ? "bfm" : "bf";
                     error            = GB_save_as(psg.gb_main, params->db_server, mode);
                 }
-            }
-        }
-        else if (strcmp(command, "-build_map") == 0) {  // create a clean mapfile for source DB
-            if (GB_supports_mapfile()) {
-                error = probe_read_data_base(params->db_server, false);
-                if (!error) {
-                    pt_assert(psg.gb_main);
-                    const char *mode = "bfm"; // save PT-server database with Fastload file
-                    error            = GB_save_as(psg.gb_main, params->db_server, mode);
-                }
-            }
-            else {
-                error = "Invalid invocation of -build_map (your ARB version does not support mapfiles)";
             }
         }
         else if (strcmp(command, "-build") == 0) {  // build command
-            error            = pt_init_main_struct(aisc_main, params->db_server);
+            if (!error) error = pt_init_main_struct(aisc_main, params->db_server);
+            if (!error) {
+                int dbstate = get_DB_state(psg.gb_main, error);
+                if (!error && dbstate != 1) {
+                    error = "database has not been prepared for ptserver";
+                }
+            }
             if (error) error = GBS_global_string("Gave up (Reason: %s)", error.deliver());
-            else {
+
+            if (!error) {
                 ULONG ARM_size_kb = 0;
                 {
                     const char *mapfile = GB_mapfile(psg.gb_main);
@@ -494,12 +516,12 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
             error = pt_init_main_struct(aisc_main, params->db_server);
             if (error) error = GBS_global_string("Gave up (Reason: %s)", error.deliver());
             else {
-                error = enter_stage_3_load_tree(aisc_main, pt_name); // now stage 3
-#if defined(DEBUG)
+                error = enter_stage_2_load_tree(aisc_main, pt_name); // now stage 2
+#if defined(CALCULATE_STATS_ON_QUERY)
                 if (!error) {
-                    printf("Tree loaded - performing checks..\n");
-                    PT_dump_tree_statistics();
-                    printf("Checks done");
+                    puts("[index loaded - calculating statistic]");
+                    PT_dump_tree_statistics(pt_name);
+                    puts("[statistic done]");
                 }
 #endif
             }

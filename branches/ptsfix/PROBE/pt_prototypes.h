@@ -15,15 +15,15 @@
 
  class DataLoc;
 
-long PTD_save_lower_tree(FILE *out, POS_TREE *node, long pos, ARB_ERROR &error);
-long PTD_save_upper_tree(FILE *out, POS_TREE *node, long pos, long &node_pos, ARB_ERROR &error);
+long PTD_save_lower_tree(FILE *out, POS_TREE1 *node, long pos, ARB_ERROR &error);
+long PTD_save_upper_tree(FILE *out, POS_TREE1 *&node, long pos, long &node_pos, ARB_ERROR &error);
 ARB_ERROR enter_stage_1_build_tree(PT_main *, const char *tname, ULONG ARM_size_kb) __ATTR__USERESULT;
-ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) __ATTR__USERESULT;
+ARB_ERROR enter_stage_2_load_tree(PT_main *, const char *tname) __ATTR__USERESULT;
 
 /* PT_debug.cxx */
-void PT_dump_tree_statistics(void);
-void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix, FILE *out);
-void PT_dump_POS_TREE(POS_TREE *IF_DEBUG (node), FILE *IF_DEBUG (out));
+void PT_dump_tree_statistics(const char *indexfilename);
+template <typename PT >void PT_dump_POS_TREE_recursive(PT *pt, const char *prefix, FILE *out);
+void PT_dump_POS_TREE(POS_TREE1 *IF_DEBUG (node), FILE *IF_DEBUG (out));
 int PT_index_dump(const PT_main *main);
 
 /* PT_etc.cxx */
@@ -42,12 +42,12 @@ int PT_find_exProb(PT_exProb *pep, int dummy_1x);
 /* PT_io.cxx */
 int compress_data(char *probestring);
 ARB_ERROR probe_read_data_base(const char *name, bool readOnly) __ATTR__USERESULT;
-int probe_compress_sequence(char *seq, int seqsize);
+size_t probe_compress_sequence(char *seq, size_t seqsize);
 char *readable_probe(const char *compressed_probe, size_t len, char T_or_U);
-char *probe_read_alignment(int j, int *psize);
-void probe_read_alignments(void);
+GB_ERROR PT_prepare_data(GBDATA *gb_main);
+GB_ERROR PT_init_input_data(void);
 void PT_build_species_hash(void);
-long PT_abs_2_rel(long pos);
+long PT_abs_2_ecoli_rel(long pos);
 
 /* PT_main.cxx */
 void PT_init_psg(void);
@@ -66,31 +66,31 @@ bytestring *MP_all_species_string(const PT_local *);
 int MP_count_all_species(const PT_local *);
 
 /* PT_new_design.cxx */
-double ptnd_check_split(PT_local *locs, const char *probe, int pos, char ref);
 char *get_design_info(const PT_tprobes *tprobe);
 char *get_design_hinfo(const PT_tprobes *tprobe);
 int PT_start_design(PT_pdc *pdc, int dummy_1x);
 
 /* PT_prefixtree.cxx */
-bool PT_chain_has_valid_entries(const POS_TREE *const node);
-PT_data *PT_init(Stage stage);
-void PT_add_to_chain(POS_TREE *node, const DataLoc &loc);
-POS_TREE *PT_change_leaf_to_node(POS_TREE *node);
-POS_TREE *PT_leaf_to_chain(POS_TREE *node);
-POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_base base, const DataLoc &loc);
-void PTD_clear_fathers(POS_TREE *node);
+template <typename CHAINITER >bool PT_chain_has_valid_entries(const typename CHAINITER ::POS_TREE_TYPE *const node);
+void PT_init_cache_sizes(Stage stage);
+void PT_add_to_chain(POS_TREE1 *node, const DataLoc &loc);
+POS_TREE1 *PT_change_leaf_to_node(POS_TREE1 *node);
+POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node);
+POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc &loc);
 void PTD_put_longlong(FILE *out, ULONG i);
 void PTD_put_int(FILE *out, ULONG i);
 void PTD_put_short(FILE *out, ULONG i);
 void PTD_put_byte(FILE *out, ULONG i);
+int PTD_put_compact_nat(FILE *out, uint_32 nat);
 void PTD_debug_nodes(void);
-long PTD_write_leafs_to_disk(FILE *out, POS_TREE *const node, long pos, long *node_pos, ARB_ERROR &error);
-ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) __ATTR__USERESULT;
+void PTD_delete_saved_node(POS_TREE1 *&node);
+long PTD_write_leafs_to_disk(FILE *out, POS_TREE1 *const node, long pos, long *node_pos, ARB_ERROR &error);
+ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE2 *&root_ptr) __ATTR__USERESULT;
 const char *get_blocksize_description(int blocksize);
 
 /* probe_tree.h */
-template <typename T >int PT_forwhole_chain(POS_TREE *node, T func);
-template <typename T >int PT_withall_tips(POS_TREE *node, T func);
+template <typename T >int PT_forwhole_chain(POS_TREE1 *node, T &func);
+template <typename T >int PT_forwhole_chain(POS_TREE2 *node, T &func);
 
 #else
 #error pt_prototypes.h included twice

@@ -19,28 +19,42 @@
 #include <cmath>
 #endif
 
-// @@@ update STAGE1_INDEX_BYTES_PER_BASE (values are too high)
+// --------------------------------------------------------------------------------
+// central settings for memory estimations
+// 
+
 #ifdef ARB_64
 
-# define STAGE1_INDEX_BYTES_PER_BASE 19.5 // size of index (for each oligo inserted in one pass)
-# define STAGE1_OTHER_BYTES_PER_BASE 1.2  // non-index data (for each bp in database)
+# define STAGE1_INDEX_BYTES_PER_PASS_OLIGO 3.7  // size of index (for each oligo inserted in one pass)
+# define STAGE1_INDEX_BYTES_PER_BASE       0.1  // size of index (for each bp in database)
+# define STAGE1_OTHER_BYTES_PER_PASS_OLIGO 1.0  // non-index data (for each oligo inserted in one pass)
+# define STAGE1_OTHER_BYTES_PER_BASE       1.15 // non-index data (for each bp in database)
 
-# define STAGE1_INDEX_EXTRA_MB 200 // additional constant memory used by index (+ a bit safety)
-# define STAGE1_OTHER_EXTRA_MB 40  // additional constant memory used elsewhere (+ a bit safety)
-
-# define PTSERVER_BIN_MB 20       // binary mem footprint of ptserver (incl. libs, w/o DB) detected using pmap
+# define STAGE1_INDEX_EXTRA_MB 350 // additional constant memory used by index (+ a bit safety)
+# define STAGE1_OTHER_EXTRA_MB 80  // additional constant memory used elsewhere (+ a bit safety)
 
 #else
 
-# error usage not determined yet
-# define STAGE1_INDEX_BYTES_PER_BASE 35
+# define STAGE1_INDEX_BYTES_PER_PASS_OLIGO 3.2  // size of index (for each oligo inserted in one pass)
+# define STAGE1_INDEX_BYTES_PER_BASE       0    // size of index (for each bp in database)
+# define STAGE1_OTHER_BYTES_PER_PASS_OLIGO 0.7  // non-index data (for each oligo inserted in one pass)
+# define STAGE1_OTHER_BYTES_PER_BASE       1    // non-index data (for each bp in database)
+
+# define STAGE1_INDEX_EXTRA_MB 150 // additional constant memory used by index (+ a bit safety)
+# define STAGE1_OTHER_EXTRA_MB 50  // additional constant memory used elsewhere (+ a bit safety)
 
 #endif
 
+# define PTSERVER_BIN_MB 20       // binary mem footprint of ptserver (incl. libs, w/o DB) detected using pmap
+
+#define STAGE1_BYTES_PER_PASS_OLIGO (STAGE1_INDEX_BYTES_PER_PASS_OLIGO + STAGE1_OTHER_BYTES_PER_PASS_OLIGO)
+#define STAGE1_BYTES_PER_BASE       (STAGE1_INDEX_BYTES_PER_BASE       + STAGE1_OTHER_BYTES_PER_BASE)
+#define STAGE1_EXTRA_MB             (STAGE1_INDEX_EXTRA_MB             + STAGE1_OTHER_EXTRA_MB)
+
 inline ULONG estimate_stage1_memusage_kb(ULONG all_bp, ULONG partition_bp) {
-    return ULONG(STAGE1_INDEX_BYTES_PER_BASE * partition_bp / 1024.0 +
-                 STAGE1_OTHER_BYTES_PER_BASE * all_bp / 1024.0 +
-                 (STAGE1_INDEX_EXTRA_MB + STAGE1_OTHER_EXTRA_MB) * 1024 +
+    return ULONG(STAGE1_BYTES_PER_PASS_OLIGO * partition_bp / 1024.0 +
+                 STAGE1_BYTES_PER_BASE       * all_bp / 1024.0 +
+                 STAGE1_EXTRA_MB             * 1024 +
                  0.5);
 }
 
@@ -120,21 +134,41 @@ public:
         return of_range(prefix_idx, prefix_idx);
     }
 
-    int find_index_near_leftsum(double wanted_leftsum) const {
+    int find_index_near_leftsum(double wanted) const {
         // returned index is in range [0 ... prefixes]
 
-        int    best_idx  = -1;
-        double best_diff = 2.0;
+        int best_idx;
+        if (prefixes == 0) best_idx = 0;
+        else {
+            int low  = 0;
+            int high = prefixes;
 
-        for (int i = 0; i <= prefixes; ++i) {
-            double diff = fabs(left_of(i)-wanted_leftsum);
-            if (diff<best_diff) {
-                best_diff = diff;
-                best_idx  = i;
+            double lol = left_of(low);
+            if (lol >= wanted) best_idx = low;
+            else {
+                double loh = left_of(high);
+                if (loh<wanted) best_idx = high;
+                else  {
+                    while ((low+1)<high) {
+                        pt_assert(lol<wanted && wanted<=loh);
+
+                        int mid = (low+high)/2;
+                        pt_assert(mid != low && mid != high);
+
+                        double left_of_mid = left_of(mid);
+                        if (left_of_mid<wanted) {
+                            low = mid;
+                            lol = left_of_mid;
+                        }
+                        else {
+                            high = mid;
+                            loh  = left_of_mid;
+                        }
+                    }
+                    best_idx = fabs(lol-wanted) < fabs(loh-wanted) ? low : high;
+                }
             }
         }
-
-        pt_assert(best_idx >= 0);
         return best_idx;
     }
 };

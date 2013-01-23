@@ -12,6 +12,7 @@
 #include "probe_match_parser.hxx"
 
 #include <PT_com.h>
+#include <PT_server.h> // needed for DOMAIN_MIN_LENGTH
 #include <client.h>
 #include <servercntrl.h>
 #include <probe_design.hxx>
@@ -565,7 +566,10 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
         progress.subtitle("Reading results from server");
         {
             char *locs_error = 0;
-            if (aisc_get(PD.link, PT_LOCS, PD.locs, LOCS_ERROR, &locs_error, NULL)) {
+            if (aisc_get(PD.link, PT_LOCS, PD.locs,
+                         LOCS_ERROR, &locs_error,
+                         NULL))
+            {
                 aw_message ("Connection to PT_SERVER lost (1)");
                 abort = true;
             }
@@ -1151,11 +1155,11 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_int  (AWAR_PD_DESIGN_MAXBOND,    4,    props)->set_minmax(0, 20);
     root->awar_float(AWAR_PD_DESIGN_MINTARGETS, 50.0, props)->set_minmax(0, 100);
 
-    root->awar_int  (AWAR_PD_DESIGN_PROBELENGTH,  18,     props)->set_minmax(10, 100);
-    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     30.0,   props)->set_minmax(0,  1000);
-    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0,  1000);
-    root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   props)->set_minmax(0,  100);
-    root->awar_float(AWAR_PD_DESIGN_MAX_GC,       100.0,  props)->set_minmax(0,  100);
+    root->awar_int  (AWAR_PD_DESIGN_PROBELENGTH,  18,     props)->set_minmax(DOMAIN_MIN_LENGTH, 100);
+    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     30.0,   props)->set_minmax(0, 1000);
+    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0, 1000);
+    root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   props)->set_minmax(0, 100);
+    root->awar_float(AWAR_PD_DESIGN_MAX_GC,       100.0,  props)->set_minmax(0, 100);
 
     root->awar_string(AWAR_PD_DESIGN_MIN_ECOLIPOS, "", props);
     root->awar_string(AWAR_PD_DESIGN_MAX_ECOLIPOS, "", props);
@@ -1774,8 +1778,7 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
 
         progress.subtitle("Exporting the database");
         {
-            const char *mode = "bfm"; // save PT-server database with Fastload file
-
+            const char *mode = GB_supports_mapfile() ? "mbf" : "bf"; // save PT-server database with Fastload file (if supported)
             if (create_gene_server) {
                 char *temp_server_name = GBS_string_eval(file, "*.arb=*_temp.arb", 0);
                 error = GB_save_as(gb_main, temp_server_name, mode);

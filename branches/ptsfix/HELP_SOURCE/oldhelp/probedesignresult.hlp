@@ -17,47 +17,55 @@ DESCRIPTION	The 'PD RESULT' window is displayed automatically after
 		'RESULT' button of the 'PROBE DESIGN' window.
 
 		The parameters defined by in the 'PROBE DESIGN' window are
-			listed in the first line of the display area of the 'PD
-			RESULT' window.
+			listed in the first few lines of the 'PD RESULT' window.
 
-		The target and probe sequences are given in the first and last
-			columns of the display area, respectively.
+	
+		Description of single display columns:
 
-		The length of the proposed probe is given in column 2.
+			Column		contains
 
-		Columns 3 and 4 indicate the 5'-positions of the target sites
-			within the alignment and the E.coli sequence,
-			respectively
+			Target		the target sequence of the designed probe
+			le		length of designed probe
+			apos		absolute 5'-position of the target sites
+					(most often targeted position)
+			ecol		ecoli-relative position
+			qual		a probe quality indicator (see below)
+			grps		groupsize (number of perfect hits in target-species)
+			G+C		G+C content
+			temp		predicted dissociation temperature (4GC+2AT)
+			Probe		the designed probe sequence 
+			
+		The numbers of the next columns (from left to right) indicates how many 
+		non-target species would be detected by this probe if the temperature would 
+		be gradually lowered ('_' means no hits).
 
-		The number of species targeted (perfectly paired) by the probe
-			is given in column 5.
+		The columns do only represent virtual temperature shifts and cannot be 
+		assigned to degree centigrade!
 
-		The G+C contents and predicted dissociation temperatures (4xGC +
-			2xAT) are listed in columns 6 and 7, respectively.
-
-		The numbers of the next columns (from left to right) indicated
-			how many non-target species would be detected by the
-			particular probe if the temperature would be gradually
-			lowered.
-
-			!!! The columns do only represent virtual temperature
-                            shifts and cannot be assigned to degree centigrade!!!
-
-		To write the results to an ascii file press the 'SAVE' button
-			to display the 'SELECTION BOX' window.
+		To write the results to an ascii file press the 'SAVE' button to display 
+		the 'SELECTION BOX' window.
 
                 The 'Auto match' toggle has the same meaning as in LINK{probematch.hlp}.
 
 SECTION         SORTING
 
-                The program brings the best probes to the front of the list.
-		Best means the product
+		The probes are sorted by quality. The quality tries to reflect how good
+		each probe separates between target- and non-target group.
 
-                     group_hits * (min. mismatches to non group sp.)
+		Therefore it detects the column COL in the decrease-temparature-list, where
+		more than twice as much non-target species get hitten than allowed.
 
-		It does not take G+C, temperature or ECOLI position into account.
+						            1000
+			quality = groupsize * COL + ----------------------
+                                                     1000 + (hits in COL)
+		
+
+		Probes with equal qualities are sorted by absolute position and 
+		then alphabetically. It does not take G+C content, temperature 
+		or ECOLI position into account.
+
 		It is up to the user to study the list carefully and choose his
-		candidates. ( In our lab we often found the 20th probe the best ).
+		candidates. In our lab we often found the 20th probe was the best.
 
 
 NOTES		None

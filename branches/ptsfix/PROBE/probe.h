@@ -20,9 +20,12 @@
 #ifndef PT_TOOLS_H
 #include "PT_tools.h"
 #endif
+#ifndef CACHE_H
+#include <cache.h>
+#endif
 
 #define PT_SERVER_MAGIC   0x32108765                // pt server identifier
-#define PT_SERVER_VERSION 2                         // version of pt server database (no versioning till 2009/05/13)
+#define PT_SERVER_VERSION 3                         // version of pt server database (no versioning till 2009/05/13)
 
 #if defined(DEBUG)
 // # define PTM_DEBUG_NODES
@@ -30,16 +33,18 @@
 // # define PTM_DEBUG_VALIDATE_CHAINS
 #endif // DEBUG
 
+#define CALCULATE_STATS_ON_QUERY // @@@ move into DEBUG section above
+
 #if defined(PTM_DEBUG_STAGE_ASSERTIONS)
-#define pt_assert_stage(s) pt_assert(psg.ptdata->get_stage() == (s))
+#define pt_assert_stage(s) pt_assert(psg.get_stage() == (s))
 #else // !defined(PTM_DEBUG_STAGE_ASSERTIONS)
 #define pt_assert_stage(s) 
 #endif
 
 #if defined(PTM_DEBUG_VALIDATE_CHAINS)
-#define pt_assert_valid_chain(node) pt_assert(PT_chain_has_valid_entries(node))
+#define pt_assert_valid_chain_stage1(node) pt_assert(PT_chain_has_valid_entries<ChainIteratorStage1>(node))
 #else // !defined(PTM_DEBUG_VALIDATE_CHAINS)
-#define pt_assert_valid_chain(node) 
+#define pt_assert_valid_chain_stage1(node) 
 #endif
 
 typedef unsigned long ULONG;
@@ -90,6 +95,7 @@ enum PT_base {
 
 inline bool is_std_base(char b) { return b >= PT_A && b <= PT_T; }
 inline bool is_ambig_base(char b) { return b == PT_QU || b == PT_N; }
+inline bool is_valid_base(char b) { return b >= PT_QU && b < PT_BASES; }
 
 inline char base_2_readable(char base) {
     static char table[] = ".NACGU";
@@ -113,88 +119,82 @@ inline void reverse_probe(char *seq, int len) {
     while (i<j) std::swap(seq[i++], seq[j--]);
 }
 
-// -----------------
-//      POS TREE
+struct POS_TREE1;
+struct POS_TREE2;
 
-enum PT_NODE_TYPE {
-    PT_NT_LEAF  = 0,
-    PT_NT_CHAIN = 1,
-    PT_NT_NODE  = 2,
-    PT_NT_SAVED = 3, // stage 1 only
-    PT_NT_UNDEF = 4
-};
-
-struct POS_TREE {
-    uchar flags;
-    char  data;
-};
-
-enum Stage { STAGE1, STAGE3 }; // STAGE2 does not exist
-
-class PT_data {
-    Stage  stage;
-    int    data_offset;
-    char  *data_start; // @@@ change to unsigned long (i.e. use offset)
-
-public:
-    PT_data(Stage stage_);
-
-    Stage get_stage() const { return stage; }
-    int get_offset() const { return data_offset; } // @@@ rename
-
-    void use_rel_pointers(char *relStartAddress) { data_start = relStartAddress; }
-    POS_TREE *rel2abs(unsigned long relPtr) const { return (POS_TREE*)(data_start+relPtr); } // @@@ elim (only used in stage1 where it makes no sense)
-};
+enum Stage { STAGE1, STAGE2 };
 
 // ---------------------
 //      Probe search
 
-class probe_input_data : virtual Noncopyable {      // every taxa's own data
+class probe_input_data : virtual Noncopyable { // every taxa's own data
+    int     size;       // @@@ misleading (contains 1 if no bases in sequence)
+    GBDATA *gb_species;
+    bool    group;      // probe_design: whether species is in group
 
-    char *data;       // sequence
-    long  checksum;   // checksum of sequence
-    int   size; // @@@ misleading (contains 1 if no bases in sequence)
+    typedef SmartArrayPtr(int) SmartIntPtr;
 
-    char   *name;
-    char   *fullname;
-    GBDATA *gbd;
+    mutable cache::CacheHandle<SmartCharPtr> seq;
+    mutable cache::CacheHandle<SmartIntPtr>  rel2abs;
 
-    bool group;           // probe_design: whether species is in group
+    static cache::Cache<SmartCharPtr> seq_cache;
+    static cache::Cache<SmartIntPtr>  rel2abs_cache;
 
-    // obsolete methods below @@@ remove them
-    GBDATA *get_gbdata() const { return gbd; }
-    void set_data(char *assign, int size_) { pt_assert(!data); data = assign; size = size_; }
-    void set_checksum(long cs) { checksum = cs; }
-    
+    SmartCharPtr loadSeq() const {
+        GB_transaction ta(gb_species);
+        GBDATA *gb_compr = GB_entry(gb_species, "compr");
+        return SmartCharPtr(GB_read_bytes(gb_compr));
+    }
+
 public:
 
     probe_input_data()
-        : data(0),
-          checksum(0), 
-          size(0), 
-          name(0), 
-          fullname(0), 
-          gbd(0), 
-          group(false) 
+        : size(0),
+          gb_species(0),
+          group(false)
     {}
     ~probe_input_data() {
-        free(data);
-        free(name);
-        free(fullname);
+        seq.release(seq_cache);
+        rel2abs.release(rel2abs_cache);
     }
 
-    GB_ERROR init(GBDATA *gbd_);
+    static void set_cache_sizes(size_t seq_cache_size, size_t abs_cache_size) {
+        seq_cache.resize(seq_cache_size);
+        rel2abs_cache.resize(abs_cache_size);
+    }
 
-    const char *get_data() const { return data; }
-    char *read_alignment(int *psize) const;
+    GB_ERROR init(GBDATA *gb_species_);
 
-    const char *get_name() const { return name; }
-    const char *get_fullname() const { return fullname; }
-    long get_checksum() const { return checksum; }
+    SmartCharPtr get_dataPtr() const {
+        if (!seq.is_cached()) seq.assign(loadSeq(), seq_cache);
+        return seq.access(seq_cache);
+    }
+
+    // @@@ speed up all DB-searches by directly using GBQUARK
+    const char *get_shortname() const {
+        GB_transaction ta(gb_species);
+
+        GBDATA *gb_name = GB_entry(gb_species, "name");
+        pt_assert(gb_name);
+        return GB_read_char_pntr(gb_name);
+    }
+    const char *get_fullname() const {
+        GB_transaction ta(gb_species);
+
+        GBDATA *gb_full = GB_entry(gb_species, "full_name");
+        return gb_full ? GB_read_char_pntr(gb_full) : "";
+    }
+    long get_checksum() const { // @@@ change return-type -> uint32_t
+        GB_transaction ta(gb_species);
+        GBDATA *gb_cs = GB_entry(gb_species, "cs");
+        pt_assert(gb_cs);
+        uint32_t csum = uint32_t(GB_read_int(gb_cs));
+        return csum;
+    }
     int get_size() const { return size; }
 
-    PT_base base_at(int rpos) const {
-        return rpos >= 0 && rpos<get_size() ? PT_base(get_data()[rpos]) : PT_QU;
+    bool valid_rel_pos(int rel_pos) const { // returns true if rel_pos is inside sequence
+        return rel_pos >= 0 && rel_pos<get_size();
     }
 
     bool inside_group() const { return group; }
@@ -202,14 +202,63 @@ public:
 
     void set_group_state(bool isGroupMember) { group = isGroupMember; }
 
-    long get_abspos() const {
+    long get_geneabspos() const {
         pt_assert(gene_flag); // only legal in gene-ptserver
-        GBDATA *gb_pos = GB_entry(get_gbdata(), "abspos");
+        GBDATA *gb_pos = GB_entry(gb_species, "abspos");
         if (gb_pos) return GB_read_int(gb_pos);
         return -1;
     }
 
-private:
+    void preload_rel2abs() const {
+        if (!rel2abs.is_cached()) {
+            GB_transaction ta(gb_species);
+
+            GBDATA *gb_baseoff = GB_entry(gb_species, "baseoff");
+            pt_assert(gb_baseoff);
+
+            const GB_CUINT4 *baseoff = GB_read_ints_pntr(gb_baseoff);
+
+            int *r2a = new int[size];
+
+            int abs = 0;
+            for (int rel = 0; rel<size; ++rel) {
+                abs      += baseoff[rel];
+                r2a[rel]  = abs;
+            }
+
+            rel2abs.assign(r2a, rel2abs_cache);
+        }
+    }
+    size_t get_abspos(size_t rel_pos) const {
+        pt_assert(rel2abs.is_cached()); // you need to call preload_rel2abs
+        return (&*rel2abs.access(rel2abs_cache))[rel_pos]; // @@@ brute-forced
+    }
+
+    size_t calc_relpos(int abs_pos) const { // expensive
+        preload_rel2abs();
+        SmartIntPtr  rel2abs_ptr = rel2abs.access(rel2abs_cache);
+        const int   *r2a     = &*rel2abs_ptr;
+
+        int l = 0;
+        int h = get_size()-1;
+
+        if (r2a[l] == abs_pos) return l;
+        if (r2a[h] == abs_pos) return h;
+
+        while (l<h) {
+            int m = (l+h)/2;
+            if (r2a[m]<abs_pos) {
+                l = m;
+            }
+            else if (r2a[m]>abs_pos) {
+                h = m;
+            }
+            else {
+                return m;
+            }
+        }
+        return l;
+    }
 };
 
 struct probe_statistic_struct {
@@ -272,11 +321,17 @@ public:
     int get_most_used() const { return pos; }
 };
 
-struct probe_struct_global {
+class probe_struct_global {
+    Stage stage;
+
+    union {
+        POS_TREE1 *p1;
+        POS_TREE2 *p2;
+    } pt;
+
+public:
     GB_shell *gb_shell;
     GBDATA   *gb_main;                              // ARBDB interface
-    GBDATA   *gb_species_data;
-    GBDATA   *gb_sai_data;
     char     *alignment_name;
     GB_HASH  *namehash;                             // name to int
 
@@ -293,26 +348,29 @@ struct probe_struct_global {
 
     double *pos_to_weight;                          // position to weight
 
-    int height;                                     // used in PT_forwhole_chain callbacks (design+debug)
-
     MostUsedPos abs_pos;
 
     int sort_by;
 
-    const char *probe;                              // used in PT_forwhole_chain callbacks (design)
-    char       *main_probe;
+    char *main_probe;
 
     char      *server_name;                         // name of this server
     aisc_com  *link;
     T_PT_MAIN  main;
     Hs_struct *com_so;                              // the communication socket
-    POS_TREE  *pt;
-    PT_data   *ptdata;
 
     probe_statistic_struct stat;
 
+    bool big_db; // STAGE2 only (true -> uses 8 bit pointers)
+
     void setup();
     void cleanup();
+
+    void enter_stage(Stage stage_);
+    Stage get_stage() const { return stage; }
+
+    POS_TREE1*& TREE_ROOT1() { pt_assert(stage == STAGE1); return pt.p1; }
+    POS_TREE2*& TREE_ROOT2() { pt_assert(stage == STAGE2); return pt.p2; }
 };
 
 extern probe_struct_global psg;

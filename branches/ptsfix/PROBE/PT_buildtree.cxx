@@ -28,15 +28,15 @@
 
 // AISC_MKPT_PROMOTE: class DataLoc;
 
-static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
-    POS_TREE *at = root;
-    int       height = 0;
+static POS_TREE1 *build_pos_tree(POS_TREE1 *const root, const ReadableDataLoc& loc) {
+    POS_TREE1 *at     = root;
+    int        height = 0;
 
-    while (PT_read_type(at) == PT_NT_NODE) {    // now we got an inner node
-        POS_TREE *pt_next = PT_read_son_stage_1(at, loc[height]);
+    while (at->is_node()) {    // now we got an inner node
+        POS_TREE1 *pt_next = PT_read_son(at, loc[height]);
         if (!pt_next) { // there is no son of that type -> simply add the new son to that path
-            POS_TREE *new_root = root;
-            POS_TREE *leaf;
+            POS_TREE1 *new_root = root;
+            POS_TREE1 *leaf;
             {
                 bool atRoot = (at == root);
 
@@ -62,7 +62,7 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
             if (loc.is_shorther_than(height)) {
                 // end of sequence reached -> change node to chain and add
                 pt_assert(loc[height-1] == PT_QU);
-                pt_assert(PT_read_type(at) == PT_NT_CHAIN);
+                pt_assert(at->is_chain());
 
                 PT_add_to_chain(at, loc);
                 return root;
@@ -71,30 +71,30 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
     }
 
     // type == leaf or chain
-    if (PT_read_type(at) == PT_NT_CHAIN) {      // old chain reached
+    if (at->is_chain()) {      // old chain reached
         PT_add_to_chain(at, loc);
         return root;
     }
 
     // change leaf to node and create two sons
 
-    const DataLoc loc_ref(at);
+    const ReadableDataLoc loc_ref(at);
 
     while (loc[height] == loc_ref[height]) {  // creates nodes until sequences are different
-        pt_assert(PT_read_type(at) != PT_NT_NODE);
+        pt_assert(!at->is_node());
 
-        if (PT_read_type(at) == PT_NT_CHAIN) {
+        if (at->is_chain()) {
             PT_add_to_chain(at, loc);
             return root;
         }
         if (height >= PT_POS_TREE_HEIGHT) {
-            if (PT_read_type(at) == PT_NT_LEAF) at = PT_leaf_to_chain(at);
-            pt_assert(PT_read_type(at) == PT_NT_CHAIN);
+            if (at->is_leaf()) at = PT_leaf_to_chain(at);
+            pt_assert(at->is_chain());
             PT_add_to_chain(at, loc);
             return root;
         }
 
-        pt_assert(PT_read_type(at) == PT_NT_LEAF);
+        pt_assert(at->is_leaf());
 
         bool loc_done = loc.is_shorther_than(height+1);
         bool ref_done = loc_ref.is_shorther_than(height+1);
@@ -121,11 +121,11 @@ static POS_TREE *build_pos_tree(POS_TREE *const root, const DataLoc& loc) {
     pt_assert(loc[height] != loc_ref[height]);
 
     if (height >= PT_POS_TREE_HEIGHT) {
-        if (PT_read_type(at) == PT_NT_LEAF) at = PT_leaf_to_chain(at);
+        if (at->is_leaf()) at = PT_leaf_to_chain(at);
         PT_add_to_chain(at, loc);
         return root;
     }
-    if (PT_read_type(at) == PT_NT_CHAIN) {
+    if (at->is_chain()) {
         // not covered by test - but looks similar to case in top-loop
         PT_add_to_chain(at, loc);
     }
@@ -174,65 +174,64 @@ inline void get_abs_align_pos(char *seq, int &pos) {
     pos+=q_exists;
 }
 
-static bool all_sons_saved(POS_TREE *node);
-inline bool is_saved(POS_TREE *node) {
-    PT_NODE_TYPE type = PT_read_type(node);
-    return (type == PT_NT_NODE) ? all_sons_saved(node) : (type == PT_NT_SAVED);
+static bool all_sons_saved(POS_TREE1 *node);
+inline bool has_unsaved_sons(POS_TREE1 *node) {
+    POS_TREE1::TYPE type = node->get_type();
+    return (type == PT1_NODE) ? !all_sons_saved(node) : (type != PT1_SAVED);
 }
-inline bool is_completely_saved(POS_TREE *node) { return PT_read_type(node) == PT_NT_SAVED; }
-static bool all_sons_saved(POS_TREE *node) {
-    pt_assert(PT_read_type(node) == PT_NT_NODE);
+static bool all_sons_saved(POS_TREE1 *node) {
+    pt_assert(node->is_node());
 
     for (int i = PT_QU; i < PT_BASES; i++) {
-        POS_TREE *son = PT_read_son_stage_1(node, (PT_base)i);
+        POS_TREE1 *son = PT_read_son(node, (PT_base)i);
         if (son) {
-            if (!is_saved(son)) return false;
+            if (has_unsaved_sons(son)) return false;
         }
     }
     return true;
 }
 
-static long write_subtree(FILE *out, POS_TREE *node, long pos, long *node_pos, ARB_ERROR& error) {
+static long write_subtree(FILE *out, POS_TREE1 *node, long pos, long *node_pos, ARB_ERROR& error) {
     pt_assert_stage(STAGE1);
-    PTD_clear_fathers(node);
+    node->clear_fathers();
     return PTD_write_leafs_to_disk(out, node, pos, node_pos, error);
 }
 
-static long save_lower_subtree(FILE *out, POS_TREE *node, long pos, int height, ARB_ERROR& error) {
+static long save_lower_subtree(FILE *out, POS_TREE1 *node, long pos, int height, ARB_ERROR& error) {
     if (height >= PT_MIN_TREE_HEIGHT) { // in lower part of tree
         long dummy;
         pos = write_subtree(out, node, pos, &dummy, error);
     }
     else {
-        switch (PT_read_type(node)) {
-            case PT_NT_NODE:
+        switch (node->get_type()) {
+            case PT1_NODE:
                 for (int i = PT_QU; i<PT_BASES; ++i) {
-                    POS_TREE *son = PT_read_son_stage_1(node, PT_base(i));
+                    POS_TREE1 *son = PT_read_son(node, PT_base(i));
                     if (son) pos = save_lower_subtree(out, son, pos, height+1, error);
                 }
                 break;
 
-            case PT_NT_CHAIN: {
+            case PT1_CHAIN: {
                 long dummy;
                 pos = write_subtree(out, node, pos, &dummy, error);
                 break;
             }
-            case PT_NT_LEAF: pt_assert(0); break; // leafs shall not occur above PT_MIN_TREE_HEIGHT
-            case PT_NT_SAVED: break; // ok - saved by previous call
-            default: pt_assert(0); break;
+            case PT1_LEAF: pt_assert(0); break; // leafs shall not occur above PT_MIN_TREE_HEIGHT
+            case PT1_SAVED: break; // ok - saved by previous call
+            case PT1_UNDEF: pt_assert(0); break;
         }
     }
     return pos;
 }
 
-static long save_upper_tree(FILE *out, POS_TREE *node, long pos, long& node_pos, ARB_ERROR& error) {
+static long save_upper_tree(FILE *out, POS_TREE1 *node, long pos, long& node_pos, ARB_ERROR& error) {
     pos = write_subtree(out, node, pos, &node_pos, error);
     return pos;
 }
 
-inline void check_tree_was_saved(POS_TREE *node, const char *whatTree, bool completely, ARB_ERROR& error) {
+inline void check_tree_was_saved(POS_TREE1 *node, const char *whatTree, bool completely, ARB_ERROR& error) {
     if (!error) {
-        bool saved = completely ? is_completely_saved(node) : is_saved(node);
+        bool saved = completely ? node->is_saved() : !has_unsaved_sons(node);
         if (!saved) {
 #if defined(DEBUG)
             fprintf(stderr, "%s was not completely saved:\n", whatTree);
@@ -243,16 +242,17 @@ inline void check_tree_was_saved(POS_TREE *node, const char *whatTree, bool comp
     }
 }
 
-long PTD_save_lower_tree(FILE *out, POS_TREE *node, long pos, ARB_ERROR& error) {
+long PTD_save_lower_tree(FILE *out, POS_TREE1 *node, long pos, ARB_ERROR& error) {
     pos = save_lower_subtree(out, node, pos, 0, error);
     check_tree_was_saved(node, "lower tree", false, error);
     return pos;
 }
 
-long PTD_save_upper_tree(FILE *out, POS_TREE *node, long pos, long& node_pos, ARB_ERROR& error) {
-    pt_assert(is_saved(node)); // forgot to call PTD_save_lower_tree?
+long PTD_save_upper_tree(FILE *out, POS_TREE1*& node, long pos, long& node_pos, ARB_ERROR& error) {
+    pt_assert(!has_unsaved_sons(node)); // forgot to call PTD_save_lower_tree?
     pos = save_upper_tree(out, node, pos, node_pos, error);
     check_tree_was_saved(node, "tree", true, error);
+    PTD_delete_saved_node(node);
     return pos;
 }
 
@@ -340,7 +340,10 @@ public:
     Partition partition() const { return Partition(depth, passes); }
 };
 
-static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable) {
+static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable, int forced_passes) {
+    // if 'forced_passes' == 0 -> decide number of passes such that estimated memuse is hard up for 'max_kb_usable'
+    // if 'forced_passes' > 0 -> ignore available memory (for DEBUGGING memory estimation)
+
     fflush_all();
 
     PartitionSpec best;
@@ -349,16 +352,26 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable)
         PrefixProbabilities prob(depth);
 
         int maxPasses = prob.get_prefix_count();
-        for (int passes = 1; passes <= maxPasses; ++passes) {
-            PartitionSpec curr(passes, max_kb_for_passes(prob, passes, overallBases), depth);
-            if (curr.isBetterThan(best, max_kb_usable)) {
-                best = curr;
-                best.dump(stdout, max_kb_usable);
+        if (forced_passes) {
+            if (maxPasses >= forced_passes) {
+                PartitionSpec curr(forced_passes, max_kb_for_passes(prob, forced_passes, overallBases), depth);
+                if (curr.isBetterThan(best, max_kb_usable)) {
+                    best = curr;
+                    best.dump(stdout, max_kb_usable);
+                }
             }
-            if (!curr.willUseMoreThan(max_kb_usable)) break;
+        }
+        else {
+            for (int passes = 1; passes <= maxPasses; ++passes) {
+                PartitionSpec curr(passes, max_kb_for_passes(prob, passes, overallBases), depth);
+                if (curr.isBetterThan(best, max_kb_usable)) {
+                    best = curr;
+                    best.dump(stdout, max_kb_usable);
+                }
+                if (!curr.willUseMoreThan(max_kb_usable)) break;
+            }
         }
     }
-
     fflush(stdout);
 
     if (best.willUseMoreThan(max_kb_usable)) {
@@ -375,7 +388,7 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable)
                 "  amounts of memory and will possibly run for days, weeks or even months.\n"
                 "\n", allowed_passes);
 
-                fflush(stderr);
+        fflush(stderr);
     }
 
     return best.partition();
@@ -401,7 +414,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
             error = GBS_global_string("Cannot open %s", t2name);
         }
         else {
-            POS_TREE *pt = NULL;
+            POS_TREE1 *pt = NULL;
             
             {
                 GB_ERROR sm_error = GB_set_mode_of_file(t2name, 0666);
@@ -417,7 +430,8 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
             // ARB applications by writing to log
             GBS_add_ptserver_logentry(GBS_global_string("Calculating probe tree (%s)", tname));
 
-            psg.ptdata = PT_init(STAGE1);
+            psg.enter_stage(STAGE1);
+            PT_init_cache_sizes(STAGE1);
 
             pt = PT_create_leaf(NULL, PT_N, DataLoc(0, 0, 0));  // create main node
             pt = PT_change_leaf_to_node(pt);
@@ -427,20 +441,19 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
             ULONG available_memory = GB_get_usable_memory() - ARM_size_kb - PTSERVER_BIN_MB*1024;
             printf("Memory available for build: %s\n", GBS_readable_size(available_memory*1024, "b"));
 
-            Partition partition = decide_passes_to_use(psg.char_count, available_memory);
-
-// #define FORCE_PASSES 13
-#if defined(FORCE_PASSES)
-            for (int depth = 0; depth <= PT_MAX_PARTITION_DEPTH; ++depth) {
-                PrefixProbabilities prob(depth);
-                if (prob.get_prefix_count() >= FORCE_PASSES) {
-                    partition = Partition(prob, FORCE_PASSES);
+            int forcedPasses = 0; // means "do not force"
+            {
+                const char *forced = GB_getenv("ARB_PTS_FORCE_PASSES");
+                if (forced) {
+                    int f = atoi(forced);
+                    if (f >= 1) {
+                        forcedPasses = f;
+                        printf("Warning: Forcing %i passes (by envvar ARB_PTS_FORCE_PASSES='%s')\n", forcedPasses, forced);
+                    }
                 }
             }
-            printf("Warning: Forcing %i passes (for DEBUG reasons)\n", FORCE_PASSES);
-            printf("Estimated memusage: %s\n", GBS_readable_size(partition.estimate_max_kb_for_any_pass(psg.char_count)*1024, "b"));
-#endif
 
+            Partition partition = decide_passes_to_use(psg.char_count, available_memory, forcedPasses);
             {
                 size_t max_part = partition.estimate_max_probes_for_any_pass(psg.char_count);
                 printf("Overall bases:       %s\n", GBS_readable_size(psg.char_count, "bp"));
@@ -456,23 +469,20 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
                 ++currPass;
                 arb_progress data_progress(GBS_global_string("pass %i/%i", currPass, passes), psg.data_count);
 
-                for (int i = 0; i < psg.data_count; i++) {
-                    int                      psize;
-                    char                    *align_abs = probe_read_alignment(i, &psize);
-                    const probe_input_data&  pid       = psg.data[i];
-                    const char              *probe     = pid.get_data();
+                for (int name = 0; name < psg.data_count; name++) {
+                    const probe_input_data& pid = psg.data[name];
 
-                    int abs_align_pos = psize-1;
-                    for (int j = pid.get_size() - 1; j >= 0; j--, abs_align_pos--) {
-                        get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
-                        if (abs_align_pos < 0) break; // -> in this case abort
+                    SmartCharPtr  seqPtr = pid.get_dataPtr();
+                    const char   *seq    = &*seqPtr;
 
-                        if (partition.contains(probe+j)) {
-                            pt = build_pos_tree(pt, DataLoc(i, abs_align_pos, j));
+                    pid.preload_rel2abs();
+                    ReadableDataLoc insertLoc(name, 0, 0);
+                    for (int rel = pid.get_size() - 1; rel >= 0; rel--) {
+                        if (partition.contains(seq+rel)) {
+                            insertLoc.set_position(pid.get_abspos(rel), rel);
+                            pt = build_pos_tree(pt, insertLoc);
                         }
                     }
-                    free(align_abs);
-
                     ++data_progress;
                 }
 
@@ -492,6 +502,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
             long last_obj = 0;
             if (!error) {
                 pos = PTD_save_upper_tree(out, pt, pos, last_obj, error);
+                pt_assert(!pt);
             }
             if (!error) {
                 bool need64bit = false; // does created db need a 64bit ptserver ?
@@ -546,8 +557,6 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
                 if (!error) {
                     GB_ERROR sm_error = GB_set_mode_of_file(tname, 00666);
                     if (sm_error) GB_warning(sm_error);
-
-                    psg.pt = pt;
                 }
             }
 
@@ -579,11 +588,12 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
     return error;
 }
 
-ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USERESULT
+ARB_ERROR enter_stage_2_load_tree(PT_main *, const char *tname) { // __ATTR__USERESULT
     // load tree from disk
     ARB_ERROR error;
 
-    psg.ptdata = PT_init(STAGE3);
+    psg.enter_stage(STAGE2);
+    PT_init_cache_sizes(STAGE2);
 
     {
         long size = GB_size_of_file(tname);
@@ -591,13 +601,13 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
             error = GB_IO_error("stat", tname);
         }
         else {
-            printf("- reading Tree %s of size %li from disk\n", tname, size);
+            printf("- mapping ptindex ('%s', %s) from disk\n", tname, GBS_readable_size(size, "b"));
             FILE *in = fopen(tname, "r");
             if (!in) {
                 error = GB_IO_error("read", tname);
             }
             else {
-                error = PTD_read_leafs_from_disk(tname, &psg.pt);
+                error = PTD_read_leafs_from_disk(tname, psg.TREE_ROOT2());
                 fclose(in);
             }
         }
@@ -611,6 +621,7 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
 #ifdef UNIT_TESTS
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
+#include "PT_compress.h"
 #endif
 
 void TEST_PrefixProbabilities() {
@@ -665,20 +676,18 @@ static int count_passes(Partition& p) {
     return count;
 }
 
-class Compressed : virtual Noncopyable {
-    size_t  len;
-    char   *data;
+class Compressed {
+    size_t        len;
+    PT_compressed compressed;
+
 public:
     Compressed(const char *readable)
-        : len(strlen(readable)+1),
-          data(new char[len])
+        : len(strlen(readable)),
+          compressed(len)
     {
-        memcpy(data, readable, len);
-        probe_compress_sequence(data, len);
+        compressed.createFrom(readable, len);
     }
-    ~Compressed() { delete [] data; }
-
-    const char *seq() const { return data; }
+    const char *seq() const { return compressed.get_seq(); }
 };
 
 void TEST_MarkedPrefixes() {
@@ -722,6 +731,12 @@ void TEST_MarkedPrefixes() {
     TEST_EXPECT_EQUAL(mp2.isMarked(Compressed("TA").seq()), false);
 }
 
+#if defined(ARB_64)
+#define VAL_64_32_BITDEP(val64,val32) (val64)
+#else // !defined(ARB_64)
+#define VAL_64_32_BITDEP(val64,val32) (val32)
+#endif
+
 void TEST_Partition() {
     PrefixProbabilities p0(0);
     PrefixProbabilities p1(1);
@@ -748,7 +763,7 @@ void TEST_Partition() {
         TEST_EXPECT_EQUAL(P16.estimate_probes_for_pass(5, BASES_100k), 30740);
         TEST_EXPECT_EQUAL(P16.estimate_probes_for_pass(6, BASES_100k), 20980);
         TEST_EXPECT_EQUAL(P16.estimate_max_probes_for_any_pass(BASES_100k), 30740);
-        TEST_EXPECT_EQUAL(P16.estimate_max_kb_for_any_pass(BASES_100k), 246463);
+        TEST_EXPECT_EQUAL(P16.estimate_max_kb_for_any_pass(BASES_100k), VAL_64_32_BITDEP(440583, 205015));
     }
 
     {
@@ -788,7 +803,7 @@ void TEST_Partition() {
         TEST_EXPECT_EQUAL(P13.estimate_probes_for_pass(2, BASES_100k), 53420);
         TEST_EXPECT_EQUAL(P13.estimate_probes_for_pass(3, BASES_100k), 20980);
         TEST_EXPECT_EQUAL(P13.estimate_max_probes_for_any_pass(BASES_100k), 53420);
-        TEST_EXPECT_EQUAL(P13.estimate_max_kb_for_any_pass(BASES_100k), 246894);
+        TEST_EXPECT_EQUAL(P13.estimate_max_kb_for_any_pass(BASES_100k), VAL_64_32_BITDEP(440687, 205101));
     }
 
     {
@@ -818,7 +833,7 @@ void TEST_Partition() {
         TEST_EXPECT_EQUAL(P12.estimate_probes_for_pass(1, BASES_100k), 48280);
         TEST_EXPECT_EQUAL(P12.estimate_probes_for_pass(2, BASES_100k), 51720);
         TEST_EXPECT_EQUAL(P12.estimate_max_probes_for_any_pass(BASES_100k), 51720);
-        TEST_EXPECT_EQUAL(P12.estimate_max_kb_for_any_pass(BASES_100k), 246862);
+        TEST_EXPECT_EQUAL(P12.estimate_max_kb_for_any_pass(BASES_100k), VAL_64_32_BITDEP(440679, 205095));
     }
 
     TEST_EXPECT_EQUAL(max_probes_for_passes(p1,   1, BASES_100k), 100000);
@@ -887,7 +902,7 @@ static arb_test::match_expectation decides_on_passes(ULONG bp, size_t avail_mem_
 
     avail_mem_kb -= ARM_size_kb + PTSERVER_BIN_MB*1024;
 
-    Partition part             = decide_passes_to_use(bp, avail_mem_kb);
+    Partition part             = decide_passes_to_use(bp, avail_mem_kb, 0);
     int       decided_passes   = part.number_of_passes();
     int       decided_depth    = part.split_depth();
     size_t    decided_passsize = part.estimate_max_probes_for_any_pass(bp);
@@ -921,6 +936,7 @@ void TEST_SLOW_decide_passes_to_use() {
 
     const ULONG MINI_PC       =   2 *GB;
     const ULONG SMALL_PC      =   4 *GB;
+#if defined(ARB_64)
     const ULONG SMALL_SERVER  =  12 *GB; // "bilbo"
     const ULONG MEDIUM_SERVER =  20 *GB; // "boarisch"
     const ULONG BIG_SERVER    =  64 *GB;
@@ -929,6 +945,9 @@ void TEST_SLOW_decide_passes_to_use() {
     const ULONG MEM1 = ULONG(45.7*GB+0.5);
     const ULONG MEM2 = ULONG(18.7*GB+0.5);
     const ULONG MEM3 = ULONG(11.23*GB+0.5);
+    const ULONG MEM4 = ULONG(8*GB+0.5);
+#endif
+    const ULONG MEM5 = ULONG(4*GB+0.5);
 
     const ULONG LMEM1 = 3072*MB;
     const ULONG LMEM2 = 2560*MB;
@@ -937,56 +956,91 @@ void TEST_SLOW_decide_passes_to_use() {
     const ULONG LMEM5 = 1024*MB;
     const ULONG LMEM6 =  768*MB;
     const ULONG LMEM7 =  512*MB;
-    const ULONG LMEM8 =  256*MB;
-    const ULONG LMEM9 =  128*MB;
 
     const int SWAPS = 1;
 
-    // ---------------- database --------- machine -- passes depth ---- probes --- memuse - swap?
+#if defined(ARB_64)
+    // ---------------- database --------- machine -- passes depth ---- probes ----- memuse - swap?
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM1,           1,    0,  891481251,  18266914,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM2,           1,    0,  891481251,  18266914,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM3,           2,    1,  461074103,  10070684,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEM1,           1,    0, 3593147643UL,  21318473,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEM2,           2,    1, 1858375961,    13356142,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEM3,           4,    2,  985573522,     9350115,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEM4,          11,    4,  333053234,     6355149,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM1,          1,    0,   56223289,   1382305,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM2,          1,    0,   56223289,   1382305,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM3,          1,    0,   56223289,   1382305,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM4,          1,    0,   56223289,   1382305,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM5,          2,    1,   29078685,    865391,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM6,          3,    2,   20734434,    706492,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM7,          7,    4,    8168194,    467193,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM8,        194,    4,     502032,    321207,  SWAPS);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM9,        194,    4,     502032,    321207,  SWAPS);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM1,           1,    0,  891481251,     5620314,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM2,           1,    0,  891481251,     5620314,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM3,           1,    0,  891481251,     5620314,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM4,           1,    0,  891481251,     5620314,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM5,           2,    1,  461074103,     3644812,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  LMEM1,          4,    3,  230472727,     2586388,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  LMEM2,          8,    3,  123505999,     2095427,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  LMEM3,        111,    4,   11443798,     1581079,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MINI_PC,      194,    4,   32084148,   5067457,  SWAPS);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MINI_PC,       77,    4,   15064846,   1577344,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MINI_PC,        1,    0,   56223289,   1382305,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MINI_PC,        1,    0,   17622233,    601991,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM1,          1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM2,          1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM3,          1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM4,          1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM5,          1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM6,          2,    1,   29078685,      642419,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM7,        194,    4,     502032,      511256,  SWAPS);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_PC,     194,    4,   32084148,   5067457,  SWAPS);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_PC,       8,    3,  123505999,   3642385,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_PC,       1,    0,   56223289,   1382305,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_PC,       1,    0,   17622233,    601991,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MINI_PC,      194,    4,   32084148,     4973748,  SWAPS);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MINI_PC,      111,    4,   11443798,     1581079,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MINI_PC,        1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MINI_PC,        1,    0,   17622233,      542715,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_SERVER,  12,    4,  305189765,  10268199,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_SERVER,   2,    1,  461074103,  10070684,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_SERVER,   1,    0,   56223289,   1382305,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_SERVER,   1,    0,   17622233,    601991,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_PC,     194,    4,   32084148,     4973748,  SWAPS);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_PC,       2,    1,  461074103,     3644812,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_PC,       1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_PC,       1,    0,   17622233,      542715,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEDIUM_SERVER,  5,    3,  751184894,  18761270,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEDIUM_SERVER,  1,    0,  891481251,  18266914,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MEDIUM_SERVER,  1,    0,   56223289,   1382305,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MEDIUM_SERVER,  1,    0,   17622233,    601991,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_SERVER,   3,    3, 1217700425,    10415541,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_SERVER,   1,    0,  891481251,     5620314,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_SERVER,   1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_SERVER,   1,    0,   17622233,      542715,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, BIG_SERVER,     2,    1, 1858375961,  39845475,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  BIG_SERVER,     1,    0,  891481251,  18266914,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  BIG_SERVER,     1,    0,   56223289,   1382305,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  BIG_SERVER,     1,    0,   17622233,    601991,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MEDIUM_SERVER,  2,    1, 1858375961,    13356142,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEDIUM_SERVER,  1,    0,  891481251,     5620314,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MEDIUM_SERVER,  1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MEDIUM_SERVER,  1,    0,   17622233,      542715,  0);
 
-    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, HUGE_SERVER,    1,    0, 3593147643,  72880678,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  HUGE_SERVER,    1,    0,  891481251,  18266914,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  HUGE_SERVER,    1,    0,   56223289,   1382305,  0);
-    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  HUGE_SERVER,    1,    0,   17622233,    601991,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, BIG_SERVER,     1,    0, 3593147643UL,  21318473,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  BIG_SERVER,     1,    0,  891481251,     5620314,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  BIG_SERVER,     1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  BIG_SERVER,     1,    0,   17622233,      542715,  0);
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, HUGE_SERVER,    1,    0, 3593147643UL,  21318473,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  HUGE_SERVER,    1,    0,  891481251,     5620314,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  HUGE_SERVER,    1,    0,   56223289,      767008,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  HUGE_SERVER,    1,    0,   17622233,      542715,  0);
+
+#else // !defined(ARB_64)  =>  only test for situations with at most 4Gb
+    // ---------------- database --------- machine -- passes depth ---- probes ----- memuse - swap?
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MEM5,           2,    1,  461074103,     2831431,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  LMEM1,          3,    2,  328766946,     2327527,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  LMEM2,          4,    2,  244526639,     2006690,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  LMEM3,          7,    4,  129515581,     1568659,  0);
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM1,          1,    0,   56223289,      473837,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM2,          1,    0,   56223289,      473837,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM3,          1,    0,   56223289,      473837,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM4,          1,    0,   56223289,      473837,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM5,          1,    0,   56223289,      473837,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM6,          1,    0,   56223289,      473837,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  LMEM7,          2,    1,   29078685,      370454,  0);
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, MINI_PC,      194,    4,   32084148,     3835929,  SWAPS);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  MINI_PC,        7,    4,  129515581,     1568659,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  MINI_PC,        1,    0,   56223289,      473837,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  MINI_PC,        1,    0,   17622233,      289125,  0);
+
+    TEST_DECIDES_PASSES(BP_SILVA_108_PARC, SMALL_PC,     194,    4,   32084148,     3835929,  SWAPS);
+    TEST_DECIDES_PASSES(BP_SILVA_108_REF,  SMALL_PC,       2,    1,  461074103,     2831431,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_40K,  SMALL_PC,       1,    0,   56223289,      473837,  0);
+    TEST_DECIDES_PASSES(BP_SILVA_108_12K,  SMALL_PC,       1,    0,   17622233,      289125,  0);
+
+#endif
 }
 
 void NOTEST_SLOW_maybe_build_tree() {
