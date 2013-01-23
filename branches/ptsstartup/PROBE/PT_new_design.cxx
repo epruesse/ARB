@@ -435,7 +435,7 @@ public:
         // format centigrade-decrement-list
         int printed = 0;
         for (int i = 0; i<PERC_SIZE; ++i) {
-            if (i) buffer[printed++]  = ' ';
+            buffer[printed++]  = ' ';
             printed += perc[i]
                 ? sprintf(buffer+printed, "%*i", width[i], perc[i])
                 : sprintf(buffer+printed, "%*s", width[i], "-");
@@ -520,17 +520,17 @@ char *get_design_info(const PT_tprobes *tprobe) {
                      PT_abs_2_ecoli_rel(tprobe->apos+1)); // ecoli-bases inclusive apos ("bases before apos+1")
     }
 
-    p += sprintf(p, "%4i ", int(tprobe->quality+0.5));
-    p += sprintf(p, "%4i ", tprobe->groupsize);
-    p += sprintf(p, "%4.1f ", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0); // G+C
-    p += sprintf(p, "%7.1f ", pt_get_temperature(tprobe->sequence));                                // 4GC+2AT
+    p += sprintf(p, "%4i", int(tprobe->quality+0.5));
+    p += sprintf(p, "%5i", tprobe->groupsize);
+    p += sprintf(p, "%6.1f", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0); // G+C
+    p += sprintf(p, "%5.1f ", pt_get_temperature(tprobe->sequence));                               // temperature
 
     // probe string
     {
         char *probe  = create_reversed_probe(tprobe->sequence, tprobe->seq_len);
         complement_probe(probe, tprobe->seq_len);
         probe_2_readable(probe, tprobe->seq_len); // convert probe to real ASCII
-        p     += sprintf(p, "%-*s | ", pdc->probelen, probe);
+        p     += sprintf(p, "%-*s |", pdc->probelen, probe);
         free(probe);
     }
 
@@ -597,7 +597,7 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
         int maxprobelen = formatter.get_maxprobelen();
 
         s += sprintf(s, "%-*s", maxprobelen+1, "Target");
-        s += sprintf(s, "le     apos ecol qual grps  G+C 4GC+2AT ");
+        s += sprintf(s, "le     apos ecol qual grps   G+C temp ");
         s += sprintf(s, "%-*s | ", maxprobelen, maxprobelen<14 ? "Probe" : "Probe sequence");
         s += sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
 

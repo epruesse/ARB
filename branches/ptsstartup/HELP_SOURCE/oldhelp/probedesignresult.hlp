@@ -32,7 +32,7 @@ DESCRIPTION	The 'PD RESULT' window is displayed automatically after
 			qual		a probe quality indicator (see below)
 			grps		groupsize (number of perfect hits in target-species)
 			G+C		G+C content
-			4GC+2AT		predicted dissociation temperature
+			temp		predicted dissociation temperature (4GC+2AT)
 			Probe		the designed probe sequence 
 			
 		The numbers of the next columns (from left to right) indicates how many 
