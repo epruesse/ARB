@@ -1591,6 +1591,32 @@ void TEST_SLOW_design_probe() {
     {
         const char *arguments[] = {
             "prgnamefake",
+            "designnames=VbrFurni",
+            "designprobelength=8",
+            "designmingc=80",
+            "designmaxgc=100",
+        };
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe       8\n"
+            "Temperature        [ 0.0 -400.0]\n"
+            "GC-Content         [80.0 -100.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits     0\n"
+            "Min Group Hits        50%\n"
+            "Target   le     apos ecol qual grps  G+C 4GC+2AT Probe    | Decrease T by n*.3C -> probe matches n non group species\n"
+            "CGGCAGCG  8 A=    28   23   20    1 87.5    30.0 CGCUGCCG | - - - - - - - - - - - - - - - - - - - -\n"
+            "UGGGCGGC  8 B=    67   60    8    1 87.5    30.0 GCCGCCCA | - - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1\n"
+            "CGGCGAGC  8 B+     4   60    8    1 87.5    30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 4\n"
+            "GGGCGGCG  8 B+     1   60    8    1 100.0    32.0 CGCCGCCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"
+            "GGCGGCGA  8 B+     2   60    8    1 87.5    30.0 UCGCCGCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"
+            "GCGGCGAG  8 B+     3   60    3    1 87.5    30.0 CUCGCCGC | - - 1 1 1 1 1 4 4 4 4 4 4 4 4 4 4 4 4 4\n";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
             "designnames=HllHalod#VbhChole#VblVulni#VbrFurni#PtVVVulg",
             "designprobelength=14",
             "designmintargets=100",
