@@ -402,6 +402,7 @@ static char hitgroup_idx2char(int idx) {
 
 class PD_formatter {
     int width[PERC_SIZE]; // of centigrade list columns
+    int maxprobelen;
 
     void collect(const int *perc) { for (int i = 0; i<PERC_SIZE; ++i) width[i] = std::max(width[i], perc[i]); }
     void clear() { for (int i = 0; i<PERC_SIZE; ++i) width[i] = 0; }
@@ -419,10 +420,12 @@ class PD_formatter {
 
 public:
     PD_formatter() { clear(); }
-    PD_formatter(const PT_tprobes *tprobe) {
-        // collect max value for each column:
+    PD_formatter(const PT_pdc *pdc) {
         clear();
-        for (; tprobe; tprobe = tprobe->next) collect(tprobe->perc);
+
+        // collect max value for each column:
+        for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) collect(tprobe->perc);
+        maxprobelen = pdc->probelen;
 
         // convert max.values to needed print-width:
         for (int i = 0; i<PERC_SIZE; ++i) width[i] = width4num(width[i]);
@@ -439,6 +442,8 @@ public:
         }
         return printed;
     }
+
+    int get_maxprobelen() const { return maxprobelen; }
 };
 
 typedef std::map<const PT_pdc*const, PD_formatter> PD_Formatter4design;
@@ -447,7 +452,7 @@ static PD_Formatter4design format4design;
 inline const PD_formatter& get_formatter(const PT_pdc *pdc) {
     PD_Formatter4design::iterator found = format4design.find(pdc);
     if (found == format4design.end()) {
-        format4design[pdc] = PD_formatter(pdc->tprobes);
+        format4design[pdc] = PD_formatter(pdc);
         found              = format4design.find(pdc);
     }
     pt_assert(found != format4design.end());
@@ -457,18 +462,22 @@ inline const PD_formatter& get_formatter(const PT_pdc *pdc) {
 inline void erase_formatter(const PT_pdc *pdc) { format4design.erase(pdc); }
 
 char *get_design_info(const PT_tprobes *tprobe) {
-    const int  BUFFERSIZE = 2000;
-    char      *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
-    PT_pdc    *pdc        = (PT_pdc *)tprobe->mh.parent->parent;
-    char      *p          = buffer;
+    pt_assert(tprobe);
+
+    const int            BUFFERSIZE = 2000;
+    char                *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
+    PT_pdc              *pdc        = (PT_pdc *)tprobe->mh.parent->parent;
+    char                *p          = buffer;
+    const PD_formatter&  formatter  = get_formatter(pdc);
 
     // target
     {
-        char *probe = (char *)GB_give_buffer2(tprobe->seq_len + 10);
+        int   len   = tprobe->seq_len;
+        char *probe = (char *)GB_give_buffer2(len+1);
         strcpy(probe, tprobe->sequence);
 
-        probe_2_readable(probe, pdc->probelen); // convert probe to real ASCII
-        p += sprintf(p, "%-*s", pdc->probelen+1, probe);
+        probe_2_readable(probe, len); // convert probe to real ASCII
+        p += sprintf(p, "%-*s", formatter.get_maxprobelen()+1, probe);
     }
 
     {
@@ -526,11 +535,8 @@ char *get_design_info(const PT_tprobes *tprobe) {
     }
 
     // non-group hits by temp. decrease
-    {
-        const PD_formatter& formatter = get_formatter(pdc);
-        p += formatter.sprint_centigrade_list(p, tprobe->perc);
-        if (!tprobe->next) erase_formatter(pdc); // erase formatter when done with last probe
-    }
+    p += formatter.sprint_centigrade_list(p, tprobe->perc);
+    if (!tprobe->next) erase_formatter(pdc); // erase formatter when done with last probe
 
     pt_assert((p-buffer)<BUFFERSIZE);
     return buffer;
@@ -541,60 +547,64 @@ char *get_design_info(const PT_tprobes *tprobe) {
 #endif
 
 char *get_design_hinfo(const PT_tprobes *tprobe) {
-    const int  BUFFERSIZE = 2000;
-    char      *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
-    char      *s          = buffer;
-    PT_pdc    *pdc;
-
     if (!tprobe) {
         return (char*)"Sorry, there are no probes for your selection !!!";
     }
-    pdc = (PT_pdc *)tprobe->mh.parent->parent;
+    else {
+        const int  BUFFERSIZE = 2000;
+        char      *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
+        char      *s          = buffer;
 
-    {
-        char *ecolipos = NULL;
-        if (pdc->min_ecolipos == -1) {
-            if (pdc->max_ecolipos == -1) {
-                ecolipos = strdup("any");
+        PT_pdc              *pdc       = (PT_pdc *)tprobe->mh.parent->parent;
+        const PD_formatter&  formatter = get_formatter(pdc);
+
+        {
+            char *ecolipos = NULL;
+            if (pdc->min_ecolipos == -1) {
+                if (pdc->max_ecolipos == -1) {
+                    ecolipos = strdup("any");
+                }
+                else {
+                    ecolipos = GBS_global_string_copy("<= %i", pdc->max_ecolipos);
+                }
             }
             else {
-                ecolipos = GBS_global_string_copy("<= %i", pdc->max_ecolipos);
+                if (pdc->max_ecolipos == -1) {
+                    ecolipos = GBS_global_string_copy(">= %i", pdc->min_ecolipos);
+                }
+                else {
+                    ecolipos = GBS_global_string_copy("%4i -%4i", pdc->min_ecolipos, pdc->max_ecolipos);
+                }
             }
-        }
-        else {
-            if (pdc->max_ecolipos == -1) {
-                ecolipos = GBS_global_string_copy(">= %i", pdc->min_ecolipos);
-            }
-            else {
-                ecolipos = GBS_global_string_copy("%4i -%4i", pdc->min_ecolipos, pdc->max_ecolipos);
-            }
+
+            s += sprintf(s,
+                         "Probe design Parameters:\n"
+                         "Length of probe    %4i\n"
+                         "Temperature        [%4.1f -%4.1f]\n"
+                         "GC-Content         [%4.1f -%4.1f]\n"
+                         "E.Coli Position    [%s]\n"
+                         "Max Non Group Hits  %4i\n"
+                         "Min Group Hits      %4.0f%%\n",
+                         pdc->probelen,
+                         pdc->mintemp, pdc->maxtemp,
+                         pdc->min_gc*100.0, pdc->max_gc*100.0,
+                         ecolipos,
+                         pdc->maxMisHits, pdc->mintarget*100.0);
+
+            free(ecolipos);
         }
 
-        s += sprintf(s,
-                     "Probe design Parameters:\n"
-                     "Length of probe    %4i\n"
-                     "Temperature        [%4.1f -%4.1f]\n"
-                     "GC-Content         [%4.1f -%4.1f]\n"
-                     "E.Coli Position    [%s]\n"
-                     "Max Non Group Hits  %4i\n"
-                     "Min Group Hits      %4.0f%%\n",
-                     pdc->probelen,
-                     pdc->mintemp, pdc->maxtemp,
-                     pdc->min_gc*100.0, pdc->max_gc*100.0,
-                     ecolipos,
-                     pdc->maxMisHits, pdc->mintarget*100.0);
+        int maxprobelen = formatter.get_maxprobelen();
 
-        free(ecolipos);
+        s += sprintf(s, "%-*s", maxprobelen+1, "Target");
+        s += sprintf(s, "le     apos ecol qual grps  G+C 4GC+2AT ");
+        s += sprintf(s, "%-*s | ", maxprobelen, maxprobelen<14 ? "Probe" : "Probe sequence");
+        s += sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
+
+        pt_assert((s-buffer)<BUFFERSIZE);
+
+        return buffer;
     }
-
-    s += sprintf(s, "%-*s", pdc->probelen+1, "Target");
-    s += sprintf(s, "le     apos ecol qual grps  G+C 4GC+2AT ");
-    s += sprintf(s, "%-*s | ", pdc->probelen, "Probe sequence");
-    s += sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
-
-    pt_assert((s-buffer)<BUFFERSIZE);
-
-    return buffer;
 }
 
 struct ptnd_chain_count_mishits {
