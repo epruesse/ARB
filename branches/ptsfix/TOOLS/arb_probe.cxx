@@ -1401,6 +1401,7 @@ void TEST_SLOW_design_probe() {
             "GUUCCUUGGGUGGCGAGC 18 B+     3   50   20    1  66.7 60.0 GCUCGCCACCCAAGGAAC | - - - - - - - - - - - - - - - - - - - -\n"
             "GUUUCUCGGGUGGCGAGC 18 B+     3   50   20    1  66.7 60.0 GCUCGCCACCCGAGAAAC | - - - - - - - - - - - - - - - - - - - -\n"
             "UUCCUUGGGUGGCGAGCG 18 B+    10   57   20    1  66.7 60.0 CGCUCGCCACCCAAGGAA | - - - - - - - - - - - - - - - - - - - -\n"
+            "UUUCUCGGGUGGCGAGCG 18 B+    10   57   20    1  66.7 60.0 CGCUCGCCACCCGAGAAA | - - - - - - - - - - - - - - - - - - - -\n"
             "UCCUUGGGUGGCGAGCGG 18 B+    11   58   20    1  72.2 62.0 CCGCUCGCCACCCAAGGA | - - - - - - - - - - - - - - - - - - - -\n"
             "UUCUCGGGUGGCGAGCGG 18 B+    11   58   20    1  72.2 62.0 CCGCUCGCCACCCGAGAA | - - - - - - - - - - - - - - - - - - - -\n"
             "CAAGUCGAGCGGCAGCAC 18 A-     2   18   13    2  66.7 60.0 GUGCUGCCGCUCGACUUG | - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1 1\n"

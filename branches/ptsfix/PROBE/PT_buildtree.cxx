@@ -59,11 +59,9 @@ static POS_TREE1 *build_pos_tree(POS_TREE1 *const root, const ReadableDataLoc& l
             at = pt_next;
             height++;
 
-            if (loc.is_shorther_than(height)) {
+            if (loc[height-1] == PT_QU) {
                 // end of sequence reached -> change node to chain and add
-                pt_assert(loc[height-1] == PT_QU);
                 pt_assert(at->is_chain());
-
                 PT_add_to_chain(at, loc);
                 return root;
             }
@@ -96,26 +94,19 @@ static POS_TREE1 *build_pos_tree(POS_TREE1 *const root, const ReadableDataLoc& l
 
         pt_assert(at->is_leaf());
 
-        bool loc_done = loc.is_shorther_than(height+1);
-        bool ref_done = loc_ref.is_shorther_than(height+1);
-
-        pt_assert(correlated(loc_done, ref_done));
-        pt_assert(implicated(loc_done, loc[height] == PT_QU));
-        pt_assert(implicated(ref_done, loc_ref[height] == PT_QU));
-
-        if (ref_done && loc_done) { // end of both sequences
-            pt_assert(loc[height] == PT_QU);
-            pt_assert(loc_ref[height] == PT_QU);
-
-            at = PT_leaf_to_chain(at); // change leaf to chain
-            PT_add_to_chain(at, loc);  // and add node
-            return root;
-        }
-
         at = PT_change_leaf_to_node(at);                // change tip to node and append two new leafs
         at = PT_create_leaf(&at, loc[height], loc_ref); // dummy leaf just to create a new node; may become a chain
 
         height++;
+
+        if (loc[height-1] == PT_QU) {
+            pt_assert(loc_ref[height-1] == PT_QU); // end of both sequences
+            pt_assert(at->is_chain());
+
+            PT_add_to_chain(at, loc);  // and add node
+            return root;
+        }
+        pt_assert(loc_ref[height-1] != PT_QU);
     }
 
     pt_assert(loc[height] != loc_ref[height]);

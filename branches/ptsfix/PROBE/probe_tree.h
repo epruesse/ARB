@@ -484,9 +484,6 @@ public:
         pt_assert(has_valid_positions());
     }
 
-    int restlength() const { return get_pid().get_size()-rpos; }
-    bool is_shorther_than(int offset) const { return offset >= restlength(); }
-
     bool is_equal(const DataLoc& other) const { return rpos == other.rpos && AbsLoc::is_equal(other); }
 
 #if defined(DEBUG)
