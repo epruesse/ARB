@@ -400,8 +400,8 @@ static char hitgroup_idx2char(int idx) {
     return c;
 }
 
-class PercWidth {
-    int width[PERC_SIZE];
+class PD_formatter {
+    int width[PERC_SIZE]; // of centigrade list columns
 
     void collect(const int *perc) { for (int i = 0; i<PERC_SIZE; ++i) width[i] = std::max(width[i], perc[i]); }
     void clear() { for (int i = 0; i<PERC_SIZE; ++i) width[i] = 0; }
@@ -418,8 +418,8 @@ class PercWidth {
     }
 
 public:
-    PercWidth() { clear(); }
-    PercWidth(const PT_tprobes *tprobe) {
+    PD_formatter() { clear(); }
+    PD_formatter(const PT_tprobes *tprobe) {
         // collect max value for each column:
         clear();
         for (; tprobe; tprobe = tprobe->next) collect(tprobe->perc);
@@ -428,7 +428,7 @@ public:
         for (int i = 0; i<PERC_SIZE; ++i) width[i] = width4num(width[i]);
     }
 
-    int sdumpf(char *buffer, const int *perc) {
+    int sprint_centigrade_list(char *buffer, const int *perc) const {
         // format centigrade-decrement-list
         int printed = 0;
         for (int i = 0; i<PERC_SIZE; ++i) {
@@ -441,21 +441,26 @@ public:
     }
 };
 
-typedef std::map<const PT_pdc*const, PercWidth> PercWidth4design;
-static PercWidth4design format4design;
+typedef std::map<const PT_pdc*const, PD_formatter> PD_Formatter4design;
+static PD_Formatter4design format4design;
+
+inline const PD_formatter& get_formatter(const PT_pdc *pdc) {
+    PD_Formatter4design::iterator found = format4design.find(pdc);
+    if (found == format4design.end()) {
+        format4design[pdc] = PD_formatter(pdc->tprobes);
+        found              = format4design.find(pdc);
+    }
+    pt_assert(found != format4design.end());
+
+    return found->second;
+}
+inline void erase_formatter(const PT_pdc *pdc) { format4design.erase(pdc); }
 
 char *get_design_info(const PT_tprobes *tprobe) {
     const int  BUFFERSIZE = 2000;
     char      *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
     PT_pdc    *pdc        = (PT_pdc *)tprobe->mh.parent->parent;
     char      *p          = buffer;
-
-    PercWidth4design::iterator found = format4design.find(pdc);
-    if (found == format4design.end()) {
-        format4design[pdc] = PercWidth(tprobe);
-        found              = format4design.find(pdc);
-    }
-    pt_assert(found != format4design.end());
 
     // target
     {
@@ -521,13 +526,13 @@ char *get_design_info(const PT_tprobes *tprobe) {
     }
 
     // non-group hits by temp. decrease
-    PercWidth& format = found->second;
-    p += format.sdumpf(p, tprobe->perc);
-
-    if (!tprobe->next) format4design.erase(found); // erase format when done with last probe
+    {
+        const PD_formatter& formatter = get_formatter(pdc);
+        p += formatter.sprint_centigrade_list(p, tprobe->perc);
+        if (!tprobe->next) erase_formatter(pdc); // erase formatter when done with last probe
+    }
 
     pt_assert((p-buffer)<BUFFERSIZE);
-
     return buffer;
 }
 
