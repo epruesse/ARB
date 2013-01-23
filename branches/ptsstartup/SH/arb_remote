@@ -1,8 +1,0 @@
-#!/bin/sh
-# run ARB on a remote machine.
-
-echo '******************************************************************'
-echo 'Please enter the NAME of the machine, where you want to start ARB:'
-read a
-pwd=`pwd`
-ssh -f -X $a "xterm -sb -sl 2000 -e sh -c \"cd $pwd;pwd; arb;echo press ctrl-c to close log window;sleep 300000\""

@@ -1,7 +1,0 @@
-# libraries needed to link against GUI_ALIVIEW/GUI_ALIVIEW.a
-
-lib/libAWT.so
-SL/ALIVIEW/ALIVIEW.a
-SL/HELIX/HELIX.a
-
-
