@@ -400,11 +400,62 @@ static char hitgroup_idx2char(int idx) {
     return c;
 }
 
+class PercWidth {
+    int width[PERC_SIZE];
+
+    void collect(const int *perc) { for (int i = 0; i<PERC_SIZE; ++i) width[i] = std::max(width[i], perc[i]); }
+    void clear() { for (int i = 0; i<PERC_SIZE; ++i) width[i] = 0; }
+
+    static inline int width4num(int num) {
+        pt_assert(num >= 0);
+
+        int digits = 0;
+        while (num) {
+            ++digits;
+            num /= 10;
+        }
+        return digits ? digits : 1;
+    }
+
+public:
+    PercWidth() { clear(); }
+    PercWidth(const PT_tprobes *tprobe) {
+        // collect max value for each column:
+        clear();
+        for (; tprobe; tprobe = tprobe->next) collect(tprobe->perc);
+
+        // convert max.values to needed print-width:
+        for (int i = 0; i<PERC_SIZE; ++i) width[i] = width4num(width[i]);
+    }
+
+    int sdumpf(char *buffer, const int *perc) {
+        // format centigrade-decrement-list
+        int printed = 0;
+        for (int i = 0; i<PERC_SIZE; ++i) {
+            if (i) buffer[printed++]  = ' ';
+            printed += perc[i]
+                ? sprintf(buffer+printed, "%*i", width[i], perc[i])
+                : sprintf(buffer+printed, "%*s", width[i], "-");
+        }
+        return printed;
+    }
+};
+
+typedef std::map<const PT_pdc*const, PercWidth> PercWidth4design;
+static PercWidth4design format4design;
+
 char *get_design_info(const PT_tprobes *tprobe) {
     const int  BUFFERSIZE = 2000;
     char      *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
     PT_pdc    *pdc        = (PT_pdc *)tprobe->mh.parent->parent;
     char      *p          = buffer;
+
+    PercWidth4design::iterator found = format4design.find(pdc);
+    if (found == format4design.end()) {
+        format4design[pdc] = PercWidth(tprobe);
+        found              = format4design.find(pdc);
+    }
+    pt_assert(found != format4design.end());
 
     // target
     {
@@ -465,14 +516,15 @@ char *get_design_info(const PT_tprobes *tprobe) {
         char *probe  = create_reversed_probe(tprobe->sequence, tprobe->seq_len);
         complement_probe(probe, tprobe->seq_len);
         probe_2_readable(probe, tprobe->seq_len); // convert probe to real ASCII
-        p     += sprintf(p, "%-*s |", pdc->probelen, probe);
+        p     += sprintf(p, "%-*s | ", pdc->probelen, probe);
         free(probe);
     }
 
     // non-group hits by temp. decrease
-    for (int i = 0; i<PERC_SIZE; i++) {
-        p += sprintf(p, "%3i,", tprobe->perc[i]);
-    }
+    PercWidth& format = found->second;
+    p += format.sdumpf(p, tprobe->perc);
+
+    if (!tprobe->next) format4design.erase(found); // erase format when done with last probe
 
     pt_assert((p-buffer)<BUFFERSIZE);
 
