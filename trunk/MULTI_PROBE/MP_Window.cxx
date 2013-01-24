@@ -244,7 +244,8 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 
                     if (new_format) { // already got probe value -> compare
                         if (strcmp(probe, parsed_probe.c_str()) != 0) {
-                            error = GBS_global_string("probe string mismatch (in '%s')", line[i]);
+                            error = GBS_global_string("probe string mismatch (probe='%s', parsed_probe='%s', parsed from='%s')",
+                                                      probe, parsed_probe.c_str(), line[i]);
                         }
                     }
                     else {
@@ -530,6 +531,7 @@ MP_Window::~MP_Window()
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
 #endif
+#include <command_output.h>
 
 inline void array2cpa(const char **content, int count, ConstStrArray& array) {
     array.erase();
@@ -573,9 +575,7 @@ static arb_test::match_expectation inputConvertsInto(const char *input, const ch
 
 #define TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(input,expected) TEST_EXPECTATION(inputConvertsInto(input, expected))
 
-void TEST_probe_lists() {
-    ConstStrArray lines;
-
+void TEST_load_probe_design_results() {
     const char *expected =
         "3#0#  521#GCAGCCGCGGUAAUACGG\n"
         "3#0#  510#ACUCCGUGCCAGCAGCCG\n"
@@ -616,7 +616,7 @@ void TEST_probe_lists() {
         TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(old_multiprobeInputSave, expected);
     }
 
-    const char *new_probeDesignSave =
+    const char *new_probeDesignSave_v1 =
         "Probe design Parameters:,\n"
         "Length of probe      18,\n"
         "Temperature        [30.0 -100.0],\n"
@@ -632,7 +632,7 @@ void TEST_probe_lists() {
         "CCGUGCCAGCAGCCGCGG 18 B+     9  513   23 83.3 66.0    CCGCGGCUGCUGGCACGG |  0;  0;  0;  0;  0; 80; 80; 80; 80;120;120;121;161;161;161;162;203;203;204;204;,CCGUGCCAGCAGCCGCGG\n"
         "AACUCCGUGCCAGCAGCC 18 B-     1  509   22 66.7 60.0    GGCUGCUGGCACGGAGUU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80;120;120;120;120;160;160;160;240;240;,AACUCCGUGCCAGCAGCC\n";
 
-    TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(new_probeDesignSave, expected);
+    TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(new_probeDesignSave_v1, expected);
 
 
     const char *new_multiprobeInputSave =
@@ -645,6 +645,87 @@ void TEST_probe_lists() {
 
     TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(new_multiprobeInputSave, expected);
 }
+
+static const char *recent_expected =
+    "3#0#   19#AAGUCGAGCGAUGA\n"
+    "3#0#   20#AGUCGAGCGAUGAA\n"
+    "3#0#   18#CAAGUCGAGCGAUG\n"
+    "3#0#   82#CGAAAGGAAGAUUA\n"
+    "3#0#   87#GGAAGAUUAAUACC\n"
+    "3#0#   21#GUCGAGCGAUGAAG\n"
+    "3#0#   17#UCAAGUCGAGCGAU\n"
+    "3#0#   16#AUCAAGUCGAGCGA\n";
+
+static const char *recent_probeDesignSave =
+    "Probe design Parameters:,\n"
+    "Length of probe      14,\n"
+    "Temperature        [ 0.0 -400.0],\n"
+    "GC-Content         [30.0 -80.0],\n"
+    "E.Coli Position    [any],\n"
+    "Max Non Group Hits     0,\n"
+    "Min Group Hits       100%,\n"
+    "Target         le     apos ecol grps  G+C 4GC+2AT Probe sequence | Decrease T by n*.3C -> probe matches n non group species,\n"
+    "AAGUCGAGCGAUGA 14 A=    20   19    4 50.0 42.0    UCAUCGCUCGACUU |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,AAGUCGAGCGAUGA\n"
+    "AGUCGAGCGAUGAA 14 A+     1   20    4 50.0 42.0    UUCAUCGCUCGACU |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,AGUCGAGCGAUGAA\n"
+    "CAAGUCGAGCGAUG 14 A-     1   18    4 57.1 44.0    CAUCGCUCGACUUG |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,CAAGUCGAGCGAUG\n"
+    "CGAAAGGAAGAUUA 14 B=    94   82    4 35.7 38.0    UAAUCUUCCUUUCG |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,CGAAAGGAAGAUUA\n"
+    "GGAAGAUUAAUACC 14 B+     5   87    4 35.7 38.0    GGUAUUAAUCUUCC |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,GGAAGAUUAAUACC\n"
+    "GUCGAGCGAUGAAG 14 A+     2   21    4 57.1 44.0    CUUCAUCGCUCGAC |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,GUCGAGCGAUGAAG\n"
+    "UCAAGUCGAGCGAU 14 A-     2   17    4 50.0 42.0    AUCGCUCGACUUGA |  0;  2;  2;  2;  2;  4;  4;  4;  4; 11; 13; 13; 13; 20; 22; 22; 22; 22; 31; 31;,UCAAGUCGAGCGAU\n"
+    "AUCAAGUCGAGCGA 14 A-     3   16    4 50.0 42.0    UCGCUCGACUUGAU |  0;  9;  9;  9;  9; 18; 18; 18; 18; 27; 27; 27; 27; 27; 36; 36; 36; 36; 45; 45;,AUCAAGUCGAGCGA";
+
+void TEST_AFTER_SLOW_recent_probe_design_result() {
+    // --------------------------------------------------------------------------------
+    // whenever probe design output changes, copy current 'recent_probeDesignSave' and
+    // 'recent_expected' into TEST_load_probe_design_results, to ensure ARB can load
+    // any saved probe design ever created with ARB.
+
+    TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(recent_probeDesignSave, recent_expected);
+}
+
+void TEST_SLOW_design_probes_and_load_result() {
+    TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
+
+    CommandOutput designed_probes("arb_probe serverid=-666 designprobelength=14 designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr designmintargets=100", true);
+    TEST_EXPECT_NO_ERROR(designed_probes.get_error());
+
+    // Simulate result of designing probes in ARB_NT and saving the result to a file:
+    char *saved_design_result = NULL; // content of that file
+    {
+        ConstStrArray lines;
+        GBT_split_string(lines, designed_probes.get_stdoutput(), "\n", true);
+
+        StrArray saved_lines;
+
+        for (size_t i = 0; i<lines.size(); ++i) {
+            char *probe; // same as awar-value of probe-design-resultlist in ARB_NT
+            {
+                size_t plen = strspn(lines[i], "acgtuACGTU");
+                if (plen<10) { // no probe at start // @@@ 10 is min. probelen, use a global definition here!
+                    probe = strdup("");
+                }
+                else {
+                    probe = GB_strndup(lines[i], plen);
+                }
+            }
+
+            char *conv4save = GBS_string_eval(lines[i], ":,=;", NULL); // saving selection list converts comma to semicolon
+            arb_assert(conv4save);
+
+            saved_lines.put(GBS_global_string_copy("%s,%s", conv4save, probe));
+
+            free(conv4save);
+            free(probe);
+        }
+
+        saved_design_result = GBT_join_names(saved_lines, '\n');
+        TEST_EXPECT_EQUAL(saved_design_result, recent_probeDesignSave); // see comment in TEST_LATE_recent_probe_design_result
+    }
+
+    TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(saved_design_result, recent_expected);
+    free(saved_design_result);
+}
+
 
 #endif // UNIT_TESTS
 
