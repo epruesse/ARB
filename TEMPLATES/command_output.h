@@ -93,6 +93,7 @@ public:
 
     const char *get_stdoutput() const { return stdoutput; }
     const char *get_stderrput() const { return stderrput; }
+    GB_ERROR get_error() const { return error; }
 
     arb_test::match_expectation Equals(const char *expected_std, const char *expected_err) {
         using namespace arb_test;
