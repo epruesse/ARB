@@ -75,10 +75,12 @@ How to use ARB unit testing
       - If test name starts with 'TEST_###' (where ### are digits), it declares a test with priority ###.
         The default priority is 100. Lower numbers mean higher priority, i.e. start more early. 
       - Other predefined priorities are
-        - TEST_BASIC_ (=20)
-        - TEST_EARLY_ (=50)
-        - TEST_LATE_  (=200)
-        - TEST_SLOW_  (=900)
+        - TEST_BASIC_       (=20)
+        - TEST_EARLY_       (=50)
+        - TEST_             (=100 default)
+        - TEST_LATE_        (=200)
+        - TEST_SLOW_        (=900)
+        - TEST_AFTER_SLOW_  (=910)
 
         TEST_SLOW_... is meant to indicate "slow" tests (i.e. tests which need more than
         a second to execute).
