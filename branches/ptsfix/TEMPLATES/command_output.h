@@ -12,6 +12,10 @@
 #ifndef COMMAND_OUTPUT_H
 #define COMMAND_OUTPUT_H
 
+#ifndef UNIT_TESTS
+#error currently only used inside unittest-code. need refactoring to be used generally
+#endif
+
 #ifndef ARB_FILE_H
 #include <arb_file.h>
 #endif
@@ -86,6 +90,9 @@ public:
         free(stderrput);
         free(stdoutput);
     }
+
+    const char *get_stdoutput() const { return stdoutput; }
+    const char *get_stderrput() const { return stderrput; }
 
     arb_test::match_expectation Equals(const char *expected_std, const char *expected_err) {
         using namespace arb_test;
