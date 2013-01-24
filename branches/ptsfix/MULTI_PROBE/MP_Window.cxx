@@ -212,8 +212,17 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
             display.clear();
             value.clear();
 
-            // try to read designed list 
-            RegExpr reg_designed("^([A-Z]+)[[:space:]]+[0-9]+[[:space:]]+[A-Z][=+-][[:space:]]+[0-9]+[[:space:]]+([0-9]+)[[:space:]]+[0-9]+[[:space:]]+[0-9.]+[[:space:]]+[0-9.]+[[:space:]]+[A-Z]+[[:space:]]+[|]", true);
+            // try to read designed list
+            RegExpr reg_designed("^([A-Z]+)"            // subexpr #1 (target)
+                                 "[[:space:]]+[0-9]+"
+                                 "[[:space:]]+[A-Z][=+-]"
+                                 "[[:space:]]+[0-9]+"
+                                 "[[:space:]]+([0-9]+)" // subexpr #2 (ecoli pos)
+                                 "[[:space:]]+[0-9]+"
+                                 "[[:space:]]+[0-9.]+"
+                                 "[[:space:]]+[0-9.]+"
+                                 "[[:space:]]+[A-Z]+"
+                                 "[[:space:]]+[|]", true);
 
             for (size_t i = 0; i<line.size() && !error; ++i) {
                 char *probe       = NULL;
