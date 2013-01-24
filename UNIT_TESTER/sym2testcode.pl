@@ -84,6 +84,7 @@ sub calculate_priorities() {
   foreach (keys %simple_test) {
     if    (/^TEST_BASIC_/)    { $test_priority{$_} = 20; }
     elsif (/^TEST_EARLY_/)    { $test_priority{$_} = 50; }
+    elsif (/^TEST_LATE_/)     { $test_priority{$_} = 200; }
     elsif (/^TEST_SLOW_/)     { $test_priority{$_} = 900; }
     elsif (/^TEST_([0-9]+)_/) { $test_priority{$_} = $1; }
     else                      { $test_priority{$_} = 100; }
