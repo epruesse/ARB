@@ -77,6 +77,7 @@ How to use ARB unit testing
       - Other predefined priorities are
         - TEST_BASIC_ (=20)
         - TEST_EARLY_ (=50)
+        - TEST_LATE_  (=200)
         - TEST_SLOW_  (=900)
 
         TEST_SLOW_... is meant to indicate "slow" tests (i.e. tests which need more than
