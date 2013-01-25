@@ -202,7 +202,7 @@ public:
     }
 
     MatchingOligo bind_against(char c, const Splits& splits, const double *max_bond) const {
-        pt_assert(is_std_base(c));
+        pt_assert(c != PT_QU);
 
         char   pc       = dangling_char();
         double strength = splits.check(pc, c);
