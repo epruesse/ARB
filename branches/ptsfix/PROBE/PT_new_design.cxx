@@ -1115,41 +1115,49 @@ static long ptnd_collect_hash(const char *key, long val, void *gb_hash) {
     return val;
 }
 
-#if defined(DEBUG)
-#if defined(DEVEL_RALF)
 static long avoid_hash_warning(const char *, long,  void*) { return 0; }
-#endif // DEVEL_RALF
-#endif
 
-static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
+static void ptnd_build_tprobes(PT_pdc *pdc, const int overall_group_size) {
     // search for possible probes
 
-    int           *group_idx    = new int[group_count];
+    int           *group_idx    = new int[overall_group_size];
     unsigned long  datasize     = 0;                    // of marked species/genes
     unsigned long  maxseqlength = 0;                    // of marked species/genes
 
     // get group indices and count datasize of marked species
-    {
-        int used_idx = 0;
-        for (int name = 0; name < psg.data_count; name++) {
-            const probe_input_data& pid = psg.data[name];
+    int known_group_members = 0;
+    for (int name = 0; name < psg.data_count; name++) {
+        const probe_input_data& pid = psg.data[name];
 
-            if (pid.inside_group()) {
-                group_idx[used_idx++] = name;                  // store marked group indices
+        if (pid.inside_group()) {
+            group_idx[known_group_members++] = name;                  // store marked group indices
 
-                unsigned long size  = pid.get_size();
-                datasize           += size;
+            unsigned long size  = pid.get_size();
+            datasize           += size;
 
-                if (size<1 || size<(unsigned long)pdc->probelen) {
-                    fprintf(stderr, "Warning: impossible design request for '%s' (contains only %lu bp)\n", pid.get_shortname(), size);
-                }
-
-                if (datasize<size) datasize           = ULONG_MAX;  // avoid overflow!
-                if (size > maxseqlength) maxseqlength = size;
+            if (size<1 || size<(unsigned long)pdc->probelen) {
+                fprintf(stderr, "Warning: impossible design request for '%s' (contains only %lu bp)\n", pid.get_shortname(), size);
             }
+
+            if (datasize<size) datasize           = ULONG_MAX;  // avoid overflow!
+            if (size > maxseqlength) maxseqlength = size;
         }
-        pt_assert(used_idx == group_count);
     }
+
+    int added_group_members = 0;
+    for (PT_sequence *seq = pdc->sequences; seq; seq = seq->next) {
+        datasize += seq->seq.size;
+        added_group_members++;
+    }
+
+#if defined(DEBUG)
+    fprintf(stderr, "added_group_members=%i known_group_members=%i overall_group_size=%i\n",
+            added_group_members, known_group_members, overall_group_size);
+    fflush_all();
+#endif
+
+    pt_assert((known_group_members+added_group_members) == overall_group_size);
+    pt_assert(datasize>(unsigned long)(pdc->probelen)); // otherwise estimation below fails badly
 
     int           partsize = 0;                     // no partitions
     unsigned long estimated_no_of_tprobes;
@@ -1167,7 +1175,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 
 #if defined(DEBUG)
         printf("marked=%i datasize=%lu partsize=%i estimated_no_of_tprobes=%lu\n",
-               group_count, datasize, partsize, estimated_no_of_tprobes);
+               overall_group_size, datasize, partsize, estimated_no_of_tprobes);
 #endif // DEBUG
     }
 
@@ -1197,7 +1205,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         GBS_clear_hash_statistic_summary("inner");
 #endif // DEBUG
 
-        for (int g = 0; g<group_count; ++g) {
+        for (int g = 0; g<known_group_members; ++g) {
             const probe_input_data& pid = psg.data[group_idx[g]];
 
             long possible_tprobes = pid.get_size()-pdc->probelen+1;
@@ -1213,8 +1221,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 #endif // DEBUG
             GBS_free_hash(hash_one);
         }
-        PT_sequence *seq;
-        for (seq = pdc->sequences; seq; seq = seq->next) {
+        for (PT_sequence *seq = pdc->sequences; seq; seq = seq->next) {
             long     possible_tprobes = seq->seq.size-pdc->probelen+1;
             GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, seq->seq.data, seq->seq.size, pdc->probelen, design4prefix);
@@ -1230,17 +1237,15 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 #endif // DEBUG
 
         {
-            probes_collect_data collData(pdc, group_count);
+            probes_collect_data collData(pdc, overall_group_size);
             GBS_hash_do_loop(hash_outer, ptnd_build_probes_collect, &collData);
         }
 
 #if defined(DEBUG)
         GBS_calc_hash_statistic(hash_outer, "outer", 1);
-#if defined(DEVEL_RALF)
-        GBS_hash_do_loop(hash_outer, avoid_hash_warning, NULL); // hash is known to be overfilled - avoid assertion
-#endif // DEVEL_RALF
 #endif // DEBUG
 
+        GBS_hash_do_loop(hash_outer, avoid_hash_warning, NULL); // hash is known to be overfilled - avoid warnings // @@@ better replace the whole outer hash by some std::set
         GBS_free_hash(hash_outer);
         ++design4prefix;
     }
@@ -1283,7 +1288,7 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
 
     PT_sequence *seq; // @@@ move into for loop?
     for (seq = pdc->sequences; seq; seq = seq->next) {  // Convert all external sequence to internal format
-        seq->seq.size = probe_compress_sequence(seq->seq.data, seq->seq.size);
+        seq->seq.size = probe_compress_sequence(seq->seq.data, seq->seq.size-1); // no longer convert final zero-byte (PT_QU gets auto-appended)
         locs->group_count++;
     }
 
