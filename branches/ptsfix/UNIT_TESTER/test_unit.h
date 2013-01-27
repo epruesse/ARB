@@ -1117,6 +1117,8 @@ namespace arb_test {
 
 #define TEST_EXPECT_ERROR_CONTAINS(call,part)         TEST_EXPECTATION        (reported_error_contains(call, part))
 #define TEST_EXPECT_ERROR_CONTAINS__BROKEN(call,part) TEST_EXPECTATION__BROKEN(reported_error_contains(call, part))
+#define TEST_EXPECT_ANY_ERROR(call)                   TEST_EXPECTATION        (reports_error(call))
+#define TEST_EXPECT_ANY_ERROR__BROKEN(call)           TEST_EXPECTATION__BROKEN(reports_error(call))
 #define TEST_EXPECT_NO_ERROR(call)                    TEST_EXPECTATION        (doesnt_report_error(call))
 #define TEST_EXPECT_NO_ERROR__BROKEN(call)            TEST_EXPECTATION__BROKEN(doesnt_report_error(call))
 
