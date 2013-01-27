@@ -125,7 +125,8 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
         psg.data[i].set_group_state(0); // Note: probes are designed for species with is_group == 1
     }
     locs->group_count = 0;
-    error             = 0;
+
+    error = 0;
 
     if (!names_list) {
         error = "Can't design probes for no species (species list is empty)";
@@ -196,21 +197,21 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
 }
 
 bytestring *PT_unknown_names(const PT_pdc *pdc) {
-    static bytestring un = { 0, 0 };
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
-    delete un.data;
+    static bytestring unknown = { 0, 0 };
+    delete unknown.data;
 
     const char *error;
-    un.data = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data, error);
-    if (un.data) {
-        un.size = strlen(un.data) + 1;
+    unknown.data = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data, error);
+    if (unknown.data) {
+        unknown.size = strlen(unknown.data) + 1;
         pt_assert(!error);
     }
     else {
-        un.data = strdup("");
-        un.size = 1;
+        unknown.data = strdup("");
+        unknown.size = 1;
         if (error) pt_export_error(locs, error);
     }
-    return &un;
+    return &unknown;
 }
 
