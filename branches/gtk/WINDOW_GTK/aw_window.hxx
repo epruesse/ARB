@@ -57,32 +57,6 @@ class AW_at;
 
 enum AW_orientation { AW_HORIZONTAL, AW_VERTICAL };
 
-class AW_at_size {
-    int  to_offset_x;                               // here we use offsets (not positions like in AW_at)
-    int  to_offset_y;
-    bool to_position_exists;
-
-    bool attach_x;           // attach right side to right form
-    bool attach_y;
-    bool attach_lx;          // attach left side to right form
-    bool attach_ly;
-    bool attach_any;
-
-public:
-    AW_at_size()
-        : to_offset_x(0),
-          to_offset_y(0),
-          to_position_exists(false),
-          attach_x(false), 
-          attach_y(false), 
-          attach_lx(false), 
-          attach_ly(false), 
-          attach_any(false) 
-    {}
-
-    void store(const AW_at *at);
-    void restore(AW_at *at) const;
-};
 
 class AW_at_maxsize {
     int maxx;
@@ -607,7 +581,7 @@ public:
 
 
     // ***** option_menu is a menu where only one selection is visible at a time
-    AW_option_menu_struct *create_option_menu(const char *awar_name, AW_label label=0, const char *mnemonic=0);
+    AW_option_menu_struct *create_option_menu(const char *awar_name, AW_label label= NULL, const char *mnemonic= NULL);
     void clear_option_menu(AW_option_menu_struct *oms);  // used to redefine available options
 
 private:

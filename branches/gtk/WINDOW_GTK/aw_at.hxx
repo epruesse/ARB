@@ -81,3 +81,29 @@ public:
 };
 
 
+class AW_at_size {
+    int  to_offset_x;                               // here we use offsets (not positions like in AW_at)
+    int  to_offset_y;
+    bool to_position_exists;
+
+    bool attach_x;           // attach right side to right form
+    bool attach_y;
+    bool attach_lx;          // attach left side to right form
+    bool attach_ly;
+    bool attach_any;
+
+public:
+    AW_at_size()
+        : to_offset_x(0),
+          to_offset_y(0),
+          to_position_exists(false),
+          attach_x(false), 
+          attach_y(false), 
+          attach_lx(false), 
+          attach_ly(false), 
+          attach_any(false) 
+    {}
+
+    void store(const AW_at& at);
+    void restore(AW_at& at) const;
+};

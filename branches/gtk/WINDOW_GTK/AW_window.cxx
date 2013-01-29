@@ -1105,8 +1105,8 @@ void AW_combo_box_changed(GtkComboBox* box, gpointer user_data) {
 }
 
 AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name, 
-                                                     AW_label tmp_label /*= 0*/, 
-                                                     const char */*mnemonic*/ /*= 0*/){
+                                                     AW_label tmp_label, 
+                                                     const char *){
     int x_for_position_of_menu;
     FIXME("mnemonic not implemented");
     if (_at.label_for_inputfield) {
@@ -1511,11 +1511,13 @@ void AW_window::create_toggle_field(const char */*awar_name*/, int orientation /
     else {
       prvt->radio_box = gtk_hbox_new(true, 2);
     }
+    
 }
 
 void AW_window::create_toggle_field(const char *var_name, AW_label labeli, const char */*mnemonic*/) {
-    if (labeli) this->label(labeli);
-    this->create_toggle_field(var_name);
+    GTK_NOT_IMPLEMENTED;
+    //    if (labeli) this->label(labeli);
+//    this->create_toggle_field(var_name);
 }
 
 void AW_window::insert_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, const char */*var_value*/){
@@ -1980,8 +1982,8 @@ void AW_window::button_height(int height) {
     _at.height_of_buttons = height>1 ? height : 0; 
 }
 
-void AW_window::store_at_size_and_attach(AW_at_size */*at_size*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
+    at_size->store(_at);
 }
 
 void AW_window::show_modal() {
@@ -2087,6 +2089,7 @@ AW_window::AW_window()
     main_drag_gc(0),
     picture(new AW_screen_area)
 {
+
     reset_scrolled_picture_size();
     
     prvt = new AW_window::AW_window_gtk();

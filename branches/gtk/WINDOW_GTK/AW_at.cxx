@@ -216,3 +216,30 @@ int AW_at::get_at_xposition() const {
 int AW_at::get_at_yposition() const {
     return y_for_next_button; 
 }
+
+void AW_at_size::store(const AW_at& at) {
+    to_position_exists = at.to_position_exists;
+    if (to_position_exists) {
+        to_offset_x = at.to_position_x - at.x_for_next_button;
+        to_offset_y = at.to_position_y - at.y_for_next_button;
+    }
+    attach_x   = at.attach_x;
+    attach_y   = at.attach_y;
+    attach_lx  = at.attach_lx;
+    attach_ly  = at.attach_ly;
+    attach_any = at.attach_any;
+}
+
+void AW_at_size::restore(AW_at& at) const {
+    at.to_position_exists = to_position_exists;
+    if (to_position_exists) {
+        at.to_position_x = at.x_for_next_button + to_offset_x;
+        at.to_position_y = at.y_for_next_button + to_offset_y;
+    }
+    at.attach_x   = attach_x;
+    at.attach_y   = attach_y;
+    at.attach_lx  = attach_lx;
+    at.attach_ly  = attach_ly;
+    at.attach_any = attach_any;
+}
+
