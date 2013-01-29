@@ -463,6 +463,7 @@ void AW_root::add_timed_callback_never_disabled(int ms, AW_RCB2 f, AW_CL cd1, AW
 #if defined(DEBUG)
 size_t AW_root::callallcallbacks(int mode) {
     GTK_NOT_IMPLEMENTED;
+    return 0;
 }
 #endif
 

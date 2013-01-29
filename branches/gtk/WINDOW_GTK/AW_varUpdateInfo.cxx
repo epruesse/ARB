@@ -87,7 +87,7 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
             // fall-through
         case AW_WIDGET_CHOICE_MENU:
             FIXME("AW_WIDGET_CHOICE_MENU handling not implemented");
-//            error = value.write_to(awar);
+            error = value.write_to(awar);
             break;
 
         case AW_WIDGET_SELECTION_LIST: {

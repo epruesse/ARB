@@ -9,8 +9,8 @@
 //                                                                   //
 // ================================================================= //
 
-#ifndef AW_BASE_HXX
-#define AW_BASE_HXX
+#pragma once
+
 #include <gdk/gdktypes.h>
 class AW_root;
 class AW_window;
@@ -75,6 +75,7 @@ enum AW_VARIABLE_TYPE {
     AW_TYPE_MAX = 16
 };
 
+
 enum AW_area {
     AW_INFO_AREA,
     AW_MIDDLE_AREA,
@@ -96,7 +97,3 @@ enum AW_color_idx {
 
 AW_default get_AW_ROOT_DEFAULT();
 #define AW_ROOT_DEFAULT get_AW_ROOT_DEFAULT()
-
-
-
-#endif // AW_BASE_HXX

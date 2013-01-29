@@ -18,7 +18,6 @@ class AW_window;
 class AW_cb_struct;
 class AW_selection_list;
 
-
 class AW_varUpdateInfo : virtual Noncopyable { // used to refresh single items on change
     AW_window         *aw_parent;
     GtkWidget         *widget;
@@ -52,10 +51,10 @@ public:
     
     /**
      * Use this callback for events that only provide user data and no additional parameter
-     * @param selection
+     * @param widget
      * @param variable_update_struct
      */
-    static void AW_variable_update_callback(GtkWidget *selection, gpointer variable_update_struct);
+    static void AW_variable_update_callback(GtkWidget *widget, gpointer variable_update_struct);
     /**
      * Use this callback for events that provide an additional GdkEvent struct.
      * @param widget

@@ -17,9 +17,6 @@ AW_option_menu_struct::AW_option_menu_struct(int numberi, const char *variable_n
     variable_type      = variable_typei;
     label_widget       = label_widgeti;
     menu_widget        = menu_widgeti;
-    first_choice       = NULL;
-    last_choice        = NULL;
-    default_choice     = NULL;
     next               = NULL;
     x                  = xi;
     y                  = yi;

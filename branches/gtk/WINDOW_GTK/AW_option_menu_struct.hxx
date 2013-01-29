@@ -15,17 +15,12 @@
 #include "AW_gtk_forward_declarations.hxx"
 #include "aw_scalar.hxx"
 #include "aw_base.hxx"
+#include "aw_varUpdateInfo.hxx"
+#include <map>
+#include <string>
+#include <vector>
 
 
-struct AW_widget_value_pair : virtual Noncopyable {
-    template<typename T> explicit AW_widget_value_pair(T t, GtkWidget* w) : value(t), widget(w), next(NULL) {}
-    ~AW_widget_value_pair() { aw_assert(!next); } // has to be unlinked from list BEFORE calling dtor
-
-    AW_scalar  value;
-    GtkWidget* widget;
-
-    AW_widget_value_pair *next;
-};
 
 struct AW_option_menu_struct {
     AW_option_menu_struct(int numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, GtkWidget *label_widgeti, GtkWidget *menu_widgeti, AW_pos xi, AW_pos yi, int correct);
@@ -35,15 +30,24 @@ struct AW_option_menu_struct {
     AW_VARIABLE_TYPE  variable_type;
     GtkWidget        *label_widget;
     GtkWidget        *menu_widget;
-
-    AW_widget_value_pair *first_choice;
-    AW_widget_value_pair *last_choice;
-    AW_widget_value_pair *default_choice;
+    std::vector<std::string> options; /** < Contains all options */
+    std::string default_option; /** < This option is selected by default */
     
     AW_pos x;
     AW_pos y;
     int    correct_for_at_center_intern;            // needed for centered and right justified menus (former member of AW_at)
-
+    
+    /** Contains a VarUpdateInfo for each entry in this option menu.*/
+    std::map<std::string, AW_varUpdateInfo*> valueToUpdateInfo;
+    
     AW_option_menu_struct *next;
+    
+    
+    inline void add_option(const std::string& option_name, bool default_option) {
+        if (default_option) {
+            this->default_option = option_name;
+        }
+        options.push_back(option_name);
+    }
 };
 
