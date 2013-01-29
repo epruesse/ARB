@@ -291,6 +291,7 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_sort.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_str.h
+PT_new_design.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arbdb.h

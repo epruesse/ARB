@@ -28,9 +28,10 @@ int PT_index_dump(const PT_main *main);
 
 /* PT_etc.cxx */
 void pt_export_error(PT_local *locs, const char *error);
+void pt_export_error_if(PT_local *locs, ARB_ERROR &error);
 const char *virt_name(const PT_probematch *ml);
 const char *virt_fullname(const PT_probematch *ml);
-char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char *&error);
+char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, ARB_ERROR &error);
 bytestring *PT_unknown_names(const PT_pdc *pdc);
 
 /* PT_family.cxx */

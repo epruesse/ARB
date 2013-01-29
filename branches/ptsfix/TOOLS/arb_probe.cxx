@@ -259,15 +259,21 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
         }
 
         if (!error) {
-            for (apd_sequence *s = P.sequence; s; s = s->next) {
-                bytestring bs_seq;
+            for (apd_sequence *s = P.sequence; s; ) {
+                apd_sequence *next = s->next;
+
+                bytestring    bs_seq;
                 T_PT_SEQUENCE pts;
+
                 bs_seq.data = (char*)s->sequence;
                 bs_seq.size = strlen(bs_seq.data)+1;
                 aisc_create(pd_gl.link, PT_PDC, pdc,
                             PDC_SEQUENCE, PT_SEQUENCE, pts,
                             SEQUENCE_SEQUENCE, &bs_seq,
                             NULL);
+
+                delete s;
+                s = next;
             }
 
             aisc_put(pd_gl.link, PT_PDC, pdc,
@@ -611,10 +617,17 @@ static int test_setup(bool use_gene_ptserver) {
     ARB_ERROR error;                                                                    \
     char *answer = execute(error)
 
-#define TEST_RUN_ARB_PROBE__REPORTS_ERROR(fake_argc,fake_argv,expected_error)   \
+#define TEST_ARB_PROBE__REPORTS_ERROR(fake_argc,fake_argv,expected_error)       \
     TEST_RUN_ARB_PROBE__INT(fake_argc,fake_argv);                               \
     free(answer);                                                               \
     TEST_EXPECT_ERROR_CONTAINS(error.deliver(), expected_error)
+
+#define TEST_ARB_PROBE__REPORTS_ERROR__BROKEN(fake_argc,fake_argv,expected_error)       \
+    TEST_RUN_ARB_PROBE__INT(fake_argc,fake_argv);                                       \
+    free(answer);                                                                       \
+    TEST_EXPECT_ANY_ERROR(error.preserve());                                            \
+    TEST_EXPECT_ERROR_CONTAINS__BROKEN(error.deliver(), expected_error)
+
 
 #define TEST_RUN_ARB_PROBE(fake_argc,fake_argv)                 \
     TEST_RUN_ARB_PROBE__INT(fake_argc,fake_argv);               \
@@ -1410,18 +1423,6 @@ void TEST_SLOW_design_probe() {
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
 
-    // test error case
-    {
-        const char *arguments_bad_design[] = {
-            "prgnamefake",
-            "designnames=CPPParap#PsAAAA00",
-            "designprobelength=3",
-        };
-        const char *expected_error = "Probe length 3 is below the minimum probe length of 8";
-
-        TEST_RUN_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments_bad_design), arguments_bad_design, expected_error);
-    }
-
     // design MANY probes to test location specifier
     {
         const char *arguments_loc[] = {
@@ -1639,6 +1640,80 @@ void TEST_SLOW_design_probe() {
             "AGCGGCGGACGGAC 14 A-     0   64   21    5  78.6 50.0 GUCCGUCCGCCGCU | 4 7 7 7 9 9 9 9 9 9 9 9 9 9  9  9  9 10 10 10\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+}
+
+void TEST_SLOW_probe_design_errors() {
+    // test here runs versus database ../UNIT_TESTER/run/TEST_pt_src.arb
+
+    bool use_gene_ptserver = false;
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=CPPParap#PsAAAA00",
+            "designprobelength=3",
+        };
+        const char *expected_error = "Probe length 3 is below the minimum probe length of 8";
+
+        TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, expected_error);
+    }
+    {
+        const char *expected_error = "Got 0 unknown marked species, but 1 custom sequence was added (has to match)";
+        {
+            const char *arguments[] = {
+                "prgnamefake",
+                "designsequence=", // pass an empty sequence
+                "designprobelength=16",
+            };
+            TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, expected_error);
+        }
+        {
+            const char *arguments[] = {
+                "prgnamefake",
+                "designsequence=-------------", // pass a gap-only sequence
+                "designprobelength=16",
+            };
+            TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, expected_error);
+        }
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=Unknown", // one unknown species
+            "designprobelength=16",
+        };
+        const char *expected_error = "No species marked - no probes designed";
+        TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, expected_error);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=Unknown#CPPParap", // one unknown species, one known species
+            "designprobelength=16",
+        };
+        const char *expected_error = "Got 1 unknown marked species, but 0 custom sequences were added (has to match)";
+        TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, expected_error);
+    }
+    {
+        const char *expected_error = "Impossible design request for one of the added sequences (contains only 0 bp)";
+        {
+            const char *arguments[] = {
+                "prgnamefake",
+                "designnames=Unknown", // one unknown species
+                "designsequence=", // pass an empty sequence
+                "designprobelength=16",
+            };
+            TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, expected_error);
+        }
+        {
+            const char *arguments[] = {
+                "prgnamefake",
+                "designnames=Unknown", // one unknown species
+                "designsequence=-------------", // pass a gap-only sequence
+                "designprobelength=16",
+            };
+            TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, expected_error);
+        }
     }
 }
 

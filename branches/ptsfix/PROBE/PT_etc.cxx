@@ -19,6 +19,10 @@
 void pt_export_error(PT_local *locs, const char *error) {
     freedup(locs->ls_error, error);
 }
+void pt_export_error_if(PT_local *locs, ARB_ERROR& error) {
+    if (error) pt_export_error(locs, error.deliver());
+    else error.expect_no_error();
+}
 
 static const gene_struct *get_gene_struct_by_internal_gene_name(const char *gene_name) {
     gene_struct to_search(gene_name, "", "");
@@ -115,7 +119,7 @@ static const char *get_list_part(const char *list, int& offset) {
 
 #undef MAX_LIST_PART_SIZE
 
-char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char*& error) {
+char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, ARB_ERROR& error) {
     /* read the name list separated by '#' and set the flag for the group members,
      + returns a list of names which have not been found
      */
@@ -201,7 +205,7 @@ bytestring *PT_unknown_names(const PT_pdc *pdc) {
     static bytestring unknown = { 0, 0 };
     delete unknown.data;
 
-    const char *error;
+    ARB_ERROR error;
     unknown.data = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data, error);
     if (unknown.data) {
         unknown.size = strlen(unknown.data) + 1;
@@ -210,8 +214,8 @@ bytestring *PT_unknown_names(const PT_pdc *pdc) {
     else {
         unknown.data = strdup("");
         unknown.size = 1;
-        if (error) pt_export_error(locs, error);
     }
+    pt_export_error_if(locs, error);
     return &unknown;
 }
 

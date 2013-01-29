@@ -145,7 +145,10 @@ public:
             last_base_offset = offset;
         }
 
-        pt_assert(base_count>0);
+        if (base_count <= 0) { // may happen if empty (or gap-only) input sequence is passed
+            size = 0;
+            return;
+        }
 
         // ensure last entry is a dot
         if (compressed[base_count-1] != PT_QU) {
