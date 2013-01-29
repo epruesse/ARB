@@ -33,6 +33,7 @@
 #include <aw_question.hxx>
 #include <adGene.h>
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
 #include <arb_file.h>
 #include <aw_edit.hxx>
 
@@ -416,6 +417,21 @@ static int ecolipos2int(const char *awar_val) {
     return i>0 ? i : -1;
 }
 
+static char *readableUnknownNames(const ConstStrArray& unames) {
+    GBS_strstruct readable(100);
+
+    int ulast = unames.size()-1;
+    int umax  = ulast <= 10 ? ulast : 10;
+    for (int u = 0; u <= umax; ++u) {
+        if (u) readable.cat(u == ulast ? " and " : ", ");
+        readable.cat(unames[u]);
+    }
+
+    if (umax<ulast) readable.nprintf(30, " (and %i other)", ulast-umax);
+
+    return readable.release();
+}
+
 static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     AW_root     *root    = aww->get_root();
     T_PT_PDC     pdc;
@@ -501,52 +517,61 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
         return;
     }
 
-    char *unames = unknown_names.data;
-    bool  abort  = false;
+    bool abort = false;
 
     if (unknown_names.size>1) {
+        ConstStrArray unames_array;
+        GBT_split_string(unames_array, unknown_names.data, "#", true);
+
+        char *readable_unames = readableUnknownNames(unames_array);
+
         if (design_gene_probes) { // updating sequences of missing genes is not possible with gene PT server
-            aw_message(GBS_global_string("Your PT server is not up to date or wrongly chosen.\n"
-                                         "The following genes are new to it: %s\n"
-                                         "You'll have to re-build the PT server.", unames));
+            aw_message(GBS_global_string("Your PT server is not up to date or wrongly chosen!\n"
+                                         "It knows nothing about the following genes:\n"
+                                         "\n"
+                                         "  %s\n"
+                                         "\n"
+                                         "You have to rebuild the PT server.",
+                                         readable_unames));
             abort = true;
         }
         else if (aw_question("ptserver_add_unknown",
-                             GBS_global_string("Your PT server is not up to date or wrongly chosen\n"
-                                               "  The following names are new to it:\n"
+                             GBS_global_string("Your PT server is not up to date or wrongly chosen!\n"
+                                               "It knows nothing about the following species:\n"
+                                               "\n"
                                                "  %s\n"
-                                               "  This version allows you to quickly add the unknown sequences\n"
-                                               "  to the pt_server\n",
-                                               unames),
-                             "Add and Continue,Abort"))
+                                               "\n"
+                                               "You may now temporarily add these sequences for probe design.\n",
+                                               readable_unames),
+                             "Add and continue,Abort"))
         {
             abort = true;
         }
         else {
             GB_transaction dummy(gb_main);
 
-            char *h;
             char *ali_name = GBT_get_default_alignment(gb_main);
 
-            for (; unames && !abort; unames = h) {
-                h = strchr(unames, '#');
-                if (h) *(h++) = 0;
-                GBDATA *gb_species = GBT_find_species(gb_main, unames);
+            for (size_t u = 0; !abort && u<unames_array.size(); ++u) {
+                const char *uname      = unames_array[u];
+                GBDATA     *gb_species = GBT_find_species(gb_main, uname);
                 if (!gb_species) {
-                    aw_message(GBS_global_string("Species '%s' not found", unames));
+                    aw_message(GBS_global_string("Species '%s' not found", uname));
                     abort = true;
                 }
                 else {
                     GBDATA *data = GBT_read_sequence(gb_species, ali_name);
                     if (!data) {
-                        aw_message(GB_export_errorf("Species '%s' has no sequence belonging to alignment '%s'", unames, ali_name));
+                        aw_message(GB_export_errorf("Species '%s' has no sequence belonging to alignment '%s'", uname, ali_name));
                         abort = true;
                     }
                     else {
                         T_PT_SEQUENCE pts;
-                        bytestring    bs_seq;
+
+                        bytestring bs_seq;
                         bs_seq.data = (char*)GB_read_char_pntr(data);
                         bs_seq.size = GB_read_string_count(data)+1;
+
                         aisc_create(PD.link, PT_PDC, pdc,
                                     PDC_SEQUENCE, PT_SEQUENCE, pts,
                                     SEQUENCE_SEQUENCE, &bs_seq,
@@ -554,7 +579,9 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
                     }
                 }
             }
+            free(ali_name);
         }
+        free(readable_unames);
         free(unknown_names.data);
     }
 
@@ -1821,7 +1848,7 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
     if (error) aw_message(error);
 }
 
-static void pd_view_pt_log(AW_window *aww) {
+static void pd_view_pt_log(AW_window *) {
     AW_edit(GBS_ptserver_logname());
 }
 
