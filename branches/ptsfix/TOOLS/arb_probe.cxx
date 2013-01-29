@@ -1590,6 +1590,40 @@ void TEST_SLOW_design_probe() {
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
+    // test same design as above, but add 2 "unknown species" each of which is missing one of the previously designed probes
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=ClnCorin#Unknown1#CPPParap#ClfPerfr#Unknown2",
+            "designprobelength=16",
+            "designmintargets=100",
+            "designmishit=2",
+            // pass sequences for the unknown species
+            "designsequence=---CGAAAGGAAGAUUAAU------------------AAGUCGAGCGAUGAAG-CAAGUCGAGCGAUGAA-GUCGAGCGAUGAAGUU-UCAAGUCGAGCGAUGA-AGUCGAGCGAUGAAGU-AUCAAGUCGAGCGAUG-GAUCAAGUCGAGCGAU-UGAUCAAGUCGAGCGA",
+            "designsequence=---CGAAAGGAAGAUUAAU-AAGGAAGAUUAAUACC-AAGUCGAGCGAUGAAG-CAAGUCGAGCGAUGAA-GUCGAGCGAUGAAGUU-UCAAGUCGAGCGAUGA-AGUCGAGCGAUGAAGU-AUCAAGUCGAGCGAUG------------------UGAUCAAGUCGAGCGA",
+        };
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe      16\n"
+            "Temperature        [ 0.0 -400.0]\n"
+            "GC-Content         [30.0 -80.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits     2\n"
+            "Min Group Hits       100%\n"
+            "Target           le     apos ecol qual grps   G+C temp Probe sequence   | Decrease T by n*.3C -> probe matches n non group species\n"
+            "CGAAAGGAAGAUUAAU 16 A=    94   82   96    5  31.2 42.0 AUUAAUCUUCCUUUCG | 1 1 1 1 1 1 1 1  1  1  1  1  1  1  1  1  1  1  1  1\n"
+            // AAGGAAGAUUAAUACC is not designed here
+            "AAGUCGAGCGAUGAAG 16 B=    20   19   86    5  50.0 48.0 CUUCAUCGCUCGACUU | 1 1 1 1 1 1 1 1  1  1  1  1  1  1  1  1  1  3  3  3\n"
+            "CAAGUCGAGCGAUGAA 16 B-     1   18   61    5  50.0 48.0 UUCAUCGCUCGACUUG | 1 1 1 1 1 1 1 1  1  1  1  1  3  3  3  3  3  3  3  3\n"
+            "GUCGAGCGAUGAAGUU 16 B+     2   21   51    5  50.0 48.0 AACUUCAUCGCUCGAC | - - - - - - - -  -  -  1  1  1  1  1  1  1  1  1  1\n"
+            "UCAAGUCGAGCGAUGA 16 B-     2   17   46    5  50.0 48.0 UCAUCGCUCGACUUGA | 1 1 1 1 1 1 1 1  1  3  3  3  3  3  3  3  3  3  3  3\n"
+            "AGUCGAGCGAUGAAGU 16 B+     1   20   31    5  50.0 48.0 ACUUCAUCGCUCGACU | - - - - - - 1 1  1  1  1  1  1  1  1  1  1  1  1  1\n"
+            "AUCAAGUCGAGCGAUG 16 B-     3   16   26    5  50.0 48.0 CAUCGCUCGACUUGAU | 1 1 1 1 1 3 3 3  3  3  3  3  3  3  3  3  3 10 10 10\n"
+            // GAUCAAGUCGAGCGAU is not designed here
+            "UGAUCAAGUCGAGCGA 16 B-     5   14    6    5  50.0 48.0 UCGCUCGACUUGAUCA | - 9 9 9 9 9 9 9 10 10 10 10 10 10 10 10 10 10 10 10\n";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
     {
         const char *arguments[] = {
             "prgnamefake",
