@@ -59,9 +59,14 @@ public:
     GtkWidget *radio_last;
 
     /*
-     * The box for the current radio group. NULL if no open group.
+     * The box for the current toggle field (radio group). NULL if no open field.
      */
-    GtkWidget *radio_box;
+    GtkWidget *toggle_field;
+    
+    /**
+     * Name of the awar of the current toggle field (radio group). NULL if no open field.
+     */
+    const char *toggle_field_awar_name;
 
     /*
      * The current ComboBox, NULL if none under construction

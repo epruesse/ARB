@@ -595,10 +595,8 @@ private:
     template <class T>
     void insert_option_internal(AW_label choice_label, const char *mnemonic, T var_value,  const char *name_of_color, bool default_option);
 
-    void insert_toggle_internal(AW_label toggle_label, const char *mnemonic, const char *var_value, bool default_toggle);
-    void insert_toggle_internal(AW_label toggle_label, const char *mnemonic, int var_value,          bool default_toggle);
-    void insert_toggle_internal(AW_label toggle_label, const char *mnemonic, float var_value,        bool default_toggle);
-    
+    template <class T>
+    void insert_toggle_internal(AW_label toggle_label, const char *mnemonic, T var_value, bool default_toggle);
 
     
 public:

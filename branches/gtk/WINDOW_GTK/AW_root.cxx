@@ -18,6 +18,7 @@
 #include <arbdbt.h>
 #include "aw_awar.hxx"
 #include <gdk/gdkx.h>
+#include <vector>
 #include "aw_xfont.hxx"
 #include "aw_awar_defs.hxx"
 #include "aw_window.hxx"
@@ -223,9 +224,9 @@ void AW_root::init_variables(AW_default database) {
     current_option_menu      = NULL;
     number_of_option_menus   = 0;
     changer_of_variable      = NULL;
+
     
     FIXME("not sure if aw_fb is still needed");
-    
     for (int i=0; aw_fb[i].awar; ++i) {
         awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
     }
@@ -237,13 +238,16 @@ void AW_root::append_selection_list(AW_selection_list* pList) {
         last_selection_list = last_selection_list->next;
     }
     else {
-        last_selection_list = selection_list = pList;
+        last_selection_list = pList;
+        selection_list = pList;
     }
 }
 
 AW_selection_list* AW_root::get_last_selection_list() {
     return last_selection_list;
 }
+
+
 
 void AW_root::make_sensitive(GtkWidget* w, AW_active mask) {
     // Don't call make_sensitive directly!

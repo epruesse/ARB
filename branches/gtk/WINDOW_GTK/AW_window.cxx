@@ -1461,7 +1461,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 
 // BEGIN TOGGLE FIELD STUFF
 
-void AW_window::create_toggle_field(const char */*awar_name*/, int orientation /*= 0*/){
+void AW_window::create_toggle_field(const char *awar_name, int orientation /*= 0*/){
     // orientation = 0 -> vertical else horizontal layout
 
     GtkWidget *parent_widget = GTK_WIDGET(prvt->fixed_size_area);
@@ -1506,56 +1506,138 @@ void AW_window::create_toggle_field(const char */*awar_name*/, int orientation /
     }
 
     if (orientation == 0) {
-      prvt->radio_box = gtk_vbox_new(true, 2);
+      prvt->toggle_field = gtk_vbox_new(true, 2);
     } 
     else {
-      prvt->radio_box = gtk_hbox_new(true, 2);
+      prvt->toggle_field = gtk_hbox_new(true, 2);
     }
     
+    if (_at.attach_any) {
+        FIXME("Attaching toggle fields not implemented");
+       // aw_attach_widget(toggle_field, _at, 300);
+    }
+    
+    prvt->toggle_field_awar_name = awar_name;
+    
+    root->make_sensitive(prvt->toggle_field, _at.widget_mask);
 }
 
 void AW_window::create_toggle_field(const char *var_name, AW_label labeli, const char */*mnemonic*/) {
-    GTK_NOT_IMPLEMENTED;
-    //    if (labeli) this->label(labeli);
-//    this->create_toggle_field(var_name);
+    if (labeli) this->label(labeli);
+    create_toggle_field(var_name);
 }
 
-void AW_window::insert_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, const char */*var_value*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::insert_toggle(AW_label toggle_label, const char */*mnemonic*/, int /*var_value*/){
+template <class T>
+void AW_window::insert_toggle_internal(AW_label toggle_label, const char */*mnemonic*/, T var_value, bool default_toggle) {
     GtkWidget *radio;  
     // create and chain radio button
+    FIXME("radio group mnemonic not implemented");
     radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(prvt->radio_last), toggle_label);
     prvt->radio_last = radio;
 
-    gtk_box_pack_start(GTK_BOX(prvt->radio_box), radio, true, true, 2);
+    gtk_box_pack_start(GTK_BOX(prvt->radio_last), radio, true, true, 2);
+    
+    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(prvt->toggle_field_awar_name), var_value, prvt->callback);
+    g_signal_connect((gpointer)radio, "clicked", G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), (gpointer)vui);
+    
+    if(default_toggle){
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), true);
+    }
 }
 
-void AW_window::insert_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, float /*var_value*/){
-    GTK_NOT_IMPLEMENTED;
-}
+void AW_window::insert_toggle        (AW_label toggle_label, const char *mnemonic, const char *var_value) { insert_toggle_internal(toggle_label, mnemonic, var_value, false); }
+void AW_window::insert_default_toggle(AW_label toggle_label, const char *mnemonic, const char *var_value) { insert_toggle_internal(toggle_label, mnemonic, var_value, true); }
+void AW_window::insert_toggle        (AW_label toggle_label, const char *mnemonic, int var_value)           { insert_toggle_internal(toggle_label, mnemonic, var_value, false); }
+void AW_window::insert_default_toggle(AW_label toggle_label, const char *mnemonic, int var_value)           { insert_toggle_internal(toggle_label, mnemonic, var_value, true); }
+void AW_window::insert_toggle        (AW_label toggle_label, const char *mnemonic, float var_value)         { insert_toggle_internal(toggle_label, mnemonic, var_value, false); }
+void AW_window::insert_default_toggle(AW_label toggle_label, const char *mnemonic, float var_value)         { insert_toggle_internal(toggle_label, mnemonic, var_value, true); }
 
-void AW_window::insert_default_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, const char */*var_value*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::insert_default_toggle(AW_label /*toggle_label*/, const char */*mnemonic*/, int /*var_value*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::refresh_toggle_field(int /*toggle_field_number*/) {
-    GTK_NOT_IMPLEMENTED;
-}
 
 void AW_window::update_toggle_field() { 
     GtkWidget *parent_widget = GTK_WIDGET(prvt->fixed_size_area);
-    gtk_fixed_put(GTK_FIXED(parent_widget), prvt->radio_box, 
+    gtk_fixed_put(GTK_FIXED(parent_widget), prvt->toggle_field, 
                       _at.x_for_next_button + _at.saved_xoff_for_label, 
                       _at.y_for_next_button);
-    gtk_widget_show_all(prvt->radio_box);
+    gtk_widget_show_all(prvt->toggle_field);
     prvt->radio_last = NULL; // end of radio group
+    prvt->toggle_field = NULL;
+    unset_at_commands();
+}
+void AW_window::refresh_toggle_field(int toggle_field_number) {
+    GTK_NOT_IMPLEMENTED;
+//#if defined(DEBUG)
+//    static int inside_here = 0;
+//    aw_assert(!inside_here);
+//    inside_here++;
+//#endif // DEBUG
+//
+//    AW_toggle_field_struct *toggle_field_list = p_global->toggle_field_list;
+//    {
+//        while (toggle_field_list) {
+//            if (toggle_field_number == toggle_field_list->toggle_field_number) {
+//                break;
+//            }
+//            toggle_field_list = toggle_field_list->next;
+//        }
+//    }
+//
+//    if (toggle_field_list) {
+//        AW_widget_value_pair *active_toggle = toggle_field_list->first_toggle;
+//        {
+//            AW_scalar global_value(root->awar(toggle_field_list->variable_name));
+//            while (active_toggle && active_toggle->value != global_value) {
+//                active_toggle = active_toggle->next;
+//            }
+//            if (!active_toggle) active_toggle = toggle_field_list->default_toggle;
+//        }
+//
+//        // iterate over all toggles including default_toggle and set their state
+//        for (AW_widget_value_pair *toggle = toggle_field_list->first_toggle; toggle;) {
+//            XmToggleButtonSetState(toggle->widget, toggle == active_toggle, False);
+//
+//            if (toggle->next)                                     toggle = toggle->next;
+//            else if (toggle != toggle_field_list->default_toggle) toggle = toggle_field_list->default_toggle;
+//            else                                                  toggle = 0;
+//        }
+//
+//        // @@@ code below should go to update_toggle_field
+//        {
+//            short length;
+//            short height;
+//            XtVaGetValues(p_w->toggle_field, XmNwidth, &length, XmNheight, &height, NULL);
+//            length                += (short)_at->saved_xoff_for_label;
+//
+//            int width_of_last_widget  = length;
+//            int height_of_last_widget = height;
+//
+//            if (toggle_field_list->correct_for_at_center_intern) {
+//                if (toggle_field_list->correct_for_at_center_intern == 1) {   // middle centered
+//                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at->saved_x - (short)(length/2) + (short)_at->saved_xoff_for_label), NULL);
+//                    if (p_w->toggle_label) {
+//                        XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at->saved_x - (short)(length/2)), NULL);
+//                    }
+//                    width_of_last_widget = width_of_last_widget / 2;
+//                }
+//                if (toggle_field_list->correct_for_at_center_intern == 2) {   // right centered
+//                    XtVaSetValues(p_w->toggle_field, XmNx, (short)((short)_at->saved_x - length + (short)_at->saved_xoff_for_label), NULL);
+//                    if (p_w->toggle_label) {
+//                        XtVaSetValues(p_w->toggle_label, XmNx, (short)((short)_at->saved_x - length),    NULL);
+//                    }
+//                    width_of_last_widget = 0;
+//                }
+//            }
+//
+//            this->unset_at_commands();
+//            this->increment_at_commands(width_of_last_widget, height_of_last_widget);
+//        }
+//    }
+//    else {
+//        GBK_terminatef("update_toggle_field: toggle field %i does not exist", toggle_field_number);
+//    }
+//
+//#if defined(DEBUG)
+//    inside_here--;
+//#endif // DEBUG
 }
 
 // END TOGGLE FIELD STUFF

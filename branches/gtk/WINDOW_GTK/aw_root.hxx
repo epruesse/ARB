@@ -74,7 +74,7 @@ class AW_root : virtual Noncopyable {
     AW_buttons_struct *button_sens_list; /** < FIXME */
     bool        no_exit; /** < FIXME no idea what this is used for*/
     bool help_active; /** < true if the help mode is active, false otherwise */ 
-
+    
 
     
 //    AW_buttons_struct *button_sens_list;
@@ -101,10 +101,9 @@ class AW_root : virtual Noncopyable {
     AW_default load_properties(const char *default_name);
     
     
-    AW_selection_list *selection_list;
-    AW_selection_list *last_selection_list;
+    AW_selection_list *selection_list; /** < List of current selection lists */
+    AW_selection_list *last_selection_list; /** < Last created selection list */
     
-
 //    void exit_variables();
 
 
