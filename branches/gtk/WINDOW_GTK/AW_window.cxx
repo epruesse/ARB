@@ -1086,12 +1086,12 @@ char *AW_window::align_string(const char *label_text, int columns) {
 /**
  * Is called whenever the selection of a combobox changes
  */
-void AW_combo_box_changed(GtkComboBox* box, gpointer user_data) {
+void AW_combo_box_changed(GtkComboBoxText* box, gpointer user_data) {
     
     AW_option_menu_struct *oms = (AW_option_menu_struct*) user_data;
     aw_assert(NULL != oms);
     
-    gchar *selected_option_name = gtk_combo_box_get_active_text(box);
+    gchar *selected_option_name = gtk_combo_box_text_get_active_text(box);
     
     aw_assert(NULL != selected_option_name);
     aw_assert(oms->valueToUpdateInfo.find(selected_option_name) != oms->valueToUpdateInfo.end());
@@ -1107,7 +1107,7 @@ void AW_combo_box_changed(GtkComboBox* box, gpointer user_data) {
 AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name, 
                                                      AW_label tmp_label, 
                                                      const char *){
-    int x_for_position_of_menu;
+    int x_for_position_of_menu = 10;
     FIXME("mnemonic not implemented");
     if (_at.label_for_inputfield) {
         tmp_label = _at.label_for_inputfield;
@@ -1116,13 +1116,15 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
         aw_assert(0); // do not specify empty labels (causes misalignment)
         tmp_label = NULL;
     }
+    _at.saved_x = _at.x_for_next_button;
+    if (!tmp_label) {
+      _at.saved_x -= 10;
+    }
 
-    _at.saved_x = _at.x_for_next_button - (tmp_label ? 0 : 10);
-    x_for_position_of_menu = 10;
-
-    prvt->combo_box = gtk_combo_box_new_text();
     GtkWidget *label = NULL; //contains the label, or NULL
-    GtkWidget* hbox = gtk_hbox_new(false, 1); //This box is used to align label and combobox
+    prvt->combo_box = gtk_hbox_new(false, 1); //This box is used to align label and combobox
+    GtkWidget *cbox = gtk_combo_box_text_new();
+
     int hbox_x = 0;//where to put the hbox
     int hbox_y = 0;
     
@@ -1146,34 +1148,28 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
     
 
     if (tmp_label) {
-        int   width_help_label, height_help_label;
-        calculate_label_size(this, &width_help_label, &height_help_label, false, tmp_label);
-        #if defined(DUMP_BUTTON_CREATION)
-        printf("width_help_label=%i label='%s'\n", width_help_label, tmp_label);
-        #endif // DUMP_BUTTON_CREATION
+        label = gtk_label_new(tmp_label);
+        if (_at.length_of_label_for_inputfield) {
+          gtk_label_set_width_chars(GTK_LABEL(label), _at.length_of_label_for_inputfield);
+          gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+        }
+        gtk_box_pack_start(GTK_BOX(prvt->combo_box), label, false, false, 0);
+    }
 
-        char *help_label = this->align_string(tmp_label, width_help_label);
-        label = gtk_label_new(help_label);
-        free(help_label);
-        gtk_box_pack_start(GTK_BOX(hbox), label, false, false, 0);
-    }
-    else {
-        _at.x_for_next_button = _at.saved_x;
-    }
-    gtk_box_pack_start(GTK_BOX(hbox), prvt->combo_box, false, false, 0);    
-    gtk_fixed_put(prvt->fixed_size_area, GTK_WIDGET(hbox), hbox_x, hbox_y);
+    gtk_box_pack_start(GTK_BOX(prvt->combo_box), cbox, false, false, 0);    
+    gtk_fixed_put(prvt->fixed_size_area, prvt->combo_box, 
+                  _at.x_for_next_button, _at.y_for_next_button);
     
     root->number_of_option_menus++;
 
-    
     AW_awar *vs = root->awar(awar_name);
 
     AW_option_menu_struct *next =
         new AW_option_menu_struct(root->number_of_option_menus,
                                   awar_name,
                                   vs->variable_type,
-                                  label,
-                                  prvt->combo_box,
+                                  label, 
+                                  cbox,
                                   _at.x_for_next_button - 7,
                                   _at.y_for_next_button,
                                   _at.correct_for_at_center);
@@ -1186,17 +1182,19 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
         root->last_option_menu = root->option_menu_list = next;
     }
 
-
     root->current_option_menu = root->last_option_menu;
 
-    vs->tie_widget((AW_CL)root->current_option_menu, prvt->combo_box, AW_WIDGET_CHOICE_MENU, this);
+    vs->tie_widget((AW_CL)root->current_option_menu, cbox, AW_WIDGET_CHOICE_MENU, this);
     
     //connect changed signal
-    g_signal_connect(G_OBJECT(prvt->combo_box), "changed", G_CALLBACK(AW_combo_box_changed), (gpointer) next);
+    g_signal_connect(G_OBJECT(cbox), "changed", G_CALLBACK(AW_combo_box_changed), (gpointer) next);
+   
+    root->make_sensitive(prvt->combo_box, _at.widget_mask);
+    GtkRequisition requisition;
+    gtk_widget_size_request(GTK_WIDGET(prvt->combo_box), &requisition);
+    unset_at_commands();
+    increment_at_commands(requisition.width, requisition.height);
     
-    
-    root->make_sensitive(hbox, _at.widget_mask);
-
     return root->current_option_menu;
 }
 
@@ -1235,11 +1233,11 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
     if (oms->variable_type == AW_TypeCheck::getVarType(var_value)) {
         
         FIXME("background color not implemented");
-        gtk_combo_box_append_text(GTK_COMBO_BOX(oms->menu_widget), option_name);
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(oms->menu_widget), option_name);
         
 
         AW_cb_struct *cbs   = prvt->callback; // user-own callback
-//
+
         //create VarUpdateInfo for new choice and add it to the oms.
         //AW_variable_update_callback() will be called with this VarUpdateInfo
         //This rather complicated structure is needed because the old interface
@@ -1254,16 +1252,26 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         
         oms->valueToUpdateInfo[option_name] = vui;
         oms->add_option(option_name, default_option);
+        
+        if (default_option) {
+          gtk_combo_box_set_active(GTK_COMBO_BOX(oms->menu_widget), 
+                                   oms->options.size()-1);
+        }
+
        
         FIXME("setting sensitivity of option menu entries not implemented");
-//      root->make_sensitive(entry, _at->widget_mask);
+        root->make_sensitive(entry, _at->widget_mask);
         this->unset_at_commands();
     }
 }
 
-
 void AW_window::update_option_menu() {
-    GTK_NOT_IMPLEMENTED;
+    GtkRequisition requisition;
+    gtk_widget_show_all(prvt->combo_box);
+    gtk_widget_size_request(GTK_WIDGET(prvt->combo_box), &requisition);
+    unset_at_commands();
+    // no clue where the +10 comes from
+    increment_at_commands(requisition.width + 10, requisition.height);
 }
 
 
