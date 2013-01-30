@@ -1433,7 +1433,6 @@ void TEST_SLOW_design_probe() {
             "designmingc=0", "designmaxgc=100", // allow all GCs
             "designmintemp=30", "designmaxtemp=100", // allow all temp above 30 deg
             "designmishit=7",  // allow enough outgroup hits
-            "designmaxhits=99999", // do not limit results
             "designprobelength=9",
         };
 
@@ -1452,7 +1451,6 @@ void TEST_SLOW_design_probe() {
             "designmingc=0", "designmaxgc=100", // allow all GCs
             "designmintemp=30", "designmaxtemp=100", // allow all temp above 30 deg
             "designmishit=7",  // allow enough outgroup hits
-            "designmaxhits=99999", // do not limit results
             "designprobelength=9",
         };
 
@@ -1532,7 +1530,6 @@ void TEST_SLOW_design_probe() {
             "designmintemp=30", "designmaxtemp=100", // allow all temp above 30 deg
             // "designmishit=7",
             "designmishit=15", // @@@ reports more results than with 7 mishits, but no mishits reported below!
-            "designmaxhits=99999", // do not limit results
             "designprobelength=8",
         };
 
@@ -1556,6 +1553,37 @@ void TEST_SLOW_design_probe() {
             "ACGGGCGC  8 B=    98   86   13    1  87.5 30.0 GCGCCCGU |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  1\n"
             "CGGGCGCU  8 B+     1   87   13    1  87.5 30.0 AGCGCCCG |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  1\n"
             "CAGCGGCG  8 C=    63   58    8    1  87.5 30.0 CGCCGCUG |  2  2  2  2  2  2  2  6  6  6  6  6  6  6  8  8  8  8  8  8\n";
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+
+    // same as above (but restricting ecoli-range)
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=CPPParap#PsAAAA00",
+            "designmintargets=50", // hit at least 1 of the 2 targets
+            "designmingc=0", "designmaxgc=100", // allow all GCs
+            "designmintemp=30", "designmaxtemp=100", // allow all temp above 30 deg
+            "designmishit=15",
+            "designprobelength=8",
+            "designminpos=65", "designmaxpos=69", // restrict ecoli-range
+        };
+
+        const char *expected =
+            "Probe design Parameters:\n"
+            "Length of probe       8\n"
+            "Temperature        [30.0 -100.0]\n"
+            "GC-Content         [ 0.0 -100.0]\n"
+            "E.Coli Position    [  65 -  69]\n"
+            "Max Non Group Hits    15\n"
+            "Min Group Hits        50%\n"
+            "Target   le     apos ecol qual grps   G+C temp Probe    | Decrease T by n*.3C -> probe matches n non group species\n"
+            "GGCGGACG  8 A=    78   67   39    2  87.5 30.0 CGUCCGCC | 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13\n"
+            "GCGGACGG  8 A+     1   68   39    2  87.5 30.0 CCGUCCGC | 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13\n"
+            "GCGGCGGA  8 A-     2   65   39    2  87.5 30.0 UCCGCCGC | 10 10 11 11 11 11 11 14 14 14 14 14 14 14 14 14 14 14 14 14\n"
+            "CGGCGGAC  8 A-     1   66   39    2  87.5 30.0 GUCCGCCG | 10 10 10 10 10 10 10 13 13 13 13 13 13 13 14 14 14 14 14 14\n"
+            "CGGACGGG  8 A+     2   69   20    1  87.5 30.0 CCCGUCCG |  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
