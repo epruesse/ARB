@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AW_gtk_forward_declarations.hxx"
+#include "aw_gtk_forward_declarations.hxx"
 #include <string>
 //@depricated DO NOT USE, remove later
 struct awXKeymap {

@@ -13,7 +13,7 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
-#include "AW_gtk_forward_declarations.hxx"
+#include "aw_gtk_forward_declarations.hxx"
 #include "aw_root_gtk.hxx"
 #include "aw_assert.hxx"
 #include "aw_select.hxx"

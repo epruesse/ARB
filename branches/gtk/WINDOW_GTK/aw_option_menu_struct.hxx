@@ -12,7 +12,7 @@
 #include <arbtools.h>
 #endif
 
-#include "AW_gtk_forward_declarations.hxx"
+#include "aw_gtk_forward_declarations.hxx"
 #include "aw_scalar.hxx"
 #include "aw_base.hxx"
 #include "aw_varUpdateInfo.hxx"

@@ -5,7 +5,7 @@
  * Created on October 23, 2012, 11:01 AM
  */
 
-#include "AW_motif_gtk_conversion.hxx"
+#include "aw_motif_gtk_conversion.hxx"
 
 std::string AW_motif_gtk_conversion::convert_mnemonic(const char* text, const char* mnemonic) {
     std::string strText(text);

@@ -5,8 +5,8 @@
  * Created on January 15, 2013, 3:41 PM
  */
 
-#include "AW_option_menu_struct.hxx"
-#include "AW_gtk_forward_declarations.hxx"
+#include "aw_option_menu_struct.hxx"
+#include "aw_gtk_forward_declarations.hxx"
 
 
 AW_option_menu_struct::AW_option_menu_struct(int numberi, const char *variable_namei,

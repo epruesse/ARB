@@ -18,7 +18,7 @@
 #include "aw_scalar.hxx"
 #endif
 
-#include "AW_gtk_forward_declarations.hxx"
+#include "aw_gtk_forward_declarations.hxx"
 #include <typeinfo>
 class CharPtrArray;
 class StrArray;

@@ -8,7 +8,7 @@
 #pragma once
 
 #include "aw_base.hxx"
-#include "AW_gtk_forward_declarations.hxx"
+#include "aw_gtk_forward_declarations.hxx"
 class AW_window;
 class AW_root;
 class AW_common_gtk;

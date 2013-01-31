@@ -30,7 +30,7 @@
 #include <arbtools.h>
 #endif
 
-#include "AW_gtk_forward_declarations.hxx"
+#include "aw_gtk_forward_declarations.hxx"
 
 
 

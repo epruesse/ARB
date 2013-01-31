@@ -17,8 +17,8 @@
 #endif
 
 #include "aw_at.hxx"
-#include "AW_gtk_forward_declarations.hxx"
-#include "AW_area_management.hxx"
+#include "aw_gtk_forward_declarations.hxx"
+#include "aw_area_management.hxx"
 #include "aw_help.hxx"
 
 //the following types are not forward declared because ARB needs to know about them

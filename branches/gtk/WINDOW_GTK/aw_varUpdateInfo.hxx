@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "AW_gtk_forward_declarations.hxx"
+#include "aw_gtk_forward_declarations.hxx"
 #include "aw_awar.hxx"
 #include "aw_scalar.hxx"
 #include "aw_gtk_migration_helpers.hxx"

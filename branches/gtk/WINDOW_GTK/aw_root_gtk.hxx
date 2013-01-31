@@ -13,7 +13,7 @@
 
 #include <gdk/gdk.h>
 #include "aw_base.hxx"
-#include "AW_gtk_forward_declarations.hxx"
+#include "aw_gtk_forward_declarations.hxx"
 
 class AW_root;
 

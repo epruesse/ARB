@@ -12,7 +12,7 @@
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_window.hxx"
 #include "aw_window_gtk.hxx"
-#include "AW_area_management.hxx"
+#include "aw_area_management.hxx"
 #include "aw_xfig.hxx" 
 #include "aw_root.hxx"
 #include "devices/aw_device_click.hxx"  
@@ -21,11 +21,11 @@
 #include "aw_msg.hxx"
 #include "aw_awar.hxx"
 #include "aw_common.hxx"
-#include "AW_motif_gtk_conversion.hxx"
-#include "AW_modal.hxx"
+#include "aw_motif_gtk_conversion.hxx"
+#include "aw_modal.hxx"
 #include "aw_help.hxx"
 #include "aw_varUpdateInfo.hxx" 
-#include "AW_option_menu_struct.hxx"
+#include "aw_option_menu_struct.hxx"
 #include "aw_type_checking.hxx"
 #include <gtk/gtk.h>
 
@@ -1260,7 +1260,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
 
        
         FIXME("setting sensitivity of option menu entries not implemented");
-        root->make_sensitive(entry, _at->widget_mask);
+        // root->make_sensitive(entry, _at->widget_mask);
         this->unset_at_commands();
     }
 }

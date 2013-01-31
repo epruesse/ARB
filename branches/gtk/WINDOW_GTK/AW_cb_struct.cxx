@@ -2,7 +2,7 @@
 #include "aw_window_gtk.hxx"
 #include "aw_root.hxx"
 #include "aw_msg.hxx"
-#include "AW_modal.hxx"
+#include "aw_modal.hxx"
 
 //TODO comment
 AW_cb_struct_guard AW_cb_struct::guard_before = NULL;
