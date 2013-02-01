@@ -23,6 +23,7 @@
 #include <arb_strarray.h>
 
 #include <climits>
+#include <algorithm>
 #include <map>
 
 #if defined(DEBUG)
@@ -1040,235 +1041,256 @@ public:
     }
 };
 
-static int ptnd_check_tprobe(PT_pdc *pdc, const char *probe, int len)
-{
-    int occ[PT_BASES] = { 0, 0, 0, 0, 0, 0 };
+class ProbeOccurrance {
+    SmartCharPtr seq;
+    size_t       offset;
 
-    int count = 0;
-    while (count<len) {
-        occ[safeCharIndex(probe[count++])]++;
+public:
+    ProbeOccurrance(SmartCharPtr seq_, size_t offset_) : seq(seq_), offset(offset_) {}
+
+    const char *sequence() const { return &*seq+offset; }
+
+    size_t get_offset() const { return offset; }
+    void forward() { ++offset; }
+
+    bool less(const ProbeOccurrance& other, size_t len) const {
+        const char *mine = sequence();
+        const char *his  = other.sequence();
+
+        int cmp = 0;
+        for (size_t i = 0; i<len && !cmp; ++i) {
+            cmp = mine[i]-his[i];
+        }
+        return cmp<0;
     }
-    int gc = occ[PT_G]+occ[PT_C];
-    int at = occ[PT_A]+occ[PT_T];
-
-    int all = gc+at;
-
-    if (all < len) return 1; // there were some unwanted characters ('N' or '.')
-    if (all < pdc->probelen) return 1;
-
-    if (gc < pdc->min_gc*len) return 1;
-    if (gc > pdc->max_gc*len) return 1;
-
-    double temp = at*2 + gc*4;
-    if (temp< pdc->mintemp) return 1;
-    if (temp>pdc->maxtemp) return 1;
-
-    return 0;
-}
-
-struct probes_collect_data {
-    PT_pdc *pdc;
-    long    min_count;
-
-    probes_collect_data(PT_pdc *pdc_, int group_count)
-        : pdc(pdc_),
-          min_count(group_count*pdc->mintarget)
-    {}
 };
 
-static long ptnd_build_probes_collect(const char *probe, long count, void *cl_collData) {
-    probes_collect_data *collect_data = static_cast<probes_collect_data*>(cl_collData);
+class ProbeIterator {
+    ProbeOccurrance cursor;
+    size_t          seqlen;
+    size_t          probelen;
+    size_t          gc, at;    // count G+C and A+T
 
-    if (count >= collect_data->min_count) {
-        PT_tprobes *tprobe = create_PT_tprobes();
-        tprobe->sequence = strdup(probe);
-        tprobe->temp = pt_get_temperature(probe);
-        tprobe->groupsize = (int)count;
-        aisc_link(&collect_data->pdc->ptprobes, tprobe);
+    bool has_only_std_bases() const { return (gc+at) == probelen; }
+
+    size_t get_maxoffset() const { return seqlen-probelen; }
+    bool at_end() const { return cursor.get_offset() == get_maxoffset(); }
+
+    PT_base base_at(size_t offset) const {
+        pt_assert(offset < probelen);
+        return PT_base(cursor.sequence()[offset]);
     }
-    return count;
-}
 
-static void PT_incr_hash(GB_HASH *hash, const char *sequence, int len) {
-    char c        = sequence[len];
-    const_cast<char*>(sequence)[len] = 0;
-
-    pt_assert(strlen(sequence) == (size_t)len);
-
-    GBS_incr_hash(hash, sequence);
-
-    const_cast<char*>(sequence)[len] = c;
-}
-
-static void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, const char *sequence, int seq_len, int probe_len, const PrefixIterator& prefix) {
-    for (int pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {
-        if (prefix.matches_at(sequence)) {
-            if (!ptnd_check_tprobe(pdc, sequence, probe_len)) {
-                PT_incr_hash(hash, sequence, probe_len);
-            }
+    void forget(PT_base b) {
+        switch (b) {
+            case PT_A: case PT_T: pt_assert(at>0); --at; break;
+            case PT_C: case PT_G: pt_assert(gc>0); --gc; break;
+            default : break;
         }
     }
-}
-
-static long ptnd_collect_hash(const char *key, long val, void *gb_hash) {
-    pt_assert(val);
-    GBS_incr_hash((GB_HASH*)gb_hash, key);
-    return val;
-}
-
-static long avoid_hash_warning(const char *, long,  void*) { return 0; }
-
-static ARB_ERROR ptnd_build_tprobes(PT_pdc *pdc, const int overall_group_size) {
-    // search for possible probes
-
-    ARB_ERROR      error;
-    int           *group_idx    = new int[overall_group_size];
-    unsigned long  datasize     = 0;                    // of marked species/genes
-    unsigned long  maxseqlength = 0;                    // of marked species/genes
-
-    // get group indices and count datasize of marked species
-    int known_group_members = 0;
-    for (int name = 0; name < psg.data_count && !error; name++) {
-        const probe_input_data& pid = psg.data[name];
-
-        if (pid.inside_group()) {
-            group_idx[known_group_members++] = name;                  // store marked group indices
-
-            unsigned long size  = pid.get_size();
-            datasize           += size;
-
-            if (size<(unsigned long)pdc->probelen) {
-                error = GBS_global_string("Impossible design request for '%s' (contains only %lu bp)", pid.get_shortname(), size);
-            }
-            else {
-                if (datasize<size) datasize           = ULONG_MAX;  // avoid overflow!
-                if (size > maxseqlength) maxseqlength = size;
-            }
+    void count(PT_base b) {
+        switch (b) {
+            case PT_A: case PT_T: ++at; break;
+            case PT_C: case PT_G: ++gc; break;
+            default : break;
         }
     }
 
-    int added_group_members = 0;
-    for (PT_sequence *seq = pdc->sequences; seq && !error; seq = seq->next) {
-        unsigned long size = seq->seq.size;
-        if (size<(unsigned long)pdc->probelen) {
-            error = GBS_global_string("Impossible design request for one of the added sequences (contains only %lu bp)", size);
+    void init_counts() {
+        at = gc = 0;
+        for (size_t i = 0; i<probelen; ++i) {
+            count(base_at(i));
+        }
+    }
+
+public:
+    ProbeIterator(SmartCharPtr seq_, size_t offset_, size_t seqlen_, size_t probelen_)
+        : cursor(seq_, offset_),
+          seqlen(seqlen_),
+          probelen(probelen_)
+    {
+        pt_assert(seqlen >= probelen);
+        init_counts();
+    }
+
+    bool next() {
+        if (at_end()) return false;
+        forget(base_at(0));
+        cursor.forward();
+        count(base_at(probelen-1));
+        return true;
+    }
+
+    int get_temperature() const { return 2*at + 4*gc; }
+
+    bool gc_in_wanted_range(PT_pdc *pdc) const {
+        return pdc->min_gc*probelen <= gc && gc <= pdc->max_gc*probelen;
+    }
+    bool temperature_in_wanted_range(PT_pdc *pdc) const {
+        int temp             = get_temperature();
+        return pdc->mintemp <= temp && temp <= pdc->maxtemp;
+    }
+
+    bool feasible(PT_pdc *pdc) const {
+        pt_assert(cursor.get_offset() <= get_maxoffset());
+
+        return has_only_std_bases() &&
+            gc_in_wanted_range(pdc) &&
+            temperature_in_wanted_range(pdc);
+    }
+
+    const ProbeOccurrance& occurance() const { return cursor; }
+
+    void dump(FILE *out) const {
+        char *probe = readable_probe(cursor.sequence(), probelen, 'T');
+        fprintf(out, "probe='%s' probelen=%lu at=%lu gc=%lu\n", probe, probelen, at, gc);
+        free(probe);
+    }
+};
+
+class PO_Less {
+    size_t probelen;
+public:
+    PO_Less(size_t probelen_) : probelen(probelen_) {}
+    bool operator()(const ProbeOccurrance& a, const ProbeOccurrance& b) const { return a.less(b, probelen); }
+};
+
+class ProbeCandidates {
+    typedef std::set<ProbeOccurrance, PO_Less>      Candidates;
+    typedef std::map<ProbeOccurrance, int, PO_Less> CandidateHits;
+
+    size_t        probelen;
+    CandidateHits candidateHits;
+
+public:
+    ProbeCandidates(size_t probelen_)
+        : probelen(probelen_),
+          candidateHits(probelen)
+    {}
+
+    void generate_for_sequence(PT_pdc *pdc, const SmartCharPtr& seq, size_t bp) {
+        if (bp >= probelen) {
+            // collect all probe candidates for current sequence
+            Candidates candidates(probelen);
+            {
+                ProbeIterator probe(seq, 0, bp, probelen);
+                do {
+                    if (probe.feasible(pdc)) {
+                        candidates.insert(probe.occurance());
+                    }
+                } while (probe.next());
+            }
+
+            // increment overall hitcount for each found candidate
+            for (Candidates::iterator c = candidates.begin(); c != candidates.end(); ++c) {
+                candidateHits[*c]++;
+            }
+        }
+    }
+
+    void create_tprobes(PT_pdc *pdc, int ingroup_size) {
+        int min_ingroup_hits = (ingroup_size * pdc->mintarget + .5);
+        for (CandidateHits::iterator c = candidateHits.begin(); c != candidateHits.end(); ++c) {
+            int ingroup_hits = c->second;
+            if (ingroup_hits >= min_ingroup_hits) {
+                const ProbeOccurrance& candi = c->first;
+
+                PT_tprobes *tprobe = create_PT_tprobes();
+
+                tprobe->sequence  = GB_strndup(candi.sequence(), probelen);
+                tprobe->temp      = pt_get_temperature(tprobe->sequence);
+                tprobe->groupsize = ingroup_hits;
+
+                aisc_link(&pdc->ptprobes, tprobe);
+            }
+        }
+    }
+};
+
+class DesignTargets : virtual Noncopyable {
+    PT_pdc *pdc;
+
+    int targets;       // overall target sequence count
+    int known_targets; // known target sequences
+    int added_targets; // added (=unknown) target sequences
+
+    long datasize;     // overall bp of target sequences
+
+    int max_probe_length; // min. designed probe length
+
+    int *known2id;
+
+    ARB_ERROR error;
+
+    void announce_seq_bp(long bp) {
+        pt_assert(!error);
+        if (bp<long(max_probe_length)) {
+            error = GBS_global_string("Sequence contains only %lu bp. Impossible design request for", bp);
         }
         else {
-            datasize += size;
-            added_group_members++;
-            if (datasize<size) datasize           = ULONG_MAX;  // avoid overflow!
-            if (size > maxseqlength) maxseqlength = size;
+            datasize                  += bp;
+            if (datasize<bp) datasize  = ULONG_MAX;
         }
     }
 
-    if (!error) {
-#if defined(DEBUG)
-        fprintf(stderr, "added_group_members=%i known_group_members=%i overall_group_size=%i\n",
-                added_group_members, known_group_members, overall_group_size);
-        fflush_all();
-#endif
-
-        pt_assert((known_group_members+added_group_members) == overall_group_size);
-        pt_assert(datasize>(unsigned long)(pdc->probelen)); // otherwise estimation below fails badly
-
-        int           partsize = 0;                     // no partitions
-        unsigned long estimated_no_of_tprobes;
-        {
-            const unsigned long max_allowed_hash_size = 1000000; // approx.
-            const unsigned long max_allowed_tprobes   = (unsigned long)(max_allowed_hash_size*0.66); // results in 66% fill rate for hash (which is much!)
-
-            // tests found about 5-8% tprobes (in relation to datasize) -> we use 10% here
-            estimated_no_of_tprobes = (unsigned long)((datasize-pdc->probelen+1)*0.10+0.5);
-
-            while (estimated_no_of_tprobes > max_allowed_tprobes) {
-                partsize++;
-                estimated_no_of_tprobes /= 4; // 4 different bases
-            }
-
-#if defined(DEBUG)
-            printf("marked=%i datasize=%lu partsize=%i estimated_no_of_tprobes=%lu\n",
-                   overall_group_size, datasize, partsize, estimated_no_of_tprobes);
-#endif // DEBUG
+    void scan_added_targets() {
+        added_targets = 0;
+        for (PT_sequence *seq = pdc->sequences; seq && !error; seq = seq->next) {
+            announce_seq_bp(seq->seq.size);
+            ++added_targets;
         }
+        if (error) error = GBS_global_string("%s one of the added sequences", error.deliver());
+    }
+    void scan_known_targets(int expected_known_targets) {
+        known2id      = new int[expected_known_targets];
+        known_targets = 0;
 
-#if defined(DEBUG)
-        GBS_clear_hash_statistic_summary("outer");
-#endif // DEBUG
-
-        const int hash_multiply = 2; // resulting hash fill ratio is 1/(2*hash_multiply)
-
-#if defined(DEBUG) && 0
-        partsize = 2;
-        fprintf(stderr, "OVERRIDE: forcing partsize=%i\n", partsize);
-#endif
-
-        PrefixIterator design4prefix(PT_A, PT_T, partsize);
-        while (!design4prefix.done()) {
-#if defined(DEBUG)
-            {
-                char *prefix = probe_2_readable(design4prefix.copy(), design4prefix.length());
-                fprintf(stderr, "partition='%s'\n", prefix);
-                free(prefix);
+        for (int id = 0; id < psg.data_count && !error; ++id) {
+            const probe_input_data& pid = psg.data[id];
+            if (pid.inside_group()) {
+                announce_seq_bp(pid.get_size());
+                known2id[known_targets++] = id;
+                pt_assert(known_targets <= expected_known_targets);
+                if (error) error = GBS_global_string("%s species '%s'", error.deliver(), pid.get_shortname());
             }
-#endif // DEBUG
-            GB_HASH *hash_outer = GBS_create_hash(estimated_no_of_tprobes, GB_MIND_CASE); // count in how many groups/sequences the tprobe occurs (key = tprobe, value = counter)
-
-#if defined(DEBUG)
-            GBS_clear_hash_statistic_summary("inner");
-#endif // DEBUG
-
-            for (int g = 0; g<known_group_members; ++g) {
-                const probe_input_data& pid = psg.data[group_idx[g]];
-
-                long possible_tprobes = pid.get_size()-pdc->probelen+1;
-                if (possible_tprobes<1) possible_tprobes = 1; // avoid wrong hash-size if no/not enough data
-
-                GB_HASH      *hash_one = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE);    // count tprobe occurrences for one group/sequence
-                SmartCharPtr  seqPtr   = pid.get_dataPtr();
-                ptnd_add_sequence_to_hash(pdc, hash_one, &*seqPtr, pid.get_size(), pdc->probelen, design4prefix);
-
-                GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash
-#if defined(DEBUG)
-                GBS_calc_hash_statistic(hash_one, "inner", 0);
-#endif // DEBUG
-                GBS_free_hash(hash_one);
-            }
-            for (PT_sequence *seq = pdc->sequences; seq; seq = seq->next) {
-                long     possible_tprobes = seq->seq.size-pdc->probelen+1;
-                GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
-                ptnd_add_sequence_to_hash(pdc, hash_one, seq->seq.data, seq->seq.size, pdc->probelen, design4prefix);
-                GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash
-#if defined(DEBUG)
-                GBS_calc_hash_statistic(hash_one, "inner", 0);
-#endif // DEBUG
-                GBS_free_hash(hash_one);
-            }
-
-#if defined(DEBUG)
-            GBS_print_hash_statistic_summary("inner");
-#endif // DEBUG
-
-            {
-                probes_collect_data collData(pdc, overall_group_size);
-                GBS_hash_do_loop(hash_outer, ptnd_build_probes_collect, &collData);
-            }
-
-#if defined(DEBUG)
-            GBS_calc_hash_statistic(hash_outer, "outer", 1);
-#endif // DEBUG
-
-            GBS_hash_do_loop(hash_outer, avoid_hash_warning, NULL); // hash is known to be overfilled - avoid warnings // @@@ better replace the whole outer hash by some std::set
-            GBS_free_hash(hash_outer);
-            ++design4prefix;
         }
-#if defined(DEBUG)
-        GBS_print_hash_statistic_summary("outer");
-#endif // DEBUG
     }
 
-    delete [] group_idx;
-    return error;
-}
+public:
+    DesignTargets(PT_pdc *pdc_, int expected_known_targets)
+        : pdc(pdc_),
+          targets(0),
+          known_targets(0),
+          datasize(0),
+          max_probe_length(pdc->probelen),
+          known2id(NULL)
+    {
+        scan_added_targets(); // calc added_targets
+        if (!error) {
+            scan_known_targets(expected_known_targets);
+            targets = known_targets+added_targets;
+        }
+    }
+    ~DesignTargets() {
+        delete [] known2id;
+    }
+    ARB_ERROR& get_error() { return error; } // needs to be checked after construction!
+
+    long get_datasize() const { return datasize; }
+    int get_count() const { return targets; }
+    int get_known_count() const { return known_targets; }
+    int get_added_count() const { return added_targets; }
+
+    void generate(ProbeCandidates& candidates) {
+        for (int k = 0; k<known_targets; ++k) {
+            const probe_input_data& pid = psg.data[known2id[k]];
+            candidates.generate_for_sequence(pdc, pid.get_dataPtr(), pid.get_size());
+        }
+        for (PT_sequence *seq = pdc->sequences; seq; seq = seq->next) {
+            candidates.generate_for_sequence(pdc, GB_strndup(seq->seq.data, seq->seq.size), seq->seq.size);
+        }
+    }
+};
 
 #if defined(DUMP_DESIGNED_PROBES)
 static void dump_tprobe(PT_tprobes *tprobe, int idx) {
@@ -1290,10 +1312,10 @@ static void DUMP_TPROBES(const char *where, PT_pdc *pdc) {
 int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
 
-    int added_species_count = 0;
+    while (pdc->tprobes) destroy_PT_tprobes(pdc->tprobes);
+
     for (PT_sequence *seq = pdc->sequences; seq; seq = seq->next) {              // Convert all external sequence to internal format
         seq->seq.size = probe_compress_sequence(seq->seq.data, seq->seq.size-1); // no longer convert final zero-byte (PT_QU gets auto-appended)
-        added_species_count++;
     }
 
     ARB_ERROR error;
@@ -1309,50 +1331,61 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     }
 
     if (!error) {
-        locs->group_count += added_species_count;
+        DesignTargets targets(pdc, locs->group_count); // here locs->group_count is amount of known marked species/genes
+        error = targets.get_error();
 
-        if (locs->group_count <= 0) {
-            error = GBS_global_string("No %s marked - no probes designed", gene_flag ? "genes" : "species");
-        }
-        else if (added_species_count != unknown_species_count) {
-            if (gene_flag) { // cannot add genes
-                pt_assert(added_species_count == 0); // cannot, but did add?!
-                error = GBS_global_string("Cannot design probes for %i unknown marked genes", unknown_species_count);
+        if (!error) {
+            locs->group_count = targets.get_count();
+            if (locs->group_count <= 0) {
+                error = GBS_global_string("No %s marked - no probes designed", gene_flag ? "genes" : "species");
+            }
+            else if (targets.get_added_count() != unknown_species_count) {
+                if (gene_flag) { // cannot add genes
+                    pt_assert(targets.get_added_count() == 0); // cannot, but did add?!
+                    error = GBS_global_string("Cannot design probes for %i unknown marked genes", unknown_species_count);
+                }
+                else {
+                    int added = targets.get_added_count();
+                    error     = GBS_global_string("Got %i unknown marked species, but %i custom sequence%s added (has to match)",
+                                                  unknown_species_count,
+                                                  added,
+                                                  added == 1 ? " was" : "s were");
+                }
+            }
+            else if (pdc->probelen < MIN_DESIGN_PROBE_LENGTH) {
+                error = GBS_global_string("Probe length %i is below the minimum probe length of %i", pdc->probelen, MIN_DESIGN_PROBE_LENGTH);
             }
             else {
-                error = GBS_global_string("Got %i unknown marked species, but %i custom sequence%s added (has to match)",
-                                          unknown_species_count,
-                                          added_species_count,
-                                          added_species_count == 1 ? " was" : "s were");
-            }
-        }
-        else if (pdc->probelen < MIN_DESIGN_PROBE_LENGTH) {
-            error = GBS_global_string("Probe length %i is below the minimum probe length of %i", pdc->probelen, MIN_DESIGN_PROBE_LENGTH);
-        }
-        else {
-            while (pdc->tprobes) destroy_PT_tprobes(pdc->tprobes);
+                // search for possible probes
+                if (!error) {
+                    ProbeCandidates candidates(pdc->probelen);
 
-            error = ptnd_build_tprobes(pdc, locs->group_count);
+                    targets.generate(candidates);
+                    pt_assert(!targets.get_error());
 
-            while (pdc->sequences) destroy_PT_sequence(pdc->sequences);
-
-            if (!error) {
-                sort_tprobes_by(pdc, PSM_SEQUENCE);
-                remove_tprobes_with_too_many_mishits(pdc);
-                remove_tprobes_outside_ecoli_range(pdc);
-                tprobes_calculate_bonds(locs);
-                DUMP_TPROBES("after tprobes_calculate_bonds", pdc);
-
-                {
-                    OutgroupMatcher om(locs, pdc);
-                    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
-                        om.calculate_outgroup_matches(*tprobe);
-                    }
+                    candidates.create_tprobes(pdc, targets.get_count());
                 }
 
-                tprobes_sumup_perc_and_calc_quality(pdc);
-                sort_tprobes_by(pdc, PSM_QUALITY);
-                clip_tprobes(pdc, pdc->clipresult);
+                while (pdc->sequences) destroy_PT_sequence(pdc->sequences);
+
+                if (!error) {
+                    sort_tprobes_by(pdc, PSM_SEQUENCE);
+                    remove_tprobes_with_too_many_mishits(pdc);
+                    remove_tprobes_outside_ecoli_range(pdc);
+                    tprobes_calculate_bonds(locs);
+                    DUMP_TPROBES("after tprobes_calculate_bonds", pdc);
+
+                    {
+                        OutgroupMatcher om(locs, pdc);
+                        for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
+                            om.calculate_outgroup_matches(*tprobe);
+                        }
+                    }
+
+                    tprobes_sumup_perc_and_calc_quality(pdc);
+                    sort_tprobes_by(pdc, PSM_QUALITY);
+                    clip_tprobes(pdc, pdc->clipresult);
+                }
             }
         }
     }

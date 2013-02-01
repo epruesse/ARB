@@ -1720,7 +1720,7 @@ void TEST_SLOW_probe_design_errors() {
         TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, expected_error);
     }
     {
-        const char *expected_error = "Got 0 unknown marked species, but 1 custom sequence was added (has to match)";
+        const char *expected_error = "Sequence contains only 0 bp. Impossible design request for one of the added sequences";
         {
             const char *arguments[] = {
                 "prgnamefake",
@@ -1741,6 +1741,15 @@ void TEST_SLOW_probe_design_errors() {
     {
         const char *arguments[] = {
             "prgnamefake",
+            "designsequence=ACGTACGTACGTACGT", // pass a long enough (unexpected) sequence
+            "designprobelength=16",
+        };
+        const char *expected_error = "Got 0 unknown marked species, but 1 custom sequence was added (has to match)";
+        TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, expected_error);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
             "designnames=Unknown", // one unknown species
             "designprobelength=16",
         };
@@ -1757,7 +1766,7 @@ void TEST_SLOW_probe_design_errors() {
         TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, expected_error);
     }
     {
-        const char *expected_error = "Impossible design request for one of the added sequences (contains only 0 bp)";
+        const char *expected_error = "Sequence contains only 0 bp. Impossible design request for one of the added sequences";
         {
             const char *arguments[] = {
                 "prgnamefake",
