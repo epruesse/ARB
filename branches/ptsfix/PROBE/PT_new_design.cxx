@@ -617,13 +617,13 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
             }
 
             s += sprintf(s,
-                         "Probe design Parameters:\n"
-                         "Length of probe    %4i\n" // @@@ misaligned!
+                         "Probe design parameters:\n"
+                         "Length of probe    %i\n"
                          "Temperature        [%4.1f -%4.1f]\n"
-                         "GC-Content         [%4.1f -%4.1f]\n"
-                         "E.Coli Position    [%s]\n"
-                         "Max Non Group Hits  %4i\n"
-                         "Min Group Hits      %4.0f%%\n",
+                         "GC-content         [%4.1f -%4.1f]\n"
+                         "E.Coli position    [%s]\n"
+                         "Max. nongroup hits %i\n"
+                         "Min. group hits    %.0f%%\n",
                          pdc->probelen,
                          pdc->mintemp, pdc->maxtemp,
                          pdc->min_gc*100.0, pdc->max_gc*100.0,

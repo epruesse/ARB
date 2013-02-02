@@ -1361,13 +1361,13 @@ void TEST_SLOW_design_probe() {
             "designmintargets=100",
         };
         const char *expected =
-            "Probe design Parameters:\n"
-            "Length of probe      18\n"
+            "Probe design parameters:\n"
+            "Length of probe    18\n"
             "Temperature        [ 0.0 -400.0]\n"
-            "GC-Content         [30.0 -80.0]\n"
-            "E.Coli Position    [any]\n"
-            "Max Non Group Hits     0\n"
-            "Min Group Hits       100%\n"
+            "GC-content         [30.0 -80.0]\n"
+            "E.Coli position    [any]\n"
+            "Max. nongroup hits 0\n"
+            "Min. group hits    100%\n"
             "Target             le apos ecol qual grps   G+C temp Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
             "CGAAAGGAAGAUUAAUAC 18 A=94   82   77    4  33.3 48.0 GUAUUAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -\n"
             "GAAAGGAAGAUUAAUACC 18 A+ 1   83   77    4  33.3 48.0 GGUAUUAAUCUUCCUUUC | - - - - - - - - - - - - - - - - - - - -\n"
@@ -1394,13 +1394,13 @@ void TEST_SLOW_design_probe() {
         };
 
         const char *expected =
-            "Probe design Parameters:\n"
-            "Length of probe      18\n"
+            "Probe design parameters:\n"
+            "Length of probe    18\n"
             "Temperature        [ 0.0 -400.0]\n"
-            "GC-Content         [60.0 -75.0]\n"
-            "E.Coli Position    [any]\n"
-            "Max Non Group Hits     0\n"
-            "Min Group Hits        50%\n"
+            "GC-content         [60.0 -75.0]\n"
+            "E.Coli position    [any]\n"
+            "Max. nongroup hits 0\n"
+            "Min. group hits    50%\n"
             "Target             le apos ecol qual grps   G+C temp Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
             "AGUCGAGCGGCAGCACAG 18 A=21   20   39    2  66.7 60.0 CUGUGCUGCCGCUCGACU | - - - - - - - - - - - - - - - - - - - -\n"
             "GUCGAGCGGCAGCACAGA 18 A+ 1   21   39    2  66.7 60.0 UCUGUGCUGCCGCUCGAC | - - - - - - - - - - - - - - - - - - - -\n"
@@ -1462,13 +1462,13 @@ void TEST_SLOW_design_probe() {
         };
 
         const char *expected =
-            "Probe design Parameters:\n"
-            "Length of probe       9\n"
+            "Probe design parameters:\n"
+            "Length of probe    9\n"
             "Temperature        [30.0 -100.0]\n"
-            "GC-Content         [ 0.0 -100.0]\n"
-            "E.Coli Position    [any]\n"
-            "Max Non Group Hits     7\n"
-            "Min Group Hits        50%\n"
+            "GC-content         [ 0.0 -100.0]\n"
+            "E.Coli position    [any]\n"
+            "Max. nongroup hits 7\n"
+            "Min. group hits    50%\n"
             "Target    le  apos ecol qual grps   G+C temp Probe     | Decrease T by n*.3C -> probe matches n non group species\n"
             "GAGCGGAUG  9 A= 29   24   20    1  66.7 30.0 CAUCCGCUC | - -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -\n"
             "UGCUCCUGG  9 B= 51   46   20    1  66.7 30.0 CCAGGAGCA | - -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -\n"
@@ -1541,13 +1541,13 @@ void TEST_SLOW_design_probe() {
         };
 
         const char *expected =
-            "Probe design Parameters:\n"
-            "Length of probe       8\n"
+            "Probe design parameters:\n"
+            "Length of probe    8\n"
             "Temperature        [30.0 -100.0]\n"
-            "GC-Content         [ 0.0 -100.0]\n"
-            "E.Coli Position    [any]\n"
-            "Max Non Group Hits    15\n"
-            "Min Group Hits        50%\n"
+            "GC-content         [ 0.0 -100.0]\n"
+            "E.Coli position    [any]\n"
+            "Max. nongroup hits 15\n"
+            "Min. group hits    50%\n"
             "Target   le apos ecol qual grps   G+C temp Probe    | Decrease T by n*.3C -> probe matches n non group species\n"
             "GGCGGACG  8 A=78   67   39    2  87.5 30.0 CGUCCGCC | 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13\n"
             "GCGGACGG  8 A+ 1   68   39    2  87.5 30.0 CCGUCCGC | 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13\n"
@@ -1578,13 +1578,13 @@ void TEST_SLOW_design_probe() {
         };
 
         const char *expected =
-            "Probe design Parameters:\n"
-            "Length of probe       8\n"
+            "Probe design parameters:\n"
+            "Length of probe    8\n"
             "Temperature        [30.0 -100.0]\n"
-            "GC-Content         [ 0.0 -100.0]\n"
-            "E.Coli Position    [  65 -  69]\n"
-            "Max Non Group Hits    15\n"
-            "Min Group Hits        50%\n"
+            "GC-content         [ 0.0 -100.0]\n"
+            "E.Coli position    [  65 -  69]\n"
+            "Max. nongroup hits 15\n"
+            "Min. group hits    50%\n"
             "Target   le apos ecol qual grps   G+C temp Probe    | Decrease T by n*.3C -> probe matches n non group species\n"
             "GGCGGACG  8 A=78   67   39    2  87.5 30.0 CGUCCGCC | 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13\n"
             "GCGGACGG  8 A+ 1   68   39    2  87.5 30.0 CCGUCCGC | 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13\n"
@@ -1604,13 +1604,13 @@ void TEST_SLOW_design_probe() {
             "designmishit=2",
         };
         const char *expected =
-            "Probe design Parameters:\n"
-            "Length of probe      16\n"
+            "Probe design parameters:\n"
+            "Length of probe    16\n"
             "Temperature        [ 0.0 -400.0]\n"
-            "GC-Content         [30.0 -80.0]\n"
-            "E.Coli Position    [any]\n"
-            "Max Non Group Hits     2\n"
-            "Min Group Hits       100%\n"
+            "GC-content         [30.0 -80.0]\n"
+            "E.Coli position    [any]\n"
+            "Max. nongroup hits 2\n"
+            "Min. group hits    100%\n"
             "Target           le apos ecol qual grps   G+C temp Probe sequence   | Decrease T by n*.3C -> probe matches n non group species\n"
             "CGAAAGGAAGAUUAAU 16 A=94   82   58    3  31.2 42.0 AUUAAUCUUCCUUUCG | 1 1 1 1 1 1 1 1  1  1  1  1  1  1  1  1  1  1  1  1\n"
             "AAGGAAGAUUAAUACC 16 A+ 3   85   58    3  31.2 42.0 GGUAUUAAUCUUCCUU | 1 1 1 1 1 1 1 1  1  1  1  1  1  1  1  1  1  1  1  1\n"
@@ -1638,13 +1638,13 @@ void TEST_SLOW_design_probe() {
             "designsequence=---CGAAAGGAAGAUUAAU-AAGGAAGAUUAAUACC-AAGUCGAGCGAUGAAG-CAAGUCGAGCGAUGAA-GUCGAGCGAUGAAGUU-UCAAGUCGAGCGAUGA-AGUCGAGCGAUGAAGU-AUCAAGUCGAGCGAUG------------------UGAUCAAGUCGAGCGA",
         };
         const char *expected =
-            "Probe design Parameters:\n"
-            "Length of probe      16\n"
+            "Probe design parameters:\n"
+            "Length of probe    16\n"
             "Temperature        [ 0.0 -400.0]\n"
-            "GC-Content         [30.0 -80.0]\n"
-            "E.Coli Position    [any]\n"
-            "Max Non Group Hits     2\n"
-            "Min Group Hits       100%\n"
+            "GC-content         [30.0 -80.0]\n"
+            "E.Coli position    [any]\n"
+            "Max. nongroup hits 2\n"
+            "Min. group hits    100%\n"
             "Target           le apos ecol qual grps   G+C temp Probe sequence   | Decrease T by n*.3C -> probe matches n non group species\n"
             "CGAAAGGAAGAUUAAU 16 A=94   82   96    5  31.2 42.0 AUUAAUCUUCCUUUCG | 1 1 1 1 1 1 1 1  1  1  1  1  1  1  1  1  1  1  1  1\n"
             // AAGGAAGAUUAAUACC is not designed here
@@ -1668,13 +1668,13 @@ void TEST_SLOW_design_probe() {
             "designmaxgc=100",
         };
         const char *expected =
-            "Probe design Parameters:\n"
-            "Length of probe       8\n"
+            "Probe design parameters:\n"
+            "Length of probe    8\n"
             "Temperature        [ 0.0 -400.0]\n"
-            "GC-Content         [80.0 -100.0]\n"
-            "E.Coli Position    [any]\n"
-            "Max Non Group Hits     0\n"
-            "Min Group Hits        50%\n"
+            "GC-content         [80.0 -100.0]\n"
+            "E.Coli position    [any]\n"
+            "Max. nongroup hits 0\n"
+            "Min. group hits    50%\n"
             "Target   le apos ecol qual grps   G+C temp Probe    | Decrease T by n*.3C -> probe matches n non group species\n"
             "CGGCAGCG  8 A=28   23   20    1  87.5 30.0 CGCUGCCG | - - - - - - - - - - - - - - - - - - - -\n"
             "UGGGCGGC  8 B=67   60    8    1  87.5 30.0 GCCGCCCA | - - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1\n"
@@ -1696,13 +1696,13 @@ void TEST_SLOW_design_probe() {
             "designmaxgc=100",
         };
         const char *expected =
-            "Probe design Parameters:\n"
-            "Length of probe      14\n"
+            "Probe design parameters:\n"
+            "Length of probe    14\n"
             "Temperature        [ 0.0 -400.0]\n"
-            "GC-Content         [70.0 -100.0]\n"
-            "E.Coli Position    [any]\n"
-            "Max Non Group Hits     4\n"
-            "Min Group Hits       100%\n"
+            "GC-content         [70.0 -100.0]\n"
+            "E.Coli position    [any]\n"
+            "Max. nongroup hits 4\n"
+            "Min. group hits    100%\n"
             "Target         le apos ecol qual grps   G+C temp Probe sequence | Decrease T by n*.3C -> probe matches n non group species\n"
             "GAGCGGCGGACGGA 14 A=75   64   21    5  78.6 50.0 UCCGUCCGCCGCUC | - - - - 1 1 1 1 1 1 5 5 9 9 10 10 10 10 10 10\n"
             "CGAGCGGCGGACGG 14 A- 1   63   21    5  85.7 52.0 CCGUCCGCCGCUCG | - - - - 2 2 2 2 2 2 2 2 2 2  2  2  2  2  9  9\n"

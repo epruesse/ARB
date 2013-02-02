@@ -668,13 +668,13 @@ static const char *recent_expected =
     "3#0#   16#AUCAAGUCGAGCGA\n";
 
 static const char *recent_probeDesignSave =
-    "Probe design Parameters:,\n"
-    "Length of probe      14,\n"
+    "Probe design parameters:,\n"
+    "Length of probe    14,\n"
     "Temperature        [ 0.0 -400.0],\n"
-    "GC-Content         [30.0 -80.0],\n"
-    "E.Coli Position    [any],\n"
-    "Max Non Group Hits     0,\n"
-    "Min Group Hits       100%,\n"
+    "GC-content         [30.0 -80.0],\n"
+    "E.Coli position    [any],\n"
+    "Max. nongroup hits 0,\n"
+    "Min. group hits    100%,\n"
     "Target         le apos ecol qual grps   G+C temp Probe sequence | Decrease T by n*.3C -> probe matches n non group species,\n"
     "CGAAAGGAAGAUUA 14 A=94   82   77    4  35.7 38.0 UAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -,CGAAAGGAAGAUUA\n"
     "GGAAGAUUAAUACC 14 A+ 5   87   77    4  35.7 38.0 GGUAUUAAUCUUCC | - - - - - - - - - - - - - - - - - - - -,GGAAGAUUAAUACC\n"
