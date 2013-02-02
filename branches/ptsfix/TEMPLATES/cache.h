@@ -19,7 +19,9 @@
 #include <list>
 #endif
 
+#if defined(DEBUG)
 #define DUMP_CACHE_STAT
+#endif
 
 #define ca_assert(cond)           arb_assert(cond)
 #define ca_assert_expensive(cond) // arb_assert(cond) // uncomment to enable expensive assertions

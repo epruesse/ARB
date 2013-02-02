@@ -25,6 +25,7 @@
 #include <climits>
 #include <algorithm>
 #include <map>
+#include <arb_progress.h>
 
 #if defined(DEBUG)
 // # define DUMP_DESIGNED_PROBES
@@ -729,13 +730,15 @@ static void remove_tprobes_outside_ecoli_range(PT_pdc *pdc) {
     }
 }
 
-static void tprobes_calculate_bonds(PT_local *locs) {
+static size_t tprobes_calculate_bonds(PT_local *locs) {
     /*! check the average bond size.
+     *  returns number of tprobes 
      *
      * @TODO  checks probe hairpin bonds
      */
 
-    PT_pdc *pdc = locs->pdc;
+    PT_pdc *pdc   = locs->pdc;
+    size_t  count = 0;
     for (PT_tprobes *tprobe = pdc->tprobes; tprobe; ) {
         PT_tprobes *tprobe_next = tprobe->next;
         tprobe->seq_len = strlen(tprobe->sequence);
@@ -745,8 +748,10 @@ static void tprobes_calculate_bonds(PT_local *locs) {
         }
         tprobe->sum_bonds = sbond;
 
+        ++count;
         tprobe = tprobe_next;
     }
+    return count;
 }
 
 class CentigradePos { // track minimum centigrade position for each species
@@ -1023,8 +1028,11 @@ public:
         pt_assert(!fullProbe.domainSeen());
         pt_assert(fullProbe.domainPossible()); // probe length too short (probes shorter than DOMAIN_MIN_LENGTH always report 0 outgroup hits -> wrong result)
 
+        arb_progress progress(tprobe.seq_len);
+
         only_bind_behind_dot = false;
         bind_till_domain(fullProbe, ptroot, 0);
+        ++progress;
 
         // match all suffixes of probe
         // - detect possible partial matches at start of alignment (and behind dots inside the sequence)
@@ -1033,9 +1041,11 @@ public:
             MatchingOligo probeSuffix(fullProbe.get_oligo().suffix(off));
             if (!probeSuffix.domainPossible()) break; // abort - no smaller suffix may create a domain
             bind_till_domain(probeSuffix, ptroot, 0);
+            ++progress;
         }
 
         result.summarize_centigrade_hits(tprobe.perc);
+        progress.done();
 
         reset();
     }
@@ -1169,6 +1179,7 @@ public:
     {}
 
     void generate_for_sequence(PT_pdc *pdc, const SmartCharPtr& seq, size_t bp) {
+        arb_progress base_progress(2*bp);
         if (bp >= probelen) {
             // collect all probe candidates for current sequence
             Candidates candidates(probelen);
@@ -1177,6 +1188,7 @@ public:
                 do {
                     if (probe.feasible(pdc)) {
                         candidates.insert(probe.occurance());
+                        ++base_progress;
                     }
                 } while (probe.next());
             }
@@ -1184,8 +1196,10 @@ public:
             // increment overall hitcount for each found candidate
             for (Candidates::iterator c = candidates.begin(); c != candidates.end(); ++c) {
                 candidateHits[*c]++;
+                ++base_progress;
             }
         }
+        base_progress.done();
     }
 
     void create_tprobes(PT_pdc *pdc, int ingroup_size) {
@@ -1282,12 +1296,15 @@ public:
     int get_added_count() const { return added_targets; }
 
     void generate(ProbeCandidates& candidates) {
+        arb_progress progress("Searching probe candidates", get_count());
         for (int k = 0; k<known_targets; ++k) {
             const probe_input_data& pid = psg.data[known2id[k]];
             candidates.generate_for_sequence(pdc, pid.get_dataPtr(), pid.get_size());
+            ++progress;
         }
         for (PT_sequence *seq = pdc->sequences; seq; seq = seq->next) {
             candidates.generate_for_sequence(pdc, GB_strndup(seq->seq.data, seq->seq.size), seq->seq.size);
+            ++progress;
         }
     }
 };
@@ -1372,14 +1389,19 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
                     sort_tprobes_by(pdc, PSM_SEQUENCE);
                     remove_tprobes_with_too_many_mishits(pdc);
                     remove_tprobes_outside_ecoli_range(pdc);
-                    tprobes_calculate_bonds(locs);
+                    size_t tprobes = tprobes_calculate_bonds(locs);
                     DUMP_TPROBES("after tprobes_calculate_bonds", pdc);
 
-                    {
+                    if (tprobes) {
+                        arb_progress    progress(GBS_global_string("Calculating probe quality for %zu probe candidates", tprobes), tprobes);
                         OutgroupMatcher om(locs, pdc);
                         for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
                             om.calculate_outgroup_matches(*tprobe);
+                            ++progress;
                         }
+                    }
+                    else {
+                        fputs("No probe candidates found\n", stdout);
                     }
 
                     tprobes_sumup_perc_and_calc_quality(pdc);
