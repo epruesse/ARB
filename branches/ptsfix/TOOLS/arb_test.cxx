@@ -245,11 +245,11 @@ void TEST_SLOW_arb_probe() {
                        "E.Coli Position    [any]\n"
                        "Max Non Group Hits     0\n"
                        "Min Group Hits       100%\n"
-                       "Target             le     apos ecol qual grps   G+C temp Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
-                       "CGAAAGGAAGAUUAAUAC 18 A=    94   82   77    4  33.3 48.0 GUAUUAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -\n"
-                       "GAAAGGAAGAUUAAUACC 18 A+     1   83   77    4  33.3 48.0 GGUAUUAAUCUUCCUUUC | - - - - - - - - - - - - - - - - - - - -\n"
-                       "UCAAGUCGAGCGAUGAAG 18 B=    18   17   61    4  50.0 54.0 CUUCAUCGCUCGACUUGA | - - - - - - - - - - - - - - - 2 2 2 2 2\n"
-                       "AUCAAGUCGAGCGAUGAA 18 B-     1   16   45    4  44.4 52.0 UUCAUCGCUCGACUUGAU | - - - - - - - - - - - 2 2 2 2 2 2 2 2 2\n"
+                       "Target             le apos ecol qual grps   G+C temp Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
+                       "CGAAAGGAAGAUUAAUAC 18 A=94   82   77    4  33.3 48.0 GUAUUAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -\n"
+                       "GAAAGGAAGAUUAAUACC 18 A+ 1   83   77    4  33.3 48.0 GGUAUUAAUCUUCCUUUC | - - - - - - - - - - - - - - - - - - - -\n"
+                       "UCAAGUCGAGCGAUGAAG 18 B=18   17   61    4  50.0 54.0 CUUCAUCGCUCGACUUGA | - - - - - - - - - - - - - - - 2 2 2 2 2\n"
+                       "AUCAAGUCGAGCGAUGAA 18 B- 1   16   45    4  44.4 52.0 UUCAUCGCUCGACUUGAU | - - - - - - - - - - - 2 2 2 2 2 2 2 2 2\n"
                        );
 }
 

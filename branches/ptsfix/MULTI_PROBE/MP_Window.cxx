@@ -216,7 +216,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
             RegExpr reg_designed("^([A-Z]+)"            // subexpr #1 (target)
                                  "[[:space:]]+[0-9]+"
                                  "[[:space:]]+[A-Z][=+-]"
-                                 "[[:space:]]+[0-9]+"
+                                 "[[:space:]]*[0-9]+"
                                  "[[:space:]]+([0-9]+)" // subexpr #2 (ecoli pos)
                                  "([[:space:]]+[0-9]+){1,2}" // accept with and without quality entry
                                  "([[:space:]]+[0-9.]+){2}"
@@ -675,15 +675,15 @@ static const char *recent_probeDesignSave =
     "E.Coli Position    [any],\n"
     "Max Non Group Hits     0,\n"
     "Min Group Hits       100%,\n"
-    "Target         le     apos ecol qual grps   G+C temp Probe sequence | Decrease T by n*.3C -> probe matches n non group species,\n"
-    "CGAAAGGAAGAUUA 14 A=    94   82   77    4  35.7 38.0 UAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -,CGAAAGGAAGAUUA\n"
-    "GGAAGAUUAAUACC 14 A+     5   87   77    4  35.7 38.0 GGUAUUAAUCUUCC | - - - - - - - - - - - - - - - - - - - -,GGAAGAUUAAUACC\n"
-    "GUCGAGCGAUGAAG 14 B=    22   21   77    4  57.1 44.0 CUUCAUCGCUCGAC | - - - - - - - - - - - - - - - - - - - 2,GUCGAGCGAUGAAG\n"
-    "AGUCGAGCGAUGAA 14 B-     1   20   57    4  50.0 42.0 UUCAUCGCUCGACU | - - - - - - - - - - - - - - 2 2 2 2 2 2,AGUCGAGCGAUGAA\n"
-    "AAGUCGAGCGAUGA 14 B-     2   19   41    4  50.0 42.0 UCAUCGCUCGACUU | - - - - - - - - - - 2 2 2 2 2 2 2 2 2 2,AAGUCGAGCGAUGA\n"
-    "CAAGUCGAGCGAUG 14 B-     3   18   25    4  57.1 44.0 CAUCGCUCGACUUG | - - - - - - 2 2 2 2 2 2 2 2 2 2 2 2 2 2,CAAGUCGAGCGAUG\n"
-    "UCAAGUCGAGCGAU 14 B-     4   17    5    4  50.0 42.0 AUCGCUCGACUUGA | - 2 2 2 2 2 2 2 2 9 9 9 9 9 9 9 9 9 9 9,UCAAGUCGAGCGAU\n"
-    "AUCAAGUCGAGCGA 14 B-     5   16    5    4  50.0 42.0 UCGCUCGACUUGAU | - 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9,AUCAAGUCGAGCGA";
+    "Target         le apos ecol qual grps   G+C temp Probe sequence | Decrease T by n*.3C -> probe matches n non group species,\n"
+    "CGAAAGGAAGAUUA 14 A=94   82   77    4  35.7 38.0 UAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -,CGAAAGGAAGAUUA\n"
+    "GGAAGAUUAAUACC 14 A+ 5   87   77    4  35.7 38.0 GGUAUUAAUCUUCC | - - - - - - - - - - - - - - - - - - - -,GGAAGAUUAAUACC\n"
+    "GUCGAGCGAUGAAG 14 B=22   21   77    4  57.1 44.0 CUUCAUCGCUCGAC | - - - - - - - - - - - - - - - - - - - 2,GUCGAGCGAUGAAG\n"
+    "AGUCGAGCGAUGAA 14 B- 1   20   57    4  50.0 42.0 UUCAUCGCUCGACU | - - - - - - - - - - - - - - 2 2 2 2 2 2,AGUCGAGCGAUGAA\n"
+    "AAGUCGAGCGAUGA 14 B- 2   19   41    4  50.0 42.0 UCAUCGCUCGACUU | - - - - - - - - - - 2 2 2 2 2 2 2 2 2 2,AAGUCGAGCGAUGA\n"
+    "CAAGUCGAGCGAUG 14 B- 3   18   25    4  57.1 44.0 CAUCGCUCGACUUG | - - - - - - 2 2 2 2 2 2 2 2 2 2 2 2 2 2,CAAGUCGAGCGAUG\n"
+    "UCAAGUCGAGCGAU 14 B- 4   17    5    4  50.0 42.0 AUCGCUCGACUUGA | - 2 2 2 2 2 2 2 2 9 9 9 9 9 9 9 9 9 9 9,UCAAGUCGAGCGAU\n"
+    "AUCAAGUCGAGCGA 14 B- 5   16    5    4  50.0 42.0 UCGCUCGACUUGAU | - 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9,AUCAAGUCGAGCGA";
 
 void TEST_AFTER_SLOW_recent_probe_design_result() {
     // --------------------------------------------------------------------------------

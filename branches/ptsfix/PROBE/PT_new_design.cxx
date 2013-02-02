@@ -403,12 +403,38 @@ static char hitgroup_idx2char(int idx) {
     return c;
 }
 
+inline int shown_apos(const PT_tprobes *tprobe) { return info2bio(tprobe->apos); }
+inline int shown_ecoli(const PT_tprobes *tprobe) { return PT_abs_2_ecoli_rel(tprobe->apos+1); }
+inline int shown_qual(const PT_tprobes *tprobe) { return int(tprobe->quality+0.5); }
+
 class PD_formatter {
     int width[PERC_SIZE]; // of centigrade list columns
     int maxprobelen;
 
+    int apos_width;
+    int ecol_width;
+    int qual_width;
+    int grps_width;
+
+    static inline void track_max(int& tracked, int val) { tracked = std::max(tracked, val); }
+
     void collect(const int *perc) { for (int i = 0; i<PERC_SIZE; ++i) width[i] = std::max(width[i], perc[i]); }
-    void clear() { for (int i = 0; i<PERC_SIZE; ++i) width[i] = 0; }
+    void collect(const PT_tprobes *tprobe) {
+        collect(tprobe->perc);
+        track_max(apos_width, shown_apos(tprobe));
+        track_max(ecol_width, shown_ecoli(tprobe));
+        track_max(qual_width, shown_qual(tprobe));
+        track_max(grps_width, shown_qual(tprobe));
+    }
+
+    void clear() {
+        for (int i = 0; i<PERC_SIZE; ++i) width[i] = 0;
+
+        apos_width = 0;
+        ecol_width = 0;
+        qual_width = 0;
+        grps_width = 0;
+    }
 
     static inline int width4num(int num) {
         pt_assert(num >= 0);
@@ -426,12 +452,17 @@ public:
     PD_formatter(const PT_pdc *pdc) {
         clear();
 
-        // collect max value for each column:
-        for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) collect(tprobe->perc);
+        // collect max values for output columns:
+        for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) collect(tprobe);
         maxprobelen = pdc->probelen;
 
         // convert max.values to needed print-width:
         for (int i = 0; i<PERC_SIZE; ++i) width[i] = width4num(width[i]);
+
+        apos_width = std::max(width4num(apos_width), 2);
+        ecol_width = std::max(width4num(ecol_width), 4);
+        qual_width = std::max(width4num(qual_width), 4);
+        grps_width = std::max(width4num(grps_width), 4);
     }
 
     int sprint_centigrade_list(char *buffer, const int *perc) const {
@@ -447,6 +478,11 @@ public:
     }
 
     int get_maxprobelen() const { return maxprobelen; }
+
+    int get_apos_width() const { return apos_width; }
+    int get_ecol_width() const { return ecol_width; }
+    int get_qual_width() const { return qual_width; }
+    int get_grps_width() const { return grps_width; }
 };
 
 typedef std::map<const PT_pdc*const, PD_formatter> PD_Formatter4design;
@@ -484,7 +520,7 @@ char *get_design_info(const PT_tprobes *tprobe) {
     }
 
     {
-        int apos = info2bio(tprobe->apos);
+        int apos = shown_apos(tprobe);
         int c;
         int cs   = 0;
 
@@ -518,14 +554,14 @@ char *get_design_info(const PT_tprobes *tprobe) {
         }
 
         // le apos ecol
-        p += sprintf(p, "%2i %c%c%6i %4li ", tprobe->seq_len, c, cs,
-                     apos,
-                     PT_abs_2_ecoli_rel(tprobe->apos+1)); // ecoli-bases inclusive apos ("bases before apos+1")
+        p += sprintf(p, "%2i %c%c", tprobe->seq_len, c, cs);
+        p += sprintf(p, "%*i ", formatter.get_apos_width(), apos);
+        p += sprintf(p, "%*i ", formatter.get_ecol_width(), shown_ecoli(tprobe)); // ecoli-bases inclusive apos ("bases before apos+1")
     }
 
-    p += sprintf(p, "%4i", int(tprobe->quality+0.5));
-    p += sprintf(p, "%5i", tprobe->groupsize);
-    p += sprintf(p, "%6.1f", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0); // G+C
+    p += sprintf(p, "%*i ", formatter.get_qual_width(), shown_qual(tprobe));
+    p += sprintf(p, "%*i ", formatter.get_grps_width(), tprobe->groupsize);
+    p += sprintf(p, "%5.1f", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0); // G+C
     p += sprintf(p, "%5.1f ", pt_get_temperature(tprobe->sequence));                               // temperature
 
     // probe string
@@ -582,7 +618,7 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
 
             s += sprintf(s,
                          "Probe design Parameters:\n"
-                         "Length of probe    %4i\n"
+                         "Length of probe    %4i\n" // @@@ misaligned!
                          "Temperature        [%4.1f -%4.1f]\n"
                          "GC-Content         [%4.1f -%4.1f]\n"
                          "E.Coli Position    [%s]\n"
@@ -600,7 +636,12 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
         int maxprobelen = formatter.get_maxprobelen();
 
         s += sprintf(s, "%-*s", maxprobelen+1, "Target");
-        s += sprintf(s, "le     apos ecol qual grps   G+C temp ");
+        s += sprintf(s, "le ");
+        s += sprintf(s, "%*s ", formatter.get_apos_width()+2, "apos");
+        s += sprintf(s, "%*s ", formatter.get_ecol_width(), "ecol");
+        s += sprintf(s, "%*s ", formatter.get_qual_width(), "qual");
+        s += sprintf(s, "%*s ", formatter.get_grps_width(), "grps");
+        s += sprintf(s, "  G+C temp ");
         s += sprintf(s, "%-*s | ", maxprobelen, maxprobelen<14 ? "Probe" : "Probe sequence");
         s += sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
 

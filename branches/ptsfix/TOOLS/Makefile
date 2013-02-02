@@ -28,7 +28,7 @@ endif
 endif
 
 LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB)
-LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a ../PROBE_COM/common.a
+LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a ../PROBE_COM/common.a ../SL/REGEXPR/REGEXPR.a
 LIBS_ARB_READ_TREE      := ../SL/TREE_READ/TREE_READ.a
 LIBS_ARB_EXPORT_TREE    := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
 LIBS_ARB_CONSENSUS_TREE := $(LIBS_ARB_EXPORT_TREE) ../CONSENSUS_TREE/CONSENSUS_TREE.a
@@ -321,6 +321,7 @@ arb_probe.o: $(ARBHOME)/INCLUDE/client.h
 arb_probe.o: $(ARBHOME)/INCLUDE/client_types.h
 arb_probe.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_probe.o: $(ARBHOME)/INCLUDE/PT_com.h
+arb_probe.o: $(ARBHOME)/INCLUDE/RegExpr.hxx
 arb_probe.o: $(ARBHOME)/INCLUDE/servercntrl.h
 arb_probe.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_probe.o: $(ARBHOME)/INCLUDE/test_global.h
