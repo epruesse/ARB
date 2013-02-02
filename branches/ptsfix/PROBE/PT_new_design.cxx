@@ -1052,16 +1052,14 @@ public:
 };
 
 class ProbeOccurrance {
-    SmartCharPtr seq;
-    size_t       offset;
+    const char *seq;
 
 public:
-    ProbeOccurrance(SmartCharPtr seq_, size_t offset_) : seq(seq_), offset(offset_) {}
+    ProbeOccurrance(const char *seq_) : seq(seq_) {}
 
-    const char *sequence() const { return &*seq+offset; }
+    const char *sequence() const { return seq; }
 
-    size_t get_offset() const { return offset; }
-    void forward() { ++offset; }
+    void forward() { ++seq; }
 
     bool less(const ProbeOccurrance& other, size_t len) const {
         const char *mine = sequence();
@@ -1077,14 +1075,14 @@ public:
 
 class ProbeIterator {
     ProbeOccurrance cursor;
-    size_t          seqlen;
-    size_t          probelen;
-    size_t          gc, at;    // count G+C and A+T
+
+    size_t probelen;
+    size_t rest;   // size of seqpart behind cursor
+    size_t gc, at; // count G+C and A+T
 
     bool has_only_std_bases() const { return (gc+at) == probelen; }
 
-    size_t get_maxoffset() const { return seqlen-probelen; }
-    bool at_end() const { return cursor.get_offset() == get_maxoffset(); }
+    bool at_end() const { return !rest; }
 
     PT_base base_at(size_t offset) const {
         pt_assert(offset < probelen);
@@ -1114,10 +1112,10 @@ class ProbeIterator {
     }
 
 public:
-    ProbeIterator(SmartCharPtr seq_, size_t offset_, size_t seqlen_, size_t probelen_)
-        : cursor(seq_, offset_),
-          seqlen(seqlen_),
-          probelen(probelen_)
+    ProbeIterator(const char *seq, size_t seqlen, size_t probelen_)
+        : cursor(seq),
+          probelen(probelen_),
+          rest(seqlen-probelen)
     {
         pt_assert(seqlen >= probelen);
         init_counts();
@@ -1127,6 +1125,7 @@ public:
         if (at_end()) return false;
         forget(base_at(0));
         cursor.forward();
+        --rest;
         count(base_at(probelen-1));
         return true;
     }
@@ -1142,8 +1141,6 @@ public:
     }
 
     bool feasible(PT_pdc *pdc) const {
-        pt_assert(cursor.get_offset() <= get_maxoffset());
-
         return has_only_std_bases() &&
             gc_in_wanted_range(pdc) &&
             temperature_in_wanted_range(pdc);
@@ -1165,12 +1162,18 @@ public:
     bool operator()(const ProbeOccurrance& a, const ProbeOccurrance& b) const { return a.less(b, probelen); }
 };
 
+struct SCP_Less {
+    bool operator()(const SmartCharPtr& p1, const SmartCharPtr& p2) { return &*p1 < &*p2; } // simply compare addresses
+};
+
 class ProbeCandidates {
     typedef std::set<ProbeOccurrance, PO_Less>      Candidates;
     typedef std::map<ProbeOccurrance, int, PO_Less> CandidateHits;
+    typedef std::set<SmartCharPtr, SCP_Less>        SeqData;
 
     size_t        probelen;
     CandidateHits candidateHits;
+    SeqData       data; // locks SmartPtrs to input data (ProbeOccurrances point inside their data)
 
 public:
     ProbeCandidates(size_t probelen_)
@@ -1184,7 +1187,8 @@ public:
             // collect all probe candidates for current sequence
             Candidates candidates(probelen);
             {
-                ProbeIterator probe(seq, 0, bp, probelen);
+                data.insert(seq);
+                ProbeIterator probe(&*seq, bp, probelen);
                 do {
                     if (probe.feasible(pdc)) {
                         candidates.insert(probe.occurance());
