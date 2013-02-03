@@ -618,10 +618,10 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
         popup_probe_design_result_window(aww, cl_gb_main);
         PD.resultList->clear();
 
-        if (tprobe.exists()) {
+        {
             char *match_info = 0;
-            aisc_get(PD.link, PT_TPROBE, tprobe,
-                     TPROBE_INFO_HEADER,   &match_info,
+            aisc_get(PD.link, PT_PDC, pdc,
+                     PDC_INFO_HEADER, &match_info,
                      NULL);
 
             char *s = strtok(match_info, "\n");
@@ -631,11 +631,8 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
             }
             free(match_info);
         }
-        else {
-            PD.resultList->insert("There are no results", "");
-        }
 
-        // #define TEST_PD
+// #define TEST_PD // @@@ remove test code
 #if defined(TEST_PD)
         int     my_TPROBE_KEY;
         char   *my_TPROBE_KEYSTRING;
@@ -705,7 +702,7 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
             free(probe);
             free(match_info);
         }
-        PD.resultList->insert_default("default", "");
+        PD.resultList->insert_default("", "");
         PD.resultList->update();
     }
 

@@ -307,8 +307,8 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
 
                 if (tprobe.exists()) {
                     char *match_info = 0;
-                    aisc_get(pd_gl.link, PT_TPROBE, tprobe,
-                             TPROBE_INFO_HEADER, &match_info,
+                    aisc_get(pd_gl.link, PT_PDC, pdc,
+                             PDC_INFO_HEADER, &match_info,
                              NULL);
                     GBS_strcat(outstr, match_info);
                     GBS_chrcat(outstr, '\n');

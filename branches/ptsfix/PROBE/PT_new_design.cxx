@@ -554,8 +554,8 @@ char *get_design_info(const PT_tprobes *tprobe) {
         }
 
         // le apos ecol
-        p += sprintf(p, "%2i %c%c", tprobe->seq_len, c, cs);
-        p += sprintf(p, "%*i ", formatter.get_apos_width(), apos);
+        p += sprintf(p, "%2i ", tprobe->seq_len);
+        p += sprintf(p, "%c%c%*i ", c, cs, formatter.get_apos_width(), apos);
         p += sprintf(p, "%*i ", formatter.get_ecol_width(), shown_ecoli(tprobe)); // ecoli-bases inclusive apos ("bases before apos+1")
     }
 
@@ -581,68 +581,64 @@ char *get_design_info(const PT_tprobes *tprobe) {
     return buffer;
 }
 
-char *get_design_hinfo(const PT_tprobes *tprobe) {
-    if (!tprobe) {
-        return (char*)"Sorry, there are no probes for your selection !!!"; // @@@ report "no probes" from here (not by client!)
-    }
-    else {
-        const int  BUFFERSIZE = 2000;
-        char      *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
-        char      *s          = buffer;
+char *get_design_hinfo(const PT_pdc *pdc) {
+    const int  BUFFERSIZE = 2000;
+    char      *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
+    char      *s          = buffer;
 
-        PT_pdc              *pdc       = (PT_pdc *)tprobe->mh.parent->parent;
-        const PD_formatter&  formatter = get_formatter(pdc);
+    const PD_formatter& formatter = get_formatter(pdc);
 
-        {
-            char *ecolipos = NULL;
-            if (pdc->min_ecolipos == -1) {
-                if (pdc->max_ecolipos == -1) {
-                    ecolipos = strdup("any");
-                }
-                else {
-                    ecolipos = GBS_global_string_copy("<= %i", pdc->max_ecolipos);
-                }
+    {
+        char *ecolipos = NULL;
+        if (pdc->min_ecolipos == -1) {
+            if (pdc->max_ecolipos == -1) {
+                ecolipos = strdup("any");
             }
             else {
-                if (pdc->max_ecolipos == -1) {
-                    ecolipos = GBS_global_string_copy(">= %i", pdc->min_ecolipos);
-                }
-                else {
-                    ecolipos = GBS_global_string_copy("%4i -%5i", pdc->min_ecolipos, pdc->max_ecolipos);
-                }
+                ecolipos = GBS_global_string_copy("<= %i", pdc->max_ecolipos);
             }
-
-            char *mishit_annotation = NULL;
-            if (pdc->min_rj_mishits<INT_MAX) {
-                mishit_annotation = GBS_global_string_copy(" (lowest rejected nongroup hits: %i)", pdc->min_rj_mishits);
+        }
+        else {
+            if (pdc->max_ecolipos == -1) {
+                ecolipos = GBS_global_string_copy(">= %i", pdc->min_ecolipos);
             }
-
-            char *coverage_annotation = NULL;
-            if (pdc->max_rj_coverage>0.0) {
-                coverage_annotation = GBS_global_string_copy(" (max. rejected coverage: %.0f%%)", pdc->max_rj_coverage*100.0);
+            else {
+                ecolipos = GBS_global_string_copy("%4i -%5i", pdc->min_ecolipos, pdc->max_ecolipos);
             }
-
-            s += sprintf(s,
-                         "Probe design parameters:\n"
-                         "Length of probe    %i\n"
-                         "Temperature        [%4.1f -%5.1f]\n"
-                         "GC-content         [%4.1f -%5.1f]\n"
-                         "E.Coli position    [%s]\n"
-                         "Max. nongroup hits %i%s\n"
-                         "Min. group hits    %.0f%%%s\n",
-                         pdc->probelen,
-                         pdc->mintemp, pdc->maxtemp,
-                         pdc->min_gc*100.0, pdc->max_gc*100.0,
-                         ecolipos,
-                         pdc->maxMisHits,      mishit_annotation   ? mishit_annotation   : "",
-                         pdc->mintarget*100.0, coverage_annotation ? coverage_annotation : "");
-
-            free(coverage_annotation);
-            free(mishit_annotation);
-
-            free(ecolipos);
         }
 
+        char *mishit_annotation = NULL;
+        if (pdc->min_rj_mishits<INT_MAX) {
+            mishit_annotation = GBS_global_string_copy(" (lowest rejected nongroup hits: %i)", pdc->min_rj_mishits);
+        }
+
+        char *coverage_annotation = NULL;
+        if (pdc->max_rj_coverage>0.0) {
+            coverage_annotation = GBS_global_string_copy(" (max. rejected coverage: %.0f%%)", pdc->max_rj_coverage*100.0);
+        }
+
+        s += sprintf(s,
+                     "Probe design parameters:\n"
+                     "Length of probe    %i\n"
+                     "Temperature        [%4.1f -%5.1f]\n"
+                     "GC-content         [%4.1f -%5.1f]\n"
+                     "E.Coli position    [%s]\n"
+                     "Max. nongroup hits %i%s\n"
+                     "Min. group hits    %.0f%%%s\n",
+                     pdc->probelen,
+                     pdc->mintemp, pdc->maxtemp,
+                     pdc->min_gc*100.0, pdc->max_gc*100.0,
+                     ecolipos,
+                     pdc->maxMisHits,      mishit_annotation   ? mishit_annotation   : "",
+                     pdc->mintarget*100.0, coverage_annotation ? coverage_annotation : "");
+
+        free(coverage_annotation);
+        free(mishit_annotation);
+
+        free(ecolipos);
+    }
+
+    if (pdc->tprobes) {
         int maxprobelen = formatter.get_maxprobelen();
 
         s += sprintf(s, "%-*s", maxprobelen+1, "Target");
@@ -654,11 +650,15 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
         s += sprintf(s, "  G+C temp ");
         s += sprintf(s, "%-*s | ", maxprobelen, maxprobelen<14 ? "Probe" : "Probe sequence");
         s += sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
-
-        pt_assert((s-buffer)<BUFFERSIZE);
-
-        return buffer;
     }
+    else {
+        s += sprintf(s, "No probes found!");
+        erase_formatter(pdc);
+    }
+
+    pt_assert((s-buffer)<BUFFERSIZE);
+
+    return buffer;
 }
 
 struct ptnd_chain_count_mishits {
@@ -1398,6 +1398,7 @@ static void DUMP_TPROBES(const char *where, PT_pdc *pdc) {
 int PT_start_design(PT_pdc *pdc, int /* dummy */) {
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
 
+    erase_formatter(pdc);
     while (pdc->tprobes) destroy_PT_tprobes(pdc->tprobes);
 
     for (PT_sequence *seq = pdc->sequences; seq; seq = seq->next) {              // Convert all external sequence to internal format

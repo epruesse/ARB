@@ -68,7 +68,7 @@ int MP_count_all_species(const PT_local *);
 
 /* PT_new_design.cxx */
 char *get_design_info(const PT_tprobes *tprobe);
-char *get_design_hinfo(const PT_tprobes *tprobe);
+char *get_design_hinfo(const PT_pdc *pdc);
 int PT_start_design(PT_pdc *pdc, int dummy_1x);
 
 /* PT_prefixtree.cxx */
