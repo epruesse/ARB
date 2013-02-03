@@ -63,7 +63,7 @@ PT_tprobes, TPROBE,     9,     (~the probe we want to test~), {
     double,     whairpin,        t,    r,    WHAIRPIN,    12,    ,      (~Weighted Hairpins~);
     int,        perc,            vt,   r,    PERC,        13,    ,      (~Result: How many non group hits per centigrade~), SIZE PERC_SIZE;
     double,     temp,            t,    r,    TEMPERATURE, 14,    ,      (~The temperature of the probe~);
-    int,        misHits,         t,    r,    MISHIT,      15,    ,      (~How many outgroup members hit~);
+    int,        mishits,         t,    r,    MISHIT,      15,    ,      (~How many outgroup members hit~);
     int,        apos,            t,    ,     APOS,        16,    ,      (~The absolute position of probe~);
     int,        get_r_pos,       t,    ,     ECOLI_POS,   17,    ,      (~The ecoli based position of probe~);
     aisc_string,get_design_info, %,    r,    INFO,        19,    ,      (~the info text for each of the designed probes~);
@@ -94,8 +94,8 @@ PT_pdc, PDC,    7,     (~probe design~), {
     double,         maxbonds,         t,      ,       MAXBOND,        20,     4.0,                    (~The maximum of hairpin bonds~);
     int,            min_ecolipos,     t,      ,       MIN_ECOLIPOS,   21,     -1,                     (~the minimum ecoli position [1..N]. -1 means 'no restriction'~);
     int,            max_ecolipos,     t,      ,       MAX_ECOLIPOS,   22,     -1,                     (~the maximum ecoli position [1..N]. -1 means 'no restriction'~);
-    double,         mintarget,        t,      ,       MINTARGETS,     23,     .7,                     (~the minimum coverage for the targetted group of species~);
-    int,            maxMisHits,       t,      ,       MISHIT,         24,     0,                      (~the maximum mishits~);
+    double,         min_coverage,     t,      ,       MINTARGETS,     23,     .7,                     (~the minimum coverage for the targetted group of species~);
+    int,            max_mishits,      t,      ,       MISHIT,         24,     0,                      (~the maximum mishits~);
     int,            clipresult,       t,      ,       CLIPRESULT,     25,     40,                     (~Clip the Result list~);
     int,            pos_groups,       vt,     ,       ,               ,       ,                       (~Position of Groups~), SIZE ALPHA_SIZE;
     bytestring,     checksums,        t,      w,      CHECKSUMS,      26,     ,                       (~a list of sequence checksums separated by '#' is optional~);

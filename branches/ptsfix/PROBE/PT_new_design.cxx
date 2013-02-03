@@ -372,9 +372,9 @@ static void tprobes_sumup_perc_and_calc_quality(PT_pdc *pdc) {
             tprobe->perc[i]  = sum;
         }
 
-        pt_assert(tprobe->perc[0] == tprobe->misHits); // OutgroupMatcher and count_mishits_for_matched do not agree!
+        pt_assert(tprobe->perc[0] == tprobe->mishits); // OutgroupMatcher and count_mishits_for_matched do not agree!
 
-        int limit = 2*tprobe->misHits;
+        int limit = 2*tprobe->mishits;
         for (i=0; i<(PERC_SIZE-1); ++i) {
             if (tprobe->perc[i]>limit) break;
         }
@@ -629,8 +629,8 @@ char *get_design_hinfo(const PT_pdc *pdc) {
                      pdc->mintemp, pdc->maxtemp,
                      pdc->min_gc*100.0, pdc->max_gc*100.0,
                      ecolipos,
-                     pdc->maxMisHits,      mishit_annotation   ? mishit_annotation   : "",
-                     pdc->mintarget*100.0, coverage_annotation ? coverage_annotation : "");
+                     pdc->max_mishits,        mishit_annotation   ? mishit_annotation   : "",
+                     pdc->min_coverage*100.0, coverage_annotation ? coverage_annotation : "");
 
         free(coverage_annotation);
         free(mishit_annotation);
@@ -759,10 +759,10 @@ static void remove_tprobes_with_too_many_mishits(PT_pdc *pdc) {
         PT_tprobes *tprobe_next = tprobe->next;
 
         psg.abs_pos.clear();
-        tprobe->misHits = count_mishits_for_matched(tprobe->sequence, psg.TREE_ROOT2(), 0);
+        tprobe->mishits = count_mishits_for_matched(tprobe->sequence, psg.TREE_ROOT2(), 0);
         tprobe->apos    = psg.abs_pos.get_most_used();
-        if (tprobe->misHits > pdc->maxMisHits) {
-            min_rej_mishit_amount = std::min(min_rej_mishit_amount, tprobe->misHits);
+        if (tprobe->mishits > pdc->max_mishits) {
+            min_rej_mishit_amount = std::min(min_rej_mishit_amount, tprobe->mishits);
             destroy_PT_tprobes(tprobe);
         }
         tprobe = tprobe_next;
@@ -1264,7 +1264,7 @@ public:
 
     void create_tprobes(PT_pdc *pdc, int ingroup_size) {
         // tracks maximum rejected target-group coverage
-        int min_ingroup_hits     = (ingroup_size * pdc->mintarget + .5);
+        int min_ingroup_hits     = (ingroup_size * pdc->min_coverage + .5);
         int max_rej_ingroup_hits = 0;
 
         for (CandidateHits::iterator c = candidateHits.begin(); c != candidateHits.end(); ++c) {
