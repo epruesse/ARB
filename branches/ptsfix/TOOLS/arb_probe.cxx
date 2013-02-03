@@ -1710,6 +1710,21 @@ void TEST_SLOW_design_probe() {
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "designnames=HllHalod#VbhChole#VblVulni#VbrFurni#PtVVVulg",
+            "designprobelength=14",
+            "designmintargets=100",
+            "designmishit=0",
+            "designmingc=51",
+            "designmaxgc=60",
+        };
+        const char *expected = ""; // no probes found!
+
+        TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+    }
+
 }
 
 void TEST_SLOW_probe_design_errors() {
