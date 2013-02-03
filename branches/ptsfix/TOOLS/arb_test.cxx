@@ -244,7 +244,7 @@ void TEST_SLOW_arb_probe() {
                        "GC-content         [30.0 - 80.0]\n"
                        "E.Coli position    [any]\n"
                        "Max. nongroup hits 0\n"
-                       "Min. group hits    100%\n"
+                       "Min. group hits    100% (max. rejected coverage: 75%)\n"
                        "Target             le apos ecol qual grps   G+C temp Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
                        "CGAAAGGAAGAUUAAUAC 18 A=94   82   77    4  33.3 48.0 GUAUUAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -\n"
                        "GAAAGGAAGAUUAAUACC 18 A+ 1   83   77    4  33.3 48.0 GGUAUUAAUCUUCCUUUC | - - - - - - - - - - - - - - - - - - - -\n"

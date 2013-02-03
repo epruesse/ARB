@@ -95,7 +95,7 @@ PT_pdc, PDC,    7,     (~probe design~), {
     double,         maxbonds,       t,      ,       MAXBOND,        20,     4.0,                    (~The maximum of hairpin bonds~);
     int,            min_ecolipos,   t,      ,       MIN_ECOLIPOS,   21,     -1,                     (~the minimum ecoli position [1..N]. -1 means 'no restriction'~);
     int,            max_ecolipos,   t,      ,       MAX_ECOLIPOS,   22,     -1,                     (~the maximum ecoli position [1..N]. -1 means 'no restriction'~);
-    double,         mintarget,      t,      ,       MINTARGETS,     23,     .7,                     (~the minimum targets for a group of species~);
+    double,         mintarget,      t,      ,       MINTARGETS,     23,     .7,                     (~the minimum coverage for the targetted group of species~);
     int,            maxMisHits,     t,      ,       MISHIT,         24,     0,                      (~the maximum mishits~);
     int,            clipresult,     t,      ,       CLIPRESULT,     25,     40,                     (~Clip the Result list~);
     int,            pos_groups,     vt,     ,       ,               ,       ,                       (~Position of Groups~), SIZE ALPHA_SIZE;
@@ -105,6 +105,8 @@ PT_pdc, PDC,    7,     (~probe design~), {
     PT_sequence,    sequences,      d,      ,       SEQUENCE,       29,     ,                       (~Additional Sequences~);
     int,            PT_start_design,%,      w,      GO,             31,     ,                       (~Start the design procedure~);
     PT_tprobes,     tprobes,        d,      r,      TPROBE,         32,     ,                       (~The result~);
+    double,         max_rj_coverage,t,      r,      MAX_RJ_TARGETS, 34,     0.0,                    (~the maximum rejected coverage for the targetted group of species~);
+    int,            min_rj_mishits, t,      r,      MIN_RJ_MISHIT,  35,     INT_MAX,                (~the minimum rejected mishits~);
 };
 
 # function to iterate through all probes existing in PT-Server

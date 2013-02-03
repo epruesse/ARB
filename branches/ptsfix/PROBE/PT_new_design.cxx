@@ -581,13 +581,9 @@ char *get_design_info(const PT_tprobes *tprobe) {
     return buffer;
 }
 
-#if defined(WARN_TODO)
-#warning fix usage of strlen in get_design_info and add assertion vs buffer overflow
-#endif
-
 char *get_design_hinfo(const PT_tprobes *tprobe) {
     if (!tprobe) {
-        return (char*)"Sorry, there are no probes for your selection !!!";
+        return (char*)"Sorry, there are no probes for your selection !!!"; // @@@ report "no probes" from here (not by client!)
     }
     else {
         const int  BUFFERSIZE = 2000;
@@ -616,19 +612,33 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
                 }
             }
 
+            char *mishit_annotation = NULL;
+            if (pdc->min_rj_mishits<INT_MAX) {
+                mishit_annotation = GBS_global_string_copy(" (lowest rejected nongroup hits: %i)", pdc->min_rj_mishits);
+            }
+
+            char *coverage_annotation = NULL;
+            if (pdc->max_rj_coverage>0.0) {
+                coverage_annotation = GBS_global_string_copy(" (max. rejected coverage: %.0f%%)", pdc->max_rj_coverage*100.0);
+            }
+
             s += sprintf(s,
                          "Probe design parameters:\n"
                          "Length of probe    %i\n"
                          "Temperature        [%4.1f -%5.1f]\n"
                          "GC-content         [%4.1f -%5.1f]\n"
                          "E.Coli position    [%s]\n"
-                         "Max. nongroup hits %i\n"
-                         "Min. group hits    %.0f%%\n",
+                         "Max. nongroup hits %i%s\n"
+                         "Min. group hits    %.0f%%%s\n",
                          pdc->probelen,
                          pdc->mintemp, pdc->maxtemp,
                          pdc->min_gc*100.0, pdc->max_gc*100.0,
                          ecolipos,
-                         pdc->maxMisHits, pdc->mintarget*100.0);
+                         pdc->maxMisHits,      mishit_annotation   ? mishit_annotation   : "",
+                         pdc->mintarget*100.0, coverage_annotation ? coverage_annotation : "");
+
+            free(coverage_annotation);
+            free(mishit_annotation);
 
             free(ecolipos);
         }
@@ -742,19 +752,24 @@ static int count_mishits_for_matched(char *probe, POS_TREE2 *pt, int height) {
 
 static void remove_tprobes_with_too_many_mishits(PT_pdc *pdc) {
     //! Check for direct mishits
+    // tracks minimum rejected mishits in 'pdc->min_rj_mishits'
+    int min_rej_mishit_amount = INT_MAX;
 
     for (PT_tprobes *tprobe = pdc->tprobes; tprobe; ) {
         PT_tprobes *tprobe_next = tprobe->next;
 
         psg.abs_pos.clear();
         tprobe->misHits = count_mishits_for_matched(tprobe->sequence, psg.TREE_ROOT2(), 0);
-        tprobe->apos   = psg.abs_pos.get_most_used();
+        tprobe->apos    = psg.abs_pos.get_most_used();
         if (tprobe->misHits > pdc->maxMisHits) {
+            min_rej_mishit_amount = std::min(min_rej_mishit_amount, tprobe->misHits);
             destroy_PT_tprobes(tprobe);
         }
         tprobe = tprobe_next;
     }
     psg.abs_pos.clear();
+
+    pdc->min_rj_mishits = std::min(pdc->min_rj_mishits, min_rej_mishit_amount);
 }
 
 static void remove_tprobes_outside_ecoli_range(PT_pdc *pdc) {
@@ -1248,7 +1263,10 @@ public:
     }
 
     void create_tprobes(PT_pdc *pdc, int ingroup_size) {
-        int min_ingroup_hits = (ingroup_size * pdc->mintarget + .5);
+        // tracks maximum rejected target-group coverage
+        int min_ingroup_hits     = (ingroup_size * pdc->mintarget + .5);
+        int max_rej_ingroup_hits = 0;
+
         for (CandidateHits::iterator c = candidateHits.begin(); c != candidateHits.end(); ++c) {
             int ingroup_hits = c->second;
             if (ingroup_hits >= min_ingroup_hits) {
@@ -1262,7 +1280,13 @@ public:
 
                 aisc_link(&pdc->ptprobes, tprobe);
             }
+            else {
+                max_rej_ingroup_hits = std::max(max_rej_ingroup_hits, ingroup_hits);
+            }
         }
+
+        double max_rejected_coverage = max_rej_ingroup_hits/double(ingroup_size);
+        pdc->max_rj_coverage         = std::max(pdc->max_rj_coverage, max_rejected_coverage);
     }
 };
 

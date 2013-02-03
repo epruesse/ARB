@@ -674,7 +674,7 @@ static const char *recent_probeDesignSave =
     "GC-content         [30.0 - 80.0],\n"
     "E.Coli position    [any],\n"
     "Max. nongroup hits 0,\n"
-    "Min. group hits    100%,\n"
+    "Min. group hits    100% (max. rejected coverage: 75%),\n"
     "Target         le apos ecol qual grps   G+C temp Probe sequence | Decrease T by n*.3C -> probe matches n non group species,\n"
     "CGAAAGGAAGAUUA 14 A=94   82   77    4  35.7 38.0 UAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -,CGAAAGGAAGAUUA\n"
     "GGAAGAUUAAUACC 14 A+ 5   87   77    4  35.7 38.0 GGUAUUAAUCUUCC | - - - - - - - - - - - - - - - - - - - -,GGAAGAUUAAUACC\n"
