@@ -632,61 +632,15 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
             free(match_info);
         }
 
-// #define TEST_PD // @@@ remove test code
-#if defined(TEST_PD)
-        int     my_TPROBE_KEY;
-        char   *my_TPROBE_KEYSTRING;
-        int     my_TPROBE_CNT;
-        int     my_TPROBE_PARENT;
-        int     my_TPROBE_LAST;
-        char   *my_TPROBE_IDENT;
-        char   *my_TPROBE_SEQUENCE;
-        double  my_TPROBE_QUALITY;
-        int     my_TPROBE_GROUPSIZE;
-        int     my_TPROBE_HAIRPIN;
-        int     my_TPROBE_WHAIRPIN;
-        double  my_TPROBE_TEMPERATURE;
-        int     my_TPROBE_MISHIT;
-        int     my_TPROBE_APOS;
-        int     my_TPROBE_ECOLI_POS;
-
-#endif // TEST_PD
-
         while (tprobe.exists()) {
             T_PT_TPROBE  tprobe_next;
             char        *match_info = 0;
 
             if (aisc_get(PD.link, PT_TPROBE, tprobe,
-                         TPROBE_NEXT,      tprobe_next.as_result_param(),
-                         TPROBE_INFO,      &match_info,
-
-#if defined(TEST_PD)
-                         TPROBE_KEY,       &my_TPROBE_KEY,
-                         TPROBE_KEYSTRING, &my_TPROBE_KEYSTRING,
-                         TPROBE_CNT,       &my_TPROBE_CNT,
-                         TPROBE_PARENT,    &my_TPROBE_PARENT,
-                         TPROBE_LAST,      &my_TPROBE_LAST,
-                         TPROBE_IDENT,     &my_TPROBE_IDENT,
-                         TPROBE_SEQUENCE,  &my_TPROBE_SEQUENCE,  // encoded probe sequence (2=A 3=C 4=G 5=U)
-                         TPROBE_QUALITY,   &my_TPROBE_QUALITY,   // quality of probe ?
-#endif // TEST_PD
-                         
+                         TPROBE_NEXT, tprobe_next.as_result_param(),
+                         TPROBE_INFO, &match_info,
                          NULL)) break;
 
-
-#if defined(TEST_PD)
-            if (aisc_get(PD.link, PT_TPROBE, tprobe,
-                         TPROBE_GROUPSIZE,   &my_TPROBE_GROUPSIZE,   // groesse der Gruppe,  die von Sonde getroffen wird?
-                         TPROBE_HAIRPIN,     &my_TPROBE_HAIRPIN,
-                         TPROBE_WHAIRPIN,    &my_TPROBE_WHAIRPIN,
-                         // TPROBE_PERC,     &my_TPROBE_PERC,
-                         TPROBE_TEMPERATURE, &my_TPROBE_TEMPERATURE,
-                         TPROBE_MISHIT,      &my_TPROBE_MISHIT,      // Treffer ausserhalb von Gruppe ?
-                         TPROBE_APOS,        &my_TPROBE_APOS,        // Alignment-Position
-                         TPROBE_ECOLI_POS,   &my_TPROBE_ECOLI_POS,
-                         NULL)) break;
-#endif // TEST_PD
-            
             tprobe.assign(tprobe_next);
 
             char *probe, *space;
