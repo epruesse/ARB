@@ -612,15 +612,15 @@ char *get_design_hinfo(const PT_tprobes *tprobe) {
                     ecolipos = GBS_global_string_copy(">= %i", pdc->min_ecolipos);
                 }
                 else {
-                    ecolipos = GBS_global_string_copy("%4i -%4i", pdc->min_ecolipos, pdc->max_ecolipos);
+                    ecolipos = GBS_global_string_copy("%4i -%5i", pdc->min_ecolipos, pdc->max_ecolipos);
                 }
             }
 
             s += sprintf(s,
                          "Probe design parameters:\n"
                          "Length of probe    %i\n"
-                         "Temperature        [%4.1f -%4.1f]\n"
-                         "GC-content         [%4.1f -%4.1f]\n"
+                         "Temperature        [%4.1f -%5.1f]\n"
+                         "GC-content         [%4.1f -%5.1f]\n"
                          "E.Coli position    [%s]\n"
                          "Max. nongroup hits %i\n"
                          "Min. group hits    %.0f%%\n",

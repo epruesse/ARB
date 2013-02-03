@@ -241,7 +241,7 @@ void TEST_SLOW_arb_probe() {
                        "Probe design parameters:\n"
                        "Length of probe    18\n"
                        "Temperature        [ 0.0 -400.0]\n"
-                       "GC-content         [30.0 -80.0]\n"
+                       "GC-content         [30.0 - 80.0]\n"
                        "E.Coli position    [any]\n"
                        "Max. nongroup hits 0\n"
                        "Min. group hits    100%\n"

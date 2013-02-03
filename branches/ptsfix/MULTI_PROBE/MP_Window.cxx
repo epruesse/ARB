@@ -671,7 +671,7 @@ static const char *recent_probeDesignSave =
     "Probe design parameters:,\n"
     "Length of probe    14,\n"
     "Temperature        [ 0.0 -400.0],\n"
-    "GC-content         [30.0 -80.0],\n"
+    "GC-content         [30.0 - 80.0],\n"
     "E.Coli position    [any],\n"
     "Max. nongroup hits 0,\n"
     "Min. group hits    100%,\n"
