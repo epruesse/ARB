@@ -659,31 +659,45 @@ void TEST_load_probe_design_results() {
 
 static const char *recent_expected =
     "3#0#   82#CGAAAGGAAGAUUA\n"
+    "3#0#   82#CGAAAGGAAGAUUAA\n"
+    "3#0#   86#AGGAAGAUUAAUACC\n"
     "3#0#   87#GGAAGAUUAAUACC\n"
     "3#0#   21#GUCGAGCGAUGAAG\n"
+    "3#0#   20#AGUCGAGCGAUGAAG\n"
     "3#0#   20#AGUCGAGCGAUGAA\n"
+    "3#0#   19#AAGUCGAGCGAUGAA\n"
+    "3#0#   18#CAAGUCGAGCGAUGA\n"
     "3#0#   19#AAGUCGAGCGAUGA\n"
+    "3#0#   17#UCAAGUCGAGCGAUG\n"
     "3#0#   18#CAAGUCGAGCGAUG\n"
+    "3#0#   16#AUCAAGUCGAGCGAU\n"
     "3#0#   17#UCAAGUCGAGCGAU\n"
     "3#0#   16#AUCAAGUCGAGCGA\n";
 
 static const char *recent_probeDesignSave =
     "Probe design parameters:,\n"
-    "Length of probe    14,\n"
+    "Length of probe    14-15,\n"
     "Temperature        [ 0.0 -400.0],\n"
     "GC-content         [30.0 - 80.0],\n"
     "E.Coli position    [any],\n"
     "Max. nongroup hits 0,\n"
     "Min. group hits    100% (max. rejected coverage: 75%),\n"
-    "Target         le apos ecol qual grps   G+C temp Probe sequence | Decrease T by n*.3C -> probe matches n non group species,\n"
-    "CGAAAGGAAGAUUA 14 A=94   82   77    4  35.7 38.0 UAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -,CGAAAGGAAGAUUA\n"
-    "GGAAGAUUAAUACC 14 A+ 5   87   77    4  35.7 38.0 GGUAUUAAUCUUCC | - - - - - - - - - - - - - - - - - - - -,GGAAGAUUAAUACC\n"
-    "GUCGAGCGAUGAAG 14 B=22   21   77    4  57.1 44.0 CUUCAUCGCUCGAC | - - - - - - - - - - - - - - - - - - - 2,GUCGAGCGAUGAAG\n"
-    "AGUCGAGCGAUGAA 14 B- 1   20   57    4  50.0 42.0 UUCAUCGCUCGACU | - - - - - - - - - - - - - - 2 2 2 2 2 2,AGUCGAGCGAUGAA\n"
-    "AAGUCGAGCGAUGA 14 B- 2   19   41    4  50.0 42.0 UCAUCGCUCGACUU | - - - - - - - - - - 2 2 2 2 2 2 2 2 2 2,AAGUCGAGCGAUGA\n"
-    "CAAGUCGAGCGAUG 14 B- 3   18   25    4  57.1 44.0 CAUCGCUCGACUUG | - - - - - - 2 2 2 2 2 2 2 2 2 2 2 2 2 2,CAAGUCGAGCGAUG\n"
-    "UCAAGUCGAGCGAU 14 B- 4   17    5    4  50.0 42.0 AUCGCUCGACUUGA | - 2 2 2 2 2 2 2 2 9 9 9 9 9 9 9 9 9 9 9,UCAAGUCGAGCGAU\n"
-    "AUCAAGUCGAGCGA 14 B- 5   16    5    4  50.0 42.0 UCGCUCGACUUGAU | - 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9,AUCAAGUCGAGCGA";
+    "Target          le apos ecol qual grps   G+C temp  Probe sequence | Decrease T by n*.3C -> probe matches n non group species,\n"
+    "CGAAAGGAAGAUUA  14 A=94   82   77    4  35.7 38.0  UAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -,CGAAAGGAAGAUUA\n"
+    "CGAAAGGAAGAUUAA 15 A+ 0   82   77    4  33.3 40.0 UUAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -,CGAAAGGAAGAUUAA\n"
+    "AGGAAGAUUAAUACC 15 A+ 4   86   77    4  33.3 40.0 GGUAUUAAUCUUCCU | - - - - - - - - - - - - - - - - - - - -,AGGAAGAUUAAUACC\n"
+    "GGAAGAUUAAUACC  14 A+ 5   87   77    4  35.7 38.0  GGUAUUAAUCUUCC | - - - - - - - - - - - - - - - - - - - -,GGAAGAUUAAUACC\n"
+    "GUCGAGCGAUGAAG  14 B=22   21   77    4  57.1 44.0  CUUCAUCGCUCGAC | - - - - - - - - - - - - - - - - - - - 2,GUCGAGCGAUGAAG\n"
+    "AGUCGAGCGAUGAAG 15 B- 1   20   73    4  53.3 46.0 CUUCAUCGCUCGACU | - - - - - - - - - - - - - - - - - - 2 2,AGUCGAGCGAUGAAG\n"
+    "AGUCGAGCGAUGAA  14 B- 1   20   57    4  50.0 42.0  UUCAUCGCUCGACU | - - - - - - - - - - - - - - 2 2 2 2 2 2,AGUCGAGCGAUGAA\n"
+    "AAGUCGAGCGAUGAA 15 B- 2   19   53    4  46.7 44.0 UUCAUCGCUCGACUU | - - - - - - - - - - - - - 2 2 2 2 2 2 2,AAGUCGAGCGAUGAA\n"
+    "CAAGUCGAGCGAUGA 15 B- 3   18   41    4  53.3 46.0 UCAUCGCUCGACUUG | - - - - - - - - - - 2 2 2 2 2 2 2 2 2 2,CAAGUCGAGCGAUGA\n"
+    "AAGUCGAGCGAUGA  14 B- 2   19   41    4  50.0 42.0  UCAUCGCUCGACUU | - - - - - - - - - - 2 2 2 2 2 2 2 2 2 2,AAGUCGAGCGAUGA\n"
+    "UCAAGUCGAGCGAUG 15 B- 4   17   25    4  53.3 46.0 CAUCGCUCGACUUGA | - - - - - - 2 2 2 2 2 2 2 2 2 2 2 2 9 9,UCAAGUCGAGCGAUG\n"
+    "CAAGUCGAGCGAUG  14 B- 3   18   25    4  57.1 44.0  CAUCGCUCGACUUG | - - - - - - 2 2 2 2 2 2 2 2 2 2 2 2 2 2,CAAGUCGAGCGAUG\n"
+    "AUCAAGUCGAGCGAU 15 B- 5   16    5    4  46.7 44.0 AUCGCUCGACUUGAU | - 2 2 2 2 2 2 2 9 9 9 9 9 9 9 9 9 9 9 9,AUCAAGUCGAGCGAU\n"
+    "UCAAGUCGAGCGAU  14 B- 4   17    5    4  50.0 42.0  AUCGCUCGACUUGA | - 2 2 2 2 2 2 2 2 9 9 9 9 9 9 9 9 9 9 9,UCAAGUCGAGCGAU\n"
+    "AUCAAGUCGAGCGA  14 B- 5   16    5    4  50.0 42.0  UCGCUCGACUUGAU | - 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9,AUCAAGUCGAGCGA";
 
 void TEST_AFTER_SLOW_recent_probe_design_result() {
     // --------------------------------------------------------------------------------
@@ -697,7 +711,7 @@ void TEST_AFTER_SLOW_recent_probe_design_result() {
 void TEST_SLOW_design_probes_and_load_result() {
     TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
 
-    CommandOutput designed_probes("arb_probe serverid=-666 designprobelength=14 designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr designmintargets=100", true);
+    CommandOutput designed_probes("arb_probe serverid=-666 designprobelength=14 designmaxprobelength=15 designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr designmintargets=100", true);
     TEST_EXPECT_NO_ERROR(designed_probes.get_error());
 
     // Simulate result of designing probes in ARB_NT and saving the result to a file:
