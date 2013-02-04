@@ -33,7 +33,7 @@
 // # define PTM_DEBUG_VALIDATE_CHAINS
 #endif // DEBUG
 
-#define CALCULATE_STATS_ON_QUERY // @@@ move into DEBUG section above
+#define CALCULATE_STATS_ON_QUERY
 
 #if defined(PTM_DEBUG_STAGE_ASSERTIONS)
 #define pt_assert_stage(s) pt_assert(psg.get_stage() == (s))
@@ -170,7 +170,6 @@ public:
         return seq.access(seq_cache);
     }
 
-    // @@@ speed up all DB-searches by directly using GBQUARK
     const char *get_shortname() const {
         GB_transaction ta(gb_species);
 

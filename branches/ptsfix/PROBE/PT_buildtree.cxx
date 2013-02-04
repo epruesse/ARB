@@ -24,7 +24,7 @@
 #include <malloc.h>
 #include <ctype.h>
 
-#define PTM_TRACE_MAX_MEM_USAGE // @@@ comment out later
+// #define PTM_TRACE_MAX_MEM_USAGE
 
 // AISC_MKPT_PROMOTE: class DataLoc;
 
@@ -556,7 +556,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
         free(t2name);
     }
 
-    // @@@ disable later:
+#if defined(DEBUG)
     {
         char *related = strdup(tname);
         char *starpos = strstr(related, ".arb.pt");
@@ -575,6 +575,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
         free(listRelated);
         free(related);
     }
+#endif
 
     return error;
 }

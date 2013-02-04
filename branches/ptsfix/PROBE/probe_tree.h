@@ -466,15 +466,7 @@ public:
     explicit DataLoc(const AbsLoc& aloc) // expensive!
         : AbsLoc(aloc),
           rpos(get_pid().calc_relpos(get_abs_pos()))
-    {
-#if 0 // @@@ fix expensive conversions later
-        const DataLoc *dloc = dynamic_cast<const DataLoc*>(&aloc);
-        if (dloc) {
-            GBK_dump_backtrace(stderr, "expensive conversion");
-            // pt_assert(!dloc); // expensive conversion (DataLoc->AbsLoc->DataLoc)
-        }
-#endif
-    }
+    {}
 
     int get_rel_pos() const { return rpos; }
 

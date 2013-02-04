@@ -96,9 +96,6 @@ static GB_ERROR common_open_socket(ClientOrServer cos, const char *path, int del
     int       socket_id;
     GB_ERROR  error     = common_get_m_id(path, &mach_name, &socket_id);
 
-    // @@@ mem assigned to mach_name is leaked often
-    // @@@ refactor aisc_client_open_socket -> one exit point
-
     if (!error) {
         const char one = 1;
         if (socket_id >= 0) {       // UNIX
