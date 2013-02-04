@@ -1086,12 +1086,12 @@ char *AW_window::align_string(const char *label_text, int columns) {
 /**
  * Is called whenever the selection of a combobox changes
  */
-void AW_combo_box_changed(GtkComboBoxText* box, gpointer user_data) {
+void AW_combo_box_changed(GtkComboBox* box, gpointer user_data) {
     
     AW_option_menu_struct *oms = (AW_option_menu_struct*) user_data;
     aw_assert(NULL != oms);
     
-    gchar *selected_option_name = gtk_combo_box_text_get_active_text(box);
+    gchar *selected_option_name = gtk_combo_box_get_active_text(box);
     
     aw_assert(NULL != selected_option_name);
     aw_assert(oms->valueToUpdateInfo.find(selected_option_name) != oms->valueToUpdateInfo.end());
@@ -1123,7 +1123,7 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
 
     GtkWidget *label = NULL; //contains the label, or NULL
     prvt->combo_box = gtk_hbox_new(false, 1); //This box is used to align label and combobox
-    GtkWidget *cbox = gtk_combo_box_text_new();
+    GtkWidget *cbox = gtk_combo_box_new();
 
     int hbox_x = 0;//where to put the hbox
     int hbox_y = 0;
@@ -1233,7 +1233,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
     if (oms->variable_type == AW_TypeCheck::getVarType(var_value)) {
         
         FIXME("background color not implemented");
-        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(oms->menu_widget), option_name);
+        gtk_combo_box_append_text(GTK_COMBO_BOX(oms->menu_widget), option_name);
         
 
         AW_cb_struct *cbs   = prvt->callback; // user-own callback
