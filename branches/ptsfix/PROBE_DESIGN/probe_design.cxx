@@ -62,7 +62,9 @@
 #define AWAR_PD_DESIGN_MAXBOND    "probe_design/MAXBOND"    // max hairpinbonds ?
 #define AWAR_PD_DESIGN_MINTARGETS "probe_design/MINTARGETS" // 'min. group hits (%)'
 
-#define AWAR_PD_DESIGN_PROBELENGTH  "probe_design/PROBELENGTH" // length of probe
+#define AWAR_PD_DESIGN_MIN_LENGTH "probe_design/PROBELENGTH"      // min. length of probe
+#define AWAR_PD_DESIGN_MAX_LENGTH "probe_design/PROBEMAXLENGTH"   // max. length of probe (or empty)
+
 #define AWAR_PD_DESIGN_MIN_TEMP     "probe_design/MINTEMP"     // temperature (min)
 #define AWAR_PD_DESIGN_MAX_TEMP     "probe_design/MAXTEMP"     // temperature (max)
 #define AWAR_PD_DESIGN_MIN_GC       "probe_design/MINGC"       // GC content (min)
@@ -481,7 +483,8 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
     if (aisc_create(PD.link, PT_LOCS, PD.locs,
                     LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,
-                    PDC_MIN_PROBELEN, root->awar(AWAR_PD_DESIGN_PROBELENGTH)->read_int(),
+                    PDC_MIN_PROBELEN, root->awar(AWAR_PD_DESIGN_MIN_LENGTH)->read_int(),
+                    PDC_MAX_PROBELEN, root->awar(AWAR_PD_DESIGN_MAX_LENGTH)->read_int(),
                     PDC_MINTEMP,      (double)root->awar(AWAR_PD_DESIGN_MIN_TEMP)->read_float(),
                     PDC_MAXTEMP,      (double)root->awar(AWAR_PD_DESIGN_MAX_TEMP)->read_float(),
                     PDC_MINGC,        (double)root->awar(AWAR_PD_DESIGN_MIN_GC)->read_float()/100.0,
@@ -1101,6 +1104,19 @@ static void selected_match_changed_cb(AW_root *root) {
     free(selected_match);
 }
 
+static void probelength_changed_cb(AW_root *root, AW_CL min_changed) {
+    AW_awar *awar_minl = root->awar(AWAR_PD_DESIGN_MIN_LENGTH);
+    AW_awar *awar_maxl = root->awar(AWAR_PD_DESIGN_MAX_LENGTH);
+
+    int minl = awar_minl->read_int();
+    int maxl = awar_maxl->read_int();
+
+    if (minl>maxl) {
+        if (min_changed) awar_maxl->write_int(minl);
+        else             awar_minl->write_int(maxl);
+    }
+}
+
 void create_probe_design_variables(AW_root *root, AW_default props, AW_default db)
 {
     char buffer[256]; memset(buffer, 0, 256);
@@ -1133,7 +1149,10 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_int  (AWAR_PD_DESIGN_MAXBOND,    4,    props)->set_minmax(0, 20);
     root->awar_float(AWAR_PD_DESIGN_MINTARGETS, 50.0, props)->set_minmax(0, 100);
 
-    root->awar_int  (AWAR_PD_DESIGN_PROBELENGTH,  18,     props)->set_minmax(DOMAIN_MIN_LENGTH, 100);
+    AW_awar *awar_min_len = root->awar_int(AWAR_PD_DESIGN_MIN_LENGTH, 18, props);
+    awar_min_len->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(probelength_changed_cb, 1);
+    root->awar_int(AWAR_PD_DESIGN_MAX_LENGTH, awar_min_len->read_int(), props)->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(probelength_changed_cb, 0);
+
     root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     30.0,   props)->set_minmax(0, 1000);
     root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0, 1000);
     root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   props)->set_minmax(0, 100);
@@ -1227,7 +1246,8 @@ static AWT_config_mapping_def probe_design_mapping_def[] = {
     { AWAR_PD_DESIGN_MISHIT,       "mishit" },
     { AWAR_PD_DESIGN_MAXBOND,      "maxbond" },
     { AWAR_PD_DESIGN_MINTARGETS,   "mintarget" },
-    { AWAR_PD_DESIGN_PROBELENGTH,  "probelen" },
+    { AWAR_PD_DESIGN_MIN_LENGTH,   "probelen" },
+    { AWAR_PD_DESIGN_MAX_LENGTH,   "probemaxlen" },
     { AWAR_PD_DESIGN_MIN_TEMP,     "mintemp" },
     { AWAR_PD_DESIGN_MAX_TEMP,     "maxtemp" },
     { AWAR_PD_DESIGN_MIN_GC,       "mingc" },
@@ -1296,18 +1316,19 @@ AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main) {
     aws->label("PT-Server:");
     awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
 
-    aws->at("lenout"); aws->create_input_field(AWAR_PD_DESIGN_CLIPRESULT, 6);
-    aws->at("mishit"); aws->create_input_field(AWAR_PD_DESIGN_MISHIT,       6);
+    aws->at("lenout");   aws->create_input_field(AWAR_PD_DESIGN_CLIPRESULT, 6);
+    aws->at("mishit");   aws->create_input_field(AWAR_PD_DESIGN_MISHIT,     6);
     aws->sens_mask(AWM_EXP);
     aws->at("maxbonds"); aws->create_input_field(AWAR_PD_DESIGN_MAXBOND,    6);
     aws->sens_mask(AWM_ALL);
-    aws->at("minhits"); aws->create_input_field(AWAR_PD_DESIGN_MINTARGETS, 6);
+    aws->at("minhits");  aws->create_input_field(AWAR_PD_DESIGN_MINTARGETS, 6);
 
-    aws->at("minlen"); aws->create_input_field(AWAR_PD_DESIGN_PROBELENGTH,  5);
-    aws->at("mint"); aws->create_input_field(AWAR_PD_DESIGN_MIN_TEMP,       5);
-    aws->at("maxt"); aws->create_input_field(AWAR_PD_DESIGN_MAX_TEMP,       5);
-    aws->at("mingc"); aws->create_input_field(AWAR_PD_DESIGN_MIN_GC,        5);
-    aws->at("maxgc"); aws->create_input_field(AWAR_PD_DESIGN_MAX_GC,        5);
+    aws->at("minlen"); aws->create_input_field(AWAR_PD_DESIGN_MIN_LENGTH,   5);
+    aws->at("maxlen"); aws->create_input_field(AWAR_PD_DESIGN_MAX_LENGTH,   5);
+    aws->at("mint");   aws->create_input_field(AWAR_PD_DESIGN_MIN_TEMP,     5);
+    aws->at("maxt");   aws->create_input_field(AWAR_PD_DESIGN_MAX_TEMP,     5);
+    aws->at("mingc");  aws->create_input_field(AWAR_PD_DESIGN_MIN_GC,       5);
+    aws->at("maxgc");  aws->create_input_field(AWAR_PD_DESIGN_MAX_GC,       5);
     aws->at("minpos"); aws->create_input_field(AWAR_PD_DESIGN_MIN_ECOLIPOS, 5);
     aws->at("maxpos"); aws->create_input_field(AWAR_PD_DESIGN_MAX_ECOLIPOS, 5);
 
