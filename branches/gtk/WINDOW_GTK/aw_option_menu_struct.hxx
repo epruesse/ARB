@@ -22,7 +22,7 @@
 
 
 
-struct AW_option_menu_struct {
+struct AW_option_menu_struct : public Noncopyable {
     AW_option_menu_struct(int numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, GtkWidget *label_widgeti, GtkWidget *menu_widgeti, AW_pos xi, AW_pos yi, int correct);
 
     int               option_menu_number;

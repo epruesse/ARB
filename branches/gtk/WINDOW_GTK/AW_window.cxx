@@ -1275,7 +1275,7 @@ void AW_window::update_option_menu() {
 }
 
 
-void AW_window::refresh_option_menu(AW_option_menu_struct *oms) {
+void AW_window::refresh_option_menu(AW_option_menu_struct */*oms*/) {
     GTK_NOT_IMPLEMENTED;
 //    if (root->changer_of_variable != oms->label_widget) {
 //        AW_widget_value_pair *active_choice = oms->first_choice;
@@ -1474,7 +1474,6 @@ void AW_window::create_toggle_field(const char *awar_name, int orientation /*= 0
 
     GtkWidget *parent_widget = GTK_WIDGET(prvt->fixed_size_area);
     GtkWidget *label_for_toggle;
-    GtkWidget *toggle_field;
 
     int xoff_for_label           = 0;
     int width_of_label           = 0;
@@ -1538,9 +1537,9 @@ void AW_window::create_toggle_field(const char *var_name, AW_label labeli, const
 template <class T>
 void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemonic, T var_value, bool default_toggle) {
     GtkWidget *radio;  
-    std::string label = AW_motif_gtk_conversion::convert_mnemonic(toggle_label, mnemonic);
+    std::string mnemonicLabel = AW_motif_gtk_conversion::convert_mnemonic(toggle_label, mnemonic);
     // create and chain radio button
-    radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(prvt->radio_last), label.c_str());
+    radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(prvt->radio_last), mnemonicLabel.c_str());
     prvt->radio_last = radio;
     
     gtk_box_pack_start(GTK_BOX(prvt->toggle_field), radio, true, true, 2);
@@ -1571,7 +1570,7 @@ void AW_window::update_toggle_field() {
     prvt->toggle_field = NULL;
     unset_at_commands();
 }
-void AW_window::refresh_toggle_field(int toggle_field_number) {
+void AW_window::refresh_toggle_field(int /*toggle_field_number*/) {
     GTK_NOT_IMPLEMENTED;
 //#if defined(DEBUG)
 //    static int inside_here = 0;
@@ -1893,10 +1892,7 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
     else        xfig = new AW_xfig(get_root()->font_width, get_root()->font_height); // create an empty xfig
  
     xfig_data = xfig;
-
-
-    FIXME("Remove color mode");
-    xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1); 
+    xfig->create_gcs(get_device(AW_INFO_AREA)); 
 
     int xsize = xfig->maxx - xfig->minx;
     int ysize = xfig->maxy - xfig->miny;
@@ -2297,11 +2293,11 @@ void AW_window::update_scrollbar_settings_from_awars(AW_orientation orientation)
     }
 }
 
-void AW_window::create_font_button(const char* awar_name, AW_label label) {
+void AW_window::create_font_button(const char* /*awar_name*/, AW_label /*label_*/) {
   GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::create_color_button(const char* awar_name, AW_label label) {
+void AW_window::create_color_button(const char* /*awar_name*/, AW_label /*label_*/) {
   GTK_NOT_IMPLEMENTED;
 }
 

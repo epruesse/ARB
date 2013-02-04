@@ -11,8 +11,6 @@ void AW_window_message::init(AW_root *root_in, const char *windowname, bool allo
     root = root_in;
     int width  = 100;
     int height = 100;
-    int posx   = 50;
-    int posy   = 50;
 
     set_window_title(windowname);
     set_window_size(width, height);

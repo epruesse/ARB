@@ -83,7 +83,7 @@ public:
     /**
      * initializes the graphics contexts
      */
-    void create_gcs(AW_device *device, int screen_depth);
+    void create_gcs(AW_device *device);
 
     void add_line(int x1, int y1, int x2, int y2, int width); // add a line to xfig
 };
