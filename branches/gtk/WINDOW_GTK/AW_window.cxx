@@ -1542,8 +1542,8 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char */*mnem
     FIXME("radio group mnemonic not implemented");
     radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(prvt->radio_last), toggle_label);
     prvt->radio_last = radio;
-
-    gtk_box_pack_start(GTK_BOX(prvt->radio_last), radio, true, true, 2);
+    
+    gtk_box_pack_start(GTK_BOX(prvt->toggle_field), radio, true, true, 2);
     
     AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(prvt->toggle_field_awar_name), var_value, prvt->callback);
     g_signal_connect((gpointer)radio, "clicked", G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), (gpointer)vui);

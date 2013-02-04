@@ -84,6 +84,7 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
         case AW_WIDGET_TOGGLE_FIELD:
             FIXME("AW_WIDGET_TOGGLE_FIELD  handling not implemented");
 //            if (XmToggleButtonGetState(widget) == False) break; // no toggle is selected (?)
+            break;
             // fall-through
         case AW_WIDGET_CHOICE_MENU:
             FIXME("AW_WIDGET_CHOICE_MENU handling not implemented");
