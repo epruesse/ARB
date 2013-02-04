@@ -1536,11 +1536,11 @@ void AW_window::create_toggle_field(const char *var_name, AW_label labeli, const
 }
 
 template <class T>
-void AW_window::insert_toggle_internal(AW_label toggle_label, const char */*mnemonic*/, T var_value, bool default_toggle) {
+void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemonic, T var_value, bool default_toggle) {
     GtkWidget *radio;  
+    std::string label = AW_motif_gtk_conversion::convert_mnemonic(toggle_label, mnemonic);
     // create and chain radio button
-    FIXME("radio group mnemonic not implemented");
-    radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(prvt->radio_last), toggle_label);
+    radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(prvt->radio_last), label.c_str());
     prvt->radio_last = radio;
     
     gtk_box_pack_start(GTK_BOX(prvt->toggle_field), radio, true, true, 2);

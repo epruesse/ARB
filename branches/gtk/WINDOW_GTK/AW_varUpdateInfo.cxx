@@ -7,6 +7,8 @@
 
 #include <gtk-2.0/gtk/gtktreeview.h>
 #include <gtk-2.0/gtk/gtktreeselection.h>
+#include <gtk-2.0/gtk/gtkcheckbutton.h>
+#include <gtk-2.0/gtk/gtkradiobutton.h>
 
 #include "aw_varUpdateInfo.hxx"
 #include "aw_gtk_migration_helpers.hxx"
@@ -37,8 +39,15 @@ void AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer v
             vui->change_from_widget((gpointer)widget); 
         }
     }
-    else
-    { 
+    else if(GTK_IS_RADIO_BUTTON(widget)) {
+        //the radio button extends toggle button. 
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
+            //this method is also called when a radio button is unchecked
+            //but we don't need that information.
+            vui->change_from_widget((gpointer)widget); 
+        }
+    }
+    else { 
         vui->change_from_widget((gpointer)widget); 
     }
 }
@@ -82,12 +91,8 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
             break;
 
         case AW_WIDGET_TOGGLE_FIELD:
-            FIXME("AW_WIDGET_TOGGLE_FIELD  handling not implemented");
-//            if (XmToggleButtonGetState(widget) == False) break; // no toggle is selected (?)
-            break;
             // fall-through
         case AW_WIDGET_CHOICE_MENU:
-            FIXME("AW_WIDGET_CHOICE_MENU handling not implemented");
             error = value.write_to(awar);
             break;
 
