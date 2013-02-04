@@ -403,6 +403,10 @@ static char hitgroup_idx2char(int idx) {
     return c;
 }
 
+inline int get_max_probelen(const PT_pdc *pdc) {
+    return pdc->max_probelen == -1 ? pdc->min_probelen : pdc->max_probelen;
+}
+
 inline int shown_apos(const PT_tprobes *tprobe) { return info2bio(tprobe->apos); }
 inline int shown_ecoli(const PT_tprobes *tprobe) { return PT_abs_2_ecoli_rel(tprobe->apos+1); }
 inline int shown_qual(const PT_tprobes *tprobe) { return int(tprobe->quality+0.5); }
@@ -425,6 +429,7 @@ class PD_formatter {
         track_max(ecol_width, shown_ecoli(tprobe));
         track_max(qual_width, shown_qual(tprobe));
         track_max(grps_width, shown_qual(tprobe));
+        track_max(maxprobelen, tprobe->seq_len);
     }
 
     void clear() {
@@ -434,6 +439,8 @@ class PD_formatter {
         ecol_width = 0;
         qual_width = 0;
         grps_width = 0;
+
+        maxprobelen = 0;
     }
 
     static inline int width4num(int num) {
@@ -454,7 +461,6 @@ public:
 
         // collect max values for output columns:
         for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) collect(tprobe);
-        maxprobelen = pdc->probelen;
 
         // convert max.values to needed print-width:
         for (int i = 0; i<PERC_SIZE; ++i) width[i] = width4num(width[i]);
@@ -477,7 +483,7 @@ public:
         return printed;
     }
 
-    int get_maxprobelen() const { return maxprobelen; }
+    int get_max_designed_len() const { return maxprobelen; }
 
     int get_apos_width() const { return apos_width; }
     int get_ecol_width() const { return ecol_width; }
@@ -516,7 +522,7 @@ char *get_design_info(const PT_tprobes *tprobe) {
         strcpy(probe, tprobe->sequence);
 
         probe_2_readable(probe, len); // convert probe to real ASCII
-        p += sprintf(p, "%-*s", formatter.get_maxprobelen()+1, probe);
+        p += sprintf(p, "%-*s", formatter.get_max_designed_len()+1, probe);
     }
 
     {
@@ -532,9 +538,9 @@ char *get_design_info(const PT_tprobes *tprobe) {
                 break;
             }
             int dist = abs(apos - pdc->pos_groups[c]);
-            if (dist < pdc->probelen) {
+            if (dist < pdc->min_probelen) {
                 apos = apos - pdc->pos_groups[c];
-                if (apos > 0) {
+                if (apos >= 0) {
                     cs = '+';
                     break;
                 }
@@ -566,10 +572,10 @@ char *get_design_info(const PT_tprobes *tprobe) {
 
     // probe string
     {
-        char *probe  = create_reversed_probe(tprobe->sequence, tprobe->seq_len);
+        char *probe = create_reversed_probe(tprobe->sequence, tprobe->seq_len);
         complement_probe(probe, tprobe->seq_len);
         probe_2_readable(probe, tprobe->seq_len); // convert probe to real ASCII
-        p     += sprintf(p, "%-*s |", pdc->probelen, probe);
+        p += sprintf(p, "%*s |", formatter.get_max_designed_len(), probe);
         free(probe);
     }
 
@@ -617,21 +623,30 @@ char *get_design_hinfo(const PT_pdc *pdc) {
             coverage_annotation = GBS_global_string_copy(" (max. rejected coverage: %.0f%%)", pdc->max_rj_coverage*100.0);
         }
 
+        char *probelen_info;
+        if (get_max_probelen(pdc) == pdc->min_probelen) {
+            probelen_info = GBS_global_string_copy("%i", pdc->min_probelen);
+        }
+        else {
+            probelen_info = GBS_global_string_copy("%i-%i", pdc->min_probelen, get_max_probelen(pdc));
+        }
+
         s += sprintf(s,
                      "Probe design parameters:\n"
-                     "Length of probe    %i\n"
+                     "Length of probe    %s\n"
                      "Temperature        [%4.1f -%5.1f]\n"
                      "GC-content         [%4.1f -%5.1f]\n"
                      "E.Coli position    [%s]\n"
                      "Max. nongroup hits %i%s\n"
                      "Min. group hits    %.0f%%%s\n",
-                     pdc->probelen,
+                     probelen_info,
                      pdc->mintemp, pdc->maxtemp,
                      pdc->min_gc*100.0, pdc->max_gc*100.0,
                      ecolipos,
                      pdc->max_mishits,        mishit_annotation   ? mishit_annotation   : "",
                      pdc->min_coverage*100.0, coverage_annotation ? coverage_annotation : "");
 
+        free(probelen_info);
         free(coverage_annotation);
         free(mishit_annotation);
 
@@ -639,7 +654,7 @@ char *get_design_hinfo(const PT_pdc *pdc) {
     }
 
     if (pdc->tprobes) {
-        int maxprobelen = formatter.get_maxprobelen();
+        int maxprobelen = formatter.get_max_designed_len();
 
         s += sprintf(s, "%-*s", maxprobelen+1, "Target");
         s += sprintf(s, "le ");
@@ -648,7 +663,7 @@ char *get_design_hinfo(const PT_pdc *pdc) {
         s += sprintf(s, "%*s ", formatter.get_qual_width(), "qual");
         s += sprintf(s, "%*s ", formatter.get_grps_width(), "grps");
         s += sprintf(s, "  G+C temp ");
-        s += sprintf(s, "%-*s | ", maxprobelen, maxprobelen<14 ? "Probe" : "Probe sequence");
+        s += sprintf(s, "%*s | ", maxprobelen, maxprobelen<14 ? "Probe" : "Probe sequence");
         s += sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
     }
     else {
@@ -1299,7 +1314,7 @@ class DesignTargets : virtual Noncopyable {
 
     long datasize;     // overall bp of target sequences
 
-    int max_probe_length; // min. designed probe length
+    int min_probe_length; // min. designed probe length
 
     int *known2id;
 
@@ -1307,7 +1322,7 @@ class DesignTargets : virtual Noncopyable {
 
     void announce_seq_bp(long bp) {
         pt_assert(!error);
-        if (bp<long(max_probe_length)) {
+        if (bp<long(min_probe_length)) {
             error = GBS_global_string("Sequence contains only %lu bp. Impossible design request for", bp);
         }
         else {
@@ -1345,7 +1360,7 @@ public:
           targets(0),
           known_targets(0),
           datasize(0),
-          max_probe_length(pdc->probelen),
+          min_probe_length(pdc->min_probelen),
           known2id(NULL)
     {
         scan_added_targets(); // calc added_targets
@@ -1365,7 +1380,7 @@ public:
     int get_added_count() const { return added_targets; }
 
     void generate(ProbeCandidates& candidates) {
-        arb_progress progress("Searching probe candidates", get_count());
+        arb_progress progress(get_count());
         for (int k = 0; k<known_targets; ++k) {
             const probe_input_data& pid = psg.data[known2id[k]];
             candidates.generate_for_sequence(pdc, pid.get_dataPtr(), pid.get_size());
@@ -1439,18 +1454,28 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
                                                   added == 1 ? " was" : "s were");
                 }
             }
-            else if (pdc->probelen < MIN_DESIGN_PROBE_LENGTH) {
-                error = GBS_global_string("Probe length %i is below the minimum probe length of %i", pdc->probelen, MIN_DESIGN_PROBE_LENGTH);
+            else if (pdc->min_probelen < MIN_DESIGN_PROBE_LENGTH) {
+                error = GBS_global_string("Specified min. probe length %i is below the min. allowed probe length of %i", pdc->min_probelen, MIN_DESIGN_PROBE_LENGTH);
+            }
+            else if (get_max_probelen(pdc) < pdc->min_probelen) {
+                error = GBS_global_string("Max. probe length %i is below the specified min. probe length of %i", get_max_probelen(pdc), pdc->min_probelen);
             }
             else {
                 // search for possible probes
                 if (!error) {
-                    ProbeCandidates candidates(pdc->probelen);
+                    int min_probelen = pdc->min_probelen;
+                    int max_probelen = get_max_probelen(pdc);
 
-                    targets.generate(candidates);
-                    pt_assert(!targets.get_error());
+                    arb_progress progress("Searching probe candidates", max_probelen-min_probelen+1);
+                    for (int len = min_probelen; len <= max_probelen; ++len) {
+                        ProbeCandidates candidates(len);
 
-                    candidates.create_tprobes(pdc, targets.get_count());
+                        targets.generate(candidates);
+                        pt_assert(!targets.get_error());
+
+                        candidates.create_tprobes(pdc, targets.get_count());
+                        ++progress;
+                    }
                 }
 
                 while (pdc->sequences) destroy_PT_sequence(pdc->sequences);

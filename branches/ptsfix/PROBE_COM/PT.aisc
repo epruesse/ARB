@@ -1,6 +1,6 @@
 PROJECT         pb_com
 OBJECT_KEY      PT,             # MAIN PREFIX
-MAX_KEY         36,             # MAX NUMBER OF AN ATTRIBUTE
+MAX_KEY         37,             # MAX NUMBER OF AN ATTRIBUTE
 MAX_OBJECT      12,             # MAX DIFFERENT USER STRUCTURES
 MAX_STRING_LEN  1024,
 MAX_PAR_CNT     16,
@@ -86,7 +86,7 @@ PT_pdc, PDC,    7,     (~probe design~), {
     double,         dte,              t,      ,       DTEDGE,         9,      50.0,                   (~The Temperature drop per percent mismatch on the edge of the probe~);
     double,         dt,               t,      ,       DT,             10,     50.0,                   (~The temperature drop per percent mismatch~);
     int,            looplen,          t,      ,       LOOPLEN,        14,     4,                      (~The Loop Length of a probe~);
-    int,            probelen,         t,      ,       PROBELENGTH,    15,     18,                     (~the length of the probe~);
+    int,            min_probelen,     t,      ,       MIN_PROBELEN,   15,     18,                     (~the minimum length of the designed probes~);
     double,         mintemp,          t,      ,       MINTEMP,        16,     30.0,                   (~minimum temperature~);
     double,         maxtemp,          t,      ,       MAXTEMP,        17,     100.0,                  (~maximum temperature~);
     double,         min_gc,           t,      ,       MINGC,          18,     .3,                     (~the minimum GC content~);
@@ -107,6 +107,7 @@ PT_pdc, PDC,    7,     (~probe design~), {
     double,         max_rj_coverage,  t,      r,      MAX_RJ_TARGETS, 34,     0.0,                    (~the maximum rejected coverage for the targetted group of species~);
     int,            min_rj_mishits,   t,      r,      MIN_RJ_MISHIT,  35,     INT_MAX,                (~the minimum rejected mishits~);
     aisc_string,    get_design_hinfo, %,      r,      INFO_HEADER,    36,     ,                       (~the result info header of this probe design~);
+    int,            max_probelen,     t,      ,       MAX_PROBELEN,   37,     -1,                     (~the maximum length of the designed probes (or -1 to use MIN_PROBELEN~);
 };
 
 # function to iterate through all probes existing in PT-Server

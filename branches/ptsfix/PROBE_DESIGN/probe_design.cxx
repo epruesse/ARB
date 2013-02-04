@@ -481,7 +481,7 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
     if (aisc_create(PD.link, PT_LOCS, PD.locs,
                     LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,
-                    PDC_PROBELENGTH,  root->awar(AWAR_PD_DESIGN_PROBELENGTH)->read_int(),
+                    PDC_MIN_PROBELEN, root->awar(AWAR_PD_DESIGN_PROBELENGTH)->read_int(),
                     PDC_MINTEMP,      (double)root->awar(AWAR_PD_DESIGN_MIN_TEMP)->read_float(),
                     PDC_MAXTEMP,      (double)root->awar(AWAR_PD_DESIGN_MAX_TEMP)->read_float(),
                     PDC_MINGC,        (double)root->awar(AWAR_PD_DESIGN_MIN_GC)->read_float()/100.0,
