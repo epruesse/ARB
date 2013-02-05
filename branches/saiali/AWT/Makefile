@@ -178,11 +178,14 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -269,6 +272,7 @@ AWT_map_key.o: awt_map_key.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -322,10 +326,12 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/items.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/smartptr.h

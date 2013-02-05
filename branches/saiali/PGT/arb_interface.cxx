@@ -82,8 +82,11 @@ void CONFIG_connect() {
     global_gbConfig = GB_open(config, "rwc");                // OPEN CONFIG FILE
     free(config);
 
-    if (global_gbConfig) GB_no_transaction(global_gbConfig); // DISABLE TRANSACTIONS
-    global_CONFIG_available = global_gbConfig;
+    GB_ERROR error             = 0;
+    if (global_gbConfig) error = GB_no_transaction(global_gbConfig); // DISABLE TRANSACTIONS
+    global_CONFIG_available    = global_gbConfig;
+
+    pgt_assert(!error); // unhandled error occurred
 }
 
 
@@ -345,10 +348,7 @@ void getExperimentList(Widget list, char *species, bool clear= false)
 {
     // LOCAL VARIABLES
     GBDATA *gb_sp;
-    GBDATA *gb_exp;
     GBDATA *gb_exp_data;
-    GBDATA *gb_exp_name;
-    char *exp_name;
     int pos;
 
     if(clear) // CLEAR LIST, IF FLAG IST SET (POS = 0)
@@ -374,18 +374,18 @@ void getExperimentList(Widget list, char *species, bool clear= false)
     if(gb_exp_data)
     {
         // BROWSE EXPERIMENTS AND FETCH ENTRY NAMES
-        gb_exp= GB_entry(gb_exp_data, "experiment");
+        GBDATA *gb_exp = GB_entry(gb_exp_data, "experiment");
 
         while(gb_exp)
         {
             // FETCH SPECIES NAME ENTRY
-            gb_exp_name= GB_entry(gb_exp, "name");
+            GBDATA *gb_exp_name = GB_entry(gb_exp, "name");
 
             // IF A NAME IS AVAILABLE, ...
             if(gb_exp_name)
             {
                 // GET CHAR* OF SPECIES NAME
-                exp_name= GB_read_string(gb_exp_name);
+                char *exp_name = GB_read_string(gb_exp_name);
 
                 // ADD ITEM TO LIST WIDGET
                 XmListAddItemUnselected(list, PGT_XmStringCreateLocalized(exp_name), pos);
@@ -408,18 +408,11 @@ void getExperimentList(Widget list, char *species, bool clear= false)
 ****************************************************************************/
 void getProteomeList(Widget list, char *species, char *experiment, bool clear= false)
 {
-    // LOCAL VARIABLES
-    GBDATA *gb_exp;
-    GBDATA *gb_prot;
-    GBDATA *gb_prot_data;
-    GBDATA *gb_prot_name;
-    char *prot_name;
     int pos;
-
     if(clear) // CLEAR LIST, IF FLAG IST SET (POS = 0)
     {
         XmListDeleteAllItems(list);
-        pos= 0;
+        pos = 0;
     }
     else // FIND LAST ITEM POSITION TO APPEND
     {
@@ -427,29 +420,28 @@ void getProteomeList(Widget list, char *species, char *experiment, bool clear= f
     }
 
     // FETCH EXPERIMENT ENTRY
-    gb_exp= find_experiment(species, experiment);
+    GBDATA *gb_exp = find_experiment(species, experiment);
     if(!gb_exp) return;
 
     // INIT AN ARB TRANSACTION
     ARB_begin_transaction();
 
     // FETCH EXPERIMENT DATA ENTRY
-    gb_prot_data= GB_entry(gb_exp, "proteome_data");
-
+    GBDATA *gb_prot_data = GB_entry(gb_exp, "proteome_data");
     if(gb_prot_data)
     {
         // BROWSE EXPERIMENTS AND FETCH ENTRY NAMES
-        gb_prot= GB_entry(gb_prot_data, "proteome");
+        GBDATA *gb_prot = GB_entry(gb_prot_data, "proteome");
         while(gb_prot)
         {
             // FETCH SPECIES NAME ENTRY
-            gb_prot_name= GB_entry(gb_prot, "name");
+            GBDATA *gb_prot_name = GB_entry(gb_prot, "name");
 
             // IF A NAME IS AVAILABLE, ...
             if(gb_prot_name)
             {
                 // GET CHAR* OF SPECIES NAME
-                prot_name= GB_read_string(gb_prot_name);
+                char *prot_name = GB_read_string(gb_prot_name);
 
                 // ADD ITEM TO LIST WIDGET
                 XmListAddItemUnselected(list, PGT_XmStringCreateLocalized(prot_name), pos);
@@ -564,10 +556,9 @@ static bool check_create_AWAR(GBDATA *gb_data, const char *AWAR_path, bool trans
     if(transaction) ARB_begin_transaction();
 
     GBDATA *gb_search= NULL, *gb_create= NULL;
-    char *str= NULL;
 
     strncpy(buf, AWAR_path, 1023);
-    str= strtok(buf, "/");
+    char *str = strtok(buf, "/");
     while(str && count)
     {
         // DO WE HAVE THE PART OF THE PATH?
@@ -687,12 +678,10 @@ char *get_CONFIG(const char *CONFIG_path)
 {
     if(!global_CONFIG_available) return NULL;
 
-    char *content= NULL;
-
     check_create_AWAR(global_gbConfig, CONFIG_path, false);
 
-    GBDATA *gb_awar= GB_search(global_gbConfig, CONFIG_path, GB_FIND);
-    content= GB_read_string(gb_awar);
+    GBDATA *gb_awar = GB_search(global_gbConfig, CONFIG_path, GB_FIND);
+    char   *content = GB_read_string(gb_awar);
 
     return content;
 }

@@ -27,7 +27,7 @@
 
 using namespace std;
 
-AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL)
+AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL)
 {
     AW_gc_manager preset_window =
         AW_manage_GC(aww,
@@ -35,7 +35,7 @@ AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                      SEC_GC_LOOP,
                      SEC_GC_MAX,
                      AW_GCM_DATA_AREA,
-                     (AW_CB)AWT_expose_cb, (AW_CL)ntw, 0,
+                     (AW_CB)AWT_expose_cb, (AW_CL)scr, 0,
                      false,
                      "#A1A1A1",
                      "LOOP$#247900",
@@ -132,13 +132,14 @@ GB_ERROR SEC_graphic::handleKey(AW_event_type event, AW_key_mod key_modifier, AW
     GB_ERROR error = 0;
 
     if (event == AW_Keyboard_Press) {
-        bool wrapped   = false; // avoid deadlock
         int  curpos    = sec_root->get_cursor();
         int  maxIndex  = sec_root->max_index();
         bool setCurpos = false;
         bool handled   = false;
 
         if (key_modifier == AW_KEYMODE_NONE) {
+            bool wrapped = false;   // avoid deadlock
+
             switch (key_code) {
                 case AW_KEY_LEFT: {
                     while (1) {
@@ -241,9 +242,8 @@ GB_ERROR SEC_graphic::handleKey(AW_event_type event, AW_key_mod key_modifier, AW
 GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int button, AWT_COMMAND_MODE cmd, const Position& world, SEC_base *elem, int abspos) {
     GB_ERROR error = 0;
 
-    // -----------------------------------------
+    // ------------------------------------------
     //      handle element dependent actions
-    // -----------------------------------------
 
     if (elem) {
         static Position start;      // click position on mouse down
@@ -267,7 +267,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
 
                 switch (event) {
                     case AW_Mouse_Press:
-                        if (button == AWT_M_LEFT) {
+                        if (button == AW_BUTTON_LEFT) {
                             start_size = elem->drawnSize();
                             sec_root->set_show_constraints(elem->getType());
                             exports.refresh = 1;
@@ -281,7 +281,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                         break;
 
                     case AW_Mouse_Drag:
-                        if (button == AWT_M_LEFT) {
+                        if (button == AW_BUTTON_LEFT) {
                             double dfix1 = Distance(fixpoint, start);
                             double dfix2 = Distance(fixpoint, world);
 
@@ -307,7 +307,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                 break;
             }
             case AWT_MODE_EDIT:  // edit constraints
-                if (button==AWT_M_LEFT && event==AW_Mouse_Press) {
+                if (button==AW_BUTTON_LEFT && event==AW_Mouse_Press) {
                     error = change_constraints(elem);
                     if (!error) {
                         elem->sizeChanged();
@@ -332,7 +332,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                     if (event == AW_Mouse_Press) {
                         startClick = fix2world;
                         old.clear();
-                        rotateSubStructure = (button == AWT_M_LEFT);
+                        rotateSubStructure = (button == AW_BUTTON_LEFT);
 
                         if (loop) {
                             old.push_back(loop->get_abs_angle());
@@ -378,7 +378,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
 
             case AWT_MODE_SETROOT:  // set-root-mode / reset angles
                 if (event == AW_Mouse_Press) {
-                    if (button == AWT_M_LEFT) { // set root
+                    if (button == AW_BUTTON_LEFT) { // set root
                         if (loop) {
                             sec_root->set_root(loop);
                             exports.save = 1;
@@ -386,7 +386,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                         else error = "Please click on a loop to change the root";
                     }
                     else { // reset angles
-                        sec_assert(button == AWT_M_RIGHT);
+                        sec_assert(button == AW_BUTTON_RIGHT);
                         elem->reset_angles();
                         elem->orientationChanged();
                         exports.save = 1;
@@ -396,7 +396,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
 
             case AWT_MODE_MOVE: { // fold/unfold helix
                 if (event == AW_Mouse_Press) {
-                    if (button == AWT_M_LEFT) { // fold helix
+                    if (button == AW_BUTTON_LEFT) { // fold helix
                         if (loop) {
                             const char *helix_nr = sec_root->helixNrAt(abspos);
                             if (helix_nr) {
@@ -417,7 +417,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                         }
                     }
                     else { // unfold helix
-                        sec_assert(button == AWT_M_RIGHT);
+                        sec_assert(button == AW_BUTTON_RIGHT);
                         if (helix) {
                             error = sec_root->unsplit_loop(helix->strandToRoot());
                             if (!error) {
@@ -440,9 +440,8 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
         }
     }
 
-    // --------------------------------------
+    // ---------------------------------------
     //      action independent of element
-    // --------------------------------------
 
     if (!elem) {
         switch (cmd) {
@@ -457,14 +456,14 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
 
             case AWT_MODE_PROINFO: // display search pattern
                 if (event == AW_Mouse_Press) {
-                    if (button == AWT_M_LEFT) {
+                    if (button == AW_BUTTON_LEFT) {
                         if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
                             sec_root->paintSearchPatternStrings(device, abspos, world.xpos()+1, world.ypos());
                         }
                         // don't refresh here!
                     }
                     else {
-                        sec_assert(button == AWT_M_RIGHT);
+                        sec_assert(button == AW_BUTTON_RIGHT);
                         exports.refresh = 1; // simply refresh to remove drawn patterns
                     }
                 }
@@ -492,7 +491,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
         error = handleKey(event, key_modifier, key_code, key_char);
     }
     else {
-        if (button != AWT_M_MIDDLE && cmd != AWT_MODE_ZOOM) { // don't handle scroll + zoom
+        if (button != AW_BUTTON_MIDDLE && cmd != AWT_MODE_ZOOM) { // don't handle scroll + zoom
             AW_CL    cd1, cd2;
 
             if (AW_getBestClick(cl, ct, &cd1, &cd2)) {
@@ -515,23 +514,21 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
 
 SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini)
-    : update_requested(SEC_UPDATE_RELOAD)
-    , load_error(0)
-    , disp_device(0)
-    , gb_main(gb_maini)
-    , aw_root(aw_rooti)
-    , sec_root(new SEC_root)
-    , gb_struct(0)
-    , gb_struct_ref(0)
-    , last_saved(0)
+    : update_requested(SEC_UPDATE_RELOAD),
+      load_error(0),
+      disp_device(0),
+      gb_main(gb_maini),
+      aw_root(aw_rooti),
+      sec_root(new SEC_root),
+      gb_struct(0),
+      gb_struct_ref(0),
+      last_saved(0)
 {
-    exports.dont_fit_x  = 0;
-    exports.dont_fit_y  = 0;
-    exports.dont_scroll = 0;
     exports.set_standard_default_padding();
 
-    rot_ct.exists = false;
-    rot_cl.exists = false;
+    rot_ct.exists     = false;
+    rot_cl.exists     = false;
+    old_rot_cl.exists = false;
 }
 
 SEC_graphic::~SEC_graphic() {
@@ -578,11 +575,10 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     }
 
 
-    GB_ERROR err = 0;
 
     // Setup new structure:
-    long    ali_len = -1;
-    GBDATA *gb_ali  = 0;
+    GB_ERROR  err    = 0;
+    GBDATA   *gb_ali = 0;
     {
         char *helix_name = GBT_get_default_helix(gb_main);
         char *name       = GBT_readOrCreate_string(gb_main, AWAR_HELIX_NAME, helix_name);
@@ -594,8 +590,8 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
         }
         else {
             char *ali_name = GBT_get_default_alignment(gb_main);
+            long  ali_len  = GBT_get_alignment_len(gb_main, ali_name);
 
-            ali_len = GBT_get_alignment_len(gb_main, ali_name);
             if (ali_len < 10) {
                 err = GB_export_errorf("alignment '%s' to short to generate helix", ali_name);
             }
@@ -612,9 +608,8 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
         free(helix_name);
     }
 
-    // -----------------------
+    // ------------------------
     //      read structure
-    // -----------------------
 
     if (!err) {
         gb_struct = GB_search(gb_ali, NAME_OF_STRUCT_SEQ, GB_FIND);

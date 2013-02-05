@@ -21,9 +21,6 @@
 #define NEXT_INDENT      (indent+INDENT_PER_LEVEL)
 #define OUT              stdout
 
-// ----------------------------------------------------------
-//      static void printProperties(ED4_properties prop)
-// ----------------------------------------------------------
 static void printProperties(ED4_properties prop) {
     char sep = ' ';
 #define pprop(tag) do { if (prop&ED4_P_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)
@@ -43,9 +40,6 @@ static void printProperties(ED4_properties prop) {
 #undef pprop
 }
 
-// -------------------------------------------------
-//      static void printLevel(ED4_level level)
-// -------------------------------------------------
 static void printLevel(ED4_level level) {
     char sep = ' ';
 #define plev(tag) do { if (level&ED4_L_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)
@@ -158,12 +152,14 @@ void ED4_manager::dump_base(size_t indent) const {
 }
 
 inline const char *readable_ED4_species_type(ED4_species_type type) {
+    const char *spec_type = "<invalid>";
     switch (type) {
-        case ED4_SP_CONSENSUS: return "Consensus";
-        case ED4_SP_SAI:       return "SAI";
-        case ED4_SP_SPECIES:   return "Species";
-        case ED4_SP_NONE:      return "None (invalid!)";
+        case ED4_SP_CONSENSUS: spec_type = "Consensus"; break;
+        case ED4_SP_SAI:       spec_type = "SAI"; break;
+        case ED4_SP_SPECIES:   spec_type = "Species"; break;
+        case ED4_SP_NONE:      spec_type = "None (invalid!)"; break;
     }
+    return spec_type;
 }
 
 void ED4_species_manager::dump(size_t indent) const {

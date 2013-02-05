@@ -27,9 +27,8 @@
 
 using namespace std;
 
-// ------------------
+// -------------------
 //      Debugging
-// ------------------
 
 #if defined(ASSERTION_USED)
 
@@ -59,9 +58,8 @@ static void paintStrandDebugInfo(AW_device *device, int color, SEC_helix_strand 
 
 #endif // DEBUG
 
-// ------------------
+// -------------------
 //      PaintData
-// ------------------
 
 class PaintData {
     int gc_edit4_to_secedit[ED4_G_DRAG+1]; // GC translation table (EDIT4 -> SECEDIT)
@@ -122,9 +120,8 @@ public:
 
 static PaintData paintData;
 
-// --------------------
+// ---------------------
 //      Annotations
-// --------------------
 
 void SEC_root::paintAnnotation(AW_device *device, int gc,
                                const Position& pos, const Position& left, const Position& right,
@@ -330,9 +327,8 @@ void SEC_root::delete_announced_positions() {
 }
 
 
-// ---------------------------
+// ----------------------------
 //      Paints CONSTRAINTS
-// ---------------------------
 
 void SEC_helix_strand::paint_constraints(AW_device *device) {
     double minS = helix_info->minSize();
@@ -370,9 +366,8 @@ void SEC_loop::paint_constraints(AW_device *device) {
     }
 }
 
-// --------------------------
+// ---------------------------
 //      Background colors
-// --------------------------
 
 #if defined(WARN_TODO)
 #warning move to SEC_db_interface
@@ -415,8 +410,8 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
     color2 = paintData.convert_BackgroundGC(color2);
 
     if (color1 >= 0 || color2 >= 0 || displayParams.show_strSkeleton) {
-        const double& radius1 = char_radius[gc1];
-        const double& radius2 = char_radius[gc2];
+        const double& radius1 = get_char_radius(gc1);
+        const double& radius2 = get_char_radius(gc2);
 
         Position s1    = p1;
         Position s2    = p2;
@@ -485,10 +480,8 @@ void SEC_root::paintSearchPatternStrings(AW_device *device, int clickedPos, AW_p
     }
 }
 
-// --------------
+// ---------------
 //      Bonds
-// --------------
-
 
 void SEC_bond_def::paint(AW_device *device, char base1, char base2, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius) const {
     if (base1 && base2) {
@@ -624,9 +617,8 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
     }
 }
 
-// ----------------------
+// -----------------------
 //      Paint helices
-// ----------------------
 
 struct StrandPositionData {
     int      abs[2];            // absolute sequence position
@@ -768,7 +760,7 @@ void SEC_helix_strand::paint_strands(AW_device *device, const Vector& strand_vec
                     if (disp.show_debug) device->line(gc, realPos, base_pos);
 #endif // DEBUG
 
-                    device->text(gc, baseBuf, base_pos);
+                    device->text(gc, baseBuf, base_pos, 0.0, AW_ALL_DEVICES_SCALED);
                 }
             }
         }
@@ -836,10 +828,8 @@ void SEC_helix_strand::paint(AW_device *device) {
 }
 
 
-// --------------------
+// ---------------------
 //      Paint loops
-// --------------------
-
 
 void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_pointer) {
     int base_count = get_region()->get_base_count(); // bases in segment
@@ -948,7 +938,7 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
                 // (which is currently calculated wrong!)
                 if (disp.show_debug) device->line(SEC_GC_LOOP, pos, base_pos);
 #endif // DEBUG
-                device->text(SEC_GC_LOOP, baseBuf, base_pos);
+                device->text(SEC_GC_LOOP, baseBuf, base_pos, 0.0, AW_ALL_DEVICES_SCALED);
             }
             root->announce_base_position(abs, pos);
         }
@@ -986,9 +976,8 @@ void SEC_loop::paint(AW_device *device) {
     if (sroot->get_show_constraints() & SEC_LOOP) paint_constraints(device);
 }
 
-// ---------------------------------------------------------
+// ------------------------------------------------------------
 //      Paint the whole structure (starting with SEC_root)
-// ---------------------------------------------------------
 
 GB_ERROR SEC_root::paint(AW_device *device) {
     SEC_loop *rootLoop = get_root_loop();
@@ -1016,7 +1005,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
             maxSize += 2; // add 2 extra pixels
 
             bg_linewidth[gc] = maxSize;
-            char_radius[gc]    = device->rtransform_size(maxSize) * 0.5; // was 0.75
+            charRadius[gc]   = device->rtransform_size(maxSize) * 0.5;  // was 0.75
         }
 
         cacheBackgroundColor();

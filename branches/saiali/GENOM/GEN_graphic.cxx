@@ -25,21 +25,18 @@
 using namespace std;
 using namespace AW;
 
-//  -------------------
+// ---------------------
 //      GEN_graphic
-//  -------------------
 
 GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_installer callback_installer_, int window_nr_)
-    : aw_root(aw_root_)
-    , gb_main(gb_main_)
-    , callback_installer(callback_installer_)
-    , window_nr(window_nr_)
-    , gen_root(0)
-    , want_zoom_reset(false)
+    : aw_root(aw_root_),
+      gb_main(gb_main_),
+      callback_installer(callback_installer_),
+      window_nr(window_nr_),
+      gen_root(0),
+      want_zoom_reset(false),
+      disp_device(NULL)
 {
-    exports.dont_fit_x  = 0;
-    exports.dont_fit_y  = 0;
-    exports.dont_scroll = 0;
     exports.set_standard_default_padding();
 
     rot_ct.exists = false;
@@ -48,14 +45,13 @@ GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_ins
     set_display_style(GEN_DisplayStyle(aw_root->awar(AWAR_GENMAP_DISPLAY_TYPE(window_nr))->read_int()));
 }
 
-GEN_graphic::~GEN_graphic() {
-}
+GEN_graphic::~GEN_graphic() {}
 
-AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *ntw, AW_CL cd2) {
+AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
     disp_device                 = device;
     AW_gc_manager preset_window = AW_manage_GC(aww, device,
                                                GEN_GC_FIRST_FONT, GEN_GC_MAX, AW_GCM_DATA_AREA,
-                                               (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
+                                               (AW_CB)AWT_resize_cb, (AW_CL)scr, cd2,
                                                true, // define color groups
                                                "#55C0AA",
                                                "Default$#5555ff",
@@ -104,7 +100,7 @@ void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
             }
             case AWT_MODE_SELECT:
             case AWT_MODE_EDIT: {
-                if (button==AWT_M_LEFT) {
+                if (button==AW_BUTTON_LEFT) {
                     GEN_gene *gene = 0;
                     if (ct) gene   = (GEN_gene*)ct->client_data1;
                     if (cl) gene   = (GEN_gene*)cl->client_data1;
@@ -349,21 +345,17 @@ void GEN_root::paint(AW_device *device) {
                 }
                 break;
             }
-            default: {
-                gen_assert(0);
-                break;
-            }
         }
     }
 }
 
-void GEN_graphic::delete_gen_root(AWT_canvas *ntw) {
-    callback_installer(false, ntw, this);
+void GEN_graphic::delete_gen_root(AWT_canvas *scr) {
+    callback_installer(false, scr, this);
     delete gen_root;
     gen_root = 0;
 }
 
-void GEN_graphic::reinit_gen_root(AWT_canvas *ntw, bool force_reinit) {
+void GEN_graphic::reinit_gen_root(AWT_canvas *scr, bool force_reinit) {
     char *organism_name = aw_root->awar(AWAR_LOCAL_ORGANISM_NAME(window_nr))->read_string();
     char *gene_name     = aw_root->awar(AWAR_LOCAL_GENE_NAME(window_nr))->read_string();
 
@@ -372,7 +364,7 @@ void GEN_graphic::reinit_gen_root(AWT_canvas *ntw, bool force_reinit) {
             if (gen_root->OrganismName().length() == 0) {
                 want_zoom_reset = true; // no organism was displayed before
             }
-            delete_gen_root(ntw);
+            delete_gen_root(scr);
         }
         if (gen_root && gen_root->GeneName() != string(gene_name)) {
             gen_root->set_GeneName(gene_name);
@@ -381,7 +373,7 @@ void GEN_graphic::reinit_gen_root(AWT_canvas *ntw, bool force_reinit) {
 
     if (!gen_root) {
         gen_root = new GEN_root(organism_name, gene_name, gb_main, aw_root, this);
-        callback_installer(true, ntw, this);
+        callback_installer(true, scr, this);
     }
 
     free(organism_name);
@@ -390,32 +382,19 @@ void GEN_graphic::reinit_gen_root(AWT_canvas *ntw, bool force_reinit) {
 
 void GEN_graphic::set_display_style(GEN_DisplayStyle type) {
     style = type;
-
+    
     switch (style) {
-        case GEN_DISPLAY_STYLE_RADIAL: {
-            exports.dont_fit_x      = 0;
-            exports.dont_fit_y      = 0;
-            exports.dont_fit_larger = 0;
+        case GEN_DISPLAY_STYLE_RADIAL:
+            exports.fit_mode = AWT_FIT_LARGER;
             break;
-        }
-        case GEN_DISPLAY_STYLE_VERTICAL: {
-            exports.dont_fit_x      = 0;
-            exports.dont_fit_y      = 1;
-            exports.dont_fit_larger = 0;
+
+        case GEN_DISPLAY_STYLE_VERTICAL:
+        case GEN_DISPLAY_STYLE_BOOK:
+            exports.fit_mode = AWT_FIT_SMALLER;
             break;
-        }
-        case GEN_DISPLAY_STYLE_BOOK: {
-            exports.dont_fit_x      = 0;
-            exports.dont_fit_y      = 1;
-            exports.dont_fit_larger = 0;
-            break;
-        }
-        default: {
-            gen_assert(0);
-            break;
-        }
     }
 
-    want_zoom_reset = true;
+    exports.zoom_mode = AWT_ZOOM_BOTH;
+    want_zoom_reset   = true;
 }
 

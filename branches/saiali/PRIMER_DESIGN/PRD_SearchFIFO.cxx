@@ -161,12 +161,8 @@ void SearchFIFO::push_front(Node *child_of_current_)
     begin = new_parameter;
 }
 
-void SearchFIFO::iterateWith (PRD_Sequence_Pos pos_, unsigned char base_)
-{
+void SearchFIFO::iterateWith (PRD_Sequence_Pos pos_, unsigned char base_) {
     if (begin == NULL) return;
-
-    Node *child;
-    int   bits;
 
     current = begin;
 
@@ -174,7 +170,7 @@ void SearchFIFO::iterateWith (PRD_Sequence_Pos pos_, unsigned char base_)
         while (current != NULL) {
 
             // get childnode of parameters current node
-            child = current->node->childByBase(base_);
+            Node *child = current->node->childByBase(base_);
 
             // erase parameter if child doesn't exist
             if (child == NULL) {
@@ -215,10 +211,10 @@ void SearchFIFO::iterateWith (PRD_Sequence_Pos pos_, unsigned char base_)
     }
     else { // expand IUPAC-Codes
         while (current != NULL) {
-            bits = current->node->child_bits & CHAR2BIT.FIELD[base_];
+            int bits = current->node->child_bits & CHAR2BIT.FIELD[base_];
 
             if (bits & 1) {   // A
-                child = current->node->child[2];   // 2 = A
+                Node *child = current->node->child[2];   // 2 = A
 
                 // invalidate if node is primer and is in range
                 if (child->isValidPrimer()) {
@@ -247,7 +243,7 @@ void SearchFIFO::iterateWith (PRD_Sequence_Pos pos_, unsigned char base_)
             }
 
             if (bits & 2) {   // T/U
-                child = current->node->child[3];   // 3 = T/U
+                Node *child = current->node->child[3];   // 3 = T/U
 
                 // invalidate if node is primer and is in range
                 if (child->isValidPrimer()) {
@@ -276,7 +272,7 @@ void SearchFIFO::iterateWith (PRD_Sequence_Pos pos_, unsigned char base_)
             }
 
             if (bits & 4) {   // C
-                child = current->node->child[0];   // 0 = C
+                Node *child = current->node->child[0];   // 0 = C
 
                 // invalidate if node is primer and is in range
                 if (child->isValidPrimer()) {
@@ -305,7 +301,7 @@ void SearchFIFO::iterateWith (PRD_Sequence_Pos pos_, unsigned char base_)
             }
 
             if (bits & 8) {   // G
-                child = current->node->child[1];   // 1 = G
+                Node *child = current->node->child[1];   // 1 = G
 
                 // invalidate if node is primer and is in range
                 if (child->isValidPrimer()) {

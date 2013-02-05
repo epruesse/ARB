@@ -88,7 +88,6 @@ static void aed_start_naligning(AW_window *aw) {
     GBS_strcat(strstruct, " -msub");
     for (i=0; i<5; i++) {
         for (j=0; j<5; j++) {
-            char var[100];
             if (i==4 || j==4) {                 // gap panelty
                 if (i==4 && j==4) {
                     GBS_floatcat(strstruct, 0.0);
@@ -99,8 +98,9 @@ static void aed_start_naligning(AW_window *aw) {
                 }
             }
             else {
+                char var[100];
                 if (i<j) sprintf(var, "naligner/%c%c", "acgt-"[i], "acgt-"[j]);
-                else    sprintf(var, "naligner/%c%c", "acgt-"[j], "acgt-"[i]);
+                else     sprintf(var, "naligner/%c%c", "acgt-"[j], "acgt-"[i]);
                 GBS_floatcat(strstruct, root->awar(var)->read_float());
                 if (i<4 || j<4) GBS_chrcat(strstruct, ',');
             }

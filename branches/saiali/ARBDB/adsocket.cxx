@@ -82,14 +82,10 @@ static long gbcm_read_buffered(int socket, char *ptr, long size) {
     return size;
 }
 
-long gbcm_read(int socket, char *ptr, long size)
-{
-    long    leftsize, readsize;
-    leftsize = size;
-    readsize = 0;
-
+long gbcm_read(int socket, char *ptr, long size) {
+    long leftsize = size;
     while (leftsize) {
-        readsize = gbcm_read_buffered(socket, ptr, leftsize);
+        long readsize = gbcm_read_buffered(socket, ptr, leftsize);
         if (readsize<=0) return 0;
         ptr += readsize;
         leftsize -= readsize;
@@ -203,19 +199,15 @@ static GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id) {
 }
 
 GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name) {
-    long      socket_id[1];
-    char     *mach_name[1];
-    in_addr   addr;                                 // union -> u_long
-    hostent  *he;
-    GB_ERROR  err;
-
-    mach_name[0] = 0;
-    err = gbcm_get_m_id(path, mach_name, socket_id);
+    char     *machName = 0;
+    long      socketID;
+    GB_ERROR  err      = gbcm_get_m_id(path, &machName, &socketID);
     if (err) {
-        if (mach_name[0]) free(mach_name[0]);
+        free(machName);
         return err;
     }
-    if (socket_id[0] >= 0) {    // TCP
+
+    if (socketID >= 0) {    // TCP
         sockaddr_in so_ad;
         memset((char *)&so_ad, 0, sizeof(sockaddr_in));
         *psocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -223,17 +215,21 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
             return "CANNOT CREATE SOCKET";
         }
 
-        arb_gethostbyname(mach_name[0], he, err);
+        hostent *he;
+        arb_gethostbyname(machName, he, err);
         if (err) return err;
 
+        in_addr addr;                                   // union -> u_long
+        
         // simply take first address
-        addr.s_addr = *(long *) (he->h_addr);
-        so_ad.sin_addr = addr;
+        addr.s_addr      = *(long *) (he->h_addr);
+        so_ad.sin_addr   = addr;
         so_ad.sin_family = AF_INET;
-        so_ad.sin_port = htons((unsigned short)(socket_id[0])); // @@@ = pb_socket
+        so_ad.sin_port   = htons((unsigned short)socketID); // @@@ = pb_socket
+
         if (do_connect) {
             if (connect(*psocket, (sockaddr *)(&so_ad), sizeof(so_ad))) {
-                GB_warningf("Cannot connect to %s:%li   errno %i", mach_name[0], socket_id[0], errno);
+                GB_warningf("Cannot connect to %s:%li   errno %i", machName, socketID, errno);
                 return "";
             }
         }
@@ -244,7 +240,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
                 return "Could not open socket on Server";
             }
         }
-        if (mach_name[0]) free(mach_name[0]);
+        free(machName);
         if (delay2 == TCP_NODELAY) {
             GB_UINT4      optval;
             optval = 1;
@@ -261,23 +257,23 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
             return "CANNOT CREATE SOCKET";
         }
         so_ad.sun_family = AF_UNIX;
-        strcpy(so_ad.sun_path, mach_name[0]);
+        strcpy(so_ad.sun_path, machName);
 
         if (do_connect) {
             if (connect(*psocket, (sockaddr*)(&so_ad), strlen(so_ad.sun_path)+2)) {
-                if (mach_name[0]) free(mach_name[0]);
+                free(machName);
                 return "";
             }
         }
         else {
-            if (unlink(mach_name[0]) == 0) printf("old socket found\n");
-            if (bind(*psocket, (sockaddr*)(&so_ad), strlen(mach_name[0])+2)) {
-                if (mach_name[0]) free(mach_name[0]);
+            if (unlink(machName) == 0) printf("old socket found\n");
+            if (bind(*psocket, (sockaddr*)(&so_ad), strlen(machName)+2)) {
+                free(machName);
                 return "Could not open socket on Server";
             }
-            if (chmod(mach_name[0], 0777)) return GB_export_errorf("Cannot change mode of socket '%s'", mach_name[0]);
+            if (chmod(machName, 0777)) return GB_export_errorf("Cannot change mode of socket '%s'", machName);
         }
-        *unix_name = mach_name[0];
+        *unix_name = machName;
         return 0;
     }
 }
@@ -316,7 +312,7 @@ gbcmc_comm *gbcmc_open(const char *path) {
         return 0;
     }
     ASSERT_RESULT_PREDICATE(is_default_or_ignore_or_own_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcmc_suppress_sigpipe, "gbcmc_open"));
-    gb_local->iamclient = 1;
+    gb_local->iamclient = true;
     return link;
 }
 
@@ -512,8 +508,9 @@ GB_ERROR GB_textprint(const char *path) {
     char       *fpath   = GBS_eval_env(path);
     const char *command = GBS_global_string("arb_textprint '%s' &", fpath);
     GB_ERROR    error   = GBK_system(command);
+    error               = GB_failedTo_error("print textfile", fpath, error);
     free(fpath);
-    return GB_failedTo_error("print textfile", fpath, error);
+    return error;
 }
 
 // --------------------------------------------------------------------------------
@@ -1160,9 +1157,8 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
     GB_CSTR   file  = GB_concat_path(GB_PATH_TMP, filename);
     bool      write = strpbrk(fmode, "wa") != 0;
     GB_ERROR  error = 0;
-    FILE     *fp    = 0;
 
-    fp = fopen(file, fmode);
+    FILE *fp = fopen(file, fmode);
     if (fp) {
         // make file private
         if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) != 0) {
@@ -1180,7 +1176,7 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
     if (error) {
         // don't care if anything fails here..
         if (fp) { fclose(fp); fp = 0; }
-        if (file) { unlink(file); file = 0; }
+        if (file) unlink(file); 
         GB_export_error(error);
     }
 

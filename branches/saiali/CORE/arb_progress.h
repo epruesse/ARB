@@ -172,7 +172,7 @@ public:
         // if you can't ahead-determine the exact number of incrementations,
         // specify an upper-limit and call .done() before dtor.
 
-        arb_assert(overall_count>0);
+        arb_assert(overall_count >= 0);
         setup(title, overall_count);
     }
     explicit arb_progress(const char *title) {
@@ -262,7 +262,9 @@ public:
 class arb_suppress_progress {
     SmartPtr<arb_parent_progress> suppressor;
 public:
-    arb_suppress_progress() { suppressor = arb_parent_progress::create_suppressor(); }
+    arb_suppress_progress()
+        : suppressor(arb_parent_progress::create_suppressor())
+    {}
 };
 
 #else

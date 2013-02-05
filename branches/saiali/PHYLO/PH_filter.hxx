@@ -1,5 +1,19 @@
+// =========================================================== //
+//                                                             //
+//   File      : PH_filter.hxx                                 //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
 #ifndef PH_FILTER_HXX
 #define PH_FILTER_HXX
+
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 enum {
     OPT_START_COL    = 0,
@@ -33,3 +47,4 @@ public:
 #else
 #error PH_filter.hxx included twice
 #endif
+

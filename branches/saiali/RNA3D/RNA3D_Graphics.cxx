@@ -10,7 +10,7 @@
 using namespace std;
 
 
-AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2) {
+AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
     AW_gc_manager preset_window =
         AW_manage_GC (aww,
                       device,
@@ -18,7 +18,7 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
                       RNA3D_GC_MAX,
                       AW_GCM_DATA_AREA,
                       (AW_CB)AWT_resize_cb,
-                      (AW_CL)ntw,
+                      (AW_CL)scr,
                       cd2,
                       false,
                       "#000000",
@@ -46,10 +46,9 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
 }
 
 RNA3D_Graphics::RNA3D_Graphics(AW_root *aw_root_, GBDATA *gb_main_) {
-    exports.dont_fit_x      = 1;
-    exports.dont_fit_y      = 1;
-    exports.dont_fit_larger = 0;
-    exports.dont_scroll     = 0;
+    exports.zoom_mode = AWT_ZOOM_NEVER;
+    exports.fit_mode  = AWT_FIT_NEVER;
+    
     exports.set_standard_default_padding();
 
     this->aw_root = aw_root_;

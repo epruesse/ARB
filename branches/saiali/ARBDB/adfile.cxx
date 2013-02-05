@@ -126,17 +126,16 @@ char *GB_find_all_files(const char *dir, const char *mask, bool filename_only) {
     */
 
     DIR         *dirp;
-    dirent      *dp;
     struct stat  st;
     char        *result = 0;
-    char         buffer[FILE_PATH_MAX];
 
     dirp = opendir(dir);
     if (dirp) {
         GBS_string_matcher *matcher = GBS_compile_matcher(mask, GB_IGNORE_CASE);
         if (matcher) {
-            for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
+            for (dirent *dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
                 if (GBS_string_matches_regexp(dp->d_name, matcher)) {
+                    char buffer[FILE_PATH_MAX];
                     sprintf(buffer, "%s/%s", dir, dp->d_name);
                     if (stat(buffer, &st) == 0  && S_ISREG(st.st_mode)) { // regular file ?
                         if (filename_only) strcpy(buffer, dp->d_name);
@@ -166,18 +165,17 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
      */
 
     DIR         *dirp;
-    dirent      *dp;
-    char         buffer[FILE_PATH_MAX];
     struct stat  st;
-    GB_ULONG     newest = 0;
     char        *result = 0;
 
     dirp = opendir(dir);
     if (dirp) {
         GBS_string_matcher *matcher = GBS_compile_matcher(mask, GB_IGNORE_CASE);
         if (matcher) {
-            for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
+            GB_ULONG newest = 0;
+            for (dirent *dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
                 if (GBS_string_matches_regexp(dp->d_name, matcher)) {
+                    char buffer[FILE_PATH_MAX];
                     sprintf(buffer, "%s/%s", dir, dp->d_name);
                     if (stat(buffer, &st) == 0) {
                         if ((GB_ULONG)st.st_mtime > newest) {

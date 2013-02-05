@@ -42,17 +42,15 @@ private:
     AW_default  default_file;
 
 public:
-    AWT_configuration(AW_window *aww, AW_default default_file_, const char *id_, AWT_store_config_to_string store_,
-                      AWT_load_config_from_string load_, AW_CL cl1, AW_CL cl2)
-    {
-        id              = id_;
-        store           = store_;
-        load            = load_;
-        client1         = cl1;
-        client2         = cl2;
-        last_client_aww = aww;
-        default_file    = default_file_;
-    }
+    AWT_configuration(AW_window *aww, AW_default default_file_, const char *id_, AWT_store_config_to_string store_, AWT_load_config_from_string load_, AW_CL cl1, AW_CL cl2)
+        : id(id_),
+          store(store_),
+          load(load_),
+          client1(cl1),
+          client2(cl2),
+          last_client_aww(aww),
+          default_file(default_file_)
+    {}
     virtual ~AWT_configuration() {}
 
     bool operator<(const AWT_configuration& other) const { return id<other.id; }

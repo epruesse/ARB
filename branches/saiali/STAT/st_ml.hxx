@@ -99,8 +99,10 @@ class ST_rate_matrix {
 
     ST_FLOAT diag;                                  // value for indices [0][0], [1][1]...
     ST_FLOAT rest;                                  // other indices
-    
+
 public:
+
+    ST_rate_matrix() : diag(0.0), rest(0.0) {}
     void set(double dist, double TT_ratio);
     inline void transform(const ST_base_vector& in, ST_base_vector& out) const;
     void print();

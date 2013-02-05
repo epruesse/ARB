@@ -102,7 +102,10 @@ ED4_block.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_block.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+ED4_block.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_block.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_block.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -518,6 +521,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -934,6 +938,8 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

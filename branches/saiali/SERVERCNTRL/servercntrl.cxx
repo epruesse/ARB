@@ -50,9 +50,12 @@
 #define TRIES 1
 
 static struct gl_struct {
-    aisc_com *link;
-    long      locs;
-    long      com;
+    aisc_com   *link;
+    AISC_Object  com;
+
+    gl_struct()
+        : link(0), com(0x10000*1) // faked type id (matches main object)
+    { }
 } glservercntrl;
 
 
@@ -165,7 +168,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
 }
 
 static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, const char *tcp_id, int magic_number, struct gl_struct *serverctrl, int wait) {
-    serverctrl->link = aisc_open(tcp_id, &(serverctrl->com), magic_number);
+    serverctrl->link = aisc_open(tcp_id, serverctrl->com, magic_number);
     if (!serverctrl->link) { // no server running -> start one
         GB_ERROR error = arb_start_server(arb_tcp_env, 0);
         if (error) return error;
@@ -176,7 +179,7 @@ static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, const char *tcp_id,
             if ((wait%10) == 0 && wait>0) {
                 printf("Waiting for server '%s' to come up (%i seconds left)\n", arb_tcp_env, wait);
             }
-            serverctrl->link  = aisc_open(tcp_id, &(serverctrl->com), magic_number);
+            serverctrl->link  = aisc_open(tcp_id, serverctrl->com, magic_number);
         }
     }
 
@@ -259,7 +262,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
                         "     check $ARBHOME/lib/arb_tcp.dat and /etc/services\n";
                 }
                 else {
-                    aisc_close(glservercntrl.link);
+                    aisc_close(glservercntrl.link, glservercntrl.com);
                     glservercntrl.link = 0;
                 }
             }
@@ -279,9 +282,9 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env) {
     else {
         const char *server = strchr(tcp_id, 0)+1;
 
-        glservercntrl.link = aisc_open(tcp_id, &glservercntrl.com, magic_number);
+        glservercntrl.link = aisc_open(tcp_id, glservercntrl.com, magic_number);
         if (glservercntrl.link) {
-            aisc_close(glservercntrl.link);
+            aisc_close(glservercntrl.link, glservercntrl.com);
             glservercntrl.link = 0;
 
             const char *command = GBS_global_string("%s -kill -T%s &", server, tcp_id);

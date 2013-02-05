@@ -47,11 +47,10 @@ NODIR=--no-print-directory
 # ---------------------- [basic compiler setting]
 
 ifdef DARWIN
-#       GCC,GPP and CPPreal now set in the Portfile
+#       GCC and GPP now set in the Portfile
 else
 	GCC:=$(CC)
 	GPP:=$(CXX)
-	CPPreal:=cpp
 
 #       to use clang-static-analyzer , call make like this:
 #       setenv CLANG_STATIC_CHECKER 1 ; scan-build make -j5 build
@@ -67,14 +66,15 @@ endif
 
 ALLOWED_GCC_4xx_VERSIONS=\
 	4.2.1 \
-	4.3 4.3.1 4.3.2 4.3.3 4.3.4 \
-	4.4 4.4.1 4.4.3 4.4.5 \
-	4.5.2 \
-	4.6 4.6.1
+	4.3.1 4.3.2 4.3.3 4.3.4 \
+	4.4.1       4.4.3       4.4.5 4.4.6 \
+	      4.5.2 \
+	4.6.1       4.6.3 \
+	4.7.1 
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
-GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
+GCC_VERSION_FOUND=$(shell SOURCE_TOOLS/arb_gcc_version.pl)
 GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
 
 #---------------------- split gcc version 
@@ -86,6 +86,8 @@ USE_GCC_MINOR:=$(word 2,$(SPLITTED_VERSION))
 USE_GCC_PATCHLEVEL:=$(word 3,$(SPLITTED_VERSION))
 
 USE_GCC_452_OR_HIGHER:=
+USE_GCC_47_OR_HIGHER:=
+
 ifeq ($(USE_GCC_MAJOR),4)
  ifeq ($(USE_GCC_MINOR),5)
   ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),23456789)','')
@@ -94,10 +96,14 @@ ifeq ($(USE_GCC_MAJOR),4)
  else
   ifneq ('$(findstring $(USE_GCC_MINOR),6789)','')
    USE_GCC_452_OR_HIGHER:=yes
+   ifneq ($(USE_GCC_MINOR),6)
+    USE_GCC_47_OR_HIGHER:=yes
+   endif
   endif
  endif
 else
  USE_GCC_452_OR_HIGHER:=yes
+ USE_GCC_47_OR_HIGHER:=yes
 endif
 
 #---------------------- define special directories for non standard builds
@@ -142,9 +148,9 @@ ifeq ($(DEBUG),1)
 #	cflags := -O0  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
 #	cflags := -O0  $(gdb_common) -gstabs  # using stabs (same here IIRC)
 #	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
-ifndef DARWIN
+ ifndef DARWIN
 	lflags += -g
-endif
+ endif
 
 # control how much you get spammed
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
@@ -177,6 +183,9 @@ endif
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
+  ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
+	extended_cpp_warnings += -Wc++11-compat# gcc 4.7 
+  endif
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
@@ -406,11 +415,14 @@ cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
 cppflags := $(extended_cpp_warnings)
 
 ifeq ($(DEVELOPER),RALF)
+ ifeq ('$(USE_GCC_47_OR_HIGHER)','')
+# only use for gcc versions between 4.3 and <4.7 (4.7++ adds -Wc++11-compat above)
 HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(GCC_VERSION_FOUND)`
-ifeq ($(HAVE_GNUPP0X),1)
+  ifeq ($(HAVE_GNUPP0X),1)
 # ensure compatibility with upcoming C++ standard
 cppflags += -std=gnu++0x
-endif
+  endif
+ endif
 endif
 
 # compiler settings:
@@ -419,13 +431,6 @@ ACC := $(GCC)# compile C
 CPP := $(GPP) $(cppflags)# compile C++
 ACCLIB := $(ACC) $(shared_cflags)# compile C (shared libs)
 CPPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
-
-# preprocessor
-ifdef DARWIN
-PP := $(GCC) -E -x c-header
-else
-PP := $(CPPreal)
-endif
 
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
 LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
@@ -632,7 +637,6 @@ check_TOOLS:
 		"$(ACC)" \
 		"$(CPP)" \
 		"$(GPP)" \
-		"$(PP)" \
 		"$(ACCLIB)" \
 		"$(CPPLIB)" \
 		"$(XMKMF)" \
@@ -1457,6 +1461,7 @@ proto: proto_tools
 	@echo $(SEP) Updating prototypes
 	$(MAKE) \
 		ARBDB/ARBDB.proto \
+		AISC_COM/AISC_COM.proto \
 		ARB_GDE/ARB_GDE.proto \
 		CORE/CORE.proto \
 		CONVERTALN/CONVERTALN.proto \
@@ -1552,7 +1557,7 @@ readseq:	READSEQ/READSEQ.dummy
 menus: binlink links
 	@(( \
 		echo "$(SEP) Make GDEHELP"; \
-		$(MAKE) -C GDEHELP -r "PP=$(PP)" all && \
+		$(MAKE) -C GDEHELP -r all && \
 		echo "$(SEP) Make GDEHELP [done]"; \
 	) > GDEHELP.log 2>&1 && (cat GDEHELP.log;rm GDEHELP.log)) || (cat GDEHELP.log;rm GDEHELP.log;false)
 
@@ -1620,6 +1625,13 @@ perl_clean:
 PERL2ARB/PERL2ARB.clean:
 	$(MAKE) perl_clean
 
+# ---------------------------------------- bindings to script languages
+
+bindings: lib/libCORE.so lib/libARBDB.so
+	$(MAKE) -C BINDINGS all ARBDEPENDS="$(^:%=../%)" DFLAGS="$(dflags)"
+
+bindings_clean:
+	$(MAKE) -C BINDINGS clean
 
 # ----------------------------------------
 
@@ -1789,11 +1801,13 @@ do_release:
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) testsave
 	$(MAKE) templ # auto upgrades version early
-	$(MAKE) tarfile sourcetarfile
+	$(MAKE) tarfile 
+	$(MAKE) sourcetarfile
 
 release_quick:
 	-rm arb.tgz arbsrc.tgz
-	$(MAKE) tarfile_quick sourcetarfile
+	$(MAKE) tarfile_quick
+	$(MAKE) sourcetarfile
 
 # --------------------------------------------------------------------------------
 
@@ -1883,7 +1897,6 @@ UNITS_WORKING = \
 	SL/NDS/NDS.test \
 	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
 	SL/REFENTRIES/REFENTRIES.test \
-	SL/REGEXPR/REGEXPR.test \
 	SL/SEQUENCE/SEQUENCE.test \
 	SL/TRANSLATE/TRANSLATE.test \
 	SL/TREE_ADMIN/TREE_ADMIN.test \
@@ -1906,6 +1919,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	SL/REGEXPR/REGEXPR.test \
 	SL/FILTER/FILTER.test \
 	ARBDB/libARBDB.test \
 	CONSENSUS_TREE/CONSENSUS_TREE.test \

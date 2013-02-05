@@ -146,6 +146,8 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -304,6 +306,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_algo.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h

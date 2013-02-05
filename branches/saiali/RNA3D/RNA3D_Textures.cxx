@@ -61,7 +61,7 @@ void Texture2D::LoadGLTextures() {
         pngInfo  info;
 
         // Using pngLoadAndBind to set texture parameters automatically.
-        texture[i] = pngBind(ImageFile, PNG_NOMIPMAP, PNG_ALPHA, &info, GL_CLAMP, GL_NEAREST, GL_NEAREST);
+        texture[i] = pngBind(ImageFile, GLPNG_NOMIPMAP, GLPNG_ALPHA, &info, GL_CLAMP, GL_NEAREST, GL_NEAREST);
 
         if (texture[i] == 0) {
             throw string(GBS_global_string("Error loading %s", ImageFile));

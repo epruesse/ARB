@@ -114,16 +114,28 @@ enum AW_event_type {
     AW_Mouse_Drag       = 5
 };
 
+enum AW_MouseButton {
+    AW_BUTTON_NONE   = 0,
+    AW_BUTTON_LEFT   = 1,
+    AW_BUTTON_MIDDLE = 2,
+    AW_BUTTON_RIGHT  = 3,
+    AW_WHEEL_UP      = 4,
+    AW_WHEEL_DOWN    = 5,
+};
+
 struct AW_event {
-    AW_event_type       type;       // AW_Keyboard or AW_Mouse
-    unsigned long       time;       // time in msec, when event occurred
-    // ***** button fields
-    unsigned int        button;     // which mouse button was pressed 1,2,3
-    int         x, y;       // pointer x,y coordinates in the event window
-    // ****** key fields
-    AW_key_mod      keymodifier;    // control alt meta ....
-    AW_key_code     keycode;    // which key type was pressed
-    char            character;  // the c character
+    // fields always valid
+    AW_event_type type;             // AW_Keyboard or AW_Mouse
+    unsigned long time;             // time in msec, when event occurred
+    AW_key_mod    keymodifier;      // control, alt/meta (shift only for type == AW_Mouse)
+
+    // fields valid for type == AW_Mouse
+    AW_MouseButton button;
+    int            x, y;            // pointer x,y coordinates in the event window
+
+    // fields valid for type == AW_Keyboard
+    AW_key_code keycode;            // which key type was pressed
+    char        character;          // the c character
 };
 
 void AW_POPDOWN(AW_window *);
@@ -301,8 +313,7 @@ public:
 
     void  create_invisible(int columns);
     void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic, const char *name_of_color);
-    void  update_toggle_field(int toggle_field_number);
-    void  update_selection_list_intern(AW_selection_list *selection_list);
+    void  refresh_toggle_field(int toggle_field_number); 
     void  _set_activate_callback(void *widget);
     void  unset_at_commands();
     void  increment_at_commands(int width, int height);
@@ -317,7 +328,6 @@ public:
 
     // ------------------------------
     //      The read only section
-    // ------------------------------
 
     char *window_name;                              // window title
     char *window_defaults_name;
@@ -332,7 +342,6 @@ public:
 
     // --------------------------------
     //      The real public section
-    // --------------------------------
 
     AW_root *get_root() { return root; }
 
@@ -552,7 +561,7 @@ public:
     void insert_default_option (AW_label choice_label, const char *mnemonic, float var_value,        const char *name_of_color = 0);
 
     void update_option_menu();
-    void update_option_menu(AW_option_menu_struct *);  // don't use this
+    void refresh_option_menu(AW_option_menu_struct *);  // don't use this
 
 
     // ***** toggle_field is a static menu (all items are visible and only one is selected)
@@ -571,57 +580,7 @@ public:
 
     // ***** selection list is a redefinable scrolled list of items
 
-    AW_selection_list *create_selection_list(const char *awar_name, const char *label = 0, const char *mnemonic = 0, int columns = 4, int rows = 4);
-    // to make a copy of the selection list
-    AW_selection_list *copySelectionList(AW_selection_list *sourceList, AW_selection_list *destinationList);
-    // for string
-    void insert_selection(AW_selection_list *selection_list, const char *displayed, const char *value);
-    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, const char *value);
-    // for int
-    void insert_selection(AW_selection_list * selection_list, const char *displayed, int32_t value);
-    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, int32_t value);
-    // for float
-    void insert_selection(AW_selection_list * selection_list, const char *displayed, float value);
-    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, float value);
-    // for pointers (only allowed if selection list uses a tmp-awars)
-    void insert_selection(AW_selection_list * selection_list, const char *displayed, GBDATA *pointer);
-    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, GBDATA *pointer);
-
-    void delete_selection_from_list(AW_selection_list * selection_list, const char *displayed_string);
-    void conc_list(AW_selection_list * from_list_id,   AW_selection_list * to_list_id);
-
-    // --- selection list iterator:
-    void        init_list_entry_iterator(AW_selection_list *selection_list) const;
-    void        iterate_list_entry(int offset);
-    // --- the following functions work on the currently iterated element:
-    const char *get_list_entry_char_value() const;
-    const char *get_list_entry_displayed() const;
-    void        set_list_entry_char_value(const char *new_char_value);
-    void        set_list_entry_displayed(const char *new_displayed);
-    // ---------------------------------------------------------
-
-    void clear_selection_list(AW_selection_list *selection_list);
-    void update_selection_list(AW_selection_list *selection_list);
-    void init_selection_list_from_array(AW_selection_list *selection_list, const class CharPtrArray& entries, const char *defaultEntry);
-
-    int         get_index_of_element(AW_selection_list *selection_list, const char *selected_element);
-    const char *get_element_at_index(AW_selection_list *selection_list, int index);
-
-    int  get_index_of_selected_element(AW_selection_list *selection_list);
-    void select_element_at_index(AW_selection_list *selection_list, int wanted_index);
-    void move_selection(AW_selection_list *selection_list, int offset);
-
-    void selection_list_to_array(class StrArray& array, AW_selection_list *sel_list, bool values);
-    char     *get_selection_list_contents(AW_selection_list * selection_list, long nr_of_lines = -1);
-    GB_HASH  *selection_list_to_hash(AW_selection_list *sel_list, bool case_sens);
-
-    void      sort_selection_list(AW_selection_list * selection_list, int backward, int case_sensitive);
-    GB_ERROR  save_selection_list(AW_selection_list * selection_list, const char *filename, long number_of_lines = 0);
-    void      set_selection_list_suffix(AW_selection_list * selection_list, const char *suffix);
-    GB_ERROR  load_selection_list(AW_selection_list * selection_list, const char *filename);
-
-    AW_selection_list *create_multi_selection_list(const char *label = 0, const char *mnemonic = 0, int columns = 4, int rows = 4);
-    // all works, but its not connected to an AWAR may be converted to AW_mselection_list_helper
+    AW_selection_list *create_selection_list(const char *awar_name, int columns = 4, int rows = 4);
 };
 
 

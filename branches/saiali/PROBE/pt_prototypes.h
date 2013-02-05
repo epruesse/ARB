@@ -44,6 +44,7 @@ int PT_find_exProb(PT_exProb *pep, int dummy_1x);
 int compress_data(char *probestring);
 ARB_ERROR probe_read_data_base(const char *name, bool readOnly) __ATTR__USERESULT;
 int probe_compress_sequence(char *seq, int seqsize);
+char *readable_probe(char *compressed_probe, size_t len, char T_or_U);
 char *probe_read_alignment(int j, int *psize);
 void probe_read_alignments(void);
 void PT_build_species_hash(void);
@@ -66,7 +67,7 @@ bytestring *MP_all_species_string(PT_local *);
 int MP_count_all_species(PT_local *);
 
 /* PT_new_design.cxx */
-double ptnd_check_split(PT_pdc *pdc, char *probe, int pos, char ref);
+double ptnd_check_split(PT_local *locs, char *probe, int pos, char ref);
 char *get_design_info(PT_tprobes *tprobe);
 char *get_design_hinfo(PT_tprobes *tprobe);
 int PT_start_design(PT_pdc *pdc, int dummy_1x);

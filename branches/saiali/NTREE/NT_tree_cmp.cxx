@@ -102,9 +102,6 @@ int AWT_species_set_root::search(AWT_species_set *set, FILE *log_file) {
     return net_cost;
 }
 
-// --------------------------------------------------------------------------------
-//     AWT_species_set::AWT_species_set(AP_tree *nodei,AWT_species_set_root *ssr,char *species_name)
-// --------------------------------------------------------------------------------
 AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, char *species_name) {
     memset((char *)this, 0, sizeof(*this));
     bitstring = (unsigned char *)GB_calloc(sizeof(char), size_t(ssr->nspecies/8)+sizeof(long)+1);
@@ -119,13 +116,10 @@ AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, char
     best_cost = 0x7fffffff;
 }
 
-// --------------------------------------------------------------------------------
-//     AWT_species_set::AWT_species_set(AP_tree *nodei,AWT_species_set_root *ssr,AWT_species_set *l,AWT_species_set *r)
-// --------------------------------------------------------------------------------
 AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, AWT_species_set *l, AWT_species_set *r) {
     memset((char *)this, 0, sizeof(*this));
     this->node = node;
-    long j = ssr->nspecies/8+1;
+    long j = ssr->nspecies/8+1; // @@@ unused
     bitstring = (unsigned char *)GB_calloc(sizeof(char), size_t(ssr->nspecies/8)+5);
     long *lbits = (long *)l->bitstring;
     long *rbits = (long *)r->bitstring;
@@ -167,11 +161,8 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
         ss = new AWT_species_set(tree_source, this, tree_source->name);
     }
     else {
-        AWT_species_set *ls = NULL;
-        AWT_species_set *rs = NULL;
-
-        ls         = find_best_matches_info(tree_source->get_leftson(), log, compare_node_info);
-        if (ls) rs = find_best_matches_info(tree_source->get_rightson(), log, compare_node_info);
+        AWT_species_set *ls =      find_best_matches_info(tree_source->get_leftson(),  log, compare_node_info);
+        AWT_species_set *rs = ls ? find_best_matches_info(tree_source->get_rightson(), log, compare_node_info) : NULL;
 
         if (rs) {
             ss = new AWT_species_set(tree_source, this, ls, rs); // Generate new bitstring
@@ -320,11 +311,8 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
 
             if (source_leafs < 3) error = GB_export_error("Destination tree has less than 3 species");
             else {
-                AWT_species_set *root_setl = NULL;
-                AWT_species_set *root_setr = NULL;
-
-                root_setl = ssr->find_best_matches_info(source->get_leftson(),  log, compare_node_info);
-                if (root_setl) root_setr = ssr->find_best_matches_info(source->get_rightson(), log, compare_node_info);
+                AWT_species_set *root_setl =             ssr->find_best_matches_info(source->get_leftson(),  log, compare_node_info);
+                AWT_species_set *root_setr = root_setl ? ssr->find_best_matches_info(source->get_rightson(), log, compare_node_info) : NULL;
 
                 if (root_setr) {
                     if (!compare_node_info) {

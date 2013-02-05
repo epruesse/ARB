@@ -26,7 +26,7 @@
 #define AWAR_COLSTAT_SMOOTH       "/name=/smooth"
 #define AWAR_COLSTAT_ENABLE_HELIX "/name=/enable_helix"
 
-void ColumnStat::refresh_selection_list() {
+void ColumnStat::refresh_sai_selection_list() {
     GB_transaction ta(gb_main);
 
     freeset(alignment_name, awr->awar(awar_alignment)->read_string());
@@ -39,7 +39,7 @@ void ColumnStat::refresh_selection_list() {
 
 static void refresh_columnstat_selection(AW_root *, AW_CL cl_column_stat) {
     ColumnStat *column_stat = (ColumnStat *)cl_column_stat;
-    column_stat->refresh_selection_list();
+    column_stat->refresh_sai_selection_list();
 }
 
 ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_template, AW_awar *awar_used_alignment) {
@@ -67,7 +67,7 @@ ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_templat
     awr->awar_int(awar_enable_helix, 1);
 
     awr->awar(awar_alignment)->add_callback(refresh_columnstat_selection, (AW_CL)this);
-    refresh_selection_list();                       // same as refresh_columnstat_selection(this)
+    refresh_sai_selection_list();                       // same as refresh_columnstat_selection(this)
 }
 
 void ColumnStat::forget() {
@@ -150,7 +150,7 @@ GB_ERROR ColumnStat::calculate(AP_filter *filter) {
 
             long use_helix = awr->awar(awar_enable_helix)->read_int();
 
-            for (j=i=0; i<seq_len; i++) {
+            for (i=0; i<seq_len; i++) {
                 is_helix[i] = false;
                 weights[i]  = 1;
             }
@@ -280,32 +280,31 @@ void ColumnStat::weight_by_inverseRates() const {
 
 
 
-void ColumnStat::print() {
-    unsigned int j;
-    int wf;
-    double sum_rates[2], sum_tt[2];
-    long count[2];
-    sum_rates[0] = sum_rates[1] = sum_tt[0] = sum_tt[1] = 0;
-    count[0] = count[1] = 0;
-    if (!seq_len) return;
-    for (j=0; j<seq_len; j++) {
-        if (!weights[j]) continue;
-        fputc(".#"[is_helix[j]], stdout);
-        printf("%i:    minmut %5i  freqs %5i   rates  %5f  tt %5f  ",
-                j, mut_sum[j], freq_sum[j], rates[j], ttratio[j]);
-        for (wf = 0; wf<256; wf++) {
-            if (!frequency[wf]) continue;
-            printf("%c:%5f ", wf, frequency[wf][j]);
+void ColumnStat::print() { 
+    if (seq_len) {
+        double sum_rates[2] = { 0.0, 0.0 };
+        double sum_tt[2] = { 0.0, 0.0 };
+        long   count[2] = { 0, 0 };
+
+        for (unsigned j=0; j<seq_len; j++) {
+            if (weights[j]) {
+                fputc(".#"[is_helix[j]], stdout);
+                printf("%u:    minmut %5i  freqs %5i   rates  %5f  tt %5f  ",
+                       j, mut_sum[j], freq_sum[j], rates[j], ttratio[j]);
+                for (int wf = 0; wf<256; wf++) {
+                    if (frequency[wf]) printf("%c:%5f ", wf, frequency[wf][j]);
+                }
+                sum_rates[is_helix[j]] += rates[j];
+                sum_tt[is_helix[j]] += ttratio[j];
+                count[is_helix[j]]++;
+                printf("w: %i\n", weights[j]);
+            }
         }
-        sum_rates[is_helix[j]] += rates[j];
-        sum_tt[is_helix[j]] += ttratio[j];
-        count[is_helix[j]]++;
-        printf("w: %i\n", weights[j]);
+        printf("Helical Rates %5f   Non Hel. Rates  %5f\n",
+               sum_rates[1]/count[1], sum_rates[0]/count[0]);
+        printf("Helical TT %5f  Non Hel. TT %5f\n",
+               sum_tt[1]/count[1], sum_tt[0]/count[0]);
     }
-    printf("Helical Rates %5f   Non Hel. Rates  %5f\n",
-           sum_rates[1]/count[1], sum_rates[0]/count[0]);
-    printf("Helical TT %5f  Non Hel. TT %5f\n",
-           sum_tt[1]/count[1], sum_tt[0]/count[0]);
 }
 
 static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
@@ -331,13 +330,13 @@ static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
     return result;
 }
 
-void ColumnStat::create_selection_list(AW_window *aww) {
+void ColumnStat::create_sai_selection_list(AW_window *aww) {
     GB_transaction ta(gb_main);
     sai_sel_box_id = awt_create_selection_list_on_sai(gb_main, aww, awar_name, filter_columnstat_SAIs, (AW_CL)this);
 }
 
 void COLSTAT_create_selection_list(AW_window *aws, ColumnStat *column_stat) {
-    column_stat->create_selection_list(aws);
+    column_stat->create_sai_selection_list(aws);
 }
 
 AW_window *COLSTAT_create_selection_window(AW_root *aw_root, ColumnStat *column_stat) {

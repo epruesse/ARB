@@ -55,8 +55,6 @@ static void Version();
 #define NEWBUFSIZ (20480*sizeof(char))              // new buffer size
 
 
-static int dostatic            = 0;                 // include static functions?
-static int doinline            = 0;                 // include inline functions?
 static int donum               = 0;                 // print line numbers?
 static int define_macro        = 1;                 // define macro for prototypes?
 static int use_macro           = 1;                 // use a macro for prototypes?
@@ -671,7 +669,7 @@ static int fnextch(FILE *f) {
     c = ngetc(f);
     while (c == '\\') {
         DEBUG_PRINT("fnextch: in backslash loop\n");
-        c = ngetc(f);                               // skip a character
+        ngetc(f);                               // skip a character
         c = ngetc(f);
     }
     if (c == '/' && !inquote) {
@@ -737,10 +735,7 @@ static int nextch(FILE *f) {
     // Get the next "interesting" character. Comments are skipped, and strings
     // are converted to "0". Also, if a line starts with "#" it is skipped.
 
-    int c, n;
-    char *p, numbuf[10];
-
-    c = fnextch(f);
+    int c = fnextch(f);
 
     // skip preprocessor directives
     // EXCEPTION: #line nnn or #nnn lines are interpreted
@@ -763,8 +758,9 @@ static int nextch(FILE *f) {
 
         // if we have a digit it's a line number, from the preprocessor
         if (c >= 0 && isdigit(c)) {
-            p = numbuf;
-            for (n = 8; n >= 0; --n) {
+            char numbuf[10];
+            char *p = numbuf;
+            for (int n = 8; n >= 0; --n) {
                 *p++ = c;
                 c = fnextch(f);
                 if (c <= 0 || !isdigit(c))
@@ -998,7 +994,7 @@ static Word *getparamlist(FILE *f) {
         if (*buf == ')' && (--inparen < 0)) {
             if (sawsomething) {                     // if we've seen an arg
                 pname[np] = plist;
-                plist = word_alloc("");
+                plist = word_alloc(""); // @@@ Value stored to 'plist' is never read 
                 np++;
             }
             break;
@@ -1200,8 +1196,6 @@ static void emit(Word *wlist, Word *plist, long startline) {
             printf("\tterm");
         }
 
-        refs = 0;
-
         if (strcmp(plist->string, "void") != 0) {   // if parameter is not 'void'
             printf(",\t{\n");
             printf("\t@TYPE,\t@IDENT,\t@REF;\n");
@@ -1378,17 +1372,33 @@ static void getdecl(FILE *f, const char *header) {
             goto again;
         }
 
-        if (oktoprint && !dostatic && strcmp(buf, "static")==0) {
-            oktoprint = 0;
+        if (strncmp(buf, "__ATTR__", 8) == 0) { // prefix attribute (should only be used for static and inline)
+            DEBUG_PRINT("seen prefix __ATTR__: '");
+            DEBUG_PRINT(buf);
+            DEBUG_PRINT("'\n");
+
+            bool seen_static_or_inline = false;
+
+            while (!seen_static_or_inline) {
+                if (getsym(buf, f)<0) {
+                    DEBUG_PRINT("EOF in getdecl loop (behind prefix __ATTR__)\n");
+                    return;
+                }
+                if (strcmp(buf, "static") == 0 || strcmp(buf, "inline") == 0) {
+                    seen_static_or_inline = true;
+                }
+                else {
+                    DEBUG_PRINT("read over (behind prefix __ATTR__): '");
+                    DEBUG_PRINT(buf);
+                    DEBUG_PRINT("'\n");
+                }
+            }
         }
-        if (oktoprint && !doinline && strcmp(buf, "inline")==0) {
-            oktoprint = 0;
-        }
-        if (oktoprint && search__ATTR__ &&
-            (strcmp(buf, "STATIC_ATTRIBUTED") == 0 || strcmp(buf, "INLINE_ATTRIBUTED") == 0))
-        {
-            // (compare with ../TEMPLATES/attributes.h@specialHandling_ATTRIBUTED)
-            oktoprint = 0;
+
+        if (oktoprint) {
+            if (strcmp(buf, "static") == 0 || strcmp(buf, "inline") == 0) {
+                oktoprint = 0;
+            }
         }
 
 
@@ -1437,7 +1447,7 @@ static void getdecl(FILE *f, const char *header) {
     }
 }
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
+__ATTR__NORETURN static void Usage() {
     fprintf(stderr, "Usage: %s [flags] [files ...]", ourname);
     fputs("\nSupported flags:"
           "\n   -a               make a function list for aisc_includes (default: generate C prototypes)"
@@ -1446,8 +1456,6 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
           "\n"
           "\n   -n               put line numbers of declarations as comments"
           "\n"
-          "\n   -s               promote declarations for static functions"
-          "\n   -i               promote declarations for inline functions"
           "\n   -m               promote declaration of 'main()' (default is to skip it)"
           "\n   -F part[,part]*  only promote declarations for functionnames containing one of the parts"
           "\n                    if 'part' starts with a '^' functionname has to start with rest of part"
@@ -1465,7 +1473,6 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
           "\n"
           "\n   -g               search for GNU extension __attribute__ in comment behind function header"
           "\n   -G               search for ARB macro     __ATTR__      in comment behind function header"
-          "\n                    and detect and ignore STATIC/INLINE_ATTRIBUTED() declarations"
           "\n"
           "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
           "\n"
@@ -1484,28 +1491,21 @@ static int string_comparator(const void *v0, const void *v1) {
 }
 
 int ARB_main(int argc, const char *argv[]) {
-    FILE *f;
-    const char *t;
-    char *iobuf;
-    int exit_if_noargs = 0;
+    bool exit_if_noargs = false;
 
     if (argv[0] && argv[0][0]) {
-
         ourname = strrchr(argv[0], '/');
-        if (!ourname)
-            ourname = argv[0];
+        if (!ourname) ourname = argv[0];
     }
-    else {
-        ourname = "mkptypes";
-    }
+    else ourname = "mkptypes";
 
     argv++; argc--;
 
     addExcludedSymParts("^TEST_,^NOTEST_"); // exclude unit tests
 
-    iobuf = (char *)malloc(NEWBUFSIZ);
+    char *iobuf = (char *)malloc(NEWBUFSIZ);
     while (*argv && **argv == '-') {
-        t = *argv++; --argc; t++;
+        const char *t = *argv++; --argc; t++;
         while (*t) {
             if (*t == 'e')      print_extern        = 1;
             else if (*t == 'A') use_macro           = 0;
@@ -1516,8 +1516,6 @@ int ARB_main(int argc, const char *argv[]) {
             else if (*t == 'g') search__attribute__ = 1;
             else if (*t == 'G') search__ATTR__      = 1;
             else if (*t == 'n') donum               = 1;
-            else if (*t == 's') dostatic            = 1;
-            else if (*t == 'i') doinline            = 1;
             else if (*t == 'x') no_parm_names       = 1; // no parm names, only types (sg)
             else if (*t == 'z') define_macro        = 0;
             else if (*t == 'P') promote_lines       = 1;
@@ -1555,7 +1553,7 @@ int ARB_main(int argc, const char *argv[]) {
                 break;
             }
             else if (*t == 'V') {
-                exit_if_noargs = 1;
+                exit_if_noargs = true;
                 Version();
             }
             else Usage();
@@ -1670,7 +1668,8 @@ int ARB_main(int argc, const char *argv[]) {
             DEBUG_PRINT(filename[i]);
             DEBUG_PRINT("'\n");
 
-            if (!(f = fopen(filename[i], "r"))) {
+            FILE *f = fopen(filename[i], "r");
+            if (!f) {
                 perror(filename[i]);
                 exit(EXIT_FAILURE);
             }

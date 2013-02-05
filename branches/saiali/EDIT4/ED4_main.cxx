@@ -535,8 +535,6 @@ int ARB_main(int argc, const char *argv[]) {
 
     ED4_ROOT = new ED4_root;
 
-    init_Advisor(ED4_ROOT->aw_root);
-    
     ED4_ROOT->database = new EDB_root_bact;
     ED4_ROOT->init_alignment();
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);

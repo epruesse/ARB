@@ -14,64 +14,55 @@
 
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
+#include <aw_select.hxx>
 #include <arb_progress.h>
 
 #include <ctime>
 
-void ProbeValuation::evolution()
-{
-    long n=0;
-    long moeglichkeiten;
-    double avg_fit = 0;
-
-    for (int i=0; i<size_sonden_array; i++)             // Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
+void ProbeValuation::evolution() {
+    long n = 0;
+    for (int i=0; i<size_sonden_array; i++) {            // Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
         n += mismatch_array[i]+1;
-
-    moeglichkeiten = k_aus_n(mp_gl_awars.no_of_probes, n);
-
-    if (moeglichkeiten <= MAXINITPOPULATION)
-    {
-        act_generation->calc_fitness(NO_GENETIC_ALG);
-        act_generation->check_for_results();
-        return;
     }
 
+    long moeglichkeiten = k_aus_n(mp_gl_awars.no_of_probes, n);
+    double avg_fit = 0.0;
+    if (moeglichkeiten <= MAXINITPOPULATION) {
+        act_generation->calcFitness(false, avg_fit);
+    }
+    else {
+        // assumption: genetic algorithm needs about 1/3 of attempts (compared with brute force) 
+        long max_generation = moeglichkeiten/(3*MAXPOPULATION)-1;
+        if (max_generation<1) max_generation = 1;
 
-    long max_generation = moeglichkeiten/(3*MAXPOPULATION)-1;
+        arb_progress progress(max_generation);
+        MP_aborted(0, 0.0, 0.0, 0.0, progress);
 
-    mp_assert(max_generation>1);
-    arb_progress progress(max_generation);
-    MP_aborted(0, 0.0, 0.0, 0.0, progress);
-    
-    // hier beginnt der genetische Algorithmus
-    do {
-        act_generation->calc_fitness(0, avg_fit);       // hier wird auch init_roulette_wheel gemacht
-        avg_fit = act_generation->get_avg_fit();
+        do { // genetic algorithm loop 
+            bool aborted = act_generation->calcFitness(true, avg_fit);
+            if (aborted) break;
 
-        if (!Stop_evaluation) {
+            avg_fit = act_generation->get_avg_fit();
+#if defined(DEBUG)
+            printf("Generation %i: avg_fit=%f\n", act_generation->get_generation(), avg_fit);
+#endif
+
             if (avg_fit == 0) {
                 aw_message("Please choose better Probes!");
-                return;
+                break;
             }
             child_generation = act_generation->create_next_generation();
             delete act_generation; act_generation = NULL;
 
             child_generation->check_for_results();
 
-            act_generation = child_generation;  // zum testen hier nur generierung einer Generation
+            act_generation = child_generation;
             progress.inc();
         }
+        while (act_generation->get_generation() <= max_generation);
+        progress.done();
     }
-    while (act_generation->get_generation() <= max_generation && !Stop_evaluation) ; // hier abbruchbedingung
-
-    Stop_evaluation = false;
-
-    // Abbruchbedingung deshalb, weil der genetische Alg. keinesfalls mehr Versuche
-    // benoetigt als sequentielles probieren. Hier: Annahme, dass er max.
-    // ein drittel der Versuche benoetigt
-
-    if (act_generation)
-        act_generation->check_for_results();
+    if (act_generation) act_generation->check_for_results();
 }
 
 void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // pcs darf nur eingetragen werden, wenn es nicht schon vorhanden ist
@@ -85,9 +76,8 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // p
     char  ecoli_pos[40], temp_ecol[10];
     int   buf_len, i;
 
-    result_struct *rs  = new result_struct;
+    result_struct *rs = new result_struct;
     result_struct *elem;
-    AW_window     *aww = mp_main->get_mp_window()->get_result_window();
 
     memset(rs, 0, sizeof(result_struct));
     memset(ecoli_pos, 0, 40);
@@ -164,25 +154,24 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // p
 
 
 
-    aww->clear_selection_list(result_probes_list);
+    result_probes_list->clear();
 
     elem = computation_result_list->get_first();
     while (elem)
     {
-        aww->insert_selection(result_probes_list, elem->view_string, elem->view_string);
+        result_probes_list->insert(elem->view_string, elem->view_string);
         elem = computation_result_list->get_next();
     }
 
-    aww->insert_default_selection(result_probes_list, "", "");
-    aww->update_selection_list(result_probes_list);
+    result_probes_list->insert_default("", "");
+    result_probes_list->update();
 }
 
 void ProbeValuation::init_valuation()
 {
-    int         i, j, k, counter=0;
-    probe       *temp_probe;
-    AW_window       *aww;
-    char        *ptr, *ptr2;
+    int    i, j, k, counter = 0;
+    probe *temp_probe;
+    char  *ptr;
 
     if (new_pt_server)
     {
@@ -201,14 +190,13 @@ void ProbeValuation::init_valuation()
         return;
     }
 
-    aww = mp_main->get_mp_window()->get_window();
-    aww->init_list_entry_iterator(selected_list); // initialisieren
+    AW_selection_list_iterator selentry(selected_list); 
 
     if (max_init_pop_combis < MAXINITPOPULATION) {
         for (i=0; i<size_sonden_array; i++)         // generierung eines pools, in dem jede Sonde nur einmal pro Mismatch
         {                           // vorkommt, damit alle moeglichen Kombinationen deterministisch
-            ptr2 = (char *)aww->get_list_entry_char_value();
-            aww->iterate_list_entry(1);
+            const char *ptr2    = selentry.get_value();
+            ++selentry;
 
             for (j=0; j<=mismatch_array[i]; j++)        // generiert werden koennen.
             {
@@ -226,8 +214,8 @@ void ProbeValuation::init_valuation()
     else {
         for (i=0; i<size_sonden_array; i++)
         {                               // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
-            ptr2 = (char *)aww->get_list_entry_char_value();
-            aww->iterate_list_entry(1);
+            const char *ptr2 = selentry.get_value();
+            ++selentry;
 
             for (j=0; j<=mismatch_array[i]; j++)        // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jedE
             {                           // einzelne Sonde bestimmt
@@ -248,8 +236,7 @@ void ProbeValuation::init_valuation()
     act_generation->init_valuation();
     evolution();
 
-    aww = mp_main->get_mp_window()->get_result_window();
-    aww->activate();
+    mp_main->get_mp_window()->get_result_window()->activate();
 }
 
 

@@ -87,8 +87,8 @@ public:
     const bool *get_is_helix() const { return is_helix; }
     const float *get_frequencies(unsigned char c) const { return frequency[c]; }
 
-    void create_selection_list(AW_window *aww);
-    void refresh_selection_list();
+    void create_sai_selection_list(AW_window *aww);
+    void refresh_sai_selection_list();
 
     void print();
 };

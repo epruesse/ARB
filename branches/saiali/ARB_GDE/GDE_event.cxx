@@ -14,6 +14,8 @@
 #include <set>
 #include <string>
 
+#include <unistd.h>
+
 using namespace std;
 
 #define DEFAULT_COLOR 8
@@ -74,14 +76,14 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
      *
      *
      */
-    const char *symbol=0;
-    char *method=0;
-    char *textvalue=0;
-    char *temp;
-    int i, newlen, type;
-    symbol = gmenuitem->arg[number].symbol;
-    type = gmenuitem->arg[number].type;
-    if ((type == SLIDER)) {
+
+    char *method    = 0;
+    char *textvalue = 0;
+    
+    const char *symbol = gmenuitem->arg[number].symbol;
+    int         type   = gmenuitem->arg[number].type;
+
+    if (type == SLIDER) {
         char *awarname = GDE_makeawarname(gmenuitem, number);
         textvalue      = awr->awar(awarname)->read_as_string();
         free(awarname);
@@ -91,17 +93,17 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
         textvalue  = AW_get_selected_fullname(awr, awar_base);
         free(awar_base);
     }
-    else if ((type == CHOOSER) ||
-             (type == CHOICE_TREE) ||
-             (type == CHOICE_SAI) ||
-            (type == CHOICE_MENU) ||
-            (type == CHOICE_LIST) ||
-            (type == CHOICE_WEIGHTS) ||
-            (type == TEXTFIELD))
+    else if (type == CHOOSER ||
+             type == CHOICE_TREE ||
+             type == CHOICE_SAI ||
+             type == CHOICE_MENU ||
+             type == CHOICE_LIST ||
+             type == CHOICE_WEIGHTS ||
+             type == TEXTFIELD)
     {
-        char *awarname=GDE_makeawarname(gmenuitem, number);
-        method=awr->awar(awarname)->read_string();
-        textvalue=awr->awar(awarname)->read_string();
+        char *awarname = GDE_makeawarname(gmenuitem, number);
+        method         = awr->awar(awarname)->read_string();
+        textvalue      = awr->awar(awarname)->read_string();
     }
 
     if (textvalue == NULL)  textvalue=(char *)calloc(1, sizeof(char));
@@ -109,20 +111,16 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     if (symbol == NULL)     symbol="";
 
     set<string>warned_about;
-    int conversion_warning        = 0;
-    int j                         = 0;
-
-    for (; (i=Find2(Action+j, symbol)) != -1;)
-    {
+    int conversion_warning = 0;
+    
+    for (int i, j = 0; (i=Find2(Action+j, symbol)) != -1;) {
         i += j;
         ++j;
         if (i>0 && Action[i-1] == '$')
         {
-            newlen = strlen(Action)-strlen(symbol)
-                +strlen(textvalue);
-            temp = (char *)calloc(newlen, 1);
-            if (temp == NULL)
-                Error("ReplaceArgs():Error in calloc");
+            int   newlen = strlen(Action)-strlen(symbol) +strlen(textvalue);
+            char *temp   = (char *)calloc(newlen, 1);
+            if (!temp) Error("ReplaceArgs():Error in calloc");
             strncat(temp, Action, i-1);
             strncat(temp, textvalue, strlen(textvalue));
             strcat(temp, &(Action[i+strlen(symbol)]));
@@ -232,21 +230,21 @@ static void GDE_freeali(NA_Alignment *dataset) {
     }
 }
 
-static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) {
+static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelements) {
     GBDATA   *gb_main = db_access.gb_main;
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
-    long maxalignlen    = GBT_get_alignment_len(gb_main, align);
-    long isdefaultalign = 0;
+    long  maxalignlen  = GBT_get_alignment_len(gb_main, align);
+    char *defaultAlign = NULL;
 
     if (maxalignlen <= 0 && !error) {
         GB_clear_error(); // clear "alignment not found" error
-    
-        align             = GBT_get_default_alignment(gb_main);
-        if (!align) error = GB_await_error();
+
+        defaultAlign             = GBT_get_default_alignment(gb_main);
+        if (!defaultAlign) error = GB_await_error();
         else {
-            isdefaultalign = 1;
-            maxalignlen    = GBT_get_alignment_len(gb_main, align);
+            align       = defaultAlign;
+            maxalignlen = GBT_get_alignment_len(gb_main, align);
         }
     }
 
@@ -440,7 +438,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
     progress.done();
 
     GB_end_transaction_show_error(db_access.gb_main, error, aw_message);
-    if (isdefaultalign) free(align);
+    free(defaultAlign);
 }
 
 static char *preCreateTempfile(const char *name) {
@@ -453,25 +451,17 @@ static char *preCreateTempfile(const char *name) {
 }
 
 void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
-    long oldnumelements=0;
-    AW_root *aw_root=aw->get_root();
+    AW_root   *aw_root           = aw->get_root();
+    AP_filter *filter2           = awt_get_filter(agde_filtercd);
+    char      *filter_name       = 0;      // aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string()
+    char      *alignment_name    = strdup("ali_unknown");
+    bool       marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
+    long       cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
+    GmenuItem *current_item      = gmenuitem;
+    int        stop              = 0;
 
-    GapCompression  compress          = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
-    AP_filter      *filter2           = awt_get_filter(agde_filtercd);
-    char           *filter_name       = 0; // aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string()
-    char           *alignment_name    = strdup("ali_unknown");
-    bool            marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
-    long            cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
-    GmenuItem      *current_item      = gmenuitem;
-    arb_progress    progress(current_item->label);
-
-    int   j;
-    bool  flag;
-    char *Action, buffer[GBUFSIZ];
-
-    static int fileindx    = 0;
-    int        select_mode = 0;
-    int        stop        = 0;
+    GapCompression compress = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
+    arb_progress   progress(current_item->label);
 
     if (current_item->numinputs>0) {
         DataSet->gb_main = db_access.gb_main;
@@ -495,19 +485,24 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     }
 
     if (!stop) {
-        flag = false;
-        for (j=0; j<current_item->numinputs; j++) {
-            if (current_item->input[j].format != STATUS_FILE) {
-                flag = true;
+        int select_mode = 0;
+        {
+            bool flag = false;
+            for (int j=0; j<current_item->numinputs; j++) {
+                if (current_item->input[j].format != STATUS_FILE) {
+                    flag = true;
+                }
             }
+            if (flag && DataSet) select_mode = ALL;
         }
-        if (flag && DataSet) select_mode = ALL;
 
         int pid = getpid();
 
-        for (j=0; j<current_item->numinputs; j++) {
+        static int fileindx = 0;
+        for (int j=0; j<current_item->numinputs; j++) {
             GfileFormat& gfile = current_item->input[j];
 
+            char buffer[GBUFSIZ];
             sprintf(buffer, "gde%d_%d", pid, fileindx++);
             gfile.name = preCreateTempfile(buffer);
 
@@ -521,27 +516,28 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
         }
 
-        for (j=0; j<current_item->numoutputs; j++) {
+        for (int j=0; j<current_item->numoutputs; j++) {
+            char buffer[GBUFSIZ];
             sprintf(buffer, "gde%d_%d", pid, fileindx++);
             current_item->output[j].name = preCreateTempfile(buffer);
         }
 
         // Create the command line for external the function call
-        Action = (char*)strdup(current_item->method);
+        char *Action = (char*)strdup(current_item->method);
         if (Action == NULL) Error("DO(): Error in duplicating method string");
 
         while (1) {
             char *oldAction = strdup(Action);
 
-            for (j=0; j<current_item->numargs; j++) Action = ReplaceArgs(aw_root, Action, gmenuitem, j);
+            for (int j=0; j<current_item->numargs; j++) Action = ReplaceArgs(aw_root, Action, gmenuitem, j);
             bool changed = strcmp(oldAction, Action) != 0;
             free(oldAction);
 
             if (!changed) break;
         }
 
-        for (j=0; j<current_item->numinputs; j++) Action = ReplaceFile(Action, current_item->input[j]);
-        for (j=0; j<current_item->numoutputs; j++) Action = ReplaceFile(Action, current_item->output[j]);
+        for(int j=0; j<current_item->numinputs;  j++) Action = ReplaceFile(Action, current_item->input[j]);
+        for(int j=0; j<current_item->numoutputs; j++) Action = ReplaceFile(Action, current_item->output[j]);
 
         filter_name = AWT_get_combined_filter_name(aw_root, "gde");
         Action = ReplaceString(Action, "$FILTER", filter_name);
@@ -551,21 +547,17 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         aw_message_if(GBK_system(Action));
         free(Action);
 
-        oldnumelements=DataSet->numelements;
+        long oldnumelements = DataSet->numelements;
 
         BlockInput = false;
 
-        for (j=0; j<current_item->numoutputs; j++)
-        {
-            if (current_item->output[j].overwrite)
-            {
-                if (current_item->output[j].format == GDE)
-                    OVERWRITE = true;
-                else
-                    Warning("Overwrite mode only available for GDE format");
+        for (int j=0; j<current_item->numoutputs; j++) {
+            if (current_item->output[j].overwrite) {
+                if (current_item->output[j].format == GDE) OVERWRITE = true;
+                else Warning("Overwrite mode only available for GDE format");
             }
-            switch (current_item->output[j].format)
-            {
+
+            switch (current_item->output[j].format) {
                 /* The LoadData routine must be reworked so that
                  * OpenFileName uses it, and so I can remove the
                  * major kluge in OpenFileName().
@@ -583,18 +575,14 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
             OVERWRITE = false;
         }
-        for (j=0; j<current_item->numoutputs; j++)
-        {
-            if (!current_item->output[j].save)
-            {
+        for (int j=0; j<current_item->numoutputs; j++) {
+            if (!current_item->output[j].save) {
                 unlink(current_item->output[j].name);
             }
         }
 
-        for (j=0; j<current_item->numinputs; j++)
-        {
-            if (!current_item->input[j].save)
-            {
+        for (int j=0; j<current_item->numinputs; j++) {
+            if (!current_item->input[j].save) {
                 unlink(current_item->input[j].name);
             }
         }

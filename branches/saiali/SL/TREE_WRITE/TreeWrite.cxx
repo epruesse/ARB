@@ -210,11 +210,11 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
                 tree_assert(!folded);
             }
 
-            int my_son_counter = 0;
             if (hide_this_group) {
                 branch_tag.add_attribute("items_in_group", GBT_count_leafs(tree));
             }
             else {
+                int my_son_counter = 0;
                 if (!error) error  = export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, tree_name, node_gen, skip_folded, my_id, my_son_counter);
                 if (!error) error  = export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, tree_name, node_gen, skip_folded, my_id, my_son_counter);
             }

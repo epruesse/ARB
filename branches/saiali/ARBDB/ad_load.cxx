@@ -583,14 +583,13 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
     }
 
     if (!error) {
-        Reader   *r        = openReader(in);
-        GB_ERROR  cl_error = 0;
+        Reader *r = openReader(in);
 
         GB_search((GBDATA *)gbd, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
 
         error = gb_parse_ascii(r, gbd);
 
-        cl_error = closeReader(r);
+        GB_ERROR cl_error = closeReader(r);
         if (!error) error = cl_error;
     }
 
@@ -718,7 +717,7 @@ static long gb_read_bin_rek(FILE *in, GBCONTAINER *gbd, long nitems, long versio
             case GB_DB:
                 size = gb_read_in_uint32(in, reversed);
                 // gbc->d.size  is automatically incremented
-                memsize = gb_read_in_uint32(in, reversed);
+                memsize = gb_read_in_uint32(in, reversed); // @@@ memsize is not used
                 if (gb_read_bin_rek(in, gbc, size, version, reversed)) return -1;
                 break;
             case GB_BYTE:
@@ -738,7 +737,6 @@ static long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recover
     static FILE *old_in = 0;
     static unsigned char *file = 0;
     static long size = 0;
-    long pos = ftell(in);
     if (!GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
         if (!recovery_reason) { recovery_reason = GB_await_error(); }
         GB_export_errorf("Aborting recovery (because recovery mode is disabled)\n"
@@ -748,7 +746,7 @@ static long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recover
                          recovery_reason);
         return -1;
     }
-    pos = ftell(in);
+    long pos = ftell(in);
     if (old_in != in) {
         file = (unsigned char *)GB_map_FILE(in, 0);
         old_in = in;
@@ -763,7 +761,7 @@ static long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recover
                 if (! (isalnum(c) || isspace(c) || strchr("._;:,", c))) break;
             }
             if (s< size && s > pos+11 && !file[s]) {    // we found something
-                gb_local->search_system_folder = 1;
+                gb_local->search_system_folder = true;
                 return fseek(in, pos, 0);
             }
         }
@@ -806,7 +804,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
     gb_create_header_array(gbd, (int)nitems);
     header = GB_DATA_LIST_HEADER(gbd->d);
     if (deep == 0 && GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
-        GB_warning("Read to end of file in recovery mode");
+        GB_warning("Now reading to end of file (trying to recover data from broken database)");
         nitems = 10000000; // read forever at highest level
     }
 
@@ -815,7 +813,12 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
         type = getc(in);
         DEBUG_DUMP_INDENTED(deep, GBS_global_string("Item #%li/%li type=%02lx (filepos=%08lx)", item+1, nitems, type, ftell(in)-1));
         if (type == EOF) {
-            GB_export_error("Unexpected end of file seen");
+            if (GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
+                GB_export_error("End of file reached (no error)");
+            }
+            else {
+                GB_export_error("Unexpected end of file seen");
+            }
             return -1;
         }
         if (!type) {
@@ -1378,8 +1381,6 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
      * @see GB_open() and GBT_open()
      */
     GBCONTAINER   *gbd;
-    FILE          *input;
-    long           i;
     GB_MAIN_TYPE  *Main;
     gb_open_types  opentype;
     GB_CSTR        quickFile           = NULL;
@@ -1391,10 +1392,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
 
     gb_assert(strchr(opent, 'd') == NULL); // mode 'd' is deprecated. You have to use 'D' and store your defaults inside ARBHOME/lib/arb_default
 
-    if (!opent) opentype = gb_open_all;
-    else if (strchr(opent, 'w')) opentype = gb_open_all;
-    else if (strchr(opent, 's')) opentype = gb_open_read_only_all;
-    else opentype = gb_open_read_only_all;
+    opentype = (!opent || strchr(opent, 'w')) ? gb_open_all : gb_open_read_only_all;
 
     if (strchr(path, ':')) {
         ; // remote access
@@ -1494,15 +1492,14 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
         else {
             int read_from_stdin = strcmp(path, "-") == 0;
 
-            GB_ULONG time_of_main_file  = 0;
-            GB_ULONG time_of_quick_file = 0;
-            Main->local_mode            = true;
+            // cppcheck-suppress variableScope (cannot change due to goto-bypass)
+            GB_ULONG time_of_main_file = 0; long i;
+
+            Main->local_mode = true;
             GB_begin_transaction((GBDATA *)gbd);
-            Main->clock                 = 0;        // start clock
+            Main->clock      = 0;                   // start clock
 
-            if (read_from_stdin) input = stdin;
-            else input                 = fopen(path, "rb");
-
+            FILE *input = read_from_stdin ? stdin : fopen(path, "rb");
             if (!input && ignoreMissingMaster) {
                 goto load_quick_save_file_only;
             }
@@ -1543,8 +1540,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 }
                 time_of_main_file = GB_time_of_file(path);
 
-                if (input != stdin) i = gb_read_in_uint32(input, 0);
-                else i                = 0;
+                i = (input != stdin) ? gb_read_in_uint32(input, 0) : 0;
 
                 if (is_binary_db_id(i)) {
                     i = gb_read_bin(input, gbd, false);     // read or map whole db
@@ -1572,7 +1568,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                         input = fopen(quickFile, "rb");
 
                         if (input) {
-                            time_of_quick_file = GB_time_of_file(quickFile);
+                            GB_ULONG time_of_quick_file = GB_time_of_file(quickFile);
                             if (time_of_main_file && time_of_quick_file < time_of_main_file) {
                                 const char *warning = GBS_global_string("Your main database file '%s' is newer than\n"
                                                                         "   the changes file '%s'\n"
@@ -1629,7 +1625,6 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 else {
                     if (input != stdin) fclose(input);
                     error = gb_read_ascii(path, gbd);
-                    if (error) GB_warning(error);
                     GB_disable_quicksave((GBDATA *)gbd, "Sorry, I cannot save differences to ascii files\n"
                                          "  Save whole database in binary mode first");
                 }
@@ -1661,6 +1656,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
             }
             error = gb_load_key_data_and_dictionaries((GBDATA *)Main->data);
             if (!error) error = GB_resort_system_folder_to_top((GBDATA *)Main->data);
+            // @@@ handle error 
             GB_commit_transaction((GBDATA *)gbd);
         }
         Main->security_level = 0;
@@ -1689,7 +1685,7 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
      */
 
     GB_ERROR error = NULL;
-    if (strchr(name, ':') != 0)  { // don't check remote DB
+    if (!strchr(name, ':'))  { // don't check remote DB
         FILE *in = fopen(name, "rb");
         if (!in) {
             error = GBS_global_string("Cannot find file '%s'", name);
@@ -1749,12 +1745,15 @@ void TEST_io_number() {
         { 0x800002, 4 },
         { 0xffffff, 4 },
         { 0xfffffff, 4 },
-        
+
+#if defined(ARB_64)
+        // the following entries are negative on 32bit systems; see ad_io_inline.h@bit-hell
         { 0x10000000, 5 },
         { 0x7fffffff, 5 },
         { 0x80000000, 5 },
         { 0x80808080, 5 },
         { 0xffffffff, 5 },
+#endif
     };
 
     const char *numbers   = "numbers.test";

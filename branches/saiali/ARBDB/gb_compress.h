@@ -26,7 +26,7 @@ enum gb_compress_list_commands {
 };
 
 struct gb_compress_tree {
-    char              leave;
+    char              leaf;
     gb_compress_tree *son[2];
 };
 

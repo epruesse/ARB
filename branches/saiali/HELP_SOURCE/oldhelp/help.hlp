@@ -90,12 +90,14 @@ DESCRIPTION
 
 	  Mouse buttons communicate commands to the program:
 
-		"Left mouse button" is used exclusively for clicking on prompts,
-			checkboxes and buttons.
-			!!! Exception: current version of 'ARB_PHYL' (see LINK{phyl.hlp})
+		"Left mouse button" is used for clicking on prompts, checkboxes and buttons.
+                      and to select and modify the main display area.
 
 		"Middle and right mouse buttons" are used for modifying the main display
 			(see LINK{mode.hlp})
+
+                "Mouse-Wheel" is used to scroll the a display-area (vertically or horizontally
+                              when used with ALT/META) or to zoom the display (when used with CTRL).
 
 		"Press" means hold down the mouse button while completing an
 			operation.
@@ -107,7 +109,6 @@ DESCRIPTION
 			the mouse button.
 
 		"Choose" from a menu means clicking on the desired menu option.
-
 
 
 NOTES		The 'HELP' texts for foreign programs or tools which have been

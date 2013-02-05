@@ -15,24 +15,19 @@
 #include <AP_seq_simple_pro.hxx>
 #endif
 
-const int di_max_aa     = stop; // must be 20
-const int di_max_paa    = unk;  // includes virtual aa
-const int di_resolution = 1000; // max res
-const int di_max_dist   = 10;   // max dist
+const int DI_MAX_AA     = STOP; // must be 20
+const int DI_MAX_PAA    = UNK;  // includes virtual aa
+const int DI_RESOLUTION = 1000; // max res
+const int DI_MAX_DIST   = 10;   // max dist
 
 // stop is first non real AA == 20
 
-enum di_codetype {
-    universal, ciliate, mito, vertmito, flymito, yeastmito
-};
-enum di_cattype {
-    none, similarity, kimura, pam, chemical, hall, george
-};
+enum di_codetype { UNIVERSAL, CILIATE, MITO, VERTMITO, FLYMITO, YEASTMITO };
+enum di_cattype { NONE, SIMILARITY, KIMURA, PAM, CHEMICAL, HALL, GEORGE };
 
-
-typedef double di_aa_matrix[di_max_aa][di_max_aa];
-typedef double di_paa_matrix[di_max_paa][di_max_paa];
-typedef char   di_bool_matrix[di_max_paa][di_max_paa];
+typedef double di_aa_matrix[DI_MAX_AA][DI_MAX_AA];
+typedef double di_paa_matrix[DI_MAX_PAA][DI_MAX_PAA];
+typedef char   di_bool_matrix[DI_MAX_PAA][DI_MAX_PAA];
 
 class DI_ENTRY;
 class AP_smatrix;
@@ -52,15 +47,15 @@ class di_protdist : virtual Noncopyable {
     DI_ENTRY      **entries;                                                        // link to entries
     aas            trans[4][4][4];
     double         pi[20];
-    long           cat[di_max_aa];
-    double         eig[di_max_aa];
-    double         exptteig[di_max_aa];
+    long           cat[DI_MAX_AA];
+    double         eig[DI_MAX_AA];
+    double         exptteig[DI_MAX_AA];
     di_aa_matrix   prob, eigvecs;
 
-    di_paa_matrix   *(slopes[di_resolution*di_max_dist]);
+    di_paa_matrix   *(slopes[DI_RESOLUTION*DI_MAX_DIST]);
     // huge cash for many slopes
-    di_paa_matrix   *(curves[di_resolution*di_max_dist]);
-    di_bool_matrix  *(infs[di_resolution*di_max_dist]);
+    di_paa_matrix   *(curves[DI_RESOLUTION*DI_MAX_DIST]);
+    di_bool_matrix  *(infs[DI_RESOLUTION*DI_MAX_DIST]);
 
     di_paa_matrix  *akt_slopes;
     di_paa_matrix  *akt_curves;

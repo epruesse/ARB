@@ -55,6 +55,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

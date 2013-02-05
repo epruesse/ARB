@@ -42,9 +42,8 @@ void SEC_root::invalidate_base_positions() {
     }
 }
 
-// -----------------------------------------------------
+// ------------------------------------------------------
 //      auto-scrolling (triggered by structure self)
-// -----------------------------------------------------
 
 void SEC_root::nail_position(size_t absPos) {
     if (drawnPositions) {
@@ -119,7 +118,7 @@ bool SEC_root::perform_autoscroll() {
             autoscroll = 0;
 
             device->clear(-1);
-            canvas->scroll(NULL, screen_scroll, false);
+            canvas->scroll(screen_scroll);
             scrolled = true;
         }
     }
@@ -134,8 +133,8 @@ void SEC_root::position_cursor(bool toCenter, bool evenIfVisible) {
     const LineVector& cursorLine = get_last_drawed_cursor_position();
     sec_assert(cursorLine.valid());
 
-    AWT_canvas *ntw    = db->canvas();
-    AW_device  *device = ntw->aww->get_device(AW_MIDDLE_AREA);
+    AWT_canvas *scr    = db->canvas();
+    AW_device  *device = scr->aww->get_device(AW_MIDDLE_AREA);
 
     Rectangle cursor(device->transform(cursorLine));
     Rectangle screen(device->get_area_size(), INCLUSIVE_OUTLINE);
@@ -159,8 +158,8 @@ void SEC_root::position_cursor(bool toCenter, bool evenIfVisible) {
 #if defined(DEBUG) && 1
             printf("Auto-scroll: scroll = (%f, %f) [Center cursor]\n", scroll.x(), scroll.y());
 #endif
-            ntw->scroll(NULL, -scroll, false);
-            ntw->refresh();
+            scr->scroll(-scroll);
+            scr->refresh();
         }
     }
 }
@@ -242,9 +241,9 @@ static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode)
 
     aws->get_root()->awar(AWAR_FOOTER)->write_string(text);
 
-    AWT_canvas *ntw = sec_root->get_db()->canvas();
-    ntw->set_mode(mode);
-    ntw->refresh();
+    AWT_canvas *scr = sec_root->get_db()->canvas();
+    scr->set_mode(mode);
+    scr->refresh();
 }
 
 static void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
@@ -709,9 +708,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
 static void SEC_exit(GBDATA *, void *cl_sec_root) {
     SEC_root *sec_root = static_cast<SEC_root*>(cl_sec_root);
-
     delete sec_root;
-    sec_root = NULL;
 }
 
 AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
@@ -725,11 +722,11 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->init(awr, "ARB_SECEDIT", "ARB_SECEDIT: Secondary structure editor", 200, 200);
 
     AW_gc_manager aw_gc_manager;
-    AWT_canvas *ntw = new AWT_canvas(gb_main, awm, gfx, aw_gc_manager, AWAR_SPECIES_NAME);
-    root->init(gfx, ntw, host);
+    AWT_canvas *scr = new AWT_canvas(gb_main, awm, gfx, aw_gc_manager, AWAR_SPECIES_NAME);
+    root->init(gfx, scr, host);
 
-    ntw->recalc_size();
-    ntw->set_mode(AWT_MODE_ZOOM); // Default-Mode
+    scr->recalc_size();
+    scr->set_mode(AWT_MODE_ZOOM); // Default-Mode
 
     const SEC_db_interface *db = root->get_db();
 
@@ -744,8 +741,8 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->insert_menu_topic("secedit_import", "Load structure", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)db);
     awm->insert_menu_topic("secedit_export", "Save structure", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)db);
     awm->sep______________();
-    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp",  AWM_ALL, AWT_popup_sec_export_window, (AW_CL)ntw, 0);
-    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, AWT_popup_print_window,      (AW_CL)ntw, 0);
+    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp",  AWM_ALL, AWT_popup_sec_export_window, (AW_CL)scr, 0);
+    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, AWT_popup_print_window,      (AW_CL)scr, 0);
     awm->sep______________();
 
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);

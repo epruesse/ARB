@@ -7,14 +7,23 @@
  *
  *  Created on: Feb 15, 2010
  *      Author: Breno Faria
+ *
+ *  Institute of Microbiology (Technical University Munich)
+ *  http://www.arb-home.de/ 
  */
 
-#ifndef ALIGNEDSEQUENCELOADER_H_
-#define ALIGNEDSEQUENCELOADER_H_
 
+#ifndef ALIGNEDSEQUENCELOADER_H
+#define ALIGNEDSEQUENCELOADER_H
+
+#ifndef CMA_H
 #include "Cma.h"
+#endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
-class AlignedSequenceLoader {
+class AlignedSequenceLoader : virtual Noncopyable {
 
 private:
     /**
@@ -62,4 +71,6 @@ public:
     virtual ~AlignedSequenceLoader();
 };
 
-#endif /* ALIGNEDSEQUENCELOADER_H_ */
+#else
+#error AlignedSequenceLoader.h included twice
+#endif // ALIGNEDSEQUENCELOADER_H

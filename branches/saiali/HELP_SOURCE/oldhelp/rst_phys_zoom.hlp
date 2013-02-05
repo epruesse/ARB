@@ -11,20 +11,18 @@ UP	mode.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Reset Physical Zoom
 
-OCCURRENCE	ARB_NT/ETC/Reset Physical Zoom
-
+OCCURRENCE	ARB_NT/Reset zoom/Reset Physical Zoom
 
 DESCRIPTION	Restores the initial scale of the tree display.
 
-NOTES		To magnify sections of the tree display (physical zoom) activate
-		the 'ZOOM MODE' by clicking on the <PZoom> button of the
-		'ARB_NT' window or pressing the 'F4' key on the keyboard. In the
-		latter case, the cursor has to be placed within the tree display
-		area.
+NOTES           See LINK{mode_pzoom.hlp} on how to zoom.
 
-EXAMPLES	To restore the initial scale of the tree display choose the
-			'Reset Physical Zoom' item from the 'ETC' menu of the
-			'ARB_NT' window.
+                You may also reset the zoom by any of the following:
+
+                - slightly resize the main window
+                - choose display mode (kind of tree view or similar)
+
+EXAMPLES	None
 
 WARNINGS	None
 

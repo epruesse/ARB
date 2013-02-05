@@ -735,9 +735,8 @@ AW_awar *AW_root::label_is_awar(const char *label) {
     return awar_exists;
 }
 
-// ---------------------------
+// ----------------------------
 //      Awar_Callback_Info
-// ---------------------------
 
 void Awar_Callback_Info::remap(const char *new_awar) {
     if (strcmp(awar_name, new_awar) != 0) {

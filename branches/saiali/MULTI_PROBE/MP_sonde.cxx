@@ -82,7 +82,8 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
         bytestring      bs;
         int             i        = 0;
 
-        mp_pd_gl.link = aisc_open(servername, &mp_pd_gl.com, AISC_MAGIC_NUMBER);
+        mp_pd_gl.link = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER);
+        mp_pd_gl.locs.clear();
 
         if (!mp_pd_gl.link) {
             aw_message("Cannot contact Probe bank server ");
@@ -107,11 +108,11 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
 
         bs.data = 0;
         aisc_get(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
-                  LOCS_MATCH_LIST,  &match_list,
-                  LOCS_MATCH_LIST_CNT,  &match_list_cnt,
-                  LOCS_MP_MATCH_STRING, &bs,
-                  LOCS_ERROR,       &locs_error,
-                  NULL);
+                 LOCS_MATCH_LIST,      match_list.as_result_param(),
+                 LOCS_MATCH_LIST_CNT,  &match_list_cnt,
+                 LOCS_MP_MATCH_STRING, &bs,
+                 LOCS_ERROR,           &locs_error,
+                 NULL);
         if (*locs_error) {
             aw_message(locs_error);
         }
@@ -149,7 +150,7 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
 
         *number_of_species = match_list_cnt;
 
-        aisc_close(mp_pd_gl.link);
+        aisc_close(mp_pd_gl.link, mp_pd_gl.com);
         free(bs.data);
 
     }

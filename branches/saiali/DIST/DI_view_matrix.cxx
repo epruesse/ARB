@@ -19,7 +19,7 @@
 
 #include <awt_canvas.hxx>
 
-#include <algorithm>
+#include <arb_algo.h>
 
 #define AWAR_MATRIX                "matrix/"
 #define AWAR_MATRIX_PADDING        AWAR_MATRIX "padding"
@@ -137,13 +137,13 @@ void DI_dmatrix::resized() {
     screen_width  = squ.r-squ.l;
     screen_height = squ.b-squ.t;
 
-    long horiz_paint_size, vert_paint_size;
     AW_screen_area rect; // @@@ used uninitialized if !m
     if (m) {
-        horiz_paint_size = (squ.r-lim.width-off_dx)/cell_width;
-        vert_paint_size  = (squ.b-off_dy)/cell_height;
-        horiz_page_size  = (n > horiz_paint_size) ?  horiz_paint_size : n;
-        vert_page_size   = (n > vert_paint_size) ? vert_paint_size : n;
+        long horiz_paint_size = (squ.r-lim.width-off_dx)/cell_width;
+        long vert_paint_size  = (squ.b-off_dy)/cell_height;
+
+        horiz_page_size = (n > horiz_paint_size) ?  horiz_paint_size : n;
+        vert_page_size  = (n > vert_paint_size) ? vert_paint_size : n;
 
         rect.l = 0;
         rect.t = 0;
@@ -177,6 +177,22 @@ enum ClickAction {
 #define MINMAX_GRANULARITY 10000L
 #define ROUNDUP            0.00005 // in order to round to 4 digits
 
+void DI_dmatrix::scroll_to(int sxpos, int sypos) {
+    sxpos = force_in_range(0, sxpos, int(awm->get_scrolled_picture_width())-screen_width);
+    sypos = force_in_range(0, sypos, int(awm->get_scrolled_picture_height())-screen_height);
+
+    awm->set_horizontal_scrollbar_position(sxpos);
+    awm->set_vertical_scrollbar_position(sypos);
+
+    monitor_vertical_scroll_cb(awm);
+    monitor_horizontal_scroll_cb(awm);
+}
+
+void DI_dmatrix::scroll_cells(int cells_x, int cells_y) {
+    scroll_to(awm->slider_pos_horizontal + cells_x*cell_width,
+              awm->slider_pos_vertical + cells_y*cell_height);
+}
+
 void DI_dmatrix::handle_move(AW_event& event) {
     static int clickx, clicky; // original click pos
     static int startx, starty; // original slider position
@@ -192,22 +208,7 @@ void DI_dmatrix::handle_move(AW_event& event) {
         int x_screen_diff = clickx - event.x;
         int y_screen_diff = clicky - event.y;
 
-        int sxpos = startx + x_screen_diff;
-        int sypos = starty + y_screen_diff;
-
-        AW_pos maxx = awm->get_scrolled_picture_width() - screen_width;
-        AW_pos maxy = awm->get_scrolled_picture_height() - screen_height;
-
-        if (sxpos>maxx) sxpos = int(maxx);
-        if (sypos>maxy) sypos = int(maxy);
-        if (sxpos<0) sxpos    = 0;
-        if (sypos<0) sypos    = 0;
-
-        awm->set_horizontal_scrollbar_position(sxpos);
-        awm->set_vertical_scrollbar_position(sypos);
-
-        monitor_vertical_scroll_cb(awm);
-        monitor_horizontal_scroll_cb(awm);
+        scroll_to(startx + x_screen_diff, starty + y_screen_diff);
     }
 }
 
@@ -216,7 +217,7 @@ static void motion_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
     aww->get_event(&event);
 
     DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
-    if (event.button == AWT_M_MIDDLE) {
+    if (event.button == AW_BUTTON_MIDDLE) {
         dmatrix->handle_move(event);
     }
 }
@@ -226,7 +227,15 @@ static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
     aww->get_event(&event);
 
     DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
-    if (event.button == AWT_M_MIDDLE) {
+
+    if (event.button == AW_WHEEL_UP || event.button == AW_WHEEL_DOWN) {
+        if (event.type == AW_Mouse_Press) {
+            bool horizontal = event.keymodifier & AW_KEYMODE_ALT;
+            int  direction  = event.button == AW_WHEEL_UP ? -1 : 1;
+            dmatrix->scroll_cells(horizontal*direction, !horizontal*direction);
+        }
+    }
+    else if (event.button == AW_BUTTON_MIDDLE) {
         dmatrix->handle_move(event);
     }
     else {
@@ -271,8 +280,8 @@ static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
                     AW_awar *awar_bound = 0;
 
                     switch (event.button) {
-                        case AWT_M_LEFT:  awar_bound = aw_root->awar(AWAR_DIST_MIN_DIST); break;
-                        case AWT_M_RIGHT: awar_bound = aw_root->awar(AWAR_DIST_MAX_DIST); break;
+                        case AW_BUTTON_LEFT:  awar_bound = aw_root->awar(AWAR_DIST_MIN_DIST); break;
+                        case AW_BUTTON_RIGHT: awar_bound = aw_root->awar(AWAR_DIST_MAX_DIST); break;
                         default: break;
                     }
 
@@ -773,7 +782,6 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     awm->at_x(x);
     awm->callback(di_change_dist, 3);
     awm->create_button("MINUS_MAX", "-");
-    x += BUTTON_XSIZE;
 
     awm->set_info_area_height(40);
 

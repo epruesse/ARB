@@ -17,6 +17,7 @@
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_select.hxx>
 #include <arbdbt.h>
 #include <items.h>
 
@@ -302,8 +303,12 @@ void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL /*
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("box");
-        AW_selection_list* id    = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
-        GB_ERROR           error = aws->load_selection_list(id, GB_path_in_ARBLIB("sellists/srt_aci*.sellst"));
+        AW_selection_list *programs = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
+        GB_ERROR error;
+        {
+            StorableSelectionList storable_sellist(TypedSelectionList("sellst", programs, "SRT/ACI scripts", "srt_aci"));
+            error = storable_sellist.load(GB_path_in_ARBLIB("sellists/srt_aci*.sellst"), false);
+        }
         if (error) aw_message(error);
 
         aws->at("field");
@@ -446,7 +451,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("page");
-        aws->create_option_menu(AWAR_NDS_PAGE, "", "");
+        aws->create_option_menu(AWAR_NDS_PAGE);
         for (int p = 0; p < NDS_PAGES; p++) {
             const char *text = GBS_global_string("Entries %i - %i", p*NDS_PER_PAGE+1, (p+1)*NDS_PER_PAGE);
             aws->insert_option(text, "", p);

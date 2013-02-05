@@ -37,22 +37,18 @@ class ALI_TLIST : virtual Noncopyable {
 
 public:
     int is_consistent() {
-        int current_inside_flag = 0;
-        int marked_inside_flag = 0;
-        ALI_TLIST_ELEM<T> *akt, *pre;
-
         if (!((current_elem == 0 && first_elem == 0 && last_elem == 0) ||
               (current_elem != 0 && first_elem != 0 && last_elem != 0))) {
             printf("List is inconsistent (1)\n");
             return 0;
         }
         if (first_elem != 0) {
-            pre = first_elem;
-            if (current_elem == pre)
-                current_inside_flag = 1;
-            if (marked_elem == pre)
-                marked_inside_flag = 1;
-            akt = pre->next_elem;
+            ALI_TLIST_ELEM<T> *pre = first_elem;
+
+            int current_inside_flag = current_elem == pre;
+            int marked_inside_flag  = marked_elem == pre;
+
+            ALI_TLIST_ELEM<T> *akt = pre->next_elem;
             while (akt) {
                 if (current_elem == akt)
                     current_inside_flag = 1;
@@ -364,10 +360,7 @@ void ALI_TLIST<T>::insert_bevor(ALI_TLIST<T> &a)
 }
 
 template<class T>
-void ALI_TLIST<T>::delete_element()
-{
-    ALI_TLIST_ELEM<T> *elem;
-
+void ALI_TLIST<T>::delete_element() {
     if (current_elem != 0) {
         if (current_elem == marked_elem) {
             ali_warning("Delete marked element");
@@ -375,7 +368,7 @@ void ALI_TLIST<T>::delete_element()
         }
         //   prev_elem <--> current <--> next_elem
         if (current_elem->prev_elem != 0 && current_elem->next_elem != 0) {
-            elem = current_elem;
+            ALI_TLIST_ELEM<T> *elem = current_elem;
             current_elem->prev_elem->next_elem = current_elem->next_elem;
             current_elem->next_elem->prev_elem = current_elem->prev_elem;
             current_elem = current_elem->next_elem;
@@ -384,7 +377,7 @@ void ALI_TLIST<T>::delete_element()
         else {
             //   prev_elem <--> current -|
             if (current_elem->prev_elem != 0) {
-                elem = current_elem;
+                ALI_TLIST_ELEM<T> *elem = current_elem;
                 current_elem->prev_elem->next_elem = 0;
                 current_elem = current_elem->prev_elem;
                 last_elem = current_elem;
@@ -393,7 +386,7 @@ void ALI_TLIST<T>::delete_element()
             else {
                 //   |- current <--> next_elem
                 if (current_elem->next_elem != 0) {
-                    elem = current_elem;
+                    ALI_TLIST_ELEM<T> *elem = current_elem;
                     current_elem->next_elem->prev_elem = 0;
                     current_elem = current_elem->next_elem;
                     first_elem = current_elem;
@@ -401,7 +394,7 @@ void ALI_TLIST<T>::delete_element()
                 }
                 else {
                     //   |- current -|
-                    elem = current_elem;
+                    ALI_TLIST_ELEM<T> *elem = current_elem;
                     delete elem;
                     first_elem = last_elem = current_elem = 0;
                 }

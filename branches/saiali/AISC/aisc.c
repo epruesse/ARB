@@ -19,9 +19,6 @@ using namespace std;
 // AISC_MKPT_PROMOTE:#include "aisc_def.h"
 // AISC_MKPT_PROMOTE:#endif
 
-
-static char string_buf[256];
-
 char *read_aisc_file(const char *path, const Location *loc) {
     char *buffer = 0;
     FILE *input  = fopen(path, "rt");
@@ -371,7 +368,17 @@ int main(int argc, char ** argv) {
         fprintf(stderr, "Error: missing file name\n");
     }
     else {
-        exitcode = Interpreter().launch(argc, argv);
+        try {
+            exitcode = Interpreter().launch(argc, argv);
+        }
+        catch (const char *err) {
+            fprintf(stderr, "\nAISC: exception: %s [terminating]\n", err);
+            exitcode = EXIT_FAILURE;
+        }
+        catch (...) {
+            fprintf(stderr, "\nAISC: unknown exception [terminating]\n");
+            exitcode = EXIT_FAILURE;
+        }
     }
     return exitcode;
 }

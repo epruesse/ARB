@@ -24,6 +24,7 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
+#include <aw_select.hxx>
 
 #include <arbdbt.h>
 #include <adGene.h>
@@ -33,8 +34,8 @@
 
 using std::string;
 
-static AW_window_simple  *pdrw    = 0;
-static AW_selection_list *pdrw_id = 0;
+static AW_window_simple  *pdrw       = 0;
+static AW_selection_list *resultList = 0;
 
 static double get_estimated_memory(AW_root *root) {
     int    bases  = root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->read_int() + root->awar(AWAR_PRIMER_DESIGN_RIGHT_LENGTH)->read_int();
@@ -89,31 +90,39 @@ void create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_defa
     aw_root->awar_string(AWAR_PRIMER_TARGET_STRING,                0, global);
 }
 
-static void create_primer_design_result_window(AW_window *aww)
-{
+static void create_primer_design_result_window(AW_window *aww) {
     if (!pdrw) {
         pdrw = new AW_window_simple;
         pdrw->init(aww->get_root(), "PRD_RESULT", "Primer Design RESULT");
         pdrw->load_xfig("pd_reslt.fig");
 
-        pdrw->at("close");
-        pdrw->callback((AW_CB0)AW_POPDOWN);
-        pdrw->create_button("CLOSE", "CLOSE", "C");
+        pdrw->button_length(6);
+        pdrw->auto_space(10, 10);
 
         pdrw->at("help");
         pdrw->callback(AW_POPUP_HELP, (AW_CL)"primerdesignresult.hlp");
         pdrw->create_button("HELP", "HELP", "H");
 
         pdrw->at("result");
-        pdrw_id = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, NULL, "", 40, 5);
-        pdrw->set_selection_list_suffix(pdrw_id, "primer");
+        resultList = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, 40, 5);
 
-        pdrw->at("save");
-        pdrw->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pdrw_id);
+        const StorableSelectionList *storable_primer_list = new StorableSelectionList(TypedSelectionList("prim", resultList, "primers", "primer")); // never freed
+
+        pdrw->at("buttons");
+
+        pdrw->callback((AW_CB0)AW_POPDOWN);
+        pdrw->create_button("CLOSE", "CLOSE", "C");
+
+        pdrw->callback(awt_clear_selection_list_cb, (AW_CL)resultList);
+        pdrw->create_button("CLEAR", "CLEAR", "R");
+        
+        pdrw->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_primer_list);
+        pdrw->create_button("LOAD", "LOAD", "L");
+
+        pdrw->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_primer_list);
         pdrw->create_button("SAVE", "SAVE", "S");
 
-        pdrw->at("print");
-        pdrw->callback(create_print_box_for_selection_lists, (AW_CL)pdrw_id);
+        pdrw->callback(create_print_box_for_selection_lists, (AW_CL)&storable_primer_list->get_typedsellist());
         pdrw->create_button("PRINT", "PRINT", "P");
     }
 
@@ -173,11 +182,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
                              );
 
         try {
-#ifdef DEBUG
-            PD->run(PrimerDesign::PRINT_PRIMER_PAIRS);
-#else
-            PD->run(0);
-#endif
+            PD->run();
         }
 
         catch (string& s) {
@@ -189,11 +194,11 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
         if (!error) error = PD->get_error();
 
         if (!error) {
-            if (!pdrw_id) create_primer_design_result_window(aww);
-            prd_assert(pdrw_id);
+            if (!resultList) create_primer_design_result_window(aww);
+            prd_assert(resultList);
 
             // create result-list:
-            pdrw->clear_selection_list(pdrw_id);
+            resultList->clear();
             int max_primer_length   = PD->get_max_primer_length();
             int max_position_length = int(std::log10(double (PD->get_max_primer_pos())))+1;
             int max_length_length   = int(std::log10(double(PD->get_max_primer_length())))+1;
@@ -201,15 +206,14 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
             if (max_position_length < 3) max_position_length = 3;
             if (max_length_length   < 3) max_length_length   = 3;
 
-            pdrw->insert_selection(pdrw_id,
-                                   GBS_global_string(" Rating | %-*s %-*s %-*s G/C Tmp | %-*s %-*s %-*s G/C Tmp",
-                                                     max_primer_length,   "Left primer",
-                                                     max_position_length, "Pos",
-                                                     max_length_length,   "Len",
-                                                     max_primer_length,   "Right primer",
-                                                     max_position_length, "Pos",
-                                                     max_length_length,   "Len"),
-                                   "");
+            resultList->insert(GBS_global_string(" Rating | %-*s %-*s %-*s G/C Tmp | %-*s %-*s %-*s G/C Tmp",
+                                                 max_primer_length,   "Left primer",
+                                                 max_position_length, "Pos",
+                                                 max_length_length,   "Len",
+                                                 max_primer_length,   "Right primer",
+                                                 max_position_length, "Pos",
+                                                 max_length_length,   "Len"),
+                               "");
 
             int r;
 
@@ -217,12 +221,12 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
                 const char *primers = 0;
                 const char *result  = PD->get_result(r, primers, max_primer_length, max_position_length, max_length_length);
                 if (!result) break;
-                pdrw->insert_selection(pdrw_id, result, primers);
+                resultList->insert(result, primers);
             }
 
-            pdrw->insert_default_selection(pdrw_id, (r ? "**** End of list" : "**** There are no results"), "");
+            resultList->insert_default(r ? "**** End of list" : "**** There are no results", "");
+            resultList->update();
 
-            pdrw->update_selection_list(pdrw_id);
             pdrw->show();
         }
     }
@@ -331,10 +335,7 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
     if (!error && gb_seq) {
         SequenceIterator *i          = 0;
         PRD_Sequence_Pos  length     = 0;
-        PRD_Sequence_Pos  left_min, left_max;
-        PRD_Sequence_Pos  right_min, right_max;
         PRD_Sequence_Pos  add_offset = 0;           // offset to add to positions (used for genes)
-        long int          dist_min, dist_max;
         char             *sequence   = 0;
 
         if (gb_gene) {
@@ -358,17 +359,21 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
         }
 
         if (!error) {
+            long int dist_min;
+            long int dist_max;
+
             // find reasonable parameters
             // left pos (first base from start)
 
             long int left_len = root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->read_int();
             if (left_len == 0 || left_len<0) left_len = 100;
 
-            i                     = new SequenceIterator(sequence, 0, SequenceIterator::IGNORE, left_len, SequenceIterator::FORWARD);
-            i->nextBase();          // find first base from start
-            left_min              = i->pos; // store pos. of first base
-            while (i->nextBase() != SequenceIterator::EOS) ;  // step to 'left_len'th base from start
-            left_max              = i->pos; // store pos. of 'left_len'th base
+            i = new SequenceIterator(sequence, 0, SequenceIterator::IGNORE, left_len, SequenceIterator::FORWARD);
+
+            i->nextBase();                                        // find first base from start
+            PRD_Sequence_Pos left_min = i->pos;                   // store pos. of first base
+            while (i->nextBase() != SequenceIterator::EOS) ;      // step to 'left_len'th base from start
+            PRD_Sequence_Pos left_max = i->pos;                   // store pos. of 'left_len'th base
 
             root->awar(AWAR_PRIMER_DESIGN_LEFT_POS)->write_int(left_min+add_offset);
             root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->write_int(left_len);
@@ -378,10 +383,11 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
 
             // right pos ('right_len'th base from end)
             i->restart(length, 0, right_len, SequenceIterator::BACKWARD);
-            i->nextBase();                  // find last base
-            right_max             = i->pos; // store pos. of last base
-            while (i->nextBase() != SequenceIterator::EOS) ;  // step to 'right_len'th base from end
-            right_min             = i->pos; // store pos of 'right_len'th base from end
+
+            i->nextBase();                                   // find last base
+            PRD_Sequence_Pos right_max = i->pos;             // store pos. of last base
+            while (i->nextBase() != SequenceIterator::EOS) ; // step to 'right_len'th base from end
+            PRD_Sequence_Pos right_min = i->pos;             // store pos of 'right_len'th base from end
 
             root->awar(AWAR_PRIMER_DESIGN_RIGHT_POS)->write_int(right_min+add_offset);
             root->awar(AWAR_PRIMER_DESIGN_RIGHT_LENGTH)->write_int(right_len);
@@ -403,7 +409,7 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
             // update mem-info
             primer_design_event_update_memory(aww);
 
-#ifdef DEBUG
+#if defined(DUMP_PRIMER)
             printf ("primer_design_event_init : left_min   %7li\n", left_min);
             printf ("primer_design_event_init : left_max   %7li\n", left_max);
             printf ("primer_design_event_init : right_min  %7li\n", right_min);
@@ -458,17 +464,15 @@ static void primer_design_restore_config(AW_window *aww, const char *stored_stri
 }
 
 AW_window *create_primer_design_window(AW_root *root, AW_CL cl_gb_main) {
-    GB_ERROR  error   = 0;
-    GBDATA   *gb_main = (GBDATA*)cl_gb_main;
-    bool      is_genome_db;
+    GBDATA *gb_main = (GBDATA*)cl_gb_main;
+    bool    is_genome_db;
     {
         GB_transaction  dummy(gb_main);
         char           *selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();
         GBDATA         *gb_species       = GBT_find_species(gb_main, selected_species);
 
         if (!gb_species) {
-            error = "You have to select a species!";
-            aw_message(error);
+            aw_message("You have to select a species!");
         }
 
         is_genome_db = GEN_is_genome_db(gb_main, -1);

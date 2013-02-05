@@ -26,7 +26,7 @@ static void clearUp(void) { void *v;
 
 // ==========================================================================
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void outOfMemory(void)) {
+__ATTR__NORETURN static void outOfMemory(void) {
     fprintf(stdout,"\n!!! Out of Memory\n");
     clearUp();
     exit(EXIT_FAILURE);

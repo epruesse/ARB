@@ -481,12 +481,8 @@ public:
 };
 
 static double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne) {
-    int i;
-    int sum[3];
-    sum[0] = 0;
-    sum[1] = 0;
-    sum[2] = 0;
-    for (i=0; i<seq_len; i++) {
+    int sum[3] = { 0, 0, 0 };
+    for (int i=0; i<seq_len; i++) {
         int diff = ne[i] - old[i];
         if (diff > 1 || diff < -1) {
 #if defined(DEBUG)
@@ -496,21 +492,15 @@ static double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const c
         }
         sum[diff+1] ++;
     }
-    {
-        int msum = 0;
-        for (i=0; i<seq_len; i++) {
-            msum += old[i];
-            msum += ne[i];
-        }
-        msum /= 2;
-    }
+
     double prob = 0;
     {
         int asum = 0;
-        for (i=0; i<3; i++) asum += sum[i];
+        for (int i=0; i<3; i++) asum += sum[i];
+
         double freq[3];
         double log_freq[3];
-        for (i=0; i<3; i++) {
+        for (int i=0; i<3; i++) {
             freq[i] = sum[i] / double(asum); // relative frequencies of -1, 0, 1
             if (sum[i] >0) {
                 log_freq[i] = log(freq[i]);
@@ -616,33 +606,23 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
 
 
 static void ap_calc_branch_lengths(AP_tree_nlen * /* root */, AP_tree_nlen *son, double /* parsbest */, double blen) {
-    static double s_new = 0.0;
-    static double s_old = 0.0;
-
     AP_FLOAT seq_len = son->get_seq()->weighted_base_count();
     if (seq_len <= 1.0) seq_len = 1.0;
     blen *= 0.5 / seq_len * 2.0;        // doubled counted sum * corr
 
     AP_tree_nlen *fathr = son->get_father();
-    double old_len = 0.0;
     if (!fathr->father) {   // at root
-        old_len = fathr->leftlen + fathr->rightlen;
         fathr->leftlen = blen *.5;
         fathr->rightlen = blen *.5;
     }
     else {
         if (fathr->leftson == son) {
-            old_len = fathr->leftlen;
             fathr->leftlen = blen;
         }
         else {
-            old_len = fathr->rightlen;
             fathr->rightlen = blen;
         }
     }
-    if (old_len< 1e-5) old_len = 1e-5;
-    s_new += blen;
-    s_old += old_len;
 
     if (son->leftson->is_leaf) {
         ap_calc_leaf_branch_length((AP_tree_nlen*)son->leftson);
@@ -857,7 +837,7 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         }
         AP_tree_nlen *node0 = this->node[0];
         AP_tree_nlen *node1 = this->node[1];
-        if (node0->gr.leave_sum > node1->gr.leave_sum) { // node0 is final son
+        if (node0->gr.leaf_sum > node1->gr.leaf_sum) { // node0 is final son
             node0 = node1;
         }
         static int num = 0;
@@ -903,6 +883,7 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
             << ", node[0]=" << *(e.node[0])
             << ", node[1]=" << *(e.node[1])
             << ")";
+        // cppcheck-suppress redundantAssignment (does not detect recursion)
         notTooDeep = 0;
     }
 

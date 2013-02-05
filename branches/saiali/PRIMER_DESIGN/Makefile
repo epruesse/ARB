@@ -149,6 +149,8 @@ primer_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

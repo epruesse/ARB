@@ -66,7 +66,7 @@ static void pars_export_tree() {
     if (error) aw_message(error);
 }
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void pars_exit(AW_window *aww)) {
+__ATTR__NORETURN static void pars_exit(AW_window *aww) {
     aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
 #if defined(DEBUG)
     AWT_browser_forget_db(GLOBAL_gb_main);
@@ -373,10 +373,11 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
         ASSERT_VALID_TREE(tree);
 
         AP_tree_nlen **branchlist;
-        long           bsum = 0;
 
         {
             AP_tree **blist;
+            long      bsum = 0;
+
             tree->buildBranchList(blist, bsum, true, -1); // get all branches
             branchlist = (AP_tree_nlen**)blist;
         }
@@ -577,9 +578,8 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-// -----------------------------------------
+// ------------------------------------------
 //      Adding partial sequences to tree
-// -----------------------------------------
 
 class PartialSequence { 
     GBDATA               *gb_species;
@@ -765,18 +765,20 @@ static long push_partial(const char *, long val, void *cd_partial) {
 
 static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
     GB_begin_transaction(GLOBAL_gb_main);
-    GB_ERROR error                    = 0;
-    int      full_marked_sequences    = 0;
-    int      partial_marked_sequences = 0;
-    int      no_data                  = 0; // no data in alignment
+    GB_ERROR error = 0;
 
-    arb_progress("Adding partial sequences");
+    int full_marked_sequences = 0;
+
+    arb_progress part_add_progress("Adding partial sequences");
 
     {
         list<PartialSequence> partial;
         {
             GB_HASH *partial_hash = GBS_create_hash(GBT_get_species_count(GLOBAL_gb_main), GB_MIND_CASE);
-            int      marked_found = 0;
+
+            int marked_found             = 0;
+            int partial_marked_sequences = 0;
+            int no_data                  = 0;      // no data in alignment
 
             for (GBDATA *gb_marked = GBT_first_marked_species(GLOBAL_gb_main);
                  !error && gb_marked;
@@ -951,9 +953,8 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-// -----------------------------
+// -------------------------------
 //      add marked / selected
-// -----------------------------
 
 // normal versions :
 
@@ -967,9 +968,8 @@ static void TESTMENU_add      (AW_window * aww, AWT_canvas *ntw, AddWhat what) {
 static void TESTMENU_quick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true, 1); }
 #endif // TESTMENU
 
-// -----------------------------------------
+// ------------------------------------------
 //      remove and add marked / selected
-// -----------------------------------------
 
 static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, AddWhat what, bool quick, int test) {
     AW_awar *awar_best_pars = aww->get_root()->awar(AWAR_BEST_PARSIMONY);
@@ -998,9 +998,8 @@ static void TESTMENU_radd           (AW_window * aww, AWT_canvas *ntw, AddWhat w
 static void TESTMENU_rquick_add_test(AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, true, 1); }
 #endif // TESTMENU
 
-// --------------------------------------------------------------------------------
-// Add Partial sequences
-// --------------------------------------------------------------------------------
+// -------------------------------
+//      Add Partial sequences
 
 
 static void NT_partial_add(AW_window *aww, AW_CL cl_ntw, AW_CL) {

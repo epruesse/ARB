@@ -754,9 +754,8 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
             new_SeqInfoTerminal->set_links(seqInfoTerminal, seqInfoTerminal);
             new_SeqManager->children->append_member(new_SeqInfoTerminal);
 
-            ED4_orf_terminal *AA_SeqTerminal = 0;
             sprintf(namebuffer, "AA_Sequence_Term%ld.%d", ED4_counter, count++);
-            AA_SeqTerminal = new ED4_orf_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
+            ED4_orf_terminal *AA_SeqTerminal = new ED4_orf_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
             AA_SeqTerminal->set_links(seqTerminal, seqTerminal);
 
             char       *speciesName    = seqTerminal->species_name;
@@ -878,7 +877,7 @@ void PV_CallBackFunction(AW_root *root) {
 
 // --------------------------------------------------------------------------------
 //        Binding callback function to the AWARS
-// --------------------------------------------------------------------------------
+
 static void PV_AddCallBacks(AW_root *awr) {
 
     awr->awar(AWAR_PV_DISPLAY_ALL)->add_callback(PV_CallBackFunction);
@@ -923,7 +922,7 @@ static void PV_AddCallBacks(AW_root *awr) {
 
 // --------------------------------------------------------------------------------
 //        Creating AWARS to be used by the PROTVIEW module
-// --------------------------------------------------------------------------------
+
 void PV_CreateAwars(AW_root *root, AW_default aw_def) {
 
     root->awar_int(AWAR_PV_DISPLAY_ALL, 0, aw_def);

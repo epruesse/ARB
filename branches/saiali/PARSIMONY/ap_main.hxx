@@ -60,8 +60,15 @@ class AP_main : virtual Noncopyable {
     unsigned long     user_push_counter;
 
 public:
-    AP_main();
-    ~AP_main();
+    AP_main()
+        : stack(NULL),
+          stack_level(0),
+          agt(NULL),
+          user_push_counter(0)
+    {}
+    ~AP_main() {
+        delete stack;
+    }
 
     void set_tree_root(AWT_graphic_tree *agt_);
     AWT_graphic_tree *get_tree_root() { return agt; }

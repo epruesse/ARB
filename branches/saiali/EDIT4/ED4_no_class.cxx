@@ -307,7 +307,69 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
 }
 
 void ED4_remote_event(AW_event *faked_event) { // keystrokes forwarded from SECEDIT
+    ED4_MostRecentWinContext context;
     executeKeystroke(faked_event, 1);
+}
+
+static int get_max_slider_xpos() {
+    const AW_screen_area& rect = current_device()->get_area_size();
+
+    AW_pos x, y;
+    ED4_base *horizontal_link = ED4_ROOT->scroll_links.link_for_hor_slider;
+    horizontal_link->calc_world_coords(&x, &y);
+
+    AW_pos max_xpos = horizontal_link->extension.size[WIDTH] // overall width of virtual scrolling area
+        - (rect.r - x); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
+
+    if (max_xpos<0) max_xpos = 0; // happens when window-content is smaller than window (e.g. if (folded) alignment is narrow)
+    return int(max_xpos+0.5);
+}
+
+static int get_max_slider_ypos() {
+    const AW_screen_area& rect = current_device()->get_area_size(); 
+
+    AW_pos x, y;
+    ED4_base *vertical_link = ED4_ROOT->scroll_links.link_for_ver_slider;
+    vertical_link->calc_world_coords(&x, &y);
+
+    AW_pos max_ypos = vertical_link->extension.size[HEIGHT] // overall height of virtual scrolling area
+        - (rect.b - y); // minus height of visible scroll-area (== relative height of vertical scrollbar)
+
+    if (max_ypos<0) max_ypos = 0; // happens when window-content is smaller than window (e.g. if ARB_EDIT4 is not filled)
+    return int(max_ypos+0.5);
+}
+
+static void ed4_scroll(AW_window *aww, int xdiff, int ydiff, AW_CL cd1, AW_CL cd2) {
+    int new_xpos = aww->slider_pos_horizontal + (xdiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_X)->read_int())/10;
+    int new_ypos = aww->slider_pos_vertical   + (ydiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_Y)->read_int())/10;
+
+    if (xdiff<0) { // scroll left
+        if (new_xpos<0) new_xpos = 0;
+    }
+    else if (xdiff>0) { // scroll right
+        int max_xpos = get_max_slider_xpos();
+        if (max_xpos<0) max_xpos = 0;
+        if (new_xpos>max_xpos) new_xpos = max_xpos;
+    }
+
+    if (ydiff<0) { // scroll up
+        if (new_ypos<0) new_ypos = 0;
+    }
+    else if (ydiff>0) { // scroll down
+        int max_ypos = get_max_slider_ypos();
+        if (max_ypos<0) max_ypos = 0;
+        if (new_ypos>max_ypos) new_ypos = max_ypos;
+    }
+
+    if (new_xpos!=aww->slider_pos_horizontal) {
+        aww->set_horizontal_scrollbar_position(new_xpos);
+        ED4_horizontal_change_cb(aww, cd1, cd2);
+    }
+
+    if (new_ypos!=aww->slider_pos_vertical) {
+        aww->set_vertical_scrollbar_position(new_ypos);
+        ED4_vertical_change_cb(aww, cd1, cd2);
+    }
 }
 
 void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
@@ -319,6 +381,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
     ED4_LocalWinContext uses(aww);
 
     aww->get_event(&event);
+
 
 #if defined(DEBUG) && 0
     printf("event.type=%i event.keycode=%i event.character='%c' event.keymodifier=%i\n", event.type, event.keycode, event.character, event.keymodifier);
@@ -371,19 +434,34 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
             break;
         }
         default: {
-            if (event.type == AW_Mouse_Release && event.button == ED4_B_MIDDLE_BUTTON) {
-                ED4_ROOT->scroll_picture.scroll = 0;
-                return;
-            }
-            else if (event.type == AW_Mouse_Press && event.button == ED4_B_MIDDLE_BUTTON) {
-                ED4_ROOT->scroll_picture.scroll = 1;
-                ED4_ROOT->scroll_picture.old_y = event.y;
-                ED4_ROOT->scroll_picture.old_x = event.x;
+            if (event.button == AW_WHEEL_UP || event.button == AW_WHEEL_DOWN) {
+                if (event.type == AW_Mouse_Press) {
+                    bool horizontal = event.keymodifier & AW_KEYMODE_ALT;
+                    int  direction  = event.button == AW_WHEEL_UP ? -1 : 1;
+
+                    int dx = horizontal ? direction*ED4_ROOT->font_group.get_max_width() : 0;
+                    int dy = horizontal ? 0 : direction*ED4_ROOT->font_group.get_max_height();
+                
+                    ed4_scroll(aww, dx, dy, 0, 0);
+                }
                 return;
             }
 
+            if (event.button == AW_BUTTON_MIDDLE) {
+                if (event.type == AW_Mouse_Press) {
+                    ED4_ROOT->scroll_picture.scroll = 1;
+                    ED4_ROOT->scroll_picture.old_y = event.y;
+                    ED4_ROOT->scroll_picture.old_x = event.x;
+                    return;
+                }
+                if (event.type == AW_Mouse_Release) {
+                    ED4_ROOT->scroll_picture.scroll = 0;
+                    return;
+                }
+            }
+
 #if defined(DEBUG) && 0
-            if (event.button==ED4_B_LEFT_BUTTON) {
+            if (event.button==AW_BUTTON_LEFT) {
                 printf("[ED4_input_cb]  type=%i x=%i y=%i ", (int)event.type, (int)event.x, (int)event.y);
             }
 #endif
@@ -395,7 +473,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
             event.y = (int) win_y;
 
 #if defined(DEBUG) && 0
-            if (event.button==ED4_B_LEFT_BUTTON) {
+            if (event.button==AW_BUTTON_LEFT) {
                 printf("-> x=%i y=%i\n", (int)event.type, (int)event.x, (int)event.y);
             }
 #endif
@@ -407,34 +485,6 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
     }
 
     ED4_trigger_instant_refresh();
-}
-
-static int get_max_slider_xpos() {
-    const AW_screen_area& rect = current_device()->get_area_size();
-
-    AW_pos x, y;
-    ED4_base *horizontal_link = ED4_ROOT->scroll_links.link_for_hor_slider;
-    horizontal_link->calc_world_coords(&x, &y);
-
-    AW_pos max_xpos = horizontal_link->extension.size[WIDTH] // overall width of virtual scrolling area
-        - (rect.r - x); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
-
-    if (max_xpos<0) max_xpos = 0; // happens when window-content is smaller than window (e.g. if (folded) alignment is narrow)
-    return int(max_xpos+0.5);
-}
-
-static int get_max_slider_ypos() {
-    const AW_screen_area& rect = current_device()->get_area_size(); 
-
-    AW_pos x, y;
-    ED4_base *vertical_link = ED4_ROOT->scroll_links.link_for_ver_slider;
-    vertical_link->calc_world_coords(&x, &y);
-
-    AW_pos max_ypos = vertical_link->extension.size[HEIGHT] // overall height of virtual scrolling area
-        - (rect.b - y); // minus height of visible scroll-area (== relative height of vertical scrollbar)
-
-    if (max_ypos<0) max_ypos = 0; // happens when window-content is smaller than window (e.g. if ARB_EDIT4 is not filled)
-    return int(max_ypos+0.5);
 }
 
 void ED4_vertical_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
@@ -538,48 +588,21 @@ void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
 
     aww->get_event(&event);
 
-    if (event.type == AW_Mouse_Drag && event.button == ED4_B_MIDDLE_BUTTON) {
+    if (event.type == AW_Mouse_Drag && event.button == AW_BUTTON_MIDDLE) {
         if (ED4_ROOT->scroll_picture.scroll) {
-            int xdiff    = ED4_ROOT->scroll_picture.old_x - event.x;
-            int ydiff    = ED4_ROOT->scroll_picture.old_y - event.y;
-            int new_xpos = aww->slider_pos_horizontal + (xdiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_X)->read_int())/10;
-            int new_ypos = aww->slider_pos_vertical   + (ydiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_Y)->read_int())/10;
+            int xdiff = ED4_ROOT->scroll_picture.old_x - event.x;
+            int ydiff = ED4_ROOT->scroll_picture.old_y - event.y;
 
-            if (xdiff<0) { // scroll left
-                if (new_xpos<0) new_xpos = 0;
-            }
-            else if (xdiff>0) { // scroll right
-                int max_xpos = get_max_slider_xpos();
-                if (max_xpos<0) max_xpos = 0;
-                if (new_xpos>max_xpos) new_xpos = max_xpos;
-            }
+            ed4_scroll(aww, xdiff, ydiff, cd1, cd2);
 
-            if (ydiff<0) { // scroll left
-                if (new_ypos<0) new_ypos = 0;
-            }
-            else if (ydiff>0) { // scroll right
-                int max_ypos = get_max_slider_ypos();
-                if (max_ypos<0) max_ypos = 0;
-                if (new_ypos>max_ypos) new_ypos = max_ypos;
-            }
-
-            if (new_xpos!=aww->slider_pos_horizontal) {
-                aww->set_horizontal_scrollbar_position(new_xpos);
-                ED4_horizontal_change_cb(aww, cd1, cd2);
-                ED4_ROOT->scroll_picture.old_x = event.x;
-            }
-
-            if (new_ypos!=aww->slider_pos_vertical) {
-                aww->set_vertical_scrollbar_position(new_ypos);
-                ED4_vertical_change_cb(aww, cd1, cd2);
-                ED4_ROOT->scroll_picture.old_y = event.y;
-            }
+            ED4_ROOT->scroll_picture.old_x = event.x;
+            ED4_ROOT->scroll_picture.old_y = event.y;
         }
     }
     else {
 
 #if defined(DEBUG) && 0
-        if (event.button==ED4_B_LEFT_BUTTON) {
+        if (event.button==AW_BUTTON_LEFT) {
             printf("[ED4_motion_cb] type=%i x=%i y=%i ", (int)event.type, (int)event.x, (int)event.y);
         }
 #endif
@@ -591,7 +614,7 @@ void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
         event.y = (int) win_y;
 
 #if defined(DEBUG) && 0
-        if (event.button==ED4_B_LEFT_BUTTON) {
+        if (event.button==AW_BUTTON_LEFT) {
             printf("-> x=%i y=%i\n", (int)event.type, (int)event.x, (int)event.y);
         }
 #endif
@@ -1155,8 +1178,9 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
                                 createGroupFromSelected(field_content, field_name, field_content);
                                 tryAgain = 1;
 
-                                int newlen = doneLen + field_content_len + 1;
+                                int   newlen  = doneLen + field_content_len + 1;
                                 char *newDone = (char*)malloc(newlen+1);
+
                                 GBS_global_string_to_buffer(newDone, newlen+1, "%s%s;", doneContents, field_content);
                                 freeset(doneContents, newDone);
                                 doneLen = newlen;
@@ -1416,11 +1440,11 @@ void ED4_compression_changed_cb(AW_root *awr) {
     }
 }
 
-void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /* cd2 */)
-{
-    int            gaps = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->read_int();
-    int            hide = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->read_int();
-    ED4_remap_mode mode = ED4_remap_mode(root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int());
+void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /* cd2 */) {
+    int gaps = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->read_int();
+    int hide = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->read_int();
+
+    ED4_remap_mode mode = ED4_remap_mode(root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int()); // @@@ mode is overwritten below
 
     switch (int(cd1)) {
         case 0: { // ED4_AWAR_COMPRESS_SEQUENCE_GAPS changed
@@ -1461,9 +1485,6 @@ void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /* cd2 */
     root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->write_int(int(mode));
 }
 
-//  -------------------------------------------------------------------
-//      AW_window *ED4_create_level_1_options_window(AW_root *root)
-//  -------------------------------------------------------------------
 AW_window *ED4_create_level_1_options_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -1893,8 +1914,6 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
         }
 
         if (!error) {
-            GBDATA *gb_new_species = 0;
-
             if (!error) {
                 if (creation_mode==CREATE_NEW_SPECIES) {
                     GBDATA *gb_created_species = GBT_find_or_create_species(GLOBAL_gb_main, new_species_name);
@@ -1924,6 +1943,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                             error = "Please choose a none empty group!";
                         }
 
+                        GBDATA *gb_new_species = 0;
                         if (!error) {
                             GBDATA *gb_source = sml->species;
                             gb_new_species = GB_create_container(gb_species_data, "species");
@@ -2034,7 +2054,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                                         gb_field = GB_search(sl2->species, fieldName, GB_FIND);
                                                         if (gb_field) {
                                                             new_content = GB_read_as_string(gb_field);
-                                                            new_content_len = strlen(new_content);
+                                                            new_content_len = strlen(new_content); // @@@ new_content_len never used
                                                             break;
                                                         }
                                                         sl2 = sl2->next;
@@ -2123,10 +2143,10 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                     GBDATA                    *gb_source   = GBT_find_species_rel_species_data(gb_species_data, source_name);
 
                     if (gb_source) {
-                        gb_new_species    = GB_create_container(gb_species_data, "species");
-                        error             = GB_copy(gb_new_species, gb_source);
-                        if (!error) error = GBT_write_string(gb_new_species, "name", new_species_name);
-                        if (!error) error = GBT_write_string(gb_new_species, "full_name", new_species_full_name); // insert new 'full_name'
+                        GBDATA *gb_new_species = GB_create_container(gb_species_data, "species");
+                        error                  = GB_copy(gb_new_species, gb_source);
+                        if (!error) error      = GBT_write_string(gb_new_species, "name", new_species_name);
+                        if (!error) error      = GBT_write_string(gb_new_species, "full_name", new_species_full_name); // insert new 'full_name'
                         if (!error && creation_mode==CREATE_FROM_CONSENSUS) {
                             ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
                             error = createDataFromConsensus(gb_new_species, group_man);
@@ -2208,7 +2228,7 @@ AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode) {
         aws->create_toggle(ED4_AWAR_CREATE_FROM_CONS_ALL_UPPER);
 
         aws->at("data");
-        aws->create_option_menu(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE, "Other fields", "");
+        aws->create_option_menu(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE, "Other fields");
         aws->insert_default_option("Merge from all in group", "", 0);
         aws->insert_option("Copy from current species", "", 1);
         aws->update_option_menu();

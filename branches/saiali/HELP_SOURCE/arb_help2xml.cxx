@@ -58,7 +58,7 @@ enum SectionType {
 };
 
 
-STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), string vstrf(const char *format, va_list argPtr)) {
+__ATTR__VFORMAT(1) static string vstrf(const char *format, va_list argPtr) {
     static size_t  buf_size = 256;
     static char   *buffer   = new char[buf_size];
 
@@ -81,7 +81,7 @@ STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), string vstrf(const char *format, va_list a
     return string(buffer, length);
 }
 
-STATIC_ATTRIBUTED(__ATTR__FORMAT(1), string strf(const char *format, ...)) {
+__ATTR__FORMAT(1) static string strf(const char *format, ...) {
     va_list argPtr;
     va_start(argPtr, format);
     string result = vstrf(format, argPtr);
@@ -90,9 +90,8 @@ STATIC_ATTRIBUTED(__ATTR__FORMAT(1), string strf(const char *format, ...)) {
     return result;
 }
 
-// --------------------------------------
+// ------------------
 //      warnings
-// --------------------------------------
 
 class LineAttachedMessage {
     string message;
@@ -132,7 +131,6 @@ inline void preadd_warning(const string& warning, size_t lineno) {
 
 // ----------------------
 //      class Reader
-// ----------------------
 
 class Reader {
 private:
@@ -231,9 +229,9 @@ void check_TODO(const char *line, const Reader& reader) {
 }
 #endif // WARN_MISSING_HELP
 
-//  ---------------------------
+// ----------------------------
 //      class NamedSection
-//  ---------------------------
+
 class NamedSection {
 private:
     string  name;
@@ -268,9 +266,9 @@ public:
 
 typedef list<Link> Links;
 
-//  -----------------------
+// ------------------------
 //      class Helpfile
-//  -----------------------
+
 class Helpfile {
 private:
     Links         uplinks;
@@ -679,16 +677,15 @@ static size_t scanMinIndentation(const string& text) {
     return min_indent;
 }
 
-//  ----------------------------
+// -----------------------------
 //      class ParagraphTree
-//  ----------------------------
+
 class ParagraphTree : virtual Noncopyable {
-private:
     ParagraphTree *brother;     // has same indentation as this
     ParagraphTree *son;         // indentation + 1
 
-    bool is_enumerated;         // 1., 2.,  usw.
-    long long enumeration;           // the value of the enumeration (undefined if !is_enumerated)
+    bool      is_enumerated;    // 1., 2.,  usw.
+    long long enumeration;      // the value of the enumeration (undefined if !is_enumerated)
 
     bool reflow;                // should the paragraph be reflown ? (true if indentation is equal for all lines of text)
     int  indentation;           // the real indentation of the black (after enumeration was removed)
@@ -696,17 +693,16 @@ private:
     string text;                // text of the Section (containing linefeeds)
     size_t lineNo;              // line number where Paragraph starts
 
-    ParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end, size_t beginLineNo) {
+    ParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end, size_t beginLineNo)
+        : son(NULL),
+          enumeration(0),
+          indentation(0),
+          text(*begin),
+          lineNo(beginLineNo)
+    {
         h2x_assert(begin != end);
 
-        text = *begin;
-        son  = 0;
-
-        enumeration   = 0;
         is_enumerated = startsWithNumber(text, enumeration);
-
-        lineNo = beginLineNo;
-
         if (is_enumerated) {
             size_t text_start     = text.find_first_not_of(" \n");
             size_t next_linestart = text.find('\n', text_start);
@@ -719,9 +715,7 @@ private:
             }
         }
 
-        indentation = 0;
-        reflow      = shouldReflow(text, indentation);
-
+        reflow = shouldReflow(text, indentation);
         if (!reflow) {
             size_t reststart = text.find('\n', 1);
             if (reststart != string::npos) {

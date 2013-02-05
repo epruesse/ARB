@@ -343,17 +343,9 @@ void GBT_mark_all_that(GBDATA *gb_main, int flag, int (*condition)(GBDATA*, void
     GB_pop_transaction(gb_main);
 }
 
-long GBT_count_marked_species(GBDATA *gb_main)
-{
-    long    cnt = 0;
-    GBDATA *gb_species_data;
-
-    GB_push_transaction(gb_main);
-    gb_species_data = GBT_get_species_data(gb_main);
-    GB_pop_transaction(gb_main);
-
-    cnt = GB_number_of_marked_subentries(gb_species_data);
-    return cnt;
+long GBT_count_marked_species(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+    return GB_number_of_marked_subentries(GBT_get_species_data(gb_main));
 }
 
 char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all)
@@ -452,7 +444,7 @@ GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt)
          gb_species = GBT_next_species(gb_species)) {
         (*pspeccnt) ++;
     }
-    result = (GBDATA **)malloc((size_t)(sizeof(GBDATA *)* (*pspeccnt)));
+    result = (GBDATA **)malloc((size_t)(sizeof(GBDATA *)* (*pspeccnt))); // @@@ fails if no species present
     *pspeccnt = 0;
     for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
          gb_species;

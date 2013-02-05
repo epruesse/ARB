@@ -71,8 +71,8 @@
 
 // probe design/match (expert window)
 #define AWAR_PD_COMMON_EXP_BONDS "probe_design/bonds/pos"  // prefix for bonds
+#define AWAR_PD_COMMON_EXP_SPLIT "probe_design/SPLIT"
 
-#define AWAR_PD_DESIGN_EXP_SPLIT  "probe_design/SPLIT"
 #define AWAR_PD_DESIGN_EXP_DTEDGE "probe_design/DTEDGE"
 #define AWAR_PD_DESIGN_EXP_DT     "probe_design/DT"
 
@@ -84,13 +84,13 @@
 
 static saiProbeData *g_spd = 0;
 
-static struct gl_struct {
-    aisc_com *link;
-    T_PT_LOCS locs;
-    T_PT_MAIN com;
-    AW_window_simple *pd_design;
-    AW_selection_list *pd_design_id;
-} pd_gl;
+static struct {
+    aisc_com          *link;
+    T_PT_LOCS          locs;
+    T_PT_MAIN          com;
+    AW_window_simple  *win;
+    AW_selection_list *resultList; // @@@ replace by TypedSelectionList?
+} PD;
 
 struct ProbeMatchEventParam {
     GBDATA            *gb_main;
@@ -171,7 +171,7 @@ static void enable_auto_match_cb(AW_root *root, AW_window *aww, ProbeMatchEventP
     auto_match_changed(root);
 }
 
-static void popup_match_window_cb(AW_window *aww, AW_CL cl_gb_main) {
+static void popup_match_window_cb(AW_window *aww, AW_CL cl_gb_main) { // @@@ shall be called by auto_match_cb (if never opened b4)
     AW_root   *root         = aww->get_root();
     AW_window *match_window = create_probe_match_window(root, cl_gb_main);
     match_window->activate();
@@ -181,55 +181,61 @@ static void popup_match_window_cb(AW_window *aww, AW_CL cl_gb_main) {
 // --------------------------------------------------------------------------------
 
 static void popup_probe_design_result_window(AW_window *aww, AW_CL cl_gb_main) {
-    if (!pd_gl.pd_design) {
+    if (!PD.win) {
         AW_root *root = aww->get_root();
 
-        pd_gl.pd_design = new AW_window_simple;
-        pd_gl.pd_design->init(root, "PD_RESULT", "PD RESULT");
-        pd_gl.pd_design->load_xfig("pd_reslt.fig");
+        PD.win = new AW_window_simple;
+        PD.win->init(root, "PD_RESULT", "PD RESULT");
+        PD.win->load_xfig("pd_reslt.fig");
 
-        pd_gl.pd_design->at("close");
-        pd_gl.pd_design->callback((AW_CB0)AW_POPDOWN);
-        pd_gl.pd_design->create_button("CLOSE", "CLOSE", "C");
+        PD.win->button_length(6);
+        PD.win->auto_space(10, 10);
 
-        pd_gl.pd_design->at("help");
-        pd_gl.pd_design->callback(AW_POPUP_HELP, (AW_CL)"probedesignresult.hlp");
-        pd_gl.pd_design->create_button("HELP", "HELP", "H");
+        PD.win->at("help");
+        PD.win->callback(AW_POPUP_HELP, (AW_CL)"probedesignresult.hlp");
+        PD.win->create_button("HELP", "HELP", "H");
 
-        pd_gl.pd_design->at("auto");
-        pd_gl.pd_design->label("Auto match");
-        pd_gl.pd_design->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
+        PD.win->at("result");
+        PD.resultList = PD.win->create_selection_list(AWAR_TARGET_STRING, 40, 5);
+        const StorableSelectionList *storable_result_list = new StorableSelectionList(TypedSelectionList("prb", PD.resultList, "designed probes", "designed")); // @@@ make member of PD ? 
 
-        enable_auto_match_cb(root, pd_gl.pd_design, 0);
+        PD.resultList->clear();
+        PD.resultList->insert_default("No probes designed yet", "");
 
-        pd_gl.pd_design->at("result");
-        pd_gl.pd_design_id = pd_gl.pd_design->create_selection_list(AWAR_TARGET_STRING, NULL, "", 40, 5);
-        pd_gl.pd_design->set_selection_list_suffix(pd_gl.pd_design_id, "prb");
+        PD.win->at("buttons");
+        
+        PD.win->callback((AW_CB0)AW_POPDOWN);
+        PD.win->create_button("CLOSE", "CLOSE", "C");
 
-        pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
-        pd_gl.pd_design->insert_default_selection(pd_gl.pd_design_id, "No probes designed yet", "");
+        PD.win->callback(awt_clear_selection_list_cb, (AW_CL)PD.resultList);
+        PD.win->create_button("CLEAR", "CLEAR", "R");
+        
+        PD.win->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_result_list);
+        PD.win->create_button("LOAD", "LOAD", "L");
 
-        pd_gl.pd_design->at("save");
-        pd_gl.pd_design->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id);
-        pd_gl.pd_design->create_button("SAVE", "SAVE", "S");
+        PD.win->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_result_list);
+        PD.win->create_button("SAVE", "SAVE", "S");
 
-        pd_gl.pd_design->at("print");
-        pd_gl.pd_design->callback(create_print_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id);
-        pd_gl.pd_design->create_button("PRINT", "PRINT", "P");
+        PD.win->callback(create_print_box_for_selection_lists, (AW_CL)&storable_result_list->get_typedsellist());
+        PD.win->create_button("PRINT", "PRINT", "P");
 
-        pd_gl.pd_design->at("match");
-        pd_gl.pd_design->callback(popup_match_window_cb, cl_gb_main);
-        pd_gl.pd_design->create_button("MATCH", "MATCH", "M");
+        PD.win->callback(popup_match_window_cb, cl_gb_main);
+        PD.win->create_button("MATCH", "MATCH", "M");
+
+        PD.win->label("Auto match");
+        PD.win->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
+
+        enable_auto_match_cb(root, PD.win, 0);
     }
-    pd_gl.pd_design->activate();
+    PD.win->activate();
 }
 
 static int init_local_com_struct()
 {
     const char *user = GB_getenvUSER();
 
-    if (aisc_create(pd_gl.link, PT_MAIN, pd_gl.com,
-                    MAIN_LOCS, PT_LOCS, &pd_gl.locs,
+    if (aisc_create(PD.link, PT_MAIN, PD.com,
+                    MAIN_LOCS, PT_LOCS, PD.locs,
                     LOCS_USER, user,
                     NULL)) {
         return 1;
@@ -364,38 +370,43 @@ static GB_ERROR pd_get_the_gene_names(GBDATA *gb_main, bytestring &bs, bytestrin
     return error;
 }
 
-static int probe_send_bonds(AW_root *root, T_PT_PDC pdc) {
+static int probe_common_send_data(AW_root *root) {
+    // send data common to probe-design AND -match
+    if (aisc_put(PD.link, PT_LOCS, PD.locs,
+                 LOCS_SPLIT,   (double)root->awar(AWAR_PD_COMMON_EXP_SPLIT)->read_float(),
+                 NULL))
+        return 1;
+
     for (int i=0; i<16; i++) {
         char buffer[256];
         sprintf(buffer, AWAR_PD_COMMON_EXP_BONDS "%i", i);
-        if (aisc_put(pd_gl.link, PT_PDC, pdc,
+        if (aisc_put(PD.link, PT_LOCS, PD.locs,
                      PT_INDEX,  i,
-                     PDC_BONDVAL,   (double)root->awar(buffer)->read_float(),
+                     LOCS_BONDVAL, (double)root->awar(buffer)->read_float(),
                      NULL))
             return 1;
     }
     return 0;
 }
-static int probe_design_send_data(AW_root *root, T_PT_PDC pdc) {
-    if (aisc_put(pd_gl.link, PT_PDC, pdc,
+static int probe_design_send_data(AW_root *root, const T_PT_PDC& pdc) {
+    if (aisc_put(PD.link, PT_PDC, pdc,
                  PDC_DTEDGE,     (double)root->awar(AWAR_PD_DESIGN_EXP_DTEDGE)->read_float()*100.0,
                  PDC_DT,         (double)root->awar(AWAR_PD_DESIGN_EXP_DT)->read_float()*100.0,
-                 PDC_SPLIT,      (double)root->awar(AWAR_PD_DESIGN_EXP_SPLIT)->read_float(),
                  PDC_CLIPRESULT, root->awar(AWAR_PD_DESIGN_CLIPRESULT)->read_int(),
                  NULL))
         return 1;
 
-    return probe_send_bonds(root, pdc);
+    return probe_common_send_data(root);
 }
-static int probe_match_send_data(AW_root *root, T_PT_PDC pdc) {
-    if (aisc_put(pd_gl.link, PT_LOCS, pd_gl.locs,
+static int probe_match_send_data(AW_root *root) {
+    if (aisc_put(PD.link, PT_LOCS, PD.locs,
                  LOCS_MATCH_N_ACCEPT, root->awar(AWAR_PD_MATCH_NMATCHES)->read_int(),  
                  LOCS_MATCH_N_LIMIT,  root->awar(AWAR_PD_MATCH_LIM_NMATCH)->read_int(),
                  LOCS_MATCH_MAX_HITS, root->awar(AWAR_PD_MATCH_MAX_RES)->read_int(),
                  NULL))
         return 1;
 
-    return probe_send_bonds(root, pdc);
+    return probe_common_send_data(root);
 }
 
 static int ecolipos2int(const char *awar_val) {
@@ -419,8 +430,9 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     {
         const char *servername = PD_probe_pt_look_for_server(root, error);
         if (servername) {
-            pd_gl.link = aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
-            if (!pd_gl.link) error = "can't contact PT server";
+            PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER);
+            if (!PD.link) error = "can't contact PT server";
+            PD.locs.clear();
         }
     }
 
@@ -450,8 +462,8 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
     progress.subtitle("probe design running");
 
-    if (aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
-                    LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
+    if (aisc_create(PD.link, PT_LOCS, PD.locs,
+                    LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,
                     PDC_PROBELENGTH,  root->awar(AWAR_PD_DESIGN_PROBELENGTH)->read_int(),
                     PDC_MINTEMP,      (double)root->awar(AWAR_PD_DESIGN_MIN_TEMP)->read_float(),
                     PDC_MAXTEMP,      (double)root->awar(AWAR_PD_DESIGN_MAX_TEMP)->read_float(),
@@ -473,7 +485,7 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
         return;
     }
 
-    aisc_put(pd_gl.link, PT_PDC, pdc,
+    aisc_put(PD.link, PT_PDC, pdc,
              PDC_NAMES, &bs,
              PDC_CHECKSUMS, &check,
              NULL);
@@ -481,7 +493,7 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
     // Get the unknown names
     bytestring unknown_names;
-    if (aisc_get(pd_gl.link, PT_PDC, pdc,
+    if (aisc_get(PD.link, PT_PDC, pdc,
                  PDC_UNKNOWN_NAMES, &unknown_names,
                  NULL)) {
         aw_message ("Connection to PT_SERVER lost (1)");
@@ -534,8 +546,8 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
                         bytestring    bs_seq;
                         bs_seq.data = (char*)GB_read_char_pntr(data);
                         bs_seq.size = GB_read_string_count(data)+1;
-                        aisc_create(pd_gl.link, PT_PDC, pdc,
-                                    PDC_SEQUENCE, PT_SEQUENCE, &pts,
+                        aisc_create(PD.link, PT_PDC, pdc,
+                                    PDC_SEQUENCE, PT_SEQUENCE, pts,
                                     SEQUENCE_SEQUENCE, &bs_seq,
                                     NULL);
                     }
@@ -546,14 +558,14 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     }
 
     if (!abort) {
-        aisc_put(pd_gl.link, PT_PDC, pdc,
+        aisc_put(PD.link, PT_PDC, pdc,
                  PDC_GO, 0,
                  NULL);
 
         progress.subtitle("Reading results from server");
         {
             char *locs_error = 0;
-            if (aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_ERROR, &locs_error, NULL)) {
+            if (aisc_get(PD.link, PT_LOCS, PD.locs, LOCS_ERROR, &locs_error, NULL)) {
                 aw_message ("Connection to PT_SERVER lost (1)");
                 abort = true;
             }
@@ -568,26 +580,26 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     }
 
     if (!abort) {
-        aisc_get(pd_gl.link, PT_PDC, pdc,
-                  PDC_TPROBE, &tprobe,
-                  NULL);
+        aisc_get(PD.link, PT_PDC, pdc,
+                 PDC_TPROBE, tprobe.as_result_param(),
+                 NULL);
 
         popup_probe_design_result_window(aww, cl_gb_main);
-        pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
+        PD.resultList->clear();
 
-        if (tprobe) {
-            aisc_get(pd_gl.link, PT_TPROBE, tprobe,
+        if (tprobe.exists()) {
+            aisc_get(PD.link, PT_TPROBE, tprobe,
                       TPROBE_INFO_HEADER,   &match_info,
                       NULL);
             char *s = strtok(match_info, "\n");
             while (s) {
-                pd_gl.pd_design->insert_selection(pd_gl.pd_design_id, s, "");
+                PD.resultList->insert(s, "");
                 s = strtok(0, "\n");
             }
             free(match_info);
         }
         else {
-            pd_gl.pd_design->insert_selection(pd_gl.pd_design_id, "There are no results", "");
+            PD.resultList->insert("There are no results", "");
         }
 
         // #define TEST_PD
@@ -610,37 +622,40 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
 #endif // TEST_PD
 
-        while (tprobe) {
-            long tprobe_next;
-            if (aisc_get(pd_gl.link, PT_TPROBE, tprobe,
-                          TPROBE_NEXT,      &tprobe_next,
-                          TPROBE_INFO,      &match_info,
+        while (tprobe.exists()) {
+            T_PT_TPROBE tprobe_next;
+            if (aisc_get(PD.link, PT_TPROBE, tprobe,
+                         TPROBE_NEXT,      tprobe_next.as_result_param(),
+                         TPROBE_INFO,      &match_info,
+
 #if defined(TEST_PD)
-                          TPROBE_KEY, &my_TPROBE_KEY,
-                          TPROBE_KEYSTRING, &my_TPROBE_KEYSTRING,
-                          TPROBE_CNT, &my_TPROBE_CNT,
-                          TPROBE_PARENT, &my_TPROBE_PARENT,
-                          TPROBE_LAST, &my_TPROBE_LAST,
-                          TPROBE_IDENT, &my_TPROBE_IDENT,
-                          TPROBE_SEQUENCE, &my_TPROBE_SEQUENCE,  // encoded probe sequence (2=A 3=C 4=G 5=U)
-                          TPROBE_QUALITY, &my_TPROBE_QUALITY, // quality of probe ?
+                         TPROBE_KEY,       &my_TPROBE_KEY,
+                         TPROBE_KEYSTRING, &my_TPROBE_KEYSTRING,
+                         TPROBE_CNT,       &my_TPROBE_CNT,
+                         TPROBE_PARENT,    &my_TPROBE_PARENT,
+                         TPROBE_LAST,      &my_TPROBE_LAST,
+                         TPROBE_IDENT,     &my_TPROBE_IDENT,
+                         TPROBE_SEQUENCE,  &my_TPROBE_SEQUENCE,  // encoded probe sequence (2=A 3=C 4=G 5=U)
+                         TPROBE_QUALITY,   &my_TPROBE_QUALITY,   // quality of probe ?
 #endif // TEST_PD
-                          NULL)) break;
+                         
+                         NULL)) break;
 
 
 #if defined(TEST_PD)
-            if (aisc_get(pd_gl.link, PT_TPROBE, tprobe,
-                          TPROBE_GROUPSIZE, &my_TPROBE_GROUPSIZE, // groesse der Gruppe,  die von Sonde getroffen wird?
-                          TPROBE_HAIRPIN, &my_TPROBE_HAIRPIN,
-                          TPROBE_WHAIRPIN, &my_TPROBE_WHAIRPIN,
-                          //                      TPROBE_PERC, &my_TPROBE_PERC,
-                          TPROBE_TEMPERATURE, &my_TPROBE_TEMPERATURE,
-                          TPROBE_MISHIT, &my_TPROBE_MISHIT, // Treffer ausserhalb von Gruppe ?
-                          TPROBE_APOS, &my_TPROBE_APOS, // Alignment-Position
-                          TPROBE_ECOLI_POS, &my_TPROBE_ECOLI_POS,
-                          NULL)) break;
+            if (aisc_get(PD.link, PT_TPROBE, tprobe,
+                         TPROBE_GROUPSIZE,   &my_TPROBE_GROUPSIZE,   // groesse der Gruppe,  die von Sonde getroffen wird?
+                         TPROBE_HAIRPIN,     &my_TPROBE_HAIRPIN,
+                         TPROBE_WHAIRPIN,    &my_TPROBE_WHAIRPIN,
+                         // TPROBE_PERC,     &my_TPROBE_PERC,
+                         TPROBE_TEMPERATURE, &my_TPROBE_TEMPERATURE,
+                         TPROBE_MISHIT,      &my_TPROBE_MISHIT,      // Treffer ausserhalb von Gruppe ?
+                         TPROBE_APOS,        &my_TPROBE_APOS,        // Alignment-Position
+                         TPROBE_ECOLI_POS,   &my_TPROBE_ECOLI_POS,
+                         NULL)) break;
 #endif // TEST_PD
-            tprobe = tprobe_next;
+            
+            tprobe.assign(tprobe_next);
 
             char *probe, *space;
             probe = strpbrk(match_info, "acgtuACGTU");
@@ -651,15 +666,15 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
             else {
                 probe = strdup("");
             }
-            pd_gl.pd_design->insert_selection(pd_gl.pd_design_id, match_info, probe);
+            PD.resultList->insert(match_info, probe);
             free(probe);
             free(match_info);
         }
-        pd_gl.pd_design->insert_default_selection(pd_gl.pd_design_id, "default", "");
-        pd_gl.pd_design->update_selection_list(pd_gl.pd_design_id);
+        PD.resultList->insert_default("default", "");
+        PD.resultList->update();
     }
 
-    aisc_close(pd_gl.link); pd_gl.link = 0;
+    aisc_close(PD.link, PD.com); PD.link = 0;
     return;
 }
 
@@ -672,12 +687,11 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
         int                  *counter      = event_param ? event_param->counter : NULL;
         GBDATA               *gb_main      = event_param ? event_param->gb_main : NULL;
         AW_root              *root         = aww->get_root();
-        T_PT_PDC              pdc;
         int                   show_status  = 0;
         int                   extras       = 1;     // mark species and write to temp fields
         GB_ERROR              error        = 0;
 
-        if (!gb_main) { error = "Internal error (gb_main unknown)"; }
+        if (!gb_main) { error = "Please open probe match window once to enable auto-match"; }
 
         SmartPtr<arb_progress> progress;
         
@@ -686,7 +700,7 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
 
             if (!error) {
                 if (selection_id) {
-                    aww->clear_selection_list(selection_id);
+                    selection_id->clear();
                     pd_assert(!counter);
                     show_status = 1;
                 }
@@ -699,28 +713,21 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                     progress->subtitle("Connecting PT-server");
                 }
 
-                pd_gl.link = aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
-                if (!pd_gl.link) error = "Cannot contact PT-server";
+                PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER);
+                if (!PD.link) error = "Cannot contact PT-server";
+                PD.locs.clear();
             }
         }
 
-        if (!error) {
-            if (init_local_com_struct()) error = "Cannot contact PT-server (2)";
-
-            if (!error) {
-                aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs, 
-                            LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc, // @@@ hack - only done to transfer bonds
-                            NULL);
-                if (probe_match_send_data(root, pdc)) error = "Connection to PT_SERVER lost (2)";
-            }
-        }
+        if (!error && init_local_com_struct())     error = "Cannot contact PT-server (2)";
+        if (!error && probe_match_send_data(root)) error = "Connection to PT_SERVER lost (2)";
 
         char *probe = root->awar(AWAR_TARGET_STRING)->read_string();
 
         if (!error) {
             if (show_status) progress->subtitle("Probe match running");
 
-            if (aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs,
+            if (aisc_nput(PD.link, PT_LOCS, PD.locs,
                           LOCS_MATCH_REVERSED,       root->awar(AWAR_PD_MATCH_COMPLEMENT)->read_int(),
                           LOCS_MATCH_SORT_BY,        root->awar(AWAR_PD_MATCH_SORTBY)->read_int(),
                           LOCS_MATCH_COMPLEMENT,     0,
@@ -752,13 +759,13 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
             long            match_list_cnt    = 0;
             char           *locs_error        = 0;
 
-            if (aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs,
-                          LOCS_MATCH_LIST,        &match_list,
-                          LOCS_MATCH_LIST_CNT,    &match_list_cnt,
-                          LOCS_MATCH_STRING,      &bs,
-                          LOCS_MATCHES_TRUNCATED, &matches_truncated,
-                          LOCS_ERROR,             &locs_error,
-                          NULL))
+            if (aisc_get(PD.link, PT_LOCS, PD.locs,
+                         LOCS_MATCH_LIST,        match_list.as_result_param(),
+                         LOCS_MATCH_LIST_CNT,    &match_list_cnt,
+                         LOCS_MATCH_STRING,      &bs,
+                         LOCS_MATCHES_TRUNCATED, &matches_truncated,
+                         LOCS_ERROR,             &locs_error,
+                         NULL))
             {
                 error = "Connection to PT_SERVER lost (3)";
             }
@@ -805,8 +812,8 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                 if (parser && !error) width = parser->get_probe_region_offset()+2+10; // 2 cause headline is shorter and 10 for match prefix region
 
                 const char *searched = GBS_global_string("%-*s%s", width, "Searched for ", probe);
-                aww->insert_selection(selection_id, searched, probe);
-                if (hinfo) aww->insert_selection(selection_id, hinfo, "");
+                selection_id->insert(searched, probe);
+                if (hinfo) selection_id->insert(hinfo, "");
             }
 
 
@@ -971,11 +978,11 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                         sprintf(result, "%s %s", flags, match_info+1); // both flags (skip 1 space from match info to keep alignment)
                         char *gene_match_name = new char[strlen(match_name) + strlen(gene_str)+2];
                         sprintf(gene_match_name, "%s/%s", match_name, gene_str);
-                        if (selection_id) aww->insert_selection(selection_id, result, gene_match_name);   // @@@ wert fuer awar eintragen
+                        if (selection_id) selection_id->insert(result, gene_match_name);   // @@@ wert fuer awar eintragen
                     }
                     else {
                         sprintf(result, "%c %s", flags[0], match_info); // only first flag ( = species related)
-                        if (selection_id)  aww->insert_selection(selection_id, result, match_name);   // @@@ wert fuer awar eintragen
+                        if (selection_id) selection_id->insert(result, match_name);   // @@@ wert fuer awar eintragen
 
                         if (selection_id) {  // storing probe data into linked lists
                             g_spd->probeSeq.push_back(strdup(match_info));
@@ -1015,8 +1022,8 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
 
         if (counter) *counter = mcount;
 
-        aisc_close(pd_gl.link);
-        pd_gl.link = 0;
+        aisc_close(PD.link, PD.com);
+        PD.link = 0;
 
         if (selection_id) {
             const char *last_line                 = 0;
@@ -1024,8 +1031,8 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
             else if (matches_truncated) last_line = "****** List is truncated *******";
             else        last_line                 = "****** End of List *******";
 
-            aww->insert_default_selection(selection_id, last_line, "");
-            aww->update_selection_list(selection_id);
+            selection_id->insert_default(last_line, "");
+            selection_id->update();
         }
 
         free(bs.data);
@@ -1045,35 +1052,35 @@ static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL 
     AW_root           *root          = aww->get_root();
     char              *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
 
-    aww->init_list_entry_iterator(iselection_id); // init
-
-    arb_progress progress("Matching all resolved strings", iselection_id->size());
+    AW_selection_list_iterator selentry(iselection_id);
     
-    bool got_result = false;
-    for (;;) {
-        const char *entry = aww->get_list_entry_char_value();
-        if (!entry) break;
+    arb_progress progress("Matching all resolved strings", iselection_id->size());
 
+    bool got_result = false;
+    while (selentry) {
+        const char *entry = selentry.get_value();
         root->awar(AWAR_TARGET_STRING)->write_string(entry); // probe match
         int counter = -1;
         ProbeMatchEventParam match_event((GBDATA*)cl_gb_main, &counter);
         probe_match_event(aww, (AW_CL)&match_event);
         if (counter==-1) break;
 
-        char *buffer = new char[strlen(entry)+10]; // write # of matched to list entries
-        sprintf(buffer, "%5i %s", counter, entry);
-        aww->set_list_entry_displayed(buffer);
-        got_result   = true;
-        delete buffer;
+        {
+            char *buffer = new char[strlen(entry)+10]; // write # of matched to list entries
+            sprintf(buffer, "%5i %s", counter, entry);
+            selentry.set_displayed(buffer);
+            got_result   = true;
+            delete [] buffer;
+        }
 
-        aww->iterate_list_entry(1); // iterate
+        ++selentry;
         progress.inc();
         
     }
 
     if (got_result) {
-        aww->sort_selection_list(iselection_id, 1, 1);
-        aww->update_selection_list(iselection_id);
+        iselection_id->sort(true, true);
+        iselection_id->update();
         root->awar(AWAR_TARGET_STRING)->write_string(target_string);
     }
 
@@ -1112,7 +1119,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
 {
     char buffer[256]; memset(buffer, 0, 256);
     int  i;
-    pd_gl.pd_design = 0;        // design result window not created
+    PD.win = 0;        // design result window not created
     root->awar_string(AWAR_SPECIES_NAME,         "", props);
     root->awar_string(AWAR_PD_SELECTED_MATCH,    "", props)->add_callback(selected_match_changed_cb);
     root->awar_float (AWAR_PD_DESIGN_EXP_DTEDGE, .5, props);
@@ -1131,7 +1138,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
         root->awar_float(buffer, default_bonds[i], props);
         root->awar(buffer)->set_minmax(0, 3.0);
     }
-    root->awar_float(AWAR_PD_DESIGN_EXP_SPLIT,  .5, props);
+    root->awar_float(AWAR_PD_COMMON_EXP_SPLIT,  .5, props);
     root->awar_float(AWAR_PD_DESIGN_EXP_DTEDGE, .5, props);
     root->awar_float(AWAR_PD_DESIGN_EXP_DT,     .5, props);
 
@@ -1211,15 +1218,15 @@ static AW_window *create_probe_expert_window(AW_root *root, AW_CL for_design) {
         aws->create_input_field(buffer, 4);
     }
 
+    aws->sens_mask(AWM_EXP);
+    aws->at("split"); aws->create_input_field(AWAR_PD_COMMON_EXP_SPLIT,  6);
+
     if (for_design) {
-        aws->sens_mask(AWM_EXP);
-        aws->at("split");   aws->create_input_field(AWAR_PD_DESIGN_EXP_SPLIT,  6);
         aws->at("dt_edge"); aws->create_input_field(AWAR_PD_DESIGN_EXP_DTEDGE, 6);
         aws->at("dt");      aws->create_input_field(AWAR_PD_DESIGN_EXP_DT,     6);
         aws->sens_mask(AWM_ALL);
     }
     else {
-        aws->sens_mask(AWM_EXP);
         aws->at("nmatches");   aws->create_input_field(AWAR_PD_MATCH_NMATCHES,   3);
         aws->at("lim_nmatch"); aws->create_input_field(AWAR_PD_MATCH_LIM_NMATCH, 3);
         aws->sens_mask(AWM_ALL);
@@ -1242,7 +1249,7 @@ static AWT_config_mapping_def probe_design_mapping_def[] = {
     { AWAR_PD_DESIGN_MIN_ECOLIPOS, "minecoli" },
     { AWAR_PD_DESIGN_MAX_ECOLIPOS, "maxecoli" },
     { AWAR_PD_DESIGN_GENE,         "gene" },
-    { AWAR_PD_DESIGN_EXP_SPLIT,    "split" },
+    { AWAR_PD_COMMON_EXP_SPLIT,    "split" }, 
     { AWAR_PD_DESIGN_EXP_DTEDGE,   "dtedge" },
     { AWAR_PD_DESIGN_EXP_DT,       "dt" },
     { 0, 0 }
@@ -1345,11 +1352,11 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
     AW_window         *aww          = (AW_window*)cl_aww;
     AW_selection_list *selection_id = (AW_selection_list*)cl_selid;
 
-    aww->clear_selection_list(selection_id);
+    selection_id->clear();
 
     if (ali_used_for_resolvement != GB_AT_RNA && ali_used_for_resolvement!=GB_AT_DNA) {
-        aww->insert_default_selection(selection_id, "Wrong alignment type!", "");
-        aww->update_selection_list(selection_id);
+        selection_id->insert_default("Wrong alignment type!", "");
+        selection_id->update();
         return;
     }
 
@@ -1433,7 +1440,7 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                         buffer[off] = iupac::nuc_group[idx][index].members[resolution_idx[i]];
                     }
 
-                    aww->insert_selection(selection_id, buffer, buffer);
+                    selection_id->insert(buffer, buffer);
                     not_last--;
 
                     // permute indices:
@@ -1453,15 +1460,15 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                     while (nidx<bases_to_resolve) resolution_idx[nidx++] = 0; // zero all other indices
                 }
 
-                delete buffer;
-                delete resolution_max_idx;
-                delete resolution_idx;
+                delete [] buffer;
+                delete [] resolution_max_idx;
+                delete [] resolution_idx;
 
-                aww->insert_default_selection(selection_id, "", "");
-                aww->update_selection_list(selection_id);
+                selection_id->insert_default("", "");
+                selection_id->update();
             }
 
-            delete offsets_to_resolve;
+            delete [] offsets_to_resolve;
         }
     }
 
@@ -1517,8 +1524,8 @@ static AW_window *create_IUPAC_resolve_window(AW_root *root, AW_CL cl_gb_main) {
 
     AW_selection_list *iselection_id;
     aws->at("iresult");
-    iselection_id = aws->create_selection_list(AWAR_PD_MATCH_RESOLVE, NULL, "", 32, 15);
-    aws->insert_default_selection(iselection_id, "---empty---", "");
+    iselection_id = aws->create_selection_list(AWAR_PD_MATCH_RESOLVE, 32, 15);
+    iselection_id->insert_default("---empty---", "");
 
     aws->at("istring");
     aws->create_input_field(AWAR_ITARGET_STRING, 32);
@@ -1570,11 +1577,12 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
 
         AW_selection_list *selection_id;
         aws->at("result");
-        selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, NULL, "", 110, 15);
-        aws->insert_default_selection(selection_id, "****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
+        selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, 110, 15);
+        selection_id->insert_default("****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
 
-        aws->callback(create_print_box_for_selection_lists, (AW_CL)selection_id);
+        TypedSelectionList *typed_selection = new TypedSelectionList("match", selection_id, "probe match", "probe_match");
         aws->at("print");
+        aws->callback(create_print_box_for_selection_lists, (AW_CL)typed_selection);
         aws->create_button("PRINT", "PRINT", "P");
 
         aws->at("matchSai");
@@ -1598,7 +1606,7 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
         aws->create_toggle(AWAR_PD_MATCH_SORTBY);
 
         aws->at("mismatches");
-        aws->create_option_menu(AWAR_MAX_MISMATCHES, NULL,  "");
+        aws->create_option_menu(AWAR_MAX_MISMATCHES);
         aws->insert_default_option("Search up to zero mismatches", "", 0);
         for (int mm = 1; mm <= 20; ++mm) {
             aws->insert_option(GBS_global_string("Search up to %i mismatches", mm), "", mm);
@@ -1952,10 +1960,10 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
     if (selList==0) {
         aws->at("box");
         aws->callback(pg_result_selected, (AW_CL)gb_main);
-        selList = pg_global.selList = aws->create_selection_list(AWAR_PG_SELECTED_RESULT, 0, "", 2, 2);
+        selList = pg_global.selList = aws->create_selection_list(AWAR_PG_SELECTED_RESULT, 2, 2);
     }
     else {
-        aws->clear_selection_list(selList);
+        selList->clear();
     }
 
     GB_ERROR error = 0;
@@ -1973,7 +1981,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
     if (pg_global.pg_main) {
         const char *reason = 0;
         int32_t i = 0;
-        aws->insert_selection(selList, "members | probes | fitness | quality | mintarget | mishit | probelen | birth", i++);
+        selList->insert("members | probes | fitness | quality | mintarget | mishit | probelen | birth", i++);
 
         GB_transaction dummy(pg_global.pg_main);
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
@@ -2012,7 +2020,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
                         probelength,
                         birth);
 
-                aws->insert_selection(selList, entry, i);
+                selList->insert(entry, i);
             }
         }
         else {
@@ -2021,10 +2029,10 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
 
         if (reason) {
             error = GB_export_errorf("Error in database format (reason: %s)", reason);
-            aws->insert_selection(selList, error, (int32_t)0);
+            selList->insert(error, (int32_t)0);
         }
 
-        aws->update_selection_list(selList);
+        selList->update();
     }
     else {
         error = GB_export_errorf("Can't open database '%s'", file_name);

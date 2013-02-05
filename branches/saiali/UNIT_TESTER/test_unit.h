@@ -299,7 +299,11 @@ namespace arb_test {
     }
 
 
-    template <typename T> inline void print(const T& t) { fputs(val2readable(make_copy(t)), stderr); }
+    template <typename T> inline void print(const T& t) {
+        char *r = val2readable(make_copy(t));
+        fputs(r, stderr);
+        free(r);
+    }
     template <typename T> inline void print_hex(const T& t) { fputs(val2hex(make_copy(t)), stderr); }
 
     template <typename T1, typename T2> inline void print_pair(T1 t1, T2 t2) {
@@ -619,6 +623,7 @@ namespace arb_test {
     public:
         predicate_description(const char *primary_) : primary(primary_), inverse(NULL) {}
         predicate_description(const char *primary_, const char *inverse_) : primary(primary_), inverse(inverse_) {}
+        // cppcheck-suppress uninitMemberVar (fails to detect default ctor of 'str')
         predicate_description(const predicate_description& other) : primary(other.primary), inverse(other.inverse) {}
         DECLARE_ASSIGNMENT_OPERATOR(predicate_description);
 
@@ -677,6 +682,8 @@ namespace arb_test {
         template <typename U> inline match_expectation lessThan_expectation(bool invert, const U& other, const char *code) const;
         template <typename U> inline match_expectation moreThan_expectation(bool invert, const U& other, const char *code) const;
         
+        inline match_expectation null_expectation(bool wantNULL) const;
+
         template <typename FUNC> inline match_expectation predicate_expectation(bool wanted, predicate<FUNC> pred, matchable_value<T> arg) const;
         template <typename U, typename FUNC> inline match_expectation predicate_expectation(bool wanted, FUNC pred, const char *pred_code, const U& arg, const char *arg_code) const;
     };
@@ -703,7 +710,11 @@ namespace arb_test {
     inline match_expectation matchable_value<T>::moreThan_expectation(bool wanted, const U& other, const char *code_) const {
         return predicate_expectation(wanted, make_predicate(more<T>, "more than", "less or equal"), make_matchable_value<T,U>(other, code_));
     }
-    
+    template <typename T>
+    inline match_expectation matchable_value<T>::null_expectation(bool wantNULL) const {
+        return equals_expectation(wantNULL, (T)NULL, "NULL");
+    }
+
     template <typename T>
     class value_matcher : public matcher //! matcher for values
     {
@@ -754,6 +765,7 @@ namespace arb_test {
 
 
     template <typename T, typename FUNC>
+    // cppcheck-suppress noConstructor (fails to detect template ctor)
     class predicate_matcher : public value_matcher<T> {
         predicate<FUNC> pred;
         bool            expected_result;
@@ -782,7 +794,7 @@ namespace arb_test {
     // ------------------------------------------------
     //      matchable + matcher (for expectations)
 
-    const int MAX_GROUP_SIZE = 4;
+    const int MAX_GROUP_SIZE = 5;
     class expectation_group : public matchable //! group of expectation. matchable with group_matcher
     {
         int          count;
@@ -792,7 +804,7 @@ namespace arb_test {
     protected:
 
     public:
-        expectation_group() : count(0) {}
+        expectation_group() : count(0) { depend_on[0] = NULL; }
         expectation_group(const expectation& e) : count(1) {
             depend_on[0] = e.clone();
         }
@@ -812,7 +824,7 @@ namespace arb_test {
         }
         MAKE_CLONABLE(expectation_group);
 
-        expectation_group& add(const expectation& e) { depend_on[count++] = e.clone(); return *this; }
+        expectation_group& add(const expectation& e) { depend_on[count++] = e.clone(); arb_assert(count <= MAX_GROUP_SIZE); return *this; }
 
         const char *name() const {
             return "<expectation_group>";
@@ -1027,8 +1039,11 @@ namespace arb_test {
 #define MATCHABLE_ARGS_UNTYPED(val) val, #val
 #define MATCHABLE_ARGS_TYPED(val)   make_copy(val), #val
 
-#define is_equal_to(val)  equals_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
+#define is_equal_to(val)      equals_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
 #define does_differ_from(val) equals_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
+
+#define is_equal_to_NULL()      null_expectation(true)
+#define does_differ_from_NULL() null_expectation(false)
 
 #define less_than(val) lessThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
 #define more_than(val) moreThan_expectation(true, MATCHABLE_ARGS_UNTYPED(val))
@@ -1036,10 +1051,10 @@ namespace arb_test {
 #define less_or_equal(val) moreThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
 #define more_or_equal(val) lessThan_expectation(false, MATCHABLE_ARGS_UNTYPED(val))
 
-#define is(pred,arg)     predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
-#define is_not(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
+#define fulfills(pred,arg)    predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
+#define contradicts(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 
-#define does_contain(val) is(containing(),val)
+#define does_contain(val) fulfills(containing(),val)
 
 #define that(thing) CREATE_matchable(MATCHABLE_ARGS_TYPED(thing))
 
@@ -1103,9 +1118,9 @@ namespace arb_test {
 // --------------------------------------------------------------------------------
 
 namespace arb_test {
-    inline match_expectation reports_error(const char *error) { return that(error).does_differ_from(NULL); }
-    inline match_expectation doesnt_report_error(const char *error) { return that(error).is_equal_to(NULL); }
-    inline match_expectation reported_error_contains(const char *error, const char *part) { return error ? that(error).does_contain(part) : that(error).does_differ_from(NULL); }
+    inline match_expectation reports_error(const char *error) { return that(error).does_differ_from_NULL(); }
+    inline match_expectation doesnt_report_error(const char *error) { return that(error).is_equal_to_NULL(); }
+    inline match_expectation reported_error_contains(const char *error, const char *part) { return error ? that(error).does_contain(part) : that(error).does_differ_from_NULL(); }
 };
 
 #define TEST_ASSERT_ERROR_CONTAINS(call,part)         TEST_EXPECT        (reported_error_contains(call, part))
@@ -1119,7 +1134,7 @@ namespace arb_test {
 
 namespace arb_test {
     inline GB_ERROR get_exported_error() { return GB_have_error() ? GB_await_error() : NULL; }
-    inline match_expectation no_forgotten_error_exported() { return that(get_exported_error()).is_equal_to(NULL); }
+    inline match_expectation no_forgotten_error_exported() { return that(get_exported_error()).is_equal_to_NULL(); }
 
     class calling {
         bool     result;
@@ -1133,8 +1148,8 @@ namespace arb_test {
         // functions below try to make failing expectations more readable
         match_expectation returns_result() const { return that(result).is_equal_to(true); }
         match_expectation doesnt_return_result() const { return that(result).is_equal_to(false); }
-        match_expectation exports_error() const { return that(error).does_differ_from(NULL); }
-        match_expectation doesnt_export_error() const { return that(error).is_equal_to(NULL); }
+        match_expectation exports_error() const { return that(error).does_differ_from_NULL(); }
+        match_expectation doesnt_export_error() const { return that(error).is_equal_to_NULL(); }
         match_expectation exports_error_containing(const char *expected_part) const {
             return error ? that(error).does_contain(expected_part) : exports_error();
         }
@@ -1235,7 +1250,7 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_ASSERT_EQUAL(e1,t2)         TEST_EXPECT(that(e1).is_equal_to(t2))
 #define TEST_ASSERT_EQUAL__BROKEN(e1,t2) TEST_EXPECT__BROKEN(that(e1).is_equal_to(t2))
 
-#define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_EXPECT(that(e1).is(epsilon_similar(epsilon), t2))
+#define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_EXPECT(that(e1).fulfills(epsilon_similar(epsilon), t2))
 #define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECT__BROKEN(that(e1).is(epsilon_similar(epsilon), t2))
 
 #define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_EXPECT(that(e1).does_differ_from(t2));
@@ -1292,9 +1307,6 @@ namespace arb_test {
 
 #define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::test_files_equal(f1,f2))
 #define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::test_files_equal(f1,f2))
-
-#define TEST_ASSERT_MEM_EQUAL(m1,m2,size)         TEST_ASSERT(arb_test::test_mem_equal(m1,m2,size))
-#define TEST_ASSERT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_ASSERT__BROKEN(arb_test::test_mem_equal(m1,m2,size))
 
 #define TEST_ASSERT_TEXTFILES_EQUAL(f1,f2)         TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,0)
 #define TEST_ASSERT_TEXTFILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,0)

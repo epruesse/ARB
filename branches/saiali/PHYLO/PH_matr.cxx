@@ -22,14 +22,9 @@
 #warning module completely unused
 #endif
 
-extern void ph_view_matrix_cb(AW_window *);
-
-
 #define CHECK_NAN(x) if ((!(x>=0.0)) && (!(x<0.0))) *(int *)0=0;
 
-
 static AP_smatrix *global_ratematrix = 0;
-
 
 static void set_globel_r_m_value(AW_root *aw_root, long i, long j) {
     char buffer[256];

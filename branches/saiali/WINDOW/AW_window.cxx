@@ -181,14 +181,14 @@ char *AW_selection_list_entry::copy_string_for_display(const char *str) {
 }
 
 AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti) {
+    // @@@ fix initialization
     memset((char *)this, 0, sizeof(AW_selection_list));
-    variable_name = nulldup(variable_namei);
-    variable_type = (AW_VARIABLE_TYPE)variable_typei;
-    select_list_widget = select_list_widgeti;
-    list_table = NULL;
-    last_of_list_table = NULL;
-    default_select = NULL;
-    value_equal_display = false;
+    variable_name          = nulldup(variable_namei);
+    variable_type          = (AW_VARIABLE_TYPE)variable_typei;
+    select_list_widget     = select_list_widgeti;
+    list_table             = NULL;
+    last_of_list_table     = NULL;
+    default_select         = NULL;
 }
 
 static void destroy_AW_root() {
@@ -488,7 +488,7 @@ void AW_window::calculate_scrollbars() {
 }
 
 void AW_window::set_vertical_scrollbar_position(int position) {
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     fprintf(stderr, "set_vertical_scrollbar_position to %i\n", position);
 #endif
     // @@@ test and constrain against limits
@@ -497,7 +497,7 @@ void AW_window::set_vertical_scrollbar_position(int position) {
 }
 
 void AW_window::set_horizontal_scrollbar_position(int position) {
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     fprintf(stderr, "set_horizontal_scrollbar_position to %i\n", position);
 #endif
     // @@@ test and constrain against limits
@@ -1092,41 +1092,35 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         }
     }
 
-    if (ev->xbutton.type == ButtonPress) {
-        aww->event.type = AW_Mouse_Press;
-        aww->event.button = ev->xbutton.button;
-        aww->event.x = ev->xbutton.x;
-        aww->event.y = ev->xbutton.y;
-        aww->event.keycode = AW_KEY_NONE;
-        aww->event.keymodifier = AW_KEYMODE_NONE;
-        aww->event.character = '\0';
+    if (ev->xbutton.type == ButtonPress || ev->xbutton.type == ButtonRelease) {
+        aww->event.button      = AW_MouseButton(ev->xbutton.button);
+        aww->event.x           = ev->xbutton.x;
+        aww->event.y           = ev->xbutton.y;
+        aww->event.keymodifier = (AW_key_mod)(ev->xbutton.state & (AW_KEYMODE_SHIFT|AW_KEYMODE_CONTROL|AW_KEYMODE_ALT));
+        aww->event.keycode     = AW_KEY_NONE;
+        aww->event.character   = '\0';
 
-        if (area && area->get_double_click_cb()) {
-            if ((ev->xbutton.time - area->get_click_time()) < 200) {
-                run_double_click_callback = true;
+        if (ev->xbutton.type == ButtonPress) {
+            aww->event.type = AW_Mouse_Press;
+            if (area && area->get_double_click_cb()) {
+                if ((ev->xbutton.time - area->get_click_time()) < 200) {
+                    run_double_click_callback = true;
+                }
+                else {
+                    run_callback = true;
+                }
+                area->set_click_time(ev->xbutton.time);
             }
             else {
                 run_callback = true;
             }
-            area->set_click_time(ev->xbutton.time);
+            aww->event.time = ev->xbutton.time;
         }
-        else {
+        else if (ev->xbutton.type == ButtonRelease) {
+            aww->event.type = AW_Mouse_Release;
             run_callback = true;
+            // keep event.time set in ButtonPress-branch
         }
-
-        aww->event.time = ev->xbutton.time;
-    }
-    else if (ev->xbutton.type == ButtonRelease) {
-        aww->event.type = AW_Mouse_Release;
-        aww->event.button = ev->xbutton.button;
-        aww->event.x = ev->xbutton.x;
-        aww->event.y = ev->xbutton.y;
-        aww->event.keycode = AW_KEY_NONE;
-        aww->event.keymodifier = AW_KEYMODE_NONE;
-        aww->event.character = '\0';
-        //  aww->event.time     use old time
-
-        run_callback = true;
     }
     else if (ev->xkey.type == KeyPress || ev->xkey.type == KeyRelease) {
         aww->event.time = ev->xbutton.time;
@@ -1149,7 +1143,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         else {
             aww->event.type = AW_Keyboard_Release;
         }
-        aww->event.button = 0;
+        aww->event.button = AW_BUTTON_NONE;
         aww->event.x = ev->xbutton.x;
         aww->event.y = ev->xbutton.y;
 
@@ -1362,9 +1356,10 @@ static arb_handlers aw_handlers = {
 
 void AW_root::init_root(const char *programname, bool no_exit) {
     // initialize ARB X application
-    int          a = 0;
+    int          a             = 0;
     XFontStruct *fontstruct;
-    char        *fallback_resources[100];
+    const int    MAX_FALLBACKS = 30;
+    char        *fallback_resources[MAX_FALLBACKS];
 
     prvt->action_hash = GBS_create_hash(1000, GB_MIND_CASE);
 
@@ -1372,14 +1367,15 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     program_name  = strdup(programname);
 
     int i;
-    for (i=0; i<1000 && aw_fb[i].fb; i++) {
+    for (i=0; aw_fb[i].fb; i++) {
         GBDATA *gb_awar       = GB_search((GBDATA*)application_database, aw_fb[i].awar, GB_FIND);
         fallback_resources[i] = GBS_global_string_copy("*%s: %s", aw_fb[i].fb, GB_read_char_pntr(gb_awar));
     }
     fallback_resources[i] = 0;
+    aw_assert(i<MAX_FALLBACKS);
 
     ARB_install_handlers(aw_handlers);
-    
+
     // @@@ FIXME: the next line hangs if program runs inside debugger
     p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programname,
             NULL, 0, // XrmOptionDescRec+numOpts
@@ -1389,9 +1385,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
             applicationShellWidgetClass, // widget class
             NULL, 0);
 
-    for (i=0; i<1000 && fallback_resources[i]; i++) {
-        free(fallback_resources[i]);
-    }
+    for (i=0; fallback_resources[i]; i++) free(fallback_resources[i]);
 
     p_r->display = XtDisplay(p_r->toplevel_widget);
 
@@ -1546,10 +1540,11 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     }
     else {
         if (colnum>=color_table_size) {
-            long new_size = colnum+8;
-            color_table   = (AW_rgb*)realloc(color_table, new_size*sizeof(AW_rgb)); // valgrinders : never freed because AW_window never is freed
+            long new_size  = colnum+8;
+            realloc_unleaked(color_table, new_size*sizeof(AW_rgb)); // valgrinders : never freed because AW_window never is freed
+            if (!color_table) GBK_terminate("out of memory");
             for (int i = color_table_size; i<new_size; ++i) color_table[i] = AW_NO_COLOR;
-            color_table_size = new_size;
+            color_table_size                                               = new_size;
         }
     }
     XColor xcolor_returned, xcolor_exakt;
@@ -2592,9 +2587,8 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     return p_w->number_of_modes;
 }
 
-// ------------------------
+// -------------------------
 //      Hotkey Checking
-// ------------------------
 
 #ifdef DEBUG
 
@@ -3122,7 +3116,7 @@ void AW_window::show() {
                     if (wx || wy) {
                         if (p_w->knows_WM_offset()) {
                             wx -= p_w->WM_left_offset;
-                            wy -= p_w->WM_top_offset;
+                            wy -= p_w->WM_top_offset; // @@@ values of wx/wy never used
 
                             // add size of window decoration
                             width  += p_w->WM_left_offset;
@@ -3416,7 +3410,7 @@ public:
 
     static void add(AW_RCB1 execution_done_cb, AW_CL client_data) { new ExecutingMacro(execution_done_cb, client_data); }
     static void done() {
-        aw_assert(head);
+        // aw_assert(head); // fails when a macro is called from command line
         if (head) {
             head->call();
             head->destroy();

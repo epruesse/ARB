@@ -79,7 +79,7 @@ static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
 }
 
 
-GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *species_hash, int *removed, int *groups_removed) {
+GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_HASH *species_hash, int *removed, int *groups_removed) {
     // Given 'tree' can either
     // - be linked (in this case 'species_hash' shall be NULL)
     // - be unlinked (in this case 'species_hash' has to be provided)
@@ -225,31 +225,35 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
 }
 
 static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode) {
-    char buffer[40];        // just real numbers
-    char    *c1;
-
-    if ((c1 = node->remark_branch)) {
-        int c;
-        if (mode == GBT_PUT_DATA) {
-            *(dest++) = 'R';
-            while ((c = *(c1++))) {
-                if (c == 1) continue;
-                *(dest++) = c;
+    {
+        char *c1 = node->remark_branch;
+        if (c1) {
+            if (mode == GBT_PUT_DATA) {
+                int c;
+                *(dest++) = 'R';
+                while ((c = *(c1++))) {
+                    if (c == 1) continue;
+                    *(dest++) = c;
+                }
+                *(dest++) = 1;
             }
-            *(dest++) = 1;
-        }
-        else {
-            dest += strlen(c1) + 2;
+            else {
+                dest += strlen(c1) + 2;
+            }
         }
     }
-
     if (node->is_leaf) {
         if (mode == GBT_PUT_DATA) {
             *(dest++) = 'L';
             if (node->name) strcpy(dest, node->name);
-            while ((c1 = (char *)strchr(dest, 1))) *c1 = 2;
-            dest += strlen(dest);
-            *(dest++) = 1;
+
+            char *c1;
+            while ((c1 = (char *)strchr(dest, 1))) {
+                *c1 = 2;
+            }
+            dest      += strlen(dest);
+            *(dest++)  = 1;
+            
             return dest;
         }
         else {
@@ -258,6 +262,7 @@ static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode)
         }
     }
     else {
+        char buffer[40];
         sprintf(buffer, "%g,%g;", node->leftlen, node->rightlen);
         if (mode == GBT_PUT_DATA) {
             *(dest++) = 'N';
@@ -352,6 +357,8 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
                 }
             }
         }
+
+        if (!error) GBT_order_tree(gb_tree);
     }
 
     return error;
@@ -368,19 +375,15 @@ GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *
 //      tree read functions
 
 static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error) {
-    GBT_TREE    *node;
-    GBDATA      *gb_group_name;
-    char         c;
-    char        *p1;
-    static char *membase;
-
     gb_assert(error);
     if (*error) return NULL;
 
+    GBT_TREE *node;
     if (structure_size>0) {
         node = (GBT_TREE *)GB_calloc(1, (size_t)structure_size);
     }
     else {
+        static char *membase;
         if (!startid[0]) {
             membase = (char *)GB_calloc(size_of_tree+1, (size_t)(-2*structure_size)); // because of inner nodes
         }
@@ -389,7 +392,8 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
         membase -= structure_size;
     }
 
-    c = *((*data)++);
+    char  c = *((*data)++);
+    char *p1;
 
     if (c=='R') {
         p1 = strchr(*data, 1);
@@ -410,7 +414,7 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
         node->rightlen = GB_atof(*data);
         *data = p1;
         if ((*startid < size_of_tree) && (node->gb_node = gb_tree_nodes[*startid])) {
-            gb_group_name = GB_entry(node->gb_node, "group_name");
+            GBDATA *gb_group_name = GB_entry(node->gb_node, "group_name");
             if (gb_group_name) {
                 node->name = GB_read_string(gb_group_name);
             }
@@ -733,7 +737,6 @@ inline GBDATA *get_tree_with_idx(GBDATA *gb_treedata, int at_idx) {
     GBDATA *gb_found = NULL;
     for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree && !gb_found; gb_tree = GB_nextChild(gb_tree)) {
         int idx = get_tree_idx(gb_tree);
-        gb_assert(idx);
         if (idx == at_idx) {
             gb_found = gb_tree;
         }
@@ -818,6 +821,13 @@ static void ensure_trees_have_order(GBDATA *gb_treedata) {
     if (error) GBK_terminatef("failed to order trees (Reason: %s)", error);
 }
 
+void GBT_order_tree(GBDATA *gb_tree) {
+    // if 'gb_tree' has no order yet, move it to the bottom (as done previously)
+    if (!get_tree_idx(gb_tree)) {
+        set_tree_idx(gb_tree, get_max_tree_idx(GB_get_father(gb_tree))+1);
+    }
+}
+
 // ----------------------
 //      search trees
 
@@ -891,7 +901,7 @@ const char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name) {
     return GBT_get_tree_name(gb_tree);
 }
 
-GBDATA *GBT_get_next_tree(GBDATA *gb_tree) {
+GBDATA *GBT_find_next_tree(GBDATA *gb_tree) {
     GBDATA *gb_other = NULL;
     if (gb_tree) {
         gb_other = GBT_tree_behind(gb_tree);
@@ -1283,8 +1293,8 @@ void TEST_tree() {
 
             TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_tree2");
 
-            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_get_next_tree(gb_nj_bs)), "tree_nj");
-            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_get_next_tree(gb_nj)), "tree_tree2"); // last -> first
+            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj_bs)), "tree_nj");
+            TEST_ASSERT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj)), "tree_tree2"); // last -> first
         }
 
         // check tree order is maintained by copy, rename and delete
@@ -1330,8 +1340,8 @@ void TEST_tree() {
             TEST_ASSERT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
             TEST_ASSERT_EQUAL(GBT_find_bottom_tree(gb_main), gb_nj_bs);
             
-            TEST_ASSERT_EQUAL(GBT_get_next_tree(gb_test), gb_nj_bs);
-            TEST_ASSERT_EQUAL(GBT_get_next_tree(gb_nj_bs), gb_test);
+            TEST_ASSERT_EQUAL(GBT_find_next_tree(gb_test), gb_nj_bs);
+            TEST_ASSERT_EQUAL(GBT_find_next_tree(gb_nj_bs), gb_test);
 
             TEST_ASSERT_NULL (GBT_tree_infrontof(gb_test));
             TEST_ASSERT_EQUAL(GBT_tree_behind   (gb_test), gb_nj_bs);
@@ -1354,7 +1364,7 @@ void TEST_tree() {
             TEST_ASSERT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
             TEST_ASSERT_EQUAL(GBT_find_bottom_tree(gb_main), gb_test);
             
-            TEST_ASSERT_NULL(GBT_get_next_tree(gb_test)); // no other tree left
+            TEST_ASSERT_NULL(GBT_find_next_tree(gb_test)); // no other tree left
             TEST_ASSERT_NULL(GBT_tree_behind(gb_test));
             TEST_ASSERT_NULL(GBT_tree_infrontof(gb_test));
 

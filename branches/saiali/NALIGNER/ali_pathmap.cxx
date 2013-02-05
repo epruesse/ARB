@@ -25,11 +25,9 @@ ALI_PATHMAP::ALI_PATHMAP(unsigned long w, unsigned long h)
 
 ALI_PATHMAP::~ALI_PATHMAP()
 {
-    unsigned long   l;
-
     free(pathmap);
     if (up_pointers) {
-        for (l = 0; l < width; l++)
+        for (unsigned long l = 0; l < width; l++)
             if ((*up_pointers)[l])
                 free((*up_pointers)[l]);
         free(up_pointers);
@@ -66,8 +64,7 @@ void ALI_PATHMAP::set(unsigned long x, unsigned long y, unsigned char val, ALI_T
 
 void ALI_PATHMAP::get(unsigned long x, unsigned long y, unsigned char *val, ALI_TARRAY < ali_pathmap_up_pointer > **up_pointer) {
     // Get a value from the pathmap
-    unsigned long   l, counter;
-
+    
     *up_pointer = 0;
     if (x >= width || y >= height) {
         ali_fatal_error("Out of range", "ALI_PATHMAP::get()");
@@ -79,6 +76,8 @@ void ALI_PATHMAP::get(unsigned long x, unsigned long y, unsigned char *val, ALI_
 
     if (*val & ALI_LUP) {
         if ((*optimized)[x / 8] & (0x01 << (7 - (x % 8)))) {
+            unsigned long l;
+            unsigned long counter;
             for (l = 0, counter = 0; l < y / 2; l++) {
                 if ((*pathmap)[x * height_real + l] & ALI_LUP)
                     counter++;

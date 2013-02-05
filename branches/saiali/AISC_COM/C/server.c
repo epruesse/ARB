@@ -28,11 +28,8 @@
 
 #include <aisc_com.h>
 // AISC_MKPT_PROMOTE:#include <aisc_func_types.h>
-#include <attributes.h>
 #include "server.h"
-#include "aisc_global.h"
 
-#include <arb_assert.h>
 #include <SigHandler.h>
 #include <arb_cs.h>
 #include <static_assert.h>
@@ -190,7 +187,7 @@ static const char *test_address_valid(void *address, long key)
 
 static SigHandler old_sigsegv_handler;
 
-static void aisc_server_sigsegv(int sig) {
+__ATTR__NORETURN static void aisc_server_sigsegv(int sig) {
     sigsegv_occurred = true;
     if (catch_sigsegv) {
         siglongjmp(return_after_segv, 666); // never returns
@@ -217,13 +214,10 @@ static void aisc_server_sigpipe(int)
 // --------------------------
 //      new read command
 
-static int aisc_s_read(int socket, char *ptr, int size)
-{
-    int leftsize, readsize;
-    leftsize = size;
-    readsize = 0;
+static int aisc_s_read(int socket, char *ptr, int size) {
+    int leftsize = size;
     while (leftsize) {
-        readsize = read(socket, ptr, leftsize);
+        int readsize = read(socket, ptr, leftsize);
         if (readsize<=0) return 0;
         ptr += readsize;
         leftsize -= readsize;
@@ -236,14 +230,11 @@ static int aisc_s_read(int socket, char *ptr, int size)
     return size;
 }
 
-static int aisc_s_write(int socket, char *ptr, int size)
-{
-    int leftsize, writesize;
-    leftsize = size;
-    writesize = 0;
+static int aisc_s_write(int socket, char *ptr, int size) {
+    int leftsize = size;
     pipe_broken = 0;
     while (leftsize) {
-        writesize = write(socket, ptr, leftsize);
+        int writesize = write(socket, ptr, leftsize);
         if (pipe_broken) return -1;
         if (writesize<0) return -1;
         ptr += writesize;
@@ -493,7 +484,7 @@ static int aisc_s_send_bytes_queue(int socket) {
     return 0;
 }
 
-static long aisc_talking_get(long *in_buf, int size, long *out_buf, int) {
+static long aisc_talking_get(long *in_buf, int size, long *out_buf, int) { // handles AISC_GET
     aisc_server_error = NULL;
 
     long in_pos      = 0;
@@ -773,7 +764,7 @@ static long aisc_talking_sets(long *in_buf, int size, long *out_buf, long *objec
     return 0;
 }
 
-static long aisc_talking_set(long *in_buf, int size, long *out_buf, int) {
+static long aisc_talking_set(long *in_buf, int size, long *out_buf, int) { // handles AISC_SET
     aisc_server_error = NULL;
 
     int  in_pos      = 0;
@@ -783,7 +774,7 @@ static long aisc_talking_set(long *in_buf, int size, long *out_buf, int) {
     return aisc_talking_sets(&(in_buf[in_pos]), size-in_pos, out_buf, (long *)object, object_type);
 }
 
-static long aisc_talking_nset(long *in_buf, int size, long *out_buf, int) {
+static long aisc_talking_nset(long *in_buf, int size, long *out_buf, int) { // handles AISC_NSET 
     aisc_server_error = NULL;
 
     int  in_pos      = 0;
@@ -809,7 +800,7 @@ long aisc_make_sets(long *obj)
     }
 }
 
-static long aisc_talking_create(long *in_buf, int size, long *out_buf, int) {
+static long aisc_talking_create(long *in_buf, int size, long *out_buf, int) { // handles AISC_CREATE
     aisc_server_error = NULL;
 
     int  in_pos      = 0;
@@ -866,7 +857,7 @@ static long aisc_talking_create(long *in_buf, int size, long *out_buf, int) {
     }
 }
 
-static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_size) {
+static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_COPY
     aisc_server_error = NULL;
 
     int  in_pos      = 0;
@@ -927,7 +918,7 @@ static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_siz
     }
 }
 
-static long aisc_talking_find(long *in_buf, int /*size*/, long *out_buf, int /*max_size*/) {
+static long aisc_talking_find(long *in_buf, int /*size*/, long *out_buf, int /*max_size*/) { // handles AISC_FIND
     aisc_server_error = NULL;
 
     int  in_pos      = 0;
@@ -984,7 +975,7 @@ static long aisc_talking_find(long *in_buf, int /*size*/, long *out_buf, int /*m
 
 extern int *aisc_main;
 
-static long aisc_talking_init(long *in_buf, int size, long *out_buf, int max_size) {
+static long aisc_talking_init(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_INIT
     in_buf            = in_buf;
     size              = size;
     max_size          = max_size;
@@ -993,7 +984,7 @@ static long aisc_talking_init(long *in_buf, int size, long *out_buf, int max_siz
     return 1;
 }
 
-static long aisc_fork_server(long *in_buf, int size, long *out_buf, int max_size) {
+static long aisc_fork_server(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_FORK_SERVER
     pid_t pid;
 
     in_buf   = in_buf;
@@ -1006,7 +997,7 @@ static long aisc_fork_server(long *in_buf, int size, long *out_buf, int max_size
     return pid;
 }
 
-static long aisc_talking_delete(long *in_buf, int size, long *out_buf, int max_size) {
+static long aisc_talking_delete(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_DELETE
     int             in_pos, out_pos;
     long             object_type;
 
@@ -1048,7 +1039,7 @@ static long aisc_talking_delete(long *in_buf, int size, long *out_buf, int max_s
     return 0;
 }
 
-static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int max_size) {
+static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_DEBUG_INFO
     int  in_pos, out_pos;
     long object_type, attribute;
 
@@ -1172,16 +1163,16 @@ extern "C" {
 #endif
 
 static aisc_talking_function_type aisc_talking_functions[] = {
-    aisc_talking_get,
-    aisc_talking_set,
-    aisc_talking_nset,
-    aisc_talking_create,
-    aisc_talking_find,
-    aisc_talking_copy,
-    aisc_talking_delete,
-    aisc_talking_init,
-    aisc_talking_debug_info,
-    aisc_fork_server
+    aisc_talking_get,        // AISC_GET
+    aisc_talking_set,        // AISC_SET
+    aisc_talking_nset,       // AISC_NSET
+    aisc_talking_create,     // AISC_CREATE
+    aisc_talking_find,       // AISC_FIND
+    aisc_talking_copy,       // AISC_COPY
+    aisc_talking_delete,     // AISC_DELETE
+    aisc_talking_init,       // AISC_INIT
+    aisc_talking_debug_info, // AISC_DEBUG_INFO
+    aisc_fork_server         // AISC_FORK_SERVER
 };
 
 static int aisc_talking(int con) {

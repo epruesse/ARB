@@ -24,7 +24,6 @@
 
 //  ---------------------
 //      class output
-//  ---------------------
 
 class output {
 private:
@@ -116,7 +115,7 @@ inline void output::put(const char *s, ...) {
 
 //  ---------------------
 //      class indent
-//  ---------------------
+
 // create an instance of indent to increase indentation
 // indentation automatically resets when that instance leaves the scope
 

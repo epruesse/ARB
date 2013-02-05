@@ -106,7 +106,7 @@ void MDialog::createShell(const char *name)
 void MDialog::closeDialog()
 {
     // KILL ALL CHILDREN
-    while(m_children.size())
+    while (!m_children.empty())
     {
         for(vector<MDialog*>::iterator i = m_children.begin(); i != m_children.end(); ++i)
         {

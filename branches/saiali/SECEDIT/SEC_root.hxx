@@ -41,7 +41,6 @@ using namespace AW;
 
 // ------------------
 //      Debugging
-// ------------------
 
 #if defined(DEBUG)
 
@@ -61,7 +60,6 @@ enum SEC_CHECK_TYPE {
 
 // -------------------
 //      SEC_region
-// -------------------
 
 class SEC_root;
 
@@ -146,7 +144,6 @@ public:
 
 // -------------------------
 //      SEC_constrainted
-// -------------------------
 
 class SEC_constrainted {
     double sSize;               // standard size
@@ -195,7 +192,6 @@ public:
 
 // ---------------------
 //      SEC_oriented
-// ---------------------
 
 class SEC_base;
 
@@ -250,7 +246,6 @@ public:
 
 // ----------------------
 //      SEC_BASE_TYPE
-// ----------------------
 
 enum SEC_BASE_TYPE {
     SEC_NO_TYPE  = 0,
@@ -261,7 +256,6 @@ enum SEC_BASE_TYPE {
 
 // -----------------
 //      SEC_base
-// -----------------
 
 class SEC_base : public SEC_constrainted, public SEC_oriented, virtual Noncopyable { // loop or helix
     SEC_root *root;
@@ -310,7 +304,6 @@ public:
 
 // ------------------
 //      SEC_helix
-// ------------------
 
 class SEC_helix_strand;
 class SEC_loop;
@@ -370,7 +363,6 @@ public:
 
 // -------------------------
 //      SEC_helix_strand
-// -------------------------
 
 class SEC_segment;
 
@@ -470,7 +462,6 @@ public:
 
 // --------------------
 //      SEC_segment
-// --------------------
 
 class SEC_segment : public SEC_base_part { // derived from a Noncopyable
 private:
@@ -551,7 +542,6 @@ public:
 
 // -----------------
 //      SEC_loop
-// -----------------
 
 class SEC_loop : public SEC_base { // derived from a Noncopyable
     double   Circumference;     // unit is in "segment-base-distances"
@@ -620,7 +610,6 @@ public:
 
 // --------------------------
 //      SEC_displayParams
-// --------------------------
 
 enum ShowBonds {
     SHOW_NO_BONDS     = 0,
@@ -659,13 +648,14 @@ struct SEC_displayParams {
     bool show_debug;            // show debug info in structure display
 #endif // DEBUG
 
+    SEC_displayParams() { memset(this, 0, sizeof(*this)); }
+
     void reread(AW_root *aw_root, const ED4_plugin_host& host);
 };
 
 
 // -----------------
 //      SEC_root
-// -----------------
 
 class AWT_canvas;
 class SEC_drawn_positions;
@@ -691,11 +681,10 @@ class SEC_root : virtual Noncopyable {
 
     // -----------------------------
     //      updated before paint
-    // -----------------------------
 
     AW_font_group font_group;
 
-    double char_radius[SEC_GC_DATA_COUNT]; // radius and..
+    double charRadius[SEC_GC_DATA_COUNT];  // radius and..
     short  bg_linewidth[SEC_GC_DATA_COUNT]; // ..linewidth for drawing background (index = gc)
     Vector center_char[SEC_GC_FONT_COUNT]; // correction vector to center the base character at its position (world coordinates)
 
@@ -707,7 +696,6 @@ class SEC_root : virtual Noncopyable {
 
     // --------------------------
     //      valid after paint
-    // --------------------------
 
     SEC_drawn_positions *drawnPositions; // after paint this contains draw positions for every absolute position
     LineVector           cursor_line; // main line of the cursor
@@ -741,7 +729,7 @@ public:
     SEC_root();
     ~SEC_root();
 
-    void init(SEC_graphic *gfx, AWT_canvas *ntw, ED4_plugin_host& host);
+    void init(SEC_graphic *gfx, AWT_canvas *scr, ED4_plugin_host& host);
 
     bool under_construction() const { return constructing; }
     void set_under_construction(bool construct) { constructing = construct; }
@@ -754,7 +742,7 @@ public:
     const char *helixNrAt(int abspos) const { return get_helixDef()->helixNr(abspos); }
 
     const size_t *getHelixPositions(const char *helixNr) const;
-    const double& get_char_radius(int gc) const { return char_radius[gc]; }
+    const double& get_char_radius(int gc) const { return charRadius[gc]; }
 
     void reread_display_params(AW_root *aw_root, const ED4_plugin_host& Host) { displayParams.reread(aw_root, Host); }
     const SEC_displayParams& display_params() const { return displayParams; }
@@ -865,7 +853,6 @@ public:
 
 // --------------------------------------------------------------------------------
 // inlines:
-// --------------------------------------------------------------------------------
 
 inline void SEC_helix::flip() {
     strand_to_root = strand_to_root->get_other_strand();

@@ -132,33 +132,35 @@ GB_ERROR GBT_abort_rename_session() {
 static const char *currentTreeName = 0;
 
 static GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
-    char buffer[256];
-    static int counter = 0;
-    if (!tree) return 0;
-    if (tree->is_leaf) {
-        if (tree->name) {
-            gbt_renamed *rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, tree->name);
-            if (rns) {
-                char *newname;
-                if (rns->used_by == tree_index) { // species more than once in the tree
-                    sprintf(buffer, "%s_%i", rns->data, counter++);
-                    GB_warningf("Species '%s' more than once in '%s', creating zombie '%s'",
-                                tree->name, currentTreeName, buffer);
-                    newname = buffer;
+    if (tree) {
+        if (tree->is_leaf) {
+            if (tree->name) {
+                gbt_renamed *rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, tree->name);
+                if (rns) {
+                    char *newname;
+                    if (rns->used_by == tree_index) { // species more than once in the tree
+                        static int counter = 0;
+                        char       buffer[256];
+
+                        sprintf(buffer, "%s_%i", rns->data, counter++);
+                        GB_warningf("Species '%s' more than once in '%s', creating zombie '%s'",
+                                    tree->name, currentTreeName, buffer);
+                        newname = buffer;
+                    }
+                    else {
+                        newname = &rns->data[0];
+                    }
+                    freedup(tree->name, newname);
+                    rns->used_by = tree_index;
                 }
-                else {
-                    newname = &rns->data[0];
-                }
-                freedup(tree->name, newname);
-                rns->used_by = tree_index;
             }
         }
+        else {
+            gbt_rename_tree_rek(tree->leftson, tree_index);
+            gbt_rename_tree_rek(tree->rightson, tree_index);
+        }
     }
-    else {
-        gbt_rename_tree_rek(tree->leftson, tree_index);
-        gbt_rename_tree_rek(tree->rightson, tree_index);
-    }
-    return 0;
+    return NULL;
 }
 
 GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT

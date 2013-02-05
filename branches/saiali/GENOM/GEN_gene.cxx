@@ -111,9 +111,6 @@ static const GEN_position *loadPositions4gene(GBDATA *gb_gene) {
     return loaded_position;
 }
 
-//  ----------------------------------------------------------
-//      GEN_gene::init(GBDATA *gb_gene_, GEN_root *root_)
-//  ----------------------------------------------------------
 void GEN_gene::init(GBDATA *gb_gene_, GEN_root *root_) {
     gb_gene = gb_gene_;
     root    = root_;
@@ -158,9 +155,8 @@ void GEN_gene::reinit_NDS() const {
     nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
 }
 
-// -----------------
+// ------------------
 //      GEN_root
-// -----------------
 
 GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *gb_main_, AW_root *aw_root, GEN_graphic *gen_graphic_)
     : gb_main(gb_main_)

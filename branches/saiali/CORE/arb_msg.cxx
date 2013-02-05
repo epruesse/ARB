@@ -59,7 +59,7 @@ static size_t last_global_string_size = 0;
 
 // --------------------------------------------------------------------------------
 
-STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), const char *gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse)) {
+__ATTR__VFORMAT(1) static const char *gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse) {
     static char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // several buffers - used alternately
     static int  idx                             = 0;
     static char lifetime[GLOBAL_STRING_BUFFERS] = {};
@@ -132,7 +132,7 @@ STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), const char *gbs_vglobal_string(const char 
     return buffer[my_idx];
 }
 
-STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), char *gbs_vglobal_string_copy(const char *templat, va_list parg)) {
+__ATTR__VFORMAT(1) static char *gbs_vglobal_string_copy(const char *templat, va_list parg) {
     const char *gstr = gbs_vglobal_string(templat, parg, 1);
     return GB_strduplen(gstr, last_global_string_size);
 }
@@ -239,8 +239,6 @@ GB_ERROR GB_export_errorf(const char *templat, ...) {
     char     buffer[GBS_GLOBAL_STRING_SIZE];
     char    *p = buffer;
     va_list  parg;
-
-    memset(buffer, 0, 1000);
 
 #if defined(WARN_TODO)
 #warning dont prepend ARB ERROR here
@@ -490,7 +488,8 @@ void GB_informationf(const char *templat, ...) {
 
 void GBS_reuse_buffer(const char *global_buffer) {
     // If you've just shortely used a buffer, you can put it back here
-    gbs_vglobal_string(global_buffer, 0, -1); // omg hax
+    va_list empty;
+    gbs_vglobal_string(global_buffer, empty, -1); // omg hax
 }
 
 #if defined(WARN_TODO)

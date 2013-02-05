@@ -59,13 +59,12 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
 
     return false;
 }
-//  ---------------------------------------------------------------------
-//      static bool findNextProbe(POS_TREE *node, char *probe, int restlen)
-//  ---------------------------------------------------------------------
-// searches next probe after 'probe' ('probe' itself may not exist)
-// returns: true if next probe was found
-// 'probe' is modified to next probe
+
 static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) {
+    // searches next probe after 'probe' ('probe' itself may not exist)
+    // returns: true if next probe was found
+    // 'probe' is modified to next probe
+
     if (restlen==0) return false;  // in this case we found the recent probe
     // returning false upwards takes the next after
 
@@ -121,24 +120,28 @@ int PT_find_exProb(PT_exProb *pep, int) {
             pep->next_probe.size = pep->plength+1;
 
             found = findLeftmostProbe(pt, pep->next_probe.data, pep->plength, 0);
-
-            pt_assert(pep->next_probe.data[pep->plength] == 0);
-            pt_assert(strlen(pep->next_probe.data) == (size_t)pep->plength);
         }
-
-        if (!found) {
+        else {
             found = findNextProbe(pt, pep->next_probe.data, pep->plength, 0);
-
-            pt_assert(pep->next_probe.data[pep->plength] == 0);
-            pt_assert(strlen(pep->next_probe.data) == (size_t)pep->plength);
         }
+        
+        pt_assert(pep->next_probe.data[pep->plength] == 0);
+        pt_assert(strlen(pep->next_probe.data) == (size_t)pep->plength);
+
         if (!found) break;
 
         // append the probe to the probe list
 
-        if (!first) GBS_strcat(gbs_str, ";");
+        if (!first) GBS_chrcat(gbs_str, (char)pep->separator);
         first = false;
-        GBS_strcat(gbs_str, pep->next_probe.data);
+        if (pep->readable) {
+            char *readable = readable_probe(pep->next_probe.data, pep->next_probe.size, pep->tu);
+            GBS_strcat(gbs_str, readable);
+            free(readable);
+        }
+        else {
+            GBS_strcat(gbs_str, pep->next_probe.data);
+        }
     }
 
     pep->result = GBS_strclose(gbs_str);

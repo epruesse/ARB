@@ -20,6 +20,8 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
+#include <aw_select.hxx>
+
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 
@@ -311,18 +313,17 @@ static void saiChanged_callback(AW_root *awr) {
     free(saiName);
 }
 
-static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_aws, AW_CL cl_id) {
-    AW_window         *aws              = (AW_window*)cl_aws;
-    AW_selection_list *id               = (AW_selection_list*)cl_id;
+static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_colorTransList) {
+    AW_selection_list *colorTransList   = (AW_selection_list*)cl_colorTransList;
     char              *clrTransTabNames = awr->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES)->read_string();
 
-    aws->clear_selection_list(id);
+    colorTransList->clear();
 
     for (char *tok = strtok(clrTransTabNames, "\n"); tok; tok = strtok(0, "\n")) {
-        aws->insert_selection(id, tok, tok);
+        colorTransList->insert(tok, tok);
     }
-    aws->insert_default_selection(id, "????", "");
-    aws->update_selection_list(id);
+    colorTransList->insert_default("????", "");
+    colorTransList->update();
 
     free(clrTransTabNames);
 }
@@ -492,12 +493,12 @@ static void deleteColorTranslationTable(AW_window *aws) {
 }
 
 static AW_selection_list *buildClrTransTabNamesList(AW_window *aws) {
-    AW_root           *awr = aws->get_root();
-    AW_selection_list *id  = aws->create_selection_list(AWAR_SAI_CLR_TRANS_TABLE);
+    AW_root           *awr            = aws->get_root();
+    AW_selection_list *colorTransList = aws->create_selection_list(AWAR_SAI_CLR_TRANS_TABLE);
 
-    update_ClrTransTabNamesList_cb(awr, (AW_CL)aws, (AW_CL)id);
+    update_ClrTransTabNamesList_cb(awr, (AW_CL)colorTransList);
 
-    return id;
+    return colorTransList;
 }
 
 const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
@@ -748,7 +749,7 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
         aws->update_toggle_field();
 
         AW_awar *trans_tabs = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
-        trans_tabs->add_callback(update_ClrTransTabNamesList_cb, (AW_CL)aws, (AW_CL)clrTransTableLst);
+        trans_tabs->add_callback(update_ClrTransTabNamesList_cb, (AW_CL)clrTransTableLst);
         trans_tabs->touch();        // force update
     }
     aws->show();

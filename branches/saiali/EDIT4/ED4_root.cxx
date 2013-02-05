@@ -466,16 +466,19 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int * /* cl */, GB_C
 
         MAXSEQUENCECHARACTERLENGTH = new_length;
 
-        const char *err = ED4_ROOT->helix->init(GLOBAL_gb_main); // reload helix
-        if (err) { aw_message(err); err = 0; }
-
-        err = ED4_ROOT->ecoli_ref->init(GLOBAL_gb_main); // reload ecoli
-        if (err) { aw_message(err); err = 0; }
+        {
+            const char *err = ED4_ROOT->helix->init(GLOBAL_gb_main); // reload helix
+            aw_message_if(err);
+        }
+        {
+            const char *err = ED4_ROOT->ecoli_ref->init(GLOBAL_gb_main); // reload ecoli
+            aw_message_if(err);
+        }
 
         if (ED4_ROOT->alignment_type == GB_AT_AA) {
             // TODO: is this needed here?
-            err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len); // reload protstruct
-            if (err) { aw_message(err); err = 0; }
+            const char *err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len); // reload protstruct
+            aw_message_if(err);
         }
 
         if (was_increased) {
@@ -523,22 +526,25 @@ static ARB_ERROR force_group_update(ED4_base *base) {
     return NULL;
 }
 
-ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_string_top) // creates internal hierarchy of editor
-{
-    int index = 0, x = 0, change = 0;
-    ED4_index y = 0, help = 0;
-    ED4_base *x_link, *y_link, *width_link, *height_link;
-    long total_no_of_species, total_no_of_groups, group_count, species_count;
+ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_string_top) {
+    // creates internal hierarchy of editor
 
-    // count species and related info (e.g. helix) displayed in the top region
-    database->calc_no_of_all(area_string_top, &group_count, &species_count);
-    total_no_of_groups = group_count;
-    total_no_of_species = species_count;
+    long total_no_of_groups  = 0;
+    long total_no_of_species = 0;
+    {
+        // count species and related info (e.g. helix) displayed in the top region (a == 0)
+        // count no of species and sais including groups in middle region (a == 1)
 
-    // count no of species and sais including groups in middle region
-    database->calc_no_of_all(area_string_middle, &group_count, &species_count);
-    total_no_of_groups += group_count;
-    total_no_of_species += species_count;
+        const char *area_string[2] = { area_string_top, area_string_middle };
+        for (int a = 0; a<2; ++a) {
+            long group_count;
+            long species_count;
+            database->calc_no_of_all(area_string[a], &group_count, &species_count);
+
+            total_no_of_groups  += group_count;
+            total_no_of_species += species_count;
+        }
+    }
 
     arb_progress startup_progress("EDIT4 startup");
 
@@ -567,135 +573,134 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
                            new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal", /* NULL, */ 250, 0, MAXINFOWIDTH, col_stat_term_height, NULL),
                            new ED4_columnStat_terminal("Reference_ColumnStatistics_Terminal", 300, 0, 300, col_stat_term_height, NULL));
     }
-    x = 100;
+
 
     recalc_font_group();
 
+    ED4_index y = 0;
+
     {
-        ED4_area_manager *middle_area_manager;
-        ED4_tree_terminal *tree_terminal;
-        ED4_multi_species_manager *top_multi_species_manager;
-        ED4_multi_species_manager *mid_multi_species_manager;
-        ED4_spacer_terminal *top_spacer_terminal;
-        ED4_spacer_terminal *top_mid_spacer_terminal;
-        ED4_spacer_terminal *top_multi_spacer_terminal_beg;
-        ED4_spacer_terminal *mid_multi_spacer_terminal_beg;
-        ED4_line_terminal *top_mid_line_terminal;
-        ED4_line_terminal *mid_bot_line_terminal;
-        ED4_spacer_terminal *total_bottom_spacer;
+        arb_progress species_progress("Loading species", total_no_of_species);
+        
+        const int XPOS_MULTIMAN = 100;
 
         // ********** Top Area beginning **********
 
+        ED4_multi_species_manager *top_multi_species_manager;
+        ED4_spacer_terminal       *top_spacer_terminal;
+        ED4_spacer_terminal       *top_mid_spacer_terminal;
+        ED4_spacer_terminal       *top_multi_spacer_terminal_beg;
+        ED4_line_terminal         *top_mid_line_terminal;
         {
-            arb_progress species_progress("Loading species", total_no_of_species);
-            {
-                ED4_area_manager *top_area_manager = new ED4_area_manager("Top_Area_Manager", 0, y, 0, 0, device_manager);
-                device_manager->children->append_member(top_area_manager);
-                top_area_man = top_area_manager;
+            ED4_area_manager *top_area_manager = new ED4_area_manager("Top_Area_Manager", 0, y, 0, 0, device_manager);
+            device_manager->children->append_member(top_area_manager);
+            top_area_man = top_area_manager;
 
-                top_spacer_terminal = new ED4_spacer_terminal("Top_Spacer", true, 0, 0, 100, 10, top_area_manager);
-                top_area_manager->children->append_member(top_spacer_terminal);
+            top_spacer_terminal = new ED4_spacer_terminal("Top_Spacer", true, 0, 0, 100, 10, top_area_manager);
+            top_area_manager->children->append_member(top_spacer_terminal);
 
-                top_multi_species_manager = new ED4_multi_species_manager("Top_MultiSpecies_Manager", x, 0, 0, 0, top_area_manager);
-                top_area_manager->children->append_member(top_multi_species_manager);
+            top_multi_species_manager = new ED4_multi_species_manager("Top_MultiSpecies_Manager", XPOS_MULTIMAN, 0, 0, 0, top_area_manager);
+            top_area_manager->children->append_member(top_multi_species_manager);
 
-                top_multi_spacer_terminal_beg = new ED4_spacer_terminal("Top_Multi_Spacer_Terminal_Beg", true, 0, 0, 0, 3, top_multi_species_manager);
-                top_multi_species_manager->children->append_member(top_multi_spacer_terminal_beg);
+            top_multi_spacer_terminal_beg = new ED4_spacer_terminal("Top_Multi_Spacer_Terminal_Beg", true, 0, 0, 0, 3, top_multi_species_manager);
+            top_multi_species_manager->children->append_member(top_multi_spacer_terminal_beg);
 
-                y+=3;
+            y += 3;
 
-                reference = new AWT_reference(GLOBAL_gb_main);
-                database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
-                                      area_string_top, &index, &y, species_progress);
-                GB_pop_transaction(GLOBAL_gb_main);
+            reference = new AWT_reference(GLOBAL_gb_main);
 
-                const int TOP_MID_LINE_HEIGHT   = 3;
-                int       TOP_MID_SPACER_HEIGHT = font_group.get_max_height()-TOP_MID_LINE_HEIGHT;
+            int index = 0;
+            database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
+                                  area_string_top, &index, &y, species_progress);
+            GB_pop_transaction(GLOBAL_gb_main);
 
-                top_mid_line_terminal = new ED4_line_terminal("Top_Mid_Line_Terminal", 0, y, 0, TOP_MID_LINE_HEIGHT, device_manager);    // width will be set below
-                device_manager->children->append_member(top_mid_line_terminal);
+            const int TOP_MID_LINE_HEIGHT   = 3;
+            int       TOP_MID_SPACER_HEIGHT = font_group.get_max_height()-TOP_MID_LINE_HEIGHT;
 
-                y += TOP_MID_LINE_HEIGHT;
+            top_mid_line_terminal = new ED4_line_terminal("Top_Mid_Line_Terminal", 0, y, 0, TOP_MID_LINE_HEIGHT, device_manager);    // width will be set below
+            device_manager->children->append_member(top_mid_line_terminal);
 
-
-                top_mid_spacer_terminal = new ED4_spacer_terminal("Top_Middle_Spacer", true, 0, y, 880, TOP_MID_SPACER_HEIGHT,   device_manager);
-                device_manager->children->append_member(top_mid_spacer_terminal);
-
-                // needed to avoid text-clipping problems:
-                main_manager->set_top_middle_spacer_terminal(top_mid_spacer_terminal);
-                main_manager->set_top_middle_line_terminal(top_mid_line_terminal);
-
-                y += TOP_MID_SPACER_HEIGHT; // add top-mid_spacer_terminal height
-            }
-
-            // ********** Top Area end **********
+            y += TOP_MID_LINE_HEIGHT;
 
 
-            // ********** Middle Area beginning **********
+            top_mid_spacer_terminal = new ED4_spacer_terminal("Top_Middle_Spacer", true, 0, y, 880, TOP_MID_SPACER_HEIGHT,   device_manager);
+            device_manager->children->append_member(top_mid_spacer_terminal);
 
-            {
-                middle_area_manager = new ED4_area_manager("Middle_Area_Manager", 0, y, 0, 0, device_manager);
-                device_manager->children->append_member(middle_area_manager);
-                middle_area_man = middle_area_manager;
+            // needed to avoid text-clipping problems:
+            main_manager->set_top_middle_spacer_terminal(top_mid_spacer_terminal);
+            main_manager->set_top_middle_line_terminal(top_mid_line_terminal);
 
-                tree_terminal = new ED4_tree_terminal("Tree", 0, 0, 2, change, middle_area_manager);
-                middle_area_manager->children->append_member(tree_terminal);
-
-                mid_multi_species_manager = new ED4_multi_species_manager("Middle_MultiSpecies_Manager", x, 0, 0, 0, middle_area_manager);
-                middle_area_manager->children->append_member(mid_multi_species_manager);
-
-                mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg", true, 0, 0, 0, 3, mid_multi_species_manager);
-                mid_multi_species_manager->children->append_member(mid_multi_spacer_terminal_beg);
-
-                y+=3;               // dummy height, to create a dummy layout ( to preserve order of objects )
-
-                scroll_links.link_for_ver_slider = middle_area_manager;
-
-                help = y;
-                index = 0;
-                {
-                    GB_transaction dummy(GLOBAL_gb_main);
-                    database->scan_string(mid_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
-                                          area_string_middle, &index, &y, species_progress);
-                }
-
-                {
-                    ED4_spacer_terminal *mid_bot_spacer_terminal = new ED4_spacer_terminal("Middle_Bot_Spacer_Terminal", true, 0, y, 880, 10, device_manager);
-                    device_manager->children->append_member(mid_bot_spacer_terminal);
-                }
-
-                tree_terminal->extension.size[HEIGHT] = y - help;
-
-                y += 10; // add top-mid_spacer_terminal height
-
-                mid_bot_line_terminal = new ED4_line_terminal("Mid_Bot_Line_Terminal", 0, y, 0, 3, device_manager);    // width will be set below
-                device_manager->children->append_member(mid_bot_line_terminal);
-                y += 3;
-
-                total_bottom_spacer = new ED4_spacer_terminal("Total_Bottom_Spacer_terminal", true, 0, y, 0, 10000, device_manager);
-                device_manager->children->append_member(total_bottom_spacer);
-                y += 10000;
-            }
-
-            // ********** Middle Area end **********
-
-            if (scroll_links.link_for_hor_slider) {
-                long ext_width = long(scroll_links.link_for_hor_slider->extension.size[WIDTH]);
-
-                top_multi_spacer_terminal_beg->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-                mid_multi_spacer_terminal_beg->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-                total_bottom_spacer->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-
-                top_mid_line_terminal->extension.size[WIDTH] = ext_width + TREETERMINALSIZE + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-                mid_bot_line_terminal->extension.size[WIDTH] = ext_width + TREETERMINALSIZE + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-
-            }
-
-            tree_terminal->set_links(NULL, mid_multi_species_manager);                          // set links
-            top_spacer_terminal->set_links(tree_terminal, top_multi_species_manager);
-            top_mid_spacer_terminal->set_links(middle_area_manager, NULL);
-            total_bottom_spacer->set_links(mid_bot_line_terminal, 0);
+            y += TOP_MID_SPACER_HEIGHT; // add top-mid_spacer_terminal height
         }
+
+        // ********** Middle Area beginning **********
+
+        ED4_area_manager          *middle_area_manager;
+        ED4_tree_terminal         *tree_terminal;
+        ED4_multi_species_manager *mid_multi_species_manager;
+        ED4_spacer_terminal       *mid_multi_spacer_terminal_beg;
+        ED4_line_terminal         *mid_bot_line_terminal;
+        ED4_spacer_terminal       *total_bottom_spacer;
+        {
+            middle_area_manager = new ED4_area_manager("Middle_Area_Manager", 0, y, 0, 0, device_manager);
+            device_manager->children->append_member(middle_area_manager);
+            middle_area_man = middle_area_manager;
+
+            tree_terminal = new ED4_tree_terminal("Tree", 0, 0, 2, 0, middle_area_manager);
+            middle_area_manager->children->append_member(tree_terminal);
+
+            mid_multi_species_manager = new ED4_multi_species_manager("Middle_MultiSpecies_Manager", XPOS_MULTIMAN, 0, 0, 0, middle_area_manager);
+            middle_area_manager->children->append_member(mid_multi_species_manager);
+
+            mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg", true, 0, 0, 0, 3, mid_multi_species_manager);
+            mid_multi_species_manager->children->append_member(mid_multi_spacer_terminal_beg);
+
+            y+=3;               // dummy height, to create a dummy layout ( to preserve order of objects )
+
+            scroll_links.link_for_ver_slider = middle_area_manager;
+
+            ED4_index help = y;
+            {
+                GB_transaction dummy(GLOBAL_gb_main);
+                int index  = 0;
+                database->scan_string(mid_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
+                                      area_string_middle, &index, &y, species_progress);
+            }
+
+            {
+                ED4_spacer_terminal *mid_bot_spacer_terminal = new ED4_spacer_terminal("Middle_Bot_Spacer_Terminal", true, 0, y, 880, 10, device_manager);
+                device_manager->children->append_member(mid_bot_spacer_terminal);
+            }
+
+            tree_terminal->extension.size[HEIGHT] = y - help;
+
+            y += 10; // add top-mid_spacer_terminal height
+
+            mid_bot_line_terminal = new ED4_line_terminal("Mid_Bot_Line_Terminal", 0, y, 0, 3, device_manager);    // width will be set below
+            device_manager->children->append_member(mid_bot_line_terminal);
+            y += 3;
+
+            total_bottom_spacer = new ED4_spacer_terminal("Total_Bottom_Spacer_terminal", true, 0, y, 0, 10000, device_manager);
+            device_manager->children->append_member(total_bottom_spacer);
+            y += 10000;
+        }
+
+        if (scroll_links.link_for_hor_slider) {
+            long ext_width = long(scroll_links.link_for_hor_slider->extension.size[WIDTH]);
+
+            top_multi_spacer_terminal_beg->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
+            mid_multi_spacer_terminal_beg->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
+            total_bottom_spacer->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
+
+            top_mid_line_terminal->extension.size[WIDTH] = ext_width + TREETERMINALSIZE + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
+            mid_bot_line_terminal->extension.size[WIDTH] = ext_width + TREETERMINALSIZE + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
+
+        }
+
+        tree_terminal->set_links(NULL, mid_multi_species_manager);                          // set links
+        top_spacer_terminal->set_links(tree_terminal, top_multi_species_manager);
+        top_mid_spacer_terminal->set_links(middle_area_manager, NULL);
+        total_bottom_spacer->set_links(mid_bot_line_terminal, 0);
     }
 
     first_window->update_window_coords();
@@ -720,24 +725,26 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     resize_all();
 
     e4_assert(main_manager);
-    x_link = scroll_links.link_for_hor_slider;
-    y_link = scroll_links.link_for_ver_slider;
 
-    width_link  = x_link;
-    height_link = y_link;
+    {
+        ED4_base *x_link      = scroll_links.link_for_hor_slider;
+        ED4_base *y_link      = scroll_links.link_for_ver_slider;
+        ED4_base *width_link  = x_link;
+        ED4_base *height_link = y_link;
 
-    ED4_window *win = first_window;
-    while (win) {
-        win->set_scrolled_rectangle(x_link, y_link, width_link, height_link);
-        win->aww->show();
-        win->update_scrolled_rectangle();
-        win = win->next;
+        ED4_window *win = first_window;
+        while (win) {
+            win->set_scrolled_rectangle(x_link, y_link, width_link, height_link);
+            win->aww->show();
+            win->update_scrolled_rectangle();
+            win = win->next;
+        }
     }
 
     ED4_trigger_instant_refresh();
     ED4_finish_and_show_notFoundMessage();
 
-    return (ED4_R_OK);
+    return ED4_R_OK;
 }
 
 ED4_returncode ED4_root::get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_pos y) {
@@ -806,9 +813,8 @@ static void reload_ecoli_cb() {
     ED4_request_full_refresh();
 }
 
-// --------------------------------------------------------------------------------
-//  recursion through all species
-// --------------------------------------------------------------------------------
+// ---------------------------------------
+//      recursion through all species
 
 typedef ARB_ERROR (*ED4_Species_Callback)(GBDATA*, AW_CL);
 
@@ -841,10 +847,6 @@ static ARB_ERROR do_sth_with_species(ED4_base *base, AW_CL cl_spec_cb, AW_CL cd)
 static ARB_ERROR ED4_with_all_loaded_species(ED4_Species_Callback cb, AW_CL cd) {
     return ED4_ROOT->root_group_man->route_down_hierarchy(do_sth_with_species, (AW_CL)cb, cd);
 }
-
-// --------------------------------------------------------------------------------
-//  faligner
-// --------------------------------------------------------------------------------
 
 static bool has_species_name(ED4_base *base, AW_CL cl_species_name) {
     ED4_species_name_terminal *name_term = base->to_species_name_terminal();
@@ -1396,9 +1398,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     static AW_gc_manager first_gc_manager = 0;
     if (!first_gc_manager) first_gc_manager = aw_gc_manager;
 
-    // ------------------------------
-    //  File
-    // ------------------------------
+    // --------------
+    //      File
 
 #if defined(DEBUG)
     AWT_create_debug_menu(awmm);
@@ -1419,9 +1420,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     if (clone) awmm->insert_menu_topic("close", "CLOSE", "C", 0, AWM_ALL, ED4_quit_editor, 0, 0);
     else       awmm->insert_menu_topic("quit",   "QUIT",  "Q", 0, AWM_ALL, ED4_quit_editor, 0, 0);
 
-    // ------------------------------
-    //  Create
-    // ------------------------------
+    // ----------------
+    //      Create
 
     awmm->create_menu("Create", "C", AWM_ALL);
     awmm->insert_menu_topic("create_species",                "Create new species",                "n", 0, AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)0);
@@ -1431,9 +1431,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("create_group",           "Create new Group",              "G", 0, AWM_ALL, group_species_cb, 0, 0);
     awmm->insert_menu_topic("create_groups_by_field", "Create new groups using Field", "F", 0, AWM_ALL, group_species_cb, 1, 0);
 
-    // ------------------------------
-    //  Edit
-    // ------------------------------
+    // --------------
+    //      Edit
 
     awmm->create_menu("Edit", "E", AWM_ALL);
     awmm->insert_menu_topic("refresh",      "Refresh [Ctrl-L]",           "f", 0, AWM_ALL, (AW_CB)ED4_request_full_refresh,       0, 0);
@@ -1482,9 +1481,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 #endif // DEBUG
     }
 
-    // ------------------------------
-    //  View
-    // ------------------------------
+    // --------------
+    //      View
 
     awmm->create_menu("View", "V", AWM_ALL);
     awmm->insert_sub_menu("Search", "S");
@@ -1545,9 +1543,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         awmm->insert_menu_topic("Protein_Viewer", "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_CreateProteinViewer_window, 0);
     }
 
-    // ------------------------------
-    //  Block
-    // ------------------------------
+    // ---------------
+    //      Block
 
     awmm->create_menu("Block", "B", AWM_ALL);
 
@@ -1581,9 +1578,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("shift_left",        "Shift block left ",           "l", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_LEFT),       0);
     awmm->insert_menu_topic("shift_right",       "Shift block right",           "r", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_RIGHT),      0);
 
-    // ------------------------------
-    //  Properties
-    // ------------------------------
+    // --------------------
+    //      Properties
 
     awmm->create_menu("Properties", "P", AWM_ALL);
 
@@ -1652,9 +1648,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->shadow_width(1);
     awmm->load_xfig("edit4/editmenu.fig", false);
 
-    // -------------------------
+    // --------------------------
     //      help /quit /fold
-    // -------------------------
 
     awmm->button_length(0);
 
@@ -1674,9 +1669,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->help_text("e4.hlp");
     awmm->create_toggle(AWAR_EDIT_TITLE_MODE, "#more.bitmap", "#less.bitmap");
 
-    // ------------------
+    // -------------------
     //      positions
-    // ------------------
 
     awmm->button_length(0);
 
@@ -1712,9 +1706,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->callback((AW_CB)ED4_set_helixnr, (AW_CL) current_ed4w()->awar_path_for_helixNr, AW_CL(0));
     awmm->create_input_field(current_ed4w()->awar_path_for_helixNr, 5);
 
-    // ---------------------------
+    // ----------------------------
     //      jump/get/undo/redo
-    // ---------------------------
 
     awmm->button_length(4);
 
@@ -1740,9 +1733,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->help_text("undo.hlp");
     awmm->create_button("REDO", "#redo.bitmap");
 
-    // -------------------------
+    // --------------------------
     //      aligner / SAIviz
-    // -------------------------
 
     awmm->button_length(7);
 
@@ -1756,9 +1748,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->help_text("visualizeSAI.hlp");
     awmm->create_button("SAIVIZ", "SAIviz");
 
-    // ------------------------------------------
+    // -------------------------------------------
     //      align/insert/protection/direction
-    // ------------------------------------------
 
     awmm->button_length(0);
 
@@ -1787,9 +1778,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->at("direct");
     awmm->create_toggle(AWAR_EDIT_RIGHTWARD, "#edit/3to5.bitmap", "#edit/5to3.bitmap", 7);
 
-    // ------------------------
+    // -------------------------
     //      secedit / rna3d
-    // ------------------------
 
     int xoffset = 0;
 
@@ -1838,9 +1828,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         aw_set_local_message();
     }
 
-    // --------------------
+    // ---------------------
     //      'more' area
-    // --------------------
 
     awmm->at("cons");
     awmm->create_toggle(ED4_AWAR_CONSENSUS_SHOW, "#edit/nocons.bitmap", "#edit/cons.bitmap");

@@ -30,6 +30,7 @@
 
 #include <SigHandler.h>
 #include <setjmp.h>
+#include <unistd.h>
 #include <string>
 
 using namespace std;
@@ -46,7 +47,8 @@ struct Globals : virtual Noncopyable {
     Globals()
         : inside_test(false),
           runDir(NULL),
-          pid(getpid())
+          pid(getpid()),
+          libname(NULL)
     {
         running_on_valgrind = (RUNNING_ON_VALGRIND>0);
     }
@@ -68,7 +70,7 @@ static Globals GLOBAL;
 // #define TRACE_PREFIX "UnitTester:0: "
 #define TRACE_PREFIX "UnitTester: "
 
-STATIC_ATTRIBUTED(__ATTR__FORMAT(1), void trace(const char *format, ...)) {
+__ATTR__FORMAT(1) static void trace(const char *format, ...) {
     va_list parg;
 
     fflush(stdout);
@@ -100,7 +102,7 @@ enum TrapCode {
     TRAP_TERM,
 };
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void UNITTEST_sigsegv_handler(int sig)) {
+__ATTR__NORETURN static void UNITTEST_sigsegv_handler(int sig) {
     if (GLOBAL.inside_test) {
         int  trap_code;
         const char *backtrace_cause = NULL;
@@ -236,7 +238,7 @@ public:
 
 inline Flag getLocalFlag(const char *flagname) {
     string localname  = string(GLOBAL.runDir)+"/../flags/"+flagname+'.'+GLOBAL.libname;
-    return Flag(localname.c_str());
+    return Flag(localname);
 }
 
 static bool flag_callback(arb_test::FlagAction action, const char *name) {
@@ -276,7 +278,7 @@ inline void sleepms(long ms) {
 }
 
 #if (DEADLOCKGUARD == 1)
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void deadlockguard(long max_allowed_duration_ms, bool detect_environment_calls)) {
+__ATTR__NORETURN static void deadlockguard(long max_allowed_duration_ms, bool detect_environment_calls) {
     // this function is completely incompatible with debuggers
     sleepms(max_allowed_duration_ms);
 
@@ -332,6 +334,7 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
         deadlockguard(max_allowed_duration_ms, detect_environment_calls);
 #else
 #warning DEADLOCKGUARD has been disabled (not default!)
+        // cppcheck-suppress selfAssignment
         detect_environment_calls = detect_environment_calls; // dont warn
 #endif
         exit(EXIT_FAILURE);
@@ -339,8 +342,6 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
 
     return result;
 }
-
-// --------------------------------------------------------------------------------
 
 // --------------------------------------------------------------------------------
 

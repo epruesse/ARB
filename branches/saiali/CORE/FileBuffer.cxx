@@ -37,7 +37,7 @@ bool FileBuffer::getLine_intern(string& line)
 {
     if (offset==read) return false;
 
-    size_t lineEnd;
+    size_t lineEnd = 0;
     {
         size_t  rest   = read-offset;
         char   *eolPos = (char*)memchr(buf+offset, eol[0], rest);
@@ -54,12 +54,14 @@ bool FileBuffer::getLine_intern(string& line)
         }
         else {
             lineEnd = eolPos-buf;
-            if (lineEnd>0 && buf[lineEnd-1] == eol[1]) {
+            if (lineEnd>0 && lineEnd>offset && buf[lineEnd-1] == eol[1]) {
                 swap(eol[0], eol[1]);
                 lineEnd--;
             }
         }
     }
+
+    fb_assert(lineEnd >= offset);
 
     if (lineEnd<read) { // found end of line char
         line    = string(buf+offset, lineEnd-offset);
@@ -68,6 +70,7 @@ bool FileBuffer::getLine_intern(string& line)
         offset = lineEnd+1;
         if (offset == read) fillBuffer();
 
+        // cppcheck-suppress redundantOperationIn (fails to track 'offset' and 'read' modified by fillBuffer)
         if (offset<read) { // otherwise EOF!
             char nextChar = buf[offset];
             if (is_EOL(nextChar) && nextChar != lf) offset++; // skip DOS linefeed

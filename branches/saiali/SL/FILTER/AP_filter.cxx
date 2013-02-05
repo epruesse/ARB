@@ -20,6 +20,7 @@ void AP_filter::init(size_t size) {
     filter_len         = size;
     update             = AP_timer();
     simplify_type      = AWT_FILTER_SIMPLIFY_NOT_INITIALIZED;
+    simplify[0]        = 0; // silence cppcheck-warning
     bootstrap          = NULL;
     filterpos_2_seqpos = NULL;
 }
@@ -30,13 +31,13 @@ AP_filter::AP_filter(size_t size) {
 }
 
 AP_filter::AP_filter(const AP_filter& other)
-    : filter_mask(new bool[other.filter_len])
-    , filter_len(other.filter_len)
-    , real_len(other.real_len)
-    , update(other.update)
-    , simplify_type(other.simplify_type)
-    , bootstrap(NULL)
-    , filterpos_2_seqpos(NULL)
+    : filter_mask(new bool[other.filter_len]),
+      filter_len(other.filter_len),
+      real_len(other.real_len),
+      update(other.update),
+      simplify_type(other.simplify_type),
+      bootstrap(NULL),
+      filterpos_2_seqpos(NULL)
 {
     memcpy(filter_mask, other.filter_mask, filter_len*sizeof(*filter_mask));
     memcpy(simplify, other.simplify, sizeof(simplify)*sizeof(*simplify));

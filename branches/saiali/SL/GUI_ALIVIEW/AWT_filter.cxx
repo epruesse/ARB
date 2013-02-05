@@ -5,6 +5,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
+#include <aw_select.hxx>
 #include <AP_filter.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
@@ -13,7 +14,6 @@
 static void awt_create_select_filter_window_aw_cb(void *, struct adfiltercbstruct *cbs)
 {       // update the variables
     AW_root *aw_root = cbs->awr;
-    char    buffer[256];
     GB_push_transaction(cbs->gb_main);
     char *target = aw_root->awar(cbs->def_subname)->read_string();
     char *to_free_target = target;
@@ -71,6 +71,7 @@ static void awt_create_select_filter_window_aw_cb(void *, struct adfiltercbstruc
 
         for (i=0; i<len-10; i++) {  // place markers
             if (i%10 == 0) {
+                char buffer[256];
                 sprintf(buffer, "%li", i+1);
                 strncpy(data+i+1, buffer, strlen(buffer));
             }
@@ -141,7 +142,7 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
 
                     const char *target = GBS_global_string("%c%s%c%s", tpre, GB_read_key_pntr(gb_data), 1, name);
 
-                    cbs->aw_filt->insert_selection(cbs->id, str, target);
+                    cbs->filterlist->insert(str, target);
                     free(str);
                     count++;
                 }
@@ -153,13 +154,12 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
 static void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs) {
     // update list widget and variables
     GB_push_transaction(cbs->gb_main);
-    GBDATA *gb_extended;
 
-    if (cbs->id) {
+    if (cbs->filterlist) {
         char *use = cbs->awr->awar(cbs->def_alignment)->read_string();
 
-        cbs->aw_filt->clear_selection_list(cbs->id);
-        cbs->aw_filt->insert_default_selection(cbs->id, "none", "");
+        cbs->filterlist->clear();
+        cbs->filterlist->insert_default("none", "");
 
         const char *name = GBT_readOrCreate_char_pntr(cbs->gb_main, AWAR_SPECIES_NAME, "");
         if (name[0]) {
@@ -169,14 +169,14 @@ static void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruc
             }
         }
 
-        for (gb_extended = GBT_first_SAI(cbs->gb_main);
+        for (GBDATA *gb_extended = GBT_first_SAI(cbs->gb_main);
              gb_extended;
              gb_extended = GBT_next_SAI(gb_extended))
         {
             awt_add_sequences_to_list(cbs, use, gb_extended, "", ' ');
         }
 
-        cbs->aw_filt->update_selection_list(cbs->id);
+        cbs->filterlist->update();
         free(use);
     }
     awt_create_select_filter_window_aw_cb(0, cbs);
@@ -243,9 +243,9 @@ adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, co
     aw_root->awar_string(acbs->def_2filter);
     aw_root->awar_string(acbs->def_2alignment);
 
-    acbs->id      = 0;
-    acbs->aw_filt = 0;
-    acbs->awr     = aw_root;
+    acbs->filterlist = 0;
+    acbs->aw_filt    = 0;
+    acbs->awr        = aw_root;
     {
         char *fname = aw_root->awar(acbs->def_name)->read_string();
         const char *fsname = GBS_global_string(" data%c%s", 1, fname);
@@ -351,7 +351,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
         acbs->aw_filt = aws; // store the filter selection window in 'acbs'
 
         aws->at("filter");
-        acbs->id = aws->create_selection_list(acbs->def_subname, 0, "", 20, 3);
+        acbs->filterlist = aws->create_selection_list(acbs->def_subname, 20, 3);
 
         aws->at("2filter");
         aws->callback(AW_POPUP, (AW_CL)awt_create_2_filter_window, (AW_CL)acbs);

@@ -45,48 +45,121 @@ gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 // ----------------------------------------------
 //      global data initialization / cleanup
 
+void probe_statistic_struct::setup() {
+    cut_offs    = 0;
+    single_node = 0;
+    short_node  = 0;
+    long_node   = 0;
+    longs       = 0;
+    shorts      = 0;
+    shorts2     = 0;
+    chars       = 0;
+
+#ifdef ARB_64
+    int_node = 0;
+    ints     = 0;
+    ints2    = 0;
+    maxdiff  = 0;
+#endif
+}
+
+void probe_struct_global::setup() {
+    // init uninitialized data
+    
+    gb_shell        = NULL;
+    gb_main         = NULL;
+    gb_species_data = NULL;
+    gb_sai_data     = NULL;
+
+    alignment_name = NULL;
+    namehash       = NULL;
+
+    data_count = 0;
+    data       = NULL;
+
+    max_size   = 0;
+    char_count = 0;
+    
+    mismatches = 0;
+    wmismatches = 0.0;
+    N_mismatches = 0;
+
+    for (size_t i = 0; i<ARRAY_ELEMS(w_N_mismatches); ++i) {
+        w_N_mismatches[i] = 0;
+    }
+
+    reversed = 0;
+
+    pos_to_weight = NULL;
+    for (size_t i=0; i<ARRAY_ELEMS(complement); i++) {
+        complement[i] = PT_complement(i);
+    }
+
+    deep   = 0;
+    height = 0;
+    length = 0;
+
+    sort_by = 0;
+
+    probe      = NULL;
+    main_probe = NULL;
+
+    server_name = NULL;
+    link        = NULL;
+
+    main.clear();
+    
+    com_so = NULL;
+    pt     = NULL;
+    ptmain = NULL;
+
+    stat.setup();
+}
+
+void probe_struct_global::cleanup() {
+    if (gb_main) {
+        delete [] data;
+
+        GB_close(gb_main);
+        gb_main         = NULL;
+        gb_species_data = NULL;
+        gb_sai_data     = NULL;
+    }
+
+    if (gb_shell) {
+        delete gb_shell;
+        gb_shell = NULL;
+    }
+
+    if (namehash) GBS_free_hash(namehash);
+
+    free(ecoli);
+    delete bi_ecoli;
+    delete [] pos_to_weight;
+    free(alignment_name);
+    free(ptmain);
+    free(com_so);
+
+    setup();
+}
+
 static bool psg_initialized = false;
 static void PT_init_psg() {
     pt_assert(!psg_initialized);
-    memset((char *)&psg, 0, sizeof(psg));
-    int i;
-    for (i=0; i<256; i++) {
-        psg.complement[i] = PT_complement(i);
-    }
+    psg.setup();
     psg_initialized = true;
 }
 
 static void PT_exit_psg() {
+#if defined(ASSERTION_USED)
     static bool executed = false;
     pt_assert(!executed);
     executed             = true;
+#endif
 
     pt_assert(psg_initialized);
     if (psg_initialized) {
-        if (psg.gb_main) {
-            delete [] psg.data;
-
-            GB_close(psg.gb_main);
-            psg.gb_main         = NULL;
-            psg.gb_species_data = NULL;
-            psg.gb_sai_data     = NULL;
-        }
-        
-        if (psg.gb_shell) {
-            delete psg.gb_shell;
-            psg.gb_shell = NULL;
-        }
-
-        if (psg.namehash) GBS_free_hash(psg.namehash);
-
-        free(psg.ecoli);
-        delete psg.bi_ecoli;
-        delete [] psg.pos_to_weight;
-        free(psg.alignment_name);
-        free(psg.ptmain);
-        free(psg.com_so);
-
-        memset((char *)&psg, 0, sizeof(psg)); 
+        psg.cleanup();
         psg_initialized = false;
     }
 }
@@ -161,7 +234,7 @@ inline bool copy_to_buf(const char *start, const char *behindEnd, int MAXLEN, ch
     return true;
 }
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR parse_names_into_gene_struct(const char *map_str, gene_struct_list& listOfGenes)) {
+__ATTR__USERESULT static ARB_ERROR parse_names_into_gene_struct(const char *map_str, gene_struct_list& listOfGenes) {
 #define MAX_INAME_LEN 30
 #define MAX_ONAME_LEN 30
 #define MAX_GNAME_LEN 1024
@@ -259,7 +332,7 @@ static void initGlobals() {
 #endif // DEBUG
 }
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR start_pt_server(const char *socket_name, const char *arbdb_name, const char *pt_name, const char *exename)) {
+__ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, const char *arbdb_name, const char *pt_name, const char *exename) {
     ARB_ERROR error;
 
     fputs("\n"
@@ -355,7 +428,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR start_pt_server(const char *socke
     return error;
 }
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, const char *command, const arb_params *params)) {
+__ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *command, const arb_params *params) {
     ARB_ERROR error;
 
     // check that arb_pt_server knows its socket
@@ -431,7 +504,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, 
             }
         }
         else {
-            psg.link = aisc_open(socket_name, &psg.main, AISC_MAGIC_NUMBER);
+            psg.link = aisc_open(socket_name, psg.main, AISC_MAGIC_NUMBER);
 
             bool running = psg.link;
             bool kill    = false;
@@ -445,14 +518,14 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, 
             if (!error) {
                 if (kill) {
                     pt_assert(running);
-                    fputs("There is another activ server. Sending shutdown message..\n", stderr);
+                    fputs("There is another active server. Sending shutdown message..\n", stderr);
                     if (aisc_nput(psg.link, PT_MAIN, psg.main, MAIN_SHUTDOWN, "47@#34543df43%&3667gh", NULL)) {
                         fprintf(stderr,
                                 "%s: Warning: Problem connecting to the running %s\n"
                                 "             You might need to kill it manually to ensure proper operation\n",
                                 exename, exename);
                     }
-                    aisc_close(psg.link);
+                    aisc_close(psg.link, psg.main);
                     psg.link = 0;
                 }
 

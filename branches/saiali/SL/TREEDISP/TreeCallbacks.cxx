@@ -95,7 +95,6 @@ void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
 
 // ---------------------------------------
 //      Basic mark/unmark callbacks :
-// ---------------------------------------
 
 static void count_mark_all_cb(void *, AW_CL cl_ntw) {
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
@@ -380,9 +379,8 @@ static void save_changed_tree(AWT_canvas *ntw) {
     ntw->zoom_reset_and_refresh();
 }
 
-// ---------------------------------------
+// ----------------------------------------
 //      Automated collapse/expand tree
-// ---------------------------------------
 
 static void group_and_save_tree(AWT_canvas *ntw, int mode, int color_group) {
     GB_transaction gb_dummy(ntw->gb_main);
@@ -404,9 +402,6 @@ static void NT_group_not_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_colornum) 
     group_and_save_tree(ntw, 8, colornum);
 }
 
-// ----------------------------------------------------------------------------------------------------
-//      void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas)
-// ----------------------------------------------------------------------------------------------------
 void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas) {
 #define MAXLABEL 30
 #define MAXENTRY (AW_COLOR_GROUP_NAME_LEN+10)
@@ -446,7 +441,6 @@ void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntr
 
 // ------------------------
 //      tree sorting :
-// ------------------------
 
 void NT_resort_tree_cb(void *, AWT_canvas *ntw, int type) {
     GB_transaction gb_dummy(ntw->gb_main);
@@ -614,50 +608,55 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
                 // fall-through
             }
             case AP_LIST_NDS: {
-                repeat_jump: 
-                AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
-                device->set_filter(AW_SIZE|AW_SIZE_UNSCALED);
-                device->reset();
-                ntw->init_device(device);
-                ntw->tree_disp->show(device);
+                bool do_jump = true;
+                
+                while (do_jump) {
+                    do_jump = false;
 
-                const AW_screen_area& screen = device->get_area_size();
+                    AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
+                    device->set_filter(AW_SIZE|AW_SIZE_UNSCALED);
+                    device->reset();
+                    ntw->init_device(device);
+                    ntw->gfx->show(device);
 
-                const Position& cursor = gtree->get_cursor();
-                if (are_distinct(Origin, cursor)) {
-                    Position S = device->transform(cursor);
+                    const AW_screen_area& screen = device->get_area_size();
 
-                    int scroll_x = 0;
-                    int scroll_y = 0;
+                    const Position& cursor = gtree->get_cursor();
+                    if (are_distinct(Origin, cursor)) {
+                        Position S = device->transform(cursor);
 
-                    if (S.xpos()<0.0) scroll_x      = (int)(S.xpos() - screen.r * .1);
-                    if (S.xpos()>screen.r) scroll_x = (int)(S.xpos() - screen.r * .5);
+                        int scroll_x = 0;
+                        int scroll_y = 0;
 
-                    if (gtree->tree_sort == AP_TREE_IRS) {
-                        // always scroll IRS tree
-                        // position a bit below vertical center
-                        scroll_y = (int) (S.ypos() - screen.b * .6);
+                        if (S.xpos()<0.0) scroll_x      = (int)(S.xpos() - screen.r * .1);
+                        if (S.xpos()>screen.r) scroll_x = (int)(S.xpos() - screen.r * .5);
+
+                        if (gtree->tree_sort == AP_TREE_IRS) {
+                            // always scroll IRS tree
+                            // position a bit below vertical center
+                            scroll_y = (int) (S.ypos() - screen.b * .6);
+                        }
+                        else if (S.ypos()<0.0 || S.ypos()>screen.b) {
+                            scroll_y = (int) (S.ypos() - screen.b * .5);
+                        }
+
+                        if (scroll_x || scroll_y) {
+                            ntw->scroll(scroll_x, scroll_y);
+                        }
+
+                        if (repeat) {
+                            // reposition jump in IRS tree (reduces jump failure rate)
+                            repeat  = false;
+                            do_jump = true;
+                        }
                     }
-                    else if (S.ypos()<0.0 || S.ypos()>screen.b) {
-                        scroll_y = (int) (S.ypos() - screen.b * .5);
-                    }
-
-                    if (scroll_x || scroll_y) {
-                        ntw->scroll(aww, scroll_x, scroll_y);
-                    }
-                    
-                    if (repeat) {
-                        // reposition jump in IRS tree (reduces jump failure rate)
-                        repeat = false;
-                        goto repeat_jump;
-                    }
-                }
-                else {
-                    if (auto_expand_groups) {
-                        aw_message(GBS_global_string(gtree->tree_sort == AP_LIST_NDS
-                                                     ? "Species '%s' is not in this list"
-                                                     : "Species '%s' is not member of this tree",
-                                                     name));
+                    else {
+                        if (auto_expand_groups) {
+                            aw_message(GBS_global_string(gtree->tree_sort == AP_LIST_NDS
+                                                         ? "Species '%s' is not in this list"
+                                                         : "Species '%s' is not member of this tree",
+                                                         name));
+                        }
                     }
                 }
                 ntw->refresh();
@@ -700,13 +699,13 @@ inline const char *plural(int val) {
 void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose) {
     GB_push_transaction(ntw->gb_main);
     char     *tree_name = awr->awar(ntw->user_awar)->read_string();
-    GB_ERROR  error     = ntw->tree_disp->load(ntw->gb_main, tree_name, 0, 0);
+    GB_ERROR  error     = ntw->gfx->load(ntw->gb_main, tree_name, 0, 0);
     if (error) {
         aw_message(error);
     }
     else {
         int zombies, duplicates;
-        ((AWT_graphic_tree*)ntw->tree_disp)->get_zombies_and_duplicates(zombies, duplicates);
+        ((AWT_graphic_tree*)ntw->gfx)->get_zombies_and_duplicates(zombies, duplicates);
 
         if (zombies || duplicates) {
             const char *msg = 0;
@@ -730,7 +729,7 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose) {
 }
 
 void NT_recompute_cb(AW_window *, AWT_canvas *ntw, AW_CL cl2) {
-    AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->tree_disp);
+    AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->gfx);
     td_assert(gt);
 
     gt->get_root_node()->compute_tree(ntw->gb_main);
@@ -738,7 +737,7 @@ void NT_recompute_cb(AW_window *, AWT_canvas *ntw, AW_CL cl2) {
 }
 
 void NT_reinit_treetype(AW_window *, AWT_canvas *ntw, AW_CL ) {
-    AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->tree_disp);
+    AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->gfx);
     td_assert(gt);
     gt->set_tree_type(gt->tree_sort, ntw);
     AWT_resize_cb(ntw->aww, ntw, 0);

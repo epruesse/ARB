@@ -122,34 +122,6 @@ struct AW_toggle_field_struct {
 };
 
 
-// cppcheck-suppress noConstructor
-class AW_selection_list_entry : virtual Noncopyable {
-    char      *displayed;
-
-public:
-    // @@@ make members private
-    AW_scalar  value;
-    bool is_selected;                                // internal use only
-    AW_selection_list_entry *next;
-
-    template<typename T>
-    AW_selection_list_entry(const char *display, T val)
-        : displayed(copy_string_for_display(display)),
-          value(val),
-          is_selected(false),
-          next(NULL)
-    {}
-    ~AW_selection_list_entry() { free(displayed); }
-
-    static char *copy_string_for_display(const char *str);
-
-    template<typename T>
-    void set_value(T val) { value = AW_scalar(val); }
-
-    const char *get_displayed() const { return displayed; }
-    void set_displayed(const char *displayed_) { freeset(displayed, copy_string_for_display(displayed_)); }
-};
-
 // -------------------------------------------
 //      area management: devices callbacks
 

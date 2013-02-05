@@ -30,6 +30,9 @@ AW_window *AP_open_pos_var_pars_window(AW_root *root);
 /* ColumnStat_2_gnuplot.cxx */
 AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root);
 
+/* NT_branchAnalysis.cxx */
+AW_window *NT_open_branch_analysis_window(AW_root *aw_root, AW_CL cl_ntw);
+
 /* NT_cb.cxx */
 
 #ifndef ARBDB_BASE_H
@@ -57,9 +60,12 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main);
 void NT_rerepair_DB(AW_window *, AW_CL cl_gbmain, AW_CL dummy_1x);
 
 /* NT_edconf.cxx */
-void NT_popup_configuration_admin(AW_window *aw_main, AW_CL dummy_1x, AW_CL dummy_2x);
+void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL dummy_1x);
 AW_window *NT_start_editor_on_old_configuration(AW_root *awr);
-void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL dummy_1x);
+void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL cl_ntw);
+
+/* NT_extern.cxx */
+int NT_get_canvas_id(AWT_canvas *ntw);
 
 /* NT_import.cxx */
 void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
@@ -68,7 +74,7 @@ void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
 GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
 
 /* NT_sort.cxx */
-void NT_resort_data_by_phylogeny(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
+void NT_resort_data_by_phylogeny(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
 void NT_build_resort_awars(AW_root *awr, AW_default aw_def);
 AW_window *NT_build_resort_window(AW_root *awr);
 

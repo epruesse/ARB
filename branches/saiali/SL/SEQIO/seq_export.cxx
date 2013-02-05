@@ -16,6 +16,7 @@
 #include <arb_file.h>
 #include <xml.hxx>
 #include <arb_progress.h>
+#include <unistd.h>
 
 #define sio_assert(cond) arb_assert(cond)
 
@@ -693,11 +694,10 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
                                 const char *formname, const char *outname, int multiple,
                                 char **real_outname)
 {
-    GB_ERROR error = 0;
     esd = new export_sequence_data(gb_main, marked_only, filter, cut_stop_codon, compress);
     GB_set_export_sequence_hook(exported_sequence);
 
-    error = esd->detectVerticalGaps();
+    GB_ERROR error = esd->detectVerticalGaps();
     if (!error) {
         error = export_format_multiple(dbname, formname, outname, multiple, real_outname);
     }

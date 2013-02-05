@@ -27,10 +27,9 @@ int ARB_main(int argc, const char *argv[]) {
                 "\n"
                 "database my be '-' in which case arb_2_bin reads from stdin.\n"
                 "\n"
-                );
+            );
 
         if (strcmp(argv[1], "--help") != 0) { error = "Missing arguments"; }
-        return (-1);
     }
     else {
         char rtype[256];

@@ -2,6 +2,8 @@
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_select.hxx>
+
 #include <fast_aligner.hxx>
 
 #include "ed4_awars.hxx"
@@ -14,6 +16,7 @@
 #include <climits>
 #include <cctype>
 #include <map>
+#include <awt_sel_boxes.hxx>
 
 using namespace std;
 
@@ -44,17 +47,24 @@ public:
     void set_range(const PosRange& new_range) { range = new_range; }
 
     PosRange get_range_according_to_type() {
+        PosRange res;
+
         switch (type) {
             case ED4_BT_NOBLOCK:
-                return PosRange::empty();
+                res = PosRange::empty();
+                break;
 
             case ED4_BT_COLUMNBLOCK:
             case ED4_BT_MODIFIED_COLUMNBLOCK:
-                return get_colblock_range();
+                res = get_colblock_range();
+                break;
 
             case ED4_BT_LINEBLOCK:
-                return PosRange::whole();
+                res = PosRange::whole();
+                break;
         }
+
+        return res;
     }
 };
 
@@ -615,7 +625,6 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
 
 // --------------------------------------------------------------------------------
 //      Replace
-// --------------------------------------------------------------------------------
 
 inline bool matchesUsingWildcard(GB_CSTR s1, GB_CSTR s2, int len) {
     // s2 may contain '?' as wildcard
@@ -723,7 +732,6 @@ AW_window *ED4_create_replace_window(AW_root *root) {
 
 // --------------------------------------------------------------------------------
 //      Other block operations
-// --------------------------------------------------------------------------------
 
 inline char *dont_return_unchanged(char *result, int& new_len, const SeqPart& part) {
     if (result) {
@@ -1004,7 +1012,11 @@ AW_window *ED4_create_modsai_window(AW_root *root) {
 
     aws->at("box");
     AW_selection_list *sellist = aws->create_selection_list(AWAR_MOD_SAI_SCRIPT);
-    GB_ERROR           error   = aws->load_selection_list(sellist, GB_path_in_ARBLIB("sellists/mod_sequence*.sellst"));
+    GB_ERROR error;
+    {
+        StorableSelectionList storable_sellist(TypedSelectionList("sellst", sellist, "SRT/ACI scripts", "srt_aci"));
+        error = storable_sellist.load(GB_path_in_ARBLIB("sellists/mod_sequence*.sellst"), false);
+    }
     aw_message_if(error);
     
     return aws;
@@ -1029,7 +1041,7 @@ static arb_test::match_expectation blockop_expected_io(const ED4_block_operator&
     expectation_group expectations;
     expectations.add(part_of_error
                      ? that(blockop.get_error()).does_contain(part_of_error)
-                     : that(blockop.get_error()).is_equal_to(NULL));
+                     : that(blockop.get_error()).is_equal_to_NULL());
     expectations.add(that(result).is_equal_to(expected_result));
     if (expected_result) expectations.add(that(new_len).is_equal_to(whole_len-2));
 

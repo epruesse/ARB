@@ -242,7 +242,7 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
                                     case GB_BITS:   error = GB_write_bits  (gb_data, modified, modified_len, "-");       break;
                                     case GB_BYTES:  error = GB_write_bytes (gb_data, modified, modified_len);            break;
                                     case GB_INTS:   error = GB_write_ints  (gb_data, (GB_UINT4*)modified, modified_len); break;
-                                    case GB_FLOATS: error = GB_write_floats(gb_data, (float*)modified, modified_len);    break;
+                                    case GB_FLOATS: error = GB_write_floats(gb_data, (float*)(void*)modified, modified_len);    break;
 
                                     default: gb_assert(0); break;
                                 }
@@ -273,12 +273,11 @@ static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget ite
 }
 
 static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_field, enum insDelTarget item_type, const insDel_params *params) {
-    GBDATA       *gb_item;
-    GB_ERROR      error      = 0;
-    long          item_count = GB_number_of_subentries(gb_item_data);
-    arb_progress  progress(item_field, item_count);
+    GB_ERROR     error      = 0;
+    long         item_count = GB_number_of_subentries(gb_item_data);
+    arb_progress progress(item_field, item_count);
 
-    for (gb_item = GB_entry(gb_item_data, item_field);
+    for (GBDATA *gb_item = GB_entry(gb_item_data, item_field);
          gb_item && !error;
          gb_item = GB_nextEntry(gb_item))
     {
@@ -344,6 +343,7 @@ static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
             if (!error) error = gbt_insert_character(gb_species_data,  "species",  IDT_SPECIES, &params);
             if (!error) error = gbt_insert_character_secstructs(gb_secstructs, &params);
 
+            progress.done();
             freenull(params.ali_name);
         }
     }

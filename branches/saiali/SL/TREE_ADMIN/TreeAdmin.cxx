@@ -50,7 +50,7 @@ namespace TreeAdmin {
             gb_tree = GBT_find_tree(gb_main, name);
             if (!gb_tree) error = "Please select tree to delete";
             else {
-                GBDATA *gb_next = GBT_get_next_tree(gb_tree);
+                GBDATA *gb_next = GBT_find_next_tree(gb_tree);
                 awar_tree->write_string(gb_next ? GBT_get_tree_name(gb_next) : NO_TREE_SELECTED);
             }
             error = ta.close(error);

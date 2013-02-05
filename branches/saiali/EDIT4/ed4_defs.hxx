@@ -173,12 +173,6 @@ enum ED4_AREA_LEVEL {
     ED4_A_ERROR
 };
 
-enum ED4_mouse_buttons {
-    ED4_B_LEFT_BUTTON   = 1,
-    ED4_B_MIDDLE_BUTTON = 2,
-    ED4_B_RIGHT_BUTTON  = 3
-};
-
 enum ED4_properties {
     ED4_P_NO_PROP            = 0,
     ED4_P_IS_MANAGER         = 1,

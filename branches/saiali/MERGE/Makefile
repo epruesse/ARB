@@ -113,6 +113,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -197,6 +198,8 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/cb.h
@@ -288,6 +291,8 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MG_preserves.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+MG_preserves.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/cb.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -322,6 +327,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/cb.h

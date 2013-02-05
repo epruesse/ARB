@@ -18,26 +18,26 @@
 #define NT_AW_TRUE  1
 #define NT_AW_FALSE 0
 
+#define MAX_NT_WINDOWS          5
+#define MAX_NT_WINDOWS_NULLINIT NULL,NULL,NULL,NULL,NULL
+
 class AWT_graphic_tree;
 
 struct NT_global {
-    AW_root           *awr;
-    AWT_graphic_tree  *tree;
+    AW_root           *aw_root;
+    GBDATA            *gb_main;
     AW_Window_Creator  window_creator;
     bool               extern_quit_button;
+
+    NT_global()
+        : aw_root(NULL),
+          gb_main(NULL),
+          window_creator(NULL),
+          extern_quit_button(false)
+    {}
 };
 
-extern NT_global  GLOBAL_NT;
-extern GBDATA    *GLOBAL_gb_main;
-
-
-class NT_install_window_creator {
-    int dummy;
-public:
-    NT_install_window_creator(AW_Window_Creator wc) {
-        GLOBAL_NT.window_creator = wc;
-    };
-};
+extern NT_global GLOBAL;
 
 #define AWAR_EXPORT_NDS                "tmp/export_nds"
 #define AWAR_EXPORT_NDS_SEPARATOR      "tmp/export_nds/separator"

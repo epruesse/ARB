@@ -147,7 +147,7 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message);
 
 /* adtree.cxx */
 GBDATA *GBT_get_tree_data(GBDATA *gb_main);
-GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *species_hash, int *removed, int *groups_removed);
+GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_HASH *species_hash, int *removed, int *groups_removed);
 void GBT_delete_tree(GBT_TREE *tree);
 GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name);
 GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree);
@@ -158,6 +158,7 @@ size_t GBT_count_leafs(const GBT_TREE *tree);
 GB_ERROR GBT_is_invalid(const GBT_TREE *tree);
 GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates);
 void GBT_unlink_tree(GBT_TREE *tree);
+void GBT_order_tree(GBDATA *gb_tree);
 GBDATA *GBT_find_tree(GBDATA *gb_main, const char *tree_name);
 GBDATA *GBT_find_largest_tree(GBDATA *gb_main);
 GBDATA *GBT_tree_infrontof(GBDATA *gb_tree);
@@ -165,7 +166,7 @@ GBDATA *GBT_tree_behind(GBDATA *gb_tree);
 GBDATA *GBT_find_top_tree(GBDATA *gb_main);
 GBDATA *GBT_find_bottom_tree(GBDATA *gb_main);
 const char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name);
-GBDATA *GBT_get_next_tree(GBDATA *gb_tree);
+GBDATA *GBT_find_next_tree(GBDATA *gb_tree);
 const char *GBT_get_tree_name(GBDATA *gb_tree);
 GB_ERROR GBT_check_tree_name(const char *tree_name);
 const char *GBT_name_of_largest_tree(GBDATA *gb_main);

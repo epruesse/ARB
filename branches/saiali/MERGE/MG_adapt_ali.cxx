@@ -321,10 +321,9 @@ void MG_remap::create_softmapping() {
 
 static void drop_dots(softbaselist& softbases, int excessive_positions) {
     // drop consecutive dots
-    bool         justseendot = false;
-    bool         keptgaps    = false;
-    softbaseiter next        = softbases.begin();
-
+    bool justseendot = false;
+    
+    softbaseiter next = softbases.begin();
     while (excessive_positions && next != softbases.end()) {
         bool isdot = (next->base == '.');
         if (isdot && justseendot) {
@@ -332,7 +331,6 @@ static void drop_dots(softbaselist& softbases, int excessive_positions) {
             next = softbases.erase(next);
         }
         else {
-            keptgaps    = keptgaps || isdot;
             justseendot = isdot;
             ++next;
         }

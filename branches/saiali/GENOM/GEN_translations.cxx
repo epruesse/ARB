@@ -83,13 +83,6 @@ static GEN_remove_state remove_redundant_translation(GBDATA *gb_gene, bool ignor
     error                      = 0;
     char             *add_note = 0; // will be added as 'ARB_translation_note' (if set)
 
-    const char *to_remove[] = {
-        "translation",
-        "ARB_translation",
-        "ARB_translation_note",
-        0
-    };
-
 #define set_result_bit(s) result = GEN_remove_state(result|s)
 
     GBDATA *gb_translation = GB_entry(gb_gene, "translation");
@@ -122,8 +115,16 @@ static GEN_remove_state remove_redundant_translation(GBDATA *gb_gene, bool ignor
             }
 
             if (remove) {       // remove translation and related entries
+                const char *to_remove[] = {
+                    "translation",
+                    "ARB_translation",
+                    "ARB_translation_note",
+                    0
+                };
+
                 GB_ERROR err          = 0;
                 int      failed_field = -1;
+
                 for (int r = 0; to_remove[r] && !err; ++r) {
                     GBDATA *gb_remove = GB_entry(gb_gene, to_remove[r]);
                     if (gb_remove) {

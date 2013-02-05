@@ -80,7 +80,7 @@ ARB.c : $(XS_DEPENDS)
 	@echo "-------- end of MakeMaker-Makefile"
 
 # buildMakefile
-Makefile : $(MACH).PL typemap Makefile.main  
+Makefile : $(MACH).PL typemap Makefile.main arb_common.pm
 	( PATH=/usr/arb/bin:${PATH}; \
 	  export PATH; \
 	  echo calling perl ${MACH}.PL "$(cross_cflags)" "$(cross_lflags)"; \
@@ -93,7 +93,7 @@ Makefile.PL : $(MACH).PL
 
 ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs perlmain_source.c typemap
 	-@test -f $@ && chmod a+w $@
-	LD_LIBRARY_PATH=$(LIB):$(LD_LIBRARY_PATH) $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs typemap >$@
+	$(ARB_PROTO_2_XSUB) proto.h ARB.default.xs typemap >$@
 	@test -f $@ && chmod a-w $@
 
 proto.h : $(HEADERS) $(THIS) depends.stamp

@@ -105,6 +105,7 @@ AW_button.o: aw_window_Xm.hxx
 AW_button.o: aw_xargs.hxx
 AW_button.o: aw_Xm.hxx
 AW_button.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_button.o: $(ARBHOME)/INCLUDE/arb_algo.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_defs.h
@@ -220,6 +221,8 @@ AW_file_selection.o: aw_file.hxx
 AW_file_selection.o: aw_keysym.hxx
 AW_file_selection.o: aw_msg.hxx
 AW_file_selection.o: aw_root.hxx
+AW_file_selection.o: aw_scalar.hxx
+AW_file_selection.o: aw_select.hxx
 AW_file_selection.o: aw_window.hxx
 AW_file_selection.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -285,6 +288,8 @@ AW_help.o: aw_global_awars.hxx
 AW_help.o: aw_keysym.hxx
 AW_help.o: aw_msg.hxx
 AW_help.o: aw_root.hxx
+AW_help.o: aw_scalar.hxx
+AW_help.o: aw_select.hxx
 AW_help.o: aw_window.hxx
 AW_help.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -337,6 +342,8 @@ AW_modal.o: aw_keysym.hxx
 AW_modal.o: aw_msg.hxx
 AW_modal.o: aw_question.hxx
 AW_modal.o: aw_root.hxx
+AW_modal.o: aw_scalar.hxx
+AW_modal.o: aw_select.hxx
 AW_modal.o: aw_window.hxx
 AW_modal.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_modal.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

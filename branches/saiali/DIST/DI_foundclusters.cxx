@@ -13,6 +13,7 @@
 #include "di_clustertree.hxx"
 
 #include <aw_window.hxx>
+#include <aw_select.hxx>
 
 #include <cmath>
 
@@ -354,6 +355,7 @@ void ClustersData::clear(ClusterSubset subset) {
 
 void ClustersData::store(ID id) {
     ClusterPtr toStore = clusterWithID(id);
+    // cppcheck-suppress uselessCallsRemove
     remove(toStore, SHOWN_CLUSTERS);
     add(toStore, STORED_CLUSTERS);
 }
@@ -404,12 +406,12 @@ public:
      }
 };
 
-void ClustersData::update_cluster_selection_list(AW_window *aww) {
+void ClustersData::update_cluster_selection_list() {
     cl_assert(clusterList);
-    aww->clear_selection_list(clusterList);
+    clusterList->clear();
 
     if (shown.empty()) {
-        aww->insert_default_selection(clusterList, "<No clusters detected>", ID(0));
+        clusterList->insert_default("<No clusters detected>", ID(0));
     }
     else {
         {
@@ -429,22 +431,21 @@ void ClustersData::update_cluster_selection_list(AW_window *aww) {
                         cluster->scan_display_widths(format);
                     }
                     else {
-                        aww->insert_selection(clusterList, cluster->get_list_display(&format), cluster->get_ID());
+                        clusterList->insert(cluster->get_list_display(&format), cluster->get_ID());
                     }
                 }
             }
-            aww->insert_default_selection(clusterList, "<select no cluster>", ID(0));
+            clusterList->insert_default("<select no cluster>", ID(0));
         }
     }
-    aww->update_selection_list(clusterList);
+    clusterList->update();
 }
 
-void ClustersData::free(AW_window *aww) {
+void ClustersData::free() {
     // delete calculated/stored data
-
     shown.clear();
     stored.clear();
-    update_cluster_selection_list(aww);
+    update_cluster_selection_list();
     known_clusters.clear();
 }
 

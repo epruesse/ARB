@@ -27,12 +27,12 @@ int        anz_elem_unmarked   = 0;
 bool       pt_server_different = false;
 
 MP_Main::MP_Main(AW_root *awr, AWT_canvas *canvas) {
-    aw_root = awr;
-    ntw     = canvas;
-    stc     = NULL;
+    aw_root   = awr;
+    scr       = canvas;
+    stc       = NULL;
     create_awars();
-    mp_window   = new MP_Window(aw_root, canvas->gb_main);
-    p_eval  = NULL;
+    mp_window = new MP_Window(aw_root, canvas->gb_main);
+    p_eval    = NULL;
 }
 
 MP_Main::~MP_Main()
@@ -63,7 +63,7 @@ ProbeValuation *MP_Main::new_probe_eval(char **field, int size, int *array, int 
 
 void MP_Main::create_awars()
 {
-    aw_root->awar_string(MP_AWAR_SEQUENZEINGABE)->add_target_var(& mp_gl_awars.manual_sequence);
+    aw_root->awar_string(MP_AWAR_SEQIN);
     aw_root->awar_string(MP_AWAR_SELECTEDPROBES)->add_target_var(& mp_gl_awars.selected_probes);
     aw_root->awar_string(MP_AWAR_PROBELIST)->add_target_var(& mp_gl_awars.probelist);
     aw_root->awar_int(MP_AWAR_WEIGHTEDMISMATCHES)->add_target_var(& mp_gl_awars.weightedmismatches)->write_int(2);
@@ -101,10 +101,10 @@ static void create_tables()
     }
 }
 
-AW_window *create_multiprobe_window(AW_root *root, AW_CL cl_ntw) {
+AW_window *create_multiprobe_window(AW_root *root, AW_CL cl_canvas) {
     if (!mp_main) {
         create_tables();
-        mp_main = new MP_Main(root, (AWT_canvas *)cl_ntw);
+        mp_main = new MP_Main(root, (AWT_canvas *)cl_canvas);
     }
 
     AW_window *aw = mp_main->get_mp_window()->get_window();

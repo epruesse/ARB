@@ -130,12 +130,11 @@ GB_ERROR awt_open_ACISRT_URL_by_gbd(AW_root *aw_root, GBDATA *gb_main, GBDATA *g
 }
 
 GB_ERROR awt_openURL_by_gbd(AW_root *aw_root, GBDATA *gb_main, GBDATA *gbd, const char *name) {
-    GB_ERROR        error        = 0;
     GB_transaction  tscope(gb_main);
     int             url_selected = aw_root->awar(AWAR_WWW_SELECT)->read_int();
     const char     *awar_url     = GBS_global_string(AWAR_WWW_TEMPLATE, url_selected);
     char           *url_srt      = aw_root->awar(awar_url)->read_string();
-    error                        = awt_open_ACISRT_URL_by_gbd(aw_root, gb_main, gbd, name, url_srt);
+    GB_ERROR        error        = awt_open_ACISRT_URL_by_gbd(aw_root, gb_main, gbd, name, url_srt);
 
     free(url_srt);
     return error;

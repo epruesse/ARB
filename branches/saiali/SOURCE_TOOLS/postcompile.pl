@@ -25,12 +25,14 @@ my $reg_included = qr/^In\sfile\sincluded\sfrom\s(.*)[,:]/;
 my $reg_included2 = qr/^\s+from\s(.*)[,:]/;
 my $reg_location = qr/^[^:]+:\sIn\sfunction\s/;
 my $reg_location2 = qr/^[^:]+:\sAt\stop\slevel:/;
+my $reg_clang_dirt = qr/^ANALYZE:\s/;
 
 # regexps for messages:
 my $reg_is_error = qr/^error:\s/i;
 my $reg_is_warning = qr/^warning:\s/i;
 my $reg_is_note = qr/^note:\s/i;
-my $reg_is_instantiated = qr/^\s\sinstantiated\sfrom\s/;
+my $reg_is_instantiated = qr/^\s\s+instantiated\sfrom\s/;
+my $reg_is_required = qr/^\s\s+required\sfrom\s/;
 
 # regexps for warning messages (for part behind 'warning: ')
 my $reg_shadow_warning = qr/^declaration\sof\s.*\sshadows\s/;
@@ -299,6 +301,10 @@ sub parse_input(\@) {
         push @related, $_;
         $_ = suppress($_,@warnout);
       }
+      elsif ($msg =~ $reg_is_required) {
+        push @related, $_;
+        $_ = suppress($_,@warnout);
+      }
       elsif ($msg =~ $reg_is_note) {
         if ($did_show_previous==0) {
           $_ = suppress($_,@warnout);
@@ -313,6 +319,9 @@ sub parse_input(\@) {
     elsif ($_ =~ $reg_included) {
       push @related, included_from_here($1);
       $_ = suppress($_,@warnout);
+    }
+    elsif ($_ =~ $reg_clang_dirt) {
+      $_ = undef;
     }
     elsif ($_ =~ $reg_file_noline) {
       if (/^cc1plus:.*error/) {

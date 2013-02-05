@@ -68,7 +68,7 @@ AW_window *create_kernighan_window(AW_root *aw_root) {
 
 #if 0
     aws->at("button_4");
-    aws->create_option_menu("genetic/kh/function_type", 0, "");
+    aws->create_option_menu("genetic/kh/function_type");
     aws->insert_option("start_x^2", "d", AP_QUADRAT_START);
     aws->insert_option("max_x^2", "d", AP_QUADRAT_MAX);
     aws->insert_default_option("???", "?", AP_QUADRAT_START);

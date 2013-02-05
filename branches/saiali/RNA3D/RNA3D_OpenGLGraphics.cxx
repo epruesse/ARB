@@ -21,7 +21,6 @@ OpenGLGraphics::~OpenGLGraphics() {
 
 // Sets the Background Color for the OpenGL Window
 void OpenGLGraphics::SetOpenGLBackGroundColor() {
-
     unsigned long bgColor;
     XtVaGetValues(RNA3D->glw, XmNbackground, &bgColor, NULL);
 
@@ -32,10 +31,9 @@ void OpenGLGraphics::SetOpenGLBackGroundColor() {
     Colormap colormap = DefaultColormapOfScreen(XtScreen(w));
     XQueryColor(XtDisplay(w), colormap, &xcolor);
 
-    float r, g, b; r = g = b = 0.0;
-    r = (float) xcolor.red / 65535.0;
-    g = (float) xcolor.green / 65535.0;
-    b = (float) xcolor.blue / 65535.0;
+    float r = xcolor.red / 65535.0;
+    float g = xcolor.green / 65535.0;
+    float b = xcolor.blue / 65535.0;
 
     // set OpenGL background color to the widget's background
     glClearColor(r, g, b, 1);
@@ -46,10 +44,8 @@ void OpenGLGraphics::SetOpenGLBackGroundColor() {
 // Converts the GC into RGB values
 ColorRGBf OpenGLGraphics::ConvertGCtoRGB(int gc) {
     ColorRGBf clr = ColorRGBf(0, 0, 0);
-    float r, g, b; r = g = b = 0.0;
-
-    Widget w   = AW_get_AreaWidget(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA);
-    GC     xgc = AW_map_AreaGC(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA, gc);
+    Widget    w   = AW_get_AreaWidget(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA);
+    GC        xgc = AW_map_AreaGC(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA, gc);
 
     XGCValues     xGCValues;
     XGetGCValues(XtDisplay(w), xgc, GCForeground, &xGCValues);
@@ -61,9 +57,9 @@ ColorRGBf OpenGLGraphics::ConvertGCtoRGB(int gc) {
     Colormap colormap = DefaultColormapOfScreen(XtScreen(w));
     XQueryColor(XtDisplay(w), colormap, &xcolor);
 
-    r = (float) xcolor.red / 65535.0;
-    g = (float) xcolor.green / 65535.0;
-    b = (float) xcolor.blue / 65535.0;
+    float r = xcolor.red / 65535.0;
+    float g = xcolor.green / 65535.0;
+    float b = xcolor.blue / 65535.0;
 
     clr = ColorRGBf(r, g, b);
     return clr;

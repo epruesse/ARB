@@ -25,23 +25,10 @@
 
 using namespace std;
 
-extern void ph_view_matrix_cb(AW_window *);
-extern void ph_view_species_cb(AW_window *, AW_CL, AW_CL);
-extern void ph_view_filter_cb(AW_window *, AW_CL, AW_CL);
-// extern void ph_calculate_matrix_cb(AW_window *, AW_CL, AW_CL);
-extern void PH_create_save_matrix_window(AW_root *, char *);
-extern void display_status(AW_window *, AW_CL, AW_CL);
-
 AW_HEADER_MAIN
-AW_window *create_tree_window(AW_root *aw_root);
 
 GBDATA *GLOBAL_gb_main; // global gb_main for arb_phylo
 char **filter_text;
-
-GB_ERROR ph_check_initialized() {
-    if (!PHDATA::ROOT) return "Please select alignment and press DONE";
-    return 0;
-}
 
 static void create_filter_text()
 {
@@ -82,8 +69,8 @@ static void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww) {
     ph_view_species_cb(0, 0, 0);
 }
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void ph_exit(AW_window *aw_window, PH_root *ph_root)) {
-    GBDATA *gb_main = ph_root->gb_main;
+__ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
+    GBDATA *gb_main = ph_root->get_gb_main();
     if (gb_main) {
         aw_window->get_root()->unlink_awars_from_DB(gb_main);
 #if defined(DEBUG)
@@ -281,17 +268,15 @@ static void PH_save_ml_multiline_cb(AW_window *aww) {
 
 static void PH_save_ml_cb(AW_window *aww) {
     GB_begin_transaction(GLOBAL_gb_main);
-    GB_ERROR error = 0;
 
     char   *fname  = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
     GBDATA *gb_sai = GBT_find_or_create_SAI(GLOBAL_gb_main, fname);
-    GBDATA *gbd, *gb2;
 
-    error = ph_check_initialized();
+    GB_ERROR error = ph_check_initialized();
 
     if (!error) {
-        for (gbd = GB_child(gb_sai); gbd; gbd = gb2) {
-            gb2 = GB_nextChild(gbd);
+        for (GBDATA *gbd = GB_child(gb_sai), *gbnext; gbd; gbd = gbnext) {
+            gbnext = GB_nextChild(gbd);
 
             const char *key = GB_read_key_pntr(gbd);
             if (!strcmp(key, "name")) continue;
@@ -305,8 +290,8 @@ static void PH_save_ml_cb(AW_window *aww) {
     if (!error) {
         GBDATA *gb_ali = GB_search(gb_sai, PHDATA::ROOT->use, GB_FIND);
         if (gb_ali) {
-            for (gbd = GB_child(gb_ali); gbd; gbd = gb2) {
-                gb2 = GB_nextChild(gbd);
+            for (GBDATA *gbd = GB_child(gb_ali), *gbnext; gbd; gbd = gbnext) {
+                gbnext = GB_nextChild(gbd);
 
                 const char *key = GB_read_key_pntr(gbd);
                 if (!strcmp(key, "bits")) continue;

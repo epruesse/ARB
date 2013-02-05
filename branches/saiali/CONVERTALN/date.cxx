@@ -23,7 +23,7 @@ static const char *Month[12] = {
 };
 
 static unsigned char days_in_month[12+1] = {
-    -1, 
+    0xFF, 
     31, 29, 31, 30, 31, 30,
     31, 31, 30, 31, 30, 31
 };
@@ -46,7 +46,7 @@ inline int ismonth(const char *str) {
 }
 
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, bool find_date(const char *date_string, int *month, int *day, int *year)) {
+__ATTR__USERESULT static bool find_date(const char *date_string, int *month, int *day, int *year) {
     // Find day, month, year from date Str.
     char determ                                 = ' ';
     if      (two_char(date_string, '.')) determ = '.';
@@ -115,14 +115,14 @@ public:
     void replace(int val) { ca_assert(is_set()); num_ = val; }
 };
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, bool find_date_long_form(const char *date_string, int *monthPtr, int *dayPtr, int *yearPtr)) {
+__ATTR__USERESULT static bool find_date_long_form(const char *date_string, int *monthPtr, int *dayPtr, int *yearPtr) {
     // Find day, month, year in the long term date Str like day-of-week, month, day, time, year.
 
     int     length = str0len(date_string);
     SetOnce day, month, year;
 
+    char token[SIZE];
     for (int indi = 0, index = 0; index <= length; index++) {
-        char token[SIZE];
         if ((index == length) || isspace(date_string[index]) || strchr("(),", date_string[index]) != 0) {
             if (indi == 0) continue; // empty token
             token[indi] = '\0';
@@ -284,8 +284,7 @@ const char *gcg_date(const char *input) {
     do {                                                        \
         char *dup_ = strdup(input);                             \
         int   day_, month_, year_;                              \
-        ASSERT_RESULT(bool, true,                               \
-                      finder(dup_, &month_, &day_, &year_));    \
+        TEST_ASSERT(finder(dup_, &month_, &day_, &year_));      \
         TEST_ASSERT_EQUAL(day_, d);                             \
         TEST_ASSERT_EQUAL(month_, m);                           \
         TEST_ASSERT_EQUAL(year_, y);                            \

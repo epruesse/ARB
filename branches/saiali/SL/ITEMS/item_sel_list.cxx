@@ -19,13 +19,12 @@ static AW_window *existing_window_creator(AW_window *, AW_CL cl1, AW_CL) {
     return (AW_window*)cl1;
 }
 
-Itemfield_Selection::Itemfield_Selection(AW_window         *win_,
-                                         AW_selection_list *sellist_,
+Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
                                          GBDATA            *gb_key_data,
                                          long               type_filter_,
                                          SelectedFields     field_filter_,
                                          ItemSelector&      selector_)
-    : AW_DB_selection(win_, sellist_, gb_key_data)
+    : AW_DB_selection(sellist_, gb_key_data)
     , type_filter(type_filter_)
     , field_filter(field_filter_)
     , selector(selector_)
@@ -35,8 +34,8 @@ Itemfield_Selection::Itemfield_Selection(AW_window         *win_,
 
 void Itemfield_Selection::fill() {
     if (field_filter & SF_PSEUDO) {
-        insert_selection(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
-        insert_selection(PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
+        insert(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
+        insert(PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
     }
 
     GBDATA         *gb_key_data = get_gbd();
@@ -73,11 +72,11 @@ void Itemfield_Selection::fill() {
                 }
                 else display = name;
 
-                if (display) insert_selection(display, name);
+                if (display) insert(display, name);
             }
         }
     }
-    insert_default_selection("????", "----");
+    insert_default("????", "----");
 }
 
 
@@ -127,7 +126,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
             aw_popup->at_newline();
 
             aw_popup->callback((AW_CB0)AW_POPDOWN);
-            sellist = aw_popup->create_selection_list(varname, 0, "", columns, visible_rows);
+            sellist = aw_popup->create_selection_list(varname, columns, visible_rows);
 
             aw_popup->at_newline();
             aw_popup->callback((AW_CB0)AW_POPDOWN);
@@ -146,7 +145,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
 
     }
     else { // otherwise just insert the selection list at point
-        sellist = aws->create_selection_list(varname, 0, "", columns, visible_rows);
+        sellist = aws->create_selection_list(varname, columns, visible_rows);
     }
 
     if (rescan_xfig_label) {
@@ -160,9 +159,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
         if (popup_button_id) aws->at(x, y); // restore 'at' position if popup_list_in_window
     }
 
-    Itemfield_Selection *selection = 
-        new Itemfield_Selection(win_for_sellist, sellist, gb_key_data,
-                                    type_filter, field_filter, selector);
+    Itemfield_Selection *selection = new Itemfield_Selection(sellist, gb_key_data, type_filter, field_filter, selector);
     selection->refresh();
     return selection;
 }

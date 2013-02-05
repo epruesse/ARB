@@ -90,8 +90,7 @@ static GB_ERROR transfer_tree(const char *tree_name, bool overwrite, const char 
                         gb_at_tree = gb_tree_behind;
                     }
 
-                    error        = GB_delete(gb_dest_tree);
-                    gb_dest_tree = NULL;
+                    error = GB_delete(gb_dest_tree);
                 }
             }
         }
@@ -185,7 +184,7 @@ static void MG_transfer_tree(AW_window *aww) {
 
         if (what == XFER_SELECTED) {
             GB_transaction  ta(GLOBAL_gb_src);
-            GBDATA         *gb_next = GBT_get_next_tree(GBT_find_tree(GLOBAL_gb_src, source_name));
+            GBDATA         *gb_next = GBT_find_next_tree(GBT_find_tree(GLOBAL_gb_src, source_name));
             awar_tree_source->write_string(gb_next ? GBT_get_tree_name(gb_next) : NO_TREE_SELECTED);
         }
 

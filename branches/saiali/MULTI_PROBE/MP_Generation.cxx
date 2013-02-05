@@ -13,8 +13,6 @@
 #include "MultiProbe.hxx"
 #include <arb_progress.h>
 
-bool Stop_evaluation = false;
-
 probe_combi_statistic *Generation::single_in_generation(probe_combi_statistic *field)
 {
     bool result = true;
@@ -46,18 +44,16 @@ void Generation::check_for_results()
     }
 }
 
-void Generation::calc_fitness(int flag, double old_avg_fit)     // reoulette_wheel wird DANACH initialisiert
-{
-    double  fitness = 0;
-    double  dummy = 0;
-    int     i;
+bool Generation::calcFitness(bool use_genetic_algo, double old_avg_fit) {
+    // returns true if aborted
+    //
+    // (roulette_wheel wird am Ende neu initialisiert)
 
     arb_progress progress(probe_combi_array_length);
+    double       fitness = 0;
 
-    for (i=0; i<probe_combi_array_length; i++)
-    {
-
-        dummy = probe_combi_stat_array[i]->calc_fitness(mp_gl_awars.no_of_probes);
+    for (int i=0; i<probe_combi_array_length; i++) {
+        double dummy = probe_combi_stat_array[i]->calc_fitness(mp_gl_awars.no_of_probes);
         fitness += dummy;
 
         if (i==0)
@@ -68,55 +64,53 @@ void Generation::calc_fitness(int flag, double old_avg_fit)     // reoulette_whe
         else if (dummy > max_fit)
             max_fit = dummy;
 
-        if (MP_aborted(generation_counter, old_avg_fit, min_fit, max_fit, progress))       // Berechnungen abbrechen
-        {
-            Stop_evaluation = true;
+        if (MP_aborted(generation_counter, old_avg_fit, min_fit, max_fit, progress)) {
             probe_combi_array_length = i-1;
-            return;
+            return true;
         }
         progress.inc();
     }
 
-    if (flag == NO_GENETIC_ALG)             // wenn kein gen. ALgorithmus verwendet wird, dann
-        return;                     // muss der Rest nicht berechnet werden.
+    if (use_genetic_algo) {
+        average_fitness = fitness / (double)probe_combi_array_length;
 
-    average_fitness = fitness / (double)probe_combi_array_length;
-
-    deviation = 0;
+        deviation = 0;
 
 
 #ifdef USE_LINEARSCALING
-    double  dev = 0;
-    double  a = 0,
-        b = 0;
+        double  dev = 0;
+        double  a = 0,
+            b = 0;
 #ifdef USE_SIGMATRUNCATION
-    for (i=0; i<probe_combi_array_length; i++)          // Berechnung der Abweichung nach Goldberg S.124
-    {
-        dev = probe_combi_stat_array[i]->get_fitness() - average_fitness;
-        dev = dev * dev;
-        deviation += dev;
-    }
-    deviation = (1.0 / (double)((double)i - 1.0)) * deviation;
-    deviation = sqrt(deviation);
+        for (i=0; i<probe_combi_array_length; i++)          // Berechnung der Abweichung nach Goldberg S.124
+        {
+            dev = probe_combi_stat_array[i]->get_fitness() - average_fitness;
+            dev = dev * dev;
+            deviation += dev;
+        }
+        deviation = (1.0 / (double)((double)i - 1.0)) * deviation;
+        deviation = sqrt(deviation);
 
-    for (i=0; i<probe_combi_array_length; i++)          // sigma_truncation nur auf schlechte Kombis anwenden ???
-        probe_combi_stat_array[i]->sigma_truncation(average_fitness, deviation);
+        for (i=0; i<probe_combi_array_length; i++)          // sigma_truncation nur auf schlechte Kombis anwenden ???
+            probe_combi_stat_array[i]->sigma_truncation(average_fitness, deviation);
 #endif
-    // lineare Skalierung auf fitness anwenden !!!
-    // Skalierung erfolgt nach der Formel     fitness'= a*fitness + b
+        // lineare Skalierung auf fitness anwenden !!!
+        // Skalierung erfolgt nach der Formel     fitness'= a*fitness + b
 
-    prescale(&a, &b);       // Koeffizienten a und b berechnen
+        prescale(&a, &b);       // Koeffizienten a und b berechnen
 #endif
 
-    for (i=0; i<probe_combi_array_length; i++)
-    {
+        for (int i=0; i<probe_combi_array_length; i++)
+        {
 #ifdef USE_LINEARSCALING
-        probe_combi_stat_array[i]->scale(a, b);
+            probe_combi_stat_array[i]->scale(a, b);
 #endif
-        probe_combi_stat_array[i]->calc_expected_children(average_fitness);
-    }
+            probe_combi_stat_array[i]->calc_expected_children(average_fitness);
+        }
 
-    init_roulette_wheel();
+        init_roulette_wheel();
+    }
+    return false;
 }
 
 void Generation::prescale(double *a, double *b) // berechnet Koeffizienten fuer lineare Skalierung
@@ -294,8 +288,7 @@ void Generation::gen_determ_combis(int beg,
             bastel_probe_combi->
             get_probe_combi(mp_gl_awars.no_of_probes - len - 1)->probe_index)
         {
-            bastel_probe_combi->set_probe_combi(mp_gl_awars.no_of_probes - len,
-                                                    (mp_main->get_p_eval()->get_probe_pool())[i]);
+            bastel_probe_combi->set_probe_combi(mp_gl_awars.no_of_probes - len, (mp_main->get_p_eval()->get_probe_pool())[i]);
             gen_determ_combis(i+1, len-1, pos_counter, bastel_probe_combi);
         }
 

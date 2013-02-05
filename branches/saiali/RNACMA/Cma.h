@@ -15,10 +15,14 @@
  *
  *  Created on: Dec 16, 2009
  *      Author: Breno Faria
+ *
+ *  Institute of Microbiology (Technical University Munich)
+ *  http://www.arb-home.de/ 
  */
 
-#ifndef CMA_H_
-#define CMA_H_
+ 
+#ifndef CMA_H
+#define CMA_H
 
 #include <iostream>
 #include <eigen/Eigen/Eigen>
@@ -157,4 +161,6 @@ public:
     virtual ~Cma();
 };
 
-#endif /* CMA_H_ */
+#else
+#error Cma.h included twice
+#endif // CMA_H

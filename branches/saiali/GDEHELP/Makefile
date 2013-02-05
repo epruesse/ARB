@@ -1,24 +1,34 @@
 
-TARGET = ARB_GDEmenus
-SOURCE = ARB_GDEmenus.source
+MENUS = ARB_GDEmenus
+MENUS_SRC = ARB_GDEmenus.source
+
 HELPFILELIST=helpfiles.lst
 GENHELPDEST=./HELP_GEN
 GENDOCDEST=./HELP_DOC_GEN
 
-MENUS=$(wildcard MENUS/*.menu)
-GENMENUS=$(MENUS:.menu=.genmenu)
+SUBMENUS=$(wildcard MENUS/*.menu)
+GENMENUS=$(SUBMENUS:.menu=.genmenu)
 
-all: $(TARGET) help
+PPP:=./pp.pl
+CLEAN:=./cleanmenu.pl
+
+all: $(MENUS) help
 
 MENUS/%.genmenu : genmenu.header
 
 MENUS/%.genmenu : MENUS/%.menu
 		( cat genmenu.header; sed -e "s/^[ ]*//" ) < $< > $@
 
-$(TARGET) : $(SOURCE) $(GENMENUS)
-	-chmod a+w $(TARGET)
-	$(PP)  -IMENUS $(SOURCE) >$(TARGET)
-	chmod a-w $(TARGET)
+MENUS_DIRTY=$(MENUS).dirty
+
+$(MENUS_DIRTY) : $(MENUS_SRC) $(GENMENUS) Makefile $(PPP)
+	$(PPP) -IMENUS $(MENUS_SRC) >$@
+
+$(MENUS) : $(MENUS_DIRTY) $(CLEAN)
+	-chmod a+w $@
+	$(CLEAN) <$(MENUS_DIRTY) >$@
+	rm $(MENUS_DIRTY)
+	chmod a-w $@
 
 # ------------------------------------------------------------
 
@@ -27,7 +37,7 @@ help: $(HELPFILELIST)
 	@test -d $(GENDOCDEST) || mkdir $(GENDOCDEST)
 	@$(MAKE) -f Makefile.helpfiles "GENHELPDEST=$(GENHELPDEST)" "GENDOCDEST=$(GENDOCDEST)" "HELPFILELIST=$(HELPFILELIST)"
 
-$(HELPFILELIST): $(TARGET)
+$(HELPFILELIST): $(SUBMENUS)
 	grep -i '^itemhelp:' < $< | sed -e 's/^itemhelp://' | sort | uniq > $@
 
 # ------------------------------------------------------------
@@ -42,5 +52,5 @@ clean: $(HELPFILELIST)
 		"GENDOCDEST=$(GENDOCDEST)" \
 		"HELPFILELIST=$(HELPFILELIST)" \
 		clean
-	rm -f $(GENMENUS) $(TARGET) $(HELPFILELIST)
+	rm -f $(GENMENUS) $(MENUS) $(HELPFILELIST)
 

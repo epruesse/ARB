@@ -163,7 +163,7 @@ void awt_execute_macro(GBDATA *gb_main, AW_root *root, const char *macroname) {
 
     GB_ERROR error       = 0;
     if (!fullname) error = "file not found";
-    else     error       = root->execute_macro(gb_main, fullname, NULL, NULL);
+    else     error       = root->execute_macro(gb_main, fullname, NULL, 0);
 
     if (error) {
         aw_message(GBS_global_string("Can't execute macro '%s' (Reason: %s)", macroname, error));

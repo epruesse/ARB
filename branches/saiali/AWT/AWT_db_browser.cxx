@@ -17,11 +17,10 @@
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
+#include <aw_select.hxx>
+#include <aw_advice.hxx>
 
-#include <arb_msg.h>
 #include <arb_str.h>
-
-#include <arbdb.h>
 
 #include <string>
 #include <vector>
@@ -151,7 +150,6 @@ SortOrder list_entry::sort_order = SORT_NONE;
 
 // ---------------------
 //      create AWARs
-// ---------------------
 
 static MemDump make_userdefined_MemDump(AW_root *awr) {
     bool   hex      = awr->awar(AWAR_DUMP_HEX)->read_int();
@@ -322,7 +320,7 @@ class DB_browser {
 
     AW_window             *aww;                     // browser window
     AW_option_menu_struct *oms;                     // the DB selector
-    AW_selection_list     *browse_id;               // the browse subwindow
+    AW_selection_list     *browse_list;             // the browse subwindow
 
     static SmartPtr<DB_browser> the_browser;
     friend DB_browser *get_the_browser(bool autocreate);
@@ -348,7 +346,7 @@ public:
     }
 
     AW_window *get_window(AW_root *aw_root);
-    AW_selection_list *get_browser_id() { return browse_id; }
+    AW_selection_list *get_browser_list() { return browse_list; }
 
     size_t get_selected_db() const { return current_db; }
     void set_selected_db(size_t idx) {
@@ -365,7 +363,6 @@ public:
 
 // -----------------------------
 //      DB_browser singleton
-// -----------------------------
 
 SmartPtr<DB_browser> DB_browser::the_browser;
 
@@ -378,7 +375,6 @@ static DB_browser *get_the_browser(bool autocreate = true) {
 
 // --------------------------
 //      announce databases
-// --------------------------
 
 void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description) {
     get_the_browser()->add_db(gb_main, description);
@@ -396,7 +392,6 @@ void AWT_browser_forget_db(GBDATA *gb_main) {
 
 // ---------------------------------------
 //      browser window callbacks
-// ---------------------------------------
 
 static void toggle_tmp_cb(AW_window *aww) {
     AW_awar *awar_path = aww->get_root()->awar(AWAR_DBB_PATH);
@@ -442,7 +437,6 @@ static void go_up_cb(AW_window *aww) {
 
 // --------------------------
 //      browser commands:
-// --------------------------
 
 #define BROWSE_CMD_PREFIX          "browse_cmd___"
 #define BROWSE_CMD_GOTO_VALID_NODE BROWSE_CMD_PREFIX "goto_valid_node"
@@ -500,7 +494,6 @@ static void execute_browser_command(AW_window *aww, const char *command) {
 
 // ----------------------------
 //      the browser window
-// ----------------------------
 
 static AW_window *create_db_browser(AW_root *aw_root) {
     return get_the_browser()->get_window(aw_root);
@@ -526,10 +519,10 @@ struct counterPair {
     counterPair() : occur(0), count(0) {}
 };
 
-inline void insert_history_selection(AW_window *aww, AW_selection_list *sel, const char *entry, int wanted_db) {
+inline void insert_history_selection(AW_selection_list *sel, const char *entry, int wanted_db) {
     const char *colon = strchr(entry, ':');
     if (colon && (atoi(entry) == wanted_db)) {
-        aww->insert_selection(sel, colon+1, colon+1);
+        sel->insert(colon+1, colon+1);
     }
 }
 
@@ -575,13 +568,11 @@ static char *get_dbentry_content(GBDATA *gbd, GB_TYPES type, bool shorten_repeat
     return content;
 }
 
-static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL cl_id) {
-    AW_window         *aww     = (AW_window*)cl_aww;
-    AW_selection_list *id      = (AW_selection_list*)cl_id;
-    DB_browser        *browser = get_the_browser();
-    char              *path    = aw_root->awar(AWAR_DBB_PATH)->read_string();
-    bool               is_root;
-    GBDATA            *node;
+static void update_browser_selection_list(AW_root *aw_root, AW_selection_list *id) {
+    DB_browser *browser = get_the_browser();
+    char       *path    = aw_root->awar(AWAR_DBB_PATH)->read_string();
+    bool        is_root;
+    GBDATA     *node;
 
     {
         GBDATA         *gb_main = browser->get_db();
@@ -592,25 +583,25 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
         set_callback_node(node, aw_root);
     }
 
-    aww->clear_selection_list(id);
+    id->clear();
 
     if (node == 0) {
         if (strcmp(path, HISTORY_PSEUDO_PATH) == 0) {
             char *history = aw_root->awar(AWAR_DBB_HISTORY)->read_string();
-            aww->insert_selection(id, "Previously visited nodes:", "");
+            id->insert("Previously visited nodes:", "");
             char *start   = history;
             int   curr_db = aw_root->awar(AWAR_DBB_DB)->read_int();
 
             for (char *lf = strchr(start, '\n'); lf; start = lf+1, lf = strchr(start, '\n')) {
                 lf[0] = 0;
-                insert_history_selection(aww, id, start, curr_db);
+                insert_history_selection(id, start, curr_db);
             }
-            insert_history_selection(aww, id, start, curr_db);
+            insert_history_selection(id, start, curr_db);
             free(history);
         }
         else {
-            aww->insert_selection(id, "No such node!", "");
-            aww->insert_selection(id, "-> goto valid node", BROWSE_CMD_GOTO_VALID_NODE);
+            id->insert("No such node!", "");
+            id->insert("-> goto valid node", BROWSE_CMD_GOTO_VALID_NODE);
         }
     }
     else {
@@ -647,11 +638,11 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
         }
 
         if (!is_root) {
-            aww->insert_selection(id, GBS_global_string("%-*s   parent container", maxkeylen, ".."), BROWSE_CMD_GO_UP);
-            aww->insert_selection(id, GBS_global_string("%-*s   container", maxkeylen, "."), "");
+            id->insert(GBS_global_string("%-*s   parent container", maxkeylen, ".."), BROWSE_CMD_GO_UP);
+            id->insert(GBS_global_string("%-*s   container", maxkeylen, "."), "");
         }
         else {
-            aww->insert_selection(id, GBS_global_string("%-*s   root container", maxkeylen, "/"), "");
+            id->insert(GBS_global_string("%-*s   root container", maxkeylen, "/"), "");
         }
         
         // collect children and sort them
@@ -698,20 +689,20 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
 
             key_name = numbered_keyname ? numbered_keyname : key_name;
             const char *displayed = GBS_global_string("%-*s   %-*s   %s", maxkeylen, key_name, maxtypelen, GB_get_type_name(entry.gbd), entry.content.c_str());
-            aww->insert_selection(id, displayed, key_name);
+            id->insert(displayed, key_name);
 
             free(numbered_keyname);
         }
     }
-    aww->insert_default_selection(id, "", "");
-    aww->update_selection_list(id);
+    id->insert_default("", "");
+    id->update();
 
     free(path);
 }
 
 static void order_changed_cb(AW_root *aw_root) {
     DB_browser *browser = get_the_browser();
-    update_browser_selection_list(aw_root, (AW_CL)browser->get_window(aw_root), (AW_CL)browser->get_browser_id());
+    update_browser_selection_list(aw_root, browser->get_browser_list());
 }
 
 inline char *strmove(char *dest, char *source) {
@@ -893,7 +884,7 @@ static void path_changed_cb(AW_root *aw_root) {
             free(path);
         }
 
-        update_browser_selection_list(aw_root, (AW_CL)browser->get_window(aw_root), (AW_CL)browser->get_browser_id());
+        update_browser_selection_list(aw_root, browser->get_browser_list());
         aw_root->awar(AWAR_DBB_BROWSE)->write_string(goto_child ? goto_child : "");
     }
 }
@@ -971,8 +962,8 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->callback(toggle_tmp_cb); aws->create_button("toggle_tmp", "/tmp");
 
         aws->at("browse");
-        browse_id = aws->create_selection_list(AWAR_DBB_BROWSE);
-        update_browser_selection_list(aw_root, (AW_CL)aws, (AW_CL)browse_id);
+        browse_list = aws->create_selection_list(AWAR_DBB_BROWSE);
+        update_browser_selection_list(aw_root, browse_list);
 
         aws->at("infoopt");
         aws->label("ASCII"); aws->create_toggle     (AWAR_DUMP_ASCII);
@@ -1040,6 +1031,7 @@ AW_root *AWT_create_root(const char *properties, const char *program) {
 #if defined(DEBUG)
     AWT_announce_properties_to_browser(AW_ROOT_DEFAULT, properties);
 #endif // DEBUG
+    init_Advisor(aw_root);
     return aw_root;
 }
 

@@ -51,3 +51,4 @@ RegExpr.o: $(ARBHOME)/INCLUDE/attributes.h
 RegExpr.o: $(ARBHOME)/INCLUDE/dupstr.h
 RegExpr.o: $(ARBHOME)/INCLUDE/smartptr.h
 RegExpr.o: $(ARBHOME)/INCLUDE/test_global.h
+RegExpr.o: $(ARBHOME)/INCLUDE/test_unit.h

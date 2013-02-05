@@ -89,16 +89,15 @@ static char *get_atcc(const Macke& macke, char *source) {
 
 static char *genbank_get_atcc(const GenBank& gbk, const Macke& macke) {
     // Get atcc from SOURCE line in Genbank data file.
-    char  temp[LONGTEXT];
-    char *atcc;
+    char *atcc = NULL;
 
-    atcc = NULL;
     // get culture collection #
     if (has_content(gbk.source)) {
         atcc = get_atcc(macke, gbk.source);
     }
     if (!has_content(atcc) && has_content(macke.strain)) {
         // add () to macke strain to be processed correctly
+        char temp[LONGTEXT];
         sprintf(temp, "(%s)", macke.strain);
         atcc = get_atcc(macke, temp);
     }
@@ -454,16 +453,20 @@ int mtog(const Macke& macke, GenBank& gbk, const Seq& seq) { // __ATTR__USERESUL
 
 int gtom(const GenBank& gbk, Macke& macke) { // __ATTR__USERESULT
     // Convert from Genbank format to Macke format.
-    char temp[LONGTEXT], buffer[TOKENSIZE];
-    char genus[TOKENSIZE], species[TOKENSIZE];
 
     // copy sequence abbr, assume every entry in gbk must end with \n\0
     // no '\n' at the end of the string
-    genbank_key_word(gbk.locus, 0, temp);
-    freedup(macke.seqabbr, temp);
+    {
+        char temp[LONGTEXT];
+        genbank_key_word(gbk.locus, 0, temp);
+        freedup(macke.seqabbr, temp);
+    }
 
     // copy name and definition
     if (!copy_content(macke.name, gbk.organism) && has_content(gbk.definition)) {
+        char genus[TOKENSIZE];
+        char species[TOKENSIZE];
+
         ASSERT_RESULT(int, 2, sscanf(gbk.definition, "%s %s", genus, species));
 
         int last = str0len(species)-1;
@@ -482,6 +485,7 @@ int gtom(const GenBank& gbk, Macke& macke) { // __ATTR__USERESULT
 
     // copy genbank entry  (gbkentry has higher priority than gbk.accession)
     if (!copy_content(macke.acs, seqinf.gbkentry)) {
+        char buffer[TOKENSIZE];
         if (has_content(gbk.accession) && !str_equal(gbk.accession, "No information\n")) {
             scan_token_or_die(buffer, gbk.accession);
             strcat(buffer, "\n");

@@ -118,7 +118,8 @@ public:
         if (used >= size) {
             size = size*3/2+1;
             if (size<LINEBUFSIZE) { size = LINEBUFSIZE; }
-            buf = (char*)realloc(buf, size);
+            realloc_unleaked(buf, size);
+            if (!buf) throw "out of memory";
         }
         buf[used++] = c;
         if (c == ALIGN_MARKER) ++markers;
@@ -160,7 +161,8 @@ public:
     void add(char *line) {
         if (count >= size) {
             size  = size*3/2+1;
-            queue = (char**)realloc(queue, size*sizeof(*queue));
+            realloc_unleaked(queue, size*sizeof(*queue));
+            if (!queue) throw "out of memory";
         }
         aisc_assert(line[strlen(line)-1] == '\n');
         

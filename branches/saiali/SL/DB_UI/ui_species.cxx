@@ -490,8 +490,8 @@ static void reorder_keys(AW_window *aws, ReorderMode mode, Itemfield_Selection *
     ItemSelector& selector = sel_left->get_selector();
     ui_assert(&selector == &sel_right->get_selector());
     
-    int left_index  = aws->get_index_of_selected_element(sel_left->get_sellist());
-    int right_index = aws->get_index_of_selected_element(sel_right->get_sellist());
+    int left_index  = sel_left->get_sellist()->get_index_of_selected();
+    int right_index = sel_right->get_sellist()->get_index_of_selected();
 
     GB_ERROR warning = 0;
 
@@ -537,8 +537,8 @@ static void reorder_keys(AW_window *aws, ReorderMode mode, Itemfield_Selection *
         aw_message(warning);
     }
     else {
-        aws->select_element_at_index(sel_left->get_sellist(), left_index);
-        aws->select_element_at_index(sel_right->get_sellist(), right_index);
+        sel_left->get_sellist()->select_element_at(left_index);
+        sel_right->get_sellist()->select_element_at(right_index);
     }
 }
 
@@ -557,7 +557,7 @@ static void reorder_up_down(AW_window *aws, AW_CL cl_selright, AW_CL cl_dir) {
 
     GB_begin_transaction(gb_main);
     ItemSelector& selector   = sel_right->get_selector();
-    int           list_index = aws->get_index_of_selected_element(sel_right->get_sellist());
+    int           list_index = sel_right->get_sellist()->get_index_of_selected();
 
     const char *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_char_pntr();
     GBDATA     *gb_field   = GBT_get_changekey(gb_main, field_name, selector.change_key_path);
@@ -586,7 +586,7 @@ static void reorder_up_down(AW_window *aws, AW_CL cl_selright, AW_CL cl_dir) {
     }
 
     GB_commit_transaction(gb_main);
-    if (list_index >= 0) aws->select_element_at_index(sel_right->get_sellist(), list_index);
+    if (list_index >= 0) sel_right->get_sellist()->select_element_at(list_index);
     if (warning) aw_message(warning);
 }
 
@@ -678,7 +678,7 @@ static void hide_field_cb(AW_window *aws, AW_CL cl_sel, AW_CL cl_hide) {
         free(source);
     }
     GB_end_transaction_show_error(gb_main, error, aw_message);
-    if (!error) aws->move_selection(item_sel->get_sellist(), 1);
+    if (!error) item_sel->get_sellist()->move_selection(1);
 }
 
 static void field_delete_cb(AW_window *aws, AW_CL cl_sel) {
@@ -691,7 +691,7 @@ static void field_delete_cb(AW_window *aws, AW_CL cl_sel) {
         char              *source     = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
         ItemSelector&      selector   = item_sel->get_selector();
         AW_selection_list *sellist    = item_sel->get_sellist();
-        int                curr_index = aws->get_index_of_selected_element(sellist);
+        int                curr_index = sellist->get_index_of_selected();
         GBDATA            *gb_source  = GBT_get_changekey(gb_main, source, selector.change_key_path);
 
         if (!gb_source) error = "Please select the field you want to delete";
@@ -711,7 +711,7 @@ static void field_delete_cb(AW_window *aws, AW_CL cl_sel) {
                     error = GB_delete(gbd);
                     if (!error) {
                         // item has disappeared, this selects the next one:
-                        aws->select_element_at_index(sellist, curr_index);
+                        sellist->select_element_at(curr_index);
                     }
                 }
             }
@@ -836,14 +836,13 @@ AW_window *DBUI::create_field_create_window(AW_root *root, AW_CL cl_bound_item_s
 static void field_convert_commit_cb(AW_window *aws, AW_CL cl_bound_item_selector) {
     BoundItemSel *bound_selector = (BoundItemSel*)cl_bound_item_selector;
 
-    AW_root  *root    = aws->get_root();
-    GBDATA   *gb_main = bound_selector->gb_main;
-    GB_ERROR  error   = NULL;
+    AW_root *root    = aws->get_root();
+    GBDATA  *gb_main = bound_selector->gb_main;
 
     GB_push_transaction(gb_main);
-    error = GBT_convert_changekey(gb_main,
-                                  root->awar(AWAR_FIELD_CONVERT_SOURCE)->read_char_pntr(),
-                                  (GB_TYPES)root->awar(AWAR_FIELD_CONVERT_TYPE)->read_int());
+    GB_ERROR error = GBT_convert_changekey(gb_main,
+                                           root->awar(AWAR_FIELD_CONVERT_SOURCE)->read_char_pntr(),
+                                           (GB_TYPES)root->awar(AWAR_FIELD_CONVERT_TYPE)->read_int());
 
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
@@ -946,11 +945,10 @@ inline int get_and_fix_range_from_awar(AW_awar *awar) {
 
 class NN_GlobalData {
     DbQuery           *query;
-    AW_selection_list *sel_id;     // result list from create_next_neighbours_selected_window()
-    AW_window         *aww_sel_id; // window containing sel_id
+    AW_selection_list *resultList;     // result list from create_next_neighbours_selected_window()
 
 public:
-    NN_GlobalData() : query(0), sel_id(0) {}
+    NN_GlobalData() : query(0), resultList(0) {}
 
     void set_query(DbQuery *new_query) {
         if (new_query != query) {
@@ -958,20 +956,16 @@ public:
             query = new_query;
         }
     }
-    void set_result_list(AW_window *new_aww, AW_selection_list *new_sel_id) {
-        if (new_sel_id != sel_id) {
-            ui_assert(!sel_id); // need redesign b4 changing query works
-            ui_assert(!aww_sel_id); // need redesign b4 changing query works
-            sel_id     = new_sel_id;
-            aww_sel_id = new_aww;
+    void set_result_list(AW_selection_list *new_resultList) {
+        if (new_resultList != resultList) {
+            ui_assert(!resultList); // need redesign b4 changing query works
+            resultList = new_resultList;
         }
     }
 
     DbQuery *get_query() const { ui_assert(query); return query; }
 
-    AW_selection_list *get_result_list() const { ui_assert(sel_id); return sel_id; }
-    AW_window *get_aww() const { ui_assert(aww_sel_id); return aww_sel_id; }
-
+    AW_selection_list *get_result_list() const { ui_assert(resultList); return resultList; }
     GBDATA *get_gb_main() const { return query_get_gb_main(get_query()); }
 };
 static NN_GlobalData NN_GLOBAL;
@@ -1104,10 +1098,9 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
 }
 
 static void awtc_mark_hits(AW_window *) {
-    AW_selection_list *id        = NN_GLOBAL.get_result_list();
-    AW_window         *aww       = NN_GLOBAL.get_aww();
-    GB_HASH           *list_hash = aww->selection_list_to_hash(id, false);
-    GBDATA            *gb_main   = NN_GLOBAL.get_gb_main();
+    AW_selection_list *resultList = NN_GLOBAL.get_result_list();
+    GB_HASH           *list_hash  = resultList->to_hash(false);
+    GBDATA            *gb_main    = NN_GLOBAL.get_gb_main();
 
     GB_transaction ta(gb_main);
     for (GBDATA *gb_species = GBT_first_species(gb_main);
@@ -1119,13 +1112,12 @@ static void awtc_mark_hits(AW_window *) {
     }
 }
 
-static void awtc_nn_search(AW_window*) {
-    AW_window *aww      = NN_GLOBAL.get_aww();
-    AW_root   *aw_root  = aww->get_root();
-    GBDATA    *gb_main  = NN_GLOBAL.get_gb_main();
-    GB_ERROR   error    = 0;
-    PosRange   range    = get_nn_range_from_awars(aw_root);
-    char      *sequence = 0;
+static void awtc_nn_search(AW_window *aww) {
+    AW_root  *aw_root  = aww->get_root();
+    GBDATA   *gb_main  = NN_GLOBAL.get_gb_main();
+    GB_ERROR  error    = 0;
+    PosRange  range    = get_nn_range_from_awars(aw_root);
+    char     *sequence = 0;
     {
         GB_transaction  ta(gb_main);
 
@@ -1175,12 +1167,12 @@ static void awtc_nn_search(AW_window*) {
     // update result list
     {
         AW_selection_list* sel = NN_GLOBAL.get_result_list();
-        aww->clear_selection_list(sel);
+        sel->clear();
 
         int hits = 0;
         if (error) {
             aw_message(error);
-            aww->insert_default_selection(sel, "<Error>", "");
+            sel->insert_default("<Error>", "");
         }
         else {
             int count     = 1;
@@ -1196,11 +1188,11 @@ static void awtc_nn_search(AW_window*) {
                     dis = GBS_global_string("#%0*i %-12s Hits: %4li", numWidth, count, fm->name, fm->matches);
                 }
 
-                aww->insert_selection(sel, dis, fm->name);
+                sel->insert(dis, fm->name);
                 count++;
             }
 
-            aww->insert_default_selection(sel, ff.hits_were_truncated() ? "<List truncated>" : "<No more hits>", "");
+            sel->insert_default(ff.hits_were_truncated() ? "<List truncated>" : "<No more hits>", "");
             hits = ff.getRealHits();
         }
         aw_root->awar(AWAR_NN_SELECTED_HIT_COUNT)->write_int(hits);
@@ -1208,7 +1200,7 @@ static void awtc_nn_search(AW_window*) {
             awtc_mark_hits(NULL);
             aw_root->awar(AWAR_TREE_REFRESH)->touch();
         }
-        aww->update_selection_list(sel);
+        sel->update();
     }
 
     free(sequence);
@@ -1359,10 +1351,10 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
         aws->create_button(0, AWAR_NN_SELECTED_HIT_COUNT, 0, "+");
 
         aws->at("hits");
-        AW_selection_list *id = aws->create_selection_list(AWAR_SPECIES_NAME);
-        NN_GLOBAL.set_result_list(aws, id);
-        aws->insert_default_selection(id, "No hits found", "");
-        aws->update_selection_list(id);
+        AW_selection_list *resultList = aws->create_selection_list(AWAR_SPECIES_NAME);
+        NN_GLOBAL.set_result_list(resultList);
+        resultList->insert_default("No hits found", "");
+        resultList->update();
 
         aws->at("go");
         aws->callback(awtc_nn_search);

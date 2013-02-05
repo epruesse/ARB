@@ -22,6 +22,10 @@
 #include <arbdb.h>
 #endif
 
+#if defined(DEBUG)
+// # define DUMP_PRIMER
+#endif
+
 class PrimerDesign : virtual Noncopyable {
     // zu untersuchendes Genom
     // sequence of bases/spaces to be examined
@@ -97,14 +101,22 @@ class PrimerDesign : virtual Noncopyable {
     Pair* pairs;
 
     GB_ERROR error;
+
     unsigned long int total_node_counter_left;
     unsigned long int total_node_counter_right;
     unsigned long int primer_node_counter_left;
     unsigned long int primer_node_counter_right;
 
+    void reset_node_counters() {
+        total_node_counter_left   = 0;
+        total_node_counter_right  = 0;
+        primer_node_counter_left  = 0;
+        primer_node_counter_right = 0;
+    }
+
 public:
     PrimerDesign(const char *sequence_, long int seqLength_,
-                  Range       pos1_, Range pos2_, Range length_, Range distance_,
+                 Range       pos1_, Range pos2_, Range length_, Range distance_,
                   Range       ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_,
                   int         max_count_primerpairs_, double GC_factor_, double temp_factor_);
     PrimerDesign(const char *sequence_, long int seqLength_,
@@ -118,17 +130,17 @@ public:
     void setConditionalParameters(Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_, int max_count_primerpairs_, double GC_factor_, double temp_factor_);
 
     void buildPrimerTrees ();
-    void printPrimerTrees ();
-
     void matchSequenceAgainstPrimerTrees ();
-
     void convertTreesToLists ();
-    void printPrimerLists    ();
-
     void evaluatePrimerPairs ();
+    
+#if defined(DUMP_PRIMER)
+    void printPrimerTrees ();
+    void printPrimerLists    ();
     void printPrimerPairs    ();
+#endif
 
-    void run (int print_stages_);
+    void run();
 
     GB_ERROR get_error() const { return error; }
 

@@ -106,6 +106,7 @@ enum GB_UNDO_TYPE {
 typedef void (*GB_CB)(GBDATA *, int *clientdata, GB_CB_TYPE gbtype);
 
 typedef long (*gb_hash_loop_type)(const char *key, long val, void *client_data);
+typedef void (*gb_hash_const_loop_type)(const char *key, long val, void *client_data);
 typedef int (*gbs_hash_compare_function) (const char *key0, long val0, const char *key1, long val1);
 
 typedef const char* (*gb_export_sequence_cb)(GBDATA *gb_species, size_t *seq_len, GB_ERROR *error);

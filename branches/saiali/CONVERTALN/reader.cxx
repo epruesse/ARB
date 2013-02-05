@@ -1,4 +1,5 @@
 #include "reader.h"
+#include <unistd.h>
 
 Reader::Reader(const char *inf)
     : fp(fopen(inf, "rt")),
