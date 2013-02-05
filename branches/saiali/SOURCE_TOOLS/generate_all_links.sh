@@ -159,6 +159,7 @@ symlink_file ../TEMPLATES/bytestring.h INCLUDE/bytestring.h &&
 symlink_file ../TEMPLATES/cb.h INCLUDE/cb.h &&
 symlink_file ../TEMPLATES/ChecksumCollector.h INCLUDE/ChecksumCollector.h &&
 symlink_file ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
+symlink_file ../TEMPLATES/command_output.h INCLUDE/command_output.h &&
 symlink_file ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
 symlink_file ../TEMPLATES/dupstr.h INCLUDE/dupstr.h &&
 symlink_file ../TEMPLATES/output.h INCLUDE/output.h &&

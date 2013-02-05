@@ -406,10 +406,12 @@ class FunInfo {
     string             name;
     LazyPersistantFlag is_setup;
     LazyPersistantFlag changing; // some process is currently setting up/cleaning the environment
+    LazyPersistantFlag failed;   // some process failed to setup the environment
 
     void all_get_lazy_again() {
         changing.get_lazy_again();
         is_setup.get_lazy_again();
+        failed.get_lazy_again();
     }
 
     Error set_to(Mode mode) {
@@ -481,7 +483,8 @@ public:
         : cb(cb_),
           name(name_),
           is_setup(name_),
-          changing(GBS_global_string("changing_%s", name_))
+          changing(GBS_global_string("changing_%s", name_)),
+          failed(GBS_global_string("failed_%s", name_))
     {}
 
     Error switch_to(Mode mode) { // @@@ need to return allocated msg (it gets overwritten)
@@ -516,20 +519,37 @@ public:
 
         env_assert(!(perform_change && wait_for_change));
 
-        if (perform_change) error = set_to(mode);
+        if (perform_change) {
+            error = set_to(mode);
+            if (error.isSet()) {
+                {
+                    Mutex m(FLAG_MUTEX);
+                    failed = true;
+                    all_get_lazy_again();
+                }
+                Error clean_error = set_to(CLEAN);
+                if (clean_error.isSet()) {
+                    StaticCode::printf("[environment '%s' failed to reach '%s' after failure (Reason: %s)]\n",
+                                       get_name(), mode_command[CLEAN], &*clean_error);
+                }
+            }
+        }
 
         if (wait_for_change) {
             bool reached = false;
-            while (!reached) {
+            while (!reached && !error.isSet()) {
                 StaticCode::printf("[waiting until environment '%s' reaches '%s']\n", get_name(), mode_command[mode]);
                 sleep(1);
                 {
                     Mutex m(FLAG_MUTEX);
                     if (!changing && is_setup == want_setup) reached = true;
+                    if (failed) {
+                        error = GBS_global_string_copy("[environment '%s' failed to reach '%s' (in another process)]", get_name(), mode_command[mode]);
+                    }
                     all_get_lazy_again();
                 }
             }
-            StaticCode::printf("[environment '%s' has reached '%s']\n", get_name(), mode_command[mode]);
+            if (reached) StaticCode::printf("[environment '%s' has reached '%s']\n", get_name(), mode_command[mode]);
         }
 
         return error;

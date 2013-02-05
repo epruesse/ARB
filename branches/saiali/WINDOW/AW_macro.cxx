@@ -241,7 +241,7 @@ void RecordingMacro::post_process() {
 #define TEST_MODIFIES_AWAR(cmd,app_exp,awar_exp,app_in) do {    \
         char *app  = app_in;                                    \
         char *awar = modifies_awar(cmd, app);                   \
-        TEST_EXPECT(all().of(that(awar).is_equal_to(awar_exp),  \
+        TEST_EXPECTATION(all().of(that(awar).is_equal_to(awar_exp),  \
                              that(app).is_equal_to(app_exp)));  \
         free(awar);                                             \
         free(app);                                              \
