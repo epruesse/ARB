@@ -71,7 +71,7 @@ arb_test::match_expectation arrays_equal(const StrArray& expected, const StrArra
     return same_size;
 }
 
-#define TEST_ASSERT_READS_SAME(fc,name) do {                     \
+#define TEST_EXPECT_READS_SAME(fc,name) do {                     \
         FileContent oc(name);                                    \
         TEST_EXPECTATION(arrays_equal(fc.lines(), oc.lines()));       \
     } while(0)
@@ -85,15 +85,15 @@ void TEST_linefeed_conversion() {
     const int LINES = 6;
 
     FileContent cunix(funix);
-    TEST_ASSERT_EQUAL(cunix.lines().size(), LINES);
+    TEST_EXPECT_EQUAL(cunix.lines().size(), LINES);
 
-    TEST_ASSERT_EQUAL(GB_size_of_file(fmac),    GB_size_of_file(funix));
-    TEST_ASSERT_EQUAL(GB_size_of_file(fdos),    GB_size_of_file(funix)+LINES);
-    TEST_ASSERT_EQUAL(GB_size_of_file(fbroken), GB_size_of_file(fdos));
+    TEST_EXPECT_EQUAL(GB_size_of_file(fmac),    GB_size_of_file(funix));
+    TEST_EXPECT_EQUAL(GB_size_of_file(fdos),    GB_size_of_file(funix)+LINES);
+    TEST_EXPECT_EQUAL(GB_size_of_file(fbroken), GB_size_of_file(fdos));
 
-    TEST_ASSERT_READS_SAME(cunix,fdos);
-    TEST_ASSERT_READS_SAME(cunix,fmac);
-    TEST_ASSERT_READS_SAME(cunix,fbroken);
+    TEST_EXPECT_READS_SAME(cunix,fdos);
+    TEST_EXPECT_READS_SAME(cunix,fmac);
+    TEST_EXPECT_READS_SAME(cunix,fbroken);
 }
 
 #endif // UNIT_TESTS

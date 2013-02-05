@@ -63,8 +63,8 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
 #define RUN_TOOL(cmdline)                valgrinded_system(cmdline)
 #define RUN_TOOL_NEVER_VALGRIND(cmdline) GBK_system(cmdline)
 
-#define TEST_RUN_TOOL(cmdline)                TEST_ASSERT_NO_ERROR(RUN_TOOL(cmdline))
-#define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_ASSERT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
+#define TEST_RUN_TOOL(cmdline)                TEST_EXPECT_NO_ERROR(RUN_TOOL(cmdline))
+#define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_EXPECT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
 
 void TEST_SLOW_ascii_2_bin_2_ascii() {
     const char *ascii_ORG  = "TEST_loadsave_ascii.arb";
@@ -76,23 +76,23 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
     TEST_RUN_TOOL(GBS_global_string("arb_2_bin   %s %s", ascii_ORG, binary));
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary, ascii));
 
-    TEST_ASSERT_FILES_EQUAL(ascii, ascii_ORG);
+    TEST_EXPECT_FILES_EQUAL(ascii, ascii_ORG);
 
     // test conversion (bin->ascii->bin) via stream (this tests 'arb_repair')
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s - | arb_2_bin - %s", binary, binary_2ND));
 
-    // TEST_ASSERT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (they contain undefined bytes)
+    // TEST_EXPECT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (they contain undefined bytes)
 
     // instead convert back to ascii and compare result with original
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary_2ND, ascii));
-    TEST_ASSERT_FILES_EQUAL(ascii, ascii_ORG);
+    TEST_EXPECT_FILES_EQUAL(ascii, ascii_ORG);
 
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary));
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary_2ND));
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin.ARF"));
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin2.ARF"));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary_2ND));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin.ARF"));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin2.ARF"));
 }
 
 void TEST_arb_primer() {
@@ -102,8 +102,8 @@ void TEST_arb_primer() {
     const char *primer_expected = "tools/arb_primer_expected.out";
 
     TEST_RUN_TOOL(GBS_global_string("arb_primer %s < %s", primer_db, primer_stdin));
-    TEST_ASSERT_FILES_EQUAL(primer_out, primer_expected);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(primer_out));
+    TEST_EXPECT_FILES_EQUAL(primer_out, primer_expected);
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(primer_out));
 }
 
 static GB_ERROR removeVaryingDateFromTreeRemarks(const char *dbname) {
@@ -183,17 +183,17 @@ void TEST_SLOW_arb_read_tree() {
         free(treefile);
     }
 
-    TEST_ASSERT_NO_ERROR(removeVaryingDateFromTreeRemarks(dbout));
-    TEST_ASSERT_TEXTFILES_EQUAL(dbout, dbexpected);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(dbout));
+    TEST_EXPECT_NO_ERROR(removeVaryingDateFromTreeRemarks(dbout));
+    TEST_EXPECT_TEXTFILES_EQUAL(dbout, dbexpected);
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(dbout));
 }
 
 #define TEST_ARB_REPLACE(infile,expected,args) do {                     \
         char *tmpfile = GBS_global_string_copy("%s.tmp", expected);     \
         TEST_RUN_TOOL_NEVER_VALGRIND(GBS_global_string("cp %s %s", infile, tmpfile));  \
         TEST_RUN_TOOL(GBS_global_string("arb_replace %s %s", args, tmpfile)); \
-        TEST_ASSERT_TEXTFILES_EQUAL(tmpfile, expected);                 \
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(tmpfile));             \
+        TEST_EXPECT_TEXTFILES_EQUAL(tmpfile, expected);                 \
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(tmpfile));             \
         free(tmpfile);                                                  \
     } while(0)
 
@@ -259,8 +259,8 @@ void TEST_SLOW_arb_probe() {
 
 void TEST_SLOW_arb_dna_rates() {
     TEST_STDOUT_CONTAINS("arb_dnarates tools/dnarates.inp " IN_DB " " OUT_DB, "\nWriting 'POS_VAR_BY_ML_1'\n");
-    TEST_ASSERT_FILES_EQUAL(OUT_DB, WANTED_DB);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(OUT_DB));
+    TEST_EXPECT_FILES_EQUAL(OUT_DB, WANTED_DB);
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(OUT_DB));
 }
 
 #define RATES_DB "tools/exportrates.arb"
@@ -291,7 +291,7 @@ void TEST_arb_export_tree() {
 
     TEST_STDOUT_EQUALS("arb_export_tree --nobranchlens tree_mini " TREE_DB,
                        "((( 'VibFurni'  'VibVulni' ) 'VibChole' ),( 'AcnPleur'  'PrtVulga' ), 'HlmHalod' );\n");
-    TEST_ASSERT__BROKEN(0); // the test above returns a wrong result (commas are missing)
+    TEST_EXPECT__BROKEN(0); // the test above returns a wrong result (commas are missing)
 
     TEST_OUTPUT_EQUALS("arb_export_tree \"\" " TREE_DB,
                        ";\n",                                                                    // shall export an empty newick tree
@@ -317,7 +317,7 @@ static void test_notification_cb(const char *message, void *cd) {
     GB_close(gb_main);          \
     free(cmd)
     
-#define TEST_DBSERVER_OPEN(gbmain) TEST_ASSERT_NO_ERROR(GBCMS_open(":", 0, gbmain))
+#define TEST_DBSERVER_OPEN(gbmain) TEST_EXPECT_NO_ERROR(GBCMS_open(":", 0, gbmain))
 #define TEST_DBSERVER_SERVE_UNTIL(gbmain, cond) do {                    \
         bool success            = GBCMS_accept_calls(gb_main, false);   \
         while (success) success = GBCMS_accept_calls(gb_main, true);    \
@@ -332,7 +332,7 @@ void TEST_close_with_pending_notification() {
 }
 void TEST_close_after_pending_notification_removed() {
     INIT_NOTIFICATION;
-    TEST_ASSERT_NO_ERROR(GB_remove_last_notification(gb_main));
+    TEST_EXPECT_NO_ERROR(GB_remove_last_notification(gb_main));
     EXIT_NOTIFICATION;
 }
 void TEST_arb_notify() {
@@ -340,13 +340,13 @@ void TEST_arb_notify() {
 
     TEST_DBSERVER_OPEN(gb_main);
 
-    TEST_ASSERT_NULL(notification_result);
-    TEST_ASSERT_NO_ERROR(GBK_system(GBS_global_string("%s &", cmd))); // async call to arb_notify
+    TEST_EXPECT_NULL(notification_result);
+    TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("%s &", cmd))); // async call to arb_notify
 
     TEST_DBSERVER_SERVE_UNTIL(gb_main, notification_result);
     TEST_DBSERVER_CLOSE(gb_main);
 
-    TEST_ASSERT_EQUAL(notification_result, "message='the note' cd='some argument'");
+    TEST_EXPECT_EQUAL(notification_result, "message='the note' cd='some argument'");
     freenull(notification_result);
 
     EXIT_NOTIFICATION;

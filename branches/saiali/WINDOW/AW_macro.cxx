@@ -233,8 +233,8 @@ void RecordingMacro::post_process() {
 #define TEST_PARSE_QUOTED_STRING(in,res_exp,out_exp) do {       \
         const char *line = (in);                                \
         char *res =parse_quoted_string(line);                   \
-        TEST_ASSERT_EQUAL(res, res_exp);                        \
-        TEST_ASSERT_EQUAL(line, out_exp);                       \
+        TEST_EXPECT_EQUAL(res, res_exp);                        \
+        TEST_EXPECT_EQUAL(line, out_exp);                       \
         free(res);                                              \
     } while(0)
 
@@ -265,7 +265,7 @@ void TEST_parse() {
 }
 
 #define RUN_TOOL_NEVER_VALGRIND(cmdline)      GBK_system(cmdline)
-#define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_ASSERT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
+#define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_EXPECT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
 
 void TEST_post_process() {
     const char *source   = "general/pp.amc";
@@ -275,17 +275,17 @@ void TEST_post_process() {
     TEST_RUN_TOOL_NEVER_VALGRIND(GBS_global_string("cp %s %s", source, dest));
 
     char *fulldest = strdup(GB_path_in_ARBHOME(GB_concat_path("UNIT_TESTER/run", dest)));
-    TEST_ASSERT(GB_is_readablefile(fulldest));
+    TEST_EXPECT(GB_is_readablefile(fulldest));
 
     {
         RecordingMacro recording(fulldest, "whatever", "whatever", true);
 
-        TEST_ASSERT_NO_ERROR(recording.has_error());
-        TEST_ASSERT_NO_ERROR(recording.stop()); // triggers post_process
+        TEST_EXPECT_NO_ERROR(recording.has_error());
+        TEST_EXPECT_NO_ERROR(recording.stop()); // triggers post_process
     }
 
-    TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(dest, expected, 0);
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(dest));
+    TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(dest, expected, 0);
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(dest));
 
     free(fulldest);
 }

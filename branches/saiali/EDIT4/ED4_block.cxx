@@ -1050,10 +1050,10 @@ static arb_test::match_expectation blockop_expected_io(const ED4_block_operator&
     return all().ofgroup(expectations);
 }
 
-#define TEST_ASSERT_BLOCKOP_PERFORMS(oversized_input,blockop,expected)         TEST_EXPECTATION(blockop_expected_io(blockop, oversized_input, expected, NULL))
-#define TEST_ASSERT_BLOCKOP_PERFORMS__BROKEN(oversized_input,blockop,expected) TEST_EXPECTATION__BROKEN(blockop_expected_io(blockop, oversized_input, expected, NULL))
-#define TEST_ASSERT_BLOCKOP_ERRORHAS(oversized_input,blockop,expected)         TEST_EXPECTATION(blockop_expected_io(blockop, oversized_input, NULL, expected))
-#define TEST_ASSERT_BLOCKOP_ERRORHAS__BROKEN(oversized_input,blockop,expected) TEST_EXPECTATION__BROKEN(blockop_expected_io(blockop, oversized_input, NULL, expected))
+#define TEST_EXPECT_BLOCKOP_PERFORMS(oversized_input,blockop,expected)         TEST_EXPECTATION(blockop_expected_io(blockop, oversized_input, expected, NULL))
+#define TEST_EXPECT_BLOCKOP_PERFORMS__BROKEN(oversized_input,blockop,expected) TEST_EXPECTATION__BROKEN(blockop_expected_io(blockop, oversized_input, expected, NULL))
+#define TEST_EXPECT_BLOCKOP_ERRORHAS(oversized_input,blockop,expected)         TEST_EXPECTATION(blockop_expected_io(blockop, oversized_input, NULL, expected))
+#define TEST_EXPECT_BLOCKOP_ERRORHAS__BROKEN(oversized_input,blockop,expected) TEST_EXPECTATION__BROKEN(blockop_expected_io(blockop, oversized_input, NULL, expected))
 
 void TEST_block_operators() {
     ED4_init_is_align_character("-.");
@@ -1061,77 +1061,77 @@ void TEST_block_operators() {
     // Note: make sure tests perform an identity block operation at least once for each operator
     
     // replace_op
-    TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", replace_op("-",  "."),  "A.C.");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", replace_op("?",  "."),  "....");
-    TEST_ASSERT_BLOCKOP_PERFORMS("AACAG-", replace_op("AC", "CA"), "CAAG");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-ACAG-", replace_op("A?", "Ax"), "AxAx");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-A-C--", replace_op("-",  "."),  "A.C.");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-A-C--", replace_op("?",  "."),  "....");
+    TEST_EXPECT_BLOCKOP_PERFORMS("AACAG-", replace_op("AC", "CA"), "CAAG");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-ACAG-", replace_op("A?", "Ax"), "AxAx");
 
-    TEST_ASSERT_BLOCKOP_PERFORMS("GACAG-", replace_op("GA", "AG"), NULL);   // unchanged
-    TEST_ASSERT_BLOCKOP_PERFORMS("GAGAGA", replace_op("GA", "AG"), "AAGG"); 
-    TEST_ASSERT_BLOCKOP_PERFORMS("GACAGA", replace_op("GA", "AG"), NULL);
-    TEST_ASSERT_BLOCKOP_PERFORMS("AGAGAG", replace_op("GA", "AG"), "AGAG");
+    TEST_EXPECT_BLOCKOP_PERFORMS("GACAG-", replace_op("GA", "AG"), NULL);   // unchanged
+    TEST_EXPECT_BLOCKOP_PERFORMS("GAGAGA", replace_op("GA", "AG"), "AAGG");
+    TEST_EXPECT_BLOCKOP_PERFORMS("GACAGA", replace_op("GA", "AG"), NULL);
+    TEST_EXPECT_BLOCKOP_PERFORMS("AGAGAG", replace_op("GA", "AG"), "AGAG");
 
     // case_op
-    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGuT-", case_op(true), "ACGUT");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGuT-", case_op(false), "acgut");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-acgut-", case_op(false), NULL);
-    TEST_ASSERT_BLOCKOP_PERFORMS("-------", case_op(false), NULL);
+    TEST_EXPECT_BLOCKOP_PERFORMS("-AcGuT-", case_op(true), "ACGUT");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-AcGuT-", case_op(false), "acgut");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-acgut-", case_op(false), NULL);
+    TEST_EXPECT_BLOCKOP_PERFORMS("-------", case_op(false), NULL);
 
     // revcomp_op
-    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, false, false), NULL);     // noop
-    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, true,  false), "TuG-cA");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, false, true),  "Ug-CaA");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, true,  true),  "AaC-gU");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_DNA, true,  true),  "AaC-gT");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGCgT-", revcomp_op(GB_AT_DNA, true,  true),  NULL);
-    TEST_ASSERT_BLOCKOP_PERFORMS("--------", revcomp_op(GB_AT_DNA, true,  true),  NULL);
-    
-    TEST_ASSERT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, false, false), NULL); // noop             
-    TEST_ASSERT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, true,  false), "FQD-RA");
-    TEST_ASSERT_BLOCKOP_ERRORHAS("-AR-DQF-", revcomp_op(GB_AT_AA, false, true),  "complement not available");
-    TEST_ASSERT_BLOCKOP_ERRORHAS("-AR-DQF-", revcomp_op(GB_AT_AA, true,  true),  "reverse-complement not available");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, false, false), NULL);     // noop
+    TEST_EXPECT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, true,  false), "TuG-cA");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, false, true),  "Ug-CaA");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_RNA, true,  true),  "AaC-gU");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-Ac-GuT-", revcomp_op(GB_AT_DNA, true,  true),  "AaC-gT");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-AcGCgT-", revcomp_op(GB_AT_DNA, true,  true),  NULL);
+    TEST_EXPECT_BLOCKOP_PERFORMS("--------", revcomp_op(GB_AT_DNA, true,  true),  NULL);
+
+    TEST_EXPECT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, false, false), NULL); // noop
+    TEST_EXPECT_BLOCKOP_PERFORMS("-AR-DQF-", revcomp_op(GB_AT_AA, true,  false), "FQD-RA");
+    TEST_EXPECT_BLOCKOP_ERRORHAS("-AR-DQF-", revcomp_op(GB_AT_AA, false, true),  "complement not available");
+    TEST_EXPECT_BLOCKOP_ERRORHAS("-AR-DQF-", revcomp_op(GB_AT_AA, true,  true),  "reverse-complement not available");
 
     // unalign_op
-    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T-", unalign_op(-1), "AcGT----");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G-T-T", unalign_op(-1), "AcGT----");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--TT", unalign_op(-1), "AcGT----");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T.", unalign_op(-1), "AcGT....");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G-T.T", unalign_op(-1), "AcGT....");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-A-c-G--T-", unalign_op(-1), "AcGT----");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-A-c-G-T-T", unalign_op(-1), "AcGT----");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-A-c-G--TT", unalign_op(-1), "AcGT----");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-A-c-G--T.", unalign_op(-1), "AcGT....");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-A-c-G-T.T", unalign_op(-1), "AcGT....");
 
-    TEST_ASSERT_BLOCKOP_PERFORMS("A-Ac-G--T-", unalign_op(+1), "----AcGT");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T-", unalign_op(+1), "----AcGT");
-    TEST_ASSERT_BLOCKOP_PERFORMS("A.Ac-G--T-", unalign_op(+1), "....AcGT");
-    TEST_ASSERT_BLOCKOP_PERFORMS(".A-c-G--T-", unalign_op(+1), "....AcGT");
-    TEST_ASSERT_BLOCKOP_PERFORMS("AA-c-G--T-", unalign_op(+1), "----AcGT");
+    TEST_EXPECT_BLOCKOP_PERFORMS("A-Ac-G--T-", unalign_op(+1), "----AcGT");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-A-c-G--T-", unalign_op(+1), "----AcGT");
+    TEST_EXPECT_BLOCKOP_PERFORMS("A.Ac-G--T-", unalign_op(+1), "....AcGT");
+    TEST_EXPECT_BLOCKOP_PERFORMS(".A-c-G--T-", unalign_op(+1), "....AcGT");
+    TEST_EXPECT_BLOCKOP_PERFORMS("AA-c-G--T-", unalign_op(+1), "----AcGT");
 
-    TEST_ASSERT_BLOCKOP_PERFORMS("AA-c-G--TT", unalign_op(0), "--AcGT--");
-    TEST_ASSERT_BLOCKOP_PERFORMS(".A-c-G--T-", unalign_op(0), "..AcGT--");
-    TEST_ASSERT_BLOCKOP_PERFORMS(".A-c-G--T.", unalign_op(0), "..AcGT..");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-G--T.", unalign_op(0), "--AcGT..");
-    TEST_ASSERT_BLOCKOP_PERFORMS("-A-c-Gc-T.", unalign_op(0), "-AcGcT..");
+    TEST_EXPECT_BLOCKOP_PERFORMS("AA-c-G--TT", unalign_op(0), "--AcGT--");
+    TEST_EXPECT_BLOCKOP_PERFORMS(".A-c-G--T-", unalign_op(0), "..AcGT--");
+    TEST_EXPECT_BLOCKOP_PERFORMS(".A-c-G--T.", unalign_op(0), "..AcGT..");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-A-c-G--T.", unalign_op(0), "--AcGT..");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-A-c-Gc-T.", unalign_op(0), "-AcGcT..");
 
-    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGcT.",  unalign_op(0), NULL);
-    TEST_ASSERT_BLOCKOP_PERFORMS("-AcGcT..", unalign_op(0), NULL);
-    TEST_ASSERT_BLOCKOP_PERFORMS("--AcGcT.", unalign_op(0), "AcGcT.");
+    TEST_EXPECT_BLOCKOP_PERFORMS("-AcGcT.",  unalign_op(0), NULL);
+    TEST_EXPECT_BLOCKOP_PERFORMS("-AcGcT..", unalign_op(0), NULL);
+    TEST_EXPECT_BLOCKOP_PERFORMS("--AcGcT.", unalign_op(0), "AcGcT.");
 
-    TEST_ASSERT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(-1), NULL);
-    TEST_ASSERT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(+1), NULL);
-    TEST_ASSERT_BLOCKOP_PERFORMS("------", unalign_op(+1), NULL);
+    TEST_EXPECT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(-1), NULL);
+    TEST_EXPECT_BLOCKOP_PERFORMS("-ACGT-", unalign_op(+1), NULL);
+    TEST_EXPECT_BLOCKOP_PERFORMS("------", unalign_op(+1), NULL);
 
     // shift_op
-    TEST_ASSERT_BLOCKOP_PERFORMS("-A-C--", shift_op(+1), "-A-C"); // take gap outside region
-    TEST_ASSERT_BLOCKOP_PERFORMS(".A-C--", shift_op(+1), ".A-C"); // -"-
-    TEST_ASSERT_BLOCKOP_PERFORMS("-.AC--", shift_op(+1), "..AC"); // take gap inside region
+    TEST_EXPECT_BLOCKOP_PERFORMS("-A-C--", shift_op(+1), "-A-C"); // take gap outside region
+    TEST_EXPECT_BLOCKOP_PERFORMS(".A-C--", shift_op(+1), ".A-C"); // -"-
+    TEST_EXPECT_BLOCKOP_PERFORMS("-.AC--", shift_op(+1), "..AC"); // take gap inside region
 
-    TEST_ASSERT_BLOCKOP_PERFORMS("--A-C-", shift_op(-1), "A-C-"); // same for other direction
-    TEST_ASSERT_BLOCKOP_PERFORMS("--A-C.", shift_op(-1), "A-C.");
-    TEST_ASSERT_BLOCKOP_PERFORMS("--AC..", shift_op(-1), "AC..");
-    TEST_ASSERT_BLOCKOP_PERFORMS("------", shift_op(-1), NULL);
+    TEST_EXPECT_BLOCKOP_PERFORMS("--A-C-", shift_op(-1), "A-C-"); // same for other direction
+    TEST_EXPECT_BLOCKOP_PERFORMS("--A-C.", shift_op(-1), "A-C.");
+    TEST_EXPECT_BLOCKOP_PERFORMS("--AC..", shift_op(-1), "AC..");
+    TEST_EXPECT_BLOCKOP_PERFORMS("------", shift_op(-1), NULL);
 
-    TEST_ASSERT_BLOCKOP_PERFORMS("G-TTAC", shift_op(-1), "TTA-"); // no gap reachable
+    TEST_EXPECT_BLOCKOP_PERFORMS("G-TTAC", shift_op(-1), "TTA-"); // no gap reachable
 
-    TEST_ASSERT_BLOCKOP_ERRORHAS("GATTAC", shift_op(-1), "Need a gap at block");  // no space
-    TEST_ASSERT_BLOCKOP_ERRORHAS("GATTAC", shift_op(+1), "Need a gap at block");  // no space
+    TEST_EXPECT_BLOCKOP_ERRORHAS("GATTAC", shift_op(-1), "Need a gap at block");  // no space
+    TEST_EXPECT_BLOCKOP_ERRORHAS("GATTAC", shift_op(+1), "Need a gap at block");  // no space
 }
 
 #endif // UNIT_TESTS

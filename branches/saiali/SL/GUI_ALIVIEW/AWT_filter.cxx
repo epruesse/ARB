@@ -187,6 +187,8 @@ static void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruc
 adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, const char *def_name) {
     /*! Create a data structure for filters (needed for awt_create_select_filter_win)
      *
+     * @param aw_root application root
+     * @param gb_main DB root node
      * @param def_name filter name awar (has to exist, name has to be "SOMETHING/name")
      * awars "SOMETHING/filter" (STRING) and
      * "SOMETHING/alignment" (STRING) have to exist as well!

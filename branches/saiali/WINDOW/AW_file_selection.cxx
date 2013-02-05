@@ -712,10 +712,10 @@ void AW_refresh_fileselection(AW_root *awr, const char *awar_prefix) {
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
-#define TEST_ASSERT_EQUAL_DUPPED(cs1, cs2)                              \
+#define TEST_EXPECT_EQUAL_DUPPED(cs1, cs2)                              \
     do {                                                                \
         char *s1, *s2;                                                  \
-        TEST_ASSERT_EQUAL(s1 = (cs1), s2 = (cs2));                      \
+        TEST_EXPECT_EQUAL(s1 = (cs1), s2 = (cs2));                      \
         free(s1);                                                       \
         free(s2);                                                       \
     } while(0)
@@ -725,30 +725,30 @@ void TEST_path_unfolding() {
     {
         gb_getenv_hook old = GB_install_getenv_hook(expand_symbolic_directories);
 
-        TEST_ASSERT_EQUAL(GB_getenv("PWD"), currDir);
-        TEST_ASSERT_EQUAL_DUPPED(strdup(GB_getenv("PT_SERVER_HOME")), strdup(GB_path_in_ARBLIB("pts"))); // need to dup here - otherwise temp buffers get overwritten
-        TEST_ASSERT_EQUAL(GB_getenv("ARBHOME"), GB_getenvARBHOME());
-        TEST_ASSERT_NULL(GB_getenv("ARB_NONEXISTING_ENVAR"));
+        TEST_EXPECT_EQUAL(GB_getenv("PWD"), currDir);
+        TEST_EXPECT_EQUAL_DUPPED(strdup(GB_getenv("PT_SERVER_HOME")), strdup(GB_path_in_ARBLIB("pts"))); // need to dup here - otherwise temp buffers get overwritten
+        TEST_EXPECT_EQUAL(GB_getenv("ARBHOME"), GB_getenvARBHOME());
+        TEST_EXPECT_NULL(GB_getenv("ARB_NONEXISTING_ENVAR"));
 
         GB_install_getenv_hook(old);
     }
 
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"),                strdup("/bin"));
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"),            strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
+    TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"),                strdup("/bin"));
+    TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"),            strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
     {
         // test fails if
         char *pts_path_in_arblib = strdup(GB_path_in_ARBLIB("pts"));
         char *pts_unfold_path    = AW_unfold_path("PT_SERVER_HOME", ".");
         if (GB_is_directory(pts_path_in_arblib)) {
-            TEST_ASSERT_EQUAL(pts_path_in_arblib, pts_unfold_path);
+            TEST_EXPECT_EQUAL(pts_path_in_arblib, pts_unfold_path);
         }
         else {
-            TEST_ASSERT_EQUAL__BROKEN(pts_path_in_arblib, pts_unfold_path); // fails if directory does not exist
+            TEST_EXPECT_EQUAL__BROKEN(pts_path_in_arblib, pts_unfold_path); // fails if directory does not exist
         }
         free(pts_unfold_path);
         free(pts_path_in_arblib);
     }
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), strdup(currDir));
+    TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), strdup(currDir));
 }
 
 #endif // UNIT_TESTS

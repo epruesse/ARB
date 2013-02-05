@@ -183,7 +183,8 @@ public:
 };
 
 
-/*! @memo Smart pointer class
+/*! @class SmartPtr
+ * @brief Generic smart pointer
  */
 
 template <class T, class C = Counted<T, auto_delete_ptr<T> > >

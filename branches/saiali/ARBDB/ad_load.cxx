@@ -1361,13 +1361,17 @@ inline bool is_binary_db_id(int id) {
 static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     /*! open an ARB database
      *
+     * @param cpath arb database. May be
+     * - full path of database. (loads DB plus newest quicksave, if any quicksaves exist)
+     * - full path of a quicksave file (loads DB with specific quicksave)
+     * - ":" connects to a running ARB DB server (e.g. ARB_NT, arb_db_server)
      * @param opent contains one or more of the following characters:
      * - 'r' read
      * - 'w' write (w/o 'r' it overwrites existing database)
      * - 'c' create (if not found)
      * - 's'     read only ???
      * - 'D' looks for default in $ARBHOME/lib/arb_default if file is not found in ~/.arb_prop
-     *       (only works combined with mode 'c') 
+     *       (only works combined with mode 'c')
      * - memory usage:
      *   - 't' small memory usage
      *   - 'm' medium
@@ -1375,8 +1379,9 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
      *   - 'h' huge
      * - 'R' allow corrupt file recovery + opening quicks with no master
      * - 'N' assume new database format (does not check whether to convert old->new compression)
+     * @param user username
      *
-     * @return root node
+     * @return DB root node (or NULL, in which case an error has been exported)
      *
      * @see GB_open() and GBT_open()
      */
@@ -1762,7 +1767,7 @@ void TEST_io_number() {
 
     {
         FILE *out = fopen(numbers, "wb");
-        TEST_ASSERT(out);
+        TEST_REJECT_NULL(out);
 
         long lastPos = 0;
         for (size_t i = 0; i<ARRAY_ELEMS(DATA); ++i) {
@@ -1772,7 +1777,7 @@ void TEST_io_number() {
 
             long pos           = ftell(out);
             long bytes_written = pos-lastPos;
-            TEST_ASSERT_EQUAL(bytes_written, d.size_expd);
+            TEST_EXPECT_EQUAL(bytes_written, d.size_expd);
 
             writeSize += bytes_written;
 
@@ -1784,7 +1789,7 @@ void TEST_io_number() {
 
     {
         FILE *in = fopen(numbers, "rb");
-        TEST_ASSERT(in);
+        TEST_REJECT_NULL(in);
 
         long lastPos = 0;
 
@@ -1793,11 +1798,11 @@ void TEST_io_number() {
             TEST_ANNOTATE_ASSERT(GBS_global_string("val=0x%lx", d.val));
 
             long val = gb_get_number(in);
-            TEST_ASSERT_EQUAL(val, d.val);
+            TEST_EXPECT_EQUAL(val, d.val);
 
             long pos        = ftell(in);
             long bytes_read = pos-lastPos;
-            TEST_ASSERT_EQUAL(bytes_read, d.size_expd);
+            TEST_EXPECT_EQUAL(bytes_read, d.size_expd);
 
             readSize += bytes_read;
 
@@ -1807,10 +1812,10 @@ void TEST_io_number() {
         fclose(in);
     }
 
-    TEST_ASSERT_EQUAL(GB_size_of_file(numbers), writeSize);
-    TEST_ASSERT_EQUAL(writeSize, readSize);
+    TEST_EXPECT_EQUAL(GB_size_of_file(numbers), writeSize);
+    TEST_EXPECT_EQUAL(writeSize, readSize);
 
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(numbers));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(numbers));
 }
 
 #endif

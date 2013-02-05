@@ -336,44 +336,44 @@ int PART::topological_cmp(const PART *other) const {
 void TEST_PartRegistry() {
     {
         PartitionSize reg(0);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 0);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 0);
+        TEST_EXPECT_EQUAL(reg.get_bits(), 0);
+        TEST_EXPECT_EQUAL(reg.get_longs(), 0);
         // cutmask doesnt matter
     }
 
     {
         PartitionSize reg(1);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 1);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 1);
-        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "00000000000000000000000000000001");
+        TEST_EXPECT_EQUAL(reg.get_bits(), 1);
+        TEST_EXPECT_EQUAL(reg.get_longs(), 1);
+        TEST_EXPECT_EQUAL(readable_cutmask(reg.get_cutmask()), "00000000000000000000000000000001");
     }
 
     {
         PartitionSize reg(31);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 31);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 1);
-        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "01111111111111111111111111111111");
+        TEST_EXPECT_EQUAL(reg.get_bits(), 31);
+        TEST_EXPECT_EQUAL(reg.get_longs(), 1);
+        TEST_EXPECT_EQUAL(readable_cutmask(reg.get_cutmask()), "01111111111111111111111111111111");
     }
 
     {
         PartitionSize reg(32);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 32);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 1);
-        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "11111111111111111111111111111111");
+        TEST_EXPECT_EQUAL(reg.get_bits(), 32);
+        TEST_EXPECT_EQUAL(reg.get_longs(), 1);
+        TEST_EXPECT_EQUAL(readable_cutmask(reg.get_cutmask()), "11111111111111111111111111111111");
     }
 
     {
         PartitionSize reg(33);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 33);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 2);
-        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "00000000000000000000000000000001");
+        TEST_EXPECT_EQUAL(reg.get_bits(), 33);
+        TEST_EXPECT_EQUAL(reg.get_longs(), 2);
+        TEST_EXPECT_EQUAL(readable_cutmask(reg.get_cutmask()), "00000000000000000000000000000001");
     }
 
     {
         PartitionSize reg(95);
-        TEST_ASSERT_EQUAL(reg.get_bits(), 95);
-        TEST_ASSERT_EQUAL(reg.get_longs(), 3);
-        TEST_ASSERT_EQUAL(readable_cutmask(reg.get_cutmask()), "01111111111111111111111111111111");
+        TEST_EXPECT_EQUAL(reg.get_bits(), 95);
+        TEST_EXPECT_EQUAL(reg.get_longs(), 3);
+        TEST_EXPECT_EQUAL(readable_cutmask(reg.get_cutmask()), "01111111111111111111111111111111");
     }
 }
 

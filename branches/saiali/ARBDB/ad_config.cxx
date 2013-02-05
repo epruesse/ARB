@@ -319,16 +319,16 @@ void TEST_GBT_get_configuration_names() {
 
         const char *configs[] = { "arb", "BASIC", "Check it", "dummy" };
         for (size_t i = 0; i<ARRAY_ELEMS(configs); ++i) {
-            TEST_ASSERT_RESULT__NOERROREXPORTED(GBT_create_configuration(gb_main, configs[i]));
+            TEST_EXPECT_RESULT__NOERROREXPORTED(GBT_create_configuration(gb_main, configs[i]));
         }
 
         ConstStrArray cnames;
         GBT_get_configuration_names(cnames, gb_main);
 
-        TEST_ASSERT_EQUAL(cnames.size(), 4U);
+        TEST_EXPECT_EQUAL(cnames.size(), 4U);
 
         char *joined = GBT_join_names(cnames, '*');
-        TEST_ASSERT_EQUAL(joined, "arb*BASIC*Check it*dummy");
+        TEST_EXPECT_EQUAL(joined, "arb*BASIC*Check it*dummy");
         free(joined);
     }
 

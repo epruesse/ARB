@@ -353,6 +353,11 @@ extern gene_struct_index_internal gene_struct_internal2arb; // sorted by interna
 
 #define PT_base_string_counter_eof(str) (*(unsigned char *)(str) == 255)
 
+inline void fflush_all() { // @@@ will become a duplicate (when merging PT_tools.h later)
+    fflush(stderr); 
+    fflush(stdout); 
+} 
+
 #else
 #error probe.h included twice
 #endif

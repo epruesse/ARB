@@ -623,7 +623,7 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
         gb_assert(ADMAP_ID_LEN <= strlen(ADMAP_ID));
 
         if (!writeError) {
-            IF_DEBUG(long calcOffset=)
+            IF_ASSERTION_USED(long calcOffset=)
                 calcGbdOffsets(Main, gb_gbk);
 
             gb_map_header mheader;
@@ -643,7 +643,7 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
             gb_assert(GB_FATHER(Main->data) == Main->dummy_father);
             SET_GB_FATHER(Main->data, NULL);
     
-            IF_DEBUG(long writeOffset =)
+            IF_ASSERTION_USED(long writeOffset =)
                 writeGbdByKey(Main, gb_gbk, out, main_idx_4_save);
             SET_GB_FATHER(Main->data, Main->dummy_father);
 

@@ -23,6 +23,7 @@
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
 #include <arb_progress.h>
+#include <arb_misc.h>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <gui_aliview.hxx>

@@ -2925,9 +2925,9 @@ void TEST_treeDisplay() {
 
 #if defined(TEST_AUTO_UPDATE)
 #warning TEST_AUTO_UPDATE is active (non-default)
-                    TEST_ASSERT_NO_ERROR(print_dev.open(spool_expected));
+                    TEST_EXPECT_NO_ERROR(print_dev.open(spool_expected));
 #else
-                    TEST_ASSERT_NO_ERROR(print_dev.open(spool_file));
+                    TEST_EXPECT_NO_ERROR(print_dev.open(spool_file));
 #endif
 
                     {
@@ -2940,9 +2940,9 @@ void TEST_treeDisplay() {
 
 #if !defined(TEST_AUTO_UPDATE)
                     // if (strcmp(spool_expected, "display/irs_CH.fig") == 0) {
-                        TEST_ASSERT_TEXTFILES_EQUAL(spool_expected, spool_file);
+                        TEST_EXPECT_TEXTFILES_EQUAL(spool_expected, spool_file);
                     // }
-                    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
+                    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
 #endif
                     free(spool_expected);
                     free(spool_file);

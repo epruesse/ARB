@@ -187,6 +187,8 @@ char *GBS_escape_string(const char *str, const char *chars_to_escape, char escap
      * uses a special escape-method, which eliminates all 'chars_to_escape' completely
      * from str (this makes further processing of the string more easy)
      *
+     * @param str string to escape
+     *
      * @param escape_char is the character used for escaping. For performance reasons it
      * should be a character rarely used in 'str'.
      *
@@ -930,29 +932,6 @@ char *GBS_replace_tabs_by_spaces(const char *text) {
     return GBS_strclose(mfile);
 }
 
-const char *GBS_readable_size(unsigned long long size, const char *unit_suffix) {
-    // return human readable size information
-    // returned string is maximal 6+strlen(unit) characters long
-    // (using "b" as 'unit_suffix' produces '### b', '### Mb' etc)
-
-    if (size<1000) return GBS_global_string("%llu %s", size, unit_suffix);
-
-    const char *units = "kMGTPEZY"; // kilo, Mega, Giga, Tera, ... should be enough forever
-    int i;
-
-    for (i = 0; units[i]; ++i) {
-        char unit = units[i];
-        if (size<1000*1024) {
-            double amount = size/(double)1024;
-            if (amount<10.0)  return GBS_global_string("%4.2f %c%s", amount+0.005, unit, unit_suffix);
-            if (amount<100.0) return GBS_global_string("%4.1f %c%s", amount+0.05, unit, unit_suffix);
-            return GBS_global_string("%i %c%s", (int)(amount+0.5), unit, unit_suffix);
-        }
-        size /= 1024; // next unit
-    }
-    return GBS_global_string("MUCH %s", unit_suffix);
-}
-
 char *GBS_trim(const char *str) {
     // trim whitespace at beginning and end of 'str'
     const char *whitespace = " \t\n";
@@ -1018,37 +997,37 @@ static void dont_failassertion() {}
 static void provokesegv_does_not_fail_assertion() {
     // provokesegv does not raise assertion
     // -> the following assertion fails
-    TEST_ASSERT_CODE_ASSERTION_FAILS(provokesegv);
+    TEST_EXPECT_CODE_ASSERTION_FAILS(provokesegv);
 }
 #endif
 #endif
 
 void TEST_signal_tests() {
     // check whether we can test for SEGV and assertion failures
-    TEST_ASSERT_SEGFAULT(provokesegv);
-    TEST_ASSERT_CODE_ASSERTION_FAILS(failassertion);
+    TEST_EXPECT_SEGFAULT(provokesegv);
+    TEST_EXPECT_CODE_ASSERTION_FAILS(failassertion);
 
     // tests whether signal suppression works multiple times (by repeating tests)
-    TEST_ASSERT_CODE_ASSERTION_FAILS(failassertion);
-    TEST_ASSERT_SEGFAULT(provokesegv);
+    TEST_EXPECT_CODE_ASSERTION_FAILS(failassertion);
+    TEST_EXPECT_SEGFAULT(provokesegv);
 
     // test whether SEGV can be distinguished from assertion
-    TEST_ASSERT_CODE_ASSERTION_FAILS(provokesegv_does_not_fail_assertion);
+    TEST_EXPECT_CODE_ASSERTION_FAILS(provokesegv_does_not_fail_assertion);
 
     // following section is disabled since it would spam wanted warnings
     // (enable it when changing any of these TEST_..-macros used here)
 #if 0
-    TEST_ASSERT_SEGFAULT__WANTED(dont_provokesegv);
-    TEST_ASSERT_SEGFAULT__UNWANTED(provokesegv);
-    TEST_ASSERT_SEGFAULT__UNWANTED(failassertion);
+    TEST_EXPECT_SEGFAULT__WANTED(dont_provokesegv);
+    TEST_EXPECT_SEGFAULT__UNWANTED(provokesegv);
+    TEST_EXPECT_SEGFAULT__UNWANTED(failassertion);
 
-    TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
-    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
-    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
+    TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
+    TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
+    TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
 #endif
 }
 
-#define EXPECT_CONTENT(content) TEST_ASSERT_EQUAL(GBS_mempntr(strstr), content)
+#define EXPECT_CONTENT(content) TEST_EXPECT_EQUAL(GBS_mempntr(strstr), content)
 
 void TEST_GBS_strstruct() {
     {
@@ -1059,7 +1038,7 @@ void TEST_GBS_strstruct() {
         GBS_chrcat(strstr, '_');            EXPECT_CONTENT("bbb17_");
         GBS_floatcat(strstr, 3.5);          EXPECT_CONTENT("bbb17_3.500000");
 
-        TEST_ASSERT_EQUAL(GBS_memoffset(strstr), 14);
+        TEST_EXPECT_EQUAL(GBS_memoffset(strstr), 14);
         GBS_str_cut_tail(strstr, 13);       EXPECT_CONTENT("b");
         GBS_strcat(strstr, "utter");        EXPECT_CONTENT("butter");
         GBS_strncat(strstr, "flying", 3);   EXPECT_CONTENT("butterfly");
@@ -1086,7 +1065,7 @@ void TEST_GBS_strstruct() {
         size_t         oldbufsize = strstr->get_buffer_size();
         GBS_chrncat(strstr, 'x', 20);               // trigger reallocation of buffer
 
-        TEST_ASSERT(oldbufsize != strstr->get_buffer_size()); // did we reallocate?
+        TEST_EXPECT_DIFFERENT(oldbufsize, strstr->get_buffer_size()); // did we reallocate?
         EXPECT_CONTENT("xxxxxxxxxxxxxxxxxxxx");
         GBS_strforget(strstr);
     }
@@ -1095,7 +1074,7 @@ void TEST_GBS_strstruct() {
 #define TEST_SHORTENED_EQUALS(Long,Short) do {  \
         char *buf = strdup(Long);               \
         GBS_shorten_repeated_data(buf);         \
-        TEST_ASSERT_EQUAL(buf, Short);          \
+        TEST_EXPECT_EQUAL(buf, Short);          \
         free(buf);                              \
     } while(0)
 
