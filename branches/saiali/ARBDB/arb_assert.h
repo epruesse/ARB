@@ -88,8 +88,9 @@
 
 #if defined(__cplusplus)
 inline void provoke_core_dump() {
+    volatile int *np = 0; // if not volatile, the clang compiler will skip the crashing code
     // cppcheck-suppress nullPointer
-    *(int*)0 = 0;
+    *(int*)np = 666;
 }
 #else // !defined(__cplusplus)
 #define provoke_core_dump() do { *(int*)0 = 0; } while(0)
@@ -262,8 +263,10 @@ inline bool contradicted(bool hypo1, bool hypo2) { return !correlated(hypo1, hyp
 
 #else
 
+template <typename T> inline void dont_warn_unused_result(T) {}
+
 # define ASSERT_RESULT(Type, Expected, Expr) do {       \
-        (void)Expr;                                     \
+        dont_warn_unused_result<Type>(Expr);            \
     } while(0)
 
 # define ASSERT_RESULT_PREDICATE(Pred, Expr) do {       \

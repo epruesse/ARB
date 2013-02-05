@@ -525,7 +525,7 @@ int ARB_main(int argc, const char *argv[]) {
         char *stamp   = strdup(GB_path_in_arbprop("msgtime"));
         if (GB_time_of_file(message)>GB_time_of_file(stamp)) {
             AW_edit(message);
-            system(GBS_global_string("touch %s", stamp));
+            aw_message_if(GBK_system(GBS_global_string("touch %s", stamp)));
         }
         free(stamp);
         free(message);

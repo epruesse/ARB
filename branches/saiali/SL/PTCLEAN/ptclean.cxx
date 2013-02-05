@@ -29,7 +29,7 @@ class EntryTempMarker : virtual Noncopyable {
         NONE,
         ALL,
         SOME_OF_ROOT,
-        SOME_OF_PRESETS,
+        // SOME_OF_PRESETS,
         SOME_OF_SPECIES_DATA,
         SOME_OF_EXTENDED_DATA,
         SOME_OF_SPECIES,

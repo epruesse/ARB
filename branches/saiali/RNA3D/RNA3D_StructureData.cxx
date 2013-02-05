@@ -190,7 +190,7 @@ void Structure3D::DeleteOldMoleculeData() {
 
 void Structure3D::ReadCoOrdinateFile() {
     static char *DataFile = 0;
-    int rnaType    = FindTypeOfRNA();
+    int          rnaType  = FindTypeOfRNA();
 
     RNA3D->bDisplayComments = true; // displaying comments in main window
 
@@ -221,43 +221,37 @@ void Structure3D::ReadCoOrdinateFile() {
         break;
     }
 
-    char      buf[256];
-
-    float X, Y, Z;
-    unsigned int pos;
-    char Base;
-
     ifstream readData;
     readData.open(DataFile, ios::in);
     if (!readData.is_open()) {
         throw_IO_error(DataFile);
     }
 
-    int cntr = 0;
-    unsigned int last3Dpos = 0;
-
-    static bool bEColiStartPosStored = false;
+    int          cntr                 = 0;
+    unsigned int last3Dpos            = 0;
+    static bool  bEColiStartPosStored = false;
 
     while (!readData.eof()) {
+        char buf[256];
         readData.getline(buf, 100);
-        string tmp, atom, line = string(buf);
 
+        string line(buf);
         if ((line.find("ATOM") != string::npos) || (line.find("HETATM") != string::npos)) {
-            atom = (line.substr(77, 2)).c_str();
+            string atom = line.substr(77, 2);
             if (atom.find("P") != string::npos) {
-                tmp = (line.substr(18, 3)).c_str();
-                Base = tmp[1];
-                pos  = atoi((line.substr(22, 4)).c_str());
-                X    = atof((line.substr(31, 8)).c_str());
-                Y    = atof((line.substr(39, 8)).c_str());
-                Z    = atof((line.substr(47, 8)).c_str());
+                char     base = line[19];
+                unsigned pos  = atoi(line.substr(22, 4).c_str());
 
                 // special filter for 23S rRNA structure (IVOR/IPNU)
                 // IVOR/IPNU contains artifacts and are not mentioned in any of the
                 // remarks of PDB file
                 if (last3Dpos != pos && !(pos >= 3093)) {
-                    StoreCoordinates(X, Y, Z, Base, pos);
-                    last3Dpos = pos;
+                    float X = atof(line.substr(31, 8).c_str());
+                    float Y = atof(line.substr(39, 8).c_str());
+                    float Z = atof(line.substr(47, 8).c_str());
+
+                    StoreCoordinates(X, Y, Z, base, pos);
+                    last3Dpos  = pos;
                     strCen->x += X; strCen->y += Y; strCen->z += Z;
                     cntr++;
                 }
@@ -265,10 +259,10 @@ void Structure3D::ReadCoOrdinateFile() {
                     iEColiStartPos = pos;
                     bEColiStartPosStored = true;
                 }
+                iEColiEndPos = pos;
             }
         }
     }
-    iEColiEndPos = pos;
 
     cout<<"--------------------------------------------------"<<endl
         <<globalComment<<endl
@@ -286,8 +280,8 @@ void Structure3D::ReadCoOrdinateFile() {
 
 
 void Structure3D::Store2Dinfo(char *info, int pos, int helixNr) {
-    Struct2Dinfo *data, *temp;
-    data = new Struct2Dinfo;
+    Struct2Dinfo *data = new Struct2Dinfo;
+
     data->base    = info[0];
     data->mask    = info[1];
     data->code    = info[2];
@@ -296,10 +290,11 @@ void Structure3D::Store2Dinfo(char *info, int pos, int helixNr) {
 
     data->next = NULL;
 
-    if (start2D == NULL)
+    if (start2D == NULL) {
         start2D = data;
+    }
     else {
-        temp = start2D;
+        Struct2Dinfo *temp = start2D;
         // We know this is not NULL - list not empty!
         while (temp->next != NULL) {
             temp = temp->next;  // Move to next link in chain
@@ -314,25 +309,27 @@ void Structure3D::GetSecondaryStructureInfo() {
     static char *DataFile = 0;
     int rnaType    = FindTypeOfRNA();
 
-     switch (rnaType) {
-     case LSU_23S:
-         DataFile = find_data_file("SecondaryStructureModel_23SrRNA.data");
-         break;
-     case LSU_5S:
-         DataFile = find_data_file("SecondaryStructureModel_5SrRNA.data");
-         break;
-     case SSU_16S:
-         DataFile = find_data_file("SecondaryStructureModel_16SrRNA.data");
-         break;
-     }
+    switch (rnaType) {
+        case LSU_23S:
+            DataFile = find_data_file("SecondaryStructureModel_23SrRNA.data");
+            break;
+        case LSU_5S:
+            DataFile = find_data_file("SecondaryStructureModel_5SrRNA.data");
+            break;
+        case SSU_16S:
+            DataFile = find_data_file("SecondaryStructureModel_16SrRNA.data");
+            break;
+    }
 
     char  buf[256];
 
-    int pos, helixNr, lastHelixNr; lastHelixNr = 0;
+    int  pos         = 0;
+    int  helixNr     = 0;
+    int  lastHelixNr = 0;
     char info[4];
-    info[3] = '\0';
+    info[3]          = '\0';
     bool insideHelix = false;
-    bool skip = false;
+    bool skip        = false;
 
     ifstream readData;
     readData.open(DataFile, ios::in);
@@ -344,19 +341,20 @@ void Structure3D::GetSecondaryStructureInfo() {
         readData.getline(buf, 100);
         char *tmp;
         tmp = strtok(buf, " ");
-        for (int i = 0; tmp != NULL; tmp = strtok(NULL, " "), i++)
-            {
-                switch (i) {
+        for (int i = 0; tmp != NULL; tmp = strtok(NULL, " "), i++) {
+            switch (i) {
                 case 0: pos = atoi(tmp);      break;
                 case 1: info[0] = tmp[0];     break;
                 case 2: info[1] = tmp[0];     break;
                 case 3: info[2] = tmp[0];     break;
                 case 4: helixNr = atoi(tmp); break;
-                }
             }
-        if (((info[2] == 'S') || (info[2] == 'E')) && (helixNr > 0))  lastHelixNr = helixNr;
+        }
 
-        if ((info[2] == 'S') || (info[2] == 'E')) {
+        bool is_SE = (info[2] == 'S') || (info[2] == 'E'); // 'S' = helix start 'E' = helix end
+        if (is_SE) {
+            if (helixNr>0) lastHelixNr = helixNr;
+
             if (!insideHelix) insideHelix = true;
             else {
                 Store2Dinfo(info, pos, lastHelixNr);

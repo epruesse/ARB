@@ -56,32 +56,6 @@ char *GBT_get_default_helix_nr(GBDATA *) { return strdup("HELIX_NR"); }
 char *GBT_get_default_ref     (GBDATA *) { return strdup("ECOLI"); }
 
 
-GB_ERROR GBT_check_arb_file(const char *name) {
-    /*! Checks whether a file is an arb file (or ':')
-     *
-     * @result NULL if it is an arb file
-     */
-    FILE *in;
-    long i;
-    char buffer[100];
-    if (strchr(name, ':')) return 0;
-    in = fopen(name, "r");
-    if (!in) return GBS_global_string("Cannot find file '%s'", name);
-    i = gb_read_in_long(in, 0);
-    if ((i == 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED)) {
-        fclose(in);
-        return 0;
-    }
-    rewind(in);
-    fgets(buffer, 50, in);
-    fclose(in);
-    if (!strncmp(buffer, "/*ARBDB AS", 10)) {
-        return 0;
-    }
-
-    return GBS_global_string("'%s' is not an arb file", name);
-}
-
 // ----------------
 //      scan DB
 

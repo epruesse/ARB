@@ -914,7 +914,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
                 unsigned long size  = pid.get_size();
                 datasize           += size;
 
-                if (size<1 || (unsigned long)size<pdc->probelen) {
+                if (size<1 || size<(unsigned long)pdc->probelen) {
                     fprintf(stderr, "Warning: impossible design request for '%s' (contains only %lu bp)\n", pid.get_name(), size);
                 }
 

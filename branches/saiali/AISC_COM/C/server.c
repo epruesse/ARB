@@ -157,8 +157,8 @@ static const char *test_address_valid(void *address, long key)
     // ----------------------------------------
     // start of critical section
     // (need volatile for modified local auto variables, see man longjump)
-    volatile long  i;
-    volatile int trapped = sigsetjmp(return_after_segv, 1);
+    volatile long i       = 0;
+    volatile int  trapped = sigsetjmp(return_after_segv, 1);
 
     if (trapped == 0) { // normal execution
         i = *(long *)address; // here a SIGSEGV may happen. Execution will continue in else-branch
@@ -492,11 +492,6 @@ static int aisc_s_send_bytes_queue(int socket) {
     aisc_server_bytes_first = aisc_server_bytes_last = NULL;
     return 0;
 }
-
-union double_xfer {
-    double as_double;
-    int    as_int[2];
-};
 
 static long aisc_talking_get(long *in_buf, int size, long *out_buf, int) {
     aisc_server_error = NULL;

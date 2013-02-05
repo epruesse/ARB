@@ -25,13 +25,14 @@
 
 #define nt_assert(bed) arb_assert(bed)
 
-#define AWAR_CS2GP                         "tmp/ntree/colstat_2_gnuplot"
-#define AWAR_CS2GP_NAME                    AWAR_CS2GP "/name"
-#define AWAR_CS2GP_ALIGNMENT               AWAR_CS2GP "/alignment"
-#define AWAR_CS2GP_SUFFIX                  AWAR_CS2GP "/filter"
-#define AWAR_CS2GP_DIRECTORY               AWAR_CS2GP "/directory"
-#define AWAR_CS2GP_FILENAME                AWAR_CS2GP "/file_name"
-#define AWAR_CS2GP_SMOOTH                  AWAR_CS2GP "/smooth"
+#define AWAR_CS2GP "tmp/ntree/colstat_2_gnuplot"
+
+#define AWAR_CS2GP_NAME      AWAR_CS2GP "/name"
+#define AWAR_CS2GP_SUFFIX    AWAR_CS2GP "/filter"
+#define AWAR_CS2GP_DIRECTORY AWAR_CS2GP "/directory"
+#define AWAR_CS2GP_FILENAME  AWAR_CS2GP "/file_name"
+
+#define AWAR_CS2GP_SMOOTH_VALUES           AWAR_CS2GP "/smooth_values"
 #define AWAR_CS2GP_SMOOTH_GNUPLOT          AWAR_CS2GP "/smooth_gnuplot"
 #define AWAR_CS2GP_GNUPLOT_OVERLAY_PREFIX  AWAR_CS2GP "/gnuplot_overlay_prefix"
 #define AWAR_CS2GP_GNUPLOT_OVERLAY_POSTFIX AWAR_CS2GP "/gnuplot_overlay_postfix"
@@ -290,6 +291,53 @@ SortedFreq::~SortedFreq() {
     for (int i = 0; i<4; ++i) delete [] freq[i];
 }
 
+class Smoother : virtual Noncopyable {
+    double *value;
+    size_t *index;
+    size_t  size;
+    size_t  halfsize;
+    size_t  next;
+    size_t  added;
+    double  sum;
+
+    size_t wrap(size_t idx) { return idx >= size ? idx-size : idx; }
+
+public:
+    Smoother(size_t smooth_range)
+        : size(smooth_range),
+          halfsize(size/2), 
+          next(0),
+          added(0),
+          sum(0.0)
+    {
+        nt_assert(size>0);
+        
+        value = new double[size];
+        index = new size_t[size];
+
+        for (size_t i = 0; i<size; ++i) value[i] = 0.0;
+    }
+    ~Smoother() {
+        delete [] value;
+        delete [] index;
+    }
+
+    void print(FILE *out, size_t i, double v) {
+        sum = sum+v-value[next];
+
+        index[next] = i;
+        value[next] = v;
+
+        next = wrap(next+1);
+
+        if (added<size) ++added;
+        if (added == size) {
+            size_t printNext = wrap(next+halfsize);
+            fprintf(out, "%zu %f\n", index[printNext], sum/size);
+        }
+    }
+};
+
 static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_mode) {
     // cl_mode = 0 -> write file
     // cl_mode = 1 -> write file and run gnuplot
@@ -345,9 +393,9 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
             nt_assert(out || error);
 
             if (!error) {
-                char   *type    = aww->get_root()->awar(AWAR_CS2GP_SUFFIX)->read_string();
-                long    smooth  = aww->get_root()->awar(AWAR_CS2GP_SMOOTH)->read_int()+1;
-                size_t  columns = column_stat->get_length();
+                char   *type       = aww->get_root()->awar(AWAR_CS2GP_SUFFIX)->read_string();
+                long    smoothSize = aww->get_root()->awar(AWAR_CS2GP_SMOOTH_VALUES)->read_int();  // 1 = discrete values
+                size_t  columns    = column_stat->get_length();
 
                 enum {
                     STAT_AMOUNT,
@@ -416,11 +464,12 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
                 const GB_UINT4 *weights = column_stat->get_weights();
 
                 if (!error) {
+                    Smoother smoother(smoothSize);
+
                     for (size_t j=0; j<columns; ++j) {
                         if (!weights[j]) continue;
-                        fprintf(out, "%zu ", j); // print X coordinate
 
-                        double val;
+                        double val = 0;
                         switch (stat_type) {
                             case STAT_AMOUNT: {
                                 float A  = data.amount.A[j];
@@ -449,8 +498,7 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
                             case STAT_UNKNOWN: nt_assert(0); break;
                         }
 
-                        double smoothed = val/smooth + smoothed *(smooth-1)/(smooth);
-                        fprintf(out, "%f\n", smoothed); // print Y coordinate
+                        smoother.print(out, j, val);
                     }
                 }
 
@@ -526,7 +574,8 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     aws->init(root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot");
     aws->load_xfig("cpro/csp_2_gnuplot.fig");
 
-    root->awar_int(AWAR_CS2GP_SMOOTH);
+    root->awar_int(AWAR_CS2GP_SMOOTH_VALUES, 1)
+        ->set_minmax(1, GBT_get_alignment_len(GLOBAL_gb_main, awar_default_alignment->read_char_pntr()));
     root->awar_int(AWAR_CS2GP_GNUPLOT_OVERLAY_POSTFIX);
     root->awar_int(AWAR_CS2GP_GNUPLOT_OVERLAY_PREFIX);
     root->awar_string(AWAR_CS2GP_SMOOTH_GNUPLOT);
@@ -563,14 +612,7 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     aws->create_button("SELECT_FILTER", AWAR_CS2GP_FILTER_NAME);
 
     aws->at("smooth");
-    aws->create_option_menu(AWAR_CS2GP_SMOOTH);
-    aws->insert_option("Don't smooth", "D", 0);
-    aws->insert_option("Smooth 1", "1", 1);
-    aws->insert_option("Smooth 2", "2", 2);
-    aws->insert_option("Smooth 3", "3", 3);
-    aws->insert_option("Smooth 5", "5", 5);
-    aws->insert_option("Smooth 10", "0", 10);
-    aws->update_option_menu();
+    aws->create_input_field(AWAR_CS2GP_SMOOTH_VALUES, 8);
 
     aws->at("smooth2");
     aws->create_toggle_field(AWAR_CS2GP_SMOOTH_GNUPLOT, 1);

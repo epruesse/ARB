@@ -765,9 +765,15 @@ void ReadCMask(const char *filename)
                     sscanf(in_line, "%d", &(colors[jj]));
                 }
             }
-            else if ((indx == -1) && (strlen(curname) != 0))
-                for (j=0; j<curlen; j++)
-                    fgets(in_line, GBUFSIZ, file);
+            else if ((indx == -1) && (strlen(curname) != 0)) {
+                for (j=0; j<curlen; j++) {
+                    char *read = fgets(in_line, GBUFSIZ, file);
+                    if (!read) {
+                        Warning("Unexepected end of file");
+                        return;
+                    }
+                }
+            }
             else
                 for (j=0; j<curlen; j++)
                 {

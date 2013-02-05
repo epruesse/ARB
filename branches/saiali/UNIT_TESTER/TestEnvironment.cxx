@@ -409,53 +409,56 @@ class FunInfo {
         wrapped_mode = mode;
         wrapped_error.SetNull();
 
-        chdir(runDir());
-
-        long           duration;
-        UnitTestResult guard_says = execute_guarded(wrapped, &duration, MAX_EXEC_MS_ENV, false);
-        Error          error;
-
-        switch (guard_says) {
-            case TEST_OK:
-                if (wrapped_error.isSet()) {
-                    error = GBS_global_string_copy("returns error: %s", &*wrapped_error);
-                }
-                break;
-
-            case TEST_TRAPPED:
-            case TEST_INTERRUPTED:  {
-                const char *what_happened = guard_says == TEST_TRAPPED
-                    ? "trapped"
-                    : "has been interrupted (might be a deaklock)";
-
-                error = GBS_global_string_copy("%s%s",
-                                               what_happened,
-                                               wrapped_error.isSet() ? GBS_global_string(" (wrapped_error='%s')", &*wrapped_error) : "");
-                break;
-            }
-        }
-        if (error.isSet()) {
-            error = GBS_global_string_copy("%s(%s) %s", name.c_str(), upcase(mode_command[mode]), &*error);
+        Error error;
+        if (chdir(runDir()) != 0) {
+            error = strdup(GB_IO_error("changing dir to", runDir()));
         }
         else {
-            Mutex m(FLAG_MUTEX);
+            long           duration;
+            UnitTestResult guard_says = execute_guarded(wrapped, &duration, MAX_EXEC_MS_ENV, false);
 
-            env_assert(changing);
-            is_setup = (mode == SETUP);
-#if defined(SIMULATE_ENVSETUP_TIMEOUT)
-            if (mode == SETUP) {
-                StaticCode::printf("[simulating a timeout during SETUP]\n");
-                sleepms(MAX_EXEC_MS_ENV+MAX_EXEC_MS_SLOW+100); // simulate a timeout
+            switch (guard_says) {
+                case TEST_OK:
+                    if (wrapped_error.isSet()) {
+                        error = GBS_global_string_copy("returns error: %s", &*wrapped_error);
+                    }
+                    break;
+
+                case TEST_TRAPPED:
+                case TEST_INTERRUPTED:  {
+                    const char *what_happened = guard_says == TEST_TRAPPED
+                        ? "trapped"
+                        : "has been interrupted (might be a deaklock)";
+
+                    error = GBS_global_string_copy("%s%s",
+                                                   what_happened,
+                                                   wrapped_error.isSet() ? GBS_global_string(" (wrapped_error='%s')", &*wrapped_error) : "");
+                    break;
+                }
             }
+            if (error.isSet()) {
+                error = GBS_global_string_copy("%s(%s) %s", name.c_str(), upcase(mode_command[mode]), &*error);
+            }
+            else {
+                Mutex m(FLAG_MUTEX);
+
+                env_assert(changing);
+                is_setup = (mode == SETUP);
+#if defined(SIMULATE_ENVSETUP_TIMEOUT)
+                if (mode == SETUP) {
+                    StaticCode::printf("[simulating a timeout during SETUP]\n");
+                    sleepms(MAX_EXEC_MS_ENV+MAX_EXEC_MS_SLOW+100); // simulate a timeout
+                }
 #endif
 #if defined(SIMULATE_ENVSETUP_SLOW_OVERTIME)
-            if (mode == SETUP) {
-                StaticCode::printf("[simulating overtime during SETUP]\n");
-                sleepms(MAX_EXEC_MS_SLOW+100); // simulate overtime
-            }
+                if (mode == SETUP) {
+                    StaticCode::printf("[simulating overtime during SETUP]\n");
+                    sleepms(MAX_EXEC_MS_SLOW+100); // simulate overtime
+                }
 #endif
-            changing = false;
-            all_get_lazy_again();
+                changing = false;
+                all_get_lazy_again();
+            }
         }
 
         StaticCode::printf("[%s environment '%s' END]\n", mode_command[mode], get_name());

@@ -46,21 +46,27 @@ NODIR=--no-print-directory
 
 # ---------------------- [basic compiler setting]
 
-GCC:=$(CC)
-GPP:=$(CXX)
-CPPreal:=cpp
+ifdef DARWIN
+#       GCC,GPP and CPPreal now set in the Portfile
+else
+	GCC:=$(CC)
+	GPP:=$(CXX)
+	CPPreal:=cpp
 
-# to use clang-static-analyzer, call make like this:
-# setenv CLANG_STATIC_CHECKER 1 ; scan-build make -j5 build
-ifeq ($(CLANG_STATIC_CHECKER),1)
-CCC_ANALYZER_CPLUSPLUS=1
+#       to use clang-static-analyzer , call make like this:
+#       setenv CLANG_STATIC_CHECKER 1 ; scan-build make -j5 build
+	ifeq ($(CLANG_STATIC_CHECKER),1)
+		CCC_ANALYZER_CPLUSPLUS=1
+	endif
 endif
+
 
 # ---------------------- compiler version detection
 
 # supported compiler versions:
 
 ALLOWED_GCC_4xx_VERSIONS=\
+	4.2.1 \
 	4.3 4.3.1 4.3.2 4.3.3 4.3.4 \
 	4.4 4.4.1 4.4.3 4.4.5 \
 	4.5.2 \
@@ -97,10 +103,10 @@ endif
 #---------------------- define special directories for non standard builds
 
 ifdef DARWIN
-OSX_SDK:=/Developer/SDKs/MacOSX10.5.sdk
-OSX_FW:=/System/Library/Frameworks
-OSX_FW_OPENGL:=$(OSX_FW)/OpenGL.framework/Versions/A/Libraries
-OSX_FW_IMAGEIO:=$(OSX_FW)/ApplicationServices.framework/Versions/A/Frameworks/ImageIO.framework/Versions/A/Resources
+	OSX_FW:=/System/Library/Frameworks
+	OSX_FW_OPENGL:=$(OSX_FW)/OpenGL.framework/Versions/A/Libraries
+	OSX_FW_GLUT:=$(OSX_FW)/GLUT.framework/Versions/A/Libraries
+	OSX_FW_IMAGEIO:=$(OSX_FW)/ApplicationServices.framework/Versions/A/Frameworks/ImageIO.framework/Versions/A/Resources
 endif
 
 #----------------------
@@ -119,10 +125,12 @@ extended_cpp_warnings :=# warning flags for C++-compiler only
 
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
-	cflags := -O4# compiler flags (C and C++)
- ifndef DARWIN
-	lflags += -O99# linker flags
- endif
+	ifdef DARWIN
+		cflags := -O3# compiler flags (C and C++)
+	else
+		cflags := -O4# compiler flags (C and C++)
+		lflags += -O99# linker flags
+	endif
 endif
 
 ifeq ($(DEBUG),1)
@@ -280,7 +288,6 @@ endif
 dflags += -D$(MACH) # define machine
 
 ifdef DARWIN
-	cflags += -no-cpp-precomp 
 	shared_cflags += -fno-common
 else
 	dflags +=  $(shell getconf LFS_CFLAGS)
@@ -297,16 +304,19 @@ cflags += -fstrict-aliasing# gcc 3.4
 
 #---------------------- X11 location
 
-XHOME:=/usr/X11R6
-XINCLUDES:=-I$(XHOME)/include
-
 ifdef DARWIN
-	XINCLUDES := -I/sw/include -I$(OSX_SDK)/usr/X11/include -I$(OSX_SDK)/usr/include/krb5 -I/usr/OpenMotif/include #Snow Leopard couldn't find OpenMotif
+	XHOME:=$(PREFIX)
+else
+	XHOME:=/usr/X11R6
 endif
 
+XINCLUDES:=-I$(XHOME)/include
 ifdef DARWIN
-	XLIBS := -L/usr/OpenMotif/lib -lXm -L$(XHOME)/lib -lpng -lXt -lX11 -lXext -lc -lXmu -lXi
-	XLIBS += -lGLU -lGL -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGL.dylib:$(OSX_FW_OPENGL)/libGL.dylib
+	XINCLUDES += -I$(OSX_FW)/GLUT.framework/Headers -I$(OSX_FW)/OpenGL.framework/Headers -I$(OSX_SDK)/usr/include/krb5
+
+	XLIBS := -L$(XHOME)/lib -lXm -lpng -lz -lXt -lX11 -lXext -lXp -lXmu -lXi
+	XLIBS += -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGL.dylib:$(OSX_FW_OPENGL)/libGL.dylib
+	XLIBS += -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGLU.dylib:$(OSX_FW_OPENGL)/libGLU.dylib
 else
 	XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXt -lXext -lX11
 endif
@@ -319,34 +329,32 @@ ifeq ($(OPENGL),1)
 	GL_LIB_SYS := -lGL -lGLU
 	GL_LIB_ARB := -L$(ARBHOME)/GL/glAW -lglAW
 
- ifdef DEBIAN
-	GL_LIB_SYS += -lpthread
- endif
+        ifdef DEBIAN
+	        GL_LIB_SYS += -lpthread
+        endif
 
-GL_PNGLIBS_ARB := -L$(ARBHOME)/GL/glpng -lglpng_arb
-GL_PNGLIBS_SYS := -lpng
+        GL_PNGLIBS_ARB := -L$(ARBHOME)/GL/glpng -lglpng_arb
+        GL_PNGLIBS_SYS := -lpng
 
- ifdef DARWIN
-	GLEWLIB := -L/usr/lib -lGLEW -L$(OSX_SDK)/usr/X11/lib -lGLw
-	GLUTLIB := -L$(XHOME)/lib -lglut
- else 
-	GLEWLIB := -lGLEW -lGLw
-	GLUTLIB := -lglut
- endif
+        GLEWLIB := -lGLEW -lGLw
+	ifdef DARWIN
+		GLUTLIB := -glut
+	else
+		GLUTLIB := -lglut
+	endif
 
-GL_LIBS_SYS := $(GL_LIB_SYS) $(GL_PNGLIBS_SYS) $(GLEWLIB) $(GLUTLIB)
-GL_LIBS_ARB := $(GL_LIB_ARB) $(GL_PNGLIBS_ARB)
+        GL_LIBS_SYS := $(GL_LIB_SYS) $(GL_PNGLIBS_SYS) $(GLEWLIB) $(GLUTLIB)
+        GL_LIBS_ARB := $(GL_LIB_ARB) $(GL_PNGLIBS_ARB)
 
-RNA3D_LIB := RNA3D/RNA3D.a
+        RNA3D_LIB := RNA3D/RNA3D.a
 
 else
-# OPENGL=0
 
-GL_LIBS_ARB:=# no opengl -> no libs
-GL_LIBS_SYS:=# no opengl -> no libs
-GL:=# don't build ARB openGL libs
+        GL_LIBS_ARB:=# no opengl -> no libs
+        GL_LIBS_SYS:=# no opengl -> no libs
+        GL:=# don't build ARB openGL libs
 
-RNA3D_LIB :=
+        RNA3D_LIB :=
 
 endif
 
@@ -356,11 +364,7 @@ GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
 #---------------------- tiff lib:
 
-ifdef DARWIN
-	TIFFLIBS := -L/usr/local/lib -ltiff -L$(OSX_FW_IMAGEIO) -lTIFF  
-else
-	TIFFLIBS := -ltiff
-endif
+TIFFLIBS := -ltiff
 
 #---------------------- basic libs:
 
@@ -384,7 +388,15 @@ ifeq ($(TRACESYM),1)
 	endif
 endif
 
-# ------------------------------------------------------------------------- 
+#---------------------- system dependent commands
+
+ifdef DARWIN
+	TIME:=gtime
+else
+	TIME:=/usr/bin/time
+endif
+
+# -------------------------------------------------------------------------
 #	Don't put any machine/version/etc conditionals below!
 #	(instead define variables above)
 # -------------------------------------------------------------------------
@@ -408,7 +420,12 @@ CPP := $(GPP) $(cppflags)# compile C++
 ACCLIB := $(ACC) $(shared_cflags)# compile C (shared libs)
 CPPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
 
-PP := $(CPPreal)# preprocessor
+# preprocessor
+ifdef DARWIN
+PP := $(GCC) -E -x c-header
+else
+PP := $(CPPreal)
+endif
 
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
 LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
@@ -423,11 +440,13 @@ endif
 
 # other used tools
 
+
 ifdef DARWIN
-	XMKMF := /usr/X11/bin/xmkmf
+	XMKMF := $(PREFIX)/bin/xmkmf
 else
 	XMKMF := /usr/bin/X11/xmkmf
 endif
+
 MAKEDEPEND_PLAIN = makedepend
 
 MAKEDEPEND = $(FORCEMASK);$(MAKEDEPEND_PLAIN)
@@ -647,10 +666,15 @@ checks: check_setup check_tabs
 
 CORE_LIB=-lCORE
 ARBDB_LIB=-lARBDB $(CORE_LIB)
-
 LIBS = $(ARBDB_LIB) $(SYSLIBS)
-GUI_LIBS = $(LIBS) -lWINDOW -lAWT $(XLIBS)
 
+GUI_LIBS_PREFIX:=
+ifdef DARWIN
+#       this seem to be added at wrong place, since opengl is only needed to link EDIT4 
+        GUI_LIBS_PREFIX:=-framework GLUT -framework OpenGL
+endif
+
+GUI_LIBS = $(GUI_LIBS_PREFIX) $(LIBS) -lWINDOW -lAWT $(XLIBS)
 LIBPATH = -L$(ARBHOME)/lib
 
 DEST_LIB = lib
@@ -1207,7 +1231,7 @@ PHYLO/PHYLO.dummy:			links_non_perl
 PRIMER_DESIGN/PRIMER_DESIGN.dummy:	links_non_perl
 PROBE_SET/PROBE_SET.dummy:		links_non_perl link_db
 READSEQ/READSEQ.dummy:			links_non_perl
-RNACMA/RNACMA.dummy:			links_non_perl headerlibs
+RNACMA/RNACMA.dummy:			links_non_perl header_libs
 SECEDIT/SECEDIT.dummy:			links_non_perl
 SEQ_QUALITY/SEQ_QUALITY.dummy:		links_non_perl
 SERVERCNTRL/SERVERCNTRL.dummy:		links_non_perl com
@@ -1507,7 +1531,7 @@ redo_links: clean_links
 
 #********************************************************************************
 
-headerlibs:
+header_libs:
 	$(MAKE) -C HEADERLIBS all
 
 #********************************************************************************
@@ -1578,7 +1602,7 @@ endif
 realperl: perltools
 	(( \
 		echo "$(SEP) Make PERL2ARB" ; \
-		time $(MAKE) -C PERL2ARB -r -f Makefile.main \
+		$(TIME) $(MAKE) -C PERL2ARB -r -f Makefile.main \
 			"AUTODEPENDS=1" \
 			"dflags=$(dflags)" \
 			"cross_cflags=$(cross_cflags) $(dflags)" \
@@ -1984,7 +2008,7 @@ aut:
 
 TIMELOG=$(ARBHOME)/arb_time.log
 TIMEARGS=--append --output=$(TIMELOG) --format=" %E(%S+%U) %P [%C]"
-TIMECMD=/usr/bin/time $(TIMEARGS)
+TIMECMD=$(TIME) $(TIMEARGS)
 
 time_one:
 ifeq ($(ONE_TIMED_TARGET),)

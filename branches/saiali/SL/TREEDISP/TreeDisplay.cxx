@@ -2825,7 +2825,7 @@ public:
 
         double zoomx = SCREENSIZE/drawn.width();
         double zoomy = SCREENSIZE/drawn.height();
-        double zoom;
+        double zoom  = 0.0;
 
         switch (type) {
             case AP_LIST_SIMPLE:

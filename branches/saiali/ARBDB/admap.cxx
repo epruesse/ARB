@@ -699,22 +699,29 @@ int gb_is_valid_mapfile(const char *path, gb_map_header *mheader, int verbose) {
 #else
     FILE *in = fopen(path, "r");
     if (in) {
-        const char *error_form = 0;
+        GB_ERROR error = NULL;
 
         if (verbose) printf("ARB: Opening FastLoad File '%s' ...\n", path);
-        fread((char *)mheader, sizeof(*mheader), 1, in);
+        if (fread((char *)mheader, sizeof(*mheader), 1, in) != 1) {
+            error = GB_IO_error("reading header", path);
+        }
         fclose(in);
 
-        if (strcmp(mheader->mapfileID, ADMAP_ID)!=0)    error_form = "'%s' is not a ARB-FastLoad-File";
-        else if (mheader->version!=ADMAP_VERSION)       error_form = "FastLoad-File '%s' has wrong version";
-        else if (mheader->byte_order!=ADMAP_BYTE_ORDER) error_form = "FastLoad-File '%s' has wrong byte order";
+        if (!error) {
+            const char *error_form = 0;
 
-        if (error_form) {
-            GB_export_errorf(error_form, path);
+            if (strcmp(mheader->mapfileID, ADMAP_ID)!=0)    error_form = "'%s' is not a ARB-FastLoad-File";
+            else if (mheader->version!=ADMAP_VERSION)       error_form = "FastLoad-File '%s' has wrong version";
+            else if (mheader->byte_order!=ADMAP_BYTE_ORDER) error_form = "FastLoad-File '%s' has wrong byte order";
+
+            if (error_form) error = GBS_global_string(error_form, path);
+        }
+
+        if (error) {
+            GB_export_error(error);
             GB_print_error();
             return 0;
         }
-
         return 1;
     }
     return -1;

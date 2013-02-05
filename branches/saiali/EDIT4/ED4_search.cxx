@@ -1608,13 +1608,9 @@ static void load_search_paras_from_file(AW_window *aw, AW_CL cl_type) {
 
         while (1) {
             const int BUFFERSIZE = 10000;
-            char buffer[BUFFERSIZE];
+            char      buffer[BUFFERSIZE];
+            if (!fgets(buffer, BUFFERSIZE, in)) break;
 
-            buffer[0] = 0;
-            fgets(buffer, BUFFERSIZE, in);
-            if (!buffer[0]) {
-                break;
-            }
             char *content = strchr(buffer, '=');
             if (!content) {
                 aw_message(GBS_global_string("Format error in '%s' - ignored!", filename));

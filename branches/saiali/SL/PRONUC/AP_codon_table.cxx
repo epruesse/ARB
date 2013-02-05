@@ -413,7 +413,6 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
         is_codon = AWT_is_codon('D', dna, allowed_code, allowed_code_left, &fail_reason);
         if (!is_codon) {
             pn_assert(fail_reason != 0); // if failed there should always be a failure-reason
-            // cppcheck-suppress nullPointer
             char *fail1 = strdup(fail_reason);
             is_codon    = AWT_is_codon('N', dna, allowed_code, allowed_code_left, &fail_reason);
             if (!is_codon) {
@@ -428,7 +427,6 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
         is_codon = AWT_is_codon('E', dna, allowed_code, allowed_code_left, &fail_reason);
         if (!is_codon) {
             pn_assert(fail_reason != 0); // if failed there should always be a failure-reason
-            // cppcheck-suppress nullPointer
             char *fail1 = strdup(fail_reason);
             is_codon    = AWT_is_codon('Q', dna, allowed_code, allowed_code_left, &fail_reason);
             if (!is_codon) {

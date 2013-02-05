@@ -34,6 +34,10 @@
 
 #define AISC_COMMON      0
 
+union double_xfer { // workaround aliasing problems
+    double as_double;
+    int    as_int[2];
+};
 
 #else
 #error aisc_global.h included twice

@@ -17,6 +17,7 @@
 #include "gb_map.h"
 #include "gb_load.h"
 #include "gb_storage.h"
+#include "ad_io_inline.h"
 
 GB_MAIN_TYPE *gb_main_array[GB_MAIN_ARRAY_SIZE];
 
@@ -513,86 +514,6 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
 // -------------------------
 //      Read Binary File
 
-long gb_read_in_long(FILE *in, long reversed) {
-    long  sdata = 0;
-    char *p     = (char *)&sdata;
-
-    if (!reversed) {
-        *(p++) = getc(in);
-        *(p++) = getc(in);
-        *(p++) = getc(in);
-        *(p) = getc(in);
-    }
-    else {
-        p[3] = getc(in);
-        p[2] = getc(in);
-        p[1] = getc(in);
-        p[0] = getc(in);
-    }
-    return sdata;
-}
-
-
-long gb_read_number(FILE *in) {
-    unsigned int c0, c1, c2, c3, c4;
-    c0 = getc(in);
-    if (c0 & 0x80) {
-        c1 = getc(in);
-        if (c0 & 0x40) {
-            c2 = getc(in);
-            if (c0 & 0x20) {
-                c3 = getc(in);
-                if (c0 &0x10) {
-                    c4 = getc(in);
-                    return c4 | (c3<<8) | (c2<<16) | (c1<<8);
-                }
-                else {
-                    return (c3) | (c2<<8) | (c1<<16) | ((c0 & 0x0f)<<24);
-                }
-            }
-            else {
-                return (c2) | (c1<<8) | ((c0 & 0x1f)<<16);
-            }
-        }
-        else {
-            return (c1) | ((c0 & 0x3f)<<8);
-        }
-    }
-    else {
-        return c0;
-    }
-}
-
-static void gb_put_number(long i, FILE *out) {
-    long j;
-    if (i< 0x80) { putc((int)i, out); return; }
-    if (i<0x4000) {
-        j = (i>>8) | 0x80;
-        putc((int)j, out);
-        putc((int)i, out);
-        return;
-    }
-    if (i<0x200000) {
-        j = (i>>16) | 0xC0;
-        putc((int)j, out);
-        j = (i>>8);
-        putc((int)j, out);
-        putc((int)i, out);
-        return;
-    }
-    if (i<0x10000000) {
-        j = (i>>24) | 0xE0;
-        putc((int)j, out);
-        j = (i>>16);
-        putc((int)j, out);
-        j = (i>>8);
-        putc((int)j, out);
-        putc((int)i, out);
-        return;
-    }
-    gb_assert(0); // overflow
-}
-
 long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text) {
     long p = (long)ftell(in);
     GB_export_errorf("%s in reading GB_file (loc %li=%lX) reading %s\n",
@@ -603,22 +524,6 @@ long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text) {
 
 // --------------------------
 //      Write Binary File
-
-static long gb_write_out_long(long data, FILE *out) {
-    long sdata[1];
-    char *p = (char *)sdata, c;
-    sdata[0] = data;
-    c = *(p++);
-    putc(c, out);
-    c = *(p++);
-    putc(c, out);
-    c = *(p++);
-    putc(c, out);
-    c = *(p);
-    putc(c, out);
-    return 0;
-}
-
 
 static int gb_is_writeable(gb_header_list *header, GBDATA *gbd, long version, long diff_save) {
     /* Test whether to write any data to disc.
@@ -733,11 +638,12 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
 
 static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version, long diff_save, int is_root) {
     gb_header_list *header;
-    int             i, index;
+    uint32_t        i, index;
     int             counter;
 
     header = GB_DATA_LIST_HEADER(gbc->d);
-    for (i=0, index = 0; index < gbc->d.nheader; index++) {
+    gb_assert(gbc->d.nheader >= 0);
+    for (i=0, index = 0; index < (uint32_t)gbc->d.nheader; index++) {
         if (gb_is_writeable(&(header[index]), GB_HEADER_LIST_GBD(header[index]), version, diff_save)) i++;
     }
 
@@ -745,11 +651,11 @@ static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version
         gb_put_number(i, out);
     }
     else {
-        gb_write_out_long(i, out);
+        gb_write_out_uint32(i, out);
     }
 
     counter = 0;
-    for (index = 0; index < gbc->d.nheader; index++) {
+    for (index = 0; index < (uint32_t)gbc->d.nheader; index++) {
         GBDATA *h_gbd;
 
         if (header[index].flags.changed == GB_DELETED_IN_MASTER) {  // count deleted items in master, because of index renaming
@@ -786,21 +692,21 @@ static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version
 
 
 
-static int gb_write_bin(FILE *out, GBDATA *gbd, long version) {
+static int gb_write_bin(FILE *out, GBDATA *gbd, uint32_t version) {
     /* version 1 write master arb file
-     * version 2 write slave arb file
+     * version 2 write slave arb file (aka quick save file)
      */
     long          i;
     GBCONTAINER  *gbc       = (GBCONTAINER *)gbd;
     int           diff_save = 0;
     GB_MAIN_TYPE *Main      = GBCONTAINER_MAIN(gbc);
 
-    gb_write_out_long(GBTUM_MAGIC_NUMBER, out);
-    fprintf(out, "\n this is the binary version of the gbtum data file version %li\n", version);
+    gb_write_out_uint32(GBTUM_MAGIC_NUMBER, out);
+    fprintf(out, "\n this is the binary version of the gbtum data file version %li\n", (long)version);
     putc(0, out);
     fwrite("vers", 4, 1, out);
-    gb_write_out_long(0x01020304, out);
-    gb_write_out_long(version, out);
+    gb_write_out_uint32(0x01020304, out);
+    gb_write_out_uint32(version, out);
     fwrite("keys", 4, 1, out);
 
     for (i=1; i<Main->keycnt; i++) {
@@ -976,7 +882,7 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
         error = "got no db";
     }
     else {
-        bool saveASCII;
+        bool saveASCII = false;
         if (strchr(savetype, 'a')) saveASCII      = true;
         else if (strchr(savetype, 'b')) saveASCII = false;
         else error = GBS_global_string("Invalid savetype '%s' (expected 'a' or 'b')", savetype);

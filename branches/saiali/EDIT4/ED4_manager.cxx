@@ -740,7 +740,7 @@ int ED4_manager::refresh_flag_ok() {
     return 1;
 }
 
-inline void ED4_base::resize_requested_by_link(ED4_base *link) {
+inline void ED4_base::resize_requested_by_link(ED4_base *IF_DEBUG(link)) {
     e4_assert((width_link == link) || (height_link == link)); // wrong link
     if (calc_bounding_box()) request_resize();
 }

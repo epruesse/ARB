@@ -139,8 +139,8 @@ static void dot_missing_bases(AW_window *aww) {
         }
         else {
             // if SAI is selected, reduce list of affected positions
-            char   *sai = 0;
-            size_t  sai_len;
+            char   *sai     = 0;
+            size_t  sai_len = -1;
             {
                 GB_transaction  ta(GLOBAL_gb_main);
                 char           *sai_name = aw_root->awar(AWAR_DOT_SAI)->read_string();
