@@ -1797,7 +1797,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->button_length(13);
     awm->help_text("marked_species.hlp");
     awm->callback(NT_popup_configuration_admin, 0, 0);
-    awm->create_button(0, AWAR_MARKED_SPECIES_COUNTER);
+    awm->create_button("selection_admin", AWAR_MARKED_SPECIES_COUNTER);
     {
         GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
         GB_add_callback(gb_species_data, GB_CB_CHANGED, nt_auto_count_marked_species, (int*)awm);
