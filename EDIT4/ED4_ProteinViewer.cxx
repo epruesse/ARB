@@ -452,7 +452,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
                         AWT_pro_a_nucs_convert(AWT_default_protein_type(), str_SeqData, len, aaStartPos-1, false, true, false, 0);
 
                         // Create alignment data to store the translated sequence
-                        GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
+                        GBDATA *gb_presets          = GBT_get_presets(GLOBAL_gb_main);
                         GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", newAlignmentName, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
                         GBDATA *gb_new_alignment    = 0;
 

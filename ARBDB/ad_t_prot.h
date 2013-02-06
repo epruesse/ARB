@@ -162,6 +162,7 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count);
 char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name);
 
 /* adali.cxx */
+GBDATA *GBT_get_presets(GBDATA *gb_main);
 int GBT_count_alignments(GBDATA *gb_main);
 GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name);
 void GBT_get_alignment_names(ConstStrArray &names, GBDATA *gbd);

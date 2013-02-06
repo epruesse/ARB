@@ -42,7 +42,7 @@ struct preserve_para {
 static void get_global_alignments(ConstStrArray& ali_names) {
     // get all alignment names available in both databases
     GBT_get_alignment_names(ali_names, GLOBAL_gb_merge);
-    GBDATA *gb_presets = GB_search(GLOBAL_gb_dest, "presets", GB_CREATE_CONTAINER);
+    GBDATA *gb_presets = GBT_get_presets(GLOBAL_gb_dest);
 
     int i;
     for (i = 0; ali_names[i]; ++i) {
