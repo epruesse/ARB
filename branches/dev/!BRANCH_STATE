@@ -6,10 +6,6 @@ performed merges in this branch
         FullSync @ 7281 sync with trunk using:
                 svn diff --old=svn+ssh://westram@menuett.mikro.biologie.tu-muenchen.de/menuett1/repository/ARB/branches/dev --new=svn+ssh://westram@menuett.mikro.biologie.tu-muenchen.de/menuett1/repository/ARB/trunk | patch -p0 --force
 
-STABLE->TRUNK 
-
-                7758 -> 7759
-
 TRUNK->BRANCH
 
                 7223 -> 7224
@@ -132,10 +128,11 @@ BRANCH->TRUNK
                 7966 7968 -> 8039
                 7975 8034 8002 8004 -> 8040
                 7990 7991 7992 7993 7994 7995 7996 7998 8001 8003 8005 8006 8007 8008 8009 8011 8012 8019 -> 8041
+                8219 -> 8220
 
     skipped patches (depends, already there, this file, ...)
 
-                this file:      7249 7277 7351 7416 7627 7670 7816 7820 7932
+                this file:      7249 7277 7351 7416 7627 7670 7816 7820 7932 8042
                 depends:        7256 7540 7573 7709 7777
                 not needed:     7507 7560
                 crap:           7278 7280 7545 7756 
@@ -221,5 +218,10 @@ BRANCH->TRUNK
 
         --- current try above
 
+                8174 localize logfiles
+                8218 doxygen
 
-    not reviewed: 8041:HEAD
+                8368 leak,freedel-mismatch
+                8369 use GBK_terminate
+
+    not reviewed: 8424:HEAD
