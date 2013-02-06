@@ -306,15 +306,18 @@ adcolumns.o: arbdbt.h
 adcolumns.o: gb_local.h
 adcolumns.o: gb_prot.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_core.h
+adcolumns.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_error.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_string.h
+adcolumns.o: $(ARBHOME)/INCLUDE/arb_unit_test.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcolumns.o: $(ARBHOME)/INCLUDE/attributes.h
 adcolumns.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcolumns.o: $(ARBHOME)/INCLUDE/smartptr.h
 adcolumns.o: $(ARBHOME)/INCLUDE/test_global.h
+adcolumns.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adcomm.o: ad_prot.h
 adcomm.o: arb_assert.h
