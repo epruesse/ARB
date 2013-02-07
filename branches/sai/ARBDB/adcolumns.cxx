@@ -463,7 +463,7 @@ public:
 };
 
 
-class AliHandler { // something that can be appied to the whole alignment
+class AliApplicable { // something that can be appied to the whole alignment
     virtual GB_ERROR apply_to_terminal(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const = 0;
 
     GB_ERROR apply_recursive(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const;
@@ -471,12 +471,12 @@ class AliHandler { // something that can be appied to the whole alignment
     GB_ERROR apply_to_secstructs(GBDATA *gb_secstructs, const Alignment& ali) const;
 
 public:
-    AliHandler() {}
-    virtual ~AliHandler() {}
+    AliApplicable() {}
+    virtual ~AliApplicable() {}
 
     GB_ERROR apply_to_alignment(GBDATA *gb_main, const Alignment& ali) const;
 };
-GB_ERROR AliHandler::apply_recursive(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const {
+GB_ERROR AliApplicable::apply_recursive(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const {
     GB_ERROR error = 0;
     GB_TYPES type  = GB_read_type(gb_data);
 
@@ -492,7 +492,7 @@ GB_ERROR AliHandler::apply_recursive(GBDATA *gb_data, TargetType ttype, const Al
 
     return error;
 }
-GB_ERROR AliHandler::apply_to_childs_named(GBDATA *gb_item_data, const char *item_field, TargetType ttype, const Alignment& ali) const {
+GB_ERROR AliApplicable::apply_to_childs_named(GBDATA *gb_item_data, const char *item_field, TargetType ttype, const Alignment& ali) const {
     GBDATA   *gb_item;
     GB_ERROR  error      = 0;
     long      item_count = GB_number_of_subentries(gb_item_data);
@@ -514,7 +514,7 @@ GB_ERROR AliHandler::apply_to_childs_named(GBDATA *gb_item_data, const char *ite
     }
     return error;
 }
-GB_ERROR AliHandler::apply_to_secstructs(GBDATA *gb_secstructs, const Alignment& ali) const {
+GB_ERROR AliApplicable::apply_to_secstructs(GBDATA *gb_secstructs, const Alignment& ali) const {
     GB_ERROR  error  = 0;
     GBDATA   *gb_ali = GB_entry(gb_secstructs, ali.get_name());
 
@@ -540,7 +540,7 @@ GB_ERROR AliHandler::apply_to_secstructs(GBDATA *gb_secstructs, const Alignment&
     return error;
 }
 
-GB_ERROR AliHandler::apply_to_alignment(GBDATA *gb_main, const Alignment& ali) const {
+GB_ERROR AliApplicable::apply_to_alignment(GBDATA *gb_main, const Alignment& ali) const {
     GB_ERROR error    = apply_to_childs_named(GBT_find_or_create(gb_main, "species_data",  7), "species",  IDT_SPECIES, ali);
     if (!error) error = apply_to_childs_named(GBT_find_or_create(gb_main, "extended_data", 7), "extended", IDT_SAI,     ali);
     if (!error) error = apply_to_secstructs(GB_search(gb_main, "secedit/structs", GB_CREATE_CONTAINER), ali);
@@ -549,11 +549,11 @@ GB_ERROR AliHandler::apply_to_alignment(GBDATA *gb_main, const Alignment& ali) c
 
 // --------------------------------------------------------------------------------
 
-class AlignmentEntryCounter : public AliHandler {
+class AliEntryCounter : public AliApplicable {
     mutable size_t count;
     GB_ERROR apply_to_terminal(GBDATA *, TargetType , const Alignment& ) const { count++; return NULL; }
 public:
-    AlignmentEntryCounter() : count(0) {}
+    AliEntryCounter() : count(0) {}
     size_t get_entry_count() const { return count; }
 };
 
@@ -575,7 +575,7 @@ public:
     }
     virtual ~AliEditCommand() {}
 
-    virtual bool will_modify(size_t , const Alignment& ) const { return nchar != 0; }
+    virtual bool might_modify(size_t , const Alignment& ) const { return nchar != 0; }
 
     long get_pos() const { return pos; }
     long get_amount() const { return nchar; }
@@ -584,12 +584,12 @@ public:
 
 struct AliFormat : public AliEditCommand {
     AliFormat() : AliEditCommand(0, 0, 0) {}
-    virtual bool will_modify(size_t term_size, const Alignment& ali) const { return term_size != ali.get_len(); }
+    virtual bool might_modify(size_t term_size, const Alignment& ali) const { return term_size != ali.get_len(); }
 };
 
 // --------------------------------------------------------------------------------
 
-class AliEditor : public AliHandler {
+class AliEditor : public AliApplicable {
     const AliEditCommand& cmd;
     mutable arb_progress  progress;
 
@@ -607,7 +607,10 @@ public:
     const AliEditCommand& edit_command() const { return cmd; }
 };
 
-static bool insdel_shall_be_applied_to(GBDATA *gb_data, TargetType ttype) {
+static bool affected_by_AliEditor(GBDATA *gb_data, TargetType ttype) {
+    // defines whether specific DB-elements shall be edited by any AliEditor
+    // (true for all data, that contains alignment position specific data)
+
     bool        apply = true;
     const char *key   = GB_read_key_pntr(gb_data);
 
@@ -656,8 +659,8 @@ GB_ERROR AliEditor::apply_to_terminal(GBDATA *gb_data, TargetType ttype, const A
     if (type >= GB_BITS && type != GB_LINK) {
         long size = GB_read_count(gb_data);
 
-        if (edit_command().will_modify(size, ali)) { // nothing would change
-            if (insdel_shall_be_applied_to(gb_data, ttype)) {
+        if (edit_command().might_modify(size, ali)) { // change possible
+            if (affected_by_AliEditor(gb_data, ttype)) {
                 GB_CSTR source      = 0;
                 long    modulo      = sizeof(char);
                 char    insert_what = 0;
@@ -737,7 +740,7 @@ GB_ERROR AliEditor::apply_to_terminal(GBDATA *gb_data, TargetType ttype, const A
 // --------------------------------------------------------------------------------
 
 static size_t countAffectedEntries(GBDATA *Main, const Alignment& ali) {
-    AlignmentEntryCounter counter;
+    AliEntryCounter counter;
     counter.apply_to_alignment(Main, ali);
     return counter.get_entry_count();
 }
@@ -792,7 +795,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
      *
      * This affects all species' and SAIs having data in given 'alignment_name' and
      * modifies several data entries found there
-     * (see insdel_shall_be_applied_to for details which fields are affected).
+     * (see affected_by_AliEditor() for details which fields are affected).
      */
 
     GB_ERROR error = 0;
