@@ -462,6 +462,7 @@ public:
     size_t get_len() const { return len; }
 };
 
+// --------------------------------------------------------------------------------
 
 class AliApplicable { // something that can be appied to the whole alignment
     virtual GB_ERROR apply_to_terminal(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const = 0;
@@ -476,6 +477,7 @@ public:
 
     GB_ERROR apply_to_alignment(GBDATA *gb_main, const Alignment& ali) const;
 };
+
 GB_ERROR AliApplicable::apply_recursive(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const {
     GB_ERROR error = 0;
     GB_TYPES type  = GB_read_type(gb_data);
@@ -594,6 +596,17 @@ class AliEditor : public AliApplicable {
     mutable arb_progress  progress;
 
     GB_ERROR apply_to_terminal(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const;
+
+    bool shall_edit(GBDATA *gb_data, TargetType ttype) const {
+        // defines whether specific DB-elements shall be edited by any AliEditor
+        // (true for all data, that contains alignment position specific data)
+
+        const char *key   = GB_read_key_pntr(gb_data);
+        bool        apply = key[0] != '_';                                // general case: don't apply to keys starting with '_'
+        if (!apply) apply = ttype == IDT_SAI && strcmp(key, "_REF") == 0; // exception (SAI:_REF needs editing)
+        return apply;
+    }
+
 public:
     AliEditor(const AliEditCommand& cmd_, const char *progress_title, size_t progress_count)
         : cmd(cmd_),
@@ -606,31 +619,6 @@ public:
 
     const AliEditCommand& edit_command() const { return cmd; }
 };
-
-static bool affected_by_AliEditor(GBDATA *gb_data, TargetType ttype) {
-    // defines whether specific DB-elements shall be edited by any AliEditor
-    // (true for all data, that contains alignment position specific data)
-
-    bool        apply = true;
-    const char *key   = GB_read_key_pntr(gb_data);
-
-    if (key[0] == '_') {                            // don't apply to keys starting with '_'
-        switch (ttype) {
-            case IDT_SECSTRUCT:
-            case IDT_SPECIES:
-                apply = false;
-                break;
-
-            case IDT_SAI:
-                if (strcmp(key, "_REF") != 0) {     // despite key is _REF
-                    apply = false;
-                }
-                break;
-        }
-    }
-
-    return apply;
-}
 
 inline int alignment_oversize(GBDATA *gb_data, TargetType ttype, long alilen, long found_size) {
     int oversize = 0;
@@ -652,84 +640,108 @@ inline int alignment_oversize(GBDATA *gb_data, TargetType ttype, long alilen, lo
     return oversize;
 }
 
+class EditedTerminal {
+    GBDATA   *gb_data;
+    GB_TYPES  type;
+
+    GB_CSTR source;
+    long    size;
+    long    modulo;
+
+    char insert_what; // @@@ information about insert is specific for ONE explicit insert, i.e. information is misplaced here
+
+    char insert_tail;
+
+    char extraByte; // special flag for zero-terminated strings
+
+    GB_ERROR error;
+
+    void prepare(const AliEditCommand& cmd) {
+        if (!error && source && type == GB_STRING) {
+            if (cmd.get_amount() > 0) { // insert
+                if (cmd.get_pos()<size) { // otherwise insert position is behind (old and too short) sequence -> dots are inserted at tail
+                    if ((cmd.get_pos()>0 && source[cmd.get_pos()-1] == '.') || source[cmd.get_pos()] == '.') { // dot at insert position?
+                        insert_what = '.'; // insert dots
+                    }
+                }
+            }
+            else { // delete
+                long after            = cmd.get_pos()+(-cmd.get_amount()); // position after deleted part
+                if (after>size) after = size;
+
+                for (long p = cmd.get_pos(); p<after; p++) {
+                    if (cmd.allowed_to_delete(source[p])) {
+                        error = GBS_global_string("You tried to delete '%c' at position %li  -> Operation aborted", source[p], p);
+                    }
+                }
+            }
+        }
+    }
+
+public:
+    EditedTerminal(GBDATA *gb_data_, GB_TYPES type_, long size_)
+        : gb_data(gb_data_),
+          type(type_),
+          source(NULL),
+          size(size_),
+          modulo(sizeof(char)),
+          insert_what(0),
+          insert_tail(0),
+          extraByte(0),
+          error(NULL)
+    {
+        switch(type) {
+            case GB_STRING: source = GB_read_char_pntr(gb_data);            insert_what = '-'; insert_tail = '.'; extraByte = 1; break;
+            case GB_BITS:   source = GB_read_bits_pntr(gb_data, '-', '+');  insert_what = '-'; insert_tail = '-'; break;
+            case GB_BYTES:  source = GB_read_bytes_pntr(gb_data);           break;
+            case GB_INTS:   source = (GB_CSTR)GB_read_ints_pntr(gb_data);   modulo = sizeof(GB_UINT4); break;
+            case GB_FLOATS: source = (GB_CSTR)GB_read_floats_pntr(gb_data); modulo = sizeof(float); break;
+
+            default:
+                error = GBS_global_string("Unhandled type '%i'", type);
+                gb_assert(0);
+                break;
+        }
+    }
+
+    GB_ERROR apply(const AliEditCommand& cmd, TargetType ttype, const Alignment& ali) {
+        if (!error) prepare(cmd);
+        if (!error) {
+            if (!source) error = GB_await_error();
+            else {
+                size_t  modified_len;
+                int     oversize   = alignment_oversize(gb_data, ttype, ali.get_len(), size);
+                long    wanted_len = ali.get_len() + oversize;
+                GB_CSTR modified   = gbt_insert_delete(source, size, wanted_len, modified_len, cmd.get_pos(), cmd.get_amount(), modulo, insert_what, insert_tail, extraByte);
+
+                if (modified) {
+                    gb_assert(modified_len == (ali.get_len()+cmd.get_amount()+oversize));
+
+                    switch (type) {
+                        case GB_STRING: error = GB_write_string(gb_data, modified);                          break;
+                        case GB_BITS:   error = GB_write_bits  (gb_data, modified, modified_len, "-");       break;
+                        case GB_BYTES:  error = GB_write_bytes (gb_data, modified, modified_len);            break;
+                        case GB_INTS:   error = GB_write_ints  (gb_data, (GB_UINT4*)modified, modified_len); break;
+                        case GB_FLOATS: error = GB_write_floats(gb_data, (float*)modified, modified_len);    break;
+
+                        default: gb_assert(0); break;
+                    }
+                }
+            }
+        }
+        return error;
+    }
+};
 
 GB_ERROR AliEditor::apply_to_terminal(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const {
-    GB_TYPES type  = GB_read_type(gb_data);
+    GB_TYPES gbtype  = GB_read_type(gb_data);
     GB_ERROR error = NULL;
-    if (type >= GB_BITS && type != GB_LINK) {
+    if (gbtype >= GB_BITS && gbtype != GB_LINK) {
         long size = GB_read_count(gb_data);
 
-        if (edit_command().might_modify(size, ali)) { // change possible
-            if (affected_by_AliEditor(gb_data, ttype)) {
-                GB_CSTR source      = 0;
-                long    modulo      = sizeof(char);
-                char    insert_what = 0;
-                char    insert_tail = 0;
-                char    extraByte   = 0;
-
-                switch (type) {
-                    case GB_STRING: {
-                        source      = GB_read_char_pntr(gb_data);
-                        extraByte   = 1;
-                        insert_what = '-';
-                        insert_tail = '.';
-
-                        if (source) {
-                            if (edit_command().get_amount() > 0) { // insert
-                                if (edit_command().get_pos()<size) { // otherwise insert position is behind (old and too short) sequence -> dots are inserted at tail
-                                    if ((edit_command().get_pos()>0 && source[edit_command().get_pos()-1] == '.') || source[edit_command().get_pos()] == '.') { // dot at insert position?
-                                        insert_what = '.'; // insert dots
-                                    }
-                                }
-                            }
-                            else { // delete
-                                long after            = edit_command().get_pos()+(-edit_command().get_amount()); // position after deleted part
-                                if (after>size) after = size;
-
-                                for (long p = edit_command().get_pos(); p<after; p++) {
-                                    if (edit_command().allowed_to_delete(source[p])) {
-                                        error = GBS_global_string("You tried to delete '%c' at position %li  -> Operation aborted", source[p], p);
-                                    }
-                                }
-                            }
-                        }
-
-                        break;
-                    }
-                    case GB_BITS:   source = GB_read_bits_pntr(gb_data, '-', '+');  insert_what = '-'; insert_tail = '-'; break;
-                    case GB_BYTES:  source = GB_read_bytes_pntr(gb_data);           break;
-                    case GB_INTS:   source = (GB_CSTR)GB_read_ints_pntr(gb_data);   modulo = sizeof(GB_UINT4); break;
-                    case GB_FLOATS: source = (GB_CSTR)GB_read_floats_pntr(gb_data); modulo = sizeof(float); break;
-
-                    default:
-                        error = GBS_global_string("Unhandled type '%i'", type);
-                        GB_internal_error(error);
-                        break;
-                }
-
-                if (!error) {
-                    if (!source) error = GB_await_error();
-                    else {
-                        size_t  modified_len;
-                        int     oversize   = alignment_oversize(gb_data, ttype, ali.get_len(), size);
-                        long    wanted_len = ali.get_len() + oversize;
-                        GB_CSTR modified   = gbt_insert_delete(source, size, wanted_len, modified_len, edit_command().get_pos(), edit_command().get_amount(), modulo, insert_what, insert_tail, extraByte);
-
-                        if (modified) {
-                            gb_assert(modified_len == (ali.get_len()+edit_command().get_amount()+oversize));
-
-                            switch (type) {
-                                case GB_STRING: error = GB_write_string(gb_data, modified);                          break;
-                                case GB_BITS:   error = GB_write_bits  (gb_data, modified, modified_len, "-");       break;
-                                case GB_BYTES:  error = GB_write_bytes (gb_data, modified, modified_len);            break;
-                                case GB_INTS:   error = GB_write_ints  (gb_data, (GB_UINT4*)modified, modified_len); break;
-                                case GB_FLOATS: error = GB_write_floats(gb_data, (float*)modified, modified_len);    break;
-
-                                default: gb_assert(0); break;
-                            }
-                        }
-                    }
-                }
+        if (edit_command().might_modify(size, ali)) {
+            if (shall_edit(gb_data, ttype)) {
+                error = EditedTerminal(gb_data, gbtype, size).apply(edit_command(), ttype, ali);
             }
         }
     }
@@ -795,7 +807,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
      *
      * This affects all species' and SAIs having data in given 'alignment_name' and
      * modifies several data entries found there
-     * (see affected_by_AliEditor() for details which fields are affected).
+     * (see shall_edit() for details which fields are affected).
      */
 
     GB_ERROR error = 0;
