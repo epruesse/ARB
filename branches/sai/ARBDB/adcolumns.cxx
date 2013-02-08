@@ -328,6 +328,21 @@ void TEST_AliData() {
             TEST_EXPECT_COPY_EQUALS_STRING(ins_gap,    "CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU");
             TEST_EXPECT_COPY_EQUALS_STRING(start_gap1, "-CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU");
             TEST_EXPECT_COPY_EQUALS_STRING(start_gap3, "---CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU");
+
+            AliDataPtr bef_dot     = insert_gap(ins, 15, 2);
+            AliDataPtr aft_dot     = insert_gap(ins, 16, 2);
+            AliDataPtr bet_dots    = insert_gap(ins, 32, 2);
+            AliDataPtr bet_dashes  = insert_gap(ins, 23, 2);
+            AliDataPtr bet_dashdot = insert_gap(ins, 29, 2);
+            AliDataPtr bet_dotdash = insert_gap(ins, 18, 2);
+
+            TEST_EXPECT_COPY_EQUALS_STRING(ins,        "CGCAC-C-GG-C-GG.A.-C------GG-.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(bef_dot,    "CGCAC-C-GG-C-GG--.A.-C------GG-.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(aft_dot,    "CGCAC-C-GG-C-GG.--A.-C------GG-.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(bet_dots,   "CGCAC-C-GG-C-GG.A.-C------GG-.C.--.UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(bet_dashes, "CGCAC-C-GG-C-GG.A.-C--------GG-.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(bet_dashdot,"CGCAC-C-GG-C-GG.A.-C------GG---.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(bet_dotdash,"CGCAC-C-GG-C-GG.A.---C------GG-.C..UCAGU");
         }
 
     }
