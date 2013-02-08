@@ -249,7 +249,7 @@ static void illegal_alidata_composition() {
 }
 
 void TEST_AliData() {
-#define SEQDATA "CGCAC-C-GG-C-GG-A--C------GG--C-UCAGU"
+#define SEQDATA "CGCAC-C-GG-C-GG.A.-C------GG-.C..UCAGU"
     char      bit_src[] = SEQDATA; // also contains trailing 0-byte!
     GB_CUINT4 int_src[] = { 0x01, 0x1213, 0x242526, 0x37383930, 0xffffffff };
     float     flt_src[] = { 0.0, 0.5, 1.0, -5.0, 20.1 };
@@ -318,16 +318,16 @@ void TEST_AliData() {
 
         if (t == 0) {
             TEST_EXPECT_COPY_EQUALS_STRING(start,      "CGC");
-            TEST_EXPECT_COPY_EQUALS_STRING(end,        "C-C-GG-C-GG-A--C------GG--C-UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(end,        "C-C-GG-C-GG.A.-C------GG-.C..UCAGU");
             TEST_EXPECT_COPY_EQUALS_STRING(mid,        "A");
             TEST_EXPECT_COPY_EQUALS_STRING(end_gap1,   "A-");
-            TEST_EXPECT_COPY_EQUALS_STRING(del,        "CGCC-C-GG-C-GG-A--C------GG--C-UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(del,        "CGCC-C-GG-C-GG.A.-C------GG-.C..UCAGU");
             TEST_EXPECT_COPY_EQUALS_STRING(del_rest,   "CGC");
-            TEST_EXPECT_COPY_EQUALS_STRING(ins,        "CGCAC-C-GG-C-GG-A--C------GG--C-UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(ins,        "CGCAC-C-GG-C-GG.A.-C------GG-.C..UCAGU");
             TEST_EXPECT_COPY_EQUALS_STRING(gap,        "-----");
-            TEST_EXPECT_COPY_EQUALS_STRING(ins_gap,    "CGCC------C-GG-C-GG-A--C------GG--C-UCAGU");
-            TEST_EXPECT_COPY_EQUALS_STRING(start_gap1, "-CGCC------C-GG-C-GG-A--C------GG--C-UCAGU");
-            TEST_EXPECT_COPY_EQUALS_STRING(start_gap3, "---CGCC------C-GG-C-GG-A--C------GG--C-UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(ins_gap,    "CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(start_gap1, "-CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(start_gap3, "---CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU");
         }
 
     }
