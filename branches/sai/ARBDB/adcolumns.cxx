@@ -25,16 +25,18 @@ class AliData;
 typedef SmartPtr<AliData> AliDataPtr;
 
 class AliData {
+    size_t size;
 protected:
     void *inc_by_units(void *mem, size_t units) const { return reinterpret_cast<char*>(mem)+units*unitsize(); }
 public:
+    AliData(size_t size_) : size(size_) {}
     virtual ~AliData() {}
 
     virtual size_t unitsize() const                                      = 0;
     virtual AliDataPtr create_gap(size_t repeat) const                   = 0;
-    virtual size_t elems() const                                         = 0;
     virtual void copyPartTo(void *mem, size_t start, size_t count) const = 0;
 
+    size_t elems() const { return size; }
     size_t memsize() const { return unitsize()*elems(); }
     void copyTo(void *mem) const { copyPartTo(mem, 0, elems()); }
     bool empty() const { return !elems(); }
@@ -44,7 +46,7 @@ public:
 class ComposedAliData : public AliData {
     AliDataPtr left, right;
 
-    ComposedAliData(AliDataPtr l, AliDataPtr r) : left(l), right(r) {
+    ComposedAliData(AliDataPtr l, AliDataPtr r) : AliData(l->elems()+r->elems()), left(l), right(r) {
         gb_assert(l->unitsize() == r->unitsize());
         gb_assert(l->elems());
         gb_assert(r->elems());
@@ -53,7 +55,6 @@ class ComposedAliData : public AliData {
 public:
     size_t unitsize() const { return left->unitsize(); }
     AliDataPtr create_gap(size_t repeat) const { return left->create_gap(repeat); }
-    size_t elems() const  { return left->elems()+right->elems(); }
     void copyPartTo(void *mem, size_t start, size_t count) const {
         size_t left_elems = left->elems();
         size_t take_left  = 0;
@@ -73,47 +74,55 @@ public:
 class AliDataSlice : public AliData {
     AliDataPtr from;
     size_t     pos;
-    size_t     amount;
-public:
-    AliDataSlice(AliDataPtr from_, size_t pos_, size_t amount_)
-        : from(from_),
-          pos(pos_),
-          amount(amount_)
-    {
-        size_t from_size = from->elems();
 
-        if (pos>from_size) amount = 0;
+    static int fix_amount(AliDataPtr from, size_t pos, size_t amount) {
         if (amount) {
-            size_t last_pos  = pos+amount-1;
-            size_t last_from = from->elems()-1;
-            if (last_pos > last_from) {
-                gb_assert(last_from >= pos);
-                amount = last_from-pos+1;
+            size_t from_size = from->elems();
+            if (pos>from_size) {
+                amount = 0;
+            }
+            else {
+                size_t last_pos  = pos+amount-1;
+                size_t last_from = from->elems()-1;
+
+                if (last_pos > last_from) {
+                    gb_assert(last_from >= pos);
+                    amount = last_from-pos+1;
+                }
             }
         }
+        return amount;
     }
+
+public:
+    AliDataSlice(AliDataPtr from_, size_t pos_, size_t amount_)
+        : AliData(fix_amount(from_, pos_, amount_)),
+          from(from_),
+          pos(pos_)
+    {}
 
     size_t unitsize() const { return from->unitsize(); }
     AliDataPtr create_gap(size_t repeat) const { return from->create_gap(repeat); }
-    size_t elems() const { return amount; }
     void copyPartTo(void *mem, size_t start, size_t count) const {
-        gb_assert(count <= amount);
+        gb_assert(count <= elems());
         from->copyPartTo(mem, start+pos, count);
     }
 };
 
 template<typename T>
 class SpecificGap : public AliData {
-    T      gap;
-    size_t repeat;
+    T gap;
+
 public:
-    SpecificGap(const T& gap_, size_t repeat_) : gap(gap_), repeat(repeat_) {}
+    SpecificGap(const T& gap_, size_t gapsize)
+        : AliData(gapsize),
+          gap(gap_)
+    {}
     size_t unitsize() const { return sizeof(T); }
     AliDataPtr create_gap(size_t) const { gb_assert(0); return NULL; }
-    size_t elems() const { return repeat; }
     void copyPartTo(void *mem, size_t start, size_t count) const {
-        if (start<repeat) {
-            size_t amount = min(start+count, repeat-start);
+        if (start<elems()) {
+            size_t amount = min(start+count, elems()-start);
             for (size_t a = 0; a<amount; ++a) {
                 memcpy(mem, &gap, unitsize());
                 mem = inc_by_units(mem, 1);
@@ -124,14 +133,13 @@ public:
 
 template<typename T>
 class SpecificAliData : public AliData, virtual Noncopyable {
-    T      *data;
-    size_t  size;
-    T       gap;
+    T *data;
+    T  gap;
 
 public:
     SpecificAliData(T*& allocated_data, size_t elements, const T& gap_)
-        : data(allocated_data),
-          size(elements),
+        : AliData(elements),
+          data(allocated_data),
           gap(gap_)
     {
         allocated_data = NULL;
@@ -140,7 +148,6 @@ public:
 
     size_t unitsize() const { return sizeof(T); }
     AliDataPtr create_gap(size_t repeat) const { return new SpecificGap<T>(gap, repeat); }
-    size_t elems() const  { return size; }
     void copyPartTo(void *mem, size_t start, size_t count) const {
         gb_assert(start<elems());
         if (count>0) {
