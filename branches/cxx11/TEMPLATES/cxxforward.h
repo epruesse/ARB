@@ -25,10 +25,20 @@
 //      constexpr
 
 // allows static member initialisation in class definition:
-#if Cxx11
+#if (GCC_VERSION_CODE >= 406) // override is supported starting with gcc 4.6
 # define CONSTEXPR constexpr
 #else
 # define CONSTEXPR const
+#endif
+
+// ------------------
+//      override
+
+// allows to protect overloading functions against signature changes of overload functions 
+#if (GCC_VERSION_CODE >= 407) // override is supported starting with gcc 4.7
+# define OVERRIDE override
+#else
+# define OVERRIDE
 #endif
 
 #else
