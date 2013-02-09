@@ -55,7 +55,7 @@ void EXP_create_awars(AW_root *aw_root, AW_default /* aw_def */, GBDATA *gb_main
 class EXP_item_type_species_selector : public awt_item_type_selector {
 public:
     EXP_item_type_species_selector() : awt_item_type_selector(AWT_IT_EXPERIMENT) {}
-    virtual ~EXP_item_type_species_selector() {}
+    virtual ~EXP_item_type_species_selector() OVERRIDE {}
 
     virtual const char *get_self_awar() const {
         return AWAR_COMBINED_EXPERIMENT_NAME;

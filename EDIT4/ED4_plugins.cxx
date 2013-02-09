@@ -45,7 +45,7 @@ public:
           gb_main(gb_main_), 
           seq_term(NULL)
     {}
-    virtual ~ED4_host() {}
+    virtual ~ED4_host() OVERRIDE {}
 
     AW_root *get_application_root() const { return aw_root; }
     GBDATA *get_database() const { return gb_main; }

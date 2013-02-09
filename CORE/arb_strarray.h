@@ -128,7 +128,7 @@ class StrArray : public CharPtrArray {
 
 public:
     StrArray() {}
-    virtual ~StrArray() { erase(); }
+    virtual ~StrArray() OVERRIDE { erase(); }
 
     void erase() { erase_elems(); }
 
@@ -150,7 +150,7 @@ class ConstStrArray : public CharPtrArray { // derived from a Noncopyable
 
 public:
     ConstStrArray() : memblock(NULL) {}
-    virtual ~ConstStrArray() { free(memblock); }
+    virtual ~ConstStrArray() OVERRIDE { free(memblock); }
 
     void set_memblock(char *block) {
         // hold one memblock until destruction

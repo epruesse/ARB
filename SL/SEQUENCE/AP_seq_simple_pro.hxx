@@ -33,7 +33,7 @@ class AP_sequence_simple_protein : public AP_sequence { // derived from a Noncop
 public:
 
     AP_sequence_simple_protein(const AliView *aliview);
-    ~AP_sequence_simple_protein();
+    ~AP_sequence_simple_protein() OVERRIDE;
 
     AP_sequence *dup() const;                             // used to get the real new element
 

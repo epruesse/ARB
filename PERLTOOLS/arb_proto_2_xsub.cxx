@@ -45,7 +45,7 @@ class ProgramError : public Error {
 public:
     ProgramError(string message) : error(message) {}
     ProgramError(const char *message) : error(message) {}
-    virtual ~ProgramError() {}
+    virtual ~ProgramError() OVERRIDE {}
 
     void print() const {
         fprintf(stderr, "arb_proto_2_xsub: Error: %s\n", error.c_str());
@@ -57,7 +57,7 @@ class InputFileError : public Error {
 public:
     InputFileError(FileBuffer& fileBuffer, string message)      : located_error(fileBuffer.lineError(message)) {}
     InputFileError(FileBuffer& fileBuffer, const char *message) : located_error(fileBuffer.lineError(message)) {}
-    virtual ~InputFileError() {}
+    virtual ~InputFileError() OVERRIDE {}
 
     void print() const {
         fputs(located_error.c_str(), stderr);

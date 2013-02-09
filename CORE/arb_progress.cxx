@@ -111,7 +111,7 @@ public:
         arb_assert(overall_count>0);
         init(overall_count);
     }
-    ~concrete_counter() {
+    ~concrete_counter() OVERRIDE {
         free(auto_subtitle_prefix);
 #if defined(TEST_COUNTERS)
         if (!progress->accept_invalid_counters) {
@@ -181,7 +181,7 @@ public:
         freedup(name, GBS_global_string("child: %s", title));
 #endif
     }
-    ~child_progress() {
+    ~child_progress() OVERRIDE {
         parent->child_terminated();
     }
 
@@ -217,7 +217,7 @@ public:
         freedup(name, GBS_global_string("initial: %s", title));
 #endif
     }
-    ~initial_progress() {
+    ~initial_progress() OVERRIDE {
         update_gauge(1.0); // due to numeric issues it often only counts up to 99.999%
         impl->closestatus();
     }

@@ -102,7 +102,7 @@ public:
         @param name_ element name
     */
     XML_Tag(const std::string &name_);
-    virtual ~XML_Tag();
+    virtual ~XML_Tag() OVERRIDE;
 
     /*! add an attribute to the XML_Tag
         @param name_ attribute name
@@ -128,7 +128,7 @@ public:
         @param content_ the content
     */
     XML_Text(const std::string& content_) : XML_Node(false), content(content_) {}
-    virtual ~XML_Text();
+    virtual ~XML_Text() OVERRIDE;
 
     virtual void add_son(XML_Node *son_, bool son_is_tag) __ATTR__NORETURN;
     virtual void remove_son(XML_Node *son_) __ATTR__NORETURN;
@@ -140,7 +140,7 @@ class XML_Comment : public XML_Node {
     std::string content;
 public:
     XML_Comment(const std::string& content_) : XML_Node(false), content(content_) {}
-    virtual ~XML_Comment();
+    virtual ~XML_Comment() OVERRIDE;
 
     virtual void add_son(XML_Node *son_, bool son_is_tag) __ATTR__NORETURN;
     virtual void remove_son(XML_Node *son_) __ATTR__NORETURN;
@@ -163,7 +163,7 @@ public:
         @param out_ FILE where xml document will be written to
     */
     XML_Document(const std::string& name_, const std::string& dtd_, FILE *out_);
-    virtual ~XML_Document();
+    virtual ~XML_Document() ;
 
     //! true -> tags w/o content or attributes are skipped (default = false)
     bool skip_empty_tags;

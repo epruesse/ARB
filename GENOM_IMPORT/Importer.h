@@ -97,7 +97,7 @@ class GenebankImporter : public Importer {
 
 public:
     GenebankImporter(FileBuffer& Flatfile, DBwriter& DB_writer);
-    virtual ~GenebankImporter() {}
+    virtual ~GenebankImporter() OVERRIDE {}
 
 };
 
@@ -109,7 +109,7 @@ class EmblImporter : public Importer {
 
 public:
     EmblImporter(FileBuffer& Flatfile, DBwriter& DB_writer);
-    virtual ~EmblImporter() {}
+    virtual ~EmblImporter() OVERRIDE {}
 };
 
 

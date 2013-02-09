@@ -56,7 +56,7 @@ class ClusterTreeRoot : public ARB_tree_root {
 
 public:
     ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_);
-    virtual ~ClusterTreeRoot();
+    virtual ~ClusterTreeRoot() OVERRIDE;
 
     ClusterTree *get_root_node() { return DOWNCAST(ClusterTree*, ARB_tree_root::get_root_node()); }
 
@@ -152,7 +152,7 @@ public:
         , worstKnownDistance(NULL)
     {}
 
-    virtual ~ClusterTree() {
+    virtual ~ClusterTree() OVERRIDE {
         delete worstKnownDistance;
         delete sequenceDists;
         delete branchDists;

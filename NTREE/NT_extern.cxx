@@ -875,7 +875,7 @@ static void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
 class nt_item_type_species_selector : public awt_item_type_selector {
 public:
     nt_item_type_species_selector() : awt_item_type_selector(AWT_IT_SPECIES) {}
-    virtual ~nt_item_type_species_selector() {}
+    virtual ~nt_item_type_species_selector() OVERRIDE {}
 
     virtual const char *get_self_awar() const {
         return AWAR_SPECIES_NAME;

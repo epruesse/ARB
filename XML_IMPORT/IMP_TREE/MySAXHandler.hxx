@@ -13,7 +13,7 @@ private:
 public:
     char *buffer;
     MySAXHandler(const char* const encodingName, const XMLFormatter::UnRepFlags unRepFlags, ofstream &outFile);
-    ~MySAXHandler();
+    ~MySAXHandler() OVERRIDE;
 
     //  Implementations of the format target interface
     // -----------------------------------------------------------------------

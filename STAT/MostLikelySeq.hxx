@@ -58,7 +58,7 @@ private:
 public:
 
     MostLikelySeq(const AliView *aliview, ST_ML *st_ml_);
-    ~MostLikelySeq();
+    ~MostLikelySeq() OVERRIDE;
 
     bool is_up_to_date() const { return up_to_date; }
 

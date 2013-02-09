@@ -93,7 +93,7 @@ public:
     AW_root    *aw_root;
 
     SAI_graphic(AW_root *aw_root, GBDATA *gb_main);
-    ~SAI_graphic();
+    ~SAI_graphic() OVERRIDE;
 
     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr, AW_CL);
 
