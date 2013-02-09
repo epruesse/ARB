@@ -175,7 +175,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, gbl_param *ppara, const 
                         break;
 
                     case GB_INT:
-                        COMPILE_ASSERT(sizeof(int) == sizeof(uint)); // assumed by GBL_PARAM_UINT
+                        STATIC_ASSERT(sizeof(int) == sizeof(uint)); // assumed by GBL_PARAM_UINT
                         *(int *)para->varaddr = atoi(value);
                         break;
 

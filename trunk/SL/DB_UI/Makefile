@@ -64,6 +64,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/cb.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_query.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/dupstr.h
+ui_species.o: $(ARBHOME)/INCLUDE/gccver.h
 ui_species.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ui_species.o: $(ARBHOME)/INCLUDE/items.h
 ui_species.o: $(ARBHOME)/INCLUDE/pos_range.h

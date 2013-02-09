@@ -132,12 +132,12 @@ public:
 
 // --------------------------------------------------------------------------------
 
-inline bool is_empty(const char *code) { return !code[0]; }
+inline bool is_empty_code(const char *code) { return !code[0]; }
 inline bool contains_preprozessorCode(const char *code) { return strchr(code, '#') != NULL; }
 inline bool contains_braces(const char *code) { return strpbrk(code, "{}") != NULL; }
 inline bool is_prototype(const char *code) {
     return
-        !is_empty(code)                  &&
+        !is_empty_code(code)             &&
         !contains_preprozessorCode(code) &&
         !contains_braces(code);
 }

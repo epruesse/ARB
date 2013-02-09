@@ -31,8 +31,9 @@
 #include <math.h>
 #include <string>
 #include <list>
+#include <cxxforward.h>
 
-using namespace std;
+using namespace std; // @@@ wtf! this really is a nono
 using Eigen::VectorXd;
 using Eigen::VectorXi;
 using Eigen::MatrixXd;
@@ -51,19 +52,17 @@ struct MITuple {
     double MI;
 };
 
-
-
 class Cma {
 
 private:
     /**
      * This is used for numerical stability and to compare floating point numbers.
      */
-    static const double epsilon = 1.0e-9;
+    static CONSTEXPR double epsilon = 1.0e-9;
     /**
      * See documentation of project, p. 7.
      */
-    static const double penalty = 5.;
+    static CONSTEXPR double penalty = 5.;
     /**
      * The alphabet considered.
      */

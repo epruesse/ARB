@@ -69,6 +69,7 @@ DBwriter.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/dupstr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+DBwriter.o: $(ARBHOME)/INCLUDE/gccver.h
 DBwriter.o: $(ARBHOME)/INCLUDE/GEN.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/items.h
 DBwriter.o: $(ARBHOME)/INCLUDE/Location.h
@@ -115,6 +116,7 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/dupstr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/gccver.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/Location.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/smartptr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -142,6 +144,7 @@ Importer.o: $(ARBHOME)/INCLUDE/arbtools.h
 Importer.o: $(ARBHOME)/INCLUDE/attributes.h
 Importer.o: $(ARBHOME)/INCLUDE/dupstr.h
 Importer.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+Importer.o: $(ARBHOME)/INCLUDE/gccver.h
 Importer.o: $(ARBHOME)/INCLUDE/Location.h
 Importer.o: $(ARBHOME)/INCLUDE/smartptr.h
 Importer.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -77,5 +77,6 @@ void to_printable(const FormattedFile& in, const char *outf) {
     }
 
     write.seq_done(ali.get_count());
+    write.expect_written();
 }
 

@@ -53,5 +53,6 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cb.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/dupstr.h
+TreeAdmin.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/test_global.h

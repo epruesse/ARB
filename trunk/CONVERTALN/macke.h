@@ -17,7 +17,7 @@ class Macke : public InputFormat { // derived from a Noncopyable
     char **remarks;             // remarks
     int    allocated;
 
-    char *create_id() const { return strdup(seqabbr); }
+    char *create_id() const OVERRIDE { return strdup(seqabbr); }
 
     void add_remark_nocopy(char *rem) {
         if (numofrem >= allocated) {
@@ -84,7 +84,7 @@ public:
         remarks   = NULL;
         allocated = 0;
     }
-    virtual ~Macke() {
+    virtual ~Macke() OVERRIDE {
         freenull(seqabbr);
         freenull(name);
         freenull(atcc);
@@ -129,9 +129,9 @@ public:
     void add_remarks_from(const GenBank& gbk);
 
     // InputFormat interface
-    void reinit() { INPLACE_RECONSTRUCT(Macke, this); }
+    void reinit() OVERRIDE { INPLACE_RECONSTRUCT(Macke, this); }
     const char *get_id() const { return seqabbr; }
-    Format format() const { return MACKE; }
+    Format format() const OVERRIDE { return MACKE; }
 };
 
 // --------------------
@@ -175,13 +175,13 @@ class MackeReader : public FormatReader, virtual Noncopyable {
 public:
 
     MackeReader(const char *inName_);
-    ~MackeReader();
+    ~MackeReader() OVERRIDE;
 
-    bool read_one_entry(Seq& seq) __ATTR__USERESULT;
-    bool failed() const { return r1->failed() || r2->failed() || r3->failed(); }
-    void ignore_rest_of_file() { r1->ignore_rest_of_file(); r2->ignore_rest_of_file(); r3->ignore_rest_of_file(); }
-    InputFormat& get_data() { return data; }
-    void rewind() {
+    bool read_one_entry(Seq& seq) OVERRIDE __ATTR__USERESULT;
+    bool failed() const OVERRIDE { return r1->failed() || r2->failed() || r3->failed(); }
+    void ignore_rest_of_file() OVERRIDE { r1->ignore_rest_of_file(); r2->ignore_rest_of_file(); r3->ignore_rest_of_file(); }
+    InputFormat& get_data() OVERRIDE { return data; }
+    void rewind() OVERRIDE {
         r1->rewind();
         r2->rewind();
         r3->rewind();

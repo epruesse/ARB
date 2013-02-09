@@ -75,6 +75,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/db_query.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/dbui.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/gccver.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/items.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -107,6 +108,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/cb.h
 EXP_main.o: $(ARBHOME)/INCLUDE/db_query.h
 EXP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+EXP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 EXP_main.o: $(ARBHOME)/INCLUDE/items.h
 EXP_main.o: $(ARBHOME)/INCLUDE/ntree.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -136,6 +138,7 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_gene.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/items.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -170,6 +173,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_graphic.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/items.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -208,6 +212,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/db_query.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/dbui.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/items.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/Location.h
@@ -256,6 +261,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_map.o: $(ARBHOME)/INCLUDE/db_query.h
 GEN_map.o: $(ARBHOME)/INCLUDE/dbui.h
 GEN_map.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_map.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_map.o: $(ARBHOME)/INCLUDE/items.h
 GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -282,6 +288,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_nds.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/items.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/nds.h
@@ -306,6 +313,7 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/items.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/test_global.h

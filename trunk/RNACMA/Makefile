@@ -2,25 +2,43 @@
 
 .SUFFIXES: .o .cxx .depend
 
-#CPP_OBJECTS = AlignedSequenceLoader.o Analyser.o Cma.o
 CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
 cma_CPP:= $(CPP)
 cma_cflags:= $(cflags)
 
+SUPPRESS_WARNINGS=1# set to 0 to show warnings
+
+ifeq ($(SUPPRESS_WARNINGS),1)
 cma_CPP:= $(subst -Weffc++,,$(cma_CPP))
 cma_CPP:= $(subst -Wctor-dtor-privacy,,$(cma_CPP))
+cma_CPP:= $(subst -Wlogical-op,,$(cma_CPP))
 cma_cflags:= $(subst -Wshadow,,$(cma_cflags))
+cma_cflags+= -Wno-unused-local-typedefs# this is included in -Wall
+endif
+
 cma_cflags+= -I../HEADERLIBS
 
-$(MAIN): $(CPP_OBJECTS) 
+$(MAIN): $(CPP_OBJECTS) warn
 	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $(MAIN) $(CPP_OBJECTS) || ( \
 		echo "$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)"; \
 		$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS) ; \
 	)
 
-.cxx.o:
+warn:
+ifeq ($(SUPPRESS_WARNINGS),1)
+	@echo "------------------------------------------------------------------------------------------"
+	@echo "Please note: Several compiler warnings have been disabled in RNACMA"
+	@echo "(namely -Weffc++, -Wctor-dtor-privacy, -Wlogical-op, -Wshadow, -Wunused-local-typedefs)"
+	@echo "to avoid Eigen spams here"
+	@echo "------------------------------------------------------------------------------------------"
+endif
+
+.cxx.o: warn
 	$(cma_CPP) $(cma_cflags) -c $<  $(CPPINCLUDES)  $(POST_COMPILE)
+
+
+$(CPP_OBJECTS) : Makefile
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -57,7 +75,9 @@ AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arbtools.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/attributes.h
+AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/dupstr.h
+AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/gccver.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/smartptr.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -77,11 +97,15 @@ Analyser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Analyser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 Analyser.o: $(ARBHOME)/INCLUDE/arbtools.h
 Analyser.o: $(ARBHOME)/INCLUDE/attributes.h
+Analyser.o: $(ARBHOME)/INCLUDE/cxxforward.h
 Analyser.o: $(ARBHOME)/INCLUDE/dupstr.h
+Analyser.o: $(ARBHOME)/INCLUDE/gccver.h
 Analyser.o: $(ARBHOME)/INCLUDE/smartptr.h
 Analyser.o: $(ARBHOME)/INCLUDE/test_global.h
 
 Cma.o: Cma.h
+Cma.o: $(ARBHOME)/INCLUDE/cxxforward.h
+Cma.o: $(ARBHOME)/INCLUDE/gccver.h
 
 dbconn.o: dbconn.h
 dbconn.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -95,5 +119,6 @@ dbconn.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 dbconn.o: $(ARBHOME)/INCLUDE/arbtools.h
 dbconn.o: $(ARBHOME)/INCLUDE/attributes.h
 dbconn.o: $(ARBHOME)/INCLUDE/dupstr.h
+dbconn.o: $(ARBHOME)/INCLUDE/gccver.h
 dbconn.o: $(ARBHOME)/INCLUDE/smartptr.h
 dbconn.o: $(ARBHOME)/INCLUDE/test_global.h

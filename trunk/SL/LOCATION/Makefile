@@ -44,6 +44,7 @@ Location.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Location.o: $(ARBHOME)/INCLUDE/arbtools.h
 Location.o: $(ARBHOME)/INCLUDE/attributes.h
 Location.o: $(ARBHOME)/INCLUDE/dupstr.h
+Location.o: $(ARBHOME)/INCLUDE/gccver.h
 Location.o: $(ARBHOME)/INCLUDE/smartptr.h
 Location.o: $(ARBHOME)/INCLUDE/test_global.h
 Location.o: $(ARBHOME)/INCLUDE/test_unit.h

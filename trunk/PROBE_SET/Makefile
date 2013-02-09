@@ -140,6 +140,7 @@ ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/dupstr.h
+ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -162,6 +163,7 @@ ps_convert_db.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/dupstr.h
+ps_convert_db.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -243,6 +245,7 @@ ps_get_probes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/dupstr.h
+ps_get_probes.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/test_global.h
 
