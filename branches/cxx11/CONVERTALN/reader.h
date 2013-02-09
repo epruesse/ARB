@@ -79,9 +79,9 @@ typedef SmartPtr<FormatReader> FormatReaderPtr;
 
 struct SimpleFormatReader : public Reader, public FormatReader {
     SimpleFormatReader(const char *inf) : Reader(inf) {}
-    bool failed() const { return Reader::failed(); }
-    void ignore_rest_of_file() { Reader::ignore_rest_of_file(); }
-    void rewind() { Reader::rewind(); }
+    bool failed() const OVERRIDE { return Reader::failed(); }
+    void ignore_rest_of_file() OVERRIDE { Reader::ignore_rest_of_file(); }
+    void rewind() OVERRIDE { Reader::rewind(); }
 };
 
 // --------------------------------------------------------------------------------
@@ -119,16 +119,16 @@ class FileWriter : public Writer, virtual Noncopyable {
 
 public:
     FileWriter(const char *outf);
-    ~FileWriter();
+    ~FileWriter() OVERRIDE;
 
     FILE *get_FILE() { return ofp; }
 
-    bool ok() const { return ofp != NULL; }
-    void out(char ch);
-    const char *name() const { return filename; }
+    bool ok() const OVERRIDE { return ofp != NULL; }
+    void out(char ch) OVERRIDE;
+    const char *name() const OVERRIDE { return filename; }
 
-    int out(const char *text) { return Writer::out(text); }
-    int outf(const char *format, ...) __ATTR__FORMAT_MEMBER(1);
+    int out(const char *text) OVERRIDE { return Writer::out(text); }
+    int outf(const char *format, ...) OVERRIDE __ATTR__FORMAT_MEMBER(1);
 
     void seq_done() { ++written; }
     void seq_done(int count) { ca_assert(count >= 0); written += count; }

@@ -262,7 +262,7 @@ class MackeParser : public Parser {
 public:
     MackeParser(Macke& macke_, Seq& seq_, Reader& reader_) : Parser(seq_, reader_), macke(macke_) {}
 
-    void parse_section() {
+    void parse_section() OVERRIDE {
         ca_assert(0); // @@@ unused yet
     }
 };

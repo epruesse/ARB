@@ -79,14 +79,14 @@ public:
         : gcg_writer(gcg_writer_),
           used(0)
     {}
-    ~GcgCommentWriter() {
+    ~GcgCommentWriter() OVERRIDE {
         ca_assert(used == 0); // trailing \n has not been written
     }
 
-    bool ok() const { return true; }
-    void throw_write_error() { ca_assert(0); }
-    void out(char ch);
-    const char *name() const { return "comment-writer"; }
+    bool ok() const OVERRIDE { return true; }
+    void throw_write_error() const OVERRIDE { ca_assert(0); }
+    void out(char ch) OVERRIDE;
+    const char *name() const OVERRIDE { return "comment-writer"; }
 };
 
 class GcgWriter : public FileWriter { // derived from a Noncopyable
@@ -102,7 +102,7 @@ public:
           seq_written(false),
           writer(*this)
     {}
-    ~GcgWriter() { free(species_name); }
+    ~GcgWriter() OVERRIDE { free(species_name); }
 
     void set_species_name(const char *next_name) {
         if (!seq_written) species_name = nulldup(next_name);
