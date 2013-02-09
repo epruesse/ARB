@@ -48,6 +48,7 @@ RegExpr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arbtools.h
 RegExpr.o: $(ARBHOME)/INCLUDE/attributes.h
+RegExpr.o: $(ARBHOME)/INCLUDE/cxxforward.h
 RegExpr.o: $(ARBHOME)/INCLUDE/dupstr.h
 RegExpr.o: $(ARBHOME)/INCLUDE/gccver.h
 RegExpr.o: $(ARBHOME)/INCLUDE/smartptr.h

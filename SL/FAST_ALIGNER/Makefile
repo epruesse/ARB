@@ -46,6 +46,7 @@ ClustalV.o: $(ARBHOME)/INCLUDE/attributes.h
 ClustalV.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ClustalV.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ClustalV.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+ClustalV.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ClustalV.o: $(ARBHOME)/INCLUDE/dupstr.h
 ClustalV.o: $(ARBHOME)/INCLUDE/gccver.h
 ClustalV.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -83,6 +84,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/cb.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/dupstr.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/gccver.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
@@ -110,6 +112,7 @@ seq_search.o: $(ARBHOME)/INCLUDE/attributes.h
 seq_search.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+seq_search.o: $(ARBHOME)/INCLUDE/cxxforward.h
 seq_search.o: $(ARBHOME)/INCLUDE/dupstr.h
 seq_search.o: $(ARBHOME)/INCLUDE/gccver.h
 seq_search.o: $(ARBHOME)/INCLUDE/smartptr.h

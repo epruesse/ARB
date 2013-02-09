@@ -64,6 +64,7 @@ MP_Generation.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_Generation.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_Generation.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/cb.h
+MP_Generation.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -84,6 +85,7 @@ MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/cb.h
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -113,6 +115,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_main.o: $(ARBHOME)/INCLUDE/cb.h
+MP_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_main.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -143,6 +146,7 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/cb.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client_types.h
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -189,6 +193,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/cb.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/client.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/client_types.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -213,6 +218,7 @@ MP_permute.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_permute.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_permute.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_permute.o: $(ARBHOME)/INCLUDE/cb.h
+MP_permute.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_permute.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_permute.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_permute.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -244,6 +250,7 @@ MP_probe.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_probe.o: $(ARBHOME)/INCLUDE/cb.h
+MP_probe.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_probe.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_probe.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_probe.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -264,6 +271,7 @@ MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/cb.h
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -283,6 +291,7 @@ MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/cb.h
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -312,6 +321,7 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/cb.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/client.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/client_types.h
+MP_sonde.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -345,6 +355,7 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/cb.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -389,6 +400,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_Window.o: $(ARBHOME)/INCLUDE/cb.h
 MP_Window.o: $(ARBHOME)/INCLUDE/command_output.h
+MP_Window.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_Window.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_Window.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_Window.o: $(ARBHOME)/INCLUDE/PT_com.h

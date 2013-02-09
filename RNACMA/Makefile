@@ -118,6 +118,7 @@ dbconn.o: $(ARBHOME)/INCLUDE/arbdb.h
 dbconn.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 dbconn.o: $(ARBHOME)/INCLUDE/arbtools.h
 dbconn.o: $(ARBHOME)/INCLUDE/attributes.h
+dbconn.o: $(ARBHOME)/INCLUDE/cxxforward.h
 dbconn.o: $(ARBHOME)/INCLUDE/dupstr.h
 dbconn.o: $(ARBHOME)/INCLUDE/gccver.h
 dbconn.o: $(ARBHOME)/INCLUDE/smartptr.h

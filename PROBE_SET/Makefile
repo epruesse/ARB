@@ -121,7 +121,9 @@ fb_test.o: ps_node.hxx
 fb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
 fb_test.o: $(ARBHOME)/INCLUDE/arb_core.h
 fb_test.o: $(ARBHOME)/INCLUDE/arbtools.h
+fb_test.o: $(ARBHOME)/INCLUDE/cxxforward.h
 fb_test.o: $(ARBHOME)/INCLUDE/dupstr.h
+fb_test.o: $(ARBHOME)/INCLUDE/gccver.h
 fb_test.o: $(ARBHOME)/INCLUDE/smartptr.h
 fb_test.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -139,6 +141,7 @@ ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbdb.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/attributes.h
+ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -162,6 +165,7 @@ ps_convert_db.o: $(ARBHOME)/INCLUDE/arbdb.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/attributes.h
+ps_convert_db.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -175,7 +179,9 @@ ps_database.o: ps_node.hxx
 ps_database.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_database.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_database.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_database.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ps_database.o: $(ARBHOME)/INCLUDE/dupstr.h
+ps_database.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_database.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_database.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -190,7 +196,9 @@ ps_detect_weak_differences.o: ps_tools.hxx
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/dupstr.h
+ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -206,13 +214,17 @@ ps_eval_candidates.o: ps_tools.hxx
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_eval_candidates.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/dupstr.h
+ps_eval_candidates.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_filebuffer.o: ps_assert.hxx
 ps_filebuffer.o: ps_filebuffer.hxx
 ps_filebuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_filebuffer.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ps_filebuffer.o: $(ARBHOME)/INCLUDE/gccver.h
 
 ps_find_probes.o: ps_assert.hxx
 ps_find_probes.o: ps_bitmap.hxx
@@ -226,7 +238,9 @@ ps_find_probes.o: ps_tools.hxx
 ps_find_probes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_find_probes.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/dupstr.h
+ps_find_probes.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -244,6 +258,7 @@ ps_get_probes.o: $(ARBHOME)/INCLUDE/arbdb.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/attributes.h
+ps_get_probes.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -258,7 +273,9 @@ ps_merge_my_dbs.o: ps_tools.hxx
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/dupstr.h
+ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -269,7 +286,9 @@ ps_my2ascii.o: ps_node.hxx
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_my2ascii.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/dupstr.h
+ps_my2ascii.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -280,7 +299,9 @@ ps_my2asciipaths.o: ps_node.hxx
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/dupstr.h
+ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -291,7 +312,9 @@ ps_node.o: ps_node.hxx
 ps_node.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_node.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_node.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_node.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ps_node.o: $(ARBHOME)/INCLUDE/dupstr.h
+ps_node.o: $(ARBHOME)/INCLUDE/gccver.h
 ps_node.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_node.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -301,5 +324,7 @@ ps_show_result.o: ps_bitset.hxx
 ps_show_result.o: ps_defs.hxx
 ps_show_result.o: ps_filebuffer.hxx
 ps_show_result.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_show_result.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ps_show_result.o: $(ARBHOME)/INCLUDE/gccver.h
 
 ps_tools.o: ps_tools.hxx
