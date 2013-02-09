@@ -7,9 +7,6 @@
 #ifndef PARSER_H
 #include "parser.h"
 #endif
-#ifndef CXXFORWARD_H
-#include <cxxforward.h>
-#endif
 
 struct Emblref {
     char *author;
