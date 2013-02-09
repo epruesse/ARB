@@ -3,7 +3,6 @@
 //   File      : attributes.h                                           //
 //   Purpose   : declare attribute macros                               //
 //                                                                      //
-//                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in June 2005             //
 // Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                      //
@@ -12,6 +11,10 @@
 // ==================================================================== //
 #ifndef ATTRIBUTES_H
 #define ATTRIBUTES_H
+
+#ifndef GCCVER_H
+#include "gccver.h"
+#endif
 
 // ------------------------------------------------------------
 // short description of attributes defined:
@@ -28,34 +31,7 @@
 //
 // ------------------------------------------------------------
 
-#ifndef __GNUC__
-# error You have to use the gnu compiler!
-#endif
-
-#if (__GNUC__ < 4)
-#else
-# if (__GNUC__ > 4)
-#  define COMPILER_OK
-# else
-// gcc 4.xx:
-#  ifdef __clang__
-#   if (__GNUC_MINOR__ >= 2)
-#    define COMPILER_OK
-#   endif
-#  else
-#   if (__GNUC_MINOR__ >= 3)
-#    define COMPILER_OK
-#   endif
-#  endif
-# endif
-#endif
-
-#ifndef COMPILER_OK
-# error Wrong compiler version (need at least gcc 4.3 or clang 4.2) 
-#endif
-
-
-#if (__GNUC_MINOR__ > 5 || (__GNUC_MINOR__ == 5 && __GNUC_PATCHLEVEL__ >= 2)) // gcc 4.5.2 and higher
+#if (GCC_PATCHLEVEL_CODE >= 40502) // gcc 4.5.2 and higher
 # define __ATTR__DEPRECATED(reason) __attribute__((deprecated(reason)))
 #endif
 
@@ -70,7 +46,6 @@
 #ifndef __ATTR__DEPRECATED
 # define __ATTR__DEPRECATED(reason) __attribute__((deprecated))
 #endif
-#define __ATTR__DEPRECATED_FUNCTION __attribute__((deprecated)) // function attributes sometimes cant handle reason (e.g. ctors)
 
 #define __ATTR__NORETURN  __attribute__((noreturn))
 #define __ATTR__SENTINEL  __attribute__((sentinel))
@@ -108,11 +83,9 @@
 #if defined(WARN_TODO)
 #define __ATTR__USERESULT_TODO           __ATTR__USERESULT
 #define __ATTR__DEPRECATED_TODO(reason)  __ATTR__DEPRECATED(reason)
-#define __ATTR__DEPRECATED_FUNCTION_TODO __ATTR__DEPRECATED_FUNCTION
 #else
 #define __ATTR__USERESULT_TODO
 #define __ATTR__DEPRECATED_TODO(reason)
-#define __ATTR__DEPRECATED_FUNCTION_TODO
 #endif
 
 // ------------------------------------------------------------

@@ -62,6 +62,7 @@ arb_cs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_cs.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_cs.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_cs.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_cs.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_cs.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_cs.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -72,6 +73,7 @@ arb_file.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_file.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_file.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_file.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_file.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_file.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_file.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -83,6 +85,7 @@ arb_handlers.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_handlers.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -92,6 +95,7 @@ arb_misc.o: arb_msg.h
 arb_misc.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_misc.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_misc.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_misc.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_misc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_msg.o: arb_core.h
@@ -103,6 +107,7 @@ arb_msg.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 arb_msg.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_msg.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_msg.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_msg.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_msg.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_msg.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -115,6 +120,7 @@ arb_progress.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_progress.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_progress.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_progress.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_progress.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_progress.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_progress.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -126,9 +132,11 @@ arb_signal.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 arb_signal.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_signal.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_signal.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_signal.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_signal.o: $(ARBHOME)/INCLUDE/SigHandler.h
 arb_signal.o: $(ARBHOME)/INCLUDE/SuppressOutput.h
 arb_signal.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_signal.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_signal.o: $(ARBHOME)/INCLUDE/valgrind.h
 
 arb_sort.o: arb_sort.h
@@ -143,6 +151,7 @@ arb_strarray.o: $(ARBHOME)/INCLUDE/arb_str.h
 arb_strarray.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_strarray.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_strarray.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_strarray.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_strarray.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_strarray.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -152,6 +161,7 @@ arb_strbuf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_strbuf.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_string.o: arb_core.h
@@ -160,6 +170,7 @@ arb_string.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_string.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_string.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_string.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_string.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -182,6 +193,7 @@ FileContent.o: $(ARBHOME)/INCLUDE/arb_assert.h
 FileContent.o: $(ARBHOME)/INCLUDE/arbtools.h
 FileContent.o: $(ARBHOME)/INCLUDE/attributes.h
 FileContent.o: $(ARBHOME)/INCLUDE/dupstr.h
+FileContent.o: $(ARBHOME)/INCLUDE/gccver.h
 FileContent.o: $(ARBHOME)/INCLUDE/test_global.h
 FileContent.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -192,5 +204,6 @@ pos_range.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pos_range.o: $(ARBHOME)/INCLUDE/arbtools.h
 pos_range.o: $(ARBHOME)/INCLUDE/attributes.h
 pos_range.o: $(ARBHOME)/INCLUDE/dupstr.h
+pos_range.o: $(ARBHOME)/INCLUDE/gccver.h
 pos_range.o: $(ARBHOME)/INCLUDE/test_global.h
 pos_range.o: $(ARBHOME)/INCLUDE/test_unit.h

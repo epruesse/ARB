@@ -537,7 +537,7 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int) { // ha
         AISC_DUMP(aisc_talking_get, int, type);
 
         double_xfer derg;
-        COMPILE_ASSERT(sizeof(derg.as_double) <= sizeof(derg.as_int));
+        STATIC_ASSERT(sizeof(derg.as_double) <= sizeof(derg.as_int));
         
         if (type == AISC_TYPE_DOUBLE) {
             aisc_talking_func_double dfunction = (aisc_talking_func_double) function;

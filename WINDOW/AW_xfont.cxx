@@ -206,8 +206,8 @@ static struct _fstruct ps_fontinfo[] = {
     { "Courier-Bold",                 -14 },
 };
 
-COMPILE_ASSERT(ARRAY_ELEMS(x_fontinfo) == AW_NUM_FONTS);
-COMPILE_ASSERT(ARRAY_ELEMS(ps_fontinfo) == AW_NUM_FONTS+1);
+STATIC_ASSERT(ARRAY_ELEMS(x_fontinfo) == AW_NUM_FONTS);
+STATIC_ASSERT(ARRAY_ELEMS(ps_fontinfo) == AW_NUM_FONTS+1);
 
 #if defined(DEBUG)
 static void check_ps_fontinfo_valid() {

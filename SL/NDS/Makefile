@@ -56,6 +56,7 @@ nds.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 nds.o: $(ARBHOME)/INCLUDE/cb.h
 nds.o: $(ARBHOME)/INCLUDE/dupstr.h
+nds.o: $(ARBHOME)/INCLUDE/gccver.h
 nds.o: $(ARBHOME)/INCLUDE/items.h
 nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 nds.o: $(ARBHOME)/INCLUDE/test_global.h

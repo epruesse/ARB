@@ -70,6 +70,9 @@ FileWriter::FileWriter(const char *outname)
     : ofp(NULL),
       filename(NULL),
       written(0)
+#if defined(ENFORCE_CHECKED_WRITTEN)
+    , checked_written(false)
+#endif
 {
     ofp = fopen(outname, "wt");
     if (!ofp) {
@@ -78,18 +81,27 @@ FileWriter::FileWriter(const char *outname)
     filename = strdup(outname);
 }
 FileWriter::~FileWriter() {
-    bool fine      = ofp && !Convaln_exception::exception_thrown();
-    bool die_empty = fine && !written;
+    bool fine = is_fine();
+
+#if defined(ENFORCE_CHECKED_WRITTEN)
+    ca_assert(implicated(fine, checked_written)); // you have to call expect_written() on FileWriter before destruction
+#endif
 
     if (ofp) fclose(ofp);
-    if (!fine || die_empty) unlink(filename);
+    if (!fine) unlink(filename);
     free(filename);
 
-    if (die_empty) {
+    log_processed(written);
+}
+
+void FileWriter::expect_written() {
+#if defined(ENFORCE_CHECKED_WRITTEN)
+    ca_assert(!checked_written); // checking twice is nonsense
+    checked_written = true;
+#endif
+    if (is_fine() && !written) {
         throw_errorf(42, "No sequence has been written");
     }
-
-    log_processed(written);
 }
 
 void Writer::throw_write_error() const {

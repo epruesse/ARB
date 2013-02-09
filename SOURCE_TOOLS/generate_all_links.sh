@@ -148,6 +148,7 @@ symlink_file ../TEMPLATES/arb_algo.h INCLUDE/arb_algo.h &&
 symlink_file ../TEMPLATES/arb_backtrace.h INCLUDE/arb_backtrace.h &&
 symlink_file ../TEMPLATES/arb_debug.h INCLUDE/arb_debug.h &&
 symlink_file ../TEMPLATES/arb_defs.h INCLUDE/arb_defs.h &&
+symlink_file ../TEMPLATES/arb_early_check.h INCLUDE/arb_early_check.h &&
 symlink_file ../TEMPLATES/arb_global_defs.h INCLUDE/arb_global_defs.h &&
 symlink_file ../TEMPLATES/arb_error.h INCLUDE/arb_error.h &&
 symlink_file ../TEMPLATES/arb_str.h INCLUDE/arb_str.h &&
@@ -160,8 +161,10 @@ symlink_file ../TEMPLATES/cb.h INCLUDE/cb.h &&
 symlink_file ../TEMPLATES/ChecksumCollector.h INCLUDE/ChecksumCollector.h &&
 symlink_file ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
 symlink_file ../TEMPLATES/command_output.h INCLUDE/command_output.h &&
+symlink_file ../TEMPLATES/cxxforward.h INCLUDE/cxxforward.h &&
 symlink_file ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
 symlink_file ../TEMPLATES/dupstr.h INCLUDE/dupstr.h &&
+symlink_file ../TEMPLATES/gccver.h INCLUDE/gccver.h &&
 symlink_file ../TEMPLATES/output.h INCLUDE/output.h &&
 symlink_file ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
 symlink_file ../TEMPLATES/SigHandler.h INCLUDE/SigHandler.h &&

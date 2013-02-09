@@ -23,8 +23,10 @@
 #include <cstring>
 #include <cstdarg>
 
-#define SIMPLE_ARB_ASSERT
+#include <arb_early_check.h>
 #include <attributes.h>
+
+#define SIMPLE_ARB_ASSERT
 #include <arb_assert.h>
 #include <arbtools.h>
 
@@ -67,7 +69,6 @@ static int aisc                = 0;                 // aisc compatible output
 static int cansibycplus        = 0;                 // produce extern "C"
 static int promote_extern_c    = 0;                 // produce extern "C" into prototype
 static int extern_c_seen       = 0;                 // true if extern "C" was parsed
-static int search__attribute__ = 0;                 // search for gnu-extension __attribute__(()) ?
 static int search__ATTR__      = 0;                 // search for ARB-__attribute__-macros (__ATTR__) ?
 
 static const char *include_wrapper = NULL;          // add include wrapper (contains name of header or NULL)
@@ -330,13 +331,12 @@ static int ngetc(FILE *f) {
 #define MAX_COMMENT_SIZE 10000
 
 static char  last_comment[MAX_COMMENT_SIZE];
-static int   lc_size            = 0;
-static char *found__attribute__ = 0;
-static char *found__ATTR__      = 0;
+static int   lc_size       = 0;
+static char *found__ATTR__ = 0;
 
 static void clear_found_attribute() {
-    free(found__attribute__); found__attribute__ = 0;
-    free(found__ATTR__);      found__ATTR__      = 0;
+    free(found__ATTR__);
+    found__ATTR__ = 0;
 }
 
 static const char *nextNonSpace(const char* ptr) {
@@ -531,33 +531,13 @@ public:
 };
 
 static void search_comment_for_attribute() {
-    if (found__attribute__ || found__ATTR__) return; // only parse once (until reset)
-    last_comment[lc_size] = 0;  // close string
+    if (!found__ATTR__) { // only parse once (until reset)
+        if (search__ATTR__) {
+            last_comment[lc_size] = 0;  // close string
 
-    static AttributeParser attribute_parser("__attribute__", false, true);
-    static AttributeParser ATTR_parser("__ATTR__", true, false);
-
-    char *seen_attribute = attribute_parser.parse(last_comment, lc_size);
-    char *seen_ATTR      = ATTR_parser.parse(last_comment, lc_size);
-
-    if (search__attribute__) {
-        mp_assert(!search__ATTR__);
-        found__attribute__ = seen_attribute;
-        if (seen_ATTR) {
-            error("Expected not to see '__ATTR__..' (when looking for '__attribute__(...)')");
+            static AttributeParser ATTR_parser("__ATTR__", true, false);
+            found__ATTR__ = ATTR_parser.parse(last_comment, lc_size);
         }
-    }
-
-    if (search__ATTR__) {
-        mp_assert(!search__attribute__);
-        found__ATTR__ = seen_ATTR;
-        if (seen_attribute) {
-            error("Expected not to see '__attribute__(...)' (when looking for '__ATTR__..')");
-        }
-    }
-
-    if (found__attribute__ && found__ATTR__) {
-        error("Either specify __attribute__ or __ATTR__... - not both\n");
     }
 }
 
@@ -655,9 +635,6 @@ static void search_comment_for_promotion() {
  * read and skip the next character. Any comment sequence is converted
  * to a blank.
  *
- * if a comment contains __attribute__ and search__attribute__ != 0
- * the attribute string is stored in found__attribute__
- *
  * if a comment contains __ATTR__ and search__ATTR__ != 0
  * the attribute string is stored in found__ATTR__
  */
@@ -695,7 +672,7 @@ static int fnextch(FILE *f) {
                     return c;
                 }
             }
-            if (search__attribute__ || search__ATTR__) search_comment_for_attribute();
+            if (search__ATTR__) search_comment_for_attribute();
             if (promote_lines) search_comment_for_promotion();
             return fnextch(f);
         }
@@ -714,7 +691,7 @@ static int fnextch(FILE *f) {
                 if (lastc != '\\' && c == '\n') incomment = 0;
                 else if (c < 0) break;
             }
-            if (search__attribute__ || search__ATTR__) search_comment_for_attribute();
+            if (search__ATTR__) search_comment_for_attribute();
             if (promote_lines) search_comment_for_promotion();
 
             if (c == '\n') return c;
@@ -1296,7 +1273,6 @@ static void emit(Word *wlist, Word *plist, long startline) {
     else            PRINT(")");
     DEBUG_PRINT("emit[6] ')'\n");
 
-    if (found__attribute__) { PRINT(" "); PRINT(found__attribute__); }
     if (found__ATTR__) { PRINT(" "); PRINT(found__ATTR__); }
 
     PRINT(";\n");
@@ -1471,8 +1447,7 @@ __ATTR__NORETURN static void Usage() {
           "\n   -C               insert 'extern \"C\"'"
           "\n   -E               prefix 'extern \"C\"' at prototype"
           "\n"
-          "\n   -g               search for GNU extension __attribute__ in comment behind function header"
-          "\n   -G               search for ARB macro     __ATTR__      in comment behind function header"
+          "\n   -G               search for ARB macro __ATTR__ in comment behind function header"
           "\n"
           "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
           "\n"
@@ -1513,7 +1488,6 @@ int ARB_main(int argc, const char *argv[]) {
             else if (*t == 'E') promote_extern_c    = 1;
             else if (*t == 'W') dont_promote        = 1;
             else if (*t == 'a') aisc                = 1;
-            else if (*t == 'g') search__attribute__ = 1;
             else if (*t == 'G') search__ATTR__      = 1;
             else if (*t == 'n') donum               = 1;
             else if (*t == 'x') no_parm_names       = 1; // no parm names, only types (sg)
@@ -1559,11 +1533,6 @@ int ARB_main(int argc, const char *argv[]) {
             else Usage();
             t++;
         }
-    }
-
-    if (search__ATTR__ && search__attribute__) {
-        fputs("Either use option -g or -G (not both)", stderr);
-        exit(EXIT_FAILURE);
     }
 
     if (argc == 0 && exit_if_noargs) {
@@ -1626,14 +1595,6 @@ int ARB_main(int argc, const char *argv[]) {
                         "#endif\n\n",
                         macro_name, macro_name);
             }
-        }
-        if (search__attribute__) {
-            fputs("/* hide __attribute__'s for non-gcc compilers: */\n"
-                  "#ifndef __GNUC__\n"
-                  "# ifndef __attribute__\n"
-                  "#  define __attribute__(x)\n"
-                  "# endif\n"
-                  "#endif\n\n", stdout);
         }
         if (search__ATTR__) {
             fputs("/* define ARB attributes: */\n"
@@ -1730,12 +1691,8 @@ static void Version() {
 
 #include <test_unit.h>
 
-inline char*& searchResult(bool ATTR) { return ATTR ? found__ATTR__ : found__attribute__; }
-inline int& doSearchFor(bool ATTR) { return ATTR ? search__ATTR__ : search__attribute__; }
-
 inline const char *test_extract(bool ATTR, const char *str) {
-    doSearchFor(ATTR)  = true;
-    doSearchFor(!ATTR) = false;
+    search__ATTR__ = true;
 
     clear_found_attribute();
 
@@ -1744,20 +1701,15 @@ inline const char *test_extract(bool ATTR, const char *str) {
 
     search_comment_for_attribute();
 
-    TEST_REJECT(searchResult(!ATTR));
-    return searchResult(ATTR);
+    return found__ATTR__;
 }
 
 #define TEST_ATTR_____(comment,extracted) TEST_EXPECT_EQUAL(test_extract(true, comment), extracted)
-#define TEST_attribute(comment,extracted) TEST_EXPECT_EQUAL(test_extract(false, comment), extracted)
-
-#define TEST_both(c,e) do { TEST_attribute(c,e); TEST_ATTR_____(c,e); } while(0)
 
 void TEST_attribute_parser() {
-    TEST_both("",             (const char*)NULL);
-    TEST_both("nothing here", (const char*)NULL);
+    TEST_ATTR_____("",             (const char*)NULL);
+    TEST_ATTR_____("nothing here", (const char*)NULL);
 
-    TEST_attribute("bla bla __attribute__(whatever) more content",             "__attribute__(whatever)");
     TEST_ATTR_____("bla bla __ATTR__DEPRECATED(\" my reason \") more content", "__ATTR__DEPRECATED(\" my reason \")");
     TEST_ATTR_____("bla bla __ATTR__FORMAT(pos) more content",                 "__ATTR__FORMAT(pos)");
     

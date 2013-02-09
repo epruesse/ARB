@@ -268,7 +268,7 @@ static long write_IFS(gb_index_files *ifs, FILE *out, long *offset) {
         size_t       iesize = ALIGN((size_t)(ifs->hash_table_size)*sizeof(*ie));
         int          idx;
 
-        COMPILE_ASSERT(ALIGN(sizeof(*ie))==sizeof(*ie));
+        STATIC_ASSERT(ALIGN(sizeof(*ie))==sizeof(*ie));
 
         iecopy = (GB_REL_IFES *)malloc(iesize);
         memcpy(iecopy, ie, iesize);
@@ -360,7 +360,7 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
                     int             valid      = 0; // no of non-temporary items
                     gb_header_list *headercopy = (gb_header_list*) malloc(headermemsize);
 
-                    COMPILE_ASSERT(sizeof(*headercopy) == ALIGN(sizeof(*headercopy)));
+                    STATIC_ASSERT(sizeof(*headercopy) == ALIGN(sizeof(*headercopy)));
                     memset(headercopy, 0x0, headermemsize);
 
                     for (int item = 0; item<nitems; item++) {

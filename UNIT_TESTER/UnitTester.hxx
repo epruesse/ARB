@@ -27,6 +27,8 @@ enum UnitTestResult {
     TEST_OK,
     TEST_TRAPPED,
     TEST_INTERRUPTED, 
+    TEST_THREW,
+    TEST_INVALID,
 };
 
 struct UnitTester {
