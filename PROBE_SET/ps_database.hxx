@@ -46,7 +46,7 @@ private:
     PS_NodePtr     db_path;
     SpeciesID      db_MAX_ID;
     SpeciesID      db_MIN_ID;
-    void callback(void *_caller);
+    void callback(void *_caller) OVERRIDE;
 
 public:
     static const bool   READONLY  = true;
