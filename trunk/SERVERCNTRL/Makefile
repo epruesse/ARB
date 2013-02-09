@@ -49,6 +49,7 @@ servercntrl.o: $(ARBHOME)/INCLUDE/bytestring.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client_privat.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client_types.h
+servercntrl.o: $(ARBHOME)/INCLUDE/cxxforward.h
 servercntrl.o: $(ARBHOME)/INCLUDE/dupstr.h
 servercntrl.o: $(ARBHOME)/INCLUDE/gccver.h
 servercntrl.o: $(ARBHOME)/INCLUDE/SigHandler.h

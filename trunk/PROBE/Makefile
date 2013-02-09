@@ -118,6 +118,7 @@ PT_etc.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_etc.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_etc.o: $(ARBHOME)/INCLUDE/bytestring.h
+PT_etc.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PT_etc.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_etc.o: $(ARBHOME)/INCLUDE/gccver.h
 PT_etc.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -201,6 +202,7 @@ PT_io.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_io.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_io.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 PT_io.o: $(ARBHOME)/INCLUDE/bytestring.h
+PT_io.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PT_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_io.o: $(ARBHOME)/INCLUDE/gccver.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -231,6 +233,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 PT_main.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_main.o: $(ARBHOME)/INCLUDE/client.h
 PT_main.o: $(ARBHOME)/INCLUDE/client_types.h
+PT_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_main.o: $(ARBHOME)/INCLUDE/gccver.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_com.h

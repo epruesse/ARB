@@ -52,6 +52,7 @@ Translate.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Translate.o: $(ARBHOME)/INCLUDE/arbdbt.h
 Translate.o: $(ARBHOME)/INCLUDE/arbtools.h
 Translate.o: $(ARBHOME)/INCLUDE/attributes.h
+Translate.o: $(ARBHOME)/INCLUDE/cxxforward.h
 Translate.o: $(ARBHOME)/INCLUDE/dupstr.h
 Translate.o: $(ARBHOME)/INCLUDE/gccver.h
 Translate.o: $(ARBHOME)/INCLUDE/smartptr.h

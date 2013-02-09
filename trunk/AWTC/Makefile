@@ -51,6 +51,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/bytestring.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cb.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client_types.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/pos_range.h
@@ -85,6 +86,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/cb.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/smartptr.h
