@@ -192,7 +192,7 @@ public:
     // *********** public section
 
     AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
-    virtual ~AWT_graphic_tree();
+    virtual ~AWT_graphic_tree() OVERRIDE;
 
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
 

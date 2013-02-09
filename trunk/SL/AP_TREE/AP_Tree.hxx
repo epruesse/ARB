@@ -126,7 +126,7 @@ public:
     AP_rates *rates;
 
     AP_tree_root(AliView *aliView, const AP_tree& tree_proto, AP_sequence *seq_proto, bool add_delete_callbacks);
-    virtual ~AP_tree_root();
+    virtual ~AP_tree_root() OVERRIDE;
     DEFINE_TREE_ROOT_ACCESSORS(AP_tree_root, AP_tree);
 
     // ARB_tree_root interface
@@ -218,7 +218,7 @@ private:
 public:
 
     explicit AP_tree(AP_tree_root *tree_root);
-    virtual ~AP_tree(); // leave this here to force creation of virtual table
+    virtual ~AP_tree() OVERRIDE; // leave this here to force creation of virtual table
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
 
     // ARB_tree interface

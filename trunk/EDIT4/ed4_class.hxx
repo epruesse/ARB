@@ -1407,7 +1407,7 @@ struct ED4_manager : public ED4_base { // derived from a Noncopyable
     }
 
     ED4_manager(const ED4_objspec& spec_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_manager();
+    virtual ~ED4_manager() OVERRIDE;
 };
 
 struct ED4_terminal : public ED4_base { // derived from a Noncopyable
@@ -1464,7 +1464,7 @@ struct ED4_terminal : public ED4_base { // derived from a Noncopyable
     bool is_hidden() const { return parent && parent->is_hidden(); }
 
     ED4_terminal(const ED4_objspec& spec_, GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_terminal();
+    virtual ~ED4_terminal() OVERRIDE;
 };
 
 enum ED4_species_mode {
@@ -1908,7 +1908,7 @@ class ED4_species_manager : public ED4_manager {
 
 public:
     ED4_species_manager(ED4_species_type type_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_species_manager   ();
+    ~ED4_species_manager() OVERRIDE;
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
@@ -2026,7 +2026,7 @@ struct ED4_text_terminal : public ED4_terminal {
     virtual void deleted_from_database();
 
     ED4_text_terminal(const ED4_objspec& spec_, GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_text_terminal() {}
+    virtual ~ED4_text_terminal() OVERRIDE {}
 
     DECLARE_DUMP_FOR_BASECLASS(ED4_text_terminal, ED4_terminal);
 };
@@ -2041,7 +2041,7 @@ public:
 
 
     ED4_abstract_sequence_terminal(const ED4_objspec& spec_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_abstract_sequence_terminal();
+    virtual ~ED4_abstract_sequence_terminal() OVERRIDE;
 
     virtual GB_alignment_type GetAliType() = 0;
     virtual int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
@@ -2071,7 +2071,7 @@ class ED4_orf_terminal : public ED4_abstract_sequence_terminal { // derived from
     E4B_AVOID_UNNEEDED_CASTS(orf_terminal);
 public:
     ED4_orf_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_orf_terminal();
+    virtual ~ED4_orf_terminal() OVERRIDE;
 
     virtual GB_alignment_type GetAliType();
 
@@ -2141,14 +2141,14 @@ public:
     GB_CSTR build_probe_match_string(PosRange range) const;
 
     ED4_columnStat_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_columnStat_terminal();
+    ~ED4_columnStat_terminal() OVERRIDE;
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
 struct ED4_species_name_terminal : public ED4_text_terminal { // derived from a Noncopyable
     ED4_species_name_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
-    ~ED4_species_name_terminal() { delete selection_info; }
+    ~ED4_species_name_terminal() OVERRIDE { delete selection_info; }
 
     E4B_AVOID_UNNEEDED_CASTS(species_name_terminal);
 

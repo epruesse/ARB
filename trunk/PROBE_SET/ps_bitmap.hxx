@@ -188,7 +188,7 @@ public:
         memset(count_true_per_index, (bias) ? capacity : 0, capacity * sizeof(long));
     }
 
-    virtual ~PS_BitMap_Counted() {
+    virtual ~PS_BitMap_Counted() OVERRIDE {
         if (count_true_per_index) free(count_true_per_index);
     }
 };

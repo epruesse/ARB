@@ -70,7 +70,7 @@ protected:
 
 public:
     GEN_graphic(AW_root *aw_root, GBDATA *gb_main, GEN_graphic_cb_installer callback_installer_, int window_nr_);
-    virtual ~GEN_graphic();
+    virtual ~GEN_graphic() OVERRIDE;
 
     void reinit_gen_root(AWT_canvas *scr, bool force_reinit);
 

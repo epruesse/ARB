@@ -1374,7 +1374,7 @@ static AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
 class GEN_item_type_species_selector : public awt_item_type_selector {
 public:
     GEN_item_type_species_selector() : awt_item_type_selector(AWT_IT_GENE) {}
-    virtual ~GEN_item_type_species_selector() {}
+    virtual ~GEN_item_type_species_selector() OVERRIDE {}
 
     virtual const char *get_self_awar() const {
         return AWAR_COMBINED_GENE_NAME;

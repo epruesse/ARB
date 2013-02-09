@@ -2768,7 +2768,7 @@ public:
             gcm->set_fg_color(colors_def[gc+AW_STD_COLOR_IDX_MAX]);
         }
     }
-    virtual ~fake_AW_common() {}
+    virtual ~fake_AW_common() OVERRIDE {}
 
     virtual AW_GC *create_gc() {
         return new fake_AW_GC(this);

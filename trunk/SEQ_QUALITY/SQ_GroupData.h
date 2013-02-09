@@ -29,6 +29,10 @@
 #ifndef ARB_ASSERT_H
 # include <arb_assert.h>
 #endif
+#ifndef CXXFORWARD_H
+#include <cxxforward.h>
+#endif
+
 #define seq_assert(bed) arb_assert(bed)
 
 struct consensus_result {
@@ -119,7 +123,7 @@ public:
         consensus = 0;
     }
 
-    virtual ~SQ_GroupData_Impl();
+    virtual ~SQ_GroupData_Impl() OVERRIDE;
 
     SQ_GroupData_Impl& operator=(const SQ_GroupData_Impl& other) {
         seq_assert(other.size>0 && other.initialized);

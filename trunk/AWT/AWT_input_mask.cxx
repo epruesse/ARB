@@ -1125,7 +1125,7 @@ public:
         , id_dest(id_dest_)
         , id_source(id_source_)
     {}
-    virtual ~awt_assignment() {}
+    virtual ~awt_assignment() OVERRIDE {}
 };
 
 static void AWT_input_mask_perform_action(AW_window * /* aww */, AW_CL cl_awt_mask_action, AW_CL) {
@@ -1329,7 +1329,7 @@ public:
         : awt_viewport(global_, generate_baseName(global_), "0", false, label_)
         , awt_linked_to_item()
     {}
-    virtual ~awt_marked_checkbox() {}
+    virtual ~awt_marked_checkbox() OVERRIDE {}
 
     virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
     virtual GB_ERROR relink() { return link_to(mask_global().get_selected_item()); }

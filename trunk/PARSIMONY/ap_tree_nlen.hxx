@@ -73,7 +73,7 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable
 
 public:
     AP_tree_nlen(AP_tree_root *tree_root);
-    virtual ~AP_tree_nlen() {}
+    virtual ~AP_tree_nlen() OVERRIDE {}
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree_nlen);
 
     // ARB_tree interface

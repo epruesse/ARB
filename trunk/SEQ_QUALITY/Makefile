@@ -84,8 +84,10 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/test_global.h
 SQ_GroupData.o: SQ_GroupData.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/arb_core.h
+SQ_GroupData.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/dupstr.h
+SQ_GroupData.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SQ_main.o: seq_quality.h

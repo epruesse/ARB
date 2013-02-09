@@ -28,7 +28,7 @@ public:
     static char *table;
 
     AP_sequence_parsimony(const AliView *aliview);
-    ~AP_sequence_parsimony();
+    ~AP_sequence_parsimony() OVERRIDE;
 
     const char *get_sequence() const { lazy_load_sequence(); ap_assert(seq_pars); return seq_pars; }
     const unsigned char *get_usequence() const { return (const unsigned char*)get_sequence(); }
