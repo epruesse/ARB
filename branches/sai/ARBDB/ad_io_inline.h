@@ -23,8 +23,8 @@ inline uint32_t reverse_byteorder(uint32_t val) {
         uint32_t      as_uint32;
         unsigned char as_char[4];
     } data;
-    COMPILE_ASSERT(sizeof(data)           == 4);
-    COMPILE_ASSERT(sizeof(data.as_uint32) == 4);
+    STATIC_ASSERT(sizeof(data)           == 4);
+    STATIC_ASSERT(sizeof(data.as_uint32) == 4);
 
     data.as_uint32 = val;
 

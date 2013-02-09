@@ -50,6 +50,7 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -82,6 +83,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_main.o: $(ARBHOME)/INCLUDE/test_global.h
 AP_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
@@ -111,6 +113,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -141,6 +144,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/cb.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -159,6 +163,7 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/dupstr.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/smartptr.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -206,6 +211,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/dupstr.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -267,6 +273,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+PARS_main.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_main.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/nds.h
 PARS_main.o: $(ARBHOME)/INCLUDE/smartptr.h
