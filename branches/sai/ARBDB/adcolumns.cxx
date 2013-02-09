@@ -12,6 +12,7 @@
 #include <adGene.h>
 #include <arb_progress.h>
 #include <arb_defs.h>
+#include <cxxforward.h>
 
 #include "gb_local.h"
 
@@ -53,9 +54,9 @@ class ComposedAliData : public AliData {
     }
     friend AliDataPtr concat(AliDataPtr left, AliDataPtr right);
 public:
-    size_t unitsize() const { return left->unitsize(); }
-    AliDataPtr create_gap(size_t repeat) const { return left->create_gap(repeat); }
-    void copyPartTo(void *mem, size_t start, size_t count) const {
+    size_t unitsize() const OVERRIDE { return left->unitsize(); }
+    AliDataPtr create_gap(size_t repeat) const OVERRIDE { return left->create_gap(repeat); }
+    void copyPartTo(void *mem, size_t start, size_t count) const OVERRIDE {
         size_t left_elems = left->elems();
         size_t take_left  = 0;
         if (start<left_elems) {
@@ -101,9 +102,9 @@ public:
           pos(pos_)
     {}
 
-    size_t unitsize() const { return from->unitsize(); }
-    AliDataPtr create_gap(size_t repeat) const { return from->create_gap(repeat); }
-    void copyPartTo(void *mem, size_t start, size_t count) const {
+    size_t unitsize() const OVERRIDE { return from->unitsize(); }
+    AliDataPtr create_gap(size_t repeat) const OVERRIDE { return from->create_gap(repeat); }
+    void copyPartTo(void *mem, size_t start, size_t count) const OVERRIDE {
         gb_assert(count <= elems());
         from->copyPartTo(mem, start+pos, count);
     }
@@ -118,9 +119,9 @@ public:
         : AliData(gapsize),
           gap(gap_)
     {}
-    size_t unitsize() const { return sizeof(T); }
-    AliDataPtr create_gap(size_t) const { gb_assert(0); return NULL; }
-    void copyPartTo(void *mem, size_t start, size_t count) const {
+    size_t unitsize() const OVERRIDE { return sizeof(T); }
+    AliDataPtr create_gap(size_t) const OVERRIDE { gb_assert(0); return NULL; }
+    void copyPartTo(void *mem, size_t start, size_t count) const OVERRIDE {
         if (start<elems()) {
             size_t amount = min(start+count, elems()-start);
             for (size_t a = 0; a<amount; ++a) {
@@ -144,11 +145,11 @@ public:
     {
         allocated_data = NULL;
     }
-    ~SpecificAliData() { free(data); }
+    ~SpecificAliData() OVERRIDE { free(data); }
 
-    size_t unitsize() const { return sizeof(T); }
-    AliDataPtr create_gap(size_t repeat) const { return new SpecificGap<T>(gap, repeat); }
-    void copyPartTo(void *mem, size_t start, size_t count) const {
+    size_t unitsize() const OVERRIDE { return sizeof(T); }
+    AliDataPtr create_gap(size_t repeat) const OVERRIDE { return new SpecificGap<T>(gap, repeat); }
+    void copyPartTo(void *mem, size_t start, size_t count) const OVERRIDE {
         gb_assert(start<elems());
         if (count>0) {
             size_t last = start+count-1;
@@ -575,7 +576,7 @@ GB_ERROR AliApplicable::apply_to_alignment(GBDATA *gb_main, const Alignment& ali
 
 class AliEntryCounter : public AliApplicable {
     mutable size_t count;
-    GB_ERROR apply_to_terminal(GBDATA *, TargetType , const Alignment& ) const { count++; return NULL; }
+    GB_ERROR apply_to_terminal(GBDATA *, TargetType , const Alignment& ) const OVERRIDE { count++; return NULL; }
 public:
     AliEntryCounter() : count(0) {}
     size_t get_entry_count() const { return count; }
@@ -608,7 +609,7 @@ public:
 
 struct AliFormat : public AliEditCommand {
     AliFormat() : AliEditCommand(0, 0, 0) {}
-    virtual bool might_modify(size_t term_size, const Alignment& ali) const { return term_size != ali.get_len(); }
+    bool might_modify(size_t term_size, const Alignment& ali) const OVERRIDE { return term_size != ali.get_len(); }
 };
 
 // --------------------------------------------------------------------------------
@@ -617,7 +618,7 @@ class AliEditor : public AliApplicable {
     const AliEditCommand& cmd;
     mutable arb_progress  progress;
 
-    GB_ERROR apply_to_terminal(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const;
+    GB_ERROR apply_to_terminal(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const OVERRIDE;
 
     bool shall_edit(GBDATA *gb_data, TargetType ttype) const {
         // defines whether specific DB-elements shall be edited by any AliEditor
@@ -635,7 +636,7 @@ public:
           progress(progress_title, progress_count)
     {
     }
-    ~AliEditor() {
+    ~AliEditor() OVERRIDE {
         progress.done();
     }
 

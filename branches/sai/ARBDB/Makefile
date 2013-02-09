@@ -323,6 +323,7 @@ adcolumns.o: $(ARBHOME)/INCLUDE/arb_string.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_unit_test.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcolumns.o: $(ARBHOME)/INCLUDE/attributes.h
+adcolumns.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adcolumns.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcolumns.o: $(ARBHOME)/INCLUDE/gccver.h
 adcolumns.o: $(ARBHOME)/INCLUDE/smartptr.h
