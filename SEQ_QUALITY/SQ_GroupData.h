@@ -22,10 +22,6 @@
 #ifndef _GLIBCXX_IOSTREAM
 # include <iostream>
 #endif
-
-#ifndef DOWNCAST_H
-#include <downcast.h>
-#endif
 #ifndef ARB_ASSERT_H
 # include <arb_assert.h>
 #endif
@@ -117,15 +113,16 @@ public:
 
 template <int I> class SQ_GroupData_Impl : public SQ_GroupData {
     SQ_GroupData_Impl(const SQ_GroupData_Impl& other);
+    SQ_GroupData_Impl& operator = (const SQ_GroupData_Impl& Other);
 
 public:
     SQ_GroupData_Impl() {
         consensus = 0;
     }
-
     virtual ~SQ_GroupData_Impl() OVERRIDE;
 
-    SQ_GroupData_Impl& operator=(const SQ_GroupData_Impl& other) {
+    SQ_GroupData_Impl& operator = (const SQ_GroupData& Other) OVERRIDE {
+        const SQ_GroupData_Impl& other = dynamic_cast<const SQ_GroupData_Impl&>(Other);
         seq_assert(other.size>0 && other.initialized);
 
         if (!initialized) SQ_init_consensus(other.size);
@@ -160,8 +157,8 @@ public:
     SQ_GroupData_RNA *clone() const {
         return new SQ_GroupData_RNA;
     }
-    SQ_GroupData_RNA& operator = (const SQ_GroupData& other) {
-        Base::operator=(*DOWNCAST(const Base*, &other));
+    SQ_GroupData_RNA& operator = (const SQ_GroupData& other) OVERRIDE {
+        Base::operator=(other);
         return *this;
     }
 
@@ -181,8 +178,8 @@ public:
     SQ_GroupData_PRO *clone() const {
         return new SQ_GroupData_PRO;
     }
-    SQ_GroupData_PRO& operator = (const SQ_GroupData& other) {
-        Base::operator=(*DOWNCAST(const Base*, &other));
+    SQ_GroupData_PRO& operator = (const SQ_GroupData& other) OVERRIDE {
+        Base::operator=(other);
         return *this;
     }
 
