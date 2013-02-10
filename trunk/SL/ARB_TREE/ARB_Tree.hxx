@@ -246,17 +246,19 @@ public:
 };
 
 // macros to overwrite accessors in classes derived from ARB_tree_root or ARB_tree:
-#define DEFINE_TREE_ROOT_ACCESSORS(RootType, TreeType)                  \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, ARB_tree_root::get_root_node()); \
+#define DEFINE_TREE_ROOT_ACCESSORS(RootType, TreeType)                                  \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, ARB_tree_root::get_root_node())
 
-#define DEFINE_TREE_ACCESSORS(RootType, TreeType)                       \
-    DEFINE_DOWNCAST_ACCESSORS(RootType, get_tree_root, ARB_tree::get_tree_root()); \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_father, father); \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_leftson, leftson); \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_rightson, rightson); \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_brother, ARB_tree::get_brother()); \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, ARB_tree::get_root_node()); \
+#define DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)                                       \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_father, father);                            \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_leftson, leftson);                          \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_rightson, rightson);                        \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_brother, ARB_tree::get_brother());          \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, ARB_tree::get_root_node())
 
+#define DEFINE_TREE_ACCESSORS(RootType, TreeType)                                       \
+    DEFINE_DOWNCAST_ACCESSORS(RootType, get_tree_root, ARB_tree::get_tree_root());      \
+    DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)
 
 #if defined(CHECK_TREE_STRUCTURE)
 #define ASSERT_VALID_TREE(tree) (tree)->assert_valid()
