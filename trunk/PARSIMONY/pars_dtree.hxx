@@ -16,8 +16,11 @@
 #endif
 
 class arb_progress;
+class ArbParsimony;
 
-class AWT_graphic_parsimony : public AWT_graphic_tree {
+class AWT_graphic_parsimony : public AWT_graphic_tree, virtual Noncopyable {
+    ArbParsimony& parsimony;
+
     virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL cd2);
     /* init gcs, if any gc is changed you may call
        AWT_expose_cb(aw_window,ntw,cd2);
@@ -30,12 +33,11 @@ class AWT_graphic_parsimony : public AWT_graphic_tree {
                          AW_event_type type, AW_pos x, AW_pos y,
                          AW_clicked_line *cl, AW_clicked_text *ct);
 public:
-    AWT_graphic_parsimony(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
+    AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_);
 
 };
 
 void PARS_tree_init(AWT_graphic_tree *agt);
-void PARS_optimizer_cb(AP_tree *tree, arb_progress& progress);
 
 #else
 #error pars_dtree.hxx included twice
