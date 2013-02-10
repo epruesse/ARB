@@ -142,6 +142,7 @@ if [ "$args" = "help" -o "$args" = "-h" -o "$args" = "--help" ]; then
     echo "Usage:"
     echo "       arb                  # startup arb intro window"
     echo "       arb [ntargs]         # start arb with arguments"
+    echo "       arb shell            # startup arb environment, but do not run arb"
     echo "       arb help             # show help"
     echo "       arb trace [ntargs]   # trace arb (to detect errors)"
     echo ""
