@@ -20,10 +20,10 @@
 #define GCC_PATCHLEVEL_CODE ((GCC_VERSION_CODE * 100) + __GNUC_PATCHLEVEL__)
 
 // check required gcc version:
-#if (GCC_VERSION_CODE > 403) // gcc 4.3 or newer
+#if (GCC_VERSION_CODE >= 403) // gcc 4.3 or newer
 # define GCC_VERSION_OK
 #else
-# if (GCC_VERSION_CODE > 402) // gcc 4.2 is ok for clang
+# if (GCC_VERSION_CODE >= 402) // gcc 4.2 is ok for clang
 #  ifdef __clang__
 #   define GCC_VERSION_OK
 #  endif
