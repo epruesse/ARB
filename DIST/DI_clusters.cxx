@@ -310,9 +310,7 @@ public:
     virtual void init_tree() { update_leaf_counters(); }
     // ARB_countedTree interface end
 
-    GroupTree *get_leftson() { return DOWNCAST(GroupTree*, leftson); }
-    GroupTree *get_rightson() { return DOWNCAST(GroupTree*, rightson); }
-    GroupTree *get_father() { return DOWNCAST(GroupTree*, father); }
+    DEFINE_TREE_RELATIVES_ACCESSORS(GroupTree);
 
     void map_species2tip(Species2Tip& mapping);
 
@@ -449,9 +447,11 @@ public:
     ARB_ERROR save_modified_tree();
     void      load_tree();
 
+    DEFINE_DOWNCAST_ACCESSORS(GroupTree, get_root_node, tree_root->get_root_node());
+
     GroupTree *find_best_matching_subtree(ClusterPtr cluster);
     void update_group(ClusterPtr cluster); // create or delete group for cluster
-    string generate_group_name(ClusterPtr cluster, const GroupTree *group_node); 
+    string generate_group_name(ClusterPtr cluster, const GroupTree *group_node);
 
     bool matches_current_prefix(const char *groupname) const {
         return strstr(groupname, cluster_prefix.c_str()) == groupname;
@@ -475,7 +475,7 @@ void GroupBuilder::load_tree() {
     else {
         changes.clear();
 
-        GroupTree *tree = DOWNCAST(GroupTree*, tree_root->get_root_node());
+        GroupTree *tree = get_root_node();
         tree->update_leaf_counters();
         tree->map_species2tip(species2tip);
     }
@@ -628,8 +628,7 @@ GroupTree *GroupBuilder::find_best_matching_subtree(ClusterPtr cluster) {
 
             if (!error) {
                 // top-down search for best matching node
-                GroupTree *root_node  = DOWNCAST(GroupTree*, tree_root->get_root_node());
-                group_node = find_group_position(root_node, cluster->get_member_count());
+                group_node = find_group_position(get_root_node(), cluster->get_member_count());
             }
         }
     }
@@ -724,7 +723,7 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
         }
 
         if (error) bad_cluster = cluster;
-        DOWNCAST(GroupTree*, tree_root->get_root_node())->clear_tags();
+        get_root_node()->clear_tags();
     }
 }
 

@@ -58,7 +58,7 @@ public:
     ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_);
     virtual ~ClusterTreeRoot() OVERRIDE;
 
-    ClusterTree *get_root_node() { return DOWNCAST(ClusterTree*, ARB_tree_root::get_root_node()); }
+    DEFINE_DOWNCAST_ACCESSORS(ClusterTree, get_root_node, ARB_tree_root::get_root_node());
 
     GB_ERROR find_clusters();
     size_t get_minClusterSize() const { return minClusterSize; }

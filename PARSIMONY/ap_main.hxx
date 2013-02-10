@@ -14,6 +14,9 @@
 #ifndef AP_BUFFER_HXX
 #include "AP_buffer.hxx"
 #endif
+#ifndef TREEDISPLAY_HXX
+#include <TreeDisplay.hxx>
+#endif
 
 #define AWAR_ALIGNMENT        "tmp/pars/alignment"
 #define AWAR_FILTER_NAME      "tmp/pars/filter/name"
@@ -72,7 +75,9 @@ public:
 
     void set_tree_root(AWT_graphic_tree *agt_);
     AWT_graphic_tree *get_tree_root() { return agt; }
-    AP_tree_nlen *get_root_node();
+
+    DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
+
     const char *get_aliname() const;
     unsigned long get_user_push_counter() const { return user_push_counter; }
 

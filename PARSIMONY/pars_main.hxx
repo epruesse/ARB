@@ -26,7 +26,7 @@ struct PARS_global {
     AW_root          *awr;
     AWT_graphic_tree *tree;
 
-    AP_tree_nlen *get_root_node();
+    DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, tree->get_root_node());
 };
 
 extern PARS_global *GLOBAL_PARS;

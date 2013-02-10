@@ -30,10 +30,6 @@
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 
-AP_tree_nlen *PARS_global::get_root_node() {
-    return DOWNCAST(AP_tree_nlen*, tree->get_root_node());
-}
-
 static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
 
@@ -175,12 +171,10 @@ static void PARS_kernighan_cb(AP_tree *tree) {
 }
 
 void PARS_optimizer_cb(AP_tree *tree, arb_progress& progress) {
-    AWT_graphic_tree *agt          = GLOBAL_PARS->tree;
-    AP_tree          *oldrootleft  = agt->get_root_node()->get_leftson();
-    AP_tree          *oldrootright = agt->get_root_node()->get_rightson();
-
-    AP_FLOAT org_pars  = DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
-    AP_FLOAT prev_pars = org_pars;
+    AP_tree        *oldrootleft  = GLOBAL_PARS->get_root_node()->get_leftson();
+    AP_tree        *oldrootright = GLOBAL_PARS->get_root_node()->get_rightson();
+    const AP_FLOAT  org_pars     = GLOBAL_PARS->get_root_node()->costs();
+    AP_FLOAT        prev_pars    = org_pars;
 
     progress.subtitle(GBS_global_string("Old parsimony: %.1f", org_pars));
 
@@ -189,8 +183,7 @@ void PARS_optimizer_cb(AP_tree *tree, arb_progress& progress) {
 
         if (nni_pars == prev_pars) { // NNI did not reduce costs -> kern-lin
             PARS_kernighan_cb(tree);
-            AP_FLOAT ker_pars = DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
-            
+            AP_FLOAT ker_pars = GLOBAL_PARS->get_root_node()->costs();
             if (ker_pars == prev_pars) break; // kern-lin did not improve tree -> done
             prev_pars = ker_pars;
         }
@@ -203,7 +196,7 @@ void PARS_optimizer_cb(AP_tree *tree, arb_progress& progress) {
     if (oldrootleft->father == oldrootright) oldrootleft->set_root();
     else oldrootright->set_root();
 
-    DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
+    GLOBAL_PARS->get_root_node()->costs();
 }
 
 AWT_graphic_parsimony::AWT_graphic_parsimony(AW_root *root, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)

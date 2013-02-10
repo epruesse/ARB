@@ -115,6 +115,11 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -122,6 +127,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 AP_tree_nlen.o: AP_buffer.hxx
 AP_tree_nlen.o: ap_main.hxx
@@ -146,7 +152,12 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/cb.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -155,6 +166,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 PARS_debug.o: pars_debug.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/ad_prot.h
