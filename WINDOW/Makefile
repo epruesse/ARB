@@ -130,6 +130,7 @@ AW_button.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_button.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_button.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_button.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_button.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_button.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_click.o: aw_base.hxx
@@ -145,6 +146,7 @@ AW_click.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_click.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_click.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_click.o: $(ARBHOME)/INCLUDE/gccver.h
+AW_click.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_click.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_debug.o: aw_base.hxx
@@ -178,6 +180,7 @@ AW_debug.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_debug.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_debug.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_debug.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_debug.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_debug.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_device.o: aw_base.hxx
@@ -202,6 +205,7 @@ AW_device.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_device.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_device.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_device.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_device.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_device.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_edit.o: aw_base.hxx
@@ -274,6 +278,7 @@ AW_font_group.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/gccver.h
+AW_font_group.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_global_awars.o: aw_awar.hxx
@@ -473,6 +478,7 @@ AW_print.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_print.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_print.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_print.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_print.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_print.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_question.o: aw_base.hxx
@@ -550,6 +556,7 @@ AW_size.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_size.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_size.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_size.o: $(ARBHOME)/INCLUDE/gccver.h
+AW_size.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_size.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_status.o: aw_awar.hxx
@@ -627,6 +634,7 @@ AW_window.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_window.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_window.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_window.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_window.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_window.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_window_Xm_interface.o: aw_base.hxx
@@ -653,6 +661,7 @@ AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_xfig.o: aw_base.hxx
@@ -741,4 +750,5 @@ AW_Xm.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/gccver.h
+AW_Xm.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/test_global.h

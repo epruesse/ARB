@@ -200,6 +200,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/servercntrl.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/smartptr.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/static_assert.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/test_global.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/test_unit.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
@@ -361,6 +362,7 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/smartptr.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/static_assert.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/test_global.h
 
 MP_Window.o: MP_externs.hxx

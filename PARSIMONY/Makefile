@@ -53,6 +53,7 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AP_main.o: AP_buffer.hxx
@@ -87,6 +88,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/test_global.h
 AP_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
@@ -118,6 +120,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AP_tree_nlen.o: AP_buffer.hxx
@@ -150,6 +153,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PARS_debug.o: pars_debug.hxx
@@ -220,6 +224,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
@@ -286,6 +291,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_main.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/nds.h
 PARS_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+PARS_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_main.o: $(ARBHOME)/INCLUDE/test_global.h
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx

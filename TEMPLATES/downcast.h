@@ -15,6 +15,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef STATIC_ASSERT_H
+#include "static_assert.h"
+#endif
 
 #if defined(DEBUG)
 #define SAFE_DOWNCASTS
