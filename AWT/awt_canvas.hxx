@@ -11,6 +11,11 @@
 #include <attributes.h>
 #endif
 
+#ifndef AW_POSITION_HXX
+#include <aw_position.hxx>
+#endif
+
+
 class AWT_canvas;
 class AW_device;
 class AW_clicked_line;
@@ -159,7 +164,7 @@ public:
                          int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
                          AW_event_type type, AW_pos x, AW_pos y,
                          AW_clicked_line *cl, AW_clicked_text *ct);
-    void text(AW_device *device, char *text);
+    virtual void text(AW_device *device, char *text);
 
 };
 
@@ -167,13 +172,13 @@ class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
     // a partly implementation of AWT_graphic
 public:
     AWT_nonDB_graphic() {}
-    virtual ~AWT_nonDB_graphic() OVERRIDE {}
+    virtual ~AWT_nonDB_graphic() {}
 
     // dummy functions, only spittings out warnings:
-    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
-    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
-    int  check_update(GBDATA *gb_main) OVERRIDE;
-    void update(GBDATA *gb_main) OVERRIDE;
+    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
+    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
+    int  check_update(GBDATA *gb_main);
+    void update(GBDATA *gb_main);
 };
 
 

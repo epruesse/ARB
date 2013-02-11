@@ -56,9 +56,9 @@ class ClusterTreeRoot : public ARB_tree_root {
 
 public:
     ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_);
-    virtual ~ClusterTreeRoot() OVERRIDE;
+    virtual ~ClusterTreeRoot();
 
-    DEFINE_DOWNCAST_ACCESSORS(ClusterTree, get_root_node, ARB_tree_root::get_root_node());
+    ClusterTree *get_root_node() { return DOWNCAST(ClusterTree*, ARB_tree_root::get_root_node()); }
 
     GB_ERROR find_clusters();
     size_t get_minClusterSize() const { return minClusterSize; }
@@ -152,7 +152,7 @@ public:
         , worstKnownDistance(NULL)
     {}
 
-    virtual ~ClusterTree() OVERRIDE {
+    virtual ~ClusterTree() {
         delete worstKnownDistance;
         delete sequenceDists;
         delete branchDists;
@@ -160,12 +160,12 @@ public:
     }
     DEFINE_TREE_ACCESSORS(ClusterTreeRoot, ClusterTree);
 
-    virtual ClusterTree *dup() const OVERRIDE {              // create new ClusterTree element from prototype
+    virtual ClusterTree *dup() const {              // create new ClusterTree element from prototype
         return new ClusterTree(const_cast<ClusterTreeRoot*>(get_tree_root()));
     }
 
     size_t get_cluster_count() const { return clus_count; }
-    size_t get_leaf_count() const OVERRIDE { return leaf_count; }
+    size_t get_leaf_count() const { return leaf_count; }
     size_t get_depth() const { return depth; }
 
 #if defined(TRACE_DIST_CALC)
@@ -180,7 +180,7 @@ public:
     ClusterTree *get_cluster(size_t num);           // this allows sequentiell access to clusters
     ClusterState get_state() const { return state; }
 
-    void init_tree() OVERRIDE;
+    void init_tree();
     void detect_clusters(arb_progress& progress);
 
     const NodeValues *get_branch_depths() {
@@ -205,7 +205,7 @@ public:
 };
 
 struct UseAnyTree : public ARB_tree_predicate {
-    bool selects(const ARB_tree&) const OVERRIDE { return true; }
+    bool selects(const ARB_tree&) const { return true; }
 };
 
 #else

@@ -5,7 +5,6 @@
 //
 // ================================================================
 
-
 #include "embl.h"
 #include "genbank.h"
 #include "macke.h"
@@ -150,7 +149,6 @@ static void to_macke(const FormattedFile& in, const char *outf) {
             reader->rewind();
         }
     }
-    write.expect_written();
 }
 
 void convert(const FormattedFile& in, const FormattedFile& out) {
@@ -186,7 +184,6 @@ void convert(const FormattedFile& in, const FormattedFile& out) {
                     write_to_embl(write, reader->get_data(), seq);
                 }
             }
-            write.expect_written();
             break;
         }
         case MACKE:     to_macke(in, out.name()); break;

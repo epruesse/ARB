@@ -67,10 +67,8 @@ DBwriter.o: $(ARBHOME)/INCLUDE/attributes.h
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-DBwriter.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DBwriter.o: $(ARBHOME)/INCLUDE/dupstr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
-DBwriter.o: $(ARBHOME)/INCLUDE/gccver.h
 DBwriter.o: $(ARBHOME)/INCLUDE/GEN.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/items.h
 DBwriter.o: $(ARBHOME)/INCLUDE/Location.h
@@ -84,9 +82,7 @@ Feature.o: types.h
 Feature.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Feature.o: $(ARBHOME)/INCLUDE/arb_core.h
 Feature.o: $(ARBHOME)/INCLUDE/arbtools.h
-Feature.o: $(ARBHOME)/INCLUDE/cxxforward.h
 Feature.o: $(ARBHOME)/INCLUDE/dupstr.h
-Feature.o: $(ARBHOME)/INCLUDE/gccver.h
 Feature.o: $(ARBHOME)/INCLUDE/Location.h
 Feature.o: $(ARBHOME)/INCLUDE/smartptr.h
 Feature.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -117,10 +113,8 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/attributes.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GenomeImport.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/dupstr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/FileBuffer.h
-GenomeImport.o: $(ARBHOME)/INCLUDE/gccver.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/Location.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/smartptr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -146,10 +140,8 @@ Importer.o: $(ARBHOME)/INCLUDE/arbdb.h
 Importer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Importer.o: $(ARBHOME)/INCLUDE/arbtools.h
 Importer.o: $(ARBHOME)/INCLUDE/attributes.h
-Importer.o: $(ARBHOME)/INCLUDE/cxxforward.h
 Importer.o: $(ARBHOME)/INCLUDE/dupstr.h
 Importer.o: $(ARBHOME)/INCLUDE/FileBuffer.h
-Importer.o: $(ARBHOME)/INCLUDE/gccver.h
 Importer.o: $(ARBHOME)/INCLUDE/Location.h
 Importer.o: $(ARBHOME)/INCLUDE/smartptr.h
 Importer.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -161,9 +153,7 @@ MetaInfo.o: types.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/arb_core.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/arbtools.h
-MetaInfo.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/dupstr.h
-MetaInfo.o: $(ARBHOME)/INCLUDE/gccver.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/RegExpr.hxx
 MetaInfo.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -173,8 +163,6 @@ SequenceBuffer.o: types.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/arb_core.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
-SequenceBuffer.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
-SequenceBuffer.o: $(ARBHOME)/INCLUDE/gccver.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/smartptr.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/test_global.h

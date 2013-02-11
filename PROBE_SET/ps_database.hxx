@@ -46,7 +46,7 @@ private:
     PS_NodePtr     db_path;
     SpeciesID      db_MAX_ID;
     SpeciesID      db_MIN_ID;
-    void callback(void *_caller) OVERRIDE;
+    void callback(void *_caller);
 
 public:
     static const bool   READONLY  = true;
@@ -164,7 +164,7 @@ public:
         reinit(_name, _readonly);
     }
 
-    virtual ~PS_Database() OVERRIDE {
+    virtual ~PS_Database() {
         if (db_file) delete db_file;
         db_name2id_map.clear();
         db_id2name_map.clear();

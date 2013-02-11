@@ -126,15 +126,15 @@ public:
     AP_rates *rates;
 
     AP_tree_root(AliView *aliView, const AP_tree& tree_proto, AP_sequence *seq_proto, bool add_delete_callbacks);
-    virtual ~AP_tree_root() OVERRIDE;
+    virtual ~AP_tree_root();
     DEFINE_TREE_ROOT_ACCESSORS(AP_tree_root, AP_tree);
 
     // ARB_tree_root interface
 
-    virtual void change_root(ARB_tree *old, ARB_tree *newroot) OVERRIDE;
+    virtual void change_root(AP_tree *old, AP_tree *newroot);
 
-    virtual GB_ERROR loadFromDB(const char *name) OVERRIDE;
-    virtual GB_ERROR saveToDB() OVERRIDE;
+    virtual GB_ERROR loadFromDB(const char *name);
+    virtual GB_ERROR saveToDB();
 
     // AP_tree_root interface
 
@@ -218,11 +218,11 @@ private:
 public:
 
     explicit AP_tree(AP_tree_root *tree_root);
-    virtual ~AP_tree() OVERRIDE; // leave this here to force creation of virtual table
+    virtual ~AP_tree(); // leave this here to force creation of virtual table
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
 
     // ARB_tree interface
-    virtual AP_tree *dup() const OVERRIDE;
+    virtual AP_tree *dup() const;
     // ARB_tree interface (end)
 
     int compute_tree(GBDATA *gb_main);
@@ -231,8 +231,9 @@ public:
     int arb_tree_leafsum2();                        // count all leafs
 
     void calc_hidden_flag(int father_is_hidden);
-    int  calc_color();                        // start a transaction first
-    int  calc_color_probes(GB_HASH *hashptr); // new function for coloring the tree; ak
+    virtual int calc_color();                       // start a transaction first
+
+    virtual int calc_color_probes(GB_HASH *hashptr); // new function for coloring the tree; ak
 
     GBT_LEN arb_tree_min_deep();
     GBT_LEN arb_tree_deep();
@@ -253,14 +254,14 @@ public:
     void bootstrap2branchlen();                     // copy bootstraps to branchlengths
     void branchlen2bootstrap();                     // copy branchlengths to bootstraps
 
-    virtual void move_gbt_info(GBT_TREE *tree) OVERRIDE;
+    virtual void move_gbt_info(GBT_TREE *tree);
 
     GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
     GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_tree_root
 
     virtual AP_UPDATE_FLAGS check_update();
 
-    void update();
+    virtual void update();
 
     int get_linewidth() const {
         if (!father) return 0;
@@ -292,7 +293,7 @@ public:
     void replace_self(AP_tree *new_son);
     void set_brother(AP_tree *new_son);
 
-    void clear_branch_flags();
+    virtual void clear_branch_flags();
 
     void touch_branch() { const_cast<AP_tree*>(flag_branch())->br.touched = 1; }
     int get_branch_flag() const { return flag_branch()->br.touched; }

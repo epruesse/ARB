@@ -36,7 +36,7 @@ struct Emblref {
 };
 
 class Embl : public InputFormat, public RefContainer<Emblref> { // derived from a Noncopyable
-    char *create_id() const OVERRIDE {
+    char *create_id() const {
         char buf[TOKENSIZE];
         embl_key_word(ID, 0, buf);
         return strdup(buf);
@@ -64,7 +64,7 @@ public:
         keywords    = no_content();
         dr          = no_content();
     }
-    virtual ~Embl() OVERRIDE {
+    virtual ~Embl() {
         freenull(ID);
         freenull(dateu);
         freenull(datec);
@@ -76,8 +76,8 @@ public:
     }
 
     // InputFormat interface
-    void reinit() OVERRIDE { INPLACE_RECONSTRUCT(Embl, this); }
-    Format format() const OVERRIDE { return EMBL; }
+    void reinit() { INPLACE_RECONSTRUCT(Embl, this); }
+    Format format() const { return EMBL; }
 };
 
 class EmblSwissprotReader : public SimpleFormatReader {
@@ -90,8 +90,8 @@ public:
         embl_key_word(line() + offset, 0, key);
         return shorttimecopy(key);
     }
-    bool read_one_entry(Seq& seq) OVERRIDE __ATTR__USERESULT;
-    InputFormat& get_data() OVERRIDE { return data; }
+    bool read_one_entry(Seq& seq) __ATTR__USERESULT;
+    InputFormat& get_data() { return data; }
 };
 
 class EmblParser: public Parser {
@@ -100,9 +100,9 @@ class EmblParser: public Parser {
     void parse_keyed_section(const char *key);
 public:
     EmblParser(Embl& embl_, Seq& seq_, Reader& reader_) : Parser(seq_, reader_), embl(embl_) {}
-    void parse_section() OVERRIDE;
+    void parse_section();
 
-    const Embl& get_data() const OVERRIDE { return embl; }
+    const Embl& get_data() const { return embl; }
 };
 
 #else

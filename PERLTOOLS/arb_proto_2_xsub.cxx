@@ -45,9 +45,9 @@ class ProgramError : public Error {
 public:
     ProgramError(string message) : error(message) {}
     ProgramError(const char *message) : error(message) {}
-    virtual ~ProgramError() OVERRIDE {}
+    virtual ~ProgramError() {}
 
-    void print() const OVERRIDE {
+    void print() const {
         fprintf(stderr, "arb_proto_2_xsub: Error: %s\n", error.c_str());
     }
 };
@@ -57,9 +57,9 @@ class InputFileError : public Error {
 public:
     InputFileError(FileBuffer& fileBuffer, string message)      : located_error(fileBuffer.lineError(message)) {}
     InputFileError(FileBuffer& fileBuffer, const char *message) : located_error(fileBuffer.lineError(message)) {}
-    virtual ~InputFileError() OVERRIDE {}
+    virtual ~InputFileError() {}
 
-    void print() const OVERRIDE {
+    void print() const {
         fputs(located_error.c_str(), stderr);
         fputc('\n', stderr);
     }
@@ -104,7 +104,7 @@ public:
         , eol_comment(eolComment)
     {}
 
-    bool getLine(string& line) OVERRIDE {
+    bool getLine(string& line) {
         if (FileBuffer::getLine(line)) {
             size_t open = line.find(open_comment);
             size_t eol  = line.find(eol_comment);
@@ -132,12 +132,12 @@ public:
 
 // --------------------------------------------------------------------------------
 
-inline bool is_empty_code(const char *code) { return !code[0]; }
+inline bool is_empty(const char *code) { return !code[0]; }
 inline bool contains_preprozessorCode(const char *code) { return strchr(code, '#') != NULL; }
 inline bool contains_braces(const char *code) { return strpbrk(code, "{}") != NULL; }
 inline bool is_prototype(const char *code) {
     return
-        !is_empty_code(code)             &&
+        !is_empty(code)                  &&
         !contains_preprozessorCode(code) &&
         !contains_braces(code);
 }

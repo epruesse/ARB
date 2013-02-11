@@ -11,6 +11,8 @@
 #include "AP_error.hxx"
 #include "ap_tree_nlen.hxx"
 
+#include <TreeDisplay.hxx>
+
 using namespace std;
 
 // ---------------
@@ -192,6 +194,10 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
     }
 
     if (node->push(mode, stack_level))  stack->push(node);
+}
+
+AP_tree_nlen *AP_main::get_root_node() {
+    return DOWNCAST(AP_tree_nlen*, agt->get_root_node());
 }
 
 void AP_main::set_tree_root(AWT_graphic_tree *agt_) {

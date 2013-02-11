@@ -13,6 +13,9 @@
 
 #include "awt.hxx"
 #include "awt_hexdump.hxx"
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 
 #include <aw_window.hxx>
 #include <aw_msg.hxx>

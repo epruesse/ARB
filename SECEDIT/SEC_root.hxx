@@ -260,10 +260,10 @@ enum SEC_BASE_TYPE {
 class SEC_base : public SEC_constrainted, public SEC_oriented, virtual Noncopyable { // loop or helix
     SEC_root *root;
 
-    virtual SEC_base *get_parent() OVERRIDE = 0;
+    virtual SEC_base *get_parent() = 0;
 public:
     SEC_base(SEC_root *Root) : root(Root) {}
-    virtual ~SEC_base() OVERRIDE {}
+    virtual ~SEC_base() {}
 
     virtual SEC_BASE_TYPE getType() const        = 0;
     virtual const Position& get_fixpoint() const = 0;
@@ -313,11 +313,11 @@ class SEC_helix : public SEC_base { // derived from a Noncopyable
     SEC_helix_strand *strand_to_root;
     size_t base_length; // max. # of bases in any strand
 
-    SEC_base *get_parent() OVERRIDE;
+    SEC_base *get_parent();
 public:
 
     SEC_helix(SEC_root *root, SEC_helix_strand *to_root, SEC_helix_strand *from_root);
-    virtual ~SEC_helix() OVERRIDE {}
+    virtual ~SEC_helix() {}
 
     void calculate_helix_size();
     void calculate_helix_coordinates(); // assumes root-side loop has correct coordinates
@@ -350,15 +350,15 @@ public:
 #endif // CHECK_INTEGRITY
 
     // SEC_oriented interface:
-    void invalidate_sub_angles() OVERRIDE;
+    void invalidate_sub_angles();
 
     // SEC_base interface :
-    SEC_BASE_TYPE getType() const OVERRIDE { return SEC_HELIX; }
-    void reset_angles() OVERRIDE;
-    const Position& get_fixpoint() const OVERRIDE;
+    SEC_BASE_TYPE getType() const { return SEC_HELIX; }
+    void reset_angles();
+    const Position& get_fixpoint() const;
 
-    void orientationChanged() OVERRIDE; // recalc coordinates
-    void sizeChanged() OVERRIDE; // recalc size and coordinates
+    void orientationChanged(); // recalc coordinates
+    void sizeChanged(); // recalc size and coordinates
 };
 
 // -------------------------
@@ -383,13 +383,13 @@ class SEC_helix_strand : public SEC_base_part { // derived from a Noncopyable
     void set_other_strand(SEC_helix_strand *other_strand_) { other_strand = other_strand_; }
 
     // SEC_base_part interface
-    SEC_base *get_parent()  OVERRIDE { return helix_info; }
-    SEC_base_part *get_next() OVERRIDE;
+    SEC_base *get_parent() { return helix_info; }
+    SEC_base_part *get_next();
 
 public:
 
     SEC_helix_strand();
-    virtual ~SEC_helix_strand() OVERRIDE;
+    virtual ~SEC_helix_strand();
 
     GB_ERROR read(SEC_loop *loop_, std::istream & in, int version);
 
@@ -474,13 +474,13 @@ private:
     SEC_loop *loop; // the loop containing 'this'
 
     // SEC_base_part interface
-    SEC_base *get_parent() OVERRIDE;
-    SEC_base_part *get_next() OVERRIDE { return get_next_strand(); }
+    SEC_base *get_parent();
+    SEC_base_part *get_next() { return get_next_strand(); }
 
 public:
 
     SEC_segment();
-    virtual ~SEC_segment() OVERRIDE;
+    virtual ~SEC_segment();
 
     void save(std::ostream & out, int indent, const XString& x_string);
     GB_ERROR read(SEC_loop *loop_, std::istream & in, int version);
@@ -553,12 +553,12 @@ class SEC_loop : public SEC_base { // derived from a Noncopyable
     void compute_circumference();
     void compute_radius();
 
-    SEC_base *get_parent() OVERRIDE { return is_root_loop() ? 0 : get_rootside_helix(); }
+    SEC_base *get_parent() { return is_root_loop() ? 0 : get_rootside_helix(); }
 
 public:
 
     SEC_loop(SEC_root *root_);
-    virtual ~SEC_loop() OVERRIDE;
+    virtual ~SEC_loop();
 
     void save(std::ostream & out, int indent, const XString& x_string);
     GB_ERROR read(SEC_helix_strand *rootside_strand, std::istream & in, int version, double loop_angle);
@@ -592,20 +592,20 @@ public:
 #endif // CHECK_INTEGRITY
 
     // SEC_oriented interface:
-    void invalidate_sub_angles() OVERRIDE;
+    void invalidate_sub_angles();
 
     // SEC_base interface :
-    SEC_BASE_TYPE getType() const OVERRIDE { return SEC_LOOP; }
-    void reset_angles() OVERRIDE;
+    SEC_BASE_TYPE getType() const { return SEC_LOOP; }
+    void reset_angles();
 
-    const Position& get_fixpoint() const OVERRIDE {
+    const Position& get_fixpoint() const {
         // Note: does not return center for root-loop.
         SEC_helix *helix = get_fixpoint_helix();
         return helix->strandAwayFrom(this)->get_fixpoint();
     }
 
-    void orientationChanged() OVERRIDE;  // recalc coordinates
-    void sizeChanged() OVERRIDE; // recalc size and coordinates
+    void orientationChanged();  // recalc coordinates
+    void sizeChanged(); // recalc size and coordinates
 };
 
 // --------------------------

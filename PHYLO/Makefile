@@ -53,9 +53,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/cb.h
-PH_data.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_data.o: $(ARBHOME)/INCLUDE/dupstr.h
-PH_data.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_data.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_data.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -83,9 +81,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/cb.h
-PH_display.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_display.o: $(ARBHOME)/INCLUDE/dupstr.h
-PH_display.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_display.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_display.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -115,9 +111,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/cb.h
-PH_filt.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_filt.o: $(ARBHOME)/INCLUDE/dupstr.h
-PH_filt.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_filt.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_filt.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -151,9 +145,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/cb.h
-PH_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_main.o: $(ARBHOME)/INCLUDE/dupstr.h
-PH_main.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_main.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -175,9 +167,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/cb.h
-PH_matr.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
-PH_matr.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_matr.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -197,8 +187,6 @@ PH_root.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_root.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_root.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-PH_root.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_root.o: $(ARBHOME)/INCLUDE/dupstr.h
-PH_root.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_root.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_root.o: $(ARBHOME)/INCLUDE/test_global.h

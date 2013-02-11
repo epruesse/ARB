@@ -73,9 +73,7 @@ ali_aligner.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/bytestring.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/client.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/client_types.h
-ali_aligner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/dupstr.h
-ali_aligner.o: $(ARBHOME)/INCLUDE/gccver.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/server.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -101,9 +99,7 @@ ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/bytestring.h
-ali_arbdb.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/dupstr.h
-ali_arbdb.o: $(ARBHOME)/INCLUDE/gccver.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/server.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -140,9 +136,7 @@ ali_global.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_global.o: $(ARBHOME)/INCLUDE/bytestring.h
 ali_global.o: $(ARBHOME)/INCLUDE/client.h
 ali_global.o: $(ARBHOME)/INCLUDE/client_types.h
-ali_global.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ali_global.o: $(ARBHOME)/INCLUDE/dupstr.h
-ali_global.o: $(ARBHOME)/INCLUDE/gccver.h
 ali_global.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_global.o: $(ARBHOME)/INCLUDE/server.h
 ali_global.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -179,9 +173,7 @@ ali_main.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_main.o: $(ARBHOME)/INCLUDE/bytestring.h
 ali_main.o: $(ARBHOME)/INCLUDE/client.h
 ali_main.o: $(ARBHOME)/INCLUDE/client_types.h
-ali_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ali_main.o: $(ARBHOME)/INCLUDE/dupstr.h
-ali_main.o: $(ARBHOME)/INCLUDE/gccver.h
 ali_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_main.o: $(ARBHOME)/INCLUDE/server.h
 ali_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -194,8 +186,6 @@ ali_pathmap.o: ali_tarray.hxx
 ali_pathmap.o: ali_tlist.hxx
 ali_pathmap.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_pathmap.o: $(ARBHOME)/INCLUDE/attributes.h
-ali_pathmap.o: $(ARBHOME)/INCLUDE/cxxforward.h
-ali_pathmap.o: $(ARBHOME)/INCLUDE/gccver.h
 
 ali_prealigner.o: ali_aligner.hxx
 ali_prealigner.o: ali_arbdb.hxx
@@ -227,9 +217,7 @@ ali_prealigner.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/bytestring.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/client.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/client_types.h
-ali_prealigner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/dupstr.h
-ali_prealigner.o: $(ARBHOME)/INCLUDE/gccver.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/server.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -261,9 +249,7 @@ ali_profile.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ali_profile.o: $(ARBHOME)/INCLUDE/bytestring.h
 ali_profile.o: $(ARBHOME)/INCLUDE/client.h
 ali_profile.o: $(ARBHOME)/INCLUDE/client_types.h
-ali_profile.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ali_profile.o: $(ARBHOME)/INCLUDE/dupstr.h
-ali_profile.o: $(ARBHOME)/INCLUDE/gccver.h
 ali_profile.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_profile.o: $(ARBHOME)/INCLUDE/server.h
 ali_profile.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -292,9 +278,7 @@ ali_pt.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_pt.o: $(ARBHOME)/INCLUDE/bytestring.h
 ali_pt.o: $(ARBHOME)/INCLUDE/client.h
 ali_pt.o: $(ARBHOME)/INCLUDE/client_types.h
-ali_pt.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ali_pt.o: $(ARBHOME)/INCLUDE/dupstr.h
-ali_pt.o: $(ARBHOME)/INCLUDE/gccver.h
 ali_pt.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_pt.o: $(ARBHOME)/INCLUDE/server.h
 ali_pt.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -305,8 +289,6 @@ ali_sequence.o: ali_misc.hxx
 ali_sequence.o: ali_sequence.hxx
 ali_sequence.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_sequence.o: $(ARBHOME)/INCLUDE/attributes.h
-ali_sequence.o: $(ARBHOME)/INCLUDE/cxxforward.h
-ali_sequence.o: $(ARBHOME)/INCLUDE/gccver.h
 
 ali_solution.o: ali_arbdb.hxx
 ali_solution.o: ali_misc.hxx
@@ -333,9 +315,7 @@ ali_solution.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_solution.o: $(ARBHOME)/INCLUDE/bytestring.h
 ali_solution.o: $(ARBHOME)/INCLUDE/client.h
 ali_solution.o: $(ARBHOME)/INCLUDE/client_types.h
-ali_solution.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ali_solution.o: $(ARBHOME)/INCLUDE/dupstr.h
-ali_solution.o: $(ARBHOME)/INCLUDE/gccver.h
 ali_solution.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_solution.o: $(ARBHOME)/INCLUDE/server.h
 ali_solution.o: $(ARBHOME)/INCLUDE/servercntrl.h

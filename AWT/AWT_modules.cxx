@@ -26,22 +26,22 @@ void awt_create_order_buttons(AW_window *aws, awt_orderfun reorder_cb, AW_CL cl)
 
     int x, y; aws->get_at_position(&x, &y);
 
-    aws->callback((AW_CB)reorder_cb, ARM_TOP, cl); aws->create_button("moveTop", "#moveTop.bitmap", 0);
+    aws->callback((AW_CB)reorder_cb, ARM_TOP, cl); aws->create_button("moveTop", "#moveTop.xpm", 0);
 
     aws->at_newline();
     int yoff = aws->get_at_yposition()-y;
     awt_assert(yoff>0);
 
-    aws->at(x, y+1*yoff); aws->callback((AW_CB)reorder_cb, ARM_UP,     cl); aws->create_button("moveUp",     "#moveUp.bitmap",     0);
-    aws->at(x, y+2*yoff); aws->callback((AW_CB)reorder_cb, ARM_DOWN,   cl); aws->create_button("moveDown",   "#moveDown.bitmap",   0);
-    aws->at(x, y+3*yoff); aws->callback((AW_CB)reorder_cb, ARM_BOTTOM, cl); aws->create_button("moveBottom", "#moveBottom.bitmap", 0);
+    aws->at(x, y+1*yoff); aws->callback((AW_CB)reorder_cb, ARM_UP,     cl); aws->create_button("moveUp",     "#moveUp.xpm",     0);
+    aws->at(x, y+2*yoff); aws->callback((AW_CB)reorder_cb, ARM_DOWN,   cl); aws->create_button("moveDown",   "#moveDown.xpm",   0);
+    aws->at(x, y+3*yoff); aws->callback((AW_CB)reorder_cb, ARM_BOTTOM, cl); aws->create_button("moveBottom", "#moveBottom.xpm", 0);
 
     auto_at.restore(aws->_at);
 }
 
 inline const char *bitmap_name(bool rightwards, bool all) {
-    if (all) return rightwards ? "#moveAllRight.bitmap" : "#moveAllLeft.bitmap";
-    return rightwards ? "#moveRight.bitmap" : "#moveLeft.bitmap";
+    if (all) return rightwards ? "#moveAllRight.xpm" : "#moveAllLeft.xpm";
+    return rightwards ? "#moveRight.xpm" : "#moveLeft.xpm";
 }
 
 void awt_create_collect_buttons(AW_window *aws, bool collect_rightwards, awt_collectfun collect_cb, AW_CL cl) {

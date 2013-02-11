@@ -107,6 +107,7 @@ makedir() {
 # Generates some directories as well:
 makedir INCLUDE &&
 makedir INCLUDE/GL &&
+makedir INCLUDE/devices &&
 
 makedir NAMES_COM/GENC &&
 makedir NAMES_COM/GENH &&
@@ -115,6 +116,7 @@ makedir NAMES_COM/O &&
 makedir PROBE_COM/GENC &&
 makedir PROBE_COM/GENH &&
 makedir PROBE_COM/O &&
+
 
 makedir lib/help &&
 
@@ -148,7 +150,6 @@ symlink_file ../TEMPLATES/arb_algo.h INCLUDE/arb_algo.h &&
 symlink_file ../TEMPLATES/arb_backtrace.h INCLUDE/arb_backtrace.h &&
 symlink_file ../TEMPLATES/arb_debug.h INCLUDE/arb_debug.h &&
 symlink_file ../TEMPLATES/arb_defs.h INCLUDE/arb_defs.h &&
-symlink_file ../TEMPLATES/arb_early_check.h INCLUDE/arb_early_check.h &&
 symlink_file ../TEMPLATES/arb_global_defs.h INCLUDE/arb_global_defs.h &&
 symlink_file ../TEMPLATES/arb_error.h INCLUDE/arb_error.h &&
 symlink_file ../TEMPLATES/arb_str.h INCLUDE/arb_str.h &&
@@ -160,11 +161,8 @@ symlink_file ../TEMPLATES/bytestring.h INCLUDE/bytestring.h &&
 symlink_file ../TEMPLATES/cb.h INCLUDE/cb.h &&
 symlink_file ../TEMPLATES/ChecksumCollector.h INCLUDE/ChecksumCollector.h &&
 symlink_file ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
-symlink_file ../TEMPLATES/command_output.h INCLUDE/command_output.h &&
-symlink_file ../TEMPLATES/cxxforward.h INCLUDE/cxxforward.h &&
 symlink_file ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
 symlink_file ../TEMPLATES/dupstr.h INCLUDE/dupstr.h &&
-symlink_file ../TEMPLATES/gccver.h INCLUDE/gccver.h &&
 symlink_file ../TEMPLATES/output.h INCLUDE/output.h &&
 symlink_file ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
 symlink_file ../TEMPLATES/SigHandler.h INCLUDE/SigHandler.h &&
@@ -325,6 +323,17 @@ symlink_file ../WINDOW/aw_select.hxx INCLUDE/aw_select.hxx &&
 symlink_file ../WINDOW/aw_window.hxx INCLUDE/aw_window.hxx &&
 symlink_file ../WINDOW/aw_window_Xm_interface.hxx INCLUDE/aw_window_Xm_interface.hxx &&
 symlink_file ../XML/xml.hxx INCLUDE/xml.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_clipable.hxx INCLUDE/devices/aw_clipable.hxx  &&
+symlink_file ../../WINDOW_GTK/devices/aw_device.hxx INCLUDE/devices/aw_device.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_device_click.hxx INCLUDE/devices/aw_device_click.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_device_gtk.hxx INCLUDE/devices/aw_device_gtk.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_device_size.hxx INCLUDE/devices/aw_device_size.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_simple_device.hxx INCLUDE/devices/aw_simple_device.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_stylable.hxx INCLUDE/devices/aw_stylable.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_zoomable.hxx INCLUDE/devices/aw_zoomable.hxx  &&
+
+
+
 
 # gl stuff
 symlink_file ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h &&

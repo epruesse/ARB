@@ -79,14 +79,14 @@ public:
         : gcg_writer(gcg_writer_),
           used(0)
     {}
-    ~GcgCommentWriter() OVERRIDE {
+    ~GcgCommentWriter() {
         ca_assert(used == 0); // trailing \n has not been written
     }
 
-    bool ok() const OVERRIDE { return true; }
-    void throw_write_error() const OVERRIDE { ca_assert(0); }
-    void out(char ch) OVERRIDE;
-    const char *name() const OVERRIDE { return "comment-writer"; }
+    bool ok() const { return true; }
+    void throw_write_error() { ca_assert(0); }
+    void out(char ch);
+    const char *name() const { return "comment-writer"; }
 };
 
 class GcgWriter : public FileWriter { // derived from a Noncopyable
@@ -102,7 +102,10 @@ public:
           seq_written(false),
           writer(*this)
     {}
-    ~GcgWriter() OVERRIDE { free(species_name); }
+    ~GcgWriter() {
+        free(species_name);
+        FileWriter::seq_done(seq_written);
+    }
 
     void set_species_name(const char *next_name) {
         if (!seq_written) species_name = nulldup(next_name);
@@ -125,12 +128,6 @@ public:
             seq_written = true;
         }
     }
-
-    void expect_written() {
-        FileWriter::seq_done(seq_written);
-        seq_written = false;
-        FileWriter::expect_written();
-    }
 };
 
 void GcgCommentWriter::out(char ch) {
@@ -148,15 +145,14 @@ static void macke_to_gcg(const char *inf, const char *outf) {
     GcgWriter   out(outf);
 
     Seq seq;
-    if (reader.read_one_entry(seq)) {
-        Macke& macke = dynamic_cast<Macke&>(reader.get_data());
-        out.set_species_name(macke.get_id());
-        macke_seq_info_out(macke, out);
-        out.write_seq_data(seq);
+    if (!reader.read_one_entry(seq)) return;
 
-        reader.ignore_rest_of_file();
-    }
-    out.expect_written();
+    Macke& macke = dynamic_cast<Macke&>(reader.get_data());
+    out.set_species_name(macke.get_id());
+    macke_seq_info_out(macke, out);
+    out.write_seq_data(seq);
+
+    reader.ignore_rest_of_file();
 }
 
 static void genbank_to_gcg(const char *inf, const char *outf) {
@@ -166,17 +162,18 @@ static void genbank_to_gcg(const char *inf, const char *outf) {
     GenBank gbk;
     Seq     seq;
 
-    GenbankReader& greader = dynamic_cast<GenbankReader&>(*reader);
-    if (GenbankParser(gbk, seq, greader).parse_entry()) {
-        genbank_out_header(gbk, seq, write.comment_writer());
-        genbank_out_base_count(seq, write.comment_writer());
-        write.out("ORIGIN\n");
-        write.set_species_name(gbk.get_id());
-        write.write_seq_data(seq);
-
-        reader->ignore_rest_of_file();
+    {
+        GenbankReader& greader = dynamic_cast<GenbankReader&>(*reader);
+        if (!GenbankParser(gbk, seq, greader).parse_entry()) return;
     }
-    write.expect_written();
+
+    genbank_out_header(gbk, seq, write.comment_writer());
+    genbank_out_base_count(seq, write.comment_writer());
+    write.out("ORIGIN\n");
+    write.set_species_name(gbk.get_id());
+    write.write_seq_data(seq);
+
+    reader->ignore_rest_of_file();
 }
 
 static void embl_to_gcg(const char *inf, const char *outf) {
@@ -186,14 +183,13 @@ static void embl_to_gcg(const char *inf, const char *outf) {
     Embl embl;
     Seq  seq;
 
-    if (EmblParser(embl, seq, reader).parse_entry()) {
-        embl_out_header(embl, seq, write);
-        write.set_species_name(embl.get_id());
-        write.write_seq_data(seq);
+    if (!EmblParser(embl, seq, reader).parse_entry()) return;
 
-        reader.ignore_rest_of_file();
-    }
-    write.expect_written();
+    embl_out_header(embl, seq, write);
+    write.set_species_name(embl.get_id());
+    write.write_seq_data(seq);
+
+    reader.ignore_rest_of_file();
 }
 
 void to_gcg(const FormattedFile& in, const char *outf) {

@@ -62,9 +62,7 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_asciiprint.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_asciiprint.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -81,9 +79,7 @@ AWT_attributes.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-AWT_attributes.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -114,9 +110,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_canio.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_canio.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -142,9 +136,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_canvas.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_canvas.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -168,9 +160,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_config_manager.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_config_manager.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -198,9 +188,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -216,9 +204,7 @@ AWT_hexdump.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_hexdump.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_hexdump.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/test_unit.h
@@ -253,9 +239,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_input_mask.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_input_mask.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -280,9 +264,7 @@ AWT_macro.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -300,9 +282,7 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_map_key.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_map_key.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -314,9 +294,7 @@ AWT_modules.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWT_modules.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_modules.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_sel_boxes.o: awt.hxx
@@ -352,10 +330,8 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/FileBuffer.h
-AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/items.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -382,9 +358,7 @@ AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -411,9 +385,7 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_tables.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_tables.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -443,9 +415,7 @@ AWT_www.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_www.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_www.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_www.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_www.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_www.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_www.o: $(ARBHOME)/INCLUDE/test_global.h

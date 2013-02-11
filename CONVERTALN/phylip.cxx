@@ -119,6 +119,5 @@ void to_phylip(const FormattedFile& in, const char *outf, bool for_fastdnaml) {
     }
 
     write.seq_done(ali.get_count());
-    write.expect_written();
 }
 

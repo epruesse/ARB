@@ -50,21 +50,21 @@ public:
     int            *color_out_valid_till;           // color_out is valid up to
 
 private:
-    AP_FLOAT count_weighted_bases() const OVERRIDE;
+    AP_FLOAT count_weighted_bases() const;
 
-    void set(const char *sequence) OVERRIDE;
-    void unset() OVERRIDE;
+    void set(const char *sequence);
+    void unset();
 
 public:
 
     MostLikelySeq(const AliView *aliview, ST_ML *st_ml_);
-    ~MostLikelySeq() OVERRIDE;
+    ~MostLikelySeq();
 
     bool is_up_to_date() const { return up_to_date; }
 
-    AP_sequence *dup() const OVERRIDE;
-    AP_FLOAT     combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0) OVERRIDE;
-    void partial_match(const AP_sequence* part, long *overlap, long *penalty) const OVERRIDE;
+    AP_sequence *dup() const;
+    AP_FLOAT     combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0);
+    void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
 
     GB_ERROR bind_to_species(GBDATA *gb_species);
     void     unbind_from_species(bool remove_callbacks);

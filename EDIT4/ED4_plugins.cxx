@@ -45,33 +45,33 @@ public:
           gb_main(gb_main_), 
           seq_term(NULL)
     {}
-    virtual ~ED4_host() OVERRIDE {}
+    virtual ~ED4_host() {}
 
-    AW_root *get_application_root() const OVERRIDE { return aw_root; }
-    GBDATA *get_database() const OVERRIDE { return gb_main; }
+    AW_root *get_application_root() const { return aw_root; }
+    GBDATA *get_database() const { return gb_main; }
 
-    void announce_current_species(const char *species_name) OVERRIDE {
+    void announce_current_species(const char *species_name) {
         ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, has_species_name, (AW_CL)species_name);
         seq_term       = base ? base->to_sequence_terminal() : NULL;
     }
 
-    bool SAIs_visualized() const OVERRIDE { return ED4_ROOT->visualizeSAI; }
-    const char* get_SAI_background(int start, int end) const OVERRIDE {
+    bool SAIs_visualized() const { return ED4_ROOT->visualizeSAI; }
+    const char* get_SAI_background(int start, int end) const {
         return ED4_getSaiColorString(aw_root, start, end);
     }
 
-    const char* get_search_background(int start, int end) const OVERRIDE {
+    const char* get_search_background(int start, int end) const {
         return seq_term
             ? seq_term->results().buildColorString(seq_term, start, end)
             : 0;
     }
 
-    int get_base_position(int seq_position) const OVERRIDE {
+    int get_base_position(int seq_position) const {
         e4_assert(seq_term);
         return base_pos.get_base_position(seq_term, seq_position);
     }
 
-    void forward_event(AW_event *event) const OVERRIDE { ED4_remote_event(event); }
+    void forward_event(AW_event *event) const { ED4_remote_event(event); }
 };
 
 // ---------------

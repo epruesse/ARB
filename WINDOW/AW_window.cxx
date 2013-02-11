@@ -1729,10 +1729,7 @@ void aw_update_all_window_geometry_awars(AW_root *awr) {
 static const char *existingPixmap(const char *iconpath, const char *name) {
     const char *icon = GBS_global_string("%s/%s.xpm", iconpath, name);
 
-    if (!GB_is_regularfile(icon)) {
-        icon = GBS_global_string("%s/%s.bitmap", iconpath, name);
-        if (!GB_is_regularfile(icon)) icon = NULL;
-    }
+    if (!GB_is_regularfile(icon)) icon = NULL;
 
     return icon;
 }

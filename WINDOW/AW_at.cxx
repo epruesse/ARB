@@ -15,14 +15,7 @@
 
 #include <arbdb.h>
 
-AW_at::AW_at() {
-    memset((char*)this, 0, sizeof(AW_at));
 
-    length_of_buttons = 10;
-    height_of_buttons = 0;
-    shadow_thickness  = 2;
-    widget_mask       = AWM_ALL;
-}
 
 
 void AW_window::shadow_width (int shadow_thickness) { _at->shadow_thickness = shadow_thickness; }

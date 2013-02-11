@@ -306,15 +306,17 @@ public:
     {}
 
     // ARB_countedTree interface
-    virtual GroupTree *dup() const OVERRIDE { return new GroupTree(const_cast<ARB_tree_root*>(get_tree_root())); }
-    virtual void init_tree() OVERRIDE { update_leaf_counters(); }
+    virtual GroupTree *dup() const { return new GroupTree(const_cast<ARB_tree_root*>(get_tree_root())); }
+    virtual void init_tree() { update_leaf_counters(); }
     // ARB_countedTree interface end
 
-    DEFINE_TREE_RELATIVES_ACCESSORS(GroupTree);
+    GroupTree *get_leftson() { return DOWNCAST(GroupTree*, leftson); }
+    GroupTree *get_rightson() { return DOWNCAST(GroupTree*, rightson); }
+    GroupTree *get_father() { return DOWNCAST(GroupTree*, father); }
 
     void map_species2tip(Species2Tip& mapping);
 
-    size_t get_leaf_count() const OVERRIDE { return leaf_count; }
+    size_t get_leaf_count() const { return leaf_count; }
     size_t update_leaf_counters();
 
     void tag_leaf() {
@@ -447,11 +449,9 @@ public:
     ARB_ERROR save_modified_tree();
     void      load_tree();
 
-    DEFINE_DOWNCAST_ACCESSORS(GroupTree, get_root_node, tree_root->get_root_node());
-
     GroupTree *find_best_matching_subtree(ClusterPtr cluster);
     void update_group(ClusterPtr cluster); // create or delete group for cluster
-    string generate_group_name(ClusterPtr cluster, const GroupTree *group_node);
+    string generate_group_name(ClusterPtr cluster, const GroupTree *group_node); 
 
     bool matches_current_prefix(const char *groupname) const {
         return strstr(groupname, cluster_prefix.c_str()) == groupname;
@@ -475,7 +475,7 @@ void GroupBuilder::load_tree() {
     else {
         changes.clear();
 
-        GroupTree *tree = get_root_node();
+        GroupTree *tree = DOWNCAST(GroupTree*, tree_root->get_root_node());
         tree->update_leaf_counters();
         tree->map_species2tip(species2tip);
     }
@@ -518,7 +518,7 @@ class HasntCurrentClusterPrefix : public ARB_tree_predicate {
     const GroupBuilder& builder;
 public:
     HasntCurrentClusterPrefix(const GroupBuilder& builder_) : builder(builder_) {}
-    bool selects(const ARB_tree& tree) const OVERRIDE {
+    bool selects(const ARB_tree& tree) const {
         const char *groupname        = tree.group_name();
         bool        hasClusterPrefix = groupname && builder.matches_current_prefix(groupname);
         return !hasClusterPrefix;
@@ -534,7 +534,7 @@ string concatenate_name_parts(const list<string>& namepart) {
 }
 
 struct UseTreeRoot : public ARB_tree_predicate {
-    bool selects(const ARB_tree& tree) const OVERRIDE { return tree.is_root_node(); }
+    bool selects(const ARB_tree& tree) const { return tree.is_root_node(); }
 };
 
 string GroupBuilder::generate_group_name(ClusterPtr cluster, const GroupTree *group_node) {
@@ -628,7 +628,8 @@ GroupTree *GroupBuilder::find_best_matching_subtree(ClusterPtr cluster) {
 
             if (!error) {
                 // top-down search for best matching node
-                group_node = find_group_position(get_root_node(), cluster->get_member_count());
+                GroupTree *root_node  = DOWNCAST(GroupTree*, tree_root->get_root_node());
+                group_node = find_group_position(root_node, cluster->get_member_count());
             }
         }
     }
@@ -723,7 +724,7 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
         }
 
         if (error) bad_cluster = cluster;
-        get_root_node()->clear_tags();
+        DOWNCAST(GroupTree*, tree_root->get_root_node())->clear_tags();
     }
 }
 

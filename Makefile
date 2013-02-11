@@ -11,9 +11,9 @@
 # The ARB Makefile is aware of the following defines:
 #
 # BUILDHOST_64=0/1      1=>compile on 64 bit platform (defaults to ARB_64)
-# DEVELOPER=name	special compilation (values: ANY,RELEASE,your name)
+# DEVELOPER=name	    special compilation (values: ANY,RELEASE,your name)
 # OPENGL=0/1            whether OPENGL is available
-#
+# GTK=0/1               Use the new gtk gui
 # -----------------------------------------------------
 # ARB Makefile and ARB source code are aware of the following defines:
 #
@@ -70,9 +70,7 @@ ALLOWED_GCC_4xx_VERSIONS=\
 	4.4.1       4.4.3       4.4.5 4.4.6 \
 	      4.5.2 \
 	4.6.1       4.6.3 \
-	4.7.1 4.7.2 \
-	4.8.0
-# Note: gcc 4.8 is not released yet (just experimenting with gcc-dev-version)
+	4.7 4.7.1 4.7.2
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
@@ -89,7 +87,6 @@ USE_GCC_PATCHLEVEL:=$(word 3,$(SPLITTED_VERSION))
 
 USE_GCC_452_OR_HIGHER:=
 USE_GCC_47_OR_HIGHER:=
-USE_GCC_48_OR_HIGHER:=
 
 ifeq ($(USE_GCC_MAJOR),4)
  ifeq ($(USE_GCC_MINOR),5)
@@ -101,16 +98,12 @@ ifeq ($(USE_GCC_MAJOR),4)
    USE_GCC_452_OR_HIGHER:=yes
    ifneq ($(USE_GCC_MINOR),6)
     USE_GCC_47_OR_HIGHER:=yes
-    ifneq ($(USE_GCC_MINOR),7)
-     USE_GCC_48_OR_HIGHER:=yes
-    endif
    endif
   endif
  endif
 else
  USE_GCC_452_OR_HIGHER:=yes
  USE_GCC_47_OR_HIGHER:=yes
- USE_GCC_48_OR_HIGHER:=yes
 endif
 
 #---------------------- define special directories for non standard builds
@@ -152,7 +145,6 @@ ifeq ($(DEBUG),1)
 	gdb_common := -g -g3 -ggdb -ggdb3
 
 	cflags := -O0 $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
-#	cflags := -O0 $(gdb_common) -gdwarf-3 # (specify explicit dwarf format)
 #	cflags := -O0  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
 #	cflags := -O0  $(gdb_common) -gstabs  # using stabs (same here IIRC)
 #	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
@@ -161,12 +153,12 @@ ifeq ($(DEBUG),1)
  endif
 
 # control how much you get spammed
-	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --original# dont modify compiler output
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --hide-Noncopyable-advices
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --show-useless-Weff++
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings
-#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
+	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings --only-first-error
 
 # Enable extra warnings
@@ -192,9 +184,7 @@ ifeq ($(DEBUG),1)
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
   ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
-   ifeq ('$(USE_GCC_48_OR_HIGHER)','')
-	extended_cpp_warnings += -Wc++11-compat# gcc 4.7 (but not 4.8)
-   endif
+	extended_cpp_warnings += -Wc++11-compat# gcc 4.7 
   endif
  endif
 
@@ -319,10 +309,19 @@ cflags += -funit-at-a-time
 cflags += -fPIC
 cflags += -fno-common# link all global data into one namespace
 cflags += -fstrict-aliasing# gcc 3.4
-ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
- cflags += -fno-diagnostics-show-caret#gcc 4.8 (4.7.?)
-endif
 #cflags += -save-temps# uncomment to see preprocessor output
+
+
+
+#---------------------- GTK 
+
+ifeq ($(GTK),1)
+	GTKCFLAGS:= $(shell pkg-config --cflags gtk+-2.0) -fPIC
+	GTKLIBS:= $(shell pkg-config --libs gtk+-2.0 | sed 's/-pthread//')
+
+	cflags += $(GTKCFLAGS)
+	dflags += -DARB_GTK
+endif
 
 #---------------------- X11 location
 
@@ -427,9 +426,7 @@ cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
 
 cppflags := $(extended_cpp_warnings)
 
-ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-cppflags += -std=gnu++11# yeah! :)
-else
+ifeq ($(DEVELOPER),RALF)
  ifeq ('$(USE_GCC_47_OR_HIGHER)','')
 # only use for gcc versions between 4.3 and <4.7 (4.7++ adds -Wc++11-compat above)
 HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(GCC_VERSION_FOUND)`
@@ -693,14 +690,31 @@ ifdef DARWIN
         GUI_LIBS_PREFIX:=-framework GLUT -framework OpenGL
 endif
 
-GUI_LIBS = $(GUI_LIBS_PREFIX) $(LIBS) -lWINDOW -lAWT $(XLIBS)
+GUI_LIBS = $(GUI_LIBS_PREFIX) $(LIBS) -lAWT  
+ifeq ($(GTK),1)
+		GUI_LIBS += -lWINDOW_GTK $(GTKLIBS)
+else
+		GUI_LIBS += -lWINDOW $(XLIBS)		
+endif	
+
+
 LIBPATH = -L$(ARBHOME)/lib
 
 DEST_LIB = lib
 DEST_BIN = bin
 
-AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+#QUICK HACK!!!
+#FIXME
+#Currently INCLUDE contains links to files from WINDOW.
+#However if GTK is defined we want to use the headers from WINDOW_GTK not from INCLUDE
+ifeq ($(GTK),1)
+		AINCLUDES := -I. -I$(ARBHOME)/WINDOW_GTK -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+		CPPINCLUDES := -I. -I$(ARBHOME)/WINDOW_GTK -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+else
+		AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+		CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)	
+endif	
+
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
 ifeq ($(VTABLE_INFRONTOF_CLASS),1)
@@ -803,6 +817,7 @@ ARCHS = \
 			UNIT_TESTER/UNIT_TESTER.a \
 			WETC/WETC.a \
 			WINDOW/libWINDOW.a \
+			WINDOW_GTK/libWINDOW_GTK.a \
 			XML/XML.a \
 
 # ----------------------- 
@@ -838,7 +853,11 @@ ARCHS_AP_TREE = \
 
 link_core:	core
 link_db:	db link_core
-link_aw:	aw link_db
+ifeq ($(GTK),1)
+  link_aw:	aw_gtk link_db
+else
+  link_aw:	aw link_db
+endif
 link_awt:	awt link_aw
 
 #***************************************************************************************
@@ -1183,10 +1202,11 @@ target_is_missing_lib_prefix:
 	@echo "Error: Denied to build shared library target with missing 'lib'-prefix"
 	false
 
-ARBDB/ARBDB.dummy:   target_is_missing_lib_prefix
-CORE/CORE.dummy:     target_is_missing_lib_prefix
-AWT/AWT.dummy:       target_is_missing_lib_prefix
-WINDOW/WINDOW.dummy: target_is_missing_lib_prefix
+ARBDB/ARBDB.dummy:           target_is_missing_lib_prefix
+CORE/CORE.dummy:             target_is_missing_lib_prefix
+AWT/AWT.dummy:               target_is_missing_lib_prefix
+WINDOW/WINDOW.dummy:         target_is_missing_lib_prefix
+WINDOW_GTK/WINDOW_GTK.dummy: target_is_missing_lib_prefix
 
 # rule to generate main target (normally a library):
 %.dummy:
@@ -1285,6 +1305,7 @@ STAT/STAT.dummy:			links_non_perl
 TREEGEN/TREEGEN.dummy:			links_non_perl
 WETC/WETC.dummy:			links_non_perl
 WINDOW/libWINDOW.dummy:			links_non_perl
+WINDOW_GTK/libWINDOW_GTK.dummy:			links_non_perl
 XML/XML.dummy:				links_non_perl
 
 ifeq ($(OPENGL),1)
@@ -1342,6 +1363,7 @@ show:
 		@echo '  com    communication libraries'
 		@echo '  db     ARB database'
 		@echo '  aw     GUI lib'
+		@echo '  aw_gtk New GTK gui lib'		
 		@echo '  awt    GUI toolkit'
 		@echo '  awtc   general purpose library'
 		@echo '  awti   import/export library'
@@ -1382,6 +1404,7 @@ HELP_SOURCE/HELP_SOURCE.dummy: link_db xml menus
 db:	ARBDB/libARBDB.dummy
 core:	CORE/libCORE.dummy
 aw:	WINDOW/libWINDOW.dummy
+aw_gtk:	WINDOW_GTK/libWINDOW_GTK.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
 awti:	AWTI/AWTI.dummy
@@ -1957,6 +1980,7 @@ UNITS_TESTED = \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	SL/PRONUC/PRONUC.test \
 	WINDOW/libWINDOW.test \
+	WINDOW_GTK/libWINDOW_GTK.test \
 	HELP_SOURCE/arb_help2xml.test \
 	CONVERTALN/CONVERTALN.test \
 	SL/SEQIO/SEQIO.test \

@@ -21,24 +21,17 @@ class AW_root;
 class AWT_graphic_tree;
 class WeightedFilter;
 class AP_tree_nlen;
-class arb_progress;
 
-class ArbParsimony {
+struct PARS_global {
     AW_root          *awr;
     AWT_graphic_tree *tree;
 
-public:
-    ArbParsimony(AW_root *awroot) : awr(awroot), tree(NULL) {}
-
-    AW_root *get_awroot() const { return awr; }
-    AWT_graphic_tree *get_tree() const { return tree; }
-
-    DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, get_tree()->get_root_node());
-
-    void generate_tree(WeightedFilter *pars_weighted_filter);
-    void optimize_tree(AP_tree *tree, arb_progress& progress);
-    void kernighan_optimize_tree(AP_tree *at);
+    AP_tree_nlen *get_root_node();
 };
+
+extern PARS_global *GLOBAL_PARS;
+
+AWT_graphic_tree *PARS_generate_tree(AW_root *root, WeightedFilter *pars_weighted_filter);
 
 void PARS_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype);
 

@@ -10,7 +10,9 @@
 
 #include "st_ml.hxx"
 #include "st_quality.hxx"
-
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 #include <gui_aliview.hxx>
 #include <ColumnStat.hxx>
 

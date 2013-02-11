@@ -46,9 +46,7 @@ CT_ctree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/attributes.h
-CT_ctree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/dupstr.h
-CT_ctree.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -70,9 +68,7 @@ CT_dtree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/attributes.h
-CT_dtree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/dupstr.h
-CT_dtree.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -96,9 +92,7 @@ CT_hash.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_hash.o: $(ARBHOME)/INCLUDE/attributes.h
-CT_hash.o: $(ARBHOME)/INCLUDE/cxxforward.h
 CT_hash.o: $(ARBHOME)/INCLUDE/dupstr.h
-CT_hash.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_hash.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_hash.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -118,9 +112,7 @@ CT_ntree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/attributes.h
-CT_ntree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/dupstr.h
-CT_ntree.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -139,9 +131,7 @@ CT_part.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 CT_part.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_part.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_part.o: $(ARBHOME)/INCLUDE/attributes.h
-CT_part.o: $(ARBHOME)/INCLUDE/cxxforward.h
 CT_part.o: $(ARBHOME)/INCLUDE/dupstr.h
-CT_part.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_part.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_part.o: $(ARBHOME)/INCLUDE/test_global.h
 CT_part.o: $(ARBHOME)/INCLUDE/test_unit.h
@@ -165,8 +155,6 @@ CT_rbtree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/attributes.h
-CT_rbtree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/dupstr.h
-CT_rbtree.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/test_global.h

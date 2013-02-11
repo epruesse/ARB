@@ -10,6 +10,9 @@
 // =============================================================== //
 
 #include "GEN.hxx"
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 
 #include <nds.h>
 #include <item_sel_list.h>

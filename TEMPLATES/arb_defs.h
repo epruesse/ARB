@@ -27,6 +27,4 @@ inline int bio2info(int biopos) { arb_assert(biopos >= 1); return biopos-1; }
 inline int info2bio(int infopos) { arb_assert(infopos >= 0); return infopos+1; }
 
 
-#else
-#error arb_defs.h included twice
 #endif // ARB_DEFS_H

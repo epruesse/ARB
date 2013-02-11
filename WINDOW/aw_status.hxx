@@ -12,6 +12,10 @@
 #ifndef AW_STATUS_HXX
 #define AW_STATUS_HXX
 
+#if defined(ARB_GTK)
+#error attempt to include header from WINDOW (while ARB_GTK defined)
+#endif
+
 bool AW_status(const char *text); // return 1 if exit button is pressed + set statustext
 bool AW_status(double gauge);     // return 1 if exit button is pressed + set progress bar
 bool AW_status();                 // return 1 if exit button is pressed

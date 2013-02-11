@@ -34,21 +34,17 @@ public:
 
     virtual bool get(const long _row, const long _col);
     virtual bool set(const long _row, const long _col, const bool _value);
-
-    virtual void setTrue(const long _row, const long _col)  = 0;
-    virtual void setFalse(const long _row, const long _col) = 0;
-
     // triangle_ - functions reverse _row and _col if _row is greater than _col
     // the resulting map is only triangular
-            bool triangle_get(const long _row, const long _col);
-            bool triangle_set(const long _row, const long _col, const bool _value);
+    bool triangle_get(const long _row, const long _col);
+    bool triangle_set(const long _row, const long _col, const bool _value);
 
-            void invert();
-            void x_or(const PS_BitMap *_other_map);
+    virtual void invert();
+    virtual void x_or(const PS_BitMap *_other_map);
 
     virtual void print();
     virtual void printGNUplot(const char *_title, char *_buffer, PS_FileBuffer *_file);
-            bool save(PS_FileBuffer *_file);
+    virtual bool save(PS_FileBuffer *_file);
     virtual bool load(PS_FileBuffer *_file);
 
             bool copy(const PS_BitMap *_other_bitmap);
@@ -90,22 +86,22 @@ class PS_BitMap_Fast : public PS_BitMap {
 private:
 
             bool copy(const PS_BitSet *_other_bitset);   // declared but not implemented
-    virtual bool do_reserve(const long _capacity, const bool _init_sets) OVERRIDE;
+    virtual bool do_reserve(const long _capacity, const bool _init_sets);
 
     PS_BitMap_Fast(const PS_BitMap_Fast&);
     PS_BitMap_Fast();
 
 public:
 
-    virtual bool get(const long _row, const long _col) OVERRIDE;
-    virtual bool set(const long _row, const long _col, const bool _value) OVERRIDE;
-    virtual void setTrue(const long _row, const long _col) OVERRIDE;
-    virtual void setFalse(const long _row, const long _col) OVERRIDE;
+    virtual bool get(const long _row, const long _col);
+    virtual bool set(const long _row, const long _col, const bool _value);
+    virtual void setTrue(const long _row, const long _col);
+    virtual void setFalse(const long _row, const long _col);
 
-    virtual bool load(PS_FileBuffer *_file) OVERRIDE;
+    virtual bool load(PS_FileBuffer *_file);
 
             bool copy(const PS_BitMap_Fast *_other_bitmap);
-    virtual bool reserve(const long _capacity) OVERRIDE;
+    virtual bool reserve(const long _capacity);
 
     explicit PS_BitMap_Fast(const bool _bias, const long _capacity) : PS_BitMap(_bias, 0, _capacity) {
         data = (PS_BitSet **)malloc(capacity * sizeof(PS_BitSet*));
@@ -142,7 +138,7 @@ class PS_BitMap_Counted : public PS_BitMap { // derived from a Noncopyable
     long *count_true_per_index;
 
             bool copy(const PS_BitSet *_other_bitset);   // declared but not implemented because PS_BitSet has no count_true_per_index array
-    virtual bool do_reserve(const long _capacity, const bool _init_sets) OVERRIDE;
+    virtual bool do_reserve(const long _capacity, const bool _init_sets);
 
     PS_BitMap_Counted(const PS_BitMap_Counted&);
     PS_BitMap_Counted();
@@ -152,23 +148,23 @@ public:
     void recalcCounters();
     long getCountFor(const long _index) { return count_true_per_index[_index]; }
 
-    virtual long getTrueIndicesFor(const long _index, PS_BitSet::IndexSet &_index_set) OVERRIDE;
-    virtual long getFalseIndicesFor(const long _index, PS_BitSet::IndexSet &_index_set) OVERRIDE;
+    virtual long getTrueIndicesFor(const long _index, PS_BitSet::IndexSet &_index_set);
+    virtual long getFalseIndicesFor(const long _index, PS_BitSet::IndexSet &_index_set);
             long getTrueIndicesForRow(const long _row, PS_BitSet::IndexSet &_index_set);
             long getFalseIndicesForRow(const long _row, PS_BitSet::IndexSet &_index_set);
-    virtual long getCountOfTrues() OVERRIDE;
+    virtual long getCountOfTrues();
 
-    virtual bool get(const long _row, const long _col) OVERRIDE;
-    virtual bool set(const long _row, const long _col, const bool _value) OVERRIDE;
-    virtual void setTrue(const long _row, const long _col) OVERRIDE;
-    virtual void setFalse(const long _row, const long _col) OVERRIDE;
+    virtual bool get(const long _row, const long _col);
+    virtual bool set(const long _row, const long _col, const bool _value);
+    virtual void setTrue(const long _row, const long _col);
+    virtual void setFalse(const long _row, const long _col);
 
-    virtual void print() OVERRIDE;
-    virtual void printGNUplot(const char *_title, char *_buffer, PS_FileBuffer *_file) OVERRIDE;
-    virtual bool load(PS_FileBuffer *_file) OVERRIDE;
+    virtual void print();
+    virtual void printGNUplot(const char *_title, char *_buffer, PS_FileBuffer *_file);
+    virtual bool load(PS_FileBuffer *_file);
 
-            bool copy(const PS_BitMap_Counted *_other_bitmap);
-    virtual bool reserve(const long _capacity) OVERRIDE;
+    virtual bool copy(const PS_BitMap_Counted *_other_bitmap);
+    virtual bool reserve(const long _capacity);
 
     explicit PS_BitMap_Counted(PS_FileBuffer *_file) : PS_BitMap(false, 0, 0) {
         data                 = 0;
@@ -192,7 +188,7 @@ public:
         memset(count_true_per_index, (bias) ? capacity : 0, capacity * sizeof(long));
     }
 
-    virtual ~PS_BitMap_Counted() OVERRIDE {
+    virtual ~PS_BitMap_Counted() {
         if (count_true_per_index) free(count_true_per_index);
     }
 };
