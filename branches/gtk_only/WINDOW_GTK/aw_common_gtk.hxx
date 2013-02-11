@@ -45,7 +45,7 @@ public:
      * @note>: The gc can only be used to draw on surfaces that have the same pixel depth.
      */
     AW_GC_gtk(AW_common *common, int pixelDepth);
-    ~AW_GC_gtk();
+    ~AW_GC_gtk() OVERRIDE;
 
     // AW_GC interface (uses motif call)
     virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const;

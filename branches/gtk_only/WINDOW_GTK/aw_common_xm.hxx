@@ -38,7 +38,7 @@ class AW_GC_Xm : public AW_GC { // derived from Noncopyable
 public:
 
     AW_GC_Xm(AW_common *common);
-    ~AW_GC_Xm();
+    ~AW_GC_Xm() OVERRIDE;
 
     // AW_GC interface (uses motif call)
     virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const;

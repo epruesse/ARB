@@ -647,7 +647,7 @@ class AW_window_menu_modes : public AW_window { // derived from a Noncopyable
 
 public:
     AW_window_menu_modes();
-    ~AW_window_menu_modes();
+    ~AW_window_menu_modes() OVERRIDE;
     void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
 };
 
@@ -661,7 +661,7 @@ class AW_window_simple_menu : public AW_window {
 private:
 public:
     AW_window_simple_menu();
-    ~AW_window_simple_menu();
+    ~AW_window_simple_menu() OVERRIDE;
     void init(AW_root *root, const char *wid, const char *windowname);
 };
 
@@ -672,7 +672,7 @@ class AW_window_simple : public AW_window {
 private:
 public:
     AW_window_simple();
-    ~AW_window_simple();
+    ~AW_window_simple() OVERRIDE;
     void init(AW_root *root, const char *wid, const char *windowname);
 };
 
@@ -681,7 +681,7 @@ class AW_window_message : public AW_window {
 private:
 public:
     AW_window_message();
-    ~AW_window_message();
+    ~AW_window_message() OVERRIDE;
     void init(AW_root *root, const char *windowname, bool allow_close);
 };
 
