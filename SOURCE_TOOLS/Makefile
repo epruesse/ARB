@@ -33,7 +33,7 @@ dep.clean:
 
 CORE_LIB=lib/libCORE.so
 
-dep.alltargets.tmp:
+dep.alltargets.tmp: Makefile needed_libs.pl
 	./needed_libs.pl -U -I -F $(CORE_LIB) | sed -e 's/ /\n/g' >$@
 	echo $(CORE_LIB) >>$@
 
