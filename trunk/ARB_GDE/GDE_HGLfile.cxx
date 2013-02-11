@@ -1,5 +1,6 @@
 #include "GDE_extglob.h"
 #include <ctime>
+#include <algorithm>
 
 /*
   Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
@@ -321,8 +322,7 @@ void ReadGDE(char *filename, NA_Alignment *dataset) {
         else if (Find2(line, "group-ID")==0)
         {
             sscanf(line, "%*s %zu", &(this_elem->groupid));
-            dataset->numgroups =
-                MAX(this_elem->groupid, dataset->numgroups);
+            dataset->numgroups = std::max(this_elem->groupid, dataset->numgroups);
         }
         else if (Find2(line, "sequence-ID")==0)
         {

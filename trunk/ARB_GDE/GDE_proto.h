@@ -23,7 +23,6 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const 
 void GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
 
 /* GDE_FileIO.cxx */
-int MAX(int a, int b);
 void Regroup(NA_Alignment *alignment);
 void ErrorOut5(int code, const char *string);
 char *Calloc(int count, int size);
