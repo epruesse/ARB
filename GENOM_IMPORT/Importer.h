@@ -91,8 +91,8 @@ public:
 
 
 class GenebankImporter : public Importer {
-    void         import_section();
-    virtual bool readFeatureTableLine(string& line);
+    void         import_section() OVERRIDE;
+    virtual bool readFeatureTableLine(string& line) OVERRIDE;
     void         parseSequence(const string& tag, const string& headerline);
 
 public:
@@ -103,8 +103,8 @@ public:
 
 
 class EmblImporter : public Importer {
-    void         import_section();
-    virtual bool readFeatureTableLine(string& line);
+    void         import_section() OVERRIDE;
+    virtual bool readFeatureTableLine(string& line) OVERRIDE;
     void         parseSequence(const string& headerline);
 
 public:

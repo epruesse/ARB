@@ -877,19 +877,19 @@ public:
     nt_item_type_species_selector() : awt_item_type_selector(AWT_IT_SPECIES) {}
     virtual ~nt_item_type_species_selector() OVERRIDE {}
 
-    virtual const char *get_self_awar() const {
+    virtual const char *get_self_awar() const OVERRIDE {
         return AWAR_SPECIES_NAME;
     }
-    virtual size_t get_self_awar_content_length() const {
+    virtual size_t get_self_awar_content_length() const OVERRIDE {
         return 12; // should be enough for "nnaammee.999"
     }
-    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
+    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // add callbacks to awars
         root->awar(get_self_awar())->add_callback(f, cl_mask);
     }
-    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // remove callbacks to awars
+    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // remove callbacks to awars
         root->awar(get_self_awar())->remove_callback(f, cl_mask);
     }
-    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const { // give the current item
+    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char           *species_name = root->awar(get_self_awar())->read_string();
         GBDATA         *gb_species   = 0;
 
@@ -901,7 +901,7 @@ public:
         free(species_name);
         return gb_species;
     }
-    virtual const char *getKeyPath() const { // give the keypath for items
+    virtual const char *getKeyPath() const OVERRIDE { // give the keypath for items
         return CHANGE_KEY_PATH;
     }
 };

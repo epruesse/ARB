@@ -1030,7 +1030,7 @@ class has_base_at : public ED4_TerminalPredicate {
     bool want_base;
 public:
     has_base_at(int seq_pos_, bool want_base_) : seq_pos(seq_pos_), want_base(want_base_) {}
-    bool fulfilled_by(const ED4_terminal *terminal) const {
+    bool fulfilled_by(const ED4_terminal *terminal) const OVERRIDE {
         bool test_succeeded = false;
 
         if (terminal->is_sequence_terminal()) {
@@ -1048,7 +1048,7 @@ public:
 };
 
 struct acceptAnyTerminal : public ED4_TerminalPredicate {
-    bool fulfilled_by(const ED4_terminal *) const { return true; }
+    bool fulfilled_by(const ED4_terminal *) const OVERRIDE { return true; }
 };
 
 static ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4_cursor_move cursor_move, AW_pos current_y, bool isScreen, const ED4_TerminalPredicate& predicate) {
@@ -1109,7 +1109,7 @@ static ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4
 }
 
 struct acceptConsensusTerminal : public ED4_TerminalPredicate {
-    bool fulfilled_by(const ED4_terminal *term) const { return term->is_consensus_terminal(); }
+    bool fulfilled_by(const ED4_terminal *term) const OVERRIDE { return term->is_consensus_terminal(); }
 };
 
 ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
@@ -1679,20 +1679,20 @@ char *test_absrel::genResult() const {
 struct test_ecoli : public test_absrel {
     BI_ecoli_ref& eref;
     test_ecoli(BI_ecoli_ref& b, bool to_rel) : test_absrel(to_rel), eref(b) {}
-    int a2r(int a) const { return eref.abs_2_rel(a); }
-    int r2a(int r) const { return eref.rel_2_abs(r); }
-    int abs_size() const { return eref.abs_count(); }
-    int rel_size() const { return eref.base_count(); }
+    int a2r(int a) const OVERRIDE { return eref.abs_2_rel(a); }
+    int r2a(int r) const OVERRIDE { return eref.rel_2_abs(r); }
+    int abs_size() const OVERRIDE { return eref.abs_count(); }
+    int rel_size() const OVERRIDE { return eref.base_count(); }
 };
 
 struct test_basepos : public test_absrel {
     BasePosition& bpos;
     test_basepos(BasePosition& bpos_, bool to_rel)
         : test_absrel(to_rel), bpos(bpos_) {}
-    int a2r(int a) const { return bpos.abs_2_rel(a); }
-    int r2a(int r) const { return bpos.rel_2_abs(r); }
-    int abs_size() const { return bpos.abs_count(); }
-    int rel_size() const { return bpos.base_count(); }
+    int a2r(int a) const OVERRIDE { return bpos.abs_2_rel(a); }
+    int r2a(int r) const OVERRIDE { return bpos.rel_2_abs(r); }
+    int abs_size() const OVERRIDE { return bpos.abs_count(); }
+    int rel_size() const OVERRIDE { return bpos.base_count(); }
 };
 
 #define TEST_ABSREL_EQUALS(tester,expected) do {        \

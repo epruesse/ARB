@@ -87,8 +87,8 @@ public:
 
     const AP_sequence *get_seqTemplate() const { return seqTemplate; }
 
-    virtual GB_ERROR linkToDB(int *zombies, int *duplicates) __ATTR__USERESULT;
-    virtual void unlinkFromDB(); // @@@ should not be unused
+    GB_ERROR linkToDB(int *zombies, int *duplicates) __ATTR__USERESULT;
+    void unlinkFromDB(); // @@@ is (but should not be) unused
 };
 
 

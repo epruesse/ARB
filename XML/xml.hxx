@@ -110,10 +110,10 @@ public:
     */
     void         add_attribute(const std::string& name_, const std::string& content_);
     void         add_attribute(const std::string& name_, int value);
-    virtual void add_son(XML_Node *son_, bool son_is_tag);
-    virtual void remove_son(XML_Node *son_);
-    virtual void open(FILE *out);
-    virtual void close(FILE *out);
+    virtual void add_son(XML_Node *son_, bool son_is_tag) OVERRIDE;
+    virtual void remove_son(XML_Node *son_) OVERRIDE;
+    virtual void open(FILE *out) OVERRIDE;
+    virtual void close(FILE *out) OVERRIDE;
 
     void set_on_extra_line(bool oel) { onExtraLine = oel; }
 };
@@ -130,10 +130,10 @@ public:
     XML_Text(const std::string& content_) : XML_Node(false), content(content_) {}
     virtual ~XML_Text() OVERRIDE;
 
-    virtual void add_son(XML_Node *son_, bool son_is_tag) __ATTR__NORETURN;
-    virtual void remove_son(XML_Node *son_) __ATTR__NORETURN;
-    virtual void open(FILE *);
-    virtual void close(FILE *out);
+    virtual void add_son(XML_Node *son_, bool son_is_tag) OVERRIDE __ATTR__NORETURN;
+    virtual void remove_son(XML_Node *son_) OVERRIDE __ATTR__NORETURN;
+    virtual void open(FILE *) OVERRIDE;
+    virtual void close(FILE *out) OVERRIDE;
 };
 
 class XML_Comment : public XML_Node {
@@ -142,10 +142,10 @@ public:
     XML_Comment(const std::string& content_) : XML_Node(false), content(content_) {}
     virtual ~XML_Comment() OVERRIDE;
 
-    virtual void add_son(XML_Node *son_, bool son_is_tag) __ATTR__NORETURN;
-    virtual void remove_son(XML_Node *son_) __ATTR__NORETURN;
-    virtual void open(FILE *);
-    virtual void close(FILE *out);
+    virtual void add_son(XML_Node *son_, bool son_is_tag) OVERRIDE __ATTR__NORETURN;
+    virtual void remove_son(XML_Node *son_) OVERRIDE __ATTR__NORETURN;
+    virtual void open(FILE *) OVERRIDE;
+    virtual void close(FILE *out) OVERRIDE;
 };
 
 //! an entire xml document

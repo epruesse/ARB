@@ -1376,19 +1376,19 @@ public:
     GEN_item_type_species_selector() : awt_item_type_selector(AWT_IT_GENE) {}
     virtual ~GEN_item_type_species_selector() OVERRIDE {}
 
-    virtual const char *get_self_awar() const {
+    virtual const char *get_self_awar() const OVERRIDE {
         return AWAR_COMBINED_GENE_NAME;
     }
-    virtual size_t get_self_awar_content_length() const {
+    virtual size_t get_self_awar_content_length() const OVERRIDE {
         return 12 + 1 + 40; // species-name+'/'+gene_name
     }
-    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
+    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // add callbacks to awars
         root->awar(get_self_awar())->add_callback(f, cl_mask);
     }
-    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const {
+    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE {
         root->awar(get_self_awar())->remove_callback(f, cl_mask);
     }
-    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const { // give the current item
+    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char   *species_name = root->awar(AWAR_ORGANISM_NAME)->read_string();
         char   *gene_name   = root->awar(AWAR_GENE_NAME)->read_string();
         GBDATA *gb_gene      = 0;
@@ -1406,7 +1406,7 @@ public:
 
         return gb_gene;
     }
-    virtual const char *getKeyPath() const { // give the keypath for items
+    virtual const char *getKeyPath() const OVERRIDE { // give the keypath for items
         return CHANGE_KEY_PATH_GENES;
     }
 };

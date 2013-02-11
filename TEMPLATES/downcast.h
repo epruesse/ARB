@@ -134,7 +134,7 @@ inline DERIVED_PTR safe_downcast(BASE_PTR expr) {
 
 
 // helper macro to overwrite accessor functions in derived classes
-#define DEFINE_DOWNCAST_ACCESSORS(CLASS, NAME, VALUE)                   \
+#define DEFINE_DOWNCAST_ACCESSORS(CLASS, NAME, VALUE)                       \
     CLASS *NAME() { return DOWNCAST(CLASS*, VALUE); }                   \
     const CLASS *NAME() const { return DOWNCAST(const CLASS*, VALUE); }
 
