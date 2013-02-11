@@ -50,10 +50,10 @@ public:
     int            *color_out_valid_till;           // color_out is valid up to
 
 private:
-    AP_FLOAT count_weighted_bases() const;
+    AP_FLOAT count_weighted_bases() const OVERRIDE;
 
-    void set(const char *sequence);
-    void unset();
+    void set(const char *sequence) OVERRIDE;
+    void unset() OVERRIDE;
 
 public:
 
@@ -62,9 +62,9 @@ public:
 
     bool is_up_to_date() const { return up_to_date; }
 
-    AP_sequence *dup() const;
-    AP_FLOAT     combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0);
-    void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
+    AP_sequence *dup() const OVERRIDE;
+    AP_FLOAT     combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0) OVERRIDE;
+    void partial_match(const AP_sequence* part, long *overlap, long *penalty) const OVERRIDE;
 
     GB_ERROR bind_to_species(GBDATA *gb_species);
     void     unbind_from_species(bool remove_callbacks);

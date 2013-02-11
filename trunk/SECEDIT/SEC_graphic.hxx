@@ -68,17 +68,17 @@ public:
     SEC_graphic(AW_root *aw_root, GBDATA *gb_main);
     virtual ~SEC_graphic() OVERRIDE;
 
-    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr, AW_CL);
+    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr, AW_CL) OVERRIDE;
 
-    virtual void show(AW_device *device);
-    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
+    virtual void show(AW_device *device) OVERRIDE;
+    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
     virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char, AW_event_type type,
-             AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
+             AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
 
-    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2); // load structure from DB
-    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2); // save structure to DB
-    int check_update(GBDATA *gb_main);  // perform requested updates
-    void update(GBDATA *gb_main);
+    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE; // load structure from DB
+    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE; // save structure to DB
+    int check_update(GBDATA *gb_main) OVERRIDE;  // perform requested updates
+    void update(GBDATA *gb_main) OVERRIDE;
 
     GB_ERROR write_data_to_db(const char *data, const char *x_string) const;
     GB_ERROR read_data_from_db(char **data, char **x_string) const;

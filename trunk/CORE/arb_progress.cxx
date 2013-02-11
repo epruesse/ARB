@@ -20,35 +20,35 @@
 struct null_counter: public arb_progress_counter {
     null_counter(arb_parent_progress *progress_) : arb_progress_counter(progress_) {}
 
-    void inc() {}
-    void implicit_inc() {}
-    void done() {}
-    void restart(int) {}
-    void force_update() {}
-    void auto_subtitles(const char *) {}
-    bool has_auto_subtitles() { return false; }
-    void child_updates_gauge(double ) {
+    void inc() OVERRIDE {}
+    void implicit_inc() OVERRIDE {}
+    void done() OVERRIDE {}
+    void restart(int) OVERRIDE {}
+    void force_update() OVERRIDE {}
+    void auto_subtitles(const char *) OVERRIDE {}
+    bool has_auto_subtitles() OVERRIDE { return false; }
+    void child_updates_gauge(double ) OVERRIDE {
         arb_assert(0); // wont
     }
 
 #if defined(DUMP_PROGRESS)
-    void dump() {
+    void dump() OVERRIDE {
         fprintf(stderr, "null_counter\n");
     }
 #endif
 
-    arb_progress_counter* clone(arb_parent_progress *parent_, int ) const { return new null_counter(parent_); }
+    arb_progress_counter* clone(arb_parent_progress *parent_, int ) const OVERRIDE { return new null_counter(parent_); }
 };
 
 struct no_counter : public null_counter {
     no_counter(arb_parent_progress *progress_) : null_counter(progress_) {}
-    void inc() {
+    void inc() OVERRIDE {
         arb_assert(0); // this is no_counter - so explicit inc() is prohibited!
     }
-    void child_updates_gauge(double gauge) { progress->update_gauge(gauge); }
+    void child_updates_gauge(double gauge) OVERRIDE { progress->update_gauge(gauge); }
     
 #if defined(DUMP_PROGRESS)
-    void dump() {
+    void dump() OVERRIDE {
         fprintf(stderr, "no_counter (=wrapper)\n");
     }
 #endif
@@ -95,7 +95,7 @@ class concrete_counter: public arb_progress_counter { // derived from a Noncopya
         refresh_if_needed(dcount);
     }
 
-    void force_update() {
+    void force_update() OVERRIDE {
         int oldNext    = nextAutoUpdate;;
         nextAutoUpdate = 0;
         update_display_if_needed();
@@ -126,37 +126,37 @@ public:
     }
 
 #if defined(DUMP_PROGRESS)
-    void dump() {
+    void dump() OVERRIDE {
         fprintf(stderr,
                 "concrete_counter: explicit=%i, implicit=%i, maxcount=%i\n", 
                 explicit_counter, implicit_counter, maxcount);
     }
 #endif
 
-    void auto_subtitles(const char *prefix) {
+    void auto_subtitles(const char *prefix) OVERRIDE {
         arb_assert(!auto_subtitle_prefix);
         freedup(auto_subtitle_prefix, prefix);
         force_update();
     }
-    bool has_auto_subtitles() { return auto_subtitle_prefix; }
+    bool has_auto_subtitles() OVERRIDE { return auto_subtitle_prefix; }
 
-    void inc()          { explicit_counter += 1; update_display_if_needed(); }
-    void implicit_inc() { implicit_counter += 1; update_display_if_needed(); }
+    void inc()          OVERRIDE { explicit_counter += 1; update_display_if_needed(); }
+    void implicit_inc() OVERRIDE { implicit_counter += 1; update_display_if_needed(); }
     
-    void done() {
+    void done() OVERRIDE {
         implicit_counter = explicit_counter = maxcount;
         force_update();
     }
 
-    void restart(int overallCount) {
+    void restart(int overallCount) OVERRIDE {
         init(overallCount);
         force_update();
     }
 
-    arb_progress_counter* clone(arb_parent_progress *parent, int overall_count) const{
+    arb_progress_counter* clone(arb_parent_progress *parent, int overall_count) const OVERRIDE {
         return new concrete_counter(parent, overall_count);
     }
-    void child_updates_gauge(double child_gauge) {
+    void child_updates_gauge(double child_gauge) OVERRIDE {
         refresh_if_needed(dispositive_counter()+child_gauge);
     }
 };
@@ -185,22 +185,22 @@ public:
         parent->child_terminated();
     }
 
-    SmartPtr<arb_parent_progress> create_child_progress(const char *title, int overall_count) {
+    SmartPtr<arb_parent_progress> create_child_progress(const char *title, int overall_count) OVERRIDE {
         return new child_progress(this, title, overall_count);
     }
 
 #if defined(DUMP_PROGRESS)
-    void dump() {
+    void dump() OVERRIDE {
         arb_parent_progress::dump();
         fprintf(stderr, "is child of\n");
         parent->dump();
     }
 #endif
 
-    bool aborted() const { return parent->aborted(); }
-    void set_text(int level, const char *text) { parent->child_sets_text(level+has_title-1, text); }
+    bool aborted() const OVERRIDE { return parent->aborted(); }
+    void set_text(int level, const char *text) OVERRIDE { parent->child_sets_text(level+has_title-1, text); }
     
-    void update_gauge(double gauge) { parent->child_updates_gauge(gauge); }
+    void update_gauge(double gauge) OVERRIDE { parent->child_updates_gauge(gauge); }
 };
 
 class initial_progress: public arb_parent_progress {
@@ -222,12 +222,12 @@ public:
         impl->closestatus();
     }
 
-    SmartPtr<arb_parent_progress> create_child_progress(const char *title, int overall_count) {
+    SmartPtr<arb_parent_progress> create_child_progress(const char *title, int overall_count) OVERRIDE {
         return new child_progress(this, title, overall_count);
     }
 
-    bool aborted() const { return user_abort; }
-    void set_text(int level, const char *text) {
+    bool aborted() const OVERRIDE { return user_abort; }
+    void set_text(int level, const char *text) OVERRIDE {
         if (!text) return;
         switch (level+has_title-1) {
             case LEVEL_TITLE: impl->set_title(text); break;
@@ -235,7 +235,7 @@ public:
         }
     }
 
-    void update_gauge(double gauge) { user_abort = impl->set_gauge(gauge); }
+    void update_gauge(double gauge) OVERRIDE { user_abort = impl->set_gauge(gauge); }
 };
 
 struct initial_wrapping_progress: public initial_progress {
@@ -257,12 +257,12 @@ public:
 #endif
     }
 
-    SmartPtr<arb_parent_progress> create_child_progress(const char*, int overall_count) {
+    SmartPtr<arb_parent_progress> create_child_progress(const char*, int overall_count) OVERRIDE {
         return new null_progress(clone_counter(overall_count));
     }
-    bool aborted() const { return false; }
-    void set_text(int,const char*) {}
-    void update_gauge(double) {}
+    bool aborted() const OVERRIDE { return false; }
+    void set_text(int,const char*) OVERRIDE {}
+    void update_gauge(double) OVERRIDE {}
 };
 
 // -------------------------

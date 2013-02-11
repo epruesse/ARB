@@ -105,7 +105,7 @@ public:
     PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_, RelativeScoreScaling scaling_);
     ~PT_FamilyFinder() OVERRIDE;
 
-    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) __ATTR__USERESULT;
+    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) OVERRIDE __ATTR__USERESULT;
 
     const char *results2string();
 };

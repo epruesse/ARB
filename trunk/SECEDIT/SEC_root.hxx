@@ -260,7 +260,7 @@ enum SEC_BASE_TYPE {
 class SEC_base : public SEC_constrainted, public SEC_oriented, virtual Noncopyable { // loop or helix
     SEC_root *root;
 
-    virtual SEC_base *get_parent() = 0;
+    virtual SEC_base *get_parent() OVERRIDE = 0;
 public:
     SEC_base(SEC_root *Root) : root(Root) {}
     virtual ~SEC_base() OVERRIDE {}
@@ -313,7 +313,7 @@ class SEC_helix : public SEC_base { // derived from a Noncopyable
     SEC_helix_strand *strand_to_root;
     size_t base_length; // max. # of bases in any strand
 
-    SEC_base *get_parent();
+    SEC_base *get_parent() OVERRIDE;
 public:
 
     SEC_helix(SEC_root *root, SEC_helix_strand *to_root, SEC_helix_strand *from_root);
@@ -350,15 +350,15 @@ public:
 #endif // CHECK_INTEGRITY
 
     // SEC_oriented interface:
-    void invalidate_sub_angles();
+    void invalidate_sub_angles() OVERRIDE;
 
     // SEC_base interface :
-    SEC_BASE_TYPE getType() const { return SEC_HELIX; }
-    void reset_angles();
-    const Position& get_fixpoint() const;
+    SEC_BASE_TYPE getType() const OVERRIDE { return SEC_HELIX; }
+    void reset_angles() OVERRIDE;
+    const Position& get_fixpoint() const OVERRIDE;
 
-    void orientationChanged(); // recalc coordinates
-    void sizeChanged(); // recalc size and coordinates
+    void orientationChanged() OVERRIDE; // recalc coordinates
+    void sizeChanged() OVERRIDE; // recalc size and coordinates
 };
 
 // -------------------------
@@ -383,8 +383,8 @@ class SEC_helix_strand : public SEC_base_part { // derived from a Noncopyable
     void set_other_strand(SEC_helix_strand *other_strand_) { other_strand = other_strand_; }
 
     // SEC_base_part interface
-    SEC_base *get_parent() { return helix_info; }
-    SEC_base_part *get_next();
+    SEC_base *get_parent()  OVERRIDE { return helix_info; }
+    SEC_base_part *get_next() OVERRIDE;
 
 public:
 
@@ -474,8 +474,8 @@ private:
     SEC_loop *loop; // the loop containing 'this'
 
     // SEC_base_part interface
-    SEC_base *get_parent();
-    SEC_base_part *get_next() { return get_next_strand(); }
+    SEC_base *get_parent() OVERRIDE;
+    SEC_base_part *get_next() OVERRIDE { return get_next_strand(); }
 
 public:
 
@@ -553,7 +553,7 @@ class SEC_loop : public SEC_base { // derived from a Noncopyable
     void compute_circumference();
     void compute_radius();
 
-    SEC_base *get_parent() { return is_root_loop() ? 0 : get_rootside_helix(); }
+    SEC_base *get_parent() OVERRIDE { return is_root_loop() ? 0 : get_rootside_helix(); }
 
 public:
 
@@ -592,20 +592,20 @@ public:
 #endif // CHECK_INTEGRITY
 
     // SEC_oriented interface:
-    void invalidate_sub_angles();
+    void invalidate_sub_angles() OVERRIDE;
 
     // SEC_base interface :
-    SEC_BASE_TYPE getType() const { return SEC_LOOP; }
-    void reset_angles();
+    SEC_BASE_TYPE getType() const OVERRIDE { return SEC_LOOP; }
+    void reset_angles() OVERRIDE;
 
-    const Position& get_fixpoint() const {
+    const Position& get_fixpoint() const OVERRIDE {
         // Note: does not return center for root-loop.
         SEC_helix *helix = get_fixpoint_helix();
         return helix->strandAwayFrom(this)->get_fixpoint();
     }
 
-    void orientationChanged();  // recalc coordinates
-    void sizeChanged(); // recalc size and coordinates
+    void orientationChanged() OVERRIDE;  // recalc coordinates
+    void sizeChanged() OVERRIDE; // recalc size and coordinates
 };
 
 // --------------------------

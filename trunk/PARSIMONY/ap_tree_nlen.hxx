@@ -77,7 +77,7 @@ public:
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree_nlen);
 
     // ARB_tree interface
-    virtual AP_tree_nlen *dup() const;
+    virtual AP_tree_nlen *dup() const OVERRIDE;
     // ARB_tree interface (end)
 
     void     unhash_sequence();
@@ -87,21 +87,21 @@ public:
     void pop(unsigned long);    // pop old tree costs
     bool clear(unsigned long stack_update, unsigned long user_push_counter);
 
-    virtual AP_UPDATE_FLAGS check_update(); // disable  load !!!!
+    virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
 
     void copy(AP_tree_nlen *tree);
     int  Distance();
 
     // tree reconstruction methods:
     void insert(AP_tree_nlen *new_brother);
-    void remove();
-    void swap_assymetric(AP_TREE_SIDE mode);
+    void remove() OVERRIDE;
+    void swap_assymetric(AP_TREE_SIDE mode) OVERRIDE;
     void moveTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveTo to test if possible
-    void set_root();
+    void set_root() OVERRIDE;
 
     // overload virtual methods from AP_tree:
-    void insert(AP_tree *new_brother) { insert(DOWNCAST(AP_tree_nlen*, new_brother)); }
-    void moveTo(AP_tree *node, AP_FLOAT rel_pos) { moveTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
+    void insert(AP_tree *new_brother) OVERRIDE { insert(DOWNCAST(AP_tree_nlen*, new_brother)); }
+    void moveTo(AP_tree *node, AP_FLOAT rel_pos) OVERRIDE { moveTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
 
     // tree optimization methods:
     void parsimony_rek(char *mutPerSite = NULL);

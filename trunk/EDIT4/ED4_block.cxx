@@ -654,7 +654,7 @@ public:
         nlen = strlen(newString);
     }
 
-    char* operate(const SeqPart& part, int& new_len) const {
+    char* operate(const SeqPart& part, int& new_len) const OVERRIDE {
         int maxlen;
         int len   = part.length();
         int max_o = len-olen;
@@ -749,7 +749,7 @@ class case_op : public ED4_block_operator {
 public:
     case_op(bool to_upper_) : to_upper(to_upper_) {}
 
-    char *operate(const SeqPart& part, int& new_len) const {
+    char *operate(const SeqPart& part, int& new_len) const OVERRIDE {
         int         len     = part.length();
         const char *seq     = part.data();
         char       *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
@@ -782,7 +782,7 @@ public:
         }
     }
 
-    char *operate(const SeqPart& part, int& new_len) const {
+    char *operate(const SeqPart& part, int& new_len) const OVERRIDE {
         char *result = NULL;
         if (!error) {
             int len = part.length();
@@ -804,7 +804,7 @@ class unalign_op : public ED4_block_operator {
 public:
     unalign_op(int direction_) : direction(direction_) {}
 
-    char *operate(const SeqPart& part, int& new_len) const {
+    char *operate(const SeqPart& part, int& new_len) const OVERRIDE {
         int         len    = part.length();
         const char *seq    = part.data();
         char       *result = (char*)GB_calloc(len+1, sizeof(*result));
@@ -888,7 +888,7 @@ class shift_op : public ED4_block_operator {
 public:
     shift_op(int direction_) : direction(direction_) {}
 
-    char *operate(const SeqPart& part, int& new_len) const {
+    char *operate(const SeqPart& part, int& new_len) const OVERRIDE {
         char *result = direction<0
             ? shift_left_sequence(part, new_len)
             : shift_right_sequence(part, new_len);

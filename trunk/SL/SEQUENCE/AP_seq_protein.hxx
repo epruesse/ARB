@@ -51,9 +51,9 @@ enum AP_PROTEINS {
 class AP_sequence_protein : public AP_sequence { // derived from a Noncopyable
     AP_PROTEINS *seq_prot;
 
-    AP_FLOAT count_weighted_bases() const;
-    void set(const char *isequence);
-    void unset();
+    AP_FLOAT count_weighted_bases() const OVERRIDE;
+    void set(const char *isequence) OVERRIDE;
+    void unset() OVERRIDE;
 
 public:
     AP_sequence_protein(const AliView *aliview);
@@ -61,9 +61,9 @@ public:
 
     const AP_PROTEINS *get_sequence() const { lazy_load_sequence(); ap_assert(seq_prot); return seq_prot; }
 
-    AP_sequence *dup() const;                       // used to get the real new element
-    AP_FLOAT combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0);
-    void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
+    AP_sequence *dup() const OVERRIDE;                       // used to get the real new element
+    AP_FLOAT combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0) OVERRIDE;
+    void partial_match(const AP_sequence* part, long *overlap, long *penalty) const OVERRIDE;
 };
 
 

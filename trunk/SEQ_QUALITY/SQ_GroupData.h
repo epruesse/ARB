@@ -65,11 +65,11 @@ public:
         return initialized;
     }
 
-    virtual void SQ_init_consensus(int size) = 0;
-    virtual int SQ_print_on_screen() = 0;
+    virtual void SQ_init_consensus(int size)                               = 0;
+    virtual int SQ_print_on_screen()                                       = 0;
     virtual consensus_result SQ_calc_consensus(const char *sequence) const = 0;
-    virtual void SQ_add_sequence(const char *sequence) = 0;
-    virtual void SQ_add(const SQ_GroupData& other) = 0;
+    virtual void SQ_add_sequence(const char *sequence)                     = 0;
+    virtual void SQ_add(const SQ_GroupData& other)                         = 0;
 
     int getSize() const {
         return size;
@@ -138,10 +138,9 @@ public:
         return *this;
     }
 
-    void SQ_init_consensus(int size);
-    int SQ_print_on_screen();
-    void SQ_add_column(int col);
-    void SQ_add(const SQ_GroupData& other); // add's other to this
+    void SQ_init_consensus(int size) OVERRIDE;
+    int SQ_print_on_screen() OVERRIDE;
+    void SQ_add(const SQ_GroupData& other) OVERRIDE; // add's other to this
 
 protected:
     Int<I> *consensus;
@@ -154,7 +153,7 @@ public:
     SQ_GroupData_RNA() {
     }
 
-    SQ_GroupData_RNA *clone() const {
+    SQ_GroupData_RNA *clone() const OVERRIDE {
         return new SQ_GroupData_RNA;
     }
     SQ_GroupData_RNA& operator = (const SQ_GroupData& other) OVERRIDE {
@@ -162,8 +161,8 @@ public:
         return *this;
     }
 
-    consensus_result SQ_calc_consensus (const char *sequence) const;
-    void SQ_add_sequence (const char *sequence);
+    consensus_result SQ_calc_consensus (const char *sequence) const OVERRIDE;
+    void SQ_add_sequence (const char *sequence) OVERRIDE;
 protected:
     static int class_counter;
 };
@@ -175,7 +174,7 @@ public:
     SQ_GroupData_PRO() {
     }
 
-    SQ_GroupData_PRO *clone() const {
+    SQ_GroupData_PRO *clone() const OVERRIDE {
         return new SQ_GroupData_PRO;
     }
     SQ_GroupData_PRO& operator = (const SQ_GroupData& other) OVERRIDE {
@@ -183,8 +182,8 @@ public:
         return *this;
     }
 
-    consensus_result SQ_calc_consensus (const char *sequence) const;
-    void SQ_add_sequence (const char *sequence);
+    consensus_result SQ_calc_consensus (const char *sequence) const OVERRIDE;
+    void SQ_add_sequence (const char *sequence) OVERRIDE;
 };
 
 // -----------------------

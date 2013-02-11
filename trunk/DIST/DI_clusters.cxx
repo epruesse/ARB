@@ -306,15 +306,15 @@ public:
     {}
 
     // ARB_countedTree interface
-    virtual GroupTree *dup() const { return new GroupTree(const_cast<ARB_tree_root*>(get_tree_root())); }
-    virtual void init_tree() { update_leaf_counters(); }
+    virtual GroupTree *dup() const OVERRIDE { return new GroupTree(const_cast<ARB_tree_root*>(get_tree_root())); }
+    virtual void init_tree() OVERRIDE { update_leaf_counters(); }
     // ARB_countedTree interface end
 
     DEFINE_TREE_RELATIVES_ACCESSORS(GroupTree);
 
     void map_species2tip(Species2Tip& mapping);
 
-    size_t get_leaf_count() const { return leaf_count; }
+    size_t get_leaf_count() const OVERRIDE { return leaf_count; }
     size_t update_leaf_counters();
 
     void tag_leaf() {
@@ -518,7 +518,7 @@ class HasntCurrentClusterPrefix : public ARB_tree_predicate {
     const GroupBuilder& builder;
 public:
     HasntCurrentClusterPrefix(const GroupBuilder& builder_) : builder(builder_) {}
-    bool selects(const ARB_tree& tree) const {
+    bool selects(const ARB_tree& tree) const OVERRIDE {
         const char *groupname        = tree.group_name();
         bool        hasClusterPrefix = groupname && builder.matches_current_prefix(groupname);
         return !hasClusterPrefix;
@@ -534,7 +534,7 @@ string concatenate_name_parts(const list<string>& namepart) {
 }
 
 struct UseTreeRoot : public ARB_tree_predicate {
-    bool selects(const ARB_tree& tree) const { return tree.is_root_node(); }
+    bool selects(const ARB_tree& tree) const OVERRIDE { return tree.is_root_node(); }
 };
 
 string GroupBuilder::generate_group_name(ClusterPtr cluster, const GroupTree *group_node) {
