@@ -197,17 +197,17 @@ public:
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
 
     void init(const AP_tree& tree_prototype, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
-    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL);
+    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL) OVERRIDE;
 
-    virtual void show(AW_device *device);
+    virtual void show(AW_device *device) OVERRIDE;
     const AW::Position& get_cursor() const { return cursor; }
 
     virtual void info(AW_device *device, AW_pos x, AW_pos y,
-                      AW_clicked_line *cl, AW_clicked_text *ct);
+                      AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
 
     virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char, AW_event_type type,
                          AW_pos x, AW_pos y,
-                         AW_clicked_line *cl, AW_clicked_text *ct);
+                         AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
 
     void key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier, char key_char,
                      AW_pos           x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
@@ -230,10 +230,10 @@ public:
     void     toggle_group(AP_tree * at);
     void     jump(AP_tree *at, const char *name);
     AP_tree *search(AP_tree *root, const char *name);
-    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL,  AW_CL) __ATTR__USERESULT;
-    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
-    int      check_update(GBDATA *gb_main);         // reload tree if needed
-    void     update(GBDATA *gb_main);
+    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL,  AW_CL) OVERRIDE __ATTR__USERESULT;
+    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
+    int      check_update(GBDATA *gb_main) OVERRIDE;         // reload tree if needed
+    void     update(GBDATA *gb_main) OVERRIDE;
     void     set_tree_type(AP_tree_sort type, AWT_canvas *ntw);
 
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
