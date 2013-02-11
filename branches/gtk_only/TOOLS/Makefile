@@ -124,7 +124,6 @@ arb_2_bin.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/test_global.h
 
-arb_consensus_tree.o: command_output.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -141,6 +140,7 @@ arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/command_output.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -372,7 +372,6 @@ arb_replace.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_replace.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_replace.o: $(ARBHOME)/INCLUDE/test_global.h
 
-arb_test.o: command_output.h
 arb_test.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_test.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -387,6 +386,7 @@ arb_test.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_test.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_test.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_test.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_test.o: $(ARBHOME)/INCLUDE/command_output.h
 arb_test.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_test.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_test.o: $(ARBHOME)/INCLUDE/gccver.h

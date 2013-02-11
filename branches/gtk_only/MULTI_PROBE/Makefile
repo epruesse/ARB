@@ -432,6 +432,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_defs.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_Window.o: $(ARBHOME)/INCLUDE/arb_file.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -465,6 +466,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_Window.o: $(ARBHOME)/INCLUDE/cb.h
+MP_Window.o: $(ARBHOME)/INCLUDE/command_output.h
 MP_Window.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_Window.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -481,3 +483,4 @@ MP_Window.o: $(ARBHOME)/INCLUDE/RegExpr.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_Window.o: $(ARBHOME)/INCLUDE/test_global.h
 MP_Window.o: $(ARBHOME)/INCLUDE/test_unit.h
+MP_Window.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
