@@ -1210,7 +1210,6 @@ target_is_missing_lib_prefix:
 ARBDB/ARBDB.dummy:           target_is_missing_lib_prefix
 CORE/CORE.dummy:             target_is_missing_lib_prefix
 AWT/AWT.dummy:               target_is_missing_lib_prefix
-WINDOW/WINDOW.dummy:         target_is_missing_lib_prefix
 WINDOW_GTK/WINDOW_GTK.dummy: target_is_missing_lib_prefix
 
 # rule to generate main target (normally a library):
