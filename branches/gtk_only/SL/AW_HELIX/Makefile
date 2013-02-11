@@ -76,5 +76,6 @@ AW_helix.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_helix.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_helix.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_helix.o: $(ARBHOME)/INCLUDE/test_global.h

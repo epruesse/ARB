@@ -45,6 +45,7 @@ SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arbtools.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/dupstr.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/smartptr.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -91,6 +92,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -151,5 +153,6 @@ SQ_main.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+SQ_main.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 SQ_main.o: $(ARBHOME)/INCLUDE/test_global.h

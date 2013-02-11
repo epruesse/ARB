@@ -83,6 +83,7 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_asciiprint.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -100,6 +101,7 @@ AWT_attributes.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_attributes.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_attributes.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -149,6 +151,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_canio.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -193,6 +196,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_canvas.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -237,6 +241,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -283,6 +288,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -321,6 +327,7 @@ AWT_hexdump.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/test_unit.h
@@ -376,6 +383,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -421,6 +429,7 @@ AWT_macro.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_macro.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -459,6 +468,7 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_map_key.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -489,6 +499,7 @@ AWT_modules.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_sel_boxes.o: awt.hxx
@@ -544,6 +555,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/items.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -591,6 +603,7 @@ AWT_seq_colors.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_seq_colors.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -638,6 +651,7 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_tables.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -679,6 +693,7 @@ AWT_www.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_www.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_www.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -688,6 +703,7 @@ AWT_www.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_www.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_www.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_www.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_www.o: $(ARBHOME)/INCLUDE/test_global.h

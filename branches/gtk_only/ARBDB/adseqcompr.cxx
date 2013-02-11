@@ -297,7 +297,7 @@ static void distribute_masters(CompressionTree *tree, int *mcount, int *max_mast
 // --------------------------------------------------------------------------------
 
 #define MAX_NUMBER 0x7fffffff
-COMPILE_ASSERT(MAX_NUMBER <= INT_MAX); // ensure 32-bit-version compatibility!
+STATIC_ASSERT(MAX_NUMBER <= INT_MAX); // ensure 32-bit-version compatibility!
 
 inline int g_b_read_number2(const unsigned char*& s) {
     int result;

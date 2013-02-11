@@ -447,6 +447,12 @@ class FunInfo {
                                                    wrapped_error.isSet() ? GBS_global_string(" (wrapped_error='%s')", &*wrapped_error) : "");
                     break;
                 }
+                case TEST_THREW:
+                    error = strdup("has thrown an exception");
+                    break;
+
+                case TEST_INVALID:
+                    error = strdup("is invalid");
             }
             if (error.isSet()) {
                 error = GBS_global_string_copy("%s(%s) %s", name.c_str(), upcase(mode_command[mode]), &*error);

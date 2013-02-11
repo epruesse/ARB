@@ -82,6 +82,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/dupstr.h
+ui_species.o: $(ARBHOME)/INCLUDE/gccver.h
 ui_species.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ui_species.o: $(ARBHOME)/INCLUDE/items.h
 ui_species.o: $(ARBHOME)/INCLUDE/pos_range.h

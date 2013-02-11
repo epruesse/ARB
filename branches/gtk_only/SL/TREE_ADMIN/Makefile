@@ -73,5 +73,6 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/dupstr.h
+TreeAdmin.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/test_global.h

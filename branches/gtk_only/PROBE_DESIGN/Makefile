@@ -90,6 +90,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/downcast.h
 probe_design.o: $(ARBHOME)/INCLUDE/dupstr.h
+probe_design.o: $(ARBHOME)/INCLUDE/gccver.h
 probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/items.h
 probe_design.o: $(ARBHOME)/INCLUDE/iupac.h
@@ -115,6 +116,7 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/attributes.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/dupstr.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/gccver.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/smartptr.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -166,6 +168,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/dupstr.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/gccver.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/items.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/nds.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -71,6 +71,7 @@ SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/dupstr.h
+SEC_bonddef.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -134,6 +135,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_db.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
+SEC_db.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_db.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_db.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -198,6 +200,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -249,6 +252,7 @@ SEC_helix.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
+SEC_helix.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -292,6 +296,7 @@ SEC_io.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_io.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
+SEC_io.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_io.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_layout.o: SEC_abspos.hxx
@@ -334,6 +339,7 @@ SEC_layout.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
+SEC_layout.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_main.o: SEC_abspos.hxx
@@ -406,6 +412,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_main.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+SEC_main.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_main.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -469,6 +476,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/iupac.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -514,6 +522,7 @@ SEC_read.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_read.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_read.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
+SEC_read.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_read.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_split.o: SEC_abspos.hxx
@@ -558,6 +567,7 @@ SEC_split.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_split.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_split.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
+SEC_split.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_split.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_structure.o: SEC_abspos.hxx
@@ -600,6 +610,7 @@ SEC_structure.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
+SEC_structure.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_toggle.o: SEC_defs.hxx
@@ -639,5 +650,6 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/dupstr.h
+SEC_toggle.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/test_global.h

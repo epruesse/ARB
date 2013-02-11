@@ -66,6 +66,7 @@ MP_Generation.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MP_Generation.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/cb.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_Generation.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -86,6 +87,7 @@ MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/cb.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -132,6 +134,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_main.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -162,6 +165,7 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/cb.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -224,6 +228,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/servercntrl.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -247,6 +252,7 @@ MP_permute.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MP_permute.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_permute.o: $(ARBHOME)/INCLUDE/cb.h
 MP_permute.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_permute.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_permute.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_permute.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -290,6 +296,7 @@ MP_probe.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_probe.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_probe.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_probe.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_probe.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -310,6 +317,7 @@ MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/cb.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -329,6 +337,7 @@ MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/cb.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -358,6 +367,7 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/cb.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/client.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_sonde.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -392,6 +402,7 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/cb.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -450,6 +461,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/dupstr.h
+MP_Window.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_Window.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_Window.o: $(ARBHOME)/INCLUDE/RegExpr.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/smartptr.h

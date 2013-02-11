@@ -58,6 +58,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_ml.o: $(ARBHOME)/INCLUDE/dupstr.h
+ST_ml.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_ml.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/smartptr.h
 ST_ml.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -106,6 +107,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/dupstr.h
+ST_quality.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -154,6 +156,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/dupstr.h
+ST_window.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_window.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ST_window.o: $(ARBHOME)/INCLUDE/items.h

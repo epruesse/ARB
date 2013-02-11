@@ -67,5 +67,6 @@ WETC_main.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+WETC_main.o: $(ARBHOME)/INCLUDE/gccver.h
 WETC_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 WETC_main.o: $(ARBHOME)/INCLUDE/test_global.h

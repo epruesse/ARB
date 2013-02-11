@@ -75,6 +75,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/dupstr.h
+db_scanner.o: $(ARBHOME)/INCLUDE/gccver.h
 db_scanner.o: $(ARBHOME)/INCLUDE/items.h
 db_scanner.o: $(ARBHOME)/INCLUDE/smartptr.h
 db_scanner.o: $(ARBHOME)/INCLUDE/test_global.h

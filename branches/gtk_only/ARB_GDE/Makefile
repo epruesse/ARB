@@ -94,6 +94,7 @@ GDE.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 GDE.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/dupstr.h
+GDE.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -121,6 +122,7 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/dupstr.h
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -175,6 +177,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/dupstr.h
+GDE_event.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_event.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_event.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -198,6 +201,7 @@ GDE_FileIO.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/dupstr.h
+GDE_FileIO.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -220,6 +224,7 @@ GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/dupstr.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -242,6 +247,7 @@ GDE_global.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_global.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_global.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_global.o: $(ARBHOME)/INCLUDE/dupstr.h
+GDE_global.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_global.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_global.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -264,6 +270,7 @@ GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/dupstr.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -286,5 +293,6 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/dupstr.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/test_global.h

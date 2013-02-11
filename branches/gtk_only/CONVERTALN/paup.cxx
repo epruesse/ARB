@@ -135,4 +135,5 @@ void to_paup(const FormattedFile& in, const char *outf) {
     paup_print_header_counters(write, total_seq, maxsize);
 
     write.seq_done(ali.get_count());
+    write.expect_written();
 }

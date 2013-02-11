@@ -75,5 +75,6 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/test_global.h
