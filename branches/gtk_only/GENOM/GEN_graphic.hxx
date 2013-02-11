@@ -70,20 +70,20 @@ protected:
 
 public:
     GEN_graphic(AW_root *aw_root, GBDATA *gb_main, GEN_graphic_cb_installer callback_installer_, int window_nr_);
-    virtual ~GEN_graphic();
+    virtual ~GEN_graphic() OVERRIDE;
 
     void reinit_gen_root(AWT_canvas *scr, bool force_reinit);
 
     void set_display_style(GEN_DisplayStyle type);
     GEN_DisplayStyle get_display_style() const { return style; }
 
-    virtual     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr, AW_CL);
+    virtual     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr, AW_CL) OVERRIDE;
 
-    virtual     void show(AW_device *device);
-    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
-    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char, AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
+    virtual     void show(AW_device *device) OVERRIDE;
+    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
+    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char, AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
 
-    virtual int check_update(GBDATA *gbdummy);
+    virtual int check_update(GBDATA *gbdummy) OVERRIDE;
 
     AW_root *get_aw_root() const { return aw_root; }
     GBDATA *get_gb_main() const { return gb_main; }

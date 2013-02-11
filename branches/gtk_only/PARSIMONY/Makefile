@@ -48,10 +48,12 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+AP_buffer.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AP_main.o: AP_buffer.hxx
@@ -88,6 +90,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_main.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -100,6 +103,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/test_global.h
 AP_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
@@ -124,13 +128,36 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/attributes.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_help.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/devices/aw_device_print.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/devices/aw_device_size.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 AP_tree_nlen.o: AP_buffer.hxx
 AP_tree_nlen.o: ap_main.hxx
@@ -170,7 +197,9 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/cb.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -183,7 +212,9 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 PARS_debug.o: pars_debug.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -208,6 +239,7 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
+PARS_debug.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -273,6 +305,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
+PARS_dtree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -286,6 +319,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
@@ -307,6 +341,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
+PARS_klprops.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -372,6 +407,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PARS_main.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -386,6 +422,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_main.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/nds.h
 PARS_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+PARS_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_main.o: $(ARBHOME)/INCLUDE/test_global.h
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx

@@ -66,6 +66,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/cb.h
+db_scanner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 db_scanner.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

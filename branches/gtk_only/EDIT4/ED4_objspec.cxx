@@ -10,7 +10,6 @@
 // =============================================================== //
 
 #include "ed4_class.hxx"
-#include <static_assert.h>
 
 #define MAX_POSSIBLE_SPECIFIED_OBJECT_TYPES ((sizeof(ED4_level)*8)-1)
 

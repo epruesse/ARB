@@ -235,8 +235,10 @@ void AP_tree::insert(AP_tree *new_brother) {
 #if defined(WARN_TODO)
 #warning move to ARB_tree ?
 #endif
-void AP_tree_root::change_root(AP_tree *oldroot, AP_tree *newroot) {
-    if (root_changed_cb) root_changed_cb(root_changed_cd, oldroot, newroot);
+void AP_tree_root::change_root(ARB_tree *oldroot, ARB_tree *newroot) {
+    if (root_changed_cb) {
+        root_changed_cb(root_changed_cd, DOWNCAST(AP_tree*, oldroot), DOWNCAST(AP_tree*, newroot));
+    }
     if (!oldroot) {
         ap_assert(newroot);
         if (gb_tree_gone) {                         // when tree was temporarily deleted (e.g. by 'Remove & add all')

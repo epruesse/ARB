@@ -39,6 +39,7 @@ db_server.o: $(ARBHOME)/INCLUDE/arbdb.h
 db_server.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 db_server.o: $(ARBHOME)/INCLUDE/arbtools.h
 db_server.o: $(ARBHOME)/INCLUDE/attributes.h
+db_server.o: $(ARBHOME)/INCLUDE/cxxforward.h
 db_server.o: $(ARBHOME)/INCLUDE/dupstr.h
 db_server.o: $(ARBHOME)/INCLUDE/gccver.h
 db_server.o: $(ARBHOME)/INCLUDE/servercntrl.h

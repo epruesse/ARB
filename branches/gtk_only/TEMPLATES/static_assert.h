@@ -12,7 +12,7 @@
 #define STATIC_ASSERT_H
 
 #ifndef CXXFORWARD_H
-#include "cxxforward.h"
+#include <cxxforward.h>
 #endif
 
 #if Cxx11

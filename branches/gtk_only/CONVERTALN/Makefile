@@ -68,6 +68,7 @@ date.o: $(ARBHOME)/INCLUDE/arb_core.h
 date.o: $(ARBHOME)/INCLUDE/arb_defs.h
 date.o: $(ARBHOME)/INCLUDE/arbtools.h
 date.o: $(ARBHOME)/INCLUDE/attributes.h
+date.o: $(ARBHOME)/INCLUDE/cxxforward.h
 date.o: $(ARBHOME)/INCLUDE/dupstr.h
 date.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 date.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -210,6 +211,7 @@ main.o: $(ARBHOME)/INCLUDE/arb_core.h
 main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 main.o: $(ARBHOME)/INCLUDE/arbtools.h
 main.o: $(ARBHOME)/INCLUDE/attributes.h
+main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 main.o: $(ARBHOME)/INCLUDE/dupstr.h
 main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 main.o: $(ARBHOME)/INCLUDE/gccver.h

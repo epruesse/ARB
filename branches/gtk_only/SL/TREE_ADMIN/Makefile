@@ -64,6 +64,7 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cb.h
+TreeAdmin.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

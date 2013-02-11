@@ -67,6 +67,7 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/cb.h
+AW_helix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_helix.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

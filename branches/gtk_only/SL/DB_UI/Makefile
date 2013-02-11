@@ -71,6 +71,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/cb.h
+ui_species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_query.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx

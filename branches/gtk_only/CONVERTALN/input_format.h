@@ -7,9 +7,6 @@
 #ifndef DEFS_H
 #include "defs.h"
 #endif
-#ifndef CXXFORWARD_H
-#include <cxxforward.h>
-#endif
 
 class FormatReader;
 

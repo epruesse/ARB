@@ -18,6 +18,9 @@
 #ifndef _GLIBCXX_NEW
 #include <new>
 #endif
+#ifndef CXXFORWARD_H
+#include <cxxforward.h>
+#endif
 
 //  Base class for classes that may not be copied, neither via copy
 //  constructor or assignment operator.

@@ -58,6 +58,7 @@ WETC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/cb.h
+WETC_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 WETC_main.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

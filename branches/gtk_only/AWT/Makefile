@@ -74,6 +74,7 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_asciiprint.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -100,6 +101,7 @@ AWT_attributes.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+AWT_attributes.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -142,6 +144,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_canio.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -187,6 +190,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_canvas.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -232,6 +236,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -279,6 +284,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -318,6 +324,7 @@ AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -374,6 +381,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -420,6 +428,7 @@ AWT_macro.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_macro.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -459,6 +468,7 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_map_key.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -490,6 +500,7 @@ AWT_modules.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
+AWT_modules.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -545,6 +556,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -594,6 +606,7 @@ AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_seq_colors.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -642,6 +655,7 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_tables.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
