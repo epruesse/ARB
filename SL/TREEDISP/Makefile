@@ -143,7 +143,6 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/test_global.h
 
-TreeDisplay.o: ../../WINDOW/aw_common.hxx
 TreeDisplay.o: TreeDisplay.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -172,6 +171,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -191,6 +191,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cb.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/devices/aw_device_print.hxx

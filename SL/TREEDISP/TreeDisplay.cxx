@@ -2693,7 +2693,7 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def)
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
-#include <../../WINDOW/aw_common.hxx>
+#include <aw_common.hxx>
 
 static void fake_AD_map_viewer_cb(GBDATA *, AD_MAP_VIEWER_TYPE ) {}
 
