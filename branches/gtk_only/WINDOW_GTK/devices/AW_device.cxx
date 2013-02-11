@@ -339,11 +339,6 @@ void AW_device::clear_part(const AW::Rectangle& rect, AW_bitset filteri) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_device::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri) {
-    GTK_NOT_IMPLEMENTED;
-}
-
-
 void AW_device::set_filter(AW_bitset filteri) {
     filter = filteri;
 }
