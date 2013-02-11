@@ -11,8 +11,6 @@
 #include <awt_canvas.hxx>
 #endif
 
-
-#define MAX(x, y) (((x)>(y)) ?  (x) : (y))
 #define sai_assert(cond) arb_assert(cond)
 
 #define AWAR_SPV_SAI_2_PROBE "sai_visualize/sai_2_probe"

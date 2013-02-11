@@ -1220,8 +1220,8 @@ char *ED4_SearchResults::buildColorString(const ED4_sequence_terminal *seq_termi
 
         if (shown[what]) {
             int color = ED4_G_SBACK_0 + what;
-            int s = max(pos->get_start_pos(), start)-start;
-            int e = min(pos->get_end_pos(), end)-start;
+            int s = std::max(pos->get_start_pos(), start)-start;
+            int e = std::min(pos->get_end_pos(), end)-start;
 
             for (i=s; i<=e; i++) {
                 if (buffer[i]==0 || abs(buffer[i])>abs(color)) {

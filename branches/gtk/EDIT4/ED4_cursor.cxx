@@ -1008,10 +1008,10 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
 
     LocallyModify<bool> flag(allowed_to_draw, true);
     if (cursor_diff >= 0) {
-        ShowCursor(cursor_diff*length_of_char, ED4_C_RIGHT, ABS(cursor_diff));
+        ShowCursor(cursor_diff*length_of_char, ED4_C_RIGHT, abs(cursor_diff));
     }
     else {
-        ShowCursor(cursor_diff*length_of_char, ED4_C_LEFT, ABS(cursor_diff));
+        ShowCursor(cursor_diff*length_of_char, ED4_C_LEFT, abs(cursor_diff));
     }
 }
 
