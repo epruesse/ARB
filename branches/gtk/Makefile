@@ -320,6 +320,7 @@ ifeq ($(GTK),1)
 	GTKLIBS:= $(shell pkg-config --libs gtk+-2.0 | sed 's/-pthread//')
 
 	cflags += $(GTKCFLAGS)
+	dflags += -DARB_GTK
 endif
 
 #---------------------- X11 location

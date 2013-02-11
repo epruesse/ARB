@@ -17,6 +17,11 @@
 #include <limits.h>
 #endif
 
+#if defined(ARB_GTK)
+#error attempt to include header from WINDOW (while ARB_GTK defined)
+#endif
+
+
 #if defined(DEBUG) && defined(DEBUG_GRAPHICS)
 // if you want flush() to be called after every motif command :
 #define AUTO_FLUSH(device) (device)->flush()
