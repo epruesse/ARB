@@ -703,17 +703,8 @@ LIBPATH = -L$(ARBHOME)/lib
 DEST_LIB = lib
 DEST_BIN = bin
 
-#QUICK HACK!!!
-#FIXME
-#Currently INCLUDE contains links to files from WINDOW.
-#However if GTK is defined we want to use the headers from WINDOW_GTK not from INCLUDE
-ifeq ($(GTK),1)
-		AINCLUDES := -I. -I$(ARBHOME)/WINDOW_GTK -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-		CPPINCLUDES := -I. -I$(ARBHOME)/WINDOW_GTK -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-else
-		AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-		CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)	
-endif	
+AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
 
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
@@ -816,7 +807,6 @@ ARCHS = \
 			TREEGEN/TREEGEN.a \
 			UNIT_TESTER/UNIT_TESTER.a \
 			WETC/WETC.a \
-			WINDOW/libWINDOW.a \
 			WINDOW_GTK/libWINDOW_GTK.a \
 			XML/XML.a \
 
@@ -1304,8 +1294,7 @@ SL/TREEDISP/TREEDISP.dummy:		links_non_perl
 STAT/STAT.dummy:			links_non_perl
 TREEGEN/TREEGEN.dummy:			links_non_perl
 WETC/WETC.dummy:			links_non_perl
-WINDOW/libWINDOW.dummy:			links_non_perl
-WINDOW_GTK/libWINDOW_GTK.dummy:			links_non_perl
+WINDOW_GTK/libWINDOW_GTK.dummy:		links_non_perl
 XML/XML.dummy:				links_non_perl
 
 ifeq ($(OPENGL),1)
@@ -1403,7 +1392,6 @@ HELP_SOURCE/HELP_SOURCE.dummy: link_db xml menus
 
 db:	ARBDB/libARBDB.dummy
 core:	CORE/libCORE.dummy
-aw:	WINDOW/libWINDOW.dummy
 aw_gtk:	WINDOW_GTK/libWINDOW_GTK.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
@@ -1979,7 +1967,6 @@ UNITS_TESTED = \
 	SERVERCNTRL/SERVERCNTRL.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	SL/PRONUC/PRONUC.test \
-	WINDOW/libWINDOW.test \
 	WINDOW_GTK/libWINDOW_GTK.test \
 	HELP_SOURCE/arb_help2xml.test \
 	CONVERTALN/CONVERTALN.test \
