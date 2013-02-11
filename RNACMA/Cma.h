@@ -24,14 +24,30 @@
 #ifndef CMA_H
 #define CMA_H
 
+#ifndef _GLIBCXX_IOSTREAM
 #include <iostream>
-#include <eigen/Eigen/Eigen>
+#endif
+#ifndef _GLIBCXX_VECTOR
 #include <vector>
+#endif
+#ifndef _GLIBCXX_MAP
 #include <map>
-#include <math.h>
+#endif
+#ifndef _GLIBCXX_CMATH
+#include <cmath>
+#endif
+#ifndef _GLIBCXX_STRING
 #include <string>
+#endif
+#ifndef _GLIBCXX_LIST
 #include <list>
+#endif
+
+#include <eigen/Eigen/Eigen>
+
+#ifndef CXXFORWARD_H
 #include <cxxforward.h>
+#endif
 
 using namespace std; // @@@ wtf! this really is a nono
 using Eigen::VectorXd;

@@ -47,6 +47,7 @@ aisc.o: aisc_token.h
 aisc.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc.o: $(ARBHOME)/INCLUDE/dupstr.h
 aisc.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -62,6 +63,7 @@ aisc_commands.o: aisc_token.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc_commands.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/dupstr.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -74,6 +76,7 @@ aisc_eval.o: aisc_proto.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc_eval.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/dupstr.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -88,6 +91,7 @@ aisc_mix.o: aisc_token.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc_mix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/dupstr.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -100,6 +104,7 @@ aisc_parser.o: aisc_token.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc_parser.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/dupstr.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -114,6 +119,7 @@ aisc_var_ref.o: aisc_token.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc_var_ref.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/dupstr.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/test_global.h

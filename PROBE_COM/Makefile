@@ -50,6 +50,7 @@ aisc_extern.o: $(ARBHOME)/INCLUDE/arb_core.h
 aisc_extern.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_extern.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc_extern.o: $(ARBHOME)/INCLUDE/bytestring.h
+aisc_extern.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_extern.o: $(ARBHOME)/INCLUDE/dupstr.h
 aisc_extern.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_extern.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -65,6 +66,7 @@ client.o: $(ARBHOME)/INCLUDE/arb_cs.h
 client.o: $(ARBHOME)/INCLUDE/arbtools.h
 client.o: $(ARBHOME)/INCLUDE/attributes.h
 client.o: $(ARBHOME)/INCLUDE/bytestring.h
+client.o: $(ARBHOME)/INCLUDE/cxxforward.h
 client.o: $(ARBHOME)/INCLUDE/dupstr.h
 client.o: $(ARBHOME)/INCLUDE/gccver.h
 client.o: $(ARBHOME)/INCLUDE/SigHandler.h
@@ -85,6 +87,7 @@ GENC/aisc_global.o: $(ARBHOME)/INCLUDE/arb_core.h
 GENC/aisc_global.o: $(ARBHOME)/INCLUDE/arbtools.h
 GENC/aisc_global.o: $(ARBHOME)/INCLUDE/attributes.h
 GENC/aisc_global.o: $(ARBHOME)/INCLUDE/bytestring.h
+GENC/aisc_global.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GENC/aisc_global.o: $(ARBHOME)/INCLUDE/dupstr.h
 GENC/aisc_global.o: $(ARBHOME)/INCLUDE/gccver.h
 GENC/aisc_global.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -103,6 +106,7 @@ GENC/aisc_server.o: $(ARBHOME)/INCLUDE/arb_core.h
 GENC/aisc_server.o: $(ARBHOME)/INCLUDE/arbtools.h
 GENC/aisc_server.o: $(ARBHOME)/INCLUDE/attributes.h
 GENC/aisc_server.o: $(ARBHOME)/INCLUDE/bytestring.h
+GENC/aisc_server.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GENC/aisc_server.o: $(ARBHOME)/INCLUDE/dupstr.h
 GENC/aisc_server.o: $(ARBHOME)/INCLUDE/gccver.h
 GENC/aisc_server.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -133,6 +137,7 @@ struct_man.o: $(ARBHOME)/INCLUDE/arb_core.h
 struct_man.o: $(ARBHOME)/INCLUDE/arbtools.h
 struct_man.o: $(ARBHOME)/INCLUDE/attributes.h
 struct_man.o: $(ARBHOME)/INCLUDE/bytestring.h
+struct_man.o: $(ARBHOME)/INCLUDE/cxxforward.h
 struct_man.o: $(ARBHOME)/INCLUDE/dupstr.h
 struct_man.o: $(ARBHOME)/INCLUDE/gccver.h
 struct_man.o: $(ARBHOME)/INCLUDE/test_global.h

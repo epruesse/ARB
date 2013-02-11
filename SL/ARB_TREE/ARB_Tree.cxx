@@ -229,7 +229,7 @@ ARB_tree::~ARB_tree() {
     unlink_from_father();
 
     if (tree_root && tree_root->get_root_node() == this) {
-        tree_root->change_root(this, NULL);
+        tree_root->ARB_tree_root::change_root(this, NULL);
     }
 
     delete leftson;                                 // implicitely sets leftson  = NULL

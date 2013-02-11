@@ -66,6 +66,7 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/cb.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

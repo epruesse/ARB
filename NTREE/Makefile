@@ -72,6 +72,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/cb.h
+ad_ali.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_ali.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -121,6 +122,7 @@ ad_ext.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/cb.h
+ad_ext.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_ext.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -182,6 +184,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/cb.h
+ad_spec.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_spec.o: $(ARBHOME)/INCLUDE/dbui.h
 ad_spec.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -195,6 +198,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/downcast.h
 ad_spec.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_spec.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_spec.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_spec.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_spec.o: $(ARBHOME)/INCLUDE/test_global.h
 ad_spec.o: $(ARBHOME)/INCLUDE/test_unit.h
 ad_spec.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
@@ -240,6 +244,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/cb.h
+ad_transpro.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -299,6 +304,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/cb.h
 ad_trees.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_trees.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -351,6 +357,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -398,6 +405,7 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/cb.h
+AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -450,6 +458,7 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/cb.h
+AP_cprofile.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -500,6 +509,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cb.h
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -553,6 +563,7 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/cb.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -605,6 +616,7 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cb.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -617,6 +629,7 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
@@ -661,6 +674,7 @@ NT_cb.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/cb.h
+NT_cb.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_cb.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -714,6 +728,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/cb.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -750,6 +765,7 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_question.hxx
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/EXP.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -797,6 +813,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/cb.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -874,6 +891,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awtc_submission.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awti_export.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/cb.h
+NT_extern.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_extern.o: $(ARBHOME)/INCLUDE/db_query.h
 NT_extern.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 NT_extern.o: $(ARBHOME)/INCLUDE/dbui.h
@@ -900,6 +918,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/refentries.h
 NT_extern.o: $(ARBHOME)/INCLUDE/seq_quality.h
 NT_extern.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_extern.o: $(ARBHOME)/INCLUDE/st_window.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_extern.o: $(ARBHOME)/INCLUDE/svn_revision.h
 NT_extern.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_extern.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
@@ -940,6 +959,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/cb.h
+NT_import.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_import.o: $(ARBHOME)/INCLUDE/dbui.h
 NT_import.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -992,6 +1012,7 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cb.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -1039,6 +1060,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/cb.h
+NT_join.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_join.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -1102,6 +1124,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_macro.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/cb.h
+NT_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_main.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -1152,6 +1175,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/cb.h
+NT_sort.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_sort.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -1202,6 +1226,7 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/cb.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -1236,10 +1261,12 @@ NT_tree_cmp.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+NT_tree_cmp.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_tree_cmp.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_validManual.o: ntree.hxx
@@ -1276,6 +1303,7 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/cb.h
+NT_validManual.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -1323,6 +1351,7 @@ NT_validNames.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/awt_www.hxx
+NT_validNames.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

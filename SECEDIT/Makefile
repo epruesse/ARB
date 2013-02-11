@@ -49,7 +49,9 @@ SEC_abspos.o: SEC_defs.hxx
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arbtools.h
+SEC_abspos.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/dupstr.h
+SEC_abspos.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_bonddef.o: SEC_bonddef.hxx
@@ -70,6 +72,7 @@ SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+SEC_bonddef.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -124,6 +127,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_db.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_db.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -189,6 +193,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_graphic.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -237,6 +242,7 @@ SEC_helix.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_helix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -254,6 +260,7 @@ SEC_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/smartptr.h
+SEC_helix.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_io.o: SEC_abspos.hxx
@@ -281,6 +288,7 @@ SEC_io.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_io.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_io.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -297,6 +305,7 @@ SEC_io.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_io.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/gccver.h
+SEC_io.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_io.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_layout.o: SEC_abspos.hxx
@@ -324,6 +333,7 @@ SEC_layout.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_layout.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -340,6 +350,7 @@ SEC_layout.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/gccver.h
+SEC_layout.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_main.o: SEC_abspos.hxx
@@ -395,6 +406,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_main.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -414,6 +426,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 SEC_main.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+SEC_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_main.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_paint.o: SEC_abspos.hxx
@@ -459,6 +472,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -479,6 +493,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/iupac.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/smartptr.h
+SEC_paint.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_read.o: SEC_abspos.hxx
@@ -507,6 +522,7 @@ SEC_read.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_read.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_read.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -523,6 +539,7 @@ SEC_read.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_read.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_read.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/gccver.h
+SEC_read.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_read.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_split.o: SEC_abspos.hxx
@@ -552,6 +569,7 @@ SEC_split.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_split.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_split.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -568,6 +586,7 @@ SEC_split.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_split.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_split.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/gccver.h
+SEC_split.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_split.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_structure.o: SEC_abspos.hxx
@@ -595,6 +614,7 @@ SEC_structure.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_structure.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -611,6 +631,7 @@ SEC_structure.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/gccver.h
+SEC_structure.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_toggle.o: SEC_defs.hxx
@@ -641,6 +662,7 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+SEC_toggle.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

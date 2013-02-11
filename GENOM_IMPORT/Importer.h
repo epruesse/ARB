@@ -91,25 +91,25 @@ public:
 
 
 class GenebankImporter : public Importer {
-    void         import_section();
-    virtual bool readFeatureTableLine(string& line);
+    void         import_section() OVERRIDE;
+    virtual bool readFeatureTableLine(string& line) OVERRIDE;
     void         parseSequence(const string& tag, const string& headerline);
 
 public:
     GenebankImporter(FileBuffer& Flatfile, DBwriter& DB_writer);
-    virtual ~GenebankImporter() {}
+    virtual ~GenebankImporter() OVERRIDE {}
 
 };
 
 
 class EmblImporter : public Importer {
-    void         import_section();
-    virtual bool readFeatureTableLine(string& line);
+    void         import_section() OVERRIDE;
+    virtual bool readFeatureTableLine(string& line) OVERRIDE;
     void         parseSequence(const string& headerline);
 
 public:
     EmblImporter(FileBuffer& Flatfile, DBwriter& DB_writer);
-    virtual ~EmblImporter() {}
+    virtual ~EmblImporter() OVERRIDE {}
 };
 
 

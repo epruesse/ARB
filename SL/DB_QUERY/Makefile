@@ -73,6 +73,7 @@ db_query.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 db_query.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 db_query.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 db_query.o: $(ARBHOME)/INCLUDE/cb.h
+db_query.o: $(ARBHOME)/INCLUDE/cxxforward.h
 db_query.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 db_query.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 db_query.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

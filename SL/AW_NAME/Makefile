@@ -75,6 +75,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/cb.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -128,6 +129,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/bytestring.h
 AW_rename.o: $(ARBHOME)/INCLUDE/cb.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client_types.h
+AW_rename.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_rename.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

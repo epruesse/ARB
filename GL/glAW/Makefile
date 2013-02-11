@@ -68,6 +68,7 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

@@ -65,6 +65,7 @@ nds.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 nds.o: $(ARBHOME)/INCLUDE/cb.h
+nds.o: $(ARBHOME)/INCLUDE/cxxforward.h
 nds.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 nds.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 nds.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

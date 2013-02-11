@@ -76,6 +76,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -126,6 +127,7 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/cb.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -148,5 +150,7 @@ GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_core.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbtools.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/dupstr.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/gccver.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/test_global.h

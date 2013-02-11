@@ -71,6 +71,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/cb.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -128,6 +129,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/cb.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx

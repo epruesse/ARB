@@ -43,27 +43,25 @@ AW_HEADER_MAIN
 #define AWAR_COLUMNSTAT_BASE "tmp/pars/colstat"
 #define AWAR_COLUMNSTAT_NAME AWAR_COLUMNSTAT_BASE "/name"
 
-GBDATA *GLOBAL_gb_main;                             // global gb_main for arb_pars
+GBDATA              *GLOBAL_gb_main = NULL;
+static ArbParsimony *GLOBAL_PARS    = NULL;
 
-#if defined(WARN_TODO)
-#warning make GLOBAL_PARS static!
-#endif
-PARS_global *GLOBAL_PARS;
+inline AWT_graphic_tree *global_tree() { return GLOBAL_PARS->get_tree(); }
 
 // waaah more globals :(
 AP_main *ap_main;
 
 static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
-    ap_assert((AWT_TREE(ntw) == GLOBAL_PARS->tree));
+    ap_assert((AWT_TREE(ntw) == global_tree()));
 
-    GB_ERROR error = GLOBAL_PARS->tree->save(ntw->gb_main, 0, 0, 0);
+    GB_ERROR error = global_tree()->save(ntw->gb_main, 0, 0, 0);
     if (error) aw_message(error);
 
     ntw->zoom_reset_and_refresh();
 }
 
 static void pars_export_tree() {
-    GB_ERROR error = GLOBAL_PARS->tree->save(0, 0, 0, 0);
+    GB_ERROR error = global_tree()->save(0, 0, 0, 0);
     if (error) aw_message(error);
 }
 
@@ -1028,7 +1026,7 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, AW_CL limit_only) {
 
 static void NT_optimize(AW_window *, AWT_canvas *ntw) {
     arb_progress progress("Optimizing Tree");
-    PARS_optimizer_cb(rootNode(), progress);
+    GLOBAL_PARS->optimize_tree(rootNode(), progress);
     ASSERT_VALID_TREE(rootNode());
     rootEdge()->calc_branchlengths();
     AWT_TREE(ntw)->resort_tree(0);
@@ -1266,32 +1264,32 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
     AW_gc_manager aw_gc_manager = 0;
 
-    GLOBAL_PARS->tree = PARS_generate_tree(awr, wfilt);
+    GLOBAL_PARS->generate_tree(wfilt);
 
     AWT_canvas *ntw;
     {
-        AP_tree_sort  old_sort_type = GLOBAL_PARS->tree->tree_sort;
-        GLOBAL_PARS->tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
-        ntw = new AWT_canvas(GLOBAL_gb_main, (AW_window *)awm, GLOBAL_PARS->tree, aw_gc_manager, AWAR_TREE);
-        GLOBAL_PARS->tree->set_tree_type(old_sort_type, ntw);
+        AP_tree_sort  old_sort_type = global_tree()->tree_sort;
+        global_tree()->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
+        ntw = new AWT_canvas(GLOBAL_gb_main, (AW_window *)awm, global_tree(), aw_gc_manager, AWAR_TREE);
+        global_tree()->set_tree_type(old_sort_type, ntw);
     }
 
     {
         GB_ERROR error = 0;
         arb_progress progress("loading tree");
         NT_reload_tree_event(awr, ntw, 0);             // load tree (but do not expose - first zombies need to be removed)
-        if (!GLOBAL_PARS->tree->get_root_node()) {
+        if (!global_tree()->get_root_node()) {
             error = "I cannot load the selected tree";
         }
         else {
             AP_tree_edge::initialize(rootNode());   // builds edges
-            long removed = GLOBAL_PARS->tree->tree_static->remove_leafs(AWT_REMOVE_DELETED);
+            long removed = global_tree()->tree_static->remove_leafs(AWT_REMOVE_DELETED);
 
-            PARS_tree_init(GLOBAL_PARS->tree);
-            removed += GLOBAL_PARS->tree->tree_static->remove_leafs(AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
+            PARS_tree_init(global_tree());
+            removed += global_tree()->tree_static->remove_leafs(AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
 
-            if (!GLOBAL_PARS->tree->get_root_node()) {
-                const char *aliname = GLOBAL_PARS->tree->tree_static->get_aliview()->get_aliname();
+            if (!global_tree()->get_root_node()) {
+                const char *aliname = global_tree()->tree_static->get_aliview()->get_aliname();
                 error               = GBS_global_string("Less than 2 species contain data in '%s'\n"
                                                         "Tree vanished", aliname);
             }
@@ -1680,10 +1678,8 @@ int ARB_main(int argc, const char *argv[]) {
     AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS");
     AD_map_viewer_aw_root = aw_root;
 
-    ap_main = new AP_main;
-
-    GLOBAL_PARS      = (PARS_global *)calloc(sizeof(PARS_global), 1);
-    GLOBAL_PARS->awr = aw_root;
+    ap_main     = new AP_main;
+    GLOBAL_PARS = new ArbParsimony(aw_root);
 
     const char *db_server = ":";
 
@@ -1734,4 +1730,5 @@ int ARB_main(int argc, const char *argv[]) {
     aw_root->main_loop();
     return EXIT_SUCCESS;
 }
+
 

@@ -74,6 +74,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/cxxforward.h
 irstree_display.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -87,6 +88,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/dupstr.h
 irstree_display.o: $(ARBHOME)/INCLUDE/gccver.h
 irstree_display.o: $(ARBHOME)/INCLUDE/nds.h
 irstree_display.o: $(ARBHOME)/INCLUDE/smartptr.h
+irstree_display.o: $(ARBHOME)/INCLUDE/static_assert.h
 irstree_display.o: $(ARBHOME)/INCLUDE/test_global.h
 
 TreeCallbacks.o: TreeCallbacks.hxx
@@ -131,6 +133,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/cb.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -143,6 +146,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/test_global.h
 
 TreeDisplay.o: TreeDisplay.hxx
@@ -192,6 +196,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cb.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
@@ -206,5 +211,6 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/nds.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/smartptr.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/test_global.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/test_unit.h

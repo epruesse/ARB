@@ -59,6 +59,7 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
+changekey.o: $(ARBHOME)/INCLUDE/cxxforward.h
 changekey.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 changekey.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 changekey.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -100,6 +101,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/cxxforward.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
@@ -147,6 +149,7 @@ species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 species.o: $(ARBHOME)/INCLUDE/cb.h
+species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 species.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 species.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
 species.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
