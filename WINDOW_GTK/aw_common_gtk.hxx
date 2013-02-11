@@ -28,10 +28,10 @@ class AW_common_gtk;
 class AW_GC_gtk : public AW_GC { // derived from Noncopyable
     GdkGC*      gc;
 
-    virtual void wm_set_foreground_color(AW_rgb col);
-    virtual void wm_set_function(AW_function mode);
-    virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle);
-    virtual void wm_set_font(AW_font font_nr, int size, int *found_size);
+    virtual void wm_set_foreground_color(AW_rgb col) OVERRIDE;
+    virtual void wm_set_function(AW_function mode) OVERRIDE;
+    virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle) OVERRIDE;
+    virtual void wm_set_font(AW_font font_nr, int size, int *found_size) OVERRIDE;
 
     /**
      * Searches for the first occurrence of 'what' in 'text' and replaces it with 'with'.
@@ -48,7 +48,7 @@ public:
     ~AW_GC_gtk() OVERRIDE;
 
     // AW_GC interface (uses motif call)
-    virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const;
+    virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const OVERRIDE;
 
     inline AW_common_gtk *get_common() const;
 
@@ -72,7 +72,7 @@ public:
                  AW_window *aww,
                  AW_area    area);
 
-    virtual AW_GC *create_gc();
+    virtual AW_GC *create_gc() OVERRIDE;
 
     const AW_GC_gtk *map_gc(int gc) const { return DOWNCAST(const AW_GC_gtk*, AW_common::map_gc(gc)); }
     AW_GC_gtk *map_mod_gc(int gc) { return DOWNCAST(AW_GC_gtk*, AW_common::map_mod_gc(gc)); }

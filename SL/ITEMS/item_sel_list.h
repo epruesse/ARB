@@ -50,7 +50,7 @@ public:
                         SelectedFields     field_filter_,
                         ItemSelector&      selector_);
 
-    void fill();
+    void fill() OVERRIDE;
 
     ItemSelector& get_selector() const { return selector; }
 };

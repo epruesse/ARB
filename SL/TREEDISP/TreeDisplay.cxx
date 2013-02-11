@@ -2770,7 +2770,7 @@ public:
     }
     virtual ~fake_AW_common() OVERRIDE {}
 
-    virtual AW_GC *create_gc() {
+    virtual AW_GC *create_gc() OVERRIDE {
         return new fake_AW_GC(this);
     }
 };
