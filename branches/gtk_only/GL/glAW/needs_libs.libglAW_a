@@ -1,6 +1,6 @@
 # libraries needed to link against GL/glAW/libglAW.a
 
-lib/libWINDOW.so
+lib/libWINDOW_GTK.so
 $(GL_LIBS_SYS)
 
 
