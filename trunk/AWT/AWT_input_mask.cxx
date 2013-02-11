@@ -1110,7 +1110,7 @@ private:
     string id_dest;
     string id_source;
 
-    virtual GB_ERROR action() {
+    virtual GB_ERROR action() OVERRIDE {
         GB_ERROR             error       = 0;
         const awt_mask_item *item_source = mask->mask_global().get_identified_item(id_source, error);
         awt_mask_item       *item_dest   = mask->mask_global().get_identified_item(id_dest, error);
@@ -1331,12 +1331,12 @@ public:
     {}
     virtual ~awt_marked_checkbox() OVERRIDE {}
 
-    virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
-    virtual GB_ERROR relink() { return link_to(mask_global().get_selected_item()); }
-    virtual void awar_changed();
-    virtual void db_changed();
-    virtual void general_item_change() { db_changed(); } // called if item was changed (somehow)
-    virtual void build_widget(AW_window *aws); // builds the widget at the current position
+    virtual GB_ERROR link_to(GBDATA *gb_new_item) OVERRIDE; // link to a new item
+    virtual GB_ERROR relink() OVERRIDE { return link_to(mask_global().get_selected_item()); }
+    virtual void awar_changed() OVERRIDE;
+    virtual void db_changed() OVERRIDE;
+    virtual void general_item_change() OVERRIDE { db_changed(); } // called if item was changed (somehow)
+    virtual void build_widget(AW_window *aws) OVERRIDE; // builds the widget at the current position
 };
 
 GB_ERROR awt_marked_checkbox::link_to(GBDATA *gb_new_item) { // link to a new item
