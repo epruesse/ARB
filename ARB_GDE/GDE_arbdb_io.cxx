@@ -7,6 +7,8 @@
 #include <AP_filter.hxx>
 #include <aw_awar_defs.hxx>
 
+#include <algorithm>
+
 // AISC_MKPT_PROMOTE:#ifndef GDE_EXTGLOB_H
 // AISC_MKPT_PROMOTE:#include "GDE_extglob.h"
 // AISC_MKPT_PROMOTE:#endif
@@ -270,8 +272,8 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
         {
             unsigned long i;
             for (i=0; i<dataset->numelements; i++) {
-                dataset->maxlen = MAX(dataset->maxlen,
-                                      dataset->element[i].seqlen+dataset->element[i].offset);
+                dataset->maxlen = std::max(dataset->maxlen,
+                                           dataset->element[i].seqlen+dataset->element[i].offset);
             }
             for (i=0; i<numberspecies; i++)
             {
