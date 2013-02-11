@@ -58,6 +58,7 @@ TEST_CODE=$(DESTDIR)/$(UNIQUE_NAME).cxx
 TEST_OBJ=$(DESTDIR)/$(UNIQUE_NAME).o
 TEST_EXE=$(DESTDIR)/$(UNIQUE_NAME)
 
+MAKESYMLIST=./make_symlist.sh
 SYM2TESTCODE=./sym2testcode.pl
 
 INCDIR=../INCLUDE
@@ -102,8 +103,8 @@ $(RUNDIR):
 
 makedirs: $(DESTDIR) $(RUNDIR)
 
-$(SYMLIST) : $(FULLLIB) Makefile makedirs show_test_header
-	nm -C -l $< > $@
+$(SYMLIST) : $(FULLLIB) Makefile makedirs show_test_header $(MAKESYMLIST)
+	$(MAKESYMLIST) $(FULLLIB) $(SYMLIST)
 
 $(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test
 	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $< $@ $(WARN_LEVEL)

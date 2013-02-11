@@ -12,7 +12,7 @@
 #include "dbconn.h"
 #include <arbdb.h>
 
-class ARBDB_connector {
+class ARBDB_connector : virtual Noncopyable {
     GB_shell  shell;
     GBDATA   *gb_main;
 

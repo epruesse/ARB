@@ -74,6 +74,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/dupstr.h
+PH_data.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_data.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_data.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -120,6 +121,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/dupstr.h
+PH_display.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_display.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_display.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -168,6 +170,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/dupstr.h
+PH_filt.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_filt.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_filt.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -220,6 +223,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+PH_main.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_main.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -262,6 +266,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
+PH_matr.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_matr.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -282,5 +287,6 @@ PH_root.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_root.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_root.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/dupstr.h
+PH_root.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_root.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_root.o: $(ARBHOME)/INCLUDE/test_global.h

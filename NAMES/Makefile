@@ -46,6 +46,7 @@ names.o: $(ARBHOME)/INCLUDE/bytestring.h
 names.o: $(ARBHOME)/INCLUDE/client.h
 names.o: $(ARBHOME)/INCLUDE/client_types.h
 names.o: $(ARBHOME)/INCLUDE/dupstr.h
+names.o: $(ARBHOME)/INCLUDE/gccver.h
 names.o: $(ARBHOME)/INCLUDE/names_client.h
 names.o: $(ARBHOME)/INCLUDE/names_prototypes.h
 names.o: $(ARBHOME)/INCLUDE/names_server.h

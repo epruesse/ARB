@@ -45,6 +45,7 @@ ptclean.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ptclean.o: $(ARBHOME)/INCLUDE/arbtools.h
 ptclean.o: $(ARBHOME)/INCLUDE/attributes.h
 ptclean.o: $(ARBHOME)/INCLUDE/dupstr.h
+ptclean.o: $(ARBHOME)/INCLUDE/gccver.h
 ptclean.o: $(ARBHOME)/INCLUDE/smartptr.h
 ptclean.o: $(ARBHOME)/INCLUDE/test_global.h
 ptclean.o: $(ARBHOME)/INCLUDE/test_unit.h

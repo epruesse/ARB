@@ -93,6 +93,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/gccver.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/items.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -145,6 +146,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+EXP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 EXP_main.o: $(ARBHOME)/INCLUDE/items.h
 EXP_main.o: $(ARBHOME)/INCLUDE/ntree.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -195,6 +197,7 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_gene.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/items.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -247,6 +250,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_graphic.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/items.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -303,6 +307,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/items.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/Location.h
@@ -369,6 +374,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_map.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_map.o: $(ARBHOME)/INCLUDE/items.h
 GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -413,6 +419,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_nds.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/items.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/nds.h
@@ -437,6 +444,7 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/items.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/test_global.h

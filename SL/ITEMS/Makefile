@@ -68,6 +68,7 @@ changekey.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 changekey.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 changekey.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 changekey.o: $(ARBHOME)/INCLUDE/dupstr.h
+changekey.o: $(ARBHOME)/INCLUDE/gccver.h
 changekey.o: $(ARBHOME)/INCLUDE/smartptr.h
 changekey.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -108,6 +109,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/dupstr.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/gccver.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -154,5 +156,6 @@ species.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 species.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 species.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 species.o: $(ARBHOME)/INCLUDE/dupstr.h
+species.o: $(ARBHOME)/INCLUDE/gccver.h
 species.o: $(ARBHOME)/INCLUDE/smartptr.h
 species.o: $(ARBHOME)/INCLUDE/test_global.h

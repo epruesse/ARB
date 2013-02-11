@@ -63,6 +63,7 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
@@ -76,10 +77,9 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/test_global.h
-AW_window_ogl.o: $(ARBHOME)/WINDOW/aw_scalar.hxx
-AW_window_ogl.o: $(ARBHOME)/WINDOW/aw_window_Xm.hxx
 
 GLwMDrawA.o: GLwDrawA.c
 GLwMDrawA.o: GLwDrawA.h

@@ -253,7 +253,7 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 
 #ifdef ARB_64
 
-COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned long));
+STATIC_ASSERT(sizeof(void*) == sizeof(unsigned long));
 
 # define PT_READ_PNTR(ptr, my_int_i)                            \
     do {                                                        \
@@ -273,7 +273,7 @@ COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned long));
 #else
 // not ARB_64
 
-COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned int));
+STATIC_ASSERT(sizeof(void*) == sizeof(unsigned int));
 
 # define PT_READ_PNTR(ptr, my_int_i) PT_READ_INT(ptr, my_int_i)
 # define PT_WRITE_PNTR(ptr, my_int_i) PT_WRITE_INT(ptr, my_int_i)
@@ -441,7 +441,7 @@ inline POS_TREE *PT_read_son(POS_TREE *node, PT_BASES base)
 #endif
                 UINT offset = 4 * i;
                 if ((1<<base) & sec) {              // long
-                    COMPILE_ASSERT(sizeof(PT_PNTR) == 8); // 64-bit necessary
+                    STATIC_ASSERT(sizeof(PT_PNTR) == 8); // 64-bit necessary
                     PT_READ_PNTR((&node->data+1)+offset, i);
                 }
                 else {                                              // int

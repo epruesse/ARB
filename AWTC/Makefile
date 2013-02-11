@@ -72,6 +72,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/pos_range.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_com.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_global_defs.h
@@ -125,5 +126,6 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/test_global.h

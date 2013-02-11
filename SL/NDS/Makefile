@@ -74,6 +74,7 @@ nds.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 nds.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 nds.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 nds.o: $(ARBHOME)/INCLUDE/dupstr.h
+nds.o: $(ARBHOME)/INCLUDE/gccver.h
 nds.o: $(ARBHOME)/INCLUDE/items.h
 nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 nds.o: $(ARBHOME)/INCLUDE/test_global.h

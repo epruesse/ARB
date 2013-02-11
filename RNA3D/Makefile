@@ -69,6 +69,7 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/dupstr.h
+RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/gccver.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/smartptr.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -122,6 +123,7 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/dupstr.h
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/gccver.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/GL/aw_window_ogl.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -168,6 +170,7 @@ RNA3D_Main.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/dupstr.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
+RNA3D_Main.o: $(ARBHOME)/INCLUDE/gccver.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/smartptr.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -222,6 +225,7 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/dupstr.h
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/gccver.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/GL/aw_window_ogl.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -265,6 +269,7 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/dupstr.h
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/gccver.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/smartptr.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -314,6 +319,7 @@ RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/dupstr.h
+RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/gccver.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/smartptr.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -370,6 +376,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/dupstr.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/gccver.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/smartptr.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -389,6 +396,7 @@ RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/dupstr.h
+RNA3D_Textures.o: $(ARBHOME)/INCLUDE/gccver.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/smartptr.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/test_global.h

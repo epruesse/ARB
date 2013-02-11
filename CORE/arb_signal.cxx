@@ -144,3 +144,54 @@ bool GBK_raises_SIGSEGV(void (*cb)(void)) {
     return segv_occurred;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+// Tests here contain special failure cases concerning C++-exceptions.
+// They exist for tuning/debugging the unit-tester.
+// Most of them should normally be disabled.
+
+#if 0
+// this (wrong) example-test triggers ../UNIT_TESTER/UnitTester.cxx@TEST_THREW
+__ATTR__NORETURN void TEST_exception() {
+    throw(666); // bad! test code should not throw out an exception
+}
+#endif
+
+void TEST_catched_exception() {
+    try {
+        throw(0x815); // throwing is not bad in general, as long as exceptions do not leave the test-code
+        TEST_EXPECT(0);
+    }
+    catch (...) {
+    }
+}
+
+#if 0
+// this (wrong) example-test triggers ../UNIT_TESTER/UnitTester.cxx@terminate_called
+struct throw_on_destroy {
+    int j;
+    throw_on_destroy(int i) : j(i) {}
+    ~throw_on_destroy() { if (j == 666) throw(667); } // bad! if another exception was throw, this will call std::terminate()
+    void do_nothing() {}
+};
+void TEST_throw_during_throw() {
+    throw_on_destroy tod(666);
+    tod.do_nothing();
+    throw(668);
+}
+#endif
+
+#if 0
+void TEST_modify_std_terminate() {
+    std::set_terminate(TEST_catched_exception); // modify to whatever
+}
+#endif
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

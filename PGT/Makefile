@@ -66,6 +66,7 @@ arb_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 arb_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_interface.o: $(ARBHOME)/INCLUDE/EXP.hxx
+arb_interface.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_interface.o: $(ARBHOME)/INCLUDE/items.h
 arb_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_interface.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -86,6 +87,7 @@ config_dialog.o: $(ARBHOME)/INCLUDE/arbdbt.h
 config_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 config_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 config_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
+config_dialog.o: $(ARBHOME)/INCLUDE/gccver.h
 config_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
 config_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -103,6 +105,7 @@ dialog.o: $(ARBHOME)/INCLUDE/arbdbt.h
 dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
+dialog.o: $(ARBHOME)/INCLUDE/gccver.h
 dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
 dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -122,6 +125,7 @@ entry_sel_dialog.o: $(ARBHOME)/INCLUDE/arbdbt.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
+entry_sel_dialog.o: $(ARBHOME)/INCLUDE/gccver.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -140,6 +144,7 @@ file_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
 file_import.o: $(ARBHOME)/INCLUDE/arbtools.h
 file_import.o: $(ARBHOME)/INCLUDE/attributes.h
 file_import.o: $(ARBHOME)/INCLUDE/dupstr.h
+file_import.o: $(ARBHOME)/INCLUDE/gccver.h
 file_import.o: $(ARBHOME)/INCLUDE/smartptr.h
 file_import.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -167,6 +172,7 @@ image_dialog.o: $(ARBHOME)/INCLUDE/arbdbt.h
 image_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 image_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 image_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
+image_dialog.o: $(ARBHOME)/INCLUDE/gccver.h
 image_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
 image_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -189,6 +195,7 @@ import_dialog.o: $(ARBHOME)/INCLUDE/arbdbt.h
 import_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 import_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 import_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
+import_dialog.o: $(ARBHOME)/INCLUDE/gccver.h
 import_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
 import_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -212,6 +219,7 @@ main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 main.o: $(ARBHOME)/INCLUDE/arbtools.h
 main.o: $(ARBHOME)/INCLUDE/attributes.h
 main.o: $(ARBHOME)/INCLUDE/dupstr.h
+main.o: $(ARBHOME)/INCLUDE/gccver.h
 main.o: $(ARBHOME)/INCLUDE/smartptr.h
 main.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -239,6 +247,7 @@ main_dialog.o: $(ARBHOME)/INCLUDE/arbdbt.h
 main_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 main_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 main_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
+main_dialog.o: $(ARBHOME)/INCLUDE/gccver.h
 main_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
 main_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -266,6 +275,7 @@ selection_dialog.o: $(ARBHOME)/INCLUDE/arbdbt.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
+selection_dialog.o: $(ARBHOME)/INCLUDE/gccver.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 

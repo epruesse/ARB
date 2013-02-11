@@ -82,6 +82,7 @@ db_query.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 db_query.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 db_query.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 db_query.o: $(ARBHOME)/INCLUDE/dupstr.h
+db_query.o: $(ARBHOME)/INCLUDE/gccver.h
 db_query.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 db_query.o: $(ARBHOME)/INCLUDE/items.h
 db_query.o: $(ARBHOME)/INCLUDE/smartptr.h

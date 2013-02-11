@@ -61,11 +61,13 @@ island_hopping.o: $(ARBHOME)/INCLUDE/arb_core.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arbtools.h
 island_hopping.o: $(ARBHOME)/INCLUDE/attributes.h
 island_hopping.o: $(ARBHOME)/INCLUDE/dupstr.h
+island_hopping.o: $(ARBHOME)/INCLUDE/gccver.h
 island_hopping.o: $(ARBHOME)/INCLUDE/pos_range.h
 island_hopping.o: $(ARBHOME)/INCLUDE/test_global.h
 
 mem.o: mem.h
 mem.o: $(ARBHOME)/INCLUDE/attributes.h
+mem.o: $(ARBHOME)/INCLUDE/gccver.h
 
 trnsprob.o: defs.h
 trnsprob.o: mem.h

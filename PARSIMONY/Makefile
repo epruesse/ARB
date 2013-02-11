@@ -50,6 +50,7 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -97,6 +98,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_main.o: $(ARBHOME)/INCLUDE/test_global.h
 AP_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
@@ -126,6 +128,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -178,6 +181,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -213,6 +217,7 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/dupstr.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/smartptr.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -278,6 +283,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/dupstr.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -310,6 +316,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/dupstr.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PARS_main.o: AP_buffer.hxx
@@ -375,6 +382,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+PARS_main.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_main.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/nds.h
 PARS_main.o: $(ARBHOME)/INCLUDE/smartptr.h

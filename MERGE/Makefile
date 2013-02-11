@@ -60,6 +60,7 @@ MG_adapt_ali.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_global.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_unit.h
@@ -109,6 +110,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_alignment.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -157,6 +159,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_checkfield.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/items.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -204,6 +207,7 @@ MG_configs.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_configs.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_configs.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_configs.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -251,6 +255,7 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_extendeds.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/items.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -300,6 +305,7 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_gene_species.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -354,6 +360,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_main.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_main.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -401,6 +408,7 @@ MG_names.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_names.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_names.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_names.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -450,6 +458,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -506,6 +515,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_species.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_species.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 MG_species.o: $(ARBHOME)/INCLUDE/items.h
 MG_species.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -555,6 +565,7 @@ MG_trees.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_trees.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_trees.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_trees.o: $(ARBHOME)/INCLUDE/test_global.h
 MG_trees.o: $(ARBHOME)/INCLUDE/TreeAdmin.h

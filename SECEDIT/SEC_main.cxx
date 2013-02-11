@@ -265,9 +265,9 @@ static void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
 // --------------------------------------------------------------------------------
 
 #define ASS       "ARB secondary structure v1" // don't change version here!
-#define ASS_START "["ASS"]"
+#define ASS_START "[" ASS "]"
 #define ASS_EOS   "[end of structure]"
-#define ASS_EOF   "[end of "ASS"]"
+#define ASS_EOF   "[end of " ASS "]"
 
 static void export_structure_to_file(AW_window *, AW_CL cl_db)
 {

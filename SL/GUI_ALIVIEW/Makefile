@@ -85,6 +85,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -134,6 +135,7 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/dupstr.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/gccver.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/smartptr.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/test_global.h
 

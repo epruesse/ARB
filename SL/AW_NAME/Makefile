@@ -84,6 +84,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -136,6 +137,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_rename.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_rename.o: $(ARBHOME)/INCLUDE/names_client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/servercntrl.h
 AW_rename.o: $(ARBHOME)/INCLUDE/smartptr.h

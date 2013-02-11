@@ -84,6 +84,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/downcast.h
 irstree_display.o: $(ARBHOME)/INCLUDE/dupstr.h
+irstree_display.o: $(ARBHOME)/INCLUDE/gccver.h
 irstree_display.o: $(ARBHOME)/INCLUDE/nds.h
 irstree_display.o: $(ARBHOME)/INCLUDE/smartptr.h
 irstree_display.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -140,6 +141,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/dupstr.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -201,6 +203,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/dupstr.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/nds.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/test_global.h
