@@ -90,10 +90,14 @@ AW_advice.o: devices/aw_stylable.hxx
 AW_advice.o: devices/aw_stylable.hxx
 AW_advice.o: devices/aw_zoomable.hxx
 AW_advice.o: devices/aw_zoomable.hxx
+AW_advice.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_advice.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_advice.o: $(ARBHOME)/INCLUDE/arb_string.h
+AW_advice.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_advice.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -102,6 +106,7 @@ AW_advice.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_advice.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_advice.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_advice.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_advice.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AW_area_management.o: aw_area_management.hxx
 AW_area_management.o: aw_assert.hxx
@@ -553,6 +558,7 @@ AW_file.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_file.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_file.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_file.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_file.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AW_font_group.o: aw_assert.hxx
 AW_font_group.o: aw_base.hxx
