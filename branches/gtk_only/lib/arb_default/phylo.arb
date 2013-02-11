@@ -1,0 +1,282 @@
+/*ARBDB ASCII*/
+window	%% (%
+	font		"8x13bold"
+	foreground		"Black"
+	background		"light grey"
+	ARB_PHYL	%% (%
+		horizontal_page_increment	%i 50
+		vertical_page_increment	%i 50
+		scroll_delay_vertical	%i 20
+		scroll_delay_horizontal	%i 20
+		scroll_width_horizontal	%i 9
+		scroll_width_vertical	%i 20
+		%) /*ARB_PHYL*/
+
+	color_1		"black"
+	color_2		"black"
+	color_3		"black"
+	reverse		"n"
+	data_bg		"blue"
+	data_fg		"yellow"
+	data_rv		"r"
+	windows	%% (%
+		PHYL_MATRIX	%% (%
+			width	%i 460
+			height	%i 640
+			posx	%i 10
+			posy	%i 10
+			%) /*PHYL_MATRIX*/
+
+		ARB_PHYLO	%% (%
+			width	%i 830
+			height	%i 630
+			posx	%i 0
+			posy	%i 0
+			%) /*ARB_PHYLO*/
+
+		PHYL_FILTER	%% (%
+			width	%i 600
+			height	%i 300
+			posx	%i 5
+			posy	%i -16
+			%) /*PHYL_FILTER*/
+
+		WINDOW_PROPERTIES	%% (%
+			width	%i 532
+			height	%i 291
+			posx	%i 395
+			posy	%i 274
+			%) /*WINDOW_PROPERTIES*/
+
+		GC_MANAGER	%% (%
+			width	%i 770
+			height	%i 148
+			posx	%i 395
+			posy	%i 274
+			%) /*GC_MANAGER*/
+
+		DistanceTable	%% (%
+			width	%i 600
+			height	%i 220
+			posx	%i 5
+			posy	%i -16
+			%) /*DistanceTable*/
+
+		%) /*windows*/
+
+	ARB_PHYLO	%% (%
+		horizontal_page_increment	%i 50
+		vertical_page_increment	%i 50
+		scroll_delay_vertical	%i 20
+		scroll_delay_horizontal	%i 20
+		scroll_width_horizontal	%i 70
+		scroll_width_vertical	%i 26
+		%) /*ARB_PHYLO*/
+
+	%) /*window*/
+
+phyl	%% (%
+	which_species		"marked"
+	alignment		"ali_23all"
+	filter	%% (%
+		alignment		"none"
+		name		"none"
+		filter		""
+		cancel		".0-"
+		startcol	%i 0
+		stopcol	%i 3413
+		minhom	%i 0
+		maxhom	%i 100
+		point	%i 0
+		minus	%i 0
+		rest	%i 0
+		lower	%i 0
+		%) /*filter*/
+
+	weights	%% (%
+		name		"none"
+		alignment		"none"
+		%) /*weights*/
+
+	rates	%% (%
+		name		"none"
+		%) /*rates*/
+
+	cancel	%% (%
+		chars		"-."
+		%) /*cancel*/
+
+	correction	%% (%
+		name		"none/J/C"
+		correction		"none"
+		transformation		"J+C"
+		trans	%i 2
+		%) /*correction*/
+
+	tree	%% (%
+		tree_name		"tree_gud"
+		%) /*tree*/
+
+	alpha	%f 1.000000
+	ratematrix	%% (%
+		val_2_1	%f 1.000000
+		val_4_1	%f 1.000000
+		val_4_2	%f 1.000000
+		val_8_1	%f 1.000000
+		val_8_2	%f 1.000000
+		val_8_4	%f 1.000000
+		val_16_1	%f 1.000000
+		val_16_2	%f 1.000000
+		val_16_4	%f 1.000000
+		val_16_8	%f 1.000000
+		%) /*ratematrix*/
+
+	matrix	%% (%
+		point	%i 0
+		minus	%i 0
+		rest	%i 0
+		lower	%i 0
+		%) /*matrix*/
+
+	%) /*phyl*/
+
+bc	%% (%
+	env	%% (%
+		seq_len	%i 0
+		filter_len	%i 0
+		ali_len	%i 0
+		marked_len	%i 0
+		%) /*env*/
+
+	alignment		""
+	species		""
+	filter	%% (%
+		name		""
+		filter		""
+		alignment		""
+		%) /*filter*/
+
+	table	%% (%
+		type	%i 1
+		rank	%% (%
+			AD	%% (%
+				aden	%f 0.000000
+				cyto	%f 0.000000
+				guan	%f 0.000000
+				urac	%f 0.000000
+				unspec	%f 0.000000
+				blank	%f 0.000000
+				%) /*AD*/
+
+			CY	%% (%
+				aden	%f 0.000000
+				cyto	%f 0.000000
+				guan	%f 0.000000
+				urac	%f 0.000000
+				unspec	%f 0.000000
+				blank	%f 0.000000
+				%) /*CY*/
+
+			GU	%% (%
+				aden	%f 0.000000
+				cyto	%f 0.000000
+				guan	%f 0.000000
+				urac	%f 0.000000
+				unspec	%f 0.000000
+				blank	%f 0.000000
+				%) /*GU*/
+
+			UR	%% (%
+				aden	%f 0.000000
+				cyto	%f 0.000000
+				guan	%f 0.000000
+				urac	%f 0.000000
+				unspec	%f 0.000000
+				blank	%f 0.000000
+				%) /*UR*/
+
+			UNSPEC	%% (%
+				aden	%f 0.000000
+				cyto	%f 0.000000
+				guan	%f 0.000000
+				urac	%f 0.000000
+				unspec	%f 0.000000
+				blank	%f 0.000000
+				%) /*UNSPEC*/
+
+			BLANK	%% (%
+				aden	%f 0.000000
+				cyto	%f 0.000000
+				guan	%f 0.000000
+				urac	%f 0.000000
+				unspec	%f 0.000000
+				blank	%f 0.000000
+				%) /*BLANK*/
+
+			%) /*rank*/
+
+		bond	%i 1
+		%) /*table*/
+
+	check	%% (%
+		pos1	%i 1
+		pos2	%i 1
+		measure	%i 2
+		result		""
+		%) /*check*/
+
+	plot	%% (%
+		table	%i 1
+		type	%i 1
+		range	%i 3
+		%) /*plot*/
+
+	save	%% (%
+		file_name		""
+		directory		"."
+		filter		"bc"
+		%) /*save*/
+
+	load	%% (%
+		file_name		""
+		directory		"."
+		filter		"bc"
+		%) /*load*/
+
+	pca	%% (%
+		project	%% (%
+			file_name		""
+			directory		""
+			%) /*project*/
+
+		option	%i 0
+		value	%f 0.000000
+		nfactors	%i 0
+		ztrafo	%i 0
+		rotation	%i 0
+		noise	%% (%
+			abs	%f 0.000000
+			rel	%f 0.000000
+			data	%i 0
+			factors	%i 0
+			distance	%i 0
+			%) /*noise*/
+
+		%) /*pca*/
+
+	standard	%i 0
+	overview	%% (%
+		data		"BC: no information available.\n    Please select START first.\n"
+		comp		"BC: no information available.\n    Please select START first.\n"
+		cov		"BC: no information available.\n    Please select START first.\n"
+		cov_thresh	%f 0.700000
+		trans		"BC: no information available.\n    Please select START first.\n"
+		transmatrix		"BC: no information available.\n    Please select START first.\n"
+		trans_thresh	%f 0.200000
+		verbose		"BC: no information available.\n    Please select START first.\n"
+		rounding		"BC: no information available.\n    Please select START first.\n"
+		%) /*overview*/
+
+	%) /*bc*/
+
+

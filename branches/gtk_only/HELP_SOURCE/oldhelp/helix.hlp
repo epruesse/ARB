@@ -1,0 +1,88 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	arb_edit4.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	helixsym.hlp
+SUB	toggle_secinfo.hlp
+SUB	e4_options.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Helix
+
+OCCURRENCE	ARB_EDIT4/Edit/Reload Helix
+
+DESCRIPTION	The 'SAI' (see LINK{glossary.hlp}) entry 'HELIX_NR' contains
+		numbering of potential higher order structure elements. The
+		paired 5' and 3' helix halves are indicated by identical
+		numbers. The SAI entry 'HELIX' contains symbols ([<( and )>])
+		indicating positions which usually are base paired. This
+		information is used by the editor to check the sequences for
+		(correct) base pairing. User-defined symbols indicating base pairing and
+		mispairing are shown below the particular sequences.
+
+
+SECTION FORMAT OF HELIX/HELIX_NR:
+
+		When the 'HELIX/HELIX_NR SAI's are analyzed the following steps
+		are performed:
+
+		1. HELIX_NR contains the helix numbering. A helix number
+                   is a number between 0 and 100 optionally followed
+                   by one letter: e.g. 11a, 23g, 0i, 6, 23,
+
+                   A helix number is valid from the position of the
+                   first digit to the position just before the next
+                   helix number.
+
+			eg. 	.........1a.........23b.........
+			.	.........|||||||||||............
+
+                   The '|' symbols indicate the positions for '1a'
+
+		2. All '<[{(' symbols in HELIX are replaced by '('
+                   All '>]})' symbols in HELIX are replaced by ')'
+
+                        eg.	...[<<[..]>>].. is the same as ...((((..))))..
+
+		3. For each helix number 'HN' a temporary helix is created
+                   that contains all '()' symbols of the 'SAI HELIX' at
+                   all positions where 'HN' is valid.
+
+                        eg. HELIX_NR	.....1a.....23b.......1a....23b.....
+                            HELIX	.....[<<[...[<[.......]>>]..]>].....
+                            -> 1a	.....((((.............))))..........
+                            -> 23b	............(((.............))).....
+
+		4.	The (usually) paired positions can simply be defined
+			by recursively removing the innermost bracket pairs
+			in the temporary helices:
+
+			eg. HELIX_NR	.....1a.....23b.......1a....23b.....
+				HELIX	.....[<<[...[<[.......]>>]..]>].....
+				Pos	123456789012345678901234567890123456
+				-> 1a	.....((((.............))))..........
+				-> 23b	............(((.............))).....
+				1a 9-23	........+-------------+.............
+				1a 8-24	.......+---------------+............
+				1a 7-25	......+-----------------+...........
+				1a 6-26	.....+-------------------+..........
+				23b 15-29 .............+------------+.......
+				23b 14-30 ............+--------------+......
+				23b 13-31 ...........+----------------+.....
+
+NOTES		After inserting or deleting gaps in the whole alignment (ARB_NT/
+		Sequence/Insert delete columns) the helix information has to be:
+
+			1. Checked (inserting a '.' between '1' and '2'
+                           destroys the original '12').
+
+			2. reloaded using 'Reload Helix'
+
+
+EXAMPLES	None
+
+BUGS		No bugs known
