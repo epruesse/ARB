@@ -15,7 +15,7 @@ inline int calc_overlap(AW_pos smaller, AW_pos bigger) {
 }
 
 
-void AW_device_size::clear() {
+void AW_device_size::forget_tracked() {
     scaled.clear();
     unscaled.clear();
 }
@@ -94,5 +94,5 @@ inline void AW_device_size::dot_transformed(const AW::Position& pos, AW_bitset f
 }
 
 void AW_device_size::specific_reset() {
-    clear();
+    forget_tracked();
 }

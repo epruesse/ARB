@@ -29,7 +29,7 @@ class AW_device_size : public AW_simple_device {
 public:
     AW_device_size(AW_common *common_) : AW_simple_device(common_) {}
 
-    void clear() /*OVERRIDE*/; // @@@ wrong!
+    void forget_tracked();
 
     AW_DEVICE_TYPE type() OVERRIDE;
 
