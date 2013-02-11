@@ -57,12 +57,12 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window_ogl.o: $(ARBHOME)/WINDOW/aw_scalar.hxx
 AW_window_ogl.o: $(ARBHOME)/WINDOW/aw_window_Xm.hxx
-AW_window_ogl.o: $(ARBHOME)/WINDOW_GTK/AW_area_management.hxx
+AW_window_ogl.o: $(ARBHOME)/WINDOW_GTK/aw_area_management.hxx
 AW_window_ogl.o: $(ARBHOME)/WINDOW_GTK/aw_assert.hxx
 AW_window_ogl.o: $(ARBHOME)/WINDOW_GTK/aw_at.hxx
 AW_window_ogl.o: $(ARBHOME)/WINDOW_GTK/aw_base.hxx
 AW_window_ogl.o: $(ARBHOME)/WINDOW_GTK/aw_font_limits.hxx
-AW_window_ogl.o: $(ARBHOME)/WINDOW_GTK/AW_gtk_forward_declarations.hxx
+AW_window_ogl.o: $(ARBHOME)/WINDOW_GTK/aw_gtk_forward_declarations.hxx
 AW_window_ogl.o: $(ARBHOME)/WINDOW_GTK/aw_gtk_migration_helpers.hxx
 AW_window_ogl.o: $(ARBHOME)/WINDOW_GTK/aw_help.hxx
 AW_window_ogl.o: $(ARBHOME)/WINDOW_GTK/aw_keysym.hxx
