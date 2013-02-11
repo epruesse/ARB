@@ -122,7 +122,7 @@ sub target2dependencyFile($) {
 
   if (defined $dir) {
     if ($dir eq 'lib') {
-      if ($target =~ /^lib\/lib([A-Z]+)\.so$/) {
+      if ($target =~ /^lib\/lib([A-Z_]+)\.so$/) {
         $depfile = $1.'/'.$libdepend_file.'.lib'.$1.'_so';
       }
       else {
@@ -509,7 +509,7 @@ my %dep2lib = (
                'ARBDB/needs_libs.libARBDB_so'   => 'lib/libARBDB.so',
                'AWT/needs_libs.libAWT_so'       => 'lib/libAWT.so',
                'CORE/needs_libs.libCORE_so'     => 'lib/libCORE.so',
-               'WINDOW/needs_libs.libWINDOW_so' => 'lib/libWINDOW.so',
+               'WINDOW_GTK/needs_libs.libWINDOW_GTK_so' => 'lib/libWINDOW_GTK.so',
 
                'GL/glAW/needs_libs.libglAW_a'       => 'GL/glAW/libglAW.a',
                'GL/glpng/needs_libs.libglpng_arb_a' => 'GL/glpng/libglpng_arb.a',
@@ -698,7 +698,7 @@ sub pushDirsTo($\@\@) {
       push @out, prefix($pathPrefix,$dir.'/'.$name);
     }
     elsif (is_dynamic_lib($dep)) {
-      if ($dep =~ /^lib\/lib([A-Z]+)\.so/) {
+      if ($dep =~ /^lib\/lib([A-Z_]+)\.so/) {
         my $base = $1;
         push @out, prefix($pathPrefix,$base.'/'.$base);
       }
