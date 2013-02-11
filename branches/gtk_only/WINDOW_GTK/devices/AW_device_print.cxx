@@ -8,6 +8,13 @@
 #include "aw_device_print.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 
+// ---------------------
+//      Please note
+//
+// there is a unit test available that tests AW_device_print
+// see ../../SL/TREEDISP/TreeDisplay.cxx@ENABLE_THIS_TEST 
+
+
 FILE *AW_device_print::get_FILE() {
     GTK_NOT_IMPLEMENTED;
     return 0;
