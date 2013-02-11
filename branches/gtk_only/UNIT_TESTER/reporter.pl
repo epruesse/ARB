@@ -307,7 +307,7 @@ sub check_obsolete_restricts() {
   }
   else {
     $restrict = ':'.$restrict.':';
-    if ($restrict =~ /:(WINDOW|ARBDB|AWT|CORE):/) {
+    if ($restrict =~ /:(WINDOW_GTK|ARBDB|AWT|CORE):/) {
       my $lib = $1;
       my $msl = 'Makefile.setup.local';
 
