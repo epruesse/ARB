@@ -1376,12 +1376,12 @@ void TEST_paths() {
         TEST_EXPECT_IS_CANONICAL(nosuchpath_in_arbhome);
         TEST_EXPECT_IS_CANONICAL(file_in_nosuchpath);
 
-        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../ARBDB/./arbdb.h",     "ARBDB/arbdb.h"); // test parent-path
+        TEST_EXPECT_CANONICAL_TO("./PARSIMONY/./../ARBDB/./arbdb.h",     "ARBDB/arbdb.h"); // test parent-path
         TEST_EXPECT_CANONICAL_TO("INCLUDE/arbdb.h",                   "ARBDB/arbdb.h"); // test symbolic link to file
         TEST_EXPECT_CANONICAL_TO("NAMES_COM/AISC/aisc.pa",            "AISC_COM/AISC/aisc.pa"); // test symbolic link to directory
         TEST_EXPECT_CANONICAL_TO("./NAMES_COM/AISC/..",               "AISC_COM"); // test parent-path through links
-        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../ARBDB/../nosuchpath", "nosuchpath");
-        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../nosuchpath/../ARBDB", "nosuchpath/../ARBDB"); // cannot resolve through non-existing paths!
+        TEST_EXPECT_CANONICAL_TO("./PARSIMONY/./../ARBDB/../nosuchpath", "nosuchpath");
+        TEST_EXPECT_CANONICAL_TO("./PARSIMONY/./../nosuchpath/../ARBDB", "nosuchpath/../ARBDB"); // cannot resolve through non-existing paths!
 
         // test GB_unfold_path
         TEST_EXPECT_EQUAL(GB_unfold_path("ARBHOME", somefile), somefile_in_arbhome);
