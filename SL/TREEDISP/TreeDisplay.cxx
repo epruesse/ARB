@@ -2736,10 +2736,10 @@ static AW_rgb *dcolors       = colors_def;
 static long    dcolors_count = ARRAY_ELEMS(colors_def);
 
 class fake_AW_GC : public AW_GC {
-    virtual void wm_set_foreground_color(AW_rgb /*col*/) {  }
-    virtual void wm_set_function(AW_function /*mode*/) { td_assert(0); }
-    virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) {}
-    virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) {
+    virtual void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
+    virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
+    virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
+    virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) OVERRIDE {
         unsigned int i;
         for (i = AW_FONTINFO_CHAR_ASCII_MIN; i <= AW_FONTINFO_CHAR_ASCII_MAX; i++) {
             set_char_size(i, size, 0, size-2); // good fake size for Courier 8pt
@@ -2747,7 +2747,7 @@ class fake_AW_GC : public AW_GC {
     }
 public:
     fake_AW_GC(AW_common *common_) : AW_GC(common_) {}
-    virtual int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const {
+    virtual int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const OVERRIDE {
         td_assert(0);
         return 0;
     }
@@ -2778,7 +2778,7 @@ public:
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
     int var_mode;
 
-    virtual void read_tree_settings() {
+    virtual void read_tree_settings() OVERRIDE {
         scaled_branch_distance = 1.0; // not final value!
         // var_mode is in range [0..3]
         // it is used to vary tree settings such that many different combinations get tested
