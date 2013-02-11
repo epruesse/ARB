@@ -524,8 +524,8 @@ public:
         AW_pos dim;
         if (bottom() > area_height) {   // our world doesn't fit vertically in our window
             dim = bottom()-area_height; // calc dimension of both horizontal folding lines
-            scroll_top->set_dimension(min(dim, scroll_top->get_dimension()));
-            scroll_bottom->set_dimension(max(0, int(dim - scroll_top->get_dimension())));
+            scroll_top->set_dimension(std::min(dim, scroll_top->get_dimension()));
+            scroll_bottom->set_dimension(std::max(0, int(dim - scroll_top->get_dimension())));
         }
         else {
             dim = 0;
@@ -538,8 +538,8 @@ public:
 
         if (right()>area_width) {     // our world doesn't fit horizontally in our window
             dim = right()-area_width; // calc dimension of both vertical folding lines
-            scroll_left->set_dimension(min(dim, scroll_left->get_dimension()));
-            scroll_right->set_dimension(max(0, int(dim - scroll_left->get_dimension())));
+            scroll_left->set_dimension(std::min(dim, scroll_left->get_dimension()));
+            scroll_right->set_dimension(std::max(0, int(dim - scroll_left->get_dimension())));
         }
         else {
             dim = 0;
