@@ -9,13 +9,11 @@
 //                                                               //
 // ============================================================= //
 
-
-
-
-
 #include "aw_advice.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_root.hxx"
+
+#include <arbdb.h>
 
 #define AWAR_ADVICE_TMP "/tmp/advices/"
 
@@ -45,3 +43,60 @@ void AW_advice(const char */*message*/,
                const char */*corresponding_help*/ /*= 0*/) {
     GTK_NOT_IMPLEMENTED;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+
+#if 1
+#warning please reactivate tests below
+#else
+void TEST_advice_id_awar_handling() {
+    GB_shell  shell;
+    AW_root  root("min_ascii.arb");
+    init_Advisor(&root);
+
+    const char *one = "one";
+    const char *two = "second";
+
+    TEST_REJECT(advice_disabled(one));
+    TEST_REJECT(advice_disabled(two));
+
+    disable_advice(one);
+    TEST_EXPECT(advice_disabled(one));
+    TEST_REJECT(advice_disabled(two));
+
+    disable_advice(two);
+    TEST_EXPECT(advice_disabled(one));
+    TEST_EXPECT(advice_disabled(two));
+
+
+    TEST_REJECT(advice_currently_shown(one));
+    TEST_REJECT(advice_currently_shown(two));
+
+    toggle_advice_shown(two);
+    TEST_REJECT(advice_currently_shown(one));
+    TEST_EXPECT(advice_currently_shown(two));
+
+    toggle_advice_shown(one);
+    TEST_EXPECT(advice_currently_shown(one));
+    TEST_EXPECT(advice_currently_shown(two));
+
+    toggle_advice_shown(two);
+    TEST_EXPECT(advice_currently_shown(one));
+    TEST_REJECT(advice_currently_shown(two));
+
+    toggle_advice_shown(one);
+    TEST_REJECT(advice_currently_shown(one));
+    TEST_REJECT(advice_currently_shown(two));
+}
+
+void TEST_another_AW_root() {
+    GB_shell  shell;
+    AW_root("min_ascii.arb");
+}
+
+#endif
+
+#endif // UNIT_TESTS
