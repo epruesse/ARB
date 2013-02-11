@@ -68,21 +68,19 @@ void aw_initstatus();
 class AW_root : virtual Noncopyable {
 
     // gtk dependent attributes are defined in a different header to keep this header portable
-    AW_root_gtk prvt; /** < Contains all gtk dependent attributes. */
-    GB_HASH     *action_hash; /** < Is used to buffer and replay remote actions. */
-    AW_default  application_database; /** < FIXME */
+    AW_root_gtk        prvt; /** < Contains all gtk dependent attributes. */
+    GB_HASH           *action_hash; /** < Is used to buffer and replay remote actions. */
+    AW_default         application_database; /** < FIXME */
     AW_buttons_struct *button_sens_list; /** < FIXME */
-    bool        no_exit; /** < FIXME no idea what this is used for*/
-    bool help_active; /** < true if the help mode is active, false otherwise */ 
-    
+    bool               no_exit; /** < FIXME; (was/should be) used to protect status window from being closed */
+    bool               help_active; /** < true if the help mode is active, false otherwise */
 
-    
 //    AW_buttons_struct *button_sens_list;
 
     /**
      * FIXME
      */
-    void init_root(const char *programname, bool no_exit);
+    void init_root(const char *programname, bool NoExit);
 
     /**
      * Initializes prvt.colormap
@@ -157,7 +155,7 @@ public:
     /**
      * FIXME
      */
-    AW_root(const char *properties, const char *program, bool no_exit);
+    AW_root(const char *properties, const char *program, bool NoExit);
 #if defined(UNIT_TESTS)
     AW_root(const char *properties); // fake-root for unit-tests (allows access to awar-subsystem)
 #endif

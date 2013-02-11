@@ -116,7 +116,7 @@ bool AW_root::is_focus_callback(AW_RCB fcb) const {
     return focus_callback_list && focus_callback_list->contains(AW_root_callback(fcb, 0, 0));
 }
 
-AW_root::AW_root(const char *properties, const char *program, bool no_exit) {
+AW_root::AW_root(const char *properties, const char *program, bool NoExit) {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
     printf("props: %s", properties);
@@ -125,7 +125,7 @@ AW_root::AW_root(const char *properties, const char *program, bool no_exit) {
 
     init_variables(load_properties(properties));
 
-    init_root(program, no_exit);
+    init_root(program, NoExit);
 
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
@@ -268,7 +268,7 @@ void AW_root::make_sensitive(GtkWidget* w, AW_active mask) {
 
 
 
-void AW_root::init_root(const char *programname, bool no_exit) {
+void AW_root::init_root(const char *programname, bool NoExit) {
     // initialize ARB gtk application
     //TODO font stuff
     XFontStruct *fontstruct;
@@ -276,9 +276,9 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
     GTK_PARTLY_IMPLEMENTED;
 
-    action_hash = GBS_create_hash(1000, GB_MIND_CASE);
-    this->no_exit = no_exit;
-    program_name  = strdup(programname);
+    action_hash  = GBS_create_hash(1000, GB_MIND_CASE);
+    no_exit      = NoExit;
+    program_name = strdup(programname);
 
     //simulate minimal argc and argv.
 
