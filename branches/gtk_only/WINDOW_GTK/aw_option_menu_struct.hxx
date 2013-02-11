@@ -22,7 +22,7 @@
 
 
 
-struct AW_option_menu_struct : public Noncopyable {
+struct AW_option_menu_struct : virtual Noncopyable {
     AW_option_menu_struct(int numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, GtkWidget *label_widgeti, GtkWidget *menu_widgeti, AW_pos xi, AW_pos yi, int correct);
 
     int               option_menu_number;
@@ -43,9 +43,9 @@ struct AW_option_menu_struct : public Noncopyable {
     AW_option_menu_struct *next;
     
     
-    inline void add_option(const std::string& option_name, bool default_option) {
-        if (default_option) {
-            this->default_option = option_name;
+    inline void add_option(const std::string& option_name, bool as_default_option) {
+        if (as_default_option) {
+            default_option = option_name;
         }
         options.push_back(option_name);
     }

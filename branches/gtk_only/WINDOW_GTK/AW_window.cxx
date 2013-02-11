@@ -619,12 +619,12 @@ void AW_window::create_button(const char *macro_name, AW_label button_text, cons
     // args.add(XmNfontList,   (XtArgVal)p_global->fontlist);
     // _at.background_color);
      
-    GtkWidget *label = NULL;
+    GtkWidget *labelWidget = NULL;
     if (_at.label_for_inputfield) {
         if (_at.label_for_inputfield[0] == '#') {
-            label = gtk_image_new_from_file(aw_str_2_label(_at.label_for_inputfield, this));
+            labelWidget = gtk_image_new_from_file(aw_str_2_label(_at.label_for_inputfield, this));
         } else {
-            label = gtk_label_new(aw_str_2_label(_at.label_for_inputfield, this));
+            labelWidget = gtk_label_new(aw_str_2_label(_at.label_for_inputfield, this));
         }
     }
         
@@ -634,8 +634,8 @@ void AW_window::create_button(const char *macro_name, AW_label button_text, cons
     int width_of_button = requisition.width;
     int height_of_button = requisition.height;
     int width_of_label = 0, height_of_label = 0, width_of_label_and_spacer = 0;
-    if (label) {
-        gtk_widget_size_request(GTK_WIDGET(label), &requisition);
+    if (labelWidget) {
+        gtk_widget_size_request(GTK_WIDGET(labelWidget), &requisition);
         width_of_label = requisition.width;
         height_of_label = requisition.height;
         width_of_label_and_spacer = width_of_label + SPACE_BEHIND_LABEL;
@@ -687,16 +687,16 @@ void AW_window::create_button(const char *macro_name, AW_label button_text, cons
     }
 
     // finish up the label
-    if (label) {
-        gtk_fixed_put(prvt->fixed_size_area, label, x_label, y_label);
-        gtk_widget_show(label);
+    if (labelWidget) {
+        gtk_fixed_put(prvt->fixed_size_area, labelWidget, x_label, y_label);
+        gtk_widget_show(labelWidget);
 
         if (_at.attach_any) {
             // we might need to set x/y for this
-            aw_attach_widget(label, _at);
+            aw_attach_widget(labelWidget, _at);
         }
 
-        AW_label_in_awar_list(this, label, _at.label_for_inputfield);
+        AW_label_in_awar_list(this, labelWidget, _at.label_for_inputfield);
     }
 
     // finish up the button
@@ -1121,7 +1121,7 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
       _at.saved_x -= 10;
     }
 
-    GtkWidget *label = NULL; //contains the label, or NULL
+    GtkWidget *labelWidget = NULL; //contains the label, or NULL
     prvt->combo_box = gtk_hbox_new(false, 1); //This box is used to align label and combobox
     GtkWidget *cbox = gtk_combo_box_new();
 
@@ -1148,12 +1148,12 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
     
 
     if (tmp_label) {
-        label = gtk_label_new(tmp_label);
+        labelWidget = gtk_label_new(tmp_label);
         if (_at.length_of_label_for_inputfield) {
-          gtk_label_set_width_chars(GTK_LABEL(label), _at.length_of_label_for_inputfield);
-          gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+          gtk_label_set_width_chars(GTK_LABEL(labelWidget), _at.length_of_label_for_inputfield);
+          gtk_misc_set_alignment(GTK_MISC(labelWidget), 0.0, 0.5);
         }
-        gtk_box_pack_start(GTK_BOX(prvt->combo_box), label, false, false, 0);
+        gtk_box_pack_start(GTK_BOX(prvt->combo_box), labelWidget, false, false, 0);
     }
 
     gtk_box_pack_start(GTK_BOX(prvt->combo_box), cbox, false, false, 0);    
@@ -1168,7 +1168,7 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
         new AW_option_menu_struct(root->number_of_option_menus,
                                   awar_name,
                                   vs->variable_type,
-                                  label, 
+                                  labelWidget,
                                   cbox,
                                   _at.x_for_next_button - 7,
                                   _at.y_for_next_button,

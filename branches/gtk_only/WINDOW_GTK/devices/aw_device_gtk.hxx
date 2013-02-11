@@ -16,7 +16,7 @@
 /**
  * A device to draw/print on a GtkWidget.
  */
-class AW_device_gtk : public AW_device {
+class AW_device_gtk : public AW_device, virtual Noncopyable {
 
     GtkWidget* drawingArea;
 
