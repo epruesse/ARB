@@ -40,9 +40,6 @@
 
 #define MAXN    2       // Maximum number of sequences (both groups)
 
-#define TRUE    1
-#define FALSE   0
-
 static bool module_initialized = false;
 
 typedef int Boolean;
