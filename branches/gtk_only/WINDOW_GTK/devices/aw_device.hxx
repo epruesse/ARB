@@ -302,11 +302,13 @@ public:
         clear_part(AW::Rectangle(AW::Position(x, y), AW::Vector(width, height)), filteri);
     }
 
-    virtual void    clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
-    virtual void    move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
-    virtual void    fast();                                         // e.g. zoom linewidth off
-    virtual void    slow();
-    virtual void    flush();                                        // empty X11 buffers
+    virtual void clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
+    virtual void move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
+
+    void fast(); // e.g. zoom linewidth off
+    void slow();
+
+    virtual void flush(); // empty X11 buffers
 };
 
 

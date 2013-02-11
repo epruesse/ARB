@@ -20,18 +20,18 @@ class AW_device_size : public AW_simple_device {
     void dot(const AW::Position& p, AW_bitset filteri) { dot_transformed(transform(p), filteri); }
     void dot(AW_pos x, AW_pos y, AW_bitset filteri) { dot(AW::Position(x, y), filteri); }
 
-    bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
-    bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
-    bool invisible_impl(const AW::Position& pos, AW_bitset filteri);
+    bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri) OVERRIDE;
+    bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) OVERRIDE;
+    bool invisible_impl(const AW::Position& pos, AW_bitset filteri) OVERRIDE;
 
-    void specific_reset();
+    void specific_reset() OVERRIDE;
     
 public:
     AW_device_size(AW_common *common_) : AW_simple_device(common_) {}
 
-    void clear();
+    void clear() /*OVERRIDE*/; // @@@ wrong!
 
-    AW_DEVICE_TYPE type();
+    AW_DEVICE_TYPE type() OVERRIDE;
 
     // all get_size_information...() return screen coordinates
 

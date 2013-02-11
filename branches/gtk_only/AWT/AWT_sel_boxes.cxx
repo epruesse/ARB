@@ -46,7 +46,7 @@ public:
         , ali_type_match(nulldup(ali_type_match_))
     {}
     
-    void fill() {
+    void fill() OVERRIDE {
         GBDATA         *gb_presets = get_gbd();
         GB_transaction  ta(gb_presets);
 
@@ -102,7 +102,7 @@ struct AWT_tree_selection: public AW_DB_selection {
         : AW_DB_selection(sellist_, gb_tree_data)
     {}
 
-    void fill() {
+    void fill() OVERRIDE {
         GBDATA         *gb_main = get_gb_main();
         GB_transaction  ta(gb_main);
 
@@ -159,7 +159,7 @@ class AWT_ptserver_selection : public AW_selection {
 public:
     AWT_ptserver_selection(AW_selection_list *sellist_);
 
-    void fill();
+    void fill() OVERRIDE;
 
     static void refresh_all();
 };
@@ -434,7 +434,7 @@ public:
         : AW_DB_selection(sellist_, gb_configuration_data)
     {}
 
-    void fill() {
+    void fill() OVERRIDE {
         ConstStrArray config;
         GBT_get_configuration_names(config, get_gb_main());
 
@@ -495,7 +495,7 @@ public:
           filter_cd(filter_cd_)
     {}
 
-    void fill();
+    void fill() OVERRIDE;
 };
 
 void AWT_sai_selection::fill() {
@@ -1071,7 +1071,7 @@ public:
         get_sellist()->to_array(subset, true);
     }
 
-    void fill() { awt_assert(0); } // unused
+    void fill() OVERRIDE { awt_assert(0); } // unused
 
     void collect_subset_cb(awt_collect_mode what) {
         AW_selection_list *subset_list = get_sellist();
