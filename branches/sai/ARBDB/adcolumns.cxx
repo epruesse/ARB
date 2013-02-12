@@ -21,6 +21,30 @@
 using namespace std;
 
 // --------------------------------------------------------------------------------
+// helper to hold any kind of unit (char, int, float)
+
+class UnitPtr {
+    const void *ptr;
+public:
+    UnitPtr() : ptr(NULL) {}
+    UnitPtr(const void *ptr_)
+        : ptr(ptr_)
+    {
+        gb_assert(ptr);
+    }
+
+    void set_pointer(const void *ptr_) {
+        gb_assert(!ptr);
+        ptr = ptr_;
+    }
+    const void *get_pointer() const { return ptr; }
+    const void *expect_pointer() const { gb_assert(ptr); return ptr; }
+};
+struct UnitPair {
+    UnitPtr left, right;
+};
+
+// --------------------------------------------------------------------------------
 
 class AliData;
 typedef SmartPtr<AliData> AliDataPtr;
@@ -33,15 +57,19 @@ public:
     AliData(size_t size_) : size(size_) {}
     virtual ~AliData() {}
 
-    virtual size_t unitsize() const                                      = 0;
-    virtual AliDataPtr create_gap(size_t repeat) const                   = 0;
-    virtual void copyPartTo(void *mem, size_t start, size_t count) const = 0;
+    virtual size_t unitsize() const                                              = 0;
+    virtual void copyPartTo(void *mem, size_t start, size_t count) const         = 0;
+    virtual UnitPtr unit_left_of(size_t pos) const                               = 0;
+    virtual UnitPtr unit_right_of(size_t pos) const                              = 0;
+    virtual AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const = 0;
 
     size_t elems() const { return size; }
     size_t memsize() const { return unitsize()*elems(); }
     void copyTo(void *mem) const { copyPartTo(mem, 0, elems()); }
     bool empty() const { return !elems(); }
 
+    bool is_valid_pos(size_t pos) const { return pos < elems(); }
+    bool is_valid_between(size_t pos) const { return pos <= elems(); } // pos == 0 -> before first base; pos == elems() -> after last base
 };
 
 class ComposedAliData : public AliData {
@@ -55,7 +83,9 @@ class ComposedAliData : public AliData {
     friend AliDataPtr concat(AliDataPtr left, AliDataPtr right);
 public:
     size_t unitsize() const OVERRIDE { return left->unitsize(); }
-    AliDataPtr create_gap(size_t repeat) const OVERRIDE { return left->create_gap(repeat); }
+    AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const OVERRIDE {
+        return left->create_gap(gapsize, gapinfo);
+    }
     void copyPartTo(void *mem, size_t start, size_t count) const OVERRIDE {
         size_t left_elems = left->elems();
         size_t take_left  = 0;
@@ -70,25 +100,51 @@ public:
             right->copyPartTo(inc_by_units(mem, take_left), rstart, count-take_left);
         }
     }
+    UnitPtr unit_left_of(size_t pos) const OVERRIDE {
+        gb_assert(is_valid_between(pos));
+        if (left->elems() == pos) { // split between left and right
+            gb_assert(pos >= 1);
+            return left->unit_right_of(pos-1);
+        }
+        else if (left->elems() < pos) { // split inside or behind 'right'
+            return right->unit_left_of(pos-left->elems());
+        }
+        else { // split inside or frontof 'left'
+            return left->unit_left_of(pos);
+        }
+    }
+    UnitPtr unit_right_of(size_t pos) const OVERRIDE {
+        gb_assert(is_valid_between(pos));
+        if (left->elems() == pos) { // split between left and right
+            gb_assert(pos >= 1);
+            return right->unit_left_of(0);
+        }
+        else if (left->elems() < pos) { // split inside or behind 'right'
+            return right->unit_right_of(pos-left->elems());
+        }
+        else { // split inside or frontof 'left'
+            return left->unit_right_of(pos);
+        }
+    }
 };
 
 class AliDataSlice : public AliData {
     AliDataPtr from;
-    size_t     pos;
+    size_t     offset;
 
-    static int fix_amount(AliDataPtr from, size_t pos, size_t amount) {
+    static int fix_amount(AliDataPtr from, size_t offset, size_t amount) {
         if (amount) {
             size_t from_size = from->elems();
-            if (pos>from_size) {
+            if (offset>from_size) {
                 amount = 0;
             }
             else {
-                size_t last_pos  = pos+amount-1;
+                size_t last_pos  = offset+amount-1;
                 size_t last_from = from->elems()-1;
 
                 if (last_pos > last_from) {
-                    gb_assert(last_from >= pos);
-                    amount = last_from-pos+1;
+                    gb_assert(last_from >= offset);
+                    amount = last_from-offset+1;
                 }
             }
         }
@@ -96,68 +152,159 @@ class AliDataSlice : public AliData {
     }
 
 public:
-    AliDataSlice(AliDataPtr from_, size_t pos_, size_t amount_)
-        : AliData(fix_amount(from_, pos_, amount_)),
+    AliDataSlice(AliDataPtr from_, size_t offset_, size_t amount_)
+        : AliData(fix_amount(from_, offset_, amount_)),
           from(from_),
-          pos(pos_)
+          offset(offset_)
     {}
 
     size_t unitsize() const OVERRIDE { return from->unitsize(); }
-    AliDataPtr create_gap(size_t repeat) const OVERRIDE { return from->create_gap(repeat); }
+    AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const OVERRIDE {
+        return from->create_gap(gapsize, gapinfo);
+    }
     void copyPartTo(void *mem, size_t start, size_t count) const OVERRIDE {
         gb_assert(count <= elems());
-        from->copyPartTo(mem, start+pos, count);
+        from->copyPartTo(mem, start+offset, count);
+    }
+    UnitPtr unit_left_of(size_t pos) const OVERRIDE {
+        gb_assert(is_valid_between(pos));
+        return from->unit_left_of(pos+offset);
+    }
+    UnitPtr unit_right_of(size_t pos) const OVERRIDE {
+        gb_assert(is_valid_between(pos));
+        return from->unit_right_of(pos+offset);
     }
 };
 
 template<typename T>
-class SpecificGap : public AliData {
+class TypedAliData : public AliData {
     T gap;
 
+protected:
+    static const T *typed_ptr(const UnitPtr& uptr) { return (const T*)uptr.get_pointer(); }
+
+    const T& std_gap() const { return gap; }
+    const T* std_gap_ptr() const { return &gap; }
+
 public:
-    SpecificGap(const T& gap_, size_t gapsize)
-        : AliData(gapsize),
+    TypedAliData(size_t size_, T gap_)
+        : AliData(size_),
           gap(gap_)
     {}
+
     size_t unitsize() const OVERRIDE { return sizeof(T); }
-    AliDataPtr create_gap(size_t) const OVERRIDE { gb_assert(0); return NULL; }
+    virtual UnitPtr at_ptr(size_t pos) const = 0;
+    AliDataPtr create_gap(size_t gapsize, const UnitPair& /*gapinfo*/) const OVERRIDE;
+
+    UnitPtr unit_left_of(size_t pos) const OVERRIDE {
+        gb_assert(is_valid_between(pos));
+        return at_ptr(pos-1);
+    }
+    UnitPtr unit_right_of(size_t pos) const OVERRIDE {
+        gb_assert(is_valid_between(pos));
+        return at_ptr(pos);
+    }
+};
+
+template<typename T>
+class SpecificGap : public TypedAliData<T> {
+public:
+    typedef TypedAliData<T> TData;
+
+    SpecificGap(size_t gapsize, const T& gap_)
+        : TData(gapsize, gap_)
+    {}
     void copyPartTo(void *mem, size_t start, size_t count) const OVERRIDE {
-        if (start<elems()) {
-            size_t amount = min(start+count, elems()-start);
+        if (start<TData::elems()) {
+            size_t amount = min(start+count, TData::elems()-start);
             for (size_t a = 0; a<amount; ++a) {
-                memcpy(mem, &gap, unitsize());
-                mem = inc_by_units(mem, 1);
+                memcpy(mem, TData::std_gap_ptr(), TData::unitsize());
+                mem = TData::inc_by_units(mem, 1);
             }
         }
     }
+
+    UnitPtr at_ptr(size_t pos) const OVERRIDE {
+        if (pos<TData::elems()) return UnitPtr(TData::std_gap_ptr());
+        return UnitPtr();
+    }
+
 };
 
+template <typename T> 
+AliDataPtr TypedAliData<T>::create_gap(size_t gapsize, const UnitPair& /*gapinfo*/) const {
+    return new SpecificGap<T>(gapsize, std_gap());
+}
+
 template<typename T>
-class SpecificAliData : public AliData, virtual Noncopyable {
+class SpecificAliData : public TypedAliData<T>, virtual Noncopyable {
     T *data;
-    T  gap;
 
 public:
+    typedef TypedAliData<T> TData;
+
     SpecificAliData(T*& allocated_data, size_t elements, const T& gap_)
-        : AliData(elements),
-          data(allocated_data),
-          gap(gap_)
+        : TData(elements, gap_),
+          data(allocated_data)
     {
         allocated_data = NULL;
     }
     ~SpecificAliData() OVERRIDE { free(data); }
 
-    size_t unitsize() const OVERRIDE { return sizeof(T); }
-    AliDataPtr create_gap(size_t repeat) const OVERRIDE { return new SpecificGap<T>(gap, repeat); }
     void copyPartTo(void *mem, size_t start, size_t count) const OVERRIDE {
-        gb_assert(start<elems());
+        gb_assert(start<TData::elems());
         if (count>0) {
             size_t last = start+count-1;
-            gb_assert(last<elems());
-            size_t msize = unitsize()*count;
+            gb_assert(last<TData::elems());
+            size_t msize = TData::unitsize()*count;
             gb_assert(msize>0);
             memcpy(mem, data+start, msize);
         }
+    }
+
+    UnitPtr at_ptr(size_t pos) const OVERRIDE {
+        if (pos<TData::elems()) return UnitPtr(&data[pos]);
+        return UnitPtr();
+    }
+
+};
+
+class SequenceAliData : public SpecificAliData<char> {
+    char dot;
+
+    char preferred_gap(const char *s1, const char *s2) const {
+        if (s1 && s2) {
+            if (*s1 == std_gap() || *s2 == std_gap()) {
+                return std_gap();
+            }
+            if (*s1 == dot || *s2 == dot) {
+                return dot;
+            }
+            return std_gap();
+        }
+        else if (s1) {
+            gb_assert(!s2);
+            return *s1 == std_gap() ? std_gap() : dot;
+        }
+        else if (s2) {
+            gb_assert(!s1);
+            return *s2 == std_gap() ? std_gap() : dot;
+        }
+        else {
+            gb_assert(!s1 && !s2);
+            return dot;
+        }
+    }
+
+public:
+    SequenceAliData(char*& allocated_data, size_t elements, char stdgap, char dotgap)
+        : SpecificAliData<char>(allocated_data, elements, stdgap),
+          dot(dotgap)
+    {}
+
+    AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const OVERRIDE {
+        char use = preferred_gap(typed_ptr(gapinfo.left), typed_ptr(gapinfo.right));
+        return new SpecificGap<char>(gapsize, use);
     }
 };
 
@@ -181,11 +328,23 @@ inline AliDataPtr insert_at(AliDataPtr dest, size_t pos, AliDataPtr src) {
 }
 
 inline AliDataPtr insert_gap(AliDataPtr data, size_t pos, size_t count) {
-    AliDataPtr gap = data->create_gap(count);
+    UnitPair gapinfo;
+
+    gb_assert(data->unitsize() <= sizeof(gapinfo.left));
+
+    gapinfo.left  = data->unit_left_of(pos);
+    gapinfo.right = data->unit_right_of(pos);
+
+    AliDataPtr gap = data->create_gap(count, gapinfo);
     return insert_at(data, pos, gap);
 }
 
-template<typename T> AliDataPtr makeAliData(T*& allocated_data, size_t elems, const T& gap) { return new SpecificAliData<T>(allocated_data, elems, gap); }
+template<typename T> AliDataPtr makeAliData(T*& allocated_data, size_t elems, const T& gap) {
+    return new SpecificAliData<T>(allocated_data, elems, gap);
+}
+AliDataPtr makeAliSeqData(char*& allocated_data, size_t elems, char gap, char dot) {
+    return new SequenceAliData(allocated_data, elems, gap, dot);
+}
 
 // --------------------------------------------------------------------------------
 
@@ -240,6 +399,7 @@ inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) {
         free(ad_copy);                                          \
     }while(0)
 
+#if defined(ENABLE_CRASH_TESTS)
 static void illegal_alidata_composition() {
     const int ELEMS = 5;
 
@@ -248,20 +408,21 @@ static void illegal_alidata_composition() {
 
     concat(makeAliData(i, ELEMS, 0), makeAliData(c, ELEMS, '-'));
 }
+#endif
 
 void TEST_AliData() {
 #define SEQDATA "CGCAC-C-GG-C-GG.A.-C------GG-.C..UCAGU"
-    char      bit_src[] = SEQDATA; // also contains trailing 0-byte!
+    char      chr_src[] = SEQDATA; // also contains trailing 0-byte!
     GB_CUINT4 int_src[] = { 0x01, 0x1213, 0x242526, 0x37383930, 0xffffffff };
     float     flt_src[] = { 0.0, 0.5, 1.0, -5.0, 20.1 };
 
     AliDataPtr type[] = {
-        makeAliData(COPYOF(bit_src), ARRAY_ELEMS(bit_src)-1, '-'),
+        makeAliSeqData(COPYOF(chr_src), ARRAY_ELEMS(chr_src)-1, '-', '.'),
         makeAliData(COPYOF(int_src), ARRAY_ELEMS(int_src), 0U),
         makeAliData(COPYOF(flt_src), ARRAY_ELEMS(flt_src), 0.0F)
     };
-    TEST_EXPECT_COPY_EQUALS_ARRAY(type[0], bit_src, SIZEOF(bit_src)-1);
-    TEST_EXPECT_COPY_EQUALS_STRING(type[0], bit_src);
+    TEST_EXPECT_COPY_EQUALS_ARRAY(type[0], chr_src, SIZEOF(chr_src)-1);
+    TEST_EXPECT_COPY_EQUALS_STRING(type[0], chr_src);
     TEST_EXPECT_COPY_EQUALS_ARRAY(type[1], int_src, SIZEOF(int_src));
     TEST_EXPECT_COPY_EQUALS_ARRAY(type[2], flt_src, SIZEOF(flt_src));
 
@@ -301,34 +462,42 @@ void TEST_AliData() {
         TEST_EXPECT_COPIES_EQUAL(insert_at(del, 777, empty), del);      // append via insert_at
         TEST_EXPECT_COPIES_EQUAL(insert_at(start, 777, end), del); // append via insert_at
 
-        AliDataPtr gap = del->create_gap(5);
-        TEST_EXPECT_EQUAL(gap->elems(), 5U);
-
         AliDataPtr ins_gap = insert_gap(del, 4, 5);
         TEST_EXPECT_EQUAL(ins_gap->elems(), del->elems()+5);
+
+        AliDataPtr gap_iseq = partof(ins_gap, 4, 5);
 
         TEST_EXPECT_COPIES_EQUAL(ins_gap, insert_gap(ins_gap, 7, 0)); // insert empty gap
 
         AliDataPtr start_gap1 = insert_gap(ins_gap, 0, 1); // insert gap at start
         AliDataPtr start_gap3 = insert_gap(ins_gap, 0, 3); // insert gap at start
 
-        TEST_EXPECT_COPIES_EQUAL(insert_gap(empty, 0, 5), gap); // insert into empty
+        AliDataPtr gap_iempty = insert_gap(empty, 0, 5);
+        TEST_EXPECT_EQUAL(gap_iempty->elems(), 5U);
+
+        AliDataPtr gap_in_gap = insert_gap(gap_iempty, 3, 2);
+        TEST_EXPECT_EQUAL(gap_in_gap->elems(), 7U);
 
         AliDataPtr end_gap1 = insert_gap(mid, 1, 1);
         TEST_EXPECT_EQUAL(end_gap1->elems(), 2U);
 
         if (t == 0) {
+            AliDataPtr end_gap2 = insert_gap(end, 34, 2);
+
             TEST_EXPECT_COPY_EQUALS_STRING(start,      "CGC");
             TEST_EXPECT_COPY_EQUALS_STRING(end,        "C-C-GG-C-GG.A.-C------GG-.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(end_gap2,   "C-C-GG-C-GG.A.-C------GG-.C..UCAGU..");
             TEST_EXPECT_COPY_EQUALS_STRING(mid,        "A");
-            TEST_EXPECT_COPY_EQUALS_STRING(end_gap1,   "A-");
+            TEST_EXPECT_COPY_EQUALS_STRING(end_gap1,   "A-");    // '-' is ok, since before there was a C behind (but correct would be '.')
             TEST_EXPECT_COPY_EQUALS_STRING(del,        "CGCC-C-GG-C-GG.A.-C------GG-.C..UCAGU");
             TEST_EXPECT_COPY_EQUALS_STRING(del_rest,   "CGC");
             TEST_EXPECT_COPY_EQUALS_STRING(ins,        "CGCAC-C-GG-C-GG.A.-C------GG-.C..UCAGU");
-            TEST_EXPECT_COPY_EQUALS_STRING(gap,        "-----");
+            TEST_EXPECT_COPY_EQUALS_STRING(gap_iseq,   "-----"); // inserted between bases
+            TEST_EXPECT_COPY_EQUALS_STRING(gap_iempty, "....."); // inserted in empty sequence
+            TEST_EXPECT_COPY_EQUALS_STRING(gap_in_gap, "......."); // inserted gap in gap
             TEST_EXPECT_COPY_EQUALS_STRING(ins_gap,    "CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU");
-            TEST_EXPECT_COPY_EQUALS_STRING(start_gap1, "-CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU");
-            TEST_EXPECT_COPY_EQUALS_STRING(start_gap3, "---CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(start_gap1, ".CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(start_gap3, "...CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU");
 
             AliDataPtr bef_dot     = insert_gap(ins, 15, 2);
             AliDataPtr aft_dot     = insert_gap(ins, 16, 2);
@@ -338,9 +507,9 @@ void TEST_AliData() {
             AliDataPtr bet_dotdash = insert_gap(ins, 18, 2);
 
             TEST_EXPECT_COPY_EQUALS_STRING(ins,        "CGCAC-C-GG-C-GG.A.-C------GG-.C..UCAGU");
-            TEST_EXPECT_COPY_EQUALS_STRING(bef_dot,    "CGCAC-C-GG-C-GG--.A.-C------GG-.C..UCAGU");
-            TEST_EXPECT_COPY_EQUALS_STRING(aft_dot,    "CGCAC-C-GG-C-GG.--A.-C------GG-.C..UCAGU");
-            TEST_EXPECT_COPY_EQUALS_STRING(bet_dots,   "CGCAC-C-GG-C-GG.A.-C------GG-.C.--.UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(bef_dot,    "CGCAC-C-GG-C-GG...A.-C------GG-.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(aft_dot,    "CGCAC-C-GG-C-GG...A.-C------GG-.C..UCAGU");
+            TEST_EXPECT_COPY_EQUALS_STRING(bet_dots,   "CGCAC-C-GG-C-GG.A.-C------GG-.C....UCAGU");
             TEST_EXPECT_COPY_EQUALS_STRING(bet_dashes, "CGCAC-C-GG-C-GG.A.-C--------GG-.C..UCAGU");
             TEST_EXPECT_COPY_EQUALS_STRING(bet_dashdot,"CGCAC-C-GG-C-GG.A.-C------GG---.C..UCAGU");
             TEST_EXPECT_COPY_EQUALS_STRING(bet_dotdash,"CGCAC-C-GG-C-GG.A.---C------GG-.C..UCAGU");
