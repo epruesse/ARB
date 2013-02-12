@@ -55,6 +55,7 @@ GDE.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_core.h
+GDE.o: $(ARBHOME)/INCLUDE/arb_defs.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -68,6 +69,9 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_common.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -87,16 +91,24 @@ GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GDE.o: $(ARBHOME)/INCLUDE/cb.h
 GDE.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
-GDE.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
+GDE.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
+GDE.o: $(ARBHOME)/INCLUDE/devices/aw_device_gtk.hxx
+GDE.o: $(ARBHOME)/INCLUDE/devices/aw_device_impl.hxx
+GDE.o: $(ARBHOME)/INCLUDE/devices/aw_device_impl.hxx
 GDE.o: $(ARBHOME)/INCLUDE/devices/aw_device_print.hxx
 GDE.o: $(ARBHOME)/INCLUDE/devices/aw_device_size.hxx
 GDE.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
+GDE.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
+GDE.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
+GDE.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
+GDE.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_arbdb_io.o: gde.hxx
@@ -139,6 +151,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_event.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_core.h
+GDE_event.o: $(ARBHOME)/INCLUDE/arb_defs.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -153,6 +166,9 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/aw_common.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -172,16 +188,24 @@ GDE_event.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/cb.h
 GDE_event.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_device_gtk.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_device_impl.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_device_impl.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_device_print.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_device_size.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_event.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_event.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_event.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_event.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_event.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_FileIO.o: gde.hxx

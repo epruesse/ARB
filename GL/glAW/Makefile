@@ -44,6 +44,7 @@ AW_window_ogl.o: GLwMDrawA.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -55,6 +56,9 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_common.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -70,16 +74,24 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_device_gtk.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_device_impl.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_device_impl.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_device_print.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_device_size.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GLwMDrawA.o: GLwDrawA.c
