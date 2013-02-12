@@ -523,114 +523,6 @@ void TEST_AliData() {
 
 // --------------------------------------------------------------------------------
 
-static char   *insDelBuffer = 0;
-static size_t  insDelBuffer_size;
-
-inline void free_insDelBuffer() {
-    freenull(insDelBuffer);
-}
-
-static const char *gbt_insert_delete(const char *source, long srclen, long destlen, size_t& newlen, long pos, long nchar, long mod, char insert_what, char insert_tail, int extraByte) {
-    /* removes elems from or inserts elems into an array
-     *
-     * srclen           len of source
-     * destlen          if != 0, then cut or append characters to get this len, otherwise keep srclen
-     * newlenPtr        the resulting len
-     * pos              where to insert/delete
-     * nchar            and how many items
-     * mod              size of an item
-     * insert_what      insert this character (mod times)
-     * insert_tail      append this character (if destlen>srclen)
-     * extraByte        0 or 1. append extra zero byte at end? use 1 for strings!
-     *
-     * resulting array has destlen+nchar elements
-     *
-     * 1. array size is corrected to 'destlen' (by appending/cutting tail)
-     * 2. part is deleted inserted
-     *
-     * return NULL, if nothing modified
-     */
-
-    const char *result;
-
-    pos     *= mod;
-    nchar   *= mod;
-    srclen  *= mod;
-    destlen *= mod;
-
-    if (!destlen) destlen                       = srclen; // if no destlen is set then keep srclen
-    if ((nchar<0) && (pos-nchar>destlen)) nchar = pos-destlen; // clip maximum characters to delete at end of array
-
-    if (destlen == srclen && (pos>srclen || nchar == 0)) { // length stays same and clip-range is empty or behind end of sequence
-        /* before 26.2.09 the complete data was copied in this case - but nevertheless NULL(=failure) was returned.
-         * I guess this was some test accessing complete data w/o writing anything back to DB,
-         * but AFAIK it was not used anywhere --ralf
-         */
-        result = NULL;
-        newlen = 0;
-    }
-    else {
-        newlen = destlen+nchar;                // length of result (w/o trailing zero-byte)
-        if (newlen == 0) {
-            result = "";
-        }
-        else {
-            size_t neededSpace = newlen+extraByte;
-
-            if (insDelBuffer && insDelBuffer_size<neededSpace) freenull(insDelBuffer);
-            if (!insDelBuffer) {
-                insDelBuffer_size = neededSpace;
-                insDelBuffer      = (char*)malloc(neededSpace);
-            }
-
-            char *dest = insDelBuffer;
-            gb_assert(dest);
-
-            if (pos>srclen) {                       // insert/delete happens inside appended range
-                insert_what = insert_tail;
-                pos         = srclen;               // insert/delete directly after source, to avoid illegal access below
-            }
-
-            gb_assert(pos >= 0);
-            if (pos>0) {                            // copy part left of pos
-                // @@@ need to check vs smaller newlen
-                memcpy(dest, source, (size_t)pos);
-                dest   += pos;
-                source += pos; srclen -= pos;
-            }
-
-            if (nchar>0) {                          // insert
-                memset(dest, insert_what, (size_t)nchar);
-                dest += nchar;
-            }
-            else if (nchar<0) {                     // delete
-                source += -nchar; srclen -= -nchar;
-            }
-
-            if (srclen>0) {                         // copy rest of source
-                // @@@ need to check vs smaller newlen
-                memcpy(dest, source, (size_t)srclen);
-                dest   += srclen;
-                source += srclen; srclen = 0;
-            }
-
-            long rest = newlen-(dest-insDelBuffer);
-            // gb_assert(rest >= 0); // @@@ disabled (fails in test-code below)
-
-            if (rest>0) {                           // append tail
-                memset(dest, insert_tail, rest);
-                dest += rest;
-            }
-
-            if (extraByte) dest[0] = 0;             // append zero byte (used for strings)
-
-            result = insDelBuffer;
-        }
-        newlen = newlen/mod;                    // report result length
-    }
-    return result;
-}
-
 enum TargetType {
     IDT_SPECIES = 0,
     IDT_SAI,
@@ -830,6 +722,118 @@ inline int alignment_oversize(GBDATA *gb_data, TargetType ttype, long alilen, lo
     }
     return oversize;
 }
+
+// --------------------------------------------------------------------------------
+
+static char   *insDelBuffer = 0;
+static size_t  insDelBuffer_size;
+
+inline void free_insDelBuffer() {
+    freenull(insDelBuffer);
+}
+
+static const char *gbt_insert_delete(const char *source, long srclen, long destlen, size_t& newlen, long pos, long nchar, long mod, char insert_what, char insert_tail, int extraByte) {
+    /* removes elems from or inserts elems into an array
+     *
+     * srclen           len of source
+     * destlen          if != 0, then cut or append characters to get this len, otherwise keep srclen
+     * newlenPtr        the resulting len
+     * pos              where to insert/delete
+     * nchar            and how many items
+     * mod              size of an item
+     * insert_what      insert this character (mod times)
+     * insert_tail      append this character (if destlen>srclen)
+     * extraByte        0 or 1. append extra zero byte at end? use 1 for strings!
+     *
+     * resulting array has destlen+nchar elements
+     *
+     * 1. array size is corrected to 'destlen' (by appending/cutting tail)
+     * 2. part is deleted inserted
+     *
+     * return NULL, if nothing modified
+     */
+
+    const char *result;
+
+    pos     *= mod;
+    nchar   *= mod;
+    srclen  *= mod;
+    destlen *= mod;
+
+    if (!destlen) destlen                       = srclen; // if no destlen is set then keep srclen
+    if ((nchar<0) && (pos-nchar>destlen)) nchar = pos-destlen; // clip maximum characters to delete at end of array
+
+    if (destlen == srclen && (pos>srclen || nchar == 0)) { // length stays same and clip-range is empty or behind end of sequence
+        /* before 26.2.09 the complete data was copied in this case - but nevertheless NULL(=failure) was returned.
+         * I guess this was some test accessing complete data w/o writing anything back to DB,
+         * but AFAIK it was not used anywhere --ralf
+         */
+        result = NULL;
+        newlen = 0;
+    }
+    else {
+        newlen = destlen+nchar;                // length of result (w/o trailing zero-byte)
+        if (newlen == 0) {
+            result = "";
+        }
+        else {
+            size_t neededSpace = newlen+extraByte;
+
+            if (insDelBuffer && insDelBuffer_size<neededSpace) freenull(insDelBuffer);
+            if (!insDelBuffer) {
+                insDelBuffer_size = neededSpace;
+                insDelBuffer      = (char*)malloc(neededSpace);
+            }
+
+            char *dest = insDelBuffer;
+            gb_assert(dest);
+
+            if (pos>srclen) {                       // insert/delete happens inside appended range
+                insert_what = insert_tail;
+                pos         = srclen;               // insert/delete directly after source, to avoid illegal access below
+            }
+
+            gb_assert(pos >= 0);
+            if (pos>0) {                            // copy part left of pos
+                // @@@ need to check vs smaller newlen
+                memcpy(dest, source, (size_t)pos);
+                dest   += pos;
+                source += pos; srclen -= pos;
+            }
+
+            if (nchar>0) {                          // insert
+                memset(dest, insert_what, (size_t)nchar);
+                dest += nchar;
+            }
+            else if (nchar<0) {                     // delete
+                source += -nchar; srclen -= -nchar;
+            }
+
+            if (srclen>0) {                         // copy rest of source
+                // @@@ need to check vs smaller newlen
+                memcpy(dest, source, (size_t)srclen);
+                dest   += srclen;
+                source += srclen; srclen = 0;
+            }
+
+            long rest = newlen-(dest-insDelBuffer);
+            // gb_assert(rest >= 0); // @@@ disabled (fails in test-code below)
+
+            if (rest>0) {                           // append tail
+                memset(dest, insert_tail, rest);
+                dest += rest;
+            }
+
+            if (extraByte) dest[0] = 0;             // append zero byte (used for strings)
+
+            result = insDelBuffer;
+        }
+        newlen = newlen/mod;                    // report result length
+    }
+    return result;
+}
+
+// --------------------------------------------------------------------------------
 
 class EditedTerminal {
     GBDATA   *gb_data;
