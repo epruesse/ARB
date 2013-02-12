@@ -77,6 +77,7 @@ GENC/aisc_global.o: aisc_global.h
 GENC/aisc_global.o: aisc_server.h
 GENC/aisc_global.o: GENH/aisc.h
 GENC/aisc_global.o: GENH/aisc_com.h
+GENC/aisc_global.o: GENH/aisc_server_extern.h
 GENC/aisc_global.o: GENH/aisc_server_proto.h
 GENC/aisc_global.o: GENH/import_proto.h
 GENC/aisc_global.o: server.h
@@ -95,6 +96,7 @@ GENC/aisc_server.o: aisc_func_types.h
 GENC/aisc_server.o: aisc_global.h
 GENC/aisc_server.o: GENH/aisc.h
 GENC/aisc_server.o: GENH/aisc_com.h
+GENC/aisc_server.o: GENH/aisc_server_extern.h
 GENC/aisc_server.o: GENH/aisc_server_proto.h
 GENC/aisc_server.o: GENH/import_proto.h
 GENC/aisc_server.o: server.h
