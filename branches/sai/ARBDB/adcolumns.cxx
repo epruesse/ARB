@@ -1090,10 +1090,11 @@ void TEST_insert_delete() {
     TEST_FORMAT(".x..",  5, ".x...");
     TEST_FORMAT(".x...", 5, NULL); // NULL means "result == source"
 
-    TEST_FORMAT__BROKEN("xxx--", 3, "xxx");
-    TEST_FORMAT__BROKEN("xxx..", 3, "xxx");
-    TEST_FORMAT__BROKEN("xxxxx", 3, "xxx");
-    TEST_FORMAT__BROKEN("xxx",   0, "");
+    // wanted ----------------------------- current
+    TEST_FORMAT__BROKEN("xxx--", 3, "xxx"); TEST_FORMAT("xxx--", 3, "xxx--");
+    TEST_FORMAT__BROKEN("xxx..", 3, "xxx"); TEST_FORMAT("xxx..", 3, "xxx..");
+    TEST_FORMAT__BROKEN("xxxxx", 3, "xxx"); TEST_FORMAT("xxxxx", 3, "xxxxx"); // @@@ huh? should report NULL!
+    TEST_FORMAT__BROKEN("xxx",   0, "");    TEST_FORMAT("xxx",   0, NULL);
 
     // insert/delete in the middle
     TEST_INSERT("abcde", 5, 3, 0, NULL);
@@ -1108,8 +1109,9 @@ void TEST_insert_delete() {
     TEST_INSERT("abcde", 5, 5, 1, "abcde-");
     TEST_INSERT("abcde", 5, 5, 4, "abcde----");
 
-    TEST_DELETE__BROKEN("abcde-",    5, 5, 1, "abcde");
-    TEST_DELETE__BROKEN("abcde----", 5, 5, 4, "abcde");
+    // wanted ----------------------------------------- current
+    TEST_DELETE__BROKEN("abcde-",    5, 5, 1, "abcde"); TEST_DELETE("abcde-",    5, 5, 1, "abcde-");
+    TEST_DELETE__BROKEN("abcde----", 5, 5, 4, "abcde"); TEST_DELETE("abcde----", 5, 5, 4, "abcde----");
 
     // insert/delete at start
     TEST_INSERT("abcde", 5, 0, 1, "-abcde");
@@ -1118,13 +1120,11 @@ void TEST_insert_delete() {
     TEST_DELETE("-abcde",    5, 0, 1, "abcde");
     TEST_DELETE("----abcde", 5, 0, 4, "abcde");
 
-
     // insert behind end
-    TEST_INSERT__BROKEN("abcde", 10, 8, 1, "abcde...-.."); // expected_behavior?
-    TEST_INSERT        ("abcde", 10, 8, 1, "abcde......"); // current_behavior
 
-    TEST_INSERT__BROKEN("abcde", 10, 8, 4, "abcde...----.."); // expected_behavior?
-    TEST_INSERT        ("abcde", 10, 8, 4, "abcde........."); // current_behavior
+    // expected? -------------------------------------------- current
+    TEST_INSERT__BROKEN("abcde", 10, 8, 1, "abcde...-..");    TEST_INSERT("abcde", 10, 8, 1, "abcde......");
+    TEST_INSERT__BROKEN("abcde", 10, 8, 4, "abcde...----.."); TEST_INSERT("abcde", 10, 8, 4, "abcde.........");
 
     // insert/delete all
     TEST_INSERT("",    0, 0, 3, "---");
