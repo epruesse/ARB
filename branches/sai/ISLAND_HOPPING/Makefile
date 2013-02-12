@@ -60,6 +60,7 @@ island_hopping.o: $(ARBHOME)/INCLUDE/arb_assert.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arb_core.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arbtools.h
 island_hopping.o: $(ARBHOME)/INCLUDE/attributes.h
+island_hopping.o: $(ARBHOME)/INCLUDE/cxxforward.h
 island_hopping.o: $(ARBHOME)/INCLUDE/dupstr.h
 island_hopping.o: $(ARBHOME)/INCLUDE/gccver.h
 island_hopping.o: $(ARBHOME)/INCLUDE/pos_range.h

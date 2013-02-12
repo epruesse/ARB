@@ -12,7 +12,6 @@
 #include <adGene.h>
 #include <arb_progress.h>
 #include <arb_defs.h>
-#include <cxxforward.h>
 
 #include "gb_local.h"
 

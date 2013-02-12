@@ -762,8 +762,8 @@ public:
     }
 };
 struct NoSuchCommand : public Command {
-    virtual bool matches(const char *) const { return true; } // catch all
-    virtual int call(Interpreter& interpret) const {
+    virtual bool matches(const char *) const OVERRIDE { return true; } // catch all
+    virtual int call(Interpreter& interpret) const OVERRIDE {
         printf_error(interpret.at(), "Unknown command '%s'", interpret.at()->str);
         return -1; // bail out
     }
@@ -795,7 +795,7 @@ protected:
     }
 public:
     NamedCommand(const char *cmd) : name(cmd), len(strlen(name)), dispatched(0) {}
-    bool matches(const char *code) const { return strncmp(code, name, len) == 0; }
+    bool matches(const char *code) const OVERRIDE { return strncmp(code, name, len) == 0; }
     int length() const { return len; }
 };
 
@@ -803,7 +803,7 @@ class SimpleCmmd : public NamedCommand {
     NoArgFun fun;
 public:
     SimpleCmmd(const char *cmd, NoArgFun fun_) : NamedCommand(cmd), fun(fun_) {}
-    virtual int call(Interpreter& interpret) const {
+    virtual int call(Interpreter& interpret) const OVERRIDE {
         return check_result((interpret.*fun)(), NULL);
     }
 };
@@ -826,14 +826,14 @@ class ArgCommand : public NamedCommand {
             ? expr.evalVarDecl(failed)
             : expr.evaluate(failed);
     }
-    virtual int check_result(int res, char *evaluated_args) const {
+    virtual int check_result(int res, char *evaluated_args) const OVERRIDE {
         return NamedCommand::check_result(res && (emode&TERMINATED_ON_ERROR) ? -1 : res, evaluated_args);
     }
     
 public:
     ArgCommand(const char *cmd, ArgFun fun_, CallMode emode_ = STANDARD_CALL)
         : NamedCommand(cmd), fun(fun_), emode(emode_) {}
-    virtual int call(Interpreter& interpret) const {
+    virtual int call(Interpreter& interpret) const OVERRIDE {
         int   res  = 1;
         bool eval_failed;
         char *args = eval(interpret, eval_failed);

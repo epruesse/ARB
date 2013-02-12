@@ -215,7 +215,7 @@ protected:
 
 public:
     awt_mask_awar_item(awt_input_mask_global& global_, const std::string& awar_base, const std::string& default_value, bool saved_with_properties);
-    virtual ~awt_mask_awar_item() { remove_awar_callbacks(); }
+    virtual ~awt_mask_awar_item() OVERRIDE { remove_awar_callbacks(); }
 
     virtual void awar_changed() = 0; // called when awar changes
 
@@ -223,10 +223,10 @@ public:
     const AW_awar *awar() const { return mask_global().get_root()->awar(awarName.c_str()); }
     AW_awar *awar() { return mask_global().get_root()->awar(awarName.c_str()); }
 
-    virtual std::string get_value() const {  // reads the current value of the item
+    virtual std::string get_value() const OVERRIDE {  // reads the current value of the item
         return const_cast<AW_awar*>(awar())->read_string();
     }
-    virtual GB_ERROR set_value(const std::string& new_value) { // assigns a new value to the item
+    virtual GB_ERROR set_value(const std::string& new_value) OVERRIDE { // assigns a new value to the item
         awar()->write_string(new_value.c_str());
         return 0; // an overloaded method may return an error
     }
@@ -249,7 +249,7 @@ public:
         : awt_mask_awar_item(ref_item)
         , label(label_)
     {}
-    virtual ~awt_viewport() {}
+    virtual ~awt_viewport() OVERRIDE {}
 
     const std::string& get_label() const { return label; }
     virtual void build_widget(AW_window *aws) = 0; // builds the widget at the current position
@@ -273,8 +273,8 @@ private:
     }
 public:
     awt_variable(awt_input_mask_global& global_, const std::string& id, bool is_global_, const std::string& default_value, GB_ERROR& error);
-    virtual ~awt_variable();
-    virtual void awar_changed() {
+    virtual ~awt_variable() OVERRIDE;
+    virtual void awar_changed() OVERRIDE {
 #if defined(DEBUG)
         printf("awt_variable was changed\n");
 #endif // DEBUG
@@ -294,10 +294,10 @@ public:
         : awt_mask_item(global_)
         , script(script_)
     {}
-    virtual ~awt_script() {}
+    virtual ~awt_script() OVERRIDE {}
 
-    virtual std::string get_value() const; // reads the current value of the item
-    virtual GB_ERROR set_value(const std::string& /* new_value */); // assigns a new value to the item
+    virtual std::string get_value() const OVERRIDE; // reads the current value of the item
+    virtual GB_ERROR set_value(const std::string& /* new_value */) OVERRIDE; // assigns a new value to the item
 };
 
 //  ---------------------------------
@@ -333,6 +333,7 @@ public:
     virtual GB_ERROR relink() = 0; // used by callbacks to relink awt_input_handler
 
     virtual void general_item_change() {} // called if item was changed (somehow)
+    virtual void db_changed() = 0;
 };
 
 
@@ -351,14 +352,14 @@ private:
 
 public:
     awt_script_viewport(awt_input_mask_global& global_, const awt_script *script_, const std::string& label_, long field_width_);
-    virtual ~awt_script_viewport();
+    virtual ~awt_script_viewport() OVERRIDE;
 
-    virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
-    virtual GB_ERROR relink() { return link_to(mask_global().get_selected_item()); }
+    virtual GB_ERROR link_to(GBDATA *gb_new_item) OVERRIDE; // link to a new item
+    virtual GB_ERROR relink() OVERRIDE { return link_to(mask_global().get_selected_item()); }
 
-    virtual void build_widget(AW_window *aws); // builds the widget at the current position
-    virtual void awar_changed();
-    virtual void db_changed();
+    virtual void build_widget(AW_window *aws) OVERRIDE; // builds the widget at the current position
+    virtual void awar_changed() OVERRIDE;
+    virtual void db_changed() OVERRIDE;
 };
 
 
@@ -373,8 +374,8 @@ private:
     GB_TYPES     db_type;       // type of database field
     bool         in_destructor;
 
-    virtual GB_ERROR add_db_callbacks();
-    virtual void     remove_db_callbacks();
+    virtual GB_ERROR add_db_callbacks() OVERRIDE;
+    virtual void     remove_db_callbacks() OVERRIDE;
 
     static std::string generate_baseName(const awt_input_mask_global& global_, const std::string& child_path) {
         // the generated name is enumerated to allow different awt_input_handler's to be linked
@@ -386,10 +387,10 @@ private:
 
 public:
     awt_input_handler(awt_input_mask_global& global_, const std::string& child_path_, GB_TYPES type_, const std::string& label_);
-    virtual ~awt_input_handler();
+    virtual ~awt_input_handler() OVERRIDE;
 
-    virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
-    virtual GB_ERROR relink() { return link_to(mask_global().get_selected_item()); }
+    virtual GB_ERROR link_to(GBDATA *gb_new_item) OVERRIDE; // link to a new item
+    virtual GB_ERROR relink() OVERRIDE { return link_to(mask_global().get_selected_item()); }
 
     GBDATA *data() { return gbd; }
 
@@ -397,9 +398,6 @@ public:
     void set_type(GB_TYPES typ) { db_type = typ; }
 
     const std::string& get_child_path() const { return child_path; }
-
-    // callbacks are handled via the following virtual functions :
-    virtual void db_changed()   = 0;
 };
 
 typedef SmartPtr<awt_mask_item>      awt_mask_item_ptr;
@@ -419,15 +417,15 @@ public:
         , default_value(default_awar_value_)
     {
     }
-    virtual ~awt_string_handler() {}
+    virtual ~awt_string_handler() OVERRIDE {}
 
-    virtual void awar_changed();
-    virtual void db_changed();
+    virtual void awar_changed() OVERRIDE;
+    virtual void db_changed() OVERRIDE;
 
     virtual std::string awar2db(const std::string& awar_content) const { return awar_content; }
     virtual std::string db2awar(const std::string& db_content) const { return db_content; }
 
-    virtual void build_widget(AW_window *aws) = 0; // builds the widget at the current position
+    virtual void build_widget(AW_window *aws) OVERRIDE = 0; // builds the widget at the current position
 };
 
 //  ------------------------------
@@ -443,9 +441,9 @@ public:
         : awt_string_handler(global_, child_path_, default_value_, default_type, label_)
         , field_width(field_width_)
     {}
-    virtual ~awt_input_field() {}
+    virtual ~awt_input_field() OVERRIDE {}
 
-    virtual void build_widget(AW_window *aws);
+    virtual void build_widget(AW_window *aws) OVERRIDE;
 };
 
 //  -------------------------------
@@ -460,14 +458,14 @@ public:
         : awt_viewport(*item, label_)
         , field_width(field_width_)
     {}
-    virtual ~awt_text_viewport() {}
+    virtual ~awt_text_viewport() OVERRIDE {}
 
-    virtual void awar_changed() {
+    virtual void awar_changed() OVERRIDE {
 #if defined(DEBUG)
         printf("awt_text_viewport awar changed!\n");
 #endif // DEBUG
     }
-    virtual void build_widget(AW_window *aws);
+    virtual void build_widget(AW_window *aws) OVERRIDE;
 };
 
 
@@ -484,9 +482,9 @@ public:
         , min(min_)
         , max(max_)
     {}
-    virtual ~awt_numeric_input_field() {}
+    virtual ~awt_numeric_input_field() OVERRIDE {}
 
-    virtual std::string awar2db(const std::string& awar_content) const;
+    virtual std::string awar2db(const std::string& awar_content) const OVERRIDE;
 };
 
 
@@ -500,12 +498,12 @@ public:
     awt_check_box(awt_input_mask_global& global_, const std::string& child_path_, const std::string& label_, bool default_checked)
         : awt_string_handler(global_, child_path_, default_checked ? "yes" : "no", GB_BITS, label_)
     {}
-    virtual ~awt_check_box() {}
+    virtual ~awt_check_box() OVERRIDE {}
 
-    virtual std::string awar2db(const std::string& awar_content) const;
-    virtual std::string db2awar(const std::string& db_content) const;
+    virtual std::string awar2db(const std::string& awar_content) const OVERRIDE;
+    virtual std::string db2awar(const std::string& db_content) const OVERRIDE;
 
-    virtual void build_widget(AW_window *aws);
+    virtual void build_widget(AW_window *aws) OVERRIDE;
 };
 
 //  ------------------------------
@@ -528,12 +526,12 @@ public:
     {
         awt_assert(buttons.size() == values.size());
     }
-    virtual ~awt_radio_button() {}
+    virtual ~awt_radio_button() OVERRIDE {}
 
-    virtual std::string awar2db(const std::string& awar_content) const;
-    virtual std::string db2awar(const std::string& db_content) const;
+    virtual std::string awar2db(const std::string& awar_content) const OVERRIDE;
+    virtual std::string db2awar(const std::string& db_content) const OVERRIDE;
 
-    virtual void build_widget(AW_window *aws);
+    virtual void build_widget(AW_window *aws) OVERRIDE;
 
     size_t no_of_toggles() const { return buttons.size(); }
     size_t default_toggle() const { return default_position; }

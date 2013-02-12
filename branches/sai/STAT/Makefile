@@ -56,11 +56,13 @@ ST_ml.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
+ST_ml.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ST_ml.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_ml.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_ml.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_ml.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/smartptr.h
+ST_ml.o: $(ARBHOME)/INCLUDE/static_assert.h
 ST_ml.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ST_quality.o: MostLikelySeq.hxx
@@ -89,6 +91,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ST_quality.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -120,6 +123,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/cb.h
 ST_window.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ST_window.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_window.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_window.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx

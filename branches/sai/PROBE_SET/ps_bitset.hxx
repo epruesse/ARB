@@ -26,26 +26,27 @@ protected:
 public:
     typedef set<long> IndexSet;
 
-    virtual long getTrueIndices(IndexSet &_index_set, const long _fill_index);
-    virtual long getFalseIndices(IndexSet &_index_set, const long _fill_index);
-    virtual long getCountOfTrues(const long _fill_index = -1);
+            long getTrueIndices(IndexSet &_index_set, const long _fill_index);
+            long getFalseIndices(IndexSet &_index_set, const long _fill_index);
+            long getCountOfTrues(const long _fill_index = -1);
     
-    long getMaxUsedIndex() const { return max_index; }
-    long getCapacity() const { return capacity; }
+            long getMaxUsedIndex() const { return max_index; }
+            long getCapacity() const { return capacity; }
 
     virtual bool Get(const long _index);
     virtual bool Set(const long _index, const bool _value);
+
     virtual void setTrue(const long _index);
     virtual void setFalse(const long _index);
 
-    virtual void invert();
-    virtual void x_or(const PS_BitSet *_other_set);
+            void invert();
+            void x_or(const PS_BitSet *_other_set);
 
-    virtual void print(const bool _header, const long _fill_index);
-    virtual bool save(PS_FileBuffer *_file);
-    virtual bool load(PS_FileBuffer *_file, const long _fill_index);
+            void print(const bool _header, const long _fill_index);
+            bool save(PS_FileBuffer *_file);
+            bool load(PS_FileBuffer *_file, const long _fill_index);
 
-    virtual bool copy(const PS_BitSet *_other_bitset);
+            bool copy(const PS_BitSet *_other_bitset);
     virtual bool reserve(const long _capacity);
 
     explicit PS_BitSet(const bool _bias, const long _capacity) : bias(_bias), max_index(-1), capacity(0) {
@@ -74,12 +75,13 @@ private:
 
 public:
 
-    virtual bool get(const long _index);
-    virtual bool set(const long _index, const bool _value);
-    virtual void setTrue(const long _index);
-    virtual void setFalse(const long _index);
+    virtual bool Get(const long _index) OVERRIDE;
+    virtual bool Set(const long _index, const bool _value) OVERRIDE;
 
-    virtual bool reserve(const long _capacity);
+    virtual void setTrue(const long _index) OVERRIDE;
+    virtual void setFalse(const long _index) OVERRIDE;
+
+    virtual bool reserve(const long _capacity) OVERRIDE;
 
     explicit PS_BitSet_Fast(PS_FileBuffer *_file, const long _fill_index = -1) : PS_BitSet(false, -1, 0) {
         data = 0;
@@ -300,14 +302,14 @@ bool PS_BitSet::load(PS_FileBuffer *_file, const long _fill_index = -1) {
 }
 
 
-bool PS_BitSet_Fast::get(const long _index) {
+bool PS_BitSet_Fast::Get(const long _index) {
     if (_index >= capacity) printf("PS_BitSet_Fast::get( %li ) exceeds capacity %li\n", _index, capacity);
     if (_index > max_index) max_index = _index;
     return (((data[_index/8] >> (_index % 8)) & 1) == 1);
 }
 
 
-bool PS_BitSet_Fast::set(const long _index, const bool _value) {
+bool PS_BitSet_Fast::Set(const long _index, const bool _value) {
     if (_index >= capacity) printf("PS_BitSet_Fast::set( %li,%1i ) exceeds capacity %li\n", _index, _value, capacity);
     bool previous_value = (((data[_index/8] >> (_index % 8)) & 1) == 1);
     if (_value) {

@@ -17,7 +17,6 @@
 #include "aw_root.hxx"
 
 #include <arbdb.h>
-#include <static_assert.h>
 
 #include <cctype>
 

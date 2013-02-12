@@ -110,10 +110,6 @@ extern bool         DRAW;
 
 typedef long ED4_index;
 
-inline int max(int x, int y)    { return x>y ? x : y; }
-inline int min(int x, int y)    { return x<y ? x : y; }
-inline int ABS(int x)       { return x<0 ? -x : x; }
-
 #define ED4_SCROLL_OVERLAP 20   // 15 Pixels overlap
 
 

@@ -1,17 +1,7 @@
 #include "GDE_proto.h"
 #include <limits.h>
 #include <aw_msg.hxx>
-
-int MAX(int a, int b)
-{
-    if (a>b) return a;
-    return b;
-}
-
-static int MIN(int a, int b) {
-    if (a<b) return a;
-    return b;
-}
+#include <algorithm>
 
 void Regroup(NA_Alignment *alignment)
 {
@@ -180,8 +170,8 @@ static void ReadNA_Flat(char *filename, char *dataset) {
     fclose(file);
 
     for (j=0; j<data->numelements; j++)
-        data->maxlen = MAX(data->maxlen, data->element[j].seqlen +
-                           data->element[j].offset);
+        data->maxlen = std::max(data->maxlen, data->element[j].seqlen +
+                                data->element[j].offset);
 
     for (j=0; j<data->numelements; j++)
         if (data->element[j].seqlen==0)
@@ -852,14 +842,14 @@ void NormalizeOffset(NA_Alignment *aln)
     int offset = INT_MAX;
 
     for (j=0; j<aln->numelements; j++)
-        offset = MIN(offset, aln->element[j].offset);
+        offset = std::min(offset, aln->element[j].offset);
 
     for (j=0; j<aln->numelements; j++)
         aln->element[j].offset -= offset;
 
     aln->maxlen = INT_MIN;
     for (j=0; j<aln->numelements; j++)
-        aln->maxlen = MAX(aln->element[j].seqlen+aln->element[j].offset,
+        aln->maxlen = std::max(aln->element[j].seqlen+aln->element[j].offset,
                           aln->maxlen);
 
     gde_assert(aln->maxlen >= 0);

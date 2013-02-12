@@ -22,13 +22,13 @@
 #ifndef _GLIBCXX_IOSTREAM
 # include <iostream>
 #endif
-
-#ifndef DOWNCAST_H
-#include <downcast.h>
-#endif
 #ifndef ARB_ASSERT_H
 # include <arb_assert.h>
 #endif
+#ifndef CXXFORWARD_H
+#include <cxxforward.h>
+#endif
+
 #define seq_assert(bed) arb_assert(bed)
 
 struct consensus_result {
@@ -65,11 +65,11 @@ public:
         return initialized;
     }
 
-    virtual void SQ_init_consensus(int size) = 0;
-    virtual int SQ_print_on_screen() = 0;
+    virtual void SQ_init_consensus(int size)                               = 0;
+    virtual int SQ_print_on_screen()                                       = 0;
     virtual consensus_result SQ_calc_consensus(const char *sequence) const = 0;
-    virtual void SQ_add_sequence(const char *sequence) = 0;
-    virtual void SQ_add(const SQ_GroupData& other) = 0;
+    virtual void SQ_add_sequence(const char *sequence)                     = 0;
+    virtual void SQ_add(const SQ_GroupData& other)                         = 0;
 
     int getSize() const {
         return size;
@@ -113,15 +113,16 @@ public:
 
 template <int I> class SQ_GroupData_Impl : public SQ_GroupData {
     SQ_GroupData_Impl(const SQ_GroupData_Impl& other);
+    SQ_GroupData_Impl& operator = (const SQ_GroupData_Impl& Other);
 
 public:
     SQ_GroupData_Impl() {
         consensus = 0;
     }
+    virtual ~SQ_GroupData_Impl() OVERRIDE;
 
-    virtual ~SQ_GroupData_Impl();
-
-    SQ_GroupData_Impl& operator=(const SQ_GroupData_Impl& other) {
+    SQ_GroupData_Impl& operator = (const SQ_GroupData& Other) OVERRIDE {
+        const SQ_GroupData_Impl& other = dynamic_cast<const SQ_GroupData_Impl&>(Other);
         seq_assert(other.size>0 && other.initialized);
 
         if (!initialized) SQ_init_consensus(other.size);
@@ -137,10 +138,9 @@ public:
         return *this;
     }
 
-    void SQ_init_consensus(int size);
-    int SQ_print_on_screen();
-    void SQ_add_column(int col);
-    void SQ_add(const SQ_GroupData& other); // add's other to this
+    void SQ_init_consensus(int size) OVERRIDE;
+    int SQ_print_on_screen() OVERRIDE;
+    void SQ_add(const SQ_GroupData& other) OVERRIDE; // add's other to this
 
 protected:
     Int<I> *consensus;
@@ -153,16 +153,16 @@ public:
     SQ_GroupData_RNA() {
     }
 
-    SQ_GroupData_RNA *clone() const {
+    SQ_GroupData_RNA *clone() const OVERRIDE {
         return new SQ_GroupData_RNA;
     }
-    SQ_GroupData_RNA& operator = (const SQ_GroupData& other) {
-        Base::operator=(*DOWNCAST(const Base*, &other));
+    SQ_GroupData_RNA& operator = (const SQ_GroupData& other) OVERRIDE {
+        Base::operator=(other);
         return *this;
     }
 
-    consensus_result SQ_calc_consensus (const char *sequence) const;
-    void SQ_add_sequence (const char *sequence);
+    consensus_result SQ_calc_consensus (const char *sequence) const OVERRIDE;
+    void SQ_add_sequence (const char *sequence) OVERRIDE;
 protected:
     static int class_counter;
 };
@@ -174,16 +174,16 @@ public:
     SQ_GroupData_PRO() {
     }
 
-    SQ_GroupData_PRO *clone() const {
+    SQ_GroupData_PRO *clone() const OVERRIDE {
         return new SQ_GroupData_PRO;
     }
-    SQ_GroupData_PRO& operator = (const SQ_GroupData& other) {
-        Base::operator=(*DOWNCAST(const Base*, &other));
+    SQ_GroupData_PRO& operator = (const SQ_GroupData& other) OVERRIDE {
+        Base::operator=(other);
         return *this;
     }
 
-    consensus_result SQ_calc_consensus (const char *sequence) const;
-    void SQ_add_sequence (const char *sequence);
+    consensus_result SQ_calc_consensus (const char *sequence) const OVERRIDE;
+    void SQ_add_sequence (const char *sequence) OVERRIDE;
 };
 
 // -----------------------

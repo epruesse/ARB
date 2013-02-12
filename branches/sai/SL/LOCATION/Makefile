@@ -43,6 +43,7 @@ Location.o: $(ARBHOME)/INCLUDE/arbdb.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Location.o: $(ARBHOME)/INCLUDE/arbtools.h
 Location.o: $(ARBHOME)/INCLUDE/attributes.h
+Location.o: $(ARBHOME)/INCLUDE/cxxforward.h
 Location.o: $(ARBHOME)/INCLUDE/dupstr.h
 Location.o: $(ARBHOME)/INCLUDE/gccver.h
 Location.o: $(ARBHOME)/INCLUDE/smartptr.h

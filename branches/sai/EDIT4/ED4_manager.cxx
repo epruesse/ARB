@@ -209,7 +209,7 @@ ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, 
     char *new_sequence = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
 
     if (range.is_whole()) {
-        const PosRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
+        const PosRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
         
         e4_assert(restricted);
         range = *restricted;
@@ -237,7 +237,7 @@ ED4_returncode ED4_manager::update_bases_and_rebuild_consensi(const char *old_se
 
     const PosRange *changedRange = 0;
     if (range.is_whole()) {
-        changedRange = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
+        changedRange = ED4_char_table::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
     }
     else {
         changedRange = &range; // @@@ use method similar to changed_range here, which just reduces the existing range
@@ -318,7 +318,7 @@ ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, 
     if (old_sequence) {
         if (new_sequence) {
             if (range.is_whole()) {
-                const PosRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len));
+                const PosRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
                 if (!restricted) return ED4_R_OK;
                 
                 range = *restricted;
@@ -834,7 +834,7 @@ ED4_returncode ED4_manager::distribute_children() {
 
     current_index = 0;  // get maximal relevant and other size of children, set children's other position increasingly
     while ((current_child = children->member(current_index)) != NULL) {
-        max_rel_size = max(int(max_rel_size), int(current_child->extension.size[rel_size]));
+        max_rel_size = std::max(int(max_rel_size), int(current_child->extension.size[rel_size]));
         if (current_child->extension.position[other_pos] != max_other_size) {
             current_child->extension.position[other_pos] = max_other_size;
             ED4_base::touch_world_cache();

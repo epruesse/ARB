@@ -45,9 +45,9 @@ class ProgramError : public Error {
 public:
     ProgramError(string message) : error(message) {}
     ProgramError(const char *message) : error(message) {}
-    virtual ~ProgramError() {}
+    virtual ~ProgramError() OVERRIDE {}
 
-    void print() const {
+    void print() const OVERRIDE {
         fprintf(stderr, "arb_proto_2_xsub: Error: %s\n", error.c_str());
     }
 };
@@ -57,9 +57,9 @@ class InputFileError : public Error {
 public:
     InputFileError(FileBuffer& fileBuffer, string message)      : located_error(fileBuffer.lineError(message)) {}
     InputFileError(FileBuffer& fileBuffer, const char *message) : located_error(fileBuffer.lineError(message)) {}
-    virtual ~InputFileError() {}
+    virtual ~InputFileError() OVERRIDE {}
 
-    void print() const {
+    void print() const OVERRIDE {
         fputs(located_error.c_str(), stderr);
         fputc('\n', stderr);
     }
@@ -104,7 +104,7 @@ public:
         , eol_comment(eolComment)
     {}
 
-    bool getLine(string& line) {
+    bool getLine(string& line) OVERRIDE {
         if (FileBuffer::getLine(line)) {
             size_t open = line.find(open_comment);
             size_t eol  = line.find(eol_comment);

@@ -686,7 +686,7 @@ static GB_ERROR ED4_pfold_predict_structure(const unsigned char *sequence, char 
     return error;
 }
 
-GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai, const unsigned char *structure_cmp, int start, int end, char *result_buffer, PFOLD_MATCH_METHOD match_method) {
+GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai, const unsigned char *structure_cmp, const int start, const int end, char *result_buffer, PFOLD_MATCH_METHOD match_method) {
     GB_ERROR error = 0;
     e4_assert(structure_sai);
     e4_assert(structure_cmp);
@@ -696,8 +696,12 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
     ED4_pfold_init_statics();
     e4_assert(char2AA);
 
+    e4_assert(end >= start);
+
+    size_t end_minus_start = size_t(end-start); // @@@ use this
+
     size_t length    = strlen((const char *)structure_sai);
-    int    match_end = min(min(end - start, length), (int) strlen((const char *)structure_cmp));
+    size_t match_end = std::min(std::min(end_minus_start, length), strlen((const char *)structure_cmp));
 
     enum { BEND = 3, NOSTRUCT = 4 };
     char *struct_chars[] = {
@@ -723,12 +727,12 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
         pair_chars[i] = awr->awar(awar)->read_string();
     }
 
-    int struct_start = start;
-    int struct_end = start;
-    int count = 0;
-    int current_struct = 4;
-    int aa = -1;
-    double prob = 0;
+    int    struct_start   = start;
+    int    struct_end     = start;
+    size_t count          = 0;
+    int    current_struct = 4;
+    int    aa             = -1;
+    double prob           = 0;
 
     // TODO: move this check to callback for the corresponding field?
     if (strlen(pair_chars_2) != 10) {
@@ -757,7 +761,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
             }
 
             // fill the remaining buffer with spaces
-            while (count <= end - start) {
+            while (count <= end_minus_start) {
                 result_buffer[count] = ' ';
                 count++;
             }
@@ -765,7 +769,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
 
         case SECSTRUCT_SEQUENCE:
             // clear result buffer
-            for (int i = 0; i <= end - start; i++) result_buffer[i] = ' ';
+            for (size_t i = 0; i <= end_minus_start; i++) result_buffer[i] = ' ';
 
             // skip gaps
             while (structure_sai[struct_start] != '\0' && structure_cmp[struct_start] != '\0' &&
@@ -858,9 +862,6 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                         if (prob_normalized >= 0 && prob_normalized <= 9) {
                             prob_symbol = pair_chars_2[prob_normalized];
                         }
-                        for (int i = struct_start - start; i < struct_end - start && i < (end - start); i++) {
-                            if (char2AA[structure_cmp[i + start]] != -1) result_buffer[i] = prob_symbol;
-                        }
                     }
                 }
 
@@ -926,7 +927,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                     }
                 }
                 // fill the remaining buffer with spaces
-                while (count <= end - start) {
+                while (count <= end_minus_start) {
                     result_buffer[count] = ' ';
                     count++;
                 }
@@ -952,7 +953,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
         free(pairs[i]);
         free(pair_chars[i]);
     }
-    if (error) for (int i = 0; i <= end - start; i++) result_buffer[i] = ' '; // clear result buffer
+    if (error) for (size_t i = 0; i <= end_minus_start; i++) result_buffer[i] = ' '; // clear result buffer
     return error;
 }
 
