@@ -338,7 +338,7 @@ symlink_file ../WINDOW_GTK/aw_window.hxx INCLUDE/aw_window.hxx &&
 symlink_file ../WINDOW_GTK/aw_xfig.hxx INCLUDE/aw_xfig.hxx &&
 symlink_file ../XML/xml.hxx INCLUDE/xml.hxx &&
 symlink_file ../../WINDOW_GTK/devices/aw_clipable.hxx INCLUDE/devices/aw_clipable.hxx  &&
-symlink_file ../../WINDOW_GTK/devices/aw_device.hxx INCLUDE/devices/aw_device.hxx &&
+symlink_file ../../WINDOW_GTK/devices/aw_device_impl.hxx INCLUDE/devices/aw_device_impl.hxx &&
 symlink_file ../../WINDOW_GTK/devices/aw_device_click.hxx INCLUDE/devices/aw_device_click.hxx &&
 symlink_file ../../WINDOW_GTK/devices/aw_device_gtk.hxx INCLUDE/devices/aw_device_gtk.hxx &&
 symlink_file ../../WINDOW_GTK/devices/aw_device_print.hxx INCLUDE/devices/aw_device_print.hxx &&

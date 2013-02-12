@@ -21,7 +21,7 @@
 #include <arb_defs.h>
 #endif
 
-#include "devices/aw_device.hxx"
+#include "devices/aw_device_impl.hxx"
 #include <map>
 
 
