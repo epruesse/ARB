@@ -78,6 +78,9 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/aw_common.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -98,13 +101,20 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/cb.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_device.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_clipable.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_device_click.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_device_gtk.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_device_impl.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_device_impl.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_device_print.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_device_size.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_simple_device.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_stylable.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/devices/aw_zoomable.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/downcast.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/dupstr.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/gccver.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
@@ -112,6 +122,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/pos_range.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/PT_global_defs.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/RangeList.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/smartptr.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/static_assert.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/test_global.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/test_unit.h
 
