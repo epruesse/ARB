@@ -23,9 +23,9 @@
 
 //the following types are not forward declared because ARB needs to know about them
 //and I dont want to change includes in ARB
-#include "devices/aw_device_print.hxx" 
-#include "devices/aw_device_click.hxx"
-#include "devices/aw_device_size.hxx"
+#include "aw_device_print.hxx" 
+#include "aw_device_click.hxx"
+#include "aw_device_size.hxx"
 #include "aw_xfig.hxx"
 
 class AW_window;
