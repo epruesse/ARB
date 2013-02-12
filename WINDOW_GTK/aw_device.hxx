@@ -11,13 +11,13 @@
 #pragma once
 
 #include "devices/aw_clipable.hxx"
-#include "devices/aw_device.hxx"
+#include "devices/aw_device_impl.hxx"
 #include "devices/aw_device_click.hxx"
 #include "devices/aw_device_gtk.hxx"
 #include "devices/aw_device_size.hxx"
 #include "devices/aw_simple_device.hxx"
 #include "devices/aw_stylable.hxx"
 #include "devices/aw_zoomable.hxx"
-#include "devices/aw_device.hxx"
+// #include "devices/aw_device_impl.hxx"
 
 

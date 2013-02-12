@@ -20,7 +20,6 @@
 #include <arbdbt.h>
 #include <arb_str.h>
 #include <arb_defs.h>
-#include <static_assert.h>
 
 #define WWW_COUNT                10
 #define AWAR_WWW_SELECT          "www/url_select"

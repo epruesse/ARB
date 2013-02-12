@@ -5,7 +5,7 @@
  * Created on November 13, 2012, 12:23 PM
  */
 
-#include "aw_device.hxx"
+#include "aw_device_impl.hxx"
 
 #pragma once
 
