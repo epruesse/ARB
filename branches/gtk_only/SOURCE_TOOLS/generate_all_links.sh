@@ -107,7 +107,6 @@ makedir() {
 # Generates some directories as well:
 makedir INCLUDE &&
 makedir INCLUDE/GL &&
-makedir INCLUDE/devices &&
 
 makedir NAMES_COM/GENC &&
 makedir NAMES_COM/GENH &&
@@ -311,11 +310,17 @@ symlink_file ../WINDOW_GTK/aw_awar.hxx INCLUDE/aw_awar.hxx &&
 symlink_file ../WINDOW_GTK/aw_awar_defs.hxx INCLUDE/aw_awar_defs.hxx &&
 symlink_file ../WINDOW_GTK/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink_file ../WINDOW_GTK/aw_base.hxx INCLUDE/aw_base.hxx &&
+symlink_file ../WINDOW_GTK/aw_clipable.hxx INCLUDE/aw_clipable.hxx  &&
 symlink_file ../WINDOW_GTK/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
 symlink_file ../WINDOW_GTK/aw_common.hxx INCLUDE/aw_common.hxx &&
 symlink_file ../WINDOW_GTK/aw_common_gtk.hxx INCLUDE/aw_common_gtk.hxx &&
 symlink_file ../WINDOW_GTK/aw_detach.hxx INCLUDE/aw_detach.hxx &&
 symlink_file ../WINDOW_GTK/aw_device.hxx INCLUDE/aw_device.hxx &&
+symlink_file ../WINDOW_GTK/aw_device_click.hxx INCLUDE/aw_device_click.hxx &&
+symlink_file ../WINDOW_GTK/aw_device_gtk.hxx INCLUDE/aw_device_gtk.hxx &&
+symlink_file ../WINDOW_GTK/aw_device_impl.hxx INCLUDE/aw_device_impl.hxx &&
+symlink_file ../WINDOW_GTK/aw_device_print.hxx INCLUDE/aw_device_print.hxx &&
+symlink_file ../WINDOW_GTK/aw_device_size.hxx INCLUDE/aw_device_size.hxx &&
 symlink_file ../WINDOW_GTK/aw_edit.hxx INCLUDE/aw_edit.hxx &&
 symlink_file ../WINDOW_GTK/aw_file.hxx INCLUDE/aw_file.hxx &&
 symlink_file ../WINDOW_GTK/aw_font_group.hxx INCLUDE/aw_font_group.hxx &&
@@ -334,18 +339,12 @@ symlink_file ../WINDOW_GTK/aw_root.hxx INCLUDE/aw_root.hxx &&
 symlink_file ../WINDOW_GTK/aw_root_gtk.hxx INCLUDE/aw_root_gtk.hxx &&
 symlink_file ../WINDOW_GTK/aw_scalar.hxx INCLUDE/aw_scalar.hxx &&
 symlink_file ../WINDOW_GTK/aw_select.hxx INCLUDE/aw_select.hxx &&
+symlink_file ../WINDOW_GTK/aw_simple_device.hxx INCLUDE/aw_simple_device.hxx &&
+symlink_file ../WINDOW_GTK/aw_stylable.hxx INCLUDE/aw_stylable.hxx &&
 symlink_file ../WINDOW_GTK/aw_window.hxx INCLUDE/aw_window.hxx &&
 symlink_file ../WINDOW_GTK/aw_xfig.hxx INCLUDE/aw_xfig.hxx &&
+symlink_file ../WINDOW_GTK/aw_zoomable.hxx INCLUDE/aw_zoomable.hxx  &&
 symlink_file ../XML/xml.hxx INCLUDE/xml.hxx &&
-symlink_file ../../WINDOW_GTK/devices/aw_clipable.hxx INCLUDE/devices/aw_clipable.hxx  &&
-symlink_file ../../WINDOW_GTK/devices/aw_device_impl.hxx INCLUDE/devices/aw_device_impl.hxx &&
-symlink_file ../../WINDOW_GTK/devices/aw_device_click.hxx INCLUDE/devices/aw_device_click.hxx &&
-symlink_file ../../WINDOW_GTK/devices/aw_device_gtk.hxx INCLUDE/devices/aw_device_gtk.hxx &&
-symlink_file ../../WINDOW_GTK/devices/aw_device_print.hxx INCLUDE/devices/aw_device_print.hxx &&
-symlink_file ../../WINDOW_GTK/devices/aw_device_size.hxx INCLUDE/devices/aw_device_size.hxx &&
-symlink_file ../../WINDOW_GTK/devices/aw_simple_device.hxx INCLUDE/devices/aw_simple_device.hxx &&
-symlink_file ../../WINDOW_GTK/devices/aw_stylable.hxx INCLUDE/devices/aw_stylable.hxx &&
-symlink_file ../../WINDOW_GTK/devices/aw_zoomable.hxx INCLUDE/devices/aw_zoomable.hxx  &&
 
 
 
