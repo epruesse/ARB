@@ -28,7 +28,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AP_filter.o: AP_filter.hxx
 AP_filter.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -41,7 +41,9 @@ AP_filter.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_filter.o: $(ARBHOME)/INCLUDE/attributes.h
+AP_filter.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_filter.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_filter.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -51,7 +53,9 @@ RangeList.o: $(ARBHOME)/INCLUDE/arb_core.h
 RangeList.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 RangeList.o: $(ARBHOME)/INCLUDE/arbtools.h
 RangeList.o: $(ARBHOME)/INCLUDE/attributes.h
+RangeList.o: $(ARBHOME)/INCLUDE/cxxforward.h
 RangeList.o: $(ARBHOME)/INCLUDE/dupstr.h
+RangeList.o: $(ARBHOME)/INCLUDE/gccver.h
 RangeList.o: $(ARBHOME)/INCLUDE/pos_range.h
 RangeList.o: $(ARBHOME)/INCLUDE/test_global.h
 RangeList.o: $(ARBHOME)/INCLUDE/test_unit.h

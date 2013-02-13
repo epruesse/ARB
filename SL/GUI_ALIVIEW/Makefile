@@ -37,7 +37,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AWT_filter.o: awt_filter.hxx
 AWT_filter.o: ga_local.h

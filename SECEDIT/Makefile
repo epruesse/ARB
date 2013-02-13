@@ -42,7 +42,7 @@ depend.init:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 SEC_abspos.o: SEC_abspos.hxx
 SEC_abspos.o: SEC_defs.hxx
