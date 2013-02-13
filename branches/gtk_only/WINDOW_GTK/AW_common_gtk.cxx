@@ -150,7 +150,8 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_si
     XFontStruct *xfs;
     {
         int  found_font_size;
-        arb_assert(lookfont(GDK_DISPLAY_XDISPLAY(get_common()->get_display()), font_nr, size, found_font_size, true, false, &xfs)); // lookfont should do fallback
+        bool result = lookfont(GDK_DISPLAY_XDISPLAY(get_common()->get_display()), font_nr, size, found_font_size, true, false, &xfs); // lookfont should do fallback
+        arb_assert(result);
         if (found_size) *found_size = found_font_size;
     }
 
