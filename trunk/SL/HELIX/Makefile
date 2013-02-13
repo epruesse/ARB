@@ -33,7 +33,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 BI_basepos.o: BI_basepos.hxx
 BI_basepos.o: $(ARBHOME)/INCLUDE/ad_prot.h
