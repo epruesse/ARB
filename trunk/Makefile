@@ -375,7 +375,7 @@ else
 
 endif
 
-
+RNA3D_LIB_4_DEPENDS := RNA3D/RNA3D.a
 
 GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
@@ -1428,7 +1428,7 @@ fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 
-up_by_remake: depends proto libdepends
+up_by_remake: depends proto
 
 up: up_by_remake tags valgrind_update
 
@@ -1443,7 +1443,9 @@ modified: touch
 #********************************************************************************
 
 libdepends:
-	$(MAKE) -C "SOURCE_TOOLS" libdepends
+	$(MAKE) -C "SOURCE_TOOLS" \
+		"RNA3D_LIB=$(RNA3D_LIB_4_DEPENDS)" \
+		libdepends
 
 #********************************************************************************
 
