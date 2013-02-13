@@ -1148,7 +1148,7 @@ include SOURCE_TOOLS/export2sub
 		"AUTODEPENDS=1" \
 		"MAIN=nothing" \
 		"cflags=noCflagsHere_use_MAKEDEPENDFLAGS" \
-		depends;
+		depends
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null
 	@cat $(@D)/Makefile \
 		| SOURCE_TOOLS/fix_depends.pl "(from main)" \
@@ -1229,14 +1229,14 @@ CONSENSUS_TREE/CONSENSUS_TREE.dummy:	links_non_perl
 CONVERTALN/CONVERTALN.dummy:		links_non_perl
 DBSERVER/DBSERVER.dummy:		links_non_perl
 DIST/DIST.dummy:			links_non_perl
-EDIT4/EDIT4.dummy:			links_non_perl templ com
+EDIT4/EDIT4.dummy:			links_non_perl genheaders com
 EISPACK/EISPACK.dummy:			links_non_perl
 GDE/GDE.dummy:				links_non_perl
 GENOM/GENOM.dummy:			links_non_perl
 GENOM_IMPORT/GENOM_IMPORT.dummy:	links_non_perl
 ISLAND_HOPPING/ISLAND_HOPPING.dummy:	links_non_perl
 MERGE/MERGE.dummy:			links_non_perl
-NTREE/NTREE.dummy:			links_non_perl templ
+NTREE/NTREE.dummy:			links_non_perl genheaders
 PARSIMONY/PARSIMONY.dummy:		links_non_perl
 PGT/PGT.dummy:				links_non_perl
 PHYLO/PHYLO.dummy:			links_non_perl
@@ -1423,7 +1423,6 @@ wetc:	$(WETC)
 pgt:	$(PGT)
 xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
-templ:	TEMPLATES/TEMPLATES.dummy
 stat:   STAT/STAT.dummy $(NTREE) $(EDIT4)
 fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
@@ -1448,16 +1447,24 @@ libdepends:
 
 #********************************************************************************
 
-depends: templ comtools
-	@echo "$(SEP) Partially build com interface"
+# create generated headers:
+genheaders: TEMPLATES/TEMPLATES.dummy
+
+clrdotdepends:
 	-rm PROBE_COM/.depends
 	-rm NAMES_COM/.depends
 	-rm PERL2ARB/.depends
+
+comdepends: comtools clrdotdepends
+	@echo "$(SEP) Partially build com interface"
 	$(MAKE) PROBE_COM/PROBE_COM.depends
 	$(MAKE) NAMES_COM/NAMES_COM.depends
-	@echo $(SEP) Updating dependencies
+
+depends: genheaders comdepends
+	@echo "$(SEP) Updating other dependencies"
 	$(MAKE) $(ARCHS:.a=.depends) \
-			HELP_SOURCE/HELP_SOURCE.depends \
+		HELP_SOURCE/HELP_SOURCE.depends
+	$(MAKE) libdepends
 
 depend: depends
 
@@ -1808,7 +1815,7 @@ do_release:
 	@echo ARBHOME=$(ARBHOME)
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) testsave
-	$(MAKE) templ # auto upgrades version early
+	$(MAKE) genheaders # auto upgrades version early
 	$(MAKE) tarfile 
 	$(MAKE) sourcetarfile
 
