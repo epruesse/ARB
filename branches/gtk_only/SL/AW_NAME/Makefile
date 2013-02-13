@@ -36,7 +36,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AW_names_admin.o: AW_rename.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_prot.h

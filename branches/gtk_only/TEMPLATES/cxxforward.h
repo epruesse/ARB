@@ -17,15 +17,19 @@
 #include "gccver.h"
 #endif
 
+// C++11 is enabled starting with gcc 4.7 in ../Makefile@USE_Cxx11
+// 
+// Full support for C++11 is available starting with gcc 4.8.
+// Use #ifdef Cxx11 to insert conditional sections using full C++11
 #if (GCC_VERSION_CODE >= 408)
-#define Cxx11 1 // use Cxx11 to insert conditional sections using full C++11
+#define Cxx11 1
 #endif
 
 // -------------------
 //      constexpr
 
 // allows static member initialisation in class definition:
-#if (GCC_VERSION_CODE >= 406) // override is supported starting with gcc 4.6
+#if (GCC_VERSION_CODE >= 407) // constexpr is supported starting with gcc 4.6. We use it starting with 4.7
 # define CONSTEXPR constexpr
 #else
 # define CONSTEXPR const

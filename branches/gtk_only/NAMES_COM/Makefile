@@ -38,7 +38,7 @@ clean:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 aisc_extern.o: aisc_extern_privat.h
 aisc_extern.o: aisc_func_types.h

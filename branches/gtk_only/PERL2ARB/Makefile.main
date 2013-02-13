@@ -117,7 +117,7 @@ clean:
 	+test -f ARB.c || $(MAKETHIS) "AUTODEPENDS=0" ARB.c 
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) ARB.c 2>/dev/null | \
 		perl -ne 's/ARB.o:/depends.stamp:/g; print $$_;' | \
-		../SOURCE_TOOLS/fix_depends.pl > $@
+		../SOURCE_TOOLS/fix_depends.pl "(from PERL2ARB)" > $@
 
 
 depends.stamp:

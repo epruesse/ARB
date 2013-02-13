@@ -47,7 +47,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_assert.h

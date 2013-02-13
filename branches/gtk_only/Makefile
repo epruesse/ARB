@@ -141,7 +141,7 @@ ifeq ($(DEBUG),0)
 	ifdef DARWIN
 		cflags := -O3# compiler flags (C and C++)
 	else
-		cflags := -O4# compiler flags (C and C++)
+		cflags := -g -ggdb -O0# compiler flags (C and C++)
 		lflags += -O99# linker flags
 	endif
 endif
@@ -191,11 +191,6 @@ ifeq ($(DEBUG),1)
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
-  ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
-   ifeq ('$(USE_GCC_48_OR_HIGHER)','')
-	extended_cpp_warnings += -Wc++11-compat# gcc 4.7 (but not 4.8)
-   endif
-  endif
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
@@ -392,7 +387,7 @@ else
 
 endif
 
-
+RNA3D_LIB_4_DEPENDS := RNA3D/RNA3D.a
 
 GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
@@ -439,16 +434,14 @@ cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
 
 cppflags := $(extended_cpp_warnings)
 
-ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-cppflags += -std=gnu++11# yeah! :)
+ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
+cppflags += -std=gnu++11# see also TEMPLATES/cxxforward.h@USE_Cxx11
 else
- ifeq ('$(USE_GCC_47_OR_HIGHER)','')
 # only use for gcc versions between 4.3 and <4.7 (4.7++ adds -Wc++11-compat above)
 HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(GCC_VERSION_FOUND)`
-  ifeq ($(HAVE_GNUPP0X),1)
+ ifeq ($(HAVE_GNUPP0X),1)
 # ensure compatibility with upcoming C++ standard
 cppflags += -std=gnu++0x
-  endif
  endif
 endif
 
@@ -773,7 +766,7 @@ arbmainwrapper:
 # - 'depends' and
 # - 'clean'
 #
-# when adding new libs here, also add a dependency vs 'links' or 'links_non_perl' below 
+# when adding new libs here, also add a dependency vs 'links' or 'links_non_perl' in .@DD_links_non_perl
 
 ARCHS = \
 			$(ARCHS_PT_SERVER) \
@@ -866,7 +859,7 @@ endif
 link_awt:	awt link_aw
 
 #***************************************************************************************
-#		Individual Programs Section
+#		Individual_Programs_Section 
 #***************************************************************************************
 
 #***********************************	arb_ntree **************************************
@@ -1179,10 +1172,10 @@ include SOURCE_TOOLS/export2sub
 		"AUTODEPENDS=1" \
 		"MAIN=nothing" \
 		"cflags=noCflagsHere_use_MAKEDEPENDFLAGS" \
-		depends;
+		depends
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null
 	@cat $(@D)/Makefile \
-		| SOURCE_TOOLS/fix_depends.pl \
+		| SOURCE_TOOLS/fix_depends.pl "(from main)" \
 		>$(@D)/Makefile.2
 	@mv $(@D)/Makefile.old $(@D)/Makefile # restore old Makefile
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
@@ -1253,21 +1246,21 @@ CORE/libCORE.dummy:			links
 
 PERLTOOLS/PERLTOOLS.dummy:		core db
 
-# all subdirs perl not depends on go here:
+# all subdirs perl not depends on go here (ADD_links_non_perl)
 AWT/libAWT.dummy:			links_non_perl
 AWTI/AWTI.dummy:			links_non_perl
 CONSENSUS_TREE/CONSENSUS_TREE.dummy:	links_non_perl
 CONVERTALN/CONVERTALN.dummy:		links_non_perl
 DBSERVER/DBSERVER.dummy:		links_non_perl
 DIST/DIST.dummy:			links_non_perl
-EDIT4/EDIT4.dummy:			links_non_perl templ com
+EDIT4/EDIT4.dummy:			links_non_perl genheaders com
 EISPACK/EISPACK.dummy:			links_non_perl
 GDE/GDE.dummy:				links_non_perl
 GENOM/GENOM.dummy:			links_non_perl
 GENOM_IMPORT/GENOM_IMPORT.dummy:	links_non_perl
 ISLAND_HOPPING/ISLAND_HOPPING.dummy:	links_non_perl
 MERGE/MERGE.dummy:			links_non_perl
-NTREE/NTREE.dummy:			links_non_perl templ
+NTREE/NTREE.dummy:			links_non_perl genheaders
 PARSIMONY/PARSIMONY.dummy:		links_non_perl
 PGT/PGT.dummy:				links_non_perl
 PHYLO/PHYLO.dummy:			links_non_perl
@@ -1455,13 +1448,12 @@ wetc:	$(WETC)
 pgt:	$(PGT)
 xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
-templ:	TEMPLATES/TEMPLATES.dummy
 stat:   STAT/STAT.dummy $(NTREE) $(EDIT4)
 fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 
-up_by_remake: depends proto libdepends
+up_by_remake: depends proto
 
 up: up_by_remake tags valgrind_update
 
@@ -1476,20 +1468,30 @@ modified: touch
 #********************************************************************************
 
 libdepends:
-	$(MAKE) -C "SOURCE_TOOLS" libdepends
+	$(MAKE) -C "SOURCE_TOOLS" \
+		"RNA3D_LIB=$(RNA3D_LIB_4_DEPENDS)" \
+		libdepends
 
 #********************************************************************************
 
-depends: templ comtools
-	@echo "$(SEP) Partially build com interface"
+# create generated headers:
+genheaders: TEMPLATES/TEMPLATES.dummy
+
+clrdotdepends:
 	-rm PROBE_COM/.depends
 	-rm NAMES_COM/.depends
 	-rm PERL2ARB/.depends
+
+comdepends: comtools clrdotdepends
+	@echo "$(SEP) Partially build com interface"
 	$(MAKE) PROBE_COM/PROBE_COM.depends
 	$(MAKE) NAMES_COM/NAMES_COM.depends
-	@echo $(SEP) Updating dependencies
+
+depends: genheaders comdepends
+	@echo "$(SEP) Updating other dependencies"
 	$(MAKE) $(ARCHS:.a=.depends) \
-			HELP_SOURCE/HELP_SOURCE.depends \
+		HELP_SOURCE/HELP_SOURCE.depends
+	$(MAKE) libdepends
 
 depend: depends
 
@@ -1840,7 +1842,7 @@ do_release:
 	@echo ARBHOME=$(ARBHOME)
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) testsave
-	$(MAKE) templ # auto upgrades version early
+	$(MAKE) genheaders # auto upgrades version early
 	$(MAKE) tarfile 
 	$(MAKE) sourcetarfile
 
