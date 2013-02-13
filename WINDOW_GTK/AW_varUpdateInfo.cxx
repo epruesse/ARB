@@ -104,7 +104,8 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
 
             //if this assert fails no rows are selected, which should be impossible because
             //this method is called when the selection changes.
-            aw_assert(gtk_tree_selection_get_selected(selection, &model, &iter));
+            bool rval = gtk_tree_selection_get_selected(selection, &model, &iter);
+            aw_assert(rval);
             gtk_tree_model_get(model, &iter, 0, &selected,  -1);
       
             AW_selection_list_entry *entry = sellist->list_table;
