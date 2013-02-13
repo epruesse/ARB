@@ -191,11 +191,6 @@ ifeq ($(DEBUG),1)
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
-  ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
-   ifeq ('$(USE_GCC_48_OR_HIGHER)','')
-	extended_cpp_warnings += -Wc++11-compat# gcc 4.7 (but not 4.8)
-   endif
-  endif
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
@@ -427,16 +422,14 @@ cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
 
 cppflags := $(extended_cpp_warnings)
 
-ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-cppflags += -std=gnu++11# yeah! :)
+ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
+cppflags += -std=gnu++11# see also TEMPLATES/cxxforward.h@USE_Cxx11
 else
- ifeq ('$(USE_GCC_47_OR_HIGHER)','')
 # only use for gcc versions between 4.3 and <4.7 (4.7++ adds -Wc++11-compat above)
 HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(GCC_VERSION_FOUND)`
-  ifeq ($(HAVE_GNUPP0X),1)
+ ifeq ($(HAVE_GNUPP0X),1)
 # ensure compatibility with upcoming C++ standard
 cppflags += -std=gnu++0x
-  endif
  endif
 endif
 
