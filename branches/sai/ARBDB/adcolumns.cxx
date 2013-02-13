@@ -755,6 +755,8 @@ static const char *gbt_insert_delete(const char *source, long srclen, long destl
 
     const char *result;
 
+    gb_assert(destlen == 0 || (destlen >= srclen) || nchar == 0);
+
     pos     *= mod;
     nchar   *= mod;
     srclen  *= mod;
@@ -1102,23 +1104,22 @@ void TEST_insert_delete() {
     TEST_INSERT("abcde", 5, 3, 2, "abc--de");
 
     TEST_DELETE("abcde",   5, 3, 0, NULL);
-    TEST_DELETE("abc-de",  5, 3, 1, "abcde");
-    TEST_DELETE("abc--de", 5, 3, 2, "abcde");
+    TEST_DELETE("abc-de",  6, 3, 1, "abcde");
+    TEST_DELETE("abc--de", 7, 3, 2, "abcde");
 
     // insert/delete at end
     TEST_INSERT("abcde", 5, 5, 1, "abcde-");
     TEST_INSERT("abcde", 5, 5, 4, "abcde----");
 
-    // wanted ----------------------------------------- current
-    TEST_DELETE__BROKEN("abcde-",    5, 5, 1, "abcde"); TEST_DELETE("abcde-",    5, 5, 1, "abcde-");
-    TEST_DELETE__BROKEN("abcde----", 5, 5, 4, "abcde"); TEST_DELETE("abcde----", 5, 5, 4, "abcde----");
+    TEST_DELETE("abcde-",    6, 5, 1, "abcde");
+    TEST_DELETE("abcde----", 9, 5, 4, "abcde");
 
     // insert/delete at start
     TEST_INSERT("abcde", 5, 0, 1, "-abcde");
     TEST_INSERT("abcde", 5, 0, 4, "----abcde");
 
-    TEST_DELETE("-abcde",    5, 0, 1, "abcde");
-    TEST_DELETE("----abcde", 5, 0, 4, "abcde");
+    TEST_DELETE("-abcde",    6, 0, 1, "abcde");
+    TEST_DELETE("----abcde", 9, 0, 4, "abcde");
 
     // insert behind end
 
