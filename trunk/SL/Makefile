@@ -69,7 +69,7 @@ proto: TREEDISP/TREEDISP.proto
 	@$(MAKE) -C $(@D) -r  depends
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null # check whether sub Makefile has dependencies
 	@cat $(@D)/Makefile \
-		| ../SOURCE_TOOLS/fix_depends.pl \
+		| ../SOURCE_TOOLS/fix_depends.pl "(from SL)" \
 		>$(@D)/Makefile.2
 	@mv $(@D)/Makefile.old $(@D)/Makefile # restore old Makefile
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed

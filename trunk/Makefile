@@ -1151,7 +1151,7 @@ include SOURCE_TOOLS/export2sub
 		depends;
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null
 	@cat $(@D)/Makefile \
-		| SOURCE_TOOLS/fix_depends.pl \
+		| SOURCE_TOOLS/fix_depends.pl "(from main)" \
 		>$(@D)/Makefile.2
 	@mv $(@D)/Makefile.old $(@D)/Makefile # restore old Makefile
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
