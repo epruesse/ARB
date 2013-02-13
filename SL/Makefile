@@ -1,46 +1,18 @@
-
-# when adding a new lib here, also add a dependency vs 'links' or 'links_non_perl' in ../Makefile 
-
-ARCHS_ALL = \
-	TREE_ADMIN/TREE_ADMIN.dummy  \
-	PTCLEAN/PTCLEAN.dummy  \
-	ALIVIEW/ALIVIEW.dummy  \
-	AP_TREE/AP_TREE.dummy  \
-	ARB_TREE/ARB_TREE.dummy  \
-	AW_HELIX/AW_HELIX.dummy  \
-	AW_NAME/AW_NAME.dummy  \
-	DB_QUERY/DB_QUERY.dummy  \
-	DB_SCANNER/DB_SCANNER.dummy  \
-	DB_UI/DB_UI.dummy  \
-	SEQIO/SEQIO.dummy  \
-	FAST_ALIGNER/FAST_ALIGNER.dummy  \
-	GUI_ALIVIEW/GUI_ALIVIEW.dummy  \
-	HELIX/HELIX.dummy  \
-	ITEMS/ITEMS.dummy  \
-	LOCATION/LOCATION.dummy  \
-	MATRIX/MATRIX.dummy  \
-	NDS/NDS.dummy  \
-	NEIGHBOURJOIN/NEIGHBOURJOIN.dummy  \
-	PRONUC/PRONUC.dummy  \
-	REGEXPR/REGEXPR.dummy  \
-	SEQUENCE/SEQUENCE.dummy  \
-	TRANSLATE/TRANSLATE.dummy  \
-	TREEDISP/TREEDISP.dummy  \
-	TREE_READ/TREE_READ.dummy  \
-	TREE_WRITE/TREE_WRITE.dummy  \
-
 # --------------------------------------------------------------------------------
-# If a package is available as debian package it should go here
-
-ARCHS_NON_DEBIAN = \
-
+# when adding a new library (in a new SUBDIR), perform the following steps:
+#
+# - create new subdir and copy a recent Makefile into there		e.g. use ./REFENTRIES/Makefile
+# - add a dependency vs 'links' or 'links_non_perl' 			in ../Makefile@ADD_links_non_perl
+# - add it to the ARCHS_... definitions used for linking 		in ../Makefile@Individual_Programs_Section
+# - add all externally visible headers					in ../SOURCE_TOOLS/generate_all_links.sh@ALIVIEW
+#
 # --------------------------------------------------------------------------------
 
-ifdef DEBIAN
-ARCHS = $(ARCHS_ALL) 
-else
-ARCHS = $(ARCHS_ALL) $(ARCHS_NON_DEBIAN)
-endif
+# automatically handles all subdirectories
+ARCHS:=$(shell find . -maxdepth 1 -type d)# find all direct sub-directories
+ARCHS:=$(sort $(filter-out . .svn,$(subst ./,,$(ARCHS))))# remove prefix './' and get rid of '.' and '.svn'
+ARCHS:=$(shell echo $(ARCHS) | perl -pn -e 's/([A-Za-z0-9_]+)/\1\/\1/g;')# replace not possible $(patsubst %,%/%,$(ARCHS))
+ARCHS:=$(ARCHS:%=%.dummy)
 
 # --------------------------------------------------------------------------------
 # warnings in this subtree?
@@ -56,7 +28,8 @@ include $(ARBHOME)/SOURCE_TOOLS/export2sub
 
 # --------------------------------------------------------------------------------
 
-$(MAIN): $(ARCHS)
+nosuchtarget:
+	false
 
 depends: $(ARCHS:.dummy=.depend)
 
@@ -81,6 +54,8 @@ proto: TREEDISP/TREEDISP.proto
 		"cflags = $(cflags) -DIN_ARB_$(@D:/=)" \
 		>$(@D).log 2>&1 && (cat $(@D).log;rm $(@D).log)) || (cat $(@D).log;rm $(@D).log;false))
 
+# the logging through files is done to avoid that the output of parallel calls gets mixed up (make -j..)
+
 %.clean:
 	@$(MAKE) -C $(@D) \
 		clean
@@ -89,7 +64,6 @@ proto: TREEDISP/TREEDISP.proto
 	@$(MAKE) -C $(@D) \
 		proto
 
-# the end of the above command avoids that the output of parallel make calls gets mixed up 
 
 # DO NOT DELETE
 

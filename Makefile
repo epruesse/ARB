@@ -746,7 +746,7 @@ arbmainwrapper:
 # - 'depends' and
 # - 'clean'
 #
-# when adding new libs here, also add a dependency vs 'links' or 'links_non_perl' below 
+# when adding new libs here, also add a dependency vs 'links' or 'links_non_perl' in .@DD_links_non_perl
 
 ARCHS = \
 			$(ARCHS_PT_SERVER) \
@@ -835,7 +835,7 @@ link_aw:	aw link_db
 link_awt:	awt link_aw
 
 #***************************************************************************************
-#		Individual Programs Section
+#		Individual_Programs_Section 
 #***************************************************************************************
 
 #***********************************	arb_ntree **************************************
@@ -1222,7 +1222,7 @@ CORE/libCORE.dummy:			links
 
 PERLTOOLS/PERLTOOLS.dummy:		core db
 
-# all subdirs perl not depends on go here:
+# all subdirs perl not depends on go here (ADD_links_non_perl)
 AWT/libAWT.dummy:			links_non_perl
 AWTI/AWTI.dummy:			links_non_perl
 CONSENSUS_TREE/CONSENSUS_TREE.dummy:	links_non_perl
