@@ -1,4 +1,0 @@
-SUFFIX          fasta
-BEGIN
->*(name)        *(|export_sequence|len(.-)) bp          *(|sequence_type)
-*(|export_sequence|format_sequence(firsttab=0;tab=0;width=50))
