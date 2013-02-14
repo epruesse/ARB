@@ -12,6 +12,7 @@
 #include <adGene.h>
 #include <arb_progress.h>
 #include <arb_defs.h>
+#include <downcast.h>
 
 #include "gb_local.h"
 
@@ -62,10 +63,20 @@ public:
     virtual UnitPtr unit_right_of(size_t pos) const                              = 0;
     virtual AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const = 0;
 
+    virtual int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const = 0;
+
     size_t elems() const { return size; }
     size_t memsize() const { return unitsize()*elems(); }
     void copyTo(void *mem) const { copyPartTo(mem, 0, elems()); }
     bool empty() const { return !elems(); }
+
+    bool equals(const AliData& other) const {
+        if (&other == this) return true; // @@@ reactivate (should just increase performance)
+        if (elems() != other.elems()) return false;
+        gb_assert(0); // @@@ need test-cases where compare into depth is needed
+        return cmp_data(0, other, 0, elems());
+    }
+    bool differs_from(const AliData& other) const { return !equals(other); }
 
     bool is_valid_pos(size_t pos) const { return pos < elems(); }
     bool is_valid_between(size_t pos) const { return pos <= elems(); } // pos == 0 -> before first base; pos == elems() -> after last base
@@ -125,6 +136,10 @@ public:
             return left->unit_right_of(pos);
         }
     }
+
+    int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const OVERRIDE {
+        gb_assert(0);
+    }
 };
 
 class AliDataSlice : public AliData {
@@ -173,6 +188,10 @@ public:
         gb_assert(is_valid_between(pos));
         return from->unit_right_of(pos+offset);
     }
+
+    int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const OVERRIDE {
+        gb_assert(0);
+    }
 };
 
 template<typename T>
@@ -182,7 +201,6 @@ class TypedAliData : public AliData {
 protected:
     static const T *typed_ptr(const UnitPtr& uptr) { return (const T*)uptr.get_pointer(); }
 
-    const T& std_gap() const { return gap; }
     const T* std_gap_ptr() const { return &gap; }
 
 public:
@@ -190,6 +208,9 @@ public:
         : AliData(size_),
           gap(gap_)
     {}
+
+    const T& std_gap() const { return gap; }
+    virtual const T& tail_gap() const = 0; // @@@ use for refactoring only
 
     size_t unitsize() const OVERRIDE { return sizeof(T); }
     virtual UnitPtr at_ptr(size_t pos) const = 0;
@@ -207,6 +228,7 @@ public:
 
 template<typename T>
 class SpecificGap : public TypedAliData<T> {
+    const T& tail_gap() const OVERRIDE { gb_assert(0); static T fake = 0; return fake; }
 public:
     typedef TypedAliData<T> TData;
 
@@ -228,6 +250,9 @@ public:
         return UnitPtr();
     }
 
+    int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const OVERRIDE {
+        gb_assert(0);
+    }
 };
 
 template <typename T> 
@@ -251,8 +276,8 @@ public:
     ~SpecificAliData() OVERRIDE { free(data); }
 
     void copyPartTo(void *mem, size_t start, size_t count) const OVERRIDE {
-        gb_assert(start<TData::elems());
         if (count>0) {
+            gb_assert(start<TData::elems());
             size_t last = start+count-1;
             gb_assert(last<TData::elems());
             size_t msize = TData::unitsize()*count;
@@ -266,6 +291,13 @@ public:
         return UnitPtr();
     }
 
+    // @@@ interface to refactor gbt_insert_delete
+    const T *get_data() const { return data; }
+    const T& tail_gap() const OVERRIDE { return TypedAliData<T>::std_gap(); }
+
+    int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const OVERRIDE {
+        gb_assert(0);
+    }
 };
 
 class SequenceAliData : public SpecificAliData<char> {
@@ -305,6 +337,8 @@ public:
         char use = preferred_gap(typed_ptr(gapinfo.left), typed_ptr(gapinfo.right));
         return new SpecificGap<char>(gapsize, use);
     }
+
+    const char& tail_gap() const OVERRIDE { return dot; }
 };
 
 // --------------------------------------------------------------------------------
@@ -336,6 +370,18 @@ inline AliDataPtr insert_gap(AliDataPtr data, size_t pos, size_t count) {
 
     AliDataPtr gap = data->create_gap(count, gapinfo);
     return insert_at(data, pos, gap);
+}
+
+inline AliDataPtr format(AliDataPtr data, const size_t wanted_len) {
+    size_t curr_len = data->elems();
+    if (curr_len < wanted_len) {
+        data = insert_gap(data, curr_len, wanted_len-curr_len);
+    }
+    else if (curr_len > wanted_len) {
+        data = delete_from(data, wanted_len, curr_len-wanted_len);
+    }
+    gb_assert(data->elems() == wanted_len);
+    return data;
 }
 
 template<typename T> AliDataPtr makeAliData(T*& allocated_data, size_t elems, const T& gap) {
@@ -731,142 +777,74 @@ static size_t  insDelBuffer_size;
 inline void free_insDelBuffer() {
     freenull(insDelBuffer);
 }
+inline char *provide_insDelBuffer(size_t neededSpace) {
+    if (insDelBuffer && insDelBuffer_size<neededSpace) freenull(insDelBuffer);
+    if (!insDelBuffer) {
+        insDelBuffer_size = neededSpace+10;
+        insDelBuffer      = (char*)malloc(insDelBuffer_size);
+    }
+    return insDelBuffer;
+}
 
-static const char *gbt_insert_delete(const char *source, long srclen, long destlen, size_t& newlen, long pos, long nchar, long mod, char insert_what, char insert_tail, int extraByte) {
-    /* removes elems from or inserts elems into an array
+static const char *gbt_insert_delete(AliDataPtr data, size_t wanted_len, size_t pos, int amount, size_t& new_elem_count) {
+    /* removes elems from or inserts elems into 'data'
      *
-     * srclen           len of source
-     * destlen          if != 0, then cut or append characters to get this len, otherwise keep srclen
-     * newlenPtr        the resulting len
-     * pos              where to insert/delete
-     * nchar            and how many items
-     * mod              size of an item
-     * insert_what      insert this character (mod times)
-     * insert_tail      append this character (if destlen>srclen)
-     * extraByte        0 or 1. append extra zero byte at end? use 1 for strings!
-     *
-     * resulting array has destlen+nchar elements
-     *
-     * 1. array size is corrected to 'destlen' (by appending/cutting tail)
-     * 2. part is deleted inserted
-     *
-     * return NULL, if nothing modified
+     * wanted_len       if != 0, then cut or append elements to fit this len, otherwise keep previous length
+     *                  ('amount' is added to 'wanted_len', e.g. when format + delete/insert happens in one call)
+     * pos              where to insert/delete (delete starting with 'pos'; insert before 'pos')
+     * amount           and how many items (if 0 -> do not insert or delete. in this case 'pos' is not used)
      */
 
-    const char *result;
+    AliDataPtr org_data = data;
 
-    gb_assert(destlen == 0 || (destlen >= srclen) || nchar == 0);
+    gb_assert(wanted_len == 0 || (wanted_len >= data->elems()) || amount == 0);
 
-    pos     *= mod;
-    nchar   *= mod;
-    srclen  *= mod;
-    destlen *= mod;
+    if (!wanted_len) wanted_len = data->elems();
+    wanted_len += amount;
 
-    if (!destlen) destlen                       = srclen; // if no destlen is set then keep srclen
-    if ((nchar<0) && (pos-nchar>destlen)) nchar = pos-destlen; // clip maximum characters to delete at end of array
-
-    if (destlen == srclen && (pos>srclen || nchar == 0)) { // length stays same and clip-range is empty or behind end of sequence
-        /* before 26.2.09 the complete data was copied in this case - but nevertheless NULL(=failure) was returned.
-         * I guess this was some test accessing complete data w/o writing anything back to DB,
-         * but AFAIK it was not used anywhere --ralf
-         */
-        result = NULL;
-        newlen = 0;
+    if (amount>0) {
+        if (pos>data->elems()) data = format(data, pos); // allow insert beyond end
+        data = insert_gap(data, pos, amount);
     }
-    else {
-        newlen = destlen+nchar;                // length of result (w/o trailing zero-byte)
-        if (newlen == 0) {
-            result = "";
-        }
-        else {
-            size_t neededSpace = newlen+extraByte;
-
-            if (insDelBuffer && insDelBuffer_size<neededSpace) freenull(insDelBuffer);
-            if (!insDelBuffer) {
-                insDelBuffer_size = neededSpace;
-                insDelBuffer      = (char*)malloc(neededSpace);
-            }
-
-            char *dest = insDelBuffer;
-            gb_assert(dest);
-
-            if (pos>srclen) {                       // insert/delete happens inside appended range
-                insert_what = insert_tail;
-                pos         = srclen;               // insert/delete directly after source, to avoid illegal access below
-            }
-
-            gb_assert(pos >= 0);
-            if (pos>0) {                            // copy part left of pos
-                // @@@ need to check vs smaller newlen
-                memcpy(dest, source, (size_t)pos);
-                dest   += pos;
-                source += pos; srclen -= pos;
-            }
-
-            if (nchar>0) {                          // insert
-                memset(dest, insert_what, (size_t)nchar);
-                dest += nchar;
-            }
-            else if (nchar<0) {                     // delete
-                source += -nchar; srclen -= -nchar;
-            }
-
-            if (srclen>0) {                         // copy rest of source
-                // @@@ need to check vs smaller newlen
-                memcpy(dest, source, (size_t)srclen);
-                dest   += srclen;
-                source += srclen; srclen = 0;
-            }
-
-            long rest = newlen-(dest-insDelBuffer);
-            // gb_assert(rest >= 0); // @@@ disabled (fails in test-code below)
-
-            if (rest>0) {                           // append tail
-                memset(dest, insert_tail, rest);
-                dest += rest;
-            }
-
-            if (extraByte) dest[0] = 0;             // append zero byte (used for strings)
-
-            result = insDelBuffer;
-        }
-        newlen = newlen/mod;                    // report result length
+    else if (amount<0) {
+        data = delete_from(data, pos, -amount);
     }
-    return result;
+
+    data = format(data, wanted_len);
+
+    new_elem_count = data->elems();
+
+    char *buffer = NULL;
+    if (data->differs_from(*org_data)) {
+        gb_assert(new_elem_count == wanted_len);
+
+        buffer = provide_insDelBuffer(data->memsize()+1);
+        data->copyTo(buffer);
+        buffer[data->memsize()] = 0; // only needed for strings but does not harm otherwise
+    }
+    return buffer;
 }
 
 // --------------------------------------------------------------------------------
 
-class EditedTerminal {
-    GBDATA   *gb_data;
-    GB_TYPES  type;
+class EditedTerminal : virtual Noncopyable {
+    GBDATA     *gb_data;
+    GB_TYPES    type;
+    AliDataPtr  data;
+    GB_ERROR    error;
 
-    GB_CSTR source;
-    long    size;
-    long    modulo;
+    void prepare(const AliEditCommand& cmd, const SequenceAliData& sad) {
+        if (!error && type == GB_STRING) {
+            if (cmd.get_amount() < 0) { // delete
+                size_t      size   = sad.elems();
+                const char *source = sad.get_data();
 
-    char insert_what; // @@@ information about insert is specific for ONE explicit insert, i.e. information is misplaced here
+                size_t after = cmd.get_pos()+(-cmd.get_amount());            // position after deleted part
 
-    char insert_tail;
-
-    char extraByte; // special flag for zero-terminated strings
-
-    GB_ERROR error;
-
-    void prepare(const AliEditCommand& cmd) {
-        if (!error && source && type == GB_STRING) {
-            if (cmd.get_amount() > 0) { // insert
-                if (cmd.get_pos()<size) { // otherwise insert position is behind (old and too short) sequence -> dots are inserted at tail
-                    if ((cmd.get_pos()>0 && source[cmd.get_pos()-1] == '.') || source[cmd.get_pos()] == '.') { // dot at insert position?
-                        insert_what = '.'; // insert dots
-                    }
-                }
-            }
-            else { // delete
-                long after            = cmd.get_pos()+(-cmd.get_amount()); // position after deleted part
                 if (after>size) after = size;
 
-                for (long p = cmd.get_pos(); p<after; p++) {
+                // @@@ do this check somewhere inside AliData
+                for (size_t p = cmd.get_pos(); p<after; p++) {
                     if (cmd.allowed_to_delete(source[p])) {
                         error = GBS_global_string("You tried to delete '%c' at position %li  -> Operation aborted", source[p], p);
                     }
@@ -876,53 +854,83 @@ class EditedTerminal {
     }
 
 public:
-    EditedTerminal(GBDATA *gb_data_, GB_TYPES type_, long size_)
+    EditedTerminal(GBDATA *gb_data_, GB_TYPES type_, size_t size_)
         : gb_data(gb_data_),
           type(type_),
-          source(NULL),
-          size(size_),
-          modulo(sizeof(char)),
-          insert_what(0),
-          insert_tail(0),
-          extraByte(0),
+          // extraByte(0),
           error(NULL)
     {
+        // @@@ DRY cases
         switch(type) {
-            case GB_STRING: source = GB_read_char_pntr(gb_data);            insert_what = '-'; insert_tail = '.'; extraByte = 1; break;
-            case GB_BITS:   source = GB_read_bits_pntr(gb_data, '-', '+');  insert_what = '-'; insert_tail = '-'; break;
-            case GB_BYTES:  source = GB_read_bytes_pntr(gb_data);           break;
-            case GB_INTS:   source = (GB_CSTR)GB_read_ints_pntr(gb_data);   modulo = sizeof(GB_UINT4); break;
-            case GB_FLOATS: source = (GB_CSTR)GB_read_floats_pntr(gb_data); modulo = sizeof(float); break;
+            case GB_STRING: {
+                char *s       = GB_read_string(gb_data);
+                if (!s) error = GB_await_error();
+                else  data    = new SequenceAliData(s, size_, '-', '.');;
+                break;
+            }
+            case GB_BITS:   {
+                char *b       = GB_read_bits(gb_data, '-', '+');
+                if (!b) error = GB_await_error();
+                else  data    = new SpecificAliData<char>(b, size_, '-');
+                break;
+            }
+            case GB_BYTES:  {
+                char *b       = GB_read_bytes(gb_data);
+                if (!b) error = GB_await_error();
+                else  data    = new SpecificAliData<char>(b, size_, 0);
+                break;
+            }
+            case GB_INTS:   {
+                GB_UINT4 *ui   = GB_read_ints(gb_data);
+                if (!ui) error = GB_await_error();
+                else      data = new SpecificAliData<GB_UINT4>(ui, size_, 0);
+                break;
+            }
+            case GB_FLOATS: {
+                float *f      = GB_read_floats(gb_data);
+                if (!f) error = GB_await_error();
+                else   data   = new SpecificAliData<float>(f, size_, 0.0);
+                break;
+            }
 
             default:
                 error = GBS_global_string("Unhandled type '%i'", type);
                 gb_assert(0);
                 break;
         }
+
+        gb_assert(implicated(!error, size_ == data->elems()));
     }
 
     GB_ERROR apply(const AliEditCommand& cmd, TargetType ttype, const Alignment& ali) {
-        if (!error) prepare(cmd);
+        // @@@ only works with plain insert-, delete- or format-command
+
+        if (!error && type == GB_STRING) {
+            const SequenceAliData* sad = dynamic_cast<const SequenceAliData*>(&*data);
+            prepare(cmd, *sad);
+        }
         if (!error) {
-            if (!source) error = GB_await_error();
-            else {
-                size_t  modified_len;
-                int     oversize   = alignment_oversize(gb_data, ttype, ali.get_len(), size);
-                long    wanted_len = ali.get_len() + oversize;
-                GB_CSTR modified   = gbt_insert_delete(source, size, wanted_len, modified_len, cmd.get_pos(), cmd.get_amount(), modulo, insert_what, insert_tail, extraByte);
+            int  oversize   = alignment_oversize(gb_data, ttype, ali.get_len(), data->elems());     // entries is 'oversize' elems longer than alignment size
+            long wanted_len = ali.get_len() + oversize;
 
-                if (modified) {
-                    gb_assert(modified_len == (ali.get_len()+cmd.get_amount()+oversize));
+            size_t  modified_elems;
+            GB_CSTR modified = gbt_insert_delete(data, wanted_len, cmd.get_pos(), cmd.get_amount(), modified_elems);
 
-                    switch (type) {
-                        case GB_STRING: error = GB_write_string(gb_data, modified);                          break;
-                        case GB_BITS:   error = GB_write_bits  (gb_data, modified, modified_len, "-");       break;
-                        case GB_BYTES:  error = GB_write_bytes (gb_data, modified, modified_len);            break;
-                        case GB_INTS:   error = GB_write_ints  (gb_data, (GB_UINT4*)modified, modified_len); break;
-                        case GB_FLOATS: error = GB_write_floats(gb_data, (float*)modified, modified_len);    break;
+            if (modified) {
+                gb_assert(modified_elems == (ali.get_len()+cmd.get_amount()+oversize));
 
-                        default: gb_assert(0); break;
+                switch (type) {
+                    case GB_STRING: {
+                        gb_assert(strlen(modified) == modified_elems);
+                        error = GB_write_string(gb_data, modified);
+                        break;
                     }
+                    case GB_BITS:   error = GB_write_bits  (gb_data, modified, modified_elems, "-");       break;
+                    case GB_BYTES:  error = GB_write_bytes (gb_data, modified, modified_elems);            break;
+                    case GB_INTS:   error = GB_write_ints  (gb_data, (GB_UINT4*)modified, modified_elems); break;
+                    case GB_FLOATS: error = GB_write_floats(gb_data, (float*)modified, modified_elems);    break;
+
+                    default: gb_assert(0); break;
                 }
             }
         }
@@ -1073,9 +1081,11 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
 #endif
 #include <arb_unit_test.h>
 
-#define DO_INSERT(str,alilen,pos,amount)                                                                \
-    size_t      newlen;                                                                                 \
-    const char *res = gbt_insert_delete(str, strlen(str), alilen, newlen, pos, amount, 1, '-', '.', 1)
+#define DO_INSERT(str,alilen,pos,amount)                                        \
+    size_t      newlen;                                                         \
+    char       *dup  = strdup(str);                                             \
+    AliDataPtr  data = new SequenceAliData(dup, strlen(str), '-', '.');         \
+    const char *res  = gbt_insert_delete(data, alilen, pos, amount, newlen)
 
 #define TEST_INSERT(str,alilen,pos,amount,expected)         do { DO_INSERT(str,alilen,pos,amount); TEST_EXPECT_EQUAL(res, expected);         } while(0)
 #define TEST_INSERT__BROKEN(str,alilen,pos,amount,expected) do { DO_INSERT(str,alilen,pos,amount); TEST_EXPECT_EQUAL__BROKEN(res, expected); } while(0)
@@ -1093,10 +1103,10 @@ void TEST_insert_delete() {
     TEST_FORMAT(".x...", 5, NULL); // NULL means "result == source"
 
     // wanted ----------------------------- current
-    TEST_FORMAT__BROKEN("xxx--", 3, "xxx"); TEST_FORMAT("xxx--", 3, "xxx--");
-    TEST_FORMAT__BROKEN("xxx..", 3, "xxx"); TEST_FORMAT("xxx..", 3, "xxx..");
-    TEST_FORMAT__BROKEN("xxxxx", 3, "xxx"); TEST_FORMAT("xxxxx", 3, "xxxxx"); // @@@ huh? should report NULL!
-    TEST_FORMAT__BROKEN("xxx",   0, "");    TEST_FORMAT("xxx",   0, NULL);
+    TEST_FORMAT("xxx--", 3, "xxx");
+    TEST_FORMAT("xxx..", 3, "xxx");
+    TEST_FORMAT("xxxxx", 3, "xxx");
+    TEST_FORMAT__BROKEN("xxx",   0, "");    TEST_FORMAT("xxx",   0, NULL); // @@@ broken because 0 is used as "do not format" in gbt_insert_delete
 
     // insert/delete in the middle
     TEST_INSERT("abcde", 5, 3, 0, NULL);
@@ -1108,15 +1118,15 @@ void TEST_insert_delete() {
     TEST_DELETE("abc--de", 7, 3, 2, "abcde");
 
     // insert/delete at end
-    TEST_INSERT("abcde", 5, 5, 1, "abcde-");
-    TEST_INSERT("abcde", 5, 5, 4, "abcde----");
+    TEST_INSERT("abcde", 5, 5, 1, "abcde.");
+    TEST_INSERT("abcde", 5, 5, 4, "abcde....");
 
     TEST_DELETE("abcde-",    6, 5, 1, "abcde");
     TEST_DELETE("abcde----", 9, 5, 4, "abcde");
 
     // insert/delete at start
-    TEST_INSERT("abcde", 5, 0, 1, "-abcde");
-    TEST_INSERT("abcde", 5, 0, 4, "----abcde");
+    TEST_INSERT("abcde", 5, 0, 1, ".abcde");
+    TEST_INSERT("abcde", 5, 0, 4, "....abcde");
 
     TEST_DELETE("-abcde",    6, 0, 1, "abcde");
     TEST_DELETE("----abcde", 9, 0, 4, "abcde");
@@ -1128,7 +1138,7 @@ void TEST_insert_delete() {
     TEST_INSERT__BROKEN("abcde", 10, 8, 4, "abcde...----.."); TEST_INSERT("abcde", 10, 8, 4, "abcde.........");
 
     // insert/delete all
-    TEST_INSERT("",    0, 0, 3, "---");
+    TEST_INSERT("",    0, 0, 3, "...");
     TEST_DELETE("---", 3, 0, 3, "");
 
     free_insDelBuffer();
@@ -1356,7 +1366,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(53, 1);
         TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUCACCUCC......",
                   "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUCACCUCCU.....",
-                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUCACCUCCU----.", // @@@ <- should convert '-' to '.' or append '-' 
+                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUCACCUCCU-----", // @@@ <- should convert '-' to '.'
                   "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCCCACCUGA.....",
                   ".....[<[.........[[..[<<.[..].>>]....]]....].>......]",
                   ".....1.1.........22..34..34.34..34...22....1........1",
@@ -1372,7 +1382,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(55, 1);
         TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC......",
                   "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.....",
-                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU----.",
+                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-----",
                   "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.....",
                   ".....[<[.........[[..[<<.[..].>>]....]]......].>......]",
                   ".....1.1.........22..34..34.34..34...22......1........1",
@@ -1385,7 +1395,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(57, 1);
         TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
                   "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
                   "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
                   ".....[<[.........[[..[<<.[..].>>]....]]......].>........]",
                   ".....1.1.........22..34..34.34..34...22......1..........1",
@@ -1398,7 +1408,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(59, 1);
         TEST_DATA(".....G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
                   "-----A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  ".....A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
                   "-----U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
                   ".......[<[.........[[..[<<.[..].>>]....]]......].>........]",
                   ".......1.1.........22..34..34.34..34...22......1..........1",
@@ -1412,7 +1422,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(61, 1);
         TEST_DATA(".....G---GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
                   "-----A---CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  ".....A---CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
                   "-----U---GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
                   ".........[<[.........[[..[<<.[..].>>]....]]......].>........]",
                   ".........1.1.........22..34..34.34..34...22......1..........1",
@@ -1425,7 +1435,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(63, 1);
         TEST_DATA(".....G---G--GC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
                   "-----A---C--GA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--GA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  ".....A---C--GA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
                   "-----U---G--CC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
                   ".........[--<[.........[[..[<<.[..].>>]....]]......].>........]", // @@@ <- should insert dots
                   ".........1...1.........22..34..34.34..34...22......1..........1",
@@ -1438,7 +1448,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(65, 1);
         TEST_DATA(".....G---G--G--C-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
                   "-----A---C--G--A-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  ".....A---C--G--A-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
                   "-----U---G--C--C-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
                   ".........[--<--[.........[[..[<<.[..].>>]....]]......].>........]", // @@@ <- should insert dots
                   ".........1.....1.........22..34..34.34..34...22......1..........1",
@@ -1451,7 +1461,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(67, 1);
         TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
                   "-----A---C--G--A---U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU------.",
+                  ".....A---C--G--A---A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
                   ".........[--<--[...........[[..[<<.[..].>>]....]]......].>........]",
                   ".........1.....1...........22..34..34.34..34...22......1..........1",
@@ -1465,7 +1475,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(69, 1);
         TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G-CGGC-UGGAUC--ACCUCC........",
                   "-----A---C--G--A---U-C-----CGGGGAA-CCU--G-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G-CGGC-UGGAUC--ACCUCCU------.",
+                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G-CGGC-UGGAUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-----GCGGCCU-UAG--C-GCGG-UGGUCC--CACCUGA.......",
                   ".........[--<--[...........[[..[<<.[....].>>]....]]......].>........]",
                   ".........1.....1...........22..34..34...34..34...22......1..........1",
@@ -1478,7 +1488,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(71, 1);
         TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G---CGGC-UGGAUC--ACCUCC........",
                   "-----A---C--G--A---U-C-----CGGGGAA-CCU--G---CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CGGC-UGGAUC--ACCUCCU------.",
+                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CGGC-UGGAUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-----GCGGCCU-UAG--C---GCGG-UGGUCC--CACCUGA.......",
                   ".........[--<--[...........[[..[<<.[....]...>>]....]]......].>........]",
                   ".........1.....1...........22..34..34...3--4..34...22......1..........1", // @@@ <- helix nr destroyed + shall use dots
@@ -1491,7 +1501,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(73, 1);
         TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G---CG--GC-UGGAUC--ACCUCC........",
                   "-----A---C--G--A---U-C-----CGGGGAA-CCU--G---CG--GC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CG--GC-UGGAUC--ACCUCCU------.",
+                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CG--GC-UGGAUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-----GCGGCCU-UAG--C---GC--GG-UGGUCC--CACCUGA.......",
                   ".........[--<--[...........[[..[<<.[....]...>>--]....]]......].>........]", // @@@ <- shall insert dots
                   ".........1.....1...........22..34..34...3--4....34...22......1..........1",
@@ -1504,7 +1514,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(75, 1);
         TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCC........",
                   "-----A---C--G--A---U-C-----CGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU------.",
+                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-----GCGGCCU-UAG--C---GC--G--G-UGGUCC--CACCUGA.......",
                   ".........[--<--[...........[[..[<<.[....]...>>--]......]]......].>........]",
                   ".........1.....1...........22..34..34...3--4....3--4...22......1..........1", // @@@ <- helix nr destroyed + shall use dots
@@ -1517,9 +1527,9 @@ void TEST_insert_delete_DB() {
 
         TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(44), 2, ""));           // insert at gap border
         TEST_ALI_LEN_ALIGNED(77, 1);
-        TEST_DATA(".....G---G--G--C---C-G.....--AGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCC........",
+        TEST_DATA(".....G---G--G--C---C-G...----AGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCC........", // now prefers '-' here
                   "-----A---C--G--A---U-C-------CGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.......GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU------.",
+                  ".....A---C--G--A---A-C.......GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-------GCGGCCU-UAG--C---GC--G--G-UGGUCC--CACCUGA.......",
                   ".........[--<--[.............[[..[<<.[....]...>>--]......]]......].>........]",
                   ".........1.....1.............22..34..34...3--4....3--4...22......1..........1",
@@ -1533,7 +1543,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(71, 1);
         TEST_DATA(".....G---G--G--C---C-G.AGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCC........",
                   "-----A---C--G--A---U-C-CGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU------.",
+                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-GCGGCCU-UAG--C---GC--G--G-UGGUCC--CACCUGA.......",
                   ".........[--<--[.......[[..[<<.[....]...>>--]......]]......].>........]",
                   ".........1.....1.......22..34..34...3--4....3--4...22......1..........1",
@@ -1547,7 +1557,7 @@ void TEST_insert_delete_DB() {
         TEST_ALI_LEN_ALIGNED(67, 1);
         TEST_DATA(".....G---G--G--C---C-G.AGGGGAA-CCU--G---CG--G--C-UGG-ACCUCC........",
                   "-----A---C--G--A---U-C-CGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
-                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU------.",
+                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU-------",
                   "-----U---G--C--C---U-G-GCGGCCU-UAG--C---GC--G--G-UGG-CACCUGA.......",
                   ".........[--<--[.......[[..[<<.[....]...>>--]......]...].>........]",
                   ".........1.....1.......22..34..34...3--4....3--4...2...1..........1",
@@ -1588,7 +1598,7 @@ void TEST_insert_delete_DB() {
         GB_transaction ta(gb_main);
         TEST_DATA(".....G---G--G--C---C-G.AGGGGAA-CCU--G---CG--G--C-UGG-ACCUCC........",
                   "-----A---C--G--A---U-C-CGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
-                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU------.",
+                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU-------",
                   "-----U---G--C--C---U-G-GCGGCCU-UAG--C---GC--G--G-UGG-CACCUGA.......",
                   ".........[--<--[.......[[..[<<.[....]...>>--]......]...].>........]",
                   ".........1.....1.......22..34..34...3--4....3--4...2...1..........1",
