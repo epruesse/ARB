@@ -70,9 +70,9 @@ public:
     virtual int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const = 0;
 
     void copyPartTo(void *mem, size_t start, size_t count) const { operate_on_mem(mem, start, count, COPY_TO); }
-    int cmpPartWith(void *mem, size_t start, size_t count) const {
+    int cmpPartWith(const void *mem, size_t start, size_t count) const {
         gb_assert(is_valid_part(start, count));
-        return operate_on_mem(mem, start, count, COMPARE_WITH);
+        return operate_on_mem(const_cast<void*>(mem), start, count, COMPARE_WITH); // COMPARE_WITH does not modify
     }
 
     virtual UnitPtr unit_left_of(size_t pos) const  = 0;
@@ -294,7 +294,7 @@ public:
     SpecificGap(size_t gapsize, const T& gap_)
         : BaseType(gapsize, gap_)
     {}
-    int operate_on_mem(void *mem, size_t start, size_t count, AliData::memop op) const OVERRIDE {
+    int operate_on_mem(void *mem, size_t IF_ASSERTION_USED(start), size_t count, AliData::memop op) const OVERRIDE {
         gb_assert(BaseType::is_valid_part(start, count));
         if (op == AliData::COPY_TO) {
             T *typedMem = (T*)mem;
@@ -333,18 +333,15 @@ AliDataPtr TypedAliData<T>::create_gap(size_t gapsize, const UnitPair& /*gapinfo
 
 template<typename T>
 class SpecificAliData : public TypedAliData<T>, virtual Noncopyable {
-    T *data;
+    const T *data;
 
 public:
     typedef TypedAliData<T> BaseType;
 
-    SpecificAliData(T*& allocated_data, size_t elements, const T& gap_)
+    SpecificAliData(const T *static_data, size_t elements, const T& gap_)
         : BaseType(elements, gap_),
-          data(allocated_data)
-    {
-        allocated_data = NULL;
-    }
-    ~SpecificAliData() OVERRIDE { free(data); }
+          data(static_data)
+    {}
 
     int operate_on_mem(void *mem, size_t start, size_t count, AliData::memop op) const OVERRIDE {
         if (count>0) {
@@ -418,8 +415,8 @@ class SequenceAliData : public SpecificAliData<char> {
     }
 
 public:
-    SequenceAliData(char*& allocated_data, size_t elements, char stdgap, char dotgap)
-        : SpecificAliData<char>(allocated_data, elements, stdgap),
+    SequenceAliData(const char* static_data, size_t elements, char stdgap, char dotgap)
+        : SpecificAliData<char>(static_data, elements, stdgap),
           dot(dotgap)
     {}
 
@@ -945,13 +942,15 @@ inline void free_insDelBuffer() {
     freenull(insDelBuffer);
 }
 inline char *provide_insDelBuffer(size_t neededSpace) {
-    if (insDelBuffer && insDelBuffer_size<neededSpace) freenull(insDelBuffer);
+    if (insDelBuffer && insDelBuffer_size<neededSpace) free_insDelBuffer();
     if (!insDelBuffer) {
         insDelBuffer_size = neededSpace+10;
         insDelBuffer      = (char*)malloc(insDelBuffer_size);
     }
     return insDelBuffer;
 }
+
+// --------------------------------------------------------------------------------
 
 static const char *gbt_insert_delete(AliDataPtr data, size_t wanted_len, size_t pos, int amount, size_t& new_elem_count) {
     /* removes elems from or inserts elems into 'data'
@@ -1030,33 +1029,33 @@ public:
         // @@@ DRY cases
         switch(type) {
             case GB_STRING: {
-                char *s       = GB_read_string(gb_data);
-                if (!s) error = GB_await_error();
-                else  data    = new SequenceAliData(s, size_, '-', '.');;
+                const char *s    = GB_read_char_pntr(gb_data);
+                if (!s) error    = GB_await_error();
+                else        data = new SequenceAliData(s, size_, '-', '.');;
                 break;
             }
             case GB_BITS:   {
-                char *b       = GB_read_bits(gb_data, '-', '+');
-                if (!b) error = GB_await_error();
-                else  data    = new SpecificAliData<char>(b, size_, '-');
+                const char *b    = GB_read_bits_pntr(gb_data, '-', '+');
+                if (!b) error    = GB_await_error();
+                else        data = new SpecificAliData<char>(b, size_, '-');
                 break;
             }
             case GB_BYTES:  {
-                char *b       = GB_read_bytes(gb_data);
-                if (!b) error = GB_await_error();
-                else  data    = new SpecificAliData<char>(b, size_, 0);
+                const char *b    = GB_read_bytes_pntr(gb_data);
+                if (!b) error    = GB_await_error();
+                else        data = new SpecificAliData<char>(b, size_, 0);
                 break;
             }
             case GB_INTS:   {
-                GB_UINT4 *ui   = GB_read_ints(gb_data);
-                if (!ui) error = GB_await_error();
-                else      data = new SpecificAliData<GB_UINT4>(ui, size_, 0);
+                const GB_UINT4 *ui   = GB_read_ints_pntr(gb_data);
+                if (!ui) error       = GB_await_error();
+                else            data = new SpecificAliData<GB_UINT4>(ui, size_, 0);
                 break;
             }
             case GB_FLOATS: {
-                float *f      = GB_read_floats(gb_data);
-                if (!f) error = GB_await_error();
-                else   data   = new SpecificAliData<float>(f, size_, 0.0);
+                const float *f    = GB_read_floats_pntr(gb_data);
+                if (!f) error     = GB_await_error();
+                else         data = new SpecificAliData<float>(f, size_, 0.0);
                 break;
             }
 
@@ -1250,8 +1249,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
 
 #define DO_INSERT(str,alilen,pos,amount)                                        \
     size_t      newlen;                                                         \
-    char       *dup  = strdup(str);                                             \
-    AliDataPtr  data = new SequenceAliData(dup, strlen(str), '-', '.');         \
+    AliDataPtr  data = new SequenceAliData(str, strlen(str), '-', '.');         \
     const char *res  = gbt_insert_delete(data, alilen, pos, amount, newlen)
 
 #define TEST_INSERT(str,alilen,pos,amount,expected)         do { DO_INSERT(str,alilen,pos,amount); TEST_EXPECT_EQUAL(res, expected);         } while(0)
