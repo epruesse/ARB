@@ -331,15 +331,36 @@ AliDataPtr TypedAliData<T>::create_gap(size_t gapsize, const UnitPair& /*gapinfo
     return new SpecificGap<T>(gapsize, std_gap());
 }
 
+class SizeAwarable {
+    bool   allows_oversize;
+    size_t org_ali_size;
+public:
+    SizeAwarable(bool allows_oversize_, size_t ali_size_)
+        : allows_oversize(allows_oversize_),
+          org_ali_size(ali_size_)
+    {}
+
+    size_t get_allowed_size(size_t term_size, size_t new_ali_size) const {
+        size_t allowed_size = new_ali_size;
+        if (allows_oversize && term_size>org_ali_size) {
+            size_t oversize = term_size-org_ali_size;
+            allowed_size    = new_ali_size+oversize;
+        }
+        return allowed_size;
+    }
+};
+inline SizeAwarable dontAllowOversize(size_t ali_size) { return SizeAwarable(false, ali_size); }
+
 template<typename T>
-class SpecificAliData : public TypedAliData<T>, virtual Noncopyable {
+class SpecificAliData : public TypedAliData<T>, public SizeAwarable, virtual Noncopyable {
     const T *data;
 
 public:
     typedef TypedAliData<T> BaseType;
 
-    SpecificAliData(const T *static_data, size_t elements, const T& gap_)
+    SpecificAliData(const T *static_data, size_t elements, const T& gap_, const SizeAwarable& sizeAware)
         : BaseType(elements, gap_),
+          SizeAwarable(sizeAware),
           data(static_data)
     {}
 
@@ -366,14 +387,7 @@ public:
         gb_assert(BaseType::is_valid_part(start, count));
         gb_assert(other.is_valid_part(ostart, count));
 
-#if defined(DEBUG)
-#if defined(DEVEL_RALF)
-        if (&other == this) {
-            UNCOVERED(); // could speed up
-        }
-#endif
-#endif
-
+        // if (&other == this && start == ostart) return true; // @@@ why does this fail tests?
         return -other.cmpPartWith(data+start, ostart, count);
     }
 
@@ -415,8 +429,8 @@ class SequenceAliData : public SpecificAliData<char> {
     }
 
 public:
-    SequenceAliData(const char* static_data, size_t elements, char stdgap, char dotgap)
-        : SpecificAliData<char>(static_data, elements, stdgap),
+    SequenceAliData(const char* static_data, size_t elements, char stdgap, char dotgap, const SizeAwarable& sizeAware)
+        : SpecificAliData<char>(static_data, elements, stdgap, sizeAware),
           dot(dotgap)
     {}
 
@@ -471,11 +485,12 @@ inline AliDataPtr format(AliDataPtr data, const size_t wanted_len) {
     return data;
 }
 
+
 template<typename T> AliDataPtr makeAliData(T*& allocated_data, size_t elems, const T& gap) {
-    return new SpecificAliData<T>(allocated_data, elems, gap);
+    return new SpecificAliData<T>(allocated_data, elems, gap, dontAllowOversize(elems));
 }
 AliDataPtr makeAliSeqData(char*& allocated_data, size_t elems, char gap, char dot) {
-    return new SequenceAliData(allocated_data, elems, gap, dot);
+    return new SequenceAliData(allocated_data, elems, gap, dot, dontAllowOversize(elems));
 }
 
 // --------------------------------------------------------------------------------
@@ -733,7 +748,7 @@ void TEST_AliData() {
 
 // --------------------------------------------------------------------------------
 
-enum TargetType {
+enum TerminalType {
     IDT_SPECIES = 0,
     IDT_SAI,
     IDT_SECSTRUCT,
@@ -758,10 +773,10 @@ public:
 // --------------------------------------------------------------------------------
 
 class AliApplicable { // something that can be appied to the whole alignment
-    virtual GB_ERROR apply_to_terminal(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const = 0;
+    virtual GB_ERROR apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const Alignment& ali) const = 0;
 
-    GB_ERROR apply_recursive(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const;
-    GB_ERROR apply_to_childs_named(GBDATA *gb_item_data, const char *item_field, TargetType ttype, const Alignment& ali) const;
+    GB_ERROR apply_recursive(GBDATA *gb_data, TerminalType term_type, const Alignment& ali) const;
+    GB_ERROR apply_to_childs_named(GBDATA *gb_item_data, const char *item_field, TerminalType term_type, const Alignment& ali) const;
     GB_ERROR apply_to_secstructs(GBDATA *gb_secstructs, const Alignment& ali) const;
 
 public:
@@ -771,23 +786,23 @@ public:
     GB_ERROR apply_to_alignment(GBDATA *gb_main, const Alignment& ali) const;
 };
 
-GB_ERROR AliApplicable::apply_recursive(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const {
+GB_ERROR AliApplicable::apply_recursive(GBDATA *gb_data, TerminalType term_type, const Alignment& ali) const {
     GB_ERROR error = 0;
     GB_TYPES type  = GB_read_type(gb_data);
 
     if (type == GB_DB) {
         GBDATA *gb_child;
         for (gb_child = GB_child(gb_data); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
-            error = apply_recursive(gb_child, ttype, ali);
+            error = apply_recursive(gb_child, term_type, ali);
         }
     }
     else {
-        error = apply_to_terminal(gb_data, ttype, ali);
+        error = apply_to_terminal(gb_data, term_type, ali);
     }
 
     return error;
 }
-GB_ERROR AliApplicable::apply_to_childs_named(GBDATA *gb_item_data, const char *item_field, TargetType ttype, const Alignment& ali) const {
+GB_ERROR AliApplicable::apply_to_childs_named(GBDATA *gb_item_data, const char *item_field, TerminalType term_type, const Alignment& ali) const {
     GBDATA   *gb_item;
     GB_ERROR  error      = 0;
     long      item_count = GB_number_of_subentries(gb_item_data);
@@ -799,10 +814,10 @@ GB_ERROR AliApplicable::apply_to_childs_named(GBDATA *gb_item_data, const char *
         {
             GBDATA *gb_ali = GB_entry(gb_item, ali.get_name());
             if (gb_ali) {
-                error = apply_recursive(gb_ali, ttype, ali);
+                error = apply_recursive(gb_ali, term_type, ali);
                 if (error) {
                     const char *item_name = GBT_read_name(gb_item);
-                    error = GBS_global_string("%s '%s': %s", targetTypeName[ttype], item_name, error);
+                    error = GBS_global_string("%s '%s': %s", targetTypeName[term_type], item_name, error);
                 }
             }
         }
@@ -846,7 +861,7 @@ GB_ERROR AliApplicable::apply_to_alignment(GBDATA *gb_main, const Alignment& ali
 
 class AliEntryCounter : public AliApplicable {
     mutable size_t count;
-    GB_ERROR apply_to_terminal(GBDATA *, TargetType , const Alignment& ) const OVERRIDE { count++; return NULL; }
+    GB_ERROR apply_to_terminal(GBDATA *, TerminalType , const Alignment& ) const OVERRIDE { count++; return NULL; }
 public:
     AliEntryCounter() : count(0) {}
     size_t get_entry_count() const { return count; }
@@ -854,50 +869,96 @@ public:
 
 // --------------------------------------------------------------------------------
 
-class AliEditCommand : virtual Noncopyable {
-    long pos;        // start position of insert/delete
-    long nchar;      // number of elements to insert/delete
-
-    const char *delete_chars; // characters allowed to delete (array with 256 entries, value == 0 means deletion allowed)
-public: 
-    AliEditCommand(long pos_, long nchar_, const char *delete_chars_)
-        : pos(pos_),
-          nchar(nchar_),
-          delete_chars(delete_chars_)
-    {
-        gb_assert(pos >= 0);
-        // gb_assert(correlated(nchar<0, delete_chars)); // @@@
-    }
+class AliEditCommand {
+public:
     virtual ~AliEditCommand() {}
-
-    virtual bool might_modify(size_t , const Alignment& ) const { return nchar != 0; }
-
-    long get_pos() const { return pos; }
-    long get_amount() const { return nchar; }
-    bool allowed_to_delete(char c) const { return delete_chars[safeCharIndex(c)] == 1; }
+    virtual AliDataPtr apply(AliDataPtr to) const = 0;
 };
 
-struct AliFormat : public AliEditCommand {
-    AliFormat() : AliEditCommand(0, 0, 0) {}
-    bool might_modify(size_t term_size, const Alignment& ali) const OVERRIDE { return term_size != ali.get_len(); }
+class AliInsertCommand : public AliEditCommand {
+    size_t pos;
+    size_t amount;
+public:
+    AliInsertCommand(size_t pos_, size_t amount_) : pos(pos_), amount(amount_) {}
+    AliDataPtr apply(AliDataPtr to) const OVERRIDE { return insert_gap(to, pos, amount); }
+};
+
+class AliDeleteCommand : public AliEditCommand, virtual Noncopyable {
+    size_t pos;
+    size_t amount;
+
+    const char *delete_chars; // characters allowed to delete (array with 256 entries, value == 0 means deletion allowed)
+public:
+    AliDeleteCommand(size_t pos_, size_t amount_, const char *delete_chars_)
+        : pos(pos_),
+          amount(amount_),
+          delete_chars(delete_chars_)
+    {}
+
+    AliDataPtr apply(AliDataPtr to) const OVERRIDE { return delete_from(to, pos, amount); }
+    bool allowed_to_delete(char c) const { return delete_chars[safeCharIndex(c)] == 1; }
+    GB_ERROR allowed_to_delete_from(const SequenceAliData& sad) const {
+        GB_ERROR    error  = NULL;
+        size_t      size   = sad.elems();
+        const char *source = sad.get_data();
+
+        size_t after          = pos+amount; // position after deleted part
+        if (after>size) after = size;
+
+        for (size_t p = pos; p<after; p++) {
+            if (allowed_to_delete(source[p])) {
+                error = GBS_global_string("You tried to delete '%c' at position %li  -> Operation aborted", source[p], p);
+            }
+        }
+
+        return error;
+    }
+};
+
+class AliFormatCommand : public AliEditCommand {
+    size_t wanted_len;
+
+public:
+    AliFormatCommand(size_t wanted_len_) : wanted_len(wanted_len_) {}
+    AliDataPtr apply(AliDataPtr to) const OVERRIDE {
+        SizeAwarable *knows_size = dynamic_cast<SizeAwarable*>(&*to);
+
+        gb_assert(knows_size); // format can only be applied to SpecificAliData
+                               // i.e. AliFormatCommand has to be the FIRST of a series of applied commands!
+
+        int allowed_size = knows_size->get_allowed_size(to->elems(), wanted_len);
+        return format(to, allowed_size);
+    }
+};
+
+class AliCompositeCommand : public AliEditCommand, virtual Noncopyable {
+    AliEditCommand *first;
+    AliEditCommand *second;
+public:
+    AliCompositeCommand(AliEditCommand *cmd1_, AliEditCommand *cmd2_) // takes ownership of commands
+        : first(cmd1_),
+          second(cmd2_)
+    {}
+    ~AliCompositeCommand() OVERRIDE { delete second; delete first; }
+    AliDataPtr apply(AliDataPtr to) const OVERRIDE { return second->apply(first->apply(to)); }
 };
 
 // --------------------------------------------------------------------------------
 
 class AliEditor : public AliApplicable {
     const AliEditCommand& cmd;
-    mutable arb_progress  progress;
+    mutable arb_progress progress;
 
-    GB_ERROR apply_to_terminal(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const OVERRIDE;
+    GB_ERROR apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const Alignment& ali) const OVERRIDE;
 
-    bool shall_edit(GBDATA *gb_data, TargetType ttype) const {
+    bool shall_edit(GBDATA *gb_data, TerminalType term_type) const {
         // defines whether specific DB-elements shall be edited by any AliEditor
         // (true for all data, that contains alignment position specific data)
 
         const char *key   = GB_read_key_pntr(gb_data);
-        bool        apply = key[0] != '_';                                // general case: don't apply to keys starting with '_'
-        if (!apply) apply = ttype == IDT_SAI && strcmp(key, "_REF") == 0; // exception (SAI:_REF needs editing)
-        return apply;
+        bool        shall = key[0] != '_';                                    // general case: don't apply to keys starting with '_'
+        if (!shall) shall = term_type == IDT_SAI && strcmp(key, "_REF") == 0; // exception (SAI:_REF needs editing)
+        return shall;
     }
 
 public:
@@ -912,26 +973,6 @@ public:
 
     const AliEditCommand& edit_command() const { return cmd; }
 };
-
-inline int alignment_oversize(GBDATA *gb_data, TargetType ttype, long alilen, long found_size) {
-    int oversize = 0;
-    const char *key = GB_read_key_pntr(gb_data);
-    switch (ttype) {
-        case IDT_SPECIES:
-            break;
-        case IDT_SECSTRUCT:
-            if (strcmp(key, "ref") == 0) { // 'ref' may be one byte longer than alignment size
-                oversize = found_size-alilen;
-            }
-            break;
-        case IDT_SAI:
-            if (strcmp(key, "_REF") == 0) { // _REF may be one byte longer than alignment size
-                oversize = found_size-alilen;
-            }
-            break;
-    }
-    return oversize;
-}
 
 // --------------------------------------------------------------------------------
 
@@ -950,44 +991,12 @@ inline char *provide_insDelBuffer(size_t neededSpace) {
     return insDelBuffer;
 }
 
-// --------------------------------------------------------------------------------
+inline GB_CSTR alidata2buffer(const AliData& data) { // @@@ DRY vs copying code (above in this file)
+    char *buffer = provide_insDelBuffer(data.memsize()+1);
 
-static const char *gbt_insert_delete(AliDataPtr data, size_t wanted_len, size_t pos, int amount, size_t& new_elem_count) {
-    /* removes elems from or inserts elems into 'data'
-     *
-     * wanted_len       if != 0, then cut or append elements to fit this len, otherwise keep previous length
-     *                  ('amount' is added to 'wanted_len', e.g. when format + delete/insert happens in one call)
-     * pos              where to insert/delete (delete starting with 'pos'; insert before 'pos')
-     * amount           and how many items (if 0 -> do not insert or delete. in this case 'pos' is not used)
-     */
+    data.copyTo(buffer);
+    buffer[data.memsize()] = 0; // only needed for strings but does not harm otherwise
 
-    AliDataPtr org_data = data;
-
-    gb_assert(wanted_len == 0 || (wanted_len >= data->elems()) || amount == 0);
-
-    if (!wanted_len) wanted_len = data->elems();
-    wanted_len += amount;
-
-    if (amount>0) {
-        if (pos>data->elems()) data = format(data, pos); // allow insert beyond end
-        data = insert_gap(data, pos, amount);
-    }
-    else if (amount<0) {
-        data = delete_from(data, pos, -amount);
-    }
-
-    data = format(data, wanted_len);
-
-    new_elem_count = data->elems();
-
-    char *buffer = NULL;
-    if (data->differs_from(*org_data)) {
-        gb_assert(new_elem_count == wanted_len);
-
-        buffer = provide_insDelBuffer(data->memsize()+1);
-        data->copyTo(buffer);
-        buffer[data->memsize()] = 0; // only needed for strings but does not harm otherwise
-    }
     return buffer;
 }
 
@@ -999,63 +1008,66 @@ class EditedTerminal : virtual Noncopyable {
     AliDataPtr  data;
     GB_ERROR    error;
 
-    void prepare(const AliEditCommand& cmd, const SequenceAliData& sad) {
+    void prepare(const AliEditCommand& cmd, const SequenceAliData& sad) { // @@@ rename
         if (!error && type == GB_STRING) {
-            if (cmd.get_amount() < 0) { // delete
-                size_t      size   = sad.elems();
-                const char *source = sad.get_data();
-
-                size_t after = cmd.get_pos()+(-cmd.get_amount());            // position after deleted part
-
-                if (after>size) after = size;
-
-                // @@@ do this check somewhere inside AliData
-                for (size_t p = cmd.get_pos(); p<after; p++) {
-                    if (cmd.allowed_to_delete(source[p])) {
-                        error = GBS_global_string("You tried to delete '%c' at position %li  -> Operation aborted", source[p], p);
-                    }
-                }
-            }
+            const AliDeleteCommand *del_cmd = dynamic_cast<const AliDeleteCommand*>(&cmd);
+            if (del_cmd) error = del_cmd->allowed_to_delete_from(sad);
         }
     }
 
+    bool has_key(const char *expected_key) {
+        return strcmp(GB_read_key_pntr(gb_data), expected_key) == 0;
+    }
+    bool does_allow_oversize(TerminalType term_type) {
+        bool oversize_allowed = false;
+        if (type == GB_STRING) {
+            switch (term_type) {
+                case IDT_SPECIES:   break;
+                case IDT_SECSTRUCT: oversize_allowed = has_key("ref"); break;
+                case IDT_SAI:       oversize_allowed = has_key("_REF"); break;
+            }
+        }
+        return oversize_allowed;
+    }
+
 public:
-    EditedTerminal(GBDATA *gb_data_, GB_TYPES type_, size_t size_)
+    EditedTerminal(GBDATA *gb_data_, GB_TYPES type_, size_t size_, TerminalType term_type, const Alignment& ali)
         : gb_data(gb_data_),
           type(type_),
-          // extraByte(0),
           error(NULL)
     {
+        SizeAwarable oversizable(does_allow_oversize(term_type), ali.get_len());
+
         // @@@ DRY cases
         switch(type) {
             case GB_STRING: {
                 const char *s    = GB_read_char_pntr(gb_data);
                 if (!s) error    = GB_await_error();
-                else        data = new SequenceAliData(s, size_, '-', '.');;
+                else        data = new SequenceAliData(s, size_, '-', '.', oversizable); // @@@ need different gaptype for "ref" and "_REF"
                 break;
             }
             case GB_BITS:   {
                 const char *b    = GB_read_bits_pntr(gb_data, '-', '+');
                 if (!b) error    = GB_await_error();
-                else        data = new SpecificAliData<char>(b, size_, '-');
+                else        data = new SpecificAliData<char>(b, size_, '-', oversizable);
                 break;
             }
             case GB_BYTES:  {
                 const char *b    = GB_read_bytes_pntr(gb_data);
                 if (!b) error    = GB_await_error();
-                else        data = new SpecificAliData<char>(b, size_, 0);
+                else        data = new SpecificAliData<char>(b, size_, 0, oversizable);
                 break;
             }
             case GB_INTS:   {
                 const GB_UINT4 *ui   = GB_read_ints_pntr(gb_data);
                 if (!ui) error       = GB_await_error();
-                else            data = new SpecificAliData<GB_UINT4>(ui, size_, 0);
+                else            data = new SpecificAliData<GB_UINT4>(ui, size_, 0, oversizable);
                 break;
             }
             case GB_FLOATS: {
                 const float *f    = GB_read_floats_pntr(gb_data);
                 if (!f) error     = GB_await_error();
-                else         data = new SpecificAliData<float>(f, size_, 0.0);
+                else         data = new SpecificAliData<float>(f, size_, 0.0, oversizable);
                 break;
             }
 
@@ -1068,22 +1080,17 @@ public:
         gb_assert(implicated(!error, size_ == data->elems()));
     }
 
-    GB_ERROR apply(const AliEditCommand& cmd, TargetType ttype, const Alignment& ali) {
-        // @@@ only works with plain insert-, delete- or format-command
-
+    GB_ERROR apply(const AliEditCommand& cmd) {
         if (!error && type == GB_STRING) {
             const SequenceAliData* sad = dynamic_cast<const SequenceAliData*>(&*data);
             prepare(cmd, *sad);
         }
         if (!error) {
-            int  oversize   = alignment_oversize(gb_data, ttype, ali.get_len(), data->elems());     // entries is 'oversize' elems longer than alignment size
-            long wanted_len = ali.get_len() + oversize;
+            AliDataPtr modified_data = cmd.apply(data);
 
-            size_t  modified_elems;
-            GB_CSTR modified = gbt_insert_delete(data, wanted_len, cmd.get_pos(), cmd.get_amount(), modified_elems);
-
-            if (modified) {
-                gb_assert(modified_elems == (ali.get_len()+cmd.get_amount()+oversize));
+            if (modified_data->differs_from(*data)) {
+                GB_CSTR modified       = alidata2buffer(*modified_data);
+                size_t  modified_elems = modified_data->elems();
 
                 switch (type) {
                     case GB_STRING: {
@@ -1104,16 +1111,13 @@ public:
     }
 };
 
-GB_ERROR AliEditor::apply_to_terminal(GBDATA *gb_data, TargetType ttype, const Alignment& ali) const {
+GB_ERROR AliEditor::apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const Alignment& ali) const {
     GB_TYPES gbtype  = GB_read_type(gb_data);
     GB_ERROR error = NULL;
     if (gbtype >= GB_BITS && gbtype != GB_LINK) {
-        long size = GB_read_count(gb_data);
-
-        if (edit_command().might_modify(size, ali)) {
-            if (shall_edit(gb_data, ttype)) {
-                error = EditedTerminal(gb_data, gbtype, size).apply(edit_command(), ttype, ali);
-            }
+        if (shall_edit(gb_data, term_type)) {
+            EditedTerminal edited(gb_data, gbtype, GB_read_count(gb_data), term_type, ali);
+            error = edited.apply(edit_command());
         }
     }
     progress.inc_and_check_user_abort(error);
@@ -1128,12 +1132,10 @@ static size_t countAffectedEntries(GBDATA *Main, const Alignment& ali) {
     return counter.get_entry_count();
 }
 
-static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
+static GB_ERROR format_to_alilen(GBDATA *Main, const char *alignment_name) {
     GB_ERROR  error      = 0;
     GBDATA   *gb_presets = GBT_get_presets(Main);
     GBDATA   *gb_ali;
-
-    AliFormat op;
 
     for (gb_ali = GB_entry(gb_presets, "alignment");
          gb_ali && !error;
@@ -1145,7 +1147,9 @@ static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
             GBDATA    *gb_len = GB_entry(gb_ali, "alignment_len");
             Alignment  ali(GB_read_char_pntr(gb_name), GB_read_int(gb_len));
 
-            error = AliEditor(op, "Formatting alignment", countAffectedEntries(Main, ali))
+            AliFormatCommand fcmd(ali.get_len()); // format to max. existing length
+
+            error = AliEditor(fcmd, "Formatting alignment", countAffectedEntries(Main, ali))
                 .apply_to_alignment(Main, ali);
         }
     }
@@ -1156,10 +1160,10 @@ static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
 GB_ERROR GBT_format_alignment(GBDATA *Main, const char *alignment_name) {
     GB_ERROR err = 0;
 
-    if (strcmp(alignment_name, GENOM_ALIGNMENT) != 0) { // NEVER EVER format 'ali_genom'
-        err           = GBT_check_data(Main, alignment_name); // detect max. length
-        if (!err) err = GBT_check_lengths(Main, alignment_name); // format sequences in alignment
-        if (!err) err = GBT_check_data(Main, alignment_name); // sets state to "formatted"
+    if (strcmp(alignment_name, GENOM_ALIGNMENT) != 0) {         // NEVER EVER format 'ali_genom'
+        err           = GBT_check_data(Main, alignment_name);   // detect max. length
+        if (!err) err = format_to_alilen(Main, alignment_name); // format sequences in alignment
+        if (!err) err = GBT_check_data(Main, alignment_name);   // sets state to "formatted"
     }
     else {
         err = "It's forbidden to format '" GENOM_ALIGNMENT "'!";
@@ -1222,10 +1226,13 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
                 }
 
                 if (!error) {
-                    Alignment      ali(use, len);
-                    AliEditCommand op(pos, count, char_delete_list);
+                    Alignment ali(use, len);
 
-                    error = AliEditor(op, "Insert/delete characters", countAffectedEntries(Main, ali))
+                    SmartPtr<AliEditCommand> idcmd;
+                    if (count<0) idcmd = new AliDeleteCommand(pos, -count, char_delete_list);
+                    else         idcmd = new AliInsertCommand(pos, count);
+
+                    error = AliEditor(*idcmd, "Insert/delete characters", countAffectedEntries(Main, ali))
                         .apply_to_alignment(Main, ali);
                 }
                 free(use);
@@ -1247,21 +1254,49 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
 #endif
 #include <arb_unit_test.h>
 
-#define DO_INSERT(str,alilen,pos,amount)                                        \
-    size_t      newlen;                                                         \
-    AliDataPtr  data = new SequenceAliData(str, strlen(str), '-', '.');         \
-    const char *res  = gbt_insert_delete(data, alilen, pos, amount, newlen)
+#define APPLY_CMD(str,cmd)                                                                              \
+    size_t     str_len = strlen(str);                                                                   \
+    AliDataPtr data    = new SequenceAliData(str, str_len, '-', '.', dontAllowOversize(str_len));       \
+    AliDataPtr mod     = cmd.apply(data);                                                               \
+    GB_CSTR    res     = mod->differs_from(*data) ? alidata2buffer(*mod) : NULL
 
-#define TEST_INSERT(str,alilen,pos,amount,expected)         do { DO_INSERT(str,alilen,pos,amount); TEST_EXPECT_EQUAL(res, expected);         } while(0)
-#define TEST_INSERT__BROKEN(str,alilen,pos,amount,expected) do { DO_INSERT(str,alilen,pos,amount); TEST_EXPECT_EQUAL__BROKEN(res, expected); } while(0)
+#define DO_FORMAT(str,wanted_len)               \
+    AliFormatCommand     cmd(wanted_len);       \
+    APPLY_CMD(str, cmd)
 
-#define TEST_FORMAT(str,alilen,expected)         TEST_INSERT(str,alilen,0,0,expected)
-#define TEST_FORMAT__BROKEN(str,alilen,expected) TEST_INSERT__BROKEN(str,alilen,0,0,expected)
+#define DO_INSERT(str,pos,amount)               \
+    AliInsertCommand     cmd(pos, amount);      \
+    APPLY_CMD(str, cmd)
 
-#define TEST_DELETE(str,alilen,pos,amount,expected)         TEST_INSERT(str,alilen,pos,-(amount),expected)
-#define TEST_DELETE__BROKEN(str,alilen,pos,amount,expected) TEST_INSERT__BROKEN(str,alilen,pos,-(amount),expected)
+#define DO_FORMAT_AND_INSERT(str,wanted_len,pos,amount)         \
+    AliCompositeCommand  cmd(new AliFormatCommand(wanted_len),  \
+                             new AliInsertCommand(pos,amount)); \
+    APPLY_CMD(str, cmd)
 
-void TEST_insert_delete() {
+#define DO_DELETE(str,pos,amount)               \
+    AliDeleteCommand     cmd(pos, amount, "-"); \
+    APPLY_CMD(str, cmd)
+
+#define TEST_FORMAT(str,wanted_alilen,expected)         do { DO_FORMAT(str,wanted_alilen); TEST_EXPECT_EQUAL(res, expected);         } while(0)
+#define TEST_FORMAT__BROKEN(str,wanted_alilen,expected) do { DO_FORMAT(str,wanted_alilen); TEST_EXPECT_EQUAL__BROKEN(res, expected); } while(0)
+
+#define TEST_INSERT(str,pos,amount,expected)         do { DO_INSERT(str,pos,amount); TEST_EXPECT_EQUAL(res, expected);         } while(0)
+#define TEST_INSERT__BROKEN(str,pos,amount,expected) do { DO_INSERT(str,pos,amount); TEST_EXPECT_EQUAL__BROKEN(res, expected); } while(0)
+
+#define TEST_DELETE(str,pos,amount,expected)         do { DO_DELETE(str,pos,amount); TEST_EXPECT_EQUAL(res, expected);         } while(0)
+#define TEST_DELETE__BROKEN(str,pos,amount,expected) do { DO_DELETE(str,pos,amount); TEST_EXPECT_EQUAL__BROKEN(res, expected); } while(0)
+
+#define TEST_FORMAT_AND_INSERT(str,wanted_alilen,pos,amount,expected)         do { DO_FORMAT_AND_INSERT(str,wanted_alilen,pos,amount); TEST_EXPECT_EQUAL(res, expected);         } while(0)
+#define TEST_FORMAT_AND_INSERT__BROKEN(str,wanted_alilen,pos,amount,expected) do { DO_FORMAT_AND_INSERT(str,wanted_alilen,pos,amount); TEST_EXPECT_EQUAL__BROKEN(res, expected); } while(0)
+
+// --------------------------------------------------------------------------------
+
+void TEST_format_insert_delete() {
+    // this test is a bit weird.
+    //
+    // originally it was used to test the function gbt_insert_delete, which is gone now.
+    // now it tests AliFormatCommand, AliInsertCommand, AliDeleteCommand and AliCompositeCommand (but quite implicit).
+
     TEST_FORMAT("xxx",   5, "xxx..");
     TEST_FORMAT(".x.",   5, ".x...");
     TEST_FORMAT(".x..",  5, ".x...");
@@ -1271,40 +1306,38 @@ void TEST_insert_delete() {
     TEST_FORMAT("xxx--", 3, "xxx");
     TEST_FORMAT("xxx..", 3, "xxx");
     TEST_FORMAT("xxxxx", 3, "xxx");
-    TEST_FORMAT__BROKEN("xxx",   0, "");    TEST_FORMAT("xxx",   0, NULL); // @@@ broken because 0 is used as "do not format" in gbt_insert_delete
+    TEST_FORMAT("xxx",   0, "");
 
     // insert/delete in the middle
-    TEST_INSERT("abcde", 5, 3, 0, NULL);
-    TEST_INSERT("abcde", 5, 3, 1, "abc-de");
-    TEST_INSERT("abcde", 5, 3, 2, "abc--de");
+    TEST_INSERT("abcde", 3, 0, NULL);
+    TEST_INSERT("abcde", 3, 1, "abc-de");
+    TEST_INSERT("abcde", 3, 2, "abc--de");
 
-    TEST_DELETE("abcde",   5, 3, 0, NULL);
-    TEST_DELETE("abc-de",  6, 3, 1, "abcde");
-    TEST_DELETE("abc--de", 7, 3, 2, "abcde");
+    TEST_DELETE("abcde",   3, 0, NULL);
+    TEST_DELETE("abc-de",  3, 1, "abcde");
+    TEST_DELETE("abc--de", 3, 2, "abcde");
 
     // insert/delete at end
-    TEST_INSERT("abcde", 5, 5, 1, "abcde.");
-    TEST_INSERT("abcde", 5, 5, 4, "abcde....");
+    TEST_INSERT("abcde", 5, 1, "abcde.");
+    TEST_INSERT("abcde", 5, 4, "abcde....");
 
-    TEST_DELETE("abcde-",    6, 5, 1, "abcde");
-    TEST_DELETE("abcde----", 9, 5, 4, "abcde");
+    TEST_DELETE("abcde-",    5, 1, "abcde");
+    TEST_DELETE("abcde----", 5, 4, "abcde");
 
     // insert/delete at start
-    TEST_INSERT("abcde", 5, 0, 1, ".abcde");
-    TEST_INSERT("abcde", 5, 0, 4, "....abcde");
+    TEST_INSERT("abcde", 0, 1, ".abcde");
+    TEST_INSERT("abcde", 0, 4, "....abcde");
 
-    TEST_DELETE("-abcde",    6, 0, 1, "abcde");
-    TEST_DELETE("----abcde", 9, 0, 4, "abcde");
+    TEST_DELETE("-abcde",    0, 1, "abcde");
+    TEST_DELETE("----abcde", 0, 4, "abcde");
 
     // insert behind end
-
-    // expected? -------------------------------------------- current
-    TEST_INSERT__BROKEN("abcde", 10, 8, 1, "abcde...-..");    TEST_INSERT("abcde", 10, 8, 1, "abcde......");
-    TEST_INSERT__BROKEN("abcde", 10, 8, 4, "abcde...----.."); TEST_INSERT("abcde", 10, 8, 4, "abcde.........");
+    TEST_FORMAT_AND_INSERT("abcde", 10, 8, 1, "abcde......");
+    TEST_FORMAT_AND_INSERT("abcde", 10, 8, 4, "abcde.........");
 
     // insert/delete all
-    TEST_INSERT("",    0, 0, 3, "...");
-    TEST_DELETE("---", 3, 0, 3, "");
+    TEST_INSERT("",    0, 3, "...");
+    TEST_DELETE("---", 0, 3, "");
 
     free_insDelBuffer();
 }
