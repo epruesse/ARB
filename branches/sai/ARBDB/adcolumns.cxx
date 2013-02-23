@@ -1345,18 +1345,18 @@ void TEST_format_insert_delete() {
 // ------------------------------
 
 struct arb_unit_test::test_alignment_data TADinsdel[] = {
-    { 1, "MtnK1722", "...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUCACCUCC....." },
-    { 1, "MhnFormi", "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUCACCUCCU....." },
-    { 1, "MhnT1916", "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUCACCUCCU----" },
+    { 1, "MtnK1722", "...G-GGC-C-G...--A-GGGGAA-CCUG-CGGC-UGG-AUCACCUCC....." },
+    { 1, "MhnFormi", "---A-CGA-U-C-----C-GGGGAA-CCUG-CGGC-UGG-AUCACCUCCU....." },
+    { 1, "MhnT1916", "...A-CGA-A-C.....G-GGGGAA-CCUG-CGGC-UGG-AUCACCUCCU----" },
 };
 
 struct arb_unit_test::test_alignment_data EXTinsdel[] = {
-    { 0, "ECOLI",    "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCCCACCUGA...." },
-    { 0, "HELIX",    ".....[<[.........[[..[<<.[..].>>]....]]....].>......]" },
-    { 0, "HELIX_NR", ".....1.1.........22..34..34.34..34...22....1........1" },
+    { 0, "ECOLI",    "---U-GCC-U-G-----G-CGGCCU-UAGC-GCGG-UGG-UCCCACCUGA...." },
+    { 0, "HELIX",    ".....[<[.........[.[..[<<.[..].>>]....].]....].>......]" },
+    { 0, "HELIX_NR", ".....1.1.........2.2..34..34.34..34...2.2....1........1" },
 };
 
-#define HELIX_REF    ".....x..x........x.x.x....x.x....x...x.x...x.........x"
+#define HELIX_REF    ".....x..x........x..x.x....x.x....x...x..x...x.........x"
 #define HELIX_STRUCT "VERSION=3\nLOOP={etc.pp\n}\n"
 
 static const char *read_item_entry(GBDATA *gb_item, const char *ali_name, const char *entry_name) {
@@ -1513,7 +1513,7 @@ void TEST_insert_delete_DB() {
         GBDATA *gb_spec = GBT_find_species(gb_main, TADinsdel[0].name);
         {
             GBDATA     *gb_ints   = GBT_add_data(gb_spec, ali_name, "NN", GB_INTS);
-            const char *intsAsStr = "934674096035485565009425682006116502001394358998513";
+            const char *intsAsStr = "93467409603548556510094256820061165020011394358998513";
             size_t      len       = strlen(intsAsStr);
             GB_UINT4   *ints      = string2ints(intsAsStr, len);
             {
@@ -1526,7 +1526,7 @@ void TEST_insert_delete_DB() {
         }
         {
             GBDATA     *gb_ints     = GBT_add_data(gb_spec, ali_name, "FF", GB_FLOATS);
-            const char *floatsAsStr = "ODu8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uCLDoHlWV59DW";
+            const char *floatsAsStr = "ODu8EJh60e1XYLgxvzqmeMiMAjB5EJxT6JPiCvQq4uCLDoHlWV59DW";
             size_t      len         = strlen(floatsAsStr);
             float      *floats      = string2floats(floatsAsStr, len);
             {
@@ -1543,225 +1543,225 @@ void TEST_insert_delete_DB() {
         GB_transaction ta(gb_main);
 
         for (int pass = 1; pass <= 2; ++pass) {
-            if (pass == 1) TEST_ALI_LEN_ALIGNED(52, 1);
-            if (pass == 2) TEST_ALI_LEN_ALIGNED(53, 0); // was marked as "not aligned"
+            if (pass == 1) TEST_ALI_LEN_ALIGNED(54, 1);
+            if (pass == 2) TEST_ALI_LEN_ALIGNED(55, 0); // was marked as "not aligned"
 
-            TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUCACCUCC.....",
-                      "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUCACCUCCU.....",
-                      "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUCACCUCCU----",
-                      "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCCCACCUGA....",
-                      ".....[<[.........[[..[<<.[..].>>]....]]....].>......]",
-                      ".....1.1.........22..34..34.34..34...22....1........1",
-                      ".....x..x........x.x.x....x.x....x...x.x...x.........x",
-                      "934674096035485565009425682006116502001394358998513",  // a INTS entry
-                      "ODu8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uCLDoHlWV59DW", // a FLOATS entry
+            TEST_DATA("...G-GGC-C-G...--A-GGGGAA-CCUG-CGGC-UGG-AUCACCUCC.....",
+                      "---A-CGA-U-C-----C-GGGGAA-CCUG-CGGC-UGG-AUCACCUCCU.....",
+                      "...A-CGA-A-C.....G-GGGGAA-CCUG-CGGC-UGG-AUCACCUCCU----",
+                      "---U-GCC-U-G-----G-CGGCCU-UAGC-GCGG-UGG-UCCCACCUGA....",
+                      ".....[<[.........[.[..[<<.[..].>>]....].]....].>......]",
+                      ".....1.1.........2.2..34..34.34..34...2.2....1........1",
+                      ".....x..x........x..x.x....x.x....x...x..x...x.........x",
+                      "93467409603548556510094256820061165020011394358998513",  // a INTS entry
+                      "ODu8EJh60e1XYLgxvzqmeMiMAjB5EJxT6JPiCvQq4uCLDoHlWV59DW", // a FLOATS entry
                       HELIX_STRUCT);
 
             if (pass == 1) TEST_EXPECT_NO_ERROR(GBT_check_data(gb_main, ali_name));
         }
 
         TEST_EXPECT_NO_ERROR(GBT_format_alignment(gb_main, ali_name));
-        TEST_ALI_LEN_ALIGNED(53, 1);
-        TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUCACCUCC......",
-                  "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUCACCUCCU.....",
-                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUCACCUCCU-----", // @@@ <- should convert '-' to '.'
-                  "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCCCACCUGA.....",
-                  ".....[<[.........[[..[<<.[..].>>]....]]....].>......]",
-                  ".....1.1.........22..34..34.34..34...22....1........1",
-                  ".....x..x........x.x.x....x.x....x...x.x...x.........x",
-                  "93467409603548556500942568200611650200139435899851300",
-                  "ODu8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uCLDoHlWV59DW!",
+        TEST_ALI_LEN_ALIGNED(55, 1);
+        TEST_DATA("...G-GGC-C-G...--A-GGGGAA-CCUG-CGGC-UGG-AUCACCUCC......",
+                  "---A-CGA-U-C-----C-GGGGAA-CCUG-CGGC-UGG-AUCACCUCCU.....",
+                  "...A-CGA-A-C.....G-GGGGAA-CCUG-CGGC-UGG-AUCACCUCCU-----", // @@@ <- should convert '-' to '.'
+                  "---U-GCC-U-G-----G-CGGCCU-UAGC-GCGG-UGG-UCCCACCUGA.....",
+                  ".....[<[.........[.[..[<<.[..].>>]....].]....].>......]",
+                  ".....1.1.........2.2..34..34.34..34...2.2....1........1",
+                  ".....x..x........x..x.x....x.x....x...x..x...x.........x",
+                  "9346740960354855651009425682006116502001139435899851300",
+                  "ODu8EJh60e1XYLgxvzqmeMiMAjB5EJxT6JPiCvQq4uCLDoHlWV59DW!",
                   HELIX_STRUCT);
 
-// editor column -> alignment column
+// text-editor column -> alignment column
 #define COL(col) ((col)-19)
 
-        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(60), 2, "")); // insert in middle
-        TEST_ALI_LEN_ALIGNED(55, 1);
-        TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC......",
-                  "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.....",
-                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-----",
-                  "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.....",
-                  ".....[<[.........[[..[<<.[..].>>]....]]......].>......]",
-                  ".....1.1.........22..34..34.34..34...22......1........1",
-                  ".....x..x........x.x.x....x.x....x...x.x.....x.........x",
-                  "9346740960354855650094256820061165020013900435899851300",
-                  "ODu8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59DW!",
+        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(62), 2, "")); // insert in middle
+        TEST_ALI_LEN_ALIGNED(57, 1);
+        TEST_DATA("...G-GGC-C-G...--A-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCC......",
+                  "---A-CGA-U-C-----C-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU.....",
+                  "...A-CGA-A-C.....G-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU-----",
+                  "---U-GCC-U-G-----G-CGGCCU-UAGC-GCGG-UGG-UCC--CACCUGA.....",
+                  ".....[<[.........[.[..[<<.[..].>>]....].]......].>......]",
+                  ".....1.1.........2.2..34..34.34..34...2.2......1........1",
+                  ".....x..x........x..x.x....x.x....x...x..x.....x.........x",
+                  "934674096035485565100942568200611650200113900435899851300",
+                  "ODu8EJh60e1XYLgxvzqmeMiMAjB5EJxT6JPiCvQq4uC!!LDoHlWV59DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(71), 2, "")); // insert near end
-        TEST_ALI_LEN_ALIGNED(57, 1);
-        TEST_DATA("...G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
-                  "---A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  "...A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
-                  "---U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
-                  ".....[<[.........[[..[<<.[..].>>]....]]......].>........]",
-                  ".....1.1.........22..34..34.34..34...22......1..........1",
-                  ".....x..x........x.x.x....x.x....x...x.x.....x...........x",
-                  "934674096035485565009425682006116502001390043589985100300",
-                  "ODu8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
+        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(73), 2, "")); // insert near end
+        TEST_ALI_LEN_ALIGNED(59, 1);
+        TEST_DATA("...G-GGC-C-G...--A-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCC........",
+                  "---A-CGA-U-C-----C-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU.......",
+                  "...A-CGA-A-C.....G-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU-------",
+                  "---U-GCC-U-G-----G-CGGCCU-UAGC-GCGG-UGG-UCC--CACCUGA.......",
+                  ".....[<[.........[.[..[<<.[..].>>]....].]......].>........]",
+                  ".....1.1.........2.2..34..34.34..34...2.2......1..........1",
+                  ".....x..x........x..x.x....x.x....x...x..x.....x...........x",
+                  "93467409603548556510094256820061165020011390043589985100300",
+                  "ODu8EJh60e1XYLgxvzqmeMiMAjB5EJxT6JPiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(20), 2, "")); // insert near start
-        TEST_ALI_LEN_ALIGNED(59, 1);
-        TEST_DATA(".....G-GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
-                  "-----A-CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A-CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
-                  "-----U-GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
-                  ".......[<[.........[[..[<<.[..].>>]....]]......].>........]",
-                  ".......1.1.........22..34..34.34..34...22......1..........1",
-                  ".......x..x........x.x.x....x.x....x...x.x.....x...........x",
-                  "90034674096035485565009425682006116502001390043589985100300",
-                  "O!!Du8EJh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
+        TEST_ALI_LEN_ALIGNED(61, 1);
+        TEST_DATA(".....G-GGC-C-G...--A-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCC........",
+                  "-----A-CGA-U-C-----C-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU.......",
+                  ".....A-CGA-A-C.....G-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU-------",
+                  "-----U-GCC-U-G-----G-CGGCCU-UAGC-GCGG-UGG-UCC--CACCUGA.......",
+                  ".......[<[.........[.[..[<<.[..].>>]....].]......].>........]",
+                  ".......1.1.........2.2..34..34.34..34...2.2......1..........1",
+                  ".......x..x........x..x.x....x.x....x...x..x.....x...........x",
+                  "9003467409603548556510094256820061165020011390043589985100300",
+                  "O!!Du8EJh60e1XYLgxvzqmeMiMAjB5EJxT6JPiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
 
         TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(26), 2, "")); // insert at left helix start
-        TEST_ALI_LEN_ALIGNED(61, 1);
-        TEST_DATA(".....G---GGC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
-                  "-----A---CGA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---CGA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
-                  "-----U---GCC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
-                  ".........[<[.........[[..[<<.[..].>>]....]]......].>........]",
-                  ".........1.1.........22..34..34.34..34...22......1..........1",
-                  ".........x..x........x.x.x....x.x....x...x.x.....x...........x",
-                  "9003467004096035485565009425682006116502001390043589985100300",
-                  "O!!Du8E!!Jh60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
+        TEST_ALI_LEN_ALIGNED(63, 1);
+        TEST_DATA(".....G---GGC-C-G...--A-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCC........",
+                  "-----A---CGA-U-C-----C-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU.......",
+                  ".....A---CGA-A-C.....G-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU-------",
+                  "-----U---GCC-U-G-----G-CGGCCU-UAGC-GCGG-UGG-UCC--CACCUGA.......",
+                  ".........[<[.........[.[..[<<.[..].>>]....].]......].>........]",
+                  ".........1.1.........2.2..34..34.34..34...2.2......1..........1",
+                  ".........x..x........x..x.x....x.x....x...x..x.....x...........x",
+                  "900346700409603548556510094256820061165020011390043589985100300",
+                  "O!!Du8E!!Jh60e1XYLgxvzqmeMiMAjB5EJxT6JPiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(29), 2, "")); // insert behind left helix start
-        TEST_ALI_LEN_ALIGNED(63, 1);
-        TEST_DATA(".....G---G--GC-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
-                  "-----A---C--GA-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--GA-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
-                  "-----U---G--CC-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
-                  ".........[--<[.........[[..[<<.[..].>>]....]]......].>........]", // @@@ <- should insert dots
-                  ".........1...1.........22..34..34.34..34...22......1..........1",
-                  ".........x....x........x.x.x....x.x....x...x.x.....x...........x",
-                  "900346700400096035485565009425682006116502001390043589985100300",
-                  "O!!Du8E!!J!!h60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
+        TEST_ALI_LEN_ALIGNED(65, 1);
+        TEST_DATA(".....G---G--GC-C-G...--A-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCC........",
+                  "-----A---C--GA-U-C-----C-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU.......",
+                  ".....A---C--GA-A-C.....G-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU-------",
+                  "-----U---G--CC-U-G-----G-CGGCCU-UAGC-GCGG-UGG-UCC--CACCUGA.......",
+                  ".........[--<[.........[.[..[<<.[..].>>]....].]......].>........]", // @@@ <- should insert dots
+                  ".........1...1.........2.2..34..34.34..34...2.2......1..........1",
+                  ".........x....x........x..x.x....x.x....x...x..x.....x...........x",
+                  "90034670040009603548556510094256820061165020011390043589985100300",
+                  "O!!Du8E!!J!!h60e1XYLgxvzqmeMiMAjB5EJxT6JPiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(32), 2, "")); // insert at left helix end
-        TEST_ALI_LEN_ALIGNED(65, 1);
-        TEST_DATA(".....G---G--G--C-C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
-                  "-----A---C--G--A-U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A-A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
-                  "-----U---G--C--C-U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
-                  ".........[--<--[.........[[..[<<.[..].>>]....]]......].>........]", // @@@ <- should insert dots
-                  ".........1.....1.........22..34..34.34..34...22......1..........1",
-                  ".........x......x........x.x.x....x.x....x...x.x.....x...........x",
-                  "90034670040000096035485565009425682006116502001390043589985100300",
-                  "O!!Du8E!!J!!h!!60e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
+        TEST_ALI_LEN_ALIGNED(67, 1);
+        TEST_DATA(".....G---G--G--C-C-G...--A-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCC........",
+                  "-----A---C--G--A-U-C-----C-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU.......",
+                  ".....A---C--G--A-A-C.....G-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU-------",
+                  "-----U---G--C--C-U-G-----G-CGGCCU-UAGC-GCGG-UGG-UCC--CACCUGA.......",
+                  ".........[--<--[.........[.[..[<<.[..].>>]....].]......].>........]", // @@@ <- should insert dots
+                  ".........1.....1.........2.2..34..34.34..34...2.2......1..........1",
+                  ".........x......x........x..x.x....x.x....x...x..x.....x...........x",
+                  "9003467004000009603548556510094256820061165020011390043589985100300",
+                  "O!!Du8E!!J!!h!!60e1XYLgxvzqmeMiMAjB5EJxT6JPiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
         TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(35), 2, ""));    // insert behind left helix end
-        TEST_ALI_LEN_ALIGNED(67, 1);
-        TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCUG-CGGC-UGGAUC--ACCUCC........",
-                  "-----A---C--G--A---U-C-----CGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.....GGGGGAA-CCUG-CGGC-UGGAUC--ACCUCCU-------",
-                  "-----U---G--C--C---U-G-----GCGGCCU-UAGC-GCGG-UGGUCC--CACCUGA.......",
-                  ".........[--<--[...........[[..[<<.[..].>>]....]]......].>........]",
-                  ".........1.....1...........22..34..34.34..34...22......1..........1",
-                  ".........x........x........x.x.x....x.x....x...x.x.....x...........x", // @@@ _REF gets destroyed here! (see #159)
-                  "9003467004000009006035485565009425682006116502001390043589985100300",
-                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzmeMiMAjB5EJxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
-                  HELIX_STRUCT);
-
-
-        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(57), 2, "")); // insert at right helix start
         TEST_ALI_LEN_ALIGNED(69, 1);
-        TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G-CGGC-UGGAUC--ACCUCC........",
-                  "-----A---C--G--A---U-C-----CGGGGAA-CCU--G-CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G-CGGC-UGGAUC--ACCUCCU-------",
-                  "-----U---G--C--C---U-G-----GCGGCCU-UAG--C-GCGG-UGGUCC--CACCUGA.......",
-                  ".........[--<--[...........[[..[<<.[....].>>]....]]......].>........]",
-                  ".........1.....1...........22..34..34...34..34...22......1..........1",
-                  ".........x........x........x.x.x....x...x....x...x.x.....x...........x",
-                  "900346700400000900603548556500942568200006116502001390043589985100300",
-                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzmeMiMAjB5E!!JxT6JPiCvQ4uC!!LDoHlWV59!!DW!",
+        TEST_DATA(".....G---G--G--C---C-G...--A-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-----C-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.....G-GGGGAA-CCUG-CGGC-UGG-AUC--ACCUCCU-------",
+                  "-----U---G--C--C---U-G-----G-CGGCCU-UAGC-GCGG-UGG-UCC--CACCUGA.......",
+                  ".........[--<--[...........[.[..[<<.[..].>>]....].]......].>........]",
+                  ".........1.....1...........2.2..34..34.34..34...2.2......1..........1",
+                  ".........x........x........x..x.x....x.x....x...x..x.....x...........x", // @@@ _REF gets destroyed here! (see #159)
+                  "900346700400000900603548556510094256820061165020011390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzqmeMiMAjB5EJxT6JPiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(60), 2, ""));       // insert behind right helix start
+
+        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(58), 2, "")); // insert at right helix start
         TEST_ALI_LEN_ALIGNED(71, 1);
-        TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G---CGGC-UGGAUC--ACCUCC........",
-                  "-----A---C--G--A---U-C-----CGGGGAA-CCU--G---CGGC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CGGC-UGGAUC--ACCUCCU-------",
-                  "-----U---G--C--C---U-G-----GCGGCCU-UAG--C---GCGG-UGGUCC--CACCUGA.......",
-                  ".........[--<--[...........[[..[<<.[....]...>>]....]]......].>........]",
-                  ".........1.....1...........22..34..34...3--4..34...22......1..........1", // @@@ <- helix nr destroyed + shall use dots
-                  ".........x........x........x.x.x....x...x......x...x.x.....x...........x",
-                  "90034670040000090060354855650094256820000006116502001390043589985100300",
-                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzmeMiMAjB5E!!J!!xT6JPiCvQ4uC!!LDoHlWV59!!DW!",
+        TEST_DATA(".....G---G--G--C---C-G...--A-GGGGAA-CCU--G-CGGC-UGG-AUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-----C-GGGGAA-CCU--G-CGGC-UGG-AUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.....G-GGGGAA-CCU--G-CGGC-UGG-AUC--ACCUCCU-------",
+                  "-----U---G--C--C---U-G-----G-CGGCCU-UAG--C-GCGG-UGG-UCC--CACCUGA.......",
+                  ".........[--<--[...........[.[..[<<.[....].>>]....].]......].>........]",
+                  ".........1.....1...........2.2..34..34...34..34...2.2......1..........1",
+                  ".........x........x........x..x.x....x...x....x...x..x.....x...........x",
+                  "90034670040000090060354855651009425682000061165020011390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzqmeMiMAjB5E!!JxT6JPiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(65), 2, ""));         // insert at right helix end
+        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(61), 2, ""));       // insert behind right helix start
         TEST_ALI_LEN_ALIGNED(73, 1);
-        TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G---CG--GC-UGGAUC--ACCUCC........",
-                  "-----A---C--G--A---U-C-----CGGGGAA-CCU--G---CG--GC-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CG--GC-UGGAUC--ACCUCCU-------",
-                  "-----U---G--C--C---U-G-----GCGGCCU-UAG--C---GC--GG-UGGUCC--CACCUGA.......",
-                  ".........[--<--[...........[[..[<<.[....]...>>--]....]]......].>........]", // @@@ <- shall insert dots
-                  ".........1.....1...........22..34..34...3--4....34...22......1..........1",
-                  ".........x........x........x.x.x....x...x........x...x.x.....x...........x",
-                  "9003467004000009006035485565009425682000000611006502001390043589985100300",
-                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzmeMiMAjB5E!!J!!xT6!!JPiCvQ4uC!!LDoHlWV59!!DW!",
+        TEST_DATA(".....G---G--G--C---C-G...--A-GGGGAA-CCU--G---CGGC-UGG-AUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-----C-GGGGAA-CCU--G---CGGC-UGG-AUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.....G-GGGGAA-CCU--G---CGGC-UGG-AUC--ACCUCCU-------",
+                  "-----U---G--C--C---U-G-----G-CGGCCU-UAG--C---GCGG-UGG-UCC--CACCUGA.......",
+                  ".........[--<--[...........[.[..[<<.[....]...>>]....].]......].>........]",
+                  ".........1.....1...........2.2..34..34...3--4..34...2.2......1..........1", // @@@ <- helix nr destroyed + shall use dots
+                  ".........x........x........x..x.x....x...x......x...x..x.....x...........x",
+                  "9003467004000009006035485565100942568200000061165020011390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzqmeMiMAjB5E!!J!!xT6JPiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(68), 2, ""));           // insert behind right helix end
+        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(66), 2, ""));         // insert at right helix end
         TEST_ALI_LEN_ALIGNED(75, 1);
-        TEST_DATA(".....G---G--G--C---C-G...--AGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCC........",
-                  "-----A---C--G--A---U-C-----CGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.....GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU-------",
-                  "-----U---G--C--C---U-G-----GCGGCCU-UAG--C---GC--G--G-UGGUCC--CACCUGA.......",
-                  ".........[--<--[...........[[..[<<.[....]...>>--]......]]......].>........]",
-                  ".........1.....1...........22..34..34...3--4....3--4...22......1..........1", // @@@ <- helix nr destroyed + shall use dots
-                  ".........x........x........x.x.x....x...x..........x...x.x.....x...........x", // @@@ _REF gets destroyed here! (see #159)
-                  "900346700400000900603548556500942568200000061100600502001390043589985100300",
-                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzmeMiMAjB5E!!J!!xT6!!J!!PiCvQ4uC!!LDoHlWV59!!DW!",
+        TEST_DATA(".....G---G--G--C---C-G...--A-GGGGAA-CCU--G---CG--GC-UGG-AUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-----C-GGGGAA-CCU--G---CG--GC-UGG-AUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.....G-GGGGAA-CCU--G---CG--GC-UGG-AUC--ACCUCCU-------",
+                  "-----U---G--C--C---U-G-----G-CGGCCU-UAG--C---GC--GG-UGG-UCC--CACCUGA.......",
+                  ".........[--<--[...........[.[..[<<.[....]...>>--]....].]......].>........]", // @@@ <- shall insert dots
+                  ".........1.....1...........2.2..34..34...3--4....34...2.2......1..........1",
+                  ".........x........x........x..x.x....x...x........x...x..x.....x...........x",
+                  "900346700400000900603548556510094256820000006110065020011390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzqmeMiMAjB5E!!J!!xT6!!JPiCvQq4uC!!LDoHlWV59!!DW!",
+                  HELIX_STRUCT);
+
+        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(69), 2, ""));           // insert behind right helix end
+        TEST_ALI_LEN_ALIGNED(77, 1);
+        TEST_DATA(".....G---G--G--C---C-G...--A-GGGGAA-CCU--G---CG--G--C-UGG-AUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-----C-GGGGAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.....G-GGGGAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU-------",
+                  "-----U---G--C--C---U-G-----G-CGGCCU-UAG--C---GC--G--G-UGG-UCC--CACCUGA.......",
+                  ".........[--<--[...........[.[..[<<.[....]...>>--]......].]......].>........]",
+                  ".........1.....1...........2.2..34..34...3--4....3--4...2.2......1..........1", // @@@ <- helix nr destroyed + shall use dots
+                  ".........x........x........x..x.x....x...x..........x...x..x.....x...........x", // @@@ _REF gets destroyed here! (see #159)
+                  "90034670040000090060354855651009425682000000611006005020011390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLgxvzqmeMiMAjB5E!!J!!xT6!!J!!PiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
 
 
         TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(44), 2, ""));           // insert at gap border
-        TEST_ALI_LEN_ALIGNED(77, 1);
-        TEST_DATA(".....G---G--G--C---C-G...----AGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCC........", // now prefers '-' here
-                  "-----A---C--G--A---U-C-------CGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.......GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU-------",
-                  "-----U---G--C--C---U-G-------GCGGCCU-UAG--C---GC--G--G-UGGUCC--CACCUGA.......",
-                  ".........[--<--[.............[[..[<<.[....]...>>--]......]]......].>........]",
-                  ".........1.....1.............22..34..34...3--4....3--4...22......1..........1",
-                  ".........x........x..........x.x.x....x...x..........x...x.x.....x...........x",
-                  "90034670040000090060354850056500942568200000061100600502001390043589985100300",
-                  "O!!Du8E!!J!!h!!6!!0e1XYLg!!xvzmeMiMAjB5E!!J!!xT6!!J!!PiCvQ4uC!!LDoHlWV59!!DW!",
+        TEST_ALI_LEN_ALIGNED(79, 1);
+        TEST_DATA(".....G---G--G--C---C-G...----A-GGGGAA-CCU--G---CG--G--C-UGG-AUC--ACCUCC........", // now prefers '-' here
+                  "-----A---C--G--A---U-C-------C-GGGGAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.......G-GGGGAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU-------",
+                  "-----U---G--C--C---U-G-------G-CGGCCU-UAG--C---GC--G--G-UGG-UCC--CACCUGA.......",
+                  ".........[--<--[.............[.[..[<<.[....]...>>--]......].]......].>........]",
+                  ".........1.....1.............2.2..34..34...3--4....3--4...2.2......1..........1",
+                  ".........x........x..........x..x.x....x...x..........x...x..x.....x...........x",
+                  "9003467004000009006035485005651009425682000000611006005020011390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYLg!!xvzqmeMiMAjB5E!!J!!xT6!!J!!PiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
 
         TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(42), -6, "-.")); // delete gaps
-        TEST_ALI_LEN_ALIGNED(71, 1);
-        TEST_DATA(".....G---G--G--C---C-G.AGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCC........",
-                  "-----A---C--G--A---U-C-CGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU.......",
-                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU-------",
-                  "-----U---G--C--C---U-G-GCGGCCU-UAG--C---GC--G--G-UGGUCC--CACCUGA.......",
-                  ".........[--<--[.......[[..[<<.[....]...>>--]......]]......].>........]",
-                  ".........1.....1.......22..34..34...3--4....3--4...22......1..........1",
-                  ".........x........x....x.x.x....x...x..........x...x.x.....x...........x",
-                  "90034670040000090060354500942568200000061100600502001390043589985100300",
-                  "O!!Du8E!!J!!h!!6!!0e1XYzmeMiMAjB5E!!J!!xT6!!J!!PiCvQ4uC!!LDoHlWV59!!DW!",
+        TEST_ALI_LEN_ALIGNED(73, 1);
+        TEST_DATA(".....G---G--G--C---C-G.A-GGGGAA-CCU--G---CG--G--C-UGG-AUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-C-GGGGAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.G-GGGGAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU-------",
+                  "-----U---G--C--C---U-G-G-CGGCCU-UAG--C---GC--G--G-UGG-UCC--CACCUGA.......",
+                  ".........[--<--[.......[.[..[<<.[....]...>>--]......].]......].>........]",
+                  ".........1.....1.......2.2..34..34...3--4....3--4...2.2......1..........1",
+                  ".........x........x....x..x.x....x...x..........x...x..x.....x...........x",
+                  "9003467004000009006035451009425682000000611006005020011390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYzqmeMiMAjB5E!!J!!xT6!!J!!PiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
 
-        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(71), -4, "%")); // delete anything
-        TEST_ALI_LEN_ALIGNED(67, 1);
-        TEST_DATA(".....G---G--G--C---C-G.AGGGGAA-CCU--G---CG--G--C-UGG-ACCUCC........",
-                  "-----A---C--G--A---U-C-CGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
-                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU-------",
-                  "-----U---G--C--C---U-G-GCGGCCU-UAG--C---GC--G--G-UGG-CACCUGA.......",
-                  ".........[--<--[.......[[..[<<.[....]...>>--]......]...].>........]",
-                  ".........1.....1.......22..34..34...3--4....3--4...2...1..........1",
-                  ".........x........x....x.x.x....x...x..........x...x...x...........x",
-                  "9003467004000009006035450094256820000006110060050200043589985100300",
-                  "O!!Du8E!!J!!h!!6!!0e1XYzmeMiMAjB5E!!J!!xT6!!J!!PiCvQ!LDoHlWV59!!DW!",
+        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(72), -5, "%")); // delete anything
+        TEST_ALI_LEN_ALIGNED(68, 1);
+        TEST_DATA(".....G---G--G--C---C-G.A-GGGGAA-CCU--G---CG--G--C-UGG-ACCUCC........",
+                  "-----A---C--G--A---U-C-C-GGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
+                  ".....A---C--G--A---A-C.G-GGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU-------",
+                  "-----U---G--C--C---U-G-G-CGGCCU-UAG--C---GC--G--G-UGG-CACCUGA.......",
+                  ".........[--<--[.......[.[..[<<.[....]...>>--]......]...].>........]",
+                  ".........1.....1.......2.2..34..34...3--4....3--4...2...1..........1",
+                  ".........x........x....x..x.x....x...x..........x...x...x...........x",
+                  "90034670040000090060354510094256820000006110060050200043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYzqmeMiMAjB5E!!J!!xT6!!J!!PiCvQ!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
     }
@@ -1775,14 +1775,14 @@ void TEST_insert_delete_DB() {
         }
         {
             GB_transaction ta(gb_main);
-            TEST_EXPECT_EQUAL(GBT_insert_character(gb_main, ali_name, COL(56), -3, "-."), // illegal delete
-                              "SAI 'HELIX_NR': You tried to delete '4' at position 39  -> Operation aborted");
+            TEST_EXPECT_EQUAL(GBT_insert_character(gb_main, ali_name, COL(57), -3, "-."), // illegal delete
+                              "SAI 'HELIX_NR': You tried to delete '4' at position 40  -> Operation aborted");
             ta.close("xxx");
         }
         {
             GB_transaction ta(gb_main);
             TEST_EXPECT_EQUAL(GBT_insert_character(gb_main, ali_name, 4711, 3, "-."), // illegal insert
-                              "Can't insert at position 4711 (exceeds length 67 of alignment 'ali_mini')");
+                              "Can't insert at position 4711 (exceeds length 68 of alignment 'ali_mini')");
             ta.close("xxx");
         }
         {
@@ -1794,15 +1794,15 @@ void TEST_insert_delete_DB() {
     }
     if (!error) {
         GB_transaction ta(gb_main);
-        TEST_DATA(".....G---G--G--C---C-G.AGGGGAA-CCU--G---CG--G--C-UGG-ACCUCC........",
-                  "-----A---C--G--A---U-C-CGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
-                  ".....A---C--G--A---A-C.GGGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU-------",
-                  "-----U---G--C--C---U-G-GCGGCCU-UAG--C---GC--G--G-UGG-CACCUGA.......",
-                  ".........[--<--[.......[[..[<<.[....]...>>--]......]...].>........]",
-                  ".........1.....1.......22..34..34...3--4....3--4...2...1..........1",
-                  ".........x........x....x.x.x....x...x..........x...x...x...........x",
-                  "9003467004000009006035450094256820000006110060050200043589985100300",
-                  "O!!Du8E!!J!!h!!6!!0e1XYzmeMiMAjB5E!!J!!xT6!!J!!PiCvQ!LDoHlWV59!!DW!",
+        TEST_DATA(".....G---G--G--C---C-G.A-GGGGAA-CCU--G---CG--G--C-UGG-ACCUCC........",
+                  "-----A---C--G--A---U-C-C-GGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
+                  ".....A---C--G--A---A-C.G-GGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU-------",
+                  "-----U---G--C--C---U-G-G-CGGCCU-UAG--C---GC--G--G-UGG-CACCUGA.......",
+                  ".........[--<--[.......[.[..[<<.[....]...>>--]......]...].>........]",
+                  ".........1.....1.......2.2..34..34...3--4....3--4...2...1..........1",
+                  ".........x........x....x..x.x....x...x..........x...x...x...........x",
+                  "90034670040000090060354510094256820000006110060050200043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYzqmeMiMAjB5E!!J!!xT6!!J!!PiCvQ!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
     }
 
