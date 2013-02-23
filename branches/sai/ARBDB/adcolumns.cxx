@@ -1750,8 +1750,21 @@ void TEST_insert_delete_DB() {
                   "O!!Du8E!!J!!h!!6!!0e1XYzqmeMiMAjB5E!!J!!xT6!!J!!PiCvQq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
+        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(72), -1, "-.")); // delete gap destroying helix nr
+        TEST_ALI_LEN_ALIGNED(72, 1);
+        TEST_DATA(".....G---G--G--C---C-G.A-GGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCC........",
+                  "-----A---C--G--A---U-C-C-GGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU.......",
+                  ".....A---C--G--A---A-C.G-GGGGAA-CCU--G---CG--G--C-UGGAUC--ACCUCCU-------",
+                  "-----U---G--C--C---U-G-G-CGGCCU-UAG--C---GC--G--G-UGGUCC--CACCUGA.......",
+                  ".........[--<--[.......[.[..[<<.[....]...>>--]......]]......].>........]",
+                  ".........1.....1.......2.2..34..34...3--4....3--4...22......1..........1", // @@@ helix nr destroyed (2 -> 22)
+                  ".........x........x....x..x.x....x...x..........x...x.x.....x...........x",
+                  "900346700400000900603545100942568200000061100600502001390043589985100300",
+                  "O!!Du8E!!J!!h!!6!!0e1XYzqmeMiMAjB5E!!J!!xT6!!J!!PiCvQ4uC!!LDoHlWV59!!DW!",
+                  HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(72), -5, "%")); // delete anything
+
+        TEST_EXPECT_NO_ERROR(GBT_insert_character(gb_main, ali_name, COL(72), -4, "%")); // delete anything
         TEST_ALI_LEN_ALIGNED(68, 1);
         TEST_DATA(".....G---G--G--C---C-G.A-GGGGAA-CCU--G---CG--G--C-UGG-ACCUCC........",
                   "-----A---C--G--A---U-C-C-GGGGAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
