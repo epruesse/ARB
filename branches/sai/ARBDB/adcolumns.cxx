@@ -49,7 +49,6 @@ inline int compare_type(const T& t1, const T& t2) {
     return t1<t2 ? -1 : (t1>t2 ? 1 : 0);
 }
 
-
 // --------------------------------------------------------------------------------
 
 class AliData;
@@ -253,6 +252,38 @@ public:
     }
 };
 
+// --------------------------------------------------------------------------------
+
+class Deletable { // define characters allowed to delete (only applicable to TypedAliData<char>)
+    bool deletable[256];
+
+    void init(bool val) {
+        for (int i = 0; i<256; ++i) {
+            deletable[i] = val;
+        }
+    }
+
+public:
+    enum DeleteWhat { NOTHING, ANYTHING };
+    explicit Deletable(DeleteWhat what) {
+        switch (what) {
+            case ANYTHING: init(true); break;
+            case NOTHING: init(false); break;
+        }
+    }
+    explicit Deletable(const char *allowed) {
+        init(false);
+        for (int i = 0; allowed[i]; ++i) {
+            deletable[safeCharIndex(allowed[i])] = true;
+        }
+    }
+
+    bool is(char c) const { return deletable[safeCharIndex(c)]; }
+    bool isnt(char c) const { return !is(c); }
+};
+
+// --------------------------------------------------------------------------------
+
 template<typename T>
 class TypedAliData : public AliData {
     T gap;
@@ -269,7 +300,6 @@ public:
     {}
 
     const T& std_gap() const { return gap; }
-    virtual const T& tail_gap() const = 0; // @@@ use for refactoring only // @@@ unused?
 
     size_t unitsize() const OVERRIDE { return sizeof(T); }
     virtual UnitPtr at_ptr(size_t pos) const = 0;
@@ -287,7 +317,6 @@ public:
 
 template<typename T>
 class SpecificGap : public TypedAliData<T> {
-    const T& tail_gap() const OVERRIDE { gb_assert(0); static T fake = 0; return fake; }
 public:
     typedef TypedAliData<T> BaseType;
 
@@ -319,7 +348,6 @@ public:
         }
         return -other.cmp_data(ostart, *this, start, count);
     }
-
     UnitPtr at_ptr(size_t pos) const OVERRIDE {
         if (pos<BaseType::elems()) return UnitPtr(BaseType::std_gap_ptr());
         return UnitPtr();
@@ -390,15 +418,11 @@ public:
         // if (&other == this && start == ostart) return true; // @@@ why does this fail tests?
         return -other.cmpPartWith(data+start, ostart, count);
     }
-
     UnitPtr at_ptr(size_t pos) const OVERRIDE {
         if (pos<BaseType::elems()) return UnitPtr(&data[pos]);
         return UnitPtr();
     }
-
-    // @@@ interface to refactor gbt_insert_delete
     const T *get_data() const { return data; }
-    const T& tail_gap() const OVERRIDE { return TypedAliData<T>::std_gap(); }
 };
 
 class SequenceAliData : public SpecificAliData<char> {
@@ -438,8 +462,6 @@ public:
         char use = preferred_gap(typed_ptr(gapinfo.left), typed_ptr(gapinfo.right));
         return new SpecificGap<char>(gapsize, use);
     }
-
-    const char& tail_gap() const OVERRIDE { return dot; }
 };
 
 // --------------------------------------------------------------------------------
@@ -456,7 +478,10 @@ inline AliDataPtr partof(AliDataPtr data, size_t pos, size_t amount) { return ne
 inline AliDataPtr before(AliDataPtr data, size_t pos) { return partof(data, 0, pos); }
 inline AliDataPtr after(AliDataPtr data, size_t pos) { return partof(data, pos+1, data->elems()-pos-1); }
 
-inline AliDataPtr delete_from(AliDataPtr from, size_t pos, size_t amount) { return concat(before(from, pos), after(from, pos+amount-1)); }
+inline AliDataPtr delete_from(AliDataPtr from, size_t pos, size_t amount) {
+    // @@@ need to check for delete here (otherwise format deletes anything)
+    return concat(before(from, pos), after(from, pos+amount-1));
+}
 inline AliDataPtr insert_at(AliDataPtr dest, size_t pos, AliDataPtr src) {
     return concat(before(dest, pos), src, after(dest, pos-1));
 }
@@ -849,10 +874,9 @@ GB_ERROR AliApplicable::apply_to_secstructs(GBDATA *gb_secstructs, const Alignme
 }
 
 GB_ERROR AliApplicable::apply_to_alignment(GBDATA *gb_main, const Alignment& ali) const {
-    // @@@ apply to SAI / secstruct 1st! (to provoke early abort before changing whole sequence data)
-    GB_ERROR error    = apply_to_childs_named(GBT_find_or_create(gb_main, "species_data",  7), "species",  IDT_SPECIES, ali);
-    if (!error) error = apply_to_childs_named(GBT_find_or_create(gb_main, "extended_data", 7), "extended", IDT_SAI,     ali);
+    GB_ERROR error    = apply_to_childs_named(GBT_find_or_create(gb_main, "extended_data", 7), "extended", IDT_SAI,     ali);
     if (!error) error = apply_to_secstructs(GB_search(gb_main, "secedit/structs", GB_CREATE_CONTAINER), ali);
+    if (!error) error = apply_to_childs_named(GBT_find_or_create(gb_main, "species_data",  7), "species",  IDT_SPECIES, ali);
     return error;
 }
 
@@ -882,20 +906,19 @@ public:
     AliDataPtr apply(AliDataPtr to) const OVERRIDE { return insert_gap(to, pos, amount); }
 };
 
-class AliDeleteCommand : public AliEditCommand, virtual Noncopyable {
+class AliDeleteCommand : public AliEditCommand {
     size_t pos;
     size_t amount;
 
-    const char *delete_chars; // characters allowed to delete (array with 256 entries, value == 0 means deletion allowed)
+    const Deletable& deletable;
 public:
-    AliDeleteCommand(size_t pos_, size_t amount_, const char *delete_chars_)
+    AliDeleteCommand(size_t pos_, size_t amount_, const Deletable& deletable_)
         : pos(pos_),
           amount(amount_),
-          delete_chars(delete_chars_)
+          deletable(deletable_)
     {}
 
     AliDataPtr apply(AliDataPtr to) const OVERRIDE { return delete_from(to, pos, amount); }
-    bool allowed_to_delete(char c) const { return delete_chars[safeCharIndex(c)] == 1; }
     GB_ERROR allowed_to_delete_from(const SpecificAliData<char>& sad) const {
         GB_ERROR    error  = NULL;
         size_t      size   = sad.elems();
@@ -905,7 +928,7 @@ public:
         if (after>size) after = size;
 
         for (size_t p = pos; p<after; p++) {
-            if (allowed_to_delete(source[p])) {
+            if (deletable.isnt(source[p])) {
                 error = GBS_global_string("You tried to delete '%c' at position %li  -> Operation aborted", source[p], p);
             }
         }
@@ -1197,6 +1220,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
      *
      * Note: deleting is only performed, if found characters in deleted range are listed in 'char_delete'
      *       otherwise function returns with error
+     *       (if 'char_delete' contains a '%', any character will be deleted)
      *
      * This affects all species' and SAIs having data in given 'alignment_name' and
      * modifies several data entries found there
@@ -1211,18 +1235,10 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
     else {
         GBDATA *gb_ali;
         GBDATA *gb_presets = GBT_get_presets(Main);
-        char    char_delete_list[256];
 
-        if (strchr(char_delete, '%')) {
-            memset(char_delete_list, 0, 256);
-        }
-        else {
-            int ch;
-            for (ch = 0; ch<256; ch++) {
-                if (strchr(char_delete, ch)) char_delete_list[ch] = 0;
-                else                         char_delete_list[ch] = 1;
-            }
-        }
+        Deletable deletable = strchr(char_delete, '%')
+            ? Deletable(Deletable::ANYTHING)
+            : Deletable(char_delete);
 
         for (gb_ali = GB_entry(gb_presets, "alignment");
              gb_ali && !error;
@@ -1247,7 +1263,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
                     Alignment ali(use, len);
 
                     SmartPtr<AliEditCommand> idcmd;
-                    if (count<0) idcmd = new AliDeleteCommand(pos, -count, char_delete_list);
+                    if (count<0) idcmd = new AliDeleteCommand(pos, -count, deletable);
                     else         idcmd = new AliInsertCommand(pos, count);
 
                     error = AliEditor(*idcmd, "Insert/delete characters", countAffectedEntries(Main, ali))
@@ -1278,21 +1294,21 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
     AliDataPtr mod     = cmd.apply(data);                                                               \
     GB_CSTR    res     = mod->differs_from(*data) ? alidata2buffer(*mod) : NULL
 
-#define DO_FORMAT(str,wanted_len)               \
-    AliFormatCommand     cmd(wanted_len);       \
+#define DO_FORMAT(str,wanted_len)           \
+    AliFormatCommand cmd(wanted_len);       \
     APPLY_CMD(str, cmd)
 
-#define DO_INSERT(str,pos,amount)               \
-    AliInsertCommand     cmd(pos, amount);      \
+#define DO_INSERT(str,pos,amount)           \
+    AliInsertCommand cmd(pos, amount);      \
     APPLY_CMD(str, cmd)
 
-#define DO_FORMAT_AND_INSERT(str,wanted_len,pos,amount)         \
-    AliCompositeCommand  cmd(new AliFormatCommand(wanted_len),  \
-                             new AliInsertCommand(pos,amount)); \
+#define DO_FORMAT_AND_INSERT(str,wanted_len,pos,amount)        \
+    AliCompositeCommand cmd(new AliFormatCommand(wanted_len),  \
+                            new AliInsertCommand(pos,amount)); \
     APPLY_CMD(str, cmd)
 
-#define DO_DELETE(str,pos,amount)               \
-    AliDeleteCommand     cmd(pos, amount, "-"); \
+#define DO_DELETE(str,pos,amount)                           \
+    AliDeleteCommand cmd(pos, amount, Deletable("-"));     \
     APPLY_CMD(str, cmd)
 
 #define TEST_FORMAT(str,wanted_alilen,expected)         do { DO_FORMAT(str,wanted_alilen); TEST_EXPECT_EQUAL(res, expected);         } while(0)
