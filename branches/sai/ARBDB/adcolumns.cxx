@@ -269,7 +269,7 @@ public:
     {}
 
     const T& std_gap() const { return gap; }
-    virtual const T& tail_gap() const = 0; // @@@ use for refactoring only
+    virtual const T& tail_gap() const = 0; // @@@ use for refactoring only // @@@ unused?
 
     size_t unitsize() const OVERRIDE { return sizeof(T); }
     virtual UnitPtr at_ptr(size_t pos) const = 0;
@@ -466,7 +466,7 @@ inline AliDataPtr insert_gap(AliDataPtr data, size_t pos, size_t count) {
 
     gb_assert(data->unitsize() <= sizeof(gapinfo.left));
 
-    gapinfo.left  = data->unit_left_of(pos);
+    gapinfo.left  = data->unit_left_of(pos); // @@@ do not perform ALWAYS (put into an object and lazy eval)
     gapinfo.right = data->unit_right_of(pos);
 
     AliDataPtr gap = data->create_gap(count, gapinfo);
@@ -773,9 +773,9 @@ public:
 // --------------------------------------------------------------------------------
 
 class AliApplicable { // something that can be appied to the whole alignment
-    virtual GB_ERROR apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const Alignment& ali) const = 0;
+    virtual GB_ERROR apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const char *item_name, const Alignment& ali) const = 0;
 
-    GB_ERROR apply_recursive(GBDATA *gb_data, TerminalType term_type, const Alignment& ali) const;
+    GB_ERROR apply_recursive(GBDATA *gb_data, TerminalType term_type, const char *item_name, const Alignment& ali) const;
     GB_ERROR apply_to_childs_named(GBDATA *gb_item_data, const char *item_field, TerminalType term_type, const Alignment& ali) const;
     GB_ERROR apply_to_secstructs(GBDATA *gb_secstructs, const Alignment& ali) const;
 
@@ -786,18 +786,18 @@ public:
     GB_ERROR apply_to_alignment(GBDATA *gb_main, const Alignment& ali) const;
 };
 
-GB_ERROR AliApplicable::apply_recursive(GBDATA *gb_data, TerminalType term_type, const Alignment& ali) const {
+GB_ERROR AliApplicable::apply_recursive(GBDATA *gb_data, TerminalType term_type, const char *item_name, const Alignment& ali) const {
     GB_ERROR error = 0;
     GB_TYPES type  = GB_read_type(gb_data);
 
     if (type == GB_DB) {
         GBDATA *gb_child;
         for (gb_child = GB_child(gb_data); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
-            error = apply_recursive(gb_child, term_type, ali);
+            error = apply_recursive(gb_child, term_type, item_name, ali);
         }
     }
     else {
-        error = apply_to_terminal(gb_data, term_type, ali);
+        error = apply_to_terminal(gb_data, term_type, item_name, ali);
     }
 
     return error;
@@ -814,11 +814,9 @@ GB_ERROR AliApplicable::apply_to_childs_named(GBDATA *gb_item_data, const char *
         {
             GBDATA *gb_ali = GB_entry(gb_item, ali.get_name());
             if (gb_ali) {
-                error = apply_recursive(gb_ali, term_type, ali);
-                if (error) {
-                    const char *item_name = GBT_read_name(gb_item);
-                    error = GBS_global_string("%s '%s': %s", targetTypeName[term_type], item_name, error);
-                }
+                const char *item_name = GBT_read_name(gb_item);
+                error = apply_recursive(gb_ali, term_type, item_name, ali);
+                if (error) error = GBS_global_string("%s '%s': %s", targetTypeName[term_type], item_name, error);
             }
         }
     }
@@ -839,7 +837,7 @@ GB_ERROR AliApplicable::apply_to_secstructs(GBDATA *gb_secstructs, const Alignme
         {
             GBDATA *gb_ref = GB_entry(gb_item, "ref");
             if (gb_ref) {
-                error = apply_recursive(gb_ref, IDT_SECSTRUCT, ali);
+                error = apply_recursive(gb_ref, IDT_SECSTRUCT, "ref", ali);
                 if (error) {
                     const char *item_name = GBT_read_name(gb_item);
                     error = GBS_global_string("%s '%s': %s", targetTypeName[IDT_SECSTRUCT], item_name, error);
@@ -851,6 +849,7 @@ GB_ERROR AliApplicable::apply_to_secstructs(GBDATA *gb_secstructs, const Alignme
 }
 
 GB_ERROR AliApplicable::apply_to_alignment(GBDATA *gb_main, const Alignment& ali) const {
+    // @@@ apply to SAI / secstruct 1st! (to provoke early abort before changing whole sequence data)
     GB_ERROR error    = apply_to_childs_named(GBT_find_or_create(gb_main, "species_data",  7), "species",  IDT_SPECIES, ali);
     if (!error) error = apply_to_childs_named(GBT_find_or_create(gb_main, "extended_data", 7), "extended", IDT_SAI,     ali);
     if (!error) error = apply_to_secstructs(GB_search(gb_main, "secedit/structs", GB_CREATE_CONTAINER), ali);
@@ -861,7 +860,7 @@ GB_ERROR AliApplicable::apply_to_alignment(GBDATA *gb_main, const Alignment& ali
 
 class AliEntryCounter : public AliApplicable {
     mutable size_t count;
-    GB_ERROR apply_to_terminal(GBDATA *, TerminalType , const Alignment& ) const OVERRIDE { count++; return NULL; }
+    GB_ERROR apply_to_terminal(GBDATA *, TerminalType, const char *, const Alignment&) const OVERRIDE { count++; return NULL; }
 public:
     AliEntryCounter() : count(0) {}
     size_t get_entry_count() const { return count; }
@@ -897,7 +896,7 @@ public:
 
     AliDataPtr apply(AliDataPtr to) const OVERRIDE { return delete_from(to, pos, amount); }
     bool allowed_to_delete(char c) const { return delete_chars[safeCharIndex(c)] == 1; }
-    GB_ERROR allowed_to_delete_from(const SequenceAliData& sad) const {
+    GB_ERROR allowed_to_delete_from(const SpecificAliData<char>& sad) const {
         GB_ERROR    error  = NULL;
         size_t      size   = sad.elems();
         const char *source = sad.get_data();
@@ -949,7 +948,7 @@ class AliEditor : public AliApplicable {
     const AliEditCommand& cmd;
     mutable arb_progress progress;
 
-    GB_ERROR apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const Alignment& ali) const OVERRIDE;
+    GB_ERROR apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const char *item_name, const Alignment& ali) const OVERRIDE;
 
     bool shall_edit(GBDATA *gb_data, TerminalType term_type) const {
         // defines whether specific DB-elements shall be edited by any AliEditor
@@ -1005,35 +1004,49 @@ inline GB_CSTR alidata2buffer(const AliData& data) { // @@@ DRY vs copying code 
 class EditedTerminal : virtual Noncopyable {
     GBDATA     *gb_data;
     GB_TYPES    type;
+    const char *item_name; // name of SAI/species etc
     AliDataPtr  data;
     GB_ERROR    error;
 
-    void prepare(const AliEditCommand& cmd, const SequenceAliData& sad) { // @@@ rename
+    void prepare(const AliEditCommand& cmd, const SpecificAliData<char>& sad) { // @@@ rename
         if (!error && type == GB_STRING) {
             const AliDeleteCommand *del_cmd = dynamic_cast<const AliDeleteCommand*>(&cmd);
             if (del_cmd) error = del_cmd->allowed_to_delete_from(sad);
         }
     }
 
-    bool has_key(const char *expected_key) {
+    bool has_key(const char *expected_key) const {
         return strcmp(GB_read_key_pntr(gb_data), expected_key) == 0;
     }
-    bool does_allow_oversize(TerminalType term_type) {
-        bool oversize_allowed = false;
-        if (type == GB_STRING) {
-            switch (term_type) {
-                case IDT_SPECIES:   break;
-                case IDT_SECSTRUCT: oversize_allowed = has_key("ref"); break;
-                case IDT_SAI:       oversize_allowed = has_key("_REF"); break;
-            }
-        }
-        return oversize_allowed;
+    bool has_name(const char *expected_name) const {
+        return strcmp(item_name, expected_name) == 0;
+    }
+
+    bool is_ref(TerminalType term_type) const {
+        return
+            type == GB_STRING &&
+            ((term_type == IDT_SECSTRUCT && has_key("ref")) ||
+             (term_type == IDT_SAI && has_key("_REF")));
+    }
+    bool is_helix(TerminalType term_type) const {
+        return
+            type == GB_STRING &&
+            term_type == IDT_SAI &&
+            (has_name("HELIX") || has_name("HELIX_NR")) &&
+            has_key("data");
+    }
+
+    bool does_allow_oversize(TerminalType term_type) const { return is_ref(term_type); }
+    char get_std_string_gaptype(TerminalType term_type) const {
+        bool prefers_dots = is_ref(term_type) || is_helix(term_type);
+        return prefers_dots ? '.' : '-';
     }
 
 public:
-    EditedTerminal(GBDATA *gb_data_, GB_TYPES type_, size_t size_, TerminalType term_type, const Alignment& ali)
+    EditedTerminal(GBDATA *gb_data_, GB_TYPES type_, const char *item_name_, size_t size_, TerminalType term_type, const Alignment& ali)
         : gb_data(gb_data_),
           type(type_),
+          item_name(item_name_),
           error(NULL)
     {
         SizeAwarable oversizable(does_allow_oversize(term_type), ali.get_len());
@@ -1041,9 +1054,13 @@ public:
         // @@@ DRY cases
         switch(type) {
             case GB_STRING: {
-                const char *s    = GB_read_char_pntr(gb_data);
-                if (!s) error    = GB_await_error();
-                else        data = new SequenceAliData(s, size_, '-', '.', oversizable); // @@@ need different gaptype for "ref" and "_REF"
+                const char *s = GB_read_char_pntr(gb_data);
+                if (!s) error = GB_await_error();
+                else {
+                    char stdgap             = get_std_string_gaptype(term_type);
+                    if (stdgap == '.') data = new SpecificAliData<char>(s, size_, '.', oversizable);
+                    else data               = new SequenceAliData(s, size_, stdgap, '.', oversizable);
+                }
                 break;
             }
             case GB_BITS:   {
@@ -1082,7 +1099,8 @@ public:
 
     GB_ERROR apply(const AliEditCommand& cmd) {
         if (!error && type == GB_STRING) {
-            const SequenceAliData* sad = dynamic_cast<const SequenceAliData*>(&*data);
+            const SpecificAliData<char> *sad = dynamic_cast<const SpecificAliData<char>*>(&*data);
+            gb_assert(sad);
             prepare(cmd, *sad);
         }
         if (!error) {
@@ -1111,12 +1129,12 @@ public:
     }
 };
 
-GB_ERROR AliEditor::apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const Alignment& ali) const {
+GB_ERROR AliEditor::apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const char *item_name, const Alignment& ali) const {
     GB_TYPES gbtype  = GB_read_type(gb_data);
     GB_ERROR error = NULL;
     if (gbtype >= GB_BITS && gbtype != GB_LINK) {
         if (shall_edit(gb_data, term_type)) {
-            EditedTerminal edited(gb_data, gbtype, GB_read_count(gb_data), term_type, ali);
+            EditedTerminal edited(gb_data, gbtype, item_name, GB_read_count(gb_data), term_type, ali);
             error = edited.apply(edit_command());
         }
     }
@@ -1635,7 +1653,7 @@ void TEST_insert_delete_DB() {
                   "-----A---C--GA-U-C-----C--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU.......",
                   ".....A---C--GA-A-C.....G--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU-------",
                   "-----U---G--CC-U-G-----G--C--CCU-UAGC-GCGG-UGG--UCC--CACCUGA.......",
-                  ".........[--<[.........[..[..[<<.[..].>>]....]..]......].>........]", // @@@ <- should insert dots
+                  ".........[..<[.........[..[..[<<.[..].>>]....]..]......].>........]",
                   ".........1...1.........25.25.34..34.34..34...25.25.....1..........1",
                   ".........x....x........x...x.x....x.x....x...x...x.....x...........x",
                   "9003467004000960354855652100942568200611650200211390043589985100300",
@@ -1648,7 +1666,7 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A-U-C-----C--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU.......",
                   ".....A---C--G--A-A-C.....G--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU-------",
                   "-----U---G--C--C-U-G-----G--C--CCU-UAGC-GCGG-UGG--UCC--CACCUGA.......",
-                  ".........[--<--[.........[..[..[<<.[..].>>]....]..]......].>........]", // @@@ <- should insert dots
+                  ".........[..<..[.........[..[..[<<.[..].>>]....]..]......].>........]",
                   ".........1.....1.........25.25.34..34.34..34...25.25.....1..........1",
                   ".........x......x........x...x.x....x.x....x...x...x.....x...........x",
                   "900346700400000960354855652100942568200611650200211390043589985100300",
@@ -1661,7 +1679,7 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A---U-C-----C--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU.......",
                   ".....A---C--G--A---A-C.....G--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-----G--C--CCU-UAGC-GCGG-UGG--UCC--CACCUGA.......",
-                  ".........[--<--[...........[..[..[<<.[..].>>]....]..]......].>........]",
+                  ".........[..<..[...........[..[..[<<.[..].>>]....]..]......].>........]",
                   ".........1.....1...........25.25.34..34.34..34...25.25.....1..........1",
                   ".........x........x........x...x.x....x.x....x...x...x.....x...........x", // @@@ _REF gets destroyed here! (see #159)
                   //               ^ ^
@@ -1676,7 +1694,7 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A---U-C-----C--G--GAA-CCU--G-CGGC-UGG--AUC--ACCUCCU.......",
                   ".....A---C--G--A---A-C.....G--G--GAA-CCU--G-CGGC-UGG--AUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-----G--C--CCU-UAG--C-GCGG-UGG--UCC--CACCUGA.......",
-                  ".........[--<--[...........[..[..[<<.[....].>>]....]..]......].>........]",
+                  ".........[..<..[...........[..[..[<<.[....].>>]....]..]......].>........]",
                   ".........1.....1...........25.25.34..34...34..34...25.25.....1..........1",
                   ".........x........x........x...x.x....x...x....x...x...x.....x...........x",
                   "9003467004000009006035485565210094256820000611650200211390043589985100300",
@@ -1689,8 +1707,8 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A---U-C-----C--G--GAA-CCU--G---CGGC-UGG--AUC--ACCUCCU.......",
                   ".....A---C--G--A---A-C.....G--G--GAA-CCU--G---CGGC-UGG--AUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-----G--C--CCU-UAG--C---GCGG-UGG--UCC--CACCUGA.......",
-                  ".........[--<--[...........[..[..[<<.[....]...>>]....]..]......].>........]",
-                  ".........1.....1...........25.25.34..34...3--4..34...25.25.....1..........1", // @@@ <- helix nr destroyed + shall use dots
+                  ".........[..<..[...........[..[..[<<.[....]...>>]....]..]......].>........]",
+                  ".........1.....1...........25.25.34..34...3..4..34...25.25.....1..........1", // @@@ <- helix nr destroyed
                   //                                         ^^^^
                   ".........x........x........x...x.x....x...x......x...x...x.....x...........x",
                   "900346700400000900603548556521009425682000000611650200211390043589985100300",
@@ -1703,8 +1721,8 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A---U-C-----C--G--GAA-CCU--G---CG--GC-UGG--AUC--ACCUCCU.......",
                   ".....A---C--G--A---A-C.....G--G--GAA-CCU--G---CG--GC-UGG--AUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-----G--C--CCU-UAG--C---GC--GG-UGG--UCC--CACCUGA.......",
-                  ".........[--<--[...........[..[..[<<.[....]...>>--]....]..]......].>........]", // @@@ <- shall insert dots
-                  ".........1.....1...........25.25.34..34...3--4....34...25.25.....1..........1",
+                  ".........[..<..[...........[..[..[<<.[....]...>>..]....]..]......].>........]",
+                  ".........1.....1...........25.25.34..34...3..4....34...25.25.....1..........1",
                   ".........x........x........x...x.x....x...x........x...x...x.....x...........x",
                   "90034670040000090060354855652100942568200000061100650200211390043589985100300",
                   "O!!Du8E!!J!!h!!6!!0e1XYLgxvzrqmeMiMAjB5E!!J!!xT6!!JPiCvQrq4uC!!LDoHlWV59!!DW!",
@@ -1716,8 +1734,8 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A---U-C-----C--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCCU.......",
                   ".....A---C--G--A---A-C.....G--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-----G--C--CCU-UAG--C---GC--G--G-UGG--UCC--CACCUGA.......",
-                  ".........[--<--[...........[..[..[<<.[....]...>>--]......]..]......].>........]",
-                  ".........1.....1...........25.25.34..34...3--4....3--4...25.25.....1..........1", // @@@ <- helix nr destroyed + shall use dots
+                  ".........[..<..[...........[..[..[<<.[....]...>>..]......]..]......].>........]",
+                  ".........1.....1...........25.25.34..34...3..4....3..4...25.25.....1..........1", // @@@ <- helix nr destroyed
                   ".........x........x........x...x.x....x...x..........x...x...x.....x...........x", // @@@ _REF gets destroyed here! (see #159)
                   "9003467004000009006035485565210094256820000006110060050200211390043589985100300",
                   "O!!Du8E!!J!!h!!6!!0e1XYLgxvzrqmeMiMAjB5E!!J!!xT6!!J!!PiCvQrq4uC!!LDoHlWV59!!DW!",
@@ -1731,8 +1749,8 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A---U-C-------C--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCCU.......",
                   ".....A---C--G--A---A-C.......G--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-------G--C--CCU-UAG--C---GC--G--G-UGG--UCC--CACCUGA.......",
-                  ".........[--<--[.............[..[..[<<.[....]...>>--]......]..]......].>........]",
-                  ".........1.....1.............25.25.34..34...3--4....3--4...25.25.....1..........1",
+                  ".........[..<..[.............[..[..[<<.[....]...>>..]......]..]......].>........]",
+                  ".........1.....1.............25.25.34..34...3..4....3..4...25.25.....1..........1",
                   ".........x........x..........x...x.x....x...x..........x...x...x.....x...........x",
                   "900346700400000900603548500565210094256820000006110060050200211390043589985100300",
                   "O!!Du8E!!J!!h!!6!!0e1XYLg!!xvzrqmeMiMAjB5E!!J!!xT6!!J!!PiCvQrq4uC!!LDoHlWV59!!DW!",
@@ -1745,8 +1763,8 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A---U-C-C--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCCU.......",
                   ".....A---C--G--A---A-C.G--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-G--C--CCU-UAG--C---GC--G--G-UGG--UCC--CACCUGA.......",
-                  ".........[--<--[.......[..[..[<<.[....]...>>--]......]..]......].>........]",
-                  ".........1.....1.......25.25.34..34...3--4....3--4...25.25.....1..........1",
+                  ".........[..<..[.......[..[..[<<.[....]...>>..]......]..]......].>........]",
+                  ".........1.....1.......25.25.34..34...3..4....3..4...25.25.....1..........1",
                   ".........x........x....x...x.x....x...x..........x...x...x.....x...........x",
                   "900346700400000900603545210094256820000006110060050200211390043589985100300",
                   "O!!Du8E!!J!!h!!6!!0e1XYzrqmeMiMAjB5E!!J!!xT6!!J!!PiCvQrq4uC!!LDoHlWV59!!DW!",
@@ -1758,8 +1776,8 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A---U-C-C--G--GAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU.......",
                   ".....A---C--G--A---A-C.G--G--GAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-G--C--CCU-UAG--C---GC--G--G-UGG-UCC--CACCUGA.......",
-                  ".........[--<--[.......[..[..[<<.[....]...>>--]......].]......].>........]",
-                  ".........1.....1.......25.25.34..34...3--4....3--4...2525.....1..........1", // @@@ helix nr destroyed ('25.25' -> '2525')
+                  ".........[..<..[.......[..[..[<<.[....]...>>..]......].]......].>........]",
+                  ".........1.....1.......25.25.34..34...3..4....3..4...2525.....1..........1", // @@@ helix nr destroyed ('25.25' -> '2525')
                   ".........x........x....x...x.x....x...x..........x...x..x.....x...........x",
                   "90034670040000090060354521009425682000000611006005020021390043589985100300",
                   "O!!Du8E!!J!!h!!6!!0e1XYzrqmeMiMAjB5E!!J!!xT6!!J!!PiCvQr4uC!!LDoHlWV59!!DW!",
@@ -1772,8 +1790,8 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A---U-C-C--G-GAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU.......",
                   ".....A---C--G--A---A-C.G--G-GAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU-------",
                   "-----U---G--C--C---U-G-G--C-CCU-UAG--C---GC--G--G-UGG-UCC--CACCUGA.......",
-                  ".........[--<--[.......[..[.[<<.[....]...>>--]......].]......].>........]",
-                  ".........1.....1.......25.2534..34...3--4....3--4...2525.....1..........1", // @@@ helix nr destroyed ('25.34' -> '2534')
+                  ".........[..<..[.......[..[.[<<.[....]...>>..]......].]......].>........]",
+                  ".........1.....1.......25.2534..34...3..4....3..4...2525.....1..........1", // @@@ helix nr destroyed ('25.34' -> '2534')
                   ".........x........x....x...xx....x...x..........x...x..x.....x...........x",
                   "9003467004000009006035452100425682000000611006005020021390043589985100300",
                   "O!!Du8E!!J!!h!!6!!0e1XYzrqmeiMAjB5E!!J!!xT6!!J!!PiCvQr4uC!!LDoHlWV59!!DW!",
@@ -1786,8 +1804,8 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A---U-C-C--G-GAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
                   ".....A---C--G--A---A-C.G--G-GAA-CCU--G---CG--G--C-UGG-ACCUCCU-------",
                   "-----U---G--C--C---U-G-G--C-CCU-UAG--C---GC--G--G-UGG-CACCUGA.......",
-                  ".........[--<--[.......[..[.[<<.[....]...>>--]......]...].>........]",
-                  ".........1.....1.......25.2534..34...3--4....3--4...2...1..........1",
+                  ".........[..<..[.......[..[.[<<.[....]...>>..]......]...].>........]",
+                  ".........1.....1.......25.2534..34...3..4....3..4...2...1..........1",
                   ".........x........x....x...xx....x...x..........x...x...x...........x",
                   "90034670040000090060354521004256820000006110060050200043589985100300",
                   "O!!Du8E!!J!!h!!6!!0e1XYzrqmeiMAjB5E!!J!!xT6!!J!!PiCvQ!LDoHlWV59!!DW!",
@@ -1827,8 +1845,8 @@ void TEST_insert_delete_DB() {
                   "-----A---C--G--A---U-C-C--G-GAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
                   ".....A---C--G--A---A-C.G--G-GAA-CCU--G---CG--G--C-UGG-ACCUCCU-------",
                   "-----U---G--C--C---U-G-G--C-CCU-UAG--C---GC--G--G-UGG-CACCUGA.......",
-                  ".........[--<--[.......[..[.[<<.[....]...>>--]......]...].>........]",
-                  ".........1.....1.......25.2534..34...3--4....3--4...2...1..........1",
+                  ".........[..<..[.......[..[.[<<.[....]...>>..]......]...].>........]",
+                  ".........1.....1.......25.2534..34...3..4....3..4...2...1..........1",
                   ".........x........x....x...xx....x...x..........x...x...x...........x",
                   "90034670040000090060354521004256820000006110060050200043589985100300",
                   "O!!Du8E!!J!!h!!6!!0e1XYzrqmeiMAjB5E!!J!!xT6!!J!!PiCvQ!LDoHlWV59!!DW!",
