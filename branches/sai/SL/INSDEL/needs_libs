@@ -1,0 +1,3 @@
+# libraries needed to link against SL/INSDEL/INSDEL.a
+
+lib/libARBDB.so

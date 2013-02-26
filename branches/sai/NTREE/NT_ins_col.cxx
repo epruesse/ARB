@@ -10,6 +10,7 @@
 
 #include "ntree.hxx"
 #include <arbdbt.h>
+#include <insdel.h>
 #include <aw_root.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
@@ -37,7 +38,7 @@ static void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode) {
         char *alignment = GBT_get_default_alignment(GLOBAL.gb_main);
 
         if (alignment) {
-            error             = GBT_insert_character(GLOBAL.gb_main, alignment, pos, nchar, deletes);
+            error             = ARB_insert_character(GLOBAL.gb_main, alignment, pos, nchar, deletes);
             if (!error) error = GBT_check_data(GLOBAL.gb_main, 0);
         }
         else {

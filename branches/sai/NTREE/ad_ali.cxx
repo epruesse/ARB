@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include "ntree.hxx"
+#include <insdel.h>
 #include <awt_sel_boxes.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
@@ -113,7 +114,7 @@ static void ed_al_check_len_cb(AW_window *aww)
 static void ed_al_align_cb(AW_window *aww) {
     char     *use = aww->get_root()->awar("presets/use")->read_string();
     GB_begin_transaction(GLOBAL.gb_main);
-    GB_ERROR  err = GBT_format_alignment(GLOBAL.gb_main, use);
+    GB_ERROR  err = ARB_format_alignment(GLOBAL.gb_main, use);
     GB_commit_transaction(GLOBAL.gb_main);
     if (err) aw_message(err);
     free(use);

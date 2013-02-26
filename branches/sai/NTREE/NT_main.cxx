@@ -14,6 +14,7 @@
 
 #include <mg_merge.hxx>
 #include <awti_import.hxx>
+#include <insdel.h>
 
 #include <awt.hxx>
 #include <awt_macro.hxx>
@@ -128,7 +129,7 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
                 }
                 if (!err && perform_format) {
                     GB_push_my_security(gb_main);
-                    err = GBT_format_alignment(gb_main, ali_name);
+                    err = ARB_format_alignment(gb_main, ali_name);
                     GB_pop_my_security(gb_main);
                 }
             }
