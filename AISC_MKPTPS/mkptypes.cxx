@@ -58,8 +58,8 @@ static void Version();
 
 
 static int donum               = 0;                 // print line numbers?
-static int define_macro        = 1;                 // define macro for prototypes?
-static int use_macro           = 1;                 // use a macro for prototypes?
+static int define_macro        = 0;                 // define macro for K&R prototypes?
+static int use_macro           = 0;                 // use a macro to support K&R prototypes?
 static int use_main            = 0;                 // add prototype for main?
 static int no_parm_names       = 0;                 // no parm names - only types
 static int print_extern        = 0;                 // use "extern" before function declarations
@@ -1423,46 +1423,58 @@ static void getdecl(FILE *f, const char *header) {
     }
 }
 
-__ATTR__NORETURN static void Usage() {
-    fprintf(stderr, "Usage: %s [flags] [files ...]", ourname);
-    fputs("\nSupported flags:"
-          "\n   -a               make a function list for aisc_includes (default: generate C prototypes)"
-          "\n"
-          "\n   -e               put an explicit \"extern\" keyword in declarations"
-          "\n"
-          "\n   -n               put line numbers of declarations as comments"
-          "\n"
-          "\n   -m               promote declaration of 'main()' (default is to skip it)"
+__ATTR__NORETURN static void Usage(const char *msg = NULL) {
+    fprintf(stderr,
+            "\naisc_mkpts - ARB prototype generator"
+            "\nUsage: %s [options] [files ...]", ourname);
+    fputs("\nSupported options:"
           "\n   -F part[,part]*  only promote declarations for functionnames containing one of the parts"
           "\n                    if 'part' starts with a '^' functionname has to start with rest of part"
-          "\n   -S (like -F)     do NOT promote matching declarations (defaults to -S '^TEST_')"
+          "\n   -S (like -F)     do NOT promote matching declarations (defaults to -S '^TEST_,^NOTEST_')"
           "\n"
-          "\n   -W               don't promote types in old style declarations"
-          "\n   -x               omit parameter names in prototypes"
+          "\n   -G               search for ARB macro __ATTR__ in comment behind function header"
+          "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
           "\n"
-          "\n   -p sym           use \"sym\" as the prototype macro (default \"P_\")"
-          "\n   -z               omit prototype macro definition"
-          "\n   -A               omit prototype macro; header files are strict ANSI"
+          "\n   -w gen.h         add standard include wrapper (needs name of generated header)"
+          "\n   -c \"text\"        add text as comment into header"
           "\n"
           "\n   -C               insert 'extern \"C\"'"
           "\n   -E               prefix 'extern \"C\"' at prototype"
           "\n"
-          "\n   -G               search for ARB macro __ATTR__ in comment behind function header"
+          "\n   -W               don't promote types in old style declarations"
+          "\n   -x               omit parameter names in prototypes"
           "\n"
-          "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
+          "\n   -K               use K&R prototype macro (default assumes header files are strict ANSI)"
+          "\n   -D               define K&R prototype macro"
+          "\n   -p sym           use \"sym\" as the prototype macro (default \"P_\")"
           "\n"
-          "\n   -w gen.h         add standard include wrapper (needs name of generated header)"
-          "\n"
-          "\n   -c \"text\"      add text as comment into header"
+          "\n   -m               promote declaration of 'main()' (default is to skip it)"
+          "\n   -a               make a function list for aisc_includes (default: generate C prototypes)"
+          "\n   -e               put an explicit \"extern\" keyword in declarations"
+          "\n   -n               put line numbers of declarations as comments"
           "\n"
           "\n   -V               print version number"
+          "\n   -h               print this help"
           "\n"
           , stderr);
+    if (msg) fprintf(stderr, "\nError: %s", msg);
+    fputc('\n', stderr);
     exit(EXIT_FAILURE);
 }
 
 static int string_comparator(const void *v0, const void *v1) {
     return strcmp(*(const char **)v0, *(const char **)v1);
+}
+
+static void MissingArgumentFor(char option) {
+    char buffer[100];
+    sprintf(buffer, "option -%c expects an argument", option);
+    Usage(buffer);
+}
+static void UnknownOption(char option) {
+    char buffer[100];
+    sprintf(buffer, "unknown option -%c", option);
+    Usage(buffer);
 }
 
 int ARB_main(int argc, const char *argv[]) {
@@ -1483,7 +1495,6 @@ int ARB_main(int argc, const char *argv[]) {
         const char *t = *argv++; --argc; t++;
         while (*t) {
             if (*t == 'e')      print_extern        = 1;
-            else if (*t == 'A') use_macro           = 0;
             else if (*t == 'C') cansibycplus        = 1;
             else if (*t == 'E') promote_extern_c    = 1;
             else if (*t == 'W') dont_promote        = 1;
@@ -1491,37 +1502,38 @@ int ARB_main(int argc, const char *argv[]) {
             else if (*t == 'G') search__ATTR__      = 1;
             else if (*t == 'n') donum               = 1;
             else if (*t == 'x') no_parm_names       = 1; // no parm names, only types (sg)
-            else if (*t == 'z') define_macro        = 0;
+            else if (*t == 'D') define_macro        = 1;
+            else if (*t == 'K') use_macro           = 1;
             else if (*t == 'P') promote_lines       = 1;
             else if (*t == 'm') use_main            = 1;
             else if (*t == 'p') {
                 t = *argv++; --argc;
-                if (!t) Usage();
+                if (!t) MissingArgumentFor(*t);
                 use_macro = 1;
                 macro_name = t;
                 break;
             }
             else if (*t == 'c') {
                 t = *argv++; --argc;
-                if (!t) Usage();
+                if (!t) MissingArgumentFor(*t);
                 header_comment = t;
                 break;
             }
             else if (*t == 'w') {
                 t = *argv++; --argc;
-                if (!t) Usage();
+                if (!t) MissingArgumentFor(*t);
                 include_wrapper = t;
                 break;
             }
             else if (*t == 'F') {
                 t = *argv++; --argc;
-                if (!t) Usage();
+                if (!t) MissingArgumentFor(*t);
                 addRequiredSymParts(t);
                 break;
             }
             else if (*t == 'S') {
                 t = *argv++; --argc;
-                if (!t) Usage();
+                if (!t) MissingArgumentFor(*t);
                 freeExcludedSymParts();
                 addExcludedSymParts(t);
                 break;
@@ -1530,7 +1542,8 @@ int ARB_main(int argc, const char *argv[]) {
                 exit_if_noargs = true;
                 Version();
             }
-            else Usage();
+            else if (*t == 'h') Usage();
+            else UnknownOption(*t);
             t++;
         }
     }

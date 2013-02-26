@@ -147,11 +147,11 @@ $(AISC_SERVER_EXTERN): $(AISC_EXTERNALS) $(AISC_MKPT) $(THIS)
 
 $(GEN_SERVER_EXTERN_PROTO): $(AISC_EXTERNALS) $(AISC_MKPT) $(THIS)
 	rm -f $(GEN_SERVER_EXTERN_PROTO)
-	$(AISC_MKPT) -z -A -w $(subst GENH/,,$@) $(AISC_EXTERNALS) >$@
+	$(AISC_MKPT) -w $(subst GENH/,,$@) $(AISC_EXTERNALS) >$@
 
 $(GEN_SERVER_PROTO): $(GEN_SERVER_PROTO_SOURCES) $(AISC_MKPT) $(THIS)
 	rm -f $@
-	$(AISC_MKPT) -z -A -w $(subst GENH/,,$@) $(GEN_SERVER_PROTO_SOURCES) >$@
+	$(AISC_MKPT) -w $(subst GENH/,,$@) $(GEN_SERVER_PROTO_SOURCES) >$@
 
 clean:
 	@rm -f *.[ao] */*.[ao]

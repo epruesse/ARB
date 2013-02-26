@@ -22,7 +22,7 @@ GDE_proto.h: $(CPP_FILES) Makefile
 	$(MAKE) proto
 
 proto:
-	../AISC_MKPTPS/aisc_mkpt -P -G -A -E -w GDE_proto.h $(CPP_FILES) > GDE_proto.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -G -E -w GDE_proto.h $(CPP_FILES) > GDE_proto.h.tmp
 	../SOURCE_TOOLS/mv_if_diff GDE_proto.h.tmp GDE_proto.h
 
 clean:
