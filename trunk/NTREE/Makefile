@@ -12,9 +12,9 @@ $(MAIN): $(OBJECTS)
 	)
 
 proto:
-	../AISC_MKPTPS/aisc_mkpt -P -A -E -G -F ^NT_,^AP_ -w nt_internal.h $(SOURCES) >nt_internal.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -E -G -F ^NT_,^AP_ -w nt_internal.h $(SOURCES) >nt_internal.h.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_internal.h.tmp nt_internal.h
-	../AISC_MKPTPS/aisc_mkpt -P -A -E -G -w nt_cb.hxx NT_cb.cxx NT_extern.cxx >nt_cb.hxx.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -E -G -w nt_cb.hxx NT_cb.cxx NT_extern.cxx >nt_cb.hxx.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_cb.hxx.tmp nt_cb.hxx
 
 .cxx.o:
