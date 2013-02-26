@@ -18,20 +18,28 @@
 
 #define nt_assert(bed) arb_assert(bed)
 
-void create_insertchar_variables(AW_root *root, AW_default db1) {
-    root->awar_int   (AWAR_CURSOR_POSITION,    info2bio(0),  GLOBAL.gb_main);
-    root->awar_int   ("insertchar/nchar",      0,  db1)->set_minmax(0, 999000);
-    root->awar_string("insertchar/characters", "", db1);
+#define AWAR_INSDEL "insdel/"
+
+#define AWAR_INSDEL_AMOUNT    AWAR_INSDEL "nchar"
+#define AWAR_INSDEL_DELETABLE AWAR_INSDEL "characters"
+
+void create_insertDeleteColumn_variables(AW_root *root, AW_default db1) {
+    root->awar_int   (AWAR_CURSOR_POSITION,  info2bio(0), GLOBAL.gb_main);
+    root->awar_int   (AWAR_INSDEL_AMOUNT,    0,           db1)->set_minmax(0, 9999999);
+    root->awar_string(AWAR_INSDEL_DELETABLE, "",          db1);
 }
 
-static void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode) {
-    int mode = (int)awcl_mode; // 1 = insert, -1 = delete
-    nt_assert(mode == -1 || mode == 1);
+enum InsdelMode { INSERT, DELETE };
 
-    AW_root *root    = aws->get_root();
-    long     pos     = bio2info(root->awar(AWAR_CURSOR_POSITION)->read_int());
-    long     nchar   = root->awar("insertchar/nchar")->read_int() * mode;
-    char    *deletes = root->awar("insertchar/characters")->read_string();
+static void insdel_event(AW_window *aws, AW_CL cl_insdelmode) {
+    InsdelMode  mode = InsdelMode(cl_insdelmode);
+    AW_root    *root = aws->get_root();
+
+    long  pos     = bio2info(root->awar(AWAR_CURSOR_POSITION)->read_int());
+    long  nchar   = root->awar(AWAR_INSDEL_AMOUNT)->read_int();
+    char *deletes = root->awar(AWAR_INSDEL_DELETABLE)->read_string();
+
+    if (mode == DELETE) nchar = -nchar;
 
     GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
     if (!error) {
@@ -51,21 +59,21 @@ static void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode) {
     free(deletes);
 }
 
-AW_window *create_insertchar_window(AW_root *root, AW_default /*def*/) {
+AW_window *create_insertDeleteColumn_window(AW_root *root, AW_default /*def*/) {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
     aws = new AW_window_simple;
 
-    aws->init(root, "INSERT_COLUMN", "INSERT CHAR");
+    aws->init(root, "INSDEL_COLUMNS", "Insert/delete columns");
 
-    aws->load_xfig("inschar.fig");
+    aws->load_xfig("insdel.fig");
     aws->button_length(8);
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"insdelchar.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"insdel.hlp");
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -73,22 +81,23 @@ AW_window *create_insertchar_window(AW_root *root, AW_default /*def*/) {
 
     aws->at("pos");
     aws->label("Sequence Position");
-    aws->create_input_field(AWAR_CURSOR_POSITION, 6);
+    aws->create_input_field(AWAR_CURSOR_POSITION, 7);
 
     aws->at("len");
     aws->label("How many Characters");
-    aws->create_input_field("insertchar/nchar", 6);
+    aws->create_input_field(AWAR_INSDEL_AMOUNT, 7);
 
     aws->at("characters");
     aws->label("Delete Only (% = all)");
-    aws->create_input_field("insertchar/characters", 6);
+    aws->create_input_field(AWAR_INSDEL_DELETABLE, 7);
 
-    aws->callback(awt_inserchar_event, (AW_CL)1);
-    aws->at("insert");
+    aws->auto_space(10, 0);
+
+    aws->at("actions");
+    aws->callback(insdel_event, (AW_CL)INSERT);
     aws->create_button("INSERT", "INSERT", "I");
 
-    aws->callback(awt_inserchar_event, (AW_CL)-1);
-    aws->at("delete");
+    aws->callback(insdel_event, (AW_CL)DELETE);
     aws->create_button("DELETE", "DELETE", "D");
 
     return (AW_window *)aws;
