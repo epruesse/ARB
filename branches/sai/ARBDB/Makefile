@@ -79,25 +79,25 @@ proto:	global_proto local_proto
 local_proto: lpro tlpro
 
 lpro: $(GB_O:.o=.cxx)
-	../AISC_MKPTPS/aisc_mkpt -c "Internal database interface" -G -A -w gb_prot.h -F ^gb_,^gbs_,^gbcm,^gbm_,^gbl_ $^ >gb_prot.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -c "Internal database interface" -G -w gb_prot.h -F ^gb_,^gbs_,^gbcm,^gbm_,^gbl_ $^ >gb_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff gb_prot.h.tmp gb_prot.h
 
 tlpro: $(GB_T:.o=.cxx)
-	../AISC_MKPTPS/aisc_mkpt -c "Internal toolkit" -G -A -w gb_t_prot.h -F ^gb_,^gbt_,^gbs_ $^ >gb_t_prot.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -c "Internal toolkit" -G -w gb_t_prot.h -F ^gb_,^gbt_,^gbs_ $^ >gb_t_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff gb_t_prot.h.tmp gb_t_prot.h
 
 global_proto: pro ppro tpro 
 
 pro: $(GB_O:.o=.cxx)
-	../AISC_MKPTPS/aisc_mkpt -c "ARB database interface" -G -P -A -w ad_prot.h -F ^GB_,^GEN_,^EXP_,^GBS_,^GBT_,^GBCM,^GBC_ $^ >ad_prot.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -c "ARB database interface" -G -P -w ad_prot.h -F ^GB_,^GEN_,^EXP_,^GBS_,^GBT_,^GBCM,^GBC_ $^ >ad_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_prot.h.tmp ad_prot.h
 
 ppro: $(GB_O:.o=.cxx)
-	../AISC_MKPTPS/aisc_mkpt -c "ARB perl interface" -G -A -w ad_p_prot.h -F ^GBP_ $^ >ad_p_prot.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -c "ARB perl interface" -G -w ad_p_prot.h -F ^GBP_ $^ >ad_p_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_p_prot.h.tmp ad_p_prot.h
 
 tpro: $(GB_T:.o=.cxx)
-	../AISC_MKPTPS/aisc_mkpt -c "ARB toolkit" -G -A -w ad_t_prot.h -F ^GB_,^GEN_,^EXP_,^GBT_ $^ >ad_t_prot.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -c "ARB toolkit" -G -w ad_t_prot.h -F ^GB_,^GEN_,^EXP_,^GBT_ $^ >ad_t_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_t_prot.h.tmp ad_t_prot.h
 
 wc:

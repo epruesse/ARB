@@ -28,7 +28,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(CPPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 .cxx.genh:
-	../AISC_MKPTPS/aisc_mkpt -P -G -A -w $(subst .genh,.h,$@) $< > $@
+	../AISC_MKPTPS/aisc_mkpt -P -G -w $(subst .genh,.h,$@) $< > $@
 
 %.genheader: %.genh
 	../SOURCE_TOOLS/mv_if_diff $< $(subst .genheader,.h,$@)
