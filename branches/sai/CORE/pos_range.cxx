@@ -42,6 +42,7 @@ char *PosRange::dup_corresponding_part(const char *source, size_t source_len) co
 #endif
 #include "arb_msg.h"
 #include <climits>
+#include <smartptr.h>
 
 inline bool exactly_one_of(bool b1, bool b2, bool b3) { return (b1+b2+b3) == 1; }
 inline bool wellDefined(PosRange range) {
@@ -156,8 +157,8 @@ void TEST_range_copying() {
     PosRange::whole().copy_corresponding_part(dest, dest+1, source_len-1);
     TEST_EXPECT_EQUAL(dest, source+1);
 
-    TEST_EXPECT_EQUAL(PosRange::empty().dup_corresponding_part(source, source_len), ""); // empty range
-    TEST_EXPECT_EQUAL(PosRange(2, 5).dup_corresponding_part(NULL, 0), ""); // empty source
+    TEST_EXPECT_EQUAL(&*SmartCharPtr(PosRange::empty().dup_corresponding_part(source, source_len)), ""); // empty range
+    TEST_EXPECT_EQUAL(&*SmartCharPtr(PosRange(2, 5).dup_corresponding_part(NULL, 0)), "");               // empty source
 }
 
 void TEST_range_intersection() {
@@ -206,6 +207,46 @@ void TEST_range_intersection() {
     TEST_EXPECT(intersection(PosRange(40, 60), from30) == PosRange(40, 60));
     
     TEST_EXPECT(intersection(PosRange(40, 60), PosRange(50, 70)) == PosRange(50, 60));
+}
+
+void TEST_range_containment() {
+    PosRange empty;
+    PosRange whole  = PosRange::whole();
+    PosRange till50 = PosRange::till(50);
+    PosRange from30 = PosRange::from(30);
+    PosRange part(30, 50);
+
+    // empty contains nothing
+    TEST_REJECT(empty.contains(empty)); // and empty is contained nowhere!
+    TEST_REJECT(empty.contains(whole));
+    TEST_REJECT(empty.contains(till50));
+    TEST_REJECT(empty.contains(from30));
+    TEST_REJECT(empty.contains(part));
+
+    // whole contains anything
+    TEST_REJECT(whole.contains(empty)); // except empty
+    TEST_EXPECT(whole.contains(whole));
+    TEST_EXPECT(whole.contains(till50));
+    TEST_EXPECT(whole.contains(from30));
+    TEST_EXPECT(whole.contains(part));
+
+    TEST_REJECT(till50.contains(empty));
+    TEST_REJECT(till50.contains(whole));
+    TEST_EXPECT(till50.contains(till50));
+    TEST_REJECT(till50.contains(from30));
+    TEST_EXPECT(till50.contains(part));
+
+    TEST_REJECT(from30.contains(empty));
+    TEST_REJECT(from30.contains(whole));
+    TEST_REJECT(from30.contains(till50));
+    TEST_EXPECT(from30.contains(from30));
+    TEST_EXPECT(from30.contains(part));
+
+    TEST_REJECT(part.contains(empty));
+    TEST_REJECT(part.contains(whole));
+    TEST_REJECT(part.contains(till50));
+    TEST_REJECT(part.contains(from30));
+    TEST_EXPECT(part.contains(part));
 }
 
 #endif // UNIT_TESTS

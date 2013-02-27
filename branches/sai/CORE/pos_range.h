@@ -78,6 +78,7 @@ public:
     bool contains(int pos) const {
         return !is_empty() && pos >= start_pos && (pos <= end_pos || is_unlimited());
     }
+    bool contains(const PosRange& other) const;
 };
 
 inline PosRange intersection(PosRange r1, PosRange r2) {
@@ -92,6 +93,11 @@ inline PosRange intersection(PosRange r1, PosRange r2) {
     if (r2.is_limited()) return PosRange(start, r2.end());
     return PosRange::from(start);
 }
+
+inline bool PosRange::contains(const PosRange& other) const {
+    return !other.is_empty() && intersection(*this, other) == other;
+}
+
 
 class ExplicitRange : public PosRange {
 
