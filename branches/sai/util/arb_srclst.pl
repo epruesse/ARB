@@ -514,7 +514,9 @@ sub dumpFiles($) {
     my @files;
 
     my %CVS;
-    getVCEntries($dir,%CVS);
+    if (!getVCEntries($dir,%CVS)) {
+      die "arb_srclst.pl only works in a SVN checkout";
+    }
 
     opendir(DIR,$dir) || die "can't read directory '$dir' (Reason: $!)";
     foreach (readdir(DIR)) {

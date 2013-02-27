@@ -17,7 +17,7 @@ GB_ERROR ARB_insdel_columns(GBDATA *Main, const char *alignment_name, long pos, 
 
 class RangeList;
 
-GB_ERROR ARB_delete_columns_using_SAI(GBDATA *Main, const char *alignment_name, const RangeList &ranges, const char *deletable_chars);
+GB_ERROR ARB_delete_columns_using_SAI(GBDATA *Main, const char *alignment_name, const RangeList& ranges, const char *deletable_chars);
 
 #else
 #error insdel.h included twice

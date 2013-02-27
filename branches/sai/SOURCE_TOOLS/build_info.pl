@@ -119,7 +119,7 @@ file2hash($version_info,%version_info,1);
 my $inc_major = $SOURCE_TOOLS.'/inc_major.stamp';
 my $inc_minor = $SOURCE_TOOLS.'/inc_minor.stamp';
 
-if ($in_SVN==1 and $build_info{allowVersionUpgrade}==1) {
+if ($in_SVN and $build_info{allowVersionUpgrade}==1) {
   if (-f $inc_major or -f $inc_minor) { # version upgrade requested
     my $last_version_upgrade = $version_info{last_upgrade};
     if (not defined $last_version_upgrade) { $last_version_upgrade = 0; }
