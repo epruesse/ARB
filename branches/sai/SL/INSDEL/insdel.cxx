@@ -965,7 +965,8 @@ public:
 class AliEditCommand {
 public:
     virtual ~AliEditCommand() {}
-    virtual AliDataPtr apply(AliDataPtr to, GB_ERROR& error) const = 0;
+    virtual AliDataPtr apply(AliDataPtr to, GB_ERROR& error) const                                 = 0;
+    virtual GB_ERROR check_applicable_to(const Alignment& ali, size_t& resulting_ali_length) const = 0;
 };
 
 class AliInsertCommand : public AliEditCommand {
@@ -974,6 +975,15 @@ class AliInsertCommand : public AliEditCommand {
 public:
     AliInsertCommand(size_t pos_, size_t amount_) : pos(pos_), amount(amount_) {}
     AliDataPtr apply(AliDataPtr to, GB_ERROR& /*error*/) const OVERRIDE { return insert_gap(to, pos, amount); }
+    GB_ERROR check_applicable_to(const Alignment& ali, size_t& resulting_ali_length) const OVERRIDE {
+        size_t len = ali.get_len();
+        if (pos>len) {
+            return GBS_global_string("Can't insert at position %zu (exceeds length %zu of alignment '%s')",
+                                     pos, len, ali.get_name());
+        }
+        resulting_ali_length = len+amount;
+        return NULL;
+    }
 };
 
 class AliDeleteCommand : public AliEditCommand {
@@ -985,6 +995,16 @@ public:
           amount(amount_)
     {}
     AliDataPtr apply(AliDataPtr to, GB_ERROR& error) const OVERRIDE { return delete_from(to, pos, amount, error); }
+    GB_ERROR check_applicable_to(const Alignment& ali, size_t& resulting_ali_length) const OVERRIDE {
+        size_t len     = ali.get_len();
+        size_t end_pos = pos+amount-1;
+        if (end_pos >= len) {
+            return GBS_global_string("Can't delete positions %zu-%zu (exceeds max. position %zu of alignment '%s')",
+                                     pos, end_pos, len-1, ali.get_name());
+        }
+        resulting_ali_length = len-amount;
+        return NULL;
+    }
 };
 
 class AliFormatCommand : public AliEditCommand {
@@ -1001,6 +1021,23 @@ public:
         int allowed_size = knows_size->get_allowed_size(to->elems(), wanted_len);
         return format(to, allowed_size, error);
     }
+    GB_ERROR check_applicable_to(const Alignment& ali, size_t& resulting_ali_length) const OVERRIDE {
+        id_assert(ali.get_len() == wanted_len);
+        resulting_ali_length     = wanted_len;
+        return NULL;
+    }
+};
+
+class AliAutoFormatCommand : public AliEditCommand {
+    mutable SmartPtr<AliFormatCommand> cmd;
+public:
+    AliDataPtr apply(AliDataPtr to, GB_ERROR& error) const OVERRIDE {
+        return cmd->apply(to, error);
+    }
+    GB_ERROR check_applicable_to(const Alignment& ali, size_t& resulting_ali_length) const OVERRIDE {
+        cmd = new AliFormatCommand(ali.get_len()); // late decision on length to format
+        return cmd->check_applicable_to(ali, resulting_ali_length);
+    }
 };
 
 class AliCompositeCommand : public AliEditCommand, virtual Noncopyable {
@@ -1016,6 +1053,10 @@ public:
         AliDataPtr tmp = first->apply(to, error);
         if (!error) tmp = second->apply(tmp, error);
         return tmp;
+    }
+    GB_ERROR check_applicable_to(const Alignment& ali, size_t& resulting_ali_length) const OVERRIDE {
+        UNCOVERED();
+        id_assert(0);
     }
 };
 
@@ -1219,12 +1260,18 @@ static size_t countAffectedEntries(GBDATA *Main, const Alignment& ali) {
     return counter.get_entry_count();
 }
 
-static GB_ERROR format_to_alilen(GBDATA *Main, const char *alignment_name) {
+static GB_ERROR apply_command_to_alignment(const AliEditCommand& cmd, const char *cmd_description, GBDATA *Main, const char *alignment_name, const char *deletable_chars) {
+    // applies 'cmd' to one or all alignments
+    // (if 'alignment_name' is NULL, all alignments are affected - probably useless case)
+
+    Deletable deletable = strchr(deletable_chars, '%')
+        ? Deletable(Deletable::ANYTHING)
+        : Deletable(deletable_chars);
+
     GB_ERROR  error      = 0;
     GBDATA   *gb_presets = GBT_get_presets(Main);
-    GBDATA   *gb_ali;
 
-    for (gb_ali = GB_entry(gb_presets, "alignment");
+    for (GBDATA *gb_ali = GB_entry(gb_presets, "alignment");
          gb_ali && !error;
          gb_ali = GB_nextEntry(gb_ali))
     {
@@ -1234,14 +1281,24 @@ static GB_ERROR format_to_alilen(GBDATA *Main, const char *alignment_name) {
             GBDATA    *gb_len = GB_entry(gb_ali, "alignment_len");
             Alignment  ali(GB_read_char_pntr(gb_name), GB_read_int(gb_len));
 
-            AliFormatCommand fcmd(ali.get_len()); // format to max. existing length
+            size_t resulting_ali_length;
+            error = cmd.check_applicable_to(ali, resulting_ali_length);
 
-            error = AliEditor(fcmd, Deletable("-."), "Formatting alignment", countAffectedEntries(Main, ali))
-                .apply_to_alignment(Main, ali);
+            if (!error) error = AliEditor(cmd, deletable, cmd_description, countAffectedEntries(Main, ali)).apply_to_alignment(Main, ali);
+            if (!error) error = GB_write_int(gb_len, resulting_ali_length);
         }
     }
+
     free_insDelBuffer();
+
+    if (!error) GB_disable_quicksave(Main, "a lot of sequences changed"); // @@@ only disable if a reasonable amount of sequences has changed!
+
     return error;
+}
+
+static GB_ERROR format_to_alilen(GBDATA *Main, const char *alignment_name) { // @@@ inline
+    AliAutoFormatCommand fcmd;
+    return apply_command_to_alignment(fcmd, "Formatting alignment", Main, alignment_name, "-.");
 }
 
 GB_ERROR ARB_format_alignment(GBDATA *Main, const char *alignment_name) {
@@ -1258,15 +1315,13 @@ GB_ERROR ARB_format_alignment(GBDATA *Main, const char *alignment_name) {
     return err;
 }
 
-
-GB_ERROR ARB_insert_character(GBDATA *Main, const char *alignment_name, long pos, long count, const char *char_delete)
-{
+GB_ERROR ARB_insert_character(GBDATA *Main, const char *alignment_name, long pos, long count, const char *deletable_chars) {
     /* if count > 0     insert 'count' characters at pos
      * if count < 0     delete pos to pos+|count|
      *
-     * Note: deleting is only performed, if found characters in deleted range are listed in 'char_delete'
-     *       otherwise function returns with error
-     *       (if 'char_delete' contains a '%', any character will be deleted)
+     * Note: deleting is only performed, if found characters in deleted range are listed in 'deletable_chars'
+     *       otherwise function returns with an error.
+     *       (if 'deletable_chars' contains a '%', any character will be deleted)
      *
      * This affects all species' and SAIs having data in given 'alignment_name' and
      * modifies several data entries found there
@@ -1279,49 +1334,19 @@ GB_ERROR ARB_insert_character(GBDATA *Main, const char *alignment_name, long pos
         error = GBS_global_string("Illegal sequence position %li", pos);
     }
     else {
-        GBDATA *gb_ali;
-        GBDATA *gb_presets = GBT_get_presets(Main);
+        const char *description = NULL;
 
-        Deletable deletable = strchr(char_delete, '%')
-            ? Deletable(Deletable::ANYTHING)
-            : Deletable(char_delete);
-
-        for (gb_ali = GB_entry(gb_presets, "alignment");
-             gb_ali && !error;
-             gb_ali = GB_nextEntry(gb_ali))
-        {
-            GBDATA *gb_name = GB_find_string(gb_ali, "alignment_name", alignment_name, GB_IGNORE_CASE, SEARCH_CHILD);
-
-            if (gb_name) {
-                GBDATA *gb_len = GB_entry(gb_ali, "alignment_len");
-                long    len    = GB_read_int(gb_len);
-                char   *use    = GB_read_string(gb_name);
-
-                if (pos > len) {
-                    error = GBS_global_string("Can't insert at position %li (exceeds length %li of alignment '%s')", pos, len, use);
-                }
-                else {
-                    if (count < 0 && pos-count > len) count = pos - len;
-                    error = GB_write_int(gb_len, len + count);
-                }
-
-                if (!error) {
-                    Alignment ali(use, len);
-
-                    SmartPtr<AliEditCommand> idcmd;
-                    if (count<0) idcmd = new AliDeleteCommand(pos, -count);
-                    else         idcmd = new AliInsertCommand(pos, count);
-
-                    error = AliEditor(*idcmd, deletable, "Insert/delete characters", countAffectedEntries(Main, ali))
-                        .apply_to_alignment(Main, ali);
-                }
-                free(use);
-            }
+        SmartPtr<AliEditCommand> idcmd;
+        if (count<0) {
+            idcmd       = new AliDeleteCommand(pos, -count);
+            description = "Deleting columns";
+        }
+        else {
+            idcmd = new AliInsertCommand(pos, count);
+            description = "Inserting columns";
         }
 
-        free_insDelBuffer();
-
-        if (!error) GB_disable_quicksave(Main, "a lot of sequences changed");
+        error = apply_command_to_alignment(*idcmd, description, Main, alignment_name, deletable_chars);
     }
     return error;
 }
@@ -1910,6 +1935,12 @@ void TEST_insert_delete_DB() {
             GB_transaction ta(gb_main);
             TEST_EXPECT_EQUAL(ARB_insert_character(gb_main, ali_name, 4711, 3, "-."), // illegal insert
                               "Can't insert at position 4711 (exceeds length 68 of alignment 'ali_mini')");
+            ta.close("xxx");
+        }
+        {
+            GB_transaction ta(gb_main);
+            TEST_EXPECT_EQUAL(ARB_insert_character(gb_main, ali_name, 66, -3, "-."), // illegal delete
+                              "Can't delete positions 66-68 (exceeds max. position 67 of alignment 'ali_mini')");
             ta.close("xxx");
         }
         {
