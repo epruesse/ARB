@@ -185,11 +185,9 @@ void AW_root::apply_focus_policy(bool /*follow_mouse*/) {
 
 void AW_root::apply_sensitivity(AW_active mask) {
     aw_assert(legal_mask(mask));
-    AW_buttons_struct *list;
 
-    global_mask = mask;
-    for (list = button_sens_list; list; list = list->next) {
-        gtk_widget_set_sensitive(list->button, (list->mask & mask) ? True : False);
+    for (auto btn : button_list) {
+      btn.apply_sensitivity(mask);
     }
 }
 
@@ -249,8 +247,8 @@ AW_selection_list* AW_root::get_last_selection_list() {
 
 
 
-void AW_root::make_sensitive(GtkWidget* w, AW_active mask) {
-    // Don't call make_sensitive directly!
+void AW_root::register_widget(GtkWidget* w, AW_active mask) {
+    // Don't call register_widget directly!
     //
     // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets,
     // set it back using sens_mask(AWM_ALL)
@@ -261,7 +259,7 @@ void AW_root::make_sensitive(GtkWidget* w, AW_active mask) {
     prvt.set_last_widget(w);
 
     if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
-        button_sens_list = new AW_buttons_struct(mask, w, button_sens_list);
+        button_list.push_back(AW_button(mask, w));
         if (!(mask & global_mask)) gtk_widget_set_sensitive(w, false); // disable widget if mask doesn't match
     }
 }

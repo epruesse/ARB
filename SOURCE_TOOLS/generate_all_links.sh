@@ -310,6 +310,7 @@ symlink_file ../WINDOW_GTK/aw_awar.hxx INCLUDE/aw_awar.hxx &&
 symlink_file ../WINDOW_GTK/aw_awar_defs.hxx INCLUDE/aw_awar_defs.hxx &&
 symlink_file ../WINDOW_GTK/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink_file ../WINDOW_GTK/aw_base.hxx INCLUDE/aw_base.hxx &&
+symlink_file ../WINDOW_GTK/aw_button.hxx INCLUDE/aw_button.hxx &&
 symlink_file ../WINDOW_GTK/aw_clipable.hxx INCLUDE/aw_clipable.hxx  &&
 symlink_file ../WINDOW_GTK/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
 symlink_file ../WINDOW_GTK/aw_common.hxx INCLUDE/aw_common.hxx &&

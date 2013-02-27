@@ -53,7 +53,6 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
 
 
 class  AW_awar;
-struct AW_buttons_struct;
 class  AW_root_cblist;
 class  GB_HASH;
 
@@ -71,11 +70,9 @@ class AW_root : virtual Noncopyable {
     AW_root_gtk        prvt; /** < Contains all gtk dependent attributes. */
     GB_HASH           *action_hash; /** < Is used to buffer and replay remote actions. */
     AW_default         application_database; /** < FIXME */
-    AW_buttons_struct *button_sens_list; /** < FIXME */
+    std::vector<AW_button> button_list;
     bool               no_exit; /** < FIXME; (was/should be) used to protect status window from being closed */
     bool               help_active; /** < true if the help mode is active, false otherwise */
-
-//    AW_buttons_struct *button_sens_list;
 
     /**
      * FIXME
@@ -270,7 +267,7 @@ public:
      */
     void apply_sensitivity(AW_active mask);
     void apply_focus_policy(bool follow_mouse);
-    void make_sensitive(GtkWidget* w, AW_active mask);
+    void register_widget(GtkWidget* w, AW_active mask);
     bool remove_button_from_sens_list(GtkWidget* button);
 
     GB_ERROR start_macro_recording(const char *file, const char *application_id, const char *stop_action_name, bool expand_existing);
