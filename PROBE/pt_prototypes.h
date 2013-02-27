@@ -29,7 +29,7 @@ void set_table_for_PT_N_mis(int ignored_Nmismatches, int when_less_than_Nmismatc
 void pt_export_error(PT_local *locs, const char *error);
 const char *virt_name(PT_probematch *ml);
 const char *virt_fullname(PT_probematch *ml);
-char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char *&error);
+char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char*& error);
 bytestring *PT_unknown_names(PT_pdc *pdc);
 void PT_init_base_string_counter(char *str, char initval, int size);
 void PT_inc_base_string_count(char *str, char initval, char maxval, int size);
@@ -75,16 +75,16 @@ int PT_start_design(PT_pdc *pdc, int dummy_1x);
 /* PT_prefixtree.cxx */
 void PTM_finally_free_all_mem(void);
 PTM2 *PT_init(void);
-POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc &loc);
+POS_TREE *PT_add_to_chain(POS_TREE *node, const DataLoc& loc);
 POS_TREE *PT_change_leaf_to_node(POS_TREE *node);
 POS_TREE *PT_leaf_to_chain(POS_TREE *node);
-POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc &loc);
+POS_TREE *PT_create_leaf(POS_TREE **pfather, PT_BASES base, const DataLoc& loc);
 void PTD_clear_fathers(POS_TREE *node);
 void PTD_put_longlong(FILE *out, ULONG i);
 void PTD_put_int(FILE *out, ULONG i);
 void PTD_put_short(FILE *out, ULONG i);
 void PTD_debug_nodes(void);
-long PTD_write_leafs_to_disk(FILE *out, POS_TREE *node, long pos, long *pnodepos, int *pblock, ARB_ERROR &error);
+long PTD_write_leafs_to_disk(FILE *out, POS_TREE *node, long pos, long *pnodepos, int *pblock, ARB_ERROR& error);
 ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE **pnode) __ATTR__USERESULT;
 
 /* probe_tree.h */
