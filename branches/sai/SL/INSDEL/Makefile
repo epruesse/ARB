@@ -55,6 +55,8 @@ insdel.o: $(ARBHOME)/INCLUDE/cxxforward.h
 insdel.o: $(ARBHOME)/INCLUDE/downcast.h
 insdel.o: $(ARBHOME)/INCLUDE/dupstr.h
 insdel.o: $(ARBHOME)/INCLUDE/gccver.h
+insdel.o: $(ARBHOME)/INCLUDE/pos_range.h
+insdel.o: $(ARBHOME)/INCLUDE/RangeList.h
 insdel.o: $(ARBHOME)/INCLUDE/smartptr.h
 insdel.o: $(ARBHOME)/INCLUDE/static_assert.h
 insdel.o: $(ARBHOME)/INCLUDE/test_global.h

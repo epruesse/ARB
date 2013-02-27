@@ -13,6 +13,7 @@
 // AISC_MKPT_PROMOTE:#endif
 
 #include "insdel.h"
+#include <RangeList.h>
 
 #include <arbdbt.h>
 #include <adGene.h>
@@ -1055,8 +1056,12 @@ public:
         return tmp;
     }
     GB_ERROR check_applicable_to(const Alignment& ali, size_t& resulting_ali_length) const OVERRIDE {
-        UNCOVERED();
-        id_assert(0);
+        GB_ERROR error = first->check_applicable_to(ali, resulting_ali_length);
+        if (!error) {
+            Alignment tmp_ali(ali.get_name(), resulting_ali_length);
+            error = second->check_applicable_to(tmp_ali, resulting_ali_length);
+        }
+        return error;
     }
 };
 
@@ -1351,6 +1356,17 @@ GB_ERROR ARB_insert_character(GBDATA *Main, const char *alignment_name, long pos
     return error;
 }
 
+// AISC_MKPT_PROMOTE:class RangeList;
+GB_ERROR ARB_delete_columns_using_SAI(GBDATA *Main, const char *alignment_name, const RangeList& ranges, const char *deletable_chars) {
+    AliEditCommand *cmd = new AliAutoFormatCommand; // @@@ use SmartPtr (here and in AliCompositeCommand)
+    for (RangeList::reverse_iterator r = ranges.rbegin(); r != ranges.rend(); ++r) {
+        cmd = new AliCompositeCommand(cmd, new AliDeleteCommand(r->start(), r->size()));
+    }
+    GB_ERROR error = apply_command_to_alignment(*cmd, "Deleting columns using SAI", Main, alignment_name, deletable_chars);
+    delete cmd;
+    return error;
+}
+
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
@@ -1602,6 +1618,60 @@ static int get_alignment_aligned(GBDATA *gb_main, const char *aliname) { // form
         TEST_EXPECT_EQUAL(get_alignment_aligned(gb_main, ali_name), aligned);   \
     } while(0)
 
+static ARB_ERROR add_some_SAIs(GBDATA *gb_main, const char *ali_name) {
+    ARB_ERROR      error;
+    GB_transaction ta(gb_main);
+    TEST_DB_INSERT_SAI(gb_main, error, ali_name, EXTinsdel);
+
+    // add secondary structure to "HELIX"
+    GBDATA *gb_helix     = GBT_find_SAI(gb_main, "HELIX");
+    if (!gb_helix) error = GB_await_error();
+    else {
+        GBDATA *gb_struct     = GBT_add_data(gb_helix, ali_name, "_STRUCT", GB_STRING);
+        if (!gb_struct) error = GB_await_error();
+        else    error         = GB_write_string(gb_struct, HELIX_STRUCT);
+
+        GBDATA *gb_struct_ref     = GBT_add_data(gb_helix, ali_name, "_REF", GB_STRING);
+        if (!gb_struct_ref) error = GB_await_error();
+        else    error             = GB_write_string(gb_struct_ref, HELIX_REF);
+    }
+
+    // add stored secondary structure
+    GBDATA *gb_ref     = GB_search(gb_main, "secedit/structs/ali_mini/struct/ref", GB_STRING);
+    if (!gb_ref) error = GB_await_error();
+    else    error      = GB_write_string(gb_ref, HELIX_REF);
+
+    // create one INTS and one FLOATS entry for first species
+    GBDATA *gb_spec = GBT_find_species(gb_main, TADinsdel[0].name);
+    {
+        GBDATA     *gb_ints   = GBT_add_data(gb_spec, ali_name, "NN", GB_INTS);
+        const char *intsAsStr = "9346740960354855652100942568200611650200211394358998513";
+        size_t      len       = strlen(intsAsStr);
+        GB_UINT4   *ints      = string2ints(intsAsStr, len);
+        {
+            char *asStr = ints2string(ints, len);
+            TEST_EXPECT_EQUAL(intsAsStr, asStr);
+            free(asStr);
+        }
+        error = GB_write_ints(gb_ints, ints, len);
+        free(ints);
+    }
+    {
+        GBDATA     *gb_ints     = GBT_add_data(gb_spec, ali_name, "FF", GB_FLOATS);
+        const char *floatsAsStr = "ODu8EJh60e1XYLgxvzrqmeMiMAjB5EJxT6JPiCvQrq4uCLDoHlWV59DW";
+        size_t      len         = strlen(floatsAsStr);
+        float      *floats      = string2floats(floatsAsStr, len);
+        {
+            char *asStr = floats2string(floats, len);
+            TEST_EXPECT_EQUAL(floatsAsStr, asStr);
+            free(asStr);
+        }
+        error = GB_write_floats(gb_ints, floats, len);
+        free(floats);
+    }
+    return error;
+}
+
 void TEST_insert_delete_DB() {
     GB_shell    shell;
     ARB_ERROR   error;
@@ -1610,58 +1680,7 @@ void TEST_insert_delete_DB() {
 
     arb_suppress_progress noProgress;
 
-    if (!error) {
-        GB_transaction ta(gb_main);
-        TEST_DB_INSERT_SAI(gb_main, error, ali_name, EXTinsdel);
-
-        // add secondary structure to "HELIX"
-        GBDATA *gb_helix     = GBT_find_SAI(gb_main, "HELIX");
-        if (!gb_helix) error = GB_await_error();
-        else {
-            GBDATA *gb_struct     = GBT_add_data(gb_helix, ali_name, "_STRUCT", GB_STRING);
-            if (!gb_struct) error = GB_await_error();
-            else    error         = GB_write_string(gb_struct, HELIX_STRUCT);
-
-            GBDATA *gb_struct_ref     = GBT_add_data(gb_helix, ali_name, "_REF", GB_STRING);
-            if (!gb_struct_ref) error = GB_await_error();
-            else    error             = GB_write_string(gb_struct_ref, HELIX_REF);
-        }
-
-        // add stored secondary structure
-        GBDATA *gb_ref     = GB_search(gb_main, "secedit/structs/ali_mini/struct/ref", GB_STRING);
-        if (!gb_ref) error = GB_await_error();
-        else    error      = GB_write_string(gb_ref, HELIX_REF);
-
-        // create one INTS and one FLOATS entry for first species
-        GBDATA *gb_spec = GBT_find_species(gb_main, TADinsdel[0].name);
-        {
-            GBDATA     *gb_ints   = GBT_add_data(gb_spec, ali_name, "NN", GB_INTS);
-            const char *intsAsStr = "9346740960354855652100942568200611650200211394358998513";
-            size_t      len       = strlen(intsAsStr);
-            GB_UINT4   *ints      = string2ints(intsAsStr, len);
-            {
-                char *asStr = ints2string(ints, len);
-                TEST_EXPECT_EQUAL(intsAsStr, asStr);
-                free(asStr);
-            }
-            error = GB_write_ints(gb_ints, ints, len);
-            free(ints);
-        }
-        {
-            GBDATA     *gb_ints     = GBT_add_data(gb_spec, ali_name, "FF", GB_FLOATS);
-            const char *floatsAsStr = "ODu8EJh60e1XYLgxvzrqmeMiMAjB5EJxT6JPiCvQrq4uCLDoHlWV59DW";
-            size_t      len         = strlen(floatsAsStr);
-            float      *floats      = string2floats(floatsAsStr, len);
-            {
-                char *asStr = floats2string(floats, len);
-                TEST_EXPECT_EQUAL(floatsAsStr, asStr);
-                free(asStr);
-            }
-            error = GB_write_floats(gb_ints, floats, len);
-            free(floats);
-        }
-    }
-
+    if (!error) error = add_some_SAIs(gb_main, ali_name);
     if (!error) {
         GB_transaction ta(gb_main);
 
@@ -1961,6 +1980,53 @@ void TEST_insert_delete_DB() {
                   ".........x........x....x...xx....x...x..........x...x...x...........x",
                   "90034670040000090060354521004256820000006110060050200043589985100300",
                   "O!!Du8E!!J!!h!!6!!0e1XYzrqmeiMAjB5E!!J!!xT6!!J!!PiCvQ!LDoHlWV59!!DW!",
+                  HELIX_STRUCT);
+    }
+
+    GB_close(gb_main);
+    TEST_EXPECT_NO_ERROR(error.deliver());
+}
+
+void TEST_insert_delete_DB_using_SAI() {
+    GB_shell    shell;
+    ARB_ERROR   error;
+    const char *ali_name = "ali_mini";
+    GBDATA     *gb_main  = TEST_CREATE_DB(error, ali_name, TADinsdel, false);
+
+    arb_suppress_progress noProgress;
+
+    if (!error) error = add_some_SAIs(gb_main, ali_name);
+    if (!error) {
+        GB_transaction ta(gb_main);
+
+        // test here is just a duplicate from TEST_insert_delete_DB() - just here to show the data
+        TEST_EXPECT_NO_ERROR(ARB_format_alignment(gb_main, ali_name));
+        TEST_ALI_LEN_ALIGNED(57, 1);
+        TEST_DATA("...G-GGC-C-G...--A--G--GAA-CCUG-CGGC-UGG--AUCACCUCC......",
+                  "---A-CGA-U-C-----C--G--GAA-CCUG-CGGC-UGG--AUCACCUCCU.....",
+                  "...A-CGA-A-C.....G--G--GAA-CCUG-CGGC-UGG--AUCACCUCCU-----",
+                  "---U-GCC-U-G-----G--C--CCU-UAGC-GCGG-UGG--UCCCACCUGA.....",
+                  ".....[<[.........[..[..[<<.[..].>>]....]..]....].>......]",
+                  ".....1.1.........25.25.34..34.34..34...25.25...1........1",
+                  ".....x..x........x...x.x....x.x....x...x...x...x.........x",
+                  "934674096035485565210094256820061165020021139435899851300",
+                  "ODu8EJh60e1XYLgxvzrqmeMiMAjB5EJxT6JPiCvQrq4uCLDoHlWV59DW!",
+                  HELIX_STRUCT);
+
+        RangeList delRanges = build_RangeList_from_string(
+            /* */ "xxx---------xxxxx---------x---------x---------------xxxx-",
+            "x", false);
+        TEST_EXPECT_NO_ERROR(ARB_delete_columns_using_SAI(gb_main, ali_name, delRanges, ".-"));
+        TEST_ALI_LEN_ALIGNED(43, 1);
+        TEST_DATA("G-GGC-C-GA--G--GAACCUG-CGGCUGG--AUCACCUCC..",
+                  "A-CGA-U-CC--G--GAACCUG-CGGCUGG--AUCACCUCCU.",
+                  "A-CGA-A-CG--G--GAACCUG-CGGCUGG--AUCACCUCCU-",
+                  "U-GCC-U-GG--C--CCUUAGC-GCGGUGG--UCCCACCUGA.",
+                  "..[<[....[..[..[<<[..].>>]...]..]....].>..]",
+                  "..1.1....25.25.34.34.34..34..25.25...1....1",
+                  "..x..x...x...x.x...x.x....x..x...x...x.....x",
+                  "6740960355210094258200611652002113943589980",
+                  "8EJh60e1XzrqmeMiMAB5EJxT6JPCvQrq4uCLDoHlWV!",
                   HELIX_STRUCT);
     }
 
