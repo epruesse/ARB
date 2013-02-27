@@ -26,7 +26,13 @@ cleanup() {
 
 gen_list() {
     util/arb_srclst.pl $* > arbsrc.lst.tmp || \
-        ( echo "Failed to build arbsrc.lst" ; echo "To save manually use 'make save2'"; false )
+        ( \
+        echo "Failed to build arbsrc.lst" ; \
+        if [ "$*" != "ignore" ] ; then \
+        echo "To ignore this error save manually using 'make save2' (only works in SVN checkout)"; \
+        fi; \
+        false \
+        )
 }
 sort_list() {
     sort < arbsrc.lst.tmp | perl -pne "s/^\./.\/$REVISION_DIR/g;" > arbsrc.lst
