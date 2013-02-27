@@ -13,7 +13,7 @@
 #endif
 
 GB_ERROR ARB_format_alignment(GBDATA *Main, const char *alignment_name);
-GB_ERROR ARB_insert_character(GBDATA *Main, const char *alignment_name, long pos, long count, const char *deletable_chars);
+GB_ERROR ARB_insdel_columns(GBDATA *Main, const char *alignment_name, long pos, long count, const char *deletable_chars);
 
 class RangeList;
 

@@ -1320,7 +1320,7 @@ GB_ERROR ARB_format_alignment(GBDATA *Main, const char *alignment_name) {
     return err;
 }
 
-GB_ERROR ARB_insert_character(GBDATA *Main, const char *alignment_name, long pos, long count, const char *deletable_chars) {
+GB_ERROR ARB_insdel_columns(GBDATA *Main, const char *alignment_name, long pos, long count, const char *deletable_chars) {
     /* if count > 0     insert 'count' characters at pos
      * if count < 0     delete pos to pos+|count|
      *
@@ -1718,7 +1718,7 @@ void TEST_insert_delete_DB() {
 // text-editor column -> alignment column
 #define COL(col) ((col)-19)
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(64), 2, "")); // insert in middle
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(64), 2, "")); // insert in middle
         TEST_ALI_LEN_ALIGNED(59, 1);
         TEST_DATA("...G-GGC-C-G...--A--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCC......",
                   "---A-CGA-U-C-----C--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU.....",
@@ -1731,7 +1731,7 @@ void TEST_insert_delete_DB() {
                   "ODu8EJh60e1XYLgxvzrqmeMiMAjB5EJxT6JPiCvQrq4uC!!LDoHlWV59DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(75), 2, "")); // insert near end
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(75), 2, "")); // insert near end
         TEST_ALI_LEN_ALIGNED(61, 1);
         TEST_DATA("...G-GGC-C-G...--A--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCC........",
                   "---A-CGA-U-C-----C--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU.......",
@@ -1744,7 +1744,7 @@ void TEST_insert_delete_DB() {
                   "ODu8EJh60e1XYLgxvzrqmeMiMAjB5EJxT6JPiCvQrq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(20), 2, "")); // insert near start
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(20), 2, "")); // insert near start
         TEST_ALI_LEN_ALIGNED(63, 1);
         TEST_DATA(".....G-GGC-C-G...--A--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCC........",
                   "-----A-CGA-U-C-----C--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU.......",
@@ -1758,7 +1758,7 @@ void TEST_insert_delete_DB() {
                   HELIX_STRUCT);
 
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(26), 2, "")); // insert at left helix start
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(26), 2, "")); // insert at left helix start
         TEST_ALI_LEN_ALIGNED(65, 1);
         TEST_DATA(".....G---GGC-C-G...--A--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCC........",
                   "-----A---CGA-U-C-----C--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU.......",
@@ -1771,7 +1771,7 @@ void TEST_insert_delete_DB() {
                   "O!!Du8E!!Jh60e1XYLgxvzrqmeMiMAjB5EJxT6JPiCvQrq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(29), 2, "")); // insert behind left helix start
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(29), 2, "")); // insert behind left helix start
         TEST_ALI_LEN_ALIGNED(67, 1);
         TEST_DATA(".....G---G--GC-C-G...--A--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCC........",
                   "-----A---C--GA-U-C-----C--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU.......",
@@ -1784,7 +1784,7 @@ void TEST_insert_delete_DB() {
                   "O!!Du8E!!J!!h60e1XYLgxvzrqmeMiMAjB5EJxT6JPiCvQrq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(32), 2, "")); // insert at left helix end
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(32), 2, "")); // insert at left helix end
         TEST_ALI_LEN_ALIGNED(69, 1);
         TEST_DATA(".....G---G--G--C-C-G...--A--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCC........",
                   "-----A---C--G--A-U-C-----C--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU.......",
@@ -1797,7 +1797,7 @@ void TEST_insert_delete_DB() {
                   "O!!Du8E!!J!!h!!60e1XYLgxvzrqmeMiMAjB5EJxT6JPiCvQrq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(35), 2, ""));    // insert behind left helix end
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(35), 2, ""));    // insert behind left helix end
         TEST_ALI_LEN_ALIGNED(71, 1);
         TEST_DATA(".....G---G--G--C---C-G...--A--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCC........",
                   "-----A---C--G--A---U-C-----C--G--GAA-CCUG-CGGC-UGG--AUC--ACCUCCU.......",
@@ -1812,7 +1812,7 @@ void TEST_insert_delete_DB() {
                   HELIX_STRUCT);
 
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(59), 2, "")); // insert at right helix start
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(59), 2, "")); // insert at right helix start
         TEST_ALI_LEN_ALIGNED(73, 1);
         TEST_DATA(".....G---G--G--C---C-G...--A--G--GAA-CCU--G-CGGC-UGG--AUC--ACCUCC........",
                   "-----A---C--G--A---U-C-----C--G--GAA-CCU--G-CGGC-UGG--AUC--ACCUCCU.......",
@@ -1825,7 +1825,7 @@ void TEST_insert_delete_DB() {
                   "O!!Du8E!!J!!h!!6!!0e1XYLgxvzrqmeMiMAjB5E!!JxT6JPiCvQrq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(62), 2, ""));       // insert behind right helix start
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(62), 2, ""));       // insert behind right helix start
         TEST_ALI_LEN_ALIGNED(75, 1);
         TEST_DATA(".....G---G--G--C---C-G...--A--G--GAA-CCU--G---CGGC-UGG--AUC--ACCUCC........",
                   "-----A---C--G--A---U-C-----C--G--GAA-CCU--G---CGGC-UGG--AUC--ACCUCCU.......",
@@ -1839,7 +1839,7 @@ void TEST_insert_delete_DB() {
                   "O!!Du8E!!J!!h!!6!!0e1XYLgxvzrqmeMiMAjB5E!!J!!xT6JPiCvQrq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(67), 2, ""));         // insert at right helix end
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(67), 2, ""));         // insert at right helix end
         TEST_ALI_LEN_ALIGNED(77, 1);
         TEST_DATA(".....G---G--G--C---C-G...--A--G--GAA-CCU--G---CG--GC-UGG--AUC--ACCUCC........",
                   "-----A---C--G--A---U-C-----C--G--GAA-CCU--G---CG--GC-UGG--AUC--ACCUCCU.......",
@@ -1852,7 +1852,7 @@ void TEST_insert_delete_DB() {
                   "O!!Du8E!!J!!h!!6!!0e1XYLgxvzrqmeMiMAjB5E!!J!!xT6!!JPiCvQrq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(70), 2, ""));           // insert behind right helix end
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(70), 2, ""));           // insert behind right helix end
         TEST_ALI_LEN_ALIGNED(79, 1);
         TEST_DATA(".....G---G--G--C---C-G...--A--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCC........",
                   "-----A---C--G--A---U-C-----C--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCCU.......",
@@ -1867,7 +1867,7 @@ void TEST_insert_delete_DB() {
 
 
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(44), 2, ""));           // insert at gap border (between different gap types)
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(44), 2, ""));           // insert at gap border (between different gap types)
         TEST_ALI_LEN_ALIGNED(81, 1);
         TEST_DATA(".....G---G--G--C---C-G...----A--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCC........", // now prefers '-' here
                   "-----A---C--G--A---U-C-------C--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCCU.......",
@@ -1881,7 +1881,7 @@ void TEST_insert_delete_DB() {
                   HELIX_STRUCT);
 
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(42), -6, "-.")); // delete gaps
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(42), -6, "-.")); // delete gaps
         TEST_ALI_LEN_ALIGNED(75, 1);
         TEST_DATA(".....G---G--G--C---C-G.A--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCC........",
                   "-----A---C--G--A---U-C-C--G--GAA-CCU--G---CG--G--C-UGG--AUC--ACCUCCU.......",
@@ -1894,7 +1894,7 @@ void TEST_insert_delete_DB() {
                   "O!!Du8E!!J!!h!!6!!0e1XYzrqmeMiMAjB5E!!J!!xT6!!J!!PiCvQrq4uC!!LDoHlWV59!!DW!",
                   HELIX_STRUCT);
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(74), -1, "-.")); // delete gap inside helix destroying helix nrs
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(74), -1, "-.")); // delete gap inside helix destroying helix nrs
         TEST_ALI_LEN_ALIGNED(74, 1);
         TEST_DATA(".....G---G--G--C---C-G.A--G--GAA-CCU--G---CG--G--C-UGG-AUC--ACCUCC........",
                   "-----A---C--G--A---U-C-C--G--GAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU.......",
@@ -1908,7 +1908,7 @@ void TEST_insert_delete_DB() {
                   HELIX_STRUCT);
 
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(47), -1, "-.")); // delete gap between helices destroying helix nrs
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(47), -1, "-.")); // delete gap between helices destroying helix nrs
         TEST_ALI_LEN_ALIGNED(73, 1);
         TEST_DATA(".....G---G--G--C---C-G.A--G-GAA-CCU--G---CG--G--C-UGG-AUC--ACCUCC........",
                   "-----A---C--G--A---U-C-C--G-GAA-CCU--G---CG--G--C-UGG-AUC--ACCUCCU.......",
@@ -1922,7 +1922,7 @@ void TEST_insert_delete_DB() {
                   HELIX_STRUCT);
 
 
-        TEST_EXPECT_NO_ERROR(ARB_insert_character(gb_main, ali_name, COL(72), -5, "%")); // delete anything
+        TEST_EXPECT_NO_ERROR(ARB_insdel_columns(gb_main, ali_name, COL(72), -5, "%")); // delete anything
         TEST_ALI_LEN_ALIGNED(68, 1);
         TEST_DATA(".....G---G--G--C---C-G.A--G-GAA-CCU--G---CG--G--C-UGG-ACCUCC........",
                   "-----A---C--G--A---U-C-C--G-GAA-CCU--G---CG--G--C-UGG-ACCUCCU.......",
@@ -1940,31 +1940,31 @@ void TEST_insert_delete_DB() {
     if (!error) {
         {
             GB_transaction ta(gb_main);
-            TEST_EXPECT_EQUAL(ARB_insert_character(gb_main, ali_name, COL(35), -3, "-."), // illegal delete
+            TEST_EXPECT_EQUAL(ARB_insdel_columns(gb_main, ali_name, COL(35), -3, "-."), // illegal delete
                               "SAI 'HELIX': You tried to delete 'x' at position 18  -> Operation aborted");
             ta.close("xxx");
         }
         {
             GB_transaction ta(gb_main);
-            TEST_EXPECT_EQUAL(ARB_insert_character(gb_main, ali_name, COL(57), -3, "-."), // illegal delete
+            TEST_EXPECT_EQUAL(ARB_insdel_columns(gb_main, ali_name, COL(57), -3, "-."), // illegal delete
                               "SAI 'HELIX_NR': You tried to delete '4' at position 40  -> Operation aborted");
             ta.close("xxx");
         }
         {
             GB_transaction ta(gb_main);
-            TEST_EXPECT_EQUAL(ARB_insert_character(gb_main, ali_name, 4711, 3, "-."), // illegal insert
+            TEST_EXPECT_EQUAL(ARB_insdel_columns(gb_main, ali_name, 4711, 3, "-."), // illegal insert
                               "Can't insert at position 4711 (exceeds length 68 of alignment 'ali_mini')");
             ta.close("xxx");
         }
         {
             GB_transaction ta(gb_main);
-            TEST_EXPECT_EQUAL(ARB_insert_character(gb_main, ali_name, 66, -3, "-."), // illegal delete
+            TEST_EXPECT_EQUAL(ARB_insdel_columns(gb_main, ali_name, 66, -3, "-."), // illegal delete
                               "Can't delete positions 66-68 (exceeds max. position 67 of alignment 'ali_mini')");
             ta.close("xxx");
         }
         {
             GB_transaction ta(gb_main);
-            TEST_EXPECT_EQUAL(ARB_insert_character(gb_main, ali_name, -1, 3, "-."), // illegal insert
+            TEST_EXPECT_EQUAL(ARB_insdel_columns(gb_main, ali_name, -1, 3, "-."), // illegal insert
                               "Illegal sequence position -1");
             ta.close("xxx");
         }

@@ -77,7 +77,7 @@ static void insdel_event(AW_window *aws, AW_CL cl_insdelmode) {
         char *alignment = GBT_get_default_alignment(GLOBAL.gb_main);
 
         if (alignment) {
-            error             = ARB_insert_character(GLOBAL.gb_main, alignment, pos, nchar, deletes);
+            error             = ARB_insdel_columns(GLOBAL.gb_main, alignment, pos, nchar, deletes);
             if (!error) error = GBT_check_data(GLOBAL.gb_main, 0);
         }
         else {
