@@ -34,9 +34,6 @@
 
 static void Version();
 
-
-#define check_heap_sanity() do { char *x = malloc(10); free(x); } while (0)
-
 #if defined(DEBUG)
 // #define DEBUG_PRINTS
 #endif // DEBUG
@@ -51,10 +48,10 @@ static void Version();
 
 #define PRINT(s) fputs((s), stdout)
 
-#define ISCSYM(x) ((x) > 0 && (isalnum(x) || (x) == '_'))
-#define ABORTED   ((Word *) -1)
-#define MAXPARAM  20                                // max. number of parameters to a function
-#define NEWBUFSIZ (20480*sizeof(char))              // new buffer size
+#define IS_CSYM(x) ((x) > 0 && (isalnum(x) || (x) == '_'))
+#define ABORTED    ((Word *) -1)
+#define MAXPARAM   20                               // max. number of parameters to a function
+#define NEWBUFSIZ  (20480*sizeof(char))             // new buffer size
 
 
 static int donum               = 0;                 // print line numbers?
@@ -849,7 +846,7 @@ static int getsym(char *buf, FILE *f) {
         glastc = nextch(f);
         DEBUG_PRINT("getsym: returning brackets '");
     }
-    else if (!ISCSYM(c)) {
+    else if (!IS_CSYM(c)) {
         *buf++ = c;
         *buf   = 0;
         glastc = nextch(f);
@@ -857,7 +854,7 @@ static int getsym(char *buf, FILE *f) {
         DEBUG_PRINT("getsym: returning special symbol '");
     }
     else {
-        while (ISCSYM(c)) {
+        while (IS_CSYM(c)) {
             *buf++ = c;
             c = nextch(f);
         }
@@ -916,7 +913,7 @@ static int is_type_word(char *s) {
  * losing too many type specifiers. (sg)
  */
 #define IS_PARM_NAME(w) \
-    (ISCSYM(*(w)->string) && !is_type_word((w)->string) && \
+    (IS_CSYM(*(w)->string) && !is_type_word((w)->string) && \
     (!(w)->next || *(w)->next->string == ',' || \
      *(w)->next->string == '['))
 
@@ -930,7 +927,7 @@ static Word *typelist(Word *p) {
     r = w = word_alloc("");
     while (p && p->next) {
         // handle int *x --> int
-        if (p->string[0] && !ISCSYM(p->string[0]))
+        if (p->string[0] && !IS_CSYM(p->string[0]))
             break;
         // handle int x[] --> int
         if (p->next->string[0] == '[')
@@ -1118,6 +1115,16 @@ static Word *getparamlist(FILE *f) {
     return plist;
 }
 
+inline Word *getLastPtrRef(Word *w) {
+    Word *last = NULL;
+    while (w) {
+        if (strchr("&*", w->string[0]) == NULL) break;
+        last = w;
+        w    = w->next;
+    }
+    return last;
+}
+
 static void emit(Word *wlist, Word *plist, long startline) {
     // emit a function declaration. The attributes and name of the function
     // are in wlist; the parameters are in plist.
@@ -1240,7 +1247,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
         }
         printf("%s", w->string);
         DEBUG_PRINT_STRING("emit[2] ", w->string);
-        spaceBeforeNext = ISCSYM(w->string[0]);
+        spaceBeforeNext = IS_CSYM(w->string[0]);
     }
 
     if (use_macro) printf(" %s((", macro_name);
@@ -1259,11 +1266,22 @@ static void emit(Word *wlist, Word *plist, long startline) {
         if (tokStart == ',')                       spaceBeforeNext = 1;
         else if (strchr("[])", tokStart) != NULL)  spaceBeforeNext = 0;
         else {
+            int nextSpaceBeforeNext;
+            if (strchr("&*", tokStart) != NULL) {
+                if (spaceBeforeNext) {
+                    Word *lastPtrRef = getLastPtrRef(w);
+                    if (lastPtrRef->string[0] == '&') spaceBeforeNext = 0;
+                }
+                nextSpaceBeforeNext = tokStart == '&';
+            }
+            else {
+                nextSpaceBeforeNext = IS_CSYM(tokStart);;
+            }
             if (spaceBeforeNext) {
                 putchar(' ');
                 DEBUG_PRINT("emit[4] ' '\n");
             }
-            spaceBeforeNext = ISCSYM(tokStart);
+            spaceBeforeNext = nextSpaceBeforeNext;
         }
         fputs(token, stdout);
         DEBUG_PRINT_STRING("emit[5] ", token);
