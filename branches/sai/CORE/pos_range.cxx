@@ -92,7 +92,7 @@ void TEST_PosRange() {
     TEST_EXPECT(from7 == PosRange::after(6));
     TEST_EXPECT(till9 == PosRange::prior(10));
 
-    // test containment
+    // test containment (see also TEST_range_containment below)
     for (int pos = -3; pos<12; ++pos) {
         TEST_ANNOTATE_ASSERT(GBS_global_string("pos=%i", pos));
 
@@ -105,6 +105,19 @@ void TEST_PosRange() {
     TEST_EXPECT(whole.contains(INT_MAX));
     TEST_EXPECT(from7.contains(INT_MAX));
     TEST_REJECT(empty.contains(INT_MAX));
+
+    // test after/prior
+    TEST_EXPECT(empty.prior() == empty);
+    TEST_EXPECT(whole.prior() == empty);
+    TEST_EXPECT(from7.prior() == PosRange::till(6));
+    TEST_EXPECT(till9.prior() == empty);
+    TEST_EXPECT(seven2nine.prior() == PosRange::till(6));
+
+    TEST_EXPECT(empty.after() == empty);
+    TEST_EXPECT(whole.after() == empty);
+    TEST_EXPECT(from7.after() == empty);
+    TEST_EXPECT(till9.after() == PosRange::from(10));
+    TEST_EXPECT(seven2nine.after() == PosRange::from(10));
 }
 
 void TEST_ExplicitRange() {
@@ -115,7 +128,7 @@ void TEST_ExplicitRange() {
     PosRange f30t50(30, 50);
 
     ExplicitRange wholeOf17(whole, 17);
-    TEST_EXPECT(wholeOf17.is_limited());
+    TEST_EXPECT(PosRange(wholeOf17).is_limited());
 
     TEST_EXPECT_EQUAL(ExplicitRange(whole, 100).size(), 100);
     TEST_EXPECT_EQUAL(ExplicitRange(till50, 100).size(), 51); // 0-50
