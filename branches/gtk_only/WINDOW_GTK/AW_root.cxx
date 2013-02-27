@@ -186,8 +186,9 @@ void AW_root::apply_focus_policy(bool /*follow_mouse*/) {
 void AW_root::apply_sensitivity(AW_active mask) {
     aw_assert(legal_mask(mask));
 
-    for (auto btn : button_list) {
-      btn.apply_sensitivity(mask);
+    for (std::vector<AW_button>::iterator btn = button_list.begin();
+         btn != button_list.end(); ++btn) {
+      btn->apply_sensitivity(mask);
     }
 }
 
