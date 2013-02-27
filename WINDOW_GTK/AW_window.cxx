@@ -1109,7 +1109,7 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
 
     GtkWidget *labelWidget = NULL; //contains the label, or NULL
     prvt->combo_box = gtk_hbox_new(false, 1); //This box is used to align label and combobox
-    GtkWidget *cbox = gtk_combo_box_new();
+    GtkWidget *cbox = gtk_combo_box_new_text();
 
     int hbox_x = 0;//where to put the hbox
     int hbox_y = 0;
