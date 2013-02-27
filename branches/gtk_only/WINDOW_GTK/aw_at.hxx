@@ -5,7 +5,7 @@
 #include "aw_base.hxx"
 #endif
 
-
+class AW_xfig;
 class AW_window;
 
 /**
@@ -15,6 +15,7 @@ class AW_window;
 class AW_at {
 private:
     AW_window* window; /** < The window this cursor belongs to */
+    AW_xfig* xfig_data;
 public:
     short shadow_thickness;
     short length_of_buttons;
@@ -61,6 +62,9 @@ public:
     bool attach_any;
 
     AW_at(AW_window* pWindow);
+    void set_xfig(AW_xfig* xfig);
+    void set_mask(AW_active mask);
+    void at(const char *at_id);
     void at(int x, int y);
     void at_x(int x);
     void at_y(int y);
@@ -70,6 +74,7 @@ public:
     void at_set_to(bool attach_x, bool attach_y, int xoff, int yoff);
     void at_unset_to();
     void unset_at_commands();
+    void increment_at_commands(int x, int y);
     void at_set_min_size(int xmin, int ymin);
     void auto_space(int x, int y);
     void label_length(int length);

@@ -27,7 +27,6 @@
 #include "aw_device_print.hxx" 
 #include "aw_device_click.hxx"
 #include "aw_device_size.hxx"
-#include "aw_xfig.hxx"
 
 
 class AW_window;
@@ -316,8 +315,6 @@ public:
     void  refresh_toggle_field(int toggle_field_number); 
     void  _set_activate_callback(GtkWidget *widget);
     void  unset_at_commands();
-    void  increment_at_commands(int width, int height);
-
 
     AW_color_idx alloc_named_data_color(int colnum, char *colorname);
 
