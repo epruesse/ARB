@@ -76,73 +76,8 @@ int AW_window::get_button_length() const { return _at.get_button_length(); }
 void AW_window::get_at_position(int *x, int *y) const { _at.get_at_position(x,y); }
 int AW_window::get_at_xposition() const { return _at.get_at_xposition(); }
 int AW_window::get_at_yposition() const { return _at.get_at_yposition(); }
-
-void AW_window::at(const char *at_id) {
-    char to_position[100];
-    memset(to_position, 0, sizeof(to_position));
-
-    _at.attach_y   = _at.attach_x = false;
-    _at.attach_ly  = _at.attach_lx = false;
-    _at.attach_any = false;
-
-    if (!xfig_data) GBK_terminatef("no xfig-data loaded, can't position at(\"%s\")", at_id);
-
-    AW_xfig     *xfig = xfig_data;
-    AW_xfig_pos *pos;
-
-    pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, at_id);
-
-    if (!pos) {
-        sprintf(to_position, "X:%s", at_id);
-        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
-        if (pos) _at.attach_any = _at.attach_lx = true;
-    }
-    if (!pos) {
-        sprintf(to_position, "Y:%s", at_id);
-        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
-        if (pos) _at.attach_any = _at.attach_ly = true;
-    }
-    if (!pos) {
-        sprintf(to_position, "XY:%s", at_id);
-        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
-        if (pos) _at.attach_any = _at.attach_lx = _at.attach_ly = true;
-    }
-
-    if (!pos) GBK_terminatef("ID '%s' does not exist in xfig file", at_id);
-
-    at((pos->x - xfig->minx), (pos->y - xfig->miny - this->get_root()->font_height - 9));
-    _at.correct_for_at_center = pos->center;
-
-    sprintf(to_position, "to:%s", at_id);
-    pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
-
-    if (!pos) {
-        sprintf(to_position, "to:X:%s", at_id);
-        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
-        if (pos) _at.attach_any = _at.attach_x = true;
-    }
-    if (!pos) {
-        sprintf(to_position, "to:Y:%s", at_id);
-        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
-        if (pos) _at.attach_any = _at.attach_y = true;
-    }
-    if (!pos) {
-        sprintf(to_position, "to:XY:%s", at_id);
-        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
-        if (pos) _at.attach_any = _at.attach_x = _at.attach_y = true;
-    }
-
-    if (pos) {
-        _at.to_position_exists = true;
-        _at.to_position_x = (pos->x - xfig->minx);
-        _at.to_position_y = (pos->y - xfig->miny);
-        _at.correct_for_at_center = 0; // always justify left when a to-position exists
-    }
-    else {
-        _at.to_position_exists = false;
-    }
-}
-
+void AW_window::at(const char *at_id) { _at.at(at_id); }
+void AW_window::sens_mask(AW_active mask){  _at.set_mask(mask); }
 
 void AW_window::get_scrollarea_size(AW_screen_area *square) {
     _get_area_size(AW_MIDDLE_AREA, square);
@@ -423,31 +358,6 @@ static void AW_label_in_awar_list(AW_window *aww, GtkWidget* widget, const char 
     }
 }
 
-void AW_window::increment_at_commands(int width, int height) {
-
-    at_shift(width, 0);
-    at_shift(-width, 0);        // set bounding box
-
-    if (_at.do_auto_increment) {
-        at_shift(_at.auto_increment_x, 0);
-    }
-    if (_at.do_auto_space) {
-        at_shift(_at.auto_space_x + width, 0);
-    }
-
-    if (_at.biggest_height_of_buttons < height) {
-        _at.biggest_height_of_buttons = height;
-    }
-
-    if (_at.max_y_size < (_at.y_for_next_button + _at.biggest_height_of_buttons + 3.0)) {
-        _at.max_y_size = _at.y_for_next_button + _at.biggest_height_of_buttons + 3;
-    }
-
-    if (_at.max_x_size < (_at.x_for_next_button + this->get_root()->font_width)) {
-        _at.max_x_size = _at.x_for_next_button + this->get_root()->font_width;
-    }
-}
-
 void AW_window::set_background(const char */*colorname*/, GtkWidget* /*parentWidget*/) {
     GTK_NOT_IMPLEMENTED;
 }
@@ -704,8 +614,8 @@ void AW_window::create_button(const char *macro_name, AW_label button_text, cons
    // p_w->toggle_field = button;
 
     this->unset_at_commands();
-    this->increment_at_commands(width_of_label_and_spacer + width_of_button + SPACE_BEHIND_BUTTON, 
-                                height_of_button);
+    _at.increment_at_commands(width_of_label_and_spacer + width_of_button + SPACE_BEHIND_BUTTON, 
+                              height_of_button);
 }
 
 
@@ -784,7 +694,7 @@ void AW_window::create_toggle(const char */*var_name*/){
         height = checkButton->allocation.height;
 
     }
-    this->increment_at_commands(width + SPACE_BEHIND_BUTTON, height);
+    _at.increment_at_commands(width + SPACE_BEHIND_BUTTON, height);
 }
 
 void AW_window::create_toggle(const char */*awar_name*/, const char */*nobitmap*/, const char */*yesbitmap*/, int /*buttonWidth*/ /* = 0 */){
@@ -963,7 +873,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     width_of_last_widget -= 2;
 
     this->unset_at_commands();
-    this->increment_at_commands(width_of_last_widget, height_of_last_widget);
+    _at.increment_at_commands(width_of_last_widget, height_of_last_widget);
 
 }
 
@@ -1111,6 +1021,8 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
     prvt->combo_box = gtk_hbox_new(false, 1); //This box is used to align label and combobox
     GtkWidget *cbox = gtk_combo_box_new_text();
 
+    gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(cbox), GTK_SENSITIVITY_ON);
+
     int hbox_x = 0;//where to put the hbox
     int hbox_y = 0;
     
@@ -1179,7 +1091,7 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
     GtkRequisition requisition;
     gtk_widget_size_request(GTK_WIDGET(prvt->combo_box), &requisition);
     unset_at_commands();
-    increment_at_commands(requisition.width, requisition.height);
+    _at.increment_at_commands(requisition.width, requisition.height);
     
     return root->current_option_menu;
 }
@@ -1248,6 +1160,8 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         FIXME("setting sensitivity of option menu entries not implemented");
         // root->register_widget(entry, _at->widget_mask);
         this->unset_at_commands();
+    } else {
+      printf("arg\n");
     }
 }
 
@@ -1257,7 +1171,7 @@ void AW_window::update_option_menu() {
     gtk_widget_size_request(GTK_WIDGET(prvt->combo_box), &requisition);
     unset_at_commands();
     // no clue where the +10 comes from
-    increment_at_commands(requisition.width + 10, requisition.height);
+    _at.increment_at_commands(requisition.width + 10, requisition.height);
 }
 
 
@@ -1446,7 +1360,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     }
 
     this->unset_at_commands();
-    this->increment_at_commands(width_of_last_widget, height_of_last_widget);
+    _at.increment_at_commands(width_of_last_widget, height_of_last_widget);
     
     gtk_widget_show(scrolled_win);
     
@@ -1621,7 +1535,7 @@ void AW_window::refresh_toggle_field(int /*toggle_field_number*/) {
 //            }
 //
 //            this->unset_at_commands();
-//            this->increment_at_commands(width_of_last_widget, height_of_last_widget);
+//            _at.increment_at_commands(width_of_last_widget, height_of_last_widget);
 //        }
 //    }
 //    else {
@@ -1871,20 +1785,12 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 }
 
 void AW_window::load_xfig(const char *file, bool resize /*= true*/){
+    if (file)   xfig_data = new AW_xfig(file, get_root()->font_width, get_root()->font_height);
+    else        xfig_data = new AW_xfig(get_root()->font_width, get_root()->font_height); // create an empty xfig
 
-    AW_xfig *xfig = 0;
+    xfig_data->create_gcs(get_device(AW_INFO_AREA)); 
 
-    if (file)   xfig = new AW_xfig(file, get_root()->font_width, get_root()->font_height);
-    else        xfig = new AW_xfig(get_root()->font_width, get_root()->font_height); // create an empty xfig
- 
-    xfig_data = xfig;
-    xfig->create_gcs(get_device(AW_INFO_AREA)); 
-
-    int xsize = xfig->maxx - xfig->minx;
-    int ysize = xfig->maxy - xfig->miny;
-
-    if (xsize > _at.max_x_size) _at.max_x_size = xsize;
-    if (ysize > _at.max_y_size) _at.max_y_size = ysize;
+    _at.set_xfig(xfig_data);
 
     AW_device *device = get_device(AW_INFO_AREA);
 
@@ -1911,9 +1817,6 @@ void AW_window::restore_at_size_and_attach(const AW_at_size */*at_size*/){
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::sens_mask(AW_active /*mask*/){
-    GTK_NOT_IMPLEMENTED;
-}
 
 void AW_window::sep______________() {
     
@@ -2161,16 +2064,14 @@ AW_window::AW_window()
     main_drag_gc(0),
     picture(new AW_screen_area)
 {
-
     reset_scrolled_picture_size();
     
     prvt = new AW_window::AW_window_gtk();
     for(int i = 0; i < AW_MAX_AREA; i++ ) {
         prvt->areas.push_back(NULL);
     }
-
-    xfig_data = 0; // otherwise -> infrequent segfault in calculate_string_width()
 }
+
 
 void AW_window::reset_scrolled_picture_size() {
     picture->l = 0;

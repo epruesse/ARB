@@ -12,6 +12,9 @@
  
 #include "aw_at.hxx"
 #include "aw_window.hxx"
+#include "aw_root.hxx"
+#include "aw_xfig.hxx"
+
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
@@ -22,6 +25,7 @@ AW_at::AW_at(AW_window* pWindow) {
     
     aw_assert(NULL != pWindow);
     window = pWindow;
+    xfig_data = NULL;
     
     length_of_buttons = 10;
     height_of_buttons = 0;
@@ -67,6 +71,85 @@ AW_at::AW_at(AW_window* pWindow) {
     attach_lx = false;          // attach left side to right form
     attach_ly = false;
     attach_any = false;
+}
+
+void AW_at::set_xfig(AW_xfig* xfig) {
+    xfig_data = xfig;
+    int xsize = xfig->maxx - xfig->minx;
+    int ysize = xfig->maxy - xfig->miny;
+
+    if (xsize > max_x_size) max_x_size = xsize;
+    if (ysize > max_y_size) max_y_size = ysize;
+}
+
+void AW_at::set_mask(AW_active mask) {
+    widget_mask = mask;
+}
+
+void AW_at::at(const char *at_id) {
+    char to_position[100];
+    memset(to_position, 0, sizeof(to_position));
+
+    attach_y   = attach_x = false;
+    attach_ly  = attach_lx = false;
+    attach_any = false;
+
+    if (!xfig_data) GBK_terminatef("no xfig-data loaded, can't position at(\"%s\")", at_id);
+
+    AW_xfig     *xfig = xfig_data;
+    AW_xfig_pos *pos;
+
+    pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, at_id);
+
+    if (!pos) {
+        sprintf(to_position, "X:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
+        if (pos) attach_any = attach_lx = true;
+    }
+    if (!pos) {
+        sprintf(to_position, "Y:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
+        if (pos) attach_any = attach_ly = true;
+    }
+    if (!pos) {
+        sprintf(to_position, "XY:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
+        if (pos) attach_any = attach_lx = attach_ly = true;
+    }
+
+    if (!pos) GBK_terminatef("ID '%s' does not exist in xfig file", at_id);
+
+    at((pos->x - xfig->minx), (pos->y - xfig->miny - window->get_root()->font_height - 9));
+    correct_for_at_center = pos->center;
+
+    sprintf(to_position, "to:%s", at_id);
+    pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
+
+    if (!pos) {
+        sprintf(to_position, "to:X:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
+        if (pos) attach_any = attach_x = true;
+    }
+    if (!pos) {
+        sprintf(to_position, "to:Y:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
+        if (pos) attach_any = attach_y = true;
+    }
+    if (!pos) {
+        sprintf(to_position, "to:XY:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
+        if (pos) attach_any = attach_x = attach_y = true;
+    }
+
+    if (pos) {
+        to_position_exists = true;
+        to_position_x = (pos->x - xfig->minx);
+        to_position_y = (pos->y - xfig->miny);
+        correct_for_at_center = 0; // always justify left when a to-position exists
+    }
+    else {
+        to_position_exists = false;
+    }
 }
 
 void AW_at::at(int x, int y){
@@ -167,6 +250,30 @@ void AW_at::unset_at_commands() {
     background_color = 0;
 }
 
+void AW_at::increment_at_commands(int width, int height) {
+    at_shift(width, 0);
+    at_shift(-width, 0);        // set bounding box
+
+    if (do_auto_increment) {
+        at_shift(auto_increment_x, 0);
+    }
+    if (do_auto_space) {
+        at_shift(auto_space_x + width, 0);
+    }
+
+    if (biggest_height_of_buttons < height) {
+        biggest_height_of_buttons = height;
+    }
+
+    if (max_y_size < (y_for_next_button + biggest_height_of_buttons + 3.0)) {
+        max_y_size = y_for_next_button + biggest_height_of_buttons + 3;
+    }
+
+    if (max_x_size < (x_for_next_button + window->get_root()->font_width)) {
+        max_x_size = x_for_next_button + window->get_root()->font_width;
+    }
+}
+
 void AW_at::at_unset_to(){
     attach_x   = attach_y = to_position_exists = false;
     attach_any = attach_lx || attach_ly;
@@ -216,6 +323,7 @@ int AW_at::get_at_xposition() const {
 int AW_at::get_at_yposition() const {
     return y_for_next_button; 
 }
+
 
 void AW_at_size::store(const AW_at& at) {
     to_position_exists = at.to_position_exists;

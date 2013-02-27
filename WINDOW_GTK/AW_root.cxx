@@ -259,8 +259,9 @@ void AW_root::register_widget(GtkWidget* w, AW_active mask) {
     prvt.set_last_widget(w);
 
     if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
-        button_list.push_back(AW_button(mask, w));
-        if (!(mask & global_mask)) gtk_widget_set_sensitive(w, false); // disable widget if mask doesn't match
+        AW_button btn(mask, w);
+        button_list.push_back(btn);
+        btn.apply_sensitivity(global_mask);
     }
 }
 
