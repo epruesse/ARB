@@ -37,20 +37,6 @@
 
 const int AW_NUMBER_OF_F_KEYS = 20;
 
-AW_buttons_struct::AW_buttons_struct(AW_active maski, GtkWidget* w, AW_buttons_struct *prev_button) {
-    aw_assert(w);
-    aw_assert(legal_mask(maski));
-
-    mask     = maski;
-    button   = w;
-    next     = prev_button;
-}
-
-AW_buttons_struct::~AW_buttons_struct() {
-    delete next;
-}
-
-
 void AW_window::recalc_pos_atShow(AW_PosRecalc /*pr*/){
     GTK_NOT_IMPLEMENTED;
 }
@@ -708,7 +694,7 @@ void AW_window::create_button(const char *macro_name, AW_label button_text, cons
     if (_at.attach_any) aw_attach_widget(buttonOrLabel, _at);
 
     if (prvt->callback) {
-        root->make_sensitive(buttonOrLabel, _at.widget_mask);
+        root->register_widget(buttonOrLabel, _at.widget_mask);
         // should we also enable/disable the label?
     }
 
@@ -955,7 +941,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
                      (gpointer) root);
     vs->tie_widget(0, textField, AW_WIDGET_INPUT_FIELD, this);
 
-    root->make_sensitive(textField, _at.widget_mask);
+    root->register_widget(textField, _at.widget_mask);
     
     int height_of_last_widget = textField->allocation.height;
 
@@ -1046,7 +1032,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
         //p_w->modes_widgets[p_w->number_of_modes] = button;
     }
 
-    root->make_sensitive(GTK_WIDGET(item), mask);
+    root->register_widget(GTK_WIDGET(item), mask);
     prvt->number_of_modes++;
 
     return prvt->number_of_modes;
@@ -1189,7 +1175,7 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
     //connect changed signal
     g_signal_connect(G_OBJECT(cbox), "changed", G_CALLBACK(AW_combo_box_changed), (gpointer) next);
    
-    root->make_sensitive(prvt->combo_box, _at.widget_mask);
+    root->register_widget(prvt->combo_box, _at.widget_mask);
     GtkRequisition requisition;
     gtk_widget_size_request(GTK_WIDGET(prvt->combo_box), &requisition);
     unset_at_commands();
@@ -1260,7 +1246,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
 
        
         FIXME("setting sensitivity of option menu entries not implemented");
-        // root->make_sensitive(entry, _at->widget_mask);
+        // root->register_widget(entry, _at->widget_mask);
         this->unset_at_commands();
     }
 }
@@ -1456,7 +1442,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 //                          (XtPointer) _d_callback);
 //        }
         vs->tie_widget((AW_CL)root->get_last_selection_list(), tree, AW_WIDGET_SELECTION_LIST, this);
-        root->make_sensitive(tree, _at.widget_mask);
+        root->register_widget(tree, _at.widget_mask);
     }
 
     this->unset_at_commands();
@@ -1526,7 +1512,7 @@ void AW_window::create_toggle_field(const char *awar_name, int orientation /*= 0
     
     prvt->toggle_field_awar_name = awar_name;
     
-    root->make_sensitive(prvt->toggle_field, _at.widget_mask);
+    root->register_widget(prvt->toggle_field, _at.widget_mask);
 }
 
 void AW_window::create_toggle_field(const char *var_name, AW_label labeli, const char */*mnemonic*/) {
@@ -1790,7 +1776,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const cha
 
     cbs->id = strdup(topic_id);
     root->define_remote_command(cbs);
-    root->make_sensitive(item, mask);
+    root->register_widget(item, mask);
 }
 
 
@@ -1833,7 +1819,7 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active m
        // open_test_duplicate_mnemonics(prvt->menu_deep+1, name, mnemonic);
     #endif
 
-    root->make_sensitive(GTK_WIDGET(item), mask);
+    root->register_widget(GTK_WIDGET(item), mask);
 }
 
 

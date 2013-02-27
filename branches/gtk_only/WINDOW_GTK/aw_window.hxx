@@ -20,6 +20,7 @@
 #include "aw_gtk_forward_declarations.hxx"
 #include "aw_area_management.hxx"
 #include "aw_help.hxx"
+#include "aw_button.hxx"
 
 //the following types are not forward declared because ARB needs to know about them
 //and I dont want to change includes in ARB
@@ -27,6 +28,7 @@
 #include "aw_device_click.hxx"
 #include "aw_device_size.hxx"
 #include "aw_xfig.hxx"
+
 
 class AW_window;
 class AW_xfig;
@@ -136,17 +138,6 @@ void AW_normal_cursor(AW_root *);
 void AW_openURL(AW_root *aw_root, const char *url);
 
 typedef void (*AW_cb_struct_guard)();
-
-
-struct AW_buttons_struct : virtual Noncopyable {
-    AW_buttons_struct(AW_active maski, GtkWidget* w, AW_buttons_struct *next);
-    ~AW_buttons_struct();
-
-    AW_active          mask;
-    GtkWidget*         button;
-    AW_buttons_struct *next;
-};
-
 
 /**
  * A list of callback functions.
