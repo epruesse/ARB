@@ -971,7 +971,7 @@ public:
 };
 
 class AliInsertCommand : public AliEditCommand {
-    size_t pos;
+    size_t pos; // inserts in front of pos
     size_t amount;
 public:
     AliInsertCommand(size_t pos_, size_t amount_) : pos(pos_), amount(amount_) {}
@@ -1268,10 +1268,18 @@ static size_t countAffectedEntries(GBDATA *Main, const Alignment& ali) {
 static GB_ERROR apply_command_to_alignment(const AliEditCommand& cmd, const char *cmd_description, GBDATA *Main, const char *alignment_name, const char *deletable_chars) {
     // applies 'cmd' to one or all alignments
     // (if 'alignment_name' is NULL, all alignments are affected - probably useless case)
+    //
+    // 'deletable_chars' is either
+    // - NULL -> nothing may be deleted
+    // - "%" -> anything may be deleted
+    // - or a string containing all deletable characters
 
-    Deletable deletable = strchr(deletable_chars, '%')
-        ? Deletable(Deletable::ANYTHING)
-        : Deletable(deletable_chars);
+    Deletable deletable =
+        deletable_chars
+        ? ( strchr(deletable_chars, '%')
+            ? Deletable(Deletable::ANYTHING)
+            : Deletable(deletable_chars))
+        : Deletable(Deletable::NOTHING);
 
     GB_ERROR  error      = 0;
     GBDATA   *gb_presets = GBT_get_presets(Main);
@@ -1357,12 +1365,53 @@ GB_ERROR ARB_insdel_columns(GBDATA *Main, const char *alignment_name, long pos, 
 }
 
 // AISC_MKPT_PROMOTE:class RangeList;
+// AISC_MKPT_PROMOTE:enum UseRange { RANGES, SINGLE_COLUMNS };
+// AISC_MKPT_PROMOTE:enum InsertWhere { INFRONTOF, BEHIND };
+
 GB_ERROR ARB_delete_columns_using_SAI(GBDATA *Main, const char *alignment_name, const RangeList& ranges, const char *deletable_chars) {
+    // Deletes all columns defined by 'ranges'
+    // from all members (SAIs, seqs, ..) of alignment named 'alignment_name'.
+
     AliEditCommand *cmd = new AliAutoFormatCommand; // @@@ use SmartPtr (here and in AliCompositeCommand)
     for (RangeList::reverse_iterator r = ranges.rbegin(); r != ranges.rend(); ++r) {
         cmd = new AliCompositeCommand(cmd, new AliDeleteCommand(r->start(), r->size()));
     }
     GB_ERROR error = apply_command_to_alignment(*cmd, "Deleting columns using SAI", Main, alignment_name, deletable_chars);
+    delete cmd;
+    return error;
+}
+
+GB_ERROR ARB_insert_columns_using_SAI(GBDATA *Main, const char *alignment_name, const RangeList& ranges, UseRange units, InsertWhere where, size_t amount) {
+    // Insert 'amount' columns into all members of the alignment named 'alignment_name'.
+    //
+    // If units is
+    // - RANGES, each range
+    // - SINGLE_COLUMNS, each column of each range
+    // is handled as a unit.
+    //
+    // InsertWhere specifies whether the insertion happens INFRONTOF or BEHIND
+
+    AliEditCommand *cmd = new AliAutoFormatCommand; // @@@ use SmartPtr (here and in AliCompositeCommand)
+    for (RangeList::reverse_iterator r = ranges.rbegin(); r != ranges.rend(); ++r) {
+        switch (units) {
+            case RANGES: {
+                int pos;
+                switch (where) {
+                    case INFRONTOF: pos = r->start(); break;
+                    case BEHIND:    pos = r->end()+1; break;
+                }
+                cmd = new AliCompositeCommand(cmd, new AliInsertCommand(pos, amount));
+                break;
+            }
+            case SINGLE_COLUMNS: {
+                for (int pos = r->end(); pos >= r->start(); --pos)  {
+                    cmd = new AliCompositeCommand(cmd, new AliInsertCommand(where == INFRONTOF ? pos : pos+1, amount));
+                }
+                break;
+            }
+        }
+    }
+    GB_ERROR error = apply_command_to_alignment(*cmd, "Inserting columns using SAI", Main, alignment_name, NULL);
     delete cmd;
     return error;
 }
@@ -2001,7 +2050,8 @@ void TEST_insert_delete_DB_using_SAI() {
 
         // test here is just a duplicate from TEST_insert_delete_DB() - just here to show the data
         TEST_EXPECT_NO_ERROR(ARB_format_alignment(gb_main, ali_name));
-        TEST_ALI_LEN_ALIGNED(57, 1);
+        int alilen_exp = 57;
+        TEST_ALI_LEN_ALIGNED(alilen_exp, 1);
         TEST_DATA("...G-GGC-C-G...--A--G--GAA-CCUG-CGGC-UGG--AUCACCUCC......",
                   "---A-CGA-U-C-----C--G--GAA-CCUG-CGGC-UGG--AUCACCUCCU.....",
                   "...A-CGA-A-C.....G--G--GAA-CCUG-CGGC-UGG--AUCACCUCCU-----",
@@ -2013,20 +2063,93 @@ void TEST_insert_delete_DB_using_SAI() {
                   "ODu8EJh60e1XYLgxvzrqmeMiMAjB5EJxT6JPiCvQrq4uCLDoHlWV59DW!",
                   HELIX_STRUCT);
 
-        RangeList delRanges = build_RangeList_from_string(
-            /* */ "xxx---------xxxxx---------x---------x---------------xxxx-",
+        RangeList delRanges  = build_RangeList_from_string(
+            /* */ "xxx-------x-x-xxx---------x---------x---------------xxxx-",
             "x", false);
         TEST_EXPECT_NO_ERROR(ARB_delete_columns_using_SAI(gb_main, ali_name, delRanges, ".-"));
-        TEST_ALI_LEN_ALIGNED(43, 1);
-        TEST_DATA("G-GGC-C-GA--G--GAACCUG-CGGCUGG--AUCACCUCC..",
-                  "A-CGA-U-CC--G--GAACCUG-CGGCUGG--AUCACCUCCU.",
-                  "A-CGA-A-CG--G--GAACCUG-CGGCUGG--AUCACCUCCU-",
-                  "U-GCC-U-GG--C--CCUUAGC-GCGGUGG--UCCCACCUGA.",
+        alilen_exp -= 14;
+        TEST_ALI_LEN_ALIGNED(alilen_exp, 1);
+        TEST_DATA("G-GGC-CG.A--G--GAACCUG-CGGCUGG--AUCACCUCC..",
+                  "A-CGA-UC-C--G--GAACCUG-CGGCUGG--AUCACCUCCU.",
+                  "A-CGA-AC.G--G--GAACCUG-CGGCUGG--AUCACCUCCU-",
+                  "U-GCC-UG-G--C--CCUUAGC-GCGGUGG--UCCCACCUGA.",
                   "..[<[....[..[..[<<[..].>>]...]..]....].>..]",
                   "..1.1....25.25.34.34.34..34..25.25...1....1",
                   "..x..x...x...x.x...x.x....x..x...x...x.....x",
-                  "6740960355210094258200611652002113943589980",
-                  "8EJh60e1XzrqmeMiMAB5EJxT6JPCvQrq4uCLDoHlWV!",
+                  "6740960585210094258200611652002113943589980",
+                  "8EJh60eXLzrqmeMiMAB5EJxT6JPCvQrq4uCLDoHlWV!",
+                  HELIX_STRUCT);
+
+        // insert INFRONTOF each range
+        RangeList insRanges = build_RangeList_from_string(
+            /* */ "---xx---xxxxxxxx---------xxxx--------------",
+            "x", false);
+        TEST_EXPECT_NO_ERROR(ARB_insert_columns_using_SAI(gb_main, ali_name, insRanges, RANGES, INFRONTOF, 2));
+        alilen_exp += 3*2;
+        TEST_ALI_LEN_ALIGNED(alilen_exp, 1);
+        TEST_DATA("G-G--GC-CG...A--G--GAACCUG-CG--GCUGG--AUCACCUCC..",
+                  "A-C--GA-UC---C--G--GAACCUG-CG--GCUGG--AUCACCUCCU.",
+                  "A-C--GA-AC...G--G--GAACCUG-CG--GCUGG--AUCACCUCCU-",
+                  "U-G--CC-UG---G--C--CCUUAGC-GC--GGUGG--UCCCACCUGA.",
+                  "..[..<[......[..[..[<<[..].>>..]...]..]....].>..]",
+                  "..1...1......25.25.34.34.34....34..25.25...1....1",
+                  "..x....x.....x...x.x...x.x......x..x...x...x.....x",
+                  "6740009605008521009425820061100652002113943589980",
+                  "8EJ!!h60eX!!LzrqmeMiMAB5EJxT6!!JPCvQrq4uCLDoHlWV!",
+                  HELIX_STRUCT);
+
+        // insert BEHIND each range
+        insRanges = build_RangeList_from_string(
+            /* */ "-----------xx-x------------xxxxxx---------------x",
+            "x", false);
+        TEST_EXPECT_NO_ERROR(ARB_insert_columns_using_SAI(gb_main, ali_name, insRanges, RANGES, BEHIND, 4));
+        alilen_exp += 4*4;
+        TEST_ALI_LEN_ALIGNED(alilen_exp, 1);
+        TEST_DATA("G-G--GC-CG.......A------G--GAACCUG-CG--GC----UGG--AUCACCUCC......",
+                  "A-C--GA-UC-------C------G--GAACCUG-CG--GC----UGG--AUCACCUCCU.....",
+                  "A-C--GA-AC.......G------G--GAACCUG-CG--GC----UGG--AUCACCUCCU-----",
+                  "U-G--CC-UG-------G------C--CCUUAGC-GC--GG----UGG--UCCCACCUGA.....",
+                  "..[..<[..........[......[..[<<[..].>>..].......]..]....].>..]....",
+                  "..1...1..........25.....25.34.34.34....34......25.25...1....1....",
+                  "..x....x.........x.......x.x...x.x......x......x...x...x.........x", // @@@ ref gets destroyed here
+                  "67400096050080000520000100942582006110065000020021139435899800000",
+                  "8EJ!!h60eX!!L!!!!zr!!!!qmeMiMAB5EJxT6!!JP!!!!CvQrq4uCLDoHlWV!!!!!",
+                  HELIX_STRUCT);
+
+        // insert INFRONTOF each column
+        insRanges = build_RangeList_from_string(
+            /* */ "x----xx--------------------------------------xxx----xxxx--------x",
+            "x", false);
+        TEST_EXPECT_NO_ERROR(ARB_insert_columns_using_SAI(gb_main, ali_name, insRanges, SINGLE_COLUMNS, INFRONTOF, 1));
+        alilen_exp += 11*1;
+        TEST_ALI_LEN_ALIGNED(alilen_exp, 1);
+        TEST_DATA(".G-G---G-C-CG.......A------G--GAACCUG-CG--GC-----U-G-G--AU-C-A-C-CUCC.......",
+                  ".A-C---G-A-UC-------C------G--GAACCUG-CG--GC-----U-G-G--AU-C-A-C-CUCCU......",
+                  ".A-C---G-A-AC.......G------G--GAACCUG-CG--GC-----U-G-G--AU-C-A-C-CUCCU------",
+                  ".U-G---C-C-UG-------G------C--CCUUAGC-GC--GG-----U-G-G--UC-C-C-A-CCUGA......",
+                  "...[...<.[..........[......[..[<<[..].>>..]..........]..]........].>..].....",
+                  "...1.....1..........25.....25.34.34.34....34.........25.25.......1....1.....",
+                  "...x......x.........x.......x.x...x.x......x.........x...x.......x..........x",
+                  "0674000009605008000052000010094258200611006500000200002113090403058998000000",
+                  "!8EJ!!!h!60eX!!L!!!!zr!!!!qmeMiMAB5EJxT6!!JP!!!!!C!v!Qrq4u!C!L!D!oHlWV!!!!!!",
+                  HELIX_STRUCT);
+
+        // insert BEHIND each column
+        insRanges   = build_RangeList_from_string(
+            /* */ "------------------------------xxxxxxx----------------------------xxxxxx-----",
+            "x", false);
+        TEST_EXPECT_NO_ERROR(ARB_insert_columns_using_SAI(gb_main, ali_name, insRanges, SINGLE_COLUMNS, BEHIND, 2));
+        alilen_exp += 13*2;
+        TEST_ALI_LEN_ALIGNED(alilen_exp, 1);
+        TEST_DATA(".G-G---G-C-CG.......A------G--G--A--A--C--C--U--G---CG--GC-----U-G-G--AU-C-A-C-C--U--C--C.............",
+                  ".A-C---G-A-UC-------C------G--G--A--A--C--C--U--G---CG--GC-----U-G-G--AU-C-A-C-C--U--C--C--U..........",
+                  ".A-C---G-A-AC.......G------G--G--A--A--C--C--U--G---CG--GC-----U-G-G--AU-C-A-C-C--U--C--C--U----------",
+                  ".U-G---C-C-UG-------G------C--C--C--U--U--A--G--C---GC--GG-----U-G-G--UC-C-C-A-C--C--U--G--A..........",
+                  "...[...<.[..........[......[..[..<..<..[........]...>>..]..........]..]........].....>........].......",
+                  "...1.....1..........25.....25.3..4.....3..4.....3..4....34.........25.25.......1..............1.......",  // @@@ helix nrs destroyed
+                  "...x......x.........x.......x.x...........x.....x........x.........x...x.......x......................x", // @@@ ref destroyed further
+                  "067400000960500800005200001009400200500800200000000611006500000200002113090403050080090090080000000000",
+                  "!8EJ!!!h!60eX!!L!!!!zr!!!!qmeMi!!M!!A!!B!!5!!E!!J!!xT6!!JP!!!!!C!v!Qrq4u!C!L!D!o!!H!!l!!W!!V!!!!!!!!!!",
                   HELIX_STRUCT);
     }
 

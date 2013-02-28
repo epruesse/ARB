@@ -16,8 +16,11 @@ GB_ERROR ARB_format_alignment(GBDATA *Main, const char *alignment_name);
 GB_ERROR ARB_insdel_columns(GBDATA *Main, const char *alignment_name, long pos, long count, const char *deletable_chars);
 
 class RangeList;
+enum UseRange { RANGES, SINGLE_COLUMNS };
+enum InsertWhere { INFRONTOF, BEHIND };
 
 GB_ERROR ARB_delete_columns_using_SAI(GBDATA *Main, const char *alignment_name, const RangeList& ranges, const char *deletable_chars);
+GB_ERROR ARB_insert_columns_using_SAI(GBDATA *Main, const char *alignment_name, const RangeList& ranges, UseRange units, InsertWhere where, size_t amount);
 
 #else
 #error insdel.h included twice

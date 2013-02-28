@@ -32,9 +32,7 @@
 #define AWAR_INSDEL_WHAT      TMP_AWAR_INSDEL "what"
 #define AWAR_INSDEL_DIRECTION AWAR_INSDEL "direction"
 
-enum UseRange { RANGES, SINGLE_COLUMNS };
 enum SaiContains { CONTAINS, DOESNT_CONTAIN };
-enum InsertWhere { INFRONTOF, BEHIND };
 enum InsdelMode { INSERT, DELETE };
 
 static void range_changed_cb(AW_root *root) {
@@ -131,9 +129,8 @@ AW_window *create_insertDeleteColumn_window(AW_root *root) {
         aws->at("actions");
         aws->callback(insdel_event, (AW_CL)INSERT); aws->create_button("INSERT", "INSERT", "I");
         aws->callback(insdel_event, (AW_CL)DELETE); aws->create_button("DELETE", "DELETE", "D");
-
-        return aws;
     }
+    return aws;
 }
 
 AW_window *create_insertDeleteBySAI_window(AW_root *root, AW_CL cl_gbmain) {
@@ -206,7 +203,6 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, AW_CL cl_gbmain) {
         aws->at("what0"); aws->create_button(0, AWAR_INSDEL_WHAT);
         aws->at("what1"); aws->create_button(0, AWAR_INSDEL_WHAT);
         aws->at("what2"); aws->create_button(0, AWAR_INSDEL_WHAT);
-
-        return aws;
     }
+    return aws;
 }
