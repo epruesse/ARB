@@ -93,17 +93,10 @@ bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char
     GdkGCValues values;
     GdkGC *gdkGc = device_gtk->get_common()->get_GC(gc);
 
-    gdk_gc_get_values(gdkGc, &values);
-    ASSERT_FALSE(values.font == NULL);
-    FIXME("Use NULL font");
-    //TODO according to the gtk documentation it should be possible to use NULL as font.
-    //      NULL means: use the gc font. However that does not work. Maybe it will in a newer gtk version.
-    gdk_draw_string(GDK_DRAWABLE(gtk_widget_get_window(device_gtk->drawingArea)),
-                    values.font,
-                    gdkGc,
-                    AW_INT(X),
-                    AW_INT(Y),
-                    str);
+    PangoLayout *pl = gtk_widget_create_pango_layout(device_gtk->drawingArea, str);
+    gdk_draw_layout(GDK_DRAWABLE(gtk_widget_get_window(device_gtk->drawingArea)),
+                    gdkGc, AW_INT(X), AW_INT(Y), pl);
+
 
     return true;
 }
