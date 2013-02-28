@@ -30,6 +30,7 @@
 #include "aw_select.hxx"
 #include <gtk/gtk.h>
 
+#include <string>
 
 #ifndef ARBDB_H
 #include <arbdb.h>
@@ -38,25 +39,6 @@
 
 const int AW_NUMBER_OF_F_KEYS = 20;
 
-void AW_window::recalc_pos_atShow(AW_PosRecalc /*pr*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-AW_PosRecalc AW_window::get_recalc_pos_atShow() const {
-    GTK_NOT_IMPLEMENTED;
-    return AW_KEEP_POS; // 0
-}
-
-void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
-    if (sr == AW_RESIZE_ANY) {
-        sr = (recalc_size_at_show == AW_RESIZE_USER) ? AW_RESIZE_USER : AW_RESIZE_DEFAULT;
-    }
-    recalc_size_at_show = sr;
-}
-
-void AW_window::on_hide(aw_hide_cb /*call_on_hide*/){
-    GTK_NOT_IMPLEMENTED;
-}
 
 void AW_window::at(int x, int y){ _at.at(x,y); }
 void AW_window::at_x(int x) { _at.at_x(x); }
@@ -2081,13 +2063,53 @@ AW_window::~AW_window() {
 
 void AW_window::init_window(const char *window_name, const char* window_title,
                             int width, int height, bool resizable) {
-    if (window_name && window_name[0] != '\0') {
-        window_defaults_name = GBS_string_2_key(window_name);
-    }
+    // clean unwanted chars from window_name 
+    window_defaults_name = GBS_string_2_key(window_name);
 
+    // get (and create if necessary) x,y,w,h awars for window
+    std::string prop_root = std::string("window/windows/") + window_defaults_name;
+    awar_posx   = get_root()->awar_int((prop_root + "/posx").c_str(), 0);
+    awar_posy   = get_root()->awar_int((prop_root + "/posy").c_str(), 0);
+    awar_width  = get_root()->awar_int((prop_root + "/height").c_str(), width);
+    awar_height = get_root()->awar_int((prop_root + "/width").c_str(), height);
+        
+    // register window by name
+    if (!GBS_read_hash(get_root()->hash_for_windows, window_defaults_name)) {
+        GBS_write_hash(get_root()->hash_for_windows, window_defaults_name, (long)this);
+    }
     set_window_title(window_title);
-    set_window_size(width, height);
+    
+    set_window_size(awar_width->read_int(), awar_height->read_int());
+    prvt->set_resizable(resizable);
+
+    // set minimum window size to size provided by init
+    if (width  > _at.max_x_size) _at.max_x_size = width;
+    if (height > _at.max_y_size) _at.max_y_size = height;
+
+    
+
 }
+
+void AW_window::recalc_pos_atShow(AW_PosRecalc /*pr*/){
+    GTK_NOT_IMPLEMENTED;
+}
+
+AW_PosRecalc AW_window::get_recalc_pos_atShow() const {
+    GTK_NOT_IMPLEMENTED;
+    return AW_KEEP_POS; // 0
+}
+
+void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
+    if (sr == AW_RESIZE_ANY) {
+        sr = (recalc_size_at_show == AW_RESIZE_USER) ? AW_RESIZE_USER : AW_RESIZE_DEFAULT;
+    }
+    recalc_size_at_show = sr;
+}
+
+void AW_window::on_hide(aw_hide_cb /*call_on_hide*/){
+    GTK_NOT_IMPLEMENTED;
+}
+
 
 
 void AW_window::reset_scrolled_picture_size() {
