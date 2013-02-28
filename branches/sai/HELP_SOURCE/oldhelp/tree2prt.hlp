@@ -1,0 +1,144 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile strunk********
+TITLE           Print a Graphic to a Printer
+
+OCCURRENCE      ARB_NT/Tree/Print Tree
+                ARB_SECEDIT/File/Print structure
+
+DESCRIPTION     Multi Page Printer
+
+SECTION Select what to print
+
+                Clip at Screen: Show only those graphics that are
+                                drawn at the ARB_NT main window
+
+                Show Handles:   Show/Hide root and mark symbols
+
+                Export colors:  Whether to export colors or not.
+
+SECTION Page Layout
+
+                The upper part of this section shows the current graphic size,
+                the magnification in effect, the resulting outputsize (after
+                resize) and the used papersize. 
+
+                graphic size:   size of graphic in inches. When you change the display
+                                while this window stays open (e.g. zoom in/out ...)
+                                press <Get Graphic Size> to update the graphic size.
+
+                Magnify%: magnification of graphic. This can either be set manually or
+                          will be set automatically by changing the number of pages used.
+
+                Papersize: useable paper size in inches (i.e. size of area printer can fill)
+
+                           Normally you will select one of the predefined paper formats.
+                           Doing this will pass it to fig2dev (which is used to preprocess
+                           printing).
+
+                           It is also possible to use non-standard-formats by setting the paper
+                           size directly, but since they aren't known by fig2dev figuring out
+                           magnification, overlap etc. might be tricky or impossible.
+
+                Orientation: Landscape or Portrait mode
+
+                Bordersize: Keep an empty border around the graphic (specified as percentage of
+                            graphic size)
+
+                Useable size: How much of a page your printer can fill. This is used when
+                              calculating the 'Papersize' from paper format.
+
+                              This value cannot be influenced by ARB, it's only here to
+                              allow you to inform ARB about the capabilities/restrictions
+                              of your printer setup.
+
+SECTION Multiple pages
+
+                Left side shows the fractional number of pages needed to print with
+                current magnification and orientation. 
+
+                Fit on XXX pages:
+
+                    - shows the number of pages which will be printed
+                    - change it and click on 'Fit on' to zoom the graphic such that
+                      it will fit on the specified number of pages (that will
+                      modify 'Orientation' and 'Magnify%')
+                    - mark lock to fix the number of pages used. You will not be
+                      able to change magnification when locked.
+                    - the small buttons below allow to quickly fit onto the
+                      displayed number of pages.
+
+                Overlap: If checked, the printed pages will "slightly" overlap.
+                         Does not apply when printing to a single page - obviously.
+
+                         Note: ARB cannot influence the size of the overlap-region,
+                               but it needs to know it in order to be able to properly
+                               calculate the needed magnification.
+
+                               If the default of 10% does not match your system, you'll
+                               have to test it (use preview for that). Once you got a
+                               working value, save properties to store it for future
+                               sessions.
+
+
+SECTION Destination
+
+                - Printer: Use print command to print
+                - File: Use File Name as destination file name
+                - Preview: Print to file and show using gv (ghostview)
+
+SECTION HOWTO configure correct overlap
+
+        The following actions need to be performed in order!
+
+                First you need to determine the 'Useable size':
+
+                      - set bordersize to 0%
+                      - select a graphic which is very tall (i.e. does not fill the complete
+                        width of a page when magnified to fit on one page)
+                      - Fit on 1 page
+                      - select Destination 'Preview'
+                      - now change 'Useable size' until height fits best
+                      - control whether this value is also correct for width and/or landscape. It
+                        is important, that you do NOT use multiple pages when checking this.
+
+                Determine whether your fig2dev has the overlap bug:
+
+                      - disable overlap bug
+                      - print on 2 vertically arranged pages in portrait mode with ~1.99 rows
+                        of pages
+                      - if there is empty space at top of printout and some info is clipped
+                        at bottom, your fig2dev has the bug
+
+                Determine the overlap value used by fig2dev:
+
+                      - switch to landscape mode
+                      - print ~1.99 rows of pages
+                      - adjust overlap percentage until it fits best on two pages
+                      - check value with ~2.99 rows and ~3.99 rows
+                      - check value with portrait mode
+
+NOTES           The default printer used by ARB can be defined by setting the
+                environment variable PRINTER to your printer name.
+
+                To change the proportion between font- and graphic-size you have to change the
+                physical zoom factor (of the radial tree/secondary structure). For dendrogram
+                and IRS tree the physical zoom will also affect the relation between
+                horizontal branch length and vertical branch distance.
+
+EXAMPLES        Print a long list tree:
+
+                        1. Select tree style in ARB_NT main window
+                        2. Select File/Print tree
+                        3. Select Destination 'Printer'
+                        4. Press PRINT button
+
+WARNINGS        Printing cannot be stopped
+
+BUGS            None

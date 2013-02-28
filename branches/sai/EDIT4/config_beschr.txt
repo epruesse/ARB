@@ -1,0 +1,43 @@
+
+NODE    ::=     NODE NODE
+NODE    ::=     S speciesname^A
+NODE    ::=     G gruppenname^ANODEE
+NODE    ::=     GF gruppenname^ANODEE   // F ist gefaltete Gruppe
+
+
+
+Beispiele:
+
+Sei ^A == #
+
+#G Gruppe#S ecoli#S asdf#G neue Gruppe#E#S ecoli2#\0            // Vor jedes Steuerzeichen S G E muss ein Separator !!!!!!!!!!!!
+
+
+
+
+
+
+
+        strcat(configstring, "S EugGrac7");     // toparea
+        strcat(configstring, sep_name);
+        strcat(configstring, "S CriFasc4");
+        strcat(configstring, sep_name);
+        strcat(configstring, "G Gruppe1");
+        strcat(configstring, sep_name);
+        strcat(configstring, "S TpaCruz4");
+        strcat(configstring, sep_name);
+        strcat(configstring, "S TpaBruc4");
+        strcat(configstring, sep_name);
+        strcat(configstring, "G Gruppe2");
+        strcat(configstring, sep_name);
+        strcat(configstring, "S Aq_op");
+        strcat(configstring, sep_name);
+        strcat(configstring, "ES Aqper");
+        strcat(configstring, sep_name);
+        strcat(configstring, "S DioDisc3");
+        strcat(configstring, sep_name);
+        strcat(configstring, "ES DroMela4");
+        strcat(configstring, sep_name);
+        strcat(configstring, "S CasElega");
+        strcat(configstring, sep_name);
+        strcat(configstring, "\0");
