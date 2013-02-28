@@ -134,7 +134,7 @@ dump:
 
 do_valgrind:
 	@echo "Valgrinding $(TEST_EXE)"
-	$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -e -q $(LEAKS) -c 15 $(TEST_EXE) || \
+	$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -e -q $(LEAKS) -c 40 $(TEST_EXE) || \
 		echo "UnitTester: $(UNITLIBNAME) valgrind reports error(s)"
 
 show_test_header:

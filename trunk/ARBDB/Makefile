@@ -37,7 +37,6 @@ GB_O = \
 GB_T =  \
 	adChangeKey.o \
 	adRevCompl.o \
-	adcolumns.o \
 	aditem.o \
 	adname.o \
 	adseqcompr.o \
@@ -309,28 +308,6 @@ adChangeKey.o: $(ARBHOME)/INCLUDE/dupstr.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/gccver.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/smartptr.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/test_global.h
-
-adcolumns.o: ad_prot.h
-adcolumns.o: ad_t_prot.h
-adcolumns.o: adGene.h
-adcolumns.o: arb_assert.h
-adcolumns.o: arbdb.h
-adcolumns.o: arbdb_base.h
-adcolumns.o: arbdbt.h
-adcolumns.o: gb_local.h
-adcolumns.o: gb_prot.h
-adcolumns.o: $(ARBHOME)/INCLUDE/arb_core.h
-adcolumns.o: $(ARBHOME)/INCLUDE/arb_error.h
-adcolumns.o: $(ARBHOME)/INCLUDE/arb_msg.h
-adcolumns.o: $(ARBHOME)/INCLUDE/arb_progress.h
-adcolumns.o: $(ARBHOME)/INCLUDE/arb_string.h
-adcolumns.o: $(ARBHOME)/INCLUDE/arbtools.h
-adcolumns.o: $(ARBHOME)/INCLUDE/attributes.h
-adcolumns.o: $(ARBHOME)/INCLUDE/cxxforward.h
-adcolumns.o: $(ARBHOME)/INCLUDE/dupstr.h
-adcolumns.o: $(ARBHOME)/INCLUDE/gccver.h
-adcolumns.o: $(ARBHOME)/INCLUDE/smartptr.h
-adcolumns.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adcomm.o: ad_prot.h
 adcomm.o: arb_assert.h

@@ -956,8 +956,7 @@ static long GB_read_floats_count(GBDATA *gbd)
     return GB_GETSIZE(gbd);
 }
 
-static float *GB_read_floats(GBDATA *gbd) // @@@ unused - check usage of floats
-{
+float *GB_read_floats(GBDATA *gbd) { // @@@ only used in unittest - check usage of floats
     GB_CFLOAT *f;
     f = GB_read_floats_pntr(gbd);
     if (!f) return NULL;

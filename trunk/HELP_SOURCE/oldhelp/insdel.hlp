@@ -4,14 +4,14 @@ UP	glossary.hlp
 UP	arb_edit4.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
+SUB	insdel_sai.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Insert / Delete Column
 
-OCCURRENCE	ARB_NT/Sequence/Insert delete columns
+OCCURRENCE	ARB_NT/Sequence/Insert delete/columns
 
 DESCRIPTION	Inserts or deletes columns in the current alignment.
 

@@ -275,6 +275,7 @@ symlink_file ../SL/GUI_ALIVIEW/awt_filter.hxx INCLUDE/awt_filter.hxx &&
 symlink_file ../SL/GUI_ALIVIEW/gui_aliview.hxx INCLUDE/gui_aliview.hxx &&
 symlink_file ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
 symlink_file ../SL/HELIX/BI_basepos.hxx INCLUDE/BI_basepos.hxx &&
+symlink_file ../SL/INSDEL/insdel.h INCLUDE/insdel.h &&
 symlink_file ../SL/ITEMS/items.h INCLUDE/items.h &&
 symlink_file ../SL/ITEMS/item_sel_list.h INCLUDE/item_sel_list.h &&
 symlink_file ../SL/LOCATION/Location.h INCLUDE/Location.h &&

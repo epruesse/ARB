@@ -22,6 +22,21 @@ namespace arb_unit_test {
         const char *data;
     };
 
+    inline void test_insert_SAI_data(GBDATA *gb_main, ARB_ERROR& error, const char *test_aliname, test_alignment_data *ali_data, int sai_count) {
+        for (int sp = 0; sp<sai_count && !error; ++sp) {
+            test_alignment_data&  sai    = ali_data[sp];
+            GBDATA               *gb_species = GBT_find_or_create_SAI(gb_main, sai.name);
+            if (!gb_species) error           = GB_await_error();
+            else {
+                GB_write_flag(gb_species, sai.mark);
+
+                GBDATA *gb_data     = GBT_add_data(gb_species, test_aliname, "data", GB_STRING);
+                if (!gb_data) error = GB_await_error();
+                else    error       = GB_write_string(gb_data, sai.data);
+            }
+        }
+    }
+
     inline GBDATA *test_create_DB(ARB_ERROR& error, const char *test_aliname, test_alignment_data *ali_data, int species_count, bool use_compression) {
         GBDATA *gb_main = GB_open("nodb.arb", "crw");
         error           = GB_push_transaction(gb_main);
@@ -60,9 +75,13 @@ namespace arb_unit_test {
 
 #define TEST_SPECIES_COUNT(test_ali_data) ARRAY_ELEMS(test_ali_data)
 
-#define TEST_CREATE_DB(error,test_aliname,test_ali_data,compress)       \
-    arb_unit_test::test_create_DB(error, test_aliname, test_ali_data,   \
+#define TEST_CREATE_DB(error,test_aliname,test_ali_data,compress)               \
+    arb_unit_test::test_create_DB(error, test_aliname, test_ali_data,           \
                                   TEST_SPECIES_COUNT(test_ali_data), compress)
+
+#define TEST_DB_INSERT_SAI(gb_main, error,test_aliname,test_ali_data)                   \
+    arb_unit_test::test_insert_SAI_data(gb_main, error, test_aliname, test_ali_data,    \
+                                        TEST_SPECIES_COUNT(test_ali_data))
 
 };
 

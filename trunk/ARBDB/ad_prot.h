@@ -337,6 +337,7 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd);
 long GB_read_ints_count(GBDATA *gbd);
 GB_UINT4 *GB_read_ints(GBDATA *gbd);
 GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd);
+float *GB_read_floats(GBDATA *gbd);
 char *GB_read_as_string(GBDATA *gbd);
 long GB_read_from_ints(GBDATA *gbd, long index);
 double GB_read_from_floats(GBDATA *gbd, long index);

@@ -63,6 +63,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/cb.h
 ad_ali.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_ali.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_ali.o: $(ARBHOME)/INCLUDE/gccver.h
+ad_ali.o: $(ARBHOME)/INCLUDE/insdel.h
 ad_ali.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_ali.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -697,10 +698,14 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+NT_ins_col.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cb.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/gccver.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/insdel.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/pos_range.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/RangeList.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -775,6 +780,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/cb.h
 NT_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_main.o: $(ARBHOME)/INCLUDE/gccver.h
+NT_main.o: $(ARBHOME)/INCLUDE/insdel.h
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h

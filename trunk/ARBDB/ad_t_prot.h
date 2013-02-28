@@ -53,10 +53,6 @@ bool GBT_is_alignment_protein(GBDATA *gb_main, const char *alignment_name);
 NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revComplement, char partSeparator, size_t *gene_length);
 char *GBT_read_gene_sequence(GBDATA *gb_gene, bool use_revComplement, char partSeparator);
 
-/* adcolumns.cxx */
-GB_ERROR GBT_format_alignment(GBDATA *Main, const char *alignment_name);
-GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos, long count, const char *char_delete);
-
 /* aditem.cxx */
 GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, bool markCreated);
 GBDATA *GBT_find_or_create_species_rel_species_data(GBDATA *gb_species_data, const char *name);
