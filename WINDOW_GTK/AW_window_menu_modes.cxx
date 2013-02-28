@@ -18,17 +18,14 @@ AW_window_menu_modes::AW_window_menu_modes() {
 AW_window_menu_modes::~AW_window_menu_modes() {
 }
 
-void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) {
+void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, const char *window_title, 
+                                int width, int height) {
+    init_window(window_name, window_title, width, height, true /*resizable*/);
+    
 #if defined(DUMP_MENU_LIST)
     initMenuListing(windowname);
 #endif // DUMP_MENU_LIST
     const char *help_button   = "_HELP"; //underscore + mnemonic 
-
-    root = root_in; // for macro
-    set_window_title(windowname);
-    set_window_size(width, height);
-    window_defaults_name = GBS_string_2_key(wid);
-
 
     // create menu bar
     prvt->menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
@@ -47,7 +44,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     // create area for buttons at top ('info area')
     prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
     FIXME("form should be a frame around area?!");
-    prvt->areas[AW_INFO_AREA] = new AW_area_management(root, GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); 
+    prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); 
 
     //create a table that will contain the drawing area and scrollbars
     GtkWidget *table = gtk_table_new(2, 2, false);
@@ -70,7 +67,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     
     
     gtk_widget_realize(GTK_WIDGET(drawing_area));
-    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(root, drawing_area, drawing_area); 
+    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(drawing_area, drawing_area); 
     //FIXME form should be a frame around the area.
 
     // Layout:

@@ -16,6 +16,7 @@
 #include <arbtools.h>
 #endif
 
+#include "aw_root.hxx"
 #include "aw_at.hxx"
 #include "aw_gtk_forward_declarations.hxx"
 #include "aw_area_management.hxx"
@@ -247,7 +248,6 @@ class AW_window : virtual Noncopyable {
 //    void create_toggle(const char *var_name, aw_toggle_data *tdata);
 
 protected:
-    AW_root *root;
     class AW_window_gtk;
     AW_window_gtk* prvt; /*< Contains all gtk dependent attributes */
 
@@ -257,7 +257,16 @@ protected:
     void set_background(const char *colorname, GtkWidget* w);
 
     void wm_activate();                                // un-minimize window and give it the focus (use show_and_activate())
-    
+
+    /** 
+     * Common initialization function called from AW_window_xxx::init()
+     * - set up window title and name ('id')
+     * - set icon based on window title
+     * - set window position and size 
+     * - connect pos/size to awars
+     */
+    void init_window(const char *window_id, const char* window_name, 
+                     int width, int height, bool resizable);
     
 public:
 
@@ -341,7 +350,7 @@ public:
     // --------------------------------
     //      The real public section
 
-    AW_root *get_root() { return root; }
+    AW_root *get_root() { return AW_root::SINGLETON; }
     /**
      * 
      * @param index

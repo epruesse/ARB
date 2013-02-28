@@ -8,19 +8,10 @@ AW_window_simple_menu::AW_window_simple_menu() {
 AW_window_simple_menu::~AW_window_simple_menu() {
 }
 
-void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname) {
+void AW_window_simple_menu::init(AW_root */*root_in*/, const char *window_name, const char *window_title) {
+    init_window(window_name, window_title, 0, 0, true /*resizable*/);
     const char *help_button   = "_HELP"; //underscore + mnemonic  
 
-    root = root_in; // for macro
-    window_defaults_name = GBS_string_2_key(wid);
-  
-    int width = 100;
-    int height = 100;
-
-    // create window
-    set_window_title(windowname);
-    set_window_size(width, height);
-                                     
     // create menu bar
     prvt->menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
     prvt->menus.push(GTK_MENU_SHELL(prvt->menu_bar));
@@ -32,7 +23,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     // create drawing/info area
     GtkWidget *fixed_size_area = gtk_fixed_new();
     prvt->fixed_size_area = GTK_FIXED(fixed_size_area);
-    prvt->areas[AW_INFO_AREA] = new AW_area_management(root, fixed_size_area, fixed_size_area); 
+    prvt->areas[AW_INFO_AREA] = new AW_area_management(fixed_size_area, fixed_size_area); 
 
     // put menu+drawing area into vbox into window
     GtkWidget *vbox = gtk_vbox_new(false, 0);

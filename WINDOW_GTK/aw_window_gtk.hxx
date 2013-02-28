@@ -115,12 +115,31 @@ public:
      */
     GtkAdjustment *hAdjustment;
     
-     /**
+    /**
      * Adjustment of the vertical scrollbar.
      * @note might not be present in every window. Check for NULL before use.
      */   
     GtkAdjustment *vAdjustment;
-    
+
+    /**
+     * default constructor
+     */
     AW_window_gtk();
+
+    /**
+     * Set window title.
+     */
+    void set_title(const char*); 
+
+    /**
+     * Set window width/height
+     */
+    void set_size(int width, int height);
+
+    /**
+     * Make window resizable (or not)
+     */
+    void set_resizable(bool resizable);
+    
 };
 

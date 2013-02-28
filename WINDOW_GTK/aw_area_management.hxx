@@ -27,7 +27,7 @@ class AW_area_management {
     Pimpl* prvt; /* < Contains all private attributes and gtk dependencies */  
     
 public:
-    AW_area_management(AW_root *awr, GtkWidget *form, GtkWidget *area);
+    AW_area_management(GtkWidget *form, GtkWidget *area);
 
     GtkWidget *get_form() const;
     GtkWidget *get_area() const;

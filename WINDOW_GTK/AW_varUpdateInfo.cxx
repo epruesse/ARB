@@ -15,6 +15,7 @@
 #include "aw_window.hxx"
 #include "aw_root.hxx"
 #include "aw_msg.hxx"
+#include "aw_select.hxx"
 
 
 void AW_varUpdateInfo::AW_variable_update_callback_event(GtkWidget *widget, GdkEvent */*event*/, gpointer variable_update_struct) {

@@ -16,8 +16,12 @@
 #include "aw_gtk_forward_declarations.hxx"
 #include "aw_root_gtk.hxx"
 #include "aw_assert.hxx"
-#include "aw_select.hxx"
+//#include "aw_select.hxx"
 #include <string>
+#include <vector>
+class AW_selection_list;
+class AW_option_menu_struct;
+class AW_button;
 
 
 typedef void (*AW_RCB0)(AW_root*);
@@ -301,7 +305,7 @@ inline AW_default get_AW_ROOT_DEFAULT() { return AW_root::SINGLETON->check_prope
 void AW_system(AW_window *aww, const char *command, const char *auto_help_file);
 
 #else
-#error aw_root.hxx included twice
+//#error aw_root.hxx included twice
 #endif
 
 
