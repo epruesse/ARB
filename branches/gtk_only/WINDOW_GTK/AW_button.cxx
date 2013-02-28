@@ -1,6 +1,6 @@
 #include "aw_button.hxx"
 #include "aw_assert.hxx"
-#include "aw_root.hxx" // for legal_mask
+#include "aw_window.hxx" // for legal_mask
 
 #include "gtk/gtk.h"
 

@@ -201,6 +201,10 @@ enum {
     AWM_ALL      = AWM_BASIC|AWM_EXP
 };
 
+#if defined(ASSERTION_USED)
+#define legal_mask(m) (((m)&AWM_ALL) == (m))
+#endif // ASSERTION_USED
+
 enum {
     AWM_MASK_UNKNOWN = AWM_DISABLED,
     AWM_MASK_DEFAULT = AWM_BASIC,
