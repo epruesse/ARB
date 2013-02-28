@@ -247,6 +247,7 @@ class AW_window : virtual Noncopyable {
 //    void all_menus_created() const;
 //    void create_toggle(const char *var_name, aw_toggle_data *tdata);
 
+    AW_awar *awar_posx, *awar_posy, *awar_width, *awar_height;
 protected:
     class AW_window_gtk;
     AW_window_gtk* prvt; /*< Contains all gtk dependent attributes */
@@ -372,7 +373,6 @@ public:
     void    set_window_title(const char *title);   // Set the window title forever
 
     const char *get_window_title();       // Get the window's title
-    const char *get_window_id() const { return window_defaults_name; } // Get the window's internal name
 
     const char *local_id(const char *id) const;
 

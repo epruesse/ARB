@@ -67,7 +67,7 @@ AW_MGC_cb_struct::AW_MGC_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, 
     cd1 = cd1i;
     cd2 = cd2i;
 
-    window_awar_name = strdup(awi->get_window_id());
+    window_awar_name = strdup(awi->window_defaults_name);
 }
 
 class aw_gc_manager;
