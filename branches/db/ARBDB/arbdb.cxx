@@ -1962,8 +1962,17 @@ bool GB_in_temporary_branch(GBDATA *gbd) { // @@@ used in ptpan branch - do not 
 // ---------------------
 //      transactions
 
- // @@@ fix ugly "(GBDATA*)data" cast (appears in all GB_MAIN_TYPE-members!)
+GB_ERROR gb_init_transaction(GBCONTAINER *gbd) { // the first transaction ever
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    Main->transaction  = 1;
 
+    GB_ERROR error = gbcmc_init_transaction(Main->data);
+    if (!error) Main->clock ++;
+
+    return error;
+}
+
+ // @@@ fix ugly "(GBDATA*)data" cast (appears in all GB_MAIN_TYPE-members!)
 inline GB_ERROR GB_MAIN_TYPE::begin_initial_transaction() {
     gb_assert(transaction == 0);
 
@@ -1997,90 +2006,6 @@ inline GB_ERROR GB_MAIN_TYPE::push_transaction() {
     return NULL;
 }
 
-GB_ERROR GB_push_transaction(GBDATA *gbd) {
-    /*! start a transaction if no transaction is running.
-     * (otherwise only trace nested transactions)
-     *
-     * recommended transaction usage:
-     *
-     * \code
-     * GB_ERROR myFunc() {
-     *     GB_ERROR error = GB_push_transaction(gbd);
-     *     if (!error) {
-     *         error = ...;
-     *     }
-     *     return GB_end_transaction(gbd, error);
-     * }
-     *
-     * void myFunc() {
-     *     GB_ERROR error = GB_push_transaction(gbd);
-     *     if (!error) {
-     *         error = ...;
-     *     }
-     *     GB_end_transaction_show_error(gbd, error, aw_message);
-     * }
-     * \endcode
-     *
-     * @see GB_pop_transaction(), GB_end_transaction(), GB_begin_transaction()
-     */
-
-    return GB_MAIN(gbd)->push_transaction();
-}
-
-inline GB_ERROR GB_MAIN_TYPE::pop_transaction() {
-    if (transaction==0) return "attempt to pop nested transaction while none running";
-    if (transaction<0)  return 0;  // no transaction mode
-    if (transaction==1) return commit_transaction();
-    transaction--;
-    return NULL;
-}
-
-GB_ERROR GB_pop_transaction(GBDATA *gbd) {
-    //! commit a transaction started with GB_push_transaction()
-    return GB_MAIN(gbd)->pop_transaction();
-}
-
-GB_ERROR GB_begin_transaction(GBDATA *gbd) {
-    /*! like GB_push_transaction(),
-     * but fails if there is already an transaction running.
-     * @see GB_commit_transaction() and GB_abort_transaction()
-     */
-
-    GB_ERROR      error = NULL;
-    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
-
-    if (Main->transaction>0) {
-        error = GBS_global_string("attempt to start a NEW transaction (at transaction level %i)",
-                                  Main->transaction);
-    }
-    else if (Main->transaction == 0) {
-        Main->begin_initial_transaction();
-    }
-    return error;
-}
-
-GB_ERROR gb_init_transaction(GBCONTAINER *gbd) { // the first transaction ever
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    Main->transaction  = 1;
-
-    GB_ERROR error = gbcmc_init_transaction(Main->data);
-    if (!error) Main->clock ++;
-
-    return error;
-}
-
-GB_ERROR GB_no_transaction(GBDATA *gbd) { // @@@ return error; add __ATTR__USERESULT
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (!Main->local_mode) {
-        GB_ERROR error = GB_export_error("Tried to disable transactions in a client");
-        GB_internal_error(error);
-    }
-    else {
-        Main->transaction = -1;
-    }
-    return 0;
-}
-
 inline GB_ERROR GB_MAIN_TYPE::abort_transaction() {
     if (transaction<=0) {
         return "GB_abort_transaction: No transaction running";
@@ -2101,18 +2026,6 @@ inline GB_ERROR GB_MAIN_TYPE::abort_transaction() {
     gb_untouch_children(data);
     gb_untouch_me((GBDATA*)data);
     return 0;
-}
-
-GB_ERROR GB_abort_transaction(GBDATA *gbd) {
-    /*! abort a running transaction,
-     * i.e. forget all changes made to DB inside the current transaction.
-     *
-     * May be called instead of GB_pop_transaction() or GB_commit_transaction()
-     *
-     * If a nested transactions got aborted,
-     * committing a surrounding transaction will silently abort it as well.
-     */
-    return GB_MAIN(gbd)->abort_transaction();
 }
 
 inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
@@ -2168,6 +2081,96 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
     return error;
 }
 
+inline GB_ERROR GB_MAIN_TYPE::pop_transaction() {
+    if (transaction==0) return "attempt to pop nested transaction while none running";
+    if (transaction<0)  return 0;  // no transaction mode
+    if (transaction==1) return commit_transaction();
+    transaction--;
+    return NULL;
+}
+
+// --------------------------------------
+//      client transaction interface
+
+GB_ERROR GB_push_transaction(GBDATA *gbd) {
+    /*! start a transaction if no transaction is running.
+     * (otherwise only trace nested transactions)
+     *
+     * recommended transaction usage:
+     *
+     * \code
+     * GB_ERROR myFunc() {
+     *     GB_ERROR error = GB_push_transaction(gbd);
+     *     if (!error) {
+     *         error = ...;
+     *     }
+     *     return GB_end_transaction(gbd, error);
+     * }
+     *
+     * void myFunc() {
+     *     GB_ERROR error = GB_push_transaction(gbd);
+     *     if (!error) {
+     *         error = ...;
+     *     }
+     *     GB_end_transaction_show_error(gbd, error, aw_message);
+     * }
+     * \endcode
+     *
+     * @see GB_pop_transaction(), GB_end_transaction(), GB_begin_transaction()
+     */
+
+    return GB_MAIN(gbd)->push_transaction();
+}
+
+GB_ERROR GB_pop_transaction(GBDATA *gbd) {
+    //! commit a transaction started with GB_push_transaction()
+    return GB_MAIN(gbd)->pop_transaction();
+}
+
+GB_ERROR GB_begin_transaction(GBDATA *gbd) { // @@@ move into GB_MAIN_TYPE
+    /*! like GB_push_transaction(),
+     * but fails if there is already an transaction running.
+     * @see GB_commit_transaction() and GB_abort_transaction()
+     */
+
+    GB_ERROR      error = NULL;
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
+
+    if (Main->transaction>0) {
+        error = GBS_global_string("attempt to start a NEW transaction (at transaction level %i)",
+                                  Main->transaction);
+    }
+    else if (Main->transaction == 0) {
+        Main->begin_initial_transaction();
+    }
+    return error;
+}
+
+ // @@@ move into GB_MAIN_TYPE
+GB_ERROR GB_no_transaction(GBDATA *gbd) { // @@@ return error; add __ATTR__USERESULT
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    if (!Main->local_mode) {
+        GB_ERROR error = GB_export_error("Tried to disable transactions in a client");
+        GB_internal_error(error);
+    }
+    else {
+        Main->transaction = -1;
+    }
+    return 0;
+}
+
+GB_ERROR GB_abort_transaction(GBDATA *gbd) {
+    /*! abort a running transaction,
+     * i.e. forget all changes made to DB inside the current transaction.
+     *
+     * May be called instead of GB_pop_transaction() or GB_commit_transaction()
+     *
+     * If a nested transactions got aborted,
+     * committing a surrounding transaction will silently abort it as well.
+     */
+    return GB_MAIN(gbd)->abort_transaction();
+}
+
 GB_ERROR GB_commit_transaction(GBDATA *gbd) {
     /*! commit a transaction started with GB_begin_transaction()
      *
@@ -2213,7 +2216,7 @@ int GB_get_transaction_level(GBDATA *gbd) {
 #warning GB_update_server should be ARBDB-local!
 #endif
 
-GB_ERROR GB_update_server(GBDATA *gbd) {
+GB_ERROR GB_update_server(GBDATA *gbd) { // @@@ move into GB_MAIN_TYPE
     //! Send updated data to server
     GB_ERROR      error = NULL;
     GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
