@@ -27,6 +27,7 @@
 #include "aw_varUpdateInfo.hxx" 
 #include "aw_option_menu_struct.hxx"
 #include "aw_type_checking.hxx"
+#include "aw_select.hxx"
 #include <gtk/gtk.h>
 
 
@@ -378,7 +379,7 @@ static void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
 
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     
-    AW_root *root = cbs->aw->get_root();
+    AW_root *root = AW_root::SINGLETON;
      
     if (root->is_help_active()) {
         root->set_help_active(false);
@@ -396,7 +397,7 @@ static void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
         return;
     }
    FIXME("recording not implemented");
-   // if (root->prvt->recording) root->prvt->recording->record_action(cbs->id);
+   // if (get_root()->prvt->recording) get_root()->prvt->recording->record_action(cbs->id);
 
     if (cbs->f == AW_POPUP) {
         cbs->run_callback();
@@ -604,7 +605,7 @@ void AW_window::create_button(const char *macro_name, AW_label button_text, cons
     if (_at.attach_any) aw_attach_widget(buttonOrLabel, _at);
 
     if (prvt->callback) {
-        root->register_widget(buttonOrLabel, _at.widget_mask);
+        get_root()->register_widget(buttonOrLabel, _at.widget_mask);
         // should we also enable/disable the label?
     }
 
@@ -735,8 +736,7 @@ void AW_window::allow_delete_window(bool allow_close) {
 
 
 static bool AW_value_changed_callback(GtkWidget* /*wgt*/,  gpointer rooti) {
-    AW_root *root = (AW_root *)rooti;
-    root->value_changed = true;
+    AW_root::SINGLETON->value_changed = true;
     return false; //this event should propagate further
 }
 
@@ -750,8 +750,8 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 
     if (!columns) columns = _at.length_of_buttons;
 
-    AW_awar *vs = root->awar(var_name);
-    str         = root->awar(var_name)->read_as_string();
+    AW_awar *vs = get_root()->awar(var_name);
+    str         = get_root()->awar(var_name)->read_as_string();
 
     aw_assert(NULL != vs);
     
@@ -768,7 +768,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 
     if (_at.label_for_inputfield) {
         tmp_label = gtk_label_new(_at.label_for_inputfield);
-        gtk_fixed_put(prvt->fixed_size_area, tmp_label, _at.x_for_next_button, (int)(_at.y_for_next_button) + root->y_correction_for_input_labels -1);
+        gtk_fixed_put(prvt->fixed_size_area, tmp_label, _at.x_for_next_button, (int)(_at.y_for_next_button) + get_root()->y_correction_for_input_labels -1);
         gtk_widget_show(tmp_label);
 //        tmp_label = XtVaCreateManagedWidget("label",
 //                                            xmLabelWidgetClass,
@@ -780,7 +780,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 //                                            XmNalignment, XmALIGNMENT_BEGINNING,
 //                                            XmNfontList, p_global->fontlist,
 //                                            (_at.attach_any) ? NULL : XmNx, (int)_at.x_for_next_button,
-//                                            XmNy, (int)(_at.y_for_next_button) + root->y_correction_for_input_labels -1,
+//                                            XmNy, (int)(_at.y_for_next_button) + get_root()->y_correction_for_input_labels -1,
 //                                            NULL);
         if (_at.attach_any)
         {
@@ -848,10 +848,10 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     // callback for value changed
     g_signal_connect(G_OBJECT(textField), "changed",
                      G_CALLBACK(AW_value_changed_callback),
-                     (gpointer) root);
+                     (gpointer) get_root());
     vs->tie_widget(0, textField, AW_WIDGET_INPUT_FIELD, this);
 
-    root->register_widget(textField, _at.widget_mask);
+    get_root()->register_widget(textField, _at.widget_mask);
     
     int height_of_last_widget = textField->allocation.height;
 
@@ -942,7 +942,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
         //p_w->modes_widgets[p_w->number_of_modes] = button;
     }
 
-    root->register_widget(GTK_WIDGET(item), mask);
+    get_root()->register_widget(GTK_WIDGET(item), mask);
     prvt->number_of_modes++;
 
     return prvt->number_of_modes;
@@ -1058,12 +1058,12 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
     gtk_fixed_put(prvt->fixed_size_area, prvt->combo_box, 
                   _at.x_for_next_button, _at.y_for_next_button);
     
-    root->number_of_option_menus++;
+    get_root()->number_of_option_menus++;
 
-    AW_awar *vs = root->awar(awar_name);
+    AW_awar *vs = get_root()->awar(awar_name);
 
     AW_option_menu_struct *next =
-        new AW_option_menu_struct(root->number_of_option_menus,
+        new AW_option_menu_struct(get_root()->number_of_option_menus,
                                   awar_name,
                                   vs->variable_type,
                                   labelWidget,
@@ -1072,28 +1072,28 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
                                   _at.y_for_next_button,
                                   _at.correct_for_at_center);
 
-    if (root->option_menu_list) {
-        root->last_option_menu->next = next;
-        root->last_option_menu = root->last_option_menu->next;
+    if (get_root()->option_menu_list) {
+        get_root()->last_option_menu->next = next;
+        get_root()->last_option_menu = get_root()->last_option_menu->next;
     }
     else {
-        root->last_option_menu = root->option_menu_list = next;
+        get_root()->last_option_menu = get_root()->option_menu_list = next;
     }
 
-    root->current_option_menu = root->last_option_menu;
+    get_root()->current_option_menu = get_root()->last_option_menu;
 
-    vs->tie_widget((AW_CL)root->current_option_menu, cbox, AW_WIDGET_CHOICE_MENU, this);
+    vs->tie_widget((AW_CL)get_root()->current_option_menu, cbox, AW_WIDGET_CHOICE_MENU, this);
     
     //connect changed signal
     g_signal_connect(G_OBJECT(cbox), "changed", G_CALLBACK(AW_combo_box_changed), (gpointer) next);
    
-    root->register_widget(prvt->combo_box, _at.widget_mask);
+    get_root()->register_widget(prvt->combo_box, _at.widget_mask);
     GtkRequisition requisition;
     gtk_widget_size_request(GTK_WIDGET(prvt->combo_box), &requisition);
     unset_at_commands();
     _at.increment_at_commands(requisition.width, requisition.height);
     
-    return root->current_option_menu;
+    return get_root()->current_option_menu;
 }
 
 void AW_window::insert_option(AW_label on, const char *mn, const char *vv, const char *noc) {
@@ -1123,7 +1123,7 @@ void AW_window::insert_default_option(AW_label on, const char *mn, float vv, con
 
 template <class T>
 void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, T var_value, const char *name_of_color, bool default_option) {
-    AW_option_menu_struct *oms = root->current_option_menu;
+    AW_option_menu_struct *oms = get_root()->current_option_menu;
     
     aw_assert(NULL != oms); //current option menu has to be set
     aw_assert(oms->variable_type == AW_TypeCheck::getVarType(var_value)); //type missmatch
@@ -1143,7 +1143,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         AW_varUpdateInfo* vui = new AW_varUpdateInfo(this,
                                                NULL,
                                                AW_WIDGET_CHOICE_MENU,
-                                               root->awar(oms->variable_name),
+                                               get_root()->awar(oms->variable_name),
                                                var_value, cbs);
         //check for duplicate option name
         aw_assert(oms->valueToUpdateInfo.find(option_name) == oms->valueToUpdateInfo.end());
@@ -1158,7 +1158,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
 
        
         FIXME("setting sensitivity of option menu entries not implemented");
-        // root->register_widget(entry, _at->widget_mask);
+        // get_root()->register_widget(entry, _at->widget_mask);
         this->unset_at_commands();
     } else {
       printf("arg\n");
@@ -1177,10 +1177,10 @@ void AW_window::update_option_menu() {
 
 void AW_window::refresh_option_menu(AW_option_menu_struct */*oms*/) {
     GTK_NOT_IMPLEMENTED;
-//    if (root->changer_of_variable != oms->label_widget) {
+//    if (get_root()->changer_of_variable != oms->label_widget) {
 //        AW_widget_value_pair *active_choice = oms->first_choice;
 //        {
-//            AW_scalar global_var_value(root->awar(oms->variable_name));
+//            AW_scalar global_var_value(get_root()->awar(oms->variable_name));
 //            while (active_choice && global_var_value != active_choice->value) {
 //                active_choice = active_choice->next;
 //            }
@@ -1246,7 +1246,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     AW_awar *vs = 0;
     
     aw_assert(var_name); // @@@ case where var_name == NULL is relict from multi-selection-list (not used; removed)
-    vs = root->awar(var_name);
+    vs = get_root()->awar(var_name);
     
     tree = gtk_tree_view_new();
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
@@ -1333,7 +1333,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
         int type = GB_STRING;
         if (vs)  type = vs->variable_type;
 
-        root->append_selection_list(new AW_selection_list(var_name, type, GTK_TREE_VIEW(tree)));
+        get_root()->append_selection_list(new AW_selection_list(var_name, type, GTK_TREE_VIEW(tree)));
     }
 
 
@@ -1344,7 +1344,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     // callback for enter
     if (vs) {
         vui = new AW_varUpdateInfo(this, tree, AW_WIDGET_SELECTION_LIST, vs, cbs);
-        vui->set_sellist(root->get_last_selection_list());
+        vui->set_sellist(get_root()->get_last_selection_list());
 
         GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
         g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), (gpointer) vui);
@@ -1355,8 +1355,8 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 //                          (XtCallbackProc) AW_server_callback,
 //                          (XtPointer) _d_callback);
 //        }
-        vs->tie_widget((AW_CL)root->get_last_selection_list(), tree, AW_WIDGET_SELECTION_LIST, this);
-        root->register_widget(tree, _at.widget_mask);
+        vs->tie_widget((AW_CL)get_root()->get_last_selection_list(), tree, AW_WIDGET_SELECTION_LIST, this);
+        get_root()->register_widget(tree, _at.widget_mask);
     }
 
     this->unset_at_commands();
@@ -1364,7 +1364,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     
     gtk_widget_show(scrolled_win);
     
-    return root->get_last_selection_list();
+    return get_root()->get_last_selection_list();
 }
 
 // BEGIN TOGGLE FIELD STUFF
@@ -1426,7 +1426,7 @@ void AW_window::create_toggle_field(const char *awar_name, int orientation /*= 0
     
     prvt->toggle_field_awar_name = awar_name;
     
-    root->register_widget(prvt->toggle_field, _at.widget_mask);
+    get_root()->register_widget(prvt->toggle_field, _at.widget_mask);
 }
 
 void AW_window::create_toggle_field(const char *var_name, AW_label labeli, const char */*mnemonic*/) {
@@ -1444,7 +1444,7 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
     
     gtk_box_pack_start(GTK_BOX(prvt->toggle_field), radio, true, true, 2);
     
-    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(prvt->toggle_field_awar_name), var_value, prvt->callback);
+    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, NULL, AW_WIDGET_TOGGLE_FIELD, get_root()->awar(prvt->toggle_field_awar_name), var_value, prvt->callback);
     g_signal_connect((gpointer)radio, "clicked", G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), (gpointer)vui);
     
     if(default_toggle){
@@ -1491,7 +1491,7 @@ void AW_window::refresh_toggle_field(int /*toggle_field_number*/) {
 //    if (toggle_field_list) {
 //        AW_widget_value_pair *active_toggle = toggle_field_list->first_toggle;
 //        {
-//            AW_scalar global_value(root->awar(toggle_field_list->variable_name));
+//            AW_scalar global_value(get_root()->awar(toggle_field_list->variable_name));
 //            while (active_toggle && active_toggle->value != global_value) {
 //                active_toggle = active_toggle->next;
 //            }
@@ -1689,8 +1689,8 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const cha
     g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_server_callback), (gpointer)cbs);
 
     cbs->id = strdup(topic_id);
-    root->define_remote_command(cbs);
-    root->register_widget(item, mask);
+    get_root()->define_remote_command(cbs);
+    get_root()->register_widget(item, mask);
 }
 
 
@@ -1733,7 +1733,7 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active m
        // open_test_duplicate_mnemonics(prvt->menu_deep+1, name, mnemonic);
     #endif
 
-    root->register_widget(GTK_WIDGET(item), mask);
+    get_root()->register_widget(GTK_WIDGET(item), mask);
 }
 
 
@@ -1935,22 +1935,23 @@ void AW_window::set_vertical_scrollbar_position(int position){
 }
 
 void AW_window::set_window_size(int width, int height) {
-    gtk_window_set_default_size(prvt->window, width, height);
+    // only used from GDE once (looks like a hack) -- delete?
+    prvt->set_size(width, height); 
 }
 
 void AW_window::set_window_title(const char *title){
-    gtk_window_set_title(prvt->window, title);
+    prvt->set_title(title);
     freedup(window_name, title);
 }
 
 void AW_window::shadow_width (int /*shadow_thickness*/) {
-    GTK_NOT_IMPLEMENTED;
+    // GTK_NOT_IMPLEMENTED;
+    // won't implement
 }
 
 void AW_window::show() {
     arb_assert(NULL != prvt->window);
     gtk_widget_show_all(GTK_WIDGET(prvt->window));
-
 }
 
 void AW_window::button_height(int height) {
@@ -2046,7 +2047,6 @@ void AW_window::d_callback(void (*/*f*/)(AW_window*)) {
 
 AW_window::AW_window() 
   : recalc_size_at_show(AW_KEEP_SIZE),
-    root(0),
     prvt(new AW_window::AW_window_gtk()),
     _at(this),
     _d_callback(NULL),
@@ -2064,6 +2064,8 @@ AW_window::AW_window()
     main_drag_gc(0),
     picture(new AW_screen_area)
 {
+    aw_assert(AW_root::SINGLETON); // must have AW_root
+  
     reset_scrolled_picture_size();
     
     prvt = new AW_window::AW_window_gtk();
@@ -2072,17 +2074,27 @@ AW_window::AW_window()
     }
 }
 
+AW_window::~AW_window() {
+    delete picture;
+    delete prvt;
+}
+
+void AW_window::init_window(const char *window_name, const char* window_title,
+                            int width, int height, bool resizable) {
+    if (window_name && window_name[0] != '\0') {
+        window_defaults_name = GBS_string_2_key(window_name);
+    }
+
+    set_window_title(window_title);
+    set_window_size(width, height);
+}
+
 
 void AW_window::reset_scrolled_picture_size() {
     picture->l = 0;
     picture->r = 0;
     picture->t = 0;
     picture->b = 0;
-}
-
-AW_window::~AW_window() {
-    delete picture;
-    delete prvt;
 }
 
 AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
@@ -2100,12 +2112,12 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
         }
     }
 
-    color_table[colnum] = root->alloc_named_data_color(colorname);
+    color_table[colnum] = get_root()->alloc_named_data_color(colorname);
     
     if (colnum == AW_DATA_BG) {
         AW_area_management* pMiddleArea = prvt->areas[AW_MIDDLE_AREA];
         if(pMiddleArea) {
-            GdkColor color = root->getColor(color_table[colnum]);
+            GdkColor color = get_root()->getColor(color_table[colnum]);
             gtk_widget_modify_bg(pMiddleArea->get_area(),GTK_STATE_NORMAL, &color);
             FIXME("no idea if this works");
         }

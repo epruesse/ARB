@@ -10,3 +10,16 @@ AW_window::AW_window_gtk::AW_window_gtk()
       hAdjustment(NULL),
       vAdjustment(NULL) 
 {} 
+
+
+void AW_window::AW_window_gtk::set_title(const char* title) {
+    gtk_window_set_title(window, title);
+}
+
+void AW_window::AW_window_gtk::set_size(int width, int height) {
+    gtk_window_set_default_size(window, width, height);
+}
+
+void AW_window::AW_window_gtk::set_resizable(bool resizable) {
+    gtk_window_set_resizable(window, resizable);
+}

@@ -25,7 +25,7 @@
 #include "aw_global_awars.hxx"
 #include "aw_nawar.hxx"
 #include "aw_msg.hxx"
-
+#include "aw_select.hxx"
 
 //globals
 //TODO use static class or namespace for globals

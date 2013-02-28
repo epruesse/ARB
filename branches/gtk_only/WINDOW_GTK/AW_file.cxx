@@ -18,6 +18,7 @@
 #include <arbdb.h>
 #endif
 #include <arb_file.h>
+#include "aw_select.hxx"
 #include <arb_strbuf.h>
 #include "aw_msg.hxx"
 #include "aw_question.hxx"

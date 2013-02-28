@@ -248,8 +248,7 @@ inline void AW_area_management::run_resize_callback() {
     if (prvt->resize_cb) prvt->resize_cb->run_callback();
 }
 
-AW_area_management::AW_area_management(AW_root* awr, GtkWidget* form,
-        GtkWidget* area) {
+AW_area_management::AW_area_management(GtkWidget* form, GtkWidget* area) {
     
     prvt = new AW_area_management::Pimpl();
     prvt->form = form;
