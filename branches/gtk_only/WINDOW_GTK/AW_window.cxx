@@ -1721,8 +1721,7 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active m
 
 
 bool AW_window::is_shown() const{
-    GTK_NOT_IMPLEMENTED;
-    return false;
+    return gtk_widget_get_visible(GTK_WIDGET(prvt->window));
 }
 
 /* set label for next button 
