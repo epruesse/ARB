@@ -30,10 +30,6 @@ typedef AW_RCB AW_RCB2;
 
 typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL);
 
-#if defined(ASSERTION_USED)
-#define legal_mask(m) (((m)&AWM_ALL) == (m))
-#endif // ASSERTION_USED
-
 typedef char *AW_error;
 typedef void (*AW_RCB)(AW_root*, AW_CL, AW_CL);
 // asynchronous messages:
