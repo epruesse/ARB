@@ -61,6 +61,12 @@ sub check_ignore($\$$) {
   }
 }
 
+sub is_boring($) {
+  my ($text) = @_;
+  if ($text =~ /provoke_core_dump/) { return 1; }
+  return 0;
+}
+
 my $debug = 0;
 
 # --------------------------------------------------------------- customize till here
@@ -327,8 +333,13 @@ while (not $in->eof) {
     }
   }
 
+  my $boring = 0;
+  if ($ignore_curr_line==0) {
+    $boring = $ignore_curr_line = is_boring($_);
+  }
+
   # print out line
-  if ($ignore_curr_line==0) { 
+  if ($ignore_curr_line==0) {
     if (not defined $ignore) {
       entering();
       $out->print(shorten_location($_));
@@ -352,7 +363,11 @@ while (not $in->eof) {
     }
   }
   else {
-    if ($debug==1) {
+    if ($boring) {
+      $out->print("(BORE) ".$_);
+      $out->flush();
+    }
+    elsif ($debug==1) {
       $out->print("(SUPP) ".$_);
       $out->flush();
     }

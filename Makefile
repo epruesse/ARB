@@ -866,6 +866,7 @@ ARCHS_NTREE = \
 		SL/REFENTRIES/REFENTRIES.a \
 		SL/NDS/NDS.a \
 		SL/ITEMS/ITEMS.a \
+		SL/INSDEL/INSDEL.a \
 		SL/LOCATION/LOCATION.a \
 		SL/TRANSLATE/TRANSLATE.a \
 		SL/TREEDISP/TREEDISP.a \
@@ -1258,6 +1259,7 @@ SL/FAST_ALIGNER/FAST_ALIGNER.dummy:	links_non_perl
 SL/FILTER/FILTER.dummy:			links_non_perl
 SL/GUI_ALIVIEW/GUI_ALIVIEW.dummy:	links_non_perl
 SL/HELIX/HELIX.dummy:			links_non_perl
+SL/INSDEL/INSDEL.dummy:			links_non_perl
 SL/ITEMS/ITEMS.dummy:			links_non_perl
 SL/LOCATION/LOCATION.dummy:		links_non_perl
 SL/MATRIX/MATRIX.dummy:			links_non_perl
@@ -1949,6 +1951,7 @@ UNITS_TESTED = \
 	DBSERVER/DBSERVER.test \
 	AWT/libAWT.test \
 	CORE/libCORE.test \
+	SL/INSDEL/INSDEL.test \
 	SL/TREEDISP/TREEDISP.test \
 	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \
