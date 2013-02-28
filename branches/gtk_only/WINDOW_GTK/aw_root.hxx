@@ -126,6 +126,7 @@ public:
 
     bool            disable_callbacks;
     AW_window      *current_modal_window;
+    AW_window      *root_window;
     AW_root_cblist *focus_callback_list;
 
     AW_option_menu_struct *option_menu_list;

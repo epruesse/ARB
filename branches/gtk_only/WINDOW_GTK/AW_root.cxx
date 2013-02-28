@@ -286,6 +286,10 @@ void AW_root::init_root(const char *programname, bool NoExit) {
     int argc = 0;
     gtk_init(&argc, NULL);
 
+    // add our own icon path to the gtk theme search path
+    GtkIconTheme *theme = gtk_icon_theme_get_default();
+    gtk_icon_theme_prepend_search_path(theme, GB_path_in_ARBLIB("pixmaps/icons"));
+
 
     color_mode = AW_RGB_COLOR; //mono color mode is not supported
     create_colormap();//load the colortable from database
