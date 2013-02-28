@@ -1962,6 +1962,40 @@ bool GB_in_temporary_branch(GBDATA *gbd) { // @@@ used in ptpan branch - do not 
 // ---------------------
 //      transactions
 
+ // @@@ fix ugly "(GBDATA*)data" cast (appears in all GB_MAIN_TYPE-members!)
+
+inline GB_ERROR GB_MAIN_TYPE::begin_initial_transaction() {
+    gb_assert(transaction == 0);
+
+    transaction         = 1;
+    aborted_transaction = 0;
+
+    GB_ERROR error = NULL;
+    if (!local_mode) {
+        error = gbcmc_begin_transaction((GBDATA*)data);
+        if (!error) {
+            error = gb_commit_transaction_local_rek((GBDATA*)data, 0, 0); // init structures
+            gb_untouch_children(data);
+            gb_untouch_me((GBDATA*)data);
+        }
+    }
+
+    if (!error) {
+        /* do all callbacks
+         * cb that change the db are no problem, because it's the beginning of a ta
+         */
+        gb_do_callback_list(this);
+        ++clock;
+    }
+    return error;
+}
+
+inline GB_ERROR GB_MAIN_TYPE::push_transaction() {
+    if (transaction == 0) return begin_initial_transaction();
+    if (transaction>0) ++transaction;
+    // transaction<0 is "no transaction mode"
+    return NULL;
+}
 
 GB_ERROR GB_push_transaction(GBDATA *gbd) {
     /*! start a transaction if no transaction is running.
@@ -1990,33 +2024,20 @@ GB_ERROR GB_push_transaction(GBDATA *gbd) {
      * @see GB_pop_transaction(), GB_end_transaction(), GB_begin_transaction()
      */
 
-    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
-    GB_ERROR      error = 0;
+    return GB_MAIN(gbd)->push_transaction();
+}
 
-    if (Main->transaction == 0) error = GB_begin_transaction(gbd);
-    else if (Main->transaction>0) Main->transaction++;
-    // Main->transaction<0 is "no transaction mode"
-
-    return error;
+inline GB_ERROR GB_MAIN_TYPE::pop_transaction() {
+    if (transaction==0) return "attempt to pop nested transaction while none running";
+    if (transaction<0)  return 0;  // no transaction mode
+    if (transaction==1) return commit_transaction();
+    transaction--;
+    return NULL;
 }
 
 GB_ERROR GB_pop_transaction(GBDATA *gbd) {
     //! commit a transaction started with GB_push_transaction()
-
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (Main->transaction==0) {
-        GB_ERROR error = GB_export_error("Pop without push");
-        GB_internal_error(error);
-        return  error;
-    }
-    if (Main->transaction<0) return 0;  // no transaction mode
-    if (Main->transaction==1) {
-        return GB_commit_transaction(gbd);
-    }
-    else {
-        Main->transaction--;
-    }
-    return 0;
+    return GB_MAIN(gbd)->pop_transaction();
 }
 
 GB_ERROR GB_begin_transaction(GBDATA *gbd) {
@@ -2025,34 +2046,17 @@ GB_ERROR GB_begin_transaction(GBDATA *gbd) {
      * @see GB_commit_transaction() and GB_abort_transaction()
      */
 
-    GB_ERROR      error;
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    gbd                = (GBDATA *)Main->data;
+    GB_ERROR      error = NULL;
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
+
     if (Main->transaction>0) {
-        error = GB_export_errorf("GB_begin_transaction called %i !!!",
-                                 Main->transaction);
-        GB_internal_error(error);
-        return GB_push_transaction(gbd);
+        error = GBS_global_string("attempt to start a NEW transaction (at transaction level %i)",
+                                  Main->transaction);
     }
-    if (Main->transaction<0) return 0;
-    Main->transaction = 1;
-    Main->aborted_transaction = 0;
-    if (!Main->local_mode) {
-        error = gbcmc_begin_transaction(gbd);
-        if (error) return error;
-        error = gb_commit_transaction_local_rek(gbd, 0, 0); // init structures
-        gb_untouch_children((GBCONTAINER *)gbd);
-        gb_untouch_me(gbd);
-        if (error) return error;
+    else if (Main->transaction == 0) {
+        Main->begin_initial_transaction();
     }
-
-    /* do all callbacks
-     * cb that change the db are no problem, because it's the beginning of a ta
-     */
-    gb_do_callback_list(Main);
-
-    Main->clock ++;
-    return 0;
+    return error;
 }
 
 GB_ERROR gb_init_transaction(GBCONTAINER *gbd) { // the first transaction ever
@@ -2077,6 +2081,28 @@ GB_ERROR GB_no_transaction(GBDATA *gbd) { // @@@ return error; add __ATTR__USERE
     return 0;
 }
 
+inline GB_ERROR GB_MAIN_TYPE::abort_transaction() {
+    if (transaction<=0) {
+        return "GB_abort_transaction: No transaction running";
+    }
+    if (transaction>1) {
+        aborted_transaction = 1;
+        return pop_transaction();
+    }
+
+    gb_abort_transaction_local_rek((GBDATA*)data, 0);
+    if (!local_mode) {
+        GB_ERROR error = gbcmc_abort_transaction((GBDATA*)data);
+        if (error) return error;
+    }
+    clock--;
+    gb_do_callback_list(this);       // do all callbacks
+    transaction = 0;
+    gb_untouch_children(data);
+    gb_untouch_me((GBDATA*)data);
+    return 0;
+}
+
 GB_ERROR GB_abort_transaction(GBDATA *gbd) {
     /*! abort a running transaction,
      * i.e. forget all changes made to DB inside the current transaction.
@@ -2086,29 +2112,60 @@ GB_ERROR GB_abort_transaction(GBDATA *gbd) {
      * If a nested transactions got aborted,
      * committing a surrounding transaction will silently abort it as well.
      */
+    return GB_MAIN(gbd)->abort_transaction();
+}
 
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    gbd = (GBDATA *)Main->data;
-    if (Main->transaction<=0) {
-        GB_internal_error("No running Transaction");
-        return GB_export_error("GB_abort_transaction: No running Transaction");
-    }
-    if (Main->transaction>1) {
-        Main->aborted_transaction = 1;
-        return GB_pop_transaction(gbd);
-    }
+inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
+    GB_ERROR      error = 0;
+    GB_CHANGE     flag;
 
-    gb_abort_transaction_local_rek(gbd, 0);
-    if (!Main->local_mode) {
-        GB_ERROR error = gbcmc_abort_transaction(gbd);
-        if (error) return error;
+    if (!transaction) {
+        return "commit_transaction: No transaction running";
     }
-    Main->clock--;
-    gb_do_callback_list(Main);       // do all callbacks
-    Main->transaction = 0;
-    gb_untouch_children((GBCONTAINER *)gbd);
-    gb_untouch_me(gbd);
-    return 0;
+    if (transaction>1) {
+        return GBS_global_string("attempt to commit at transaction level %i", transaction);
+    }
+    if (aborted_transaction) {
+        aborted_transaction = 0;
+        return abort_transaction();
+    }
+    if (local_mode) {
+        char *error1 = gb_set_undo_sync((GBDATA*)data);
+        while (1) {
+            flag = (GB_CHANGE)GB_ARRAY_FLAGS((GBDATA*)data).changed;
+            if (!flag) break;           // nothing to do
+            error = gb_commit_transaction_local_rek((GBDATA*)data, 0, 0);
+            gb_untouch_children(data);
+            gb_untouch_me((GBDATA*)data);
+            if (error) break;
+            gb_do_callback_list(this);       // do all callbacks
+        }
+        gb_disable_undo((GBDATA*)data);
+        if (error1) {
+            transaction = 0;
+            gb_assert(error); // maybe return error1?
+            return error; // @@@ huh? why not return error1
+        }
+    }
+    else {
+        gb_disable_undo((GBDATA*)data);
+        while (1) {
+            flag = (GB_CHANGE)GB_ARRAY_FLAGS((GBDATA*)data).changed;
+            if (!flag) break;           // nothing to do
+
+            error = gbcmc_begin_sendupdate((GBDATA*)data);        if (error) break;
+            error = gb_commit_transaction_local_rek((GBDATA*)data, 1, 0); if (error) break;
+            error = gbcmc_end_sendupdate((GBDATA*)data);      if (error) break;
+
+            gb_untouch_children(data);
+            gb_untouch_me((GBDATA*)data);
+            gb_do_callback_list(this);       // do all callbacks
+        }
+        if (!error) error = gbcmc_commit_transaction((GBDATA*)data);
+
+    }
+    transaction = 0;
+    return error;
 }
 
 GB_ERROR GB_commit_transaction(GBDATA *gbd) {
@@ -2118,62 +2175,7 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd) {
      *
      * in case of nested transactions, this is equal to GB_pop_transaction()
      */
-
-    GB_ERROR      error = 0;
-    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
-    GB_CHANGE     flag;
-
-    gbd = (GBDATA *)Main->data;
-    if (!Main->transaction) {
-        error = GB_export_error("GB_commit_transaction: No running Transaction");
-        GB_internal_error(error);
-        return error;
-    }
-    if (Main->transaction>1) {
-        GB_internal_error("Running GB_commit_transaction not at root transaction level");
-        return GB_pop_transaction(gbd);
-    }
-    if (Main->aborted_transaction) {
-        Main->aborted_transaction = 0;
-        return      GB_abort_transaction(gbd);
-    }
-    if (Main->local_mode) {
-        char *error1 = gb_set_undo_sync(gbd);
-        while (1) {
-            flag = (GB_CHANGE)GB_ARRAY_FLAGS(gbd).changed;
-            if (!flag) break;           // nothing to do
-            error = gb_commit_transaction_local_rek(gbd, 0, 0);
-            gb_untouch_children((GBCONTAINER *)gbd);
-            gb_untouch_me(gbd);
-            if (error) break;
-            gb_do_callback_list(Main);       // do all callbacks
-        }
-        gb_disable_undo(gbd);
-        if (error1) {
-            Main->transaction = 0;
-            return error;
-        }
-    }
-    else {
-        gb_disable_undo(gbd);
-        while (1) {
-            flag = (GB_CHANGE)GB_ARRAY_FLAGS(gbd).changed;
-            if (!flag) break;           // nothing to do
-
-            error = gbcmc_begin_sendupdate(gbd);        if (error) break;
-            error = gb_commit_transaction_local_rek(gbd, 1, 0); if (error) break;
-            error = gbcmc_end_sendupdate(gbd);      if (error) break;
-
-            gb_untouch_children((GBCONTAINER *)gbd);
-            gb_untouch_me(gbd);
-            gb_do_callback_list(Main);       // do all callbacks
-        }
-        if (!error) error = gbcmc_commit_transaction(gbd);
-
-    }
-    Main->transaction = 0;
-    if (error) return error;
-    return 0;
+    return GB_MAIN(gbd)->commit_transaction();
 }
 
 GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error) {

@@ -88,7 +88,7 @@ struct GB_MAIN_TYPE {
     gbcmc_comm     *c_link;
     gb_server_data *server_data;
     GBCONTAINER    *dummy_father;
-    GBCONTAINER    *data;
+    GBCONTAINER    *data; // @@@ rename ? 
     GBDATA         *gb_key_data;
     char           *path;
     gb_open_types   opentype;
@@ -141,9 +141,16 @@ struct GB_MAIN_TYPE {
 
     gb_user    *this_user;
     gb_project *this_project;
+
+    inline GB_ERROR begin_initial_transaction();
+    inline GB_ERROR push_transaction();
+    inline GB_ERROR pop_transaction();
+    inline GB_ERROR commit_transaction();
+    inline GB_ERROR abort_transaction();
 };
 
 
 #else
 #error gb_main.h included twice
 #endif // GB_MAIN_H
+
