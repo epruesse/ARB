@@ -57,6 +57,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ad_ali.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -76,12 +77,9 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/cb.h
@@ -115,6 +113,7 @@ ad_ext.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ad_ext.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -133,12 +132,9 @@ ad_ext.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-ad_ext.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-ad_ext.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ad_ext.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/cb.h
@@ -181,6 +177,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -200,12 +197,9 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-ad_spec.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-ad_spec.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ad_spec.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_www.hxx
@@ -246,6 +240,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ad_transpro.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -265,12 +260,9 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-ad_transpro.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-ad_transpro.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ad_transpro.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/cb.h
@@ -310,6 +302,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -335,7 +328,6 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ad_trees.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -374,6 +366,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AP_consensus.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -392,12 +385,9 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AP_consensus.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AP_consensus.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AP_consensus.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb.h
@@ -429,6 +419,7 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -448,12 +439,9 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/cb.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -486,6 +474,7 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -506,12 +495,9 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/cb.h
@@ -546,6 +532,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -564,12 +551,9 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cb.h
@@ -605,6 +589,7 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -629,7 +614,6 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/cb.h
@@ -666,6 +650,7 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -685,12 +670,9 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cb.h
@@ -728,6 +710,7 @@ NT_cb.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_cb.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -747,12 +730,9 @@ NT_cb.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-NT_cb.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-NT_cb.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_cb.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -788,6 +768,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -813,7 +794,6 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -883,6 +863,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -901,12 +882,9 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-NT_edconf.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-NT_edconf.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_edconf.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/cb.h
@@ -954,6 +932,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -978,12 +957,9 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -1040,6 +1016,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -1057,12 +1034,9 @@ NT_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-NT_import.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-NT_import.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_import.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -1101,6 +1075,7 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -1119,12 +1094,9 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cb.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -1155,6 +1127,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_join.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -1178,7 +1151,6 @@ NT_join.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_join.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/cb.h
@@ -1221,6 +1193,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -1242,12 +1215,9 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_macro.hxx
@@ -1285,6 +1255,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_sort.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -1308,7 +1279,6 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_sort.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/cb.h
 NT_sort.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -1342,6 +1312,7 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -1360,12 +1331,9 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/cb.h
@@ -1427,6 +1395,7 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_validManual.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -1450,7 +1419,6 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_validManual.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/cb.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -1486,6 +1454,7 @@ NT_validNames.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_validNames.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -1502,12 +1471,14 @@ NT_validNames.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+NT_validNames.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_validNames.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_validNames.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/awt_www.hxx
+NT_validNames.o: $(ARBHOME)/INCLUDE/cb.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/dupstr.h

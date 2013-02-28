@@ -51,6 +51,7 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -69,12 +70,9 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cb.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cxxforward.h

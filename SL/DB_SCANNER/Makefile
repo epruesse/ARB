@@ -52,6 +52,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -76,7 +77,6 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-db_scanner.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/cb.h
 db_scanner.o: $(ARBHOME)/INCLUDE/cxxforward.h

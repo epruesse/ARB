@@ -50,6 +50,7 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+changekey.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -65,13 +66,15 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+changekey.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+changekey.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-changekey.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+changekey.o: $(ARBHOME)/INCLUDE/cb.h
 changekey.o: $(ARBHOME)/INCLUDE/cxxforward.h
 changekey.o: $(ARBHOME)/INCLUDE/downcast.h
 changekey.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -99,6 +102,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -114,13 +118,15 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-item_sel_list.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/cb.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cxxforward.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/downcast.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -151,6 +157,7 @@ species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+species.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -173,7 +180,6 @@ species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-species.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 species.o: $(ARBHOME)/INCLUDE/cb.h
 species.o: $(ARBHOME)/INCLUDE/cxxforward.h

@@ -91,6 +91,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -106,12 +107,14 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ST_quality.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/cb.h
 ST_quality.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ST_quality.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -142,6 +145,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -165,7 +169,6 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ST_window.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/cb.h

@@ -45,6 +45,7 @@ WETC_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+WETC_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -62,12 +63,9 @@ WETC_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-WETC_main.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-WETC_main.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-WETC_main.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/cb.h

@@ -63,6 +63,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AWT_filter.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -85,7 +86,6 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/cb.h
@@ -119,6 +119,7 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -137,12 +138,9 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-ColumnStat.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-ColumnStat.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ColumnStat.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/BI_helix.hxx

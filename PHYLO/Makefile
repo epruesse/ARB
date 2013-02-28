@@ -53,6 +53,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+PH_data.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -70,12 +71,9 @@ PH_data.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-PH_data.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-PH_data.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-PH_data.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/cb.h
 PH_data.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -107,6 +105,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+PH_display.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -125,12 +124,9 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-PH_display.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-PH_display.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-PH_display.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/cb.h
 PH_display.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -165,6 +161,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -182,12 +179,9 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-PH_filt.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-PH_filt.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-PH_filt.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/cb.h
 PH_filt.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -222,6 +216,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+PH_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -241,12 +236,9 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-PH_main.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-PH_main.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-PH_main.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -275,6 +267,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+PH_matr.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -294,12 +287,9 @@ PH_matr.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/cb.h
 PH_matr.o: $(ARBHOME)/INCLUDE/cxxforward.h
