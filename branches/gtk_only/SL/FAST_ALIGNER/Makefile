@@ -78,6 +78,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -97,12 +98,9 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx

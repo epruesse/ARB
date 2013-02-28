@@ -69,6 +69,7 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -88,12 +89,9 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-GDE.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-GDE.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -161,6 +159,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -181,12 +180,9 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/cb.h

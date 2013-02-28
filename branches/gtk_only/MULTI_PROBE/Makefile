@@ -113,6 +113,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MP_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -130,12 +131,9 @@ MP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-MP_main.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-MP_main.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MP_main.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/bytestring.h
@@ -211,6 +209,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -235,7 +234,6 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MP_noclass.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/bytestring.h
@@ -294,6 +292,7 @@ MP_probe.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MP_probe.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -310,12 +309,13 @@ MP_probe.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+MP_probe.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MP_probe.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MP_probe.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_probe.o: $(ARBHOME)/INCLUDE/cb.h
@@ -467,6 +467,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MP_Window.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -491,7 +492,6 @@ MP_Window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MP_Window.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

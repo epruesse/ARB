@@ -56,6 +56,7 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -73,12 +74,9 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cxxforward.h

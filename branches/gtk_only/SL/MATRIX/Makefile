@@ -54,6 +54,7 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AP_matrix.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -71,12 +72,9 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AP_matrix.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AP_matrix.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AP_matrix.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/cb.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h

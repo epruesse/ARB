@@ -54,6 +54,7 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AW_helix.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -71,12 +72,9 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AW_helix.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AW_helix.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AW_helix.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/cb.h

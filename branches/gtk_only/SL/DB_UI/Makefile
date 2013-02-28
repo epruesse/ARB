@@ -52,6 +52,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -78,7 +79,6 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ui_species.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx

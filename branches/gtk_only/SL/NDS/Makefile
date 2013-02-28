@@ -49,6 +49,7 @@ nds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+nds.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -73,7 +74,6 @@ nds.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-nds.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

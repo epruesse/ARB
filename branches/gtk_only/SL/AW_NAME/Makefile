@@ -59,6 +59,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -79,12 +80,9 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/cb.h
@@ -119,6 +117,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AW_rename.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -138,12 +137,9 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AW_rename.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AW_rename.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AW_rename.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/bytestring.h
 AW_rename.o: $(ARBHOME)/INCLUDE/cb.h

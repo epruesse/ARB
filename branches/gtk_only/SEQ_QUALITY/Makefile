@@ -74,6 +74,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -90,12 +91,14 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-SQ_functions.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/cb.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -137,6 +140,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -155,12 +159,9 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-SQ_main.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-SQ_main.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-SQ_main.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

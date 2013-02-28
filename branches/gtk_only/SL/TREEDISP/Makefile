@@ -65,6 +65,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -81,12 +82,14 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-irstree_display.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/cb.h
 irstree_display.o: $(ARBHOME)/INCLUDE/cxxforward.h
 irstree_display.o: $(ARBHOME)/INCLUDE/downcast.h
 irstree_display.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -123,6 +126,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -142,12 +146,9 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/cb.h
@@ -186,6 +187,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -207,12 +209,9 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx

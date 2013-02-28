@@ -48,6 +48,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -65,12 +66,9 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/bytestring.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cb.h
@@ -111,6 +109,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -130,12 +129,9 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/cb.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/cxxforward.h

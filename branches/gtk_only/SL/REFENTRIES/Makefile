@@ -52,6 +52,7 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+refentries.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -70,12 +71,9 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-refentries.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-refentries.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-refentries.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 refentries.o: $(ARBHOME)/INCLUDE/cb.h
 refentries.o: $(ARBHOME)/INCLUDE/cxxforward.h

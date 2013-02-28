@@ -58,6 +58,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -84,7 +85,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
@@ -150,6 +150,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -169,12 +170,9 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx

@@ -87,6 +87,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MG_alignment.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -106,12 +107,9 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-MG_alignment.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-MG_alignment.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_alignment.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/cb.h
@@ -145,6 +143,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -168,7 +167,6 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/cb.h
@@ -201,6 +199,7 @@ MG_configs.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MG_configs.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -219,12 +218,9 @@ MG_configs.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-MG_configs.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-MG_configs.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_configs.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/cb.h
@@ -256,6 +252,7 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -274,12 +271,9 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/cb.h
@@ -315,6 +309,7 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -338,7 +333,6 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/cb.h
@@ -374,6 +368,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -396,12 +391,9 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/cb.h
@@ -434,6 +426,7 @@ MG_names.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MG_names.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -453,12 +446,9 @@ MG_names.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-MG_names.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-MG_names.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_names.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/cb.h
 MG_names.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -493,6 +483,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MG_preserves.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -516,7 +507,6 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_preserves.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/cb.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -554,6 +544,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -579,7 +570,6 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_species.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/cb.h
 MG_species.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -615,6 +605,7 @@ MG_trees.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+MG_trees.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -633,12 +624,9 @@ MG_trees.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-MG_trees.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-MG_trees.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_trees.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/cb.h

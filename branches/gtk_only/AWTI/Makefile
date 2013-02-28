@@ -56,6 +56,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -75,12 +76,9 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/cb.h
@@ -119,6 +117,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -145,7 +144,6 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWTI_import.o: $(ARBHOME)/INCLUDE/aw_xfig.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/cb.h
