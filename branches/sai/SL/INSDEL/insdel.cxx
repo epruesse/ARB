@@ -1070,7 +1070,9 @@ public:
 class AliEditor : public AliApplicable {
     const AliEditCommand& cmd;
     Deletable             deletable;
-    mutable arb_progress  progress;
+
+    mutable arb_progress progress;
+    mutable size_t       modified_counter;
 
     GB_ERROR apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const char *item_name, const Alignment& ali) const OVERRIDE;
 
@@ -1088,7 +1090,8 @@ public:
     AliEditor(const AliEditCommand& cmd_, const Deletable& deletable_, const char *progress_title, size_t progress_count)
         : cmd(cmd_),
           deletable(deletable_),
-          progress(progress_title, progress_count)
+          progress(progress_title, progress_count),
+          modified_counter(0)
     {
     }
     ~AliEditor() OVERRIDE {
@@ -1217,7 +1220,8 @@ public:
         id_assert(implicated(!error, size_ == data->elems()));
     }
 
-    GB_ERROR apply(const AliEditCommand& cmd) {
+    GB_ERROR apply(const AliEditCommand& cmd, bool& did_modify) {
+        did_modify = false;
         if (!error) {
             AliDataPtr modified_data = cmd.apply(data, error);
 
@@ -1238,6 +1242,8 @@ public:
 
                     default: id_assert(0); break;
                 }
+
+                if (!error) did_modify = true;
             }
         }
         return error;
@@ -1250,7 +1256,12 @@ GB_ERROR AliEditor::apply_to_terminal(GBDATA *gb_data, TerminalType term_type, c
     if (gbtype >= GB_BITS && gbtype != GB_LINK) {
         if (shall_edit(gb_data, term_type)) {
             EditedTerminal edited(gb_data, gbtype, item_name, GB_read_count(gb_data), term_type, ali, deletable);
-            error = edited.apply(edit_command());
+
+            bool terminal_was_modified;
+            error = edited.apply(edit_command(), terminal_was_modified);
+            if (terminal_was_modified) {
+                progress.subtitle(GBS_global_string("modified: %zu", ++modified_counter));
+            }
         }
     }
     progress.inc_and_check_user_abort(error);
@@ -1372,12 +1383,18 @@ GB_ERROR ARB_delete_columns_using_SAI(GBDATA *Main, const char *alignment_name, 
     // Deletes all columns defined by 'ranges'
     // from all members (SAIs, seqs, ..) of alignment named 'alignment_name'.
 
-    AliEditCommand *cmd = new AliAutoFormatCommand; // @@@ use SmartPtr (here and in AliCompositeCommand)
-    for (RangeList::reverse_iterator r = ranges.rbegin(); r != ranges.rend(); ++r) {
-        cmd = new AliCompositeCommand(cmd, new AliDeleteCommand(r->start(), r->size()));
+    GB_ERROR error;
+    if (ranges.empty()) {
+        error = "Done with deleting nothing :)";
     }
-    GB_ERROR error = apply_command_to_alignment(*cmd, "Deleting columns using SAI", Main, alignment_name, deletable_chars);
-    delete cmd;
+    else {
+        AliEditCommand *cmd = new AliAutoFormatCommand; // @@@ use SmartPtr (here and in AliCompositeCommand)
+        for (RangeList::reverse_iterator r = ranges.rbegin(); r != ranges.rend(); ++r) {
+            cmd = new AliCompositeCommand(cmd, new AliDeleteCommand(r->start(), r->size()));
+        }
+        error = apply_command_to_alignment(*cmd, "Deleting columns using SAI", Main, alignment_name, deletable_chars);
+        delete cmd;
+    }
     return error;
 }
 
@@ -1391,28 +1408,34 @@ GB_ERROR ARB_insert_columns_using_SAI(GBDATA *Main, const char *alignment_name, 
     //
     // InsertWhere specifies whether the insertion happens INFRONTOF or BEHIND
 
-    AliEditCommand *cmd = new AliAutoFormatCommand; // @@@ use SmartPtr (here and in AliCompositeCommand)
-    for (RangeList::reverse_iterator r = ranges.rbegin(); r != ranges.rend(); ++r) {
-        switch (units) {
-            case RANGES: {
-                int pos;
-                switch (where) {
-                    case INFRONTOF: pos = r->start(); break;
-                    case BEHIND:    pos = r->end()+1; break;
+    GB_ERROR error;
+    if (!amount || ranges.empty()) {
+        error = "Done with inserting no gaps :)";
+    }
+    else {
+        AliEditCommand *cmd = new AliAutoFormatCommand; // @@@ use SmartPtr (here and in AliCompositeCommand)
+        for (RangeList::reverse_iterator r = ranges.rbegin(); r != ranges.rend(); ++r) {
+            switch (units) {
+                case RANGES: {
+                    int pos;
+                    switch (where) {
+                        case INFRONTOF: pos = r->start(); break;
+                        case BEHIND:    pos = r->end()+1; break;
+                    }
+                    cmd = new AliCompositeCommand(cmd, new AliInsertCommand(pos, amount));
+                    break;
                 }
-                cmd = new AliCompositeCommand(cmd, new AliInsertCommand(pos, amount));
-                break;
-            }
-            case SINGLE_COLUMNS: {
-                for (int pos = r->end(); pos >= r->start(); --pos)  {
-                    cmd = new AliCompositeCommand(cmd, new AliInsertCommand(where == INFRONTOF ? pos : pos+1, amount));
+                case SINGLE_COLUMNS: {
+                    for (int pos = r->end(); pos >= r->start(); --pos)  {
+                        cmd = new AliCompositeCommand(cmd, new AliInsertCommand(where == INFRONTOF ? pos : pos+1, amount));
+                    }
+                    break;
                 }
-                break;
             }
         }
+        error = apply_command_to_alignment(*cmd, "Inserting columns using SAI", Main, alignment_name, NULL);
+        delete cmd;
     }
-    GB_ERROR error = apply_command_to_alignment(*cmd, "Inserting columns using SAI", Main, alignment_name, NULL);
-    delete cmd;
     return error;
 }
 

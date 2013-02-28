@@ -56,6 +56,8 @@ public:
 
     RangeList inverse(ExplicitRange versus);
 
+    bool empty() const { return ranges.empty(); }
+
     void add(const PosRange& range) {
         if (!range.is_empty()) {
             iterator found = ranges.find(range);

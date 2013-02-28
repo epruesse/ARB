@@ -704,6 +704,8 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/insdel.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/pos_range.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/RangeList.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/test_global.h
 

@@ -9,6 +9,8 @@
 // =============================================================== //
 
 #include "ntree.hxx"
+
+#include <RangeList.h>
 #include <arbdbt.h>
 #include <insdel.h>
 #include <aw_root.hxx>
@@ -35,61 +37,162 @@
 enum SaiContains { CONTAINS, DOESNT_CONTAIN };
 enum InsdelMode { INSERT, DELETE };
 
+class StaticData {
+    char      *ali;
+    RangeList  ranges;
+
+public:
+    StaticData() : ali(NULL) {}
+    StaticData(const StaticData& other) : ali(nulldup(other.ali)), ranges(other.ranges) {}
+    DECLARE_ASSIGNMENT_OPERATOR(StaticData);
+    ~StaticData() { free(ali); }
+
+    GB_ERROR track_ali(GBDATA *gb_main) {
+        freeset(ali, GBT_get_default_alignment(gb_main));
+        return ali ? NULL : "no alignment found";
+    }
+
+    const char *get_ali() const { return ali; }
+
+    const RangeList& get_ranges() const { return ranges; }
+    void set_ranges(const RangeList& new_ranges) { ranges = new_ranges; }
+};
+
+static StaticData SELECTED;
+
+static void cleanup_when_closing(AW_window*) {
+    SELECTED = StaticData();
+}
+
+static int columns_of(const RangeList& ranges) {
+    int count = 0;
+    for (RangeList::iterator r = ranges.begin(); r != ranges.end(); ++r) {
+        count += r->size();
+    }
+    return count;
+}
+
+static void range_count_update_cb(AW_root *root) {
+    UseRange use   = UseRange(root->awar(AWAR_INSDEL_RANGE)->read_int());
+    int      count = 0;
+    switch (use) {
+        case RANGES:         count = SELECTED.get_ranges().size(); break;
+        case SINGLE_COLUMNS: count = columns_of(SELECTED.get_ranges()); break;
+    }
+    root->awar(AWAR_INSDEL_AFFECTED)->write_int(count);
+}
+
 static void range_changed_cb(AW_root *root) {
-    UseRange use = UseRange(root->awar_int(AWAR_INSDEL_RANGE)->read_int());
+    UseRange    use = UseRange(root->awar(AWAR_INSDEL_RANGE)->read_int());
     const char *what;
     switch (use) {
         case RANGES:         what = "selected ranges";  break;
         case SINGLE_COLUMNS: what = "selected columns"; break;
     }
-    root->awar_string(AWAR_INSDEL_WHAT)->write_string(what);
+    root->awar(AWAR_INSDEL_WHAT)->write_string(what);
+    range_count_update_cb(root);
+}
+
+static GB_ERROR update_RangeList(AW_root *root, GBDATA *gb_main) {
+    const char     *saiName = root->awar(AWAR_INSDEL_SAI)->read_char_pntr();
+    GB_transaction  ta(gb_main);
+    GBDATA         *gb_sai  = GBT_expect_SAI(gb_main, saiName);
+    GB_ERROR        error   = NULL;
+
+    if (!gb_sai) error = GB_await_error();
+    if (!error) error  = SELECTED.track_ali(gb_main);
+
+    if (!error) {
+        GBDATA *gb_data = GBT_read_sequence(gb_sai, SELECTED.get_ali());
+        if (!gb_data) {
+            if (GB_have_error()) error = GB_await_error();
+            else error                 = GBS_global_string("SAI '%s' has no data in alignment '%s'", saiName, SELECTED.get_ali());
+        }
+        else {
+            const char *data = GB_read_char_pntr(gb_data);
+            if (!data) error = GB_await_error();
+            else {
+                const char  *chars    = root->awar(AWAR_INSDEL_SAI_CHARS)->read_char_pntr();
+                SaiContains  contains = SaiContains(root->awar(AWAR_INSDEL_CONTAINS)->read_int());
+
+                SELECTED.set_ranges(build_RangeList_from_string(data, chars, contains == DOESNT_CONTAIN));
+                range_count_update_cb(root);
+            }
+        }
+    }
+    return error;
+}
+
+static void update_RangeList_cb(AW_root *root) {
+    aw_message_if(update_RangeList(root, GLOBAL.gb_main));
 }
 
 void create_insertDeleteColumn_variables(AW_root *root, AW_default props) {
-    root->awar_int   (AWAR_CURSOR_POSITION,  info2bio(0),    GLOBAL.gb_main);
-    root->awar_int   (AWAR_INSDEL_AMOUNT,    0,              props)->set_minmax(0, 9999999);
-    root->awar_string(AWAR_INSDEL_DELETABLE, "-.",           props);
-    root->awar_int   (AWAR_INSDEL_RANGE,     RANGES,         props)->add_callback(range_changed_cb);
-    root->awar_string(AWAR_INSDEL_SAI,       "",             props);
-    root->awar_int   (AWAR_INSDEL_CONTAINS,  DOESNT_CONTAIN, props);
-    root->awar_string(AWAR_INSDEL_SAI_CHARS, "-.",           props);
-    root->awar_int   (AWAR_INSDEL_AFFECTED,  0,              props);
-    root->awar_string(AWAR_INSDEL_WHAT,      "???",          props);
-    root->awar_int   (AWAR_INSDEL_DIRECTION, BEHIND,         props);
+    root->awar_int   (AWAR_CURSOR_POSITION,  info2bio(0), GLOBAL.gb_main);
+    root->awar_int   (AWAR_INSDEL_AMOUNT,    0,           props)->set_minmax(0, 9999999);
+    root->awar_string(AWAR_INSDEL_DELETABLE, "-.",        props);
+    root->awar_int   (AWAR_INSDEL_RANGE,     RANGES,      props)->add_callback(range_changed_cb);
+
+    root->awar_string(AWAR_INSDEL_SAI,       "",             props)->add_callback(update_RangeList_cb);
+    root->awar_int   (AWAR_INSDEL_CONTAINS,  DOESNT_CONTAIN, props)->add_callback(update_RangeList_cb);
+    root->awar_string(AWAR_INSDEL_SAI_CHARS, "-.",           props)->add_callback(update_RangeList_cb);
+
+    root->awar_int   (AWAR_INSDEL_AFFECTED,  0,      props);
+    root->awar_string(AWAR_INSDEL_WHAT,      "???",  props);
+    root->awar_int   (AWAR_INSDEL_DIRECTION, BEHIND, props);
 
     range_changed_cb(root);
+    update_RangeList(root, GLOBAL.gb_main);
 }
 
 static void insdel_event(AW_window *aws, AW_CL cl_insdelmode) {
-    InsdelMode  mode = InsdelMode(cl_insdelmode);
-    AW_root    *root = aws->get_root();
+    GBDATA     *gb_main = GLOBAL.gb_main;
+    InsdelMode  mode    = InsdelMode(cl_insdelmode);
+    AW_root    *root    = aws->get_root();
 
-    long  pos     = bio2info(root->awar(AWAR_CURSOR_POSITION)->read_int());
-    long  nchar   = root->awar(AWAR_INSDEL_AMOUNT)->read_int();
-    char *deletes = root->awar(AWAR_INSDEL_DELETABLE)->read_string();
+    long  pos       = bio2info(root->awar(AWAR_CURSOR_POSITION)->read_int());
+    long  nchar     = root->awar(AWAR_INSDEL_AMOUNT)->read_int();
+    const char *deletable = root->awar(AWAR_INSDEL_DELETABLE)->read_char_pntr();
 
     if (mode == DELETE) nchar = -nchar;
 
-    GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
-    if (!error) {
-        char *alignment = GBT_get_default_alignment(GLOBAL.gb_main);
+    GB_ERROR error    = GB_begin_transaction(gb_main);
+    if (!error) error = SELECTED.track_ali(gb_main);
+    if (!error) error = ARB_insdel_columns(gb_main, SELECTED.get_ali(), pos, nchar, deletable);
+    if (!error) error = GBT_check_data(gb_main, 0);
 
-        if (alignment) {
-            error             = ARB_insdel_columns(GLOBAL.gb_main, alignment, pos, nchar, deletes);
-            if (!error) error = GBT_check_data(GLOBAL.gb_main, 0);
-        }
-        else {
-            error = "no alignment found";
-        }
-        free(alignment);
-    }
-
-    GB_end_transaction_show_error(GLOBAL.gb_main, error, aw_message);
-    free(deletes);
+    GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
 static void insdel_sai_event(AW_window *aws, AW_CL cl_insdelmode) {
-    aw_message("not impl");
+    GBDATA   *gb_main = GLOBAL.gb_main;
+    GB_ERROR  error   = GB_begin_transaction(GLOBAL.gb_main);
+    if (!error) error = SELECTED.track_ali(gb_main);
+
+    if (!error) {
+        InsdelMode  mode = InsdelMode(cl_insdelmode);
+        AW_root    *root = aws->get_root();
+
+        switch (mode) {
+            case INSERT: {
+                UseRange    units  = UseRange(root->awar(AWAR_INSDEL_RANGE)->read_int());
+                InsertWhere where  = InsertWhere(root->awar(AWAR_INSDEL_DIRECTION)->read_int());
+                size_t      amount = root->awar(AWAR_INSDEL_AMOUNT)->read_int();
+
+                error = ARB_insert_columns_using_SAI(gb_main, SELECTED.get_ali(), SELECTED.get_ranges(), units, where, amount);
+                break;
+            }
+            case DELETE: {
+                const char *deletable = root->awar(AWAR_INSDEL_DELETABLE)->read_char_pntr();
+
+                error = ARB_delete_columns_using_SAI(gb_main, SELECTED.get_ali(), SELECTED.get_ranges(), deletable);
+                break;
+            }
+        }
+    }
+    if (!error) error = GBT_check_data(gb_main, 0);
+
+    GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
 AW_window *create_insertDeleteColumn_window(AW_root *root) {
@@ -203,6 +306,8 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, AW_CL cl_gbmain) {
         aws->at("what0"); aws->create_button(0, AWAR_INSDEL_WHAT);
         aws->at("what1"); aws->create_button(0, AWAR_INSDEL_WHAT);
         aws->at("what2"); aws->create_button(0, AWAR_INSDEL_WHAT);
+
+        aws->on_hide(cleanup_when_closing);
     }
     return aws;
 }
