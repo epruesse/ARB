@@ -2085,7 +2085,42 @@ void AW_window::init_window(const char *window_name, const char* window_title,
     if (width  > _at.max_x_size) _at.max_x_size = width;
     if (height > _at.max_y_size) _at.max_y_size = height;
 
+    // manage transience:
+    // the first created window is considered the main application
+    // window. should it be closed, the next created window supersedes it.
+    // all other windows are "transient", i.e. dialogs relative to it.
+    // (relevant for window placement by window manager)
+    if (!get_root()->root_window || !get_root()->root_window->is_shown()) {
+        // no root window yet, or root window not visible => I'm root
+        get_root()->root_window = this;
+    }
+    else {
+        // there is a root, we're a transient to it
+        gtk_window_set_transient_for(prvt->window, 
+                                     get_root()->root_window->prvt->window);
+    }
+
     
+    // try setting a window icon 
+    GtkIconTheme *theme = gtk_icon_theme_get_default();
+    const char* icon_name = NULL;
+    if (gtk_icon_theme_has_icon(theme, window_defaults_name)) {
+      icon_name = window_defaults_name;
+    }
+    else if (gtk_icon_theme_has_icon(theme, get_root()->program_name)) {
+      icon_name = get_root()->program_name;
+    }
+    if (icon_name) {
+      // sadly, this doesn't work:
+      // gtk_window_set_icon_name(prvt->window, get_root()->program_name);
+      // => do it manually
+      GtkIconInfo *ii = gtk_icon_theme_lookup_icon(theme, get_root()->program_name, 
+                                                   128, GTK_ICON_LOOKUP_GENERIC_FALLBACK);
+      GError *err = NULL;
+      gtk_window_set_icon_from_file(prvt->window, gtk_icon_info_get_filename(ii), &err);
+      if (err) fprintf(stderr, "Setting icon for window %s failed with message '%s'",
+                       window_defaults_name, err->message);
+    } 
 
 }
 
