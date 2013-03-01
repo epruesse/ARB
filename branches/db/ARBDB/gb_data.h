@@ -118,28 +118,52 @@ inline void SET_GB_DATA_LIST_HEADER(gb_data_list& dl, gb_header_list *head) {
 
 // --------------------------------------------------------------------------------
 
-struct GBDATA {
+#if defined(DEBUG)
+#define ASSERT_STRICT_GBDATA_TYPES // just for refactoring/debugging (slow)
+#endif
+
+#if defined(ASSERT_STRICT_GBDATA_TYPES)
+#define gb_strict_assert(cond) gb_assert(cond)
+#else
+#define gb_strict_assert(cond)
+#endif
+
+struct GBDATA;
+struct GBCONTAINER;
+
+struct GBCOMMON {
     long              server_id;
     GB_REL_CONTAINER  rel_father;
     gb_db_extended   *ext;
     long              index;
     gb_flag_types     flags;
     gb_flag_types2    flags2;
-    // member above are same as in GBCONTAINER
 
-    gb_data_base_type_union info;
-    int                     cache_index;                                // @@@ should be a member of gb_db_extended and of type gb_cache_idx
+    // ----------------------------------------
+    // @@@ methods below are unused atm
+
+    GB_TYPES type() const { return GB_TYPES(flags.type); }
+
+    bool is_container() const { return type() == GB_DB; }
+    bool is_field() const { return !is_container(); }
+
+    GBDATA *as_field() const {
+        gb_strict_assert(is_field());
+        return (GBDATA*)this;
+    }
+    GBCONTAINER *as_container() const {
+        gb_strict_assert(is_container());
+        return (GBCONTAINER*)this;
+    }
 };
 
-struct GBCONTAINER {
-    long              server_id;
-    GB_REL_CONTAINER  rel_father;
-    gb_db_extended   *ext;
-    long              index;
-    gb_flag_types     flags;
-    gb_flag_types2    flags2;
-    // member above are same as in GBDATA
+struct GBDATA : public GBCOMMON {
+    gb_data_base_type_union info;
 
+    int cache_index; // @@@ should be a member of gb_db_extended and of type gb_cache_idx
+};
+
+struct GBCONTAINER : public GBCOMMON {
     gb_flag_types3 flags3;
     gb_data_list   d;
 
