@@ -142,11 +142,24 @@ struct GB_MAIN_TYPE {
     gb_user    *this_user;
     gb_project *this_project;
 
+private:
+
+    GBDATA *gb_main() const { return (GBDATA*)data; }
+
     inline GB_ERROR begin_initial_transaction();
-    inline GB_ERROR push_transaction();
-    inline GB_ERROR pop_transaction();
+
+public:
+
+    inline GB_ERROR begin_transaction();
     inline GB_ERROR commit_transaction();
     inline GB_ERROR abort_transaction();
+
+    inline GB_ERROR push_transaction();
+    inline GB_ERROR pop_transaction();
+
+    inline GB_ERROR no_transaction();
+
+    __ATTR__USERESULT GB_ERROR send_update_to_server(GBDATA *gbd);
 };
 
 

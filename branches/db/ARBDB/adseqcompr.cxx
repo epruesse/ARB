@@ -860,7 +860,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
 
     if (Main->transaction>0) {
-        error = "Compress Sequences called during a running transaction";
+        error = "Compress Sequences called while transaction running";
         GB_internal_error(error);
     }
     else {

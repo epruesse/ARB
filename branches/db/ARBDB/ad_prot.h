@@ -395,7 +395,6 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd);
 GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error);
 void GB_end_transaction_show_error(GBDATA *gbd, GB_ERROR error, void (*error_handler)(GB_ERROR));
 int GB_get_transaction_level(GBDATA *gbd);
-GB_ERROR GB_update_server(GBDATA *gbd);
 NOT4PERL bool GB_inside_callback(GBDATA *of_gbd, GB_CB_TYPE cbtype);
 GBDATA *GB_get_gb_main_during_cb(void);
 NOT4PERL const void *GB_read_old_value(void);

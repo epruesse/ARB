@@ -63,7 +63,7 @@ static const char *GB_TYPES_2_name(GB_TYPES type) {
 inline GB_ERROR gb_transactable_type(GB_TYPES type, GBDATA *gbd) {
     GB_ERROR error = NULL;
     if (!GB_MAIN(gbd)->transaction) {
-        error = "No running transaction";
+        error = "No transaction running";
     }
     else if (GB_ARRAY_FLAGS(gbd).changed == GB_DELETED) {
         error = "Entry has been deleted";
@@ -1021,7 +1021,7 @@ double GB_read_from_floats(GBDATA *gbd, long index) {
 //      write data
 
 static void gb_do_callbacks(GBDATA *gbd) {
-    gb_assert(GB_MAIN(gbd)->transaction<0); // only use in "no transaction mode"!
+    gb_assert(GB_MAIN(gbd)->transaction<0); // only use in NO_TRANSACTION_MODE!
 
     GBDATA *gbdn, *gbdc;
     for (gbdc = gbd; gbdc; gbdc=gbdn) {
@@ -2002,7 +2002,7 @@ inline GB_ERROR GB_MAIN_TYPE::begin_initial_transaction() {
 inline GB_ERROR GB_MAIN_TYPE::push_transaction() {
     if (transaction == 0) return begin_initial_transaction();
     if (transaction>0) ++transaction;
-    // transaction<0 is "no transaction mode"
+    // transaction<0 is NO_TRANSACTION_MODE
     return NULL;
 }
 
@@ -2083,7 +2083,7 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
 
 inline GB_ERROR GB_MAIN_TYPE::pop_transaction() {
     if (transaction==0) return "attempt to pop nested transaction while none running";
-    if (transaction<0)  return 0;  // no transaction mode
+    if (transaction<0)  return 0;  // NO_TRANSACTION_MODE
     if (transaction==1) return commit_transaction();
     transaction--;
     return NULL;
@@ -2127,36 +2127,28 @@ GB_ERROR GB_pop_transaction(GBDATA *gbd) {
     return GB_MAIN(gbd)->pop_transaction();
 }
 
+inline GB_ERROR GB_MAIN_TYPE::begin_transaction() { // @@@ move up
+    if (transaction>0) return GBS_global_string("attempt to start a NEW transaction (at transaction level %i)", transaction);
+    if (transaction == 0) return begin_initial_transaction();
+    return NULL; // NO_TRANSACTION_MODE
+}
+
 GB_ERROR GB_begin_transaction(GBDATA *gbd) { // @@@ move into GB_MAIN_TYPE
     /*! like GB_push_transaction(),
      * but fails if there is already an transaction running.
      * @see GB_commit_transaction() and GB_abort_transaction()
      */
-
-    GB_ERROR      error = NULL;
-    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
-
-    if (Main->transaction>0) {
-        error = GBS_global_string("attempt to start a NEW transaction (at transaction level %i)",
-                                  Main->transaction);
-    }
-    else if (Main->transaction == 0) {
-        Main->begin_initial_transaction();
-    }
-    return error;
+    return GB_MAIN(gbd)->begin_transaction();
 }
 
- // @@@ move into GB_MAIN_TYPE
+inline GB_ERROR GB_MAIN_TYPE::no_transaction() { // @@@ move up
+    if (!local_mode) return "Tried to disable transactions in a client";
+    transaction = -1;
+    return NULL;
+}
+
 GB_ERROR GB_no_transaction(GBDATA *gbd) { // @@@ return error; add __ATTR__USERESULT
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (!Main->local_mode) {
-        GB_ERROR error = GB_export_error("Tried to disable transactions in a client");
-        GB_internal_error(error);
-    }
-    else {
-        Main->transaction = -1;
-    }
-    return 0;
+    GB_MAIN(gbd)->no_transaction();
 }
 
 GB_ERROR GB_abort_transaction(GBDATA *gbd) {
@@ -2212,39 +2204,19 @@ int GB_get_transaction_level(GBDATA *gbd) {
     return Main->transaction;
 }
 
-#if defined(WARN_TODO)
-#warning GB_update_server should be ARBDB-local!
-#endif
+GB_ERROR GB_MAIN_TYPE::send_update_to_server(GBDATA *gbd) { // @@@ move up
+    GB_ERROR error = NULL;
 
-GB_ERROR GB_update_server(GBDATA *gbd) { // @@@ move into GB_MAIN_TYPE
-    //! Send updated data to server
-    GB_ERROR      error = NULL;
-    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
-
-    if (!Main->transaction) {
-        error = "GB_update_server: No running Transaction";
-        GB_internal_error(error);
-    }
-    else if (Main->local_mode) {
-        error = "You cannot update the server as you are the server yourself";
-    }
+    if (!transaction) error    = "send_update_to_server: no transaction running";
+    else if (local_mode) error = "send_update_to_server: only possible from clients (not from server itself)";
     else {
-        GBDATA           *gb_main = (GBDATA *)Main->data;
-        gb_callback_list *cbl_old = Main->cbl_last;
+        gb_callback_list *cbl_old = cbl_last;
 
-        error = gbcmc_begin_sendupdate(gb_main);
-        if (!error) {
-            error = gb_commit_transaction_local_rek(gbd, 2, 0);
-            if (!error) {
-                error = gbcmc_end_sendupdate(gb_main);
-                if (!error) {
-                    if (cbl_old != Main->cbl_last) {
-                        GB_internal_error("GB_update_server produced a callback, this is not allowed");
-                    }
-                    // gb_do_callback_list(gbd);         do all callbacks
-                }
-            }
-        }
+        error             = gbcmc_begin_sendupdate(gb_main());
+        if (!error) error = gb_commit_transaction_local_rek(gbd, 2, 0);
+        if (!error) error = gbcmc_end_sendupdate(gb_main());
+
+        if (!error && cbl_old != cbl_last) error = "send_update_to_server triggered a callback (this is not allowed)";
     }
     return error;
 }
@@ -2512,7 +2484,7 @@ static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *cl
                 (cb->clientdata == clientdata || !cd_should_match))
             {
                 if (prev_running || cb->running) {
-                    // if the previous callback in list or the callback itself is running (in "no transaction mode")
+                    // if the previous callback in list or the callback itself is running (in NO_TRANSACTION_MODE)
                     // the callback cannot be removed (see gb_do_callbacks)
                     GBK_terminate("gb_remove_callback: tried to remove currently running callback");
                 }

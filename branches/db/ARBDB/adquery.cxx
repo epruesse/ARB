@@ -185,7 +185,7 @@ static GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB
     return find_sub_by_quark(father, key_quark, type, val, case_sens, after, skip_over);
 }
 
-static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, GBQUARK sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
+static GBDATA *find_sub_sub_by_quark(GBDATA *const father, const char *key, GBQUARK sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
     int             end, index;
     gb_header_list *header;
     GBCONTAINER    *gbf  = (GBCONTAINER*)father;
@@ -206,7 +206,11 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, GBQUARK su
             // do the query in the server
             if (GB_ARRAY_FLAGS(gbf).changed) {
                 if (!gbf->flags2.update_in_server) {
-                    GB_update_server((GBDATA *)gbf);
+                    GB_ERROR error = Main->send_update_to_server(father);
+                    if (error) {
+                        GB_export_error(error);
+                        return NULL;
+                    }
                 }
             }
         }

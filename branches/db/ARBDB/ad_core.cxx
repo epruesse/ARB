@@ -726,7 +726,7 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
             gb_load_single_key_data((GBDATA *)Main->data, (GBQUARK)index);
             // Warning: starts a big recursion
             if (!Main->local_mode) { // send new gb_key to server, needed for searching
-                GB_update_server((GBDATA *)Main->data);
+                GBK_terminate_on_error(Main->send_update_to_server((GBDATA *)Main->data));
             }
         }
     }
