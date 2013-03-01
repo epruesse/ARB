@@ -1205,10 +1205,10 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
 
                         gb_main_array[new_idx] = Main;
 
-                        gbm_free_mem(Main->data, sizeof(GBCONTAINER), GB_QUARK_2_GBMINDEX(Main, 0));
+                        gbm_free_mem(Main->root_container, sizeof(GBCONTAINER), GB_QUARK_2_GBMINDEX(Main, 0));
 
-                        Main->data = newGbd;
-                        father->main_idx = new_idx;
+                        Main->root_container = newGbd;
+                        father->main_idx     = new_idx;
 
                         SET_GBCONTAINER_ELEM(father, gbd->index, NULL); // unlink old main-entry
 
@@ -1325,7 +1325,7 @@ void gb_release_main_idx(GB_MAIN_TYPE *Main) {
 }
 
 static GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent) {
-    GBCONTAINER *gbd   = Main->data;
+    GBCONTAINER *gbd   = Main->root_container;
     GB_ERROR     error = NULL;
 
     Main->local_mode = false;
@@ -1485,7 +1485,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
     Main->dummy_father->server_id = GBTUM_MAGIC_NUMBER;
     gbd                           = gb_make_container(Main->dummy_father, NULL, -1, 0); // create "main"
 
-    Main->data = gbd;
+    Main->root_container = gbd;
     gbcm_login(gbd, user);
     Main->opentype = opentype;
     Main->security_level = 7;
@@ -1549,7 +1549,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
 
                 if (is_binary_db_id(i)) {
                     i = gb_read_bin(input, gbd, false);     // read or map whole db
-                    gbd = Main->data;
+                    gbd = Main->root_container;
                     fclose(input);
 
                     if (i) {
@@ -1659,8 +1659,8 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
             if (!strchr(opent, 'N')) {               // new format
                 gb_convert_V2_to_V3((GBDATA *)gbd); // Compression conversion
             }
-            error = gb_load_key_data_and_dictionaries((GBDATA *)Main->data);
-            if (!error) error = GB_resort_system_folder_to_top((GBDATA *)Main->data);
+            error = gb_load_key_data_and_dictionaries(Main->gb_main());
+            if (!error) error = GB_resort_system_folder_to_top(Main->gb_main());
             // @@@ handle error 
             GB_commit_transaction((GBDATA *)gbd);
         }

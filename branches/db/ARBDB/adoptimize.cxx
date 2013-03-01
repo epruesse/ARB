@@ -162,7 +162,7 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
     gbk[0].cnt  = 0;
     gbk[0].gbds = (GBDATA **)GB_calloc(1, sizeof(GBDATA*));
 
-    g_b_opti_scanGbdByKey(Main, (GBDATA*)Main->data, gbk);
+    g_b_opti_scanGbdByKey(Main, Main->gb_main(), gbk);
 
     for (idx=0; idx<gbdByKey_cnt; idx++) {
         if (gbk[idx].cnt != Main->keys[idx].nref && idx)
@@ -2439,7 +2439,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
             int            compression_mask;
             GB_CSTR        key_name = Main->keys[idx].key;
             int            type;
-            GBDATA        *gb_main  = (GBDATA*)Main->data;
+            GBDATA        *gb_main  = Main->gb_main();
 
 #ifdef TEST_SOME
             if (!( // add all wanted keys here

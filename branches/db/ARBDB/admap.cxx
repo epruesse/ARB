@@ -579,7 +579,7 @@ static gbdByKey *createGbdByKey(GB_MAIN_TYPE *Main)
 
     gbk[0].gbdoff = (gbdata_offset *)GB_calloc(1, sizeof(*(gbk[0].gbdoff))); // @@@ FIXME : this is maybe allocated twice (5 lines above and here), maybe idx == 0 is special ?
 
-    scanGbdByKey(Main, (GBDATA*)Main->data, gbk);
+    scanGbdByKey(Main, Main->gb_main(), gbk);
 
     for (idx=0; idx<Main->keycnt; idx++)
         if (gbk[idx].cnt)
@@ -636,16 +636,16 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
             GB_MAIN_IDX main_idx_4_save = gb_make_main_idx(Main); // Generate a new main idx (temporary during save)
             mheader.main_idx            = main_idx_4_save;
 
-            mheader.main_data_offset = getrel_GBDATA(1, (GBDATA*)Main->data)+1;
+            mheader.main_data_offset = getrel_GBDATA(1, Main->gb_main())+1;
 
             ftwrite_unaligned(&mheader, sizeof(mheader), out);
 
-            gb_assert(GB_FATHER(Main->data) == Main->dummy_father);
-            SET_GB_FATHER(Main->data, NULL);
+            gb_assert(GB_FATHER(Main->root_container) == Main->dummy_father);
+            SET_GB_FATHER(Main->root_container, NULL);
     
             IF_ASSERTION_USED(long writeOffset =)
                 writeGbdByKey(Main, gb_gbk, out, main_idx_4_save);
-            SET_GB_FATHER(Main->data, Main->dummy_father);
+            SET_GB_FATHER(Main->root_container, Main->dummy_father);
 
             gb_assert(calcOffset==writeOffset);
 

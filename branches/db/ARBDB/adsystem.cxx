@@ -38,7 +38,7 @@ GB_ERROR gb_load_dictionary_data(GBDATA *gb_main, const char *key, char **dict_d
 
     *dict_data = 0;
     *size      = -1;
-    gb_main    = (GBDATA *)Main->data;
+    gb_main    = Main->gb_main();
 
     if (key[0] == '@') {
         error = GB_export_error("No dictionaries for system fields");
@@ -125,7 +125,7 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
         return;
     }
 
-    gb_main = (GBDATA *)Main->data;
+    gb_main = Main->gb_main();
     if (key[0] == '@') {
         ks->compression_mask = 0;
         ks->dictionary       = 0;
@@ -175,7 +175,7 @@ GB_ERROR gb_save_dictionary_data(GBDATA *gb_main, const char *key, const char *d
     // if 'dict' is NULL, an existing directory gets deleted
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
     GB_ERROR      error = 0;
-    gb_main             = (GBDATA *)Main->data;
+    gb_main             = Main->gb_main();
     if (key[0] == '@') {
         error = GB_export_error("No dictionaries for system fields");
     }

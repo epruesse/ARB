@@ -888,7 +888,7 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
 
         if (!error) {
             GB_MAIN_TYPE *Main = GB_MAIN(gb);
-            gb                 = (GBDATA*)Main->data;
+            gb                 = Main->gb_main();
             if (!path) path    = Main->path;
 
             if (!path || !path[0]) error = "Please specify a savename";
@@ -1026,7 +1026,7 @@ GB_ERROR GB_delete_database(GB_CSTR filename) {
 
 GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path) {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    gb_main            = (GBDATA *)Main->data;
+    gb_main            = Main->gb_main();
 
     GB_ERROR error = NULL;
 
@@ -1113,7 +1113,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path) {
 
 GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
     GB_MAIN_TYPE *Main = GB_MAIN(gb);
-    gb                 = (GBDATA *)Main->data;
+    gb                 = Main->gb_main();
 
     GB_ERROR error    = gb_check_quick_save(gb);
     if (!error) error = gb_check_saveable(gb, refpath, "q");

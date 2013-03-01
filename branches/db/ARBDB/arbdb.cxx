@@ -534,7 +534,7 @@ void gb_local_data::announce_db_close(GB_MAIN_TYPE *Main) {
 
 static GBDATA *gb_remembered_db() {
     GB_MAIN_TYPE *Main = gb_local ? gb_local->get_any_open_db() : NULL;
-    return Main ? (GBDATA*)Main->data : NULL;
+    return Main ? Main->gb_main() : NULL;
 }
 
 GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
@@ -678,7 +678,7 @@ void GB_close(GBDATA *gbd) {
 
     gb_assert(Main->transaction <= 0); // transaction running -> you can't close DB yet!
 
-    gb_assert((GBDATA*)Main->data == gbd);
+    gb_assert(Main->gb_main() == gbd);
     run_close_callbacks(gbd, Main->close_callbacks);
     Main->close_callbacks = 0;
     
@@ -693,7 +693,7 @@ void GB_close(GBDATA *gbd) {
         gb_assert(Main->close_callbacks == 0);
 
         gb_delete_dummy_father(&Main->dummy_father);
-        Main->data = NULL;
+        Main->root_container = NULL;
 
         /* ARBDB applications using awars easily crash in gb_do_callback_list(),
          * if AWARs are still bound to elements in the closed database.
@@ -1134,7 +1134,7 @@ int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type) {
         compression_mask = 0;
     }
     else {
-        if (!ks->gb_key) gb_load_single_key_data((GBDATA*)Main->data, key);
+        if (!ks->gb_key) gb_load_single_key_data(Main->gb_main(), key);
         compression_mask = gb_convert_type_2_compression_flags[gb_type] & ks->compression_mask;
     }
 
@@ -1519,7 +1519,7 @@ GBDATA *GB_get_grandfather(GBDATA *gbd) {
 }
 
 GBDATA *GB_get_root(GBDATA *gbd) {  // Get the root entry (gb_main)
-    return (GBDATA *)GB_MAIN(gbd)->data;
+    return GB_MAIN(gbd)->gb_main();
 }
 
 bool GB_check_father(GBDATA *gbd, GBDATA *gb_maybefather) {
@@ -1966,7 +1966,7 @@ GB_ERROR gb_init_transaction(GBCONTAINER *gbd) { // the first transaction ever
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     Main->transaction  = 1;
 
-    GB_ERROR error = gbcmc_init_transaction(Main->data);
+    GB_ERROR error = gbcmc_init_transaction(Main->root_container);
     if (!error) Main->clock ++;
 
     return error;
@@ -1981,11 +1981,11 @@ inline GB_ERROR GB_MAIN_TYPE::begin_initial_transaction() {
 
     GB_ERROR error = NULL;
     if (!local_mode) {
-        error = gbcmc_begin_transaction((GBDATA*)data);
+        error = gbcmc_begin_transaction(gb_main());
         if (!error) {
-            error = gb_commit_transaction_local_rek((GBDATA*)data, 0, 0); // init structures
-            gb_untouch_children(data);
-            gb_untouch_me((GBDATA*)data);
+            error = gb_commit_transaction_local_rek(gb_main(), 0, 0); // init structures
+            gb_untouch_children(root_container);
+            gb_untouch_me(gb_main());
         }
     }
 
@@ -2014,16 +2014,16 @@ inline GB_ERROR GB_MAIN_TYPE::abort_transaction() {
         return pop_transaction();
     }
 
-    gb_abort_transaction_local_rek((GBDATA*)data, 0);
+    gb_abort_transaction_local_rek(gb_main(), 0);
     if (!local_mode) {
-        GB_ERROR error = gbcmc_abort_transaction((GBDATA*)data);
+        GB_ERROR error = gbcmc_abort_transaction(gb_main());
         if (error) return error;
     }
     clock--;
     gb_do_callback_list(this);       // do all callbacks
     transaction = 0;
-    gb_untouch_children(data);
-    gb_untouch_me((GBDATA*)data);
+    gb_untouch_children(root_container);
+    gb_untouch_me(gb_main());
     return 0;
 }
 
@@ -2042,17 +2042,17 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
         return abort_transaction();
     }
     if (local_mode) {
-        char *error1 = gb_set_undo_sync((GBDATA*)data);
+        char *error1 = gb_set_undo_sync(gb_main());
         while (1) {
-            flag = (GB_CHANGE)GB_ARRAY_FLAGS((GBDATA*)data).changed;
+            flag = (GB_CHANGE)GB_ARRAY_FLAGS(gb_main()).changed;
             if (!flag) break;           // nothing to do
-            error = gb_commit_transaction_local_rek((GBDATA*)data, 0, 0);
-            gb_untouch_children(data);
-            gb_untouch_me((GBDATA*)data);
+            error = gb_commit_transaction_local_rek(gb_main(), 0, 0);
+            gb_untouch_children(root_container);
+            gb_untouch_me(gb_main());
             if (error) break;
             gb_do_callback_list(this);       // do all callbacks
         }
-        gb_disable_undo((GBDATA*)data);
+        gb_disable_undo(gb_main());
         if (error1) {
             transaction = 0;
             gb_assert(error); // maybe return error1?
@@ -2060,20 +2060,20 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
         }
     }
     else {
-        gb_disable_undo((GBDATA*)data);
+        gb_disable_undo(gb_main());
         while (1) {
-            flag = (GB_CHANGE)GB_ARRAY_FLAGS((GBDATA*)data).changed;
+            flag = (GB_CHANGE)GB_ARRAY_FLAGS(gb_main()).changed;
             if (!flag) break;           // nothing to do
 
-            error = gbcmc_begin_sendupdate((GBDATA*)data);        if (error) break;
-            error = gb_commit_transaction_local_rek((GBDATA*)data, 1, 0); if (error) break;
-            error = gbcmc_end_sendupdate((GBDATA*)data);      if (error) break;
+            error = gbcmc_begin_sendupdate(gb_main());        if (error) break;
+            error = gb_commit_transaction_local_rek(gb_main(), 1, 0); if (error) break;
+            error = gbcmc_end_sendupdate(gb_main());      if (error) break;
 
-            gb_untouch_children(data);
-            gb_untouch_me((GBDATA*)data);
+            gb_untouch_children(root_container);
+            gb_untouch_me(gb_main());
             gb_do_callback_list(this);       // do all callbacks
         }
-        if (!error) error = gbcmc_commit_transaction((GBDATA*)data);
+        if (!error) error = gbcmc_commit_transaction(gb_main());
 
     }
     transaction = 0;
@@ -2302,8 +2302,8 @@ GBDATA *GB_get_gb_main_during_cb() {
     GB_MAIN_TYPE *Main    = gb_get_main_during_cb();
 
     if (Main) {                 // inside callback
-        if (!GB_inside_callback((GBDATA*)Main->data, GB_CB_DELETE)) { // main is not deleted
-            gb_main = (GBDATA*)Main->data;
+        if (!GB_inside_callback(Main->gb_main(), GB_CB_DELETE)) { // main is not deleted
+            gb_main = Main->gb_main();
         }
     }
     return gb_main;

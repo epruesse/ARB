@@ -259,7 +259,7 @@ GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
 
 char *gb_destroy_main(GB_MAIN_TYPE *Main) {
     gb_assert(!Main->dummy_father);
-    gb_assert(!Main->data);
+    gb_assert(!Main->root_container);
 
     gb_destroy_cache(Main);
     gb_release_main_idx(Main);
@@ -534,11 +534,11 @@ void gb_delete_dummy_father(GBCONTAINER **dummy_father) {
         GBCONTAINER *gb_main = (GBCONTAINER*)GBCONTAINER_ELEM(gbc, index);
         if (gb_main) {
             gb_assert(GB_TYPE(gb_main) == GB_DB);
-            gb_assert(gb_main == Main->data);
+            gb_assert(gb_main == Main->root_container);
             gb_delete_main_entry((GBCONTAINER**)&gb_main);
 
             SET_GBCONTAINER_ELEM(gbc, index, NULL);
-            Main->data = NULL;
+            Main->root_container = NULL;
         }
     }
 
@@ -711,7 +711,7 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
         gb_create_key_array(Main, (int)index+1);
     }
     if (!Main->local_mode) {
-        long test_index = gbcmc_key_alloc((GBDATA *)Main->data, s);
+        long test_index = gbcmc_key_alloc(Main->gb_main(), s);
         if (test_index != index) {
             GBK_terminatef("Database corrupt (allocating quark '%s' in server failed)", s);
         }
@@ -723,10 +723,10 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
         GBS_write_hash(Main->key_2_index_hash, s, index);
         gb_assert(GBS_hash_count_elems(Main->key_2_index_hash) <= ALLOWED_KEYS);
         if (Main->gb_key_data && create_gb_key) {
-            gb_load_single_key_data((GBDATA *)Main->data, (GBQUARK)index);
+            gb_load_single_key_data(Main->gb_main(), (GBQUARK)index);
             // Warning: starts a big recursion
             if (!Main->local_mode) { // send new gb_key to server, needed for searching
-                GBK_terminate_on_error(Main->send_update_to_server((GBDATA *)Main->data));
+                GBK_terminate_on_error(Main->send_update_to_server(Main->gb_main()));
             }
         }
     }

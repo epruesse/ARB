@@ -855,7 +855,7 @@ GB_DICTIONARY * gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key) {
     gb_Key *ks = &Main->keys[key];
     if (ks->gb_key_disabled) return 0;
     if (!ks->gb_key) {
-        gb_load_single_key_data((GBDATA *)Main->data, key);
+        gb_load_single_key_data(Main->gb_main(), key);
         if (Main->gb_key_data && !ks->gb_key) {
             GB_internal_error("Couldn't load gb_key");
         }

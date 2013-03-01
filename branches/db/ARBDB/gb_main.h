@@ -88,7 +88,7 @@ struct GB_MAIN_TYPE {
     gbcmc_comm     *c_link;
     gb_server_data *server_data;
     GBCONTAINER    *dummy_father;
-    GBCONTAINER    *data; // @@@ rename ? 
+    GBCONTAINER    *root_container;
     GBDATA         *gb_key_data;
     char           *path;
     gb_open_types   opentype;
@@ -144,11 +144,11 @@ struct GB_MAIN_TYPE {
 
 private:
 
-    GBDATA *gb_main() const { return (GBDATA*)data; }
-
     inline GB_ERROR begin_initial_transaction();
 
 public:
+
+    GBDATA *gb_main() const { return (GBDATA*)root_container; }
 
     inline GB_ERROR begin_transaction();
     inline GB_ERROR commit_transaction();
