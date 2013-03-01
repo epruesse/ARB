@@ -600,138 +600,6 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
 // --------------------------
 //      Read binary files
 
-static long gb_read_bin_rek(FILE *in, GBCONTAINER *gbd, long nitems, long version, bool reversed) {
-    long          item;
-    long          type, type2;
-    GBQUARK       key;
-    char         *p;
-    long          i;
-    int           c;
-    long          size;
-    long          memsize;
-    GBDATA       *gb2;
-    GBCONTAINER  *gbc  = 0;
-    long          security;
-    char         *buff;
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-
-    gb_create_header_array(gbd, (int)nitems);
-
-    for (item = 0; item<nitems; item++) {
-        type = getc(in);
-        security = getc(in);
-        type2 = (type>>4)&0xf;
-        key = getc(in);
-        if (!key) {
-            p = buff = GB_give_buffer(256);
-            for (i=0; i<256; i++) {
-                c = getc(in);
-                *(p++) = c;
-                if (!c) break;
-                if (c==EOF) {
-                    gb_read_bin_error(in, (GBDATA *)gbd, "Unexpected EOF found");
-                    return -1;
-                }
-            }
-            if (i>GB_KEY_LEN_MAX*2) {
-                gb_read_bin_error(in, (GBDATA *)gbd, "Key to long");
-                return -1;
-            }
-            if (type2 == (long)GB_DB) {
-                gbc = gb_make_container(gbd, buff, -1, 0);
-                gb2 = (GBDATA *)gbc;
-            }
-            else {
-                gb2 = gb_make_entry(gbd, buff, -1, 0, (GB_TYPES)type2);
-            }
-        }
-        else {
-            if (type2 == (long)GB_DB) {
-                gbc = gb_make_container(gbd, NULL, -1, key);
-                gb2 = (GBDATA *)gbc;
-            }
-            else {
-                gb2 = gb_make_entry(gbd, NULL, -1, (GBQUARK)key, (GB_TYPES)type2);
-            }
-            if (!Main->keys[key].key) {
-                GB_internal_error("Some database fields have no field identifier -> setting to 'main'");
-                gb_write_index_key(GB_FATHER(gbd), gbd->index, 0);
-            }
-        }
-        gb2->flags.security_delete  = type >> 1;
-        gb2->flags.security_write   = ((type&1) << 2) + (security >> 6);
-        gb2->flags.security_read    = security >> 3;
-        gb2->flags.compressed_data  = security >> 2;
-        GB_ARRAY_FLAGS(((GBCONTAINER*)gb2)).flags = (int)((security >> 1) & 1);
-        gb2->flags.unused       = security >> 0;
-        gb2->flags2.last_updated = getc(in);
-
-        switch (type2) {
-            case GB_INT:
-                {
-                    GB_UINT4 buffer;
-                    if (!fread((char*)&buffer, sizeof(GB_UINT4), 1, in)) {
-                        GB_export_error("File too short, seems truncated");
-                        return -1;
-                    }
-                    gb2->info.i = ntohl(buffer);
-                    break;
-                }
-            case GB_FLOAT:
-                gb2->info.i = 0;
-                if (!fread((char*)&gb2->info.i, sizeof(float), 1, in)) {
-                    return -1;
-                }
-                break;
-            case GB_STRING_SHRT:
-                p = buff = GB_give_buffer(GBTUM_SHORT_STRING_SIZE+2);
-                for (size=0; size<=GBTUM_SHORT_STRING_SIZE; size++) {
-                    if (!(*(p++) = getc(in))) break;
-                }
-                *p=0;
-                GB_SETSMDMALLOC(gb2, size, size+1, buff);
-                break;
-            case GB_STRING:
-            case GB_LINK:
-            case GB_BITS:
-            case GB_BYTES:
-            case GB_INTS:
-            case GB_FLOATS:
-                size = gb_read_in_uint32(in, reversed);
-                memsize =  gb_read_in_uint32(in, reversed);
-                if (GB_CHECKINTERN(size, memsize)) {
-                    GB_SETINTERN(gb2);
-                    p = &(gb2->info.istr.data[0]);
-                }
-                else {
-                    GB_SETEXTERN(gb2);
-                    p = GB_give_buffer(memsize);
-                }
-                i = fread(p, 1, (size_t)memsize, in);
-                if (i!=memsize) {
-                    gb_read_bin_error(in, gb2, "Unexpected EOF found");
-                    return -1;
-                }
-                GB_SETSMDMALLOC(gb2, size, memsize, p);
-                break;
-            case GB_DB:
-                size = gb_read_in_uint32(in, reversed);
-                // gbc->d.size  is automatically incremented
-                memsize = gb_read_in_uint32(in, reversed); // @@@ memsize is not used
-                if (gb_read_bin_rek(in, gbc, size, version, reversed)) return -1;
-                break;
-            case GB_BYTE:
-                gb2->info.i = getc(in);
-                break;
-            default:
-                gb_read_bin_error(in, gb2, "Unknown type");
-                return -1;
-        }
-    }
-    return 0;
-}
-
-
 static long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recovery_reason) {
     // search pattern dx xx xx xx string 0
     static FILE *old_in = 0;
@@ -1079,8 +947,13 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
             gb_read_bin_error(in, (GBDATA *)gbd, "keyword '^A^B^C^D' not found");
             return 1;
     }
+
     version = gb_read_in_uint32(in, reversed);
-    if (version >2) {
+    if (version == 0) {
+        gb_read_bin_error(in, (GBDATA *)gbd, "ARB Database version 0 no longer supported (rev [9647])");
+        return 1;
+    }
+    if (version>2) {
         gb_read_bin_error(in, (GBDATA *)gbd, "ARB Database version > '2'");
         return 1;
     }
@@ -1241,10 +1114,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
     // load binary DB file
 
     switch (version) {
-        case 0:
-            error = gb_read_bin_rek(in, gbd, nodecnt, version, reversed);
-            break;
-        case 2:
+        case 2: // quick save file
             for (i=1; i < Main->keycnt; i++) {
                 if (Main->keys[i].key) {
                     Main->keys[i].nref_last_saved = Main->keys[i].nref;
@@ -1253,7 +1123,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
 
             if (Main->clock<=0) Main->clock++;
             // fall-through
-        case 1:
+        case 1: // master arb file
             error = gb_read_bin_rek_V2(in, gbd, nodecnt, version, reversed, 0);
             break;
         default:
