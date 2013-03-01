@@ -1818,4 +1818,16 @@ void TEST_io_number() {
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(numbers));
 }
 
+void TEST_GBDATA_size() {
+    // protect GBDATA/GBCONTAINER against unwanted changes
+
+#if defined(ARB_64)
+    TEST_EXPECT_EQUAL(sizeof(GBDATA), 72);
+    TEST_EXPECT_EQUAL(sizeof(GBCONTAINER), 104);
+#else // !defined(ARB_64)
+    TEST_EXPECT_EQUAL(sizeof(GBDATA), 40);
+    TEST_EXPECT_EQUAL(sizeof(GBCONTAINER), 60);
+#endif
+}
+
 #endif
