@@ -645,13 +645,14 @@ AW_awar::~AW_awar() {
 
 AW_default AW_root::load_properties(const char *default_name) {
     GBDATA   *gb_default = GB_open(default_name, "rwcD");
-    GB_ERROR  error      = NULL;
+    GB_ERROR  error;
 
     if (gb_default) {
-        GB_no_transaction(gb_default);
-
-        GBDATA *gb_tmp = GB_search(gb_default, "tmp", GB_CREATE_CONTAINER);
-        error          = GB_set_temporary(gb_tmp);
+        error = GB_no_transaction(gb_default);
+        if (!error) {
+            GBDATA *gb_tmp = GB_search(gb_default, "tmp", GB_CREATE_CONTAINER);
+            error          = GB_set_temporary(gb_tmp);
+        }
     }
     else {
         error = GB_await_error();
