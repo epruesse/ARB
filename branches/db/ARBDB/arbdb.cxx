@@ -1999,11 +1999,10 @@ inline GB_ERROR GB_MAIN_TYPE::begin_initial_transaction() {
     return error;
 }
 
-inline GB_ERROR GB_MAIN_TYPE::push_transaction() {
+inline GB_ERROR GB_MAIN_TYPE::begin_transaction() {
+    if (transaction>0) return GBS_global_string("attempt to start a NEW transaction (at transaction level %i)", transaction);
     if (transaction == 0) return begin_initial_transaction();
-    if (transaction>0) ++transaction;
-    // transaction<0 is NO_TRANSACTION_MODE
-    return NULL;
+    return NULL; // NO_TRANSACTION_MODE
 }
 
 inline GB_ERROR GB_MAIN_TYPE::abort_transaction() {
@@ -2081,12 +2080,42 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
     return error;
 }
 
+inline GB_ERROR GB_MAIN_TYPE::push_transaction() {
+    if (transaction == 0) return begin_initial_transaction();
+    if (transaction>0) ++transaction;
+    // transaction<0 is NO_TRANSACTION_MODE
+    return NULL;
+}
+
 inline GB_ERROR GB_MAIN_TYPE::pop_transaction() {
     if (transaction==0) return "attempt to pop nested transaction while none running";
     if (transaction<0)  return 0;  // NO_TRANSACTION_MODE
     if (transaction==1) return commit_transaction();
     transaction--;
     return NULL;
+}
+
+inline GB_ERROR GB_MAIN_TYPE::no_transaction() {
+    if (!local_mode) return "Tried to disable transactions in a client";
+    transaction = -1;
+    return NULL;
+}
+
+GB_ERROR GB_MAIN_TYPE::send_update_to_server(GBDATA *gbd) {
+    GB_ERROR error = NULL;
+
+    if (!transaction) error    = "send_update_to_server: no transaction running";
+    else if (local_mode) error = "send_update_to_server: only possible from clients (not from server itself)";
+    else {
+        gb_callback_list *cbl_old = cbl_last;
+
+        error             = gbcmc_begin_sendupdate(gb_main());
+        if (!error) error = gb_commit_transaction_local_rek(gbd, 2, 0);
+        if (!error) error = gbcmc_end_sendupdate(gb_main());
+
+        if (!error && cbl_old != cbl_last) error = "send_update_to_server triggered a callback (this is not allowed)";
+    }
+    return error;
 }
 
 // --------------------------------------
@@ -2126,29 +2155,15 @@ GB_ERROR GB_pop_transaction(GBDATA *gbd) {
     //! commit a transaction started with GB_push_transaction()
     return GB_MAIN(gbd)->pop_transaction();
 }
-
-inline GB_ERROR GB_MAIN_TYPE::begin_transaction() { // @@@ move up
-    if (transaction>0) return GBS_global_string("attempt to start a NEW transaction (at transaction level %i)", transaction);
-    if (transaction == 0) return begin_initial_transaction();
-    return NULL; // NO_TRANSACTION_MODE
-}
-
-GB_ERROR GB_begin_transaction(GBDATA *gbd) { // @@@ move into GB_MAIN_TYPE
+GB_ERROR GB_begin_transaction(GBDATA *gbd) {
     /*! like GB_push_transaction(),
      * but fails if there is already an transaction running.
      * @see GB_commit_transaction() and GB_abort_transaction()
      */
     return GB_MAIN(gbd)->begin_transaction();
 }
-
-inline GB_ERROR GB_MAIN_TYPE::no_transaction() { // @@@ move up
-    if (!local_mode) return "Tried to disable transactions in a client";
-    transaction = -1;
-    return NULL;
-}
-
-GB_ERROR GB_no_transaction(GBDATA *gbd) { // @@@ return error; add __ATTR__USERESULT
-    GB_MAIN(gbd)->no_transaction();
+GB_ERROR GB_no_transaction(GBDATA *gbd) { // goes to header: __ATTR__USERESULT
+    return GB_MAIN(gbd)->no_transaction();
 }
 
 GB_ERROR GB_abort_transaction(GBDATA *gbd) {
@@ -2202,23 +2217,6 @@ int GB_get_transaction_level(GBDATA *gbd) {
      */
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     return Main->transaction;
-}
-
-GB_ERROR GB_MAIN_TYPE::send_update_to_server(GBDATA *gbd) { // @@@ move up
-    GB_ERROR error = NULL;
-
-    if (!transaction) error    = "send_update_to_server: no transaction running";
-    else if (local_mode) error = "send_update_to_server: only possible from clients (not from server itself)";
-    else {
-        gb_callback_list *cbl_old = cbl_last;
-
-        error             = gbcmc_begin_sendupdate(gb_main());
-        if (!error) error = gb_commit_transaction_local_rek(gbd, 2, 0);
-        if (!error) error = gbcmc_end_sendupdate(gb_main());
-
-        if (!error && cbl_old != cbl_last) error = "send_update_to_server triggered a callback (this is not allowed)";
-    }
-    return error;
 }
 
 // ------------------
