@@ -75,9 +75,10 @@ class AW_root : virtual Noncopyable {
     bool               help_active; /** < true if the help mode is active, false otherwise */
 
     /**
-     * FIXME
+     * Main initialization function (until we can use C++11)
      */
-    void init_root(const char *programname, bool NoExit);
+    void init_root(const char *properties, const char *programname, bool NoExit,
+                   int *argc, char **argv[]);
 
     /**
      * Initializes prvt.colormap
@@ -154,6 +155,9 @@ public:
      * FIXME
      */
     AW_root(const char *properties, const char *program, bool NoExit);
+    AW_root(const char *properties, const char *program, bool NoExit, 
+            int *argc, char **argv[]);
+          
 #if defined(UNIT_TESTS)
     AW_root(const char *properties); // fake-root for unit-tests (allows access to awar-subsystem)
 #endif

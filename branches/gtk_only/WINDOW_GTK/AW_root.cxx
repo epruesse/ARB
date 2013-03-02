@@ -117,17 +117,13 @@ bool AW_root::is_focus_callback(AW_RCB fcb) const {
 }
 
 AW_root::AW_root(const char *properties, const char *program, bool NoExit) {
-    aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
-    AW_root::SINGLETON = this;
-    printf("props: %s", properties);
+    int argc = 0;
+    init_root(properties, program, NoExit, &argc, NULL);
+}
 
-    memset((char *)this, 0, sizeof(AW_root));//initialize all attributes with 0
-
-    init_variables(load_properties(properties));
-
-    init_root(program, NoExit);
-
-    atexit(destroy_AW_root); // do not call this before opening properties DB!
+AW_root::AW_root(const char *properties, const char *program, bool NoExit,
+                 int *argc, char **argv[]) {
+    init_root(properties, program, NoExit, argc, argv);
 }
 
 AW_awar *AW_root::label_is_awar(const char *label) {
@@ -268,7 +264,17 @@ void AW_root::register_widget(GtkWidget* w, AW_active mask) {
 
 
 
-void AW_root::init_root(const char *programname, bool NoExit) {
+void AW_root::init_root(const char* properties, const char *programname, bool NoExit,
+                        int *argc, char** argv[]) {
+    aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
+    AW_root::SINGLETON = this;
+    printf("props: %s", properties);
+
+    memset((char *)this, 0, sizeof(AW_root));//initialize all attributes with 0
+
+    init_variables(load_properties(properties));
+
+
     // initialize ARB gtk application
     //TODO font stuff
     XFontStruct *fontstruct;
@@ -280,11 +286,7 @@ void AW_root::init_root(const char *programname, bool NoExit) {
     no_exit      = NoExit;
     program_name = strdup(programname);
 
-    //simulate minimal argc and argv.
-
-    FIXME("Do not use fake argc and argv to run gtk_init()");
-    int argc = 0;
-    gtk_init(&argc, NULL);
+    gtk_init(argc, argv);
 
     // add our own icon path to the gtk theme search path
     GtkIconTheme *theme = gtk_icon_theme_get_default();
@@ -359,7 +361,8 @@ void AW_root::init_root(const char *programname, bool NoExit) {
 //    aw_root_create_color_map(this);
     aw_root_init_font(display);
 //    aw_install_xkeys(XtDisplay(p_r->toplevel_widget));
-
+    
+    atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 
 
