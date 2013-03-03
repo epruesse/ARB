@@ -11,9 +11,6 @@
 
 #pragma once
 
-
-
-
 #ifndef DOWNCAST_H
 #include <downcast.h>
 #endif
@@ -209,28 +206,17 @@ class AW_common {
     virtual AW_GC *create_gc() = 0;
 
 public:
-    AW_common(AW_rgb*& fcolors,
-              AW_rgb*& dcolors,
-              long&    dcolors_count)
-        : frame_colors(fcolors),
-          data_colors(dcolors),
-          data_colors_size(dcolors_count)
-    {
-        screen.t = 0;
-        screen.b = -1;
-        screen.l = 0;
-        screen.r = -1;
-    }
+    AW_common(AW_rgb*& fcolors, AW_rgb*& dcolors, long& dcolors_count);
     virtual ~AW_common() {}
     //TODO no idea why this method exists
     void reset_style();
 
     const AW_screen_area& get_screen() const { return screen; }
     void set_screen_size(unsigned int width, unsigned int height);
-    void set_screen(const AW_screen_area& screen_);
+    void set_screen(const AW_screen_area& screen);
 
     AW_rgb get_color(AW_color_idx color) const {
-        return color>=AW_DATA_BG ? data_colors[color] : frame_colors[color];
+        return color > AW_STD_COLOR_IDX_MAX ? data_colors[color] : frame_colors[color];
     }
     AW_rgb get_data_color(int i) const;
     int find_data_color_idx(AW_rgb color) const;
@@ -248,8 +234,14 @@ public:
      */
     bool gc_mapable(int gc) const;
 
+    /**
+     * Get GC object by numeric id (readonly/const)
+     */
     const AW_GC *map_gc(int gc) const;
 
+    /**
+     * Get GC object by numeric id (writable)
+     */
     AW_GC *map_mod_gc(int gc);
 
     const AW_font_limits& get_font_limits(int gc, char c) const;
