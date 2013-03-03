@@ -23,7 +23,7 @@ void gb_create_extended(GBDATA *gbd);
 GB_MAIN_TYPE *gb_make_gb_main_type(const char *path);
 char *gb_destroy_main(GB_MAIN_TYPE *Main);
 GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos, GBQUARK keyq);
-GBDATA *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type);
+GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type);
 GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbd, long index_pos, GBQUARK keyq);
 GBCONTAINER *gb_make_container(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq);
 void gb_pre_delete_entry(GBDATA *gbd);
@@ -33,6 +33,7 @@ void gb_add_ref_gb_transaction_save(gb_transaction_save *ts);
 void gb_del_ref_gb_transaction_save(gb_transaction_save *ts);
 void gb_del_ref_and_extern_gb_transaction_save(gb_transaction_save *ts);
 void gb_save_extern_data_in_ts(GBDATA *gbd);
+void gb_save_extern_data_in_ts(GBENTRY *gbe);
 void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index);
 void gb_create_key_array(GB_MAIN_TYPE *Main, int index);
 long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key);
@@ -50,15 +51,16 @@ char *gb_findExtension(char *path);
 GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr);
 GB_CSTR gb_quicksaveName(GB_CSTR path, int nr);
 GB_CSTR gb_mapfile_name(GB_CSTR path);
-long gb_ascii_2_bin(const char *source, GBDATA *gbd);
+long gb_ascii_2_bin(const char *source, GBENTRY *gbd);
 long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text);
 
 /* adcache.cxx */
 void gb_init_cache(GB_MAIN_TYPE *Main);
 void gb_destroy_cache(GB_MAIN_TYPE *Main);
-char *gb_read_cache(GBDATA *gbd);
+char *gb_read_cache(GBENTRY *gbd);
 void gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd);
-char *gb_alloc_cache_index(GBDATA *gbd, size_t size);
+void gb_free_cache(GB_MAIN_TYPE *Main, GBENTRY *gbd);
+char *gb_alloc_cache_index(GBENTRY *gbd, size_t size);
 
 /* adcomm.cxx */
 GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) __ATTR__USERESULT;
@@ -99,8 +101,8 @@ GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) __ATTR__USERESULT_TOD
 size_t gbs_get_a_prime(size_t above_or_equal_this);
 
 /* adindex.cxx */
-char *gb_index_check_in(GBDATA *gbd);
-void gb_index_check_out(GBDATA *gbd);
+char *gb_index_check_in(GBENTRY *gbd);
+void gb_index_check_out(GBENTRY *gbd);
 void gb_destroy_indices(GBCONTAINER *gbc);
 GBDATA *gb_index_find(GBCONTAINER *gbf, gb_index_files *ifs, GBQUARK quark, const char *val, GB_CASE case_sens, int after_index);
 void gb_init_undo_stack(GB_MAIN_TYPE *Main);
@@ -164,6 +166,7 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos);
 void gb_close_unclosed_DBs(void);
 int gb_read_nr(GBDATA *gbd);
 GB_ERROR gb_write_compressed_pntr(GBDATA *gbd, const char *s, long memsize, long stored_size);
+GB_ERROR gb_write_compressed_pntr(GBENTRY *gbd, const char *s, long memsize, long stored_size);
 int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type);
 GB_CSTR gb_read_key_pntr(GBDATA *gbd);
 GBQUARK gb_find_existing_quark(GB_MAIN_TYPE *Main, const char *key);

@@ -300,23 +300,26 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
         }
 
     }
-    else if ((unsigned int)GB_TYPE(gbd) < (unsigned int)GB_BITS) {
-        buffer[i++] = gbd->info.i;
-        buffer[1] = i;
-        if (gbcm_write(socket, (const char *)buffer, i*sizeof(long))) {
-            return GB_export_error("ARB_DB WRITE TO SOCKET FAILED");
-        }
-    }
     else {
-        long memsize;
-        buffer[i++] = GB_GETSIZE(gbd);
-        memsize = buffer[i++] = GB_GETMEMSIZE(gbd);
-        buffer[1] = i;
-        if (gbcm_write(socket, (const char *)buffer, i* sizeof(long))) {
-            return GB_export_error("ARB_DB WRITE TO SOCKET FAILED");
+        GBENTRY *gbe = gbd->as_entry();
+        if ((unsigned int)GB_TYPE(gbe) < (unsigned int)GB_BITS) {
+            buffer[i++] = gbe->info.i;
+            buffer[1] = i;
+            if (gbcm_write(socket, (const char *)buffer, i*sizeof(long))) {
+                return GB_export_error("ARB_DB WRITE TO SOCKET FAILED");
+            }
         }
-        if (gbcm_write(socket, GB_GETDATA(gbd), memsize)) {
-            return GB_export_error("ARB_DB WRITE TO SOCKET FAILED");
+        else {
+            long memsize;
+            buffer[i++] = GB_GETSIZE(gbe);
+            memsize = buffer[i++] = GB_GETMEMSIZE(gbe);
+            buffer[1] = i;
+            if (gbcm_write(socket, (const char *)buffer, i* sizeof(long))) {
+                return GB_export_error("ARB_DB WRITE TO SOCKET FAILED");
+            }
+            if (gbcm_write(socket, GB_GETDATA(gbe), memsize)) {
+                return GB_export_error("ARB_DB WRITE TO SOCKET FAILED");
+            }
         }
     }
     return 0;
@@ -387,7 +390,7 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
                 RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gb2);
             }
             if (types != GB_DB) {
-                gb_save_extern_data_in_ts(gb2);
+                gb_save_extern_data_in_ts(gb2->as_entry());
             }
             gb_touch_entry(gb2, GB_NORMAL_CHANGE);
         }
@@ -508,47 +511,51 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
             }
         }
     }
-    else if (type < GB_BITS) {
-        if (mode >= 0)   gb2->info.i = buffer[i++];
-    }
     else {
         if (mode >= 0) {
-            long  realsize = buffer[i++];
-            long  memsize  = buffer[i++];
-            char *data;
-
-            GB_INDEX_CHECK_OUT(gb2);
-
-            assert_or_exit(!(gb2->flags2.extern_data && GB_EXTERN_DATA_DATA(gb2->info.ex)));
-
-            if (GB_CHECKINTERN(realsize, memsize)) {
-                GB_SETINTERN(gb2);
-                data = GB_GETDATA(gb2);
+            GBENTRY *ge2 = gb2->as_entry();
+            if (type < GB_BITS) {
+                ge2->info.i = buffer[i++];
             }
             else {
-                GB_SETEXTERN(gb2);
-                data = (char*)gbm_get_mem((size_t)memsize, GB_GBM_INDEX(gb2));
-            }
-            size = gbcm_read(socket, data, memsize);
-            if (size != memsize) {
-                fprintf(stderr, "receive failed data\n");
-                return GBCM_SERVER_FAULT;
-            }
+                long  realsize = buffer[i++];
+                long  memsize  = buffer[i++];
+                char *data;
 
-            GB_SETSMD(gb2, realsize, memsize, data);
+                GB_INDEX_CHECK_OUT(ge2);
 
+                assert_or_exit(!(ge2->flags2.extern_data && GB_EXTERN_DATA_DATA(ge2->info.ex)));
+
+                if (GB_CHECKINTERN(realsize, memsize)) {
+                    GB_SETINTERN(ge2);
+                    data = GB_GETDATA(ge2);
+                }
+                else {
+                    GB_SETEXTERN(ge2);
+                    data = (char*)gbm_get_mem((size_t)memsize, GB_GBM_INDEX(ge2));
+                }
+                size = gbcm_read(socket, data, memsize);
+                if (size != memsize) {
+                    fprintf(stderr, "receive failed data\n");
+                    return GBCM_SERVER_FAULT;
+                }
+
+                GB_SETSMD(ge2, realsize, memsize, data);
+            }
         }
-        else {            // dummy read (e.g. updata in server && not cached in client
-            long memsize;
-            char *buffer2;
-            i++;
-            memsize = buffer[i++];
-            buffer2 = GB_give_buffer2(memsize);
+        else {
+            if (type >= GB_BITS) { // dummy read (e.g. updata in server && not cached in client
+                long memsize;
+                char *buffer2;
+                i++;
+                memsize = buffer[i++];
+                buffer2 = GB_give_buffer2(memsize);
 
-            size = gbcm_read(socket, buffer2, memsize);
-            if (size != memsize) {
-                GB_internal_error("receive failed data\n");
-                return GBCM_SERVER_FAULT;
+                size = gbcm_read(socket, buffer2, memsize);
+                if (size != memsize) {
+                    GB_internal_error("receive failed data\n");
+                    return GBCM_SERVER_FAULT;
+                }
             }
         }
     }

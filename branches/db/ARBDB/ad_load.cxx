@@ -497,10 +497,9 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
                                 }
 
                                 if (!error && !readAsString) {
-                                    GBDATA *gb_new;
-
                                     gb_assert(gb_type != GB_NONE);
-                                    gb_new = gb_make_entry(gb_parent, name, -1, 0, gb_type);
+
+                                    GBENTRY *gb_new    = gb_make_entry(gb_parent, name, -1, 0, gb_type);
                                     if (!gb_new) error = GB_await_error();
                                     else {
                                         switch (type[1]) {
@@ -651,14 +650,14 @@ static void DEBUG_DUMP_INDENTED(long deep, const char *s) {
 // ----------------------------------------
 
 
-static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed, long deep) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, long version, long reversed, long deep) {
+    GB_MAIN_TYPE *Main = GB_MAIN(gbc_dest);
 
     DEBUG_DUMP_INDENTED(deep, GBS_global_string("Reading container with %li items", nitems));
 
-    gb_create_header_array(gbd, (int)nitems);
-    gb_header_list *header = GB_DATA_LIST_HEADER(gbd->d);
-    if (deep == 0 && GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
+    gb_create_header_array(gbc_dest, (int)nitems);
+    gb_header_list *header = GB_DATA_LIST_HEADER(gbc_dest->d);
+    if (deep == 0 && GBCONTAINER_MAIN(gbc_dest)->allow_corrupt_file_recovery) {
         GB_warning("Now reading to end of file (trying to recover data from broken database)");
         nitems = 10000000; // read forever at highest level
     }
@@ -667,7 +666,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
         long type = getc(in);
         DEBUG_DUMP_INDENTED(deep, GBS_global_string("Item #%li/%li type=%02lx (filepos=%08lx)", item+1, nitems, type, ftell(in)-1));
         if (type == EOF) {
-            if (GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
+            if (GBCONTAINER_MAIN(gbc_dest)->allow_corrupt_file_recovery) {
                 GB_export_error("End of file reached (no error)");
             }
             else {
@@ -678,16 +677,16 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
         if (!type) {
             int func;
             if (version == 1) { // master file
-                if (gb_recover_corrupt_file(gbd, in, "Unknown DB type 0 (DB version=1)")) return -1;
+                if (gb_recover_corrupt_file(gbc_dest, in, "Unknown DB type 0 (DB version=1)")) return -1;
                 continue;
             }
             func = getc(in);
             switch (func) {
                 case 1: {    //  delete entry
                     int index = (int)gb_get_number(in);
-                    if (index >= gbd->d.nheader) {
-                        gb_create_header_array(gbd, index+1);
-                        header = GB_DATA_LIST_HEADER(gbd->d);
+                    if (index >= gbc_dest->d.nheader) {
+                        gb_create_header_array(gbc_dest, index+1);
+                        header = GB_DATA_LIST_HEADER(gbc_dest->d);
                     }
                     
                     GBDATA *gb2 = GB_HEADER_LIST_GBD(header[index]);
@@ -702,7 +701,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
                     break;
                 }
                 default:
-                    if (gb_recover_corrupt_file(gbd, in, GBS_global_string("Unknown func=%i", func))) return -1;
+                    if (gb_recover_corrupt_file(gbc_dest, in, GBS_global_string("Unknown func=%i", func))) return -1;
                     continue;
             }
             continue;
@@ -719,59 +718,65 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
 
         DEBUG_DUMP_INDENTED(deep, GBS_global_string("key='%s' type2=%li", Main->keys[key].key, type2));
 
-        GBDATA      *gb2 = NULL;
-        GBCONTAINER *gbc = NULL;
+        GBENTRY     *gbe    = NULL;
+        GBCONTAINER *gbc    = NULL;
+        GBDATA      *gb_any = NULL; // @@@ rename into 'gbd' when tests succeed
+
         {
             int index;
             if (version == 2) {
                 index = (int)gb_get_number(in);
-                if (index >= gbd->d.nheader) {
-                    gb_create_header_array(gbd, index+1);
-                    header = GB_DATA_LIST_HEADER(gbd->d);
+                if (index >= gbc_dest->d.nheader) {
+                    gb_create_header_array(gbc_dest, index+1);
+                    header = GB_DATA_LIST_HEADER(gbc_dest->d);
                 }
 
-                if (index >= 0 && (gb2 = GB_HEADER_LIST_GBD(header[index]))!=NULL) {
-                    if ((GB_TYPE(gb2) == GB_DB) != (type2 == GB_DB)) {
+                if (index >= 0 && (gb_any = GB_HEADER_LIST_GBD(header[index]))!=NULL) {
+                    if ((GB_TYPE(gb_any) == GB_DB) != (type2 == GB_DB)) {
                         GB_internal_error("Type changed, you may loose data");
-                        gb_delete_entry(&gb2);
+                        gb_delete_entry(&gb_any);
                         SET_GB_HEADER_LIST_GBD(header[index], NULL);
                     }
                     else {
-                        if (type2 == GB_DB) gbc = (GBCONTAINER *)gb2;
-                        else GB_FREEDATA(gb2);
+                        if (type2 == GB_DB) {
+                            gbc = gb_any->as_container();
+                        }
+                        else {
+                            gbe = gb_any->as_entry();
+                            GB_FREEDATA(gbe);
+                        }
                     }
                 }
             }
             else index = -1;
 
-            if (!gb2) {
+            if (!gb_any) {
                 if (type2 == (long)GB_DB) {
-                    gbc = gb_make_container(gbd, NULL, index, key);
-                    gb2 = (GBDATA *)gbc;
+                    gb_any = gbc = gb_make_container(gbc_dest, NULL, index, key);
                 }
                 else {
-                    gb2 = gb_make_entry(gbd, NULL, index, key, (GB_TYPES)type2);
-                    GB_INDEX_CHECK_OUT(gb2);
+                    gb_any = gbe = gb_make_entry(gbc_dest, NULL, index, key, (GB_TYPES)type2);
+                    GB_INDEX_CHECK_OUT(gbe);
                 }
             }
         }
 
         if (version == 2) {
-            GB_CREATE_EXT(gb2);
-            gb2->ext->update_date = gb2->ext->creation_date = Main->clock;
-            header[gb2->index].flags.ever_changed = 1;
+            GB_CREATE_EXT(gb_any);
+            gb_any->ext->update_date = gb_any->ext->creation_date = Main->clock;
+            header[gb_any->index].flags.ever_changed = 1;
         }
         else {
             Main->keys[key].nref_last_saved++;
         }
 
-        gb2->flags.security_delete     = type >> 1;
-        gb2->flags.security_write      = ((type&1) << 2) + (security >> 6);
-        gb2->flags.security_read       = security >> 3;
-        gb2->flags.compressed_data     = security >> 2;
-        header[gb2->index].flags.flags = (int)((security >> 1) & 1);
-        gb2->flags.unused              = security >> 0;
-        gb2->flags2.last_updated       = getc(in);
+        gb_any->flags.security_delete     = type >> 1;
+        gb_any->flags.security_write      = ((type&1) << 2) + (security >> 6);
+        gb_any->flags.security_read       = security >> 3;
+        gb_any->flags.compressed_data     = security >> 2;
+        header[gb_any->index].flags.flags = (int)((security >> 1) & 1);
+        gb_any->flags.unused              = security >> 0;
+        gb_any->flags2.last_updated       = getc(in);
 
         switch (type2) {
             case GB_INT:
@@ -781,12 +786,12 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
                         GB_export_error("File too short, seems truncated");
                         return -1;
                     }
-                    gb2->info.i = ntohl(buffer);
+                    gbe->info.i = ntohl(buffer);
                     break;
                 }
 
             case GB_FLOAT:
-                if (!fread((char*)&gb2->info.i, sizeof(float), 1, in)) {
+                if (!fread((char*)&gbe->info.i, sizeof(float), 1, in)) {
                     GB_export_error("File too short, seems truncated");
                     return -1;
                 }
@@ -806,7 +811,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
                     p = buff + size;
                 }
                   shrtstring_fully_loaded :
-                GB_SETSMDMALLOC(gb2, size, size+1, buff);
+                GB_SETSMDMALLOC(gbe, size, size+1, buff);
                 break;
             }
             case GB_STRING:
@@ -821,39 +826,39 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long ver
                 char *p;
                 DEBUG_DUMP_INDENTED(deep, GBS_global_string("size=%li memsize=%li", size, memsize));
                 if (GB_CHECKINTERN(size, memsize)) {
-                    GB_SETINTERN(gb2);
-                    p = &(gb2->info.istr.data[0]);
+                    GB_SETINTERN(gbe);
+                    p = &(gbe->info.istr.data[0]);
                 }
                 else {
-                    GB_SETEXTERN(gb2);
+                    GB_SETEXTERN(gbe);
                     // memsize++; // ralf: added +1 because decompress ran out of this block (cant solve like this - breaks memory management!)
-                    p = (char*)gbm_get_mem((size_t)memsize+1, GB_GBM_INDEX(gb2)); // again added old hack-around removed in [6654]
+                    p = (char*)gbm_get_mem((size_t)memsize+1, GB_GBM_INDEX(gbe)); // again added old hack-around removed in [6654]
                 }
                 long i = fread(p, 1, (size_t)memsize, in);
                 if (i!=memsize) {
-                    gb_read_bin_error(in, gb2, "Unexpected EOF found");
+                    gb_read_bin_error(in, gbe, "Unexpected EOF found");
                     return -1;
                 }
-                GB_SETSMD(gb2, size, memsize, p);
+                GB_SETSMD(gbe, size, memsize, p);
                 break;
             }
             case GB_DB: {
                 long size = gb_get_number(in);
                 // gbc->d.size  is automatically incremented
                 if (gb_read_bin_rek_V2(in, gbc, size, version, reversed, deep+1)) {
-                    if (!GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
+                    if (!GBCONTAINER_MAIN(gbc_dest)->allow_corrupt_file_recovery) {
                         return -1;
                     }
                 }
                 break;
             }
             case GB_BYTE:
-                gb2->info.i = getc(in);
+                gbe->info.i = getc(in);
                 break;
             default:
-                gb_read_bin_error(in, gb2, "Unknown type");
-                if (gb_recover_corrupt_file(gbd, in, NULL)) {
-                    return GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery
+                gb_read_bin_error(in, gb_any, "Unknown type");
+                if (gb_recover_corrupt_file(gbc_dest, in, NULL)) {
+                    return GBCONTAINER_MAIN(gbc_dest)->allow_corrupt_file_recovery
                         ? 0                         // loading stopped
                         : -1;
                 }
@@ -1690,10 +1695,10 @@ void TEST_GBDATA_size() {
     // protect GBDATA/GBCONTAINER against unwanted changes
 
 #if defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(GBDATA), 72);
+    TEST_EXPECT_EQUAL(sizeof(GBENTRY), 72);
     TEST_EXPECT_EQUAL(sizeof(GBCONTAINER), 104);
 #else // !defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(GBDATA), 40);
+    TEST_EXPECT_EQUAL(sizeof(GBENTRY), 40);
     TEST_EXPECT_EQUAL(sizeof(GBCONTAINER), 60);
 #endif
 }

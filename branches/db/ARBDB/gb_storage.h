@@ -19,8 +19,8 @@
 // ------------------------
 //      indexed keys
 
-inline void GB_INDEX_CHECK_IN(GBDATA *gbd) { if (gbd->flags2.tisa_index) gb_index_check_in(gbd); }
-inline void GB_INDEX_CHECK_OUT(GBDATA *gbd) { if ((gbd)->flags2.is_indexed) gb_index_check_out(gbd); }
+inline void GB_INDEX_CHECK_IN(GBENTRY *gbd) { if (gbd->flags2.tisa_index) gb_index_check_in(gbd); }
+inline void GB_INDEX_CHECK_OUT(GBENTRY *gbd) { if ((gbd)->flags2.is_indexed) gb_index_check_out(gbd); }
 
 #define GB_GBM_INDEX(gbd) ((gbd)->flags2.gbm_index)
 
@@ -52,11 +52,11 @@ inline gb_transaction_save *GB_GET_EXT_OLD_DATA(GBDATA *gbd) { return gbd->ext ?
 // --------------------------
 //      data and datasize
 
-inline long GB_GETSIZE(const GBDATA *gbd)       { return gbd->flags2.extern_data ? gbd->info.ex.size     : gbd->info.istr.size; }
-inline long GB_GETMEMSIZE(const GBDATA *gbd)    { return gbd->flags2.extern_data ? gbd->info.ex.memsize  : gbd->info.istr.memsize; }
-inline char *GB_GETDATA(GBDATA *gbd)            { return gbd->flags2.extern_data ? GB_EXTERN_DATA_DATA(gbd->info.ex)  : &((gbd)->info.istr.data[0]); }
+inline long GB_GETSIZE(const GBENTRY *gbd)       { return gbd->flags2.extern_data ? gbd->info.ex.size     : gbd->info.istr.size; }
+inline long GB_GETMEMSIZE(const GBENTRY *gbd)    { return gbd->flags2.extern_data ? gbd->info.ex.memsize  : gbd->info.istr.memsize; }
+inline char *GB_GETDATA(GBENTRY *gbd)            { return gbd->flags2.extern_data ? GB_EXTERN_DATA_DATA(gbd->info.ex)  : &((gbd)->info.istr.data[0]); }
 
-inline void GB_FREEDATA(GBDATA *gbd) {
+inline void GB_FREEDATA(GBENTRY *gbd) {
     GB_INDEX_CHECK_OUT(gbd);
     if (gbd->flags2.extern_data && GB_EXTERN_DATA_DATA(gbd->info.ex)) {
         gbm_free_mem(GB_EXTERN_DATA_DATA(gbd->info.ex), (size_t)(gbd->info.ex.memsize), GB_GBM_INDEX(gbd));
@@ -66,7 +66,7 @@ inline void GB_FREEDATA(GBDATA *gbd) {
 
 // wtf means SMD ???
 
-inline void GB_SETSMD(GBDATA *gbd, long siz, long memsiz, char *dat) {
+inline void GB_SETSMD(GBENTRY *gbd, long siz, long memsiz, char *dat) {
     /* insert external data into any db. field
      * Warning: this function has a lot of side effects:
      * 1. extern_data must be set by the user before calling this
@@ -87,7 +87,7 @@ inline void GB_SETSMD(GBDATA *gbd, long siz, long memsiz, char *dat) {
     GB_INDEX_CHECK_IN(gbd);
 }
 
-inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, const char *dat) {
+inline void GB_SETSMDMALLOC(GBENTRY *gbd, long siz, long memsiz, const char *dat) {
     gb_assert(dat);
 
     if (GB_CHECKINTERN(siz, memsiz)) {
@@ -108,7 +108,7 @@ inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, const char *dat)
     GB_INDEX_CHECK_IN(gbd);
 }
 
-inline void GB_SETSMDMALLOC_UNINITIALIZED(GBDATA *gbd, long siz, long memsiz) {
+inline void GB_SETSMDMALLOC_UNINITIALIZED(GBENTRY *gbd, long siz, long memsiz) {
     if (GB_CHECKINTERN(siz, memsiz)) {
         GB_SETINTERN(gbd);
         gbd->info.istr.size = (unsigned char)siz;

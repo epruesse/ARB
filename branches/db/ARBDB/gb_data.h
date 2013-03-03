@@ -128,10 +128,10 @@ inline void SET_GB_DATA_LIST_HEADER(gb_data_list& dl, gb_header_list *head) {
 #define gb_strict_assert(cond)
 #endif
 
-struct GBDATA;
+struct GBENTRY;
 struct GBCONTAINER;
 
-struct GBCOMMON {
+struct GBDATA {
     long              server_id;
     GB_REL_CONTAINER  rel_father;
     gb_db_extended   *ext;
@@ -142,14 +142,17 @@ struct GBCOMMON {
     // ----------------------------------------
     // @@@ methods below are unused atm
 
-    GB_TYPES type() const { return GB_TYPES(flags.type); }
+    GB_TYPES type() const {
+        gb_assert(this);
+        return GB_TYPES(flags.type);
+    }
 
     bool is_container() const { return type() == GB_DB; }
-    bool is_field() const { return !is_container(); }
+    bool is_entry() const { return !is_container(); }
 
-    GBDATA *as_field() const {
-        gb_strict_assert(is_field());
-        return (GBDATA*)this;
+    GBENTRY *as_entry() const {
+        gb_strict_assert(is_entry());
+        return (GBENTRY*)this;
     }
     GBCONTAINER *as_container() const {
         gb_strict_assert(is_container());
@@ -157,13 +160,13 @@ struct GBCOMMON {
     }
 };
 
-struct GBDATA : public GBCOMMON {
+struct GBENTRY : public GBDATA {
     gb_data_base_type_union info;
 
     int cache_index; // @@@ should be a member of gb_db_extended and of type gb_cache_idx
 };
 
-struct GBCONTAINER : public GBCOMMON {
+struct GBCONTAINER : public GBDATA {
     gb_flag_types3 flags3;
     gb_data_list   d;
 
@@ -182,17 +185,15 @@ struct GBCONTAINER : public GBCOMMON {
 // --------------------
 //      type access
 
-inline GB_TYPES GB_TYPE(GBDATA *gbd)      { return GB_TYPES(gbd->flags.type); }
-inline GB_TYPES GB_TYPE(GBCONTAINER *gbc) { return GB_TYPES(gbc->flags.type); }
+inline GB_TYPES GB_TYPE(GBDATA *gbd) { return gbd->type(); } // @@@ elim
 
 // ----------------------
 //      parent access
 
-inline GBCONTAINER* GB_FATHER(GBDATA *gbd)                       { return GB_RESOLVE(GBCONTAINER*, gbd, rel_father); }
-inline GBCONTAINER* GB_FATHER(GBCONTAINER *gbc)                  { return GB_RESOLVE(GBCONTAINER*, gbc, rel_father); }
-inline void SET_GB_FATHER(GBDATA *gbd, GBCONTAINER *father)      { GB_SETREL(gbd, rel_father, father); }
-inline void SET_GB_FATHER(GBCONTAINER *gbc, GBCONTAINER *father) { GB_SETREL(gbc, rel_father, father); }
-inline GBCONTAINER* GB_GRANDPA(GBDATA *gbd)                      { return GB_FATHER(GB_FATHER(gbd)); }
+inline GBCONTAINER* GB_FATHER(GBDATA *gbd)  { return GB_RESOLVE(GBCONTAINER*, gbd, rel_father); }
+inline GBCONTAINER* GB_GRANDPA(GBDATA *gbd) { return GB_FATHER(GB_FATHER(gbd)); }
+
+inline void SET_GB_FATHER(GBDATA *gbd, GBCONTAINER *father) { GB_SETREL(gbd, rel_father, father); }
 
 // -----------------------
 //      GB_MAIN access
@@ -200,9 +201,11 @@ inline GBCONTAINER* GB_GRANDPA(GBDATA *gbd)                      { return GB_FAT
 extern GB_MAIN_TYPE *gb_main_array[];
 
 inline GB_MAIN_TYPE *GBCONTAINER_MAIN(GBCONTAINER *gbc) { return gb_main_array[gbc->main_idx]; }
+
 inline GB_MAIN_TYPE *GB_MAIN(GBDATA *gbd)               { return GBCONTAINER_MAIN(GB_FATHER(gbd)); }
 inline GB_MAIN_TYPE *GB_MAIN(GBCONTAINER *gbc)          { return GBCONTAINER_MAIN(gbc); }
-inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd)     { return GB_TYPE(gbd) == GB_DB ? GBCONTAINER_MAIN((GBCONTAINER*)gbd) : GB_MAIN(gbd); }
+
+inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd)    { return GB_TYPE(gbd) == GB_DB ? GBCONTAINER_MAIN((GBCONTAINER*)gbd) : GB_MAIN(gbd); }
 
 // -----------------------
 //      security flags

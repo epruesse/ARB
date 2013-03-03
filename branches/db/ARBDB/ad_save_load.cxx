@@ -270,7 +270,7 @@ static GB_ERROR renameQuicksaves(GB_MAIN_TYPE *Main) {
 // ------------------------
 //      Ascii to Binary
 
-long gb_ascii_2_bin(const char *source, GBDATA *gbd) {
+long gb_ascii_2_bin(const char *source, GBENTRY *gbd) {
     const char *s = source;
 
     long len = 0;
@@ -350,17 +350,17 @@ long gb_ascii_2_bin(const char *source, GBDATA *gbd) {
 
 #define GB_PUT(c, out) do { if (c>=10) c+='A'-10; else c += '0'; *(out++) = (char)c; } while (0)
 
-static GB_BUFFER gb_bin_2_ascii(GBDATA *gbd) {
+static GB_BUFFER gb_bin_2_ascii(GBENTRY *gbd) {
     signed char   *s, *out, c, mo;
     unsigned long  i;
     int            j;
     char          *buffer;
     int            k;
 
-    char *source = GB_GETDATA(gbd);
-    long len = GB_GETMEMSIZE(gbd);
-    long xtended = GB_GETSIZE(gbd);
-    int compressed = gbd->flags.compressed_data;
+    char *source     = GB_GETDATA(gbd);
+    long  len        = GB_GETMEMSIZE(gbd);
+    long  xtended    = GB_GETSIZE(gbd);
+    int   compressed = gbd->flags.compressed_data;
 
     buffer = GB_give_buffer(len * 2 + 10);
     out = (signed char *)buffer;
@@ -445,68 +445,75 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
         else {
             putc('\t', out);
         }
-        switch (GB_TYPE(gb)) {
-            case    GB_STRING:
-                strng = GB_read_char_pntr(gb);
-                if (!strng) {
-                    strng = "<entry was broken - replaced during ASCIIsave/arb_repair>";
-                    GB_warningf("- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gb));
-                }
-                if (*strng == '%') {
-                    putc('%', out);
-                    putc('s', out);
-                    putc('\t', out);
-                }
-                GBS_fwrite_string(strng, out);
-                putc('\n', out);
-                break;
-            case    GB_LINK:
-                strng = GB_read_link_pntr(gb);
-                if (*strng == '%') {
-                    putc('%', out);
-                    putc('l', out);
-                    putc('\t', out);
-                }
-                GBS_fwrite_string(strng, out);
-                putc('\n', out);
-                break;
-            case GB_INT:
-                fprintf(out, "%%i %li\n", GB_read_int(gb));
-                break;
-            case GB_FLOAT:
-                fprintf(out, "%%f %g\n", GB_read_float(gb));
-                break;
-            case GB_BITS:
-                fprintf(out, "%%I\t\"%s\"\n",
-                        GB_read_bits_pntr(gb, '-', '+'));
-                break;
-            case GB_BYTES:
-                s = gb_bin_2_ascii(gb);
-                fprintf(out, "%%Y\t%s\n", s);
-                break;
-            case GB_INTS:
-                s = gb_bin_2_ascii(gb);
-                fprintf(out, "%%N\t%s\n", s);
-                break;
-            case GB_FLOATS:
-                s = gb_bin_2_ascii(gb);
-                fprintf(out, "%%F\t%s\n", s);
-                break;
-            case GB_DB:
-                fprintf(out, "%%%c (%%\n", GB_read_flag(gb) ? '$' : '%');
-                gb_write_rek(out, (GBCONTAINER *)gb, deep + 1, big_hunk);
-                for (i=deep+1; i--;) putc('\t', out);
-                fprintf(out, "%%) /*%s*/\n\n", GB_KEY(gb));
-                break;
-            case GB_BYTE:
-                fprintf(out, "%%y %i\n", GB_read_byte(gb));
-                break;
-            default:
-                fprintf(stderr,
-                        "ARBDB ERROR Key \'%s\' is of unknown type\n",
-                        GB_KEY(gb));
-                fprintf(out, "%%%% (%% %%) /* unknown type */\n");
-                break;
+
+        if (GB_TYPE(gb) == GB_DB) {
+            fprintf(out, "%%%c (%%\n", GB_read_flag(gb) ? '$' : '%');
+            gb_write_rek(out, (GBCONTAINER *)gb, deep + 1, big_hunk);
+            for (i=deep+1; i--;) putc('\t', out);
+            fprintf(out, "%%) /*%s*/\n\n", GB_KEY(gb));
+        }
+        else {
+            GBENTRY *gbe = gb->as_entry();
+            switch (GB_TYPE(gbe)) {
+                case    GB_STRING:
+                    strng = GB_read_char_pntr(gbe);
+                    if (!strng) {
+                        strng = "<entry was broken - replaced during ASCIIsave/arb_repair>";
+                        GB_warningf("- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gbe));
+                    }
+                    if (*strng == '%') {
+                        putc('%', out);
+                        putc('s', out);
+                        putc('\t', out);
+                    }
+                    GBS_fwrite_string(strng, out);
+                    putc('\n', out);
+                    break;
+                case    GB_LINK:
+                    strng = GB_read_link_pntr(gbe);
+                    if (*strng == '%') {
+                        putc('%', out);
+                        putc('l', out);
+                        putc('\t', out);
+                    }
+                    GBS_fwrite_string(strng, out);
+                    putc('\n', out);
+                    break;
+                case GB_INT:
+                    fprintf(out, "%%i %li\n", GB_read_int(gbe));
+                    break;
+                case GB_FLOAT:
+                    fprintf(out, "%%f %g\n", GB_read_float(gbe));
+                    break;
+                case GB_BITS:
+                    fprintf(out, "%%I\t\"%s\"\n",
+                            GB_read_bits_pntr(gbe, '-', '+'));
+                    break;
+                case GB_BYTES:
+                    s = gb_bin_2_ascii(gbe);
+                    fprintf(out, "%%Y\t%s\n", s);
+                    break;
+                case GB_INTS:
+                    s = gb_bin_2_ascii(gbe);
+                    fprintf(out, "%%N\t%s\n", s);
+                    break;
+                case GB_FLOATS:
+                    s = gb_bin_2_ascii(gbe);
+                    fprintf(out, "%%F\t%s\n", s);
+                    break;
+                case GB_DB:
+                    gb_assert(0);
+                    break;
+                case GB_BYTE:
+                    fprintf(out, "%%y %i\n", GB_read_byte(gbe));
+                    break;
+                default:
+                    fprintf(stderr,
+                            "ARBDB ERROR Key \'%s\' is of unknown type\n",
+                            GB_KEY(gbe));
+                    fprintf(out, "%%%% (%% %%) /* unknown type */\n");
+                    break;
+            }
         }
     }
 }
@@ -548,20 +555,24 @@ static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version
 
 static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_save, long index_of_master_file) {
     int          i;
-    GBCONTAINER *gbc     = 0;
-    long         size    = 0;
-    int          type    = GB_TYPE(gbd);
+    GBCONTAINER *gbc  = 0;
+    GBENTRY     *gbe  = 0;
+    long         size = 0;
+    int          type = GB_TYPE(gbd);
 
     if (type == GB_DB) {
         gbc = (GBCONTAINER *)gbd;
     }
-    else if (type == GB_STRING || type == GB_STRING_SHRT) {
-        size = GB_GETSIZE(gbd);
-        if (!gbd->flags.compressed_data && size < GBTUM_SHORT_STRING_SIZE) {
-            type = GB_STRING_SHRT;
-        }
-        else {
-            type = GB_STRING;
+    else {
+        gbe = gbd->as_entry();
+        if (type == GB_STRING || type == GB_STRING_SHRT) {
+            size = GB_GETSIZE(gbe);
+            if (!gbe->flags.compressed_data && size < GBTUM_SHORT_STRING_SIZE) {
+                type = GB_STRING_SHRT;
+            }
+            else {
+                type = GB_STRING;
+            }
         }
     }
 
@@ -587,7 +598,7 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
     putc(i, out);
 
     if (type == GB_STRING_SHRT) {
-        const char *data = GB_GETDATA(gbd);
+        const char *data = GB_GETDATA(gbe);
         size_t      len  = strlen(data); // w/o zero-byte!
 
         if ((long)len == size) {
@@ -605,30 +616,30 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
             return i;
 
         case GB_INT: {
-            GB_UINT4 buffer = (GB_UINT4)htonl(gbd->info.i);
+            GB_UINT4 buffer = (GB_UINT4)htonl(gbe->info.i);
             if (!fwrite((char *)&buffer, sizeof(float), 1, out)) return -1;
             return 0;
         }
         case GB_FLOAT:
-            if (!fwrite((char *)&gbd->info.i, sizeof(float), 1, out)) return -1;
+            if (!fwrite((char *)&gbe->info.i, sizeof(float), 1, out)) return -1;
             return 0;
         case GB_LINK:
         case GB_BITS:
         case GB_BYTES:
         case GB_INTS:
         case GB_FLOATS:
-            size = GB_GETSIZE(gbd);
+            size = GB_GETSIZE(gbe);
             // fall-through
         case GB_STRING: {
-            long memsize = GB_GETMEMSIZE(gbd);
+            long memsize = GB_GETMEMSIZE(gbe);
             gb_put_number(size, out);
             gb_put_number(memsize, out);
-            i = fwrite(GB_GETDATA(gbd), (size_t)memsize, 1, out);
+            i = fwrite(GB_GETDATA(gbe), (size_t)memsize, 1, out);
             if (memsize && !i) return -1;
             return 0;
         }
         case GB_BYTE:
-            putc((int)(gbd->info.i), out);
+            putc((int)(gbe->info.i), out);
             return 0;
         default:
             gb_assert(0); // unknown type

@@ -11,7 +11,7 @@
 #include "gb_storage.h"
 
 struct gb_cache_entry {
-    GBDATA       *gbd;
+    GBENTRY      *gbd;
     gb_cache_idx  prev;
     gb_cache_idx  next;
     char         *data;
@@ -185,7 +185,7 @@ void gb_destroy_cache(GB_MAIN_TYPE *Main) {
     }
 }
 
-char *gb_read_cache(GBDATA *gbd) {
+char *gb_read_cache(GBENTRY *gbd) {
     char         *cached_data = NULL;
     gb_cache_idx  index       = gbd->cache_index;
 
@@ -210,7 +210,10 @@ char *gb_read_cache(GBDATA *gbd) {
     return cached_data;
 }
 
-void gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) {
+void gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) { // @@@ elim!
+    gb_free_cache(Main, gbd->as_entry());
+}
+void gb_free_cache(GB_MAIN_TYPE *Main, GBENTRY *gbd) {
     gb_cache_idx index = gbd->cache_index;
 
     if (index) {
@@ -249,7 +252,7 @@ static char *cache_free_some_memory(gb_cache& cache, size_t needed_mem) {
     return data;
 }
 
-char *gb_alloc_cache_index(GBDATA *gbd, size_t size) {
+char *gb_alloc_cache_index(GBENTRY *gbd, size_t size) {
     gb_assert(gbd->cache_index == 0);
 
     gb_cache&     cache = GB_MAIN(gbd)->cache;

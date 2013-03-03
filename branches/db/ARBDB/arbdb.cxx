@@ -723,27 +723,27 @@ void gb_close_unclosed_DBs() {
 long GB_read_int(GBDATA *gbd)
 {
     GB_TEST_READ(gbd, GB_INT, "GB_read_int");
-    return gbd->info.i;
+    return gbd->as_entry()->info.i;
 }
 
 int GB_read_byte(GBDATA *gbd)
 {
     GB_TEST_READ(gbd, GB_BYTE, "GB_read_byte");
-    return gbd->info.i;
+    return gbd->as_entry()->info.i;
 }
 
 GBDATA *GB_read_pointer(GBDATA *gbd) {
     GB_TEST_READ(gbd, GB_POINTER, "GB_read_pointer");
-    return gbd->info.ptr;
+    return gbd->as_entry()->info.ptr;
 }
 
 double GB_read_float(GBDATA *gbd)
 {
     XDR          xdrs;
-    static float f;
+    static float f; // @@@ why static?
     
     GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
-    xdrmem_create(&xdrs, &gbd->info.in.data[0], SIZOFINTERN, XDR_DECODE);
+    xdrmem_create(&xdrs, &gbd->as_entry()->info.in.data[0], SIZOFINTERN, XDR_DECODE);
     xdr_float(&xdrs, &f);
     xdr_destroy(&xdrs);
 
@@ -753,27 +753,27 @@ double GB_read_float(GBDATA *gbd)
 }
 
 long GB_read_count(GBDATA *gbd) {
-    return GB_GETSIZE(gbd);
+    return GB_GETSIZE(gbd->as_entry());
 }
 
 long GB_read_memuse(GBDATA *gbd) {
-    return GB_GETMEMSIZE(gbd);
+    return GB_GETMEMSIZE(gbd->as_entry());
 }
 
 GB_CSTR GB_read_pntr(GBDATA *gbd) {
-    int   type = GB_TYPE(gbd);
-    char *data = GB_GETDATA(gbd);
+    GBENTRY *gbe  = gbd->as_entry();
+    char    *data = GB_GETDATA(gbe);
 
     if (data) {
-        if (gbd->flags.compressed_data) {   // uncompressed data return pntr to database entry
-            char *ca = gb_read_cache(gbd);
+        if (gbe->flags.compressed_data) {   // uncompressed data return pntr to database entry
+            char *ca = gb_read_cache(gbe);
 
             if (!ca) {
-                long        size = GB_UNCOMPRESSED_SIZE(gbd, type);
-                const char *da   = gb_uncompress_data(gbd, data, size);
+                long        size = GB_UNCOMPRESSED_SIZE(gbe, gbe->type());
+                const char *da   = gb_uncompress_data(gbe, data, size);
 
                 if (da) {
-                    ca = gb_alloc_cache_index(gbd, size);
+                    ca = gb_alloc_cache_index(gbe, size);
                     memcpy(ca, da, size);
                 }
             }
@@ -799,13 +799,13 @@ char *GB_read_string(GBDATA *gbd)
     GB_TEST_READ(gbd, GB_STRING, "GB_read_string");
     d = GB_read_pntr(gbd);
     if (!d) return NULL;
-    return GB_memdup(d, GB_GETSIZE(gbd)+1);
+    return GB_memdup(d, GB_GETSIZE(gbd->as_entry())+1);
 }
 
 long GB_read_string_count(GBDATA *gbd)
 {
     GB_TEST_READ(gbd, GB_STRING, "GB_read_string_count");
-    return GB_GETSIZE(gbd);
+    return GB_GETSIZE(gbd->as_entry());
 }
 
 GB_CSTR GB_read_link_pntr(GBDATA *gbd)
@@ -820,42 +820,39 @@ static char *GB_read_link(GBDATA *gbd)
     GB_TEST_READ(gbd, GB_LINK, "GB_read_link_pntr");
     d = GB_read_pntr(gbd);
     if (!d) return NULL;
-    return GB_memdup(d, GB_GETSIZE(gbd)+1);
+    return GB_memdup(d, GB_GETSIZE(gbd->as_entry())+1);
 }
 
 long GB_read_bits_count(GBDATA *gbd)
 {
     GB_TEST_READ(gbd, GB_BITS, "GB_read_bits_count");
-    return GB_GETSIZE(gbd);
+    return GB_GETSIZE(gbd->as_entry());
 }
 
 GB_CSTR GB_read_bits_pntr(GBDATA *gbd, char c_0, char c_1)
 {
-    char *data;
-    long size;
     GB_TEST_READ(gbd, GB_BITS, "GB_read_bits_pntr");
-    data = GB_GETDATA(gbd);
-    size = GB_GETSIZE(gbd);
-    if (!size) return 0;
-    {
-        char *ca = gb_read_cache(gbd);
-        char *da;
+    GBENTRY *gbe  = gbd->as_entry();
+    long     size = GB_GETSIZE(gbe);
+    if (size) {
+        char *ca = gb_read_cache(gbe);
         if (ca) return ca;
-        ca = gb_alloc_cache_index(gbd, size+1);
-        da = gb_uncompress_bits(data, size, c_0, c_1);
+
+        ca         = gb_alloc_cache_index(gbe, size+1);
+        char *data = GB_GETDATA(gbe);
+        char *da   = gb_uncompress_bits(data, size, c_0, c_1);
         if (ca) {
             memcpy(ca, da, size+1);
             return ca;
         }
-        else {
-            return da;
-        }
+        return da;
     }
+    return 0;
 }
 
 char *GB_read_bits(GBDATA *gbd, char c_0, char c_1) {
     GB_CSTR d = GB_read_bits_pntr(gbd, c_0, c_1);
-    return d ? GB_memdup(d, GB_GETSIZE(gbd)+1) : 0;
+    return d ? GB_memdup(d, GB_GETSIZE(gbd->as_entry())+1) : 0;
 }
 
 
@@ -868,24 +865,25 @@ GB_CSTR GB_read_bytes_pntr(GBDATA *gbd)
 long GB_read_bytes_count(GBDATA *gbd)
 {
     GB_TEST_READ(gbd, GB_BYTES, "GB_read_bytes_count");
-    return GB_GETSIZE(gbd);
+    return GB_GETSIZE(gbd->as_entry());
 }
 
 char *GB_read_bytes(GBDATA *gbd) {
     GB_CSTR d = GB_read_bytes_pntr(gbd);
-    return d ? GB_memdup(d, GB_GETSIZE(gbd)) : 0;
+    return d ? GB_memdup(d, GB_GETSIZE(gbd->as_entry())) : 0;
 }
 
 GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
 {
-    GB_UINT4 *res;
     GB_TEST_READ(gbd, GB_INTS, "GB_read_ints_pntr");
+    GBENTRY *gbe = gbd->as_entry();
 
-    if (gbd->flags.compressed_data) {
-        res = (GB_UINT4 *)GB_read_pntr(gbd);
+    GB_UINT4 *res;
+    if (gbe->flags.compressed_data) {
+        res = (GB_UINT4 *)GB_read_pntr(gbe);
     }
     else {
-        res = (GB_UINT4 *)GB_GETDATA(gbd);
+        res = (GB_UINT4 *)GB_GETDATA(gbe);
     }
     if (!res) return NULL;
 
@@ -893,13 +891,12 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
         return res;
     }
     else {
-        long      i;
-        int       size = GB_GETSIZE(gbd);
+        int       size = GB_GETSIZE(gbe);
         char     *buf2 = GB_give_other_buffer((char *)res, size<<2);
         GB_UINT4 *s    = (GB_UINT4 *)res;
         GB_UINT4 *d    = (GB_UINT4 *)buf2;
 
-        for (i=size; i; i--) {
+        for (long i=size; i; i--) {
             *(d++) = htonl(*(s++));
         }
         return (GB_UINT4 *)buf2;
@@ -908,52 +905,50 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
 
 long GB_read_ints_count(GBDATA *gbd) { // used by ../PERL_SCRIPTS/SAI/SAI.pm@read_ints_count
     GB_TEST_READ(gbd, GB_INTS, "GB_read_ints_count");
-    return GB_GETSIZE(gbd);
+    return GB_GETSIZE(gbd->as_entry());
 }
 
 GB_UINT4 *GB_read_ints(GBDATA *gbd)
 {
     GB_CUINT4 *i = GB_read_ints_pntr(gbd);
     if (!i) return NULL;
-    return  (GB_UINT4 *)GB_memdup((char *)i, GB_GETSIZE(gbd)*sizeof(GB_UINT4));
+    return  (GB_UINT4 *)GB_memdup((char *)i, GB_GETSIZE(gbd->as_entry())*sizeof(GB_UINT4));
 }
 
 GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
 {
-    char *buf2;
-    char *res;
-
     GB_TEST_READ(gbd, GB_FLOATS, "GB_read_floats_pntr");
-    if (gbd->flags.compressed_data) {
-        res = (char *)GB_read_pntr(gbd);
+    GBENTRY *gbe = gbd->as_entry();
+    char    *res;
+    if (gbe->flags.compressed_data) {
+        res = (char *)GB_read_pntr(gbe);
     }
     else {
-        res = (char *)GB_GETDATA(gbd);
+        res = (char *)GB_GETDATA(gbe);
     }
-    if (!res) return NULL;
-    {
-        XDR    xdrs;
-        float *d;
-        long   i;
-        long   size      = GB_GETSIZE(gbd);
-        long   full_size = size*sizeof(float);
+    if (res) {
+        long size      = GB_GETSIZE(gbe);
+        long full_size = size*sizeof(float);
 
+        XDR xdrs;
         xdrmem_create(&xdrs, res, (int)(full_size), XDR_DECODE);
-        buf2 = GB_give_other_buffer(res, full_size);
-        d = (float *)(void*)buf2;
-        for (i=size; i; i--) {
+
+        char  *buf2 = GB_give_other_buffer(res, full_size);
+        float *d    = (float *)(void*)buf2;
+        for (long i=size; i; i--) {
             xdr_float(&xdrs, d);
             d++;
         }
         xdr_destroy(&xdrs);
+        return (float *)(void*)buf2;
     }
-    return (float *)(void*)buf2;
+    return NULL;
 }
 
 static long GB_read_floats_count(GBDATA *gbd)
 {
     GB_TEST_READ(gbd, GB_FLOATS, "GB_read_floats_count");
-    return GB_GETSIZE(gbd);
+    return GB_GETSIZE(gbd->as_entry());
 }
 
 static float *GB_read_floats(GBDATA *gbd) // @@@ unused - check usage of floats
@@ -961,7 +956,7 @@ static float *GB_read_floats(GBDATA *gbd) // @@@ unused - check usage of floats
     GB_CFLOAT *f;
     f = GB_read_floats_pntr(gbd);
     if (!f) return NULL;
-    return  (float *)GB_memdup((char *)f, GB_GETSIZE(gbd)*sizeof(float));
+    return  (float *)GB_memdup((char *)f, GB_GETSIZE(gbd->as_entry())*sizeof(float));
 }
 
 char *GB_read_as_string(GBDATA *gbd)
@@ -1043,11 +1038,12 @@ static void gb_do_callbacks(GBDATA *gbd) {
 GB_ERROR GB_write_byte(GBDATA *gbd, int i)
 {
     GB_TEST_WRITE(gbd, GB_BYTE, "GB_write_byte");
-    if (gbd->info.i != i) {
-        gb_save_extern_data_in_ts(gbd);
-        gbd->info.i = i & 0xff;
-        gb_touch_entry(gbd, GB_NORMAL_CHANGE);
-        GB_DO_CALLBACKS(gbd);
+    GBENTRY *gbe = gbd->as_entry();
+    if (gbe->info.i != i) {
+        gb_save_extern_data_in_ts(gbe);
+        gbe->info.i = i & 0xff;
+        gb_touch_entry(gbe, GB_NORMAL_CHANGE);
+        GB_DO_CALLBACKS(gbe);
     }
     return 0;
 }
@@ -1065,22 +1061,24 @@ GB_ERROR GB_write_int(GBDATA *gbd, long i) {
         GB_warningf("Warning: 64bit incompatibility detected\nNo data written to '%s'\n", GB_get_db_path(gbd));
         return "GB_INT out of range (signed, 32bit)";
     }
-    if (gbd->info.i != (int32_t)i) {
-        gb_save_extern_data_in_ts(gbd);
-        gbd->info.i = i;
-        gb_touch_entry(gbd, GB_NORMAL_CHANGE);
-        GB_DO_CALLBACKS(gbd);
+    GBENTRY *gbe = gbd->as_entry();
+    if (gbe->info.i != (int32_t)i) {
+        gb_save_extern_data_in_ts(gbe);
+        gbe->info.i = i;
+        gb_touch_entry(gbe, GB_NORMAL_CHANGE);
+        GB_DO_CALLBACKS(gbe);
     }
     return 0;
 }
 
 GB_ERROR GB_write_pointer(GBDATA *gbd, GBDATA *pointer) {
     GB_TEST_WRITE(gbd, GB_POINTER, "GB_write_pointer");
-    if (gbd->info.ptr != pointer) {
-        gb_save_extern_data_in_ts(gbd);
-        gbd->info.ptr = pointer;
-        gb_touch_entry(gbd, GB_NORMAL_CHANGE);
-        GB_DO_CALLBACKS(gbd);
+    GBENTRY *gbe = gbd->as_entry();
+    if (gbe->info.ptr != pointer) {
+        gb_save_extern_data_in_ts(gbe);
+        gbe->info.ptr = pointer;
+        gb_touch_entry(gbe, GB_NORMAL_CHANGE);
+        GB_DO_CALLBACKS(gbe);
     }
     return 0;
 }
@@ -1099,30 +1097,36 @@ GB_ERROR GB_write_float(GBDATA *gbd, double f)
 #endif
     GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
 
-    xdrmem_create(&xdrs, &gbd->info.in.data[0], SIZOFINTERN, XDR_DECODE);
+    GBENTRY *gbe = gbd->as_entry();
+    xdrmem_create(&xdrs, &gbe->info.in.data[0], SIZOFINTERN, XDR_DECODE);
     xdr_float(&xdrs, &f2);
     xdr_destroy(&xdrs);
 
     if (f2 != f) {
         f2 = f;
-        gb_save_extern_data_in_ts(gbd);
-        xdrmem_create(&xdrs, &gbd->info.in.data[0], SIZOFINTERN, XDR_ENCODE);
+        gb_save_extern_data_in_ts(gbe);
+        xdrmem_create(&xdrs, &gbe->info.in.data[0], SIZOFINTERN, XDR_ENCODE);
         xdr_float(&xdrs, &f2);
         xdr_destroy(&xdrs);
-        gb_touch_entry(gbd, GB_NORMAL_CHANGE);
-        GB_DO_CALLBACKS(gbd);
+        gb_touch_entry(gbe, GB_NORMAL_CHANGE);
+        GB_DO_CALLBACKS(gbe);
     }
     xdr_destroy(&xdrs);
     return 0;
 }
 
-GB_ERROR gb_write_compressed_pntr(GBDATA *gbd, const char *s, long memsize, long stored_size) {
+GB_ERROR gb_write_compressed_pntr(GBDATA *gbd, const char *s, long memsize, long stored_size) { // @@@ elim 
+    return gb_write_compressed_pntr(gbd->as_entry(), s, memsize, stored_size);
+}
+GB_ERROR gb_write_compressed_pntr(GBENTRY *gbd, const char *s, long memsize, long stored_size) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+
     gb_free_cache(Main, gbd);
     gb_save_extern_data_in_ts(gbd);
     gbd->flags.compressed_data = 1;
     GB_SETSMDMALLOC(gbd, stored_size, (size_t)memsize, (char *)s);
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
+
     return 0;
 }
 
@@ -1149,64 +1153,63 @@ GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, long bytes_size, long stored_
     // e.g. for strings : stored_size = bytes_size-1, cause stored_size is string len,
     //                    but bytes_size includes zero byte.
 
-
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GBQUARK       key  = GB_KEY_QUARK(gbd);
-    const char   *d;
-    int           compression_mask;
-    long          memsize;
-    GB_TYPES      type = GB_TYPE(gbd);
+    GBENTRY      *gbe  = gbd->as_entry();
+    GB_MAIN_TYPE *Main = GB_MAIN(gbe);
+    GBQUARK       key  = GB_KEY_QUARK(gbe);
+    GB_TYPES      type = GB_TYPE(gbe);
 
     gb_assert(implicated(type == GB_STRING, stored_size == bytes_size-1)); // size constraint for strings not fulfilled!
 
-    gb_free_cache(Main, gbd);
-    gb_save_extern_data_in_ts(gbd);
+    gb_free_cache(Main, gbe);
+    gb_save_extern_data_in_ts(gbe);
 
-    compression_mask = gb_get_compression_mask(Main, key, type);
+    int compression_mask = gb_get_compression_mask(Main, key, type);
 
+    const char *d;
+    long        memsize;
     if (compression_mask) {
-        d = gb_compress_data(gbd, key, s, bytes_size, &memsize, compression_mask, false);
+        d = gb_compress_data(gbe, key, s, bytes_size, &memsize, compression_mask, false);
     }
     else {
         d = NULL;
     }
     if (d) {
-        gbd->flags.compressed_data = 1;
+        gbe->flags.compressed_data = 1;
     }
     else {
         d = s;
-        gbd->flags.compressed_data = 0;
+        gbe->flags.compressed_data = 0;
         memsize = bytes_size;
     }
 
-    GB_SETSMDMALLOC(gbd, stored_size, memsize, d);
-    gb_touch_entry(gbd, GB_NORMAL_CHANGE);
-    GB_DO_CALLBACKS(gbd);
+    GB_SETSMDMALLOC(gbe, stored_size, memsize, d);
+    gb_touch_entry(gbe, GB_NORMAL_CHANGE);
+    GB_DO_CALLBACKS(gbe);
 
     return 0;
 }
 
 GB_ERROR GB_write_string(GBDATA *gbd, const char *s)
 {
-    long size;
-    GB_TEST_WRITE(gbd, GB_STRING, "GB_write_string");
+    GBENTRY *gbe = gbd->as_entry();
+    GB_TEST_WRITE(gbe, GB_STRING, "GB_write_string");
     GB_TEST_NON_BUFFER(s, "GB_write_string");        // compress would destroy the other buffer
 
     if (!s) s = "";
-    size      = strlen(s);
+    long size = strlen(s);
 
     // no zero len strings allowed
-    if ((GB_GETMEMSIZE(gbd))  && (size == GB_GETSIZE(gbd)))
+    if ((GB_GETMEMSIZE(gbe))  && (size == GB_GETSIZE(gbe)))
     {
-        if (!strcmp(s, GB_read_pntr(gbd)))
+        if (!strcmp(s, GB_read_pntr(gbe)))
             return 0;
     }
 #if defined(DEBUG) && 0
     // check for error (in compression)
     {
-        GB_ERROR error = GB_write_pntr(gbd, s, size+1, size);
+        GB_ERROR error = GB_write_pntr(gbe, s, size+1, size);
         if (!error) {
-            char *check = GB_read_string(gbd);
+            char *check = GB_read_string(gbe);
 
             gb_assert(check);
             gb_assert(strcmp(check, s) == 0);
@@ -1216,43 +1219,43 @@ GB_ERROR GB_write_string(GBDATA *gbd, const char *s)
         return error;
     }
 #else
-    return GB_write_pntr(gbd, s, size+1, size);
+    return GB_write_pntr(gbe, s, size+1, size);
 #endif // DEBUG
 }
 
 GB_ERROR GB_write_link(GBDATA *gbd, const char *s)
 {
-    long size;
-    GB_TEST_WRITE(gbd, GB_STRING, "GB_write_link");
+    GBENTRY *gbe = gbd->as_entry();
+    GB_TEST_WRITE(gbe, GB_STRING, "GB_write_link");
     GB_TEST_NON_BUFFER(s, "GB_write_link");          // compress would destroy the other buffer
 
     if (!s) s = "";
-    size      = strlen(s);
+    long size = strlen(s);
 
     // no zero len strings allowed
-    if ((GB_GETMEMSIZE(gbd))  && (size == GB_GETSIZE(gbd)))
+    if ((GB_GETMEMSIZE(gbe))  && (size == GB_GETSIZE(gbe)))
     {
-        if (!strcmp(s, GB_read_pntr(gbd)))
+        if (!strcmp(s, GB_read_pntr(gbe)))
             return 0;
     }
-    return GB_write_pntr(gbd, s, size+1, size);
+    return GB_write_pntr(gbe, s, size+1, size);
 }
 
 
 GB_ERROR GB_write_bits(GBDATA *gbd, const char *bits, long size, const char *c_0)
 {
-    char *d;
-    long memsize;
-
-    GB_TEST_WRITE(gbd, GB_BITS, "GB_write_bits");
+    GBENTRY *gbe = gbd->as_entry();
+    GB_TEST_WRITE(gbe, GB_BITS, "GB_write_bits");
     GB_TEST_NON_BUFFER(bits, "GB_write_bits");       // compress would destroy the other buffer
-    gb_save_extern_data_in_ts(gbd);
+    gb_save_extern_data_in_ts(gbe);
 
-    d = gb_compress_bits(bits, size, (const unsigned char *)c_0, &memsize);
-    gbd->flags.compressed_data = 1;
-    GB_SETSMDMALLOC(gbd, size, memsize, d);
-    gb_touch_entry(gbd, GB_NORMAL_CHANGE);
-    GB_DO_CALLBACKS(gbd);
+    long  memsize;
+    char *d = gb_compress_bits(bits, size, (const unsigned char *)c_0, &memsize);
+
+    gbe->flags.compressed_data = 1;
+    GB_SETSMDMALLOC(gbe, size, memsize, d);
+    gb_touch_entry(gbe, GB_NORMAL_CHANGE);
+    GB_DO_CALLBACKS(gbe);
     return 0;
 }
 
@@ -1747,17 +1750,14 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source) {
 }
 
 GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_protections) {
-    GB_TYPES type;
     GB_ERROR error = 0;
-    GBDATA *gb_p;
-    GBDATA *gb_d;
-    GBCONTAINER *destc, *sourcec;
+    GBCONTAINER *destc, *sourcec; // @@@ fix locals
     const char *key;
 
     GB_test_transaction(source);
-    type = GB_TYPE(source);
-    if (GB_TYPE(dest) != type)
-    {
+
+    GB_TYPES type = GB_TYPE(source);
+    if (GB_TYPE(dest) != type) {
         return GB_export_errorf("incompatible types in GB_copy (source %s:%u != %s:%u",
                                 GB_read_key_pntr(source), type, GB_read_key_pntr(dest), GB_TYPE(dest));
     }
@@ -1782,15 +1782,17 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
         case GB_BITS:       // only local compressions for the following types
         case GB_BYTES:
         case GB_INTS:
-        case GB_FLOATS:
+        case GB_FLOATS: {
             gb_save_extern_data_in_ts(dest);
-            GB_SETSMDMALLOC(dest,   GB_GETSIZE(source),
-                            GB_GETMEMSIZE(source),
-                            GB_GETDATA(source));
-            dest->flags.compressed_data = source->flags.compressed_data;
+            GBENTRY *source_entry = source->as_entry();
+            GB_SETSMDMALLOC(dest->as_entry(), GB_GETSIZE(source_entry),
+                            GB_GETMEMSIZE(source_entry),
+                            GB_GETDATA(source_entry));
 
+            dest->flags.compressed_data = source->flags.compressed_data;
             break;
-        case GB_DB:
+        }
+        case GB_DB: {
 
             destc = (GBCONTAINER *)dest;
             sourcec = (GBCONTAINER *)source;
@@ -1806,10 +1808,11 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
             if (source->flags2.folded_container)    gb_unfold((GBCONTAINER *)source, -1, -1);
             if (dest->flags2.folded_container)  gb_unfold((GBCONTAINER *)dest, 0, -1);
 
-            for (gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
+            for (GBDATA *gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
                 GB_TYPES type2 = (GB_TYPES)GB_TYPE(gb_p);
 
                 key = GB_read_key_pntr(gb_p);
+                GBDATA *gb_d;
                 if (type2 == GB_DB)
                 {
                     gb_d = GB_create_container(dest, key);
@@ -1828,9 +1831,9 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
 
             destc->flags3 = sourcec->flags3;
             break;
-
+        }
         default:
-            error = GB_export_error("GB_copy error unknown type");
+            error = GB_export_error("GB_copy-error: unhandled type");
     }
     if (error) return error;
 

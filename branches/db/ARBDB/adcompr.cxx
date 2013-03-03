@@ -864,52 +864,55 @@ GB_DICTIONARY * gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key) {
 }
 
 bool GB_is_dictionary_compressed(GBDATA *gbd) {
-    int         type = GB_TYPE(gbd);
-    const char *data = GB_GETDATA(gbd);
+    GB_TYPES type = GB_TYPE(gbd);
 
-    if (data) {
-        if (gbd->flags.compressed_data) {
-            long     size     = GB_UNCOMPRESSED_SIZE(gbd, type);
-            int      last     = 0;
-            GB_ERROR error    = 0;
-            long     new_size = -1;                 // dummy
+    if (type != GB_DB) {
+        GBENTRY    *gbe  = gbd->as_entry();
+        const char *data = GB_GETDATA(gbe);
 
-            while (!last) {
-                int c = *((unsigned char *)(data++));
+        if (data) {
+            if (gbe->flags.compressed_data) {
+                long     size     = GB_UNCOMPRESSED_SIZE(gbe, type);
+                int      last     = 0;
+                GB_ERROR error    = 0;
+                long     new_size = -1;                 // dummy
 
-                if (c & GB_COMPRESSION_LAST) {
-                    last = 1;
-                    c &= ~GB_COMPRESSION_LAST;
-                }
+                while (!last) {
+                    int c = *((unsigned char *)(data++));
 
-                if (c == GB_COMPRESSION_DICTIONARY) {
-                    return true;
-                }
+                    if (c & GB_COMPRESSION_LAST) {
+                        last = 1;
+                        c &= ~GB_COMPRESSION_LAST;
+                    }
 
-                if (c == GB_COMPRESSION_HUFFMANN) {
-                    data = gb_uncompress_huffmann(data, size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
-                }
-                else if (c == GB_COMPRESSION_RUNLENGTH) {
-                    data = gb_uncompress_equal_bytes(data, size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
-                }
-                else if (c == GB_COMPRESSION_SEQUENCE) {
-                    data = gb_uncompress_by_sequence(gbd, data, size, &error, &new_size);
-                }
-                else if (c == GB_COMPRESSION_SORTBYTES) {
-                    data = gb_uncompress_longs(data, size, &new_size);
-                }
-                else {
-                    error = GB_export_errorf("Internal Error: Cannot uncompress data of field '%s'", GB_read_key_pntr(gbd));
-                }
+                    if (c == GB_COMPRESSION_DICTIONARY) {
+                        return true;
+                    }
 
-                if (error) {
-                    GB_internal_error(error);
-                    break;
+                    if (c == GB_COMPRESSION_HUFFMANN) {
+                        data = gb_uncompress_huffmann(data, size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
+                    }
+                    else if (c == GB_COMPRESSION_RUNLENGTH) {
+                        data = gb_uncompress_equal_bytes(data, size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
+                    }
+                    else if (c == GB_COMPRESSION_SEQUENCE) {
+                        data = gb_uncompress_by_sequence(gbe, data, size, &error, &new_size);
+                    }
+                    else if (c == GB_COMPRESSION_SORTBYTES) {
+                        data = gb_uncompress_longs(data, size, &new_size);
+                    }
+                    else {
+                        error = GB_export_errorf("Internal Error: Cannot uncompress data of field '%s'", GB_read_key_pntr(gbe));
+                    }
+
+                    if (error) {
+                        GB_internal_error(error);
+                        break;
+                    }
                 }
             }
         }
     }
-
     return false;
 }
 

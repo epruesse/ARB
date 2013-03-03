@@ -27,7 +27,7 @@
     }
 
 // write field in index table
-char *gb_index_check_in(GBDATA *gbd)
+char *gb_index_check_in(GBENTRY *gbd)
 {
     gb_index_files *ifs;
     GBQUARK         quark;
@@ -69,7 +69,7 @@ char *gb_index_check_in(GBDATA *gbd)
 }
 
 // remove entry from index table
-void gb_index_check_out(GBDATA *gbd) {
+void gb_index_check_out(GBENTRY *gbd) {
     if (gbd->flags2.is_indexed) {
         GB_ERROR        error   = 0;
         GBCONTAINER    *gfather = GB_GRANDPA(gbd);
@@ -164,7 +164,7 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
                          gb2 = GB_find_sub_by_quark(gbf, key_quark, gb2, 0))
                     {
                         if (GB_TYPE(gb2) != GB_STRING && GB_TYPE(gb2) != GB_LINK) continue;
-                        gb_index_check_in(gb2);
+                        gb_index_check_in(gb2->as_entry());
                     }
                 }
             }
@@ -438,66 +438,64 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
         case GB_UNDO_ENTRY_TYPE_CREATED:
             error = GB_delete(ue->source);
             break;
-        case GB_UNDO_ENTRY_TYPE_DELETED:
-            {
-                GBDATA *gbd = ue->d.gs.gbd;
-                int type = GB_TYPE(gbd);
-                if (type == GB_DB) {
-                    gbd = (GBDATA *)gb_make_pre_defined_container((GBCONTAINER *)ue->source, (GBCONTAINER *)gbd, -1, ue->d.gs.key);
-                }
-                else {
-                    gbd = gb_make_pre_defined_entry((GBCONTAINER *)ue->source, gbd, -1, ue->d.gs.key);
-                }
-                GB_ARRAY_FLAGS(gbd).flags = ue->flag;
-                gb_touch_header(GB_FATHER(gbd));
-                gb_touch_entry((GBDATA *)gbd, GB_CREATED);
+
+        case GB_UNDO_ENTRY_TYPE_DELETED: {
+            GBDATA *gbd = ue->d.gs.gbd;
+            int type = GB_TYPE(gbd);
+            if (type == GB_DB) {
+                gbd = (GBDATA *)gb_make_pre_defined_container((GBCONTAINER *)ue->source, (GBCONTAINER *)gbd, -1, ue->d.gs.key);
             }
+            else {
+                gbd = gb_make_pre_defined_entry((GBCONTAINER *)ue->source, gbd, -1, ue->d.gs.key);
+            }
+            GB_ARRAY_FLAGS(gbd).flags = ue->flag;
+            gb_touch_header(GB_FATHER(gbd));
+            gb_touch_entry((GBDATA *)gbd, GB_CREATED);
             break;
+        }
         case GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY:
-        case GB_UNDO_ENTRY_TYPE_MODIFY:
-            {
-                GBDATA *gbd = ue->source;
-                int type  = GB_TYPE(gbd);
-                if (type == GB_DB) {
+        case GB_UNDO_ENTRY_TYPE_MODIFY: {
+            GBDATA *gbd = ue->source;
+            int type  = GB_TYPE(gbd);
+            if (type != GB_DB) {
+                GBENTRY *gbe = gbd->as_entry();
+                gb_save_extern_data_in_ts(gbe); // check out and free string
 
-                }
-                else {
-                    gb_save_extern_data_in_ts(gbd); // check out and free string
+                if (ue->d.ts) { // nothing to undo (e.g. if undoing GB_touch)
+                    gbe->flags              = ue->d.ts->flags;
+                    gbe->flags2.extern_data = ue->d.ts->flags2.extern_data;
 
-                    if (ue->d.ts) { // nothing to undo (e.g. if undoing GB_touch)
-                        gbd->flags              = ue->d.ts->flags;
-                        gbd->flags2.extern_data = ue->d.ts->flags2.extern_data;
-
-                        memcpy(&gbd->info, &ue->d.ts->info, sizeof(gbd->info)); // restore old information
-                        if (type >= GB_BITS) {
-                            if (gbd->flags2.extern_data) {
-                                SET_GB_EXTERN_DATA_DATA(gbd->info.ex, ue->d.ts->info.ex.data); // set relative pointers correctly
-                            }
-
-                            gb_del_ref_and_extern_gb_transaction_save(ue->d.ts);
-                            ue->d.ts = 0;
-
-                            GB_INDEX_CHECK_IN(gbd);
+                    memcpy(&gbe->info, &ue->d.ts->info, sizeof(gbe->info)); // restore old information
+                    if (type >= GB_BITS) {
+                        if (gbe->flags2.extern_data) {
+                            SET_GB_EXTERN_DATA_DATA(gbe->info.ex, ue->d.ts->info.ex.data); // set relative pointers correctly
                         }
+
+                        gb_del_ref_and_extern_gb_transaction_save(ue->d.ts);
+                        ue->d.ts = 0;
+
+                        GB_INDEX_CHECK_IN(gbe);
                     }
                 }
-                {
-                    gb_header_flags *pflags = &GB_ARRAY_FLAGS(gbd);
-                    if (pflags->flags != (unsigned)ue->flag) {
-                        GBCONTAINER *gb_father = GB_FATHER(gbd);
-                        gbd->flags.saved_flags = pflags->flags;
-                        pflags->flags = ue->flag;
-                        if (GB_FATHER(gb_father)) {
-                            gb_touch_header(gb_father); // don't touch father of main
-                        }
-                    }
-                }
-                gb_touch_entry(gbd, GB_NORMAL_CHANGE);
             }
+            {
+                gb_header_flags *pflags = &GB_ARRAY_FLAGS(gbd);
+                if (pflags->flags != (unsigned)ue->flag) {
+                    GBCONTAINER *gb_father = GB_FATHER(gbd);
+                    gbd->flags.saved_flags = pflags->flags;
+                    pflags->flags = ue->flag;
+                    if (GB_FATHER(gb_father)) {
+                        gb_touch_header(gb_father); // don't touch father of main
+                    }
+                }
+            }
+            gb_touch_entry(gbd, GB_NORMAL_CHANGE);
             break;
+        }
         default:
             GB_internal_error("Undo stack corrupt:!!!");
             error = GB_export_error("shit 34345");
+            break;
     }
 
     return error;
@@ -707,7 +705,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep) {
         };
     }
     else {
-        GB_INDEX_CHECK_OUT(gbd);
+        GB_INDEX_CHECK_OUT(gbd->as_entry());
         gbd->flags2.tisa_index = 0; // never check in again
     }
     gb_abort_entry(gbd);            // get old version
@@ -731,9 +729,9 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep) {
         if (type >= GB_BITS && gbd->flags2.extern_data) {
             /* we have copied the data structures, now
                mark the old as deleted !!! */
-            g_b_add_size_to_undo_entry(ue, GB_GETMEMSIZE(gbd));
+            g_b_add_size_to_undo_entry(ue, GB_GETMEMSIZE(gbd->as_entry()));
         }
-        g_b_add_size_to_undo_entry(ue, sizeof(GBDATA));
+        g_b_add_size_to_undo_entry(ue, sizeof(GBENTRY));
     }
 }
 

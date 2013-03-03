@@ -80,7 +80,7 @@ void gb_touch_header(GBCONTAINER *gbc) {
 
 
 void gb_untouch_children(GBCONTAINER * gbc) {
-    GBDATA         *gbd;
+    GBDATA          *gbd;
     int             index, start, end;
     GB_CHANGE       changed;
     gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
@@ -125,8 +125,8 @@ void gb_untouch_me(GBDATA * gbc) {
 }
 
 static void gb_set_update_in_server_flags(GBCONTAINER * gbc) {
-    int             index;
-    GBDATA         *gbd;
+    int    index;
+    GBDATA *gbd;
 
     for (index = 0; index < gbc->d.nheader; index++) {
         if ((gbd = GBCONTAINER_ELEM(gbc, index))!=NULL) {
@@ -172,7 +172,7 @@ void gb_create_header_array(GBCONTAINER *gbc, int size) {
     SET_GB_DATA_LIST_HEADER(gbc->d, nl);
 }
 
-static void gb_link_entry(GBCONTAINER* father, GBDATA * gbd, long index_pos) {
+static void gb_link_entry(GBCONTAINER* father, GBDATA *gbd, long index_pos) {
     /* if index_pos == -1 -> to end of data;
        else special index position; error when data already exists in index pos */
 
@@ -314,14 +314,14 @@ static void gb_write_key(GBDATA *gbd, const char *s) {
     gb_write_index_key(GB_FATHER(gbd), gbd->index, new_index);
 }
 
-GBDATA *gb_make_entry(GBCONTAINER * father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type) {
+GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type) {
     // creates a terminal database object
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
     if (!keyq) keyq = gb_find_or_create_quark(Main, key);
 
-    long    gbm_index = GB_QUARK_2_GBMINDEX(Main, keyq);
-    GBDATA *gbd       = (GBDATA *) gbm_get_mem(sizeof(GBDATA), gbm_index);
+    long     gbm_index = GB_QUARK_2_GBMINDEX(Main, keyq);
+    GBENTRY *gbd       = (GBENTRY*)gbm_get_mem(sizeof(GBENTRY), gbm_index);
 
     GB_GBM_INDEX(gbd) = gbm_index;
     SET_GB_FATHER(gbd, father);
@@ -384,7 +384,7 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
 
         if (!keyq) keyq   = gb_find_or_create_NULL_quark(Main, key);
         long gbm_index    = GB_QUARK_2_GBMINDEX(Main, keyq);
-        gbd               = (GBCONTAINER *) gbm_get_mem(sizeof(GBCONTAINER), gbm_index);
+        gbd               = (GBCONTAINER *)gbm_get_mem(sizeof(GBCONTAINER), gbm_index);
         GB_GBM_INDEX(gbd) = gbm_index;
 
         SET_GB_FATHER(gbd, father);
@@ -420,7 +420,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
         gbd->ext->callback = 0;
         cb_next = cb->next;
         if (!gbd->ext->old && type != GB_DB) {
-            gb_save_extern_data_in_ts(gbd);
+            gb_save_extern_data_in_ts(gbd->as_entry());
         }
         if (cb->type & GB_CB_DELETE) {
             gb_add_delete_callback_list(gbd, gbd->ext->old, cb->func, cb->clientdata);
@@ -443,7 +443,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
     }
 
     if (type >= GB_BITS && type < GB_DB) {
-        gb_free_cache(Main, gbd);
+        gb_free_cache(Main, gbd->as_entry());
     }
     GB_FREE_TRANSACTION_SAVE(gbd);
     GB_DELETE_EXT(gbd, gbm_index);
@@ -478,7 +478,7 @@ static void gb_delete_entry(GBCONTAINER **gbc_ptr) {
     *gbc_ptr = 0;                                   // avoid further usage
 }
 
-void gb_delete_entry(GBDATA **gbd_ptr) {
+void gb_delete_entry(GBDATA **gbd_ptr) { // @@@ overload for GBENTRY**?; use GBDATA*& instead of **?
     GBDATA *gbd       = *gbd_ptr;
     long    type      = GB_TYPE(gbd);
 
@@ -486,11 +486,12 @@ void gb_delete_entry(GBDATA **gbd_ptr) {
         gb_delete_entry((GBCONTAINER**)gbd_ptr);
     }
     else {
-        long gbm_index = GB_GBM_INDEX(gbd);
+        GBENTRY *gbe       = gbd->as_entry();
+        long     gbm_index = GB_GBM_INDEX(gbe);
 
-        gb_pre_delete_entry(gbd);
-        if (type >= GB_BITS) GB_FREEDATA(gbd);
-        gbm_free_mem(gbd, sizeof(GBDATA), gbm_index);
+        gb_pre_delete_entry(gbe);
+        if (type >= GB_BITS) GB_FREEDATA(gbe);
+        gbm_free_mem(gbe, sizeof(GBENTRY), gbm_index);
         
         *gbd_ptr = 0;                               // avoid further usage
     }
@@ -548,7 +549,7 @@ void gb_delete_dummy_father(GBCONTAINER **dummy_father) {
 // ---------------------
 //      Data Storage
 
-static gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd) {
+static gb_transaction_save *gb_new_gb_transaction_save(GBENTRY *gbd) {
     // Note: does not increment the refcounter
     gb_transaction_save *ts = (gb_transaction_save *)gbm_get_mem(sizeof(gb_transaction_save), GBM_CB_INDEX);
 
@@ -597,47 +598,50 @@ void gb_del_ref_and_extern_gb_transaction_save(gb_transaction_save *ts) {
     gb_del_ref_gb_transaction_save(ts);
 }
 
-static void gb_abortdata(GBDATA *gbd) {
+static void gb_abortdata(GBENTRY *gbe) {
     gb_transaction_save *old;
 
-    GB_INDEX_CHECK_OUT(gbd);
-    old = gbd->ext->old;
+    GB_INDEX_CHECK_OUT(gbe);
+    old = gbe->ext->old;
     gb_assert(old!=0);
 
-    gbd->flags = old->flags;
-    gbd->flags2 = old->flags2;
+    gbe->flags = old->flags;
+    gbe->flags2 = old->flags2;
 
     if (old->flags2.extern_data)
     {
-        SET_GB_EXTERN_DATA_DATA(gbd->info.ex, old->info.ex.data);
-        gbd->info.ex.memsize = old->info.ex.memsize;
-        gbd->info.ex.size = old->info.ex.size;
+        SET_GB_EXTERN_DATA_DATA(gbe->info.ex, old->info.ex.data);
+        gbe->info.ex.memsize = old->info.ex.memsize;
+        gbe->info.ex.size = old->info.ex.size;
     }
     else
     {
-        memcpy(&(gbd->info), &(old->info), sizeof(old->info));
+        memcpy(&(gbe->info), &(old->info), sizeof(old->info));
     }
     gb_del_ref_and_extern_gb_transaction_save(old);
-    gbd->ext->old = NULL;
+    gbe->ext->old = NULL;
 
-    GB_INDEX_CHECK_IN(gbd);
+    GB_INDEX_CHECK_IN(gbe);
 }
 
 
-void gb_save_extern_data_in_ts(GBDATA *gbd) {
-    /* Saves gbd->info into gbd->ext->old
-     * Destroys gbd->info!
+void gb_save_extern_data_in_ts(GBDATA *gbd) { // @@@ elim
+    gb_save_extern_data_in_ts(gbd->as_entry());
+}
+void gb_save_extern_data_in_ts(GBENTRY *gbe) {
+    /* Saves gbe->info into gbe->ext->old
+     * Destroys gbe->info!
      * Don't call with GBCONTAINER
      */
 
-    GB_CREATE_EXT(gbd);
-    GB_INDEX_CHECK_OUT(gbd);
-    if (gbd->ext->old || (GB_ARRAY_FLAGS(gbd).changed == GB_CREATED)) {
-        GB_FREEDATA(gbd);
+    GB_CREATE_EXT(gbe);
+    GB_INDEX_CHECK_OUT(gbe);
+    if (gbe->ext->old || (GB_ARRAY_FLAGS(gbe).changed == GB_CREATED)) {
+        GB_FREEDATA(gbe);
     }
     else {
-        gbd->ext->old = gb_new_gb_transaction_save(gbd);
-        SET_GB_EXTERN_DATA_DATA(gbd->info.ex, 0);
+        gbe->ext->old = gb_new_gb_transaction_save(gbe);
+        SET_GB_EXTERN_DATA_DATA(gbe->info.ex, 0);
     }
 }
 
@@ -659,11 +663,12 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
     if (Main->local_mode) {
         GBDATA *gbd = GB_HEADER_LIST_GBD(hls[index]);
 
-        if (gbd && (GB_TYPE(gbd) == GB_STRING || GB_TYPE(gbd) == GB_LINK)) {
+        if (gbd && (GB_TYPE(gbd) == GB_STRING || GB_TYPE(gbd) == GB_LINK)) { // @@@ put check for GB_STRING or GB_LINK into method (occurs several times)
+            GBENTRY        *gbe = gbd->as_entry();
             gb_index_files *ifs = 0;
 
-            GB_INDEX_CHECK_OUT(gbd);
-            gbd->flags2.tisa_index = 0;
+            GB_INDEX_CHECK_OUT(gbe);
+            gbe->flags2.tisa_index = 0;
             
             GBCONTAINER *gfather = GB_FATHER(father);
             if (gfather) {
@@ -672,7 +677,7 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
                 }
             }
             hls[index].flags.key_quark = new_index;
-            if (ifs) gb_index_check_in(gbd);
+            if (ifs) gb_index_check_in(gbe);
 
             return;
         }
@@ -761,12 +766,13 @@ char *gb_abort_entry(GBDATA *gbd) {
     GB_ARRAY_FLAGS(gbd).flags = gbd->flags.saved_flags;
 
     if (type != GB_DB) {
-        if (GB_GET_EXT_OLD_DATA(gbd)) {
+        GBENTRY *gbe = gbd->as_entry();
+        if (GB_GET_EXT_OLD_DATA(gbe)) {
             if (type >= GB_BITS) {
-                gb_free_cache(GB_MAIN(gbd), gbd);
-                GB_FREEDATA(gbd);
+                gb_free_cache(GB_MAIN(gbe), gbe);
+                GB_FREEDATA(gbe);
             }
-            gb_abortdata(gbd);
+            gb_abortdata(gbe);
         }
     }
     return 0;

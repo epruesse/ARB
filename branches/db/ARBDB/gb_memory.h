@@ -40,7 +40,7 @@ struct GBCONTAINER;
 
 typedef void            *GB_REL_ADD;
 typedef char            *GB_REL_STRING;
-typedef GBDATA          *GB_REL_GBDATA;
+typedef GBDATA          *GB_REL_GBDATA; // @@@ use GBENTRY?
 typedef GBCONTAINER     *GB_REL_CONTAINER;
 typedef gb_header_list  *GB_REL_HLS;
 typedef gb_if_entries   *GB_REL_IFES;

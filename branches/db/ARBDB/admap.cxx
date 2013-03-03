@@ -448,41 +448,43 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
             *offset += gbccopy_size;
         }
     }
-    else { // GBDATA
-        int     ex = gbd->flags2.extern_data;
-        GBDATA  gbdcopy = *gbd; // make copy to avoid change of mem
+    else { // GBENTRY
+        GBENTRY *gbe = gbd->as_entry();
+
+        int     ex      = gbe->flags2.extern_data;
+        GBENTRY gbecopy = *gbe;  // make copy to avoid change of mem
 
         if (ex) {
             long   exoffset = *offset;
             size_t ex_size;
 
-            if (out) ex_size = ftwrite_unaligned(GB_EXTERN_DATA_DATA(gbd->info.ex), gbdcopy.info.ex.memsize, out);
-            else ex_size     = ALIGN(gbdcopy.info.ex.memsize);
+            if (out) ex_size = ftwrite_unaligned(GB_EXTERN_DATA_DATA(gbe->info.ex), gbecopy.info.ex.memsize, out);
+            else ex_size     = ALIGN(gbecopy.info.ex.memsize);
 
             *offset                  += ex_size;
-            gbdcopy.info.ex.rel_data  = (GB_REL_STRING)MAKEREL(*offset+PTR_DIFF(&(gbd->info), gbd), exoffset);
+            gbecopy.info.ex.rel_data  = (GB_REL_STRING)MAKEREL(*offset+PTR_DIFF(&(gbe->info), gbe), exoffset);
         }
 
         gbdoffset = *offset;
 
         {
-            size_t gbdcopy_size;
+            size_t gbecopy_size;
             if (out) {
-                gbdata_offset *dof = find_gbdata_offset(quark, gbd);
-                gbdcopy.index = dof->index;
-                gb_assert(dof->index <= gbd->index); // very simple check
+                gbdata_offset *dof = find_gbdata_offset(quark, gbe);
+                gbecopy.index = dof->index;
+                gb_assert(dof->index <= gbe->index); // very simple check
 
-                gbdcopy.rel_father  = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset, (GBDATA*)GB_FATHER(gbd));
-                gbdcopy.ext         = NULL;
-                gbdcopy.server_id   = GBTUM_MAGIC_NUMBER;
-                convertFlags4Save(&(gbdcopy.flags), &(gbdcopy.flags2), NULL);
-                gbdcopy.cache_index = 0;
-                gbdcopy_size        = ftwrite_unaligned(&gbdcopy, sizeof(gbdcopy), out);
+                gbecopy.rel_father  = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset, (GBDATA*)GB_FATHER(gbe));
+                gbecopy.ext         = NULL;
+                gbecopy.server_id   = GBTUM_MAGIC_NUMBER;
+                convertFlags4Save(&(gbecopy.flags), &(gbecopy.flags2), NULL);
+                gbecopy.cache_index = 0;
+                gbecopy_size        = ftwrite_unaligned(&gbecopy, sizeof(gbecopy), out);
             }
             else {
-                gbdcopy_size = ALIGN(sizeof(gbdcopy));
+                gbecopy_size = ALIGN(sizeof(gbecopy));
             }
-            *offset += gbdcopy_size;
+            *offset += gbecopy_size;
         }
     }
 

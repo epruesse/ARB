@@ -86,9 +86,9 @@ struct SingleDictTree {
 
 // ******************* Tool functions ******************
 
-static inline cu_str get_data_n_size(GBDATA *gbd, long *size) {
-    GB_CSTR data;
-    int     type = GB_TYPE(gbd);
+inline cu_str get_data_n_size(GBDATA *gbd, long *size) {
+    GB_CSTR  data;
+    GB_TYPES type = GB_TYPE(gbd);
 
     *size = 0;
 
@@ -104,7 +104,7 @@ static inline cu_str get_data_n_size(GBDATA *gbd, long *size) {
             break;
     }
 
-    if (data) *size = GB_UNCOMPRESSED_SIZE(gbd, type);
+    if (data) *size = GB_UNCOMPRESSED_SIZE(gbd->as_entry(), type);
     return (cu_str)data;
 }
 
@@ -183,31 +183,31 @@ static void g_b_opti_freeGbdByKey(O_gbdByKey *gbk) {
 
 // ******************* Convert old compression style to new style ******************
 
-static GB_ERROR gb_convert_compression(GBDATA *source) {
+static GB_ERROR gb_convert_compression(GBDATA *gbd) {
     GB_ERROR error = 0;
-    long     type  = GB_TYPE(source);
+    GB_TYPES type  = GB_TYPE(gbd);
 
     if (type == GB_DB) {
-        GBDATA *gb_p;
-        for (gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
-            if (gb_p->flags.compressed_data || GB_TYPE(gb_p) == GB_DB) {
-                error = gb_convert_compression(gb_p);
+        for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child)) {
+            if (gb_child->flags.compressed_data || GB_TYPE(gb_child) == GB_DB) {
+                error = gb_convert_compression(gb_child);
                 if (error) break;
             }
         }
     }
     else {
-        char *string     = 0;
-        long  elems      = GB_GETSIZE(source);
-        long  data_size  = GB_UNCOMPRESSED_SIZE(source, type);
-        long  new_size   = -1;
-        int   expectData = 1;
+        char    *string     = 0; // @@@ rename -> str
+        GBENTRY *gbe        = gbd->as_entry();
+        long     elems      = GB_GETSIZE(gbe);
+        long     data_size  = GB_UNCOMPRESSED_SIZE(gbe, type);
+        long     new_size   = -1;
+        int      expectData = 1;
 
         switch (type) {
             case GB_STRING:
             case GB_LINK:
             case GB_BYTES:
-                string = gb_uncompress_bytes(GB_GETDATA(source), data_size, &new_size);
+                string = gb_uncompress_bytes(GB_GETDATA(gbe), data_size, &new_size);
                 if (string) {
                     gb_assert(new_size == data_size);
                     string = GB_memdup(string, data_size);
@@ -216,7 +216,7 @@ static GB_ERROR gb_convert_compression(GBDATA *source) {
 
             case GB_INTS:
             case GB_FLOATS:
-                string = gb_uncompress_longs_old(GB_GETDATA(source), elems, &new_size);
+                string = gb_uncompress_longs_old(GB_GETDATA(gbe), elems, &new_size);
                 if (string) {
                     gb_assert(new_size == data_size);
                     string = GB_memdup(string, data_size);
@@ -236,23 +236,23 @@ static GB_ERROR gb_convert_compression(GBDATA *source) {
         else {
             switch (type) {
                 case GB_STRING:
-                    error             = GB_write_string(source, "");
-                    if (!error) error = GB_write_string(source, string);
+                    error             = GB_write_string(gbe, "");
+                    if (!error) error = GB_write_string(gbe, string);
                     break;
 
                 case GB_LINK:
-                    error             = GB_write_link(source, "");
-                    if (!error) error = GB_write_link(source, string);
+                    error             = GB_write_link(gbe, "");
+                    if (!error) error = GB_write_link(gbe, string);
                     break;
 
                 case GB_BYTES:
-                    error             = GB_write_bytes(source, "", 0);
-                    if (!error) error = GB_write_bytes(source, string, data_size);
+                    error             = GB_write_bytes(gbe, "", 0);
+                    if (!error) error = GB_write_bytes(gbe, string, data_size);
                     break;
 
                 case GB_INTS:
                 case GB_FLOATS:
-                    error = GB_write_pntr(source, string, data_size, elems);
+                    error = GB_write_pntr(gbe, string, data_size, elems);
                     break;
 
                 default:
