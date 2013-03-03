@@ -680,29 +680,19 @@ void gb_check_in_undo_modify(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     }
 }
 
-#if defined(WARN_TODO)
-#warning change param for gb_check_in_undo_delete to GBDATA **
-#endif
-
-void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep) {
-    long            type = GB_TYPE(gbd);
-    g_b_undo_entry *ue;
-
+void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA*& gbd) {
     if (!Main->undo->valid_u) {
-        gb_delete_entry(&gbd);
+        gb_delete_entry(gbd);
         return;
     }
 
+    long type = GB_TYPE(gbd);
     if (type == GB_DB) {
-        int             index;
-        GBDATA         *gbd2;
-        GBCONTAINER    *gbc = ((GBCONTAINER *) gbd);
-
-        for (index = 0; (index < gbc->d.nheader); index++) {
-            if ((gbd2 = GBCONTAINER_ELEM(gbc, index))) {
-                gb_check_in_undo_delete(Main, gbd2, deep+1);
-            }
-        };
+        GBCONTAINER *gbc = gbd->as_container();
+        for (int index = 0; (index < gbc->d.nheader); index++) {
+            GBDATA *gbd2 = GBCONTAINER_ELEM(gbc, index);
+            if (gbd2) gb_check_in_undo_delete(Main, gbd2);
+        }
     }
     else {
         GB_INDEX_CHECK_OUT(gbd->as_entry());
@@ -710,7 +700,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep) {
     }
     gb_abort_entry(gbd);            // get old version
 
-    ue = new_g_b_undo_entry(Main->undo->valid_u);
+    g_b_undo_entry *ue = new_g_b_undo_entry(Main->undo->valid_u);
 
     ue->type      = GB_UNDO_ENTRY_TYPE_DELETED;
     ue->source    = (GBDATA *)GB_FATHER(gbd);

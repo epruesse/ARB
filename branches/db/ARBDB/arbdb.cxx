@@ -692,7 +692,7 @@ void GB_close(GBDATA *gbd) {
     if (!error) {
         gb_assert(Main->close_callbacks == 0);
 
-        gb_delete_dummy_father(&Main->dummy_father);
+        gb_delete_dummy_father(Main->dummy_father);
         Main->root_container = NULL;
 
         /* ARBDB applications using awars easily crash in gb_do_callback_list(),
@@ -1698,11 +1698,7 @@ bool GB_allow_compression(GBDATA *gb_main, bool allow_compression) {
 }
 
 
-#if defined(WARN_TODO)
-#warning change param for GB_delete to GBDATA **
-#endif
-
-GB_ERROR GB_delete(GBDATA *source) {
+GB_ERROR GB_delete(GBDATA*& source) {
     GBDATA *gb_main;
 
     GB_test_transaction(source);
@@ -1721,7 +1717,7 @@ GB_ERROR GB_delete(GBDATA *source) {
     {
         GB_MAIN_TYPE *Main = GB_MAIN(source);
         if (Main->transaction<0) {
-            gb_delete_entry(&source);
+            gb_delete_entry(source);
             gb_do_callback_list(Main);
         }
         else {
@@ -1986,7 +1982,7 @@ inline GB_ERROR GB_MAIN_TYPE::begin_initial_transaction() {
     if (!local_mode) {
         error = gbcmc_begin_transaction(gb_main());
         if (!error) {
-            error = gb_commit_transaction_local_rek(gb_main(), 0, 0); // init structures
+            error = gb_commit_transaction_local_rek(gb_main_ref(), 0, 0); // init structures
             gb_untouch_children(root_container);
             gb_untouch_me(gb_main());
         }
@@ -2017,7 +2013,7 @@ inline GB_ERROR GB_MAIN_TYPE::abort_transaction() {
         return pop_transaction();
     }
 
-    gb_abort_transaction_local_rek(gb_main(), 0);
+    gb_abort_transaction_local_rek(gb_main_ref());
     if (!local_mode) {
         GB_ERROR error = gbcmc_abort_transaction(gb_main());
         if (error) return error;
@@ -2049,7 +2045,7 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
         while (1) {
             flag = (GB_CHANGE)GB_ARRAY_FLAGS(gb_main()).changed;
             if (!flag) break;           // nothing to do
-            error = gb_commit_transaction_local_rek(gb_main(), 0, 0);
+            error = gb_commit_transaction_local_rek(gb_main_ref(), 0, 0);
             gb_untouch_children(root_container);
             gb_untouch_me(gb_main());
             if (error) break;
@@ -2068,9 +2064,9 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
             flag = (GB_CHANGE)GB_ARRAY_FLAGS(gb_main()).changed;
             if (!flag) break;           // nothing to do
 
-            error = gbcmc_begin_sendupdate(gb_main());        if (error) break;
-            error = gb_commit_transaction_local_rek(gb_main(), 1, 0); if (error) break;
-            error = gbcmc_end_sendupdate(gb_main());      if (error) break;
+            error = gbcmc_begin_sendupdate(gb_main());                    if (error) break;
+            error = gb_commit_transaction_local_rek(gb_main_ref(), 1, 0); if (error) break;
+            error = gbcmc_end_sendupdate(gb_main());                      if (error) break;
 
             gb_untouch_children(root_container);
             gb_untouch_me(gb_main());

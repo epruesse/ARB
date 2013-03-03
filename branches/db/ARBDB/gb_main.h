@@ -149,6 +149,7 @@ private:
 public:
 
     GBDATA *gb_main() const { return (GBDATA*)root_container; }
+    GBDATA*& gb_main_ref() { return reinterpret_cast<GBDATA*&>(root_container); }
 
     inline GB_ERROR begin_transaction();
     inline GB_ERROR commit_transaction();

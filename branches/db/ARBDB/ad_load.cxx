@@ -691,7 +691,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                     
                     GBDATA *gb2 = GB_HEADER_LIST_GBD(header[index]);
                     if (gb2) {
-                        gb_delete_entry(&gb2);
+                        gb_delete_entry(gb2);
                     }
                     else {
                         header[index].flags.ever_changed = 1;
@@ -734,7 +734,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                 if (index >= 0 && (gb_any = GB_HEADER_LIST_GBD(header[index]))!=NULL) {
                     if ((GB_TYPE(gb_any) == GB_DB) != (type2 == GB_DB)) {
                         GB_internal_error("Type changed, you may loose data");
-                        gb_delete_entry(&gb_any);
+                        gb_delete_entry(gb_any);
                         SET_GB_HEADER_LIST_GBD(header[index], NULL);
                     }
                     else {
@@ -760,6 +760,10 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                 }
             }
         }
+
+        gb_assert(implicated(gbe, gbe == gb_any));
+        gb_assert(implicated(gbc, gbc == gb_any));
+        gb_assert(implicated(gb_any, contradicted(gbe, gbc)));
 
         if (version == 2) {
             GB_CREATE_EXT(gb_any);
@@ -1519,7 +1523,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
 
     if (error) {
         gbcm_logout(Main, user);
-        gb_delete_dummy_father(&Main->dummy_father);
+        gb_delete_dummy_father(Main->dummy_father);
         gbd        = NULL;
         gb_destroy_main(Main);
 

@@ -27,8 +27,10 @@ GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQ
 GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbd, long index_pos, GBQUARK keyq);
 GBCONTAINER *gb_make_container(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq);
 void gb_pre_delete_entry(GBDATA *gbd);
-void gb_delete_entry(GBDATA **gbd_ptr);
-void gb_delete_dummy_father(GBCONTAINER **dummy_father);
+void gb_delete_entry(GBCONTAINER*& gbc);
+void gb_delete_entry(GBENTRY*& gbe);
+void gb_delete_entry(GBDATA*& gbd);
+void gb_delete_dummy_father(GBCONTAINER*& gbc);
 void gb_add_ref_gb_transaction_save(gb_transaction_save *ts);
 void gb_del_ref_gb_transaction_save(gb_transaction_save *ts);
 void gb_del_ref_and_extern_gb_transaction_save(gb_transaction_save *ts);
@@ -39,8 +41,8 @@ void gb_create_key_array(GB_MAIN_TYPE *Main, int index);
 long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key);
 void gb_free_all_keys(GB_MAIN_TYPE *Main);
 char *gb_abort_entry(GBDATA *gbd);
-int gb_abort_transaction_local_rek(GBDATA *gbd, long mode);
-GB_ERROR gb_commit_transaction_local_rek(GBDATA *gbd, long mode, int *pson_created);
+void gb_abort_transaction_local_rek(GBDATA*& gbd);
+GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_created);
 
 /* ad_load.cxx */
 GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main);
@@ -111,7 +113,7 @@ char *gb_set_undo_sync(GBDATA *gb_main);
 char *gb_disable_undo(GBDATA *gb_main);
 void gb_check_in_undo_create(GB_MAIN_TYPE *Main, GBDATA *gbd);
 void gb_check_in_undo_modify(GB_MAIN_TYPE *Main, GBDATA *gbd);
-void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep);
+void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA*& gbd);
 
 /* adlang1.cxx */
 void gbl_install_standard_commands(GBDATA *gb_main);

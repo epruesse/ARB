@@ -17,8 +17,8 @@
 // (needed to abort transactions)
 
 inline void _GB_CHECK_IN_UNDO_DELETE(GB_MAIN_TYPE *Main, GBDATA *& gbd) {
-    if (Main->undo_type) gb_check_in_undo_delete(Main, gbd, 0);
-    else gb_delete_entry(&gbd);
+    if (Main->undo_type) gb_check_in_undo_delete(Main, gbd);
+    else gb_delete_entry(gbd);
 }
 inline void _GB_CHECK_IN_UNDO_CREATE(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     if (Main->undo_type) gb_check_in_undo_create(Main, gbd);
@@ -449,21 +449,20 @@ void gb_pre_delete_entry(GBDATA *gbd) {
     GB_DELETE_EXT(gbd, gbm_index);
 }
 
-static void gb_delete_entry(GBCONTAINER **gbc_ptr) {
-    GBCONTAINER *gbc       = *gbc_ptr;
-    long         gbm_index = GB_GBM_INDEX(gbc);
+void gb_delete_entry(GBCONTAINER*& gbc) {
+    long gbm_index = GB_GBM_INDEX(gbc);
 
     gb_assert(GB_TYPE(gbc) == GB_DB);
 
     for (long index = 0; index < gbc->d.nheader; index++) {
         GBDATA *gbd = GBCONTAINER_ELEM(gbc, index);
         if (gbd) {
-            gb_delete_entry(&gbd);
+            gb_delete_entry(gbd);
             SET_GBCONTAINER_ELEM(gbc, index, NULL);
         }
     }
 
-    gb_pre_delete_entry((GBDATA*)gbc);
+    gb_pre_delete_entry(gbc);
 
     // what is left now, is the core database entry!
 
@@ -475,35 +474,30 @@ static void gb_delete_entry(GBCONTAINER **gbc_ptr) {
     }
     gbm_free_mem(gbc, sizeof(GBCONTAINER), gbm_index);
 
-    *gbc_ptr = 0;                                   // avoid further usage
+    gbc = NULL; // avoid further usage
 }
 
-void gb_delete_entry(GBDATA **gbd_ptr) { // @@@ overload for GBENTRY**?; use GBDATA*& instead of **?
-    GBDATA *gbd       = *gbd_ptr;
-    long    type      = GB_TYPE(gbd);
+void gb_delete_entry(GBENTRY*& gbe) {
+    long gbm_index = GB_GBM_INDEX(gbe);
 
-    if (type == GB_DB) {
-        gb_delete_entry((GBCONTAINER**)gbd_ptr);
+    gb_pre_delete_entry(gbe);
+    if (gbe->type() >= GB_BITS) GB_FREEDATA(gbe);
+    gbm_free_mem(gbe, sizeof(GBENTRY), gbm_index);
+
+    gbe = NULL; // avoid further usage
+}
+
+void gb_delete_entry(GBDATA*& gbd) {
+    if (gbd->is_container()) {
+        gb_delete_entry(reinterpret_cast<GBCONTAINER*&>(gbd));
     }
     else {
-        GBENTRY *gbe       = gbd->as_entry();
-        long     gbm_index = GB_GBM_INDEX(gbe);
-
-        gb_pre_delete_entry(gbe);
-        if (type >= GB_BITS) GB_FREEDATA(gbe);
-        gbm_free_mem(gbe, sizeof(GBENTRY), gbm_index);
-        
-        *gbd_ptr = 0;                               // avoid further usage
+        gb_delete_entry(reinterpret_cast<GBENTRY*&>(gbd));
     }
 }
 
-
-static void gb_delete_main_entry(GBCONTAINER **gb_main_ptr) {
-    GBCONTAINER *gb_main  = *gb_main_ptr;
-    
-    gb_assert(GB_TYPE(gb_main) == GB_DB);
-
-    GBQUARK sys_quark = gb_find_existing_quark(GB_MAIN((GBDATA*)gb_main), GB_SYSTEM_FOLDER);
+static void gb_delete_main_entry(GBCONTAINER*& gb_main) {
+    GBQUARK sys_quark = gb_find_existing_quark(GB_MAIN(gb_main), GB_SYSTEM_FOLDER);
 
     // Note: sys_quark may be 0 (happens when destroying client db which never established a connection).
     // In this case no system folder/quark has been created (and we do no longer try to create it)
@@ -515,35 +509,34 @@ static void gb_delete_main_entry(GBCONTAINER **gb_main_ptr) {
             if (gbd) {
                 // delay deletion of system folder to pass 2:
                 if (pass == 2 || GB_KEY_QUARK(gbd) != sys_quark) { 
-                    gb_delete_entry(&gbd);
+                    gb_delete_entry(gbd);
                     SET_GBCONTAINER_ELEM(gb_main, index, NULL);
                 }
             }
         }
     }
-    gb_delete_entry(gb_main_ptr);
+    gb_delete_entry(gb_main);
 }
 
-void gb_delete_dummy_father(GBCONTAINER **dummy_father) {
-    GBCONTAINER  *gbc  = *dummy_father;
-    GB_MAIN_TYPE *Main = GB_MAIN(gbc);
-
-    gb_assert(GB_TYPE(gbc)   == GB_DB);
+void gb_delete_dummy_father(GBCONTAINER*& gbc) {
+    gb_assert(gbc->is_container());
     gb_assert(GB_FATHER(gbc) == NULL);
 
+    GB_MAIN_TYPE *Main = GB_MAIN(gbc);
     for (int index = 0; index < gbc->d.nheader; index++) {
-        GBCONTAINER *gb_main = (GBCONTAINER*)GBCONTAINER_ELEM(gbc, index);
-        if (gb_main) {
-            gb_assert(GB_TYPE(gb_main) == GB_DB);
+        GBDATA *gbd = GBCONTAINER_ELEM(gbc, index);
+        if (gbd) {
+            // dummy fathers should only have one element (which is the root_container)
+            GBCONTAINER *gb_main = gbd->as_container();
             gb_assert(gb_main == Main->root_container);
-            gb_delete_main_entry((GBCONTAINER**)&gb_main);
 
+            gb_delete_main_entry(gb_main);
             SET_GBCONTAINER_ELEM(gbc, index, NULL);
             Main->root_container = NULL;
         }
     }
 
-    gb_delete_entry(dummy_father);
+    gb_delete_entry(gbc);
 }
 
 // ---------------------
@@ -781,51 +774,38 @@ char *gb_abort_entry(GBDATA *gbd) {
 // ---------------------
 //      Transactions
 
-#if defined(WARN_TODO)
-#warning change param for gb_abort_transaction_local_rek to GBDATA **
-#warning remove param 'mode' (unused!)
-#endif
-
-int gb_abort_transaction_local_rek(GBDATA *gbd, long mode) {
+void gb_abort_transaction_local_rek(GBDATA*& gbd) {
     // delete created, undo changed
-    GBDATA    *gb;
-    GB_TYPES   type;
-    GB_CHANGE  change = (GB_CHANGE)GB_ARRAY_FLAGS(gbd).changed;
+    GB_CHANGE change = (GB_CHANGE)GB_ARRAY_FLAGS(gbd).changed;
 
     switch (change) {
         case GB_UNCHANGED:
-            return 0;
+            break;
 
         case GB_CREATED:
             GB_PUT_SECURITY_DELETE(gbd, 0);
-            gb_delete_entry(&gbd);
-            return 1;
+            gb_delete_entry(gbd);
+            break;
 
         case GB_DELETED:
             GB_ARRAY_FLAGS(gbd).changed = GB_UNCHANGED;
             // fall-through
         default:
-            type = (GB_TYPES)GB_TYPE(gbd);
-            if (type == GB_DB)
-            {
-                int             index;
-                GBCONTAINER    *gbc = (GBCONTAINER *)gbd;
+            if (gbd->is_container()) {
+                GBCONTAINER    *gbc = gbd->as_container();
                 gb_header_list *hls = GB_DATA_LIST_HEADER(gbc->d);
 
-                for (index = 0; index < gbc->d.nheader; index++)
-                {
-                    if ((gb = GB_HEADER_LIST_GBD(hls[index]))!=NULL)
-                    {
-                        gb_abort_transaction_local_rek(gb, mode);
-                    }
+                for (int index = 0; index < gbc->d.nheader; index++) {
+                    GBDATA *gb = GB_HEADER_LIST_GBD(hls[index]);
+                    if (gb) gb_abort_transaction_local_rek(gb);
                 }
             }
             gb_abort_entry(gbd);
+            break;
     }
-    return 0;
 }
 
-GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode, int *pson_created) {
+GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_created) {
     /* commit created / delete deleted
      *   mode   0   local     = server    or
      *              begin trans in client or
@@ -833,19 +813,16 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode, int *pson_crea
      *   mode   1   remote    = client
      *   mode   2   remote    = client (only send updated data)
      */
-    GBDATA       *gb;
-    GB_MAIN_TYPE *Main        = GB_MAIN(gbd);
-    GB_TYPES      type;
-    GB_ERROR      error;
-    gb_callback  *cb;
-    GB_CHANGE     change      = (GB_CHANGE)GB_ARRAY_FLAGS(gbd).changed;
-    int           send_header;
-    int           son_created = 0;
 
-    type = (GB_TYPES)GB_TYPE(gbd);
+    GB_MAIN_TYPE *Main        = GB_MAIN(gbd);
+    GB_CHANGE     change      = (GB_CHANGE)GB_ARRAY_FLAGS(gbd).changed;
+    int           son_created = 0;
+    GB_ERROR      error;
+
     switch (change) {
         case GB_UNCHANGED:
             return 0;
+
         case GB_DELETED:
             GB_PUT_SECURITY_DELETE(gbd, 0);
             if (mode) {
@@ -862,16 +839,17 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode, int *pson_crea
                 _GB_CHECK_IN_UNDO_DELETE(Main, gbd);
                 return 0;
             }
-            gb_delete_entry(&gbd);
+            gb_delete_entry(gbd);
             return 0;
+
         case GB_CREATED:
             if (mode) {
                 if (!gbd->flags2.update_in_server) {
                     if (gbd->server_id) goto gb_changed_label;
                     // already created, do only a change
                     error = gbcmc_sendupdate_create(gbd);
-                    if (type == GB_DB) {
-                        gb_set_update_in_server_flags(((GBCONTAINER *)gbd));
+                    if (gbd->is_container()) {
+                        gb_set_update_in_server_flags(gbd->as_container());
                         // set all children update_in_server flags
                     }
                     gbd->flags2.update_in_server = 1;
@@ -894,10 +872,9 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode, int *pson_crea
         case GB_NORMAL_CHANGE:
             if (mode) {
                 if (!gbd->flags2.update_in_server) {
-                gb_changed_label :;
-                    send_header = 0;
-                    if (gbd->flags2.header_changed) send_header = 1;
-                    error = gbcmc_sendupdate_update(gbd, send_header);
+                  gb_changed_label:
+                    int send_header = gbd->flags2.header_changed ? 1 : 0;
+                    error           = gbcmc_sendupdate_update(gbd, send_header);
                     if (error) return error;
                     gbd->flags2.update_in_server = 1;
                 }
@@ -909,11 +886,11 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode, int *pson_crea
 
         default:                                    // means GB_SON_CHANGED + GB_NORMAL_CHANGE
 
-            if (type == GB_DB)
-            {
-                GBCONTAINER    *gbc = (GBCONTAINER *)gbd;
-                int             index, start, end;
+            if (gbd->is_container()) {
+                GBCONTAINER    *gbc = gbd->as_container();
                 gb_header_list *hls = GB_DATA_LIST_HEADER(gbc->d);
+
+                int start, end;
 
                 if (gbc->index_of_touched_one_son>0) {
                     start = (int)gbc->index_of_touched_one_son-1;
@@ -929,8 +906,9 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode, int *pson_crea
                     }
                 }
 
-                for (index = start; index < end; index++) {
-                    if ((gb = GB_HEADER_LIST_GBD(hls[index]))!=NULL) {
+                for (int index = start; index < end; index++) {
+                    GBDATA *gb = GB_HEADER_LIST_GBD(hls[index]);
+                    if (gb) {
                         if (!hls[index].flags.changed) continue;
                         error = gb_commit_transaction_local_rek(gb, mode, &son_created);
                         if (error) return error;
@@ -954,7 +932,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode, int *pson_crea
                     ((GBCONTAINER*)gbd)->header_update_date = Main->clock;
                 }
 
-                for (cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb->next) {
+                for (gb_callback *cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb->next) {
                     if (cb->type & (GB_CB_CHANGED|GB_CB_SON_CREATED)) {
                         gb_add_changed_callback_list(gbd, gbd->ext->old, gbtype, cb->func, cb->clientdata);
                     }
