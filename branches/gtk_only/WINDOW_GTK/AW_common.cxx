@@ -9,20 +9,28 @@
 //                                                               //
 // ============================================================= //
 
-
 #include "aw_common.hxx"
 
-
+AW_common::AW_common(AW_rgb*& fcolors,
+                     AW_rgb*& dcolors,
+                     long&    dcolors_count)
+  : frame_colors(fcolors),
+    data_colors(dcolors),
+    data_colors_size(dcolors_count)
+{
+    screen.t = 0;
+    screen.b = -1;
+    screen.l = 0;
+    screen.r = -1;
+}
 
 void AW_common::new_gc(int gc) {
-
     //remove old gc
     if(gcmap.find(gc) != gcmap.end()) {
         delete gcmap[gc];
     }
     gcmap[gc] = create_gc();
 }
-
 
 bool AW_common::gc_mapable(int gc) const {
     return gcmap.find(gc) != gcmap.end();
