@@ -16,9 +16,16 @@
 
 #include <cstdio>
 
-#define GTK_NOT_IMPLEMENTED printf("NOT IMPLEMENTED %s\n",  __PRETTY_FUNCTION__)
-//#define GTK_PARTLY_IMPLEMENTED printf("PARTLY IMPLEMENTED %s\n",  __PRETTY_FUNCTION__)
+#define GTK_SILENT
+#ifdef GTK_SILENT
+#define GTK_NOT_IMPLEMENTED
 #define GTK_PARTLY_IMPLEMENTED
-
+#define FIXME
+#else
+#define GTK_NOT_IMPLEMENTED printf("NOT IMPLEMENTED %s\n",  __PRETTY_FUNCTION__)
+#define GTK_PARTLY_IMPLEMENTED printf("PARTLY IMPLEMENTED %s\n",  __PRETTY_FUNCTION__)
 #define FIXME(str)  printf("FIXME: [%s] in %s\n", str, __PRETTY_FUNCTION__)
-//#define FIXME(str)
+#endif
+
+
+
