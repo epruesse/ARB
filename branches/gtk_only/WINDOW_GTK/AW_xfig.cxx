@@ -18,6 +18,8 @@
 
 #include <climits>
 
+
+
 inline int scaleAndRound(int unscaled, double scaleFactor) {
     double scaled = double(unscaled)*scaleFactor;
     return AW_INT(scaled);

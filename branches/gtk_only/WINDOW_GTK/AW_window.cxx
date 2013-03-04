@@ -672,10 +672,16 @@ void AW_window::create_toggle(const char */*var_name*/){
 
 
     if (!height || !width) {
-        // ask gtk for real button size
-        width = checkButton->allocation.width;
-        height = checkButton->allocation.height;
+        GtkRequisition requisition;
+        gtk_widget_size_request(GTK_WIDGET(checkButton), &requisition);
 
+        // ask gtk for real button size
+        width = requisition.width;
+        height = requisition.height;
+
+    }
+    if (prvt->callback) {
+      _set_activate_callback(checkButton);
     }
     _at.increment_at_commands(width + SPACE_BEHIND_BUTTON, height);
 }
@@ -783,6 +789,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     {
         //TuneBackground(parentWidget, TUNE_INPUT);
         textField = gtk_entry_new();
+        gtk_entry_set_width_chars(GTK_ENTRY(textField), columns);
         gtk_fixed_put(prvt->fixed_size_area, textField, (int)(_at.x_for_next_button + xoff_for_label), (int)(_at.y_for_next_button + 5) - 8);
         gtk_widget_show(textField);
 //        textField = XtVaCreateManagedWidget("textField",
@@ -835,7 +842,10 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 
     get_root()->register_widget(textField, _at.widget_mask);
     
-    int height_of_last_widget = textField->allocation.height;
+    GtkRequisition requisition;
+    gtk_widget_size_request(GTK_WIDGET(textField), &requisition);
+
+    int height_of_last_widget = requisition.height;
 
     if (_at.correct_for_at_center == 1) {   // middle centered
         gtk_fixed_move(prvt->fixed_size_area, textField, (int)(_at.x_for_next_button + xoff_for_label) - (int)(width_of_last_widget/2) + 1, textField->allocation.y);
@@ -1765,9 +1775,17 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
     xfig->print(device);
 }
 
+void AW_window::get_font_size(int& width, int& height) {
+  prvt->get_font_size(width, height);
+}
+
 void AW_window::load_xfig(const char *file, bool resize /*= true*/){
-    if (file)   xfig_data = new AW_xfig(file, get_root()->font_width, get_root()->font_height);
-    else        xfig_data = new AW_xfig(get_root()->font_width, get_root()->font_height); // create an empty xfig
+    int width, height;
+    prvt->get_font_size(width, height);
+  
+    FIXME("scaling to 80% for unknown reason -- just fits that way");
+    if (file)   xfig_data = new AW_xfig(file, width*0.8, height*0.8);
+    else        xfig_data = new AW_xfig(width, height); // create an empty xfig
 
     xfig_data->create_gcs(get_device(AW_INFO_AREA)); 
 

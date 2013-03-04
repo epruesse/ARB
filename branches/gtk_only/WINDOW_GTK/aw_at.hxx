@@ -20,6 +20,8 @@ public:
     short shadow_thickness;
     short length_of_buttons;
     short height_of_buttons;
+    int font_width;
+    int font_height;
     short length_of_label_for_inputfield;
     bool  highlight;
 

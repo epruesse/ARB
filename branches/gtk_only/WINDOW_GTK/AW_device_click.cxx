@@ -99,19 +99,22 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
 
     // vertical check mouse against textsurrounding
     bool   exact     = true;
-    double best_dist = 0;
+    double best_y_dist = 0;
 
-    // @@@ the following section produces wrong result 
-    if (mouse_y > Y1) {     // outside text
+    // @@@ the following section produces wrong result
+    // 
+    if (mouse_y > Y1) {     // below text
         if (mouse_y > Y1+max_distance_text) return false; // too far above
         exact = false;
-        best_dist = mouse_y - Y1;
+        best_y_dist = mouse_y - Y1;
     }
-    else if (mouse_y < Y0) {
+    else if (mouse_y < Y0) { // above text
         if (mouse_y < Y0-max_distance_text) return false; // too far below
         exact = false;
-        best_dist = Y0 - mouse_y;
+        best_y_dist = Y0 - mouse_y;
     }
+
+    
 
     // align text
     int len        = opt_strlen ? opt_strlen : strlen(str);
@@ -124,27 +127,13 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
     if (X1 < clipRect.l) return false;
     if (X0 > clipRect.r) return false;
 
+    printf("X %i-%i %i-%i %s\n", AW_INT(X0), AW_INT(X1), AW_INT(Y0), AW_INT(Y1), str);
+    printf("  %i %i\n", AW_INT(mouse_x), AW_INT(mouse_y));
+
     if (mouse_x < X0) return false; // left of text
     if (mouse_x > X1) return false; // right of text
 
-    max_distance_text = best_dist; // exact hit -> distance = 0;
-
-    int position;
-    if (font_limits.is_monospaced()) {
-        short letter_width = font_limits.width;
-        position = (int)((mouse_x-X0)/letter_width);
-        if (position<0) position = 0;
-        if (position>(len-1)) position = len-1;
-    }
-    else { // proportional font
-        position   = 0;
-        int tmp_offset = 0;
-        while (position<=len) {
-            tmp_offset += gcm->get_width_of_char(str[position]);
-            if (mouse_x <= X0+tmp_offset) break;
-            position++;
-        }
-    }
+    max_distance_text = best_y_dist; // exact hit -> distance = 0;
 
     AW_pos dist2center = Distance(Position(mouse_x, mouse_y),
                                   LineVector(X0, Y0, X0+text_width, Y1).centroid());
@@ -158,7 +147,6 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
         opt_text.rotation     = 0;
         opt_text.distance     = max_distance_text;
         opt_text.dist2center  = dist2center;
-        opt_text.cursor       = position;
         if (click_cd) {
             opt_text.client_data1 = click_cd->get_cd1();
             opt_text.client_data2 = click_cd->get_cd2();
@@ -176,14 +164,16 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
 }
 
 
-void AW_device_click::get_clicked_line(class AW_clicked_line *ptr) const {
+void AW_device_click::get_clicked_line(AW_clicked_line *ptr) const {
     *ptr = opt_line;
 }
 
 
-void AW_device_click::get_clicked_text(class AW_clicked_text *ptr) const {
+void AW_device_click::get_clicked_text(AW_clicked_text *ptr) const {
     *ptr = opt_text;
 }
+
+//void AW_device_click::get_clicked(AW_clicked_element *ptr, int *is_text) const 
 
 bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2) {
     // detect the nearest item next to 'click'

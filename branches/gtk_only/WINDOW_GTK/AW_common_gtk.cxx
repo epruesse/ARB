@@ -22,36 +22,15 @@
 #include <string>
 #include <algorithm>
 
-
-
-
 /*
  * Is called upon window resize
  * @param cl_common_gtk Pointer to the common_gtk instance that registered this callback.
  */
 static void AW_window_resize_cb(AW_window *, AW_CL cl_common_gtk, AW_CL) {
-   AW_common_gtk *common = (AW_common_gtk*)cl_common_gtk;
-//    Window        root;
-//    unsigned int  width, height;
-//    unsigned int  depth, borderwidth; // unused
-//    int           x_offset, y_offset; // unused
-//
-//    XGetGeometry(common->get_display(), common->get_window_id(),
-//                 &root,
-//                 &x_offset,
-//                 &y_offset,
-//                 &width,
-//                 &height,
-//                 &borderwidth,  // border width
-//                 &depth);       // depth of display
-//
-//    common->set_screen_size(width, height);
-
-
+    AW_common_gtk *common = (AW_common_gtk*)cl_common_gtk;
     gint width = common->get_window()->allocation.width;
     gint height = common->get_window()->allocation.height;
     common->set_screen_size(width, height);
-
 }
 
 AW_common_gtk::AW_common_gtk(GdkDisplay *display_in,
@@ -60,150 +39,201 @@ AW_common_gtk::AW_common_gtk(GdkDisplay *display_in,
              AW_rgb*&   dcolors,
              long&      dcolors_count,
              AW_window *aw_window,
-             AW_area    area)
+             AW_area    area_in)
     : AW_common(fcolors, dcolors, dcolors_count),
       display(display_in),
       window(window_in),
-        pixelDepth(gdk_screen_get_system_visual(gdk_display_get_default_screen(display))->depth)
+      aww(aw_window),
+      area(area_in),
+      pixelDepth(gdk_screen_get_system_visual(gdk_display_get_default_screen(display))->depth)
 {
-    
-    
     aw_window->set_resize_callback(area, AW_window_resize_cb, (AW_CL)this);
     AW_window_resize_cb(aw_window, (AW_CL)this, 0);//call the resize cb once in the beginning to get the size
 }
 
+GtkWidget *AW_common_gtk::get_drawing_target() {
+    return aww->get_area(area)->get_area(); 
+} 
+
+
 AW_GC *AW_common_gtk::create_gc() {
-    return new AW_GC_gtk(this, pixelDepth);
+    return new AW_GC_gtk(this, aww->get_area(area)->get_area(), pixelDepth);
 }
 
-void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
-    font_limits.reset();
-    wm_set_font(font_nr, size, found_size);
-    font_limits.calc_height();
-    fontnr   = font_nr;
-    fontsize = size;
+cairo_t *AW_common_gtk::get_CR(int gc) {
+    GtkWidget *widget = aww->get_area(area)->get_area();
+    const AW_GC *awgc = map_gc(gc);
+
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
+
+    // set color
+    AW_rgb col = awgc->get_fg_color();
+    cairo_set_source_rgb(cr, 
+                         (double)((col & 0xff0000)>>16) / 255,
+                         (double)((col & 0xff00)>>8) / 255,
+                         (double)(col & 0xff) / 255);
+
+    // set line width
+    cairo_set_line_width(cr, awgc->get_line_width());
+
+    // set line style
+    switch (awgc->get_line_style()) {
+        case AW_SOLID:
+            cairo_set_dash(cr, NULL, 0, 0);
+            break;
+        case AW_DOTTED:
+            {
+                double dash[] = {1.0};
+                cairo_set_dash(cr, dash, 1, 0);
+            }
+            break;
+        case AW_DASHED:
+            {
+                double dash[] = {8.0, 3.0};
+                cairo_set_dash(cr, dash, 2, 0);
+            }
+            break;
+        default:
+          aw_assert(false);
+    }
+
+    // set rounded caps
+    cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND); 
+    cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND); 
+
+    // set function (aka operator)
+    switch (awgc->get_function()) {
+        case AW_XOR:
+            cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
+            break;
+        case AW_COPY:
+            cairo_set_operator(cr, CAIRO_OPERATOR_OVER); 
+            break;
+        default:
+            aw_assert(false);
+    }
+      
+  
+    return cr;
+  
 }
 
-//FIXME initialize gc
-AW_GC_gtk::AW_GC_gtk(AW_common *aw_common, int pixelDepth) : AW_GC(aw_common) {
-
-    //It is not possible to create a gc without a drawable.
-    //The gc can only be used to draw on drawables which use the same colormap and depth
-    GdkPixmap *temp = gdk_pixmap_new(0, 1, 1, pixelDepth); 
-    gc = gdk_gc_new(temp);
-    g_object_unref((gpointer)temp);
-
+AW_GC_gtk::AW_GC_gtk(AW_common *aw_common, GtkWidget *drawable, int pixelDepth) 
+  : AW_GC(aw_common) 
+{
 }
 AW_GC_gtk::~AW_GC_gtk(){};
 
+
 void AW_GC_gtk::wm_set_foreground_color(AW_rgb col){
-
-    GdkColor gdk_color;
-    gdk_color.pixel = col;
-    gdk_gc_set_foreground(gc, &gdk_color);
 }
 
-void AW_GC_gtk::wm_set_function(AW_function mode){
-    switch (mode) {
-        case AW_XOR:
-            gdk_gc_set_function(gc, GDK_XOR);
-            //XSetFunction(get_common()->get_display(), gc, GXxor);
-            break;
-        case AW_COPY:
-            gdk_gc_set_function(gc, GDK_COPY);
-            //XSetFunction(get_common()->get_display(), gc, GXcopy);
-            break;
-    }
+void AW_GC_gtk::wm_set_function(AW_function mode_in){
 }
 
-void AW_GC_gtk::wm_set_lineattributes(short lwidth, AW_linestyle lstyle){
-    GdkLineStyle lineStyle;
-
-    switch(lstyle) {
-        case AW_SOLID:
-            lineStyle = GDK_LINE_SOLID;
-            break;
-        case AW_DASHED:
-        case AW_DOTTED:
-            //dotted lines are converted to dashed lines because gtk does not support dotted lines
-            lineStyle = GDK_LINE_ON_OFF_DASH;
-            break;
-        default:
-            lineStyle = GDK_LINE_SOLID;
-            break;
-    }
-
-    gdk_gc_set_line_attributes(gc, lwidth, lineStyle, GDK_CAP_BUTT, GDK_JOIN_BEVEL);
+void AW_GC_gtk::wm_set_lineattributes(short lwidth_in, AW_linestyle lstyle_in){
 }
 
 void AW_GC_gtk::replaceInString(const std::string& what,const std::string& with, std::string& text){
- 
     size_t start = text.find(what);
     if (start != std::string::npos) {
         text.replace(start, what.length(), with);
     }
 }
 
-void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int size, int *found_size) {
-    // if found_size != 0 -> return value for used font size
+static const char* fonts[] = {
+  "Times Roman", // 0
+  "Times Italic", // 1
+  "Times Bold", // 2
+  "Times Bold Italic", // 3
+  "AvantGarde Book", // 4
+  "AvantGarde Book Oblique", // 5
+  "AvantGarde Demi", // 6
+  "AvantGarde Demi Oblique", // 7
+  "Bookman Light", // 8
+  "Bookman Light Italic", // 9
+  "Bookman Demi", //10
+  "Bookman Demi Italic", //11
+  "Courier", //12
+  "Courier Oblique", //13
+  "Courier Bold", //14
+  "Courier Bold Oblique", //15
+  "Helvetica", //16
+  "Helvetica Oblique", //17
+  "Helvetica Bold", //18
+  "Helvetica Bold Oblique", //19
+  "Helvetica Narrow", //20
+  "Helvetica Narrow Oblique", //21
+  "Helvetica Narrow Bold", //22
+  "Helvetica Narrow Bold Oblique", //23
+  "New Century Schoolbook Roman", //24
+  "New Century Schoolbook Italic", //25
+  "New Century Schoolbook Bold", //26
+  "New Century Schoolbook Bold Italic", //27
+  "Palatino Roman", //28
+  "Palatino Italic", //29
+  "Palatino Bold", //30
+  "Palatino Bold Italic", //31
+  "Symbol", //32
+  "Zapf Chancery Medium Italic", //33
+  "Zapf Dingbats", //34
+  "Lucida Medium" //35
+};
 
-    XFontStruct *xfs;
-    {
-        int  found_font_size;
-        bool result = lookfont(GDK_DISPLAY_XDISPLAY(get_common()->get_display()), font_nr, size, found_font_size, true, false, &xfs); // lookfont should do fallback
-        arb_assert(result);
-        if (found_size) *found_size = found_font_size;
+
+void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int font_size, int *found_size) {
+    // translate xfig font number to some name
+    if (font_nr < -1) { 
+    } else if (font_nr == -1) {
+      font_desc = pango_font_description_from_string("default");
+    } else if (font_nr < sizeof(fonts)) {
+      font_desc = pango_font_description_from_string(fonts[font_nr]);
+    } else {
+      font_desc = pango_font_description_from_string("default");
+    }
+
+    // set requested size 
+    if (font_size) {
+      printf("ff %i\n",font_size);
+        pango_font_description_set_absolute_size(font_desc, font_size * PANGO_SCALE);
+        if (found_size) *found_size = font_size;
+    }
+    else {
+      if (found_size) *found_size = 8;
     }
 
 
-    FIXME("Font conversion hack");
-    //extract XLFD name from XFontStruct
-
-    XFontProp *xfp;
-    char *name;
-    int i;
-    for (i = 0, xfp = xfs->properties; i < xfs->n_properties; i++, xfp++) {
-        if (xfp->name == XA_FONT) {
-            /*
-             * Set the font name but don't add it to the list in the font.
-             */
-            name = XGetAtomName(GDK_DISPLAY_XDISPLAY(get_common()->get_display()), (Atom) xfp->card32);
-            break;
-        }
-    }
-
-    FIXME("Gtk seems unable to load unicode fonts");
-    //workaround
-    //for some reason gtk cannot load fonts that contain ISO10646. ISO10646 is unicode.
-    //However it works fine if the "ISO10646" is replaced with a wildcard.
-    //This is most likely due to the very old gtk version on this system :)
-    std::string fontname(name);
-    
-    replaceInString("ISO10646","*", fontname);
-    replaceInString("iso10646","*", fontname); //for some reason ISO is sometimes written in small letters
- 
-
-    //load a gdk font corresponding to the XLDF name
-    GdkFont *font = gdk_font_load(fontname.c_str());
-    ASSERT_FALSE(NULL == font);
-    gdk_gc_set_font(gc, font);
-
-    //set char size for each ascii char
+    // begin acrobatics to get the glyph sizes
+    // get the actual widget we're drawing on, 
+    GtkWidget *widget = get_common()->get_drawing_target();
+    // get its context,
+    PangoContext *context = gtk_widget_get_pango_context(widget);
+    // and the fontmap thereof
+    PangoFontMap *fontmap = pango_context_get_font_map(context);//pango_cairo_font_map_get_default();
+    // use all of those to finally get the probably used font
+    PangoFont *font = pango_font_map_load_font(fontmap, context, font_desc);
+    // iterate through the ascii chars
     for (unsigned int j = AW_FONTINFO_CHAR_ASCII_MIN; j <= AW_FONTINFO_CHAR_ASCII_MAX; j++) {
-        gchar c = (gchar)j;
-        gint lbearing = 0;
-        gint rbearing = 0;
-        gint width = 0;
-        gint ascent = 0;
-        gint descent = 0;
-        gdk_text_extents(font, &c, 1, &lbearing, &rbearing, &width, &ascent, &descent);
-
-        set_char_size(j, ascent, descent, width);
-        //else    set_no_char_size(i);
+        // make a char* and from that a gunichar which is a PangoGlyph
+        char ascii[2]; ascii[0] = j; ascii[1]=0;
+        PangoGlyph glyph = g_utf8_get_char(ascii);
+        PangoRectangle rect;
+        pango_font_get_glyph_extents(font, glyph , 0, &rect);
+        pango_extents_to_pixels(&rect, 0);
+        set_char_size(j, PANGO_ASCENT(rect), PANGO_DESCENT(rect), PANGO_RBEARING(rect));
     }
 }
 
 int AW_GC_gtk::get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const {
     GTK_NOT_IMPLEMENTED;
     return 0;
+}
+
+int AW_GC_gtk::get_actual_string_size(const char* str) const {
+    GtkWidget *widget = get_common()->get_drawing_target();
+    PangoLayout *pl = gtk_widget_create_pango_layout(widget, str);
+    pango_layout_set_font_description(pl, font_desc);
+    int w, h;
+    pango_layout_get_pixel_size (pl, &w, &h);
+    return w;
 }

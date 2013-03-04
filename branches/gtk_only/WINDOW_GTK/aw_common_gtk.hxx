@@ -13,6 +13,7 @@
 #include "aw_common.hxx"
 #include "aw_gtk_forward_declarations.hxx"
 #include <string> 
+#include <cairo.h>
 
 
 class AW_common_gtk;
@@ -26,12 +27,15 @@ class AW_common_gtk;
  * identical arguments do not need to be passed repeatedly.
  */
 class AW_GC_gtk : public AW_GC { // derived from Noncopyable
-    GdkGC*      gc;
+    cairo_t *cr;
+    PangoFontDescription *font_desc;
 
     virtual void wm_set_foreground_color(AW_rgb col) OVERRIDE;
     virtual void wm_set_function(AW_function mode) OVERRIDE;
     virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle) OVERRIDE;
     virtual void wm_set_font(AW_font font_nr, int size, int *found_size) OVERRIDE;
+ 
+    virtual int get_actual_string_size(const char *str) const OVERRIDE;
 
     /**
      * Searches for the first occurrence of 'what' in 'text' and replaces it with 'with'.
@@ -40,11 +44,18 @@ class AW_GC_gtk : public AW_GC { // derived from Noncopyable
     
 public:
 
+    AW_rgb col_fg;
+    AW_function mode;
+    AW_linestyle lstyle;
+    short lwidth;
+
+
+
     /**
      * Create a gc with specified pixel depth.
      * @note>: The gc can only be used to draw on surfaces that have the same pixel depth.
      */
-    AW_GC_gtk(AW_common *common, int pixelDepth);
+    AW_GC_gtk(AW_common *common, GtkWidget *drawable,  int pixelDepth);
     ~AW_GC_gtk() OVERRIDE;
 
     // AW_GC interface (uses motif call)
@@ -52,7 +63,8 @@ public:
 
     inline AW_common_gtk *get_common() const;
 
-    GdkGC* get_gc() const { return gc; }
+    cairo_t* get_cr() const {return cr; }
+    PangoFontDescription* get_font() const { return font_desc; }
 };
 
 
@@ -60,6 +72,8 @@ public:
 class AW_common_gtk: public AW_common { // derived from Noncopyable
     GdkDisplay *display;
     GtkWidget  *window;
+    AW_window  *aww;
+    AW_area    area;
     int pixelDepth; /** < Pixel depth of all drawing surfaces  */
 
 
@@ -79,8 +93,10 @@ public:
 
     GdkDisplay *get_display() const { return display; }
     GtkWidget *get_window() const { return window; }
+    GtkWidget *get_drawing_target(); 
 
-    GdkGC *get_GC(int gc) const { return map_gc(gc)->get_gc(); }
+    cairo_t *get_CR(int gc);
+    PangoFontDescription* get_font(int gc) { return map_gc(gc)->get_font(); }
 
 };
 

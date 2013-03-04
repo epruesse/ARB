@@ -103,6 +103,7 @@ class AW_GC : public AW_GC_config, virtual Noncopyable {
     virtual void wm_set_function(AW_function mode)                        = 0;
     virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle) = 0;
     virtual void wm_set_font(AW_font font_nr, int size, int *found_size)  = 0;
+    virtual int get_actual_string_size(const char *str) const {return 0;};
 
 protected:
 

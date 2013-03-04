@@ -97,6 +97,27 @@ int AW_GC::get_string_size(const char *str, long textlen) const {
     // 'textlen' == 0 -> calls strlen when needed
     // both 0 -> return 0
 
+    // The easiest precise way to figure out how wide a string
+    // will be when rendered given the currently selected
+    // font on the currently used device is by having pango
+    // do the layout and check the size. That's what
+    // get_actual_string() does.
+    int actual_size;
+    if (str) actual_size = get_actual_string_size(str);
+    else {
+      char *tmp = (char*)malloc(textlen+1);
+      memset(tmp, 'A', textlen);
+      tmp[textlen]=0;
+      actual_size =  get_actual_string_size(str);
+      free(tmp);
+    }
+    
+    if (actual_size) 
+      return actual_size;
+    
+    // If the AW_GC implementation doesn't have get_actual_string_size,
+    // try calculating an approximation:
+
     int width = 0;
     if (font_limits.is_monospaced() || !str) {
         if (!textlen && str) textlen = strlen(str);
@@ -105,6 +126,14 @@ int AW_GC::get_string_size(const char *str, long textlen) const {
     else {
         for (int c = *(str++); c; c = *(str++)) width += width_of_chars[c];
     }
+   
     return width;
 }
 
+void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
+    font_limits.reset();
+    wm_set_font(font_nr, size, found_size);
+    font_limits.calc_height();
+    fontnr   = font_nr;
+    fontsize = size;
+}

@@ -140,6 +140,10 @@ public:
      * Make window resizable (or not)
      */
     void set_resizable(bool resizable);
-    
+
+    /**
+     * Get approximate character width/height for current window.
+     */
+    void get_font_size(int& with, int& height);
 };
 

@@ -136,16 +136,9 @@ public:
     void window_hide(AW_window *aww);
 
     // the read only public section:
-    short       font_width;
-    short       font_height;
-    short       font_ascent;
     GB_HASH    *hash_for_windows;
 
     // the real public section:
-
-    
-    
-    
 
     AW_rgb*& getColorTable() {
         return prvt.color_table;
