@@ -1243,6 +1243,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     tree = gtk_tree_view_new();
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
     renderer = gtk_cell_renderer_text_new ();
+    g_object_set(renderer, "family", "monospace", NULL);
     column = gtk_tree_view_column_new_with_attributes("List Items",
              renderer, "text", 0, NULL); //column headers are disabled, text does not matter
     gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
