@@ -21,7 +21,6 @@
 
 AW_at::AW_at(AW_window* pWindow) {
     memset((char*)this, 0, sizeof(AW_at));
-
     
     aw_assert(NULL != pWindow);
     window = pWindow;
@@ -29,6 +28,8 @@ AW_at::AW_at(AW_window* pWindow) {
     
     length_of_buttons = 10;
     height_of_buttons = 0;
+    window->get_font_size(font_width, font_height);
+
     shadow_thickness  = 2;
     widget_mask       = AWM_ALL;
     
@@ -119,7 +120,7 @@ void AW_at::at(const char *at_id) {
 
     if (!pos) GBK_terminatef("ID '%s' does not exist in xfig file", at_id);
 
-    at((pos->x - xfig->minx), (pos->y - xfig->miny - window->get_root()->font_height - 9));
+    at((pos->x - xfig->minx), (pos->y - xfig->miny - font_height - 9));
     correct_for_at_center = pos->center;
 
     sprintf(to_position, "to:%s", at_id);
@@ -269,8 +270,8 @@ void AW_at::increment_at_commands(int width, int height) {
         max_y_size = y_for_next_button + biggest_height_of_buttons + 3;
     }
 
-    if (max_x_size < (x_for_next_button + window->get_root()->font_width)) {
-        max_x_size = x_for_next_button + window->get_root()->font_width;
+    if (max_x_size < (x_for_next_button + font_width)) {
+        max_x_size = x_for_next_button + font_width;
     }
 }
 

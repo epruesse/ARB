@@ -289,14 +289,14 @@ void AW_root::init_root(const char* properties, const char *programname, bool No
     gtk_init(argc, argv);
 
     // add our own icon path to the gtk theme search path
-    GtkIconTheme *theme = gtk_icon_theme_get_default();
-    gtk_icon_theme_prepend_search_path(theme, GB_path_in_ARBLIB("pixmaps/icons"));
+    gtk_icon_theme_prepend_search_path(gtk_icon_theme_get_default(),
+                                       GB_path_in_ARBLIB("pixmaps/icons"));
 
 
     color_mode = AW_RGB_COLOR; //mono color mode is not supported
     create_colormap();//load the colortable from database
 
-    FIXME("The whole font system is still using X");
+
     int i;
     for (i=0; i<1000 && aw_fb[i].fb; i++) {
         GBDATA *gb_awar       = GB_search((GBDATA*)application_database, aw_fb[i].awar, GB_FIND);
@@ -306,14 +306,14 @@ void AW_root::init_root(const char* properties, const char *programname, bool No
 
     //ARB_install_handlers(aw_handlers);
 
+
     /**
      *  Font Hack!
      * The whole font system is still using X.
      * right before drawing the fonts are converted to GdkFont and drawn.
      * This is a quick hack to be able to get the correct fonts.
-     */
+    FIXME("The whole font system is still using X");
 
-    Display* display = GDK_DISPLAY_XDISPLAY(gdk_display_get_default());
 
     //TODO font stuff
     {
@@ -339,6 +339,8 @@ void AW_root::init_root(const char* properties, const char *programname, bool No
     font_height = fontstruct->max_bounds.ascent
             + fontstruct->max_bounds.descent;
     font_ascent = fontstruct->max_bounds.ascent;
+     */
+
 //
 
     //prvt.fontlist = XmFontListCreate(fontstruct, XmSTRING_DEFAULT_CHARSET);
@@ -359,6 +361,7 @@ void AW_root::init_root(const char* properties, const char *programname, bool No
 //    p_r->question_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget), XC_question_arrow);
 //
 //    aw_root_create_color_map(this);
+    Display* display = GDK_DISPLAY_XDISPLAY(gdk_display_get_default());
     aw_root_init_font(display);
 //    aw_install_xkeys(XtDisplay(p_r->toplevel_widget));
     

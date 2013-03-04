@@ -34,7 +34,6 @@ public:
     AW_pos        rotation;
     AW_pos        distance;     // y-Distance to text, <0 -> above, >0 -> below
     AW_pos        dist2center;  // Distance to center of text
-    int           cursor;       // which letter was selected, from 0 to strlen-1
     bool          exactHit;     // true -> real click on text (not only near text)
 };
 

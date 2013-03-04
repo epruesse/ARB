@@ -499,6 +499,7 @@ public:
 
     void get_screen_size(int& width, int& height);
     bool get_mouse_pos(int& x, int& y);
+    void get_font_size(int& w, int& h);
 
     void set_focus_policy(bool follow_mouse);
     

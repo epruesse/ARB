@@ -126,10 +126,14 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
     bool inside_clipping_right = true;
 
     // es gibt 4 clipping Moeglichkeiten:
-    // 1. man will fuer den Fall clippen, dass man vom linken display-Rand aus druckt   => clipping rechts vom 1. Buchstaben
-    // 2. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             => clipping links vom 1. Buchstaben
-    // 3. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             => clipping links vom letzten Buchstaben
-    // 4. man will fuer den Fall clippen, dass man bis zum rechten display-Rand druckt  => clipping rechts vom letzten Buchstaben
+    // 1. man will fuer den Fall clippen, dass man vom linken display-Rand aus druckt   
+    //    => clipping rechts vom 1. Buchstaben
+    // 2. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             
+    //    => clipping links vom 1. Buchstaben
+    // 3. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             
+    //    => clipping links vom letzten Buchstaben
+    // 4. man will fuer den Fall clippen, dass man bis zum rechten display-Rand druckt  
+    //    => clipping rechts vom letzten Buchstaben
 
     if (!(filter & filteri)) return 0;
 
