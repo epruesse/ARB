@@ -441,20 +441,20 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
                 return GBCM_SERVER_FAULT;
             }
             if (gb2 && mode >= -1) {
-                GBCONTAINER  *gbc  = gb2->as_container();
-                GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbc);
+                GBCONTAINER  *gbc2  = gb2->as_container();
+                GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbc2);
 
-                gb_create_header_array(gbc, (int)nheader);
-                if (nheader < gbc->d.nheader) {
+                gb_create_header_array(gbc2, (int)nheader);
+                if (nheader < gbc2->d.nheader) {
                     GB_internal_error("Inconsistency Client-Server Cache");
                 }
-                gbc->d.nheader = (int)nheader;
-                gb_header_list *hdl = GB_DATA_LIST_HEADER(gbc->d);
+                gbc2->d.nheader = (int)nheader;
+                gb_header_list *hdl = GB_DATA_LIST_HEADER(gbc2->d);
                 for (long item = 0; item < nheader; item++) {
                     GBQUARK old_index = hdl->flags.key_quark;
                     GBQUARK new_index = buffer2->key_quark;
                     if (new_index && !old_index) {  // a rename ...
-                        gb_write_index_key(gbc, item, new_index);
+                        gb_write_index_key(gbc2, item, new_index);
                     }
                     if (mode>0) {   // server read data
 
@@ -470,10 +470,10 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
                     hdl++; buffer2++;
                 }
                 if (mode>0) {   // transaction only in server
-                    gb_touch_header(gbc);
+                    gb_touch_header(gbc2);
                 }
                 else {
-                    gbc->header_update_date = Main->clock;
+                    gbc2->header_update_date = Main->clock;
                 }
             }
         }
