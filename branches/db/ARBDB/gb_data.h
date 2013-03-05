@@ -167,6 +167,8 @@ struct GBDATA {
         if (!is_container()) GBK_terminate("expected a DB container, got an entry");
         return as_container();
     }
+
+    inline GBCONTAINER *get_father();
 };
 
 class GBENTRY : public GBDATA {
@@ -219,6 +221,14 @@ inline GBCONTAINER* GB_FATHER(GBDATA *gbd)  { return GB_RESOLVE(GBCONTAINER*, gb
 inline GBCONTAINER* GB_GRANDPA(GBDATA *gbd) { return GB_FATHER(GB_FATHER(gbd)); }
 
 inline void SET_GB_FATHER(GBDATA *gbd, GBCONTAINER *father) { GB_SETREL(gbd, rel_father, father); }
+
+GBCONTAINER *GBDATA::get_father() {
+    // like GB_FATHER, but returns NULL for root_container
+    GBCONTAINER *father = GB_FATHER(this);
+    if (father && !GB_FATHER(father)) return NULL;
+    return father;
+}
+
 
 // -----------------------
 //      GB_MAIN access

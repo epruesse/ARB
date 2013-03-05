@@ -1504,9 +1504,7 @@ long GB_read_transaction(GBDATA *gbd) {
 GBDATA *GB_get_father(GBDATA *gbd) {
     // Get the father of an entry
     GB_test_transaction(gbd);
-    GBDATA *father = GB_FATHER(gbd);
-    if (father && !GB_FATHER(father)) father = NULL; // never return dummy_father of root container
-    return father;
+    return gbd->get_father();
 }
 
 GBDATA *GB_get_grandfather(GBDATA *gbd) {

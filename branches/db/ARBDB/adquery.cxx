@@ -491,7 +491,7 @@ GBDATA *gb_search(GBCONTAINER *gbc, const char *key, GB_TYPES create, int intern
             case '.': {
                 if (separator[1] != '.') invalid_char = separator[0];
                 else {
-                    GBCONTAINER *gb_parent = GB_FATHER(gbc);
+                    GBCONTAINER *gb_parent = gbc->get_father();
                     if (gb_parent) {
                         switch (separator[2]) {
                             case 0:   gb_result    = gb_parent; break;
