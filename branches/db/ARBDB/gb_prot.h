@@ -17,7 +17,8 @@
 void gb_touch_entry(GBDATA *gbd, GB_CHANGE val);
 void gb_touch_header(GBCONTAINER *gbc);
 void gb_untouch_children(GBCONTAINER *gbc);
-void gb_untouch_me(GBDATA *gbc);
+void gb_untouch_me(GBENTRY *gbe);
+void gb_untouch_children_and_me(GBCONTAINER *gbc);
 void gb_create_header_array(GBCONTAINER *gbc, int size);
 void gb_create_extended(GBDATA *gbd);
 GB_MAIN_TYPE *gb_make_gb_main_type(const char *path);
@@ -135,9 +136,9 @@ char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size, long
 char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size, long *msize, int last_flag, int search_backward, int search_forward);
 
 /* adquery.cxx */
-GBDATA *gb_find_by_nr(GBDATA *father, int index);
+GBDATA *gb_find_by_nr(GBCONTAINER *father, int index);
 void gb_init_ctype_table(void);
-GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag);
+GBDATA *gb_search(GBCONTAINER *gbc, const char *key, GB_TYPES create, int internflag);
 void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, size_t table_size);
 char *gbs_search_second_bracket(const char *source);
 
@@ -161,7 +162,7 @@ long gbcm_read_long(int socket);
 GB_ERROR gb_load_dictionary_data(GBDATA *gb_main, const char *key, char **dict_data, long *size);
 void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q);
 GB_ERROR gb_save_dictionary_data(GBDATA *gb_main, const char *key, const char *dict, int size);
-GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main) __ATTR__USERESULT;
+GB_ERROR gb_load_key_data_and_dictionaries(GB_MAIN_TYPE *Main) __ATTR__USERESULT;
 
 /* arbdb.cxx */
 GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos);
@@ -174,13 +175,16 @@ GB_CSTR gb_read_key_pntr(GBDATA *gbd);
 GBQUARK gb_find_existing_quark(GB_MAIN_TYPE *Main, const char *key);
 GBQUARK gb_find_or_create_quark(GB_MAIN_TYPE *Main, const char *key);
 GBQUARK gb_find_or_create_NULL_quark(GB_MAIN_TYPE *Main, const char *key);
-GBDATA *gb_create(GBDATA *father, const char *key, GB_TYPES type);
-GBDATA *gb_create_container(GBDATA *father, const char *key);
+GBCONTAINER *gb_get_root(GBENTRY *gbe);
+GBCONTAINER *gb_get_root(GBCONTAINER *gbc);
+GBDATA *gb_create(GBCONTAINER *father, const char *key, GB_TYPES type);
+GBCONTAINER *gb_create_container(GBCONTAINER *father, const char *key);
 GB_ERROR gb_delete_force(GBDATA *source);
 GB_ERROR gb_init_transaction(GBCONTAINER *gbd);
 void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata);
 void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB func, int *clientdata);
 GB_MAIN_TYPE *gb_get_main_during_cb(void);
+GB_ERROR gb_resort_system_folder_to_top(GBCONTAINER *gb_main);
 
 #else
 #error gb_prot.h included twice

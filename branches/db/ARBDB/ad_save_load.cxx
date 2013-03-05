@@ -697,12 +697,10 @@ static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version
     return 0;
 }
 
-static int gb_write_bin(FILE *out, GBDATA *gbd, uint32_t version) { // @@@ change param to GBCONTAINER
+static int gb_write_bin(FILE *out, GBCONTAINER *gbc, uint32_t version) {
     /* version 1 write master arb file
      * version 2 write slave arb file (aka quick save file)
      */
-    long          i;
-    GBCONTAINER  *gbc       = (GBCONTAINER *)gbd;
     int           diff_save = 0;
     GB_MAIN_TYPE *Main      = GBCONTAINER_MAIN(gbc);
 
@@ -714,7 +712,7 @@ static int gb_write_bin(FILE *out, GBDATA *gbd, uint32_t version) { // @@@ chang
     gb_write_out_uint32(version, out);
     fwrite("keys", 4, 1, out);
 
-    for (i=1; i<Main->keycnt; i++) {
+    for (long i=1; i<Main->keycnt; i++) {
         if (Main->keys[i].nref>0) {
             gb_put_number(Main->keys[i].nref, out);
             fprintf(out, "%s", Main->keys[i].key);
@@ -801,29 +799,27 @@ GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype) 
     return error;
 }
 
-static GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *flags) {
+GB_ERROR GB_MAIN_TYPE::check_saveable(const char *new_path, const char *flags) const {
     /* Check wether file can be stored at destination
      *  'f' in flags means 'force' => ignores main->disabled_path
      *  'q' in flags means 'quick save'
      *  'n' in flags means destination must be empty
      */
 
-    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
-    GB_ERROR      error = NULL;
-
-    if (!Main->local_mode) {
+    GB_ERROR error = NULL;
+    if (!local_mode) {
         error = "You cannot save a remote database,\nplease use save button in master program";
     }
-    else if (Main->opentype == gb_open_read_only_all) {
+    else if (opentype == gb_open_read_only_all) {
         error = "Database is read only";
     }
-    else if (strchr(path, ':')) {
+    else if (strchr(new_path, ':')) {
         error = "Your database name may not contain a ':' character\nChoose a different name";
     }
     else {
-        char *fullpath = gb_full_path(path);
-        if (Main->disabled_path && !strchr(flags, 'f')) {
-            if (GBS_string_matches(fullpath, Main->disabled_path, GB_MIND_CASE)) {
+        char *fullpath = gb_full_path(new_path);
+        if (disabled_path && !strchr(flags, 'f')) {
+            if (GBS_string_matches(fullpath, disabled_path, GB_MIND_CASE)) {
                 error = GBS_global_string("You are not allowed to save your database in this directory,\n"
                                           "Please select 'save as' and save your data to a different location");
             }
@@ -844,7 +840,7 @@ static GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *fla
     }
     
     if (!error && !strchr(flags, 'q')) {
-        long mode = GB_mode_of_link(path);
+        long mode = GB_mode_of_link(new_path);
         if (mode >= 0 && !(mode & S_IWUSR)) { // no write access -> looks like a master file
             error = GBS_global_string("Your selected file '%s'\n"
                                       "already exists and is write protected!\n"
@@ -852,13 +848,13 @@ static GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *fla
                                       "used by multiple quicksaved databases.\n"
                                       "If you want to save it nevertheless, delete it first, but\n"
                                       "note that doing this will render all these quicksaves useless!",
-                                      path);
+                                      new_path);
         }
     }
     
-    if (!error && strchr(flags, 'n') && GB_time_of_file(path)) {
+    if (!error && strchr(flags, 'n') && GB_time_of_file(new_path)) {
         error = GBS_global_string("Your destination file '%s' already exists.\n"
-                                  "Delete it manually!", path);
+                                  "Delete it manually!", new_path);
     }
 
 #if (MEMORY_TEST==1)
@@ -868,7 +864,7 @@ static GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *fla
     return error;
 }
 
-GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
+GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype) {
     /* Save whole database
      *
      * savetype
@@ -883,22 +879,22 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
 
     gb_assert(savetype);
 
-    if (!gb) {
+    if (!gbd) {
         error = "got no db";
     }
     else {
-        bool saveASCII = false;
+        bool saveASCII                            = false;
         if (strchr(savetype, 'a')) saveASCII      = true;
         else if (strchr(savetype, 'b')) saveASCII = false;
-        else error = GBS_global_string("Invalid savetype '%s' (expected 'a' or 'b')", savetype);
+        else error                                = GBS_global_string("Invalid savetype '%s' (expected 'a' or 'b')", savetype);
 
         if (!error) {
-            GB_MAIN_TYPE *Main = GB_MAIN(gb);
-            gb                 = Main->gb_main();
-            if (!path) path    = Main->path;
+            GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
+            GBCONTAINER  *gb_main = Main->root_container;
+            if (!path) path       = Main->path;
 
             if (!path || !path[0]) error = "Please specify a savename";
-            else error                   = gb_check_saveable(gb, path, savetype);
+            else error                   = Main->check_saveable(path, savetype);
 
             if (!error) {
                 char *mappath        = NULL;
@@ -915,8 +911,8 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
                     if (!translevel) Main->transaction = 1;
                     else {
                         if (translevel> 0) {
-                            GB_commit_transaction(gb);
-                            GB_begin_transaction(gb);
+                            GB_commit_transaction(gb_main);
+                            GB_begin_transaction(gb_main);
                         }
                     }
                     Main->security_level = 7;
@@ -928,7 +924,7 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
 
                         if (saveASCII) {
                             fprintf(out, "/*ARBDB ASCII*/\n");
-                            gb_write_rek(out, gb->as_container(), 0, 1);
+                            gb_write_rek(out, gb_main, 0, 1);
                             freedup(Main->qs.quick_save_disabled, "Database saved in ASCII mode");
                             if (deleteQuickAllowed) error = gb_remove_all_but_main(Main, path);
                         }
@@ -941,7 +937,7 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
                                 error       = gb_save_mapfile(Main, sec_mappath);
                             }
                             else GB_unlink_or_warn(mappath, &error); // delete old mapfile
-                            if (!error) result |= gb_write_bin(out, gb, 1);
+                            if (!error) result |= gb_write_bin(out, gb_main, 1);
                         }
 
                         Main->security_level = slevel;
@@ -989,8 +985,8 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
                     }
 
                     if (!error && !outOfOrderSave) {
-                        Main->last_saved_transaction      = GB_read_clock(gb);
-                        Main->last_main_saved_transaction = GB_read_clock(gb);
+                        Main->last_saved_transaction      = GB_read_clock(gb_main);
+                        Main->last_main_saved_transaction = GB_read_clock(gb_main);
                         Main->last_saved_time             = GB_time_of_day();
                     }
                 }
@@ -1005,19 +1001,17 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
     RETURN_ERROR(error);
 }
 
-static GB_ERROR gb_check_quick_save(GBDATA *gb_main) {
+GB_ERROR GB_MAIN_TYPE::check_quick_save() const {
     /* is quick save allowed?
      * return NULL if allowed, error why disallowed otherwise.
      */
 
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    if (Main->qs.quick_save_disabled) {
+    if (qs.quick_save_disabled) {
         return GBS_global_string("Save Changes Disabled, because\n"
                                  "    '%s'\n"
                                  "    Save whole database using binary mode first",
-                                 Main->qs.quick_save_disabled);
+                                 qs.quick_save_disabled);
     }
-
     return NULL;
 }
 
@@ -1030,9 +1024,9 @@ GB_ERROR GB_delete_database(GB_CSTR filename) {
     return error;
 }
 
-GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    gb_main            = Main->gb_main();
+GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path) {
+    GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
+    GBCONTAINER  *gb_main = Main->root_container;
 
     GB_ERROR error = NULL;
 
@@ -1043,8 +1037,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path) {
         error = GB_save_quick(gb_main, path);
     }
     else {
-        error             = gb_check_quick_save(gb_main);
-        if (!error) error = gb_check_saveable(gb_main, path, "bn");
+        error = Main->check_quick_saveable(path, "bn");
 
         if (!error) {
             FILE *fmaster = fopen(Main->path, "r");         // old master !!!!
@@ -1117,12 +1110,10 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path) {
     RETURN_ERROR(error);
 }
 
-GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gb);
-    gb                 = Main->gb_main();
-
-    GB_ERROR error    = gb_check_quick_save(gb);
-    if (!error) error = gb_check_saveable(gb, refpath, "q");
+GB_ERROR GB_save_quick(GBDATA *gbd, const char *refpath) {
+    GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
+    GBCONTAINER  *gb_main = Main->root_container;
+    GB_ERROR      error   = Main->check_quick_saveable(refpath, "q");
 
     if (!error && refpath && strcmp(refpath, Main->path) != 0) {
         error = GBS_global_string("master file rename '%s'!= '%s',\n"
@@ -1158,14 +1149,14 @@ GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
                 if (!translevel) Main->transaction = 1;
                 else {
                     if (translevel> 0) {
-                        GB_commit_transaction(gb);
-                        GB_begin_transaction(gb);
+                        GB_commit_transaction(gb_main);
+                        GB_begin_transaction(gb_main);
                     }
                 }
 
                 Main->security_level = 7;
 
-                erg = gb_write_bin(out, gb, 2);
+                erg = gb_write_bin(out, gb_main, 2);
 
                 Main->security_level = slevel;
                 Main->transaction    = translevel;
@@ -1177,7 +1168,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
             else {
                 error = GB_rename_file(sec_path, path);
                 if (!error) {
-                    Main->last_saved_transaction = GB_read_clock(gb);
+                    Main->last_saved_transaction = GB_read_clock(gb_main);
                     Main->last_saved_time        = GB_time_of_day();
 
                     error = deleteSuperfluousQuicksaves(Main);

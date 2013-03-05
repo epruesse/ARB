@@ -553,7 +553,7 @@ static char *gb_compress_sequence_by_master(GBDATA *gbd, const char *master, int
     return res;
 }
 
-static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, const char *ali_name) {
+static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tree, const char *ali_name) {
     GB_ERROR error      = 0;
     long     ali_len    = GBT_get_alignment_len(gb_main, ali_name);
     int      main_clock = GB_read_clock(gb_main);
@@ -626,8 +626,8 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
             }
 
             if (!warning) {
-                GBDATA              *gb_master_ali     = 0;
-                GBDATA              *old_gb_master_ali = 0;
+                GBCONTAINER         *gb_master_ali     = 0;
+                GBCONTAINER         *old_gb_master_ali = 0;
                 Sequence            *seqs              = 0;
                 GB_MAIN_TYPE        *Main              = GB_MAIN(gb_main);
                 GBQUARK              ali_quark         = gb_find_or_create_quark(Main, ali_name);
@@ -639,16 +639,17 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
 
                 {
                     char *masterfoldername = GBS_global_string_copy("%s/@master_data/@%s", GB_SYSTEM_FOLDER, ali_name);
-                    old_gb_master_ali      = GB_search(gb_main, masterfoldername, GB_FIND);
+                    old_gb_master_ali      = GB_search(gb_main, masterfoldername, GB_FIND)->as_container();
                     free(masterfoldername);
                 }
 
                 // create masters
                 if (!error) {
                     {
-                        char   *master_data_name = GBS_global_string_copy("%s/@master_data", GB_SYSTEM_FOLDER);
-                        char   *master_name      = GBS_global_string_copy("@%s", ali_name);
-                        GBDATA *gb_master_data   = gb_search(gb_main, master_data_name, GB_CREATE_CONTAINER, 1);
+                        char *master_data_name = GBS_global_string_copy("%s/@master_data", GB_SYSTEM_FOLDER);
+                        char *master_name      = GBS_global_string_copy("@%s", ali_name);
+
+                        GBCONTAINER *gb_master_data = gb_search(gb_main, master_data_name, GB_CREATE_CONTAINER, 1)->as_container();
 
                         // create a master container, the old is deleted as soon as all sequences are compressed by the new method
                         gb_master_ali = gb_create_container(gb_master_data, master_name);
@@ -836,7 +837,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
 
                 if (!error) {
                     if (old_gb_master_ali) {
-                        error = GB_delete(old_gb_master_ali);
+                        error = GB_delete(reinterpret_cast<GBDATA*&>(old_gb_master_ali));
                     }
                     Main->keys[ali_quark].gb_master_ali = gb_master_ali;
                 }
@@ -854,17 +855,18 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
     return error;
 }
 
-GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, const char *ali_name) { // goes to header: __ATTR__USERESULT // @@@ rename function
+GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const char *ali_name) { // goes to header: __ATTR__USERESULT // @@@ rename function
     // Compress sequences, call only outside a transaction
     GB_ERROR      error = NULL;
-    GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
 
     if (Main->transaction>0) {
         error = "Compress Sequences called while transaction running";
         GB_internal_error(error);
     }
     else {
-        GB_UNDO_TYPE prev_undo_type = GB_get_requested_undo_type(gb_main);
+        GBCONTAINER  *gb_main        = Main->root_container;
+        GB_UNDO_TYPE  prev_undo_type = GB_get_requested_undo_type(gb_main);
 
         error = GB_request_undo_type(gb_main, GB_UNDO_KILL);
         if (!error) {

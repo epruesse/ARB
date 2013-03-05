@@ -89,7 +89,7 @@ struct GB_MAIN_TYPE {
     gb_server_data *server_data;
     GBCONTAINER    *dummy_father;
     GBCONTAINER    *root_container;
-    GBDATA         *gb_key_data;
+    GBCONTAINER    *gb_key_data;
     char           *path;
     gb_open_types   opentype;
     char           *disabled_path;
@@ -161,6 +161,15 @@ public:
     inline GB_ERROR no_transaction();
 
     __ATTR__USERESULT GB_ERROR send_update_to_server(GBDATA *gbd);
+
+private:
+    GB_ERROR check_quick_save() const;
+public:
+    GB_ERROR check_saveable(const char *new_path, const char *flags) const;
+    GB_ERROR check_quick_saveable(const char *new_path, const char *flags) const {
+        GB_ERROR error = check_quick_save();
+        return error ? error : check_saveable(new_path, flags);
+    }
 };
 
 

@@ -115,12 +115,19 @@ void gb_untouch_children(GBCONTAINER *gbc) {
     gbc->index_of_touched_one_son = 0;
 }
 
-void gb_untouch_me(GBDATA * gbc) { // @@@ change param to GBCONTAINER?
+void gb_untouch_me(GBENTRY *gbe) {
+    GB_DATA_LIST_HEADER(GB_FATHER(gbe)->d)[gbe->index].flags.changed = GB_UNCHANGED;
+}
+inline void gb_untouch_me(GBCONTAINER *gbc) {
     GB_DATA_LIST_HEADER(GB_FATHER(gbc)->d)[gbc->index].flags.changed = GB_UNCHANGED;
-    if (GB_TYPE(gbc) == GB_DB) {
-        gbc->flags2.header_changed = 0;
-        ((GBCONTAINER *)gbc)->index_of_touched_one_son = 0;
-    }
+
+    gbc->flags2.header_changed    = 0;
+    gbc->index_of_touched_one_son = 0;
+}
+
+void gb_untouch_children_and_me(GBCONTAINER *gbc) {
+    gb_untouch_children(gbc);
+    gb_untouch_me(gbc);
 }
 
 static void gb_set_update_in_server_flags(GBCONTAINER *gbc) {
@@ -516,7 +523,6 @@ static void gb_delete_main_entry(GBCONTAINER*& gb_main) {
 }
 
 void gb_delete_dummy_father(GBCONTAINER*& gbc) {
-    gb_assert(gbc->is_container());
     gb_assert(GB_FATHER(gbc) == NULL);
 
     GB_MAIN_TYPE *Main = GB_MAIN(gbc);

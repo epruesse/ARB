@@ -80,10 +80,10 @@ GB_ERROR GBT_check_arb_file(const char *name) __ATTR__USERESULT;
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_create_directory(const char *path);
 GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype);
-GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype);
+GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype);
 GB_ERROR GB_delete_database(GB_CSTR filename);
-GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path);
-GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath);
+GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path);
+GB_ERROR GB_save_quick(GBDATA *gbd, const char *refpath);
 void GB_disable_path(GBDATA *gbd, const char *path);
 
 /* adcache.cxx */
@@ -363,6 +363,7 @@ void GB_change_my_security(GBDATA *gbd, int level);
 void GB_push_my_security(GBDATA *gbd);
 void GB_pop_my_security(GBDATA *gbd);
 GB_TYPES GB_read_type(GBDATA *gbd);
+bool GB_is_container(GBDATA *gbd);
 char *GB_read_key(GBDATA *gbd);
 GB_CSTR GB_read_key_pntr(GBDATA *gbd);
 GBQUARK GB_find_existing_quark(GBDATA *gbd, const char *key);
@@ -407,9 +408,8 @@ GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clien
 int GB_nsons(GBDATA *gbd);
 void GB_disable_quicksave(GBDATA *gbd, const char *reason);
 GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize);
-GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main);
 long GB_read_usr_private(GBDATA *gbd);
-GB_ERROR GB_write_usr_private(GBDATA *gbd, long ref);
+void GB_write_usr_private(GBDATA *gbd, long ref);
 void GB_write_flag(GBDATA *gbd, long flag);
 int GB_read_flag(GBDATA *gbd);
 void GB_touch(GBDATA *gbd);

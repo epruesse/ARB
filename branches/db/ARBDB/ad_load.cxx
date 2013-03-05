@@ -1536,8 +1536,8 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
             if (!strchr(opent, 'N')) {               // new format
                 gb_convert_V2_to_V3((GBDATA *)gbd); // Compression conversion
             }
-            error = gb_load_key_data_and_dictionaries(Main->gb_main());
-            if (!error) error = GB_resort_system_folder_to_top(Main->gb_main());
+            error = gb_load_key_data_and_dictionaries(Main);
+            if (!error) error = gb_resort_system_folder_to_top(Main->root_container);
             // @@@ handle error 
             GB_commit_transaction((GBDATA *)gbd);
         }

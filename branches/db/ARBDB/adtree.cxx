@@ -208,8 +208,8 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
             }
 
             if (node_is_used) { // set id for used nodes
-                error             = GBT_write_int(node->gb_node, "id", *startid);
-                if (!error) error = GB_write_usr_private(node->gb_node, 0);
+                error = GBT_write_int(node->gb_node, "id", *startid);
+                if (!error) GB_write_usr_private(node->gb_node, 0);
             }
             else {          // delete unused nodes
                 error = GB_delete(node->gb_node);

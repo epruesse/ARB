@@ -584,8 +584,12 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
     else {
         GBDATA *gb2 = GBCONTAINER_ELEM(gbd, index_pos);
         if (gb2) {
-            if (gb2->is_container()) gb_untouch_children(gb2->as_container());
-            gb_untouch_me(gb2);
+            if (gb2->is_container()) {
+                gb_untouch_children_and_me(gb2->as_container());
+            }
+            else {
+                gb_untouch_me(gb2->as_entry());
+            }
         }
     }
     return 0;
@@ -1419,6 +1423,10 @@ GB_TYPES GB_read_type(GBDATA *gbd) {
     return (GB_TYPES)GB_TYPE(gbd);
 }
 
+bool GB_is_container(GBDATA *gbd) {
+    return gbd && gbd->is_container();
+}
+
 char *GB_read_key(GBDATA *gbd) {
     return strdup(GB_read_key_pntr(gbd));
 }
@@ -1521,9 +1529,10 @@ GBDATA *GB_get_grandfather(GBDATA *gbd) {
     return gb_grandpa;
 }
 
-GBDATA *GB_get_root(GBDATA *gbd) {  // Get the root entry (gb_main)
-    return GB_MAIN(gbd)->gb_main();
-}
+// Get the root entry (gb_main)
+GBDATA *GB_get_root(GBDATA *gbd) { return GB_MAIN(gbd)->gb_main(); }
+GBCONTAINER *gb_get_root(GBENTRY *gbe) { return GB_MAIN(gbe)->root_container; }
+GBCONTAINER *gb_get_root(GBCONTAINER *gbc) { return GB_MAIN(gbc)->root_container; }
 
 bool GB_check_father(GBDATA *gbd, GBDATA *gb_maybefather) {
     // Test whether an entry is a subentry of another
@@ -1540,16 +1549,16 @@ bool GB_check_father(GBDATA *gbd, GBDATA *gb_maybefather) {
 // --------------------------
 //      create and rename
 
-GBDATA *gb_create(GBDATA *father, const char *key, GB_TYPES type) { // @@@ pass father as GBCONTAINER?
-    GBDATA *gbd = gb_make_entry(father->as_container(), key, -1, 0, type);
+GBDATA *gb_create(GBCONTAINER *father, const char *key, GB_TYPES type) {
+    GBDATA *gbd = gb_make_entry(father, key, -1, 0, type);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry(gbd, GB_CREATED);
     return gbd;
 }
 
-GBDATA *gb_create_container(GBDATA *father, const char *key) { // @@@ pass father as GBCONTAINER ? return GBCONTAINER ? 
+GBCONTAINER *gb_create_container(GBCONTAINER *father, const char *key) {
     // Create a container, do not check anything
-    GBCONTAINER *gbc = gb_make_container(father->as_container(), key, -1, 0);
+    GBCONTAINER *gbc = gb_make_container(father, key, -1, 0);
     gb_touch_header(GB_FATHER(gbc));
     gb_touch_entry(gbc, GB_CREATED);
     return gbc;
@@ -1634,14 +1643,10 @@ GBDATA *GB_create_container(GBDATA *father, const char *key) {
         GB_internal_errorf("GB_create error in GB_create:\nno father (key = '%s')", key);
         return NULL;
     }
-    GB_test_transaction(father);
-    if (!father->is_container()) {
-        GB_export_errorf("GB_create: father (%s) is not of GB_DB type (%i) (creating '%s')",
-                         GB_read_key_pntr(father), GB_TYPE(father), key);
-        return NULL;
-    }
 
-    GBCONTAINER *gbc = gb_make_container(father->as_container(), key, -1, 0);
+    GB_test_transaction(father);
+
+    GBCONTAINER *gbc = gb_make_container(father->expect_container(), key, -1, 0);
     gb_touch_header(GB_FATHER(gbc));
     gb_touch_entry(gbc, GB_CREATED);
     return gbc;
@@ -1970,8 +1975,7 @@ inline GB_ERROR GB_MAIN_TYPE::begin_initial_transaction() {
         error = gbcmc_begin_transaction(gb_main());
         if (!error) {
             error = gb_commit_transaction_local_rek(gb_main_ref(), 0, 0); // init structures
-            gb_untouch_children(root_container);
-            gb_untouch_me(gb_main());
+            gb_untouch_children_and_me(root_container);
         }
     }
 
@@ -2008,8 +2012,7 @@ inline GB_ERROR GB_MAIN_TYPE::abort_transaction() {
     clock--;
     gb_do_callback_list(this);       // do all callbacks
     transaction = 0;
-    gb_untouch_children(root_container);
-    gb_untouch_me(gb_main());
+    gb_untouch_children_and_me(root_container);
     return 0;
 }
 
@@ -2033,8 +2036,7 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
             flag = (GB_CHANGE)GB_ARRAY_FLAGS(gb_main()).changed;
             if (!flag) break;           // nothing to do
             error = gb_commit_transaction_local_rek(gb_main_ref(), 0, 0);
-            gb_untouch_children(root_container);
-            gb_untouch_me(gb_main());
+            gb_untouch_children_and_me(root_container);
             if (error) break;
             gb_do_callback_list(this);       // do all callbacks
         }
@@ -2055,8 +2057,7 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
             error = gb_commit_transaction_local_rek(gb_main_ref(), 1, 0); if (error) break;
             error = gbcmc_end_sendupdate(gb_main());                      if (error) break;
 
-            gb_untouch_children(root_container);
-            gb_untouch_me(gb_main());
+            gb_untouch_children_and_me(root_container);
             gb_do_callback_list(this);       // do all callbacks
         }
         if (!error) error = gbcmc_commit_transaction(gb_main());
@@ -2569,7 +2570,7 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
     return 0;
 }
 
-GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main) {
+GB_ERROR gb_resort_system_folder_to_top(GBCONTAINER *gb_main) {
     GBDATA *gb_system = GB_entry(gb_main, GB_SYSTEM_FOLDER);
     GBDATA *gb_first = GB_child(gb_main);
     GBDATA **new_order_list;
@@ -2598,48 +2599,36 @@ GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main) {
 //      private(?) user flags
 
 long GB_read_usr_private(GBDATA *gbd) {
-    if (gbd->is_container()) {
-        return gbd->as_container()->flags2.usr_ref;
-    }
-
-    GB_ERROR error = GB_export_errorf("GB_write_usr_private: not a container (%s)", GB_read_key_pntr(gbd));
-    GB_internal_error(error);
-    return 0;
+    return gbd->expect_container()->flags2.usr_ref;
 }
 
-GB_ERROR GB_write_usr_private(GBDATA *gbd, long ref) {
-    if (gbd->is_container()) {
-        gbd->as_container()->flags2.usr_ref = ref;
-        return NULL;
-    }
-    return GB_export_errorf("GB_write_usr_private: not a container (%s)", GB_read_key_pntr(gbd));
+void GB_write_usr_private(GBDATA *gbd, long ref) {
+    gbd->expect_container()->flags2.usr_ref = ref;
 }
 
 // ------------------------
 //      mark DB entries
 
 void GB_write_flag(GBDATA *gbd, long flag) {
-    if (gbd->is_container()) {
-        GBCONTAINER  *gbc  = gbd->as_container();
-        GB_MAIN_TYPE *Main = GB_MAIN(gbc);
+    GBCONTAINER  *gbc  = gbd->expect_container();
+    GB_MAIN_TYPE *Main = GB_MAIN(gbc);
 
-        GB_test_transaction(Main);
+    GB_test_transaction(Main);
 
-        int ubit = Main->users[0]->userbit;
-        int prev = GB_ARRAY_FLAGS(gbc).flags;
-        gbc->flags.saved_flags = prev;
+    int ubit = Main->users[0]->userbit;
+    int prev = GB_ARRAY_FLAGS(gbc).flags;
+    gbc->flags.saved_flags = prev;
 
-        if (flag) {
-            GB_ARRAY_FLAGS(gbc).flags |= ubit;
-        }
-        else {
-            GB_ARRAY_FLAGS(gbc).flags &= ~ubit;
-        }
-        if (prev != (int)GB_ARRAY_FLAGS(gbc).flags) {
-            gb_touch_entry(gbc, GB_NORMAL_CHANGE);
-            gb_touch_header(GB_FATHER(gbc));
-            GB_DO_CALLBACKS(gbc);
-        }
+    if (flag) {
+        GB_ARRAY_FLAGS(gbc).flags |= ubit;
+    }
+    else {
+        GB_ARRAY_FLAGS(gbc).flags &= ~ubit;
+    }
+    if (prev != (int)GB_ARRAY_FLAGS(gbc).flags) {
+        gb_touch_entry(gbc, GB_NORMAL_CHANGE);
+        gb_touch_header(GB_FATHER(gbc));
+        GB_DO_CALLBACKS(gbc);
     }
 }
 
@@ -2741,20 +2730,15 @@ int GB_info(GBDATA *gbd)
 }
 
 long GB_number_of_subentries(GBDATA *gbd) {
-    long subentries = -1;
+    GBCONTAINER    *gbc        = gbd->expect_container();
+    gb_header_list *header     = GB_DATA_LIST_HEADER(gbc->d);
 
-    if (gbd->is_container()) {
-        GBCONTAINER    *gbc    = gbd->as_container();
-        gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
+    long subentries = 0;
+    int  end        = gbc->d.nheader;
 
-        subentries = 0;
-
-        int end = gbc->d.nheader;
-        for (int index = 0; index<end; index++) {
-            if (header[index].flags.changed < GB_DELETED) subentries++;
-        }
+    for (int index = 0; index<end; index++) {
+        if (header[index].flags.changed < GB_DELETED) subentries++;
     }
-
     return subentries;
 }
 

@@ -96,7 +96,7 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
     return equal;
 }
 
-static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) { // @@@ change father to GBCONTAINER
+static GBDATA *find_sub_by_quark(GBCONTAINER *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) {
     /* search an entry with a key 'key_quark' below a container 'father'
        after position 'after'
 
@@ -115,9 +115,8 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
              if key_quark<0 search everything
     */
 
-    GBCONTAINER    *gbf    = father->as_container();
-    int             end    = gbf->d.nheader;
-    gb_header_list *header = GB_DATA_LIST_HEADER(gbf->d);
+    int             end    = father->d.nheader;
+    gb_header_list *header = GB_DATA_LIST_HEADER(father->d);
 
     int index;
     if (after) index = (int)after->index+1; else index = 0;
@@ -131,8 +130,8 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
                     GBDATA *gb = GB_HEADER_LIST_GBD(header[index]);
                     if (!gb) {
                         // @@@ DRY here versus below
-                        gb_unfold(gbf, 0, index);
-                        header = GB_DATA_LIST_HEADER(gbf->d);
+                        gb_unfold(father, 0, index);
+                        header = GB_DATA_LIST_HEADER(father->d);
                         gb     = GB_HEADER_LIST_GBD(header[index]);
                         if (!gb) {
                             const char *err = GBS_global_string("Database entry #%u is missing (in '%s')", index, GB_get_GBDATA_path(father));
@@ -152,8 +151,8 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
                 GBDATA *gb = GB_HEADER_LIST_GBD(header[index]);
                 if (!gb) {
                     // @@@ DRY here versus section above
-                    gb_unfold(gbf, 0, index);
-                    header = GB_DATA_LIST_HEADER(gbf->d);
+                    gb_unfold(father, 0, index);
+                    header = GB_DATA_LIST_HEADER(father->d);
                     gb     = GB_HEADER_LIST_GBD(header[index]);
                     if (!gb) {
                         const char *err = GBS_global_string("Database entry #%u is missing (in '%s')", index, GB_get_GBDATA_path(father));
@@ -178,19 +177,18 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
 }
 
 GBDATA *GB_find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GBDATA *after, size_t skip_over) {
-    return find_sub_by_quark(father, key_quark, GB_NONE, NULL, GB_MIND_CASE, after, skip_over);
+    return find_sub_by_quark(father->expect_container(), key_quark, GB_NONE, NULL, GB_MIND_CASE, after, skip_over);
 }
 
 static GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) {
-    return find_sub_by_quark(father, key_quark, type, val, case_sens, after, skip_over);
+    return find_sub_by_quark(father->expect_container(), key_quark, type, val, case_sens, after, skip_over);
 }
 
-static GBDATA *find_sub_sub_by_quark(GBDATA *const father, const char *key, GBQUARK sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) { // @@@ pass father as GBCONTAINER?
-    GBCONTAINER    *gbf    = father->as_container();
+static GBDATA *find_sub_sub_by_quark(GBCONTAINER *const father, const char *key, GBQUARK sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
     gb_index_files *ifs    = NULL;
-    GB_MAIN_TYPE   *Main   = GBCONTAINER_MAIN(gbf);
-    int             end    = gbf->d.nheader;
-    gb_header_list *header = GB_DATA_LIST_HEADER(gbf->d);
+    GB_MAIN_TYPE   *Main   = GBCONTAINER_MAIN(father);
+    int             end    = father->d.nheader;
+    gb_header_list *header = GB_DATA_LIST_HEADER(father->d);
 
     int index;
     if (after) index = (int)after->index+1; else index = 0;
@@ -199,10 +197,10 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *const father, const char *key, GBQU
     // ****** look for any hash index tables ********
     // ****** no wildcards allowed       *******
     if (!Main->local_mode) {
-        if (gbf->flags2.folded_container) {
+        if (father->flags2.folded_container) {
             // do the query in the server
-            if (GB_ARRAY_FLAGS(gbf).changed) {
-                if (!gbf->flags2.update_in_server) {
+            if (GB_ARRAY_FLAGS(father).changed) {
+                if (!father->flags2.update_in_server) {
                     GB_ERROR error = Main->send_update_to_server(father);
                     if (error) {
                         GB_export_error(error);
@@ -211,21 +209,21 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *const father, const char *key, GBQU
                 }
             }
         }
-        if (gbf->d.size > GB_MAX_LOCAL_SEARCH && val) {
+        if (father->d.size > GB_MAX_LOCAL_SEARCH && val) {
             if (after) res = GBCMC_find(after,  key, type, val, case_sens, SEARCH_CHILD_OF_NEXT);
             else       res = GBCMC_find(father, key, type, val, case_sens, SEARCH_GRANDCHILD);
             return res;
         }
     }
     if (val &&
-        (ifs=GBCONTAINER_IFS(gbf))!=NULL &&
+        (ifs=GBCONTAINER_IFS(father))!=NULL &&
         (!strchr(val, '*')) &&
         (!strchr(val, '?')))
     {
         for (; ifs; ifs = GB_INDEX_FILES_NEXT(ifs)) {
             if (ifs->key != sub_key_quark) continue;
             // ***** We found the index table *****
-            res = gb_index_find(gbf, ifs, sub_key_quark, val, case_sens, index);
+            res = gb_index_find(father, ifs, sub_key_quark, val, case_sens, index);
             return res;
         }
     }
@@ -285,11 +283,11 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
 
             if (key_quark) { // only search if 'key' is known to db
                 if (gbs == SEARCH_CHILD) {
-                    result = GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after, 0);
+                    result = GB_find_subcontent_by_quark(gbc, key_quark, type, val, case_sens, after, 0);
                 }
                 else {
                     gb_assert(gbs == SEARCH_GRANDCHILD);
-                    result = find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, type, val, case_sens, after);
+                    result = find_sub_sub_by_quark(gbc, key, key_quark, type, val, case_sens, after);
                 }
             }
         }
@@ -359,19 +357,13 @@ GBDATA *GB_brother(GBDATA *entry, const char *key) {
     return GB_find(entry, key, SEARCH_BROTHER);
 }
 
-GBDATA *gb_find_by_nr(GBDATA *father, int index) { // @@@ pass father as GBCONTAINER?
+GBDATA *gb_find_by_nr(GBCONTAINER *father, int index) {
     /* get a subentry by its internal number:
        Warning: This subentry must exists, otherwise internal error */
 
-    if (!father->is_container()) {
-        GB_internal_error("type is no container");
-        return NULL;
-    }
-
-    GBCONTAINER    *gbf    = father->as_container();
-    gb_header_list *header = GB_DATA_LIST_HEADER(gbf->d);
-    if (index >= gbf->d.nheader || index <0) {
-        GB_internal_errorf("Index '%i' out of range [%i:%i[", index, 0, gbf->d.nheader);
+    gb_header_list *header = GB_DATA_LIST_HEADER(father->d);
+    if (index >= father->d.nheader || index <0) {
+        GB_internal_errorf("Index '%i' out of range [%i:%i[", index, 0, father->d.nheader);
         return NULL;
     }
     if (header[index].flags.changed >= GB_DELETED || !header[index].flags.key_quark) {
@@ -381,8 +373,8 @@ GBDATA *gb_find_by_nr(GBDATA *father, int index) { // @@@ pass father as GBCONTA
 
     GBDATA *gb = GB_HEADER_LIST_GBD(header[index]);
     if (!gb) {
-        gb_unfold(gbf, 0, index);
-        header = GB_DATA_LIST_HEADER(gbf->d);
+        gb_unfold(father, 0, index);
+        header = GB_DATA_LIST_HEADER(father->d);
         gb = GB_HEADER_LIST_GBD(header[index]);
         if (!gb) {
             GB_internal_error("Could not unfold data");
@@ -421,7 +413,7 @@ const char *GB_first_non_key_char(const char *str) {
     return first_non_key_character(str);
 }
 
-inline GBDATA *find_or_create(GBDATA *gb_parent, const char *key, GB_TYPES create, bool internflag) {
+inline GBDATA *find_or_create(GBCONTAINER *gb_parent, const char *key, GB_TYPES create, bool internflag) {
     gb_assert(!first_non_key_character(key));
 
     GBDATA *gbd = GB_entry(gb_parent, key);
@@ -446,7 +438,7 @@ inline GBDATA *find_or_create(GBDATA *gb_parent, const char *key, GB_TYPES creat
     return gbd;
 }
 
-GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag) {
+GBDATA *gb_search(GBCONTAINER *gbc, const char *key, GB_TYPES create, int internflag) {
     /* finds a hierarchical key,
      * if create != GB_FIND(==0), then create the key
      * force types if ! internflag
@@ -454,22 +446,22 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
 
     // gb_assert(!GB_have_error()); // @@@ enable later
 
-    GB_test_transaction(gbd);
+    GB_test_transaction(gbc);
 
     if (!key) return NULL; // was allowed in the past (and returned the 1st child). now returns NULL
     
     if (key[0] == '/') {
-        gbd = GB_get_root(gbd);
+        gbc = gb_get_root(gbc);
         key++;
     }
 
     if (!key[0]) {
-        return gbd;
+        return gbc;
     }
 
     GBDATA     *gb_result     = NULL;
     const char *separator     = first_non_key_character(key);
-    if (!separator) gb_result = find_or_create(gbd, key, create, internflag);
+    if (!separator) gb_result = find_or_create(gbc, key, create, internflag);
     else {
         int  len = separator-key;
         char firstKey[len+1];
@@ -480,14 +472,14 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
 
         switch (separator[0]) {
             case '/': {
-                GBDATA *gb_sub = find_or_create(gbd, firstKey, create ? GB_CREATE_CONTAINER : GB_FIND, internflag);
+                GBDATA *gb_sub = find_or_create(gbc, firstKey, create ? GB_CREATE_CONTAINER : GB_FIND, internflag);
                 if (gb_sub) {
                     if (GB_TYPE(gb_sub) == GB_DB) {
                         if (separator[1] == '/') {
                             GB_export_errorf("Invalid '//' in key '%s'", key);
                         }
                         else {
-                            gb_result = gb_search(gb_sub, separator+1, create, internflag);
+                            gb_result = gb_search(gb_sub->as_container(), separator+1, create, internflag);
                         }
                     }
                     else {
@@ -499,7 +491,7 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
             case '.': {
                 if (separator[1] != '.') invalid_char = separator[0];
                 else {
-                    GBDATA *gb_parent = GB_get_father(gbd);
+                    GBCONTAINER *gb_parent = GB_FATHER(gbc);
                     if (gb_parent) {
                         switch (separator[2]) {
                             case 0:   gb_result    = gb_parent; break;
@@ -521,7 +513,7 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
                 if (separator[1] != '>') invalid_char = separator[0];
                 else {
                     if (firstKey[0]) {
-                        GBDATA *gb_link = GB_entry(gbd, firstKey);
+                        GBDATA *gb_link = GB_entry(gbc, firstKey);
                         if (!gb_link) {
                             if (create) {
                                 GB_export_error("Cannot create links on the fly in gb_search");
@@ -531,7 +523,7 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
                             if (GB_TYPE(gb_link) == GB_LINK) {
                                 GBDATA *gb_target = GB_follow_link(gb_link);
                                 if (!gb_target) GB_export_errorf("Link '%s' points nowhere", firstKey);
-                                else    gb_result = gb_search(gb_target, separator+2, create, internflag);
+                                else    gb_result = gb_search(gb_target->as_container(), separator+2, create, internflag);
                             }
                             else GB_export_errorf("'%s' exists, but is not a link", firstKey);
                         }
@@ -555,8 +547,8 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
 }
 
 
-GBDATA *GB_search(GBDATA * gbd, const char *fieldpath, GB_TYPES create) {
-    return gb_search(gbd, fieldpath, create, 0);
+GBDATA *GB_search(GBDATA *gbd, const char *fieldpath, GB_TYPES create) {
+    return gb_search(gbd->expect_container(), fieldpath, create, 0);
 }
 
 static GBDATA *gb_expect_type(GBDATA *gbd, long expected_type, const char *fieldname) {
@@ -673,9 +665,7 @@ long GB_number_of_marked_subentries(GBDATA *gbd) {
 
 
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring) {
-    if (!gbd->is_container()) return NULL;
-
-    GBCONTAINER *gbc       = gbd->as_container();
+    GBCONTAINER *gbc       = gbd->expect_container();
     GBQUARK      key_quark = GB_find_existing_quark(gbd, keystring);
     GB_test_transaction(gbc);
     return key_quark ? gb_search_marked(gbc, key_quark, 0, 0) : NULL;
@@ -1354,7 +1344,7 @@ void TEST_DB_search() {
             TEST_EXPECT_NORESULT__NOERROREXPORTED(GB_followingEntry(gb_sub, -1U));
             TEST_REJECT_NULL(gb_sub = GB_brother(gb_sub, "entry"));   TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 0");
 
-            TEST_EXPECT_EQUAL(gb_bla = GB_search(gb_4711, "/misc/str", GB_FIND), gb_str);
+            TEST_EXPECT_EQUAL(gb_bla = GB_search(gb_cont1, "/misc/str", GB_FIND), gb_str); // fullpath (ignores passed GBDATA)
 
             // keyless search
             TEST_EXPECT_NORESULT__NOERROREXPORTED(GB_search(db.gb_cont_misc, NULL, GB_FIND));

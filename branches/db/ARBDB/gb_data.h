@@ -151,22 +151,40 @@ struct GBDATA {
     bool is_entry() const { return !is_container(); }
 
     GBENTRY *as_entry() const {
-        gb_strict_assert(is_entry());
+        gb_strict_assert(!this || is_entry());
         return (GBENTRY*)this;
     }
     GBCONTAINER *as_container() const {
-        gb_strict_assert(is_container());
+        gb_strict_assert(!this || is_container());
         return (GBCONTAINER*)this;
+    }
+
+    // meant to be used in client interface (i.e. on any GBDATA* passed from outside)
+    GBENTRY *expect_entry() const {
+        if (!is_entry()) GBK_terminate("expected a DB entry, got a container");
+        return as_entry();
+    }
+    GBCONTAINER *expect_container() const {
+        if (!is_container()) GBK_terminate("expected a DB container, got an entry");
+        return as_container();
     }
 };
 
-struct GBENTRY : public GBDATA {
+class GBENTRY : public GBDATA {
+    // calls that make no sense:
+    bool is_entry() const;
+    GBENTRY *as_entry() const;
+public:
     gb_data_base_type_union info;
 
     int cache_index; // @@@ should be a member of gb_db_extended and of type gb_cache_idx
 };
 
-struct GBCONTAINER : public GBDATA {
+class GBCONTAINER : public GBDATA {
+    // calls that make no sense:
+    bool is_container() const;
+    GBCONTAINER *as_container() const;
+public:
     gb_flag_types3 flags3;
     gb_data_list   d;
 
@@ -179,7 +197,6 @@ struct GBCONTAINER : public GBDATA {
 
     GB_MAIN_IDX main_idx;
     GB_REL_IFS  rel_ifs;
-
 };
 
 // --------------------

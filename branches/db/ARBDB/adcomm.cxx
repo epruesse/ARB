@@ -161,7 +161,7 @@ static void gbcms_sighup(int) {
     }
 }
 
-GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) { // @@@ change param to GBCONTAINER?
+GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
     // server open
 
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
@@ -661,10 +661,10 @@ static GBCM_ServerResult gbcms_write_keys(int socket, GBDATA *gbd) {
     return GBCM_SERVER_OK;
 }
 
-static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void */*sin*/, GBDATA *gb_in) { // @@@ change param to GBCONTAINER?
+static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void */*sin*/, GBDATA *gb_in) {
     // command: GBCM_COMMAND_UNFOLD
 
-    GBCONTAINER *gbc = (GBCONTAINER *)gb_in;
+    GBCONTAINER *gbc = gb_in->expect_container();
     GBDATA      *gb2;
     char        *buffer;
     long         deep[1];
@@ -684,7 +684,7 @@ static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void *
     buffer = GB_give_buffer(1014);
 
     if (index_pos[0]==-2) {
-        GB_ERROR error = gbcm_write_bin(socket, gb_in, (long *)buffer, 1, deep[0]+1, 1);
+        GB_ERROR error = gbcm_write_bin(socket, gbc, (long *)buffer, 1, deep[0]+1, 1);
         if (error) {
             return GBCM_SERVER_FAULT;
         }

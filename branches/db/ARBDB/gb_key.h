@@ -33,7 +33,7 @@ struct gb_Key {
     long nref_last_saved;
 
     GBDATA        *gb_key;                          // for fast access and dynamic loading
-    GBDATA        *gb_master_ali;                   // Pointer to the master container
+    GBCONTAINER   *gb_master_ali;                   // master container
     int            gb_key_disabled;                 // There will never be a gb_key
     int            compression_mask;                // maximum compression for this type
     GB_DICTIONARY *dictionary;                      // optional dictionary
