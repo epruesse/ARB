@@ -1,10 +1,12 @@
 #!/bin/bash
 
+SED=${ARBHOME}/SH/arb_sed
+
 current() {
     $ARBHOME/SOURCE_TOOLS/build_info.pl && \
         grep ARB_SVN_REVISION $ARBHOME/TEMPLATES/svn_revision.h \
-        | sed 's/#define ARB_SVN_REVISION //' \
-        | sed 's/"//g' 
+        | $SED 's/#define ARB_SVN_REVISION //' \
+        | $SED 's/"//g'
 }
 
 SUCC=last.success

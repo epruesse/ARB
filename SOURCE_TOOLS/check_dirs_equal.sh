@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SED=${ARBHOME}/SH/arb_sed
+
 check_existance_in() {
     local OTHER=$1
     local FILE=$2
@@ -64,7 +66,7 @@ get_files() {
         find -P . -name "$WILDCARD" \
         | grep -v '\/\.svn\/' \
         | grep -v '\/patches\.arb\/' \
-        | sed 's/^\.\///' \
+        | $SED 's/^\.\///' \
         )
 }
 

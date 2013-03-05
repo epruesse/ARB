@@ -66,6 +66,7 @@ my %skipped_files = map { $_ => 1; } (
                                       'nt_date.h',
                                       'postcompile.sav',
                                       'TAGS',
+                                      '.DS_Store',
                                      );
 
 my %used_extensions = map { $_ => 1; } (

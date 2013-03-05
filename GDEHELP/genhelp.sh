@@ -10,6 +10,7 @@ OUTPUTFILE=$1
 TITLE=$2
 HEADER=$3
 INPUTTEXT=$4
+SED=${ARBHOME}/SH/arb_sed
 
 if [ \! -f $HEADER ]; then
     echo "Header '$HEADER' not found"
@@ -26,7 +27,7 @@ write_help() {
     echo "# Do not edit!!! Generated from ../$INPUTTEXT"
     echo ""
     cat $HEADER
-    sed -e 's/^/    /' < $INPUTTEXT
+    $SED -e 's/^/    /' < $INPUTTEXT
 }
 
 write_help > $OUTPUTFILE
