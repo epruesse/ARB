@@ -189,7 +189,7 @@ static GB_ERROR gb_convert_compression(GBDATA *gbd) {
         }
     }
     else {
-        char    *string     = 0; // @@@ rename -> str
+        char    *str        = 0;
         GBENTRY *gbe        = gbd->as_entry();
         long     elems      = GB_GETSIZE(gbe);
         long     data_size  = GB_UNCOMPRESSED_SIZE(gbe, type);
@@ -200,19 +200,19 @@ static GB_ERROR gb_convert_compression(GBDATA *gbd) {
             case GB_STRING:
             case GB_LINK:
             case GB_BYTES:
-                string = gb_uncompress_bytes(GB_GETDATA(gbe), data_size, &new_size);
-                if (string) {
+                str = gb_uncompress_bytes(GB_GETDATA(gbe), data_size, &new_size);
+                if (str) {
                     gb_assert(new_size == data_size);
-                    string = GB_memdup(string, data_size);
+                    str = GB_memdup(str, data_size);
                 }
                 break;
 
             case GB_INTS:
             case GB_FLOATS:
-                string = gb_uncompress_longs_old(GB_GETDATA(gbe), elems, &new_size);
-                if (string) {
+                str = gb_uncompress_longs_old(GB_GETDATA(gbe), elems, &new_size);
+                if (str) {
                     gb_assert(new_size == data_size);
-                    string = GB_memdup(string, data_size);
+                    str = GB_memdup(str, data_size);
                 }
                 break;
 
@@ -221,7 +221,7 @@ static GB_ERROR gb_convert_compression(GBDATA *gbd) {
                 break;
         }
 
-        if (!string) {
+        if (!str) {
             if (expectData) {
                 error = GBS_global_string("Can't read old data to convert compression (Reason: %s)", GB_await_error());
             }
@@ -230,22 +230,22 @@ static GB_ERROR gb_convert_compression(GBDATA *gbd) {
             switch (type) {
                 case GB_STRING:
                     error             = GB_write_string(gbe, "");
-                    if (!error) error = GB_write_string(gbe, string);
+                    if (!error) error = GB_write_string(gbe, str);
                     break;
 
                 case GB_LINK:
                     error             = GB_write_link(gbe, "");
-                    if (!error) error = GB_write_link(gbe, string);
+                    if (!error) error = GB_write_link(gbe, str);
                     break;
 
                 case GB_BYTES:
                     error             = GB_write_bytes(gbe, "", 0);
-                    if (!error) error = GB_write_bytes(gbe, string, data_size);
+                    if (!error) error = GB_write_bytes(gbe, str, data_size);
                     break;
 
                 case GB_INTS:
                 case GB_FLOATS:
-                    error = GB_write_pntr(gbe, string, data_size, elems);
+                    error = GB_write_pntr(gbe, str, data_size, elems);
                     break;
 
                 default:
@@ -253,7 +253,7 @@ static GB_ERROR gb_convert_compression(GBDATA *gbd) {
                     break;
             }
 
-            free(string);
+            free(str);
         }
     }
     return error;

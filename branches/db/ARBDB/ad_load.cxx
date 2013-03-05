@@ -718,9 +718,9 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
 
         DEBUG_DUMP_INDENTED(deep, GBS_global_string("key='%s' type2=%li", Main->keys[key].key, type2));
 
-        GBENTRY     *gbe    = NULL;
-        GBCONTAINER *gbc    = NULL;
-        GBDATA      *gb_any = NULL; // @@@ rename into 'gbd' when tests succeed!
+        GBENTRY     *gbe = NULL;
+        GBCONTAINER *gbc = NULL;
+        GBDATA      *gbd = NULL;
 
         {
             int index;
@@ -731,18 +731,18 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                     header = GB_DATA_LIST_HEADER(gbc_dest->d);
                 }
 
-                if (index >= 0 && (gb_any = GB_HEADER_LIST_GBD(header[index]))!=NULL) {
-                    if ((GB_TYPE(gb_any) == GB_DB) != (type2 == GB_DB)) {
+                if (index >= 0 && (gbd = GB_HEADER_LIST_GBD(header[index]))!=NULL) {
+                    if ((GB_TYPE(gbd) == GB_DB) != (type2 == GB_DB)) {
                         GB_internal_error("Type changed, you may loose data");
-                        gb_delete_entry(gb_any);
+                        gb_delete_entry(gbd);
                         SET_GB_HEADER_LIST_GBD(header[index], NULL);
                     }
                     else {
                         if (type2 == GB_DB) {
-                            gbc = gb_any->as_container();
+                            gbc = gbd->as_container();
                         }
                         else {
-                            gbe = gb_any->as_entry();
+                            gbe = gbd->as_entry();
                             GB_FREEDATA(gbe);
                         }
                     }
@@ -750,37 +750,37 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
             }
             else index = -1;
 
-            if (!gb_any) {
+            if (!gbd) {
                 if (type2 == (long)GB_DB) {
-                    gb_any = gbc = gb_make_container(gbc_dest, NULL, index, key);
+                    gbd = gbc = gb_make_container(gbc_dest, NULL, index, key);
                 }
                 else {
-                    gb_any = gbe = gb_make_entry(gbc_dest, NULL, index, key, (GB_TYPES)type2);
+                    gbd = gbe = gb_make_entry(gbc_dest, NULL, index, key, (GB_TYPES)type2);
                     GB_INDEX_CHECK_OUT(gbe);
                 }
             }
         }
 
-        gb_assert(implicated(gbe, gbe == gb_any));
-        gb_assert(implicated(gbc, gbc == gb_any));
-        gb_assert(implicated(gb_any, contradicted(gbe, gbc)));
+        gb_assert(implicated(gbe, gbe == gbd));
+        gb_assert(implicated(gbc, gbc == gbd));
+        gb_assert(implicated(gbd, contradicted(gbe, gbc)));
 
         if (version == 2) {
-            GB_CREATE_EXT(gb_any);
-            gb_any->ext->update_date = gb_any->ext->creation_date = Main->clock;
-            header[gb_any->index].flags.ever_changed = 1;
+            GB_CREATE_EXT(gbd);
+            gbd->ext->update_date = gbd->ext->creation_date = Main->clock;
+            header[gbd->index].flags.ever_changed = 1;
         }
         else {
             Main->keys[key].nref_last_saved++;
         }
 
-        gb_any->flags.security_delete     = type >> 1;
-        gb_any->flags.security_write      = ((type&1) << 2) + (security >> 6);
-        gb_any->flags.security_read       = security >> 3;
-        gb_any->flags.compressed_data     = security >> 2;
-        header[gb_any->index].flags.flags = (int)((security >> 1) & 1);
-        gb_any->flags.unused              = security >> 0;
-        gb_any->flags2.last_updated       = getc(in);
+        gbd->flags.security_delete     = type >> 1;
+        gbd->flags.security_write      = ((type&1) << 2) + (security >> 6);
+        gbd->flags.security_read       = security >> 3;
+        gbd->flags.compressed_data     = security >> 2;
+        header[gbd->index].flags.flags = (int)((security >> 1) & 1);
+        gbd->flags.unused              = security >> 0;
+        gbd->flags2.last_updated       = getc(in);
 
         switch (type2) {
             case GB_INT:
@@ -860,7 +860,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                 gbe->info.i = getc(in);
                 break;
             default:
-                gb_read_bin_error(in, gb_any, "Unknown type");
+                gb_read_bin_error(in, gbd, "Unknown type");
                 if (gb_recover_corrupt_file(gbc_dest, in, NULL)) {
                     return GBCONTAINER_MAIN(gbc_dest)->allow_corrupt_file_recovery
                         ? 0                         // loading stopped
@@ -1071,28 +1071,28 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
             case  0: map_fail_reason = GB_await_error(); break;
             case  1: {
                 if (gb_main_array[mheader.main_idx]==NULL) {
-                    GBCONTAINER *newGbd = (GBCONTAINER*)gb_map_mapfile(map_path); // @@@ rename -> new_gbc
+                    GBCONTAINER *new_gbc = (GBCONTAINER*)gb_map_mapfile(map_path);
 
-                    if (newGbd) {
+                    if (new_gbc) {
                         GBCONTAINER *father  = GB_FATHER(gbc);
                         GB_MAIN_IDX  new_idx = mheader.main_idx;
                         GB_MAIN_IDX  old_idx = father->main_idx;
 
                         GB_commit_transaction(gbc);
 
-                        gb_assert(newGbd->main_idx == new_idx);
+                        gb_assert(new_gbc->main_idx == new_idx);
                         gb_assert((new_idx % GB_MAIN_ARRAY_SIZE) == new_idx);
 
                         gb_main_array[new_idx] = Main;
 
                         gbm_free_mem(Main->root_container, sizeof(GBCONTAINER), GB_QUARK_2_GBMINDEX(Main, 0));
 
-                        Main->root_container = newGbd;
+                        Main->root_container = new_gbc;
                         father->main_idx     = new_idx;
 
                         SET_GBCONTAINER_ELEM(father, gbc->index, NULL); // unlink old main-entry
 
-                        gbc = newGbd;
+                        gbc = new_gbc;
                         SET_GB_FATHER(gbc, father);
                         
                         SET_GBCONTAINER_ELEM(father, gbc->index, gbc); // link new main-entry

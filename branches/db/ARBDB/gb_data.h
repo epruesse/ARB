@@ -140,7 +140,6 @@ struct GBDATA {
     gb_flag_types2    flags2;
 
     // ----------------------------------------
-    // @@@ methods below are unused atm
 
     GB_TYPES type() const {
         gb_assert(this);
