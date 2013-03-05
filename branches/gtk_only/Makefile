@@ -44,10 +44,14 @@ endif
 FORCEMASK = umask 002
 NODIR=--no-print-directory
 
+SED:=$(ARBHOME)/SH/arb_sed
+READLINK:=$(ARBHOME)/SH/arb_readlink
+
 # ---------------------- [basic compiler setting]
 
 ifdef DARWIN
-#       GCC and GPP now set in the Portfile
+	GCC:= clang
+	GPP:= clang++
 else
 	GCC:=$(CC)
 	GPP:=$(CXX)
@@ -325,7 +329,7 @@ endif
 
 ifeq ($(GTK),1)
 	GTKCFLAGS:= $(shell pkg-config --cflags gtk+-2.0) -fPIC
-	GTKLIBS:= $(shell pkg-config --libs gtk+-2.0 | sed 's/-pthread//')
+	GTKLIBS:= $(shell pkg-config --libs gtk+-2.0 | $(SED) 's/-pthread//')
 
 	cflags += $(GTKCFLAGS)
 	dflags += -DARB_GTK
@@ -657,6 +661,7 @@ check_TOOLS:
 		"$(ACC)" \
 		"$(CPP)" \
 		"$(GPP)" \
+  	       "$(GCC)" \
 		"$(ACCLIB)" \
 		"$(CPPLIB)" \
 		"$(XMKMF)" \
@@ -1536,12 +1541,12 @@ ETAGS_REST =--C-kinds=dev    --C++-kinds=dev
 $(TAG_SOURCE_HEADERS): links
 #	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
 #	workaround a bug in ctags 5.8:
-	find . \( -name '*.hxx' -o -name "*.h" \) -type f | grep -v -i perl5 | sed -e 's/^.\///g' > $@
+	find . \( -name '*.hxx' -o -name "*.h" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
 
 $(TAG_SOURCE_CODE): links
 #	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
 #	workaround a bug in ctags 5.8:
-	find . \( -name '*.cxx' -o -name "*.c" \) -type f | grep -v -i perl5 | sed -e 's/^.\///g' > $@
+	find . \( -name '*.cxx' -o -name "*.c" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
 
 tags: $(TAG_SOURCE_LISTS)
 	$(ETAGS)    $(ETAGS_TYPES) -L $(TAG_SOURCE_HEADERS)

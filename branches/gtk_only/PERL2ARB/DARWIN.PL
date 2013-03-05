@@ -18,9 +18,9 @@ use arb_common;
 WriteMakefile(
               'NAME'         => $arb_common::name,
               'VERSION_FROM' => $arb_common::version_from,
-              'CC'           => '@@GPP@@',
+              'CC'           => 'clang++',
               'CCFLAGS'      => $cflags,
-              'LD'           => '@@GPP@@ '.$lflags,
+              'LD'           => 'clang++ '.$lflags,
               'DEFINE'       => '',
               'INC'          => $arb_common::inc,
               'LIBS'         => $arb_common::libs,

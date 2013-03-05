@@ -36,7 +36,7 @@ itemmeta: P
 itemmethod:(GOTO_LOCAL_DIR; \
             tr '"%//' '>' <in1 >clus_in; \
             RUN_IN_WINDOW((clustalw -output=PIR -profile1=clus_in -profile2=../clus_prf -align ; \
-                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )); \
+                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )); \
             RM_LOCAL_FILES(clus_in* in1))
 
 itemhelp:clustalw.help
@@ -64,7 +64,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
                                     -type=DNA -transweight=$TRANSWEIGHT \
                                     -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
                                     -dnamatrix=$DNAMATRIX; \
-                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )) ; \
+                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )) ; \
            RM_LOCAL_FILES(clus_in* in1))
 
 itemhelp:clustalw.help
@@ -162,7 +162,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
                                     -type=DNA -transweight=$TRANSWEIGHT \
                                     -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
                                     -dnamatrix=$DNAMATRIX; \
-                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )) ; \
+                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )) ; \
             RM_LOCAL_FILES(clus_in* in1))
 
 itemhelp:clustalw.help
@@ -253,7 +253,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
                                     -type=PROTEIN -transweight=$TRANSWEIGHT \
                                     -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
                                     -matrix=$MATRIX $NEGMATRIX; \
-                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )) ; \
+                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )) ; \
             RM_LOCAL_FILES(clus_in* in1))
 
 itemhelp:clustalw.help
@@ -359,7 +359,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
                                     -type=PROTEIN -transweight=$TRANSWEIGHT \
                                     -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
                                     -matrix=$MATRIX $NEGMATRIX; \
-                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )) ; \
+                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )) ; \
             RM_LOCAL_FILES(clus_in* in1))
 
 itemhelp:clustalw.help
