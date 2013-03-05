@@ -161,7 +161,7 @@ static void gbcms_sighup(int) {
     }
 }
 
-GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
+GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) { // @@@ change param to GBCONTAINER?
     // server open
 
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
@@ -185,7 +185,7 @@ GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
                 ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcms_sigpipe, "GBCMS_open"));
                 ASSERT_RESULT(SigHandler, SIG_DFL,                       INSTALL_SIGHANDLER(SIGHUP, gbcms_sighup, "GBCMS_open"));
 
-                gbcms_gb_main = (GBCONTAINER *)gb_main;
+                gbcms_gb_main = gb_main->as_container();
 
                 if (listen(socket, MAX_QUEUE_LEN) < 0) {
                     error = GBS_global_string("could not listen (server; errno=%i)", errno);
@@ -246,21 +246,20 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
       * buffer = buffer
       * deep = 0 -> just send one item   >0 send sub entries too
       * send_headera = 1 -> if type = GB_DB send flag and key_quark array
-     */
-
-    GBCONTAINER *gbc;
-    long         i;
+      */
 
     buffer[0] = GBCM_COMMAND_SEND;
-    i = 2;
+
+    long i      = 2;
     buffer[i++] = (long)gbd;
     buffer[i++] = gbd->index;
+
     *(gb_flag_types *)(&buffer[i++]) = gbd->flags;
+
     if (GB_TYPE(gbd) == GB_DB) {
-        int end;
-        int index;
-        gbc = (GBCONTAINER *)gbd;
-        end = gbc->d.nheader;
+        GBCONTAINER *gbc = gbd->as_container();
+        int          end = gbc->d.nheader;
+
         *(gb_flag_types3 *)(&buffer[i++]) = gbc->flags3;
 
         buffer[i++] = send_headera ? end : -1;
@@ -275,7 +274,7 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
             gb_header_list  *hdl  = GB_DATA_LIST_HEADER(gbc->d);
             gb_header_flags *buf2 = (gb_header_flags *)GB_give_buffer2(gbc->d.nheader * sizeof(gb_header_flags));
 
-            for (index = 0; index < end; index++) {
+            for (int index = 0; index < end; index++) {
                 buf2[index] = hdl[index].flags;
             }
             if (gbcm_write(socket, (const char *)buf2, end * sizeof(gb_header_flags))) {
@@ -284,21 +283,18 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
         }
 
         if (deep) {
-            GBDATA *gb2;
-            GB_ERROR error;
             debug_printf("%i    ", gbc->d.size);
 
-            for (index = 0; index < end; index++) {
-                if ((gb2 = GBCONTAINER_ELEM(gbc, index))) {
+            for (int index = 0; index < end; index++) {
+                GBDATA *gb2 = GBCONTAINER_ELEM(gbc, index);
+                if (gb2) {
                     debug_printf("%i ", index);
-                    error = gbcm_write_bin(socket, gb2,
-                                           (long *)buffer, mode, deep-1, send_headera);
+                    GB_ERROR error = gbcm_write_bin(socket, gb2, (long *)buffer, mode, deep-1, send_headera);
                     if (error) return error;
                 }
             }
             debug_printf("\n", 0);
         }
-
     }
     else {
         GBENTRY *gbe = gbd->as_entry();
@@ -422,7 +418,7 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
         }
         gb2->flags = flags;
         if (type == GB_DB) {
-            ((GBCONTAINER *)gb2)->flags3 = *((gb_flag_types3 *)&(buffer[i++]));
+            gb2->as_container()->flags3 = *((gb_flag_types3 *)&(buffer[i++]));
         }
     }
     else {
@@ -447,16 +443,15 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
                 return GBCM_SERVER_FAULT;
             }
             if (gb2 && mode >= -1) {
-                GBCONTAINER    *gbc  = (GBCONTAINER*)gb2;
-                gb_header_list *hdl;
-                GB_MAIN_TYPE   *Main = GBCONTAINER_MAIN(gbc);
+                GBCONTAINER  *gbc  = gb2->as_container();
+                GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbc);
 
                 gb_create_header_array(gbc, (int)nheader);
                 if (nheader < gbc->d.nheader) {
                     GB_internal_error("Inconsistency Client-Server Cache");
                 }
                 gbc->d.nheader = (int)nheader;
-                hdl = GB_DATA_LIST_HEADER(gbc->d);
+                gb_header_list *hdl = GB_DATA_LIST_HEADER(gbc->d);
                 for (long item = 0; item < nheader; item++) {
                     GBQUARK old_index = hdl->flags.key_quark;
                     GBQUARK new_index = buffer2->key_quark;
@@ -498,7 +493,7 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
             debug_printf("Client %i \n", nheader);
             for (long item = 0; item < nitems; item++) {
                 debug_printf("  Client reading %i\n", item);
-                long irror = gbcm_read_bin(socket, (GBCONTAINER *)gb2, buffer, newmod, 0, cs_main);
+                long irror = gbcm_read_bin(socket, gb2->as_container(), buffer, newmod, 0, cs_main);
                 if (irror) {
                     return GBCM_SERVER_FAULT;
                 }
@@ -616,26 +611,21 @@ static GBCM_ServerResult gbcms_write_updated(int socket, GBDATA *gbd, long hsin,
         if (gbcm_write(socket, (const char *)buffer, sizeof(long)*2)) return GBCM_SERVER_FAULT;
         gbcm_write_bin(socket, gbd, buffer, 1, 0, 1);
     }
-    else {                                          // send clients first
-        if (GB_TYPE(gbd) == GB_DB)
-        {
-            GBDATA      *gb2;
-            GBCONTAINER *gbc = ((GBCONTAINER *)gbd);
-            int          index, end;
-
-            end = (int)gbc->d.nheader;
-            int send_header = 0;
-            if (gbc->header_update_date > client_clock) send_header = 1;
+    else { // send clients first
+        if (gbd->is_container()) {
+            GBCONTAINER *gbc         = gbd->as_container();
+            int          end         = (int)gbc->d.nheader;
+            int          send_header = (gbc->header_update_date > client_clock) ? 1 : 0;
 
             buffer[0] = GBCM_COMMAND_PUT_UPDATE_UPDATE;
             buffer[1] = (long)gbd;
             if (gbcm_write(socket, (const char *)buffer, sizeof(long)*2)) return GBCM_SERVER_FAULT;
             gbcm_write_bin(socket, gbd, buffer, 1, 0, send_header);
 
-            for (index = 0; index < end; index++) {
-                if ((gb2 = GBCONTAINER_ELEM(gbc, index))) {
-                    if (gbcms_write_updated(socket, gb2, hsin, client_clock, buffer))
-                        return GBCM_SERVER_FAULT;
+            for (int index = 0; index < end; index++) {
+                GBDATA *gb2 = GBCONTAINER_ELEM(gbc, index);
+                if (gb2 && gbcms_write_updated(socket, gb2, hsin, client_clock, buffer)) {
+                    return GBCM_SERVER_FAULT;
                 }
             }
         }
@@ -671,7 +661,7 @@ static GBCM_ServerResult gbcms_write_keys(int socket, GBDATA *gbd) {
     return GBCM_SERVER_OK;
 }
 
-static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void */*sin*/, GBDATA *gb_in) {
+static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void */*sin*/, GBDATA *gb_in) { // @@@ change param to GBCONTAINER?
     // command: GBCM_COMMAND_UNFOLD
 
     GBCONTAINER *gbc = (GBCONTAINER *)gb_in;
@@ -758,7 +748,7 @@ static GBCM_ServerResult gbcms_talking_put_update(int socket, long */*hsin*/, vo
         RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbd);
         switch (buffer[0]) {
             case GBCM_COMMAND_PUT_UPDATE_CREATE:
-                irror = gbcm_read_bin(socket, (GBCONTAINER *)gbd, buffer, 1, 0, (void *)cs_main);
+                irror = gbcm_read_bin(socket, gbd->as_container(), buffer, 1, 0, (void *)cs_main);
                 if (irror) return GBCM_SERVER_FAULT;
                 break;
             case GBCM_COMMAND_PUT_UPDATE_DELETE:
@@ -809,7 +799,7 @@ static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, 
     char         *user    = gbcm_read_string(socket);
 
     gbcm_read_flush();
-    if (gbcm_login((GBCONTAINER *)gbd, user)) {
+    if (gbcm_login(gbd->as_container(), user)) {
         return GBCM_SERVER_FAULT;
     }
     si->username = user;
@@ -1491,7 +1481,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
                 }
                 break;
             case GBCM_COMMAND_PUT_UPDATE_CREATE:
-                if (gbcm_read_bin(socket, (GBCONTAINER *)gb2, buffer, mode, 0, 0)) {
+                if (gbcm_read_bin(socket, gb2->as_container(), buffer, mode, 0, 0)) {
                     return GB_export_error("ARB_DB CLIENT ERROR receive failed 4236");
                 }
                 if (gb2) {
@@ -1644,11 +1634,11 @@ static GB_ERROR gbcmc_unfold_list(int socket, GBDATA * gbd) {
         error = GB_export_error("receive failed");
     }
     else {
-        GBCONTAINER *gb_client = (GBCONTAINER *) readvar[1];
+        GBCONTAINER *gb_client = (GBCONTAINER*)readvar[1];
         if (gb_client) {
             error = gbcmc_unfold_list(socket, gbd);
             if (!error) {
-                gb_client = (GBCONTAINER *) GBS_read_numhash(Main->remote_hash, (long) gb_client);
+                gb_client = (GBCONTAINER *)GBS_read_numhash(Main->remote_hash, (long) gb_client);
                 gb_unfold(gb_client, 0, (int)readvar[0]);
             }
         }

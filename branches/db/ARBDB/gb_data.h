@@ -205,7 +205,9 @@ inline GB_MAIN_TYPE *GBCONTAINER_MAIN(GBCONTAINER *gbc) { return gb_main_array[g
 inline GB_MAIN_TYPE *GB_MAIN(GBDATA *gbd)               { return GBCONTAINER_MAIN(GB_FATHER(gbd)); }
 inline GB_MAIN_TYPE *GB_MAIN(GBCONTAINER *gbc)          { return GBCONTAINER_MAIN(gbc); }
 
-inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd)    { return GB_TYPE(gbd) == GB_DB ? GBCONTAINER_MAIN((GBCONTAINER*)gbd) : GB_MAIN(gbd); }
+inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd) {
+    return gbd->is_container() ? GBCONTAINER_MAIN(gbd->as_container()) : GB_MAIN(gbd->as_entry());
+}
 
 // -----------------------
 //      security flags

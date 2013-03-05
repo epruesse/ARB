@@ -114,23 +114,16 @@ static inline long min(long a, long b) {
 
 // **************************************************
 
-static void g_b_opti_scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, O_gbdByKey *gbk)
-{
-    GBQUARK quark;
-
-    if (GB_TYPE(gbd) == GB_DB)  // CONTAINER
-    {
-        int          idx;
-        GBCONTAINER *gbc = (GBCONTAINER *)gbd;
-        GBDATA      *gbd2;
-
-        for (idx=0; idx < gbc->d.nheader; idx++)
-            if ((gbd2=GBCONTAINER_ELEM(gbc, idx))!=NULL)
-                g_b_opti_scanGbdByKey(Main, gbd2, gbk);
+static void g_b_opti_scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, O_gbdByKey *gbk) {
+    if (gbd->is_container()) {
+        GBCONTAINER *gbc = gbd->as_container();
+        for (int idx=0; idx < gbc->d.nheader; idx++) {
+            GBDATA *gbd2 = GBCONTAINER_ELEM(gbc, idx);
+            if (gbd2) g_b_opti_scanGbdByKey(Main, gbd2, gbk);
+        }
     }
 
-    quark = GB_KEY_QUARK(gbd);
-
+    GBQUARK quark = GB_KEY_QUARK(gbd);
     if (quark)
     {
         gb_assert(gbk[quark].cnt < Main->keys[quark].nref || quark==0);

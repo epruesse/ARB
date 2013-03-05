@@ -96,7 +96,7 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
     return equal;
 }
 
-static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) {
+static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) { // @@@ change father to GBCONTAINER
     /* search an entry with a key 'key_quark' below a container 'father'
        after position 'after'
 
@@ -115,13 +115,11 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
              if key_quark<0 search everything
     */
 
-    int             end, index;
-    GBCONTAINER    *gbf = (GBCONTAINER*)father;
-    gb_header_list *header;
-    GBDATA         *gb;
+    GBCONTAINER    *gbf    = father->as_container();
+    int             end    = gbf->d.nheader;
+    gb_header_list *header = GB_DATA_LIST_HEADER(gbf->d);
 
-    end  = gbf->d.nheader;
-    header = GB_DATA_LIST_HEADER(gbf->d);
+    int index;
     if (after) index = (int)after->index+1; else index = 0;
 
     if (key_quark<0) { // unspecific key quark (i.e. search all)
@@ -130,7 +128,8 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
             for (; index < end; index++) {
                 if (header[index].flags.key_quark != 0) {
                     if (header[index].flags.changed >= GB_DELETED) continue;
-                    if (!(gb=GB_HEADER_LIST_GBD(header[index]))) {
+                    GBDATA *gb = GB_HEADER_LIST_GBD(header[index]);
+                    if (!gb) {
                         // @@@ DRY here versus below
                         gb_unfold(gbf, 0, index);
                         header = GB_DATA_LIST_HEADER(gbf->d);
@@ -150,7 +149,8 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
         for (; index < end; index++) {
             if ((key_quark == header[index].flags.key_quark)) {
                 if (header[index].flags.changed >= GB_DELETED) continue;
-                if (!(gb=GB_HEADER_LIST_GBD(header[index]))) {
+                GBDATA *gb = GB_HEADER_LIST_GBD(header[index]);
+                if (!gb) {
                     // @@@ DRY here versus section above
                     gb_unfold(gbf, 0, index);
                     header = GB_DATA_LIST_HEADER(gbf->d);
@@ -185,20 +185,17 @@ static GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB
     return find_sub_by_quark(father, key_quark, type, val, case_sens, after, skip_over);
 }
 
-static GBDATA *find_sub_sub_by_quark(GBDATA *const father, const char *key, GBQUARK sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
-    int             end, index;
-    gb_header_list *header;
-    GBCONTAINER    *gbf  = (GBCONTAINER*)father;
-    GBDATA         *gb;
-    GBDATA         *res;
-    gb_index_files *ifs  = NULL;
-    GB_MAIN_TYPE   *Main = GBCONTAINER_MAIN(gbf);
+static GBDATA *find_sub_sub_by_quark(GBDATA *const father, const char *key, GBQUARK sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) { // @@@ pass father as GBCONTAINER?
+    GBCONTAINER    *gbf    = father->as_container();
+    gb_index_files *ifs    = NULL;
+    GB_MAIN_TYPE   *Main   = GBCONTAINER_MAIN(gbf);
+    int             end    = gbf->d.nheader;
+    gb_header_list *header = GB_DATA_LIST_HEADER(gbf->d);
 
-    end  = gbf->d.nheader;
-    header = GB_DATA_LIST_HEADER(gbf->d);
-
+    int index;
     if (after) index = (int)after->index+1; else index = 0;
 
+    GBDATA *res;
     // ****** look for any hash index tables ********
     // ****** no wildcards allowed       *******
     if (!Main->local_mode) {
@@ -233,9 +230,7 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *const father, const char *key, GBQU
         }
     }
 
-    if (after)  gb = after;
-    else gb        = NULL;
-
+    GBDATA *gb = after ? after : NULL;
     for (; index < end; index++) {
         GBDATA *gbn = GB_HEADER_LIST_GBD(header[index]);
 
@@ -275,7 +270,7 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
 
             case SEARCH_CHILD:
             case SEARCH_GRANDCHILD:
-                if (GB_TYPE(gbd) == GB_DB) gbc = (GBCONTAINER*)gbd;
+                if (gbd->is_container()) gbc = gbd->as_container();
                 break;
 
             case SEARCH_CHILD_OF_NEXT:
@@ -364,19 +359,17 @@ GBDATA *GB_brother(GBDATA *entry, const char *key) {
     return GB_find(entry, key, SEARCH_BROTHER);
 }
 
-GBDATA *gb_find_by_nr(GBDATA *father, int index) {
+GBDATA *gb_find_by_nr(GBDATA *father, int index) { // @@@ pass father as GBCONTAINER?
     /* get a subentry by its internal number:
        Warning: This subentry must exists, otherwise internal error */
 
-    GBCONTAINER    *gbf = (GBCONTAINER*)father;
-    gb_header_list *header;
-    GBDATA         *gb;
-
-    if (GB_TYPE(father) != GB_DB) {
-        GB_internal_error("type is not GB_DB");
+    if (!father->is_container()) {
+        GB_internal_error("type is no container");
         return NULL;
     }
-    header = GB_DATA_LIST_HEADER(gbf->d);
+
+    GBCONTAINER    *gbf    = father->as_container();
+    gb_header_list *header = GB_DATA_LIST_HEADER(gbf->d);
     if (index >= gbf->d.nheader || index <0) {
         GB_internal_errorf("Index '%i' out of range [%i:%i[", index, 0, gbf->d.nheader);
         return NULL;
@@ -385,8 +378,9 @@ GBDATA *gb_find_by_nr(GBDATA *father, int index) {
         GB_internal_error("Entry already deleted");
         return NULL;
     }
-    if (!(gb=GB_HEADER_LIST_GBD(header[index])))
-    {
+
+    GBDATA *gb = GB_HEADER_LIST_GBD(header[index]);
+    if (!gb) {
         gb_unfold(gbf, 0, index);
         header = GB_DATA_LIST_HEADER(gbf->d);
         gb = GB_HEADER_LIST_GBD(header[index]);
@@ -659,18 +653,19 @@ static GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstin
 }
 
 long GB_number_of_marked_subentries(GBDATA *gbd) {
-    GBCONTAINER    *gbc     = (GBCONTAINER *)gbd;
-    int             userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
-    int             index;
-    int             end     = gbc->d.nheader;
-    gb_header_list *header;
-    long            count   = 0;
+    long count = 0;
+    if (gbd->is_container()) {
+        GBCONTAINER    *gbc    = gbd->as_container();
+        gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
 
-    header = GB_DATA_LIST_HEADER(gbc->d);
-    for (index = 0; index<end; index++) {
-        if (! (userbit & header[index].flags.flags)) continue;
-        if (header[index].flags.changed >= GB_DELETED) continue;
-        count++;
+        int userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
+        int end     = gbc->d.nheader;
+
+        for (int index = 0; index<end; index++) {
+            if (!(userbit & header[index].flags.flags)) continue;
+            if (header[index].flags.changed >= GB_DELETED) continue;
+            count++;
+        }
     }
     return count;
 }
@@ -678,7 +673,9 @@ long GB_number_of_marked_subentries(GBDATA *gbd) {
 
 
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring) {
-    GBCONTAINER *gbc       = (GBCONTAINER *)gbd;
+    if (!gbd->is_container()) return NULL;
+
+    GBCONTAINER *gbc       = gbd->as_container();
     GBQUARK      key_quark = GB_find_existing_quark(gbd, keystring);
     GB_test_transaction(gbc);
     return key_quark ? gb_search_marked(gbc, key_quark, 0, 0) : NULL;

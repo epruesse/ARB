@@ -446,9 +446,9 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
             putc('\t', out);
         }
 
-        if (GB_TYPE(gb) == GB_DB) {
+        if (gb->is_container()) {
             fprintf(out, "%%%c (%%\n", GB_read_flag(gb) ? '$' : '%');
-            gb_write_rek(out, (GBCONTAINER *)gb, deep + 1, big_hunk);
+            gb_write_rek(out, gb->as_container(), deep+1, big_hunk);
             for (i=deep+1; i--;) putc('\t', out);
             fprintf(out, "%%) /*%s*/\n\n", GB_KEY(gb));
         }
@@ -561,7 +561,7 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
     int          type = GB_TYPE(gbd);
 
     if (type == GB_DB) {
-        gbc = (GBCONTAINER *)gbd;
+        gbc = gbd->as_container();
     }
     else {
         gbe = gbd->as_entry();
@@ -697,12 +697,7 @@ static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version
     return 0;
 }
 
-
-
-
-
-
-static int gb_write_bin(FILE *out, GBDATA *gbd, uint32_t version) {
+static int gb_write_bin(FILE *out, GBDATA *gbd, uint32_t version) { // @@@ change param to GBCONTAINER
     /* version 1 write master arb file
      * version 2 write slave arb file (aka quick save file)
      */
@@ -933,7 +928,7 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
 
                         if (saveASCII) {
                             fprintf(out, "/*ARBDB ASCII*/\n");
-                            gb_write_rek(out, (GBCONTAINER *)gb, 0, 1);
+                            gb_write_rek(out, gb->as_container(), 0, 1);
                             freedup(Main->qs.quick_save_disabled, "Database saved in ASCII mode");
                             if (deleteQuickAllowed) error = gb_remove_all_but_main(Main, path);
                         }

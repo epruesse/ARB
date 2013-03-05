@@ -186,11 +186,10 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
     }
 
     if (type==GB_DB && showChildren) {
-        GBCONTAINER *gbc = (GBCONTAINER*)gbd;
-        GBDATA *gbp;
+        GBCONTAINER *gbc = gbd->as_container();
 
         if (gbd->flags2.folded_container) gb_unfold(gbc, -1, -1);
-        for (gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
+        for (GBDATA *gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
             ++indent;
             dump_internal(gbp, lines_allowed);
             --indent;

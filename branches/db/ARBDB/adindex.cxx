@@ -132,10 +132,10 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
         error = "No index tables in DB clients allowed";
     }
     else {
-        GBCONTAINER    *gbc       = (GBCONTAINER *)gbd;
-        GBQUARK         key_quark = GB_find_or_create_quark(gbd, key);
-        gb_index_files *ifs;
+        GBCONTAINER *gbc       = gbd->as_container();
+        GBQUARK      key_quark = GB_find_or_create_quark(gbd, key);
 
+        gb_index_files *ifs;
         GB_INDEX_FIND(gbc, ifs, key_quark);
 
         if (!ifs) { // if not already have index (e.g. if fast-loaded)
@@ -210,8 +210,9 @@ NOT4PERL void GB_dump_indices(GBDATA *gbd) {
     else {
         gb_index_files *ifs;
         int             index_count = 0;
-        GBCONTAINER    *gbc         = (GBCONTAINER*)gbd;
-        GB_MAIN_TYPE   *Main        = GBCONTAINER_MAIN(gbc);
+
+        GBCONTAINER  *gbc  = gbd->as_container();
+        GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbc);
 
         for (ifs = GBCONTAINER_IFS(gbc); ifs; ifs = GB_INDEX_FILES_NEXT(ifs)) {
             index_count++;
@@ -443,10 +444,10 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
             GBDATA *gbd = ue->d.gs.gbd;
             int type = GB_TYPE(gbd);
             if (type == GB_DB) {
-                gbd = (GBDATA *)gb_make_pre_defined_container((GBCONTAINER *)ue->source, (GBCONTAINER *)gbd, -1, ue->d.gs.key);
+                gbd = gb_make_pre_defined_container(ue->source->as_container(), gbd->as_container(), -1, ue->d.gs.key);
             }
             else {
-                gbd = gb_make_pre_defined_entry((GBCONTAINER *)ue->source, gbd, -1, ue->d.gs.key);
+                gbd = gb_make_pre_defined_entry(ue->source->as_container(), gbd, -1, ue->d.gs.key);
             }
             GB_ARRAY_FLAGS(gbd).flags = ue->flag;
             gb_touch_header(GB_FATHER(gbd));

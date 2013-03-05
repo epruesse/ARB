@@ -584,7 +584,7 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
     else {
         GBDATA *gb2 = GBCONTAINER_ELEM(gbd, index_pos);
         if (gb2) {
-            if (GB_TYPE(gb2) == GB_DB) gb_untouch_children((GBCONTAINER *)gb2);
+            if (gb2->is_container()) gb_untouch_children(gb2->as_container());
             gb_untouch_me(gb2);
         }
     }
@@ -1540,19 +1540,19 @@ bool GB_check_father(GBDATA *gbd, GBDATA *gb_maybefather) {
 // --------------------------
 //      create and rename
 
-GBDATA *gb_create(GBDATA *father, const char *key, GB_TYPES type) {
-    GBDATA *gbd = gb_make_entry((GBCONTAINER *)father, key, -1, 0, type);
+GBDATA *gb_create(GBDATA *father, const char *key, GB_TYPES type) { // @@@ pass father as GBCONTAINER?
+    GBDATA *gbd = gb_make_entry(father->as_container(), key, -1, 0, type);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry(gbd, GB_CREATED);
-    return (GBDATA *)gbd;
+    return gbd;
 }
 
-GBDATA *gb_create_container(GBDATA *father, const char *key) {
+GBDATA *gb_create_container(GBDATA *father, const char *key) { // @@@ pass father as GBCONTAINER ? return GBCONTAINER ? 
     // Create a container, do not check anything
-    GBCONTAINER *gbd = gb_make_container((GBCONTAINER *)father, key, -1, 0);
-    gb_touch_header(GB_FATHER(gbd));
-    gb_touch_entry((GBDATA *)gbd, GB_CREATED);
-    return (GBDATA *)gbd;
+    GBCONTAINER *gbc = gb_make_container(father->as_container(), key, -1, 0);
+    gb_touch_header(GB_FATHER(gbc));
+    gb_touch_entry(gbc, GB_CREATED);
+    return gbc;
 }
 
 GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
@@ -1568,7 +1568,6 @@ GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
      *
      * @see GB_create_container()
      */
-    GBDATA *gbd;
 
     if (GB_check_key(key)) {
         GB_print_error();
@@ -1600,7 +1599,7 @@ GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
     }
 
     // @@@ DRY vs gb_create
-    gbd = gb_make_entry((GBCONTAINER *)father, key, -1, 0, type);
+    GBDATA *gbd = gb_make_entry(father->as_container(), key, -1, 0, type);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry(gbd, GB_CREATED);
 
@@ -1622,7 +1621,6 @@ GBDATA *GB_create_container(GBDATA *father, const char *key) {
      * @see GB_create()
      */
 
-    GBCONTAINER *gbd;
     if (GB_check_key(key)) {
         GB_print_error();
         return NULL;
@@ -1637,15 +1635,16 @@ GBDATA *GB_create_container(GBDATA *father, const char *key) {
         return NULL;
     }
     GB_test_transaction(father);
-    if (GB_TYPE(father)!=GB_DB) {
+    if (!father->is_container()) {
         GB_export_errorf("GB_create: father (%s) is not of GB_DB type (%i) (creating '%s')",
                          GB_read_key_pntr(father), GB_TYPE(father), key);
         return NULL;
-    };
-    gbd = gb_make_container((GBCONTAINER *)father, key, -1, 0);
-    gb_touch_header(GB_FATHER(gbd));
-    gb_touch_entry((GBDATA *)gbd, GB_CREATED);
-    return (GBDATA *)gbd;
+    }
+
+    GBCONTAINER *gbc = gb_make_container(father->as_container(), key, -1, 0);
+    gb_touch_header(GB_FATHER(gbc));
+    gb_touch_entry(gbc, GB_CREATED);
+    return gbc;
 }
 
 // ----------------------
@@ -1747,9 +1746,6 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source) {
 
 GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_protections) {
     GB_ERROR error = 0;
-    GBCONTAINER *destc, *sourcec; // @@@ fix locals
-    const char *key;
-
     GB_test_transaction(source);
 
     GB_TYPES type = GB_TYPE(source);
@@ -1758,8 +1754,7 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
                                 GB_read_key_pntr(source), type, GB_read_key_pntr(dest), GB_TYPE(dest));
     }
 
-    switch (type)
-    {
+    switch (type) {
         case GB_INT:
             error = GB_write_int(dest, GB_read_int(source));
             break;
@@ -1789,34 +1784,30 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
             break;
         }
         case GB_DB: {
-
-            destc = (GBCONTAINER *)dest;
-            sourcec = (GBCONTAINER *)source;
-
-            if (GB_TYPE(destc) != GB_DB)
-            {
+            if (!dest->is_container()) {
                 GB_ERROR err = GB_export_errorf("GB_COPY Type conflict %s:%i != %s:%i",
                                                 GB_read_key_pntr(dest), GB_TYPE(dest), GB_read_key_pntr(source), GB_DB);
                 GB_internal_error(err);
                 return err;
             }
 
-            if (source->flags2.folded_container)    gb_unfold((GBCONTAINER *)source, -1, -1);
-            if (dest->flags2.folded_container)  gb_unfold((GBCONTAINER *)dest, 0, -1);
+            GBCONTAINER *destc   = dest->as_container();
+            GBCONTAINER *sourcec = source->as_container();
 
-            for (GBDATA *gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
-                GB_TYPES type2 = (GB_TYPES)GB_TYPE(gb_p);
+            if (sourcec->flags2.folded_container) gb_unfold(sourcec, -1, -1);
+            if (destc->flags2.folded_container)   gb_unfold(destc, 0, -1);
 
-                key = GB_read_key_pntr(gb_p);
-                GBDATA *gb_d;
-                if (type2 == GB_DB)
-                {
-                    gb_d = GB_create_container(dest, key);
-                    gb_create_header_array((GBCONTAINER *)gb_d, ((GBCONTAINER *)gb_p)->d.size);
+            for (GBDATA *gb_p = GB_child(sourcec); gb_p; gb_p = GB_nextChild(gb_p)) {
+                GB_TYPES    type2 = (GB_TYPES)GB_TYPE(gb_p);
+                const char *key   = GB_read_key_pntr(gb_p);
+                GBDATA     *gb_d;
+
+                if (type2 == GB_DB) {
+                    gb_d = GB_create_container(destc, key);
+                    gb_create_header_array(gb_d->as_container(), gb_p->as_container()->d.size);
                 }
-                else
-                {
-                    gb_d = GB_create(dest, key, type2);
+                else {
+                    gb_d = GB_create(destc, key, type2);
                 }
 
                 if (!gb_d) error = GB_await_error();
@@ -1857,22 +1848,18 @@ char* GB_get_subfields(GBDATA *gbd) {
      * @return all subfields of 'gbd' as ';'-separated heap-copy
      * (first and last char of result is a ';')
      */
-    long type;
-    char *result = 0;
-
     GB_test_transaction(gbd);
-    type = GB_TYPE(gbd);
 
-    if (type==GB_DB) { // we are a container
-        GBCONTAINER *gbc = (GBCONTAINER*)gbd;
-        GBDATA *gbp;
-        int result_length = 0;
+    char *result = 0;
+    if (gbd->is_container()) {
+        GBCONTAINER *gbc           = gbd->as_container();
+        int          result_length = 0;
 
         if (gbc->flags2.folded_container) {
             gb_unfold(gbc, -1, -1);
         }
 
-        for (gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
+        for (GBDATA *gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
             const char *key = GB_read_key_pntr(gbp);
             int keylen = strlen(key);
 
@@ -2523,8 +2510,10 @@ int GB_nsons(GBDATA *gbd) {
      *
      * @@@ does this work in clients ?
      */
-    if (GB_TYPE(gbd) != GB_DB) return 0;
-    return ((GBCONTAINER *)gbd)->d.size;
+
+    return gbd->is_container()
+        ? gbd->as_container()->d.size
+        : 0;
 }
 
 void GB_disable_quicksave(GBDATA *gbd, const char *reason) {
@@ -2609,49 +2598,48 @@ GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main) {
 //      private(?) user flags
 
 long GB_read_usr_private(GBDATA *gbd) {
-    GBCONTAINER *gbc = (GBCONTAINER *)gbd;
-    if (GB_TYPE(gbc) != GB_DB) {
-        GB_ERROR error = GB_export_errorf("GB_write_usr_private: not a container (%s)", GB_read_key_pntr(gbd));
-        GB_internal_error(error);
-        return 0;
+    if (gbd->is_container()) {
+        return gbd->as_container()->flags2.usr_ref;
     }
-    return gbc->flags2.usr_ref;
+
+    GB_ERROR error = GB_export_errorf("GB_write_usr_private: not a container (%s)", GB_read_key_pntr(gbd));
+    GB_internal_error(error);
+    return 0;
 }
 
 GB_ERROR GB_write_usr_private(GBDATA *gbd, long ref) {
-    GBCONTAINER *gbc = (GBCONTAINER *)gbd;
-    if (GB_TYPE(gbc) != GB_DB) {
-        GB_ERROR error = GB_export_errorf("GB_write_usr_private: not a container (%s)", GB_read_key_pntr(gbd));
-        GB_internal_error(error);
-        return 0;
+    if (gbd->is_container()) {
+        gbd->as_container()->flags2.usr_ref = ref;
+        return NULL;
     }
-    gbc->flags2.usr_ref = ref;
-    return 0;
+    return GB_export_errorf("GB_write_usr_private: not a container (%s)", GB_read_key_pntr(gbd));
 }
 
 // ------------------------
 //      mark DB entries
 
 void GB_write_flag(GBDATA *gbd, long flag) {
-    GBCONTAINER  *gbc  = (GBCONTAINER *)gbd;
-    GB_MAIN_TYPE *Main = GB_MAIN(gbc);
+    if (gbd->is_container()) {
+        GBCONTAINER  *gbc  = gbd->as_container();
+        GB_MAIN_TYPE *Main = GB_MAIN(gbc);
 
-    GB_test_transaction(Main);
+        GB_test_transaction(Main);
 
-    int ubit = Main->users[0]->userbit;
-    int prev = GB_ARRAY_FLAGS(gbc).flags;
-    gbd->flags.saved_flags = prev;
+        int ubit = Main->users[0]->userbit;
+        int prev = GB_ARRAY_FLAGS(gbc).flags;
+        gbc->flags.saved_flags = prev;
 
-    if (flag) {
-        GB_ARRAY_FLAGS(gbc).flags |= ubit;
-    }
-    else {
-        GB_ARRAY_FLAGS(gbc).flags &= ~ubit;
-    }
-    if (prev != (int)GB_ARRAY_FLAGS(gbc).flags) {
-        gb_touch_entry(gbd, GB_NORMAL_CHANGE);
-        gb_touch_header(GB_FATHER(gbd));
-        GB_DO_CALLBACKS(gbd);
+        if (flag) {
+            GB_ARRAY_FLAGS(gbc).flags |= ubit;
+        }
+        else {
+            GB_ARRAY_FLAGS(gbc).flags &= ~ubit;
+        }
+        if (prev != (int)GB_ARRAY_FLAGS(gbc).flags) {
+            gb_touch_entry(gbc, GB_NORMAL_CHANGE);
+            gb_touch_header(GB_FATHER(gbc));
+            GB_DO_CALLBACKS(gbc);
+        }
     }
 }
 
@@ -2693,15 +2681,10 @@ static int GB_info_deep = 15;
 
 
 static int gb_info(GBDATA *gbd, int deep) {
-    GBCONTAINER *gbc;
-    GB_TYPES type;
-    char    *data;
-    int     size;
-    GB_MAIN_TYPE *Main;
-
     if (gbd==NULL) { printf("NULL\n"); return -1; }
     GB_push_transaction(gbd);
-    type = (GB_TYPES)GB_TYPE(gbd);
+
+    GB_TYPES type = GB_TYPE(gbd);
 
     if (deep) {
         printf("    ");
@@ -2711,19 +2694,19 @@ static int gb_info(GBDATA *gbd, int deep) {
 
     if (gbd->rel_father==0) { printf("father=NULL\n"); return -1; }
 
-    if (type==GB_DB)    { gbc = (GBCONTAINER*) gbd; Main = GBCONTAINER_MAIN(gbc); }
-    else        { gbc = NULL; Main = GB_MAIN(gbd); }
+    GBCONTAINER  *gbc;
+    GB_MAIN_TYPE *Main;
+    if (type==GB_DB) { gbc = gbd->as_container(); Main = GBCONTAINER_MAIN(gbc); }
+    else             { gbc = NULL;                Main = GB_MAIN(gbd); }
 
-    if (!Main)                  { printf("Oops - I have no main entry!!!\n"); return -1; }
-    if (gbd==(GBDATA*)(Main->dummy_father))     { printf("dummy_father!\n"); return -1; }
+    if (!Main) { printf("Oops - I have no main entry!!!\n"); return -1; }
+    if (gbd==Main->dummy_father) { printf("dummy_father!\n"); return -1; }
 
     printf("%10s Type '%c'  ", GB_read_key_pntr(gbd), GB_type_2_char(type));
 
-    switch (type)
-    {
-        case GB_DB:
-            gbc = (GBCONTAINER *)gbd;
-            size = gbc->d.size;
+    switch (type) {
+        case GB_DB: {
+            int size = gbc->d.size;
             printf("Size %i nheader %i hmemsize %i", gbc->d.size, gbc->d.nheader, gbc->d.headermemsize);
             printf(" father=(GBDATA*)0x%lx\n", (long)GB_FATHER(gbd));
             if (size < GB_info_deep) {
@@ -2737,10 +2720,12 @@ static int gb_info(GBDATA *gbd, int deep) {
                 }
             }
             break;
-        default:
-            data = GB_read_as_string(gbd);
+        }
+        default: {
+            char *data = GB_read_as_string(gbd);
             if (data) { printf("%s", data); free(data); }
             printf(" father=(GBDATA*)0x%lx\n", (long)GB_FATHER(gbd));
+        }
     }
 
 
@@ -2758,12 +2743,13 @@ int GB_info(GBDATA *gbd)
 long GB_number_of_subentries(GBDATA *gbd) {
     long subentries = -1;
 
-    if (GB_TYPE(gbd) == GB_DB) {
-        GBCONTAINER    *gbc    = (GBCONTAINER*)gbd;
+    if (gbd->is_container()) {
+        GBCONTAINER    *gbc    = gbd->as_container();
         gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
 
         subentries = 0;
-        int end     = gbc->d.nheader;
+
+        int end = gbc->d.nheader;
         for (int index = 0; index<end; index++) {
             if (header[index].flags.changed < GB_DELETED) subentries++;
         }

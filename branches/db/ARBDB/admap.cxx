@@ -338,7 +338,7 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
     gb_assert(gbd->flags.temporary==0);
 
     if (type==GB_DB) { // CONTAINER
-        GBCONTAINER *gbc     = (GBCONTAINER*)gbd;
+        GBCONTAINER *gbc     = gbd->as_container();
         GBCONTAINER  gbccopy = *gbc;
 
         long headeroffset;
@@ -531,24 +531,18 @@ static long calcGbdOffsets(GB_MAIN_TYPE *Main, gbdByKey *gbk)
    handle gbdByKey
    ******************************************************** */
 
-static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey *gbk)
-{
-    GBQUARK quark;
-
+static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey *gbk) {
     if (gbd->flags.temporary) return;
 
-    if (GB_TYPE(gbd) == GB_DB)  // CONTAINER
-    {
-        int         idx;
-        GBCONTAINER     *gbc = (GBCONTAINER *)gbd;
-        GBDATA      *gbd2;
-
-        for (idx=0; idx < gbc->d.nheader; idx++)
-            if ((gbd2=GBCONTAINER_ELEM(gbc, idx))!=NULL)
-                scanGbdByKey(Main, gbd2, gbk);
+    if (gbd->is_container()) {
+        GBCONTAINER *gbc = gbd->as_container();
+        for (int idx=0; idx < gbc->d.nheader; idx++) {
+            GBDATA *gbd2 = GBCONTAINER_ELEM(gbc, idx);
+            if (gbd2) scanGbdByKey(Main, gbd2, gbk);
+        }
     }
 
-    quark = GB_KEY_QUARK(gbd);
+    GBQUARK quark = GB_KEY_QUARK(gbd);
 
 #if defined(DEBUG)
     if (quark == 0) {

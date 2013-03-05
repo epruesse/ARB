@@ -79,7 +79,7 @@ void gb_touch_header(GBCONTAINER *gbc) {
 }
 
 
-void gb_untouch_children(GBCONTAINER * gbc) {
+void gb_untouch_children(GBCONTAINER *gbc) {
     GBDATA          *gbd;
     int             index, start, end;
     GB_CHANGE       changed;
@@ -105,9 +105,8 @@ void gb_untouch_children(GBCONTAINER * gbc) {
             changed = (GB_CHANGE)header[index].flags.changed;
             if (changed != GB_UNCHANGED && changed < GB_DELETED) {
                 header[index].flags.changed = GB_UNCHANGED;
-                if (GB_TYPE(gbd) == GB_DB)
-                {
-                    gb_untouch_children((GBCONTAINER *) gbd);
+                if (gbd->is_container()) {
+                    gb_untouch_children(gbd->as_container());
                 }
             }
             gbd->flags2.update_in_server = 0;
@@ -116,7 +115,7 @@ void gb_untouch_children(GBCONTAINER * gbc) {
     gbc->index_of_touched_one_son = 0;
 }
 
-void gb_untouch_me(GBDATA * gbc) {
+void gb_untouch_me(GBDATA * gbc) { // @@@ change param to GBCONTAINER?
     GB_DATA_LIST_HEADER(GB_FATHER(gbc)->d)[gbc->index].flags.changed = GB_UNCHANGED;
     if (GB_TYPE(gbc) == GB_DB) {
         gbc->flags2.header_changed = 0;
@@ -124,14 +123,12 @@ void gb_untouch_me(GBDATA * gbc) {
     }
 }
 
-static void gb_set_update_in_server_flags(GBCONTAINER * gbc) {
-    int    index;
-    GBDATA *gbd;
-
-    for (index = 0; index < gbc->d.nheader; index++) {
-        if ((gbd = GBCONTAINER_ELEM(gbc, index))!=NULL) {
-            if (GB_TYPE(gbd) == GB_DB) {
-                gb_set_update_in_server_flags((GBCONTAINER *) gbd);
+static void gb_set_update_in_server_flags(GBCONTAINER *gbc) {
+    for (int index = 0; index < gbc->d.nheader; index++) {
+        GBDATA *gbd = GBCONTAINER_ELEM(gbc, index);
+        if (gbd) {
+            if (gbd->is_container()) {
+                gb_set_update_in_server_flags(gbd->as_container());
             }
             gbd->flags2.update_in_server = 1;
         }
@@ -865,7 +862,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
             }
 
             if (gbd->flags2.header_changed == 1) {
-                ((GBCONTAINER*)gbd)->header_update_date = Main->clock;
+                gbd->as_container()->header_update_date = Main->clock;
             }
             goto gb_commit_do_callbacks;
 
@@ -929,7 +926,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
                 GB_CREATE_EXT(gbd);
                 gbd->ext->update_date = Main->clock;
                 if (gbd->flags2.header_changed) {
-                    ((GBCONTAINER*)gbd)->header_update_date = Main->clock;
+                    gbd->as_container()->header_update_date = Main->clock;
                 }
 
                 for (gb_callback *cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb->next) {
