@@ -24,7 +24,7 @@
 static void build_GBDATA_path(GBDATA *gbd, char **buffer) {
     GBCONTAINER *gbc = GB_FATHER(gbd);
     if (gbc) {
-        build_GBDATA_path((GBDATA*)gbc, buffer);
+        build_GBDATA_path(gbc, buffer);
 
         const char *key = GB_KEY(gbd);
         char       *bp  = *buffer;
@@ -342,13 +342,13 @@ GBDATA *GB_entry(GBDATA *father, const char *key) {
 GBDATA *GB_nextEntry(GBDATA *entry) {
     // return next child after 'entry', that has the same fieldname
     // (or NULL if 'entry' is last one)
-    return GB_find_sub_by_quark((GBDATA*)GB_FATHER(entry), GB_get_quark(entry), entry, 0);
+    return GB_find_sub_by_quark(GB_FATHER(entry), GB_get_quark(entry), entry, 0);
 }
 GBDATA *GB_followingEntry(GBDATA *entry, size_t skip_over) {
     // return following child after 'entry', that has the same fieldname
     // (or NULL if no such entry)
     // skips 'skip_over' entries (skip_over == 0 behaves like GB_nextEntry)
-    return GB_find_sub_by_quark((GBDATA*)GB_FATHER(entry), GB_get_quark(entry), entry, skip_over);
+    return GB_find_sub_by_quark(GB_FATHER(entry), GB_get_quark(entry), entry, skip_over);
 }
 
 GBDATA *GB_brother(GBDATA *entry, const char *key) {

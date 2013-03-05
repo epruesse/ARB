@@ -1506,25 +1506,19 @@ long GB_read_transaction(GBDATA *gbd) {
 
 GBDATA *GB_get_father(GBDATA *gbd) {
     // Get the father of an entry
-    GBDATA *father;
-
     GB_test_transaction(gbd);
-    if (!(father=(GBDATA*)GB_FATHER(gbd)))  return NULL;
-    if (!GB_FATHER(father))         return NULL;
-
+    GBDATA *father = GB_FATHER(gbd);
+    if (father && !GB_FATHER(father)) father = NULL; // never return dummy_father of root container
     return father;
 }
 
 GBDATA *GB_get_grandfather(GBDATA *gbd) {
-    GBDATA *gb_grandpa;
     GB_test_transaction(gbd);
 
-    gb_grandpa = (GBDATA*)GB_FATHER(gbd);
+    GBDATA *gb_grandpa = GB_FATHER(gbd);
     if (gb_grandpa) {
-        gb_grandpa = (GBDATA*)GB_FATHER(gb_grandpa);
-        if (gb_grandpa && !GB_FATHER(gb_grandpa)) {
-            gb_grandpa = 0;
-        }
+        gb_grandpa = GB_FATHER(gb_grandpa);
+        if (gb_grandpa && !GB_FATHER(gb_grandpa)) gb_grandpa = NULL; // never return dummy_father of root container
     }
     return gb_grandpa;
 }
@@ -1963,7 +1957,6 @@ GB_ERROR gb_init_transaction(GBCONTAINER *gbd) { // the first transaction ever
     return error;
 }
 
- // @@@ fix ugly "(GBDATA*)data" cast (appears in all GB_MAIN_TYPE-members!)
 inline GB_ERROR GB_MAIN_TYPE::begin_initial_transaction() {
     gb_assert(transaction == 0);
 
@@ -2566,7 +2559,7 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
         }
     }
 
-    gb_touch_entry((GBDATA *)father, GB_NORMAL_CHANGE);
+    gb_touch_entry(father, GB_NORMAL_CHANGE);
     return 0;
 }
 
@@ -2724,8 +2717,7 @@ static int gb_info(GBDATA *gbd, int deep) {
 }
 
 
-int GB_info(GBDATA *gbd)
-{
+int GB_info(GBDATA *gbd) {
     return gb_info(gbd, 0);
 }
 

@@ -420,7 +420,7 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
     GB_CSTR  strng;
     char    *key;
 
-    for (gb = GB_child((GBDATA *)gbc); gb; gb = GB_nextChild(gb)) {
+    for (gb = GB_child(gbc); gb; gb = GB_nextChild(gb)) {
         if (gb->flags.temporary) continue;
         key = GB_KEY(gb);
         if (!strcmp(key, GB_SYSTEM_FOLDER)) continue;   // do not save system folder

@@ -466,8 +466,8 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
                                     error                 = gb_parse_ascii_rek(r, gbc, cont_name);
                                     // CAUTION: most buffer variables are invalidated NOW!!!
 
-                                    if (!error) error = set_protection_level(Main, (GBDATA*)gbc, protection_copy);
-                                    if (marked) GB_write_flag((GBDATA*)gbc, 1);
+                                    if (!error) error = set_protection_level(Main, gbc, protection_copy);
+                                    if (marked) GB_write_flag(gbc, 1);
 
                                     free(protection_copy);
                                     free(cont_name);
@@ -584,7 +584,7 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
     if (!error) {
         Reader *r = openReader(in);
 
-        GB_search((GBDATA *)gbd, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
+        GB_search(gbd, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
 
         error = gb_parse_ascii(r, gbd);
 
@@ -917,7 +917,7 @@ inline bool read_keyword(const char *expected_keyword, FILE *in, GBCONTAINER *gb
     bool as_expected = strncmp((char*)&val, expected_keyword, 4) == 0;
     
     if (!as_expected) {
-        gb_read_bin_error(in, (GBDATA *)gbc, GBS_global_string("keyword '%s' not found", expected_keyword));
+        gb_read_bin_error(in, gbc, GBS_global_string("keyword '%s' not found", expected_keyword));
     }
     return as_expected;
 }
@@ -938,7 +938,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
         c = getc(in);
     }
     if (c==EOF) {
-        gb_read_bin_error(in, (GBDATA *)gbd, "First zero not found");
+        gb_read_bin_error(in, gbd, "First zero not found");
         return 1;
     }
 
@@ -951,17 +951,17 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
         case 0x01020304: reversed = false; break;
         case 0x04030201: reversed = true; break;
         default:
-            gb_read_bin_error(in, (GBDATA *)gbd, "keyword '^A^B^C^D' not found");
+            gb_read_bin_error(in, gbd, "keyword '^A^B^C^D' not found");
             return 1;
     }
 
     version = gb_read_in_uint32(in, reversed);
     if (version == 0) {
-        gb_read_bin_error(in, (GBDATA *)gbd, "ARB Database version 0 no longer supported (rev [9647])");
+        gb_read_bin_error(in, gbd, "ARB Database version 0 no longer supported (rev [9647])");
         return 1;
     }
     if (version>2) {
-        gb_read_bin_error(in, (GBDATA *)gbd, "ARB Database version > '2'");
+        gb_read_bin_error(in, gbd, "ARB Database version > '2'");
         return 1;
     }
 
@@ -989,7 +989,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
             c = getc(in);
             if (!c) break;
             if (c==EOF) {
-                gb_read_bin_error(in, (GBDATA *)gbd, "unexpected EOF while reading keys");
+                gb_read_bin_error(in, gbd, "unexpected EOF while reading keys");
                 return 1;
             }
             *(p++) = c;
@@ -1029,7 +1029,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
             c = getc(in);
             if (!c) break;
             if (c==EOF) {
-                gb_read_bin_error(in, (GBDATA *)gbd, "unexpected EOF while reading times");
+                gb_read_bin_error(in, gbd, "unexpected EOF while reading times");
                 return 1;
             }
             *(p++) = c;
@@ -1039,7 +1039,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
         freedup(Main->dates[j], buffer);
     }
     if (j>=(ALLOWED_DATES-1)) {
-        gb_read_bin_error(in, (GBDATA *)gbd, "too many date entries");
+        gb_read_bin_error(in, gbd, "too many date entries");
         return 1;
     }
     Main->last_updated = (unsigned int)j;
@@ -1078,7 +1078,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
                         GB_MAIN_IDX  new_idx = mheader.main_idx;
                         GB_MAIN_IDX  old_idx = father->main_idx;
 
-                        GB_commit_transaction((GBDATA*)gbd);
+                        GB_commit_transaction(gbd);
 
                         gb_assert(newGbd->main_idx == new_idx);
                         gb_assert((new_idx % GB_MAIN_ARRAY_SIZE) == new_idx);
@@ -1095,11 +1095,11 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
                         gbd = newGbd;
                         SET_GB_FATHER(gbd, father);
                         
-                        SET_GBCONTAINER_ELEM(father, gbd->index, (GBDATA*)gbd); // link new main-entry
+                        SET_GBCONTAINER_ELEM(father, gbd->index, gbd); // link new main-entry
 
                         gb_main_array[old_idx]    = NULL;
 
-                        GB_begin_transaction((GBDATA*)gbd);
+                        GB_begin_transaction(gbd);
                         mapped = true;
                     }
                 }
@@ -1139,7 +1139,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
     }
 
     if (gb_local->search_system_folder) {
-        gb_search_system_folder((GBDATA *)gbd);
+        gb_search_system_folder(gbd);
     }
 
     switch (version) {
@@ -1378,7 +1378,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
             GB_ULONG time_of_main_file = 0; long i;
 
             Main->local_mode = true;
-            GB_begin_transaction((GBDATA *)gbd);
+            GB_begin_transaction(gbd);
             Main->clock      = 0;                   // start clock
 
             FILE *input = read_from_stdin ? stdin : fopen(path, "rb");
@@ -1388,7 +1388,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
 
             if (!input) {
                 if (strchr(opent, 'c')) {
-                    GB_disable_quicksave((GBDATA *)gbd, "Database Created");
+                    GB_disable_quicksave(gbd, "Database Created");
 
                     if (strchr(opent, 'D')) { // use default settings
                         GB_clear_error(); // with default-files gb_scan_directory (used above) has created an error, cause the path was a fake path
@@ -1498,7 +1498,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                                 GB_print_error();
                                 GB_clear_error();
                                 error = 0;
-                                GB_disable_quicksave((GBDATA*)gbd, "Couldn't load last quicksave (your latest changes are NOT included)");
+                                GB_disable_quicksave(gbd, "Couldn't load last quicksave (your latest changes are NOT included)");
                             }
                         }
                     }
@@ -1507,16 +1507,16 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 else {
                     if (input != stdin) fclose(input);
                     error = gb_read_ascii(path, gbd);
-                    GB_disable_quicksave((GBDATA *)gbd, "Sorry, I cannot save differences to ascii files\n"
+                    GB_disable_quicksave(gbd, "Sorry, I cannot save differences to ascii files\n"
                                          "  Save whole database in binary mode first");
                 }
             }
         }
     }
     else {
-        GB_disable_quicksave((GBDATA *)gbd, "Database not part of this process");
+        GB_disable_quicksave(gbd, "Database not part of this process");
         Main->local_mode = true;
-        GB_begin_transaction((GBDATA *)gbd);
+        GB_begin_transaction(gbd);
     }
 
     gb_assert(error || gbd);
@@ -1530,22 +1530,22 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
         GB_export_error(error);
     }
     else {
-        GB_commit_transaction((GBDATA *)gbd);
+        GB_commit_transaction(gbd);
         {
-            GB_begin_transaction((GBDATA *)gbd); // New Transaction, should be quicksaveable
+            GB_begin_transaction(gbd); // New Transaction, should be quicksaveable
             if (!strchr(opent, 'N')) {               // new format
-                gb_convert_V2_to_V3((GBDATA *)gbd); // Compression conversion
+                gb_convert_V2_to_V3(gbd); // Compression conversion
             }
             error = gb_load_key_data_and_dictionaries(Main);
             if (!error) error = gb_resort_system_folder_to_top(Main->root_container);
             // @@@ handle error 
-            GB_commit_transaction((GBDATA *)gbd);
+            GB_commit_transaction(gbd);
         }
         Main->security_level = 0;
-        gbl_install_standard_commands((GBDATA *)gbd);
+        gbl_install_standard_commands(gbd);
 
         if (Main->local_mode) {                     // i am the server
-            GBT_install_message_handler((GBDATA *)gbd);
+            GBT_install_message_handler(gbd);
         }
         if (gb_verbose_mode && !dbCreated) GB_informationf("ARB: Loading '%s' done\n", path);
     }

@@ -75,7 +75,7 @@ void gb_touch_entry(GBDATA * gbd, GB_CHANGE val) {
 
 void gb_touch_header(GBCONTAINER *gbc) {
     gbc->flags2.header_changed = 1;
-    gb_touch_entry((GBDATA*)gbc, GB_NORMAL_CHANGE);
+    gb_touch_entry(gbc, GB_NORMAL_CHANGE);
 }
 
 
@@ -187,7 +187,7 @@ static void gb_link_entry(GBCONTAINER* father, GBDATA *gbd, long index_pos) {
 
     if (GB_TYPE(father) != GB_DB) {
         GB_internal_errorf("to read a database into a non database keyword %s,"
-                           "probably %%%% is missing\n", GB_read_key_pntr((GBDATA*)father));
+                           "probably %%%% is missing\n", GB_read_key_pntr(father));
         return;
     }
     if (index_pos < 0) {
@@ -370,10 +370,10 @@ GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbd
     if (Main->local_mode) gbd->server_id = GBTUM_MAGIC_NUMBER;
     if (Main->clock)
     {
-        GB_CREATE_EXT((GBDATA *) gbd);
+        GB_CREATE_EXT(gbd);
         gbd->ext->creation_date = Main->clock;
     }
-    gb_link_entry(father, (GBDATA *) gbd, index_pos);
+    gb_link_entry(father, gbd, index_pos);
     gb_write_index_key(father, gbd->index, keyq);
 
     return gbd;
@@ -396,11 +396,11 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
         gbd->main_idx = father->main_idx;
         if (Main->local_mode) gbd->server_id = GBTUM_MAGIC_NUMBER;
         if (Main->clock) {
-            GB_CREATE_EXT((GBDATA *) gbd);
+            GB_CREATE_EXT(gbd);
             gbd->ext->creation_date = Main->clock;
         }
-        gb_link_entry(father, (GBDATA *) gbd, index_pos);
-        if (key)    gb_write_key((GBDATA *)gbd, key);
+        gb_link_entry(father, gbd, index_pos);
+        if (key)    gb_write_key(gbd, key);
         else        gb_write_index_key(father, gbd->index, keyq);
 
         return gbd;

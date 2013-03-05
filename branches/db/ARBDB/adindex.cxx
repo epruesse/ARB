@@ -451,7 +451,7 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
             }
             GB_ARRAY_FLAGS(gbd).flags = ue->flag;
             gb_touch_header(GB_FATHER(gbd));
-            gb_touch_entry((GBDATA *)gbd, GB_CREATED);
+            gb_touch_entry(gbd, GB_CREATED);
             break;
         }
         case GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY:
@@ -704,7 +704,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA*& gbd) {
     g_b_undo_entry *ue = new_g_b_undo_entry(Main->undo->valid_u);
 
     ue->type      = GB_UNDO_ENTRY_TYPE_DELETED;
-    ue->source    = (GBDATA *)GB_FATHER(gbd);
+    ue->source    = GB_FATHER(gbd);
     ue->gbm_index = GB_GBM_INDEX(gbd);
     ue->flag      = GB_ARRAY_FLAGS(gbd).flags;
 

@@ -37,7 +37,7 @@ const char *GB_get_type_name(GBDATA *gbd) {
 }
 
 const char *GB_get_db_path(GBDATA *gbd) {
-    GBDATA *gb_father = (GBDATA*)GB_FATHER(gbd);
+    GBDATA *gb_father = GB_FATHER(gbd);
 
     if (gb_father) {
         const char *father_path = GB_get_db_path(gb_father);

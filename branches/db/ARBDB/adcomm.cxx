@@ -149,7 +149,7 @@ static void gbcms_sighup(int) {
         fprintf(stderr, "- Trying to save DATABASE in ASCII mode into file '%s'\n", db_panic);
 
         Main->transaction = 0;
-        GB_ERROR error    = GB_save_as((GBDATA *) gbcms_gb_main, db_panic, "a");
+        GB_ERROR error    = GB_save_as(gbcms_gb_main, db_panic, "a");
 
         if (error) fprintf(stderr, "Error while saving '%s': %s\n", db_panic, error);
         else fprintf(stderr, "- DATABASE saved into '%s' (ASCII)\n", db_panic);
@@ -393,12 +393,10 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
         else {
             if (mode==-1) goto dont_create_in_a_folded_container;
             if (type == GB_DB) {
-                gb2 = (GBDATA *)gb_make_container(gbd, 0, index_pos,
-                                                  GB_DATA_LIST_HEADER(gbd->d)[index_pos].flags.key_quark);
+                gb2 = gb_make_container(gbd, 0, index_pos, GB_DATA_LIST_HEADER(gbd->d)[index_pos].flags.key_quark);
             }
             else {  // @@@ Header Transaction stimmt nicht
-                gb2 = gb_make_entry(gbd, 0, index_pos,
-                                    GB_DATA_LIST_HEADER(gbd->d)[index_pos].flags.key_quark, (GB_TYPES)type);
+                gb2 = gb_make_entry(gbd, 0, index_pos, GB_DATA_LIST_HEADER(gbd->d)[index_pos].flags.key_quark, (GB_TYPES)type);
             }
             if (mode>0) {   // transaction only in server
                 gb_touch_entry(gb2, GB_CREATED);
@@ -413,7 +411,7 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
                 cs->next = *((gbcms_create **) cs_main);
                 *((gbcms_create **) cs_main) = cs;
                 cs->server_id = gb2;
-                cs->client_id = (GBDATA *) id;
+                cs->client_id = (GBDATA *)id;
             }
         }
         gb2->flags = flags;
@@ -1055,7 +1053,7 @@ static GBCM_ServerResult gbcms_talking_find(int socket, long */*hsin*/, void */*
             buffer[0] = (void *)gbd->index;
             buffer[1] = (void *)GB_FATHER(gbd);
             gbcm_write(socket, (const char *) buffer, sizeof(long) * 2);
-            gbd = (GBDATA *)GB_FATHER(gbd);
+            gbd = GB_FATHER(gbd);
         }
     }
     buffer[0] = NULL;
@@ -1294,7 +1292,7 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) {
         long buffer[256];
         long irror = 0;
         if (index_pos == -2) {
-            irror = gbcm_read_bin(socket, 0, buffer, 0, (GBDATA*)gbd, 0);
+            irror = gbcm_read_bin(socket, 0, buffer, 0, gbd, 0);
         }
         else {
             long nitems;
@@ -1307,7 +1305,7 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) {
         }
 
         if (irror) {
-            error = GB_export_errorf("GB_unfold (%s) read error", GB_read_key_pntr((GBDATA*)gbd));
+            error = GB_export_errorf("GB_unfold (%s) read error", GB_read_key_pntr(gbd));
         }
         else {
             gbcm_read_flush();
@@ -1516,7 +1514,7 @@ GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbd)
     int socket = Main->c_link->socket;
 
     if (gbcm_write_two(socket, GBCM_COMMAND_INIT_TRANSACTION, Main->clock)) {
-        return GB_export_errorf("Cannot send '%s' to server", GB_KEY((GBDATA*)gbd));
+        return GB_export_errorf("Cannot send '%s' to server", GB_KEY(gbd));
     }
     gbcm_write_string(socket, Main->this_user->username);
     if (gbcm_write_flush(socket)) {
@@ -1544,7 +1542,7 @@ GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbd)
     if (gbcm_read(socket, (char *)buffer, 2 * sizeof(long)) != 2 * sizeof(long)) {
         return GB_export_error("ARB_DB CLIENT ERROR receive failed 2336");
     }
-    error = gbcmc_read_keys(socket, (GBDATA *)gbd);
+    error = gbcmc_read_keys(socket, gbd);
     if (error) return error;
 
     gbcm_read_flush();

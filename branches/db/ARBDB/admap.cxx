@@ -425,11 +425,11 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
         {
             size_t gbccopy_size;
             if (out) {
-                gbdata_offset *dof = find_gbdata_offset(quark, (GBDATA *)gbc);
+                gbdata_offset *dof = find_gbdata_offset(quark, gbc);
                 gbccopy.index = dof->index;
                 gb_assert(dof->index <= gbc->index); // very simple check
 
-                gbccopy.rel_father = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset, (GBDATA*)GB_FATHER(gbc));
+                gbccopy.rel_father = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset, GB_FATHER(gbc));
 
                 gbccopy.ext = NULL;
                 convertFlags4Save(&(gbccopy.flags), &(gbccopy.flags2), &(gbccopy.flags3));
@@ -474,7 +474,7 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
                 gbecopy.index = dof->index;
                 gb_assert(dof->index <= gbe->index); // very simple check
 
-                gbecopy.rel_father  = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset, (GBDATA*)GB_FATHER(gbe));
+                gbecopy.rel_father  = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset, GB_FATHER(gbe));
                 gbecopy.ext         = NULL;
                 gbecopy.server_id   = GBTUM_MAGIC_NUMBER;
                 convertFlags4Save(&(gbecopy.flags), &(gbecopy.flags2), NULL);
