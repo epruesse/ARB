@@ -196,6 +196,15 @@ public:
 
     GB_MAIN_IDX main_idx;
     GB_REL_IFS  rel_ifs;
+
+    void set_touched_idx(int idx) {
+        if (!index_of_touched_one_son || index_of_touched_one_son == idx+1) {
+            index_of_touched_one_son = idx+1;
+        }
+        else {
+            index_of_touched_one_son = -1;
+        }
+    }
 };
 
 // --------------------

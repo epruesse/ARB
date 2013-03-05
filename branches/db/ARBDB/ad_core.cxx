@@ -31,32 +31,18 @@ inline void _GB_CHECK_IN_UNDO_MODIFY(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 // ---------------------------
 //      GB data management
 
-void gb_touch_entry(GBDATA * gbd, GB_CHANGE val) {
-    GBCONTAINER *gbc;
-    GBCONTAINER *gbc_father;
-
+void gb_touch_entry(GBDATA *gbd, GB_CHANGE val) {
     gbd->flags2.update_in_server = 0;
-    if (val > (GB_CHANGE)(int)GB_ARRAY_FLAGS(gbd).changed) {
-        GB_ARRAY_FLAGS(gbd).changed = val;
-        GB_ARRAY_FLAGS(gbd).ever_changed = 1;
-    }
-    gbc = GB_FATHER(gbd);
+    GB_ARRAY_FLAGS(gbd).inc_change(val);
 
-    if ((!gbc->index_of_touched_one_son) || gbc->index_of_touched_one_son == gbd->index+1) {
-        gbc->index_of_touched_one_son = gbd->index+1;
-    }
-    else {
-        gbc->index_of_touched_one_son = -1;
-    }
+    GBCONTAINER *gbc = GB_FATHER(gbd);
+    gbc->set_touched_idx(gbd->index);
 
-    while ((gbc_father=GB_FATHER(gbc))!=NULL)
-    {
-        if ((!gbc_father->index_of_touched_one_son) || gbc_father->index_of_touched_one_son == gbc->index+1) {
-            gbc_father->index_of_touched_one_son = gbc->index+1;
-        }
-        else {
-            gbc_father->index_of_touched_one_son = -1;
-        }
+    while (1) {
+        GBCONTAINER *gbc_father = GB_FATHER(gbc);
+        if (!gbc_father) break;
+
+        gbc_father->set_touched_idx(gbc->index);
 
         if (gbc->flags2.update_in_server) {
             gbc->flags2.update_in_server = 0;
@@ -65,10 +51,7 @@ void gb_touch_entry(GBDATA * gbd, GB_CHANGE val) {
             if (GB_ARRAY_FLAGS(gbc).changed >= GB_SON_CHANGED)
                 return;
         }
-        if (GB_ARRAY_FLAGS(gbc).changed < GB_SON_CHANGED) {
-            GB_ARRAY_FLAGS(gbc).changed = GB_SON_CHANGED;
-            GB_ARRAY_FLAGS(gbc).ever_changed = 1;
-        }
+        GB_ARRAY_FLAGS(gbc).inc_change(GB_SON_CHANGED);
         gbc = gbc_father;
     }
 }
@@ -233,8 +216,7 @@ static void gb_unlink_entry(GBDATA * gbd) {
 
         SET_GB_HEADER_LIST_GBD(*hls, NULL);
         hls->flags.key_quark    = 0;
-        hls->flags.changed      = GB_DELETED;
-        hls->flags.ever_changed = 1;
+        hls->flags.set_change(GB_DELETED);
         father->d.size--;
         SET_GB_FATHER(gbd, NULL);
     }

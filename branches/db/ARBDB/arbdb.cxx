@@ -1544,6 +1544,9 @@ GBENTRY *gb_create(GBCONTAINER *father, const char *key, GB_TYPES type) {
     GBENTRY *gbe = gb_make_entry(father, key, -1, 0, type);
     gb_touch_header(GB_FATHER(gbe));
     gb_touch_entry(gbe, GB_CREATED);
+
+    gb_assert(GB_ARRAY_FLAGS(gbe).changed < GB_DELETED); // happens sometimes -> needs debugging
+
     return gbe;
 }
 
@@ -1598,14 +1601,7 @@ GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
         }
     }
 
-    // @@@ DRY vs gb_create
-    GBDATA *gbd = gb_make_entry(father->as_container(), key, -1, 0, type);
-    gb_touch_header(GB_FATHER(gbd));
-    gb_touch_entry(gbd, GB_CREATED);
-
-    gb_assert(GB_ARRAY_FLAGS(gbd).changed < GB_DELETED); // happens sometimes -> needs debugging
-
-    return gbd;
+    return gb_create(father->expect_container(), key, type);
 }
 
 GBDATA *GB_create_container(GBDATA *father, const char *key) {
@@ -1636,11 +1632,7 @@ GBDATA *GB_create_container(GBDATA *father, const char *key) {
     }
 
     GB_test_transaction(father);
-
-    GBCONTAINER *gbc = gb_make_container(father->expect_container(), key, -1, 0);
-    gb_touch_header(GB_FATHER(gbc));
-    gb_touch_entry(gbc, GB_CREATED);
-    return gbc;
+    return gb_create_container(father->expect_container(), key);
 }
 
 // ----------------------

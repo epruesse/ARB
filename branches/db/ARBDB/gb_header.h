@@ -21,6 +21,14 @@ struct gb_header_flags {
     unsigned int key_quark : 24;                    // == 0 -> invalid
     unsigned int changed : 3;
     unsigned int ever_changed : 1;                  // is this element ever changed
+
+    void set_change(GB_CHANGE val) {
+        changed      = val;
+        ever_changed = 1;
+    }
+    void inc_change(GB_CHANGE val) {
+        if (changed<val) set_change(val);
+    }
 };
 
 struct gb_header_list {                             // public fast flags

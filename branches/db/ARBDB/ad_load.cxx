@@ -694,8 +694,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                         gb_delete_entry(gb2);
                     }
                     else {
-                        header[index].flags.ever_changed = 1;
-                        header[index].flags.changed      = GB_DELETED;
+                        header[index].flags.set_change(GB_DELETED);
                     }
 
                     break;

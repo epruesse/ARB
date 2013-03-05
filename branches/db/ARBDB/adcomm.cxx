@@ -462,8 +462,7 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
                     }
                     else {
                         if (buffer2->changed >= GB_DELETED) {
-                            hdl->flags.changed = GB_DELETED;
-                            hdl->flags.ever_changed = 1;
+                            hdl->flags.set_change(GB_DELETED);
                         }
                     }
                     hdl->flags.flags = buffer2->flags;
