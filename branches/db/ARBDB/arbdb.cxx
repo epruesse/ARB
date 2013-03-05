@@ -1119,9 +1119,6 @@ GB_ERROR GB_write_float(GBDATA *gbd, double f)
     return 0;
 }
 
-GB_ERROR gb_write_compressed_pntr(GBDATA *gbd, const char *s, long memsize, long stored_size) { // @@@ elim 
-    return gb_write_compressed_pntr(gbd->as_entry(), s, memsize, stored_size);
-}
 GB_ERROR gb_write_compressed_pntr(GBENTRY *gbe, const char *s, long memsize, long stored_size) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbe);
 
@@ -1543,11 +1540,11 @@ bool GB_check_father(GBDATA *gbd, GBDATA *gb_maybefather) {
 // --------------------------
 //      create and rename
 
-GBDATA *gb_create(GBCONTAINER *father, const char *key, GB_TYPES type) {
-    GBDATA *gbd = gb_make_entry(father, key, -1, 0, type);
-    gb_touch_header(GB_FATHER(gbd));
-    gb_touch_entry(gbd, GB_CREATED);
-    return gbd;
+GBENTRY *gb_create(GBCONTAINER *father, const char *key, GB_TYPES type) {
+    GBENTRY *gbe = gb_make_entry(father, key, -1, 0, type);
+    gb_touch_header(GB_FATHER(gbe));
+    gb_touch_entry(gbe, GB_CREATED);
+    return gbe;
 }
 
 GBCONTAINER *gb_create_container(GBCONTAINER *father, const char *key) {
@@ -1773,9 +1770,11 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
         case GB_BYTES:
         case GB_INTS:
         case GB_FLOATS: {
-            gb_save_extern_data_in_ts(dest);
             GBENTRY *source_entry = source->as_entry();
-            GB_SETSMDMALLOC(dest->as_entry(), GB_GETSIZE(source_entry),
+            GBENTRY *dest_entry   = dest->as_entry();
+
+            gb_save_extern_data_in_ts(dest_entry);
+            GB_SETSMDMALLOC(dest_entry, GB_GETSIZE(source_entry),
                             GB_GETMEMSIZE(source_entry),
                             GB_GETDATA(source_entry));
 

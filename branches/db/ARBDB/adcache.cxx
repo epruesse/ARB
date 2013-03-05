@@ -210,9 +210,6 @@ char *gb_read_cache(GBENTRY *gbe) {
     return cached_data;
 }
 
-void gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) { // @@@ elim!
-    gb_free_cache(Main, gbd->as_entry());
-}
 void gb_free_cache(GB_MAIN_TYPE *Main, GBENTRY *gbe) {
     gb_cache_idx index = gbe->cache_index;
 

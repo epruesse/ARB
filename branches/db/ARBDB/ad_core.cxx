@@ -619,9 +619,6 @@ static void gb_abortdata(GBENTRY *gbe) {
 }
 
 
-void gb_save_extern_data_in_ts(GBDATA *gbd) { // @@@ elim
-    gb_save_extern_data_in_ts(gbd->as_entry());
-}
 void gb_save_extern_data_in_ts(GBENTRY *gbe) {
     /* Saves gbe->info into gbe->ext->old
      * Destroys gbe->info!
