@@ -270,7 +270,7 @@ static GB_ERROR renameQuicksaves(GB_MAIN_TYPE *Main) {
 // ------------------------
 //      Ascii to Binary
 
-long gb_ascii_2_bin(const char *source, GBENTRY *gbd) {
+long gb_ascii_2_bin(const char *source, GBENTRY *gbe) {
     const char *s = source;
 
     long len = 0;
@@ -283,7 +283,7 @@ long gb_ascii_2_bin(const char *source, GBENTRY *gbd) {
     long  i;
 
     A_TO_I(c);
-    gbd->flags.compressed_data = c;
+    gbe->flags.compressed_data = c;
 
     if (*s == ':') {
         size = 0;
@@ -315,8 +315,8 @@ long gb_ascii_2_bin(const char *source, GBENTRY *gbd) {
 
     memsize = len;
 
-    GB_SETSMDMALLOC_UNINITIALIZED(gbd, size, memsize);
-    d = GB_GETDATA(gbd);
+    GB_SETSMDMALLOC_UNINITIALIZED(gbe, size, memsize);
+    d = GB_GETDATA(gbe);
     s = source;
     while ((c = *(s++))) {
         if (c == '.') {
@@ -350,17 +350,17 @@ long gb_ascii_2_bin(const char *source, GBENTRY *gbd) {
 
 #define GB_PUT(c, out) do { if (c>=10) c+='A'-10; else c += '0'; *(out++) = (char)c; } while (0)
 
-static GB_BUFFER gb_bin_2_ascii(GBENTRY *gbd) {
+static GB_BUFFER gb_bin_2_ascii(GBENTRY *gbe) {
     signed char   *s, *out, c, mo;
     unsigned long  i;
     int            j;
     char          *buffer;
     int            k;
 
-    char *source     = GB_GETDATA(gbd);
-    long  len        = GB_GETMEMSIZE(gbd);
-    long  xtended    = GB_GETSIZE(gbd);
-    int   compressed = gbd->flags.compressed_data;
+    char *source     = GB_GETDATA(gbe);
+    long  len        = GB_GETMEMSIZE(gbe);
+    long  xtended    = GB_GETSIZE(gbe);
+    int   compressed = gbe->flags.compressed_data;
 
     buffer = GB_give_buffer(len * 2 + 10);
     out = (signed char *)buffer;

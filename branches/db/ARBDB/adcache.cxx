@@ -11,7 +11,7 @@
 #include "gb_storage.h"
 
 struct gb_cache_entry {
-    GBENTRY      *gbd;
+    GBENTRY      *gbe;
     gb_cache_idx  prev;
     gb_cache_idx  next;
     char         *data;
@@ -82,8 +82,8 @@ inline void flush_cache_entry(gb_cache& cache, gb_cache_idx index) {
 
     freenull(entry.data);
     cache.sum_data_size    -= entry.sizeof_data;
-    gb_assert(entry.gbd->cache_index == index); // oops - cache error
-    entry.gbd->cache_index  = 0;
+    gb_assert(entry.gbe->cache_index == index); // oops - cache error
+    entry.gbe->cache_index  = 0;
 
     // insert deleted entry in free list
     entry.next            = cache.firstfree_entry;
@@ -185,17 +185,17 @@ void gb_destroy_cache(GB_MAIN_TYPE *Main) {
     }
 }
 
-char *gb_read_cache(GBENTRY *gbd) {
+char *gb_read_cache(GBENTRY *gbe) {
     char         *cached_data = NULL;
-    gb_cache_idx  index       = gbd->cache_index;
+    gb_cache_idx  index       = gbe->cache_index;
 
     if (index) {
-        gb_cache&       cache = GB_MAIN(gbd)->cache;
+        gb_cache&       cache = GB_MAIN(gbe)->cache;
         gb_cache_entry& entry = unlink_cache_entry(cache, index);
-        gb_assert(entry.gbd == gbd);
+        gb_assert(entry.gbe == gbe);
 
         // check validity
-        if (GB_GET_EXT_UPDATE_DATE(gbd) > entry.clock) {
+        if (GB_GET_EXT_UPDATE_DATE(gbe) > entry.clock) {
             flush_cache_entry(cache, index);
         }
         else {
@@ -213,8 +213,8 @@ char *gb_read_cache(GBENTRY *gbd) {
 void gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) { // @@@ elim!
     gb_free_cache(Main, gbd->as_entry());
 }
-void gb_free_cache(GB_MAIN_TYPE *Main, GBENTRY *gbd) {
-    gb_cache_idx index = gbd->cache_index;
+void gb_free_cache(GB_MAIN_TYPE *Main, GBENTRY *gbe) {
+    gb_cache_idx index = gbe->cache_index;
 
     if (index) {
         gb_cache& cache = Main->cache;
@@ -252,10 +252,10 @@ static char *cache_free_some_memory(gb_cache& cache, size_t needed_mem) {
     return data;
 }
 
-char *gb_alloc_cache_index(GBENTRY *gbd, size_t size) {
-    gb_assert(gbd->cache_index == 0);
+char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
+    gb_assert(gbe->cache_index == 0);
 
-    gb_cache&     cache = GB_MAIN(gbd)->cache;
+    gb_cache&     cache = GB_MAIN(gbe)->cache;
     char         *data  = cache_free_some_memory(cache, size);
     gb_cache_idx  index = cache.firstfree_entry;
 
@@ -270,15 +270,15 @@ char *gb_alloc_cache_index(GBENTRY *gbd, size_t size) {
 
     entry.sizeof_data = size;
     entry.data        = data;
-    entry.gbd         = gbd;
-    entry.clock       = GB_GET_EXT_UPDATE_DATE(gbd);
+    entry.gbe         = gbe;
+    entry.clock       = GB_GET_EXT_UPDATE_DATE(gbe);
     
 #if defined(GEN_CACHE_STATS)
     entry.reused     = 0;
-    entry.dbpath     = strdup(GB_get_db_path(gbd));
+    entry.dbpath     = strdup(GB_get_db_path(gbe));
 #endif                                              // GEN_CACHE_STATS
 
-    gbd->cache_index = index;
+    gbe->cache_index = index;
 
     link_cache_entry_to_top(cache, index);
     cache.sum_data_size += size; 

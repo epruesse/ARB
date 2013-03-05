@@ -325,92 +325,90 @@ GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQ
     if (!keyq) keyq = gb_find_or_create_quark(Main, key);
 
     long     gbm_index = GB_QUARK_2_GBMINDEX(Main, keyq);
-    GBENTRY *gbd       = (GBENTRY*)gbm_get_mem(sizeof(GBENTRY), gbm_index);
+    GBENTRY *gbe       = (GBENTRY*)gbm_get_mem(sizeof(GBENTRY), gbm_index);
 
-    GB_GBM_INDEX(gbd) = gbm_index;
-    SET_GB_FATHER(gbd, father);
+    GB_GBM_INDEX(gbe) = gbm_index;
+    SET_GB_FATHER(gbe, father);
 
     switch (type) {
         case GB_STRING_SHRT:
             type = GB_STRING;
             // fall-through
         case GB_STRING:
-            GB_SETSMDMALLOC(gbd, 6, 7, "<NONE>");
+            GB_SETSMDMALLOC(gbe, 6, 7, "<NONE>");
             break;
         case GB_LINK:
-            GB_SETSMDMALLOC(gbd, 1, 2, ":");
+            GB_SETSMDMALLOC(gbe, 1, 2, ":");
             break;
         default:
             break;
     }
-    gbd->flags.type = type;
+    gbe->flags.type = type;
 
     if (Main->local_mode) {
-        gbd->server_id = GBTUM_MAGIC_NUMBER;
+        gbe->server_id = GBTUM_MAGIC_NUMBER;
     }
     if (Main->clock) {
-        GB_CREATE_EXT(gbd);
-        gbd->ext->creation_date = Main->clock;
+        GB_CREATE_EXT(gbe);
+        gbe->ext->creation_date = Main->clock;
     }
 
-    gb_link_entry(father, gbd, index_pos);
-    if (key)    gb_write_key(gbd, key);
-    else        gb_write_index_key(father, gbd->index, keyq);
+    gb_link_entry(father, gbe, index_pos);
+    if (key)    gb_write_key(gbe, key);
+    else        gb_write_index_key(father, gbe->index, keyq);
 
-    return gbd;
+    return gbe;
 }
 
-GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbd, long index_pos, GBQUARK keyq) {
+GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbc, long index_pos, GBQUARK keyq) {
     // inserts an object into the dabase hierarchy
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
-    SET_GB_FATHER(gbd, father);
-    gbd->main_idx = father->main_idx;
+    SET_GB_FATHER(gbc, father);
+    gbc->main_idx = father->main_idx;
 
-    if (Main->local_mode) gbd->server_id = GBTUM_MAGIC_NUMBER;
+    if (Main->local_mode) gbc->server_id = GBTUM_MAGIC_NUMBER;
     if (Main->clock)
     {
-        GB_CREATE_EXT(gbd);
-        gbd->ext->creation_date = Main->clock;
+        GB_CREATE_EXT(gbc);
+        gbc->ext->creation_date = Main->clock;
     }
-    gb_link_entry(father, gbd, index_pos);
-    gb_write_index_key(father, gbd->index, keyq);
+    gb_link_entry(father, gbc, index_pos);
+    gb_write_index_key(father, gbc->index, keyq);
 
-    return gbd;
+    return gbc;
 }
 
 
 GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index_pos, GBQUARK keyq) {
-    GBCONTAINER *gbd;
+    GBCONTAINER *gbc;
 
     if (father) {
         GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
         if (!keyq) keyq   = gb_find_or_create_NULL_quark(Main, key);
         long gbm_index    = GB_QUARK_2_GBMINDEX(Main, keyq);
-        gbd               = (GBCONTAINER *)gbm_get_mem(sizeof(GBCONTAINER), gbm_index);
-        GB_GBM_INDEX(gbd) = gbm_index;
+        gbc               = (GBCONTAINER *)gbm_get_mem(sizeof(GBCONTAINER), gbm_index);
+        GB_GBM_INDEX(gbc) = gbm_index;
 
-        SET_GB_FATHER(gbd, father);
-        gbd->flags.type = GB_DB;
-        gbd->main_idx = father->main_idx;
-        if (Main->local_mode) gbd->server_id = GBTUM_MAGIC_NUMBER;
+        SET_GB_FATHER(gbc, father);
+        gbc->flags.type = GB_DB;
+        gbc->main_idx = father->main_idx;
+        if (Main->local_mode) gbc->server_id = GBTUM_MAGIC_NUMBER;
         if (Main->clock) {
-            GB_CREATE_EXT(gbd);
-            gbd->ext->creation_date = Main->clock;
+            GB_CREATE_EXT(gbc);
+            gbc->ext->creation_date = Main->clock;
         }
-        gb_link_entry(father, gbd, index_pos);
-        if (key)    gb_write_key(gbd, key);
-        else        gb_write_index_key(father, gbd->index, keyq);
-
-        return gbd;
+        gb_link_entry(father, gbc, index_pos);
+        if (key)    gb_write_key(gbc, key);
+        else        gb_write_index_key(father, gbc->index, keyq);
     }
     else { // main entry
-        gbd = (GBCONTAINER *) gbm_get_mem(sizeof(GBCONTAINER), 0);
-        gbd->flags.type = GB_DB;
+        gbc = (GBCONTAINER *) gbm_get_mem(sizeof(GBCONTAINER), 0);
+        gbc->flags.type = GB_DB;
     }
 
-    return gbd;
+    return gbc;
 }
 
 void gb_pre_delete_entry(GBDATA *gbd) {
@@ -545,20 +543,20 @@ void gb_delete_dummy_father(GBCONTAINER*& gbc) {
 // ---------------------
 //      Data Storage
 
-static gb_transaction_save *gb_new_gb_transaction_save(GBENTRY *gbd) {
+static gb_transaction_save *gb_new_gb_transaction_save(GBENTRY *gbe) {
     // Note: does not increment the refcounter
     gb_transaction_save *ts = (gb_transaction_save *)gbm_get_mem(sizeof(gb_transaction_save), GBM_CB_INDEX);
 
-    ts->flags  = gbd->flags;
-    ts->flags2 = gbd->flags2;
+    ts->flags  = gbe->flags;
+    ts->flags2 = gbe->flags2;
 
-    if (gbd->flags2.extern_data) {
-        ts->info.ex.data    = GB_EXTERN_DATA_DATA(gbd->info.ex);
-        ts->info.ex.memsize = gbd->info.ex.memsize;
-        ts->info.ex.size    = gbd->info.ex.size;
+    if (gbe->flags2.extern_data) {
+        ts->info.ex.data    = GB_EXTERN_DATA_DATA(gbe->info.ex);
+        ts->info.ex.memsize = gbe->info.ex.memsize;
+        ts->info.ex.size    = gbe->info.ex.size;
     }
     else {
-        memcpy(&(ts->info), &(gbd->info), sizeof(gbd->info));
+        memcpy(&(ts->info), &(gbe->info), sizeof(gbe->info));
     }
 
     ts->refcount = 1;

@@ -537,10 +537,10 @@ static GBDATA *gb_remembered_db() {
     return Main ? Main->gb_main() : NULL;
 }
 
-GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
+GB_ERROR gb_unfold(GBCONTAINER *gbc, long deep, int index_pos) {
     /*! get data from server.
      *
-     * @param gbd container to unfold
+     * @param gbc container to unfold
      * @param deep if != 0, then get subitems too.
      * @param index_pos
      * - >= 0, get indexed item from server
@@ -550,20 +550,20 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
      */
 
     GB_ERROR        error;
-    gb_header_list *header = GB_DATA_LIST_HEADER(gbd->d);
+    gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
 
-    if (!gbd->flags2.folded_container) return 0;
-    if (index_pos> gbd->d.nheader) gb_create_header_array(gbd, index_pos + 1);
+    if (!gbc->flags2.folded_container) return 0;
+    if (index_pos> gbc->d.nheader) gb_create_header_array(gbc, index_pos + 1);
     if (index_pos >= 0  && GB_HEADER_LIST_GBD(header[index_pos])) return 0;
 
-    if (GBCONTAINER_MAIN(gbd)->local_mode) {
+    if (GBCONTAINER_MAIN(gbc)->local_mode) {
         GB_internal_error("Cannot unfold local_mode database");
         return 0;
     }
 
     do {
         if (index_pos<0) break;
-        if (index_pos >= gbd->d.nheader) break;
+        if (index_pos >= gbc->d.nheader) break;
         if (header[index_pos].flags.changed >= GB_DELETED) {
             GB_internal_error("Tried to unfold a deleted item");
             return 0;
@@ -571,18 +571,18 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
         if (GB_HEADER_LIST_GBD(header[index_pos])) return 0;            // already unfolded
     } while (0);
 
-    error = gbcm_unfold_client(gbd, deep, index_pos);
+    error = gbcm_unfold_client(gbc, deep, index_pos);
     if (error) {
         GB_print_error();
         return error;
     }
 
     if (index_pos<0) {
-        gb_untouch_children(gbd);
-        gbd->flags2.folded_container = 0;
+        gb_untouch_children(gbc);
+        gbc->flags2.folded_container = 0;
     }
     else {
-        GBDATA *gb2 = GBCONTAINER_ELEM(gbd, index_pos);
+        GBDATA *gb2 = GBCONTAINER_ELEM(gbc, index_pos);
         if (gb2) {
             if (gb2->is_container()) {
                 gb_untouch_children_and_me(gb2->as_container());
@@ -1122,14 +1122,14 @@ GB_ERROR GB_write_float(GBDATA *gbd, double f)
 GB_ERROR gb_write_compressed_pntr(GBDATA *gbd, const char *s, long memsize, long stored_size) { // @@@ elim 
     return gb_write_compressed_pntr(gbd->as_entry(), s, memsize, stored_size);
 }
-GB_ERROR gb_write_compressed_pntr(GBENTRY *gbd, const char *s, long memsize, long stored_size) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+GB_ERROR gb_write_compressed_pntr(GBENTRY *gbe, const char *s, long memsize, long stored_size) {
+    GB_MAIN_TYPE *Main = GB_MAIN(gbe);
 
-    gb_free_cache(Main, gbd);
-    gb_save_extern_data_in_ts(gbd);
-    gbd->flags.compressed_data = 1;
-    GB_SETSMDMALLOC(gbd, stored_size, (size_t)memsize, (char *)s);
-    gb_touch_entry(gbd, GB_NORMAL_CHANGE);
+    gb_free_cache(Main, gbe);
+    gb_save_extern_data_in_ts(gbe);
+    gbe->flags.compressed_data = 1;
+    GB_SETSMDMALLOC(gbe, stored_size, (size_t)memsize, (char *)s);
+    gb_touch_entry(gbe, GB_NORMAL_CHANGE);
 
     return 0;
 }
@@ -1947,8 +1947,8 @@ bool GB_in_temporary_branch(GBDATA *gbd) { // @@@ used in ptpan branch - do not 
 // ---------------------
 //      transactions
 
-GB_ERROR gb_init_transaction(GBCONTAINER *gbd) { // the first transaction ever
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+GB_ERROR gb_init_transaction(GBCONTAINER *gbc) { // the first transaction ever
+    GB_MAIN_TYPE *Main = GB_MAIN(gbc);
     Main->transaction  = 1;
 
     GB_ERROR error = gbcmc_init_transaction(Main->root_container);

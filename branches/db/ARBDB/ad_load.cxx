@@ -563,7 +563,7 @@ static GB_ERROR gb_parse_ascii(Reader *r, GBCONTAINER *gb_parent) {
     return error;
 }
 
-static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
+static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbc) {
     /* This loads an ACSII database
      * if path == "-" -> read from stdin
      */
@@ -584,9 +584,9 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
     if (!error) {
         Reader *r = openReader(in);
 
-        GB_search(gbd, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
+        GB_search(gbc, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
 
-        error = gb_parse_ascii(r, gbd);
+        error = gb_parse_ascii(r, gbc);
 
         GB_ERROR cl_error = closeReader(r);
         if (!error) error = cl_error;
@@ -599,12 +599,12 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
 // --------------------------
 //      Read binary files
 
-static long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recovery_reason) {
+static long gb_recover_corrupt_file(GBCONTAINER *gbc, FILE *in, GB_ERROR recovery_reason) {
     // search pattern dx xx xx xx string 0
     static FILE *old_in = 0;
     static unsigned char *file = 0;
     static long size = 0;
-    if (!GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
+    if (!GBCONTAINER_MAIN(gbc)->allow_corrupt_file_recovery) {
         if (!recovery_reason) { recovery_reason = GB_await_error(); }
         GB_export_errorf("Aborting recovery (because recovery mode is disabled)\n"
                          "Error causing recovery: '%s'\n"
@@ -720,7 +720,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
 
         GBENTRY     *gbe    = NULL;
         GBCONTAINER *gbc    = NULL;
-        GBDATA      *gb_any = NULL; // @@@ rename into 'gbd' when tests succeed
+        GBDATA      *gb_any = NULL; // @@@ rename into 'gbd' when tests succeed!
 
         {
             int index;
@@ -922,7 +922,7 @@ inline bool read_keyword(const char *expected_keyword, FILE *in, GBCONTAINER *gb
     return as_expected;
 }
 
-static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
+static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
     int   c = 1;
     long  i;
     long  error;
@@ -932,17 +932,17 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
     long  first_free_key;
     char *buffer, *p;
 
-    GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbd);
+    GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbc);
 
     while (c && c != EOF) {
         c = getc(in);
     }
     if (c==EOF) {
-        gb_read_bin_error(in, gbd, "First zero not found");
+        gb_read_bin_error(in, gbc, "First zero not found");
         return 1;
     }
 
-    if (!read_keyword("vers", in, gbd)) return 1;
+    if (!read_keyword("vers", in, gbc)) return 1;
 
     // detect byte order in ARB file
     i = gb_read_in_uint32(in, 0);
@@ -951,17 +951,17 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
         case 0x01020304: reversed = false; break;
         case 0x04030201: reversed = true; break;
         default:
-            gb_read_bin_error(in, gbd, "keyword '^A^B^C^D' not found");
+            gb_read_bin_error(in, gbc, "keyword '^A^B^C^D' not found");
             return 1;
     }
 
     version = gb_read_in_uint32(in, reversed);
     if (version == 0) {
-        gb_read_bin_error(in, gbd, "ARB Database version 0 no longer supported (rev [9647])");
+        gb_read_bin_error(in, gbc, "ARB Database version 0 no longer supported (rev [9647])");
         return 1;
     }
     if (version>2) {
-        gb_read_bin_error(in, gbd, "ARB Database version > '2'");
+        gb_read_bin_error(in, gbc, "ARB Database version > '2'");
         return 1;
     }
 
@@ -971,7 +971,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
         return 1;
     }
 
-    if (!read_keyword("keys", in, gbd)) return 1;
+    if (!read_keyword("keys", in, gbc)) return 1;
 
     if (!Main->key_2_index_hash) Main->key_2_index_hash = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
 
@@ -989,7 +989,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
             c = getc(in);
             if (!c) break;
             if (c==EOF) {
-                gb_read_bin_error(in, gbd, "unexpected EOF while reading keys");
+                gb_read_bin_error(in, gbc, "unexpected EOF while reading keys");
                 return 1;
             }
             *(p++) = c;
@@ -1021,7 +1021,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
 
     Main->first_free_key = first_free_key;
 
-    if (!read_keyword("time", in, gbd)) return 1;
+    if (!read_keyword("time", in, gbc)) return 1;
     
     for (j=0; j<(ALLOWED_DATES-1); j++) {         // read times
         p = buffer;
@@ -1029,7 +1029,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
             c = getc(in);
             if (!c) break;
             if (c==EOF) {
-                gb_read_bin_error(in, gbd, "unexpected EOF while reading times");
+                gb_read_bin_error(in, gbc, "unexpected EOF while reading times");
                 return 1;
             }
             *(p++) = c;
@@ -1039,12 +1039,12 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
         freedup(Main->dates[j], buffer);
     }
     if (j>=(ALLOWED_DATES-1)) {
-        gb_read_bin_error(in, gbd, "too many date entries");
+        gb_read_bin_error(in, gbc, "too many date entries");
         return 1;
     }
     Main->last_updated = (unsigned int)j;
 
-    if (!read_keyword("data", in, gbd)) return 1; 
+    if (!read_keyword("data", in, gbc)) return 1;
 
     nodecnt = gb_read_in_uint32(in, reversed);
     GB_give_buffer(256);
@@ -1071,14 +1071,14 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
             case  0: map_fail_reason = GB_await_error(); break;
             case  1: {
                 if (gb_main_array[mheader.main_idx]==NULL) {
-                    GBCONTAINER *newGbd = (GBCONTAINER*)gb_map_mapfile(map_path);
+                    GBCONTAINER *newGbd = (GBCONTAINER*)gb_map_mapfile(map_path); // @@@ rename -> new_gbc
 
                     if (newGbd) {
-                        GBCONTAINER *father  = GB_FATHER(gbd);
+                        GBCONTAINER *father  = GB_FATHER(gbc);
                         GB_MAIN_IDX  new_idx = mheader.main_idx;
                         GB_MAIN_IDX  old_idx = father->main_idx;
 
-                        GB_commit_transaction(gbd);
+                        GB_commit_transaction(gbc);
 
                         gb_assert(newGbd->main_idx == new_idx);
                         gb_assert((new_idx % GB_MAIN_ARRAY_SIZE) == new_idx);
@@ -1090,16 +1090,16 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
                         Main->root_container = newGbd;
                         father->main_idx     = new_idx;
 
-                        SET_GBCONTAINER_ELEM(father, gbd->index, NULL); // unlink old main-entry
+                        SET_GBCONTAINER_ELEM(father, gbc->index, NULL); // unlink old main-entry
 
-                        gbd = newGbd;
-                        SET_GB_FATHER(gbd, father);
+                        gbc = newGbd;
+                        SET_GB_FATHER(gbc, father);
                         
-                        SET_GBCONTAINER_ELEM(father, gbd->index, gbd); // link new main-entry
+                        SET_GBCONTAINER_ELEM(father, gbc->index, gbc); // link new main-entry
 
                         gb_main_array[old_idx]    = NULL;
 
-                        GB_begin_transaction(gbd);
+                        GB_begin_transaction(gbc);
                         mapped = true;
                     }
                 }
@@ -1131,7 +1131,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
             if (Main->clock<=0) Main->clock++;
             // fall-through
         case 1: // master arb file
-            error = gb_read_bin_rek_V2(in, gbd, nodecnt, version, reversed, 0);
+            error = gb_read_bin_rek_V2(in, gbc, nodecnt, version, reversed, 0);
             break;
         default:
             GB_internal_errorf("Sorry: This ARB Version does not support database format V%li", version);
@@ -1139,7 +1139,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbd, bool allowed_to_load_diff) {
     }
 
     if (gb_local->search_system_folder) {
-        gb_search_system_folder(gbd);
+        gb_search_system_folder(gbc);
     }
 
     switch (version) {
@@ -1202,7 +1202,7 @@ void gb_release_main_idx(GB_MAIN_TYPE *Main) {
 }
 
 static GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent) {
-    GBCONTAINER *gbd   = Main->root_container;
+    GBCONTAINER *gbc   = Main->root_container;
     GB_ERROR     error = NULL;
 
     Main->local_mode = false;
@@ -1212,18 +1212,18 @@ static GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char
         error = GBS_global_string("There is no ARBDB server '%s', please start one or add a filename", path);
     }
     else {
-        gbd->server_id    = 0;
+        gbc->server_id    = 0;
         Main->remote_hash = GBS_create_numhash(GB_REMOTE_HASH_SIZE);
-        error             = gb_init_transaction(gbd); // login in server
+        error             = gb_init_transaction(gbc); // login in server
 
         if (!error) {
-            gbd->flags2.folded_container = 1;
+            gbc->flags2.folded_container = 1;
 
-            if (strchr(opent, 't')) error = gb_unfold(gbd, 0, -2);  // tiny
-            else if (strchr(opent, 'm')) error = gb_unfold(gbd, 1, -2); // medium (no sequence)
-            else if (strchr(opent, 'b')) error = gb_unfold(gbd, 2, -2); // big (no tree)
-            else if (strchr(opent, 'h')) error = gb_unfold(gbd, -1, -2); // huge (all)
-            else error                          = gb_unfold(gbd, 0, -2); // tiny
+            if (strchr(opent, 't')) error      = gb_unfold(gbc, 0, -2);  // tiny
+            else if (strchr(opent, 'm')) error = gb_unfold(gbc, 1, -2);  // medium (no sequence)
+            else if (strchr(opent, 'b')) error = gb_unfold(gbc, 2, -2);  // big (no tree)
+            else if (strchr(opent, 'h')) error = gb_unfold(gbc, -1, -2); // huge (all)
+            else error                         = gb_unfold(gbc, 0, -2);  // tiny
         }
     }
     return error;
@@ -1262,7 +1262,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
      *
      * @see GB_open() and GBT_open()
      */
-    GBCONTAINER   *gbd;
+    GBCONTAINER   *gbc;
     GB_MAIN_TYPE  *Main;
     gb_open_types  opentype;
     GB_CSTR        quickFile           = NULL;
@@ -1360,10 +1360,10 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
     Main->dummy_father            = gb_make_container(NULL, NULL, -1, 0); // create "main"
     Main->dummy_father->main_idx  = gb_make_main_idx(Main);
     Main->dummy_father->server_id = GBTUM_MAGIC_NUMBER;
-    gbd                           = gb_make_container(Main->dummy_father, NULL, -1, 0); // create "main"
+    gbc                           = gb_make_container(Main->dummy_father, NULL, -1, 0); // create "main"
 
-    Main->root_container = gbd;
-    gbcm_login(gbd, user);
+    Main->root_container = gbc;
+    gbcm_login(gbc, user);
     Main->opentype = opentype;
     Main->security_level = 7;
 
@@ -1378,7 +1378,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
             GB_ULONG time_of_main_file = 0; long i;
 
             Main->local_mode = true;
-            GB_begin_transaction(gbd);
+            GB_begin_transaction(gbc);
             Main->clock      = 0;                   // start clock
 
             FILE *input = read_from_stdin ? stdin : fopen(path, "rb");
@@ -1388,7 +1388,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
 
             if (!input) {
                 if (strchr(opent, 'c')) {
-                    GB_disable_quicksave(gbd, "Database Created");
+                    GB_disable_quicksave(gbc, "Database Created");
 
                     if (strchr(opent, 'D')) { // use default settings
                         GB_clear_error(); // with default-files gb_scan_directory (used above) has created an error, cause the path was a fake path
@@ -1413,7 +1413,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 }
                 else {
                     error = GBS_global_string("Database '%s' not found", path);
-                    gbd   = 0;
+                    gbc   = 0;
                 }
             }
             if (input) {
@@ -1425,8 +1425,8 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 i = (input != stdin) ? gb_read_in_uint32(input, 0) : 0;
 
                 if (is_binary_db_id(i)) {
-                    i = gb_read_bin(input, gbd, false);     // read or map whole db
-                    gbd = Main->root_container;
+                    i = gb_read_bin(input, gbc, false);     // read or map whole db
+                    gbc = Main->root_container;
                     fclose(input);
 
                     if (i) {
@@ -1435,12 +1435,12 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                             GB_clear_error();
                         }
                         else {
-                            gbd   = 0;
+                            gbc   = 0;
                             error = GB_await_error();
                         }
                     }
 
-                    if (gbd && quickFile) {
+                    if (gbc && quickFile) {
                         long     err;
                         GB_ERROR err_msg;
                     load_quick_save_file_only :
@@ -1463,7 +1463,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                             }
                             i = gb_read_in_uint32(input, 0);
                             if (is_binary_db_id(i)) {
-                                err = gb_read_bin(input, gbd, true);
+                                err = gb_read_bin(input, gbc, true);
                                 fclose (input);
 
                                 if (err) {
@@ -1491,14 +1491,14 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                                                       quickFile, err_msg);
 
                             if (!Main->allow_corrupt_file_recovery) {
-                                gbd = 0;
+                                gbc = 0;
                             }
                             else {
                                 GB_export_error(error);
                                 GB_print_error();
                                 GB_clear_error();
                                 error = 0;
-                                GB_disable_quicksave(gbd, "Couldn't load last quicksave (your latest changes are NOT included)");
+                                GB_disable_quicksave(gbc, "Couldn't load last quicksave (your latest changes are NOT included)");
                             }
                         }
                     }
@@ -1506,51 +1506,51 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 }
                 else {
                     if (input != stdin) fclose(input);
-                    error = gb_read_ascii(path, gbd);
-                    GB_disable_quicksave(gbd, "Sorry, I cannot save differences to ascii files\n"
+                    error = gb_read_ascii(path, gbc);
+                    GB_disable_quicksave(gbc, "Sorry, I cannot save differences to ascii files\n"
                                          "  Save whole database in binary mode first");
                 }
             }
         }
     }
     else {
-        GB_disable_quicksave(gbd, "Database not part of this process");
+        GB_disable_quicksave(gbc, "Database not part of this process");
         Main->local_mode = true;
-        GB_begin_transaction(gbd);
+        GB_begin_transaction(gbc);
     }
 
-    gb_assert(error || gbd);
+    gb_assert(error || gbc);
 
     if (error) {
         gbcm_logout(Main, user);
         gb_delete_dummy_father(Main->dummy_father);
-        gbd        = NULL;
+        gbc        = NULL;
         gb_destroy_main(Main);
 
         GB_export_error(error);
     }
     else {
-        GB_commit_transaction(gbd);
+        GB_commit_transaction(gbc);
         {
-            GB_begin_transaction(gbd); // New Transaction, should be quicksaveable
+            GB_begin_transaction(gbc); // New Transaction, should be quicksaveable
             if (!strchr(opent, 'N')) {               // new format
-                gb_convert_V2_to_V3(gbd); // Compression conversion
+                gb_convert_V2_to_V3(gbc); // Compression conversion
             }
             error = gb_load_key_data_and_dictionaries(Main);
             if (!error) error = gb_resort_system_folder_to_top(Main->root_container);
             // @@@ handle error 
-            GB_commit_transaction(gbd);
+            GB_commit_transaction(gbc);
         }
         Main->security_level = 0;
-        gbl_install_standard_commands(gbd);
+        gbl_install_standard_commands(gbc);
 
         if (Main->local_mode) {                     // i am the server
-            GBT_install_message_handler(gbd);
+            GBT_install_message_handler(gbc);
         }
         if (gb_verbose_mode && !dbCreated) GB_informationf("ARB: Loading '%s' done\n", path);
     }
     free(path);
-    return (GBDATA *)gbd;
+    return gbc;
 }
 
 GBDATA *GB_open(const char *path, const char *opent)
