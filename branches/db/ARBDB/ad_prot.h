@@ -371,7 +371,6 @@ GBQUARK GB_find_or_create_quark(GBDATA *gbd, const char *key);
 GBQUARK GB_get_quark(GBDATA *gbd);
 bool GB_has_key(GBDATA *gbd, const char *key);
 long GB_read_clock(GBDATA *gbd);
-long GB_read_transaction(GBDATA *gbd);
 GBDATA *GB_get_father(GBDATA *gbd);
 GBDATA *GB_get_grandfather(GBDATA *gbd);
 GBDATA *GB_get_root(GBDATA *gbd);

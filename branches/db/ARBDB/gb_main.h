@@ -79,8 +79,13 @@ struct gb_cache {
 #define ALLOWED_KEYS  15000
 #define ALLOWED_DATES 256
 
-struct GB_MAIN_TYPE {
-    int transaction;
+class GB_MAIN_TYPE {
+    inline GB_ERROR start_transaction();
+    GB_ERROR check_quick_save() const;
+
+    int transaction_level;
+
+public:
     int aborted_transaction;
     int local_mode;                                 // 1 = server, 0 = client
     int client_transaction_socket;
@@ -142,14 +147,14 @@ struct GB_MAIN_TYPE {
     gb_user    *this_user;
     gb_project *this_project;
 
-private:
+    // --------------------
 
-    inline GB_ERROR begin_initial_transaction();
-
-public:
+    int get_transaction_level() const { return transaction_level; }
 
     GBDATA *gb_main() const { return (GBDATA*)root_container; }
     GBDATA*& gb_main_ref() { return reinterpret_cast<GBDATA*&>(root_container); }
+
+    GB_ERROR login_to_server();
 
     inline GB_ERROR begin_transaction();
     inline GB_ERROR commit_transaction();
@@ -162,14 +167,18 @@ public:
 
     __ATTR__USERESULT GB_ERROR send_update_to_server(GBDATA *gbd);
 
-private:
-    GB_ERROR check_quick_save() const;
-public:
     GB_ERROR check_saveable(const char *new_path, const char *flags) const;
     GB_ERROR check_quick_saveable(const char *new_path, const char *flags) const {
         GB_ERROR error = check_quick_save();
         return error ? error : check_saveable(new_path, flags);
     }
+
+    GB_ERROR save_quick(const char *refpath);
+
+    GB_ERROR save_as(const char *as_path, const char *savetype);
+    GB_ERROR save_quick_as(const char *as_path);
+
+    GB_ERROR panic_save(const char *db_panic);
 };
 
 

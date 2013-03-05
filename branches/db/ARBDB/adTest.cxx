@@ -105,7 +105,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
         showChildren = false;
     }
     else {                                          // test if we need a transaction
-        if (!GB_MAIN(gbd)->transaction) {
+        if (GB_MAIN(gbd)->get_transaction_level() == 0) {
             GB_push_transaction(gbd);
             dump_internal(gbd, lines_allowed);
             GB_pop_transaction(gbd);

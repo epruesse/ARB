@@ -62,7 +62,7 @@ static const char *GB_TYPES_2_name(GB_TYPES type) {
 
 inline GB_ERROR gb_transactable_type(GB_TYPES type, GBDATA *gbd) {
     GB_ERROR error = NULL;
-    if (!GB_MAIN(gbd)->transaction) {
+    if (GB_MAIN(gbd)->get_transaction_level() == 0) {
         error = "No transaction running";
     }
     else if (GB_ARRAY_FLAGS(gbd).changed == GB_DELETED) {
@@ -680,7 +680,7 @@ void GB_close(GBDATA *gbd) {
     GB_ERROR      error = NULL;
     GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
 
-    gb_assert(Main->transaction <= 0); // transaction running -> you can't close DB yet!
+    gb_assert(Main->get_transaction_level() <= 0); // transaction running - you can't close DB yet!
 
     gb_assert(Main->gb_main() == gbd);
     run_close_callbacks(gbd, Main->close_callbacks);
@@ -1020,7 +1020,7 @@ double GB_read_from_floats(GBDATA *gbd, long index) {
 //      write data
 
 static void gb_do_callbacks(GBDATA *gbd) {
-    gb_assert(GB_MAIN(gbd)->transaction<0); // only use in NO_TRANSACTION_MODE!
+    gb_assert(GB_MAIN(gbd)->get_transaction_level() < 0); // only use in NO_TRANSACTION_MODE!
 
     GBDATA *gbdn, *gbdc;
     for (gbdc = gbd; gbdc; gbdc=gbdn) {
@@ -1037,7 +1037,7 @@ static void gb_do_callbacks(GBDATA *gbd) {
     }
 }
 
-#define GB_DO_CALLBACKS(gbd) do { if (GB_MAIN(gbd)->transaction<0) gb_do_callbacks(gbd); } while (0)
+#define GB_DO_CALLBACKS(gbd) do { if (GB_MAIN(gbd)->get_transaction_level() < 0) gb_do_callbacks(gbd); } while (0)
 
 GB_ERROR GB_write_byte(GBDATA *gbd, int i)
 {
@@ -1494,10 +1494,6 @@ long GB_read_clock(GBDATA *gbd) {
     return GB_GET_EXT_UPDATE_DATE(gbd);
 }
 
-long GB_read_transaction(GBDATA *gbd) {
-    return GB_MAIN(gbd)->transaction;
-}
-
 // ---------------------------------------------
 //      Get and check the database hierarchy
 
@@ -1701,7 +1697,7 @@ GB_ERROR GB_delete(GBDATA*& source) {
 
     {
         GB_MAIN_TYPE *Main = GB_MAIN(source);
-        if (Main->transaction<0) {
+        if (Main->get_transaction_level() < 0) { // no transaction mode
             gb_delete_entry(source);
             gb_do_callback_list(Main);
         }
@@ -1936,20 +1932,18 @@ bool GB_in_temporary_branch(GBDATA *gbd) { // @@@ used in ptpan branch - do not 
 // ---------------------
 //      transactions
 
-GB_ERROR gb_init_transaction(GBCONTAINER *gbc) { // the first transaction ever
-    GB_MAIN_TYPE *Main = GB_MAIN(gbc);
-    Main->transaction  = 1;
-
-    GB_ERROR error = gbcmc_init_transaction(Main->root_container);
-    if (!error) Main->clock ++;
-
+GB_ERROR GB_MAIN_TYPE::login_to_server() {
+    // the first transaction ever
+    transaction_level = 1;
+    GB_ERROR error    = gbcmc_init_transaction(root_container);
+    if (!error) ++clock;
     return error;
 }
 
-inline GB_ERROR GB_MAIN_TYPE::begin_initial_transaction() {
-    gb_assert(transaction == 0);
+inline GB_ERROR GB_MAIN_TYPE::start_transaction() {
+    gb_assert(transaction_level == 0);
 
-    transaction         = 1;
+    transaction_level   = 1;
     aborted_transaction = 0;
 
     GB_ERROR error = NULL;
@@ -1972,16 +1966,16 @@ inline GB_ERROR GB_MAIN_TYPE::begin_initial_transaction() {
 }
 
 inline GB_ERROR GB_MAIN_TYPE::begin_transaction() {
-    if (transaction>0) return GBS_global_string("attempt to start a NEW transaction (at transaction level %i)", transaction);
-    if (transaction == 0) return begin_initial_transaction();
+    if (transaction_level>0) return GBS_global_string("attempt to start a NEW transaction (at transaction level %i)", transaction_level);
+    if (transaction_level == 0) return start_transaction();
     return NULL; // NO_TRANSACTION_MODE
 }
 
 inline GB_ERROR GB_MAIN_TYPE::abort_transaction() {
-    if (transaction<=0) {
+    if (transaction_level<=0) {
         return "GB_abort_transaction: No transaction running";
     }
-    if (transaction>1) {
+    if (transaction_level>1) {
         aborted_transaction = 1;
         return pop_transaction();
     }
@@ -1993,7 +1987,7 @@ inline GB_ERROR GB_MAIN_TYPE::abort_transaction() {
     }
     clock--;
     gb_do_callback_list(this);       // do all callbacks
-    transaction = 0;
+    transaction_level = 0;
     gb_untouch_children_and_me(root_container);
     return 0;
 }
@@ -2002,11 +1996,11 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
     GB_ERROR      error = 0;
     GB_CHANGE     flag;
 
-    if (!transaction) {
+    if (!transaction_level) {
         return "commit_transaction: No transaction running";
     }
-    if (transaction>1) {
-        return GBS_global_string("attempt to commit at transaction level %i", transaction);
+    if (transaction_level>1) {
+        return GBS_global_string("attempt to commit at transaction level %i", transaction_level);
     }
     if (aborted_transaction) {
         aborted_transaction = 0;
@@ -2024,7 +2018,7 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
         }
         gb_disable_undo(gb_main());
         if (error1) {
-            transaction = 0;
+            transaction_level = 0;
             gb_assert(error); // maybe return error1?
             return error; // @@@ huh? why not return error1
         }
@@ -2045,36 +2039,36 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
         if (!error) error = gbcmc_commit_transaction(gb_main());
 
     }
-    transaction = 0;
+    transaction_level = 0;
     return error;
 }
 
 inline GB_ERROR GB_MAIN_TYPE::push_transaction() {
-    if (transaction == 0) return begin_initial_transaction();
-    if (transaction>0) ++transaction;
+    if (transaction_level == 0) return start_transaction();
+    if (transaction_level>0) ++transaction_level;
     // transaction<0 is NO_TRANSACTION_MODE
     return NULL;
 }
 
 inline GB_ERROR GB_MAIN_TYPE::pop_transaction() {
-    if (transaction==0) return "attempt to pop nested transaction while none running";
-    if (transaction<0)  return 0;  // NO_TRANSACTION_MODE
-    if (transaction==1) return commit_transaction();
-    transaction--;
+    if (transaction_level==0) return "attempt to pop nested transaction while none running";
+    if (transaction_level<0)  return 0;  // NO_TRANSACTION_MODE
+    if (transaction_level==1) return commit_transaction();
+    transaction_level--;
     return NULL;
 }
 
 inline GB_ERROR GB_MAIN_TYPE::no_transaction() {
     if (!local_mode) return "Tried to disable transactions in a client";
-    transaction = -1;
+    transaction_level = -1;
     return NULL;
 }
 
 GB_ERROR GB_MAIN_TYPE::send_update_to_server(GBDATA *gbd) {
     GB_ERROR error = NULL;
 
-    if (!transaction) error    = "send_update_to_server: no transaction running";
-    else if (local_mode) error = "send_update_to_server: only possible from clients (not from server itself)";
+    if (!transaction_level) error = "send_update_to_server: no transaction running";
+    else if (local_mode) error    = "send_update_to_server: only possible from clients (not from server itself)";
     else {
         gb_callback_list *cbl_old = cbl_last;
 
@@ -2184,8 +2178,7 @@ int GB_get_transaction_level(GBDATA *gbd) {
      * - 1 -> one single transaction
      * - 2, ... -> nested transactions
      */
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    return Main->transaction;
+    return GB_MAIN(gbd)->get_transaction_level();
 }
 
 // ------------------

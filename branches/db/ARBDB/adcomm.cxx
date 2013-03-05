@@ -143,22 +143,26 @@ static void gbcms_sighup(int) {
         char *newline           = strchr(db_panic, '\n');
         if (newline) newline[0] = 0;
 
-        GB_MAIN_TYPE *Main       = GBCONTAINER_MAIN(gbcms_gb_main);
-        int           translevel = Main->transaction;
-
         fprintf(stderr, "- Trying to save DATABASE in ASCII mode into file '%s'\n", db_panic);
 
-        Main->transaction = 0;
-        GB_ERROR error    = GB_save_as(gbcms_gb_main, db_panic, "a");
+        GB_ERROR error = GBCONTAINER_MAIN(gbcms_gb_main)->panic_save(db_panic);
 
         if (error) fprintf(stderr, "Error while saving '%s': %s\n", db_panic, error);
         else fprintf(stderr, "- DATABASE saved into '%s' (ASCII)\n", db_panic);
 
         unlink(panic_file);
-        Main->transaction = translevel;
-
         free(db_panic);
     }
+}
+
+GB_ERROR GB_MAIN_TYPE::panic_save(const char *db_panic) {
+    const int org_transaction_level = transaction_level;
+
+    transaction_level = 0;
+    GB_ERROR error    = save_as(db_panic, "a");
+    transaction_level = org_transaction_level;
+
+    return error;
 }
 
 GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
@@ -1152,9 +1156,7 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
 
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (!Main->server_data) return false;
-
-    long in_trans = GB_read_transaction(gbd);
-    if (in_trans) return false;
+    if (Main->get_transaction_level()) return false;
 
     gb_server_data *hs = Main->server_data;
     timeval         timeout;

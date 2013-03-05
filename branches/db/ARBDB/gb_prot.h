@@ -177,7 +177,6 @@ GBCONTAINER *gb_get_root(GBCONTAINER *gbc);
 GBENTRY *gb_create(GBCONTAINER *father, const char *key, GB_TYPES type);
 GBCONTAINER *gb_create_container(GBCONTAINER *father, const char *key);
 GB_ERROR gb_delete_force(GBDATA *source);
-GB_ERROR gb_init_transaction(GBCONTAINER *gbc);
 void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata);
 void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB func, int *clientdata);
 GB_MAIN_TYPE *gb_get_main_during_cb(void);

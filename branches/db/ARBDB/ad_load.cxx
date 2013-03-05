@@ -1213,7 +1213,7 @@ static GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char
     else {
         gbc->server_id    = 0;
         Main->remote_hash = GBS_create_numhash(GB_REMOTE_HASH_SIZE);
-        error             = gb_init_transaction(gbc); // login in server
+        error             = Main->login_to_server();
 
         if (!error) {
             gbc->flags2.folded_container = 1;

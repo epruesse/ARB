@@ -864,6 +864,122 @@ GB_ERROR GB_MAIN_TYPE::check_saveable(const char *new_path, const char *flags) c
     return error;
 }
 
+GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
+    GB_ERROR error = 0;
+
+    bool saveASCII                            = false;
+    if (strchr(savetype, 'a')) saveASCII      = true;
+    else if (strchr(savetype, 'b')) saveASCII = false;
+    else error                                = GBS_global_string("Invalid savetype '%s' (expected 'a' or 'b')", savetype);
+
+    if (!error) {
+        if (!as_path) as_path              = path;
+        if (!as_path || !as_path[0]) error = "Please specify a savename";
+        else error                         = check_saveable(as_path, savetype);
+    }
+
+    if (!error) {
+        char *mappath        = NULL;
+        char *sec_path       = strdup(gb_overwriteName(as_path));
+        char *sec_mappath    = NULL;
+        bool  dump_to_stdout = strchr(savetype, 'S');
+        FILE *out            = dump_to_stdout ? stdout : fopen(sec_path, "w");
+
+        if (!out) error = GB_IO_error("saving", sec_path);
+        else {
+            const int org_security_level    = security_level;
+            const int org_transaction_level = get_transaction_level();
+
+            if (!org_transaction_level) transaction_level = 1;
+            else {
+                if (org_transaction_level> 0) {
+                    GB_commit_transaction(root_container);
+                    GB_begin_transaction(root_container);
+                }
+            }
+            security_level = 7;
+
+            bool outOfOrderSave     = strchr(savetype, 'f');
+            bool deleteQuickAllowed = !outOfOrderSave && !dump_to_stdout;
+            {
+                int result = 0;
+
+                if (saveASCII) {
+                    fprintf(out, "/*ARBDB ASCII*/\n");
+                    gb_write_rek(out, root_container, 0, 1);
+                    freedup(qs.quick_save_disabled, "Database saved in ASCII mode");
+                    if (deleteQuickAllowed) error = gb_remove_all_but_main(this, as_path);
+                }
+                else {                      // save binary
+                    mappath = strdup(gb_mapfile_name(as_path));
+                    if (strchr(savetype, 'm')) {
+                        // it's necessary to save the mapfile FIRST,
+                        // cause this re-orders all GB_CONTAINERs containing NULL-entries in their header
+                        sec_mappath = strdup(gb_overwriteName(mappath));
+                        error       = gb_save_mapfile(this, sec_mappath);
+                    }
+                    else GB_unlink_or_warn(mappath, &error); // delete old mapfile
+                    if (!error) result |= gb_write_bin(out, root_container, 1);
+                }
+
+                security_level    = org_security_level;
+                transaction_level = org_transaction_level;
+
+                if (!dump_to_stdout) result |= fclose(out);
+                if (result != 0) error = GB_IO_error("writing", sec_path);
+            }
+
+            if (!error && !saveASCII) {
+                if (!outOfOrderSave) freenull(qs.quick_save_disabled); // delete reason, why quicksaving was disallowed
+                if (deleteQuickAllowed) error = gb_remove_quick_saved(this, as_path);
+            }
+
+            if (!dump_to_stdout) {
+                if (error) {
+                    if (sec_mappath) GB_unlink_or_warn(sec_mappath, NULL);
+                    GB_unlink_or_warn(sec_path, NULL);
+                }
+                else {
+                    bool unlinkMapfiles       = false;
+                    error                     = GB_rename_file(sec_path, as_path);
+                    if (error) unlinkMapfiles = true;
+                    else if (sec_mappath) {
+                        error             = GB_rename_file(sec_mappath, mappath);
+                        if (!error) error = GB_set_mode_of_file(mappath, GB_mode_of_file(as_path)); // set mapfile to same mode as DB file
+                        if (error) {
+                            GB_warningf("Error: %s\n[Falling back to non-fastload-save]", error);
+                            error          = 0;
+                            unlinkMapfiles = true;
+                        }
+                    }
+
+                    if (unlinkMapfiles) {
+                        GB_unlink_or_warn(sec_mappath, NULL);
+                        GB_unlink_or_warn(mappath, NULL);
+                    }
+                            
+                    if (!error) {
+                        error = qs.quick_save_disabled == 0
+                            ? gb_create_reference(as_path)
+                            : gb_delete_reference(as_path);
+                    }
+                }
+            }
+
+            if (!error && !outOfOrderSave) {
+                last_saved_transaction      = GB_read_clock(root_container);
+                last_main_saved_transaction = GB_read_clock(root_container);
+                last_saved_time             = GB_time_of_day();
+            }
+        }
+
+        free(sec_path);
+        free(mappath);
+        free(sec_mappath);
+    }
+    return error;
+}
+
 GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype) {
     /* Save whole database
      *
@@ -880,122 +996,10 @@ GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype) {
     gb_assert(savetype);
 
     if (!gbd) {
-        error = "got no db";
+        error = "got no DB";
     }
     else {
-        bool saveASCII                            = false;
-        if (strchr(savetype, 'a')) saveASCII      = true;
-        else if (strchr(savetype, 'b')) saveASCII = false;
-        else error                                = GBS_global_string("Invalid savetype '%s' (expected 'a' or 'b')", savetype);
-
-        if (!error) {
-            GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
-            GBCONTAINER  *gb_main = Main->root_container;
-            if (!path) path       = Main->path;
-
-            if (!path || !path[0]) error = "Please specify a savename";
-            else error                   = Main->check_saveable(path, savetype);
-
-            if (!error) {
-                char *mappath        = NULL;
-                char *sec_path       = strdup(gb_overwriteName(path));
-                char *sec_mappath    = NULL;
-                bool  dump_to_stdout = strchr(savetype, 'S');
-                FILE *out            = dump_to_stdout ? stdout : fopen(sec_path, "w");
-
-                if (!out) error = GB_IO_error("saving", sec_path);
-                else {
-                    int slevel     = Main->security_level;
-                    int translevel = Main->transaction;
-
-                    if (!translevel) Main->transaction = 1;
-                    else {
-                        if (translevel> 0) {
-                            GB_commit_transaction(gb_main);
-                            GB_begin_transaction(gb_main);
-                        }
-                    }
-                    Main->security_level = 7;
-
-                    bool outOfOrderSave     = strchr(savetype, 'f');
-                    bool deleteQuickAllowed = !outOfOrderSave && !dump_to_stdout;
-                    {
-                        int result = 0;
-
-                        if (saveASCII) {
-                            fprintf(out, "/*ARBDB ASCII*/\n");
-                            gb_write_rek(out, gb_main, 0, 1);
-                            freedup(Main->qs.quick_save_disabled, "Database saved in ASCII mode");
-                            if (deleteQuickAllowed) error = gb_remove_all_but_main(Main, path);
-                        }
-                        else {                      // save binary
-                            mappath = strdup(gb_mapfile_name(path));
-                            if (strchr(savetype, 'm')) {
-                                // it's necessary to save the mapfile FIRST,
-                                // cause this re-orders all GB_CONTAINERs containing NULL-entries in their header
-                                sec_mappath = strdup(gb_overwriteName(mappath));
-                                error       = gb_save_mapfile(Main, sec_mappath);
-                            }
-                            else GB_unlink_or_warn(mappath, &error); // delete old mapfile
-                            if (!error) result |= gb_write_bin(out, gb_main, 1);
-                        }
-
-                        Main->security_level = slevel;
-                        Main->transaction = translevel;
-
-                        if (!dump_to_stdout) result |= fclose(out);
-                        if (result != 0) error = GB_IO_error("writing", sec_path);
-                    }
-
-                    if (!error && !saveASCII) {
-                        if (!outOfOrderSave) freenull(Main->qs.quick_save_disabled); // delete reason, why quicksaving was disallowed
-                        if (deleteQuickAllowed) error = gb_remove_quick_saved(Main, path);
-                    }
-
-                    if (!dump_to_stdout) {
-                        if (error) {
-                            if (sec_mappath) GB_unlink_or_warn(sec_mappath, NULL);
-                            GB_unlink_or_warn(sec_path, NULL);
-                        }
-                        else {
-                            bool unlinkMapfiles       = false;
-                            error                     = GB_rename_file(sec_path, path);
-                            if (error) unlinkMapfiles = true;
-                            else if (sec_mappath) {
-                                error             = GB_rename_file(sec_mappath, mappath);
-                                if (!error) error = GB_set_mode_of_file(mappath, GB_mode_of_file(path)); // set mapfile to same mode as DB file
-                                if (error) {
-                                    GB_warningf("Error: %s\n[Falling back to non-fastload-save]", error);
-                                    error          = 0;
-                                    unlinkMapfiles = true;
-                                }
-                            }
-
-                            if (unlinkMapfiles) {
-                                GB_unlink_or_warn(sec_mappath, NULL);
-                                GB_unlink_or_warn(mappath, NULL);
-                            }
-                            
-                            if (!error) {
-                                error = Main->qs.quick_save_disabled == 0
-                                    ? gb_create_reference(path)
-                                    : gb_delete_reference(path);
-                            }
-                        }
-                    }
-
-                    if (!error && !outOfOrderSave) {
-                        Main->last_saved_transaction      = GB_read_clock(gb_main);
-                        Main->last_main_saved_transaction = GB_read_clock(gb_main);
-                        Main->last_saved_time             = GB_time_of_day();
-                    }
-                }
-
-                free(sec_path);
-                free(mappath);
-                free(sec_mappath);
-            }
-        }
+        error = GB_MAIN(gbd)->save_as(path, savetype);
     }
 
     RETURN_ERROR(error);
@@ -1024,44 +1028,40 @@ GB_ERROR GB_delete_database(GB_CSTR filename) {
     return error;
 }
 
-GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path) {
-    GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
-    GBCONTAINER  *gb_main = Main->root_container;
-
+GB_ERROR GB_MAIN_TYPE::save_quick_as(const char *as_path) {
     GB_ERROR error = NULL;
-
-    if (!path || !strlen(path)) {
+    if (!as_path || !strlen(as_path)) {
         error = "Please specify a file name";
     }
-    else if (strcmp(path, Main->path) == 0) {    // same name (no rename)
-        error = GB_save_quick(gb_main, path);
+    else if (strcmp(as_path, path) == 0) {    // same name (no rename)
+        error = save_quick(as_path);
     }
     else {
-        error = Main->check_quick_saveable(path, "bn");
+        error = check_quick_saveable(as_path, "bn");
 
         if (!error) {
-            FILE *fmaster = fopen(Main->path, "r");         // old master !!!!
+            FILE *fmaster = fopen(path, "r");         // old master !!!!
             if (!fmaster) {                                 // Oh no, where is my old master
                 error = GBS_global_string("Save Changes is missing master ARB file '%s',\n"
-                                          "    save database first", Main->path);
+                                          "    save database first", path);
             }
             else {
                 fclose(fmaster);
             }
         }
         if (!error) {
-            if (GB_unlink(path)<0) { // delete old file
+            if (GB_unlink(as_path)<0) { // delete old file
                 error = GBS_global_string("File '%s' already exists and could not be deleted\n"
                                           "(Reason: %s)",
-                                          path, GB_await_error());
+                                          as_path, GB_await_error());
             }
         }
         if (!error) {
-            char *org_master = S_ISLNK(GB_mode_of_link(Main->path))
-                ? GB_follow_unix_link(Main->path)
-                : strdup(Main->path);
+            char *org_master = S_ISLNK(GB_mode_of_link(path))
+                ? GB_follow_unix_link(path)
+                : strdup(path);
 
-            error = gb_remove_all_but_main(Main, path);
+            error = gb_remove_all_but_main(this, as_path);
             if (!error) {
                 long mode = GB_mode_of_file(org_master);
                 if (mode & S_IWUSR) {
@@ -1074,7 +1074,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path) {
                     }
                 }
                 char *full_path_of_source;
-                if (strchr(path, '/') || strchr(org_master, '/')) {
+                if (strchr(as_path, '/') || strchr(org_master, '/')) {
                     // dest or source in different directory
                     full_path_of_source = gb_full_path(org_master);
                 }
@@ -1082,7 +1082,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path) {
                     full_path_of_source = strdup(org_master);
                 }
 
-                error = GB_symlink(full_path_of_source, path);
+                error = GB_symlink(full_path_of_source, as_path);
                 if (!error) {
                     if ((uid_t)GB_getuid_of_file(full_path_of_source) != getuid()) {
                         GB_warningf("**** WARNING ******\n"
@@ -1093,13 +1093,13 @@ GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path) {
                                     "   the WHOLE database", full_path_of_source);
                     }
 
-                    GB_ERROR warning = gb_add_reference(full_path_of_source, path);
+                    GB_ERROR warning = gb_add_reference(full_path_of_source, as_path);
                     if (warning) GB_warning(warning);
 
-                    freedup(Main->path, path);                      // Symlink created -> rename allowed
+                    freedup(path, as_path);                      // Symlink created -> rename allowed
 
-                    Main->qs.last_index = 0;            // Start with new quicks
-                    error = GB_save_quick(gb_main, path);
+                    qs.last_index = 0;            // Start with new quicks
+                    error = save_quick(as_path);
                 }
                 free(full_path_of_source);
             }
@@ -1110,17 +1110,19 @@ GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path) {
     RETURN_ERROR(error);
 }
 
-GB_ERROR GB_save_quick(GBDATA *gbd, const char *refpath) {
-    GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
-    GBCONTAINER  *gb_main = Main->root_container;
-    GB_ERROR      error   = Main->check_quick_saveable(refpath, "q");
+GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path) {
+    return GB_MAIN(gbd)->save_quick_as(path);
+}
 
-    if (!error && refpath && strcmp(refpath, Main->path) != 0) {
+GB_ERROR GB_MAIN_TYPE::save_quick(const char *refpath) {
+    GB_ERROR error = check_quick_saveable(refpath, "q");
+
+    if (!error && refpath && strcmp(refpath, path) != 0) {
         error = GBS_global_string("master file rename '%s'!= '%s',\n"
-                                  "save database first", refpath, Main->path);
+                                  "save database first", refpath, path);
     }
     if (!error) {
-        FILE *fmaster = fopen(Main->path, "r");
+        FILE *fmaster = fopen(path, "r");
 
         if (!fmaster) {
             error = GBS_global_string("Quick save is missing master ARB file '%s',\n"
@@ -1130,54 +1132,58 @@ GB_ERROR GB_save_quick(GBDATA *gbd, const char *refpath) {
             fclose(fmaster);
         }
     }
-    if (!error && !Main->local_mode) error = "You cannot save a remote database";
+    if (!error && !local_mode) error = "You cannot save a remote database";
     if (!error) {
-        Main->qs.last_index++;
-        if (Main->qs.last_index > GB_MAX_QUICK_SAVE_INDEX) renameQuicksaves(Main);
+        qs.last_index++;
+        if (qs.last_index > GB_MAX_QUICK_SAVE_INDEX) renameQuicksaves(this);
 
-        GB_CSTR path     = gb_quicksaveName(Main->path, Main->qs.last_index);
-        GB_CSTR sec_path = gb_overwriteName(path);
+        GB_CSTR qck_path = gb_quicksaveName(path, qs.last_index);
+        GB_CSTR sec_path = gb_overwriteName(qck_path);
 
         FILE *out = fopen(sec_path, "w");
         if (!out) error = GBS_global_string("Cannot save file to '%s'", sec_path);
         else {
             long erg;
             {
-                int slevel     = Main->security_level;
-                int translevel = Main->transaction;
+                const int org_security_level    = security_level;
+                int       org_transaction_level = get_transaction_level();
 
-                if (!translevel) Main->transaction = 1;
+                if (!org_transaction_level) transaction_level = 1;
                 else {
-                    if (translevel> 0) {
-                        GB_commit_transaction(gb_main);
-                        GB_begin_transaction(gb_main);
+                    if (org_transaction_level> 0) {
+                        GB_commit_transaction(root_container);
+                        GB_begin_transaction(root_container);
                     }
                 }
 
-                Main->security_level = 7;
+                security_level = 7;
 
-                erg = gb_write_bin(out, gb_main, 2);
+                erg = gb_write_bin(out, root_container, 2);
 
-                Main->security_level = slevel;
-                Main->transaction    = translevel;
+                security_level    = org_security_level;
+                transaction_level = org_transaction_level;
             }
 
             erg |= fclose(out);
 
             if (erg!=0) error = GBS_global_string("Cannot write to '%s'", sec_path);
             else {
-                error = GB_rename_file(sec_path, path);
+                error = GB_rename_file(sec_path, qck_path);
                 if (!error) {
-                    Main->last_saved_transaction = GB_read_clock(gb_main);
-                    Main->last_saved_time        = GB_time_of_day();
+                    last_saved_transaction = GB_read_clock(root_container);
+                    last_saved_time        = GB_time_of_day();
 
-                    error = deleteSuperfluousQuicksaves(Main);
+                    error = deleteSuperfluousQuicksaves(this);
                 }
             }
         }
     }
 
     RETURN_ERROR(error);
+}
+
+GB_ERROR GB_save_quick(GBDATA *gbd, const char *refpath) {
+    return GB_MAIN(gbd)->save_quick(refpath);
 }
 
 
