@@ -178,7 +178,12 @@ class GBENTRY : public GBDATA {
 public:
     gb_data_base_type_union info;
 
-    int cache_index; // @@@ should be a member of gb_db_extended and of type gb_cache_idx
+    int cache_index;
+
+    size_t size()    const { return flags2.extern_data ? info.ex.size    : info.istr.size; }
+    size_t memsize() const { return flags2.extern_data ? info.ex.memsize : info.istr.memsize; }
+
+    inline size_t uncompressed_size() const;
 };
 
 class GBCONTAINER : public GBDATA {
@@ -260,6 +265,4 @@ inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd) {
 #else
 #error gb_data.h included twice
 #endif // GB_DATA_H
-
-
 

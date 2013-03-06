@@ -45,8 +45,8 @@ struct gb_compress_list {
 extern int gb_convert_type_2_sizeof[];
 extern int gb_convert_type_2_appendix_size[];
 
-inline long GB_UNCOMPRESSED_SIZE(GBENTRY *gbe, GB_TYPES type) { // @@@ gbe contains type (check caller situation)
-    return GB_GETSIZE(gbe) * gb_convert_type_2_sizeof[type] + gb_convert_type_2_appendix_size[type];
+inline size_t GBENTRY::uncompressed_size() const {
+    return GB_GETSIZE(this) * gb_convert_type_2_sizeof[type()] + gb_convert_type_2_appendix_size[type()];
 }
 
 #else

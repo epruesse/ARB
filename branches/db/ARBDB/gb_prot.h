@@ -84,12 +84,12 @@ void gb_free_compress_tree(gb_compress_tree *tree);
 gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_flag, long *size);
 char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, long *msize);
 GB_BUFFER gb_uncompress_bits(const char *source, long size, char c_0, char c_1);
-void gb_compress_equal_bytes_2(const char *source, long size, long *msize, char *dest);
-GB_BUFFER gb_uncompress_bytes(GB_CBUFFER source, long size, long *new_size);
-GB_BUFFER gb_uncompress_longs_old(GB_CBUFFER source, long size, long *new_size);
+void gb_compress_equal_bytes_2(const char *source, size_t size, size_t *msize, char *dest);
+GB_BUFFER gb_uncompress_bytes(GB_CBUFFER source, size_t size, size_t *new_size);
+GB_BUFFER gb_uncompress_longs_old(GB_CBUFFER source, size_t size, size_t *new_size);
 GB_DICTIONARY *gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key);
-GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, long size, long *msize, GB_COMPRESSION_MASK max_compr, bool pre_compressed);
-GB_CBUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, long size);
+GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, size_t size, size_t *msize, GB_COMPRESSION_MASK max_compr, bool pre_compressed);
+GB_CBUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, size_t size);
 
 /* adfile.cxx */
 GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) __ATTR__USERESULT_TODO;
@@ -126,8 +126,8 @@ int gb_isMappedMemory(void *mem);
 
 /* adoptimize.cxx */
 GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main);
-char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size, long *new_size);
-char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size, long *msize, int last_flag, int search_backward, int search_forward);
+char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, size_t size, size_t *new_size);
+char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, size_t size, size_t *msize, int last_flag, int search_backward, int search_forward);
 
 /* adquery.cxx */
 GBDATA *gb_find_by_nr(GBCONTAINER *father, int index);

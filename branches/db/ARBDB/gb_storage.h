@@ -52,11 +52,12 @@ inline gb_transaction_save *GB_GET_EXT_OLD_DATA(GBDATA *gbd) { return gbd->ext ?
 // --------------------------
 //      data and datasize
 
-inline long GB_GETSIZE(const GBENTRY *gbe)       { return gbe->flags2.extern_data ? gbe->info.ex.size     : gbe->info.istr.size; }
-inline long GB_GETMEMSIZE(const GBENTRY *gbe)    { return gbe->flags2.extern_data ? gbe->info.ex.memsize  : gbe->info.istr.memsize; }
-inline char *GB_GETDATA(GBENTRY *gbe)            { return gbe->flags2.extern_data ? GB_EXTERN_DATA_DATA(gbe->info.ex)  : &((gbe)->info.istr.data[0]); }
+inline long GB_GETSIZE(const GBENTRY *gbe)       { return gbe->size(); } // @@@ elim
+inline long GB_GETMEMSIZE(const GBENTRY *gbe)    { return gbe->memsize(); } // @@@ elim
 
-inline void GB_FREEDATA(GBENTRY *gbe) {
+inline char *GB_GETDATA(GBENTRY *gbe) { return gbe->flags2.extern_data ? GB_EXTERN_DATA_DATA(gbe->info.ex)  : &((gbe)->info.istr.data[0]); } // @@@ move into GBENTRY
+
+inline void GB_FREEDATA(GBENTRY *gbe) { // @@@ move into GBENTRY
     GB_INDEX_CHECK_OUT(gbe);
     if (gbe->flags2.extern_data && GB_EXTERN_DATA_DATA(gbe->info.ex)) {
         gbm_free_mem(GB_EXTERN_DATA_DATA(gbe->info.ex), (size_t)(gbe->info.ex.memsize), GB_GBM_INDEX(gbe));

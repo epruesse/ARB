@@ -773,7 +773,7 @@ GB_CSTR GB_read_pntr(GBDATA *gbd) {
             char *ca = gb_read_cache(gbe);
 
             if (!ca) {
-                long        size = GB_UNCOMPRESSED_SIZE(gbe, gbe->type());
+                size_t      size = gbe->uncompressed_size();
                 const char *da   = gb_uncompress_data(gbe, data, size);
 
                 if (da) {
@@ -806,7 +806,7 @@ char *GB_read_string(GBDATA *gbd)
     return GB_memdup(d, GB_GETSIZE(gbd->as_entry())+1);
 }
 
-long GB_read_string_count(GBDATA *gbd)
+size_t GB_read_string_count(GBDATA *gbd)
 {
     GB_TEST_READ(gbd, GB_STRING, "GB_read_string_count");
     return GB_GETSIZE(gbd->as_entry());
@@ -1146,7 +1146,7 @@ int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type) {
     return compression_mask;
 }
 
-GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, long bytes_size, long stored_size)
+GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, size_t bytes_size, size_t stored_size)
 {
     // 'bytes_size' is the size of what 's' points to.
     // 'stored_size' is the size-information written into the DB
@@ -1167,7 +1167,7 @@ GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, long bytes_size, long stored_
     int compression_mask = gb_get_compression_mask(Main, key, type);
 
     const char *d;
-    long        memsize;
+    size_t      memsize;
     if (compression_mask) {
         d = gb_compress_data(gbe, key, s, bytes_size, &memsize, compression_mask, false);
     }

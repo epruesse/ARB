@@ -86,7 +86,7 @@ struct SingleDictTree {
 
 // ******************* Tool functions ******************
 
-inline cu_str get_data_n_size(GBDATA *gbd, long *size) {
+inline cu_str get_data_n_size(GBDATA *gbd, size_t *size) {
     GB_CSTR  data;
     GB_TYPES type = GB_TYPE(gbd);
 
@@ -104,7 +104,7 @@ inline cu_str get_data_n_size(GBDATA *gbd, long *size) {
             break;
     }
 
-    if (data) *size = GB_UNCOMPRESSED_SIZE(gbd->as_entry(), type);
+    if (data) *size = gbd->as_entry()->uncompressed_size();
     return (cu_str)data;
 }
 
@@ -192,8 +192,8 @@ static GB_ERROR gb_convert_compression(GBDATA *gbd) {
         char    *str        = 0;
         GBENTRY *gbe        = gbd->as_entry();
         long     elems      = GB_GETSIZE(gbe);
-        long     data_size  = GB_UNCOMPRESSED_SIZE(gbe, type);
-        long     new_size   = -1;
+        size_t   data_size  = gbe->uncompressed_size();
+        size_t   new_size   = -1;
         int      expectData = 1;
 
         switch (type) {
@@ -506,7 +506,7 @@ int look(GB_DICTIONARY *dict, GB_CSTR source) {
 
 
 
-static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /* GBDATA *gbd, */ GB_CSTR s_source, const long size, bool append_zero, long *new_size) {
+static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /* GBDATA *gbd, */ GB_CSTR s_source, const size_t size, bool append_zero, size_t *new_size) {
     cu_str source = (cu_str)s_source;
     u_str  dest;
     u_str  buffer;
@@ -579,7 +579,7 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /* GBDATA
     return (char *)buffer;
 }
 
-char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size, long *new_size)
+char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, size_t size, size_t *new_size)
 {
     GB_DICTIONARY *dict        = gb_get_dictionary(GB_MAIN(gbd), GB_KEY_QUARK(gbd));
     bool           append_zero = GB_TYPE(gbd)==GB_STRING || GB_TYPE(gbd) == GB_LINK;
@@ -593,7 +593,7 @@ char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size, long
     return gb_uncompress_by_dictionary_internal(dict, s_source, size, append_zero, new_size);
 }
 
-char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size, long *msize, int last_flag, int search_backward, int search_forward)
+char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, size_t size, size_t *msize, int last_flag, int search_backward, int search_forward)
 {
     cu_str source           = (cu_str)s_source;
     u_str  dest;
@@ -602,7 +602,7 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
     u_str  lastUncompressed = NULL; // ptr to start of last block of uncompressible bytes (in dest)
 
 #if defined(ASSERTION_USED)
-    const long org_size = size;
+    const size_t org_size = size;
 #endif                          // ASSERTION_USED
 
     gb_assert(size>0); // compression of zero-length data fails!
@@ -753,8 +753,8 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
 
 #if defined(ASSERTION_USED)
     {
-        long  new_size = -1;
-        char *test     = gb_uncompress_by_dictionary_internal(dict, (GB_CSTR)buffer+1, org_size + GB_COMPRESSION_TAGS_SIZE_MAX, true, &new_size);
+        size_t  new_size = -1;
+        char   *test     = gb_uncompress_by_dictionary_internal(dict, (GB_CSTR)buffer+1, org_size + GB_COMPRESSION_TAGS_SIZE_MAX, true, &new_size);
 
         gb_assert(memcmp(test, s_source, org_size) == 0);
         gb_assert((org_size+1) == new_size);
@@ -1764,7 +1764,7 @@ static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, D
     return expand;
 }
 
-static DictTree build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, long minwordlen, long *data_sum)
+static DictTree build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, size_t minwordlen, long *data_sum)
 /* builds a tree of the most used words
  *
  * 'maxmem' is the amount of memory that will be allocated
@@ -1794,7 +1794,7 @@ static DictTree build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, long
             int type =  GB_TYPE(gbd);
 
             if (COMPRESSIBLE(type)) {
-                long   size;
+                size_t size;
                 cu_str data = get_data_n_size(gbd, &size);
                 cu_str lastWord;
 
@@ -2349,7 +2349,7 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
         int     type = GB_TYPE(gbd);
 
         if (COMPRESSIBLE(type)) {
-            long size;
+            size_t size;
             char *data;
 
             {
