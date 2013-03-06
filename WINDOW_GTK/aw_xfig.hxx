@@ -55,7 +55,7 @@ struct AW_xfig_text {
 
 struct AW_xfig_pos {
     short x, y;
-    int   center;
+    int   center; // 0=left, 1=center, 2=right
 };
 
 class AW_xfig : virtual Noncopyable {
