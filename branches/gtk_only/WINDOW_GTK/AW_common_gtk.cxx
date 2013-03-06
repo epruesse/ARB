@@ -65,6 +65,12 @@ cairo_t *AW_common_gtk::get_CR(int gc) {
     const AW_GC *awgc = map_gc(gc);
 
     cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
+    if (!cr) {
+        // Sometimes the window isn't there yet when ARB already 
+        // tries to draw on it. That's not possible. Return 
+        // NULL (drawing primitives will catch this)
+        return NULL;
+    }
 
     // set color
     AW_rgb col = awgc->get_fg_color();
@@ -194,7 +200,6 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int font_size, int *fou
 
     // set requested size 
     if (font_size) {
-      printf("ff %i\n",font_size);
         pango_font_description_set_absolute_size(font_desc, font_size * PANGO_SCALE);
         if (found_size) *found_size = font_size;
     }
