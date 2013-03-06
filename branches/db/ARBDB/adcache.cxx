@@ -102,25 +102,23 @@ inline void flush_cache_entry(gb_cache& cache, gb_cache_idx index) {
 #endif // GEN_CACHE_STATS
 }
 
-void gb_init_cache(GB_MAIN_TYPE *Main) {
-    gb_cache& cache = Main->cache;
+void gb_cache::init() {
+    if (!entries) {
+        entries = (gb_cache_entry *)GB_calloc(sizeof(gb_cache_entry), GB_MAX_CACHED_ENTRIES);
 
-    if (!cache.entries) {
-        cache.entries = (gb_cache_entry *)GB_calloc(sizeof(gb_cache_entry), GB_MAX_CACHED_ENTRIES);
-
-        cache.max_entries       = GB_MAX_CACHED_ENTRIES;
-        cache.max_data_size     = GB_TOTAL_CACHE_SIZE;
-        cache.big_data_min_size = cache.max_data_size / 4;
+        max_entries       = GB_MAX_CACHED_ENTRIES;
+        max_data_size     = GB_TOTAL_CACHE_SIZE;
+        big_data_min_size = max_data_size / 4;
 
         for (gb_cache_idx i=0; i<GB_MAX_CACHED_ENTRIES-1; i++) {
-            cache.entries[i].next = i+1;
+            entries[i].next = i+1;
         }
-        cache.firstfree_entry = 1;
+        firstfree_entry = 1;
 
 #if defined(GEN_CACHE_STATS)
-        cache.not_reused = GBS_create_hash(1000, GB_MIND_CASE);
-        cache.reused     = GBS_create_hash(1000, GB_MIND_CASE);
-        cache.reuse_sum  = GBS_create_hash(1000, GB_MIND_CASE);
+        not_reused = GBS_create_hash(1000, GB_MIND_CASE);
+        reused     = GBS_create_hash(1000, GB_MIND_CASE);
+        reuse_sum  = GBS_create_hash(1000, GB_MIND_CASE);
 #endif // GEN_CACHE_STATS
     }
 }
@@ -145,42 +143,39 @@ static long list_hash_entries(const char *key, long val, void *client_data) {
 }
 #endif // GEN_CACHE_STATS
 
-void gb_destroy_cache(GB_MAIN_TYPE *Main) {
-    // only call this from gb_destroy_main()!
-    gb_cache& cache = Main->cache;
-
-    if (cache.entries) {
-        gb_assert(cache.newest_entry == 0);         // cache is not flushed 
-        gb_assert(cache.sum_data_size == 0);
-        freenull(cache.entries);
+void gb_cache::destroy() {
+    if (entries) {
+        gb_assert(newest_entry == 0); // cache has to be flushed before!
+        gb_assert(sum_data_size == 0);
+        freenull(entries);
 
 #if defined(GEN_CACHE_STATS)
-        size_t not_reused = 0;
-        size_t reused     = 0;
-        size_t reuse_sum  = 0;
+        size_t NotReUsed = 0;
+        size_t ReUsed    = 0;
+        size_t ReUseSum  = 0;
 
-        GBS_hash_do_loop(cache.reuse_sum, sum_hash_values, &reuse_sum);
-        GBS_hash_do_loop(cache.not_reused, sum_hash_values, &not_reused);
-        GBS_hash_do_loop(cache.reused, sum_hash_values, &reused);
+        GBS_hash_do_loop(reuse_sum, sum_hash_values, &ReUseSum);
+        GBS_hash_do_loop(not_reused, sum_hash_values, &NotReUsed);
+        GBS_hash_do_loop(reused, sum_hash_values, &ReUsed);
 
-        size_t overall = not_reused+reused;
+        size_t overall = NotReUsed+ReUsed;
 
         printf("Cache stats:\n"
                "Overall entries:  %zu\n"
                "Reused entries:   %zu (%5.2f%%)\n"
                "Mean reuse count: %5.2f\n",
                overall,
-               reused, (double)reused/overall*100.0,
-               (double)reuse_sum/reused);
+               ReUsed, (double)ReUsed/overall*100.0,
+               (double)ReUseSum/ReUsed);
 
         printf("Not reused:\n");
-        GBS_hash_do_sorted_loop(cache.not_reused, list_hash_entries, GBS_HCF_sortedByKey, NULL);
+        GBS_hash_do_sorted_loop(not_reused, list_hash_entries, GBS_HCF_sortedByKey, NULL);
         printf("Reused:\n");
-        GBS_hash_do_sorted_loop(cache.reused, list_hash_entries, GBS_HCF_sortedByKey, cache.reuse_sum);
+        GBS_hash_do_sorted_loop(reused, list_hash_entries, GBS_HCF_sortedByKey, reuse_sum);
 
-        GBS_free_hash(cache.not_reused);
-        GBS_free_hash(cache.reused);
-        GBS_free_hash(cache.reuse_sum);
+        GBS_free_hash(not_reused);
+        GBS_free_hash(reused);
+        GBS_free_hash(reuse_sum);
 #endif // GEN_CACHE_STATS
     }
 }

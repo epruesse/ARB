@@ -746,7 +746,7 @@ GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to h
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
     GB_ERROR      error = NULL;
 
-    if (!Main->local_mode) {
+    if (Main->is_client()) {
         enum gb_undo_commands cmd = (type == GB_UNDO_NONE || type == GB_UNDO_KILL)
             ? _GBCMC_UNDOCOM_REQUEST_NOUNDO
             : _GBCMC_UNDOCOM_REQUEST_UNDO;
@@ -769,7 +769,7 @@ GB_ERROR GB_undo(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to header: __ATTR
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
     GB_ERROR      error = 0;
 
-    if (!Main->local_mode) {
+    if (Main->is_client()) {
         switch (type) {
             case GB_UNDO_UNDO:
                 error = gbcmc_send_undo_commands(gb_main, _GBCMC_UNDOCOM_UNDO);
@@ -818,7 +818,7 @@ char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type) {
     // get some information about the next undo
 
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    if (!Main->local_mode) {
+    if (Main->is_client()) {
         switch (type) {
             case GB_UNDO_UNDO:
                 return gbcmc_send_undo_info_commands(gb_main, _GBCMC_UNDOCOM_INFO_UNDO);
@@ -850,7 +850,7 @@ GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize) {
                                 _GBCMC_UNDOCOM_SET_MEM);
     }
     Main->undo->max_size_of_all_undos = memsize;
-    if (!Main->local_mode) {
+    if (Main->is_client()) {
         return gbcmc_send_undo_commands(gbd, (enum gb_undo_commands)memsize);
     }
     g_b_check_undo_size(Main);

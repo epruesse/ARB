@@ -651,7 +651,7 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
             {
                 GB_MAIN_IDX org_main_idx     = Main->dummy_father->main_idx;
                 Main->dummy_father->main_idx = main_idx_4_save;
-                gb_release_main_idx(Main);
+                Main->release_main_idx();
                 Main->dummy_father->main_idx = org_main_idx;
             }
         }

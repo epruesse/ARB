@@ -22,7 +22,7 @@ void gb_untouch_children_and_me(GBCONTAINER *gbc);
 void gb_create_header_array(GBCONTAINER *gbc, int size);
 void gb_create_extended(GBDATA *gbd);
 GB_MAIN_TYPE *gb_make_gb_main_type(const char *path);
-char *gb_destroy_main(GB_MAIN_TYPE *Main);
+void gb_destroy_main(GB_MAIN_TYPE *Main);
 GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos, GBQUARK keyq);
 GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type);
 GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbc, long index_pos, GBQUARK keyq);
@@ -39,14 +39,12 @@ void gb_save_extern_data_in_ts(GBENTRY *gbe);
 void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index);
 void gb_create_key_array(GB_MAIN_TYPE *Main, int index);
 long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key);
-void gb_free_all_keys(GB_MAIN_TYPE *Main);
 char *gb_abort_entry(GBDATA *gbd);
 void gb_abort_transaction_local_rek(GBDATA*& gbd);
 GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_created);
 
 /* ad_load.cxx */
 GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main);
-void gb_release_main_idx(GB_MAIN_TYPE *Main);
 
 /* ad_save_load.cxx */
 char *gb_findExtension(char *path);
@@ -57,8 +55,6 @@ long gb_ascii_2_bin(const char *source, GBENTRY *gbe);
 long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text);
 
 /* adcache.cxx */
-void gb_init_cache(GB_MAIN_TYPE *Main);
-void gb_destroy_cache(GB_MAIN_TYPE *Main);
 char *gb_read_cache(GBENTRY *gbe);
 void gb_free_cache(GB_MAIN_TYPE *Main, GBENTRY *gbe);
 char *gb_alloc_cache_index(GBENTRY *gbe, size_t size);

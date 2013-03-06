@@ -975,7 +975,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
     if (!Main->key_2_index_hash) Main->key_2_index_hash = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
 
     first_free_key = 0;
-    gb_free_all_keys(Main);
+    Main->free_all_keys();
 
     buffer = GB_give_buffer(256);
     while (1) {         // read keys
@@ -1191,38 +1191,36 @@ GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main) {
     return idx;
 }
 
-void gb_release_main_idx(GB_MAIN_TYPE *Main) {
-    if (Main->dummy_father) {
-        GB_MAIN_IDX idx = Main->dummy_father->main_idx;
-
-        gb_assert(gb_main_array[idx] == Main);
+void GB_MAIN_TYPE::release_main_idx() { 
+    if (dummy_father) {
+        GB_MAIN_IDX idx = dummy_father->main_idx;
+        gb_assert(gb_main_array[idx] == this);
         gb_main_array[idx] = NULL;
     }
 }
 
-static GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent) {
-    GBCONTAINER *gbc   = Main->root_container;
-    GB_ERROR     error = NULL;
+GB_ERROR GB_MAIN_TYPE::login_remote(const char *db_path, const char *opent) {
+    GB_ERROR error = NULL;
 
-    Main->local_mode = false;
-    Main->c_link     = gbcmc_open(path);
-
-    if (!Main->c_link) {
-        error = GBS_global_string("There is no ARBDB server '%s', please start one or add a filename", path);
+    i_am_server = false;
+    c_link = gbcmc_open(db_path);
+    if (!c_link) {
+        error = GBS_global_string("There is no ARBDB server '%s', please start one or add a filename", db_path);
     }
     else {
-        gbc->server_id    = 0;
-        Main->remote_hash = GBS_create_numhash(GB_REMOTE_HASH_SIZE);
-        error             = Main->login_to_server();
+        root_container->server_id = 0;
+
+        remote_hash = GBS_create_numhash(GB_REMOTE_HASH_SIZE);
+        error       = initial_client_transaction();
 
         if (!error) {
-            gbc->flags2.folded_container = 1;
+            root_container->flags2.folded_container = 1;
 
-            if (strchr(opent, 't')) error      = gb_unfold(gbc, 0, -2);  // tiny
-            else if (strchr(opent, 'm')) error = gb_unfold(gbc, 1, -2);  // medium (no sequence)
-            else if (strchr(opent, 'b')) error = gb_unfold(gbc, 2, -2);  // big (no tree)
-            else if (strchr(opent, 'h')) error = gb_unfold(gbc, -1, -2); // huge (all)
-            else error                         = gb_unfold(gbc, 0, -2);  // tiny
+            if (strchr(opent, 't')) error      = gb_unfold(root_container, 0, -2);  // tiny
+            else if (strchr(opent, 'm')) error = gb_unfold(root_container, 1, -2);  // medium (no sequence)
+            else if (strchr(opent, 'b')) error = gb_unfold(root_container, 2, -2);  // big (no tree)
+            else if (strchr(opent, 'h')) error = gb_unfold(root_container, -1, -2); // huge (all)
+            else error                         = gb_unfold(root_container, 0, -2);  // tiny
         }
     }
     return error;
@@ -1350,7 +1348,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
     GB_init_gb();
 
     Main = gb_make_gb_main_type(path);
-    Main->local_mode = true;
+    Main->mark_as_server();
 
     if (strchr(opent, 'R')) Main->allow_corrupt_file_recovery = 1;
 
@@ -1368,7 +1366,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
 
     if (path && (strchr(opent, 'r'))) {
         if (strchr(path, ':')) {
-            error = gb_login_remote(Main, path, opent);
+            error = Main->login_remote(path, opent);
         }
         else {
             int read_from_stdin = strcmp(path, "-") == 0;
@@ -1376,7 +1374,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
             // cppcheck-suppress variableScope (cannot change due to goto-bypass)
             GB_ULONG time_of_main_file = 0; long i;
 
-            Main->local_mode = true;
+            Main->mark_as_server();
             GB_begin_transaction(gbc);
             Main->clock      = 0;                   // start clock
 
@@ -1514,7 +1512,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
     }
     else {
         GB_disable_quicksave(gbc, "Database not part of this process");
-        Main->local_mode = true;
+        Main->mark_as_server();
         GB_begin_transaction(gbc);
     }
 
@@ -1543,7 +1541,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
         Main->security_level = 0;
         gbl_install_standard_commands(gbc);
 
-        if (Main->local_mode) {                     // i am the server
+        if (Main->is_server()) {
             GBT_install_message_handler(gbc);
         }
         if (gb_verbose_mode && !dbCreated) GB_informationf("ARB: Loading '%s' done\n", path);

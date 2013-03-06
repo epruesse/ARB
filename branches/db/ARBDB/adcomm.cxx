@@ -1611,7 +1611,7 @@ long GB_read_clients(GBDATA *gbd) {
     GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
     long          clients = -1;
 
-    if (Main->local_mode) { // i am the server
+    if (Main->is_server()) {
         gb_server_data *hs = Main->server_data;
         clients = hs ? hs->nsoc : 0;
     }
@@ -1620,8 +1620,7 @@ long GB_read_clients(GBDATA *gbd) {
 }
 
 bool GB_is_server(GBDATA *gbd) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    return Main->local_mode;
+    return GB_MAIN(gbd)->is_server();
 }
 
 static GB_ERROR gbcmc_unfold_list(int socket, GBDATA * gbd) {
@@ -1654,7 +1653,7 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
     int socket;
-    if (Main->local_mode) {
+    if (Main->is_server()) {
         gb_assert(0); // GBCMC_find may only be used in DB clients
         return (GBDATA *)-1;
     }
@@ -1704,13 +1703,10 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
 
 
 long gbcmc_key_alloc(GBDATA *gbd, const char *key) {
-    long gb_result[1];
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    if (Main->is_server()) return 0;
 
-    int socket;
-    if (Main->local_mode) return 0;
-    socket = Main->c_link->socket;
-
+    int socket = Main->c_link->socket;
     if (gbcm_write_two(socket, GBCM_COMMAND_KEY_ALLOC, gbd->server_id)) {
         GB_export_error(SEND_ERROR());
         GB_print_error();
@@ -1724,9 +1720,10 @@ long gbcmc_key_alloc(GBDATA *gbd, const char *key) {
         GB_print_error();
         return 0;
     }
-    gbcm_read_two(socket, GBCM_COMMAND_KEY_ALLOC_RES, 0, gb_result);
+    long result;
+    gbcm_read_two(socket, GBCM_COMMAND_KEY_ALLOC_RES, 0, &result);
     gbcm_read_flush();
-    return gb_result[0];
+    return result;
 }
 
 GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) { // goes to header: __ATTR__USERESULT
@@ -1735,7 +1732,7 @@ GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) { 
     GB_ERROR      error = NULL;
     GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
 
-    if (Main->local_mode) {
+    if (Main->is_server()) {
         GB_internal_error("gbcmc_send_undo_commands: cannot call a server in a server");
     }
     else {
@@ -1753,15 +1750,13 @@ GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) { 
 }
 
 char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command) {
-    int socket;
-    char *result;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (Main->local_mode) {
+    if (Main->is_server()) {
         GB_internal_error("gbcmc_send_undo_commands: cannot call a server in a server");
         return 0;
     }
-    socket = Main->c_link->socket;
 
+    int socket = Main->c_link->socket;
     if (gbcm_write_two(socket, GBCM_COMMAND_UNDO, gbd->server_id)) {
         GB_export_error("Cannot send data to Server 456");
         return 0;
@@ -1774,19 +1769,17 @@ char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command) 
         GB_export_error("Cannot send data to Server 536");
         return 0;
     }
-    result = gbcm_read_string(socket);
+
+    char *result = gbcm_read_string(socket);
     gbcm_read_flush();
     return result;
 }
 
 GB_ERROR GB_tell_server_dont_wait(GBDATA *gbd) {
-    int socket;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    if (Main->is_server()) return 0;
 
-    if (Main->local_mode) {
-        return 0;
-    }
-    socket = Main->c_link->socket;
+    int socket = Main->c_link->socket;
     if (gbcm_write_two(socket, GBCM_COMMAND_DONT_WAIT, gbd->server_id)) {
         GB_export_error("Cannot send data to Server 456");
         return 0;

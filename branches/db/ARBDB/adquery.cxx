@@ -196,7 +196,7 @@ static GBDATA *find_sub_sub_by_quark(GBCONTAINER *const father, const char *key,
     GBDATA *res;
     // ****** look for any hash index tables ********
     // ****** no wildcards allowed       *******
-    if (!Main->local_mode) {
+    if (Main->is_client()) {
         if (father->flags2.folded_container) {
             // do the query in the server
             if (GB_ARRAY_FLAGS(father).changed) {
@@ -234,7 +234,7 @@ static GBDATA *find_sub_sub_by_quark(GBCONTAINER *const father, const char *key,
 
         if (header[index].flags.changed >= GB_DELETED) continue;
         if (!gbn) {
-            if (!Main->local_mode) {
+            if (Main->is_client()) {
                 if (gb) res = GBCMC_find(gb,     key, type, val, case_sens, SEARCH_CHILD_OF_NEXT);
                 else    res = GBCMC_find(father, key, type, val, case_sens, SEARCH_GRANDCHILD);
                 return res;

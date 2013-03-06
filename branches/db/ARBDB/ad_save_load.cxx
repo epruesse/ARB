@@ -807,7 +807,7 @@ GB_ERROR GB_MAIN_TYPE::check_saveable(const char *new_path, const char *flags) c
      */
 
     GB_ERROR error = NULL;
-    if (!local_mode) {
+    if (is_client()) {
         error = "You cannot save a remote database,\nplease use save button in master program";
     }
     else if (opentype == gb_open_read_only_all) {
@@ -1132,7 +1132,7 @@ GB_ERROR GB_MAIN_TYPE::save_quick(const char *refpath) {
             fclose(fmaster);
         }
     }
-    if (!error && !local_mode) error = "You cannot save a remote database";
+    if (!error && is_client()) error = "You cannot save a remote database";
     if (!error) {
         qs.last_index++;
         if (qs.last_index > GB_MAX_QUICK_SAVE_INDEX) renameQuicksaves(this);

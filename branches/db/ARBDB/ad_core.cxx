@@ -229,49 +229,52 @@ void gb_create_extended(GBDATA *gbd) {
     }
 }
 
-GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
-    GB_MAIN_TYPE *Main;
-
-    Main = (GB_MAIN_TYPE *)gbm_get_mem(sizeof(*Main), 0);
-    if (path) Main->path   = strdup((char*)path);
-    Main->key_2_index_hash = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
-    Main->compression_mask = -1;                    // allow all compressions
-    gb_init_cache(Main);
-    gb_init_undo_stack(Main);
+void GB_MAIN_TYPE::init(const char *db_path) {
+    if (db_path) path = strdup(db_path);
+    key_2_index_hash = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
+    compression_mask = -1; // allow all compressions
+    cache.init();
+    gb_init_undo_stack(this);
     gb_init_ctype_table();
-    gb_local->announce_db_open(Main);
+    gb_local->announce_db_open(this);
+}
+
+GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
+    GB_MAIN_TYPE *Main = (GB_MAIN_TYPE *)gbm_get_mem(sizeof(*Main), 0);
+    Main->init(path);
     return Main;
 }
 
-char *gb_destroy_main(GB_MAIN_TYPE *Main) {
-    gb_assert(!Main->dummy_father);
-    gb_assert(!Main->root_container);
+void GB_MAIN_TYPE::cleanup() {
+    gb_assert(!dummy_father);
+    gb_assert(!root_container);
 
-    gb_destroy_cache(Main);
-    gb_release_main_idx(Main);
+    cache.destroy();
+    release_main_idx();
 
-    if (Main->command_hash) GBS_free_hash(Main->command_hash);
-    if (Main->table_hash) GBS_free_hash(Main->table_hash);
-    if (Main->resolve_link_hash) GBS_free_hash(Main->resolve_link_hash);
-    if (Main->remote_hash) GBS_free_numhash(Main->remote_hash);
+    if (command_hash)      GBS_free_hash(command_hash);
+    if (table_hash)        GBS_free_hash(table_hash);
+    if (resolve_link_hash) GBS_free_hash(resolve_link_hash);
+    if (remote_hash)       GBS_free_numhash(remote_hash);
 
-    gb_free_all_keys(Main);
+    free_all_keys();
     
-    if (Main->key_2_index_hash) GBS_free_hash(Main->key_2_index_hash);
-    freenull(Main->keys);
+    if (key_2_index_hash) GBS_free_hash(key_2_index_hash);
+    freenull(keys);
 
-    gb_free_undo_stack(Main);
+    gb_free_undo_stack(this);
 
-    for (int j = 0; j<ALLOWED_DATES; ++j) freenull(Main->dates[j]);
+    for (int j = 0; j<ALLOWED_DATES; ++j) freenull(dates[j]);
 
-    free(Main->path);
-    free(Main->disabled_path);
-    free(Main->qs.quick_save_disabled);
+    free(path);
+    free(disabled_path);
+    free(qs.quick_save_disabled);
+}
 
-    gbm_free_mem(Main, sizeof(*Main), 0);
+void gb_destroy_main(GB_MAIN_TYPE *Main) {
+    Main->cleanup();
     gb_local->announce_db_close(Main);
-
-    return 0;
+    gbm_free_mem(Main, sizeof(*Main), 0);
 }
 
 GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos, GBQUARK keyq) {
@@ -279,7 +282,7 @@ GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_p
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
     SET_GB_FATHER(gbd, father);
-    if (Main->local_mode) {
+    if (Main->is_server()) {
         gbd->server_id = GBTUM_MAGIC_NUMBER;
     }
     if (Main->clock) {
@@ -327,7 +330,7 @@ GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQ
     }
     gbe->flags.type = type;
 
-    if (Main->local_mode) {
+    if (Main->is_server()) {
         gbe->server_id = GBTUM_MAGIC_NUMBER;
     }
     if (Main->clock) {
@@ -349,9 +352,8 @@ GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbc
     SET_GB_FATHER(gbc, father);
     gbc->main_idx = father->main_idx;
 
-    if (Main->local_mode) gbc->server_id = GBTUM_MAGIC_NUMBER;
-    if (Main->clock)
-    {
+    if (Main->is_server()) gbc->server_id = GBTUM_MAGIC_NUMBER;
+    if (Main->clock) {
         GB_CREATE_EXT(gbc);
         gbc->ext->creation_date = Main->clock;
     }
@@ -376,7 +378,7 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
         SET_GB_FATHER(gbc, father);
         gbc->flags.type = GB_DB;
         gbc->main_idx = father->main_idx;
-        if (Main->local_mode) gbc->server_id = GBTUM_MAGIC_NUMBER;
+        if (Main->is_server()) gbc->server_id = GBTUM_MAGIC_NUMBER;
         if (Main->clock) {
             GB_CREATE_EXT(gbc);
             gbc->ext->creation_date = Main->clock;
@@ -422,7 +424,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
      * no need to keep track of the database entry
      * within the server at the client side
      */
-    if (!Main->local_mode && gbd->server_id) {
+    if (Main->is_client() && gbd->server_id) {
         if (Main->remote_hash) GBS_write_numhash(Main->remote_hash, gbd->server_id, 0);
     }
 
@@ -633,7 +635,7 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
     Main->keys[old_index].nref--;
     Main->keys[new_index].nref++;
 
-    if (Main->local_mode) {
+    if (Main->is_server()) {
         GBDATA *gbd = GB_HEADER_LIST_GBD(hls[index]);
 
         if (gbd && (GB_TYPE(gbd) == GB_STRING || GB_TYPE(gbd) == GB_LINK)) { // @@@ put check for GB_STRING or GB_LINK into method (occurs several times)
@@ -688,7 +690,7 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
         index = Main->keycnt++;
         gb_create_key_array(Main, (int)index+1);
     }
-    if (!Main->local_mode) {
+    if (Main->is_client()) {
         long test_index = gbcmc_key_alloc(Main->gb_main(), s);
         if (test_index != index) {
             GBK_terminatef("Database corrupt (allocating quark '%s' in server failed)", s);
@@ -703,7 +705,7 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
         if (Main->gb_key_data && create_gb_key) {
             gb_load_single_key_data(Main->gb_main(), (GBQUARK)index);
             // Warning: starts a big recursion
-            if (!Main->local_mode) { // send new gb_key to server, needed for searching
+            if (Main->is_client()) { // send new gb_key to server, needed for searching
                 GBK_terminate_on_error(Main->send_update_to_server(Main->gb_main()));
             }
         }
@@ -714,19 +716,19 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
     return index;
 }
 
-void gb_free_all_keys(GB_MAIN_TYPE *Main) {
-    if (Main->keys) {
-        for (long index = 1; index < Main->keycnt; index++) {
-            if (Main->keys[index].key) {
-                GBS_write_hash(Main->key_2_index_hash, Main->keys[index].key, 0);
-                freenull(Main->keys[index].key);
+void GB_MAIN_TYPE::free_all_keys() {
+    if (keys) {
+        for (long index = 1; index < keycnt; index++) {
+            if (keys[index].key) {
+                GBS_write_hash(key_2_index_hash, keys[index].key, 0);
+                freenull(keys[index].key);
             }
-            Main->keys[index].nref = 0;
-            Main->keys[index].next_free_key = 0;
+            keys[index].nref = 0;
+            keys[index].next_free_key = 0;
         }
-        freenull(Main->keys[0].key); // "main"
-        Main->first_free_key = 0;
-        Main->keycnt         = 1;
+        freenull(keys[0].key); // "main"
+        first_free_key = 0;
+        keycnt         = 1;
     }
 }
 

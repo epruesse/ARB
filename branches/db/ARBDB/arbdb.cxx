@@ -556,8 +556,8 @@ GB_ERROR gb_unfold(GBCONTAINER *gbc, long deep, int index_pos) {
     if (index_pos> gbc->d.nheader) gb_create_header_array(gbc, index_pos + 1);
     if (index_pos >= 0  && GB_HEADER_LIST_GBD(header[index_pos])) return 0;
 
-    if (GBCONTAINER_MAIN(gbc)->local_mode) {
-        GB_internal_error("Cannot unfold local_mode database");
+    if (GBCONTAINER_MAIN(gbc)->is_server()) {
+        GB_internal_error("Cannot unfold in server");
         return 0;
     }
 
@@ -686,7 +686,7 @@ void GB_close(GBDATA *gbd) {
     run_close_callbacks(gbd, Main->close_callbacks);
     Main->close_callbacks = 0;
     
-    if (!Main->local_mode) {
+    if (Main->is_client()) {
         long result            = gbcmc_close(Main->c_link);
         if (result != 0) error = GBS_global_string("gbcmc_close returns %li", result);
     }
@@ -1932,8 +1932,8 @@ bool GB_in_temporary_branch(GBDATA *gbd) { // @@@ used in ptpan branch - do not 
 // ---------------------
 //      transactions
 
-GB_ERROR GB_MAIN_TYPE::login_to_server() {
-    // the first transaction ever
+GB_ERROR GB_MAIN_TYPE::initial_client_transaction() {
+    // the first client transaction ever
     transaction_level = 1;
     GB_ERROR error    = gbcmc_init_transaction(root_container);
     if (!error) ++clock;
@@ -1947,7 +1947,7 @@ inline GB_ERROR GB_MAIN_TYPE::start_transaction() {
     aborted_transaction = 0;
 
     GB_ERROR error = NULL;
-    if (!local_mode) {
+    if (is_client()) {
         error = gbcmc_begin_transaction(gb_main());
         if (!error) {
             error = gb_commit_transaction_local_rek(gb_main_ref(), 0, 0); // init structures
@@ -1981,7 +1981,7 @@ inline GB_ERROR GB_MAIN_TYPE::abort_transaction() {
     }
 
     gb_abort_transaction_local_rek(gb_main_ref());
-    if (!local_mode) {
+    if (is_client()) {
         GB_ERROR error = gbcmc_abort_transaction(gb_main());
         if (error) return error;
     }
@@ -2006,7 +2006,7 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
         aborted_transaction = 0;
         return abort_transaction();
     }
-    if (local_mode) {
+    if (is_server()) {
         char *error1 = gb_set_undo_sync(gb_main());
         while (1) {
             flag = (GB_CHANGE)GB_ARRAY_FLAGS(gb_main()).changed;
@@ -2059,7 +2059,7 @@ inline GB_ERROR GB_MAIN_TYPE::pop_transaction() {
 }
 
 inline GB_ERROR GB_MAIN_TYPE::no_transaction() {
-    if (!local_mode) return "Tried to disable transactions in a client";
+    if (is_client()) return "Tried to disable transactions in a client";
     transaction_level = -1;
     return NULL;
 }
@@ -2068,7 +2068,7 @@ GB_ERROR GB_MAIN_TYPE::send_update_to_server(GBDATA *gbd) {
     GB_ERROR error = NULL;
 
     if (!transaction_level) error = "send_update_to_server: no transaction running";
-    else if (local_mode) error    = "send_update_to_server: only possible from clients (not from server itself)";
+    else if (is_server()) error   = "send_update_to_server: only possible from clients (not from server itself)";
     else {
         gb_callback_list *cbl_old = cbl_last;
 

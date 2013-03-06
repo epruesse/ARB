@@ -224,7 +224,7 @@ GB_ERROR gb_load_key_data_and_dictionaries(GB_MAIN_TYPE *Main) { // goes to head
     }
     else {
         Main->gb_key_data = gb_key_data;
-        if (Main->local_mode) { // do not create anything at the client side
+        if (Main->is_server()) { // do not create anything at the client side
             GB_push_my_security(gb_main);
 
             // search unused keys and delete them
