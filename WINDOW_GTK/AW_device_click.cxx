@@ -127,9 +127,6 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
     if (X1 < clipRect.l) return false;
     if (X0 > clipRect.r) return false;
 
-    printf("X %i-%i %i-%i %s\n", AW_INT(X0), AW_INT(X1), AW_INT(Y0), AW_INT(Y1), str);
-    printf("  %i %i\n", AW_INT(mouse_x), AW_INT(mouse_y));
-
     if (mouse_x < X0) return false; // left of text
     if (mouse_x > X1) return false; // right of text
 
