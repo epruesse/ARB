@@ -311,8 +311,8 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
         }
         else {
             long memsize;
-            buffer[i++] = GB_GETSIZE(gbe);
-            memsize = buffer[i++] = GB_GETMEMSIZE(gbe);
+            buffer[i++] = gbe->size();
+            memsize = buffer[i++] = gbe->memsize();
             buffer[1] = i;
             if (gbcm_write(socket, (const char *)buffer, i* sizeof(long))) {
                 return GB_export_error("ARB_DB WRITE TO SOCKET FAILED");

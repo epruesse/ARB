@@ -191,7 +191,7 @@ static GB_ERROR gb_convert_compression(GBDATA *gbd) {
     else {
         char    *str        = 0;
         GBENTRY *gbe        = gbd->as_entry();
-        long     elems      = GB_GETSIZE(gbe);
+        long     elems      = gbe->size();
         size_t   data_size  = gbe->uncompressed_size();
         size_t   new_size   = -1;
         int      expectData = 1;

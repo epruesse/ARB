@@ -52,9 +52,6 @@ inline gb_transaction_save *GB_GET_EXT_OLD_DATA(GBDATA *gbd) { return gbd->ext ?
 // --------------------------
 //      data and datasize
 
-inline long GB_GETSIZE(const GBENTRY *gbe)       { return gbe->size(); } // @@@ elim
-inline long GB_GETMEMSIZE(const GBENTRY *gbe)    { return gbe->memsize(); } // @@@ elim
-
 inline char *GB_GETDATA(GBENTRY *gbe) { return gbe->flags2.extern_data ? GB_EXTERN_DATA_DATA(gbe->info.ex)  : &((gbe)->info.istr.data[0]); } // @@@ move into GBENTRY
 
 inline void GB_FREEDATA(GBENTRY *gbe) { // @@@ move into GBENTRY

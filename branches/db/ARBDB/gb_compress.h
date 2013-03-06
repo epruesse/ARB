@@ -46,7 +46,7 @@ extern int gb_convert_type_2_sizeof[];
 extern int gb_convert_type_2_appendix_size[];
 
 inline size_t GBENTRY::uncompressed_size() const {
-    return GB_GETSIZE(this) * gb_convert_type_2_sizeof[type()] + gb_convert_type_2_appendix_size[type()];
+    return size() * gb_convert_type_2_sizeof[type()] + gb_convert_type_2_appendix_size[type()];
 }
 
 #else

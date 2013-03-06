@@ -198,7 +198,7 @@ const int gb_convert_type_2_compression_flags[] = {
 };
 
 int gb_convert_type_2_sizeof[] = { /* contains the unit-size of data stored in DB,
-                                    * i.e. realsize = unit_size * GB_GETSIZE()
+                                    * i.e. realsize = unit_size * size()
                                     */
     0,                                              // GB_NONE  0
     0,                                              // GB_BIT   1
@@ -757,11 +757,11 @@ double GB_read_float(GBDATA *gbd)
 }
 
 long GB_read_count(GBDATA *gbd) {
-    return GB_GETSIZE(gbd->as_entry());
+    return gbd->as_entry()->size();
 }
 
 long GB_read_memuse(GBDATA *gbd) {
-    return GB_GETMEMSIZE(gbd->as_entry());
+    return gbd->as_entry()->memsize();
 }
 
 GB_CSTR GB_read_pntr(GBDATA *gbd) {
@@ -791,53 +791,45 @@ int gb_read_nr(GBDATA *gbd) {
     return gbd->index;
 }
 
-GB_CSTR GB_read_char_pntr(GBDATA *gbd)
-{
+GB_CSTR GB_read_char_pntr(GBDATA *gbd) {
     GB_TEST_READ(gbd, GB_STRING, "GB_read_char_pntr");
     return GB_read_pntr(gbd);
 }
 
-char *GB_read_string(GBDATA *gbd)
-{
-    const char *d;
+char *GB_read_string(GBDATA *gbd) {
     GB_TEST_READ(gbd, GB_STRING, "GB_read_string");
-    d = GB_read_pntr(gbd);
+    const char *d = GB_read_pntr(gbd);
     if (!d) return NULL;
-    return GB_memdup(d, GB_GETSIZE(gbd->as_entry())+1);
+    return GB_memdup(d, gbd->as_entry()->size()+1);
 }
 
-size_t GB_read_string_count(GBDATA *gbd)
-{
+size_t GB_read_string_count(GBDATA *gbd) {
     GB_TEST_READ(gbd, GB_STRING, "GB_read_string_count");
-    return GB_GETSIZE(gbd->as_entry());
+    return gbd->as_entry()->size();
 }
 
-GB_CSTR GB_read_link_pntr(GBDATA *gbd)
-{
+GB_CSTR GB_read_link_pntr(GBDATA *gbd) {
     GB_TEST_READ(gbd, GB_LINK, "GB_read_link_pntr");
     return GB_read_pntr(gbd);
 }
 
-static char *GB_read_link(GBDATA *gbd)
-{
+static char *GB_read_link(GBDATA *gbd) {
     const char *d;
     GB_TEST_READ(gbd, GB_LINK, "GB_read_link_pntr");
     d = GB_read_pntr(gbd);
     if (!d) return NULL;
-    return GB_memdup(d, GB_GETSIZE(gbd->as_entry())+1);
+    return GB_memdup(d, gbd->as_entry()->size()+1);
 }
 
-long GB_read_bits_count(GBDATA *gbd)
-{
+long GB_read_bits_count(GBDATA *gbd) {
     GB_TEST_READ(gbd, GB_BITS, "GB_read_bits_count");
-    return GB_GETSIZE(gbd->as_entry());
+    return gbd->as_entry()->size();
 }
 
-GB_CSTR GB_read_bits_pntr(GBDATA *gbd, char c_0, char c_1)
-{
+GB_CSTR GB_read_bits_pntr(GBDATA *gbd, char c_0, char c_1) {
     GB_TEST_READ(gbd, GB_BITS, "GB_read_bits_pntr");
     GBENTRY *gbe  = gbd->as_entry();
-    long     size = GB_GETSIZE(gbe);
+    long     size = gbe->size();
     if (size) {
         char *ca = gb_read_cache(gbe);
         if (ca) return ca;
@@ -856,7 +848,7 @@ GB_CSTR GB_read_bits_pntr(GBDATA *gbd, char c_0, char c_1)
 
 char *GB_read_bits(GBDATA *gbd, char c_0, char c_1) {
     GB_CSTR d = GB_read_bits_pntr(gbd, c_0, c_1);
-    return d ? GB_memdup(d, GB_GETSIZE(gbd->as_entry())+1) : 0;
+    return d ? GB_memdup(d, gbd->as_entry()->size()+1) : 0;
 }
 
 
@@ -869,12 +861,12 @@ GB_CSTR GB_read_bytes_pntr(GBDATA *gbd)
 long GB_read_bytes_count(GBDATA *gbd)
 {
     GB_TEST_READ(gbd, GB_BYTES, "GB_read_bytes_count");
-    return GB_GETSIZE(gbd->as_entry());
+    return gbd->as_entry()->size();
 }
 
 char *GB_read_bytes(GBDATA *gbd) {
     GB_CSTR d = GB_read_bytes_pntr(gbd);
-    return d ? GB_memdup(d, GB_GETSIZE(gbd->as_entry())) : 0;
+    return d ? GB_memdup(d, gbd->as_entry()->size()) : 0;
 }
 
 GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
@@ -895,7 +887,7 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
         return res;
     }
     else {
-        int       size = GB_GETSIZE(gbe);
+        int       size = gbe->size();
         char     *buf2 = GB_give_other_buffer((char *)res, size<<2);
         GB_UINT4 *s    = (GB_UINT4 *)res;
         GB_UINT4 *d    = (GB_UINT4 *)buf2;
@@ -909,14 +901,14 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
 
 long GB_read_ints_count(GBDATA *gbd) { // used by ../PERL_SCRIPTS/SAI/SAI.pm@read_ints_count
     GB_TEST_READ(gbd, GB_INTS, "GB_read_ints_count");
-    return GB_GETSIZE(gbd->as_entry());
+    return gbd->as_entry()->size();
 }
 
 GB_UINT4 *GB_read_ints(GBDATA *gbd)
 {
     GB_CUINT4 *i = GB_read_ints_pntr(gbd);
     if (!i) return NULL;
-    return  (GB_UINT4 *)GB_memdup((char *)i, GB_GETSIZE(gbd->as_entry())*sizeof(GB_UINT4));
+    return  (GB_UINT4 *)GB_memdup((char *)i, gbd->as_entry()->size()*sizeof(GB_UINT4));
 }
 
 GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
@@ -931,7 +923,7 @@ GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
         res = (char *)GB_GETDATA(gbe);
     }
     if (res) {
-        long size      = GB_GETSIZE(gbe);
+        long size      = gbe->size();
         long full_size = size*sizeof(float);
 
         XDR xdrs;
@@ -952,7 +944,7 @@ GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
 static long GB_read_floats_count(GBDATA *gbd)
 {
     GB_TEST_READ(gbd, GB_FLOATS, "GB_read_floats_count");
-    return GB_GETSIZE(gbd->as_entry());
+    return gbd->as_entry()->size();
 }
 
 static float *GB_read_floats(GBDATA *gbd) // @@@ unused - check usage of floats
@@ -960,7 +952,7 @@ static float *GB_read_floats(GBDATA *gbd) // @@@ unused - check usage of floats
     GB_CFLOAT *f;
     f = GB_read_floats_pntr(gbd);
     if (!f) return NULL;
-    return  (float *)GB_memdup((char *)f, GB_GETSIZE(gbd->as_entry())*sizeof(float));
+    return  (float *)GB_memdup((char *)f, gbd->as_entry()->size()*sizeof(float));
 }
 
 char *GB_read_as_string(GBDATA *gbd)
@@ -1197,10 +1189,10 @@ GB_ERROR GB_write_string(GBDATA *gbd, const char *s)
     GB_TEST_NON_BUFFER(s, "GB_write_string");        // compress would destroy the other buffer
 
     if (!s) s = "";
-    long size = strlen(s);
+    size_t size = strlen(s);
 
     // no zero len strings allowed
-    if ((GB_GETMEMSIZE(gbe))  && (size == GB_GETSIZE(gbe)))
+    if (gbe->memsize() && (size == gbe->size()))
     {
         if (!strcmp(s, GB_read_pntr(gbe)))
             return 0;
@@ -1231,10 +1223,10 @@ GB_ERROR GB_write_link(GBDATA *gbd, const char *s)
     GB_TEST_NON_BUFFER(s, "GB_write_link");          // compress would destroy the other buffer
 
     if (!s) s = "";
-    long size = strlen(s);
+    size_t size = strlen(s);
 
     // no zero len strings allowed
-    if ((GB_GETMEMSIZE(gbe))  && (size == GB_GETSIZE(gbe)))
+    if (gbe->memsize()  && (size == gbe->size()))
     {
         if (!strcmp(s, GB_read_pntr(gbe)))
             return 0;
@@ -1760,8 +1752,8 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
             GBENTRY *dest_entry   = dest->as_entry();
 
             gb_save_extern_data_in_ts(dest_entry);
-            GB_SETSMDMALLOC(dest_entry, GB_GETSIZE(source_entry),
-                            GB_GETMEMSIZE(source_entry),
+            GB_SETSMDMALLOC(dest_entry, source_entry->size(),
+                            source_entry->memsize(),
                             GB_GETDATA(source_entry));
 
             dest->flags.compressed_data = source->flags.compressed_data;

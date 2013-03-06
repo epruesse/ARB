@@ -720,7 +720,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA*& gbd) {
         if (type >= GB_BITS && gbd->flags2.extern_data) {
             /* we have copied the data structures, now
                mark the old as deleted !!! */
-            g_b_add_size_to_undo_entry(ue, GB_GETMEMSIZE(gbd->as_entry()));
+            g_b_add_size_to_undo_entry(ue, gbd->as_entry()->memsize());
         }
         g_b_add_size_to_undo_entry(ue, sizeof(GBENTRY));
     }

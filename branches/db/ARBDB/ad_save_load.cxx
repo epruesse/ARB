@@ -358,8 +358,8 @@ static GB_BUFFER gb_bin_2_ascii(GBENTRY *gbe) {
     int            k;
 
     char *source     = GB_GETDATA(gbe);
-    long  len        = GB_GETMEMSIZE(gbe);
-    long  xtended    = GB_GETSIZE(gbe);
+    long  len        = gbe->memsize();
+    long  xtended    = gbe->size();
     int   compressed = gbe->flags.compressed_data;
 
     buffer = GB_give_buffer(len * 2 + 10);
@@ -566,7 +566,7 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
     else {
         gbe = gbd->as_entry();
         if (type == GB_STRING || type == GB_STRING_SHRT) {
-            size = GB_GETSIZE(gbe);
+            size = gbe->size();
             if (!gbe->flags.compressed_data && size < GBTUM_SHORT_STRING_SIZE) {
                 type = GB_STRING_SHRT;
             }
@@ -628,10 +628,10 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
         case GB_BYTES:
         case GB_INTS:
         case GB_FLOATS:
-            size = GB_GETSIZE(gbe);
+            size = gbe->size();
             // fall-through
         case GB_STRING: {
-            long memsize = GB_GETMEMSIZE(gbe);
+            long memsize = gbe->memsize();
             gb_put_number(size, out);
             gb_put_number(memsize, out);
             i = fwrite(GB_GETDATA(gbe), (size_t)memsize, 1, out);
