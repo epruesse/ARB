@@ -99,13 +99,13 @@ void AW_selection_list::clear(bool clear_default) {
     }
     
     gtk_list_store_clear(GTK_LIST_STORE(gtk_tree_view_get_model(select_list_widget)));
-    
+
 }
 
 bool AW_selection_list::default_is_selected() const {
-    return strcmp(get_selected_value(), get_default_value()) == 0;
+    const char *defVal = get_default_value();
+    return defVal && ARB_strNULLcmp(get_selected_value(), defVal) == 0;
 }
-
 
 int AW_selection_list::get_selected_index() const {
     //note: copy&paste from http://ubuntuforums.org/showthread.php?t=1208655
