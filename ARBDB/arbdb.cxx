@@ -2464,7 +2464,7 @@ static GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB fun
     cb->func       = func;
     cb->priority   = priority;
 
-#if defined(DEVEL_RALF)
+// #if defined(DEVEL_RALF)
 #if defined(DEBUG)
     // test if callback already was added (every callback shall only exist once)
     // maybe you like to use GB_ensure_callback instead of GB_add_callback
@@ -2473,7 +2473,7 @@ static GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB fun
         gb_assert((cb->func != func) || (cb->clientdata != clientdata) || (cb->type != type));
     }
 #endif // DEBUG
-#endif // DEVEL_RALF
+// #endif // DEVEL_RALF
 
     return 0;
 }
