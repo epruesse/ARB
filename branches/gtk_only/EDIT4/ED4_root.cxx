@@ -1940,7 +1940,7 @@ static char *detectProperties() {
 ED4_root::ED4_root()
     : most_recently_used_window(0),
       db_name(detectProperties()),
-      aw_root(AWT_create_root(db_name, "ARB_EDIT4")),
+      aw_root(AWT_create_root(db_name, "ARB_EDIT4", new NullTracker)),
       props_db(AW_ROOT_DEFAULT),
       first_window(0),
       main_manager(0),

@@ -378,8 +378,8 @@ static void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
         }
         return;
     }
-   FIXME("recording not implemented");
-   // if (get_root()->prvt->recording) get_root()->prvt->recording->record_action(cbs->id);
+
+    if (root->is_tracking()) root->track_action(cbs->id);
 
     if (cbs->f == AW_POPUP) {
         cbs->run_callback();
