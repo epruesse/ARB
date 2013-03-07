@@ -37,7 +37,7 @@
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <aw_advice.hxx>
-#include "../WINDOW_GTK/aw_status.hxx" // @@@ hack - obsolete when EDIT4 status works like elsewhere
+#include "../WINDOW/aw_status.hxx" // @@@ hack - obsolete when EDIT4 status works like elsewhere
 #include <arb_version.h>
 #include <arb_file.h>
 #include <arbdbt.h>

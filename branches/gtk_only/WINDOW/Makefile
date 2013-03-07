@@ -7,11 +7,11 @@ LIB_SHARED=../lib/$(MAIN:.a=).$(SHARED_LIB_SUFFIX)
 
 it: do_$(MAIN)
 
-do_WINDOW_GTK.a:
+do_WINDOW.a:
 	@echo "Error: MAIN='$(MAIN)' is set wrong"
 	false
 
-do_libWINDOW_GTK.a: $(LIB_SHARED)
+do_libWINDOW.a: $(LIB_SHARED)
 
 $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)

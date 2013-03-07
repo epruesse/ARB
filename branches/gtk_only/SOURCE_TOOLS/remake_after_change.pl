@@ -9,7 +9,7 @@ my @shared = (
               'AWT',
               'ARBDB',
               'CORE',
-              'WINDOW_GTK',
+              'WINDOW',
              );
 my %shared = map { $_ => 1; } @shared;
 

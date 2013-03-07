@@ -512,7 +512,7 @@ my %dep2lib =  (
                'ARBDB/needs_libs.libARBDB_so'           => 'lib/libARBDB.so',
                'AWT/needs_libs.libAWT_so'               => 'lib/libAWT.so',
                'CORE/needs_libs.libCORE_so'             => 'lib/libCORE.so',
-               'WINDOW_GTK/needs_libs.libWINDOW_GTK_so' => 'lib/libWINDOW_GTK.so',
+               'WINDOW/needs_libs.libWINDOW_so' => 'lib/libWINDOW.so',
 
                'GL/glAW/needs_libs.libglAW_a'       => 'GL/glAW/libglAW.a',
                'GL/glpng/needs_libs.libglpng_arb_a' => 'GL/glpng/libglpng_arb.a',

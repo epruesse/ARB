@@ -705,7 +705,7 @@ endif
 
 GUI_LIBS = $(GUI_LIBS_PREFIX) $(LIBS) -lAWT  
 ifeq ($(GTK),1)
-		GUI_LIBS += -lWINDOW_GTK $(GTKLIBS)
+		GUI_LIBS += -lWINDOW $(GTKLIBS)
 else
 		GUI_LIBS += -lWINDOW $(XLIBS)		
 endif	
@@ -820,7 +820,7 @@ ARCHS = \
 			TREEGEN/TREEGEN.a \
 			UNIT_TESTER/UNIT_TESTER.a \
 			WETC/WETC.a \
-			WINDOW_GTK/libWINDOW_GTK.a \
+			WINDOW/libWINDOW.a \
 			XML/XML.a \
 
 # ----------------------- 
@@ -1208,7 +1208,7 @@ target_is_missing_lib_prefix:
 ARBDB/ARBDB.dummy:           target_is_missing_lib_prefix
 CORE/CORE.dummy:             target_is_missing_lib_prefix
 AWT/AWT.dummy:               target_is_missing_lib_prefix
-WINDOW_GTK/WINDOW_GTK.dummy: target_is_missing_lib_prefix
+WINDOW/WINDOW.dummy: target_is_missing_lib_prefix
 
 # rule to generate main target (normally a library):
 %.dummy:
@@ -1306,7 +1306,7 @@ SL/TREEDISP/TREEDISP.dummy:		links_non_perl
 STAT/STAT.dummy:			links_non_perl
 TREEGEN/TREEGEN.dummy:			links_non_perl
 WETC/WETC.dummy:			links_non_perl
-WINDOW_GTK/libWINDOW_GTK.dummy:		links_non_perl
+WINDOW/libWINDOW.dummy:		links_non_perl
 XML/XML.dummy:				links_non_perl
 
 ifeq ($(OPENGL),1)
@@ -1404,7 +1404,7 @@ HELP_SOURCE/HELP_SOURCE.dummy: link_db xml menus
 
 db:	ARBDB/libARBDB.dummy
 core:	CORE/libCORE.dummy
-aw_gtk:	WINDOW_GTK/libWINDOW_GTK.dummy
+aw_gtk:	WINDOW/libWINDOW.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
 awti:	AWTI/AWTI.dummy
@@ -1988,7 +1988,7 @@ UNITS_TESTED = \
 	SERVERCNTRL/SERVERCNTRL.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	SL/PRONUC/PRONUC.test \
-	WINDOW_GTK/libWINDOW_GTK.test \
+	WINDOW/libWINDOW.test \
 	HELP_SOURCE/arb_help2xml.test \
 	CONVERTALN/CONVERTALN.test \
 	SL/SEQIO/SEQIO.test \
