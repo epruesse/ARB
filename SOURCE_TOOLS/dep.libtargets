@@ -62,5 +62,5 @@ WETC/WETC.a
 XML/XML.a
 lib/libARBDB.so
 lib/libAWT.so
-lib/libWINDOW_GTK.so
+lib/libWINDOW.so
 lib/libCORE.so

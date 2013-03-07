@@ -5,7 +5,7 @@
  * Created on November 13, 2012, 3:40 PM
  * 
  * This file only exists for compatibility reasons with arb. 
- * Do not use it from inside WINDOW_GTK. Use the files from /devices instead
+ * Do not use it from inside WINDOW. Use the files from /devices instead
  */
 
 #pragma once

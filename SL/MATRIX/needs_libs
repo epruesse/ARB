@@ -1,4 +1,4 @@
 # libraries needed to link against SL/MATRIX/MATRIX.a
 
-lib/libWINDOW_GTK.so
+lib/libWINDOW.so
 
