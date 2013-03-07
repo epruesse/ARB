@@ -116,14 +116,14 @@ bool AW_root::is_focus_callback(AW_RCB fcb) const {
     return focus_callback_list && focus_callback_list->contains(AW_root_callback(fcb, 0, 0));
 }
 
-AW_root::AW_root(const char *properties, const char *program, bool NoExit) {
+AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker) {
     int argc = 0;
-    init_root(properties, program, NoExit, &argc, NULL);
+    init_root(properties, program, NoExit, user_tracker, &argc, NULL);
 }
 
-AW_root::AW_root(const char *properties, const char *program, bool NoExit,
+AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker,
                  int *argc, char **argv[]) {
-    init_root(properties, program, NoExit, argc, argv);
+    init_root(properties, program, NoExit, user_tracker, argc, argv);
 }
 
 AW_awar *AW_root::label_is_awar(const char *label) {
@@ -264,8 +264,7 @@ void AW_root::register_widget(GtkWidget* w, AW_active mask) {
 
 
 
-void AW_root::init_root(const char* properties, const char *programname, bool NoExit,
-                        int *argc, char** argv[]) {
+void AW_root::init_root(const char* properties, const char *programname, bool NoExit, UserActionTracker *user_tracker, int *argc, char** argv[]) {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
     printf("props: %s", properties);
@@ -303,6 +302,8 @@ void AW_root::init_root(const char* properties, const char *programname, bool No
         fallback_resources[i] = GBS_global_string_copy("*%s: %s", aw_fb[i].fb, GB_read_char_pntr(gb_awar));
     }
     fallback_resources[i] = 0;
+
+    tracker = user_tracker;
 
     //ARB_install_handlers(aw_handlers);
 
@@ -622,16 +623,6 @@ void AW_root::dont_save_awars_with_default_value(GBDATA */*gb_main*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-GB_ERROR AW_root::execute_macro(GBDATA *gb_main, const char *file, AW_RCB1 execution_done_cb, AW_CL client_data) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-
-bool AW_root::is_recording_macro() const {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-
 void AW_root::main_loop() {
     gtk_main();
 }
@@ -640,20 +631,12 @@ void AW_root::set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2) {
     GTK_NOT_IMPLEMENTED;
 }
 
-GB_ERROR AW_root::start_macro_recording(const char *file, const char *application_id, const char *stop_action_name, bool expand_existing) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-
-GB_ERROR AW_root::stop_macro_recording() {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-
 void AW_root::unlink_awars_from_DB(GBDATA *gb_main) {
     GTK_NOT_IMPLEMENTED;
 }
 AW_root::~AW_root() {
+    delete tracker; tracker = NULL;
+
     if (application_database) {
         GB_close(application_database);
         application_database = NULL;

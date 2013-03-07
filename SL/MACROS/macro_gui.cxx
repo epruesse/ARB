@@ -1,17 +1,16 @@
-// ==================================================================== //
-//                                                                      //
-//   File      : AWT_macro.cxx                                          //
-//   Purpose   :                                                        //
-//                                                                      //
-//                                                                      //
-// Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //
-// Copyright Department of Microbiology (Technical University Munich)   //
-//                                                                      //
-// Visit our web site at: http://www.arb-home.de/                       //
-//                                                                      //
-// ==================================================================== //
+// ============================================================= //
+//                                                               //
+//   File      : macro_gui.cxx                                   //
+//   Purpose   :                                                 //
+//                                                               //
+//   Coded by Ralf Westram (coder@reallysoft.de) in May 2005     //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
-#include "awt_macro.hxx"
+#include "macro_gui.hxx"
+#include "macros.hxx"
 
 #include <arbdb.h>
 #include <arb_file.h>
@@ -21,10 +20,8 @@
 #include <aw_file.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
-#include <aw_root.hxx>
 
-// ---------------
-//      MACROS
+#define ma_assert(bed) arb_assert(bed)
 
 #define AWAR_MACRO_RECORD_ID "macro_record"
 
@@ -33,6 +30,16 @@
 #define AWAR_MACRO_RECORDING_MACRO_TEXT AWAR_MACRO_BASE"/button_label"
 #define AWAR_MACRO_RECORDING_EXPAND     AWAR_MACRO_BASE"/expand"
 #define AWAR_MACRO_RECORDING_RUNB4      AWAR_MACRO_BASE"/runb4"
+
+inline MacroRecorder& get_recorder(AW_root *awr) {
+    UserActionTracker *mr = awr->get_tracker();
+    ma_assert(mr);
+
+    MacroRecorder *smr = dynamic_cast<MacroRecorder*>(mr);
+    ma_assert(smr);
+
+    return *smr;
+}
 
 static void awt_delete_macro_cb(AW_window *aww) {
     AW_root *awr       = aww->get_root();
@@ -62,7 +69,7 @@ static void awt_exec_macro_cb(AW_window *aww, AW_CL cl_gb_main) {
     char    *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
 
 
-    GB_ERROR error = awr->execute_macro(gb_main, macroName, macro_execution_finished, (AW_CL)macroName);
+    GB_ERROR error = get_recorder(awr).execute(gb_main, macroName, macro_execution_finished, (AW_CL)macroName);
 
     if (error) {
         aw_message(error);
@@ -75,8 +82,8 @@ static void awt_start_macro_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_app_na
     AW_root    *awr      = aww->get_root();
     GB_ERROR    error    = NULL;
 
-    if (awr->is_recording_macro()) {
-        error = awr->stop_macro_recording();
+    if (awr->is_tracking()) {
+        error = get_recorder(awr).stop_recording();
     }
     else {
         bool expand = awr->awar(AWAR_MACRO_RECORDING_EXPAND)->read_int();
@@ -90,14 +97,14 @@ static void awt_start_macro_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_app_na
             if (runb4) awt_exec_macro_cb(aww, cl_gb_main);
 
             char *sac = GBS_global_string_copy("%s/%s", aww->window_defaults_name, AWAR_MACRO_RECORD_ID);
-            error     = awr->start_macro_recording(macroName, app_name, sac, expand);
+            error     = get_recorder(awr).start_recording(macroName, app_name, sac, expand);
             free(sac);
         }
         free(macroName);
     }
     
     AW_refresh_fileselection(awr, AWAR_MACRO_BASE);
-    awr->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string(awr->is_recording_macro() ? "STOP" : "RECORD");
+    awr->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string(awr->is_tracking() ? "STOP" : "RECORD");
     if (error) aw_message(error);
 }
 
@@ -163,7 +170,7 @@ void awt_execute_macro(GBDATA *gb_main, AW_root *root, const char *macroname) {
 
     GB_ERROR error       = 0;
     if (!fullname) error = "file not found";
-    else     error       = root->execute_macro(gb_main, fullname, NULL, 0);
+    else     error       = get_recorder(root).execute(gb_main, fullname, NULL, 0);
 
     if (error) {
         aw_message(GBS_global_string("Can't execute macro '%s' (Reason: %s)", macroname, error));

@@ -14,7 +14,6 @@
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
-#include "aw_macro.hxx"
 #include "aw_nawar.hxx" //TODO difference between awar and nawar?
 #include "aw_msg.hxx"
 #include "aw_root.hxx"

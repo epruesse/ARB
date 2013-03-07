@@ -216,7 +216,6 @@ symlink_file ../AWT/awt_canvas.hxx INCLUDE/awt_canvas.hxx &&
 symlink_file ../AWT/awt_config_manager.hxx INCLUDE/awt_config_manager.hxx &&
 symlink_file ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx &&
 symlink_file ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx &&
-symlink_file ../AWT/awt_macro.hxx INCLUDE/awt_macro.hxx &&
 symlink_file ../AWT/awt_map_key.hxx INCLUDE/awt_map_key.hxx &&
 symlink_file ../AWT/awt_modules.hxx INCLUDE/awt_modules.hxx &&
 symlink_file ../AWT/awt_sel_boxes.hxx INCLUDE/awt_sel_boxes.hxx &&
@@ -281,6 +280,8 @@ symlink_file ../SL/HELIX/BI_basepos.hxx INCLUDE/BI_basepos.hxx &&
 symlink_file ../SL/ITEMS/items.h INCLUDE/items.h &&
 symlink_file ../SL/ITEMS/item_sel_list.h INCLUDE/item_sel_list.h &&
 symlink_file ../SL/LOCATION/Location.h INCLUDE/Location.h &&
+symlink_file ../SL/MACROS/macro_gui.hxx INCLUDE/macro_gui.hxx &&
+symlink_file ../SL/MACROS/macros.hxx INCLUDE/macros.hxx &&
 symlink_file ../SL/MATRIX/AP_matrix.hxx INCLUDE/AP_matrix.hxx &&
 symlink_file ../SL/NDS/nds.h INCLUDE/nds.h &&
 symlink_file ../SL/NEIGHBOURJOIN/neighbourjoin.hxx INCLUDE/neighbourjoin.hxx &&

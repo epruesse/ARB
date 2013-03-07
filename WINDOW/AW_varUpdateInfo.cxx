@@ -53,9 +53,13 @@ void AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer v
     }
 }
 
+static void track_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
+    AW_awar *awar = (AW_awar*)cl_awar;
+    aw_assert(cb_type == GB_CB_CHANGED);
+    awar->root->track_awar_change(awar);
+}
+
 void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
-    
-    
     AW_cb_struct::useraction_init();
 
     GB_ERROR  error = NULL;
@@ -65,11 +69,10 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
         root->changer_of_variable = widget;
     }
 
-    if (root->is_recording_macro()) {
+    if (root->is_tracking()) {
         // add a callback which writes macro-code (BEFORE any other callback happens; last added, first calledback)
-//        GB_transaction ta(awar->gb_var);
-//        GB_add_callback(awar->gb_var, GB_CB_CHANGED, record_awar_change, (int*)awar);
-        FIXME("macro recording not implemented");
+        GB_transaction ta(awar->gb_var);
+        GB_add_callback(awar->gb_var, GB_CB_CHANGED, track_awar_change, (int*)awar);
     }
 
     bool run_cb = true;
@@ -131,10 +134,9 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
             break;
     }
     
-    if (root->is_recording_macro()) {
-//        GB_transaction ta(awar->gb_var);
-//        GB_remove_callback(awar->gb_var, GB_CB_CHANGED, record_awar_change, (int*)awar);
-        FIXME("macro recording not implemented");
+    if (root->is_tracking()) {
+        GB_transaction ta(awar->gb_var);
+        GB_remove_callback(awar->gb_var, GB_CB_CHANGED, track_awar_change, (int*)awar);
     }
 
     if (error) {

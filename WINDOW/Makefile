@@ -263,7 +263,6 @@ AW_awar.o: aw_gtk_forward_declarations.hxx
 AW_awar.o: aw_gtk_migration_helpers.hxx
 AW_awar.o: aw_help.hxx
 AW_awar.o: aw_keysym.hxx
-AW_awar.o: aw_macro.hxx
 AW_awar.o: aw_msg.hxx
 AW_awar.o: aw_nawar.hxx
 AW_awar.o: aw_position.hxx
