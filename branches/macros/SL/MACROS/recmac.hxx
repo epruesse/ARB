@@ -1,6 +1,6 @@
 // ============================================================= //
 //                                                               //
-//   File      : aw_macro.hxx                                    //
+//   File      : recmac.hxx                                      //
 //   Purpose   :                                                 //
 //                                                               //
 //   Coded by Ralf Westram (coder@reallysoft.de) in April 2012   //
@@ -19,9 +19,7 @@
 #include "aw_awar.hxx"
 #endif
 
-#ifndef aw_assert
-#define aw_assert(bed) arb_assert(bed)
-#endif
+#define ma_assert(bed) arb_assert(bed)
 
 class RecordingMacro : virtual Noncopyable {
     char *stop_action_name;
@@ -46,7 +44,7 @@ class RecordingMacro : virtual Noncopyable {
 public:
     RecordingMacro(const char *filename, const char *application_id_, const char *stop_action_name_, bool expand_existing);
     ~RecordingMacro() {
-        aw_assert(!out); // forgot to call stop()
+        ma_assert(!out); // forgot to call stop()
         free(path);
         free(application_id);
         free(stop_action_name);
@@ -54,8 +52,8 @@ public:
 
     GB_ERROR has_error() const { return error; }
 
-    void record_action(const char *action_id);
-    void record_awar_change(AW_awar *awar);
+    void track_action(const char *action_id);
+    void track_awar_change(AW_awar *awar);
 
     GB_ERROR stop();
 };

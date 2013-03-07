@@ -610,7 +610,6 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/awt_macro.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awtc_submission.hxx
@@ -627,6 +626,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_extern.o: $(ARBHOME)/INCLUDE/gde.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/items.h
+NT_extern.o: $(ARBHOME)/INCLUDE/macro_gui.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/multi_probe.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/nds.h
 NT_extern.o: $(ARBHOME)/INCLUDE/primer_design.hxx
@@ -774,13 +774,14 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/awt_macro.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/cb.h
 NT_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_main.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_main.o: $(ARBHOME)/INCLUDE/insdel.h
+NT_main.o: $(ARBHOME)/INCLUDE/macro_gui.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/macros.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h

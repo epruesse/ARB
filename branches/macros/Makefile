@@ -868,6 +868,7 @@ ARCHS_NTREE = \
 		SL/ITEMS/ITEMS.a \
 		SL/INSDEL/INSDEL.a \
 		SL/LOCATION/LOCATION.a \
+		SL/MACROS/MACROS.a \
 		SL/TRANSLATE/TRANSLATE.a \
 		SL/TREEDISP/TREEDISP.a \
 		SL/TREE_ADMIN/TREE_ADMIN.a \
@@ -1262,6 +1263,7 @@ SL/HELIX/HELIX.dummy:			links_non_perl
 SL/INSDEL/INSDEL.dummy:			links_non_perl
 SL/ITEMS/ITEMS.dummy:			links_non_perl
 SL/LOCATION/LOCATION.dummy:		links_non_perl
+SL/MACROS/MACROS.dummy:			links_non_perl
 SL/MATRIX/MATRIX.dummy:			links_non_perl
 SL/NDS/NDS.dummy:			links_non_perl
 SL/NEIGHBOURJOIN/NEIGHBOURJOIN.dummy:	links_non_perl
@@ -1938,6 +1940,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	SL/MACROS/MACROS.test \
 	SL/REGEXPR/REGEXPR.test \
 	SL/FILTER/FILTER.test \
 	ARBDB/libARBDB.test \

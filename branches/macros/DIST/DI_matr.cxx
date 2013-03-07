@@ -25,7 +25,6 @@
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
-#include <awt_macro.hxx>
 
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
@@ -1419,7 +1418,6 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 #endif // DEBUG
 
     aws->create_menu("FILE", "F", AWM_ALL);
-    aws->insert_menu_topic("macros", "Macros  ...", "M", "macro.hlp", AWM_ALL, (AW_CB)awt_popup_macro_window, (AW_CL)"NEIGHBOUR_JOINING", (AW_CL)GLOBAL_gb_main);
     aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)di_exit,  0,  0);
 
     aws->create_menu("Properties", "P", AWM_ALL);
