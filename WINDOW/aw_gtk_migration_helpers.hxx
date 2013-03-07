@@ -20,7 +20,11 @@
 #ifdef GTK_SILENT
 #define GTK_NOT_IMPLEMENTED
 #define GTK_PARTLY_IMPLEMENTED
+#if defined(DEVEL_RALF)
 #define FIXME
+#else // !defined(DEVEL_RALF)
+#define FIXME(str)
+#endif
 #else
 #define GTK_NOT_IMPLEMENTED printf("NOT IMPLEMENTED %s\n",  __PRETTY_FUNCTION__)
 #define GTK_PARTLY_IMPLEMENTED printf("PARTLY IMPLEMENTED %s\n",  __PRETTY_FUNCTION__)
