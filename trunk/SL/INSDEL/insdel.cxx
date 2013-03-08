@@ -63,7 +63,7 @@ typedef SmartPtr<AliData> AliDataPtr;
 // --------------------------------------------------------------------------------
 
 class AliData {
-    size_t size;
+    size_t          size;
     static GB_ERROR op_error;
 
 public:
@@ -71,6 +71,7 @@ public:
     virtual ~AliData() {}
 
     virtual size_t unitsize() const = 0;
+    virtual bool has_slice() const = 0;
 
     enum memop {
         COPY_TO, // always returns 0
@@ -105,6 +106,7 @@ public:
     virtual UnitPtr unit_right_of(size_t pos) const = 0;
 
     virtual AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const = 0;
+    virtual AliDataPtr slice_down(size_t start, size_t count) const = 0;
 
     size_t elems() const { return size; }
     size_t memsize() const { return unitsize()*elems(); }
@@ -139,10 +141,85 @@ GB_ERROR AliData::op_error = NULL;
 
 // --------------------------------------------------------------------------------
 
+class AliDataSlice : public AliData {
+    AliDataPtr from;
+    size_t     offset;
+
+    static int fix_amount(AliDataPtr from, size_t offset, size_t amount) {
+        if (amount) {
+            size_t from_size = from->elems();
+            if (offset>from_size) {
+                amount = 0;
+            }
+            else {
+                size_t last_pos  = offset+amount-1;
+                size_t last_from = from->elems()-1;
+
+                if (last_pos > last_from) {
+                    id_assert(last_from >= offset);
+                    amount = last_from-offset+1;
+                }
+            }
+        }
+        return amount;
+    }
+
+    AliDataSlice(AliDataPtr from_, size_t offset_, size_t amount_)
+        : AliData(fix_amount(from_, offset_, amount_)),
+          from(from_),
+          offset(offset_)
+    {
+        id_assert(!from->has_slice()); // do not double-slice
+    }
+
+public:
+    static AliDataPtr make(AliDataPtr from, size_t offset, size_t amount) {
+        return (offset == 0 && amount >= from->elems())
+            ? from
+            : (from->has_slice()
+               ? from->slice_down(offset, amount)
+               : new AliDataSlice(from, offset, amount));
+    }
+
+    size_t unitsize() const OVERRIDE { return from->unitsize(); }
+    bool has_slice() const OVERRIDE { return true; }
+
+    AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const OVERRIDE {
+        return from->create_gap(gapsize, gapinfo);
+    }
+    AliDataPtr slice_down(size_t start, size_t count) const OVERRIDE {
+        return new AliDataSlice(from, offset+start, std::min(count, elems()));
+    }
+    int operate_on_mem(void *mem, size_t start, size_t count, memop op) const OVERRIDE {
+        id_assert(is_valid_part(start, count));
+        return from->operate_on_mem(mem, start+offset, count, op);
+    }
+    UnitPtr unit_left_of(size_t pos) const OVERRIDE {
+        id_assert(is_valid_between(pos));
+        return from->unit_left_of(pos+offset);
+    }
+    UnitPtr unit_right_of(size_t pos) const OVERRIDE {
+        id_assert(is_valid_between(pos));
+        return from->unit_right_of(pos+offset);
+    }
+    int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const OVERRIDE {
+        id_assert(is_valid_part(start, count));
+        id_assert(other.is_valid_part(ostart, count));
+
+        return from->cmp_data(start+offset, other, ostart, count);
+    }
+};
+
 class ComposedAliData : public AliData {
     AliDataPtr left, right;
+    bool       hasSlice;
 
-    ComposedAliData(AliDataPtr l, AliDataPtr r) : AliData(l->elems()+r->elems()), left(l), right(r) {
+    ComposedAliData(AliDataPtr l, AliDataPtr r)
+        : AliData(l->elems()+r->elems()),
+          left(l),
+          right(r),
+          hasSlice(left->has_slice() || right->has_slice())
+    {
         id_assert(l->unitsize() == r->unitsize());
         id_assert(l->elems());
         id_assert(r->elems());
@@ -153,8 +230,30 @@ class ComposedAliData : public AliData {
 
 public:
     size_t unitsize() const OVERRIDE { return left->unitsize(); }
+    bool has_slice() const OVERRIDE { return hasSlice; }
+
     AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const OVERRIDE {
         return left->create_gap(gapsize, gapinfo);
+    }
+    AliDataPtr slice_down(size_t start, size_t count) const OVERRIDE {
+        size_t left_elems = left->elems();
+
+        if (left_elems <= start) { // left is before slice
+            return AliDataSlice::make(right, start-left_elems, count);
+        }
+
+        size_t pos_behind = start+count;
+        if (left_elems >= pos_behind) { // right is behind slice
+            return AliDataSlice::make(left, start, min(count, left_elems));
+        }
+
+        size_t take_left  = left_elems-start;
+        size_t take_right = count-take_left;
+
+        return new ComposedAliData(
+            AliDataSlice::make(left, start, take_left),
+            AliDataSlice::make(right, 0, take_right)
+            );
     }
     int operate_on_mem(void *mem, size_t start, size_t count, memop op) const OVERRIDE {
         size_t left_elems = left->elems();
@@ -227,60 +326,6 @@ public:
     }
 };
 
-class AliDataSlice : public AliData {
-    AliDataPtr from;
-    size_t     offset;
-
-    static int fix_amount(AliDataPtr from, size_t offset, size_t amount) {
-        if (amount) {
-            size_t from_size = from->elems();
-            if (offset>from_size) {
-                amount = 0;
-            }
-            else {
-                size_t last_pos  = offset+amount-1;
-                size_t last_from = from->elems()-1;
-
-                if (last_pos > last_from) {
-                    id_assert(last_from >= offset);
-                    amount = last_from-offset+1;
-                }
-            }
-        }
-        return amount;
-    }
-
-public:
-    AliDataSlice(AliDataPtr from_, size_t offset_, size_t amount_)
-        : AliData(fix_amount(from_, offset_, amount_)),
-          from(from_),
-          offset(offset_)
-    {}
-
-    size_t unitsize() const OVERRIDE { return from->unitsize(); }
-    AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const OVERRIDE {
-        return from->create_gap(gapsize, gapinfo);
-    }
-    int operate_on_mem(void *mem, size_t start, size_t count, memop op) const OVERRIDE {
-        id_assert(is_valid_part(start, count));
-        return from->operate_on_mem(mem, start+offset, count, op);
-    }
-    UnitPtr unit_left_of(size_t pos) const OVERRIDE {
-        id_assert(is_valid_between(pos));
-        return from->unit_left_of(pos+offset);
-    }
-    UnitPtr unit_right_of(size_t pos) const OVERRIDE {
-        id_assert(is_valid_between(pos));
-        return from->unit_right_of(pos+offset);
-    }
-    int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const OVERRIDE {
-        id_assert(is_valid_part(start, count));
-        id_assert(other.is_valid_part(ostart, count));
-
-        return from->cmp_data(start+offset, other, ostart, count);
-    }
-};
-
 // --------------------------------------------------------------------------------
 
 class Deletable { // define characters allowed to delete (only applicable to TypedAliData<char>)
@@ -328,7 +373,6 @@ class TypedAliData : public AliData {
 
 protected:
     static const T *typed_ptr(const UnitPtr& uptr) { return (const T*)uptr.get_pointer(); }
-
     const T* std_gap_ptr() const { return &gap; }
 
 public:
@@ -340,9 +384,13 @@ public:
     const T& std_gap() const { return gap; }
 
     size_t unitsize() const OVERRIDE { return sizeof(T); }
+    bool has_slice() const OVERRIDE { return false; }
+
     virtual UnitPtr at_ptr(size_t pos) const = 0;
     AliDataPtr create_gap(size_t gapsize, const UnitPair& /*gapinfo*/) const OVERRIDE;
-
+    __ATTR__NORETURN AliDataPtr slice_down(size_t /*start*/, size_t /*count*/) const OVERRIDE {
+        GBK_terminate("logic error: slice_down called for explicit TypedAliData");
+    }
     UnitPtr unit_left_of(size_t pos) const OVERRIDE {
         id_assert(is_valid_between(pos));
         return at_ptr(pos-1);
@@ -541,7 +589,7 @@ inline AliDataPtr concat(AliDataPtr left, AliDataPtr mid, AliDataPtr right) {
     return concat(left, concat(mid, right));
 }
 
-inline AliDataPtr partof(AliDataPtr data, size_t pos, size_t amount) { return new AliDataSlice(data, pos, amount); }
+inline AliDataPtr partof(AliDataPtr data, size_t pos, size_t amount) { return AliDataSlice::make(data, pos, amount); }
 inline AliDataPtr before(AliDataPtr data, size_t pos) { return partof(data, 0, pos); }
 inline AliDataPtr after(AliDataPtr data, size_t pos) { return partof(data, pos+1, data->elems()-pos-1); }
 
