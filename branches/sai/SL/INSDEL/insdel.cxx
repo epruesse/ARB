@@ -139,6 +139,60 @@ GB_ERROR AliData::op_error = NULL;
 
 // --------------------------------------------------------------------------------
 
+class AliDataSlice : public AliData {
+    AliDataPtr from;
+    size_t     offset;
+
+    static int fix_amount(AliDataPtr from, size_t offset, size_t amount) {
+        if (amount) {
+            size_t from_size = from->elems();
+            if (offset>from_size) {
+                amount = 0;
+            }
+            else {
+                size_t last_pos  = offset+amount-1;
+                size_t last_from = from->elems()-1;
+
+                if (last_pos > last_from) {
+                    id_assert(last_from >= offset);
+                    amount = last_from-offset+1;
+                }
+            }
+        }
+        return amount;
+    }
+
+public:
+    AliDataSlice(AliDataPtr from_, size_t offset_, size_t amount_)
+        : AliData(fix_amount(from_, offset_, amount_)),
+          from(from_),
+          offset(offset_)
+    {}
+
+    size_t unitsize() const OVERRIDE { return from->unitsize(); }
+    AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const OVERRIDE {
+        return from->create_gap(gapsize, gapinfo);
+    }
+    int operate_on_mem(void *mem, size_t start, size_t count, memop op) const OVERRIDE {
+        id_assert(is_valid_part(start, count));
+        return from->operate_on_mem(mem, start+offset, count, op);
+    }
+    UnitPtr unit_left_of(size_t pos) const OVERRIDE {
+        id_assert(is_valid_between(pos));
+        return from->unit_left_of(pos+offset);
+    }
+    UnitPtr unit_right_of(size_t pos) const OVERRIDE {
+        id_assert(is_valid_between(pos));
+        return from->unit_right_of(pos+offset);
+    }
+    int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const OVERRIDE {
+        id_assert(is_valid_part(start, count));
+        id_assert(other.is_valid_part(ostart, count));
+
+        return from->cmp_data(start+offset, other, ostart, count);
+    }
+};
+
 class ComposedAliData : public AliData {
     AliDataPtr left, right;
 
@@ -224,60 +278,6 @@ public:
         else { // split inside or frontof 'left'
             return left->unit_right_of(pos);
         }
-    }
-};
-
-class AliDataSlice : public AliData {
-    AliDataPtr from;
-    size_t     offset;
-
-    static int fix_amount(AliDataPtr from, size_t offset, size_t amount) {
-        if (amount) {
-            size_t from_size = from->elems();
-            if (offset>from_size) {
-                amount = 0;
-            }
-            else {
-                size_t last_pos  = offset+amount-1;
-                size_t last_from = from->elems()-1;
-
-                if (last_pos > last_from) {
-                    id_assert(last_from >= offset);
-                    amount = last_from-offset+1;
-                }
-            }
-        }
-        return amount;
-    }
-
-public:
-    AliDataSlice(AliDataPtr from_, size_t offset_, size_t amount_)
-        : AliData(fix_amount(from_, offset_, amount_)),
-          from(from_),
-          offset(offset_)
-    {}
-
-    size_t unitsize() const OVERRIDE { return from->unitsize(); }
-    AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const OVERRIDE {
-        return from->create_gap(gapsize, gapinfo);
-    }
-    int operate_on_mem(void *mem, size_t start, size_t count, memop op) const OVERRIDE {
-        id_assert(is_valid_part(start, count));
-        return from->operate_on_mem(mem, start+offset, count, op);
-    }
-    UnitPtr unit_left_of(size_t pos) const OVERRIDE {
-        id_assert(is_valid_between(pos));
-        return from->unit_left_of(pos+offset);
-    }
-    UnitPtr unit_right_of(size_t pos) const OVERRIDE {
-        id_assert(is_valid_between(pos));
-        return from->unit_right_of(pos+offset);
-    }
-    int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const OVERRIDE {
-        id_assert(is_valid_part(start, count));
-        id_assert(other.is_valid_part(ostart, count));
-
-        return from->cmp_data(start+offset, other, ostart, count);
     }
 };
 
