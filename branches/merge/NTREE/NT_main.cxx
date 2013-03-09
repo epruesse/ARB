@@ -278,7 +278,7 @@ static void nt_intro_start_existing(AW_window *aw_intro) {
 static void nt_intro_start_merge(AW_window *aw_intro, AW_root *aw_root) {
     nt_assert(contradicted(aw_intro, aw_root)); // one of them is passed!
     if (aw_intro) aw_root = aw_intro->get_root();
-    create_MG_main_window(aw_root);
+    MERGE_create_main_window(aw_root);
     if (aw_intro) aw_intro->hide();
 }
 
@@ -554,7 +554,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
         else if (cl.wants_merge())  mode = MERGE;
 
         if (mode == EXPORT) {
-            MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, ":", "noname.arb");
+            MERGE_create_all_awars(aw_root, AW_ROOT_DEFAULT, ":", "noname.arb");
             GLOBAL_gb_src = GBT_open(":", "rw");
             if (!GLOBAL_gb_src) {
                 error = GB_await_error();
@@ -569,12 +569,12 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
                 AWT_announce_db_to_browser(GLOBAL_gb_dst, "New database (noname.arb)");
 #endif // DEBUG
 
-                MG_start_cb2(NULL, aw_root, true, true);
+                MERGE_start_cb2(NULL, aw_root, true, true);
                 aw_root->main_loop();
             }
         }
         else if (mode == MERGE) {
-            MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, cl.get_arg(0), cl.get_arg(1));
+            MERGE_create_all_awars(aw_root, AW_ROOT_DEFAULT, cl.get_arg(0), cl.get_arg(1));
             nt_intro_start_merge(0, aw_root);
             aw_root->main_loop();
             nt_assert(0);

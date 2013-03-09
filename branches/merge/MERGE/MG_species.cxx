@@ -687,7 +687,7 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     return error;
 }
 
-GB_ERROR MG_simple_merge(AW_root *awr) {
+GB_ERROR MERGE_sequences_simple(AW_root *awr) {
     //! Merge the sequences of two databases
 
     static char *m_name = 0;

@@ -24,6 +24,10 @@
 #include <arb_progress.h>
 #include <arb_file.h>
 
+// AISC_MKPT_PROMOTE:// source and destination DBs for merge:
+// AISC_MKPT_PROMOTE:extern GBDATA *GLOBAL_gb_src;
+// AISC_MKPT_PROMOTE:extern GBDATA *GLOBAL_gb_dst;
+
 GBDATA *GLOBAL_gb_src = NULL;
 GBDATA *GLOBAL_gb_dst = NULL;
 
@@ -185,8 +189,12 @@ static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {
     if (error) aw_message(error);
 }
 
-void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest_is_new) {
+void MERGE_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest_is_new) {
     // uses gb_dest and gb_merge
+
+    mg_assert(aw_root);
+    mg_assert(implicated(aww, aww->get_root() == aw_root));
+
     mg_save_enabled = save_enabled;
 
     {
@@ -318,8 +326,7 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
     }
 }
 
-static void MG_start_cb(AW_window *aww)
-{
+static void MG_start_cb(AW_window *aww) {
     AW_root  *awr   = aww->get_root();
     GB_ERROR  error = 0;
     {
@@ -372,12 +379,11 @@ static void MG_start_cb(AW_window *aww)
     }
 
     if (error) aw_message(error);
-    else MG_start_cb2(aww, awr, true, false);
+    else MERGE_start_cb2(aww, awr, true, false);
 }
 
 
-static AW_window *create_merge_init_window(AW_root *awr)
-{
+static AW_window *create_merge_init_window(AW_root *awr) { // @@@ elim
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "MERGE_SELECT_DATABASES", "MERGE SELECT TWO DATABASES");
     aws->load_xfig("merge/startup.fig");
@@ -417,8 +423,7 @@ static AW_window *create_merge_init_window(AW_root *awr)
     return (AW_window *)aws;
 }
 
-void MG_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one, const char *fname_two)
-{
+void MERGE_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one, const char *fname_two) { // @@@ eliminate db-names from here
     AW_create_fileselection_awars(awr, AWAR_DB_DST, "", ".arb", fname_two, aw_def);
     awr->awar_string(AWAR_DB_DST"/type", "b", aw_def);
 
@@ -438,9 +443,9 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one,
 #endif // DEBUG
 }
 
-AW_window *create_MG_main_window(AW_root *aw_root) {
-    MG_create_all_awars(aw_root, AW_ROOT_DEFAULT);
-    AW_window *aww=create_merge_init_window(aw_root);
+AW_window *MERGE_create_main_window(AW_root *aw_root) {
+    MERGE_create_all_awars(aw_root, AW_ROOT_DEFAULT, "db1.arb", "db2.arb");
+    AW_window *aww = create_merge_init_window(aw_root);
     aww->activate();
     return aww;
 }
