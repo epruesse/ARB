@@ -5,11 +5,6 @@ Major changes for next release:
  - Detect clusters of species with similar sequences (OTUs) in ARB_DIST
  - Rewrote chimera check. Allows filtering
  - added RNACMA (computes clusters of correlated positions)
- - Next relative search
-   - can be restricted to column ranges (needs a PT-Server calculated from aligned sequences)
-   - corrected and improved scaling of relative scores
-   - more accurate scores (due to fixes in PT-Server; see below)
-   - faster in many cases
  - PT-Server
    - changed behavior
      - no longer report less hits for a part of a probe than for the probe itself (occurred at 3'-end of alignment)
@@ -33,6 +28,11 @@ Major changes for next release:
      - fixed number of outgroup hits reported when decreasing temperature
        (now each outgroup member only occurs once)
      - show possible reasons why no probes could be designed
+   - next relative search
+     - can be restricted to column ranges (needs a PT-Server calculated from aligned sequences)
+     - corrected and improved scaling of relative scores
+     - more accurate scores (due to fixes in PT-Server; see below)
+     - faster in many cases
    - show errors from ptserver build in ARB
  - fast-aligner
    - searches next-relatives based on selected column-block
