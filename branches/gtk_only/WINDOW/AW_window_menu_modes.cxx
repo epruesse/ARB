@@ -45,10 +45,6 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
     FIXME("form should be a frame around area?!");
     prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); 
-
-    //create a table that will contain the drawing area and scrollbars
-    GtkWidget *table = gtk_table_new(2, 2, false);
-
     
     // create main drawing area ('middle area')
     GtkWidget* drawing_area = gtk_drawing_area_new();
@@ -56,25 +52,21 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     //These adjustments will be attached to the scrollbars.
     prvt->hAdjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 0, 0, 0));
     prvt->vAdjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 0, 0, 0));
-      
-    //put drawing area into top left table cell
-    gtk_table_attach(GTK_TABLE(table), drawing_area, 0, 1, 0, 1,(GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL), (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL), 0, 0);
-    GtkWidget *hscrollbar = gtk_hscrollbar_new(prvt->hAdjustment); 
-    gtk_table_attach(GTK_TABLE(table), hscrollbar, 0, 1, 1, 2, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL), GTK_FILL, 0, 0);
-    GtkWidget *vscrollbar = gtk_vscrollbar_new(prvt->vAdjustment); 
-    gtk_table_attach(GTK_TABLE(table), vscrollbar, 1, 2, 0, 1, GTK_FILL, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL) , 0, 0);
     
+    GtkWidget* scrolledTree = gtk_scrolled_window_new(prvt->hAdjustment, prvt->vAdjustment);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolledTree), drawing_area);
     
-    
-    gtk_widget_realize(GTK_WIDGET(drawing_area));
-    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(drawing_area, drawing_area); 
+    gtk_widget_show(scrolledTree);
+    gtk_widget_show(GTK_WIDGET(drawing_area));
+    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(drawing_area, drawing_area);
     //FIXME form should be a frame around the area.
 
     // Layout:
     // fixed_size_area ('info') goes above scrollArea ('middle')
     GtkWidget *vbox2 = gtk_vbox_new(false, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), table, true, true, 0);   
+    gtk_box_pack_start(GTK_BOX(vbox2), scrolledTree, true, true, 0);
+    
     // Both go right of the mode_menu / vert. toolbar
     GtkWidget *hbox = gtk_hbox_new(false, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prvt->mode_menu), false, false, 0);
