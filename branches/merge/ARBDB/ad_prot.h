@@ -247,6 +247,7 @@ GB_CSTR GB_append_suffix(const char *name, const char *suffix);
 GB_CSTR GB_canonical_path(const char *anypath);
 GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right);
 GB_CSTR GB_concat_full_path(const char *anypath_left, const char *anypath_right);
+GB_CSTR GB_unfold_in_directory(const char *relative_directory, const char *path);
 GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path);
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path);
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path);
