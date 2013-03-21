@@ -1564,8 +1564,6 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         }
     }
 
-    awm->insert_help_topic("How to use help", "H", "help.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp",      0);
-    awm->insert_help_topic("ARB help",        "A", "arb.hlp",       AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",       0);
     awm->insert_help_topic("ARB_NT help",     "N", "arb_ntree.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_ntree.hlp", 0);
 
     awm->create_mode("select.bitmap",   "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
