@@ -190,10 +190,10 @@ AW_window *MG_merge_names_cb(AW_root *awr) {
         aws->callback(AW_POPUP_HELP, (AW_CL)"mg_names.hlp");
         aws->create_button("HELP", "HELP", "H");
 
-        aws->at("src_addid");
+        aws->at("addid1");
         aws->create_input_field(AWAR_ADDID_SRC, 10);
 
-        aws->at("dst_addid");
+        aws->at("addid2");
         aws->create_input_field(AWAR_ADDID_DST, 10);
 
         aws->at("dups");
