@@ -710,7 +710,7 @@ GB_ERROR MERGE_sequences_simple(AW_root *awr) {
             long M_species_count = GB_number_of_subentries(M_species_data);
             long D_species_count = GB_number_of_subentries(D_species_data);
 
-            // create hash containing all species from gb_dest,
+            // create hash containing all species from gb_dst,
             // but sized to hold all species from both DBs:
             D_species_hash = GBT_create_species_hash_sized(GLOBAL_gb_dst, M_species_count+D_species_count);
         }

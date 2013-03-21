@@ -164,8 +164,8 @@ static void MG_save_quick_result_cb(AW_window *aww) {
     free(name);
 }
 
-static void MG_create_db_dependent_awars(AW_root *aw_root, GBDATA *gb_merge, GBDATA *gb_dest) {
-    MG_create_db_dependent_rename_awars(aw_root, gb_merge, gb_dest);
+static void MG_create_db_dependent_awars(AW_root *aw_root, GBDATA *gb_src, GBDATA *gb_dst) {
+    MG_create_db_dependent_rename_awars(aw_root, gb_src, gb_dst);
 }
 
 static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {

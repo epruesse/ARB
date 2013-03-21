@@ -106,9 +106,9 @@ static void MG_transfer_extended(AW_window *aww, AW_CL force) {
     if (!error) error = GB_begin_transaction(GLOBAL_gb_src);
 
     if (!error) {
-        GBDATA *gb_source = GBT_find_SAI(GLOBAL_gb_src, dest);
+        GBDATA *gb_src = GBT_find_SAI(GLOBAL_gb_src, dest);
 
-        if (!gb_source) error = "Please select the SAI you want to transfer";
+        if (!gb_src) error = "Please select the SAI you want to transfer";
         else {
             GBDATA *gb_dst_sai_data     = GBT_get_SAI_data(GLOBAL_gb_dst);
             if (!gb_dst_sai_data) error = GB_await_error();
@@ -121,7 +121,7 @@ static void MG_transfer_extended(AW_window *aww, AW_CL force) {
                 if (!error) {
                     gb_dest_sai             = GB_create_container(gb_dst_sai_data, "extended");
                     if (!gb_dest_sai) error = GB_await_error();
-                    else error              = GB_copy(gb_dest_sai, gb_source);
+                    else error              = GB_copy(gb_dest_sai, gb_src);
                 }
             }
         }
