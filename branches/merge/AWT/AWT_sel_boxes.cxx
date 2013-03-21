@@ -979,7 +979,7 @@ static void popdown_loadbox_and_popup_user(AW_window *aw_loadbox, AW_CL cl_creat
     aw_popup->activate();
 }
 
-AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what,
+AW_window *awt_create_load_box(AW_root *aw_root, const char *action, const char *what,
                                const char *default_directory, const char *file_extension,
                                char **set_file_name_awar,
                                void (*callback)(AW_window*, AW_CL),
@@ -989,7 +989,10 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what,
 {
     /* general purpose file selection box
      *
-     * 'load_what' describes what is going to be loaded (e.g. "destination database")
+     * 'action' describes what is intended to be done (e.g. "Load").
+     * used for window title and button.
+     *
+     * 'what' describes what is going to be loaded (e.g. "destination database")
      * It is also used to create the awars for the filebox, i.e. same description for multiple
      * fileboxes makes them share the awars.
      *
@@ -1012,7 +1015,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what,
      */
 
 
-    char *what_key  = GBS_string_2_key(load_what);
+    char *what_key  = GBS_string_2_key(what);
     char *base_name = GBS_global_string_copy("tmp/load_box_%s", what_key);
 
     AW_create_fileselection_awars(aw_root, base_name, default_directory, file_extension, "");
@@ -1024,7 +1027,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what,
     AW_window_simple *aws = new AW_window_simple;
     {
         char title[100];
-        sprintf(title, "Load %s", load_what);
+        sprintf(title, "%s %s", action, what);
         aws->init(aw_root, title, title);
         aws->load_xfig("load_box.fig");
     }
@@ -1051,7 +1054,6 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what,
 #endif
 
     aws->at("go");
-    aws->highlight();
 
     if (callback) {
         awt_assert(!create_popup);
@@ -1062,7 +1064,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what,
         aws->callback(popdown_loadbox_and_popup_user, AW_CL(create_popup), cl_user);
     }
 
-    aws->create_button("LOAD", "LOAD", "L");
+    aws->create_button("GO", action);
 
     AW_create_fileselection(aws, base_name);
     free(base_name);

@@ -123,7 +123,7 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
 // -------------------------------
 //      generic file prompter
 
-AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what,
+AW_window *awt_create_load_box(AW_root *aw_root, const char *action, const char *what,
                                const char *default_directory, const char *file_extension,
                                char **set_file_name_awar,
                                void (*callback)(AW_window*, AW_CL),
