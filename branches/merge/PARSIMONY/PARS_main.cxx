@@ -1413,9 +1413,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     }
     awm->button_length(5);
 
-    awm->insert_help_topic("How to use Help",    "H", "help.hlp",     AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp",     0);
-    awm->insert_help_topic("ARB Help",           "A", "arb.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",      0);
-    awm->insert_help_topic("ARB PARSIMONY Help", "N", "arb_pars.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
+    awm->insert_help_topic("ARB_PARSIMONY help", "N", "arb_pars.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
 
     awm->create_mode("select.bitmap", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
     awm->create_mode("mark.bitmap",   "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);

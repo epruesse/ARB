@@ -290,7 +290,7 @@ void file_selection_cb(AW_window *aw, AW_CL cd1);
 
 Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy);
 void   aw_realize_widget(AW_window *aww);
-void   aw_create_help_entry(AW_window *aww);
+void   aw_insert_default_help_entries(AW_window *aww);
 
 #else
 #error aw_window_Xm.hxx included twice
