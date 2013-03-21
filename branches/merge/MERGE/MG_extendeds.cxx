@@ -110,16 +110,16 @@ static void MG_transfer_extended(AW_window *aww, AW_CL force) {
 
         if (!gb_source) error = "Please select the SAI you want to transfer";
         else {
-            GBDATA *gb_sai_data2     = GBT_get_SAI_data(GLOBAL_gb_dst);
-            if (!gb_sai_data2) error = GB_await_error();
+            GBDATA *gb_dst_sai_data     = GBT_get_SAI_data(GLOBAL_gb_dst);
+            if (!gb_dst_sai_data) error = GB_await_error();
             else {
-                GBDATA *gb_dest_sai = GBT_find_SAI_rel_SAI_data(gb_sai_data2, dest);
+                GBDATA *gb_dest_sai = GBT_find_SAI_rel_SAI_data(gb_dst_sai_data, dest);
                 if (gb_dest_sai) {
                     if (force) error = GB_delete(gb_dest_sai);
                     else error       = GBS_global_string("SAI '%s' exists, delete it first", dest);
                 }
                 if (!error) {
-                    gb_dest_sai             = GB_create_container(gb_sai_data2, "extended");
+                    gb_dest_sai             = GB_create_container(gb_dst_sai_data, "extended");
                     if (!gb_dest_sai) error = GB_await_error();
                     else error              = GB_copy(gb_dest_sai, gb_source);
                 }

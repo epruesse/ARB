@@ -203,47 +203,47 @@ static void mg_check_field_cb(AW_window *aww) {
         if (!error) {
             error = GB_begin_transaction(GLOBAL_gb_dst);
 
-            GBDATA *gb_species_data1 = GBT_get_species_data(GLOBAL_gb_src);
-            GBDATA *gb_species_data2 = GBT_get_species_data(GLOBAL_gb_dst);
+            GBDATA *gb_src_species_data = GBT_get_species_data(GLOBAL_gb_src);
+            GBDATA *gb_dst_species_data = GBT_get_species_data(GLOBAL_gb_dst);
 
-            GBDATA *gb_species1;
-            GBDATA *gb_species2;
+            GBDATA *gb_src_species;
+            GBDATA *gb_dst_species;
 
             // First step: count selected species
             arb_progress progress("Checking fields", mg_count_queried(GLOBAL_gb_src));
 
             // Delete all 'dest' fields in target database
-            for (gb_species2 = GBT_first_species_rel_species_data(gb_species_data2);
-                 gb_species2 && !error;
-                 gb_species2 = GBT_next_species(gb_species2))
+            for (gb_dst_species = GBT_first_species_rel_species_data(gb_dst_species_data);
+                 gb_dst_species && !error;
+                 gb_dst_species = GBT_next_species(gb_dst_species))
             {
-                GBDATA *gbd    = GB_search(gb_species2, dest, GB_FIND);
+                GBDATA *gbd    = GB_search(gb_dst_species, dest, GB_FIND);
                 if (gbd) error = GB_delete(gbd);
             }
 
-            for (gb_species1 = GBT_first_species_rel_species_data(gb_species_data1);
-                 gb_species1 && !error;
-                 gb_species1 = GBT_next_species(gb_species1))
+            for (gb_src_species = GBT_first_species_rel_species_data(gb_src_species_data);
+                 gb_src_species && !error;
+                 gb_src_species = GBT_next_species(gb_src_species))
             {
                 {
-                    GBDATA *gbd    = GB_search(gb_species1, dest, GB_FIND);
+                    GBDATA *gbd    = GB_search(gb_src_species, dest, GB_FIND);
                     if (gbd) error = GB_delete(gbd);
                 }
 
                 if (!error) {
-                    if (IS_QUERIED_SPECIES(gb_species1)) {
-                        const char *name1 = GBT_read_name(gb_species1);
-                        gb_species2       = GB_find_string(gb_species_data2, "name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-                        if (!gb_species2) {
+                    if (IS_QUERIED_SPECIES(gb_src_species)) {
+                        const char *name1 = GBT_read_name(gb_src_species);
+                        gb_dst_species    = GB_find_string(gb_dst_species_data, "name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+                        if (!gb_dst_species) {
                             aw_message(GBS_global_string("WARNING: Species %s not found in target DB", name1));
                         }
                         else {
-                            gb_species2 = GB_get_father(gb_species2);
+                            gb_dst_species = GB_get_father(gb_dst_species);
 
-                            GBDATA *gb_field1 = GB_search(gb_species1, source, GB_FIND);
-                            GBDATA *gb_field2 = GB_search(gb_species2, source, GB_FIND);
-                            char   *s1        = gb_field1 ? GB_read_as_tagged_string(gb_field1, tag) : 0;
-                            char   *s2        = gb_field2 ? GB_read_as_tagged_string(gb_field2, tag) : 0;
+                            GBDATA *gb_src_field = GB_search(gb_src_species, source, GB_FIND);
+                            GBDATA *gb_dst_field = GB_search(gb_dst_species, source, GB_FIND);
+                            char   *s1           = gb_src_field ? GB_read_as_tagged_string(gb_src_field, tag) : 0;
+                            char   *s2           = gb_dst_field ? GB_read_as_tagged_string(gb_dst_field, tag) : 0;
 
                             if (s1 || s2) {
                                 char *positions1 = 0;
@@ -253,8 +253,8 @@ static void mg_check_field_cb(AW_window *aww) {
                                     long corrected = 0;
                                     GBS_diff_strings(s1, s2, exclude, ToUpper, correct, &positions1, &positions2, &corrected);
                                     if (corrected) {
-                                        error = GB_write_as_string(gb_field2, s2);
-                                        if (!error) GB_write_flag(gb_species2, 1);
+                                        error = GB_write_as_string(gb_dst_field, s2);
+                                        if (!error) GB_write_flag(gb_dst_species, 1);
                                     }
                                 }
                                 else {
@@ -263,8 +263,8 @@ static void mg_check_field_cb(AW_window *aww) {
                                 }
 
                                 if (positions1 && !error) {
-                                    error             = GBT_write_string(gb_species2, dest, positions2);
-                                    if (!error) error = GBT_write_string(gb_species1, dest, positions1);
+                                    error             = GBT_write_string(gb_dst_species, dest, positions2);
+                                    if (!error) error = GBT_write_string(gb_src_species, dest, positions1);
                                 }
 
                                 free(positions2);
