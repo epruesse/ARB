@@ -7,9 +7,11 @@
 
 #include <arbdb.h>
 
-void aw_create_help_entry(AW_window *aww) {
-    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0,
-                           AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
+void aw_insert_default_help_entries(AW_window *aww) {
+    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0, AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
+
+    aww->insert_help_topic("How to use help", "H", "help.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp", 0);
+    aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",  0);
 }
 
 AW_window_menu_modes::AW_window_menu_modes() {
@@ -80,6 +82,6 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     // make-it-so:
     gtk_widget_realize(GTK_WIDGET(prvt->window)); 
     create_devices();
-    aw_create_help_entry(this);
+    aw_insert_default_help_entries(this);
     create_window_variables();
 }

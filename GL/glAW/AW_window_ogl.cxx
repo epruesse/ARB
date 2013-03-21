@@ -290,7 +290,7 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
     aw_realize_widget(this);
 
     create_devices();
-    aw_create_help_entry(this);
+    aw_insert_default_help_entries(this);
     create_window_variables();
 }
 
