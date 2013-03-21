@@ -1604,9 +1604,11 @@ void AW_help_entry_pressed(AW_window *aww) {
     p_global->help_active = 1;
 }
 
-void aw_create_help_entry(AW_window *aww) {
-    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0,
-                           AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
+void aw_insert_default_help_entries(AW_window *aww) {
+    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0, AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
+
+    aww->insert_help_topic("How to use help", "H", "help.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp", 0);
+    aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",  0);
 }
 
 const char *aw_str_2_label(const char *str, AW_window *aww) {
@@ -2135,7 +2137,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     aw_realize_widget(this);
 
     create_devices();
-    aw_create_help_entry(this);
+    aw_insert_default_help_entries(this);
     create_window_variables();
 }
 
@@ -2333,7 +2335,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     aw_realize_widget(this);
 
     create_devices();
-    aw_create_help_entry(this);
+    aw_insert_default_help_entries(this);
     create_window_variables();
 }
 
@@ -2446,7 +2448,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
 
     aw_realize_widget(this);
 
-    aw_create_help_entry(this);
+    aw_insert_default_help_entries(this);
     create_devices();
 }
 
