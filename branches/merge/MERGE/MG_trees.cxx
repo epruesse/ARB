@@ -227,25 +227,25 @@ AW_window *MG_merge_trees_cb(AW_root *awr) {
         aws->at("trees2");
         awt_create_selection_list_on_trees(GLOBAL_gb_dst, (AW_window *)aws, AWAR_TREE_NAME_DST);
 
-        static TreeAdmin::Spec spec1(GLOBAL_gb_src, AWAR_TREE_NAME_SRC);
-        static TreeAdmin::Spec spec2(GLOBAL_gb_dst,  AWAR_TREE_NAME_DST);
+        static TreeAdmin::Spec src_spec(GLOBAL_gb_src, AWAR_TREE_NAME_SRC);
+        static TreeAdmin::Spec dst_spec(GLOBAL_gb_dst,  AWAR_TREE_NAME_DST);
     
         aws->button_length(15);
 
         aws->at("delete1");
-        aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&spec1);
+        aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&src_spec);
         aws->create_button("DELETE TREE_DB1", "Delete Tree");
 
         aws->at("delete2");
-        aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&spec2);
+        aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&dst_spec);
         aws->create_button("DELETE_TREE_DB2", "Delete Tree");
 
         aws->at("rename1");
-        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_rename_window, (AW_CL)&spec1); 
+        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_rename_window, (AW_CL)&src_spec);
         aws->create_button("RENAME_TREE_DB1", "Rename Tree");
 
         aws->at("rename2");
-        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_rename_window, (AW_CL)&spec2); 
+        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_rename_window, (AW_CL)&dst_spec);
         aws->create_button("RENAME_TREE_DB2", "Rename Tree");
 
         aws->at("transfer");

@@ -91,25 +91,25 @@ static GB_ERROR MG_transfer_fields_info(char *fieldname = NULL) {
 static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
                                         GBDATA *gb_src_species_data, GBDATA *gb_dst_species_data,
                                         bool src_is_genome, bool dst_is_genome,
-                                        GBDATA  *gb_src_species, const char *name1,
+                                        GBDATA  *gb_src_species, const char *src_name,
                                         GB_HASH *source_organism_hash, GB_HASH *dest_species_hash,
                                         GB_HASH *error_suppressor)
 {
     // copies one species from source to destination DB
     //
-    // either 'gb_src_species' or 'name1' (and 'gb_src_species_data') has to be given
+    // either 'gb_src_species' or 'src_name' (and 'gb_src_species_data') has to be given
     // 'source_organism_hash' may be NULL, otherwise it's used to search for source organisms (when merging from genome DB)
     // 'dest_species_hash' may be NULL, otherwise created species is stored there
 
     GB_ERROR error = 0;
     if (gb_src_species) {
-        name1 = GBT_read_name(gb_src_species);
+        src_name = GBT_read_name(gb_src_species);
     }
     else {
-        mg_assert(name1);
-        gb_src_species = GBT_find_species_rel_species_data(gb_src_species_data, name1);
+        mg_assert(src_name);
+        gb_src_species = GBT_find_species_rel_species_data(gb_src_species_data, src_name);
         if (!gb_src_species) {
-            error = GBS_global_string("Could not find species '%s'", name1);
+            error = GBS_global_string("Could not find species '%s'", src_name);
         }
     }
 
@@ -125,7 +125,7 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
                 if (dest_organism) transfer_fields = true;
                 else {
                     error = GBS_global_string("Destination DB does not contain '%s's origin-organism '%s'",
-                                              name1, origin);
+                                              src_name, origin);
                 }
             }
             // else: merge organism ok
@@ -134,13 +134,13 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
             if (GEN_is_pseudo_gene_species(gb_src_species)) transfer_fields = true;
             else {
                 error = GBS_global_string("You can't merge organisms (%s) into a non-genome DB.\n"
-                                          "Only pseudo-species are possible", name1);
+                                          "Only pseudo-species are possible", src_name);
             }
         }
     }
     else {
         if (dst_is_genome) { // non-genome -> genome
-            error = GBS_global_string("You can't merge non-genome species (%s) into a genome DB", name1);
+            error = GBS_global_string("You can't merge non-genome species (%s) into a genome DB", src_name);
         }
         // else: non-genome -> non-genome ok
     }
@@ -148,8 +148,8 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
     GBDATA *gb_dst_species = 0;
     if (!error) {
         gb_dst_species = dest_species_hash
-            ? (GBDATA*)GBS_read_hash(dest_species_hash, name1)
-            : GBT_find_species_rel_species_data(gb_dst_species_data, name1);
+            ? (GBDATA*)GBS_read_hash(dest_species_hash, src_name)
+            : GBT_find_species_rel_species_data(gb_dst_species_data, src_name);
 
         if (gb_dst_species) error = GB_delete(gb_dst_species);
     }
@@ -164,7 +164,7 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
     }
     if (!error) GB_write_flag(gb_dst_species, 1);
     if (!error) error = MG_transfer_all_alignments(&remap, gb_src_species, gb_dst_species);
-    if (!error && dest_species_hash) GBS_write_hash(dest_species_hash, name1, (long)gb_dst_species);
+    if (!error && dest_species_hash) GBS_write_hash(dest_species_hash, src_name, (long)gb_dst_species);
 
     return error;
 }
@@ -179,11 +179,11 @@ static bool adaption_enabled(AW_root *awr) {
 static void MG_transfer_selected_species(AW_window *aww) {
     if (MG_copy_and_check_alignments(aww) != 0) return;
 
-    AW_root  *aw_root = aww->get_root();
-    char     *source  = aw_root->awar(AWAR_SPECIES_SRC)->read_string();
-    GB_ERROR  error   = NULL;
+    AW_root  *aw_root  = aww->get_root();
+    char     *src_name = aw_root->awar(AWAR_SPECIES_SRC)->read_string();
+    GB_ERROR  error    = NULL;
 
-    if (!source || !source[0]) {
+    if (!src_name || !src_name[0]) {
         error = "Please select a species in the left list";
     }
     else {
@@ -204,7 +204,7 @@ static void MG_transfer_selected_species(AW_window *aww) {
             error = MG_transfer_one_species(aw_root, rm,
                                             gb_src_species_data, gb_dst_species_data,
                                             src_is_genome, dst_is_genome,
-                                            NULL, source,
+                                            NULL, src_name,
                                             NULL, NULL,
                                             NULL);
         }
@@ -296,13 +296,13 @@ static void MG_transfer_fields_cb(AW_window *aww) {
              gb_src_species = GBT_next_species(gb_src_species))
         {
             if (IS_QUERIED_SPECIES(gb_src_species)) {
-                const char *name1          = GBT_read_name(gb_src_species);
-                GBDATA     *gb_dst_species = GB_find_string(gb_dest_species_data, "name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+                const char *src_name       = GBT_read_name(gb_src_species);
+                GBDATA     *gb_dst_species = GB_find_string(gb_dest_species_data, "name", src_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
                 if (!gb_dst_species) {
                     gb_dst_species             = GB_create_container(gb_dest_species_data, "species");
                     if (!gb_dst_species) error = GB_await_error();
-                    else error                 = GBT_write_string(gb_dst_species, "name", name1);
+                    else error                 = GBT_write_string(gb_dst_species, "name", src_name);
                 }
                 else {
                     gb_dst_species = GB_get_father(gb_dst_species);
@@ -319,19 +319,19 @@ static void MG_transfer_fields_cb(AW_window *aww) {
 
                         if ((src_type==dst_type) && (GB_DB != src_type)) {
                             if (append && src_type == GB_STRING) {
-                                char *s1 = GB_read_string(gb_src_field);
-                                char *s2 = GB_read_string(gb_dst_field);
+                                char *src_val = GB_read_string(gb_src_field);
+                                char *dst_val = GB_read_string(gb_dst_field);
 
-                                if (!s1 || !s2) error = GB_await_error();
+                                if (!src_val || !dst_val) error = GB_await_error();
                                 else {
-                                    if (!GBS_find_string(s2, s1, 0)) {
-                                        error = GB_write_string(gb_dst_field, GBS_global_string("%s %s", s2, s1));
+                                    if (!GBS_find_string(dst_val, src_val, 0)) {
+                                        error = GB_write_string(gb_dst_field, GBS_global_string("%s %s", dst_val, src_val));
                                         if (!error) GB_write_flag(gb_dst_species, 1);
                                     }
                                 }
 
-                                free(s1);
-                                free(s2);
+                                free(src_val);
+                                free(dst_val);
                             }
                             else { // not GB_STRING
                                 error = GB_copy(gb_dst_field, gb_src_field);
@@ -424,14 +424,14 @@ static void MG_move_field_cb(AW_window *aww) {
             GBDATA *gb_src_species;
             GBDATA *gb_dst_species;
             {
-                char *source = aw_root->awar(AWAR_SPECIES_SRC)->read_string();
-                char *dest   = aw_root->awar(AWAR_SPECIES_DST)->read_string();
+                char *src_name = aw_root->awar(AWAR_SPECIES_SRC)->read_string();
+                char *dst_name = aw_root->awar(AWAR_SPECIES_DST)->read_string();
 
-                gb_src_species = GBT_find_species(GLOBAL_gb_src, source);
-                gb_dst_species = GBT_find_species(GLOBAL_gb_dst, dest);
+                gb_src_species = GBT_find_species(GLOBAL_gb_src, src_name);
+                gb_dst_species = GBT_find_species(GLOBAL_gb_dst, dst_name);
 
-                free(dest);
-                free(source);
+                free(dst_name);
+                free(src_name);
             }
 
             if (!gb_src_species) error = "Please select a species in left hitlist";
@@ -512,15 +512,16 @@ static void MG_merge_tagged_field_cb(AW_window *aww) {
     GB_ERROR       error = GB_begin_transaction(GLOBAL_gb_dst);
 
     if (!error) {
-        AW_root *awr      = aww->get_root();
-        char    *f1       = awr->awar(AWAR_FIELD_SRC)->read_string();
-        char    *f2       = awr->awar(AWAR_FIELD_DST)->read_string();
-        char    *tag1     = awr->awar(AWAR_TAG_SRC)->read_string();
-        char    *tag2     = awr->awar(AWAR_TAG_DST)->read_string();
-        char    *tag_del1 = awr->awar(AWAR_TAG_DEL)->read_string();
+        AW_root *awr = aww->get_root();
+
+        char *src_field = awr->awar(AWAR_FIELD_SRC)->read_string();
+        char *dst_field = awr->awar(AWAR_FIELD_DST)->read_string();
+        char *src_tag   = awr->awar(AWAR_TAG_SRC)->read_string();
+        char *dst_tag   = awr->awar(AWAR_TAG_DST)->read_string();
+        char *del_tag   = awr->awar(AWAR_TAG_DEL)->read_string();
 
         arb_progress progress("Merging tagged fields", mg_count_queried(GLOBAL_gb_src));
-        
+
         GBDATA *gb_dest_species_data     = GBT_get_species_data(GLOBAL_gb_dst);
         if (!gb_dest_species_data) error = GB_await_error();
         else {
@@ -535,17 +536,20 @@ static void MG_merge_tagged_field_cb(AW_window *aww) {
                         GBDATA *gb_dst_species     = GBT_find_or_create_species_rel_species_data(gb_dest_species_data, name);
                         if (!gb_dst_species) error = GB_await_error();
                         else {
-                            char *s1              = GBT_readOrCreate_string(gb_src_species, f1, "");
-                            char *s2              = GBT_readOrCreate_string(gb_dst_species, f2, "");
-                            if (!s1 || !s2) error = GB_await_error();
+                            char *src_val = GBT_readOrCreate_string(gb_src_species, src_field, "");
+                            char *dst_val = GBT_readOrCreate_string(gb_dst_species, dst_field, "");
+
+                            if (!src_val || !dst_val) error = GB_await_error();
                             else {
-                                char *sum       = GBS_merge_tagged_strings(s1, tag1, tag_del1, s2, tag2, tag_del1);
+                                char *sum = GBS_merge_tagged_strings(src_val, src_tag, del_tag,
+                                                                     dst_val, dst_tag, del_tag);
+
                                 if (!sum) error = GB_await_error();
-                                else  error     = GBT_write_string(gb_dst_species, f2, sum);
+                                else error      = GBT_write_string(gb_dst_species, dst_field, sum);
                                 free(sum);
                             }
-                            free(s2);
-                            free(s1);
+                            free(dst_val);
+                            free(src_val);
                         }
                     }
                     free(name);
@@ -554,11 +558,11 @@ static void MG_merge_tagged_field_cb(AW_window *aww) {
             }
         }
 
-        free(tag_del1);
-        free(tag2);
-        free(tag1);
-        free(f2);
-        free(f1);
+        free(del_tag);
+        free(dst_tag);
+        free(src_tag);
+        free(dst_field);
+        free(src_field);
     }
     GB_end_transaction_show_error(GLOBAL_gb_dst, error, aw_message);
 }

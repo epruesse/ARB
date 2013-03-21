@@ -232,47 +232,48 @@ static void mg_check_field_cb(AW_window *aww) {
 
                 if (!error) {
                     if (IS_QUERIED_SPECIES(gb_src_species)) {
-                        const char *name1 = GBT_read_name(gb_src_species);
-                        gb_dst_species    = GB_find_string(gb_dst_species_data, "name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+                        const char *src_name = GBT_read_name(gb_src_species);
+                        gb_dst_species    = GB_find_string(gb_dst_species_data, "name", src_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
                         if (!gb_dst_species) {
-                            aw_message(GBS_global_string("WARNING: Species %s not found in target DB", name1));
+                            aw_message(GBS_global_string("WARNING: Species %s not found in target DB", src_name));
                         }
                         else {
                             gb_dst_species = GB_get_father(gb_dst_species);
 
                             GBDATA *gb_src_field = GB_search(gb_src_species, source, GB_FIND);
                             GBDATA *gb_dst_field = GB_search(gb_dst_species, source, GB_FIND);
-                            char   *s1           = gb_src_field ? GB_read_as_tagged_string(gb_src_field, tag) : 0;
-                            char   *s2           = gb_dst_field ? GB_read_as_tagged_string(gb_dst_field, tag) : 0;
 
-                            if (s1 || s2) {
-                                char *positions1 = 0;
-                                char *positions2 = 0;
+                            char *src_val = gb_src_field ? GB_read_as_tagged_string(gb_src_field, tag) : 0;
+                            char *dst_val = gb_dst_field ? GB_read_as_tagged_string(gb_dst_field, tag) : 0;
 
-                                if (s1 && s2) {
+                            if (src_val || dst_val) {
+                                char *src_positions = 0;
+                                char *dst_positions = 0;
+
+                                if (src_val && dst_val) {
                                     long corrected = 0;
-                                    GBS_diff_strings(s1, s2, exclude, ToUpper, correct, &positions1, &positions2, &corrected);
+                                    GBS_diff_strings(src_val, dst_val, exclude, ToUpper, correct, &src_positions, &dst_positions, &corrected);
                                     if (corrected) {
-                                        error = GB_write_as_string(gb_dst_field, s2);
+                                        error = GB_write_as_string(gb_dst_field, dst_val);
                                         if (!error) GB_write_flag(gb_dst_species, 1);
                                     }
                                 }
                                 else {
-                                    positions1 = GBS_global_string_copy("field missing in %s DB", s1 ? "other" : "this");
-                                    positions2 = GBS_global_string_copy("field missing in %s DB", s2 ? "other" : "this");
+                                    src_positions = GBS_global_string_copy("field missing in %s DB", src_val ? "other" : "this");
+                                    dst_positions = GBS_global_string_copy("field missing in %s DB", dst_val ? "other" : "this");
                                 }
 
-                                if (positions1 && !error) {
-                                    error             = GBT_write_string(gb_dst_species, dest, positions2);
-                                    if (!error) error = GBT_write_string(gb_src_species, dest, positions1);
+                                if (src_positions && !error) {
+                                    error             = GBT_write_string(gb_dst_species, dest, dst_positions);
+                                    if (!error) error = GBT_write_string(gb_src_species, dest, src_positions);
                                 }
 
-                                free(positions2);
-                                free(positions1);
+                                free(dst_positions);
+                                free(src_positions);
                             }
 
-                            free(s2);
-                            free(s1);
+                            free(dst_val);
+                            free(src_val);
                         }
                         progress.inc_and_check_user_abort(error);
                     }

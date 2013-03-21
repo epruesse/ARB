@@ -238,8 +238,8 @@ static void find_SAI_candidates(Candidates& candidates, const CharPtrArray& ali_
 static void calculate_preserves_cb(AW_window *aww, AW_CL cl_para) {
     // FIND button (rebuild candidates list)
 
-    GB_transaction ta1(GLOBAL_gb_src);
-    GB_transaction ta2(GLOBAL_gb_dst);
+    GB_transaction ta_src(GLOBAL_gb_src);
+    GB_transaction ta_dst(GLOBAL_gb_dst);
 
     preserve_para *para = (preserve_para*)cl_para;
     clear_candidates(para);
@@ -468,8 +468,8 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     para->refCandidatesList = aws->create_selection_list(AWAR_REMAP_CANDIDATE, 10, 30);
 
     {
-        GB_transaction ta1(GLOBAL_gb_src);
-        GB_transaction ta2(GLOBAL_gb_dst);
+        GB_transaction ta_src(GLOBAL_gb_src);
+        GB_transaction ta_dst(GLOBAL_gb_dst);
 
         init_alignments(para);
         clear_candidates(para);
