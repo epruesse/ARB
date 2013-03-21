@@ -60,7 +60,7 @@ NOTES		Following file formats currently can be detected and loaded:
 
 		To import big new databases into an existing ARB database, convert it
 		to the ARB format first, save and merge it with the
-		'ARB_INTRO <MERGE TWO ARB DATABASES>' tool.
+		ARB_MERGE tool.
 
 		For importing other formats such as PHYLIP or PAUP into an
 		existing ARB database use the 'Import sequences using Readseq'

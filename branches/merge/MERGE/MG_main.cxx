@@ -73,7 +73,7 @@ static AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init(aw_root, "MERGE_SAVE_DB_I", "SAVE ARB DB I");
+    aws->init(aw_root, "MERGE_SAVE_DB_I", "Save source DB");
     aws->load_xfig("sel_box.fig");
 
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);

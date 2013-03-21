@@ -890,7 +890,7 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
 
     {
         QUERY::query_spec awtqs(MG_species_selector[0]);
-        aws->create_menu("DB_I_Expert", "D");
+        aws->create_menu("Source-DB", "S");
 
         awtqs.gb_main                = GLOBAL_gb_src;
         awtqs.gb_ref                 = GLOBAL_gb_dst;
@@ -924,7 +924,7 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
     }
     {
         QUERY::query_spec awtqs(MG_species_selector[1]);
-        aws->create_menu("DB_II_Expert", "B");
+        aws->create_menu("Target-DB", "T");
 
         awtqs.gb_main                = GLOBAL_gb_dst;
         awtqs.gb_ref                 = GLOBAL_gb_src;
@@ -964,17 +964,17 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
         aws->at("transsspec");
         aws->callback(MG_transfer_selected_species);
         aws->create_button("TRANSFER_SELECTED_DELETE_DUPLICATED",
-                           "TRANSFER\nSELECTED\nSPECIES\n\nDELETE\nDUPLICATE\nIN DB II", "T");
+                           "Transfer\nselected\nspecies\n\nDelete\nduplicate\nin target DB", "T");
 
         aws->at("translspec");
         aws->callback(MG_transfer_species_list);
         aws->create_button("TRANSFER_LISTED_DELETE_DUPLI",
-                           "TRANSFER\nLISTED\nSPECIES\n\nDELETE\nDUPLICATES\nIN DB II", "T");
+                           "Transfer\nlisted\nspecies\n\nDelete\nduplicates\nin target DB", "T");
 
         aws->at("transfield");
         aws->callback(AW_POPUP, (AW_CL)MG_transfer_fields, 0);
         aws->create_button("TRANSFER_FIELD_OF_LISTED_DELETE_DUPLI",
-                           "TRANSFER\nFIELD\nOF LISTED\nSPECIES\n\nDELETE\nDUPLICATES\nIN DB II", "T");
+                           "Transfer\nfield\nof listed\nspecies\n\nDelete\nduplicates\nin target DB", "T");
 
         aws->shadow_width(1);
     }
@@ -997,11 +997,11 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
     aws->callback(AW_POPUP_HELP, (AW_CL)"mg_species.hlp");
     aws->create_button("HELP_MERGE", "#merge/icon.bitmap");
 
-    aws->create_menu("DB1->DB2", "-");
+    aws->create_menu("Source->Target", ">");
     aws->insert_menu_topic("compare_field_of_listed",   "Compare a field of listed species ...", "C", "checkfield.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_mg_check_fields, 0);
-    aws->insert_menu_topic("move_field_of_selected",    "Move one field of selected left species to same field of selected right species", "M",
+    aws->insert_menu_topic("move_field_of_selected",    "Move one field of selected source species to same field of selected target species", "M",
                             "movefield.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_mg_move_fields, 0);
-    aws->insert_menu_topic("merge_field_of_listed_to_new_field", "Merge field of listed species of DB1 with different fields of same species of DB2 ", "D",
+    aws->insert_menu_topic("merge_field_of_listed_to_new_field", "Merge field of listed species of source-DB with different fields of same species in target-DB ", "D",
                             "mergetaggedfield.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_mg_merge_tagged_fields, 0);
 
     aws->sep______________();

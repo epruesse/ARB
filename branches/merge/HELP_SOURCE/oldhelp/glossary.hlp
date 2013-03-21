@@ -75,8 +75,16 @@ SECTION         What do we mean if we talk about ...
 
         SELECTED SPECIES
 
-                        'species' highlighted (selected) using the 'ARB_NT/Species/
-                        Search' or 'ARB_INTRO <MERGE TWO ARB DATABASES> tools.
+                        The 'selected species' is that ONE species which has been selected
+                        by using any of the following actions
+
+                                - ARB_NTREE/Search + click onto one search result
+                                - ARB_MERGE/Transfer species + click onto one search result
+                                  (here there is one selected species in each of the two involved DBs)
+                                - clicking on the species name in the tree display in ARB_NT
+                                - placing the cursor into the sequence of a species in ARB_EDIT4
+
+                        The currently selected species will be displayed in the 'Species info window'
 
         SPECIES
 

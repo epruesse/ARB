@@ -11,20 +11,21 @@ UP	arb_merge_workflow.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Transfer Configurations
 
-OCCURRENCE	ARB_INTRO <MERGE TWO ARB DATABASES> ARB_MERGE <Transfer Configurations>
+OCCURRENCE	ARB_MERGE/Transfer configurations
 
-DESCRIPTION	Transferres editor configurations.
+DESCRIPTION	Transfers editor configurations.
 
-		Press the 'Transfer Configurations' button of the 'ARB_MERGE' window to
-			display the 'MERGE CONFIGS' window.
+                Press the 'Transfer configurations' button of the 'ARB_MERGE' window to
+                display the 'MERGE CONFIGS' window.
 
-		Select source config from the left (database I) subwindow
-                and the destination from the right (database II) subwindow.
+                Select a source config in the left subwindow (which shows all configurations
+                of the source DB) and press 'Transfer Config' to copy it into the target DB.
 
-		Press the 'Transfer Config' button below the 'Config' subwindows.
+                You may not overwrite existing configurations, instead you need to delete them from
+                or rename them in the target DB.
 
-		To delete or rename configurations in the individual databases press the
-                corresponding buttons below the 'Config' subwindows.
+                To delete or rename a configuration, select it and use the 'Delete' or 'Rename'
+                buttons below the selection list.
 
 NOTES		None
 

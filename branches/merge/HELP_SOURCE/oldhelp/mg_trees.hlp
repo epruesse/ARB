@@ -11,7 +11,7 @@ UP	arb_merge_workflow.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Transfer Trees
 
-OCCURRENCE	ARB_INTRO <MERGE TWO ARB DATABASES> ARB_MERGE <Transfer Trees>
+OCCURRENCE	ARB_MERGE/Transfer trees
 
 DESCRIPTION	Transfers trees.
 

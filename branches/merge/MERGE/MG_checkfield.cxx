@@ -212,7 +212,7 @@ static void mg_check_field_cb(AW_window *aww) {
             // First step: count selected species
             arb_progress progress("Checking fields", mg_count_queried(GLOBAL_gb_src));
 
-            // Delete all 'dest' fields in gb_database 2
+            // Delete all 'dest' fields in target database
             for (gb_species2 = GBT_first_species_rel_species_data(gb_species_data2);
                  gb_species2 && !error;
                  gb_species2 = GBT_next_species(gb_species2))
@@ -235,7 +235,7 @@ static void mg_check_field_cb(AW_window *aww) {
                         const char *name1 = GBT_read_name(gb_species1);
                         gb_species2       = GB_find_string(gb_species_data2, "name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
                         if (!gb_species2) {
-                            aw_message(GBS_global_string("WARNING: Species %s not found in DB II", name1));
+                            aw_message(GBS_global_string("WARNING: Species %s not found in target DB", name1));
                         }
                         else {
                             gb_species2 = GB_get_father(gb_species2);
