@@ -19,7 +19,7 @@ DESCRIPTION	Allows to open an existing 'ARB' database, to merge two 'ARB'
 		databases, and to create a new 'ARB' database importing external
 		data.
 
-		To open an existing 'ARB' data base, select a '*.arb' file from
+		To open an existing 'ARB' database, select a '*.arb' file from
                 the 'Existing Files and Directories' subwindow and press
                 the 'OPEN SELECTED' button to display the 'ARB_NT' main
                 window.
