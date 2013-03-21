@@ -19,9 +19,9 @@
 extern GBDATA *GLOBAL_gb_src;
 extern GBDATA *GLOBAL_gb_dst;
 
-void MERGE_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest_is_new);
-void MERGE_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one, const char *fname_two);
-AW_window *MERGE_create_main_window(AW_root *aw_root);
+AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new);
+void MERGE_create_all_awars(AW_root *awr, AW_default aw_def);
+void MERGE_create_db_file_awars(AW_root *awr, AW_default aw_def, const char *src_name, const char *dst_name);
 
 /* MG_species.cxx */
 GB_ERROR MERGE_sequences_simple(AW_root *awr);
