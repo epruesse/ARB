@@ -31,15 +31,15 @@
 GBDATA *GLOBAL_gb_src = NULL;
 GBDATA *GLOBAL_gb_dst = NULL;
 
-__ATTR__NORETURN static void MG_exit(AW_window *aww, AW_CL cl_reload_db2) {
-    int reload_db2 = (int)cl_reload_db2;
+__ATTR__NORETURN static void MG_exit(AW_window *aww, AW_CL cl_start_dst_db) {
+    int start_dst_db = (int)cl_start_dst_db;
 
-    if (reload_db2) {
-        char       *db2_name = aww->get_root()->awar(AWAR_DB_DST"/file_name")->read_string();
-        const char *cmd      = GBS_global_string("arb_ntree '%s' &", db2_name);
+    if (start_dst_db) {
+        char       *dst_db_name = aww->get_root()->awar(AWAR_DB_DST"/file_name")->read_string();
+        const char *cmd      = GBS_global_string("arb_ntree '%s' &", dst_db_name);
         int         result   = system(cmd);
         if (result != 0) fprintf(stderr, "Error running '%s'\n", cmd);
-        free(db2_name);
+        free(dst_db_name);
     }
 
     aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_src);

@@ -90,7 +90,7 @@ static GB_ERROR MG_transfer_fields_info(char *fieldname = NULL) {
 
 static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
                                         GBDATA *gb_species_data1, GBDATA *gb_species_data2,
-                                        bool is_genome_db1, bool is_genome_db2,
+                                        bool src_is_genome, bool dst_is_genome,
                                         GBDATA  *gb_species1, const char *name1,
                                         GB_HASH *source_organism_hash, GB_HASH *dest_species_hash,
                                         GB_HASH *error_suppressor)
@@ -114,8 +114,8 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
     }
 
     bool transfer_fields = false;
-    if (is_genome_db1) {
-        if (is_genome_db2) { // genome -> genome
+    if (src_is_genome) {
+        if (dst_is_genome) { // genome -> genome
             if (GEN_is_pseudo_gene_species(gb_species1)) {
                 const char *origin        = GEN_origin_organism(gb_species1);
                 GBDATA     *dest_organism = dest_species_hash
@@ -139,7 +139,7 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
         }
     }
     else {
-        if (is_genome_db2) { // non-genome -> genome
+        if (dst_is_genome) { // non-genome -> genome
             error = GBS_global_string("You can't merge non-genome species (%s) into a genome DB", name1);
         }
         // else: non-genome -> non-genome ok
@@ -159,7 +159,7 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
     }
     if (!error) error = GB_copy(gb_species2, gb_species1);
     if (!error && transfer_fields) {
-        mg_assert(is_genome_db1);
+        mg_assert(src_is_genome);
         error = MG_export_fields(aw_root, gb_species1, gb_species2, error_suppressor, source_organism_hash);
     }
     if (!error) GB_write_flag(gb_species2, 1);
@@ -198,12 +198,12 @@ static void MG_transfer_selected_species(AW_window *aww) {
             GBDATA *gb_species_data1 = GBT_get_species_data(GLOBAL_gb_src);
             GBDATA *gb_species_data2 = GBT_get_species_data(GLOBAL_gb_dst);
 
-            bool is_genome_db1 = GEN_is_genome_db(GLOBAL_gb_src, -1);
-            bool is_genome_db2 = GEN_is_genome_db(GLOBAL_gb_dst, -1);
+            bool src_is_genome = GEN_is_genome_db(GLOBAL_gb_src, -1);
+            bool dst_is_genome = GEN_is_genome_db(GLOBAL_gb_dst, -1);
 
             error = MG_transfer_one_species(aw_root, rm,
                                             gb_species_data1, gb_species_data2,
-                                            is_genome_db1, is_genome_db2,
+                                            src_is_genome, dst_is_genome,
                                             NULL, source,
                                             NULL, NULL,
                                             NULL);
@@ -225,12 +225,12 @@ static void MG_transfer_species_list(AW_window *aww) {
     GB_begin_transaction(GLOBAL_gb_src);
     GB_begin_transaction(GLOBAL_gb_dst);
 
-    bool is_genome_db1 = GEN_is_genome_db(GLOBAL_gb_src, -1);
-    bool is_genome_db2 = GEN_is_genome_db(GLOBAL_gb_dst, -1);
+    bool src_is_genome = GEN_is_genome_db(GLOBAL_gb_src, -1);
+    bool dst_is_genome = GEN_is_genome_db(GLOBAL_gb_dst, -1);
 
     GB_HASH *error_suppressor     = GBS_create_hash(50, GB_IGNORE_CASE);
     GB_HASH *dest_species_hash    = GBT_create_species_hash(GLOBAL_gb_dst);
-    GB_HASH *source_organism_hash = is_genome_db1 ? GBT_create_organism_hash(GLOBAL_gb_src) : 0;
+    GB_HASH *source_organism_hash = src_is_genome ? GBT_create_organism_hash(GLOBAL_gb_src) : 0;
 
     AW_root   *aw_root = aww->get_root();
     MG_remaps  rm(GLOBAL_gb_src, GLOBAL_gb_dst, adaption_enabled(aw_root), get_reference_species_names(aw_root));
@@ -247,7 +247,7 @@ static void MG_transfer_species_list(AW_window *aww) {
 
             error = MG_transfer_one_species(aw_root, rm,
                                             NULL, gb_species_data2,
-                                            is_genome_db1, is_genome_db2,
+                                            src_is_genome, dst_is_genome,
                                             gb_species1, NULL,
                                             source_organism_hash, dest_species_hash,
                                             error_suppressor);
