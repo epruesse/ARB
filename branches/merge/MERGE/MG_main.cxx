@@ -249,6 +249,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new) {
         awm->init(aw_root, "ARB_MERGE", "ARB_MERGE");
         awm->load_xfig("merge/main.fig");
 
+        // create menus
 #if defined(DEBUG)
         AWT_create_debug_menu(awm);
 #endif // DEBUG
@@ -268,11 +269,15 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new) {
         awm->sep______________();
         awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "p", "savedef.hlp", AWM_ALL, (AW_CB)AW_save_properties, 0, 0);
 
+        awm->insert_help_topic("ARB_MERGE help", "h", "arb_merge.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_merge.hlp", 0);
+
+
         // display involved databases
         awm->button_length(28);
 
         awm->at("db1"); awm->create_button(0, AWAR_DB_SRC"/name", 0, "+");
         awm->at("db2"); awm->create_button(0, AWAR_DB_DST"/name", 0, "+");
+
 
         // add main controls
         awm->button_length(32);

@@ -178,7 +178,7 @@ AW_window *MG_merge_names_cb(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(awr, "MERGE_AUTORENAME_SPECIES", "SYNCHRONIZE NAMES");
+        aws->init(awr, "MERGE_AUTORENAME_SPECIES", "Synchronize names");
         aws->load_xfig("merge/names.fig");
 
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);

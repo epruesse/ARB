@@ -1183,18 +1183,18 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("Import",      "I");
             {
-                awm->insert_menu_topic("import_seq", "Import from ARB database",    "d", "arb_import.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree . \":\" &", 0);
-                awm->insert_menu_topic("import_seq", "Import from external format", "I", "arb_import.hlp", AWM_ALL, NT_import_sequences, 0, 0);
+                awm->insert_menu_topic("import_seq", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree . \":\" &", 0);
+                awm->insert_menu_topic("import_seq", "Import from external format",   "I", "arb_import.hlp",     AWM_ALL, NT_import_sequences, 0,                            0);
                 GDE_load_menu(awm, AWM_EXP, "Import");
             }
             awm->close_sub_menu();
 
             awm->insert_sub_menu("Export",      "E");
             {
-                awm->insert_menu_topic("export_to_ARB", "Export seq/tree/SAI's to (new) ARB database", "A", "arb_ntree.hlp",      AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree \":\" . &", 0);
-                awm->insert_menu_topic("export_seqs",   "Export to external format",                   "f", "arb_export.hlp",     AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL.gb_main);
+                awm->insert_menu_topic("export_to_ARB", "Merge to (new) ARB database",             "A", "arb_merge_outof.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree \":\" . &", 0);
+                awm->insert_menu_topic("export_seqs",   "Export to external format",               "f", "arb_export.hlp",      AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL.gb_main);
                 GDE_load_menu(awm, AWM_ALL, "Export");
-                awm->insert_menu_topic("export_nds",    "Export fields (to calc-sheet using NDS)",     "N", "arb_export_nds.hlp", AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
+                awm->insert_menu_topic("export_nds",    "Export fields (to calc-sheet using NDS)", "N", "arb_export_nds.hlp",  AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
             }
             awm->close_sub_menu();
             awm->sep______________();

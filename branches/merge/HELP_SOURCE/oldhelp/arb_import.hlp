@@ -25,7 +25,7 @@ SUB	ae2_ift.hlp
 TITLE		Import Foreign Data(bases)
 
 OCCURRENCE	ARB_INTRO <Create and Import>,
-                ARB_NT/File/Import/Import sequences and fields (ARB)
+                ARB_NT/File/Import/Import from external format
 
 DESCRIPTION	Reads foreign data(base) formats, creates a new ARB database,
 		and imports the foreign data. A selection of commonly used
