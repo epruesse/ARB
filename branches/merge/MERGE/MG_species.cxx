@@ -314,11 +314,11 @@ static void MG_transfer_fields_cb(AW_window *aww) {
                     bool    use_copy     = true;
 
                     if (gb_dst_field && gb_src_field) {
-                        GB_TYPES type1 = GB_read_type(gb_src_field);
-                        GB_TYPES type2 = GB_read_type(gb_dst_field);
+                        GB_TYPES src_type = GB_read_type(gb_src_field);
+                        GB_TYPES dst_type = GB_read_type(gb_dst_field);
 
-                        if ((type1==type2) && (GB_DB != type1)) {
-                            if (append && type1 == GB_STRING) {
+                        if ((src_type==dst_type) && (GB_DB != src_type)) {
+                            if (append && src_type == GB_STRING) {
                                 char *s1 = GB_read_string(gb_src_field);
                                 char *s2 = GB_read_string(gb_dst_field);
 
@@ -349,8 +349,8 @@ static void MG_transfer_fields_cb(AW_window *aww) {
                             if (gb_src_field && !append) error = GB_delete(gb_dst_field);
                         }
                         if (gb_src_field && !error) {
-                            GB_TYPES type1           = GB_read_type(gb_src_field);
-                            gb_dst_field             = GB_search(gb_dst_species, field, type1);
+                            GB_TYPES src_type        = GB_read_type(gb_src_field);
+                            gb_dst_field             = GB_search(gb_dst_species, field, src_type);
                             if (!gb_dst_field) error = GB_await_error();
                             else     error           = GB_copy(gb_dst_field, gb_src_field);
                         }
@@ -442,13 +442,13 @@ static void MG_move_field_cb(AW_window *aww) {
                 if (!gb_src_field) error = GBS_global_string("Species 1 has no field '%s'", field);
 
                 if (!error) {
-                    GB_TYPES  type1        = GB_read_type(gb_src_field);
+                    GB_TYPES  src_type     = GB_read_type(gb_src_field);
                     GBDATA   *gb_dst_field = GB_search(gb_dst_species, field, GB_FIND);
 
                     if (gb_dst_field) {
-                        int type2 = GB_read_type(gb_dst_field);
+                        int dst_type = GB_read_type(gb_dst_field);
 
-                        if ((type1==type2) && (GB_DB != type1)) {
+                        if ((src_type==dst_type) && (GB_DB != src_type)) {
                             error = GB_copy(gb_dst_field, gb_src_field);
                         }
                         else { // remove dest. if type mismatch or container
@@ -458,7 +458,7 @@ static void MG_move_field_cb(AW_window *aww) {
                     }
 
                     if (!error && !gb_dst_field) { // destination missing or removed
-                        gb_dst_field             = GB_search(gb_dst_species, field, type1);
+                        gb_dst_field             = GB_search(gb_dst_species, field, src_type);
                         if (!gb_dst_field) error = GB_await_error();
                         else error               = GB_copy(gb_dst_field, gb_src_field);
                     }
@@ -618,13 +618,13 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
         error =  GB_export_error("No source sequences found");
     }
     else {
-        char       *type = GBT_get_alignment_type_string(GLOBAL_gb_src, S_alignment_names[0]);
-        const char *dest = 0;
+        char       *src_type = GBT_get_alignment_type_string(GLOBAL_gb_src, S_alignment_names[0]);
+        const char *dest     = 0;
 
         for (int d = D_alignment_names.size()-1; d>0; --d) {
-            char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dst, D_alignment_names[d]);
-            if (strcmp(type, type2) != 0) D_alignment_names.remove(d--);
-            free(type2);
+            char *dst_type = GBT_get_alignment_type_string(GLOBAL_gb_dst, D_alignment_names[d]);
+            if (strcmp(src_type, dst_type) != 0) D_alignment_names.remove(d--);
+            free(dst_type);
         }
 
         int d = D_alignment_names.size();
@@ -632,7 +632,7 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
             case 0:
                 error = GB_export_errorf("Cannot find a target alignment with a type of '%s'\n"
                                          "You should create one first or select a different alignment type\n"
-                                         "during sequence import", type);
+                                         "during sequence import", src_type);
                 break;
             case 1:
                 dest = D_alignment_names[0];
@@ -681,7 +681,7 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 GBT_add_new_changekey(GLOBAL_gb_src, GBS_global_string("%s/data", dest), GB_STRING);
             }
         }
-        free(type);
+        free(src_type);
     }
 
     return error;

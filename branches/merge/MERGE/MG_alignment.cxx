@@ -102,14 +102,14 @@ int MG_copy_and_check_alignments(AW_window */*aww*/) {
             GBT_add_new_changekey(GLOBAL_gb_dst, (char *)GBS_global_string("%s/data", name), GB_STRING);
         }
 
-        char *type1 = GBT_get_alignment_type_string(GLOBAL_gb_src, name);
-        char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dst, name);
+        char *src_type = GBT_get_alignment_type_string(GLOBAL_gb_src, name);
+        char *dst_type = GBT_get_alignment_type_string(GLOBAL_gb_dst, name);
 
-        if (strcmp(type1, type2) != 0) {
-            error = GBS_global_string("The alignments '%s' have different types (%s != %s)", name, type1, type2);
+        if (strcmp(src_type, dst_type) != 0) {
+            error = GBS_global_string("The alignments '%s' have different types (%s != %s)", name, src_type, dst_type);
         }
-        free(type2);
-        free(type1);
+        free(dst_type);
+        free(src_type);
     }
 
     GB_commit_transaction(GLOBAL_gb_dst);
