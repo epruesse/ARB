@@ -1945,7 +1945,7 @@ bool GB_is_temporary(GBDATA *gbd) {
     return (long)gbd->flags.temporary;
 }
 
-bool GB_in_temporary_branch(GBDATA *gbd) { // @@@ used in ptpan branch - do not remove
+bool GB_in_temporary_branch(GBDATA *gbd) {
     /*! @return true, if 'gbd' is member of a temporary subtree,
      * i.e. if GB_is_temporary(itself or any parent)
      */
