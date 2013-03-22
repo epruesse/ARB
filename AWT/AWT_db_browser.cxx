@@ -21,6 +21,7 @@
 #include <aw_advice.hxx>
 
 #include <arb_str.h>
+#include <arb_strarray.h>
 
 #include <string>
 #include <vector>
@@ -883,14 +884,23 @@ static void child_changed_cb(AW_root *aw_root) {
 
                         char *callback_info = GB_get_callback_info(gb_selected_node);
                         if (callback_info) {
-                            info = info+"Callbacks |\n"+callback_info+'\n';
-                            free(callback_info);
+                            ConstStrArray callbacks;
+                            GBT_splitNdestroy_string(callbacks, callback_info, "\n", true);
+
+                            for (size_t i = 0; i<callbacks.size(); ++i) {
+                                const char *prefix = i ? "         " : "Callbacks";
+                                info               = info + prefix + " | " + callbacks[i] + '\n';
+                            }
+
+                            if (gb_selected_node == gb_tracked_node) {
+                                info += "          | (Note: one callback was installed by this broweser)\n";
+                            }
                         }
 
                         if (type != GB_DB) {
                             MemDump  dump    = make_userdefined_MemDump(aw_root);
                             char    *content = get_dbentry_content(gb_selected_node, GB_read_type(gb_selected_node), false, dump);
-                            info             = info+"Content   |\n"+content+'\n';
+                            info             = info+"\nContent:\n"+content+'\n';
                             free(content);
                         }
                     }

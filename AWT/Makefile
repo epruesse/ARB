@@ -182,6 +182,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_str.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
