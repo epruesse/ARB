@@ -355,16 +355,17 @@ public:
     AW_window *get_window(AW_root *aw_root);
     AW_selection_list *get_browser_list() { return browse_list; }
 
-    size_t get_selected_db() const { return current_db; }
-    void set_selected_db(size_t idx) {
-        awt_assert(idx < known_databases.size());
-        current_db = idx;
+    bool legal_selected_db() const { return current_db < known_databases.size(); }
+
+    size_t get_selected_db() const { awt_assert(legal_selected_db()); return current_db; }
+    void set_selected_db(size_t idx) { awt_assert(idx < known_databases.size()); current_db = idx; }
+
+    const char *get_path() const { return known_databases[get_selected_db()].get_path().c_str(); }
+    void set_path(const char *new_path) { known_databases[get_selected_db()].set_path(new_path); }
+
+    GBDATA *get_db() const {
+        return legal_selected_db() ? const_cast<GBDATA*>(known_databases[get_selected_db()].get_db()) : NULL;
     }
-
-    const char *get_path() const { return known_databases[current_db].get_path().c_str(); }
-    void set_path(const char *new_path) { known_databases[current_db].set_path(new_path); }
-
-    GBDATA *get_db() const { return const_cast<GBDATA*>(known_databases[current_db].get_db()); }
 };
 
 
@@ -469,6 +470,7 @@ static GB_ERROR browse_cmd_goto_valid_node(AW_window *aww) {
     {
         GB_transaction t(gb_main);
         while (len>0 && GB_search_numbered(gb_main, path, GB_FIND) == 0) {
+            GB_clear_error();
             path[--len] = 0;
         }
     }
@@ -504,21 +506,6 @@ static void execute_browser_command(AW_window *aww, const char *command) {
 
 static AW_window *create_db_browser(AW_root *aw_root) {
     return get_the_browser()->get_window(aw_root);
-}
-
-static void child_changed_cb(AW_root *aw_root); // prototype
-static void browsed_node_changed_cb(GBDATA *, int *cl_aw_root, GB_CB_TYPE) {
-    child_changed_cb((AW_root*)cl_aw_root);
-}
-
-static void set_callback_node(GBDATA *node, AW_root *aw_root) {
-    static GBDATA *active_node = 0;
-
-    if (active_node != node) {
-        if (active_node) GB_remove_callback(active_node, GB_CB_CHANGED, browsed_node_changed_cb, (int*)aw_root);
-        if (node) GB_ensure_callback(node, GB_CB_CHANGED, browsed_node_changed_cb, (int*)aw_root);
-        active_node = node;
-    }
 }
 
 struct counterPair {
@@ -579,15 +566,15 @@ static void update_browser_selection_list(AW_root *aw_root, AW_selection_list *i
     DB_browser *browser = get_the_browser();
     char       *path    = aw_root->awar(AWAR_DBB_PATH)->read_string();
     bool        is_root;
-    GBDATA     *node;
+    GBDATA     *node    = NULL;
 
     {
-        GBDATA         *gb_main = browser->get_db();
-        GB_transaction  ta(gb_main);
-
-        is_root = (strcmp(path, "/") == 0);
-        node    = GB_search_numbered(gb_main, path, GB_FIND);
-        set_callback_node(node, aw_root);
+        GBDATA *gb_main = browser->get_db();
+        if (gb_main) {
+            GB_transaction ta(gb_main);
+            is_root = (strcmp(path, "/") == 0);
+            node    = GB_search_numbered(gb_main, path, GB_FIND);
+        }
     }
 
     id->clear();
@@ -773,6 +760,53 @@ static void add_to_history(AW_root *aw_root, const char *path) {
     }
 }
 
+static GBDATA *gb_tracked_node = NULL;
+static void selected_node_modified_cb(GBDATA *gb_node, int*, GB_CB_TYPE cb_type) {
+    awt_assert(gb_node == gb_tracked_node);
+
+    AW_root *aw_root    = AW_root::SINGLETON;
+    AW_awar *awar_path  = aw_root->awar(AWAR_DBB_PATH);
+    AW_awar *awar_child = aw_root->awar(AWAR_DBB_BROWSE);
+
+    if (cb_type & GB_CB_DELETE) {
+        gb_tracked_node = NULL; // no need to remove callback ?
+    }
+
+    {
+        const char *child = awar_child->read_char_pntr();
+
+        if (child[0]) {
+            const char *path = awar_path->read_char_pntr();
+
+            if (!path[0] || !path[1]) {
+                awar_path->write_string(GBS_global_string("/%s", child)); // child of root
+            }
+            else {
+                awar_path->write_string(GBS_global_string("%s/%s", path, child));
+            }
+        }
+        else {
+            awar_path->touch();
+        }
+    }
+}
+static void untrack_node() {
+    if (gb_tracked_node) {
+        GB_remove_callback(gb_tracked_node, GB_CB_ALL, selected_node_modified_cb, 0);
+        gb_tracked_node = NULL;
+    }
+}
+static void track_node(GBDATA *gb_node) {
+    untrack_node();
+    GB_ERROR error = GB_add_callback(gb_node, GB_CB_ALL, selected_node_modified_cb, 0);
+    if (error) {
+        aw_message(error);
+    }
+    else {
+        gb_tracked_node = gb_node;
+    }
+}
+
 static void child_changed_cb(AW_root *aw_root) {
     char *child = aw_root->awar(AWAR_DBB_BROWSE)->read_string();
     if (strncmp(child, BROWSE_CMD_PREFIX, sizeof(BROWSE_CMD_PREFIX)-1) == 0) { // a symbolic browser command
@@ -800,58 +834,60 @@ static void child_changed_cb(AW_root *aw_root) {
                     fullpath = GBS_global_string_copy("%s/%s", path, child);
                 }
 
-                DB_browser     *browser          = get_the_browser();
-                GBDATA         *gb_main          = browser->get_db();
-                GB_transaction  dummy(gb_main);
-                GBDATA         *gb_selected_node = GB_search_numbered(gb_main, fullpath, GB_FIND);
+                DB_browser *browser = get_the_browser();
+                GBDATA     *gb_main = browser->get_db();
 
-                string info;
-                info += GBS_global_string("fullpath='%s'\n", fullpath);
+                if (gb_main) {
+                    GB_transaction  dummy(gb_main);
+                    GBDATA         *gb_selected_node = GB_search_numbered(gb_main, fullpath, GB_FIND);
 
-                if (gb_selected_node == 0) {
-                    info += "Node does not exist.\n";
-                }
-                else {
-                    add_to_history(aw_root, fullpath);
-                
-                    info += GBS_global_string("Node exists [address=%p]\n", gb_selected_node);
-                    info += GBS_global_string("Key index | %i\n", GB_get_quark(gb_selected_node));
+                    string info;
+                    info += GBS_global_string("fullpath='%s'\n", fullpath);
 
-                    GB_TYPES type = GB_read_type(gb_selected_node);
-                    if (type == GB_DB) {
-                        info += "Node type | container\n";
-                        info += GBS_global_string("Entries   | %li\n", GB_number_of_subentries(gb_selected_node));
-
-                        aw_root->awar(AWAR_DBB_BROWSE)->write_string("");
-                        aw_root->awar(AWAR_DBB_PATH)->write_string(fullpath);
+                    if (gb_selected_node == 0) {
+                        info += "Node does not exist.\n";
                     }
                     else {
-                        info += GBS_global_string("Node type | data [type=%s]\n", GB_get_type_name(gb_selected_node));
-                        info += GBS_global_string("Data size | %li\n", GB_read_count(gb_selected_node));
-                        info += GBS_global_string("Memory    | %li\n", GB_read_memuse(gb_selected_node));
+                        add_to_history(aw_root, fullpath);
+                
+                        info += GBS_global_string("Node exists [address=%p]\n", gb_selected_node);
+                        info += GBS_global_string("Key index | %i\n", GB_get_quark(gb_selected_node));
+
+                        GB_TYPES type = GB_read_type(gb_selected_node);
+                        if (type == GB_DB) {
+                            info += "Node type | container\n";
+                            info += GBS_global_string("Entries   | %li\n", GB_number_of_subentries(gb_selected_node));
+
+                            aw_root->awar(AWAR_DBB_BROWSE)->write_string("");
+                            aw_root->awar(AWAR_DBB_PATH)->write_string(fullpath);
+                        }
+                        else {
+                            info += GBS_global_string("Node type | data [type=%s]\n", GB_get_type_name(gb_selected_node));
+                            info += GBS_global_string("Data size | %li\n", GB_read_count(gb_selected_node));
+                            info += GBS_global_string("Memory    | %li\n", GB_read_memuse(gb_selected_node));
+                        }
+
+                        info += GBS_global_string("Security  | read=%i write=%i delete=%i\n",
+                                                  GB_read_security_read(gb_selected_node),
+                                                  GB_read_security_write(gb_selected_node),
+                                                  GB_read_security_delete(gb_selected_node));
+
+                        char *callback_info = GB_get_callback_info(gb_selected_node);
+                        if (callback_info) {
+                            info = info+"Callbacks |\n"+callback_info+'\n';
+                            free(callback_info);
+                        }
+
+                        if (type != GB_DB) {
+                            MemDump  dump    = make_userdefined_MemDump(aw_root);
+                            char    *content = get_dbentry_content(gb_selected_node, GB_read_type(gb_selected_node), false, dump);
+                            info             = info+"Content |\n"+content+'\n';
+                            free(content);
+                        }
                     }
 
-                    info += GBS_global_string("Security  | read=%i write=%i delete=%i\n",
-                                              GB_read_security_read(gb_selected_node),
-                                              GB_read_security_write(gb_selected_node),
-                                              GB_read_security_delete(gb_selected_node));
-
-                    char *callback_info = GB_get_callback_info(gb_selected_node);
-                    if (callback_info) {
-                        info = info+"Callbacks |\n"+callback_info+'\n';
-                        free(callback_info);
-                    }
-
-                    if (type != GB_DB) {
-                        MemDump  dump    = make_userdefined_MemDump(aw_root);
-                        char    *content = get_dbentry_content(gb_selected_node, GB_read_type(gb_selected_node), false, dump);
-                        info             = info+"Content |\n"+content+'\n';
-                        free(content);
-                    }
+                    aw_root->awar(AWAR_DBB_INFO)->write_string(info.c_str());
                 }
-
-                aw_root->awar(AWAR_DBB_INFO)->write_string(info.c_str());
-
                 free(fullpath);
             }
         }
@@ -869,8 +905,8 @@ static void path_changed_cb(AW_root *aw_root) {
         DB_browser *browser    = get_the_browser();
         char       *goto_child = 0;
 
-        {
-            GBDATA         *gb_main   = browser->get_db();
+        GBDATA *gb_main = browser->get_db();
+        if (gb_main) {
             GB_transaction  t(gb_main);
             AW_awar        *awar_path = aw_root->awar(AWAR_DBB_PATH);
             char           *path      = awar_path->read_string();
@@ -879,16 +915,17 @@ static void path_changed_cb(AW_root *aw_root) {
             if (found && GB_read_type(found) != GB_DB) { // exists, but is not a container
                 char *lslash = strrchr(path, '/');
                 if (lslash) {
-                    lslash[0]  = 0;
-                    awar_path->write_string(path);
                     goto_child = strdup(lslash+1);
+                    lslash[lslash == path] = 0; // truncate at last slash (but keep sole slash)
+                    awar_path->write_string(path);
                 }
             }
 
             if (found) {
                 add_to_history(aw_root, goto_child ? GBS_global_string("%s/%s", path, goto_child) : path);
+                GBDATA *father = GB_get_father(found);
+                track_node(father ? father : found);
             }
-            // else if (strcmp(path, HISTORY_PSEUDO_PATH) == 0) {
             else if (is_dbbrowser_pseudo_path(path)) {
                 GB_clear_error(); // ignore error about invalid key
             }
@@ -897,7 +934,7 @@ static void path_changed_cb(AW_root *aw_root) {
         }
 
         update_browser_selection_list(aw_root, browser->get_browser_list());
-        aw_root->awar(AWAR_DBB_BROWSE)->write_string(goto_child ? goto_child : "");
+        aw_root->awar(AWAR_DBB_BROWSE)->rewrite_string(goto_child ? goto_child : "");
     }
 }
 static void db_changed_cb(AW_root *aw_root) {
@@ -932,7 +969,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
                 aw_root->awar(AWAR_DBB_DB)->write_int(wanted_db);
                 aw_root->awar(AWAR_DBB_PATH)->write_string("/"); // reset
             }
-            current_db = wanted_db;
+            set_selected_db(wanted_db);
 
             char *wanted_path = aw_root->awar(AWAR_DBB_PATH)->read_string();
             known_databases[wanted_db].set_path(wanted_path);
