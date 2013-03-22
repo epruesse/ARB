@@ -55,6 +55,13 @@ using namespace std;
 #define ENTRY_MAX_LENGTH    1000
 #define HISTORY_MAX_LENGTH  20000
 
+inline bool is_dbbrowser_pseudo_path(const char *path) {
+    return
+        path           &&
+        path[0] == '*' &&
+        strcmp(path, HISTORY_PSEUDO_PATH) == 0;
+}
+
 enum SortOrder {
     SORT_NONE,
     SORT_NAME,
@@ -587,6 +594,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_selection_list *i
 
     if (node == 0) {
         if (strcmp(path, HISTORY_PSEUDO_PATH) == 0) {
+            GB_clear_error(); // ignore error about invalid key
             char *history = aw_root->awar(AWAR_DBB_HISTORY)->read_string();
             id->insert("Previously visited nodes:", "");
             char *start   = history;
@@ -879,6 +887,10 @@ static void path_changed_cb(AW_root *aw_root) {
 
             if (found) {
                 add_to_history(aw_root, goto_child ? GBS_global_string("%s/%s", path, goto_child) : path);
+            }
+            // else if (strcmp(path, HISTORY_PSEUDO_PATH) == 0) {
+            else if (is_dbbrowser_pseudo_path(path)) {
+                GB_clear_error(); // ignore error about invalid key
             }
             browser->set_path(path);
             free(path);
