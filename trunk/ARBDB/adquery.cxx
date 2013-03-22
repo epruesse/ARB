@@ -1371,14 +1371,29 @@ void TEST_DB_search() {
 
             TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "str", GB_INT), "Inconsistent type for field");
             TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "subcont", GB_STRING), "Inconsistent type for field");
+
+            // ---------------------------------------------
+            //      search containers with trailing '/'
+
+            GBDATA *gb_cont2_slash;
+            TEST_EXPECT_RESULT__NOERROREXPORTED(gb_cont2_slash = GB_search(db.gb_cont_misc, "subcont2/", GB_FIND));
+            TEST_EXPECT_EQUAL(gb_cont2_slash, gb_cont2);
+
+            GBDATA *gb_rootcont;
+            GBDATA *gb_rootcont_slash;
+            TEST_EXPECT_RESULT__NOERROREXPORTED(gb_rootcont = GB_search(db.gb_main, "/container1", GB_FIND));
+            TEST_EXPECT_RESULT__NOERROREXPORTED(gb_rootcont_slash = GB_search(db.gb_main, "/container1/", GB_FIND));
+            TEST_EXPECT_EQUAL(gb_rootcont_slash, gb_rootcont);
         }
 
         {
             // check invalid searches
-            TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub/inva*lid", GB_INT), "Invalid char '*' in key 'inva*lid'");
-            TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub/1 3", GB_INT), "Invalid char ' ' in key '1 3'");
-            TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub//sub", GB_INT), "Invalid '//' in key 'sub//sub'");
-            TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub/..sub", GB_INT), "Expected '/' after '..' in key '..sub'");
+            TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub/inva*lid",   GB_INT),  "Invalid char '*' in key 'inva*lid'");
+            TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub/1 3",        GB_INT),  "Invalid char ' ' in key '1 3'");
+            TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub//sub",       GB_INT),  "Invalid '//' in key 'sub//sub'");
+            TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "subcont2//",     GB_FIND), "Invalid '//' in key 'subcont2//'");
+            TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "sub/..sub",      GB_INT),  "Expected '/' after '..' in key '..sub'");
+            TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_search(db.gb_cont_misc, "subcont/entry/", GB_FIND), "terminal entry 'entry' cannot be used as container");
         }
 
         // ---------------
