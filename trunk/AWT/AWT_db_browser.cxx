@@ -842,15 +842,15 @@ static void child_changed_cb(AW_root *aw_root) {
                     GBDATA         *gb_selected_node = GB_search_numbered(gb_main, fullpath, GB_FIND);
 
                     string info;
-                    info += GBS_global_string("fullpath='%s'\n", fullpath);
+                    info += GBS_global_string("Fullpath  | '%s'\n", fullpath);
 
                     if (gb_selected_node == 0) {
-                        info += "Node does not exist.\n";
+                        info += "Address   | NULL (node does not exist)\n";
                     }
                     else {
                         add_to_history(aw_root, fullpath);
                 
-                        info += GBS_global_string("Node exists [address=%p]\n", gb_selected_node);
+                        info += GBS_global_string("Address   | %p\n", gb_selected_node);
                         info += GBS_global_string("Key index | %i\n", GB_get_quark(gb_selected_node));
 
                         GB_TYPES type = GB_read_type(gb_selected_node);
@@ -867,6 +867,15 @@ static void child_changed_cb(AW_root *aw_root) {
                             info += GBS_global_string("Memory    | %li\n", GB_read_memuse(gb_selected_node));
                         }
 
+                        {
+                            bool is_tmp             = GB_is_temporary(gb_selected_node);
+                            bool not_tmp_but_in_tmp = !is_tmp && GB_in_temporary_branch(gb_selected_node);
+
+                            if (is_tmp || not_tmp_but_in_tmp) {
+                                info += GBS_global_string("Temporary | yes%s\n", not_tmp_but_in_tmp ? " (in temporary branch)" : "");
+                            }
+                        }
+
                         info += GBS_global_string("Security  | read=%i write=%i delete=%i\n",
                                                   GB_read_security_read(gb_selected_node),
                                                   GB_read_security_write(gb_selected_node),
@@ -881,7 +890,7 @@ static void child_changed_cb(AW_root *aw_root) {
                         if (type != GB_DB) {
                             MemDump  dump    = make_userdefined_MemDump(aw_root);
                             char    *content = get_dbentry_content(gb_selected_node, GB_read_type(gb_selected_node), false, dump);
-                            info             = info+"Content |\n"+content+'\n';
+                            info             = info+"Content   |\n"+content+'\n';
                             free(content);
                         }
                     }
