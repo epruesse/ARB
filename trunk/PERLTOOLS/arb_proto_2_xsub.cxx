@@ -899,7 +899,7 @@ static void loadTypemap(const char *typemap_filename) {
     Type::globalTypemap.load(*typemap);
 }
 
-int main(int argc, char **argv)
+int ARB_main(int argc, const char **argv)
 {
     bool error_occurred = false;
     try {
@@ -954,3 +954,17 @@ int main(int argc, char **argv)
 }
 
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_arb_proto_2_xsub() {
+    TEST_EXPECT(1); // dummy - expect 0 to check if unit-tests are called (and fail)
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

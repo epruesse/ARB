@@ -1945,6 +1945,7 @@ UNITS_TESTED_FIRST = \
 	TOOLS/arb_consensus_tree.test \
 	TOOLS/arb_test.test \
 	TOOLS/arb_probe.test \
+	PERLTOOLS/arb_proto_2_xsub.test \
 	AWTC/AWTC.test \
 
 UNITS_TESTED = \
