@@ -67,3 +67,4 @@ arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/test_unit.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h

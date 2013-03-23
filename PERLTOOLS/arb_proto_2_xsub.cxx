@@ -960,9 +960,36 @@ int ARB_main(int argc, const char **argv)
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
 #endif
+#include <ut_valgrinded.h>
+
+// #define TEST_AUTO_UPDATE // uncomment this to update expected results
+
+inline GB_ERROR valgrinded_system(const char *cmdline) {
+    char *cmddup = strdup(cmdline);
+    make_valgrinded_call(cmddup);
+
+    GB_ERROR error = GBK_system(cmddup);
+    free(cmddup);
+    return error;
+}
 
 void TEST_arb_proto_2_xsub() {
-    TEST_EXPECT(1); // dummy - expect 0 to check if unit-tests are called (and fail)
+    TEST_EXPECT_ZERO(chdir("xsub"));
+
+    const char *outname  = "ap2x.out";
+    const char *expected = "ap2x.out.expected";
+
+    char *cmd = GBS_global_string_copy("arb_proto_2_xsub ptype.header default.xs typemap > %s", outname);
+    TEST_EXPECT_NO_ERROR(valgrinded_system(cmd));
+
+#if defined(TEST_AUTO_UPDATE)
+    system(GBS_global_string("cp %s %s", outname, expected));
+#else
+    TEST_EXPECT_TEXTFILE_DIFFLINES(expected, outname, 0);
+#endif
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outname));
+
+    free(cmd);
 }
 
 #endif // UNIT_TESTS
