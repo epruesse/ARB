@@ -18,6 +18,7 @@
 #include <set>
 
 #include <cctype>
+#include <arb_str.h>
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
@@ -135,11 +136,32 @@ public:
 inline bool is_empty_code(const char *code) { return !code[0]; }
 inline bool contains_preprozessorCode(const char *code) { return strchr(code, '#') != NULL; }
 inline bool contains_braces(const char *code) { return strpbrk(code, "{}") != NULL; }
+inline bool is_typedef(const char *code) { return ARB_strscmp(code, "typedef") == 0; }
+inline bool is_forward_decl(const char *code) { return ARB_strscmp(code, "class") == 0 || ARB_strscmp(code, "struct") == 0; }
+
 inline bool is_prototype(const char *code) {
     return
         !is_empty_code(code)             &&
         !contains_preprozessorCode(code) &&
-        !contains_braces(code);
+        !contains_braces(code)           &&
+        !is_typedef(code)                &&
+        !is_forward_decl(code);
+}
+
+inline void trace_over_braces(const char *code, int& brace_counter) {
+    while (code) {
+        const char *brace = strpbrk(code, "{}");
+        if (!brace) break;
+
+        if (*brace == '{') {
+            ++brace_counter;
+        }
+        else {
+            arb_assert(*brace == '}');
+            --brace_counter;
+        }
+        code = brace+1;
+    }
 }
 
 // --------------------------------------------------------------------------------
@@ -207,13 +229,14 @@ inline const char *next_comma_outside_parens(const char *code) {
 }
 
 inline bool find_open_close_paren(const char *code, size_t& opening_paren_pos, size_t& closing_paren_pos) {
-    const char *open_paren  = strchr(code, '(');
-    const char *close_paren = next_closing_paren(open_paren+1);
-
-    if (open_paren && close_paren) {
-        opening_paren_pos = open_paren-code;
-        closing_paren_pos = close_paren-code;
-        return true;
+    const char *open_paren = strchr(code, '(');
+    if (open_paren) {
+        const char *close_paren = next_closing_paren(open_paren+1);
+        if (close_paren) {
+            opening_paren_pos = open_paren-code;
+            closing_paren_pos = close_paren-code;
+            return true;
+        }
     }
     return false;
 }
@@ -821,15 +844,16 @@ static void print_prototype_parse_error(FileBuffer& prototype_reader, const char
 }
 
 void xsubGenerator::generate_all_xsubs(FileBuffer& prototype_reader) {
-    bool   error_occurred = false;
+    bool   error_occurred     = false;
     string line;
+    int    open_brace_counter = 0;
 
     while (prototype_reader.getLine(line)) {
         const char *lineStart          = line.c_str();
         size_t      leading_whitespace = strspn(lineStart, " \t");
         const char *prototype          = lineStart+leading_whitespace;
 
-        if (is_prototype(prototype)) {
+        if (!open_brace_counter && is_prototype(prototype)) {
             try {
                 Prototype proto(prototype);
                 if (proto.possible_as_xsub()) {
@@ -852,11 +876,12 @@ void xsubGenerator::generate_all_xsubs(FileBuffer& prototype_reader) {
             }
             catch(...) { arb_assert(0); }
         }
-#if defined(TRACE)
         else {
+#if defined(TRACE)
             fprintf(stderr, "TRACE: not a prototype: '%s'\n", prototype);
-        }
 #endif // TRACE
+            trace_over_braces(prototype, open_brace_counter);
+        }
     }
 
     if (error_occurred) throw ProgramError("could not generate xsubs for all prototypes");
