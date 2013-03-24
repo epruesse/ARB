@@ -322,6 +322,7 @@ GBDATA *GB_read_pointer(GBDATA *gbd);
 double GB_read_float(GBDATA *gbd);
 long GB_read_count(GBDATA *gbd);
 long GB_read_memuse(GBDATA *gbd);
+long GB_calc_structure_size(GBDATA *gbd);
 GB_CSTR GB_read_pntr(GBDATA *gbd);
 GB_CSTR GB_read_char_pntr(GBDATA *gbd);
 char *GB_read_string(GBDATA *gbd);
