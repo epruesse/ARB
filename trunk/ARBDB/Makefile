@@ -1055,6 +1055,7 @@ arbdb.o: gb_comm.h
 arbdb.o: gb_compress.h
 arbdb.o: gb_data.h
 arbdb.o: gb_header.h
+arbdb.o: gb_index.h
 arbdb.o: gb_key.h
 arbdb.o: gb_local.h
 arbdb.o: gb_localdata.h
