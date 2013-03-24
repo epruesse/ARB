@@ -27,6 +27,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <arb_misc.h>
 
 // do includes above (otherwise depends depend on DEBUG)
 #if defined(DEBUG)
@@ -45,6 +46,8 @@ using namespace std;
 
 #define AWAR_DBB_BROWSE AWAR_DBB_TMP_BASE "/browse"
 #define AWAR_DBB_INFO   AWAR_DBB_TMP_BASE "/info"
+
+#define AWAR_DBB_RECSIZE AWAR_DBB_BASE "/recsize"
 
 #define AWAR_DUMP_HEX   AWAR_DBB_BASE "/hex"
 #define AWAR_DUMP_ASCII AWAR_DBB_BASE "/ascii"
@@ -171,7 +174,7 @@ static MemDump make_userdefined_MemDump(AW_root *awr) {
     return MemDump(offset, hex, ascii, width, separate, space);
 }
 
-static void hexmode_changed_cb(AW_root *aw_root) {
+static void nodedisplay_changed_cb(AW_root *aw_root) {
     aw_root->awar(AWAR_DBB_BROWSE)->touch();
 }
 
@@ -183,12 +186,14 @@ void AWT_create_db_browser_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_DBB_INFO,    "<select an element>", aw_def); // information about selected item
     aw_root->awar_string(AWAR_DBB_HISTORY, "",                    aw_def); // '\n'-separated string containing visited nodes
 
+    aw_root->awar_int(AWAR_DBB_RECSIZE, 0,  aw_def)->add_callback(nodedisplay_changed_cb); // collect size recursive?
+
     // hex-dump-options
-    aw_root->awar_int(AWAR_DUMP_HEX,   1,  aw_def)->add_callback(hexmode_changed_cb); // show hex ?
-    aw_root->awar_int(AWAR_DUMP_ASCII, 1,  aw_def)->add_callback(hexmode_changed_cb); // show ascii ?
-    aw_root->awar_int(AWAR_DUMP_SPACE, 1,  aw_def)->add_callback(hexmode_changed_cb); // space bytes
-    aw_root->awar_int(AWAR_DUMP_WIDTH, 16, aw_def)->add_callback(hexmode_changed_cb); // bytes/line
-    aw_root->awar_int(AWAR_DUMP_BLOCK, 8,  aw_def)->add_callback(hexmode_changed_cb); // separate each bytes
+    aw_root->awar_int(AWAR_DUMP_HEX,   1,  aw_def)->add_callback(nodedisplay_changed_cb); // show hex ?
+    aw_root->awar_int(AWAR_DUMP_ASCII, 1,  aw_def)->add_callback(nodedisplay_changed_cb); // show ascii ?
+    aw_root->awar_int(AWAR_DUMP_SPACE, 1,  aw_def)->add_callback(nodedisplay_changed_cb); // space bytes
+    aw_root->awar_int(AWAR_DUMP_WIDTH, 16, aw_def)->add_callback(nodedisplay_changed_cb); // bytes/line
+    aw_root->awar_int(AWAR_DUMP_BLOCK, 8,  aw_def)->add_callback(nodedisplay_changed_cb); // separate each bytes
 }
 
 static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create) { // @@@  this may be moved to ARBDB-sources
@@ -850,23 +855,59 @@ static void child_changed_cb(AW_root *aw_root) {
                     }
                     else {
                         add_to_history(aw_root, fullpath);
-                
+
                         info += GBS_global_string("Address   | %p\n", gb_selected_node);
                         info += GBS_global_string("Key index | %i\n", GB_get_quark(gb_selected_node));
 
+
+                        GB_SizeInfo sizeInfo;
+                        bool        collect_recursive = aw_root->awar(AWAR_DBB_RECSIZE)->read_int();
+
                         GB_TYPES type = GB_read_type(gb_selected_node);
+                        if (collect_recursive || type != GB_DB) {
+                            sizeInfo.collect(gb_selected_node);
+                        }
+
+                        string structure_add;
+                        string childs;
+
                         if (type == GB_DB) {
+                            long struct_size = GB_calc_structure_size(gb_selected_node);
+                            if (collect_recursive) {
+                                structure_add = GBS_global_string(" (this: %s)", GBS_readable_size(struct_size, "b"));
+                            }
+                            else {
+                                sizeInfo.structure = struct_size;
+                            }
+
                             info += "Node type | container\n";
-                            info += GBS_global_string("Entries   | %li\n", GB_number_of_subentries(gb_selected_node));
+
+                            childs = GBS_global_string("Childs    | %li", GB_number_of_subentries(gb_selected_node));
+                            if (collect_recursive) {
+                                childs = childs+" (rec: " + GBS_readable_size(sizeInfo.containers, "containers");
+                                childs = childs+" + " + GBS_readable_size(sizeInfo.terminals, "terminals");
+                                childs = childs+" = " + GBS_readable_size(sizeInfo.terminals+sizeInfo.containers, "nodes")+')';
+                            }
+                            childs += '\n';
 
                             aw_root->awar(AWAR_DBB_BROWSE)->write_string("");
                             aw_root->awar(AWAR_DBB_PATH)->write_string(fullpath);
+
                         }
                         else {
                             info += GBS_global_string("Node type | data [type=%s]\n", GB_get_type_name(gb_selected_node));
-                            info += GBS_global_string("Data size | %li\n", GB_read_count(gb_selected_node));
-                            info += GBS_global_string("Memory    | %li\n", GB_read_memuse(gb_selected_node));
                         }
+
+                        long overall = sizeInfo.mem+sizeInfo.structure;
+
+                        info += GBS_global_string("Data size | %7s\n", GBS_readable_size(sizeInfo.data, "b"));
+                        info += GBS_global_string("Memory    | %7s  %5.2f%%\n", GBS_readable_size(sizeInfo.mem, "b"), double(sizeInfo.mem)/overall*100+.0049);
+                        info += GBS_global_string("Structure | %7s  %5.2f%%", GBS_readable_size(sizeInfo.structure, "b"), double(sizeInfo.structure)/overall*100+.0049) + structure_add + '\n';
+                        info += GBS_global_string("Overall   | %7s\n", GBS_readable_size(overall, "b"));
+                        if (sizeInfo.data) {
+                            info += GBS_global_string("CompRatio | %5.2f%% (mem-only: %5.2f%%)\n", double(overall)/sizeInfo.data*100+.0049, double(sizeInfo.mem)/sizeInfo.data*100+.0049);
+                        }
+                        info += childs;
 
                         {
                             bool is_tmp             = GB_is_temporary(gb_selected_node);
@@ -1028,6 +1069,8 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->callback(goto_root_cb); aws->create_button("goto_root", "Top");
         aws->callback(show_history_cb); aws->create_button("history", "History");
         aws->callback(toggle_tmp_cb); aws->create_button("toggle_tmp", "/tmp");
+
+        aws->label("Rec.size"); aws->create_toggle(AWAR_DBB_RECSIZE);
 
         aws->at("browse");
         browse_list = aws->create_selection_list(AWAR_DBB_BROWSE);
