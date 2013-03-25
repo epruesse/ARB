@@ -173,7 +173,7 @@ public:
     void     touch();
 
     GB_ERROR make_global() __ATTR__USERESULT;       // should be used by ARB_init_global_awars only
-    void set_temp_if_is_default(GBDATA *gb_main);
+    void set_temp_if_is_default(GBDATA *gb_db);
 };
 
 
