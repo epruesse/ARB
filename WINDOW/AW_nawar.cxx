@@ -150,16 +150,19 @@ AW_awar *AW_root::awar_no_error(const char *var_name) {
     return (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name);
 }
 
-static long awar_set_temp_if_is_default(const char *, long val, void *cl_gb_main) {
+static long awar_set_temp_if_is_default(const char *, long val, void *cl_gb_db) {
     AW_awar *awar = (AW_awar*)val;
-    awar->set_temp_if_is_default((GBDATA*)cl_gb_main);
+    awar->set_temp_if_is_default((GBDATA*)cl_gb_db);
     return val;
 }
 
-void AW_root::dont_save_awars_with_default_value(GBDATA *gb_main) {
+void AW_root::dont_save_awars_with_default_value(GBDATA *gb_db) {
     // this should only be called
     // - before saving properties
     // - before saving any main application DB that may contain AWARs
+    //
+    // Bug: Awars created in main DB by clients (e.g. EDIT4) will stay temporary
+    //      and will never be saved again.
     //
     // Note: uninstanciated AWARs will not be affected, so different applications with
     //       different AWAR subsets should be no problem.
@@ -170,7 +173,7 @@ void AW_root::dont_save_awars_with_default_value(GBDATA *gb_main) {
     // or with different default values (regardless whether in properties or main-DB).
     // But this has already been problematic before.
     
-    GBS_hash_do_loop(hash_table_for_variables, awar_set_temp_if_is_default, (void*)gb_main);
+    GBS_hash_do_loop(hash_table_for_variables, awar_set_temp_if_is_default, (void*)gb_db);
 }
 
 // for string
@@ -522,10 +525,10 @@ void AW_awar::update_targets() {
     }
 }
 
-void AW_awar::set_temp_if_is_default(GBDATA *gb_main) {
+void AW_awar::set_temp_if_is_default(GBDATA *gb_db) {
     if (!in_tmp_branch &&                 // ignore AWARs in 'tmp/'
         gb_origin      &&                 // ignore unbound awars (zombies)
-        member_of_DB(gb_origin, gb_main)) // ignore awars in "other" DB (main-DB vs properties)
+        member_of_DB(gb_origin, gb_db)) // ignore awars in "other" DB (main-DB vs properties)
     {
         bool has_default_value   = false;
         aw_assert(GB_get_transaction_level(gb_origin)<1); // make sure allowed_to_run_callbacks works as expected
@@ -701,22 +704,22 @@ static GB_ERROR clear_temp_flags(DataPointers& made_temp) {
 
 GB_ERROR AW_root::save_properties(const char *filename) {
     GB_ERROR  error   = NULL;
-    GBDATA   *gb_main = application_database;
+    GBDATA   *gb_prop = application_database;
 
-    if (!gb_main) {
+    if (!gb_prop) {
         error = "No properties loaded - won't save";
     }
     else {
-        error = GB_push_transaction(gb_main);
+        error = GB_push_transaction(gb_prop);
         if (!error) {
             aw_update_all_window_geometry_awars(this);
-            error = GB_pop_transaction(gb_main);
+            error = GB_pop_transaction(gb_prop);
             if (!error) {
-                dont_save_awars_with_default_value(gb_main);
+                dont_save_awars_with_default_value(gb_prop);
 
                 DataPointers made_temp;
-                error             = set_parents_with_only_temp_childs_temp(gb_main, made_temp); // avoid saving empty containers
-                if (!error) error = GB_save_in_arbprop(gb_main, filename, "a");
+                error             = set_parents_with_only_temp_childs_temp(gb_prop, made_temp); // avoid saving empty containers
+                if (!error) error = GB_save_in_arbprop(gb_prop, filename, "a");
                 if (!error) error = clear_temp_flags(made_temp);
             }
         }
