@@ -2575,12 +2575,11 @@ GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientda
 static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata, bool cd_should_match) {
     bool exactly_one = cd_should_match; // remove exactly one callback
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     if (GB_inside_callback(gbd, GB_CB_DELETE)) {
         printf("Warning: gb_remove_callback called inside delete-callback of gbd (gbd may already be freed)\n");
-#if defined(DEVEL_RALF)
         gb_assert(0); // fix callback-handling (never modify callbacks from inside delete callbacks)
-#endif // DEVEL_RALF
+        return;
     }
 #endif // DEBUG
 
@@ -2935,6 +2934,199 @@ void TEST_GB_number_of_subentries() {
     }
 
     GB_close(gb_main);
+}
+
+static void test_count_cb(GBDATA *, int *counter, GB_CB_TYPE) {
+    fprintf(stderr, "test_count_cb: var.add=%p old.val=%i ", counter, *counter);
+    (*counter)++;
+    fprintf(stderr, "new.val=%i\n", *counter);
+    fflush(stderr);
+}
+
+static void remove_self_cb(GBDATA *gbe, int *cd, GB_CB_TYPE cbtype) {
+    GB_remove_callback(gbe, cbtype, remove_self_cb, cd);
+}
+
+static GBDATA *gb_entry_to_touch = NULL;
+static void test_touch_entry() {
+    GB_touch(gb_entry_to_touch);
+    gb_entry_to_touch = NULL;
+}
+
+void TEST_db_callbacks() {
+    GB_shell shell;
+
+    enum TAmode {
+        NO_TA   = 1, // no transaction mode
+        WITH_TA = 2, // transaction mode
+
+        BOTH_TA_MODES = (NO_TA|WITH_TA)
+    };
+
+    for (TAmode ta_mode = NO_TA; ta_mode <= WITH_TA; ta_mode = TAmode(ta_mode+1)) {
+        GBDATA   *gb_main = GB_open("no.arb", "c");
+        GB_ERROR  error;
+
+        TEST_ANNOTATE_ASSERT(ta_mode == NO_TA ? "NO_TA" : "WITH_TA");
+        if (ta_mode == NO_TA) {
+            error = GB_no_transaction(gb_main); TEST_EXPECT_NO_ERROR(error);
+        }
+
+        // create some DB entries
+        GBDATA *gbc;
+        GBDATA *gbe1;
+        GBDATA *gbe2;
+        GBDATA *gbe3;
+        {
+            GB_transaction ta(gb_main);
+
+            gbc  = GB_create_container(gb_main, "cont");
+            gbe1 = GB_create(gbc, "entry", GB_STRING);
+            gbe2 = GB_create(gb_main, "entry", GB_INT);
+        }
+
+        // counters to detect called callbacks
+        int e1_changed    = 0;
+        int e2_changed    = 0;
+        int c_changed     = 0;
+        int c_son_created = 0;
+
+        int e1_deleted = 0;
+        int e2_deleted = 0;
+        int e3_deleted = 0;
+        int c_deleted  = 0;
+
+#define CHCB_COUNTERS_EXPECTATION(e1c,e2c,cc,csc)       \
+        that(e1_changed).is_equal_to(e1c),              \
+            that(e2_changed).is_equal_to(e2c),          \
+            that(c_changed).is_equal_to(cc),            \
+            that(c_son_created).is_equal_to(csc)
+
+#define DLCB_COUNTERS_EXPECTATION(e1d,e2d,e3d,cd)       \
+        that(e1_deleted).is_equal_to(e1d),              \
+            that(e2_deleted).is_equal_to(e2d),          \
+            that(e3_deleted).is_equal_to(e3d),          \
+            that(c_deleted).is_equal_to(cd)
+
+#define TEST_EXPECT_CHCB_COUNTERS(e1c,e2c,cc,csc,tam) do{ if (ta_mode & (tam)) TEST_EXPECTATION(all().of(CHCB_COUNTERS_EXPECTATION(e1c,e2c,cc,csc))); }while(0)
+#define TEST_EXPECT_CHCB___WANTED(e1c,e2c,cc,csc,tam) do{ if (ta_mode & (tam)) TEST_EXPECTATION__WANTED(all().of(CHCB_COUNTERS_EXPECTATION(e1c,e2c,cc,csc))); }while(0)
+
+#define TEST_EXPECT_DLCB_COUNTERS(e1d,e2d,e3d,cd,tam) do{ if (ta_mode & (tam)) TEST_EXPECTATION(all().of(DLCB_COUNTERS_EXPECTATION(e1d,e2d,e3d,cd))); }while(0)
+#define TEST_EXPECT_DLCB___WANTED(e1d,e2d,e3d,cd,tam) do{ if (ta_mode & (tam)) TEST_EXPECTATION__WANTED(all().of(DLCB_COUNTERS_EXPECTATION(e1d,e2d,e3d,cd))); }while(0)
+
+#define RESET_CHCB_COUNTERS()   do{ e1_changed = e2_changed = c_changed = c_son_created = 0; }while(0)
+#define RESET_DLCB_COUNTERS()   do{ e1_deleted = e2_deleted = e3_deleted = c_deleted = 0; }while(0)
+#define RESET_ALL_CB_COUNTERS() do{ RESET_CHCB_COUNTERS(); RESET_DLCB_COUNTERS(); }while(0)
+
+        // install some DB callbacks
+        {
+            GB_transaction ta(gb_main);
+            GB_add_callback(gbe1, GB_CB_CHANGED,     test_count_cb, &e1_changed);
+            GB_add_callback(gbe2, GB_CB_CHANGED,     test_count_cb, &e2_changed);
+            GB_add_callback(gbc,  GB_CB_CHANGED,     test_count_cb, &c_changed);
+            GB_add_callback(gbc,  GB_CB_SON_CREATED, test_count_cb, &c_son_created);
+        }
+
+        // check callbacks were not called yet
+        TEST_EXPECT_CHCB_COUNTERS(0, 0, 0, 0, BOTH_TA_MODES);
+
+        // trigger callbacks
+        {
+            GB_transaction ta(gb_main);
+
+            error = GB_write_string(gbe1, "hi"); TEST_EXPECT_NO_ERROR(error);
+            error = GB_write_int(gbe2, 666);     TEST_EXPECT_NO_ERROR(error);
+
+            TEST_EXPECT_CHCB_COUNTERS(1, 1, 1, 0, NO_TA);   // callbacks triggered instantly in NO_TA mode
+            TEST_EXPECT_CHCB_COUNTERS(0, 0, 0, 0, WITH_TA); // callbacks delayed until transaction is committed
+
+        } // [Note: callbacks happen here in ta_mode]
+
+        // GB_CB_SON_CREATED should not be triggered here.
+        // either the name is misleading or there is a bug
+        TEST_EXPECT_CHCB_COUNTERS(1, 1, 1, 0, NO_TA);
+        TEST_EXPECT_CHCB_COUNTERS(1, 1, 1, 1, WITH_TA); // broken (no son was created)
+        TEST_EXPECT_CHCB___WANTED(1, 1, 1, 0, WITH_TA);
+
+        // really create a son
+        RESET_CHCB_COUNTERS();
+        {
+            GB_transaction ta(gb_main);
+            gbe3 = GB_create(gbc, "e3", GB_STRING);
+        }
+        TEST_EXPECT_CHCB_COUNTERS(0, 0, 0, 0, NO_TA); // broken
+        TEST_EXPECT_CHCB___WANTED(0, 0, 1, 1, NO_TA);
+        TEST_EXPECT_CHCB_COUNTERS(0, 0, 1, 1, WITH_TA);
+
+        // change that son
+        RESET_CHCB_COUNTERS();
+        {
+            GB_transaction ta(gb_main);
+            error = GB_write_string(gbe3, "bla"); TEST_EXPECT_NO_ERROR(error);
+        }
+        TEST_EXPECT_CHCB_COUNTERS(0, 0, 1, 0, NO_TA);
+        TEST_EXPECT_CHCB_COUNTERS(0, 0, 1, 1, WITH_TA); // broken (no son was created; same bug as above)
+        TEST_EXPECT_CHCB___WANTED(0, 0, 1, 0, WITH_TA);
+
+
+        // test delete callbacks
+        RESET_CHCB_COUNTERS();
+        {
+            GB_transaction ta(gb_main);
+
+            GB_add_callback(gbe1, GB_CB_DELETE, test_count_cb, &e1_deleted);
+            GB_add_callback(gbe2, GB_CB_DELETE, test_count_cb, &e2_deleted);
+            GB_add_callback(gbe3, GB_CB_DELETE, test_count_cb, &e3_deleted);
+            GB_add_callback(gbc,  GB_CB_DELETE, test_count_cb, &c_deleted);
+        }
+        TEST_EXPECT_CHCB_COUNTERS(0, 0, 0, 0, BOTH_TA_MODES); // adding callbacks does not trigger existing change-callbacks
+        {
+            GB_transaction ta(gb_main);
+
+            error = GB_delete(gbe3); TEST_EXPECT_NO_ERROR(error);
+            error = GB_delete(gbe2); TEST_EXPECT_NO_ERROR(error);
+
+            TEST_EXPECT_DLCB_COUNTERS(0, 1, 1, 0, NO_TA);
+            TEST_EXPECT_DLCB_COUNTERS(0, 0, 0, 0, WITH_TA);
+        }
+
+        TEST_EXPECT_CHCB_COUNTERS(0, 0, 1, 1, WITH_TA); // container changed by deleting a son (gbe3)
+        TEST_EXPECT_CHCB_COUNTERS(0, 0, 0, 0, NO_TA);   // change is not triggered in NO_TA mode (error?)
+        TEST_EXPECT_CHCB___WANTED(0, 0, 1, 1, NO_TA);
+
+        TEST_EXPECT_DLCB_COUNTERS(0, 1, 1, 0, BOTH_TA_MODES);
+
+        RESET_ALL_CB_COUNTERS();
+        {
+            GB_transaction ta(gb_main);
+            error = GB_delete(gbc);  TEST_EXPECT_NO_ERROR(error); // delete the container containing gbe1 and gbe3 (gbe3 alreay deleted)
+        }
+        TEST_EXPECT_CHCB_COUNTERS(0, 0, 0, 0, BOTH_TA_MODES); // deleting the container does not trigger any change callbacks
+        TEST_EXPECT_DLCB_COUNTERS(1, 0, 0, 1, BOTH_TA_MODES); // deleting the container does also trigger the delete callback for gbe1
+
+        // --------------------------------------------------------------------------------
+        // Perform this AFTER ANY OTHER TESTS!
+        // document that a callback cannot be removed while it is running (in NO_TA mode)
+        RESET_CHCB_COUNTERS();
+        {
+            GB_transaction ta(gb_main);
+            gbe1 = GB_create(gb_main, "new_e1", GB_INT); // recreate
+            GB_add_callback(gbe1, GB_CB_CHANGED, remove_self_cb, NULL);
+        }
+        {
+            GB_transaction ta(gb_main);
+
+            if (ta_mode == NO_TA) {
+                gb_entry_to_touch = gbe1;
+                TEST_EXPECT_SEGFAULT(test_touch_entry);
+            }
+            else {
+                GB_touch(gbe1); // ok in WITH_TA mode
+            }
+        }
+
+        GB_close(gb_main);
+    }
 }
 
 #endif
