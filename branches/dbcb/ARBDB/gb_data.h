@@ -55,7 +55,7 @@ struct gb_callback {
     GB_CB_TYPE   type;
     int         *clientdata;
     short        priority;
-    short        running;
+    short        running; // @@@ only used in no-transaction mode
 };
 
 // --------------------------------------------------------------------------------
