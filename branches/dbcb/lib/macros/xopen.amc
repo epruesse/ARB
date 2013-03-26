@@ -1,0 +1,26 @@
+#!/usr/bin/perl -w
+use lib "$ENV{'ARBHOME'}/lib/";
+use ARB;
+
+$gb_main = ARB::open(":","r");
+if (! $gb_main ) {
+    $error = ARB::await_error();
+    print ("Error: $error\n");
+    exit 0;
+}
+
+BIO::remote_action($gb_main,"ARB_NT","save_all_as");
+BIO::remote_action($gb_main,"ARB_NT","optimize_db");
+BIO::remote_action($gb_main,"ARB_NT","import_seq");
+BIO::remote_action($gb_main,"ARB_NT","Import Sequences in Foreign Format (using readseq: slow !!) ...");
+BIO::remote_action($gb_main,"ARB_NT","export_to_ARB");
+BIO::remote_action($gb_main,"ARB_NT","export_seqs");
+BIO::remote_action($gb_main,"ARB_NT","export_nds");
+BIO::remote_action($gb_main,"ARB_NT","Export Sequences Only to Foreign Format (using readseq: slow) ...");
+BIO::remote_action($gb_main,"ARB_NT","print_tree");
+BIO::remote_action($gb_main,"ARB_NT","Pretty Print Sequences (slow) ...");
+BIO::remote_action($gb_main,"ARB_NT","registration");
+BIO::remote_action($gb_main,"ARB_NT","bug_report");
+BIO::remote_action($gb_main,"ARB_NT","version_info");
+BIO::remote_action($gb_main,"ARB_NT","HELP/CLOSE");
+ARB::close($gb_main);
