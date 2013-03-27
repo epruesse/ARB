@@ -185,7 +185,7 @@ my @used_when_matchesFull = (
                              qr/^\.\/lib\/macros\/.*\.amc$/o,
                              qr/^\.\/lib\/nas\/names\.dat\.template$/o,
                              qr/^\.\/lib\/pictures\/.*\.(fig|vfont)$/o,
-                             qr/^\.\/lib\/pixmaps\/.*\.xpm$/o,
+                             qr/^\.\/lib\/pixmaps\/.*\.(xpm|svg|png)$/o,
                              qr/^\.\/lib\/protein_2nd_structure\/.*\.dat$/o,
                              qr/^\.\/lib\/rna3d\/.*\.(pdb|data)$/o,
                              qr/^\.\/lib\/rna3d\/images\/.*\.png$/o,
