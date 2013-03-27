@@ -424,7 +424,14 @@ static void toggle_tmp_cb(AW_window *aww) {
     }
 
     if (!done) {
-        awar_path->write_string(GBS_global_string("/tmp%s", path));
+        char *path_in_tmp = GBS_global_string_copy("/tmp%s", path);
+
+        char *lslash = strrchr(path_in_tmp, '/');
+        if (lslash && !lslash[1]) { // ends with '/'
+            lslash[0] = 0; // cut-off trailing '/'
+        }
+        awar_path->write_string(path_in_tmp);
+        free(path_in_tmp);
     }
     free(path);
 }
