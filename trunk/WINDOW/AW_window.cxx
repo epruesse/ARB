@@ -12,25 +12,20 @@
 #include "aw_nawar.hxx"
 #include "aw_xfig.hxx"
 #include "aw_Xm.hxx"
+#include "aw_window.hxx"
 #include "aw_window_Xm.hxx"
 #include "aw_xkey.hxx"
 #include "aw_select.hxx"
-#include "aw_global.hxx"
 #include "aw_awar.hxx"
 #include "aw_msg.hxx"
-#include "aw_status.hxx"
 #include "aw_root.hxx"
-#include "aw_question.hxx"
 #include "aw_xargs.hxx"
+#include "aw_macro.hxx"
 
 #include <arbdbt.h>
-#include <arb_handlers.h>
 #include <arb_file.h>
 
-#include <X11/keysym.h>
-#include <X11/Xutil.h>
 #include <X11/Shell.h>
-#include <X11/cursorfont.h>
 #include <Xm/AtomMgr.h>
 #include <Xm/Frame.h>
 #include <Xm/PushB.h>
@@ -45,16 +40,7 @@
 #include <Xm/ScrollBar.h>
 #include <Xm/MwmUtil.h>
 
-#include <cstdlib>
-#include <cstdarg>
 #include <cctype>
-
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <unistd.h>
-#include "aw_macro.hxx"
-
-AW_root *AW_root::SINGLETON = NULL;
 
 AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb_struct *nexti) {
     aw            = awi;
@@ -66,15 +52,6 @@ AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), 
     this->next = nexti;
 
     id = NULL;
-}
-
-AW_timer_cb_struct::AW_timer_cb_struct(AW_root *ari, AW_RCB g, AW_CL cd1i, AW_CL cd2i) {
-    ar = ari;
-    f = g;
-    cd1 = cd1i;
-    cd2 = cd2i;
-}
-AW_timer_cb_struct::~AW_timer_cb_struct() {
 }
 
 void AW_root::make_sensitive(Widget w, AW_active mask) {
@@ -189,51 +166,6 @@ AW_selection_list::AW_selection_list(const char *variable_namei, int variable_ty
     list_table             = NULL;
     last_of_list_table     = NULL;
     default_select         = NULL;
-}
-
-static void destroy_AW_root() {
-    delete AW_root::SINGLETON; AW_root::SINGLETON = NULL;
-}
-
-AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit) {
-    aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
-    AW_root::SINGLETON = this;
-
-    memset((char *)this, 0, sizeof(AW_root));
-
-    prvt = new AW_root_Motif;
-
-    init_variables(load_properties(propertyFile));
-    init_root(program, no_exit);
-
-    atexit(destroy_AW_root); // do not call this before opening properties DB!
-}
-
-#if defined(UNIT_TESTS)
-AW_root::AW_root(const char *propertyFile) {
-    aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
-    AW_root::SINGLETON = this;
-
-    memset((char *)this, 0, sizeof(AW_root));
-    init_variables(load_properties(propertyFile));
-    atexit(destroy_AW_root); // do not call this before opening properties DB!
-}
-#endif
-
-
-AW_root::~AW_root() {
-    AW_root_cblist::clear(focus_callback_list);
-    delete button_sens_list;    button_sens_list = NULL;
-
-    exit_root();
-    exit_variables();
-    aw_assert(this == AW_root::SINGLETON);
-
-    delete prvt;
-
-    free(program_name);
-
-    AW_root::SINGLETON = NULL;
 }
 
 AW_window_Motif::AW_window_Motif() {
@@ -503,48 +435,6 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
     // @@@ test and constrain against limits
     slider_pos_horizontal = position;
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, position, NULL);
-}
-
-static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId */*id*/) {
-    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
-    if (!tcbs)
-        return;
-
-    AW_root *root = tcbs->ar;
-    if (root->disable_callbacks) {
-        // delay the timer callback for 25ms
-        XtAppAddTimeOut(p_global->context,
-        (unsigned long)25, // wait 25 msec = 1/40 sec
-        (XtTimerCallbackProc)AW_timer_callback,
-        aw_timer_cb_struct);
-    }
-    else {
-        tcbs->f(root, tcbs->cd1, tcbs->cd2);
-        delete tcbs; // timer only once
-    }
-}
-
-static void AW_timer_callback_never_disabled(XtPointer aw_timer_cb_struct, XtIntervalId */*id*/) {
-    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
-    if (!tcbs)
-        return;
-
-    tcbs->f(tcbs->ar, tcbs->cd1, tcbs->cd2);
-    delete tcbs; // timer only once
-}
-
-void AW_root::add_timed_callback(int ms, AW_RCB f, AW_CL cd1, AW_CL cd2) {
-    XtAppAddTimeOut(p_r->context,
-    (unsigned long)ms,
-    (XtTimerCallbackProc)AW_timer_callback,
-    (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
-}
-
-void AW_root::add_timed_callback_never_disabled(int ms, AW_RCB f, AW_CL cd1, AW_CL cd2) {
-    XtAppAddTimeOut(p_r->context,
-    (unsigned long)ms,
-    (XtTimerCallbackProc)AW_timer_callback_never_disabled,
-    (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
 }
 
 void AW_POPDOWN(AW_window *aww) {
@@ -873,13 +763,6 @@ void AW_window::set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd
 static void AW_root_focusCB(Widget /*wgt*/, XtPointer awrp, XEvent*, Boolean*) {
     AW_root *aw_root = (AW_root *)awrp;
     AW_root_cblist::call(aw_root->focus_callback_list, aw_root);
-}
-
-void AW_root::set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::add(focus_callback_list, AW_root_callback(fcb, cd1, cd2));
-}
-bool AW_root::is_focus_callback(AW_RCB fcb) const {
-    return focus_callback_list && focus_callback_list->contains(AW_root_callback(fcb, 0, 0));
 }
 
 static void AW_focusCB(Widget /*wgt*/, XtPointer cl_aww, XEvent*, Boolean*) {
@@ -1224,43 +1107,6 @@ void AW_window::set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
     aram->set_motion_callback(this, f, cd1, cd2);
 }
 
-struct fallbacks {
-    const char *fb;
-    const char *awar;
-    const char *init;
-};
-
-static struct fallbacks aw_fb[] = {
-    // Name         fallback awarname    default value
-    { "FontList",   "window/font",       "8x13bold" },
-    { "background", "window/background", "grey" },
-    { "foreground", "window/foreground", "Black", },
-    { 0,            "window/color_1",    "red", },
-    { 0,            "window/color_2",    "green", },
-    { 0,            "window/color_3",    "blue", },
-    { 0,            0,                   0 }
-};
-
-static const char *aw_awar_2_color[] = {
-    "window/background",
-    "window/foreground",
-    "window/color_1",
-    "window/color_2",
-    "window/color_3",
-    0
-};
-
-
-void AW_root::init_variables(AW_default database) {
-    application_database     = database;
-    hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
-    hash_for_windows         = GBS_create_hash(100, GB_MIND_CASE);
-
-    for (int i=0; aw_fb[i].awar; ++i) {
-        awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
-    }
-}
-
 static long destroy_awar(const char *, long val, void *) {
     AW_awar *awar = (AW_awar*)val;
     delete   awar;
@@ -1284,165 +1130,6 @@ void AW_root::exit_variables() {
         application_database = NULL;
         GB_close(prop_main);
     }
-}
-
-static void aw_root_create_color_map(AW_root *root) {
-    XColor xcolor_returned, xcolor_exakt;
-    GBDATA *gbd = root->check_properties(NULL);
-    p_global->color_table = (AW_rgb*)GB_calloc(sizeof(AW_rgb), AW_STD_COLOR_IDX_MAX);
-
-    if (p_global->screen_depth == 1) { // Black and White Monitor
-        unsigned long white = WhitePixelOfScreen(XtScreen(p_global->toplevel_widget));
-        unsigned long black = BlackPixelOfScreen(XtScreen(p_global->toplevel_widget));
-        p_global->foreground = black;
-        p_global->background = white;
-        for (int i=0; i< AW_STD_COLOR_IDX_MAX; i++) {
-            p_global->color_table[i] = black;
-        }
-        p_global->color_table[AW_WINDOW_FG] = white;
-        p_global->color_table[AW_WINDOW_C1] = white;
-        p_global->color_table[AW_WINDOW_C2] = white;
-        p_global->color_table[AW_WINDOW_C3] = white;
-    }
-    else { // Color monitor
-        const char **awar_2_color;
-        int color;
-        for (color = 0, awar_2_color = aw_awar_2_color;
-             *awar_2_color;
-             awar_2_color++, color++)
-        {
-            const char *name_of_color = GB_read_char_pntr(GB_search(gbd, *awar_2_color, GB_FIND));
-            if (XAllocNamedColor(p_global->display, p_global->colormap, name_of_color, &xcolor_returned, &xcolor_exakt) == 0) {
-                fprintf(stderr, "XAllocColor failed: %s\n", name_of_color);
-            }
-            else {
-                p_global->color_table[color] = xcolor_returned.pixel;
-            }
-        }
-        p_global->foreground = BlackPixelOfScreen(XtScreen(p_global->toplevel_widget));
-        XtVaGetValues(p_global->toplevel_widget, XmNbackground,
-        &p_global->background, NULL);
-    }
-    // AW_WINDOW_DRAG see init_devices
-
-}
-
-static void dump_stdout(const char *msg) {
-    fprintf(stdout, "ARB: %s\n", msg);
-}
-static void aw_message_and_dump_stderr(const char *msg) {
-    fflush(stdout);
-    fprintf(stderr, "ARB: %s\n", msg); // print to console as well
-    fflush(stderr);
-    aw_message(msg);
-}
-
-static arb_status_implementation AW_status_impl = {
-    AST_RANDOM, 
-    aw_openstatus,
-    aw_closestatus,
-    aw_status_title, // set_title
-    AW_status, // set_subtitle
-    AW_status, // set_gauge
-    AW_status, // user_abort
-};
-
-static arb_handlers aw_handlers = {
-    aw_message_and_dump_stderr,
-    aw_message,
-    dump_stdout,
-    AW_status_impl, 
-};
-
-void AW_root::init_root(const char *programname, bool no_exit) {
-    // initialize ARB X application
-    int          a             = 0;
-    XFontStruct *fontstruct;
-    const int    MAX_FALLBACKS = 30;
-    char        *fallback_resources[MAX_FALLBACKS];
-
-    prvt->action_hash = GBS_create_hash(1000, GB_MIND_CASE);
-
-    p_r-> no_exit = no_exit;
-    program_name  = strdup(programname);
-
-    int i;
-    for (i=0; aw_fb[i].fb; i++) {
-        GBDATA *gb_awar       = GB_search((GBDATA*)application_database, aw_fb[i].awar, GB_FIND);
-        fallback_resources[i] = GBS_global_string_copy("*%s: %s", aw_fb[i].fb, GB_read_char_pntr(gb_awar));
-    }
-    fallback_resources[i] = 0;
-    aw_assert(i<MAX_FALLBACKS);
-
-    ARB_install_handlers(aw_handlers);
-
-    // @@@ FIXME: the next line hangs if program runs inside debugger
-    p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programname,
-            NULL, 0, // XrmOptionDescRec+numOpts
-            &a, // &argc
-            NULL, // argv
-            fallback_resources,
-            applicationShellWidgetClass, // widget class
-            NULL, 0);
-
-    for (i=0; fallback_resources[i]; i++) free(fallback_resources[i]);
-
-    p_r->display = XtDisplay(p_r->toplevel_widget);
-
-    if (p_r->display == NULL) {
-        printf("cannot open display\n");
-        exit(-1);
-    }
-    {
-        GBDATA *gbd = (GBDATA*)application_database;
-        const char *font = GB_read_char_pntr(GB_search(gbd, "window/font", GB_FIND));
-        if (!(fontstruct = XLoadQueryFont(p_r->display, font))) {
-            if (!(fontstruct = XLoadQueryFont(p_r->display, "fixed"))) {
-                printf("can not load font\n");
-                exit(-1);
-            }
-        }
-    }
-
-    if (fontstruct->max_bounds.width == fontstruct->min_bounds.width) {
-        font_width = fontstruct->max_bounds.width;
-    }
-    else {
-        font_width = (fontstruct->min_bounds.width
-                + fontstruct->max_bounds.width) / 2;
-    }
-
-    font_height = fontstruct->max_bounds.ascent
-            + fontstruct->max_bounds.descent;
-    font_ascent = fontstruct->max_bounds.ascent;
-
-    p_r->fontlist = XmFontListCreate(fontstruct, XmSTRING_DEFAULT_CHARSET);
-
-    button_sens_list = 0;
-
-    p_r->last_option_menu = p_r->current_option_menu = p_r->option_menu_list = NULL;
-    p_r->last_toggle_field = p_r->toggle_field_list = NULL;
-    p_r->last_selection_list = p_r->selection_list = NULL;
-
-    value_changed = false;
-    y_correction_for_input_labels = 5;
-    global_mask = AWM_ALL;
-
-    p_r->screen_depth = PlanesOfScreen(XtScreen(p_r->toplevel_widget));
-    if (p_r->screen_depth == 1) {
-        color_mode = AW_MONO_COLOR;
-    }
-    else {
-        color_mode = AW_RGB_COLOR;
-    }
-    p_r->colormap = DefaultColormapOfScreen(XtScreen(p_r->toplevel_widget));
-    p_r->clock_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget), XC_watch);
-    p_r->question_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget), XC_question_arrow);
-
-    aw_root_create_color_map(this);
-    aw_root_init_font(XtDisplay(p_r->toplevel_widget));
-    aw_install_xkeys(XtDisplay(p_r->toplevel_widget));
-
 }
 
 void AW_root::exit_root() {
@@ -2498,29 +2185,9 @@ void AW_window::set_vertical_scrollbar_top_indent(int indent) {
     top_indent_of_vertical_scrollbar = indent;
 }
 
-void AW_root::apply_sensitivity(AW_active mask) {
-    aw_assert(legal_mask(mask));
-    AW_buttons_struct *list;
-
-    global_mask = mask;
-    for (list = button_sens_list; list; list = list->next) {
-        XtSetSensitive(list->button, (list->mask & mask) ? True : False);
-    }
-}
-
 void AW_window::set_focus_policy(bool follow_mouse) {
     int focusPolicy = follow_mouse ? XmPOINTER : XmEXPLICIT;
     XtVaSetValues(p_w->shell, XmNkeyboardFocusPolicy, focusPolicy, NULL);
-}
-
-static long set_focus_policy(const char *, long cl_aww, void *) {
-    AW_window *aww = (AW_window*)cl_aww;
-    aww->set_focus_policy(aww->get_root()->focus_follows_mouse);
-    return cl_aww;
-}
-void AW_root::apply_focus_policy(bool follow_mouse) {
-    focus_follows_mouse = follow_mouse;
-    GBS_hash_do_loop(hash_for_windows, set_focus_policy, 0);
 }
 
 void AW_window::select_mode(int mode) {
@@ -3205,46 +2872,6 @@ void AW_window::hide_or_notify(const char *error) {
     else hide();
 }
 
-void AW_root::window_show() {
-    active_windows++;
-}
-
-void AW_root::window_hide(AW_window *aww) {
-    active_windows--;
-    if (active_windows<0) {
-        exit(0);
-    }
-    if (current_modal_window == aww) {
-        current_modal_window = NULL;
-    }
-}
-
-void AW_root::main_loop() {
-    XtAppMainLoop(p_r->context);
-}
-
-void AW_root::process_events() {
-    XtAppProcessEvent(p_r->context, XtIMAll);
-}
-void AW_root::process_pending_events() {
-    XtInputMask pending = XtAppPending(p_r->context);
-    while (pending) {
-        XtAppProcessEvent(p_r->context, pending);
-        pending = XtAppPending(p_r->context);
-    }
-}
-
-AW_ProcessEventType AW_root::peek_key_event(AW_window * /* aww */) {
-    //! Returns type if key event follows, else 0
-
-    XEvent xevent;
-    Boolean result = XtAppPeekEvent(p_r->context, &xevent);
-
-    if (!result) return NO_EVENT;
-    if ((xevent.type != KeyPress) && (xevent.type != KeyRelease)) return NO_EVENT;
-    return (AW_ProcessEventType)xevent.type;
-}
-
 static void timed_window_title_cb(AW_root* /*aw_root*/, AW_CL cd1, AW_CL cd2) {
     char *title = (char *)cd1;
     AW_window *aw = (AW_window *)cd2;
@@ -3469,112 +3096,6 @@ GB_ERROR AW_root::execute_macro(GBDATA *gb_main, const char *file, AW_RCB1 execu
     return error;
 }
 
-void AW_root::define_remote_command(AW_cb_struct *cbs) {
-    if (cbs->f == (AW_CB)AW_POPDOWN) {
-        aw_assert(!cbs->get_cd1() && !cbs->get_cd2()); // popdown takes no parameters (please pass ", 0, 0"!)
-    }
-
-    AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(prvt->action_hash, cbs->id, (long)cbs);
-    if (old_cbs) {
-        if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
-#if defined(DEBUG)
-            fputs(GBS_global_string("Warning: reused callback id '%s' for different callback\n", old_cbs->id), stderr);
-#if defined(DEVEL_RALF) && 0
-            aw_assert(0);
-#endif // DEVEL_RALF
-#endif // DEBUG
-        }
-        // do not free old_cbs, cause it's still reachable from first widget that defined this remote command
-    }
-}
-
-#if defined(DEBUG)
-// #define DUMP_REMOTE_ACTIONS
-#endif // DEBUG
-
-GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_base) {
-    GBDATA *gb_main = (GBDATA *)gb_maind;
-
-    char *awar_action = GBS_global_string_copy("%s/action", rm_base);
-    char *awar_value  = GBS_global_string_copy("%s/value", rm_base);
-    char *awar_awar   = GBS_global_string_copy("%s/awar", rm_base);
-    char *awar_result = GBS_global_string_copy("%s/result", rm_base);
-
-    GB_push_transaction(gb_main);
-
-    char *action   = GBT_readOrCreate_string(gb_main, awar_action, "");
-    char *value    = GBT_readOrCreate_string(gb_main, awar_value, "");
-    char *tmp_awar = GBT_readOrCreate_string(gb_main, awar_awar, "");
-
-    if (tmp_awar[0]) {
-        GB_ERROR error = 0;
-        AW_awar *found_awar = awar_no_error(tmp_awar);
-        if (!found_awar) {
-            error = GBS_global_string("Unknown variable '%s'", tmp_awar);
-        }
-        else {
-            if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
-                char *read_value = this->awar(tmp_awar)->read_as_string();
-                GBT_write_string(gb_main, awar_value, read_value);
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", tmp_awar, read_value);
-#endif // DUMP_REMOTE_ACTIONS
-                free(read_value);
-                // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
-                action[0]        = 0;
-                GBT_write_string(gb_main, awar_action, "");
-            }
-            else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
-                this->awar(tmp_awar)->touch();
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar);
-#endif // DUMP_REMOTE_ACTIONS
-                // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
-                action[0] = 0;
-                GBT_write_string(gb_main, awar_action, "");
-            }
-            else {
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value);
-#endif // DUMP_REMOTE_ACTIONS
-                error = this->awar(tmp_awar)->write_as_string(value);
-            }
-        }
-        GBT_write_string(gb_main, awar_result, error ? error : "");
-        GBT_write_string(gb_main, awar_awar, ""); // tell perl-client call has completed (BIO::remote_awar and BIO:remote_read_awar)
-
-        aw_message_if(error);
-    }
-    GB_pop_transaction(gb_main);
-
-    if (action[0]) {
-        AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash, action);
-
-#if defined(DUMP_REMOTE_ACTIONS)
-        printf("remote command (%s) exists=%i\n", action, int(cbs != 0));
-#endif                          // DUMP_REMOTE_ACTIONS
-        if (cbs) {
-            cbs->run_callback();
-            GBT_write_string(gb_main, awar_result, "");
-        }
-        else {
-            aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
-            GBT_write_string(gb_main, awar_result, GB_await_error());
-        }
-        GBT_write_string(gb_main, awar_action, ""); // tell perl-client call has completed (remote_action)
-    }
-
-    free(tmp_awar);
-    free(value);
-    free(action);
-
-    free(awar_result);
-    free(awar_awar);
-    free(awar_value);
-    free(awar_action);
-
-    return 0;
-}
 
 void AW_window::set_background(const char *colorname, Widget parentWidget) {
     bool colorSet = false;

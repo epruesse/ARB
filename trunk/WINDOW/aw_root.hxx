@@ -67,6 +67,8 @@ class AW_root : virtual Noncopyable {
     AW_default         application_database;
     AW_buttons_struct *button_sens_list;
 
+    void create_colormap();
+
     void init_variables(AW_default database);
     void exit_variables();
 
