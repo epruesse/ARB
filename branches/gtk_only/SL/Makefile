@@ -5,6 +5,8 @@
 # - add a dependency vs 'links' or 'links_non_perl' 			in ../Makefile@ADD_links_non_perl
 # - add it to the ARCHS_... definitions used for linking 		in ../Makefile@Individual_Programs_Section
 # - add all externally visible headers					in ../SOURCE_TOOLS/generate_all_links.sh@ALIVIEW
+# - add a stub for (nonexisting) unit tests				in ../Makefile@UNITS_WORKING
+#   or activate existing unit tests					in ../Makefile@UNITS_TESTED
 #
 # --------------------------------------------------------------------------------
 
@@ -35,7 +37,8 @@ depends: $(ARCHS:.dummy=.depend)
 
 clean: $(ARCHS:.dummy=.clean)
 
-proto: TREEDISP/TREEDISP.proto 
+proto:	TREEDISP/TREEDISP.proto \
+	INSDEL/INSDEL.proto \
 
 %.depend:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile

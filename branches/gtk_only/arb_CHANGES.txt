@@ -12,6 +12,7 @@ Major changes for next release:
    - searches next-relatives based on selected column-block
    - align multiple column-blocks based on SAI
  - Rewrote alignment adaption during merge
+ - Insert/delete columns using a SAI to define affected columns
  - EDIT4
    - improved support for using multiple edit-windows
    - smoother refreshes
@@ -23,7 +24,12 @@ Major changes for next release:
  - tree display
    - Show brackets on open groups (dendrogram tree only)
    - rewrote IRS (folded) display
+ - added a branch analysis tool
+   - groups several functions previously availiable via menuitems (e.g. mark long branches, etc.)
+   - added leaf-distance analysis
  - tweaked printing (interface, overlapping)
+ - probe design:
+   - added LOAD to result window
  - automation
    - tweaked macro recording
    - arb_ntree can execute macro from command line

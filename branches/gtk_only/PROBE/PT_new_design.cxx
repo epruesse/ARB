@@ -16,13 +16,7 @@
 #include <arb_str.h>
 #include <arb_defs.h>
 #include <arb_sort.h>
-
-#ifdef P_
-#error P_ already defined
-#endif
-
 #include "pt_prototypes.h"
-
 #include <climits>
 
 // overloaded functions to avoid problems with type-punning:

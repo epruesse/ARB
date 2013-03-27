@@ -21,7 +21,7 @@
 #include "gb_localdata.h"
 #include "gb_ta.h"
 #include "gb_ts.h"
-
+#include "gb_index.h"
 
 gb_local_data *gb_local = 0;
 
@@ -760,6 +760,97 @@ long GB_read_memuse(GBDATA *gbd) {
     return GB_GETMEMSIZE(gbd);
 }
 
+inline long calc_size(gb_callback *gbcb) {
+    return gbcb
+        ? sizeof(*gbcb) + calc_size(gbcb->next)
+        : 0;
+}
+inline long calc_size(gb_transaction_save *gbts) {
+    return gbts
+        ? sizeof(*gbts)
+        : 0;
+}
+inline long calc_size(gb_if_entries *gbie) {
+    return gbie
+        ? sizeof(*gbie) + calc_size(GB_IF_ENTRIES_NEXT(gbie))
+        : 0;
+}
+inline long calc_size(GB_REL_IFES *gbri, int table_size) {
+    long size = 0;
+
+    gb_if_entries *ifes;
+    for (int idx = 0; idx<table_size; ++idx) {
+        for (ifes = GB_ENTRIES_ENTRY(gbri, idx);
+             ifes;
+             ifes = GB_IF_ENTRIES_NEXT(ifes))
+        {
+            size += calc_size(ifes);
+        }
+    }
+    return size;
+}
+inline long calc_size(gb_index_files *gbif) {
+    return gbif
+        ? sizeof(*gbif) + calc_size(GB_INDEX_FILES_NEXT(gbif)) + calc_size(GB_INDEX_FILES_ENTRIES(gbif), gbif->hash_table_size)
+        : 0;
+}
+inline long calc_size(gb_db_extended *gbe) {
+    return gbe
+        ? sizeof(*gbe) + calc_size(gbe->callback) + calc_size(gbe->old)
+        : 0;
+}
+inline long calc_size(GBDATA *gbd) {
+    if (gbd) {
+        gb_assert(GB_TYPE(gbd) != GB_DB);
+        return sizeof(*gbd) + calc_size(gbd->ext);
+    }
+    return 0;
+}
+inline long calc_size(GBCONTAINER *gbd) {
+    return gbd
+        ? sizeof(*gbd) + calc_size(gbd->ext) + calc_size(GBCONTAINER_IFS(gbd))
+        : 0;
+}
+
+long GB_calc_structure_size(GBDATA *gbd) {
+    long size = 0;
+    if (GB_TYPE(gbd) == GB_DB) {
+        size = calc_size((GBCONTAINER*)gbd);
+    }
+    else {
+        size = calc_size(gbd);
+    }
+    return size;
+}
+
+void GB_SizeInfo::collect(GBDATA *gbd) {
+    if (GB_TYPE(gbd) == GB_DB) {
+        ++containers;
+        for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child)) {
+            collect(gb_child);
+        }
+    }
+    else {
+        ++terminals;
+        mem += GB_read_memuse(gbd);
+
+        long size;
+        switch (GB_TYPE(gbd)) {
+            case GB_INT:    size = sizeof(int); break;
+            case GB_FLOAT:  size = sizeof(float); break;
+            case GB_BYTE:   size = sizeof(char); break;
+            case GB_STRING: size = GB_read_count(gbd); break; // accept 0 sized data for strings
+
+            default:
+                size = GB_read_count(gbd);
+                gb_assert(size>0);                            // terminal w/o data - really?
+                break;
+        }
+        data += size;
+    }
+    structure += GB_calc_structure_size(gbd);
+}
+
 GB_CSTR GB_read_pntr(GBDATA *gbd) {
     int   type = GB_TYPE(gbd);
     char *data = GB_GETDATA(gbd);
@@ -956,8 +1047,7 @@ static long GB_read_floats_count(GBDATA *gbd)
     return GB_GETSIZE(gbd);
 }
 
-static float *GB_read_floats(GBDATA *gbd) // @@@ unused - check usage of floats
-{
+float *GB_read_floats(GBDATA *gbd) { // @@@ only used in unittest - check usage of floats
     GB_CFLOAT *f;
     f = GB_read_floats_pntr(gbd);
     if (!f) return NULL;
@@ -1946,7 +2036,7 @@ bool GB_is_temporary(GBDATA *gbd) {
     return (long)gbd->flags.temporary;
 }
 
-bool GB_in_temporary_branch(GBDATA *gbd) { // @@@ used in ptpan branch - do not remove
+bool GB_in_temporary_branch(GBDATA *gbd) {
     /*! @return true, if 'gbd' is member of a temporary subtree,
      * i.e. if GB_is_temporary(itself or any parent)
      */

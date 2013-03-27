@@ -12,9 +12,9 @@ $(MAIN): $(OBJECTS)
 	)
 
 proto:
-	../AISC_MKPTPS/aisc_mkpt -P -A -E -G -F ^NT_,^AP_ -w nt_internal.h $(SOURCES) >nt_internal.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -E -G -F ^NT_,^AP_ -w nt_internal.h $(SOURCES) >nt_internal.h.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_internal.h.tmp nt_internal.h
-	../AISC_MKPTPS/aisc_mkpt -P -A -E -G -w nt_cb.hxx NT_cb.cxx NT_extern.cxx >nt_cb.hxx.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -E -G -w nt_cb.hxx NT_cb.cxx NT_extern.cxx >nt_cb.hxx.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_cb.hxx.tmp nt_cb.hxx
 
 .cxx.o:
@@ -87,6 +87,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_ali.o: $(ARBHOME)/INCLUDE/downcast.h
 ad_ali.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_ali.o: $(ARBHOME)/INCLUDE/gccver.h
+ad_ali.o: $(ARBHOME)/INCLUDE/insdel.h
 ad_ali.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_ali.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_ali.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -1098,11 +1099,15 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+NT_ins_col.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cb.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/gccver.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/insdel.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/pos_range.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/RangeList.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -1226,6 +1231,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_main.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_main.o: $(ARBHOME)/INCLUDE/gccver.h
+NT_main.o: $(ARBHOME)/INCLUDE/insdel.h
 NT_main.o: $(ARBHOME)/INCLUDE/macro_gui.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/macros.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
