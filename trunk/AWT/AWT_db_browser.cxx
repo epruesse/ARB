@@ -766,33 +766,46 @@ static void add_to_history(AW_root *aw_root, const char *path) {
     }
 }
 
-static GBDATA *gb_tracked_node = NULL;
+static bool    inside_path_change = false;
+static GBDATA *gb_tracked_node    = NULL;
+
 static void selected_node_modified_cb(GBDATA *gb_node, int*, GB_CB_TYPE cb_type) {
     awt_assert(gb_node == gb_tracked_node);
-
-    AW_root *aw_root    = AW_root::SINGLETON;
-    AW_awar *awar_path  = aw_root->awar(AWAR_DBB_PATH);
-    AW_awar *awar_child = aw_root->awar(AWAR_DBB_BROWSE);
 
     if (cb_type & GB_CB_DELETE) {
         gb_tracked_node = NULL; // no need to remove callback ?
     }
 
-    {
-        const char *child = awar_child->read_char_pntr();
+    if (!inside_path_change) { // ignore refresh callbacks triggered by dbbrowser-awars
+        static bool avoid_recursion = false;
+        if (!avoid_recursion) {
+            LocallyModify<bool> flag(avoid_recursion, true);
 
-        if (child[0]) {
-            const char *path = awar_path->read_char_pntr();
+            AW_root *aw_root   = AW_root::SINGLETON;
+            AW_awar *awar_path = aw_root->awar_no_error(AWAR_DBB_PATH);
+            if (awar_path) { // avoid crash during exit
+                AW_awar    *awar_child = aw_root->awar(AWAR_DBB_BROWSE);
+                const char *child      = awar_child->read_char_pntr();
 
-            if (!path[0] || !path[1]) {
-                awar_path->write_string(GBS_global_string("/%s", child)); // child of root
+                if (child[0]) {
+                    const char *path     = awar_path->read_char_pntr();
+                    const char *new_path;
+
+                    if (!path[0] || !path[1]) {
+                        new_path = GBS_global_string("/%s", child);
+                    }
+                    else {
+                        new_path = GBS_global_string("%s/%s", path, child);
+                    }
+
+                    char *fixed_path = GBS_string_eval(new_path, "//=/", NULL);
+                    awar_path->write_string(fixed_path);
+                    free(fixed_path);
+                }
+                else {
+                    awar_path->touch();
+                }
             }
-            else {
-                awar_path->write_string(GBS_global_string("%s/%s", path, child));
-            }
-        }
-        else {
-            awar_path->touch();
         }
     }
 }
@@ -822,7 +835,10 @@ static void child_changed_cb(AW_root *aw_root) {
         char *path = aw_root->awar(AWAR_DBB_PATH)->read_string();
 
         if (strcmp(path, HISTORY_PSEUDO_PATH) == 0) {
-            if (child[0]) aw_root->awar(AWAR_DBB_PATH)->write_string(child);
+            if (child[0]) {
+                LocallyModify<bool> flag(inside_path_change, true);
+                aw_root->awar(AWAR_DBB_PATH)->write_string(child);
+            }
         }
         else {
             static bool avoid_recursion = false;
@@ -851,7 +867,8 @@ static void child_changed_cb(AW_root *aw_root) {
                     info += GBS_global_string("Fullpath  | '%s'\n", fullpath);
 
                     if (gb_selected_node == 0) {
-                        info += "Address   | NULL (node does not exist)\n";
+                        info += "Address   | NULL\n";
+                        info += GBS_global_string("Error     | %s\n", GB_have_error() ? GB_await_error() : "<none>");
                     }
                     else {
                         add_to_history(aw_root, fullpath);
@@ -890,9 +907,11 @@ static void child_changed_cb(AW_root *aw_root) {
                             }
                             childs += '\n';
 
-                            aw_root->awar(AWAR_DBB_BROWSE)->write_string("");
-                            aw_root->awar(AWAR_DBB_PATH)->write_string(fullpath);
-
+                            {
+                                LocallyModify<bool> flag2(inside_path_change, true);
+                                aw_root->awar(AWAR_DBB_BROWSE)->write_string("");
+                                aw_root->awar(AWAR_DBB_PATH)->write_string(fullpath);
+                            }
                         }
                         else {
                             info += GBS_global_string("Node type | data [type=%s]\n", GB_get_type_name(gb_selected_node));
@@ -994,12 +1013,16 @@ static void path_changed_cb(AW_root *aw_root) {
         }
 
         update_browser_selection_list(aw_root, browser->get_browser_list());
+
+        LocallyModify<bool> flag2(inside_path_change, true);
         aw_root->awar(AWAR_DBB_BROWSE)->rewrite_string(goto_child ? goto_child : "");
     }
 }
 static void db_changed_cb(AW_root *aw_root) {
     int         selected = aw_root->awar(AWAR_DBB_DB)->read_int();
     DB_browser *browser  = get_the_browser();
+
+    LocallyModify<bool> flag(inside_path_change, true);
     browser->set_selected_db(selected);
     aw_root->awar(AWAR_DBB_PATH)->rewrite_string(browser->get_path());
 }
