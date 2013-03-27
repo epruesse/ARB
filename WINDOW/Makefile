@@ -171,6 +171,7 @@ AW_at_auto.o: aw_device_gtk.hxx
 AW_at_auto.o: aw_device_impl.hxx
 AW_at_auto.o: aw_device_print.hxx
 AW_at_auto.o: aw_device_size.hxx
+AW_at_auto.o: aw_drawing_area.hxx
 AW_at_auto.o: aw_font_limits.hxx
 AW_at_auto.o: aw_gtk_forward_declarations.hxx
 AW_at_auto.o: aw_gtk_migration_helpers.hxx
@@ -214,6 +215,7 @@ AW_at_maxsize.o: aw_device_gtk.hxx
 AW_at_maxsize.o: aw_device_impl.hxx
 AW_at_maxsize.o: aw_device_print.hxx
 AW_at_maxsize.o: aw_device_size.hxx
+AW_at_maxsize.o: aw_drawing_area.hxx
 AW_at_maxsize.o: aw_font_limits.hxx
 AW_at_maxsize.o: aw_gtk_forward_declarations.hxx
 AW_at_maxsize.o: aw_gtk_migration_helpers.hxx
@@ -350,6 +352,7 @@ AW_cb_struct.o: aw_device_gtk.hxx
 AW_cb_struct.o: aw_device_impl.hxx
 AW_cb_struct.o: aw_device_print.hxx
 AW_cb_struct.o: aw_device_size.hxx
+AW_cb_struct.o: aw_drawing_area.hxx
 AW_cb_struct.o: aw_font_limits.hxx
 AW_cb_struct.o: aw_gtk_forward_declarations.hxx
 AW_cb_struct.o: aw_gtk_migration_helpers.hxx
@@ -634,8 +637,14 @@ AW_device_size.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_device_size.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_device_size.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AW_drawing_area.o: aw_assert.hxx
 AW_drawing_area.o: aw_drawing_area.hxx
+AW_drawing_area.o: aw_gtk_closures.hxx
 AW_drawing_area.o: aw_gtk_forward_declarations.hxx
+AW_drawing_area.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_drawing_area.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_drawing_area.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_drawing_area.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_edit.o: aw_edit.hxx
 AW_edit.o: aw_gtk_migration_helpers.hxx
@@ -739,6 +748,7 @@ AW_functions.o: aw_device_gtk.hxx
 AW_functions.o: aw_device_impl.hxx
 AW_functions.o: aw_device_print.hxx
 AW_functions.o: aw_device_size.hxx
+AW_functions.o: aw_drawing_area.hxx
 AW_functions.o: aw_font_limits.hxx
 AW_functions.o: aw_gtk_forward_declarations.hxx
 AW_functions.o: aw_gtk_migration_helpers.hxx
@@ -817,6 +827,8 @@ AW_global_awars.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/test_global.h
+
+AW_gtk_closures.o: aw_gtk_closures.hxx
 
 AW_help.o: aw_area_management.hxx
 AW_help.o: aw_assert.hxx
@@ -1305,6 +1317,7 @@ AW_window.o: aw_device_gtk.hxx
 AW_window.o: aw_device_impl.hxx
 AW_window.o: aw_device_print.hxx
 AW_window.o: aw_device_size.hxx
+AW_window.o: aw_drawing_area.hxx
 AW_window.o: aw_font_limits.hxx
 AW_window.o: aw_gtk_forward_declarations.hxx
 AW_window.o: aw_gtk_migration_helpers.hxx
@@ -1407,6 +1420,7 @@ AW_window_gtk.o: aw_device_gtk.hxx
 AW_window_gtk.o: aw_device_impl.hxx
 AW_window_gtk.o: aw_device_print.hxx
 AW_window_gtk.o: aw_device_size.hxx
+AW_window_gtk.o: aw_drawing_area.hxx
 AW_window_gtk.o: aw_font_limits.hxx
 AW_window_gtk.o: aw_gtk_forward_declarations.hxx
 AW_window_gtk.o: aw_gtk_migration_helpers.hxx
@@ -1498,6 +1512,7 @@ AW_window_message.o: aw_device_gtk.hxx
 AW_window_message.o: aw_device_impl.hxx
 AW_window_message.o: aw_device_print.hxx
 AW_window_message.o: aw_device_size.hxx
+AW_window_message.o: aw_drawing_area.hxx
 AW_window_message.o: aw_font_limits.hxx
 AW_window_message.o: aw_gtk_forward_declarations.hxx
 AW_window_message.o: aw_gtk_migration_helpers.hxx
@@ -1541,6 +1556,7 @@ AW_window_simple.o: aw_device_gtk.hxx
 AW_window_simple.o: aw_device_impl.hxx
 AW_window_simple.o: aw_device_print.hxx
 AW_window_simple.o: aw_device_size.hxx
+AW_window_simple.o: aw_drawing_area.hxx
 AW_window_simple.o: aw_font_limits.hxx
 AW_window_simple.o: aw_gtk_forward_declarations.hxx
 AW_window_simple.o: aw_gtk_migration_helpers.hxx
@@ -1588,6 +1604,7 @@ AW_window_simple_menu.o: aw_device_gtk.hxx
 AW_window_simple_menu.o: aw_device_impl.hxx
 AW_window_simple_menu.o: aw_device_print.hxx
 AW_window_simple_menu.o: aw_device_size.hxx
+AW_window_simple_menu.o: aw_drawing_area.hxx
 AW_window_simple_menu.o: aw_font_limits.hxx
 AW_window_simple_menu.o: aw_gtk_forward_declarations.hxx
 AW_window_simple_menu.o: aw_gtk_migration_helpers.hxx
