@@ -14,6 +14,8 @@
 #include <gtk-2.0/gtk/gtkseparatormenuitem.h>
 #include <gtk-2.0/gtk/gtktoolbar.h>
 
+#include "aw_drawing_area.hxx"
+
 
 /**
  * This class hides all private or gtk dependent attributes.
@@ -108,19 +110,9 @@ public:
     /** Contains the last callback struct created by AW_window::callback(). */
     AW_cb_struct *callback; 
     
+    /**The drawing area of this window. Might be NULL. */
+    AW_drawing_area *drawing_area;
     
-    /**
-     * Adjustment of the horizontal scrollbar.
-     * @note might not be present in every window. Check for NULL before use.
-     */
-    GtkAdjustment *hAdjustment;
-    
-    /**
-     * Adjustment of the vertical scrollbar.
-     * @note might not be present in every window. Check for NULL before use.
-     */   
-    GtkAdjustment *vAdjustment;
-
     /**
      * default constructor
      */

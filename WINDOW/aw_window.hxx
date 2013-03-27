@@ -404,6 +404,7 @@ public:
     void get_event(AW_event *eventi) const;       // In an event callback get the events info
 
     void force_expose(); // forces the window to expose instantly
+     
 
     // ******************* Get the devices **********************
     AW_device *get_device(AW_area area);

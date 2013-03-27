@@ -68,117 +68,31 @@ void AW_window::get_scrollarea_size(AW_screen_area *square) {
 //    square->r -= left_indent_of_horizontal_scrollbar;
 //    square->b -= top_indent_of_vertical_scrollbar;
 }
-
+ 
 void AW_window::calculate_scrollbars(){
 
-    GTK_PARTLY_IMPLEMENTED;
     AW_screen_area scrollArea;
     get_scrollarea_size(&scrollArea);
 
-    // HORIZONTAL
-    {
-        const int picture_width = (int)get_scrolled_picture_width();
-        const int scrollArea_width = scrollArea.r - scrollArea.l;
-        
-        gtk_adjustment_set_lower(prvt->hAdjustment, 0);
-        gtk_adjustment_set_step_increment(prvt->hAdjustment, 1);
-        gtk_adjustment_set_page_increment(prvt->hAdjustment, 10);
-        gtk_adjustment_set_upper(prvt->hAdjustment, picture_width);
-        gtk_adjustment_set_page_size(prvt->hAdjustment, scrollArea_width);
-        gtk_adjustment_changed(prvt->hAdjustment);
-        //gtk_adjustment_set_value()
-        
-        
-        
-//        int slider_max = 
-//        if (slider_max <1) {
-//            slider_max = 1;
-//        }
-//   
-//
-//        bool use_horizontal_bar     = true;
-//        int  slider_size_horizontal = scrollArea.r;
-//
-//        if (slider_size_horizontal < 1) slider_size_horizontal = 1; // ist der slider zu klein (<1) ?
-//        if (slider_size_horizontal > slider_max) { // Schirm groesser als Bild
-//            slider_size_horizontal = slider_max; // slider nimmt ganze laenge ein
-//            gtk_adjustment_set_value(prvt->hAdjustment, 0);// slider ganz links setzen
-//            use_horizontal_bar = false; // kein horizontaler slider mehr
-//        }
-//
-//        // check wether XmNValue is to big
-//        double position_of_slider = gtk_adjustment_get_value(prvt->hAdjustment);
-//        
-//        if (position_of_slider > (slider_max - slider_size_horizontal)) { // steht der slider fuer slidergroesse zu rechts ?
-//            position_of_slider = slider_max - slider_size_horizontal; // -1 ? vielleicht !
-//            if (position_of_slider < 0) position_of_slider = 0;
-//            gtk_adjustment_set_value(prvt->hAdjustment, position_of_slider);
-//        }
-//        // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
-//        int max_slider_pos = (int)(get_scrolled_picture_width() - scrollArea.r);
-//        if (slider_pos_horizontal>max_slider_pos) {
-//            slider_pos_horizontal = use_horizontal_bar ? max_slider_pos : 0;
-//        }
-//
-//        gtk_adjustment_set_upper(prvt->hAdjustment, slider_max);
-//        XtVaSetValues(p_w->scroll_bar_horizontal, XmNmaximum, slider_max, NULL);
-//        XtVaSetValues(p_w->scroll_bar_horizontal, XmNsliderSize, slider_size_horizontal, NULL);
+    const int width = (int)get_scrolled_picture_width();
+    const int height = (int)get_scrolled_picture_height();
+    const int scrollArea_width = scrollArea.r - scrollArea.l;
+    const int scrollArea_height= scrollArea.b - scrollArea.t;
+    
+    aw_drawing_area_set_picture_size(prvt->drawing_area, width, height, scrollArea_width, scrollArea_height);
+    
+    char buffer[200];
+    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
+    const int hpage_increment = scrollArea.r * get_root()->awar(buffer)->read_int() / 100;
+    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
+    const int hstep_increment = get_root()->awar(buffer)->read_int();
+    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);   
+    const int vpage_increment = scrollArea.b * get_root()->awar(buffer)->read_int() / 100;
+    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
+    const int vstep_increment = get_root()->awar(buffer)->read_int();
 
-        update_scrollbar_settings_from_awars(AW_HORIZONTAL);
-    }
-
-    // VERTICAL
-    {
-        
-        const int picture_height = (int)get_scrolled_picture_height();
-        const int scrollArea_height= scrollArea.b - scrollArea.t;
-        
-        gtk_adjustment_set_lower(prvt->vAdjustment, 0);
-        gtk_adjustment_set_step_increment(prvt->vAdjustment, 1);
-        gtk_adjustment_set_page_increment(prvt->vAdjustment, 10);
-        gtk_adjustment_set_upper(prvt->vAdjustment, picture_height);
-        gtk_adjustment_set_page_size(prvt->vAdjustment, scrollArea_height);
-        gtk_adjustment_changed(prvt->vAdjustment);
-
-//        
-//        
-//        
-//        int slider_max = (int)get_scrolled_picture_height();
-//        if (slider_max <1) {
-//            slider_max = 1;
-//            XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, 1, NULL);
-//        }
-//
-//        bool use_vertical_bar     = true;
-//        int  slider_size_vertical = scrollArea.b;
-//
-//        if (slider_size_vertical < 1) slider_size_vertical = 1;
-//        if (slider_size_vertical > slider_max) {
-//            slider_size_vertical = slider_max;
-//            XtVaSetValues(p_w->scroll_bar_vertical, XmNvalue, 0, NULL);
-//            use_vertical_bar = false;
-//        }
-//
-//        // check wether XmNValue is to big
-//        int position_of_slider;
-//        XtVaGetValues(p_w->scroll_bar_vertical, XmNvalue, &position_of_slider, NULL);
-//        if (position_of_slider > (slider_max-slider_size_vertical)) {
-//            position_of_slider = slider_max-slider_size_vertical; // -1 ? vielleicht !
-//            if (position_of_slider < 0) position_of_slider = 0;
-//            XtVaSetValues(p_w->scroll_bar_vertical, XmNvalue, position_of_slider, NULL);
-//        }
-//        // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
-//        int max_slider_pos = (int)(get_scrolled_picture_height() - scrollArea.b);
-//        if (slider_pos_vertical>max_slider_pos) {
-//            slider_pos_vertical = use_vertical_bar ? max_slider_pos : 0;
-//        }
-//
-//        XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, 1, NULL);
-//        XtVaSetValues(p_w->scroll_bar_vertical, XmNmaximum, slider_max, NULL);
-//        XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, slider_size_vertical, NULL);
-
-        update_scrollbar_settings_from_awars(AW_VERTICAL);
-    }
+    aw_drawing_area_set_increments(prvt->drawing_area, hstep_increment, hpage_increment,
+                                   vstep_increment, vpage_increment);
 }
 
 void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
@@ -1866,9 +1780,12 @@ static void value_changed_scroll_bar_horizontal(GtkAdjustment *adjustment, gpoin
 }
 
 void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    g_signal_connect((gpointer)prvt->hAdjustment, "value_changed",
+    aw_assert(NULL != prvt->drawing_area);
+    GtkAdjustment *hAdj = aw_drawing_area_get_horizontal_adjustment(prvt->drawing_area);
+    g_signal_connect((gpointer)hAdj, "value_changed",
                      G_CALLBACK(value_changed_scroll_bar_horizontal),
                      (gpointer)new AW_cb_struct(this, f, cd1, cd2, ""));
+
 }
 
 void AW_window::set_horizontal_scrollbar_position(int position) {
@@ -1876,9 +1793,11 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
     fprintf(stderr, "set_horizontal_scrollbar_position to %i\n", position);
 #endif
     // @@@ test and constrain against limits
+/*
     slider_pos_horizontal = position;
     gtk_adjustment_set_value(prvt->hAdjustment, position);
-
+*/
+    FIXME("not implemented");
 }
 
 void AW_window::set_info_area_height(int /*height*/) {
@@ -1914,12 +1833,16 @@ static void value_changed_scroll_bar_vertical(GtkAdjustment *adjustment, gpointe
     AW_cb_struct *cbs = (AW_cb_struct *) user_data;
     cbs->aw->slider_pos_vertical = gtk_adjustment_get_value(adjustment);
     cbs->run_callback();
-    
+
 }
 
-void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
 
-    g_signal_connect((gpointer)prvt->vAdjustment, "value_changed",
+void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    aw_assert(NULL != prvt->drawing_area);
+    
+    GtkAdjustment *hAdj = aw_drawing_area_get_vertical_adjustment(prvt->drawing_area);
+    
+    g_signal_connect((gpointer)hAdj, "value_changed",
                      G_CALLBACK(value_changed_scroll_bar_vertical),
                      (gpointer)new AW_cb_struct(this, f, cd1, cd2, ""));
 
@@ -1929,9 +1852,13 @@ void AW_window::set_vertical_scrollbar_position(int position){
 #if defined(DEBUG) && 0
     fprintf(stderr, "set_vertical_scrollbar_position to %i\n", position);
 #endif
+        GTK_NOT_IMPLEMENTED;
+    FIXME("reenable vertical change callback.");
     // @@@ test and constrain against limits
+/*
     slider_pos_vertical = position;
     gtk_adjustment_set_value(prvt->vAdjustment, position);
+*/
 }
 
 void AW_window::set_window_size(int width, int height) {
@@ -2201,13 +2128,19 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
 }
 
 static void horizontal_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
+    GTK_NOT_IMPLEMENTED;
+/*
     AW_window *aw = (AW_window *)cd;
     aw->update_scrollbar_settings_from_awars(AW_HORIZONTAL);
+*/
 }
 
 static void vertical_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
+    GTK_NOT_IMPLEMENTED;
+/*
     AW_window *aw = (AW_window *)cd;
     aw->update_scrollbar_settings_from_awars(AW_VERTICAL);
+*/
 }
 
 void AW_window::create_window_variables() {
@@ -2242,30 +2175,6 @@ void AW_window::create_devices() {
     }
 }
 
-void AW_window::update_scrollbar_settings_from_awars(AW_orientation orientation) {
-    AW_screen_area scrolled;
-    get_scrollarea_size(&scrolled);
-
-   char buffer[200];
-    if (orientation == AW_HORIZONTAL) {
-        sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
-        int page_increment = scrolled.r * get_root()->awar(buffer)->read_int() / 100;
-        gtk_adjustment_set_page_increment(prvt->hAdjustment, page_increment);
-
-        sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
-        int step_increment = get_root()->awar(buffer)->read_int();
-        gtk_adjustment_set_step_increment(prvt->hAdjustment, step_increment);
-    }
-    else {
-        sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);   
-        int page_increment = scrolled.b * get_root()->awar(buffer)->read_int() / 100;
-        gtk_adjustment_set_page_increment(prvt->vAdjustment, page_increment);
-
-        sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
-        int step_increment = get_root()->awar(buffer)->read_int();
-        gtk_adjustment_set_step_increment(prvt->vAdjustment, step_increment);
-    }
-}
 
 void AW_window::create_font_button(const char* /*awar_name*/, AW_label /*label_*/) {
   GTK_NOT_IMPLEMENTED;
