@@ -45,7 +45,5 @@ LINUX := 1
 
 # MACH   := DARWIN#
 # DARWIN := 1
-#Your macports prefix
-# PREFIX := /opt/local
 
 # ------------

@@ -31,6 +31,7 @@ my @skipped_directories = (
                            qr/_GEN$/o,
                            # needed by ralf:
                            qr/^\.\/test_arb_make_targets_logs/o,
+                           qr/\.dSYM$/o,
                           );
 
 # first used/skipped match wins (exception see @3 below)
@@ -66,8 +67,7 @@ my %skipped_files = map { $_ => 1; } (
                                       'nt_date.h',
                                       'postcompile.sav',
                                       'TAGS',
-                                      '.DS_Store',
-                                     );
+                                      '.DS_Store',);
 
 my %used_extensions = map { $_ => 1; } (
                                         'c', 'cpp', 'cxx',
@@ -96,6 +96,7 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'a',
                                            'bak',
                                            'class',
+                                           'bundle', # Some file from XCode
                                            'gcno',
                                            'genmenu',
                                            'jar',
