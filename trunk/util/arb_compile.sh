@@ -49,6 +49,10 @@
 # versions. Change 'myARB' to a different name in steps A.2., A.3. and A.7
 #
 
+
+SED=${ARBHOME}/SH/arb_sed
+
+
 default_config() {
     echo "# config to compile ARB via $BASENAME.sh"
     echo ""
@@ -100,7 +104,7 @@ fi
 OLDARBHOME=$ARBHOME
 
 BASEDIR=`pwd`
-BASENAME=`basename $0 | sed -e 's/.sh//'`
+BASENAME=`basename $0 | $SED -e 's/.sh//'`
 
 echo "BASENAME='$BASENAME'"
 
