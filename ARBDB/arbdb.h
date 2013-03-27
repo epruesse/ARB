@@ -144,6 +144,20 @@ public:
 };
 
 // --------------------------------------------
+
+struct GB_SizeInfo {
+    long containers; // no of containers
+    long terminals;  // no of terminals
+    long structure;  // structure size
+    long data;       // data size
+    long mem;        // data memory size (compressed)
+
+    GB_SizeInfo() : containers(0), terminals(0), structure(0), data(0), mem(0) {}
+
+    void collect(GBDATA *gbd);
+};
+
+// --------------------------------------------
 //      include generated public prototypes
 
 #include <ad_prot.h>

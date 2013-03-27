@@ -17,26 +17,40 @@ void RangeList::add_combined(const PosRange& range, iterator found) {
     add(combined);
 }
 
-RangeList build_RangeList_from_string(const char *SAI_data, const char *set_bits) {
+RangeList RangeList::inverse(ExplicitRange versus) {
+    RangeList inv;
+
+    for (RangeList::iterator r = begin(); r != end(); ++r) {
+        rl_assert(versus.contains(*r));
+        inv.add(intersection(r->prior(), versus));
+        versus = intersection(r->after(), versus);
+    }
+    inv.add(versus);
+    return inv;
+}
+
+RangeList build_RangeList_from_string(const char *SAI_data, const char *set_bytes, bool invert) {
     RangeList rlist;
     int       pos   = 0;
-    bool      isSet = strchr(set_bits, SAI_data[pos]);
+    bool      isSet = strchr(set_bytes, SAI_data[pos]);
 
     while (SAI_data[pos]) {
         if (isSet) {
-            size_t setCount = strspn(SAI_data+pos, set_bits);
+            size_t setCount = strspn(SAI_data+pos, set_bytes);
             rl_assert(setCount>0);
             rlist.add(PosRange(pos, pos+setCount-1));
             pos += setCount;
         }
         else {
-            size_t clrCount = strcspn(SAI_data+pos, set_bits);
+            size_t clrCount = strcspn(SAI_data+pos, set_bytes);
             pos += clrCount;
         }
         isSet = !isSet;
     }
 
-    return rlist;
+    return invert
+        ? rlist.inverse(ExplicitRange(0, pos-1))
+        : rlist;
 }
 
 // --------------------------------------------------------------------------------
@@ -126,20 +140,27 @@ void TEST_RangeList() {
     TEST_EXPECT_EQUAL(dump(ranges), "5-6,8-45");
 }
 
-static const char *convert(const char *saistring, const char *set_bits) {
-    RangeList   rlist = build_RangeList_from_string(saistring, set_bits);
+static const char *convert(const char *saistring, const char *set_bytes, bool invert) {
+    RangeList rlist = build_RangeList_from_string(saistring, set_bytes, invert);
     return dump(rlist);
 }
 
 void TEST_string2RangeList() {
-    TEST_EXPECT_EQUAL(convert("xxxxx-----xxxxx-----xxxxx-----", "x"),   "0-4,10-14,20-24");
-    TEST_EXPECT_EQUAL(convert("xxxxx-----yyyyy-----xxzzx-----", "xyz"), "0-4,10-14,20-24");
-    TEST_EXPECT_EQUAL(convert("xxxxx-----xxxxx-----xxxxx-----", "-"),   "5-9,15-19,25-29");
+    TEST_EXPECT_EQUAL(convert("---", "x", false), "");
+    TEST_EXPECT_EQUAL(convert("---", "x", true),  "0-2");
 
-    TEST_EXPECT_EQUAL(convert("x-x-x", "x"), "0-0,2-2,4-4");
-    TEST_EXPECT_EQUAL(convert("x-x-x", "-"), "1-1,3-3");
-    TEST_EXPECT_EQUAL(convert("---", "x"), "");
+    TEST_EXPECT_EQUAL(convert("xxxxx-----xxxxx-----xxxxx-----", "x",   false), "0-4,10-14,20-24");
+    TEST_EXPECT_EQUAL(convert("-----xxxxx-----xxxxx-----xxxxx", "-",   false), "0-4,10-14,20-24");
+    TEST_EXPECT_EQUAL(convert("-----xxxxx-----xxxxx-----xxxxx", "x",   true),  "0-4,10-14,20-24");
+    TEST_EXPECT_EQUAL(convert("xxxxx-----yyyyy-----xxzzx-----", "xyz", false), "0-4,10-14,20-24");
 
+    TEST_EXPECT_EQUAL(convert("-----xxxxx-----xxxxx-----xxxxx", "x",   false), "5-9,15-19,25-29");
+    TEST_EXPECT_EQUAL(convert("xxxxx-----xxxxx-----xxxxx-----", "-",   false), "5-9,15-19,25-29");
+    TEST_EXPECT_EQUAL(convert("xxxxx-----xxxxx-----xxxxx-----", "x",   true),  "5-9,15-19,25-29");
+
+    TEST_EXPECT_EQUAL(convert("x-x-x", "x", false), "0-0,2-2,4-4");
+    TEST_EXPECT_EQUAL(convert("x-x-x", "-", false), "1-1,3-3");
+    TEST_EXPECT_EQUAL(convert("x-x-x", "x", true),  "1-1,3-3");
     
 }
 

@@ -2300,7 +2300,7 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
                         char *sai_data = GB_read_string(gb_data);
                         char *set_bits = root->awar(FA_AWAR_SAI_RANGE_CHARS)->read_string();
 
-                        ranges = build_RangeList_from_string(sai_data, set_bits);
+                        ranges = build_RangeList_from_string(sai_data, set_bits, false);
 
                         free(set_bits);
                         free(sai_data);

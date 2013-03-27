@@ -61,8 +61,9 @@
 void create_probe_design_variables(AW_root *aw_root, AW_default def, AW_default global);
 void create_cprofile_var(AW_root *aw_root, AW_default aw_def);
 
-void create_insertchar_variables(AW_root *root, AW_default db1);
-AW_window *create_insertchar_window(AW_root *root, AW_default def);
+void       create_insertDeleteColumn_variables(AW_root *root, AW_default db1);
+AW_window *create_insertDeleteColumn_window(AW_root *root);
+AW_window *create_insertDeleteBySAI_window(AW_root *root, AW_CL cl_gbmain);
 
 AW_window *create_tree_window(AW_root *aw_root, AWT_graphic *awd);
 
@@ -199,7 +200,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     awr->awar(AWAR_SECURITY_LEVEL)->write_int(6); // no security for debugging..
 #endif // DEBUG
 
-    create_insertchar_variables(awr, def);
+    create_insertDeleteColumn_variables(awr, def);
     create_probe_design_variables(awr, def, GLOBAL.gb_main);
     create_primer_design_variables(awr, def, GLOBAL.gb_main);
     create_trees_var(awr, def);
@@ -1289,8 +1290,13 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->create_menu("Sequence", "S", AWM_ALL);
         {
-            awm->insert_menu_topic("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL,  AW_POPUP, (AW_CL)NT_create_alignment_window, 0);
-            awm->insert_menu_topic("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp", AWM_ALL,  AW_POPUP, (AW_CL)create_insertchar_window,   0);
+            awm->insert_menu_topic("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL, AW_POPUP, (AW_CL)NT_create_alignment_window,       0);
+            awm->insert_sub_menu("Insert/delete", "I");
+            {
+                awm->insert_menu_topic("ins_del_col", ".. column",     "I", "insdel.hlp",     AWM_ALL, AW_POPUP, (AW_CL)create_insertDeleteColumn_window, 0);
+                awm->insert_menu_topic("ins_del_sai", ".. using SAI",  "S", "insdel_sai.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_insertDeleteBySAI_window,  (AW_CL)GLOBAL.gb_main);
+            }
+            awm->close_sub_menu();
             awm->sep______________();
 
             awm->insert_sub_menu("Edit Sequences", "E");

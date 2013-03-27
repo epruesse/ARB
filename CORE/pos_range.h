@@ -43,10 +43,11 @@ public:
             }
         }
     }
-    
+
     // factory functions
     static PosRange empty() { return PosRange(); }
     static PosRange whole() { return from(0); }
+
     static PosRange from(int pos) { return PosRange(pos, -1); } static PosRange after(int pos) { return from(pos+1); }
     static PosRange till(int pos) { return PosRange(0, pos); }  static PosRange prior(int pos) { return till(pos-1); }
 
@@ -55,8 +56,7 @@ public:
         return start_pos;
     }
     int end() const {
-        arb_assert(size()>0);
-        arb_assert(end_pos >= 0); // @@@ remove later
+        arb_assert(has_end());
         return end_pos;
     }
 
@@ -66,7 +66,9 @@ public:
     bool is_empty() const { return size() == 0; }
     bool is_part() const { return !(is_empty() || is_whole()); }
 
-    bool is_limited() const { return size() >= 0; }
+    bool has_end() const { return size() > 0; }
+
+    bool is_limited() const { return is_empty() || has_end(); }
     bool is_unlimited() const { return !is_limited(); }
 
     bool operator == (const PosRange& other) const { return start_pos == other.start_pos && end_pos == other.end_pos; }
@@ -78,6 +80,16 @@ public:
     bool contains(int pos) const {
         return !is_empty() && pos >= start_pos && (pos <= end_pos || is_unlimited());
     }
+    bool contains(const PosRange& other) const;
+
+    PosRange after() const { return has_end() ? after(end()) : empty(); }
+    PosRange prior() const { return !is_empty() && start() ? prior(start()) : empty(); }
+
+#if defined(DEBUG)
+    void dump(FILE *out) const {
+        fprintf(out, "[%i..%i]", start_pos, end_pos);
+    }
+#endif
 };
 
 inline PosRange intersection(PosRange r1, PosRange r2) {
@@ -93,10 +105,20 @@ inline PosRange intersection(PosRange r1, PosRange r2) {
     return PosRange::from(start);
 }
 
+inline bool PosRange::contains(const PosRange& other) const {
+    return !other.is_empty() && intersection(*this, other) == other;
+}
+
+
 class ExplicitRange : public PosRange {
 
     // this ctor is private to avoid making ranges repeatedly explicit (if REALLY needed, convert range to PosRange before)
     ExplicitRange(const ExplicitRange& range, int maxlen);
+
+    bool is_limited() const { // always true -> private to avoid usage
+        arb_assert(PosRange::is_limited());
+        return true;
+    }
 
 public:
     ExplicitRange(const ExplicitRange& limRange) : PosRange(limRange) {}
@@ -116,6 +138,21 @@ public:
         : PosRange(0, len-1)
     { arb_assert(is_limited()); }
 };
+
+inline ExplicitRange intersection(ExplicitRange r1, ExplicitRange r2) {
+    if (r1.is_empty()) return r1;
+    if (r2.is_empty()) return r2;
+
+    return ExplicitRange(std::max(r1.start(), r2.start()),
+                         std::min(r1.end(), r2.end()));
+}
+
+inline ExplicitRange intersection(ExplicitRange e1, PosRange r2) {
+    return intersection(e1, ExplicitRange(r2, e1.end()+1));
+}
+inline ExplicitRange intersection(PosRange r1, ExplicitRange e2) {
+    return intersection(ExplicitRange(r1, e2.end()+1), e2);
+}
 
 #else
 #error pos_range.h included twice

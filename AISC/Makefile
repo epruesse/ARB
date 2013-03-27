@@ -29,7 +29,7 @@ clean:
 	rm -f $(OBJECTS) $(BINARY)
 
 proto:
-	../AISC_MKPTPS/aisc_mkpt -A -P -G -w aisc_proto.h *.c >aisc_proto.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -G -w aisc_proto.h *.c >aisc_proto.h.tmp
 	../SOURCE_TOOLS/mv_if_diff aisc_proto.h.tmp aisc_proto.h
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.

@@ -25,10 +25,6 @@ static long check_for_species_without_data(const char *species_name, long value,
     return value; // new hash value
 }
 
-#if defined(WARN_TODO)
-#warning GBT_check_data ignores given 'alignment_name' if we have a default alignment. seems wrong!
-#endif
-
 GBDATA *GBT_get_presets(GBDATA *gb_main) {
     return GBT_find_or_create(gb_main, "presets", 7);
 }
@@ -224,6 +220,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
      *  == 0     -> check all existing alignments
      * otherwise -> check only one alignment
      */
+
     GB_ERROR  error             = 0;
     GBDATA   *gb_sd             = GBT_get_species_data(Main);
     GBDATA   *gb_presets        = GBT_get_presets(Main);

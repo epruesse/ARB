@@ -895,6 +895,7 @@ ARCHS_NTREE = \
 		SL/REFENTRIES/REFENTRIES.a \
 		SL/NDS/NDS.a \
 		SL/ITEMS/ITEMS.a \
+		SL/INSDEL/INSDEL.a \
 		SL/LOCATION/LOCATION.a \
 		SL/MACROS/MACROS.a \
 		SL/TRANSLATE/TRANSLATE.a \
@@ -1288,6 +1289,7 @@ SL/FAST_ALIGNER/FAST_ALIGNER.dummy:	links_non_perl
 SL/FILTER/FILTER.dummy:			links_non_perl
 SL/GUI_ALIVIEW/GUI_ALIVIEW.dummy:	links_non_perl
 SL/HELIX/HELIX.dummy:			links_non_perl
+SL/INSDEL/INSDEL.dummy:			links_non_perl
 SL/ITEMS/ITEMS.dummy:			links_non_perl
 SL/LOCATION/LOCATION.dummy:		links_non_perl
 SL/MACROS/MACROS.dummy:			links_non_perl
@@ -1976,12 +1978,14 @@ UNITS_TESTED_FIRST = \
 	TOOLS/arb_consensus_tree.test \
 	TOOLS/arb_test.test \
 	TOOLS/arb_probe.test \
+	PERLTOOLS/arb_proto_2_xsub.test \
 	AWTC/AWTC.test \
 
 UNITS_TESTED = \
 	DBSERVER/DBSERVER.test \
 	AWT/libAWT.test \
 	CORE/libCORE.test \
+	SL/INSDEL/INSDEL.test \
 	SL/TREEDISP/TREEDISP.test \
 	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \

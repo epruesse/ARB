@@ -83,7 +83,7 @@ my %used_extensions = map { $_ => 1; } (
                                         'inc',
                                         'java', 'manifest',
                                         'makefile',
-                                        'pl', 'pm', 'PL', 'cgi',
+                                        'pl', 'pm', 'PL', 'cgi', 'xs',
                                         'py',
                                         'script',
                                         'sh',
@@ -123,6 +123,7 @@ my @used_when_matches = (
                          qr/license/io,
                          qr/needs_libs\..*/io,
                          qr/readme$/io,
+                         qr/typemap$/io,
                          qr/unused.*source.*\.tgz$/io,
                         );
 
@@ -153,9 +154,7 @@ my @used_when_matchesFull = (
                              qr/\/HELP_SOURCE\/oldhelp\/.*\.hlp$/o,
                              qr/\/HGL_SRC\/plot\.icon$/o,
                              qr/\/PERL2ARB\/.*\.html$/o,
-                             qr/\/PERL2ARB\/ARB\.default\.xs$/o,
                              qr/\/PERL2ARB\/Makefile.main$/o,
-                             qr/\/PERL2ARB\/typemap$/o,
                              qr/\/PHYLIP\/doc\//o,
                              qr/\/PROBE_SERVER\/.*\.conf$/o,
                              qr/\/READSEQ\/.*\.help$/o,
@@ -516,7 +515,9 @@ sub dumpFiles($) {
     my @files;
 
     my %CVS;
-    getVCEntries($dir,%CVS);
+    if (!getVCEntries($dir,%CVS)) {
+      die "arb_srclst.pl only works in a SVN checkout";
+    }
 
     opendir(DIR,$dir) || die "can't read directory '$dir' (Reason: $!)";
     foreach (readdir(DIR)) {
