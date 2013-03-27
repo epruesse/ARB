@@ -1516,7 +1516,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                     if (strchr(opent, 'D')) { // use default settings
                         GB_clear_error(); // with default-files gb_scan_directory (used above) has created an error, cause the path was a fake path
                         
-                        gb_assert(ARB_strscmp(path, ".arb_prop/") != 0); // do no longer pass path-prefix [deprecated!]  
+                        gb_assert(!ARB_strBeginsWith(path, ".arb_prop/")); // do no longer pass path-prefix [deprecated!]  
                         char *found_path = GB_property_file(false, path);
 
                         if (!found_path) {

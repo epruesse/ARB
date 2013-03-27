@@ -136,8 +136,8 @@ public:
 inline bool is_empty_code(const char *code) { return !code[0]; }
 inline bool contains_preprozessorCode(const char *code) { return strchr(code, '#') != NULL; }
 inline bool contains_braces(const char *code) { return strpbrk(code, "{}") != NULL; }
-inline bool is_typedef(const char *code) { return ARB_strscmp(code, "typedef") == 0; }
-inline bool is_forward_decl(const char *code) { return ARB_strscmp(code, "class") == 0 || ARB_strscmp(code, "struct") == 0; }
+inline bool is_typedef(const char *code) { return ARB_strBeginsWith(code, "typedef"); }
+inline bool is_forward_decl(const char *code) { return ARB_strBeginsWith(code, "class") || ARB_strBeginsWith(code, "struct"); }
 
 inline bool is_prototype(const char *code) {
     return
