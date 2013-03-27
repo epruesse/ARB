@@ -857,13 +857,13 @@ struct export_environment {
     }
 };
 
-static export_environment expenv; 
+static export_environment expenv;
 
 bool GB_host_is_local(const char *hostname) {
     // returns true if host is local
     return
         ARB_stricmp(hostname, "localhost")       == 0 ||
-        ARB_strscmp(hostname, "127.0.0.")        == 0 ||
+        ARB_strBeginsWith(hostname, "127.0.0.")       ||
         ARB_stricmp(hostname, arb_gethostname()) == 0;
 }
 

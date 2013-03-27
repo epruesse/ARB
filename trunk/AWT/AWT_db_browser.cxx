@@ -412,7 +412,7 @@ static void toggle_tmp_cb(AW_window *aww) {
     char    *path      = awar_path->read_string();
     bool     done      = false;
 
-    if (ARB_strscmp(path, "/tmp") == 0) {
+    if (ARB_strBeginsWith(path, "/tmp")) {
         if (path[4] == '/') {
             awar_path->write_string(path+4);
             done = true;

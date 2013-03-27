@@ -36,19 +36,15 @@ inline int ARB_stricmp(const char *s1, const char *s2) {
     }
     return cmp;
 }
-inline int ARB_strscmp(const char *s1, const char *s2) {
-    /*! compares the beginning of two strings
-     * (Note: always returns 0 if one the the strings is empty)
+
+inline bool ARB_strBeginsWith(const char *str, const char *with) {
+    /*! returns true if 'str' begins with 'with'
      */
 
-    int    cmp = 0;
-    size_t idx = 0;
-    while (!cmp) {
-        if (!s1[idx] || !s2[idx]) break;
-        cmp = s1[idx] - s2[idx];
-        ++idx;
+    for (size_t idx = 0; with[idx]; ++idx) {
+        if (str[idx] != with[idx]) return false;
     }
-    return cmp;
+    return true;
 }
 
 inline int ARB_strNULLcmp(const char *s1, const char *s2) {
