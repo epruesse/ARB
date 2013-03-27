@@ -1,6 +1,8 @@
 #!/bin/bash
 
 SELF=$ARBHOME/SOURCE_TOOLS/generate_all_links.sh
+READLINK=${ARBHOME}/SH/arb_readlink
+
 
 finderr() {
     FOUND=`grep -Hn "$1" $SELF | perl -ne '/^[^:]+:[^:]+:/; print $&."[here]\n";'`
@@ -40,9 +42,9 @@ may_create_link() {
 assert_links_to_target() {
     # $1 target
     # $2 link
-    local LINKTARGET=`readlink -f $2`
+    local LINKTARGET=`$READLINK -f $2`
     local LINKDIR=`dirname $2`
-    local TARGET=`readlink -f $LINKDIR/$1`
+    local TARGET=`$READLINK -f $LINKDIR/$1`
 
     [ "$LINKTARGET" = "$TARGET" ] || (finderr $2 "$2 links not to $TARGET")
 }

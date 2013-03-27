@@ -1,7 +1,9 @@
 
 STD = standard.header
-AUTOSECTION = sed -e 's/^\([^ \#]\)/SECTION \1/'
-AUTOTITLE = sed -e '1 s/^SECTION/TITLE/'
+SED:=$(ARBHOME)/SH/arb_sed
+
+AUTOSECTION = $(SED) -e 's/^\([^ \#]\)/SECTION \1/'
+AUTOTITLE = $(SED) -e '1 s/^SECTION/TITLE/'
 ARBHOME=../..
 
 GDEBASE=$(ARBHOME)/GDEHELP
@@ -56,7 +58,7 @@ agde.hlp: $(GDE_HLP) agde.footer
 	@echo Updating GDE overview $@ 
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
-	@ls agde_*.hlp | grep -v 'agde_.*_sub'| sed -e 's/^/SUB /' >>$@
+	@ls agde_*.hlp | grep -v 'agde_.*_sub'| $(SED) -e 's/^/SUB /' >>$@
 	@echo "" >>$@
 	@echo "UP gde_menus.hlp" >>$@
 	@cat agde.footer >>$@
