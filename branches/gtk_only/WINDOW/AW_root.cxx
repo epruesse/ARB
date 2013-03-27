@@ -30,27 +30,11 @@
 //globals
 //TODO use static class or namespace for globals
 
-AW_root *AW_root::SINGLETON = 0;
+AW_root *AW_root::SINGLETON = NULL;
 
 void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
     if (auto_help_file) AW_POPUP_HELP(aww, (AW_CL)auto_help_file);
     aw_message_if(GBK_system(command));
-}
-
-static void AWAR_AW_FOCUS_FOLLOWS_MOUSE_changed_cb(AW_root *awr) {
-    int focus = awr->awar(AWAR_AW_FOCUS_FOLLOWS_MOUSE)->read_int();
-#if defined(DEBUG)
-    printf("AWAR_AW_FOCUS_FOLLOWS_MOUSE changed, calling apply_focus_policy(%i)\n", focus);
-#endif
-    awr->apply_focus_policy(focus);
-}
-
-static void AWAR_AWM_MASK_changed_cb(AW_root *awr) {
-    int mask = awr->awar(AWAR_AWM_MASK)->read_int();
-#if defined(DEBUG)
-    printf("AWAR_AWM_MASK changed, calling apply_sensitivity(%i)\n", mask);
-#endif
-    awr->apply_sensitivity(mask);
 }
 
 
@@ -371,7 +355,7 @@ void AW_root::create_colormap() {
     GBDATA *gbd = check_properties(NULL);
     prvt.colormap = gdk_colormap_get_system();
 
- // Color monitor, B&W monitor is no longer supported
+    // Color monitor, B&W monitor is no longer supported
     const char **awar_2_color;
     int color;
     for (color = 0, awar_2_color = aw_awar_2_color;
@@ -414,8 +398,8 @@ struct AW_timer_cb_struct : virtual Noncopyable {
     AW_CL    cd1;
     AW_CL    cd2;
 
-    AW_timer_cb_struct(AW_root *ari, AW_RCB cb, AW_CL cd1i, AW_CL cd2i) 
-      : ar(ari), f(cb), cd1(cd1i), cd2(cd2i) {}
+    AW_timer_cb_struct(AW_root *ari, AW_RCB cb, AW_CL cd1i, AW_CL cd2i)
+        : ar(ari), f(cb), cd1(cd1i), cd2(cd2i) {}
 };
 
 
@@ -471,7 +455,7 @@ AW_awar *AW_root::awar(const char *var_name) {
     return vs;
 }
 
-AW_awar *AW_root::awar_float(const char *var_name, float default_value/* = 0.0*/, AW_default default_file/* = AW_ROOT_DEFAULT*/) {
+AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_default default_file) {
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
@@ -481,8 +465,7 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value/* = 0.0*/
     return vs;
 }
 
-
-AW_awar *AW_root::awar_string (const char *var_name, const char *default_value /*= ""*/, AW_default default_file /*= AW_ROOT_DEFAULT*/) {
+AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, AW_default default_file) {
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
@@ -516,6 +499,10 @@ AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_def
     }
     return vs;
 }
+
+#if defined(DEBUG)
+// #define DUMP_REMOTE_ACTIONS
+#endif // DEBUG
 
 GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_base) {
     // function has no GTK specific stuff in it
@@ -614,9 +601,10 @@ void AW_root::set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_root::unlink_awars_from_DB(GBDATA *gb_main) {
+void AW_root::unlink_awars_from_DB(AW_default database) {
     GTK_NOT_IMPLEMENTED;
 }
+
 AW_root::~AW_root() {
     delete tracker; tracker = NULL;
 
