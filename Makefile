@@ -661,7 +661,7 @@ check_TOOLS:
 		"$(ACC)" \
 		"$(CPP)" \
 		"$(GPP)" \
-  	       "$(GCC)" \
+		"$(GCC)" \
 		"$(ACCLIB)" \
 		"$(CPPLIB)" \
 		"$(XMKMF)" \
