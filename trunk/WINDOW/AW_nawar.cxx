@@ -114,7 +114,8 @@ GBDATA *AW_awar::read_pointer() {
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;           \
     GB_transaction ta(gb_var);                          \
     AWAR_CHANGE_DUMP(awar_name, #self, format);         \
-    GB_ERROR error = func(gb_var, para)
+    GB_ERROR error = func(gb_var, para);                \
+    if (!error) update_tmp_state_during_change()
 
 #define WRITE_SKELETON(self,type,format,func)           \
     GB_ERROR AW_awar::self(type para) {                 \
@@ -128,22 +129,20 @@ GBDATA *AW_awar::read_pointer() {
     }
 
 WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewrite_string
-    WRITE_SKELETON(write_int, long, "%li", GB_write_int) // defines rewrite_int
-    WRITE_SKELETON(write_float, double, "%f", GB_write_float) // defines rewrite_float
-    WRITE_SKELETON(write_as_string, const char*, "%s", GB_write_as_string) // defines rewrite_as_string
-    WRITE_SKELETON(write_pointer, GBDATA*, "%p", GB_write_pointer) // defines rewrite_pointer
+WRITE_SKELETON(write_int, long, "%li", GB_write_int) // defines rewrite_int
+WRITE_SKELETON(write_float, double, "%f", GB_write_float) // defines rewrite_float
+WRITE_SKELETON(write_as_string, const char*, "%s", GB_write_as_string) // defines rewrite_as_string
+WRITE_SKELETON(write_pointer, GBDATA*, "%p", GB_write_pointer) // defines rewrite_pointer
 
 #undef WRITE_SKELETON
 #undef concat
 #undef AWAR_CHANGE_DUMP
 
-
-    void AW_awar::touch() {
-    if (!gb_var) {
-        return;
+void AW_awar::touch() {
+    if (gb_var) {
+        GB_transaction dummy(gb_var);
+        GB_touch(gb_var);
     }
-    GB_transaction dummy(gb_var);
-    GB_touch(gb_var);
 }
 
 AW_awar *AW_root::awar_no_error(const char *var_name) {
@@ -525,28 +524,38 @@ void AW_awar::update_targets() {
     }
 }
 
+void AW_awar::update_tmp_state_during_change() {
+    // here it's known that the awar is inside the correct DB (main-DB or prop-DB)
+
+    if (has_managed_tmp_state()) {
+        aw_assert(GB_get_transaction_level(gb_origin) != 0);
+        // still should be inside change-TA (or inside TA opened in update_tmp_state())
+        // (or in no-TA-mode; as true for properties)
+
+        bool has_default_value = false;
+        switch (variable_type) {
+            case AW_STRING:  has_default_value = ARB_strNULLcmp(GB_read_char_pntr(gb_origin), default_value.s) == 0; break;
+            case AW_INT:     has_default_value = GB_read_int(gb_origin)     == default_value.l; break;
+            case AW_FLOAT:   has_default_value = GB_read_float(gb_origin)   == default_value.d; break;
+            case AW_POINTER: has_default_value = GB_read_pointer(gb_origin) == default_value.p; break;
+            default: aw_assert(0); GB_warning("Unknown awar type"); break;
+        }
+
+        if (GB_is_temporary(gb_origin) != has_default_value) {
+            GB_ERROR error = has_default_value ? GB_set_temporary(gb_origin) : GB_clear_temporary(gb_origin);
+            if (error) GB_warning(GBS_global_string("Failed to set temporary for AWAR '%s' (Reason: %s)", awar_name, error));
+        }
+    }
+}
+
 void AW_awar::set_temp_if_is_default(GBDATA *gb_db) {
-    if (!in_tmp_branch &&                 // ignore AWARs in 'tmp/'
-        gb_origin      &&                 // ignore unbound awars (zombies)
-        member_of_DB(gb_origin, gb_db)) // ignore awars in "other" DB (main-DB vs properties)
-    {
-        bool has_default_value   = false;
+    if (has_managed_tmp_state() && member_of_DB(gb_origin, gb_db)) { // ignore awars in "other" DB (main-DB vs properties)
         aw_assert(GB_get_transaction_level(gb_origin)<1); // make sure allowed_to_run_callbacks works as expected
+
         allowed_to_run_callbacks = false;                 // avoid AWAR-change-callbacks
         {
             GB_transaction ta(gb_origin);
-            switch (variable_type) {
-                case AW_STRING:  has_default_value = ARB_strNULLcmp(GB_read_char_pntr(gb_origin), default_value.s) == 0; break;
-                case AW_INT:     has_default_value = GB_read_int(gb_origin)     == default_value.l; break;
-                case AW_FLOAT:   has_default_value = GB_read_float(gb_origin)   == default_value.d; break;
-                case AW_POINTER: has_default_value = GB_read_pointer(gb_origin) == default_value.p; break;
-                default: aw_assert(0); GB_warning("Unknown awar type"); break;
-            }
-
-            if (GB_is_temporary(gb_origin) != has_default_value) {
-                GB_ERROR error = has_default_value ? GB_set_temporary(gb_origin) : GB_clear_temporary(gb_origin);
-                if (error) GB_warning(GBS_global_string("Failed to set temporary for AWAR '%s' (Reason: %s)", awar_name, error));
-            }
+            update_tmp_state_during_change();
         }
         allowed_to_run_callbacks = true;
     }

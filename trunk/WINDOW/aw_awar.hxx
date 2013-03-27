@@ -87,6 +87,10 @@ class AW_awar : virtual Noncopyable {
 
     void assert_var_type(AW_VARIABLE_TYPE target_var_type);
 
+    bool has_managed_tmp_state() const { return !in_tmp_branch && gb_origin; }
+
+    void update_tmp_state_during_change();
+
 public:
     // read only
     class AW_root *root;
@@ -181,5 +185,4 @@ public:
 #else
 #error aw_awar.hxx included twice
 #endif // AW_AWAR_HXX
-
 
