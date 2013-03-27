@@ -619,7 +619,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_b
     return 0;
 }
 
-void AW_root::dont_save_awars_with_default_value(GBDATA */*gb_main*/) {
+void AW_root::dont_save_awars_with_default_value(GBDATA */*gb_db*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
