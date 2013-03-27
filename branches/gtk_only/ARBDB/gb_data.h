@@ -51,11 +51,9 @@ union gb_data_base_type_union {
 
 struct gb_callback {
     gb_callback *next;
-    GB_CB        func;
-    GB_CB_TYPE   type;
-    int         *clientdata;
+    gb_cb_spec   spec;
     short        priority;
-    short        running;
+    short        running; // @@@ only used in no-transaction mode
 };
 
 // --------------------------------------------------------------------------------
