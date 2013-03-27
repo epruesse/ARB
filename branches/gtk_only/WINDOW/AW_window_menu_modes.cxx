@@ -4,7 +4,7 @@
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_window.hxx"
 #include "aw_window_gtk.hxx"
-
+#include "aw_drawing_area.hxx"
 #include <arbdb.h>
 
 void aw_insert_default_help_entries(AW_window *aww) {
@@ -47,21 +47,28 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
     FIXME("form should be a frame around area?!");
     prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); 
+
+    //create scroll window around drawing area
+    GtkWidget *scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
+    //only show scrollbars if they are needed
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW(scrolledWindow),
+                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
     
     // create main drawing area ('middle area')
-    GtkWidget* drawing_area = gtk_drawing_area_new();
-  
-    //These adjustments will be attached to the scrollbars.
-    prvt->hAdjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 0, 0, 0));
-    prvt->vAdjustment = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 0, 0, 0, 0));
+    prvt->drawing_area = AW_DRAWING_AREA(aw_drawing_area_new());
+    gtk_container_add(GTK_CONTAINER(scrolledWindow), GTK_WIDGET(prvt->drawing_area));
+
+    GtkWidget* scrolledTree = gtk_scrolled_window_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER(scrolledTree), prvt->drawing_area);
     
-    GtkWidget* scrolledTree = gtk_scrolled_window_new(prvt->hAdjustment, prvt->vAdjustment);
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolledTree), drawing_area);
-    
+
+    gtk_widget_realize(GTK_WIDGET(prvt->drawing_area));
+    //FIXME form should be a frame around the area.
+    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(GTK_WIDGET(prvt->drawing_area), GTK_WIDGET(prvt->drawing_area)); 
     gtk_widget_show(scrolledTree);
     gtk_widget_show(GTK_WIDGET(drawing_area));
-    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(drawing_area, drawing_area);
-    //FIXME form should be a frame around the area.
+
 
     // Layout:
     // fixed_size_area ('info') goes above scrollArea ('middle')
@@ -69,6 +76,7 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), scrolledTree, true, true, 0);
     
+
     // Both go right of the mode_menu / vert. toolbar
     GtkWidget *hbox = gtk_hbox_new(false, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prvt->mode_menu), false, false, 0);
@@ -85,3 +93,6 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     aw_insert_default_help_entries(this);
     create_window_variables();
 }
+
+
+

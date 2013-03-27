@@ -634,6 +634,9 @@ AW_device_size.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_device_size.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_device_size.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AW_drawing_area.o: aw_drawing_area.hxx
+AW_drawing_area.o: aw_gtk_forward_declarations.hxx
+
 AW_edit.o: aw_edit.hxx
 AW_edit.o: aw_gtk_migration_helpers.hxx
 
@@ -1447,6 +1450,7 @@ AW_window_menu_modes.o: aw_device_gtk.hxx
 AW_window_menu_modes.o: aw_device_impl.hxx
 AW_window_menu_modes.o: aw_device_print.hxx
 AW_window_menu_modes.o: aw_device_size.hxx
+AW_window_menu_modes.o: aw_drawing_area.hxx
 AW_window_menu_modes.o: aw_font_limits.hxx
 AW_window_menu_modes.o: aw_gtk_forward_declarations.hxx
 AW_window_menu_modes.o: aw_gtk_migration_helpers.hxx
