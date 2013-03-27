@@ -645,7 +645,7 @@ static GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
     // first all delete callbacks:
     for (cbl = Main->cbld; cbl;  cbl = cbl_next) {
         g_b_old_callback_list = cbl;
-        cbl->func(cbl->gbd, cbl->clientdata, GB_CB_DELETE);
+        cbl->spec.func(cbl->gbd, cbl->spec.clientdata, GB_CB_DELETE);
         cbl_next = cbl->next;
         g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
@@ -658,7 +658,7 @@ static GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
     // then all update callbacks:
     for (cbl = Main->cbl; cbl;  cbl = cbl_next) {
         g_b_old_callback_list = cbl;
-        cbl->func(cbl->gbd, cbl->clientdata, cbl->type);
+        cbl->spec.func(cbl->gbd, cbl->spec.clientdata, cbl->spec.type);
         cbl_next = cbl->next;
         g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
@@ -1113,7 +1113,7 @@ double GB_read_from_floats(GBDATA *gbd, long index) {
 static void gb_remove_callbacks_marked_for_deletion(GBDATA *gbd);
 
 static void marked_deleted_cb(GBDATA*, int*, GB_CB_TYPE) {}
-inline bool remove_when_finished(const gb_callback *cb) { return cb->func == marked_deleted_cb; }
+inline bool remove_when_finished(const gb_callback *cb) { return cb->spec.func == marked_deleted_cb; }
 
 static void gb_do_callbacks(GBDATA *gbd) {
     gb_assert(GB_MAIN(gbd)->transaction<0); // only use in "no transaction mode"!
@@ -1124,10 +1124,10 @@ static void gb_do_callbacks(GBDATA *gbd) {
 
         for (gb_callback *cb = GB_GET_EXT_CALLBACKS(gbd); cb; ) {
             gb_callback *cbn = cb->next;
-            if (cb->type & GB_CB_CHANGED) {
+            if (cb->spec.type & GB_CB_CHANGED) {
                 if (!remove_when_finished(cb)) { // do not call if already marked for removal
                     ++cb->running;
-                    cb->func(gbd, cb->clientdata, GB_CB_CHANGED);
+                    cb->spec.func(gbd, cb->spec.clientdata, GB_CB_CHANGED);
                     --cb->running;
                 }
 
@@ -2355,7 +2355,7 @@ GB_ERROR GB_update_server(GBDATA *gbd) {
 // ------------------
 //      callbacks
 
-void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata) {
+void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, const gb_cb_spec& cb) {
     GB_MAIN_TYPE     *Main = GB_MAIN(gbd);
     gb_callback_list *cbl  = (gb_callback_list *)gbm_get_mem(sizeof(gb_callback_list), GBM_CB_INDEX);
 
@@ -2366,17 +2366,16 @@ void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB_T
         Main->cbl = cbl;
     }
 
-    Main->cbl_last  = cbl;
-    cbl->clientdata = clientdata;
-    cbl->func       = func;
-    cbl->gbd        = gbd;
-    cbl->type       = gbtype;
-    
+    Main->cbl_last = cbl;
+
+    cbl->spec = cb;
+    cbl->gbd  = gbd;
+
     gb_add_ref_gb_transaction_save(old);
     cbl->old = old;
 }
 
-void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB func, int *clientdata) {
+void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const gb_cb_spec& cb) {
     GB_MAIN_TYPE     *Main = GB_MAIN(gbd);
     gb_callback_list *cbl  = (gb_callback_list *)gbm_get_mem(sizeof(gb_callback_list), GBM_CB_INDEX);
 
@@ -2387,10 +2386,9 @@ void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB fu
         Main->cbld = cbl;
     }
     Main->cbld_last = cbl;
-    cbl->clientdata = clientdata;
-    cbl->func       = func;
-    cbl->gbd        = gbd;
-    cbl->type       = GB_CB_DELETE;
+
+    cbl->spec = cb.with_type_changed_to(GB_CB_DELETE);
+    cbl->gbd  = gbd;
 
     if (old) gb_add_ref_gb_transaction_save(old);
     cbl->old = old;
@@ -2413,11 +2411,11 @@ NOT4PERL bool GB_inside_callback(GBDATA *of_gbd, GB_CB_TYPE cbtype) {
             GB_CB_TYPE curr_cbtype;
             if (Main->cbld) {       // delete callbacks were not all performed yet
                                     // -> current callback is a delete callback
-                curr_cbtype = GB_CB_TYPE(g_b_old_callback_list->type & GB_CB_DELETE);
+                curr_cbtype = GB_CB_TYPE(g_b_old_callback_list->spec.type & GB_CB_DELETE);
             }
             else {
                 gb_assert(Main->cbl); // change callback
-                curr_cbtype = GB_CB_TYPE(g_b_old_callback_list->type & (GB_CB_ALL-GB_CB_DELETE));
+                curr_cbtype = GB_CB_TYPE(g_b_old_callback_list->spec.type & (GB_CB_ALL-GB_CB_DELETE));
             }
             gb_assert(curr_cbtype != GB_CB_NONE); // wtf!? are we inside callback or not?
 
@@ -2493,7 +2491,7 @@ char *GB_get_callback_info(GBDATA *gbd) {
         gb_callback *cb = gbd->ext->callback;
         while (cb) {
             char *cb_info = GBS_global_string_copy("func=%p type=%i clientdata=%p priority=%i",
-                                                   (void*)cb->func, cb->type, cb->clientdata, cb->priority);
+                                                   (void*)cb->spec.func, cb->spec.type, cb->spec.clientdata, cb->priority);
             if (result) {
                 char *new_result = GBS_global_string_copy("%s\n%s", result, cb_info);
                 free(result);
@@ -2510,7 +2508,7 @@ char *GB_get_callback_info(GBDATA *gbd) {
     return result;
 }
 
-static GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata, int priority) {
+static GB_ERROR add_priority_callback(GBDATA *gbd, const gb_cb_spec& cbs, int priority) {
     /* Adds a callback to a DB entry.
      *
      * Callbacks with smaller priority values get executed before bigger priority values.
@@ -2527,7 +2525,7 @@ static GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB fun
 
 #if defined(DEBUG)
     if (GB_inside_callback(gbd, GB_CB_DELETE)) {
-        printf("Warning: GB_add_priority_callback called inside delete-callback of gbd (gbd may already be freed)\n");
+        printf("Warning: add_priority_callback called inside delete-callback of gbd (gbd may already be freed)\n");
 #if defined(DEVEL_RALF)
         gb_assert(0); // fix callback-handling (never modify callbacks from inside delete callbacks)
 #endif // DEVEL_RALF
@@ -2550,7 +2548,7 @@ static GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB fun
 
 #if defined(DEVEL_RALF)
             // test if callback already was added (every callback shall only exist once). see below.
-            gb_assert((curr->func != func) || (curr->clientdata != clientdata) || (curr->type != type) || remove_when_finished(curr));
+            gb_assert(!curr->spec.is_equal_to(cbs) || remove_when_finished(curr));
 #endif // DEVEL_RALF
 
             prev = curr;
@@ -2567,10 +2565,8 @@ static GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB fun
         gbd->ext->callback = cb;
     }
 
-    cb->type       = type;
-    cb->clientdata = clientdata;
-    cb->func       = func;
-    cb->priority   = priority;
+    cb->spec     = cbs;
+    cb->priority = priority;
 
 #if defined(DEVEL_RALF)
 #if defined(DEBUG)
@@ -2578,7 +2574,7 @@ static GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB fun
     // maybe you like to use GB_ensure_callback instead of GB_add_callback
     while (cb->next) {
         cb = cb->next;
-        gb_assert((cb->func != func) || (cb->clientdata != clientdata) || (cb->type != type) || remove_when_finished(cb));
+        gb_assert(!cb->spec.is_equal_to(cbs) || remove_when_finished(cb));
     }
 #endif // DEBUG
 #endif // DEVEL_RALF
@@ -2586,8 +2582,12 @@ static GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB fun
     return 0;
 }
 
+inline GB_ERROR gb_add_callback(GBDATA *gbd, const gb_cb_spec& cbs) {
+    return add_priority_callback(gbd, cbs, 5); // use default priority 5
+}
+
 GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {
-    return GB_add_priority_callback(gbd, type, func, clientdata, 5); // use default priority 5
+    return gb_add_callback(gbd, gb_cb_spec(func, type, clientdata));
 }
 
 template <typename PRED>
@@ -2610,7 +2610,7 @@ inline void gb_remove_callbacks_that(GBDATA *gbd, PRED shallRemove) {
             if (shallRemove(*cb)) {
                 *cb_ptr = cb->next;
                 if (prev_running || cb->running) {
-                    cb->func = marked_deleted_cb;
+                    cb->spec.func = marked_deleted_cb;
                 }
                 else {
                     gbm_free_mem(cb, sizeof(gb_callback), GB_GBM_INDEX(gbd));
@@ -2631,50 +2631,32 @@ static void gb_remove_callbacks_marked_for_deletion(GBDATA *gbd) {
     gb_remove_callbacks_that(gbd, ShallBeDeleted());
 }
 
-struct IsSpecificCallback {
-    gb_callback delcb;
-    bool        clientdata_has_to_match;
-
-    IsSpecificCallback(GB_CB_TYPE type, GB_CB func, int *clientdata) {
-        delcb.func       = func;
-        delcb.type       = type;
-        delcb.clientdata = clientdata;
-
-        clientdata_has_to_match = true;
-    }
-    IsSpecificCallback(GB_CB_TYPE type, GB_CB func) {
-        delcb.func = func;
-        delcb.type = type;
-
-        clientdata_has_to_match = false;
-    }
-
-    bool operator()(const gb_callback& cb) const {
-        return
-            delcb.func == cb.func &&
-            delcb.type == cb.type &&
-            (!clientdata_has_to_match || delcb.clientdata == cb.clientdata);
-    }
+struct IsCallback : private gb_cb_spec {
+    IsCallback(GB_CB func_, GB_CB_TYPE type_) : gb_cb_spec(func_, type_, NULL) {}
+    bool operator()(const gb_callback& cb) const { return sig_is_equal_to(cb.spec); }
+};
+struct IsSpecificCallback : private gb_cb_spec {
+    IsSpecificCallback(const gb_cb_spec& cb) : gb_cb_spec(cb) {}
+    bool operator()(const gb_callback& cb) const { return is_equal_to(cb.spec); }
 };
 
 void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {
     // remove specific callback (type, func and clientdata must match)
-    gb_remove_callbacks_that(gbd, IsSpecificCallback(type, func, clientdata));
+    gb_remove_callbacks_that(gbd, IsSpecificCallback(gb_cb_spec(func, type, clientdata)));
 }
-
 void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
     // removes all callbacks 'func' bound to 'gbd' with 'type'
-    gb_remove_callbacks_that(gbd, IsSpecificCallback(type, func));
+    gb_remove_callbacks_that(gbd, IsCallback(func, type));
 }
 
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {
-    gb_callback *cb;
-    for (cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb->next) {
-        if ((cb->func == func) && (cb->clientdata == clientdata) && (cb->type == type) && !remove_when_finished(cb)) {
+    gb_cb_spec cbs(func, type, clientdata);
+    for (gb_callback *cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb->next) {
+        if (cb->spec.is_equal_to(cbs) && !remove_when_finished(cb)) {
             return NULL;        // already in cb list
         }
     }
-    return GB_add_callback(gbd, type, func, clientdata);
+    return gb_add_callback(gbd, cbs);
 }
 
 int GB_nsons(GBDATA *gbd) {

@@ -173,8 +173,8 @@ GBDATA *gb_create(GBDATA *father, const char *key, GB_TYPES type);
 GBDATA *gb_create_container(GBDATA *father, const char *key);
 GB_ERROR gb_delete_force(GBDATA *source);
 GB_ERROR gb_init_transaction(GBCONTAINER *gbd);
-void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata);
-void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB func, int *clientdata);
+void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, const gb_cb_spec& cb);
+void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const gb_cb_spec& cb);
 GB_MAIN_TYPE *gb_get_main_during_cb(void);
 
 #else
