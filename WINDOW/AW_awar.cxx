@@ -142,10 +142,6 @@ WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewr
 #undef AWAR_CHANGE_DUMP
 
 
-
-
-
-
 char *AW_awar::read_as_string() {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
@@ -269,7 +265,7 @@ static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
     awar->update();
 }
 
-AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, 
+AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
                  const char *var_value, double var_double_value,
                  AW_default default_file, AW_root *rooti) {
     memset((char *)this, 0, sizeof(AW_awar));

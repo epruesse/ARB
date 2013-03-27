@@ -30,28 +30,11 @@
 //globals
 //TODO use static class or namespace for globals
 
-#if defined(DARWIN)
-#define OPENURL "open"
-#else
-#define OPENURL "xdg-open"
-#endif // DARWIN
-
-#define MAX_GLOBAL_AWARS 5
 AW_root *AW_root::SINGLETON = 0;
-static int      declared_awar_count = 0;
-static AW_awar *declared_awar[MAX_GLOBAL_AWARS];
-
 
 void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
     if (auto_help_file) AW_POPUP_HELP(aww, (AW_CL)auto_help_file);
     aw_message_if(GBK_system(command));
-}
-
-
-
-inline void declare_awar_global(AW_awar *awar) {
-    aw_assert(declared_awar_count<MAX_GLOBAL_AWARS);
-    declared_awar[declared_awar_count++] = awar;
 }
 
 static void AWAR_AW_FOCUS_FOLLOWS_MOUSE_changed_cb(AW_root *awr) {
