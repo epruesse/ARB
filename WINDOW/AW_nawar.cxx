@@ -147,7 +147,7 @@ WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewr
 }
 
 AW_awar *AW_root::awar_no_error(const char *var_name) {
-    return (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name);
+    return hash_table_for_variables ? (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name) : NULL;
 }
 
 static long awar_set_temp_if_is_default(const char *, long val, void *cl_gb_db) {
