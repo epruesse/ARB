@@ -41,7 +41,6 @@ class  AW_root_cblist;
 struct AW_var_target;
 struct AW_widget_refresh_cb;
 
-
 typedef AW_RCB  Awar_CB;
 typedef Awar_CB Awar_CB2;
 typedef void (*Awar_CB1)(AW_root *, AW_CL);
