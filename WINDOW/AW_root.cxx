@@ -520,7 +520,7 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
 }
 
 AW_awar *AW_root::awar_no_error(const char *var_name) {
-    return (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name);
+    return hash_table_for_variables ? (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name) : NULL;
 }
 
 
