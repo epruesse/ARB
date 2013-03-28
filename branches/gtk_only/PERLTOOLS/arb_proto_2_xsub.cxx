@@ -18,6 +18,7 @@
 #include <set>
 
 #include <cctype>
+#include <unistd.h>
 #include <arb_str.h>
 
 #if defined(DEBUG)
