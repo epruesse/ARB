@@ -638,6 +638,7 @@ AW_window.o: aw_macro.hxx
 AW_window.o: aw_msg.hxx
 AW_window.o: aw_nawar.hxx
 AW_window.o: aw_position.hxx
+AW_window.o: aw_question.hxx
 AW_window.o: aw_root.hxx
 AW_window.o: aw_scalar.hxx
 AW_window.o: aw_select.hxx
