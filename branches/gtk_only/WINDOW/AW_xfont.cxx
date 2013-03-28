@@ -12,13 +12,13 @@
  * This software has been widely modified for usage inside ARB.
  */
 
-#include "aw_common_xm.hxx"
 #include "aw_xfont.hxx"
 #include "aw_root.hxx"
+#include "aw_device_impl.hxx"
 
-#ifndef ARBDB_H
 #include <arbdb.h>
-#endif
+#include <arb_defs.h>
+#include <static_assert.h>
 
 #include <cctype>
 
@@ -594,36 +594,6 @@ bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboose, boo
     *fontstPtr = nf->fstruct;
 
     return font_found;
-}
-
-static int get_available_fontsizes(Display *tool_d, int f, int *available_sizes) {
-    // returns number of available sizes
-    // specific sizes are stored in available_sizes[]
-
-    int size_count = 0;
-    for (int size = MAX_FONTSIZE; size >= MIN_FONTSIZE; --size) {
-        int      found_size;
-        PIX_FONT fontst;
-
-        ASSERT_TRUE(lookfont(tool_d, f, size, found_size, false, true, &fontst)); // lookfont should do fallback 
-
-        if (found_size<size) size = found_size;
-        if (found_size == size) available_sizes[size_count++] = size;
-    }
-
-    // reverse order of found fontsizes
-    if (size_count>1) {
-        for (int reverse = size_count/2-1; reverse >= 0; --reverse) {
-            int o = size_count-1-reverse;
-            aw_assert(o >= 0 && o<size_count);
-
-            int s                    = available_sizes[reverse];
-            available_sizes[reverse] = available_sizes[o];
-            available_sizes[o]       = s;
-        }
-    }
-
-    return size_count;
 }
 
 static char *caps(char *sentence) {

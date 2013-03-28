@@ -1678,14 +1678,22 @@ AW_xfig.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_xfont.o: aw_assert.hxx
 AW_xfont.o: aw_base.hxx
+AW_xfont.o: aw_clipable.hxx
 AW_xfont.o: aw_def.hxx
+AW_xfont.o: aw_device_impl.hxx
+AW_xfont.o: aw_font_limits.hxx
 AW_xfont.o: aw_gtk_forward_declarations.hxx
+AW_xfont.o: aw_gtk_migration_helpers.hxx
+AW_xfont.o: aw_position.hxx
 AW_xfont.o: aw_root.hxx
 AW_xfont.o: aw_root_gtk.hxx
+AW_xfont.o: aw_stylable.hxx
 AW_xfont.o: aw_xfont.hxx
+AW_xfont.o: aw_zoomable.hxx
 AW_xfont.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_xfont.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -1698,6 +1706,7 @@ AW_xfont.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_xfont.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_xkey.o: aw_assert.hxx
