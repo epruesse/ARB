@@ -296,6 +296,7 @@ AW_awar.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_awar.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_awar.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_awar.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_awar.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AW_button.o: aw_area_management.hxx
 AW_button.o: aw_assert.hxx
