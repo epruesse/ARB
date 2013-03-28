@@ -18,6 +18,8 @@
 #include <set>
 
 #include <cctype>
+#include <unistd.h>
+#include <arb_str.h>
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
@@ -135,11 +137,32 @@ public:
 inline bool is_empty_code(const char *code) { return !code[0]; }
 inline bool contains_preprozessorCode(const char *code) { return strchr(code, '#') != NULL; }
 inline bool contains_braces(const char *code) { return strpbrk(code, "{}") != NULL; }
+inline bool is_typedef(const char *code) { return ARB_strBeginsWith(code, "typedef"); }
+inline bool is_forward_decl(const char *code) { return ARB_strBeginsWith(code, "class") || ARB_strBeginsWith(code, "struct"); }
+
 inline bool is_prototype(const char *code) {
     return
         !is_empty_code(code)             &&
         !contains_preprozessorCode(code) &&
-        !contains_braces(code);
+        !contains_braces(code)           &&
+        !is_typedef(code)                &&
+        !is_forward_decl(code);
+}
+
+inline void trace_over_braces(const char *code, int& brace_counter) {
+    while (code) {
+        const char *brace = strpbrk(code, "{}");
+        if (!brace) break;
+
+        if (*brace == '{') {
+            ++brace_counter;
+        }
+        else {
+            arb_assert(*brace == '}');
+            --brace_counter;
+        }
+        code = brace+1;
+    }
 }
 
 // --------------------------------------------------------------------------------
@@ -207,13 +230,14 @@ inline const char *next_comma_outside_parens(const char *code) {
 }
 
 inline bool find_open_close_paren(const char *code, size_t& opening_paren_pos, size_t& closing_paren_pos) {
-    const char *open_paren  = strchr(code, '(');
-    const char *close_paren = next_closing_paren(open_paren+1);
-
-    if (open_paren && close_paren) {
-        opening_paren_pos = open_paren-code;
-        closing_paren_pos = close_paren-code;
-        return true;
+    const char *open_paren = strchr(code, '(');
+    if (open_paren) {
+        const char *close_paren = next_closing_paren(open_paren+1);
+        if (close_paren) {
+            opening_paren_pos = open_paren-code;
+            closing_paren_pos = close_paren-code;
+            return true;
+        }
     }
     return false;
 }
@@ -821,15 +845,16 @@ static void print_prototype_parse_error(FileBuffer& prototype_reader, const char
 }
 
 void xsubGenerator::generate_all_xsubs(FileBuffer& prototype_reader) {
-    bool   error_occurred = false;
+    bool   error_occurred     = false;
     string line;
+    int    open_brace_counter = 0;
 
     while (prototype_reader.getLine(line)) {
         const char *lineStart          = line.c_str();
         size_t      leading_whitespace = strspn(lineStart, " \t");
         const char *prototype          = lineStart+leading_whitespace;
 
-        if (is_prototype(prototype)) {
+        if (!open_brace_counter && is_prototype(prototype)) {
             try {
                 Prototype proto(prototype);
                 if (proto.possible_as_xsub()) {
@@ -852,11 +877,12 @@ void xsubGenerator::generate_all_xsubs(FileBuffer& prototype_reader) {
             }
             catch(...) { arb_assert(0); }
         }
-#if defined(TRACE)
         else {
+#if defined(TRACE)
             fprintf(stderr, "TRACE: not a prototype: '%s'\n", prototype);
-        }
 #endif // TRACE
+            trace_over_braces(prototype, open_brace_counter);
+        }
     }
 
     if (error_occurred) throw ProgramError("could not generate xsubs for all prototypes");
@@ -899,7 +925,7 @@ static void loadTypemap(const char *typemap_filename) {
     Type::globalTypemap.load(*typemap);
 }
 
-int main(int argc, char **argv)
+int ARB_main(int argc, const char **argv)
 {
     bool error_occurred = false;
     try {
@@ -954,3 +980,44 @@ int main(int argc, char **argv)
 }
 
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+#include <ut_valgrinded.h>
+
+// #define TEST_AUTO_UPDATE // uncomment this to update expected results
+
+inline GB_ERROR valgrinded_system(const char *cmdline) {
+    char *cmddup = strdup(cmdline);
+    make_valgrinded_call(cmddup);
+
+    GB_ERROR error = GBK_system(cmddup);
+    free(cmddup);
+    return error;
+}
+
+void TEST_arb_proto_2_xsub() {
+    TEST_EXPECT_ZERO(chdir("xsub"));
+
+    const char *outname  = "ap2x.out";
+    const char *expected = "ap2x.out.expected";
+
+    char *cmd = GBS_global_string_copy("arb_proto_2_xsub ptype.header default.xs typemap > %s", outname);
+    TEST_EXPECT_NO_ERROR(valgrinded_system(cmd));
+
+#if defined(TEST_AUTO_UPDATE)
+    system(GBS_global_string("cp %s %s", outname, expected));
+#else
+    TEST_EXPECT_TEXTFILE_DIFFLINES(expected, outname, 0);
+#endif
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outname));
+
+    free(cmd);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

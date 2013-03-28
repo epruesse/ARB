@@ -409,7 +409,7 @@ static void aw_help_search(AW_window *aww) {
 
             if (!helpfilename) error = GB_await_error();
             else {
-                const char *gen_help_tmpl = "cd %s;grep -i '^[^#]*%s' `find . -name \"*.hlp\"` | sed -e 'sI:.*IIg' -e 'sI^\\./IIg' | sort | uniq > %s";
+                const char *gen_help_tmpl = "cd %s;grep -i '^[^#]*%s' `find . -name \"*.hlp\"` | arb_sed -e 'sI:.*IIg' -e 'sI^\\./IIg' | sort | uniq > %s";
                 char       *gen_help_cmd  = GBS_global_string_copy(gen_help_tmpl, GB_getenvDOCPATH(), searchtext, helpfilename);
 
                 error = GBK_system(gen_help_cmd);

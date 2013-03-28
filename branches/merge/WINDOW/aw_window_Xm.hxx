@@ -54,16 +54,6 @@
     }
 
 
-struct AW_timer_cb_struct : virtual Noncopyable {
-    AW_timer_cb_struct(AW_root *ari, AW_RCB cb, AW_CL cd1i, AW_CL cd2i);
-    ~AW_timer_cb_struct();
-
-    AW_root *ar;
-    AW_RCB   f;
-    AW_CL    cd1;
-    AW_CL    cd2;
-};
-
 struct AW_buttons_struct : virtual Noncopyable {
     AW_buttons_struct(AW_active maski, Widget w, AW_buttons_struct *next);
     ~AW_buttons_struct();

@@ -44,10 +44,14 @@ endif
 FORCEMASK = umask 002
 NODIR=--no-print-directory
 
+SED:=$(ARBHOME)/SH/arb_sed
+READLINK:=$(ARBHOME)/SH/arb_readlink
+
 # ---------------------- [basic compiler setting]
 
 ifdef DARWIN
-#       GCC and GPP now set in the Portfile
+	GCC:= clang
+	GPP:= clang++
 else
 	GCC:=$(CC)
 	GPP:=$(CXX)
@@ -645,6 +649,7 @@ check_TOOLS:
 		"$(ACC)" \
 		"$(CPP)" \
 		"$(GPP)" \
+		"$(GCC)" \
 		"$(ACCLIB)" \
 		"$(CPPLIB)" \
 		"$(XMKMF)" \
@@ -1514,12 +1519,12 @@ ETAGS_REST =--C-kinds=dev    --C++-kinds=dev
 $(TAG_SOURCE_HEADERS): links
 #	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
 #	workaround a bug in ctags 5.8:
-	find . \( -name '*.hxx' -o -name "*.h" \) -type f | grep -v -i perl5 | sed -e 's/^.\///g' > $@
+	find . \( -name '*.hxx' -o -name "*.h" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
 
 $(TAG_SOURCE_CODE): links
 #	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
 #	workaround a bug in ctags 5.8:
-	find . \( -name '*.cxx' -o -name "*.c" \) -type f | grep -v -i perl5 | sed -e 's/^.\///g' > $@
+	find . \( -name '*.cxx' -o -name "*.c" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
 
 tags: $(TAG_SOURCE_LISTS)
 	$(ETAGS)    $(ETAGS_TYPES) -L $(TAG_SOURCE_HEADERS)
@@ -1946,6 +1951,7 @@ UNITS_TESTED_FIRST = \
 	TOOLS/arb_consensus_tree.test \
 	TOOLS/arb_test.test \
 	TOOLS/arb_probe.test \
+	PERLTOOLS/arb_proto_2_xsub.test \
 	AWTC/AWTC.test \
 
 UNITS_TESTED = \

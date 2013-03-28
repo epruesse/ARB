@@ -121,7 +121,10 @@ static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) 
         to_insert = strdup(key);
     }
     else {
-        if (ARB_strscmp(insert->datapath, key+1) == 0) { // datapath matches
+        bool do_insert = ARB_strBeginsWith(key+1, insert->datapath);
+        gb_assert(implicated(!do_insert, !ARB_strBeginsWith(insert->datapath, key+1))); // oops - previously inserted also in this case. inspect!
+
+        if (do_insert) {                                         // datapath matches
             to_insert    = strdup(key+strlen(insert->datapath)); // cut off prefix
             to_insert[0] = key[0]; // copy type
         }

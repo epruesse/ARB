@@ -1,8 +1,8 @@
-# ------------------------------
-# typemap for ARB perl interface
+# --------------------------------------
+# typemap for arb_proto_2_xsub unit-test
 # 
 # Note: if you have problems with enum types
-# see ../PERLTOOLS/arb_proto_2_xsub.cxx@enum_type_replacement
+# see ../../../PERLTOOLS/arb_proto_2_xsub.cxx@enum_type_replacement
 
 TYPEMAP
 

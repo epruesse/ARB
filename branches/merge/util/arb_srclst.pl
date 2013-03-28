@@ -31,6 +31,7 @@ my @skipped_directories = (
                            qr/_GEN$/o,
                            # needed by ralf:
                            qr/^\.\/test_arb_make_targets_logs/o,
+                           qr/\.dSYM$/o,
                           );
 
 # first used/skipped match wins (exception see @3 below)
@@ -66,7 +67,7 @@ my %skipped_files = map { $_ => 1; } (
                                       'nt_date.h',
                                       'postcompile.sav',
                                       'TAGS',
-                                     );
+                                      '.DS_Store',);
 
 my %used_extensions = map { $_ => 1; } (
                                         'c', 'cpp', 'cxx',
@@ -82,7 +83,7 @@ my %used_extensions = map { $_ => 1; } (
                                         'inc',
                                         'java', 'manifest',
                                         'makefile',
-                                        'pl', 'pm', 'PL', 'cgi',
+                                        'pl', 'pm', 'PL', 'cgi', 'xs',
                                         'py',
                                         'script',
                                         'sh',
@@ -95,6 +96,7 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'a',
                                            'bak',
                                            'class',
+                                           'bundle', # Some file from XCode
                                            'gcno',
                                            'genmenu',
                                            'jar',
@@ -121,6 +123,7 @@ my @used_when_matches = (
                          qr/license/io,
                          qr/needs_libs\..*/io,
                          qr/readme$/io,
+                         qr/typemap$/io,
                          qr/unused.*source.*\.tgz$/io,
                         );
 
@@ -151,9 +154,7 @@ my @used_when_matchesFull = (
                              qr/\/HELP_SOURCE\/oldhelp\/.*\.hlp$/o,
                              qr/\/HGL_SRC\/plot\.icon$/o,
                              qr/\/PERL2ARB\/.*\.html$/o,
-                             qr/\/PERL2ARB\/ARB\.default\.xs$/o,
                              qr/\/PERL2ARB\/Makefile.main$/o,
-                             qr/\/PERL2ARB\/typemap$/o,
                              qr/\/PHYLIP\/doc\//o,
                              qr/\/PROBE_SERVER\/.*\.conf$/o,
                              qr/\/READSEQ\/.*\.help$/o,
