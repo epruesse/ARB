@@ -41,6 +41,7 @@
 #include <Xm/MwmUtil.h>
 
 #include <cctype>
+#include "aw_question.hxx"
 
 AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb_struct *nexti) {
     aw            = awi;
