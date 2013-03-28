@@ -828,13 +828,13 @@ void AW_window::create_text_toggle(const char *var_name, const char *noText, con
 
 
 void AW_window::create_toggle(const char *var_name) {
-    create_toggle(var_name, "#no.bitmap", "#yes.bitmap");
+    create_toggle(var_name, "#no.xpm", "#yes.xpm");
 }
 
 void AW_window::create_inverse_toggle(const char *var_name) {
     // like create_toggle, but displays inverse value
     // (i.e. it's checked if value is zero, and unchecked otherwise)
-    create_toggle(var_name, "#yes.bitmap", "#no.bitmap");
+    create_toggle(var_name, "#yes.xpm", "#no.xpm");
 }
 
 // ---------------------

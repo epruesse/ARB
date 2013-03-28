@@ -785,15 +785,15 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
         aws->at("what");
         aws->label("Clip at Screen");
         aws->create_toggle_field(AWAR_CANIO_CLIP, 1);
-        aws->insert_toggle("#print/clipscreen.bitmap", "S", 0);
-        aws->insert_toggle("#print/clipall.bitmap", "A", 1);
+        aws->insert_toggle("#print/clipscreen.xpm", "S", 0);
+        aws->insert_toggle("#print/clipall.xpm", "A", 1);
         aws->update_toggle_field();
 
         aws->at("remove_root");
         aws->label("Show Handles");
         aws->create_toggle_field(AWAR_CANIO_HANDLES, 1);
-        aws->insert_toggle("#print/nohandles.bitmap", "S", 0);
-        aws->insert_toggle("#print/handles.bitmap", "A", 1);
+        aws->insert_toggle("#print/nohandles.xpm", "S", 0);
+        aws->insert_toggle("#print/handles.xpm", "A", 1);
         aws->update_toggle_field();
 
         aws->at("color");
@@ -888,15 +888,15 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         aws->at("what");
         aws->label("Clip at Screen");
         aws->create_toggle_field(AWAR_CANIO_CLIP, 1);
-        aws->insert_toggle("#print/clipscreen.bitmap", "S", 0);
-        aws->insert_toggle("#print/clipall.bitmap", "A", 1);
+        aws->insert_toggle("#print/clipscreen.xpm", "S", 0);
+        aws->insert_toggle("#print/clipall.xpm", "A", 1);
         aws->update_toggle_field();
 
         aws->at("remove_root");
         aws->label("Show Handles");
         aws->create_toggle_field(AWAR_CANIO_HANDLES, 1);
-        aws->insert_toggle("#print/nohandles.bitmap", "S", 0);
-        aws->insert_toggle("#print/handles.bitmap", "A", 1);
+        aws->insert_toggle("#print/nohandles.xpm", "S", 0);
+        aws->insert_toggle("#print/handles.xpm", "A", 1);
         aws->update_toggle_field();
 
         aws->at("color");
@@ -922,8 +922,8 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         aws->label_length(0);
         aws->at("orientation");
         aws->create_toggle_field(AWAR_CANIO_LANDSCAPE, 1);
-        aws->insert_toggle("#print/landscape.bitmap", "L", 1);
-        aws->insert_toggle("#print/portrait.bitmap",  "P", 0);
+        aws->insert_toggle("#print/landscape.xpm", "L", 1);
+        aws->insert_toggle("#print/portrait.xpm",  "P", 0);
         aws->update_toggle_field();
 
         aws->at("bsize"); aws->create_input_field(AWAR_CANIO_BORDERSIZE, 4);
