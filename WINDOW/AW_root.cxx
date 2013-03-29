@@ -256,7 +256,7 @@ void AW_root::init_root(const char* properties, const char *programname, bool No
 
     // add our own icon path to the gtk theme search path
     gtk_icon_theme_prepend_search_path(gtk_icon_theme_get_default(),
-                                       GB_path_in_ARBLIB("pixmaps/icons"));
+                                       AW_get_pixmapPath("icons"));
 
 
     color_mode = AW_RGB_COLOR; //mono color mode is not supported
