@@ -183,10 +183,13 @@ static void calculate_label_size(AW_window *aww, int *width, int *height, bool i
     }
 }
 
+const char *AW_get_pixmapPath(const char *pixmapName) {
+    return GB_path_in_ARBLIB("pixmaps", pixmapName);
+}
 
 //TODO I think this method should be transformed into a private member
 static char *pixmapPath(const char *pixmapName) {
-    return nulldup(GB_path_in_ARBLIB("pixmaps", pixmapName));
+    return nulldup(AW_get_pixmapPath(pixmapName));
 }
 
 
@@ -204,7 +207,7 @@ const char *aw_str_2_label(const char *str, AW_window *aww) {
     }
     else {
         if (str[0] == '#') {
-            label = GB_path_in_ARBLIB("pixmaps", str+1);
+            label = AW_get_pixmapPath(str+1);
         }
         else {
             AW_awar *is_awar = aww->get_root()->label_is_awar(str);
@@ -353,7 +356,7 @@ void AW_window::create_button(const char *macro_name, AW_label button_text, cons
     // If a callback is bound via at->callback(), a button is created.
     // Otherwise a text display is created.
     //
-    // if button_text starts with '#' the rest of button_text is used as name of bitmap file used for button
+    // if button_text starts with '#' the rest of button_text is used as name of pixmap file used for button
     // if button_text contains a '/' it's interpreted as AWAR name and the button displays the content of the awar
     // otherwise button_text is interpreted as pure text (may contain '\n').
     //
@@ -822,7 +825,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     
 
 
-    const char *path = GB_path_in_ARBLIB("pixmaps", pixmap);
+    const char *path = AW_get_pixmapPath(pixmap);
     GtkWidget *icon = gtk_image_new_from_file(path);
     GtkToolItem *item = GTK_TOOL_ITEM(gtk_tool_button_new(icon, NULL)); //use icon, not label
     
