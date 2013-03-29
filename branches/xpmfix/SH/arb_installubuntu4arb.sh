@@ -87,6 +87,7 @@ else
             $0 echo compile_OpenGL
             echo \
                 valgrind \
+                pixmap \
                 ctags \
 
         elif [ "$2" == "devdox" ]; then
