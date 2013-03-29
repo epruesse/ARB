@@ -262,8 +262,12 @@ static void aw_attach_widget(Widget w, AW_at *_at, int default_width = -1) {
     args.assign_to_widget(w);
 }
 
+const char *AW_get_pixmapPath(const char *pixmapName) {
+    return GB_path_in_ARBLIB("pixmaps", pixmapName);
+}
+
 static char *pixmapPath(const char *pixmapName) {
-    return nulldup(GB_path_in_ARBLIB("pixmaps", pixmapName));
+    return nulldup(AW_get_pixmapPath(pixmapName));
 }
 
 
@@ -442,7 +446,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     // If a callback is bound via at->callback(), a button is created.
     // Otherwise a text display is created.
     //
-    // if buttonlabel starts with '#' the rest of buttonlabel is used as name of bitmap file used for button
+    // if buttonlabel starts with '#' the rest of buttonlabel is used as name of pixmap file used for button
     // if buttonlabel contains a '/' it's interpreted as AWAR name and the button displays the content of the awar
     // otherwise buttonlabel is interpreted as button label (may contain '\n').
     //
