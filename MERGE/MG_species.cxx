@@ -995,7 +995,7 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
     aws->button_length(0);
     aws->at("icon");
     aws->callback(AW_POPUP_HELP, (AW_CL)"mg_species.hlp");
-    aws->create_button("HELP_MERGE", "#merge/icon.bitmap");
+    aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
     aws->create_menu("DB1->DB2", "-");
     aws->insert_menu_topic("compare_field_of_listed",   "Compare a field of listed species ...", "C", "checkfield.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_mg_check_fields, 0);
