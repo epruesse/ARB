@@ -262,8 +262,15 @@ static void aw_attach_widget(Widget w, AW_at *_at, int default_width = -1) {
     args.assign_to_widget(w);
 }
 
+const char *AW_get_pixmapPath(const char *pixmapName) {
+    // const char *pixmapsDir = "pixmaps"; // normal pixmaps (as used in gtk branch)
+    const char *pixmapsDir = "motifHack/pixmaps"; // see ../lib/motifHack/README
+
+    return GB_path_in_ARBLIB(pixmapsDir, pixmapName);
+}
+
 static char *pixmapPath(const char *pixmapName) {
-    return nulldup(GB_path_in_ARBLIB("pixmaps", pixmapName));
+    return nulldup(AW_get_pixmapPath(pixmapName));
 }
 
 
@@ -442,7 +449,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     // If a callback is bound via at->callback(), a button is created.
     // Otherwise a text display is created.
     //
-    // if buttonlabel starts with '#' the rest of buttonlabel is used as name of bitmap file used for button
+    // if buttonlabel starts with '#' the rest of buttonlabel is used as name of pixmap file used for button
     // if buttonlabel contains a '/' it's interpreted as AWAR name and the button displays the content of the awar
     // otherwise buttonlabel is interpreted as button label (may contain '\n').
     //
@@ -828,13 +835,13 @@ void AW_window::create_text_toggle(const char *var_name, const char *noText, con
 
 
 void AW_window::create_toggle(const char *var_name) {
-    create_toggle(var_name, "#no.bitmap", "#yes.bitmap");
+    create_toggle(var_name, "#no.xpm", "#yes.xpm");
 }
 
 void AW_window::create_inverse_toggle(const char *var_name) {
     // like create_toggle, but displays inverse value
     // (i.e. it's checked if value is zero, and unchecked otherwise)
-    create_toggle(var_name, "#yes.bitmap", "#no.bitmap");
+    create_toggle(var_name, "#yes.xpm", "#no.xpm");
 }
 
 // ---------------------

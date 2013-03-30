@@ -1116,15 +1116,15 @@ static void insert_search_fields(AW_window_menu_modes *awmm,
 
     awmm->at(cat(buf, label_prefix, "n"));
     awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, taw->type), (AW_CL)taw->ed4w);
-    awmm->create_button(cat(buf, macro_prefix, "_SEARCH_NEXT"), "#edit/next.bitmap");
+    awmm->create_button(cat(buf, macro_prefix, "_SEARCH_NEXT"), "#edit/next.xpm");
 
     awmm->at(cat(buf, label_prefix, "l"));
     awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, taw->type), (AW_CL)taw->ed4w);
-    awmm->create_button(cat(buf, macro_prefix, "_SEARCH_LAST"), "#edit/last.bitmap");
+    awmm->create_button(cat(buf, macro_prefix, "_SEARCH_LAST"), "#edit/last.xpm");
 
     awmm->at(cat(buf, label_prefix, "d"));
     awmm->callback(AW_POPUP, (AW_CL)ED4_create_search_window, (AW_CL)taw);
-    awmm->create_button(cat(buf, macro_prefix, "_SEARCH_DETAIL"), "#edit/detail.bitmap");
+    awmm->create_button(cat(buf, macro_prefix, "_SEARCH_DETAIL"), "#edit/detail.xpm");
 
     awmm->at(cat(buf, label_prefix, "s"));
     awmm->create_toggle(show_awar_name);
@@ -1667,7 +1667,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->at("fold");
     awmm->help_text("e4.hlp");
-    awmm->create_toggle(AWAR_EDIT_TITLE_MODE, "#more.bitmap", "#less.bitmap");
+    awmm->create_toggle(AWAR_EDIT_TITLE_MODE, "#more.xpm", "#less.xpm");
 
     // -------------------
     //      positions
@@ -1726,12 +1726,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->at("undo");
     awmm->callback(ED4_undo_redo, GB_UNDO_UNDO);
     awmm->help_text("undo.hlp");
-    awmm->create_button("UNDO", "#undo.bitmap");
+    awmm->create_button("UNDO", "#undo.xpm");
 
     awmm->at("redo");
     awmm->callback(ED4_undo_redo, GB_UNDO_REDO);
     awmm->help_text("undo.hlp");
-    awmm->create_button("REDO", "#redo.bitmap");
+    awmm->create_button("REDO", "#redo.xpm");
 
     // --------------------------
     //      aligner / SAIviz
@@ -1776,7 +1776,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->create_text_toggle(AWAR_INSERT_MODE, "Replace", "Insert", 7);
 
     awmm->at("direct");
-    awmm->create_toggle(AWAR_EDIT_RIGHTWARD, "#edit/3to5.bitmap", "#edit/5to3.bitmap", 7);
+    awmm->create_toggle(AWAR_EDIT_RIGHTWARD, "#edit/3to5.xpm", "#edit/5to3.xpm", 7);
 
     // -------------------------
     //      secedit / rna3d
@@ -1814,12 +1814,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         awmm->at("zoom");
         if (xoffset) { awmm->get_at_position(&x, &y); awmm->at(x+xoffset, y); }
         awmm->callback(AW_POPUP, (AW_CL)ED4_zoom_message_window, (AW_CL)0);
-        awmm->create_button("ZOOM", "#edit/zoom.bitmap");
+        awmm->create_button("ZOOM", "#edit/zoom.xpm");
 
         awmm->at("clear");
         if (xoffset) { awmm->get_at_position(&x, &y); awmm->at(x+xoffset, y); }
         awmm->callback(ED4_clear_errors, (AW_CL)0);
-        awmm->create_button("CLEAR", "#edit/clear.bitmap");
+        awmm->create_button("CLEAR", "#edit/clear.xpm");
 
         awmm->at("errortext");
         if (xoffset) { awmm->get_at_position(&x, &y); awmm->at(x+xoffset, y); }
@@ -1832,13 +1832,13 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     //      'more' area
 
     awmm->at("cons");
-    awmm->create_toggle(ED4_AWAR_CONSENSUS_SHOW, "#edit/nocons.bitmap", "#edit/cons.bitmap");
+    awmm->create_toggle(ED4_AWAR_CONSENSUS_SHOW, "#edit/nocons.xpm", "#edit/cons.xpm");
 
     awmm->at("num");
-    awmm->create_toggle(ED4_AWAR_DIGITS_AS_REPEAT, "#edit/norepeat.bitmap", "#edit/repeat.bitmap");
+    awmm->create_toggle(ED4_AWAR_DIGITS_AS_REPEAT, "#edit/norepeat.xpm", "#edit/repeat.xpm");
 
     awmm->at("key");
-    awmm->create_toggle("key_mapping/enable", "#edit/nokeymap.bitmap", "#edit/keymap.bitmap");
+    awmm->create_toggle("key_mapping/enable", "#edit/nokeymap.xpm", "#edit/keymap.xpm");
 
     // search
 
@@ -1867,19 +1867,19 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->at("alast");
     awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, ED4_ANY_PATTERN), (AW_CL)current_ed4w());
-    awmm->create_button("ALL_SEARCH_LAST", "#edit/last.bitmap");
+    awmm->create_button("ALL_SEARCH_LAST", "#edit/last.xpm");
 
     awmm->at("anext");
     awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, ED4_ANY_PATTERN), (AW_CL)current_ed4w());
-    awmm->create_button("ALL_SEARCH_NEXT", "#edit/next.bitmap");
+    awmm->create_button("ALL_SEARCH_NEXT", "#edit/next.xpm");
 
     title_mode_changed(aw_root, awmm);
 
     // Buttons at left window border
 
-    awmm->create_mode("edit/arrow.bitmap", "normal.hlp", AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_MOVE, (AW_CL)0);
-    awmm->create_mode("edit/kill.bitmap",  "kill.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_KILL, (AW_CL)0);
-    awmm->create_mode("edit/mark.bitmap",  "mark.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_MARK, (AW_CL)0);
+    awmm->create_mode("edit/arrow.xpm", "normal.hlp", AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_MOVE, (AW_CL)0);
+    awmm->create_mode("edit/kill.xpm",  "kill.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_KILL, (AW_CL)0);
+    awmm->create_mode("edit/mark.xpm",  "mark.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_MARK, (AW_CL)0);
 
     FastAligner_create_variables(awmm->get_root(), props_db);
 

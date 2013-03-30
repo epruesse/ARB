@@ -394,8 +394,8 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
         aws->at("orientation");
         {
             aws->create_toggle_field(AWAR_APRINT_ORIENTATION, 1);
-            aws->insert_toggle("#print/portrait.bitmap", "P", int(AWT_APRINT_ORIENTATION_PORTRAIT));
-            aws->insert_toggle("#print/landscape.bitmap", "P", int(AWT_APRINT_ORIENTATION_LANDSCAPE));
+            aws->insert_toggle("#print/portrait.xpm", "P", int(AWT_APRINT_ORIENTATION_PORTRAIT));
+            aws->insert_toggle("#print/landscape.xpm", "P", int(AWT_APRINT_ORIENTATION_LANDSCAPE));
             aws->update_toggle_field();
         }
 

@@ -1312,7 +1312,7 @@ const char *aw_str_2_label(const char *str, AW_window *aww) {
     }
     else {
         if (str[0] == '#') {
-            label = GB_path_in_ARBLIB("pixmaps", str+1);
+            label = AW_get_pixmapPath(str+1);
         }
         else {
             AW_awar *is_awar = aww->get_root()->label_is_awar(str);
@@ -1416,15 +1416,13 @@ void aw_update_all_window_geometry_awars(AW_root *awr) {
     GBS_hash_do_loop(awr->hash_for_windows, aw_loop_get_window_geometry, NULL);
 }
 
-static const char *existingPixmap(const char *iconpath, const char *name) {
-    const char *icon = GBS_global_string("%s/%s.xpm", iconpath, name);
+static const char *existingPixmap(const char *icon_relpath, const char *name) {
+    const char *icon_relname  = GBS_global_string("%s/%s.xpm", icon_relpath, name);
+    const char *icon_fullname = AW_get_pixmapPath(icon_relname);
 
-    if (!GB_is_regularfile(icon)) {
-        icon = GBS_global_string("%s/%s.bitmap", iconpath, name);
-        if (!GB_is_regularfile(icon)) icon = NULL;
-    }
+    if (!GB_is_regularfile(icon_fullname)) icon_fullname = NULL;
 
-    return icon;
+    return icon_fullname;
 }
 
 static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pixel background) {
@@ -1434,8 +1432,7 @@ static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pi
     Pixmap pixmap = GBS_read_hash(icon_hash, iconName);
 
     if (!pixmap && iconName) {
-        const char *iconpath = GB_path_in_ARBLIB("pixmaps/icons");
-        const char *iconFile = existingPixmap(iconpath, iconName);
+        const char *iconFile = existingPixmap("icons", iconName);
 
         if (iconFile) {
             char *ico = strdup(iconFile);
@@ -2218,7 +2215,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
 
     TuneBackground(p_w->mode_area, TUNE_BUTTON); // set background color for mode-buttons
 
-    const char *path = GB_path_in_ARBLIB("pixmaps", pixmap);
+    const char *path = AW_get_pixmapPath(pixmap);
 
     int y = yoffset_for_mode_button(p_w->number_of_modes);
     button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass, p_w->mode_area,
