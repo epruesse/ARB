@@ -263,7 +263,10 @@ static void aw_attach_widget(Widget w, AW_at *_at, int default_width = -1) {
 }
 
 const char *AW_get_pixmapPath(const char *pixmapName) {
-    return GB_path_in_ARBLIB("pixmaps", pixmapName);
+    // const char *pixmapsDir = "pixmaps"; // normal pixmaps (as used in gtk branch)
+    const char *pixmapsDir = "motifHack/pixmaps"; // see ../lib/motifHack/README
+
+    return GB_path_in_ARBLIB(pixmapsDir, pixmapName);
 }
 
 static char *pixmapPath(const char *pixmapName) {

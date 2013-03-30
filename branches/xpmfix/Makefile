@@ -1729,7 +1729,7 @@ clean2: $(ARCHS:.a=.clean) \
 	rm -f *.last_gcc config.makefile.bak
 
 # links are needed for cleanup
-clean: redo_links
+clean: redo_links motif_xpm_hack_clean
 	$(MAKE) clean2
 	$(MAKE) clean_cov_all clean_links
 
@@ -1851,8 +1851,14 @@ arb_external: convert tools gde readseq tg pst xmlin
 
 arb_no_perl: arbapplications help arb_external
 
-arb:
+arb: motif_xpm_hack
 	$(MAKE) "WITHPERL=1" perl arb_no_perl
+
+motif_xpm_hack:
+	$(MAKE) -r -C "lib/motifHack" all
+
+motif_xpm_hack_clean:
+	$(MAKE) -r -C "lib/motifHack" clean
 
 # --------------------------------------------------------------------------------
 # special targets for SOURCE_TOOLS/remake_after_change.pl
