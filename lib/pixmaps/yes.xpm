@@ -2,7 +2,7 @@
 static char *yes[] = {
 /* columns rows colors chars-per-pixel */
 "14 13 2 1 ",
-"  c gray100",
+"  c none",
 ". c black",
 /* pixels */
 "              ",

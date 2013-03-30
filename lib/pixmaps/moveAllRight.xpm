@@ -2,7 +2,7 @@
 static char *moveAllRight[] = {
 /* columns rows colors chars-per-pixel */
 "17 17 2 1 ",
-"  c gray100",
+"  c none",
 ". c black",
 /* pixels */
 "          .      ",
