@@ -44,10 +44,14 @@ endif
 FORCEMASK = umask 002
 NODIR=--no-print-directory
 
+SED:=$(ARBHOME)/SH/arb_sed
+READLINK:=$(ARBHOME)/SH/arb_readlink
+
 # ---------------------- [basic compiler setting]
 
 ifdef DARWIN
-#       GCC and GPP now set in the Portfile
+	GCC:= clang
+	GPP:= clang++
 else
 	GCC:=$(CC)
 	GPP:=$(CXX)
@@ -645,6 +649,7 @@ check_TOOLS:
 		"$(ACC)" \
 		"$(CPP)" \
 		"$(GPP)" \
+		"$(GCC)" \
 		"$(ACCLIB)" \
 		"$(CPPLIB)" \
 		"$(XMKMF)" \
@@ -866,6 +871,7 @@ ARCHS_NTREE = \
 		SL/REFENTRIES/REFENTRIES.a \
 		SL/NDS/NDS.a \
 		SL/ITEMS/ITEMS.a \
+		SL/INSDEL/INSDEL.a \
 		SL/LOCATION/LOCATION.a \
 		SL/TRANSLATE/TRANSLATE.a \
 		SL/TREEDISP/TREEDISP.a \
@@ -1258,6 +1264,7 @@ SL/FAST_ALIGNER/FAST_ALIGNER.dummy:	links_non_perl
 SL/FILTER/FILTER.dummy:			links_non_perl
 SL/GUI_ALIVIEW/GUI_ALIVIEW.dummy:	links_non_perl
 SL/HELIX/HELIX.dummy:			links_non_perl
+SL/INSDEL/INSDEL.dummy:			links_non_perl
 SL/ITEMS/ITEMS.dummy:			links_non_perl
 SL/LOCATION/LOCATION.dummy:		links_non_perl
 SL/MATRIX/MATRIX.dummy:			links_non_perl
@@ -1483,6 +1490,7 @@ proto: proto_tools
 		CORE/CORE.proto \
 		CONVERTALN/CONVERTALN.proto \
 		NTREE/NTREE.proto \
+		MERGE/MERGE.proto \
 		$(ARCHS_PT_SERVER:.a=.proto) \
 		SERVERCNTRL/SERVERCNTRL.proto \
 		SL/SL.proto \
@@ -1511,12 +1519,12 @@ ETAGS_REST =--C-kinds=dev    --C++-kinds=dev
 $(TAG_SOURCE_HEADERS): links
 #	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
 #	workaround a bug in ctags 5.8:
-	find . \( -name '*.hxx' -o -name "*.h" \) -type f | grep -v -i perl5 | sed -e 's/^.\///g' > $@
+	find . \( -name '*.hxx' -o -name "*.h" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
 
 $(TAG_SOURCE_CODE): links
 #	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
 #	workaround a bug in ctags 5.8:
-	find . \( -name '*.cxx' -o -name "*.c" \) -type f | grep -v -i perl5 | sed -e 's/^.\///g' > $@
+	find . \( -name '*.cxx' -o -name "*.c" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
 
 tags: $(TAG_SOURCE_LISTS)
 	$(ETAGS)    $(ETAGS_TYPES) -L $(TAG_SOURCE_HEADERS)
@@ -1722,7 +1730,7 @@ clean2: $(ARCHS:.a=.clean) \
 	rm -f *.last_gcc config.makefile.bak
 
 # links are needed for cleanup
-clean: redo_links
+clean: redo_links motif_xpm_hack_clean
 	$(MAKE) clean2
 	$(MAKE) clean_cov_all clean_links
 
@@ -1844,8 +1852,14 @@ arb_external: convert tools gde readseq tg pst xmlin
 
 arb_no_perl: arbapplications help arb_external
 
-arb:
+arb: motif_xpm_hack
 	$(MAKE) "WITHPERL=1" perl arb_no_perl
+
+motif_xpm_hack:
+	$(MAKE) -r -C "lib/motifHack" all
+
+motif_xpm_hack_clean:
+	$(MAKE) -r -C "lib/motifHack" clean
 
 # --------------------------------------------------------------------------------
 # special targets for SOURCE_TOOLS/remake_after_change.pl
@@ -1943,12 +1957,14 @@ UNITS_TESTED_FIRST = \
 	TOOLS/arb_consensus_tree.test \
 	TOOLS/arb_test.test \
 	TOOLS/arb_probe.test \
+	PERLTOOLS/arb_proto_2_xsub.test \
 	AWTC/AWTC.test \
 
 UNITS_TESTED = \
 	DBSERVER/DBSERVER.test \
 	AWT/libAWT.test \
 	CORE/libCORE.test \
+	SL/INSDEL/INSDEL.test \
 	SL/TREEDISP/TREEDISP.test \
 	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \

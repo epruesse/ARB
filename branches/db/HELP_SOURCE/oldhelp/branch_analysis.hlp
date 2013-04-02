@@ -51,7 +51,16 @@ SECTION         Mark long branches
                 where the relative and absolute difference are above the specified minimas.
 
                 When a subtree has been marked, all further furcations between that subtree and the root
-                of the whole tree are ignored.
+                of the whole tree will be ignored.
+
+                Poorly aligned sequences often result in long branches in the tree. Being able to identify
+                those branches quickly helps to find those sequences.
+
+                The indented workflow is
+                * search long branches
+                * check alignment and data and fix any problems
+                * recalculate tree parts (see LINK{pa_add.hlp})
+                * search again. Now you may find other branches, nearer to the tree root.
 
 SECTION         Mark deep leafs
 

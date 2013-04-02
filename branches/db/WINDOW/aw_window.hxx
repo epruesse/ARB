@@ -103,8 +103,9 @@ public:
 typedef const char *AW_label;       // label for buttons menus etc
 // "fsdf" simple label  // no '/' symbol !!!
 // "awarname/asdf"  // awar name (any '/' in string)
-// "#file.bitmap"   // bitmap in $ARBHOME/lib/pixmaps/file.bitmap
+// "#file.xpm"   // pixmap in $ARBHOME/lib/pixmaps/file.xpm
 
+const char *AW_get_pixmapPath(const char *pixmapName);
 
 enum AW_event_type {
     AW_Keyboard_Press   = 1,

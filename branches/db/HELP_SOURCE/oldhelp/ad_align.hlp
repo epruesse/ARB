@@ -4,7 +4,7 @@ UP	glossary.hlp
 UP	security.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	insdelchar.hlp
+SUB	insdel.hlp
 
 
 #************* Title of helpfile !! and start of real helpfile ********

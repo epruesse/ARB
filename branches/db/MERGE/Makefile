@@ -1,18 +1,8 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
-CPP_OBJECTS = \
-	MG_adapt_ali.o \
-	MG_alignment.o \
-	MG_checkfield.o \
-	MG_configs.o \
-	MG_extendeds.o \
-	MG_gene_species.o \
-	MG_main.o \
-	MG_names.o \
-	MG_preserves.o \
-	MG_species.o \
-	MG_trees.o \
 
+SOURCES=$(wildcard *.cxx)
+CPP_OBJECTS=$(subst .cxx,.o,$(SOURCES))
 
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
@@ -22,6 +12,10 @@ $(MAIN): $(CPP_OBJECTS)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
+
+proto:
+	../AISC_MKPTPS/aisc_mkpt -P -G -F ^MERGE_ -c "Merge tool external interface" -w mg_merge.hxx $(SOURCES) >mg_merge.hxx.tmp
+	../SOURCE_TOOLS/mv_if_diff mg_merge.hxx.tmp mg_merge.hxx
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)

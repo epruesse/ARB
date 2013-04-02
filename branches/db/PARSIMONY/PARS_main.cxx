@@ -1413,24 +1413,22 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     }
     awm->button_length(5);
 
-    awm->insert_help_topic("How to use Help",    "H", "help.hlp",     AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp",     0);
-    awm->insert_help_topic("ARB Help",           "A", "arb.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",      0);
-    awm->insert_help_topic("ARB PARSIMONY Help", "N", "arb_pars.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
+    awm->insert_help_topic("ARB_PARSIMONY help", "N", "arb_pars.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
 
-    awm->create_mode("select.bitmap", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
-    awm->create_mode("mark.bitmap",   "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
-    awm->create_mode("group.bitmap",  "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
-    awm->create_mode("pzoom.bitmap",  "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode("lzoom.bitmap",  "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
-    awm->create_mode("swap.bitmap",   "mode_swap.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
-    awm->create_mode("move.bitmap",   "mode_move.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
+    awm->create_mode("select.xpm", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
+    awm->create_mode("mark.xpm",   "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
+    awm->create_mode("group.xpm",  "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
+    awm->create_mode("pzoom.xpm",  "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
+    awm->create_mode("lzoom.xpm",  "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
+    awm->create_mode("swap.xpm",   "mode_swap.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
+    awm->create_mode("move.xpm",   "mode_move.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
 #ifdef NNI_MODES
-    awm->create_mode("nearestn.bitmap", "mode_nni.hlp",      AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_NNI);
-    awm->create_mode("kernlin.bitmap",  "mode_kernlin.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_KERNINGHAN);
-    awm->create_mode("optimize.bitmap", "mode_optimize.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_OPTIMIZE);
+    awm->create_mode("nearestn.xpm", "mode_nni.hlp",      AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_NNI);
+    awm->create_mode("kernlin.xpm",  "mode_kernlin.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_KERNINGHAN);
+    awm->create_mode("optimize.xpm", "mode_optimize.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_OPTIMIZE);
 #endif // NNI_MODES
-    awm->create_mode("setroot.bitmap", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
-    awm->create_mode("reset.bitmap",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
+    awm->create_mode("setroot.xpm", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
+    awm->create_mode("reset.xpm",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
 
     awm->at(5, 2);
     awm->auto_space(0, -2);
@@ -1460,13 +1458,13 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->get_at_position(&db_parsx, &db_parsy);
 
     awm->button_length(10);
-    awm->create_button(0, AWAR_PARSIMONY);
+    awm->create_button(0, AWAR_PARSIMONY, 0, "+");
 
     awm->button_length(0);
 
     awm->callback((AW_CB)NT_jump_cb, (AW_CL)ntw, 1);
     awm->help_text("tr_jump.hlp");
-    awm->create_button("JUMP", "#pjump.bitmap", 0);
+    awm->create_button("JUMP", "Jump", 0);
 
     awm->callback(AW_POPUP_HELP, (AW_CL)"arb_pars.hlp");
     awm->help_text("help.hlp");
@@ -1485,25 +1483,27 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->help_text("ap_stack.hlp");
     awm->create_button("PUSH", "STORE", 0);
 
-    awm->button_length(7);
-
-    awm->at_x(db_treex);
-    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_RADIAL);
-    awm->help_text("tr_type_radial.hlp");
-    awm->create_button("RADIAL_TREE", "#radial.bitmap", 0);
-
-    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_NORMAL);
-    awm->help_text("tr_type_list.hlp");
-    awm->create_button("LIST_TREE", "#list.bitmap", 0);
-
     awm->at_x(db_parsx);
     awm->label_length(14);
     awm->label("Optimal Pars:");
 
     awm->button_length(10);
-    awm->create_button(0, AWAR_BEST_PARSIMONY);
+    awm->create_button(0, AWAR_BEST_PARSIMONY, 0, "+");
+
+    awm->button_length(0);
+    awm->auto_space(0, -2);
+
+    awm->at_x(db_treex);
+    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_RADIAL);
+    awm->help_text("tr_type_radial.hlp");
+    awm->create_button("RADIAL_TREE", "#radial.xpm", 0);
+
+    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_NORMAL);
+    awm->help_text("tr_type_list.hlp");
+    awm->create_button("LIST_TREE", "#dendro.xpm", 0);
 
     awm->at_newline();
+    awm->at(db_treex, awm->get_at_yposition());
 
     {
         AW_at_maxsize maxSize; // store size (so AWAR_FOOTER does not affect min. window size)
@@ -1515,7 +1515,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     }
 
     awm->get_at_position(&db_treex, &db_treey);
-    awm->set_info_area_height(db_treey+6);
+    awm->set_info_area_height(db_treey);
 
     awm->set_bottom_area_height(0);
     awm->set_focus_callback((AW_CB)PA_focus_cb, (AW_CL)ntw->gb_main, 0);

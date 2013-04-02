@@ -67,6 +67,8 @@ class AW_root : virtual Noncopyable {
     AW_default         application_database;
     AW_buttons_struct *button_sens_list;
 
+    void create_colormap();
+
     void init_variables(AW_default database);
     void exit_variables();
 
@@ -133,7 +135,7 @@ public:
     AW_awar *awar(const char *awar);
     AW_awar *awar_no_error(const char *awar);
 
-    void dont_save_awars_with_default_value(GBDATA *gb_main);
+    void dont_save_awars_with_default_value(GBDATA *gb_db);
 
     AW_awar *awar_string (const char *var_name, const char *default_value = "", AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_int    (const char *var_name, long default_value = 0,         AW_default default_file = AW_ROOT_DEFAULT);

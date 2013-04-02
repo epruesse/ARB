@@ -199,6 +199,15 @@ sub config2env() {
   return $UNIT_TESTS;
 }
 
+sub system_no_error_or_die($) {
+  my ($cmd) = @_;
+  if (system($cmd)!=0) { die "could not execute '$cmd'"; }
+  if ($? == -1) { die "could not execute '$cmd'"; }
+  if ($? & 127) { die sprintf("child died with signal %d", ($? & 127)); }
+  my $exitcode = ($? >> 8);
+  if ($exitcode!=0) { die "command '$cmd' failed (exitcode=$exitcode)"; }
+}
+
 sub main() {
   my $dir = `pwd`;
   chomp($dir);
@@ -260,9 +269,14 @@ sub main() {
     print "Silent premake: '$premake'\n";
     my $log = 'silent_premake.log';
     $premake = "cd $ARBHOME;$premake > $log 2>&1";
-    if (system($premake)!=0) {
-      my $err = "error executing '$premake' (exitcode=$?)";
-      print "\nError: Silent premake failed\n";
+    print "Silent premake: '$premake' (real)\n";
+
+    eval {
+      system_no_error_or_die($premake);
+    };
+    if ($@) {
+      my $err = "Silent premake failed (".$@.")";
+      print "\nError: $err\n";
       print "---------------------------------------- [$log start]\n";
       open(LOG,'<'.$log) || die "can't read '$log' (Reason: $!)";
       print <LOG>;
@@ -270,7 +284,6 @@ sub main() {
       print "---------------------------------------- [$log end]\n";
       die $err;
     }
-
     print "\n";
 
     my $targets_contain_unittests = 0;

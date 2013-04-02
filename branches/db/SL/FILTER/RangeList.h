@@ -54,14 +54,20 @@ public:
     reverse_iterator rbegin() const { return ranges.rbegin(); }
     reverse_iterator rend() const { return ranges.rend(); }
 
+    RangeList inverse(ExplicitRange versus);
+
+    bool empty() const { return ranges.empty(); }
+
     void add(const PosRange& range) {
-        iterator found = ranges.find(range);
-        if (found != ranges.end()) add_combined(range, found); // overlapping or adjacent to range
-        else ranges.insert(range);
+        if (!range.is_empty()) {
+            iterator found = ranges.find(range);
+            if (found != ranges.end()) add_combined(range, found); // overlapping or adjacent to range
+            else ranges.insert(range);
+        }
     }
 };
 
-RangeList build_RangeList_from_string(const char *SAI_data, const char *set_bits);
+RangeList build_RangeList_from_string(const char *SAI_data, const char *set_bytes, bool invert);
 
 #else
 #error RangeList.h included twice

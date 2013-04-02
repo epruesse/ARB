@@ -1,6 +1,8 @@
 #!/bin/bash
 
 SELF=$ARBHOME/SOURCE_TOOLS/generate_all_links.sh
+READLINK=${ARBHOME}/SH/arb_readlink
+
 
 finderr() {
     FOUND=`grep -Hn "$1" $SELF | perl -ne '/^[^:]+:[^:]+:/; print $&."[here]\n";'`
@@ -40,9 +42,9 @@ may_create_link() {
 assert_links_to_target() {
     # $1 target
     # $2 link
-    local LINKTARGET=`readlink -f $2`
+    local LINKTARGET=`$READLINK -f $2`
     local LINKDIR=`dirname $2`
-    local TARGET=`readlink -f $LINKDIR/$1`
+    local TARGET=`$READLINK -f $LINKDIR/$1`
 
     [ "$LINKTARGET" = "$TARGET" ] || (finderr $2 "$2 links not to $TARGET")
 }
@@ -275,6 +277,7 @@ symlink_file ../SL/GUI_ALIVIEW/awt_filter.hxx INCLUDE/awt_filter.hxx &&
 symlink_file ../SL/GUI_ALIVIEW/gui_aliview.hxx INCLUDE/gui_aliview.hxx &&
 symlink_file ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
 symlink_file ../SL/HELIX/BI_basepos.hxx INCLUDE/BI_basepos.hxx &&
+symlink_file ../SL/INSDEL/insdel.h INCLUDE/insdel.h &&
 symlink_file ../SL/ITEMS/items.h INCLUDE/items.h &&
 symlink_file ../SL/ITEMS/item_sel_list.h INCLUDE/item_sel_list.h &&
 symlink_file ../SL/LOCATION/Location.h INCLUDE/Location.h &&

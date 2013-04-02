@@ -218,5 +218,6 @@ pos_range.o: $(ARBHOME)/INCLUDE/attributes.h
 pos_range.o: $(ARBHOME)/INCLUDE/cxxforward.h
 pos_range.o: $(ARBHOME)/INCLUDE/dupstr.h
 pos_range.o: $(ARBHOME)/INCLUDE/gccver.h
+pos_range.o: $(ARBHOME)/INCLUDE/smartptr.h
 pos_range.o: $(ARBHOME)/INCLUDE/test_global.h
 pos_range.o: $(ARBHOME)/INCLUDE/test_unit.h

@@ -20,7 +20,7 @@ all: $(BINARIES)
 	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 $(ARBHOME)/bin/%: %.o
-	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIB_ARBDB) $(EXECLIBS)
 
 clean:
 	rm -f $(BINARIES)
@@ -54,6 +54,7 @@ arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_str.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -66,3 +67,5 @@ arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/test_unit.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h

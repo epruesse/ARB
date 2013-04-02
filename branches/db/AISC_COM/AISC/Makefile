@@ -1,6 +1,8 @@
 THIS=AISC/Makefile
 MAKETHIS=$(MAKE) -f $(THIS)
 #MAKETHIS=$(MAKE) -d -f $(THIS)
+SED:=$(ARBHOME)/SH/arb_sed
+READLINK:=$(ARBHOME)/SH/arb_readlink
 
 .SUFFIXES: .o .c .h .aisc
 
@@ -54,7 +56,7 @@ FAIL_ON_CHANGE=1# 0=continue on change, 1=fail on change
 
 # ----------------------------------------
 
-COMPARE_WITH_OTHER_ARB:=$(shell readlink $(LINK_TO_OTHER_ARB))
+COMPARE_WITH_OTHER_ARB:=$(shell $(READLINK) $(LINK_TO_OTHER_ARB))
 ifneq ($(COMPARE_WITH_OTHER_ARB),)
 THIS__COMDIR=$(shell pwd)
 COMDIRNAME=$(subst $(ARBHOME),,$(THIS__COMDIR))
@@ -161,7 +163,7 @@ clean:
 .depends:
 	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) C/*.c GENC/*.c -I GENH -I C -f- -w1 2>/dev/null \
 		| grep -v ' /usr' \
-		| sed -e 's/^C/O/ig' \
+		| $(SED) -e 's/^C/O/ig' \
 		> .depends_new
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff .depends_new .depends
 

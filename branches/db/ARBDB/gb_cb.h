@@ -17,14 +17,11 @@
 
 struct gb_transaction_save;
 
-
 struct gb_callback_list {
     gb_callback_list    *next;
-    GB_CB                func;
+    gb_cb_spec           spec;
     gb_transaction_save *old;
-    GB_CB_TYPE           type;
     GBDATA              *gbd;
-    int                 *clientdata;
 };
 
 #else
