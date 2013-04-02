@@ -417,7 +417,7 @@ void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
 }
 
 void AW_window::create_autosize_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, unsigned xtraSpace) {
-    aw_assert(buttonlabel[0] != '#');    // use create_button() for graphical buttons!
+    aw_assert(buttonlabel[0] != '#');    // use create_button for graphical buttons!
     aw_assert(!_at->to_position_exists); // wont work if to-position exists
 
     AW_awar *is_awar = get_root()->label_is_awar(buttonlabel);
@@ -658,7 +658,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 
             button = XtVaCreateManagedWidget("button", xmPushButtonWidgetClass, fatherwidget, RES_LABEL_CONVERT(buttonlabel), NULL);
         }
-        else { // button w/o callback (flat, not clickable)
+        else { // button w/o callback; (flat, not clickable)
             button = XtVaCreateManagedWidget("label", xmLabelWidgetClass, parent_widget, RES_LABEL_CONVERT(buttonlabel), NULL);
             args.add(XmNalignment, (org_correct_for_at_center == 1) ? XmALIGNMENT_CENTER : XmALIGNMENT_BEGINNING);
         }
