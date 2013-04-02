@@ -198,7 +198,7 @@ AW_window *MG_merge_configs_cb(AW_root *awr) {
     aws->shadow_width(1);
     aws->at("icon");
     aws->callback(AW_POPUP_HELP, (AW_CL)"mg_configs.hlp");
-    aws->create_button("HELP_MERGE", "#merge/icon.bitmap");
+    aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
     return (AW_window *)aws;
 }

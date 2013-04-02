@@ -635,8 +635,8 @@ static void run_close_callbacks(GBDATA *gb_main, gb_close_callback_list *gccs) {
     }
 }
 
-static gb_callback_list *g_b_old_callback_list = NULL; // points to callback during callback (NULL otherwise)
-static GB_MAIN_TYPE     *g_b_old_main          = NULL; // points to DB root during callback (NULL otherwise)
+static gb_callback_list *g_b_old_callback_list = NULL; // points to callback during callback; NULL otherwise
+static GB_MAIN_TYPE     *g_b_old_main          = NULL; // points to DB root during callback; NULL otherwise
 
 static GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
     gb_callback_list *cbl, *cbl_next;
@@ -2641,7 +2641,7 @@ struct IsSpecificCallback : private gb_cb_spec {
 };
 
 void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {
-    // remove specific callback (type, func and clientdata must match)
+    // remove specific callback; type, func and clientdata must match
     gb_remove_callbacks_that(gbd, IsSpecificCallback(gb_cb_spec(func, type, clientdata)));
 }
 void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {

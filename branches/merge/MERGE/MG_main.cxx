@@ -345,6 +345,8 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new) {
         awm->callback(MG_exit, 0);
         awm->create_button("QUIT", save_dst_enabled ? "Quit" : "Close");
 
+        awm->activate();
+
         return awm;
     }
 }
