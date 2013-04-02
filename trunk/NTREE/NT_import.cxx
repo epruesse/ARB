@@ -27,7 +27,7 @@ static void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {
     GLOBAL_gb_dst     = GLOBAL.gb_main;
     AW_window *aww    = DBUI::create_species_query_window(awr, (AW_CL)GLOBAL.gb_main);
     DBUI::unquery_all();
-    GB_ERROR   error  = MG_simple_merge(awr);
+    GB_ERROR    error = MERGE_sequences_simple(awr);
     if (!error) error = NT_format_all_alignments(GLOBAL.gb_main);
     DBUI::query_update_list();
     if (!error) aww->activate();

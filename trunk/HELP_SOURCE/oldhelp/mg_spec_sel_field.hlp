@@ -12,19 +12,21 @@ TITLE		Transfer one field of selected species
 
 OCCURRENCE	ARB_MERGE/Transfer Species/Transfer Field ...
 
-DESCRIPTION	Copies just one field from all listed species (left side)
-		to the corresponding species ( == equal 'name') of database II.
-		If the corresponding species does not exist then it will be
-		created.
-		There are two modes:
+DESCRIPTION	Copies just one field from all species listed in the source database (DB)
+                on the left side, to the corresponding species (i.e. the species with
+                identical 'name' entry) in the target DB on the right side.
 
-		1. Copy Mode:
-			Delete all fields of all corresponding species before
-			copying data.
+		If no such corresponding species exists, it will be created.
 
-		2. Append Mode (Strings Only)
-			Append all fields of listed species in db I
-			to corresponding field and species of db II
+		This function has two modes:
+
+		1. Copy mode:
+			Overwrite existing fields in target species.
+
+		2. Append mode:
+                        Appends to existing fields of target species.
+                        To activate the 'Append mode' check 'Append data ???'
+                        in the 'TRANSFER FIELD' window.
 
 NOTES		Transferring fields that are not of string type in append mode
 		does not work

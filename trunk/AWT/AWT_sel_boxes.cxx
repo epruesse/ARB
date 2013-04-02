@@ -968,22 +968,57 @@ void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL cl_typedse
     free(data);
 }
 
+typedef AW_window* (*PopupCallbackType)(AW_root*, AW_CL);
 
+static void popdown_loadbox_and_popup_user(AW_window *aw_loadbox, AW_CL cl_create_popup, AW_CL cl_user) {
+    PopupCallbackType  create_popup = (PopupCallbackType)cl_create_popup;
+    AW_root           *aw_root      = aw_loadbox->get_root();
+    AW_window         *aw_popup     = create_popup(aw_root, cl_user);
 
-AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const char *file_extension, char **set_file_name_awar,
-                               void (*callback)(AW_window*),
-                               AW_window* (*create_popup)(AW_root *, AW_default))
+    aw_loadbox->hide();
+    aw_popup->activate();
+}
+
+AW_window *awt_create_load_box(AW_root *aw_root, const char *action, const char *what,
+                               const char *default_directory, const char *file_extension,
+                               char **set_file_name_awar,
+                               void (*callback)(AW_window*, AW_CL),
+                               AW_window* (*create_popup)(AW_root *, AW_CL),
+                               void (*close_cb)(AW_window*, AW_CL), const char *close_button_text,
+                               AW_CL cl_user)
 {
     /* general purpose file selection box
      *
+     * 'action' describes what is intended to be done (e.g. "Load").
+     * used for window title and button.
+     *
+     * 'what' describes what is going to be loaded (e.g. "destination database")
+     * It is also used to create the awars for the filebox, i.e. same description for multiple
+     * fileboxes makes them share the awars.
+     *
+     * if 'set_file_name_awar' is non-NULL, it'll be set to a heap-copy of the awar-name
+     * containing the full selected filename.
+     *
+     * 'default_directory' specifies the directory opened in the filebox
+     *
+     * 'file_extension' specifies the filter to be used (which files are shown)
+     *
      * You can either provide a normal 'callback' or a 'create_popup'-callback
-     * (the not-used callback has to be NULL)
+     * (the not-used callback has to be NULL).
+     *
+     * Optionally you may pass a 'close_cb' which will be called when 'CLOSE' is pressed.
+     * If not given, AW_POPDOWN will be called.
+     *
+     * Optionally you may pass the button text for the 'CLOSE'-button (e.g. 'EXIT' or 'Abort')
+     *
+     * 'cl_user' will be forwarded to any specified callbacks.
      */
 
 
-    char *base_name = GBS_global_string_copy("tmp/load_box_%s", load_what);
+    char *what_key  = GBS_string_2_key(what);
+    char *base_name = GBS_global_string_copy("tmp/load_box_%s", what_key);
 
-    AW_create_fileselection_awars(aw_root, base_name, ".", file_extension, "");
+    AW_create_fileselection_awars(aw_root, base_name, default_directory, file_extension, "");
 
     if (set_file_name_awar) {
         *set_file_name_awar = GBS_global_string_copy("%s/file_name", base_name);
@@ -992,35 +1027,48 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
     AW_window_simple *aws = new AW_window_simple;
     {
         char title[100];
-        sprintf(title, "Load %s", load_what);
+        sprintf(title, "%s %s", action, what);
         aws->init(aw_root, title, title);
         aws->load_xfig("load_box.fig");
     }
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    if (close_cb) {
+        aws->callback(close_cb, cl_user);
+    }
+    else {
+        aws->callback(AW_POPDOWN);
+    }
+    if (close_button_text) {
+        aws->create_button("CLOSE", close_button_text, "");
+    }
+    else {
+        aws->create_button("CLOSE", "CLOSE", "C");
+    }
 
+#if 0
+    // @@@ allow to pass helpfile
     aws->at("help");
     aws->callback(AW_POPUP_HELP, (AW_CL)"");
     aws->create_button("HELP", "HELP");
+#endif
 
     aws->at("go");
-    aws->highlight();
 
     if (callback) {
         awt_assert(!create_popup);
-        aws->callback((AW_CB0)callback);
+        aws->callback(callback, cl_user);
     }
     else {
         awt_assert(create_popup);
-        aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_popup);
+        aws->callback(popdown_loadbox_and_popup_user, AW_CL(create_popup), cl_user);
     }
 
-    aws->create_button("LOAD", "LOAD", "L");
+    aws->create_button("GO", action);
 
     AW_create_fileselection(aws, base_name);
     free(base_name);
+    free(what_key);
     aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
     return aws;

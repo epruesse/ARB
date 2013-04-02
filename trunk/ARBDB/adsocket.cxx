@@ -996,6 +996,11 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
 static int  path_toggle = 0;
 static char path_buf[2][PATH_MAX];
 
+static char *use_other_path_buf() {
+    path_toggle = 1-path_toggle;
+    return path_buf[path_toggle];
+}
+
 GB_CSTR GB_append_suffix(const char *name, const char *suffix) {
     // if suffix != NULL -> append .suffix
     // (automatically removes duplicated '.'s)
@@ -1004,8 +1009,7 @@ GB_CSTR GB_append_suffix(const char *name, const char *suffix) {
     if (suffix) {
         while (suffix[0] == '.') suffix++;
         if (suffix[0]) {
-            path_toggle = 1-path_toggle; // use 2 buffers in turn
-            result = GBS_global_string_to_buffer(path_buf[path_toggle], PATH_MAX, "%s.%s", name, suffix);
+            result = GBS_global_string_to_buffer(use_other_path_buf(), PATH_MAX, "%s.%s", name, suffix);
         }
     }
     return result;
@@ -1037,7 +1041,8 @@ GB_CSTR GB_canonical_path(const char *anypath) {
             if (result) {
                 path_toggle = 1-path_toggle;
             }
-            else { // realpath failed, content of path_buf[path_toggle] is UNDEFINED!
+            else { // realpath failed (happens e.g. when using a non-existing path, e.g. if user entered the name of a new file)
+                   // => content of path_buf[path_toggle] is UNDEFINED!
                 char *dir, *fullname;
                 GB_split_full_path(anypath, &dir, &fullname, NULL, NULL);
 
@@ -1047,7 +1052,20 @@ GB_CSTR GB_canonical_path(const char *anypath) {
                 const char *canonical_dir = GB_canonical_path(dir);
                 gb_assert(canonical_dir);
 
-                result = GB_concat_path(canonical_dir, fullname);
+                // manually resolve '.' and '..' in non-existing parent directories
+                if (strcmp(fullname, "..") == 0) {
+                    char *parent;
+                    GB_split_full_path(canonical_dir, &parent, NULL, NULL, NULL);
+                    if (parent) {
+                        result = strcpy(use_other_path_buf(), parent);
+                        free(parent);
+                    }
+                }
+                else if (strcmp(fullname, ".") == 0) {
+                    result = canonical_dir;
+                }
+
+                if (!result) result = GB_concat_path(canonical_dir, fullname);
 
                 free(dir);
                 free(fullname);
@@ -1069,8 +1087,7 @@ GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
 
     if (anypath_left) {
         if (anypath_right) {
-            path_toggle = 1-path_toggle;
-            result = GBS_global_string_to_buffer(path_buf[path_toggle], sizeof(path_buf[path_toggle]), "%s/%s", anypath_left, anypath_right);
+            result = GBS_global_string_to_buffer(use_other_path_buf(), sizeof(path_buf[0]), "%s/%s", anypath_left, anypath_right);
         }
         else {
             result = anypath_left;
@@ -1101,6 +1118,15 @@ inline bool is_name_of_envvar(const char *name) {
         return false;
     }
     return true;
+}
+
+GB_CSTR GB_unfold_in_directory(const char *relative_directory, const char *path) {
+    // If 'path' is an absolute path, return canonical path.
+    //
+    // Otherwise unfolds relative 'path' using 'relative_directory' as start directory.
+
+    if (is_absolute_path(path)) return GB_canonical_path(path);
+    return GB_concat_full_path(relative_directory, path);
 }
 
 GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path) {
@@ -1367,6 +1393,7 @@ void TEST_paths() {
         char *somefile_in_arbhome   = strdup(GB_concat_path(arbhome, somefile));
         char *nosuchfile_in_arbhome = strdup(GB_concat_path(arbhome, nosuchfile));
         char *nosuchpath_in_arbhome = strdup(GB_concat_path(arbhome, "nosuchpath"));
+        char *somepath_in_arbhome   = strdup(GB_concat_path(arbhome, "lib"));
         char *file_in_nosuchpath    = strdup(GB_concat_path(nosuchpath_in_arbhome, "whatever"));
 
         TEST_REJECT(GB_is_directory(nosuchpath_in_arbhome));
@@ -1376,12 +1403,15 @@ void TEST_paths() {
         TEST_EXPECT_IS_CANONICAL(nosuchpath_in_arbhome);
         TEST_EXPECT_IS_CANONICAL(file_in_nosuchpath);
 
-        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../ARBDB/./arbdb.h",     "ARBDB/arbdb.h"); // test parent-path
-        TEST_EXPECT_CANONICAL_TO("INCLUDE/arbdb.h",                   "ARBDB/arbdb.h"); // test symbolic link to file
+        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../ARBDB/./arbdb.h",     "ARBDB/arbdb.h");         // test parent-path
+        TEST_EXPECT_CANONICAL_TO("INCLUDE/arbdb.h",                   "ARBDB/arbdb.h");         // test symbolic link to file
         TEST_EXPECT_CANONICAL_TO("NAMES_COM/AISC/aisc.pa",            "AISC_COM/AISC/aisc.pa"); // test symbolic link to directory
-        TEST_EXPECT_CANONICAL_TO("./NAMES_COM/AISC/..",               "AISC_COM"); // test parent-path through links
-        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../ARBDB/../nosuchpath", "nosuchpath");
-        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../nosuchpath/../ARBDB", "nosuchpath/../ARBDB"); // cannot resolve through non-existing paths!
+        TEST_EXPECT_CANONICAL_TO("./NAMES_COM/AISC/..",               "AISC_COM");              // test parent-path through links
+
+        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../ARBDB/../nosuchpath", "nosuchpath"); // nosuchpath does not exist, but involved parent dirs do
+        // test resolving of non-existent parent dirs:
+        TEST_EXPECT_CANONICAL_TO("./WINDOW/./../nosuchpath/../ARBDB", "ARBDB");
+        TEST_EXPECT_CANONICAL_TO("./nosuchpath/./../ARBDB", "ARBDB");
 
         // test GB_unfold_path
         TEST_EXPECT_EQUAL(GB_unfold_path("ARBHOME", somefile), somefile_in_arbhome);
@@ -1390,6 +1420,13 @@ void TEST_paths() {
         char *inhome = strdup(GB_unfold_path("HOME", "whatever"));
         TEST_EXPECT_EQUAL(inhome, GB_canonical_path("~/whatever"));
         free(inhome);
+
+        // test GB_unfold_in_directory
+        TEST_EXPECT_EQUAL(GB_unfold_in_directory(arbhome, somefile), somefile_in_arbhome);
+        TEST_EXPECT_EQUAL(GB_unfold_in_directory(nosuchpath_in_arbhome, somefile_in_arbhome), somefile_in_arbhome);
+        TEST_EXPECT_EQUAL(GB_unfold_in_directory(arbhome, nosuchfile), nosuchfile_in_arbhome);
+        TEST_EXPECT_EQUAL(GB_unfold_in_directory(nosuchpath_in_arbhome, "whatever"), file_in_nosuchpath);
+        TEST_EXPECT_EQUAL(GB_unfold_in_directory(somepath_in_arbhome, "../nosuchfile"), nosuchfile_in_arbhome);
 
         // test unfolding absolute paths (HOME is ignored)
         TEST_EXPECT_EQUAL(GB_unfold_path("HOME", arbhome), arbhome);
@@ -1401,6 +1438,7 @@ void TEST_paths() {
         TEST_EXPECT_EQUAL(GB_path_in_ARBHOME(nosuchfile), nosuchfile_in_arbhome);
 
         free(file_in_nosuchpath);
+        free(somepath_in_arbhome);
         free(nosuchpath_in_arbhome);
         free(nosuchfile_in_arbhome);
         free(somefile_in_arbhome);

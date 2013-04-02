@@ -1490,6 +1490,7 @@ proto: proto_tools
 		CORE/CORE.proto \
 		CONVERTALN/CONVERTALN.proto \
 		NTREE/NTREE.proto \
+		MERGE/MERGE.proto \
 		$(ARCHS_PT_SERVER:.a=.proto) \
 		SERVERCNTRL/SERVERCNTRL.proto \
 		SL/SL.proto \

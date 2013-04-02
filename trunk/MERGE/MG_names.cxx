@@ -39,12 +39,13 @@ void MG_create_rename_awars(AW_root *aw_root, AW_default aw_def) {
 // --------------------------------------------------------------------------------
 
 static const char *addids_match_info(AW_root *aw_root) {
-    char       *addid1 = aw_root->awar(AWAR_ADDID_SRC)->read_string();
-    char       *addid2 = aw_root->awar(AWAR_ADDID_DST)->read_string();
-    const char *result = (strcmp(addid1, addid2) == 0) ? "Ok" : "MISMATCH!";
+    char *src_addid = aw_root->awar(AWAR_ADDID_SRC)->read_string();
+    char *dst_addid = aw_root->awar(AWAR_ADDID_DST)->read_string();
 
-    free(addid2);
-    free(addid1);
+    const char *result = (strcmp(src_addid, dst_addid) == 0) ? "Ok" : "MISMATCH!";
+
+    free(dst_addid);
+    free(src_addid);
 
     return result;
 }
@@ -54,49 +55,50 @@ static void addids_match_info_refresh_cb(AW_root *aw_root) {
     MG_set_renamed(false, aw_root, "Needed (add.field changed)");
 }
 
-void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBDATA *gb_dest) {
+void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_src, GBDATA *gb_dst) {
     static bool created = false;
 
     if (!created) {
-        GB_transaction t1(gb_merge);
-        GB_transaction t2(gb_dest);
+        GB_transaction src_ta(gb_src);
+        GB_transaction dst_ta(gb_dst);
         GB_ERROR       error = 0;
 
         // Awars for additional ID need to be mapped, cause they use same db-path in both DBs
 
-        GBDATA     *gb_addid1 = GB_search(gb_merge, AWAR_NAMESERVER_ADDID, GB_STRING);
-        GBDATA     *gb_addid2 = GB_search(gb_dest, AWAR_NAMESERVER_ADDID, GB_STRING);
-        const char *addid1    = gb_addid1 ? GB_read_char_pntr(gb_addid1) : "";
-        const char *addid2    = gb_addid2 ? GB_read_char_pntr(gb_addid2) : "";
+        GBDATA *gb_src_addid = GB_search(gb_src, AWAR_NAMESERVER_ADDID, GB_STRING);
+        GBDATA *gb_dst_addid = GB_search(gb_dst, AWAR_NAMESERVER_ADDID, GB_STRING);
+
+        const char *src_addid = gb_src_addid ? GB_read_char_pntr(gb_src_addid) : "";
+        const char *dst_addid = gb_dst_addid ? GB_read_char_pntr(gb_dst_addid) : "";
 
         // use other as default (needed e.g. for import)
-        if (gb_addid1 && !gb_addid2) {
-            gb_addid2             = GB_create(gb_dest, AWAR_NAMESERVER_ADDID, GB_STRING);
-            if (!gb_addid2) error = GB_await_error();
-            else error            = GB_write_string(gb_addid2, addid1);
+        if (gb_src_addid && !gb_dst_addid) {
+            gb_dst_addid             = GB_create(gb_dst, AWAR_NAMESERVER_ADDID, GB_STRING);
+            if (!gb_dst_addid) error = GB_await_error();
+            else error               = GB_write_string(gb_dst_addid, src_addid);
         }
-        else if (!gb_addid1 && gb_addid2) {
-            gb_addid1             = GB_create(gb_merge, AWAR_NAMESERVER_ADDID, GB_STRING);
-            if (!gb_addid1) error = GB_await_error();
-            else error            = GB_write_string(gb_addid1, addid2);
+        else if (!gb_src_addid && gb_dst_addid) {
+            gb_src_addid             = GB_create(gb_src, AWAR_NAMESERVER_ADDID, GB_STRING);
+            if (!gb_src_addid) error = GB_await_error();
+            else error               = GB_write_string(gb_src_addid, dst_addid);
         }
 
         if (!error) {
-            AW_awar *awar_addid1 = aw_root->awar_string(AWAR_ADDID_SRC, "xxx", gb_merge);
-            AW_awar *awar_addid2 = aw_root->awar_string(AWAR_ADDID_DST, "xxx", gb_dest);
+            AW_awar *awar_src_addid = aw_root->awar_string(AWAR_ADDID_SRC, "xxx", gb_src);
+            AW_awar *awar_dst_addid = aw_root->awar_string(AWAR_ADDID_DST, "xxx", gb_dst);
 
-            awar_addid1->unmap(); awar_addid1->map(gb_addid1);
-            awar_addid2->unmap(); awar_addid2->map(gb_addid2);
+            awar_src_addid->unmap(); awar_src_addid->map(gb_src_addid);
+            awar_dst_addid->unmap(); awar_dst_addid->map(gb_dst_addid);
 
-            awar_addid1->add_callback(addids_match_info_refresh_cb);
-            awar_addid2->add_callback(addids_match_info_refresh_cb);
+            awar_src_addid->add_callback(addids_match_info_refresh_cb);
+            awar_dst_addid->add_callback(addids_match_info_refresh_cb);
 
             addids_match_info_refresh_cb(aw_root);
         }
 
         if (error) {
-            error = t1.close(error);
-            error = t2.close(error);
+            error = src_ta.close(error);
+            error = dst_ta.close(error);
             aw_message(error);
         }
         else {
@@ -178,7 +180,7 @@ AW_window *MG_merge_names_cb(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(awr, "MERGE_AUTORENAME_SPECIES", "SYNCHRONIZE NAMES");
+        aws->init(awr, "MERGE_AUTORENAME_SPECIES", "Synchronize names");
         aws->load_xfig("merge/names.fig");
 
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
