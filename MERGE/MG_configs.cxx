@@ -124,21 +124,21 @@ static void MG_transfer_config(AW_window *aww) {
     if (!error) {
         error = GB_begin_transaction(GLOBAL_gb_src);
         if (!error) {
-            GBDATA *gb_config_data1 = GB_search(GLOBAL_gb_src, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
-            GBDATA *gb_config_data2 = GB_search(GLOBAL_gb_dst,  CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
-            GBDATA *gb_cfgname_1    = GB_find_string(gb_config_data1, "name", source, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-            GBDATA *gb_cfgname_2    = GB_find_string(gb_config_data2, "name", dest,   GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+            GBDATA *gb_src_config_data = GB_search(GLOBAL_gb_src, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
+            GBDATA *gb_dst_config_data = GB_search(GLOBAL_gb_dst,  CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
+            GBDATA *gb_src_cfgname     = GB_find_string(gb_src_config_data, "name", source, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+            GBDATA *gb_dst_cfgname     = GB_find_string(gb_dst_config_data, "name", dest,   GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
-            if (!gb_cfgname_1) {
+            if (!gb_src_cfgname) {
                 error = "Please select the configuration you want to transfer";
             }
-            else if (gb_cfgname_2) {
+            else if (gb_dst_cfgname) {
                 error = "To overwrite a configuration, delete it first!";
             }
             else {
-                GBDATA *gb_cfg_1 = GB_get_father(gb_cfgname_1);
-                GBDATA *gb_cfg_2 = GB_create_container(gb_config_data2, "configuration");
-                error            = GB_copy(gb_cfg_2, gb_cfg_1);
+                GBDATA *gb_src_cfg = GB_get_father(gb_src_cfgname);
+                GBDATA *gb_dst_cfg = GB_create_container(gb_dst_config_data, "configuration");
+                error              = GB_copy(gb_dst_cfg, gb_src_cfg);
             }
         }
     }

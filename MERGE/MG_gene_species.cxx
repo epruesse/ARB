@@ -172,14 +172,14 @@ static char *MG_create_field_content(GBDATA *gb_species, CreationMethod method, 
     return result;
 }
 
-GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, GB_HASH *error_suppressor, GB_HASH *source_organism_hash) {
+GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_src, GBDATA *gb_dst, GB_HASH *error_suppressor, GB_HASH *source_organism_hash) {
     // Export fields from pseudo-species' source-organism to exported destination-species
     // error_suppressor and source_organism_hash may be NULL
 
     int export_fields = aw_root->awar(AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS)->read_int();
 
     if (export_fields) { // should fields be exported ?
-        mg_assert(GEN_is_pseudo_gene_species(gb_source));
+        mg_assert(GEN_is_pseudo_gene_species(gb_src));
 
         char *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
         char *start                = existing_definitions+1;
@@ -203,11 +203,11 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
                 char           *source = aw_root->awar(field_awar(start, "source"))->read_string();
                 char           *aci    = aw_root->awar(field_awar(start, "aci"))->read_string();
 
-                char *result = MG_create_field_content(gb_source, method, source, aci, error, source_organism_hash);
+                char *result = MG_create_field_content(gb_src, method, source, aci, error, source_organism_hash);
                 mg_assert(result || error);
 
                 if (result) {
-                    error = GBT_write_string(gb_dest, start, result);
+                    error = GBT_write_string(gb_dst, start, result);
                     free(result);
                 }
                 else {
@@ -219,7 +219,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
                         }
                     }
                     else {
-                        aw_message(GBS_global_string("'%s' when exporting %s (continuing)", error, GBT_read_name(gb_source)));
+                        aw_message(GBS_global_string("'%s' when exporting %s (continuing)", error, GBT_read_name(gb_src)));
                     }
                     if (error_suppressor) {
                         GBS_incr_hash(error_suppressor, error);

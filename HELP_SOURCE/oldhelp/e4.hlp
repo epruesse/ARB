@@ -27,7 +27,7 @@ OCCURRENCE	ARB_NT/Sequence/Edit marked sequences
 
 DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 		species' or 'a selection of species' and 'SAI' (sequence associated
-		information) stored in the data base.
+		information) stored in the database.
 		Potential secondary structure is automatically checked
 		and the information can be displayed with the primary structure.
 		In addition, an online column statistic may help you find

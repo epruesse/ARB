@@ -239,7 +239,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
 }
 
 
-static void nt_exit(AW_window *aws) {
+void nt_exit(AW_window *aws, AW_CL exitcode) { // goes to header: __ATTR__NORETURN
     if (GLOBAL.gb_main) {
         if (GB_read_clients(GLOBAL.gb_main)>=0) {
             if (GB_read_clock(GLOBAL.gb_main) > GB_last_saved_clock(GLOBAL.gb_main)) {
@@ -282,7 +282,7 @@ static void nt_exit(AW_window *aws) {
 
         GB_close(gb_main);
     }
-    exit(0);
+    exit(exitcode);
 }
 
 static void NT_save_quick_cb(AW_window *aww) {
@@ -1183,17 +1183,18 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("Import",      "I");
             {
-                awm->insert_menu_topic("import_seq", "Import sequences and fields", "I", "arb_import.hlp", AWM_ALL, NT_import_sequences, 0, 0);
+                awm->insert_menu_topic("import_seq", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree . \":\" &", 0);
+                awm->insert_menu_topic("import_seq", "Import from external format",   "I", "arb_import.hlp",     AWM_ALL, NT_import_sequences, 0,                            0);
                 GDE_load_menu(awm, AWM_EXP, "Import");
             }
             awm->close_sub_menu();
 
             awm->insert_sub_menu("Export",      "E");
             {
-                awm->insert_menu_topic("export_to_ARB", "Export seq/tree/SAI's to new ARB database", "A", "arb_ntree.hlp",      AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree -export &", 0);
-                awm->insert_menu_topic("export_seqs",   "Export sequences to foreign format",        "f", "arb_export.hlp",     AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL.gb_main);
+                awm->insert_menu_topic("export_to_ARB", "Merge to (new) ARB database",             "A", "arb_merge_outof.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree \":\" . &", 0);
+                awm->insert_menu_topic("export_seqs",   "Export to external format",               "f", "arb_export.hlp",      AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL.gb_main);
                 GDE_load_menu(awm, AWM_ALL, "Export");
-                awm->insert_menu_topic("export_nds",    "Export fields (to calc-sheet using NDS)",   "N", "arb_export_nds.hlp", AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
+                awm->insert_menu_topic("export_nds",    "Export fields (to calc-sheet using NDS)", "N", "arb_export_nds.hlp",  AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
             }
             awm->close_sub_menu();
             awm->sep______________();
@@ -1217,7 +1218,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->sep______________();
 #endif
             if (!GLOBAL.extern_quit_button) {
-                awm->insert_menu_topic("quit",      "Quit",             "Q", "quit.hlp",    AWM_ALL, (AW_CB)nt_exit,    0, 0);
+                awm->insert_menu_topic("quit",      "Quit",             "Q", "quit.hlp",    AWM_ALL, (AW_CB)nt_exit, EXIT_SUCCESS, 0);
             }
 
         }
@@ -1605,7 +1606,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         awm->create_button("CLOSE", "#close.xpm");
     }
     else {
-        awm->callback(nt_exit);
+        awm->callback(nt_exit, EXIT_SUCCESS);
         awm->help_text("quit.hlp");
         awm->create_button("QUIT", "#quit.xpm");
     }

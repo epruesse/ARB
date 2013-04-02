@@ -24,18 +24,22 @@
 #include <arb_progress.h>
 #include <arb_file.h>
 
+// AISC_MKPT_PROMOTE:// source and destination DBs for merge:
+// AISC_MKPT_PROMOTE:extern GBDATA *GLOBAL_gb_src;
+// AISC_MKPT_PROMOTE:extern GBDATA *GLOBAL_gb_dst;
+
 GBDATA *GLOBAL_gb_src = NULL;
 GBDATA *GLOBAL_gb_dst = NULL;
 
-__ATTR__NORETURN static void MG_exit(AW_window *aww, AW_CL cl_reload_db2, AW_CL) {
-    int reload_db2 = (int)cl_reload_db2;
+__ATTR__NORETURN static void MG_exit(AW_window *aww, AW_CL cl_start_dst_db) {
+    int start_dst_db = (int)cl_start_dst_db;
 
-    if (reload_db2) {
-        char       *db2_name = aww->get_root()->awar(AWAR_DB_DST"/file_name")->read_string();
-        const char *cmd      = GBS_global_string("arb_ntree '%s' &", db2_name);
+    if (start_dst_db) {
+        char       *dst_db_name = aww->get_root()->awar(AWAR_DB_DST"/file_name")->read_string();
+        const char *cmd      = GBS_global_string("arb_ntree '%s' &", dst_db_name);
         int         result   = system(cmd);
         if (result != 0) fprintf(stderr, "Error running '%s'\n", cmd);
-        free(db2_name);
+        free(dst_db_name);
     }
 
     aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_src);
@@ -47,14 +51,12 @@ __ATTR__NORETURN static void MG_exit(AW_window *aww, AW_CL cl_reload_db2, AW_CL)
     exit(EXIT_SUCCESS);
 }
 
-static bool mg_save_enabled = true;
-
 static void MG_save_merge_cb(AW_window *aww) {
     AW_root *awr  = aww->get_root();
     char    *name = awr->awar(AWAR_DB_SRC"/file_name")->read_string();
 
-    GB_begin_transaction(GLOBAL_gb_src);
     awr->dont_save_awars_with_default_value(GLOBAL_gb_src);
+    GB_begin_transaction(GLOBAL_gb_src);
     GBT_check_data(GLOBAL_gb_src, 0);
     GB_commit_transaction(GLOBAL_gb_src);
 
@@ -71,7 +73,7 @@ static AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init(aw_root, "MERGE_SAVE_DB_I", "SAVE ARB DB I");
+    aws->init(aw_root, "MERGE_SAVE_DB_I", "Save source DB");
     aws->load_xfig("sel_box.fig");
 
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
@@ -96,8 +98,8 @@ static void MG_save_cb(AW_window *aww) {
 
     arb_progress progress("Saving database");
 
+    awr->dont_save_awars_with_default_value(GLOBAL_gb_dst); // has to be done outside transaction!
     GB_begin_transaction(GLOBAL_gb_dst);
-    awr->dont_save_awars_with_default_value(GLOBAL_gb_dst);
     GBT_check_data(GLOBAL_gb_dst, 0);
     GB_commit_transaction(GLOBAL_gb_dst);
 
@@ -162,20 +164,20 @@ static void MG_save_quick_result_cb(AW_window *aww) {
     free(name);
 }
 
-static void MG_create_db_dependent_awars(AW_root *aw_root, GBDATA *gb_merge, GBDATA *gb_dest) {
-    MG_create_db_dependent_rename_awars(aw_root, gb_merge, gb_dest);
+static void MG_create_db_dependent_awars(AW_root *aw_root, GBDATA *gb_src, GBDATA *gb_dst) {
+    MG_create_db_dependent_rename_awars(aw_root, gb_src, gb_dst);
 }
 
-static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {
+static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window, AW_CL cl_user) {
     GB_ERROR error = MG_expect_renamed();
     if (!error) {
         static GB_NUMHASH *popup_hash = GBS_create_numhash(10);
         AW_window         *aw_popup   = (AW_window*)GBS_read_numhash(popup_hash, cl_create_window);
 
         if (!aw_popup) { // window has not been created yet
-            typedef AW_window *(*window_creator)(AW_root *);
+            typedef AW_window *(*window_creator)(AW_root *, AW_CL);
             window_creator create_window = (window_creator)cl_create_window;
-            aw_popup                     = create_window(aww->get_root());
+            aw_popup                     = create_window(aww->get_root(), cl_user);
             GBS_write_numhash(popup_hash, cl_create_window, (long)aw_popup);
         }
 
@@ -185,9 +187,24 @@ static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {
     if (error) aw_message(error);
 }
 
-void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest_is_new) {
-    // uses gb_dest and gb_merge
-    mg_save_enabled = save_enabled;
+AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new) {
+    // 'dst_is_new' == true -> setup dest DB according to source-DB
+    //
+    // GLOBAL_gb_src and GLOBAL_gb_dst have to be opened before
+
+    // @@@ add GB_is_client and use that here
+    bool src_is_client = GB_read_clients(GLOBAL_gb_src)<0;
+    bool dst_is_client = GB_read_clients(GLOBAL_gb_dst)<0;
+
+    mg_assert(contradicted(src_is_client, GB_is_server(GLOBAL_gb_src)));
+    mg_assert(contradicted(dst_is_client, GB_is_server(GLOBAL_gb_dst)));
+
+    mg_assert(!(src_is_client && dst_is_client));
+
+    bool save_src_enabled = !src_is_client;
+    bool save_dst_enabled = !dst_is_client;
+
+    mg_assert(aw_root);
 
     {
         GB_transaction ta_merge(GLOBAL_gb_src);
@@ -200,7 +217,7 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
         bool merge_is_genome = GEN_is_genome_db(GLOBAL_gb_src, 0);
 
         int dest_genome = 0;
-        if (dest_is_new) {
+        if (dst_is_new) {
             if (merge_is_genome) {
                 dest_genome = aw_question("select_dest_dbtype", "Enter destination DB-type", "Normal,Genome");
             }
@@ -218,7 +235,6 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
 
         GB_change_my_security(GLOBAL_gb_dst, 6);
         GB_change_my_security(GLOBAL_gb_src, 6);
-        if (aww) aww->hide();
 
         MG_create_db_dependent_awars(aw_root, GLOBAL_gb_src, GLOBAL_gb_dst);
     }
@@ -233,18 +249,19 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
         awm->init(aw_root, "ARB_MERGE", "ARB_MERGE");
         awm->load_xfig("merge/main.fig");
 
+        // create menus
 #if defined(DEBUG)
         AWT_create_debug_menu(awm);
 #endif // DEBUG
 
         awm->create_menu("File", "F", AWM_ALL);
-        if (mg_save_enabled && GB_read_clients(GLOBAL_gb_src)>=0) {
-            awm->insert_menu_topic("save_DB1", "Save Data Base I ...",      "S", "save_as.hlp", AWM_ALL, AW_POPUP, (AW_CL)MG_save_source_cb, (AW_CL)AWAR_DB_SRC);
+        if (save_src_enabled) {
+            awm->insert_menu_topic("save_DB1", "Save source DB ...", "S", "save_as.hlp", AWM_ALL, AW_POPUP, (AW_CL)MG_save_source_cb, (AW_CL)AWAR_DB_SRC);
         }
 
-        awm->insert_menu_topic("quit", "Quit",              "Q", "quit.hlp", AWM_ALL, MG_exit, 0, 0);
-        if (mg_save_enabled) {
-            awm->insert_menu_topic("quitnstart", "Quit & Start DB II", "D", "quit.hlp", AWM_ALL, MG_exit, 1, 0);
+        awm->insert_menu_topic("quit", "Quit", "Q", "quit.hlp", AWM_ALL, MG_exit, 0);
+        if (save_dst_enabled) {
+            awm->insert_menu_topic("quitnstart", "Quit & start target DB", "D", "quit.hlp", AWM_ALL, MG_exit, 1);
         }
 
         awm->sep______________();
@@ -252,9 +269,25 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
         awm->sep______________();
         awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "p", "savedef.hlp", AWM_ALL, (AW_CB)AW_save_properties, 0, 0);
 
-        awm->button_length(30);
+        awm->insert_help_topic("ARB_MERGE help", "h", "arb_merge.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_merge.hlp", 0);
 
-        if (GB_read_clients(GLOBAL_gb_src)>=0) { // merge two databases
+
+        // display involved databases
+        awm->button_length(28);
+
+        awm->at("db1"); awm->create_button(0, AWAR_DB_SRC"/name", 0, "+");
+        awm->at("db2"); awm->create_button(0, AWAR_DB_DST"/name", 0, "+");
+
+
+        // add main controls
+        awm->button_length(32);
+
+        {
+            // conditional section:
+            // when exporting into a new database there is no need to adapt alignments or names
+
+            if (dst_is_new) awm->sens_mask(AWM_DISABLED);
+
             awm->at("alignment");
             awm->callback((AW_CB1)AW_POPUP, (AW_CL)MG_merge_alignment_cb);
             awm->help_text("mg_alignment.hlp");
@@ -264,13 +297,15 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
             awm->callback((AW_CB1)AW_POPUP, (AW_CL)MG_merge_names_cb);
             awm->help_text("mg_names.hlp");
             awm->create_button("CHECK_NAMES", "Check names ...");
-        }
-        else { // export into new database
-            MG_set_renamed(true, aw_root, "Not necessary"); // a newly created database needs no renaming
+
+            if (dst_is_new) {
+                awm->sens_mask(AWM_ALL);
+                MG_set_renamed(true, aw_root, "Not necessary");
+            }
         }
 
         awm->at("species");
-        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_species_cb);
+        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_species_cb, (AW_CL)dst_is_new);
         awm->help_text("mg_species.hlp");
         awm->create_button("TRANSFER_SPECIES", "Transfer species ... ");
 
@@ -280,150 +315,43 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
         awm->create_button("TRANSFER_SAIS", "Transfer SAIs ...");
 
         awm->at("trees");
-        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_trees_cb);
+        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_trees_cb, 0);
         awm->help_text("mg_trees.hlp");
         awm->create_button("TRANSFER_TREES", "Transfer trees ...");
 
         awm->at("configs");
-        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_configs_cb);
+        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_configs_cb, 0);
         awm->help_text("mg_configs.hlp");
         awm->create_button("TRANSFER_CONFIGS", "Transfer configurations ...");
 
-        if (mg_save_enabled && GB_read_clients(GLOBAL_gb_dst)>=0) {      // No need to save when importing data
+        {
+            // conditional section:
+            // allow save only when not merging into DB running inside ARB_NT
+
+            if (!save_dst_enabled) awm->sens_mask(AWM_DISABLED);
+
             awm->at("save");
             awm->callback(AW_POPUP, (AW_CL)MG_save_result_cb, (AW_CL)AWAR_DB_DST);
-            awm->create_button("SAVE_WHOLE_DB2", "Save whole DB II as ...");
+            awm->create_button("SAVE_WHOLE_DB2", "Save whole target DB as ...");
 
             awm->at("save_quick");
-            awm->highlight();
             awm->callback(MG_save_quick_result_cb);
-            awm->create_button("SAVE_CHANGES_OF_DB2", "Quick-save changes of DB II");
+            awm->create_button("SAVE_CHANGES_OF_DB2", "Quick-save changes of target DB");
+
+            awm->sens_mask(AWM_ALL);
         }
 
-        awm->button_length(15);
-
-        awm->at("db1");
-        awm->create_button(0, AWAR_DB_SRC"/file_name");
-
-        awm->at("db2");
-        awm->create_button(0, AWAR_DB_DST"/file_name");
-
-        awm->button_length(0);
-        awm->shadow_width(1);
-        awm->at("icon");
-        awm->callback(AW_POPUP_HELP, (AW_CL)"mg_main.hlp");
-        awm->create_button("HELP_MERGE", "#merge/icon.xpm");
+        awm->at("quit");
+        awm->callback(MG_exit, 0);
+        awm->create_button("QUIT", save_dst_enabled ? "Quit" : "Close");
 
         awm->activate();
+
+        return awm;
     }
 }
 
-static void MG_start_cb(AW_window *aww)
-{
-    AW_root  *awr   = aww->get_root();
-    GB_ERROR  error = 0;
-    {
-        char *merge = awr->awar(AWAR_DB_SRC"/file_name")->read_string();
-        if (!strlen(merge) || (strcmp(merge, ":") && GB_size_of_file(merge)<=0)) {
-            error = GBS_global_string("Cannot find DB I '%s'", merge);
-        }
-        else {
-            arb_progress progress("Loading databases");
-
-#if defined(WARN_TODO)
-#warning where are GLOBAL_gb_src / GLOBAL_gb_dst closed ?
-#warning when closing them, call AWT_browser_forget_db as well
-#endif
-            progress.subtitle("DATABASE I");
-            GLOBAL_gb_src             = GBT_open(merge, "rw");
-            if (!GLOBAL_gb_src) error = GB_await_error();
-            else {
-#if defined(DEBUG)
-                AWT_announce_db_to_browser(GLOBAL_gb_src, GBS_global_string("Database I (source; %s)", merge));
-#endif // DEBUG
-
-                progress.subtitle("DATABASE II");
-
-                char       *main      = awr->awar(AWAR_DB_DST"/file_name")->read_string();
-                const char *open_mode = 0;
-
-                if (main[0] == 0) {
-                    error = "You have to specify a name for DB II";
-                }
-                else if (strcmp(main, ":") != 0 && GB_size_of_file(main) <= 0) {
-                    aw_message(GBS_global_string("Cannot find DB II '%s' -> creating empty database", main));
-                    open_mode = "wc";
-                }
-                else {
-                    open_mode = "rwc";
-                }
-
-                if (!error) {
-                    GLOBAL_gb_dst             = GBT_open(main, open_mode);
-                    if (!GLOBAL_gb_dst) error = GB_await_error();
-#if defined(DEBUG)
-                    else AWT_announce_db_to_browser(GLOBAL_gb_dst, GBS_global_string("Database II (destination; %s)", main));
-#endif // DEBUG
-                }
-                free(main);
-            }
-        }
-        free(merge);
-    }
-
-    if (error) aw_message(error);
-    else MG_start_cb2(aww, awr, true, false);
-}
-
-
-static AW_window *create_merge_init_window(AW_root *awr)
-{
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init(awr, "MERGE_SELECT_DATABASES", "MERGE SELECT TWO DATABASES");
-    aws->load_xfig("merge/startup.fig");
-
-    aws->button_length(10);
-    aws->label_length(10);
-
-    aws->callback((AW_CB0)exit);
-    aws->at("close");
-    aws->create_button("QUIT", "QUIT", "A");
-
-    aws->callback(AW_POPUP_HELP, (AW_CL)"arb_merge.hlp");
-    aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
-
-    AW_create_fileselection(aws, AWAR_DB_SRC, "");
-    aws->at("type");
-    aws->create_option_menu(AWAR_DB_SRC"/filter");
-    aws->insert_option("ARB", "A", "arb");
-    aws->insert_default_option("OTHER", "O", "");
-    aws->update_option_menu();
-
-    AW_create_fileselection(aws, AWAR_DB_DST, "m");
-    aws->at("mtype");
-    aws->create_option_menu(AWAR_DB_DST"/filter");
-    aws->insert_option("ARB", "A", "arb");
-    aws->insert_default_option("OTHER", "O", "");
-    aws->update_option_menu();
-
-    aws->callback(MG_start_cb);
-
-    aws->button_length(0);
-    aws->shadow_width(1);
-    aws->at("icon");
-    aws->create_button("GO", "#merge/icon_vertical.xpm", "G");
-
-    return (AW_window *)aws;
-}
-
-void MG_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one, const char *fname_two)
-{
-    AW_create_fileselection_awars(awr, AWAR_DB_DST, "", ".arb", fname_two, aw_def);
-    awr->awar_string(AWAR_DB_DST"/type", "b", aw_def);
-
-    AW_create_fileselection_awars(awr, AWAR_DB_SRC, "", ".arb", fname_one, aw_def);
-
+void MERGE_create_all_awars(AW_root *awr, AW_default aw_def) {
     MG_create_trees_awar(awr, aw_def);
     MG_create_config_awar(awr, aw_def);
     MG_create_extendeds_awars(awr, aw_def);
@@ -438,10 +366,47 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one,
 #endif // DEBUG
 }
 
-AW_window *create_MG_main_window(AW_root *aw_root) {
-    MG_create_all_awars(aw_root, AW_ROOT_DEFAULT);
-    AW_window *aww=create_merge_init_window(aw_root);
-    aww->activate();
-    return aww;
+inline const char *get_awar_name(const char *awar_base_name, const char *entry) {
+    return GBS_global_string("%s/%s", awar_base_name, entry);
+}
+
+static void filename_changed_cb(AW_root *awr, AW_CL cl_awar_base) {
+    const char *awar_base_name = (const char *)cl_awar_base;
+
+    AW_awar *name_awar     = awr->awar(get_awar_name(awar_base_name, "name"));
+    AW_awar *filename_awar = awr->awar(get_awar_name(awar_base_name, "file_name"));
+
+    char *name;
+    char *suffix;
+    GB_split_full_path(filename_awar->read_char_pntr(), NULL, NULL, &name, &suffix);
+
+    const char *shown_name;
+    if (strcmp(name, ":") == 0 && !suffix) {
+        shown_name = ": (DB loaded in ARB_NT)";
+    }
+    else {
+        shown_name = GB_append_suffix(name, suffix);
+    }
+    name_awar->write_string(shown_name);
+
+    free(name);
+    free(suffix);
+}
+
+static void create_fileselection_and_name_awars(AW_root *awr, AW_default aw_def, const char *awar_base_name, const char *filename) {
+    AW_create_fileselection_awars(awr, awar_base_name, "", ".arb", filename, aw_def);
+
+    awr->awar_string(get_awar_name(awar_base_name, "name"), "", aw_def); // create awar to display DB-names w/o path
+    AW_awar *filename_awar = awr->awar(get_awar_name(awar_base_name, "file_name")); // defined by AW_create_fileselection_awars above
+
+    filename_awar->add_callback(filename_changed_cb, AW_CL(awar_base_name));
+    filename_awar->touch(); // trigger callback once
+}
+
+void MERGE_create_db_file_awars(AW_root *awr, AW_default aw_def, const char *src_name, const char *dst_name) {
+    create_fileselection_and_name_awars(awr, aw_def, AWAR_DB_DST, dst_name);
+    awr->awar_string(AWAR_DB_DST"/type", "b", aw_def);
+
+    create_fileselection_and_name_awars(awr, aw_def, AWAR_DB_SRC, src_name);
 }
 

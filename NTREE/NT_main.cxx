@@ -33,6 +33,7 @@
 #include <arb_version.h>
 #include <arb_progress.h>
 #include <arb_file.h>
+#include <awt_sel_boxes.hxx>
 
 using namespace std;
 
@@ -275,11 +276,12 @@ static void nt_intro_start_existing(AW_window *aw_intro) {
     }
 }
 
-static void nt_intro_start_merge(AW_window *aw_intro, AW_root *aw_root) {
-    nt_assert(contradicted(aw_intro, aw_root)); // one of them is passed!
-    if (aw_intro) aw_root = aw_intro->get_root();
-    create_MG_main_window(aw_root);
-    if (aw_intro) aw_intro->hide();
+__ATTR__NORETURN static void nt_intro_start_merge(AW_window *aw_intro) {
+    GB_ERROR error = GBK_system("arb_ntree . . &"); // @@@ pass selected dir (or file as 1st param)?
+    if (error) {
+        fprintf(stderr, "Error: %s\n", error);
+    }
+    nt_exit(aw_intro, error ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
 static void nt_intro_start_import(AW_window *aw_intro) {
@@ -296,7 +298,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
     aws->init(awr, "ARB_INTRO", "ARB INTRO");
     aws->load_xfig("arb_intro.fig");
 
-    aws->callback((AW_CB0)exit);
+    aws->callback(nt_exit, EXIT_SUCCESS);
     aws->at("close");
     aws->create_button("CANCEL", "CANCEL", "C");
 
@@ -370,7 +372,6 @@ class NtreeCommandLine : virtual Noncopyable {
 
     bool help_requested;
     bool do_import;
-    bool do_export;
     
     const char *macro_name;
 
@@ -380,7 +381,6 @@ public:
           args(argv_+1),
           help_requested(false),
           do_import(false),
-          do_export(false),
           macro_name(NULL)
     {}
 
@@ -390,7 +390,6 @@ public:
     const char *get_arg(int num) const { return num<arg_count ? args[num] : NULL; }
 
     bool wants_help() const { return help_requested; }
-    bool wants_export() const { return do_export; }
     bool wants_import() const { return do_import; }
     bool wants_merge() const { return arg_count == 2; }
 
@@ -400,23 +399,28 @@ public:
         fprintf(out,
                 "\n"
                 "arb_ntree version " ARB_VERSION "\n"
-                    "(C) 1993-" ARB_BUILD_YEAR " Lehrstuhl fuer Mikrobiologie - TU Muenchen\n"
-                    "http://www.arb-home.de/\n"
+                "(C) 1993-" ARB_BUILD_YEAR " Lehrstuhl fuer Mikrobiologie - TU Muenchen\n"
+                "http://www.arb-home.de/\n"
 #if defined(SHOW_WHERE_BUILD)
-                    "(version build by: " ARB_BUILD_USER "@" ARB_BUILD_HOST ")\n"
+                "(version build by: " ARB_BUILD_USER "@" ARB_BUILD_HOST ")\n"
 #endif // SHOW_WHERE_BUILD
-                    "\n"
-                    "Known command line arguments:\n"
-                    "\n"
-                    "db.arb             => start ARB_NTREE with database db.arb\n"
-                    ":                  => start ARB_NTREE and connect to existing db_server\n"
-                    "db1.arb db2.arb    => merge databases db1.arb and db2.arb\n"
-                    "w/o arguments      => start database browser in current directory\n"
-                    "directory          => start database browser in 'directory'\n"
-                    "-export            => connect to existing ARB server and export database to noname.arb\n"
-                    "-import file       => import 'file' into new database\n"
-                    "\n"
-                    );
+                "\n"
+                "Possible usage:\n"
+                "  arb_ntree               => start ARB (intro)\n"
+                "  arb_ntree DB            => start ARB with DB\n"
+                "  arb_ntree DB1 DB2       => merge from DB1 into DB2\n"
+                "  arb_ntree --import FILE => import FILE into new database (FILE may be a filemask)\n"
+                "\n"
+                "Additional arguments possible with command lines above:\n"
+                "  --execute macroname     => execute macro 'macroname' after startup\n"
+                "\n"
+                "Each DB argument may be one of the following:\n"
+                "  database.arb            -> use existing or new database\n"
+                "  \":\"                     -> connect to database of a running instance of ARB\n"
+                "  directory               -> prompt for databases inside directory\n"
+                "  filemask                -> also prompt for DB, but more specific (e.g. \"prot*.arb\")\n"
+                "\n"
+            );
     }
 
     ARB_ERROR parse() {
@@ -426,26 +430,53 @@ public:
             const char *opt = args[0]+1;
             if (opt[0] == '-') ++opt; // accept '-' or '--'
             if (strcmp(opt, "help") == 0 || strcmp(opt, "h") == 0) { help_requested = true; }
-            else if (strcmp(opt, "export") == 0) { do_export = true; }
-            else if (strcmp(opt, "import") == 0) { do_import = true; }
             else if (strcmp(opt, "execute") == 0) { shift(); macro_name = *args; }
-            else {
-                error = GBS_global_string("Unknown switch '%s'", args[0]);
-            }
+            else if (strcmp(opt, "import") == 0) { do_import = true; }
+            else error = GBS_global_string("Unknown switch '%s'", args[0]);
             shift();
         }
         // non-switch arguments remain in arg_count/args
         if (!error) {
-            if (do_import && do_export) error           = "--import can't be used together with --export";
-            else if (do_export && arg_count != 0) error = "superfluous argument behind --export";
-            else if (do_import && arg_count != 1) error = "expected file-name or -mask name behind --import";
-            else if (arg_count>2) error                 = "expected to see up to 2 arguments on command line";
+            if (do_import && arg_count != 1) error = "expected exactly one file-name or file-mask behind --import";
+            else if (arg_count>2)            error = "too many stray arguments given (max. 2 accepted)";
         }
         return error;
     }
 };
 
-enum RunMode { NORMAL, IMPORT, EXPORT, MERGE, BROWSE };
+enum ArgType { // args that might be specified on command line (for DB or FILE; see above)
+    RUNNING_DB,
+    DIRECTORY,
+    EXISTING_DB,
+    NEW_DB,
+    FILEMASK,
+    EXISTING_FILE,
+    UNKNOWN_ARG,
+};
+
+inline bool has_arb_suffix(const char *arg) {
+    const char *suffix = strstr(arg, ".arb");
+    if (suffix) {
+        return strcmp(suffix, ".arb") == 0;
+    }
+    return false;
+}
+
+static ArgType detectArgType(const char *arg) {
+    if (strcmp(arg, ":") == 0) return RUNNING_DB;
+    if (GB_is_directory(arg)) return DIRECTORY;
+    if (strpbrk(arg, "*?") != 0) return FILEMASK;
+    if (has_arb_suffix(arg)) {
+        return GB_is_regularfile(arg) ? EXISTING_DB : NEW_DB;
+    }
+
+    GB_ERROR load_file_err = GBT_check_arb_file(arg);
+    if (!load_file_err) return EXISTING_DB;
+
+    return GB_is_regularfile(arg) ? EXISTING_FILE : UNKNOWN_ARG;
+}
+
+enum RunMode { NORMAL, IMPORT, MERGE, BROWSE };
 
 static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_startdir, RunMode& mode) {
     // Check whether 'database' is a
@@ -510,6 +541,281 @@ static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_st
     return error;
 }
 
+class SelectedDatabase : virtual Noncopyable {
+    GBDATA*&  gb_main;
+    char     *name;
+    ArgType   type;
+    char     *role;
+
+    void fix_name() {
+        if (type != RUNNING_DB && name[0]) {
+            const char *changed;
+
+            if (type == NEW_DB) {
+                changed = GB_unfold_in_directory(GB_getcwd(), name);
+            }
+            else {
+                changed = GB_canonical_path(name);
+            }
+
+            if (strcmp(name, changed) != 0) {
+                reselect_file(changed);
+            }
+        }
+    }
+
+public:
+    SelectedDatabase(GBDATA*& gb_main_, const char *name_, const char *role_)
+        : gb_main(gb_main_),
+          name(strdup(name_)),
+          type(detectArgType(name)),
+          role(strdup(role_))
+    {
+        fix_name();
+    }
+    ~SelectedDatabase() {
+        free(role);
+        free(name);
+    }
+
+    ArgType arg_type() const { return type; }
+
+    bool needs_to_prompt() const {
+        return type == DIRECTORY || type == FILEMASK || type == UNKNOWN_ARG;
+    }
+
+    const char *get_fullname() const { return name; }
+    const char *get_nameonly() const {
+        const char *slash = strrchr(name, '/');
+        return slash ? slash+1 : name;
+    }
+    const char *get_role() const { return role; }
+    const char *get_description() const { return GBS_global_string("%s (%s)", get_role(), get_nameonly()); }
+
+    ArgType get_type() const { return type; }
+
+    const char *get_dir() const {
+        const char *dir;
+        switch (type) {
+            case DIRECTORY:
+                dir = get_fullname();
+                break;
+
+            case NEW_DB:
+            case FILEMASK:
+            case EXISTING_FILE:
+            case EXISTING_DB: {
+                char *dir_copy;
+                GB_split_full_path(name, &dir_copy, NULL, NULL, NULL);
+
+                static SmartCharPtr dir_store;
+                dir_store = dir_copy;
+
+                dir = dir_copy;
+                break;
+            }
+            case UNKNOWN_ARG:
+            case RUNNING_DB:
+                dir = ".";
+                break;
+        }
+        return dir;
+    }
+
+    const char *get_mask() const {
+        const char *mask;
+        switch (type) {
+            case FILEMASK: {
+                char *mask_copy;
+                GB_split_full_path(name, NULL, &mask_copy, NULL, NULL);
+
+                static SmartCharPtr mask_store;
+                mask_store = mask_copy;
+
+                mask = mask_copy;
+                break;
+            }
+            default:
+                mask = ".arb";
+                break;
+        }
+        return mask;
+    }
+
+    void reselect_file(const char *file) {
+        freedup(name, file);
+        type = detectArgType(name);
+        fix_name();
+    }
+    void reselect_from_awar(AW_root *aw_root, const char *awar_name) {
+        if (awar_name) {
+            const char *file = aw_root->awar(awar_name)->read_char_pntr();
+            if (file) reselect_file(file);
+        }
+    }
+
+    GB_ERROR open_db_for_merge(bool is_source_db);
+};
+
+GB_ERROR SelectedDatabase::open_db_for_merge(bool is_source_db) {
+    GB_ERROR    error    = NULL;
+    const char *openMode = "rw";
+
+    switch (get_type()) {
+        case DIRECTORY:
+        case FILEMASK:
+            GBK_terminate("Program logic error (should have been prompted for explicit DB name)");
+            break;
+
+        case UNKNOWN_ARG:
+        case EXISTING_FILE:
+            error = GBS_global_string("'%s' is no arb-database", get_fullname());
+            break;
+
+        case NEW_DB:
+            if (is_source_db) {
+                error = GBS_global_string("'%s' has to exist", get_fullname());
+                break;
+            }
+            openMode = "crw"; // allow to create DB
+            break;
+
+        case EXISTING_DB:
+        case RUNNING_DB:
+            break;
+    }
+
+    if (!error) {
+        gb_main             = GBT_open(get_fullname(), openMode);
+        if (!gb_main) error = GB_await_error();
+        else {
+            IF_DEBUG(AWT_announce_db_to_browser(gb_main, get_description()));
+        }
+    }
+
+    return error;
+}
+
+struct merge_scheme {
+    SelectedDatabase *src;
+    SelectedDatabase *dst;
+
+    char *awar_src;
+    char *awar_dst;
+
+    GB_ERROR error;
+
+    merge_scheme(SelectedDatabase *src_, SelectedDatabase *dst_)
+        : src(src_),
+          dst(dst_),
+          awar_src(NULL),
+          awar_dst(NULL),
+          error(NULL)
+    {}
+
+    void open_dbs() {
+        if (!error) error = src->open_db_for_merge(true);
+        if (!error) error = dst->open_db_for_merge(false);
+    }
+
+    void fix_dst(AW_root *aw_root) { dst->reselect_from_awar(aw_root, awar_dst); }
+    void fix_src(AW_root *aw_root) { src->reselect_from_awar(aw_root, awar_src); }
+
+    bool knows_dbs() const { return !src->needs_to_prompt() && !dst->needs_to_prompt(); }
+};
+
+static AW_window *startup_error_window(AW_root *aw_root, AW_CL cl_error) {
+    AW_window_message *aw_msg = new AW_window_message;
+    GB_ERROR           error  = GB_ERROR(cl_error);
+
+    aw_msg->init(aw_root, "ARB merge error", false);
+    aw_msg->recalc_size_atShow(AW_RESIZE_DEFAULT); // force size recalc (ignores user size)
+
+    aw_msg->at(10, 10);
+    aw_msg->auto_space(10, 10);
+
+    aw_msg->create_autosize_button(NULL, error, "", 2);
+    aw_msg->at_newline();
+
+    aw_msg->callback(nt_exit, AW_CL(EXIT_FAILURE));
+    aw_msg->create_autosize_button("EXIT", "Exit", "E", 2);
+
+    aw_msg->window_fit();
+
+    return aw_msg;
+}
+static AW_window *startup_merge_main_window(AW_root *aw_root, AW_CL cl_merge_scheme) {
+    merge_scheme *ms = (merge_scheme*)cl_merge_scheme;
+
+    ms->fix_src(aw_root);
+    ms->fix_dst(aw_root);
+
+    if (ms->knows_dbs()) {
+        ms->open_dbs();
+    }
+    else {
+        ms->error = "Need two database to merge";
+    }
+
+    AW_window *aw_result;
+    if (!ms->error) {
+        MERGE_create_db_file_awars(aw_root, AW_ROOT_DEFAULT, ms->src->get_fullname(), ms->dst->get_fullname());
+        bool dst_is_new = ms->dst->arg_type() == NEW_DB;
+        aw_result       = MERGE_create_main_window(aw_root, dst_is_new);
+    }
+    else {
+        aw_result = startup_error_window(aw_root, AW_CL(ms->error));
+    }
+    delete ms; // was allocated in startup_gui()
+    return aw_result;
+}
+
+__ATTR__NORETURN static void merge_startup_abort_cb(AW_window *aww, AW_CL) {
+    fputs("Error: merge aborted by user\n", stderr);
+    nt_exit(aww, EXIT_FAILURE);
+}
+
+static AW_window *startup_merge_prompting_for_nonexplicit_dst_db(AW_root *aw_root, AW_CL cl_merge_scheme) {
+    merge_scheme *ms = (merge_scheme*)cl_merge_scheme;
+    AW_window    *aw_result;
+
+    if (ms->dst->needs_to_prompt()) {
+        aw_result = awt_create_load_box(aw_root, "Select", ms->dst->get_role(),
+                                        ms->dst->get_dir(), ms->dst->get_mask(),
+                                        &(ms->awar_dst),
+                                        0,
+                                        startup_merge_main_window,
+                                        merge_startup_abort_cb, "Cancel",
+                                        cl_merge_scheme);
+    }
+    else {
+        aw_result = startup_merge_main_window(aw_root, cl_merge_scheme);
+    }
+    return aw_result;
+}
+
+static AW_window *startup_merge_prompting_for_nonexplicit_dbs(AW_root *aw_root, AW_CL cl_merge_scheme) {
+    // if src_spec or dst_spec needs to be prompted for -> startup prompters with callbacks bound to continue
+    // otherwise just startup merge
+
+    merge_scheme *ms = (merge_scheme*)cl_merge_scheme;
+    AW_window    *aw_result;
+
+    if (ms->src->needs_to_prompt()) {
+        aw_result = awt_create_load_box(aw_root, "Select", ms->src->get_role(),
+                                        ms->src->get_dir(), ms->src->get_mask(),
+                                        &(ms->awar_src),
+                                        0,
+                                        startup_merge_prompting_for_nonexplicit_dst_db,
+                                        merge_startup_abort_cb, "Cancel",
+                                        cl_merge_scheme);
+    }
+    else {
+        aw_result = startup_merge_prompting_for_nonexplicit_dst_db(aw_root, cl_merge_scheme);
+    }
+    return aw_result;
+}
+
 static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
     aw_initstatus();
     GB_set_verbose();
@@ -549,35 +855,30 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
                 
         RunMode mode = NORMAL;
 
-        if (cl.wants_export())      mode = EXPORT;
+        if      (cl.wants_merge())  mode = MERGE;
         else if (cl.wants_import()) mode = IMPORT;
-        else if (cl.wants_merge())  mode = MERGE;
 
-        if (mode == EXPORT) {
-            MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, ":", "noname.arb");
-            GLOBAL_gb_src = GBT_open(":", "rw");
-            if (!GLOBAL_gb_src) {
-                error = GB_await_error();
+        if (mode == MERGE) {
+            MERGE_create_all_awars(aw_root, AW_ROOT_DEFAULT);
+
+            merge_scheme *ms = new merge_scheme( // freed in startup_merge_main_window()
+                new SelectedDatabase(GLOBAL_gb_src, cl.get_arg(0), "Source DB for merge"),
+                new SelectedDatabase(GLOBAL_gb_dst, cl.get_arg(1), "Destination DB for merge"));
+
+            if (ms->src->arg_type() == RUNNING_DB && ms->dst->arg_type() == RUNNING_DB) {
+                error = "You cannot merge from running to running DB";
             }
             else {
-#if defined(DEBUG)
-                AWT_announce_db_to_browser(GLOBAL_gb_src, "Current database (:)");
-#endif // DEBUG
+                AW_window *aww = startup_merge_prompting_for_nonexplicit_dbs(aw_root, AW_CL(ms));
 
-                GLOBAL_gb_dst = GBT_open("noname.arb", "cw");
-#if defined(DEBUG)
-                AWT_announce_db_to_browser(GLOBAL_gb_dst, "New database (noname.arb)");
-#endif // DEBUG
+                nt_assert(contradicted(aww, error));
 
-                MG_start_cb2(NULL, aw_root, true, true);
-                aw_root->main_loop();
+                if (!error) {
+                    aww->show();
+                    aw_root->main_loop();
+                    nt_assert(0);
+                }
             }
-        }
-        else if (mode == MERGE) {
-            MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, cl.get_arg(0), cl.get_arg(1));
-            nt_intro_start_merge(0, aw_root);
-            aw_root->main_loop();
-            nt_assert(0);
         }
         else {
             const char *database         = NULL;
@@ -585,7 +886,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
 
             if (cl.free_args() > 0) database = cl.get_arg(0);
 
-            error = check_argument_for_mode(database, browser_startdir, mode); 
+            error = check_argument_for_mode(database, browser_startdir, mode);
             if (!error) {
                 if (mode == IMPORT) {
                     aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
