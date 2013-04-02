@@ -87,6 +87,7 @@ else
             $0 echo compile_OpenGL
             echo \
                 valgrind \
+                pixmap \
                 ctags \
                 libgtk2.0-dev \
 
