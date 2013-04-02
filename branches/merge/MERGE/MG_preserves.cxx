@@ -200,6 +200,7 @@ static void find_species_candidates(Candidates& candidates, const CharPtrArray& 
     }
 
     GBS_free_hash(src_species);
+    progress.done();
 }
 
 static void find_SAI_candidates(Candidates& candidates, const CharPtrArray& ali_names) {
