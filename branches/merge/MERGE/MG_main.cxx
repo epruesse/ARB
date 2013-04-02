@@ -168,16 +168,16 @@ static void MG_create_db_dependent_awars(AW_root *aw_root, GBDATA *gb_src, GBDAT
     MG_create_db_dependent_rename_awars(aw_root, gb_src, gb_dst);
 }
 
-static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {
+static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window, AW_CL cl_user) {
     GB_ERROR error = MG_expect_renamed();
     if (!error) {
         static GB_NUMHASH *popup_hash = GBS_create_numhash(10);
         AW_window         *aw_popup   = (AW_window*)GBS_read_numhash(popup_hash, cl_create_window);
 
         if (!aw_popup) { // window has not been created yet
-            typedef AW_window *(*window_creator)(AW_root *);
+            typedef AW_window *(*window_creator)(AW_root *, AW_CL);
             window_creator create_window = (window_creator)cl_create_window;
-            aw_popup                     = create_window(aww->get_root());
+            aw_popup                     = create_window(aww->get_root(), cl_user);
             GBS_write_numhash(popup_hash, cl_create_window, (long)aw_popup);
         }
 
@@ -305,7 +305,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new) {
         }
 
         awm->at("species");
-        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_species_cb);
+        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_species_cb, (AW_CL)dst_is_new);
         awm->help_text("mg_species.hlp");
         awm->create_button("TRANSFER_SPECIES", "Transfer species ... ");
 
@@ -315,12 +315,12 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new) {
         awm->create_button("TRANSFER_SAIS", "Transfer SAIs ...");
 
         awm->at("trees");
-        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_trees_cb);
+        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_trees_cb, 0);
         awm->help_text("mg_trees.hlp");
         awm->create_button("TRANSFER_TREES", "Transfer trees ...");
 
         awm->at("configs");
-        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_configs_cb);
+        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_configs_cb, 0);
         awm->help_text("mg_configs.hlp");
         awm->create_button("TRANSFER_CONFIGS", "Transfer configurations ...");
 

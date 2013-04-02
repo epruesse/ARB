@@ -45,7 +45,7 @@ inline const char *awar_name_tmp(int db_nr, const char *name) {
 
 AW_window *MG_merge_alignment_cb(AW_root *awr);
 AW_window *MG_merge_names_cb(AW_root *awr);
-AW_window *MG_merge_species_cb(AW_root *awr);
+AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new);
 AW_window *MG_select_preserves_cb(AW_root *awr);
 AW_window *MG_merge_extendeds_cb(AW_root *awr);
 AW_window *MG_merge_trees_cb(AW_root *awr);

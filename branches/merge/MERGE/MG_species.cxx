@@ -872,7 +872,7 @@ static void mg_initialize_species_selectors() {
     }
 }
 
-AW_window *MG_merge_species_cb(AW_root *awr) {
+AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new) {
     static AW_window_simple_menu *aws = 0;
     if (aws) return (AW_window *)aws;
 
@@ -984,16 +984,25 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
     }
 
     // adapt alignments
-    aws->button_length(7);
-    aws->at("adapt");
-    aws->create_toggle(AWAR_REMAP_ENABLE);
+    {
+        if (dst_is_new) {
+            aws->sens_mask(AWM_DISABLED); // if dest DB is new = > adaption impossible
+            awr->awar(AWAR_REMAP_ENABLE)->write_int(0); // disable adaption
+        }
 
-    aws->at("reference");
-    aws->create_text_field(AWAR_REMAP_SPECIES_LIST);
+        aws->button_length(7);
+        aws->at("adapt");
+        aws->create_toggle(AWAR_REMAP_ENABLE);
 
-    aws->at("pres_sel");
-    aws->callback((AW_CB1)AW_POPUP, (AW_CL)MG_select_preserves_cb);
-    aws->create_button("SELECT", "SELECT", "S");
+        aws->at("reference");
+        aws->create_text_field(AWAR_REMAP_SPECIES_LIST);
+
+        aws->at("pres_sel");
+        aws->callback((AW_CB1)AW_POPUP, (AW_CL)MG_select_preserves_cb);
+        aws->create_button("SELECT", "SELECT", "S");
+
+        aws->sens_mask(AWM_ALL);
+    }
 
     // top icon
     aws->button_length(0);
