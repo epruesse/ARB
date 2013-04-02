@@ -478,7 +478,7 @@ static ArgType detectArgType(const char *arg) {
 
 enum RunMode { NORMAL, IMPORT, MERGE, BROWSE };
 
-static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_startdir, RunMode& mode) { // @@@ simplify (using ArgType)?
+static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_startdir, RunMode& mode) {
     // Check whether 'database' is a
     // - ARB database
     // - directory name
@@ -642,8 +642,6 @@ public:
         return mask;
     }
 
-    GBDATA*& get_gbmain_ref() { return gb_main; }
-
     void reselect_file(const char *file) {
         freedup(name, file);
         type = detectArgType(name);
@@ -655,13 +653,15 @@ public:
             if (file) reselect_file(file);
         }
     }
+
+    GB_ERROR open_db_for_merge(bool is_source_db);
 };
 
-static GB_ERROR open_db_for_merge(SelectedDatabase& db_spec, bool is_source_db) { // @@@ move into SelectedDatabase
+GB_ERROR SelectedDatabase::open_db_for_merge(bool is_source_db) {
     GB_ERROR    error    = NULL;
     const char *openMode = "rw";
 
-    switch (db_spec.get_type()) {
+    switch (get_type()) {
         case DIRECTORY:
         case FILEMASK:
             GBK_terminate("Program logic error (should have been prompted for explicit DB name)");
@@ -669,12 +669,12 @@ static GB_ERROR open_db_for_merge(SelectedDatabase& db_spec, bool is_source_db) 
 
         case UNKNOWN_ARG:
         case EXISTING_FILE:
-            error = GBS_global_string("'%s' is no arb-database", db_spec.get_fullname());
+            error = GBS_global_string("'%s' is no arb-database", get_fullname());
             break;
 
         case NEW_DB:
             if (is_source_db) {
-                error = GBS_global_string("'%s' has to exist", db_spec.get_fullname());
+                error = GBS_global_string("'%s' has to exist", get_fullname());
                 break;
             }
             openMode = "crw"; // allow to create DB
@@ -686,11 +686,10 @@ static GB_ERROR open_db_for_merge(SelectedDatabase& db_spec, bool is_source_db) 
     }
 
     if (!error) {
-        GBDATA*& gb_main    = db_spec.get_gbmain_ref();
-        gb_main             = GBT_open(db_spec.get_fullname(), openMode);
+        gb_main             = GBT_open(get_fullname(), openMode);
         if (!gb_main) error = GB_await_error();
         else {
-            IF_DEBUG(AWT_announce_db_to_browser(gb_main, db_spec.get_description()));
+            IF_DEBUG(AWT_announce_db_to_browser(gb_main, get_description()));
         }
     }
 
@@ -715,8 +714,8 @@ struct merge_scheme {
     {}
 
     void open_dbs() {
-        if (!error) error = open_db_for_merge(*src, true);
-        if (!error) error = open_db_for_merge(*dst, false);
+        if (!error) error = src->open_db_for_merge(true);
+        if (!error) error = dst->open_db_for_merge(false);
     }
 
     void fix_dst(AW_root *aw_root) { dst->reselect_from_awar(aw_root, awar_dst); }

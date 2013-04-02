@@ -430,7 +430,6 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     aws->create_toggle(AWAR_REMAP_ENABLE);
 
     aws->at("reference");
-    // aws->create_text_field(AWAR_REMAP_SPECIES_LIST); // @@@ needs to be a selection list!
     para->usedRefsList = aws->create_selection_list(AWAR_REMAP_SEL_REFERENCE, 10, 30);
 
     aws->button_length(8);
