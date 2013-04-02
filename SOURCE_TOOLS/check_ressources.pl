@@ -25,7 +25,7 @@ if (not -d $ARBHOME) { die "ARBHOME ('$ARBHOME') does not point to a valid direc
 # --------------------------------------------------------------------------------
 
 my @pictures  = (); # contains all .fig
-my @pixmaps   = (); # contains all .bitmap, .xpm
+my @pixmaps   = (); # contains all .xpm
 my @helpfiles = (); # contains all .help, .pdf, .pdf.gz, .ps, .ps.gz
 
 my %known   = (); # contains all files contained in arrays above
@@ -102,14 +102,13 @@ sub scanFilesAndIndex(\%\@$$$$) {
 
 sub scanExistingRessources() {
   scanFilesAndIndex(%picture,  @pictures,  $ARBHOME.'/lib/pictures',        '.*\.(fig|vfont)$',                 1, 0);
-  scanFilesAndIndex(%pixmap,   @pixmaps,   $ARBHOME.'/lib/pixmaps',         '.*\.(bitmap|xpm)$',                1, 0);
+  scanFilesAndIndex(%pixmap,   @pixmaps,   $ARBHOME.'/lib/pixmaps',         '.*\.(xpm)$',                       1, 0);
   scanFilesAndIndex(%helpfile, @helpfiles, $ARBHOME.'/HELP_SOURCE/oldhelp', '.*\.(hlp|ps|pdf|ps\.gz|pdf\.gz)$', 1, 0);
   scanFilesAndIndex(%helpfile, @helpfiles, $ARBHOME.'/HELP_SOURCE/genhelp', '.*\.(hlp|ps|pdf|ps\.gz|pdf\.gz)$', 1, 0);
 
   foreach (sort keys %unknown) {
-    if (/readme[^\/]*$/i) {
-      ; # ignore readme files
-    }
+    if (/readme[^\/]*$/i)                    { ; } # ignore readme files
+    elsif (/\/genhelp\/.*(footer|header)$/o) { ; } # ignore files used for help generation
     else {
       print "$_:0: Unhandled file in ressource directory\n";
     }
@@ -266,14 +265,12 @@ sub scanParams($\@$\$) {
         @params = ();
       }
       else {
-        if ($token eq ';') {
-          $$calltype_r = 2;
-        }
-        elsif ($token eq '{') {
-          $$calltype_r = 3;
-        }
+        if    ($token eq ';') { $$calltype_r = 2; } # accepted call
+        elsif ($token eq '{') { $$calltype_r = 3; } # function def
+        elsif ($token eq ')') { $$calltype_r = 2; } # accepted ("othercall(call())")
+        elsif ($token eq ',') { $$calltype_r = 2; } # accepted ("othercall(call(),...)")
         else {
-          print "unknown token behind call: '$token'\n";
+          die "unknown token behind call: '$token' (possible call; ignored due to this error)\n";
         }
       }
     }
@@ -312,7 +309,7 @@ sub isPGTres($) {
   return ('pgt/'.$res_param);
 }
 
-sub isBitmapRef($) {
+sub isPixmapRef($) {
   my ($res_param) = @_;
   if ($res_param =~ /^#/) { return ($'); }
   return ();
@@ -321,7 +318,7 @@ sub isBitmapRef($) {
 sub isIconRes($) {
   my ($res_param) = @_;
   my $base = 'icons/'.$res_param;
-  return ($base.'.xpm', $base.'.bitmap');
+  return ($base.'.xpm');
 }
 
 my $last_help_ref = '';
@@ -352,33 +349,33 @@ sub isHelpRef($) {
 
 my @defs =
   (
-   # regexp for function,                  param numbers, expectInIndex, isRessource,
-   [ qr/\b(AW_POPUP_HELP)\b/,              [ 2 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(PGT_LoadPixmap)\b/,             [ 1 ],         \%pixmap,      \&isPGTres,      ],
-   [ qr/\b(callback)\b/,                   [ -1, -2 ],    \%helpfile,    \&isHelpPopup,   ],
-   [ qr/\b(create_button)\b/,              [ 2 ],         \%pixmap,      \&isBitmapRef,   ],
-   [ qr/\b(create_mode)\b/,                [ 1 ],         \%pixmap,      \&acceptAll,     ],
-   [ qr/\b(create_mode)\b/,                [ 2 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(create_toggle)\b/,              [ -2, -3 ],    \%pixmap,      \&isBitmapRef,   ],
-   [ qr/\b(help_text)\b/,                  [ 1 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(init_root)\b/,                  [ 1 ],         \%pixmap,      \&isIconRes,     ],
-   [ qr/\b(insert_help_topic)\b/,          [ 3 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(insert_help_topic)\b/,          [ 5, 6 ],      \%helpfile,    \&isHelpPopup,   ],
-   [ qr/\b(insert_menu_topic)\b/,          [ 2 ],         \%pixmap,      \&isBitmapRef,   ],
-   [ qr/\b(insert_menu_topic)\b/,          [ 4 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(nt_insert_mark_topic)\b/,       [ 7 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(insert_menu_topic)\b/,          [ 6, 7 ],      \%helpfile,    \&isHelpPopup,   ],
-   [ qr/\b(GEN_insert_extract_submenu)\b/, [ 5 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(GEN_insert_mark_submenu)\b/,    [ 5 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(AWT_advice)\b/,                 [ -4 ],        \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(add_help)\b/,                   [ 1 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(insert_toggle)\b/,              [ 1 ],         \%pixmap,      \&isBitmapRef,   ],
-   [ qr/\b(load_xfig)\b/,                  [ 1 ],         \%picture,     \&acceptAll,     ],
+   # regexp for function,                  param numbers,         expectInIndex, isRessource,
+   [ qr/\b(AW_POPUP_HELP)\b/,              [ 2 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(PGT_LoadPixmap)\b/,             [ 1 ],                 \%pixmap,      \&isPGTres,      ],
+   [ qr/\b(callback)\b/,                   [ -1, -2 ],            \%helpfile,    \&isHelpPopup,   ],
+   [ qr/\b(create_button)\b/,              [ 2 ],                 \%pixmap,      \&isPixmapRef,   ],
+   [ qr/\b(create_mode)\b/,                [ 1 ],                 \%pixmap,      \&acceptAll,     ],
+   [ qr/\b(create_mode)\b/,                [ 2 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(create_toggle)\b/,              [ -2, -3 ],            \%pixmap,      \&isPixmapRef,   ],
+   [ qr/\b(help_text)\b/,                  [ 1 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(AWT_create_root)\b/,            [ 2 ],                 \%pixmap,      \&isIconRes,     ],
+   [ qr/\b(insert_help_topic)\b/,          [ 3 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(insert_help_topic)\b/,          [ 5, 6 ],              \%helpfile,    \&isHelpPopup,   ],
+   [ qr/\b(insert_menu_topic)\b/,          [ 2 ],                 \%pixmap,      \&isPixmapRef,   ],
+   [ qr/\b(insert_menu_topic)\b/,          [ 4 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(insert_mark_topic)\b/,          [ 7 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(insert_menu_topic)\b/,          [ 6, 7 ],              \%helpfile,    \&isHelpPopup,   ],
+   [ qr/\b(GEN_insert_extract_submenu)\b/, [ 5 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(GEN_insert_mark_submenu)\b/,    [ 5 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(AWT_advice)\b/,                 [ -4 ],                \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(add_help)\b/,                   [ 1 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(insert_toggle)\b/,              [ 1 ],                 \%pixmap,      \&isPixmapRef,   ],
+   [ qr/\b(load_xfig)\b/,                  [ 1 ],                 \%picture,     \&acceptAll,     ],
 
    # pseudos (used in comment to mark a ressource as used)
-   [ qr/\b(def_hlp_res)\b/,                [ 1 ],         \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(def_pic_res)\b/,                [ 1 ],         \%picture,     \&acceptAll,     ],
-   [ qr/\b(def_pix_res)\b/,                [ 1 ],         \%pixmap,      \&acceptAll,     ],
+   [ qr/\b(uses_hlp_res)\b/,               [ 1, -2, -3, -4, -5 ], \%helpfile, \&isHelpRef,     ],
+   [ qr/\b(uses_pic_res)\b/,               [ 1, -2, -3, -4, -5 ], \%picture,  \&acceptAll,     ],
+   [ qr/\b(uses_pix_res)\b/,               [ 1, -2, -3, -4, -5 ], \%pixmap,   \&acceptAll,     ],
   );
 
 # - param numbers is [1..n] or [-1..-n] for optional params
