@@ -448,6 +448,7 @@ sub scanCodeFile($) {
 
                     if ($used==0) {
                       print "$file:$lineNr: Error: Ressource '".$unquoted[0]."' is missing\n";
+                      $errors++;
                     }
                   }
                 }
@@ -631,6 +632,7 @@ sub scanCode() {
       }
       else {
         print "$_:0: Error: Ressource is most likely unused\n";
+        $errors++;
       }
     }
   }
