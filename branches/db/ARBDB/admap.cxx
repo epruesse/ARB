@@ -206,7 +206,6 @@ static void ftwrite_aligned(const void *ptr, size_t ali_siz, FILE *fil) {
 
 static char alignment_bytes[ALIGN(1)] = { 0 }; // zero-filled buffer with maximum alignment size
 
-
 static size_t ftwrite_unaligned(const void *ptr, size_t unali_siz, FILE *fil) {
     // ftwrite_unaligned does the same as ftwrite_aligned,
     // but does not access uninitialized memory (that's better for valgrind)
@@ -324,10 +323,9 @@ static void convertFlags4Save(gb_flag_types *flags, gb_flag_types2 *flags2, gb_f
     flags2->update_in_server = 0;
     flags2->header_changed = 0;
 }
-
 static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FILE *out, long *offset, GB_MAIN_IDX main_idx) {
-     /*
-       if out==NULL -> only calculate size
+    /*
+      if out==NULL -> only calculate size
 
        changes     'offset' according to size of written data
        returns     offset of GBDATA in mapfile
@@ -440,6 +438,8 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
                 gbccopy.header_update_date = 0;
                 gbccopy.rel_ifs = (GB_REL_IFS)MAKEREL(gbdoffset, ifsoffset);
 
+                // TEST_INITIALIZED(gbccopy);
+
                 gbccopy_size = ftwrite_unaligned(&gbccopy, sizeof(gbccopy), out);
             }
             else {
@@ -451,8 +451,16 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
     else { // GBENTRY
         GBENTRY *gbe = gbd->as_entry();
 
-        int     ex      = gbe->flags2.extern_data;
-        GBENTRY gbecopy = *gbe;  // make copy to avoid change of mem
+        int ex = gbe->flags2.extern_data;
+
+        GBENTRY gbecopy;
+
+        // init mem to silence valgrind
+        // (GBENTRY contains 4 unused bytes; see ad_load.cxx@TEST_GBDATA_size
+        // @@@ should be fixed; fix needs mapfile-format-version-increment)
+        memset(&gbecopy, 0, sizeof(gbecopy));
+
+        gbecopy = *gbe;  // make copy to avoid change of mem
 
         if (ex) {
             long   exoffset = *offset;
@@ -479,7 +487,10 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
                 gbecopy.server_id   = GBTUM_MAGIC_NUMBER;
                 convertFlags4Save(&(gbecopy.flags), &(gbecopy.flags2), NULL);
                 gbecopy.cache_index = 0;
-                gbecopy_size        = ftwrite_unaligned(&gbecopy, sizeof(gbecopy), out);
+
+                // TEST_INITIALIZED(gbecopy);
+
+                gbecopy_size = ftwrite_unaligned(&gbecopy, sizeof(gbecopy), out);
             }
             else {
                 gbecopy_size = ALIGN(sizeof(gbecopy));

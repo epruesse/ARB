@@ -1693,14 +1693,28 @@ void TEST_io_number() {
 }
 
 void TEST_GBDATA_size() {
-    // protect GBDATA/GBCONTAINER against unwanted changes
+    // protect GBDATA/GBENTRY/GBCONTAINER against unwanted changes
 
 #if defined(ARB_64)
+
+    TEST_EXPECT_EQUAL(sizeof(GBDATA), 40);
+    TEST_EXPECT_EQUAL(sizeof(GBENTRY::info), 24);  // @@@ SIZOFINTERN may be increased (to use unused space); that change would need new mapfile version
+    TEST_EXPECT_EQUAL(sizeof(GBENTRY::cache_index), 4);
+    // 40+24+4 = 68 (where/what are the missing 4 bytes?; they seem to be at the end of the struct; maybe padding-bytes)
+
     TEST_EXPECT_EQUAL(sizeof(GBENTRY), 72);
     TEST_EXPECT_EQUAL(sizeof(GBCONTAINER), 104);
+
 #else // !defined(ARB_64)
+
+    TEST_EXPECT_EQUAL(sizeof(GBDATA), 24);
+    TEST_EXPECT_EQUAL(sizeof(GBENTRY::info), 12);
+    TEST_EXPECT_EQUAL(sizeof(GBENTRY::cache_index), 4);
+    // 24+12+4 = 40 (here nothing is missing)
+
     TEST_EXPECT_EQUAL(sizeof(GBENTRY), 40);
     TEST_EXPECT_EQUAL(sizeof(GBCONTAINER), 60);
+
 #endif
 }
 
