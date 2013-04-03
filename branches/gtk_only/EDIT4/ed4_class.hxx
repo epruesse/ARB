@@ -709,7 +709,7 @@ class ED4_window : public ED4_foldable, virtual ED4_WinContextFree { // derived 
     void set_scrollbar_indents();
 
 public:
-    AW_window              *aww;   // Points to Window
+    AW_window_menu_modes   *aww;   // Points to Window
     ED4_window             *next;
     int                     slider_pos_horizontal;
     int                     slider_pos_vertical;
@@ -729,7 +729,7 @@ public:
     ED4_cursor cursor;
 
     // ED4_window controlling functions
-    static ED4_window *insert_window(AW_window *new_aww); // append to window list
+    static ED4_window *insert_window(AW_window_menu_modes *new_aww); // append to window list
 
     void        delete_window(ED4_window *window);  // delete from window list
     void        reset_all_for_new_config(); // reset structures for loading new config
@@ -773,7 +773,7 @@ public:
 
     AW_device *get_device() const { return aww->get_device(AW_MIDDLE_AREA); }
 
-    ED4_window(AW_window *window);
+    ED4_window(AW_window_menu_modes *window);
     ~ED4_window();
 };
 

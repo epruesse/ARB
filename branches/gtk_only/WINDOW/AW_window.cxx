@@ -272,8 +272,11 @@ int AW_window::calculate_string_height(int rows, int offset) const {
     }
 }
 
-
-static void AW_server_callback(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
+/**
+ * handler for click-callbacks
+ * takes care of recording actions and displaying help on ?-cursor
+ */
+void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
     GTK_PARTLY_IMPLEMENTED;
 
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
@@ -324,7 +327,8 @@ void AW_window::_set_activate_callback(GtkWidget *widget) {
         
         FIXME("this assumes that widget is a button");
         FIXME("investigate why this code works but the commented one does not");
-        g_signal_connect((gpointer)widget, "clicked", G_CALLBACK(AW_server_callback), (gpointer)prvt->callback);
+        g_signal_connect((gpointer)widget, "clicked", G_CALLBACK(AW_window::click_handler),
+                         (gpointer)prvt->callback);
         //g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(AW_server_callback), G_OBJECT(_callback));
     }
     prvt->callback = NULL;
@@ -741,7 +745,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     
     if (_d_callback) {
         g_signal_connect(G_OBJECT(textField), "activate",
-                         G_CALLBACK(AW_server_callback),
+                         G_CALLBACK(AW_window::click_handler),
                          (gpointer) _d_callback);
         _d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
         get_root()->define_remote_command(_d_callback);
@@ -811,50 +815,6 @@ void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask 
     }
     
     insert_sub_menu(name, mnemonic, mask);
-}
-
-static void aw_mode_callback(AW_window *aww, long mode, AW_cb_struct *cbs) {
-    aww->select_mode((int)mode);
-    cbs->run_callback();
-}
-
-int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    
-    aw_assert(legal_mask(mask));
-    aw_assert(NULL != prvt->mode_menu);
-    
-
-
-    const char *path = AW_get_pixmapPath(pixmap);
-    GtkWidget *icon = gtk_image_new_from_file(path);
-    GtkToolItem *item = GTK_TOOL_ITEM(gtk_tool_button_new(icon, NULL)); //use icon, not label
-    
-   
-    gtk_toolbar_insert(prvt->mode_menu, item, -1); //-1 = append
-    
-    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
-    AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)prvt->number_of_modes, (AW_CL)cbs, helpText, cbs);
-    
-    g_signal_connect((gpointer)item, "clicked", G_CALLBACK(AW_server_callback), (gpointer)cb2);
-    
-    if (!prvt->modes_f_callbacks) {
-        prvt->modes_f_callbacks = (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
-    }
-    
-    FIXME("prvt->modes_widgets not implemented. Not sure if really needed");
-    
-//    if (!p_w->modes_widgets) {
-//        p_w->modes_widgets = (Widget *)GB_calloc(sizeof(Widget), AW_NUMBER_OF_F_KEYS);
-//    }
-    if (prvt->number_of_modes<AW_NUMBER_OF_F_KEYS) {
-        prvt->modes_f_callbacks[prvt->number_of_modes] = cb2;
-        //p_w->modes_widgets[p_w->number_of_modes] = button;
-    }
-
-    get_root()->register_widget(GTK_WIDGET(item), mask);
-    prvt->number_of_modes++;
-
-    return prvt->number_of_modes;
 }
 
 char *AW_window::align_string(const char *label_text, int columns) {
@@ -1486,10 +1446,6 @@ void AW_window::set_vertical_scrollbar_top_indent(int /*indent*/) {
 }
 
 
-void AW_window::select_mode(int /*mode*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
 void AW_window::draw_line(int /*x1*/, int /*y1*/, int /*x2*/, int /*y2*/, int /*width*/, bool /*resize*/){
    GTK_NOT_IMPLEMENTED;
 }
@@ -1596,7 +1552,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const cha
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, helpText);
     
     
-    g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_server_callback), (gpointer)cbs);
+    g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
 
     cbs->id = strdup(topic_id);
     get_root()->define_remote_command(cbs);

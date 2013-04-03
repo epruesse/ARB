@@ -6,6 +6,7 @@
 #include "aw_window_gtk.hxx"
 #include "aw_drawing_area.hxx"
 #include <arbdb.h>
+#include "gdk/gdkkeysyms.h"
 
 void aw_insert_default_help_entries(AW_window *aww) {
     aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0, AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
@@ -87,5 +88,64 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     create_window_variables();
 }
 
+void AW_window_menu_modes::select_mode(int mode) {
+    // FIXME!
+    // this function is only called by modes_cb in ED4_root.cxx to 
+    // keep the selected mode synchronized among the editor windows
+    // to allow this without running into a loop, we have to disable
+    // callbacks while we are changing the mode
+    // this isn't good. 
+  
+    GtkToolItem* button = gtk_toolbar_get_nth_item(prvt->mode_menu, mode);
+    get_root()->disable_callbacks = true;
+    gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(button), true);
+    get_root()->disable_callbacks = false;
+}
 
+void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText, AW_active mask, 
+                           void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
+    
+    aw_assert(legal_mask(mask));
+    
+    // create radio button
+    GtkToolItem *button;
+    if (!gtk_toolbar_get_n_items(prvt->mode_menu)) {
+      // first toolbar entry
+      button = gtk_radio_tool_button_new(NULL);
+    } else {
+      GtkToolItem *first = gtk_toolbar_get_nth_item(prvt->mode_menu,0);
+      button = gtk_radio_tool_button_new_from_widget(GTK_RADIO_TOOL_BUTTON(first));
+    }
+    gtk_toolbar_insert(prvt->mode_menu, button, -1); //-1 = append
 
+    // trying to NOT allow "default" buttons in the toolbar. 
+    // doesn't seem to help, though...
+    gtk_widget_set_can_focus(GTK_WIDGET(button), false);
+    gtk_widget_set_can_default(GTK_WIDGET(button), false);
+
+    // add image
+    const char *path  = AW_get_pixmapPath(pixmap);
+    GtkWidget *icon = gtk_image_new_from_file(path);
+    gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(button), icon);
+       
+    // register clicked callback
+    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
+    cbs->help_text = helpText;
+    g_signal_connect((gpointer)button, "clicked", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
+
+    // register F1 - Fn accelerators
+    // jumping through some hoops here. the "toggled" signal doesn't work, so we create
+    // a closure that calls gtk_toggle_tool_button_set_active
+    // this /might/ be a bug... I don't understand where gtk...set_active get's its 
+    // second parameter from. it works, though... valgrinders beware...
+    guint accel_key =  GDK_KEY_F1 + gtk_toolbar_get_n_items(prvt->mode_menu) - 1;
+    GClosure *gclosure = g_cclosure_new_swap(G_CALLBACK(gtk_toggle_tool_button_set_active), button, NULL);
+    gtk_accel_group_connect(prvt->accel_group, accel_key,
+                            (GdkModifierType)0, GTK_ACCEL_VISIBLE,
+                            gclosure);
+
+    // put the accelerator name into the tooltip
+    gtk_widget_set_tooltip_text(GTK_WIDGET(button), gtk_accelerator_name(accel_key, (GdkModifierType)0));
+
+    get_root()->register_widget(GTK_WIDGET(button), mask);
+}
