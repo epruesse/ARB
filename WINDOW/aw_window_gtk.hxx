@@ -54,7 +54,7 @@ public:
      * The mode menu. Might not exist in some windows. Check for NULL before use.
      */
     GtkToolbar *mode_menu;
-  
+ 
     /**
      * The last created radio button. NULL if no open group.
      */
@@ -75,6 +75,9 @@ public:
      */
     GtkWidget *combo_box;
 
+    /**The accelerator group */
+    GtkAccelGroup *accel_group;
+    
     /**
      * A window consists of several areas.
      * Some of those areas are named, some are unnamed.
@@ -87,12 +90,6 @@ public:
     std::vector<AW_area_management *> areas;
     
     /**
-     * This is a counter for the number of items in the mode_menu.
-     * It only exists to satisfy the old interface of create_mode()
-     */
-    int number_of_modes;
-    
-    /**
      * Callback struct for the currently open popup
      */
     AW_cb_struct  *popup_cb;
@@ -102,17 +99,12 @@ public:
      */
     AW_cb_struct *focus_cb;
     
-    /*
-     * List of callbacks for the different mode buttons
-     */
-    AW_cb_struct **modes_f_callbacks;
-    
     /** Contains the last callback struct created by AW_window::callback(). */
     AW_cb_struct *callback; 
     
     /**The drawing area of this window. Might be NULL. */
     AW_drawing_area *drawing_area;
-    
+       
     /**
      * default constructor
      */
