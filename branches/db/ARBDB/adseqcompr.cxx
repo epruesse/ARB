@@ -627,7 +627,7 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
 
             if (!warning) {
                 GBCONTAINER         *gb_master_ali     = 0;
-                GBCONTAINER         *old_gb_master_ali = 0;
+                GBDATA              *old_gb_master_ali = 0;
                 Sequence            *seqs              = 0;
                 GB_MAIN_TYPE        *Main              = GB_MAIN(gb_main);
                 GBQUARK              ali_quark         = gb_find_or_create_quark(Main, ali_name);
@@ -836,9 +836,7 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
                 tree_progress.inc_and_check_user_abort(error);
 
                 if (!error) {
-                    if (old_gb_master_ali) {
-                        error = GB_delete(reinterpret_cast<GBDATA*&>(old_gb_master_ali));
-                    }
+                    if (old_gb_master_ali) error = GB_delete(old_gb_master_ali);
                     Main->keys[ali_quark].gb_master_ali = gb_master_ali;
                 }
 

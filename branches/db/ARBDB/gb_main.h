@@ -163,7 +163,7 @@ public:
     int get_transaction_level() const { return transaction_level; }
 
     GBDATA *gb_main() const { return (GBDATA*)root_container; }
-    GBDATA*& gb_main_ref() { return reinterpret_cast<GBDATA*&>(root_container); }
+    GBCONTAINER*& gb_main_ref() { return root_container; }
 
     GB_ERROR login_remote(const char *db_path, const char *opent);
 

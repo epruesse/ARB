@@ -27,7 +27,7 @@ struct gb_header_flags {
         ever_changed = 1;
     }
     void inc_change(GB_CHANGE val) {
-        if (changed<val) set_change(val);
+        if (changed<unsigned(val)) set_change(val);
     }
 };
 

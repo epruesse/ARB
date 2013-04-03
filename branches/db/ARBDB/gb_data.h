@@ -258,6 +258,17 @@ inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd) {
 #define GB_PUT_SECURITY_WRITE(gb, i) ((gb)->flags.security_write  = (i))
 #define GB_PUT_SECURITY_DELETE(gb, i) ((gb)->flags.security_delete = (i))
 
+// ---------------------------------------------------------
+//      strictly-aliased forwarders for some functions:
+
+inline GB_ERROR gb_commit_transaction_local_rek(GBCONTAINER*& gbc, long mode, int *pson_created) {
+    return gb_commit_transaction_local_rek(StrictlyAliased_BasePtrRef<GBCONTAINER,GBDATA>(gbc).forward(), mode, pson_created);
+}
+
+inline void gb_abort_transaction_local_rek(GBCONTAINER*& gbc) {
+    gb_abort_transaction_local_rek(StrictlyAliased_BasePtrRef<GBCONTAINER,GBDATA>(gbc).forward());
+}
+
 // --------------------------------------------------------------------------------
 
 #else
