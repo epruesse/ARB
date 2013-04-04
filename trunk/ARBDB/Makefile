@@ -727,6 +727,7 @@ adoptimize.o: gb_storage.h
 adoptimize.o: gb_tune.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_core.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_error.h
+adoptimize.o: $(ARBHOME)/INCLUDE/arb_file.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -737,6 +738,7 @@ adoptimize.o: $(ARBHOME)/INCLUDE/dupstr.h
 adoptimize.o: $(ARBHOME)/INCLUDE/gccver.h
 adoptimize.o: $(ARBHOME)/INCLUDE/smartptr.h
 adoptimize.o: $(ARBHOME)/INCLUDE/test_global.h
+adoptimize.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adperl.o: ad_prot.h
 adperl.o: adperl.h

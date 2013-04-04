@@ -2474,6 +2474,8 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                 {
                     int old_compression_mask = Main->keys[idx].compression_mask;
 
+                    // UNCOVERED();
+
                     Main->keys[idx].compression_mask &= ~GB_COMPRESSION_DICTIONARY;
                     error                             = readAndWrite(&gbk[idx]);
                     Main->keys[idx].compression_mask  = old_compression_mask;
@@ -2572,3 +2574,87 @@ GB_ERROR GB_optimize(GBDATA *gb_main) {
     }
     return error;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#include <arb_file.h>
+#endif
+
+// #define TEST_AUTO_UPDATE // uncomment to auto-update binary result of DB optimization
+// #define TEST_AUTO_UPDATE_ASCII // uncomment to auto-update ascii-input from output (be careful with this!)
+
+void TEST_SLOW_optimize() {
+    // test DB optimization (optimizes compression)
+    // [current coverage ~89%]
+    //
+    // Note: a test for sequence compression is in adseqcompr.cxx@TEST_SLOW_sequence_compression
+
+    GB_shell shell;
+
+    const char *source_ascii = "TEST_opti_ascii_in.arb";
+    const char *target_ascii = "TEST_opti_ascii_out.arb";
+
+    const char *nonopti     = "TEST_opti_none.arb";
+    const char *optimized   = "TEST_opti_initial.arb";
+    const char *reoptimized = "TEST_opti_again.arb";
+    const char *expected    = "TEST_opti_expected.arb"; // expected result after optimize
+
+    // initial optimization of ASCII-DB
+    {
+        GBDATA *gb_main = GB_open(source_ascii, "rw");
+
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, nonopti, "b"));
+
+        GB_push_my_security(gb_main);
+        TEST_EXPECT_NO_ERROR(GB_optimize(gb_main));
+        GB_pop_my_security(gb_main);
+
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, optimized, "b"));
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, target_ascii, "a"));
+
+#if defined(TEST_AUTO_UPDATE)
+        TEST_COPY_FILE(optimized, expected);
+#endif
+#if defined(TEST_AUTO_UPDATE_ASCII)
+        TEST_COPY_FILE(target_ascii, source_ascii);
+#endif
+
+        TEST_EXPECT_TEXTFILE_DIFFLINES(source_ascii, target_ascii, 0);
+        TEST_EXPECT_FILES_EQUAL(optimized, expected);
+
+        // check that optimization made sense:
+        long nonopti_size   = GB_size_of_file(nonopti);
+        long optimized_size = GB_size_of_file(optimized);
+        TEST_EXPECT_LESS(optimized_size, nonopti_size);         // did file shrink?
+        TEST_EXPECT_EQUAL(optimized_size*100/nonopti_size, 73); // document compression ratio (in percent)
+
+        GB_close(gb_main);
+    }
+
+    // re-optimize DB (which is already compressed)
+    {
+        GBDATA *gb_main = GB_open(optimized, "rw");
+
+        GB_push_my_security(gb_main);
+        TEST_EXPECT_NO_ERROR(GB_optimize(gb_main));
+        GB_pop_my_security(gb_main);
+
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, reoptimized, "b"));
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, target_ascii, "a"));
+
+        TEST_EXPECT_TEXTFILE_DIFFLINES(source_ascii, target_ascii, 0);
+        TEST_EXPECT_FILES_EQUAL(reoptimized, expected); // reoptimize should produce same result as initial optimize
+
+        GB_close(gb_main);
+    }
+
+    TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("rm %s %s %s %s", target_ascii, nonopti, optimized, reoptimized)));
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
+
