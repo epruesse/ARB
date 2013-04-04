@@ -429,7 +429,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
     }
 
     if (type >= GB_BITS && type < GB_DB) {
-        gb_free_cache(Main, gbd->as_entry());
+        gb_free_cache(Main, gbd->as_entry()); // cant use gb_uncache (since entry is already unlinked!)
     }
     GB_FREE_TRANSACTION_SAVE(gbd);
     GB_DELETE_EXT(gbd, gbm_index);
@@ -744,7 +744,7 @@ char *gb_abort_entry(GBDATA *gbd) {
         GBENTRY *gbe = gbd->as_entry();
         if (GB_GET_EXT_OLD_DATA(gbe)) {
             if (type >= GB_BITS) {
-                gb_free_cache(GB_MAIN(gbe), gbe);
+                gb_uncache(gbe);
                 GB_FREEDATA(gbe);
             }
             gb_abortdata(gbe);

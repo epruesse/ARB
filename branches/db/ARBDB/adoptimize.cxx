@@ -2607,6 +2607,8 @@ void TEST_SLOW_optimize() {
         TEST_EXPECT_NO_ERROR(GB_optimize(gb_main));
         GB_pop_my_security(gb_main);
 
+        GB_flush_cache(gb_main);
+
         TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, optimized, "b"));
         TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, target_ascii, "a"));
 

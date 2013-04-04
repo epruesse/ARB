@@ -1222,7 +1222,7 @@ GB_ERROR GB_write_float(GBDATA *gbd, double f)
 GB_ERROR gb_write_compressed_pntr(GBENTRY *gbe, const char *s, long memsize, long stored_size) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbe);
 
-    gb_free_cache(Main, gbe);
+    gb_uncache(gbe);
     gb_save_extern_data_in_ts(gbe);
     gbe->flags.compressed_data = 1;
     GB_SETSMDMALLOC(gbe, stored_size, (size_t)memsize, (char *)s);
@@ -1261,7 +1261,7 @@ GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, size_t bytes_size, size_t sto
 
     gb_assert(implicated(type == GB_STRING, stored_size == bytes_size-1)); // size constraint for strings not fulfilled!
 
-    gb_free_cache(Main, gbe);
+    gb_uncache(gbe);
     gb_save_extern_data_in_ts(gbe);
 
     int compression_mask = gb_get_compression_mask(Main, key, type);

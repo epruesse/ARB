@@ -57,6 +57,7 @@ long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text);
 /* adcache.cxx */
 char *gb_read_cache(GBENTRY *gbe);
 void gb_free_cache(GB_MAIN_TYPE *Main, GBENTRY *gbe);
+void gb_uncache(GBENTRY *gbe);
 char *gb_alloc_cache_index(GBENTRY *gbe, size_t size);
 
 /* adcomm.cxx */

@@ -87,6 +87,7 @@ GB_ERROR GB_save_quick(GBDATA *gbd, const char *refpath);
 void GB_disable_path(GBDATA *gbd, const char *path);
 
 /* adcache.cxx */
+void GB_flush_cache(GBDATA *gbd);
 char *GB_set_cache_size(GBDATA *gbd, size_t size);
 
 /* adcomm.cxx */

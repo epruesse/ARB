@@ -215,6 +215,23 @@ void gb_free_cache(GB_MAIN_TYPE *Main, GBENTRY *gbe) {
     }
 }
 
+static void gb_uncache(GBCONTAINER *gbc);
+void gb_uncache(GBENTRY *gbe) { gb_free_cache(GB_MAIN(gbe), gbe); }
+
+inline void gb_uncache(GBDATA *gbd) {
+    if (gbd->is_container()) gb_uncache(gbd->as_container());
+    else                     gb_uncache(gbd->as_entry());
+}
+static void gb_uncache(GBCONTAINER *gbc) {
+    for (GBDATA *gb_child = GB_child(gbc); gb_child; gb_child = GB_nextChild(gb_child)) {
+        gb_uncache(gb_child);
+    }
+}
+void GB_flush_cache(GBDATA *gbd) {
+    // flushes cache of DB-entry or -subtree
+    gb_uncache(gbd);
+}
+
 static char *cache_free_some_memory(gb_cache& cache, size_t needed_mem) {
     // free up cache entries until
     // - at least 'needed_mem' bytes are available and
