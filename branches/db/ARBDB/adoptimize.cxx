@@ -2258,11 +2258,12 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
         printf("    tree contains %i words *** maximum tree depth = %i\n", words, maxdeep);
 #endif
 
-        dict->words = 0;
+        dict->words   = 0;
         dict->textlen = DICT_STRING_INCR;
-        dict->text = (u_str)gbm_get_mem(DICT_STRING_INCR, GBM_DICT_INDEX);
+
+        dict->text    = (u_str)gbm_get_mem(DICT_STRING_INCR, GBM_DICT_INDEX);
         dict->offsets = (GB_NINT*)gbm_get_mem(sizeof(*(dict->offsets))*words, GBM_DICT_INDEX);
-        dict->resort = (GB_NINT*)gbm_get_mem(sizeof(*(dict->resort))*words, GBM_DICT_INDEX);
+        dict->resort  = (GB_NINT*)gbm_get_mem(sizeof(*(dict->resort))*words, GBM_DICT_INDEX);
 
         memset(buffer, '*', maxdeep);
         tree = remove_word_from_dtree(tree, NULL, 0, buffer, &wordLen, &wordFrequency, &dummy);
@@ -2340,6 +2341,15 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
     }
 
     return NULL;
+}
+
+static void gb_free_dictionary(GB_DICTIONARY*& dict) {
+    gbm_free_mem(dict->text, dict->textlen, GBM_DICT_INDEX);
+    gbm_free_mem(dict->offsets, sizeof(*(dict->offsets))*dict->words, GBM_DICT_INDEX);
+    gbm_free_mem(dict->resort, sizeof(*(dict->resort))*dict->words, GBM_DICT_INDEX);
+
+    gbm_free_mem(dict, sizeof(*dict), GBM_DICT_INDEX);
+    dict = NULL;
 }
 
 static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
@@ -2526,6 +2536,8 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                     }
 #endif // TEST_DICT
                 }
+
+                gb_free_dictionary(dict);
             }
 
             error = GB_end_transaction(gb_main, error);
