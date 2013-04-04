@@ -1077,6 +1077,8 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
                         GB_MAIN_IDX  new_idx = mheader.main_idx;
                         GB_MAIN_IDX  old_idx = father->main_idx;
 
+                        long gbc_index = gbc->index;
+
                         GB_commit_transaction(gbc);
 
                         gb_assert(new_gbc->main_idx == new_idx);
@@ -1089,7 +1091,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
                         Main->root_container = new_gbc;
                         father->main_idx     = new_idx;
 
-                        SET_GBCONTAINER_ELEM(father, gbc->index, NULL); // unlink old main-entry
+                        SET_GBCONTAINER_ELEM(father, gbc_index, NULL); // unlink old main-entry
 
                         gbc = new_gbc;
                         SET_GB_FATHER(gbc, father);
