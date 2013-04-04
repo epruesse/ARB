@@ -2343,20 +2343,23 @@ static void gb_free_dictionary(GB_DICTIONARY*& dict) {
     dict = NULL;
 }
 
-static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
-    int      i;
+static GB_ERROR readAndWrite(O_gbdByKey *gbkp, size_t& old_size, size_t& new_size) {
     GB_ERROR error = 0;
 
-    for (i=0; i<gbkp->cnt && !error; i++) {
+    old_size = 0;
+    new_size = 0;
+
+    for (int i=0; i<gbkp->cnt && !error; i++) {
         GBDATA *gbd  = gbkp->gbds[i];
         int     type = GB_TYPE(gbd);
 
         if (COMPRESSIBLE(type)) {
-            size_t size;
-            char *data;
+            size_t  size;
+            char   *data;
 
             {
-                char *d = (char*)get_data_n_size(gbd, &size);
+                cu_str d  = (cu_str)get_data_n_size(gbd, &size);
+                old_size += gbd->as_entry()->memsize();
 
                 data = (char*)gbm_get_mem(size, GBM_DICT_INDEX);
                 memcpy(data, d, size);
@@ -2388,6 +2391,8 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
                     gb_assert(0);
                     break;
             }
+
+            new_size += gbd->as_entry()->memsize();
 
             gbm_free_mem(data, size, GBM_DICT_INDEX);
         }
@@ -2467,14 +2472,19 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
                 printf("  * Uncompressing all with old dictionary ...\n");
 
+                size_t old_compressed_size;
+
                 {
-                    int old_compression_mask = Main->keys[idx].compression_mask;
+                    int& compr_mask     = Main->keys[idx].compression_mask;
+                    int  old_compr_mask = compr_mask;
+
+                    size_t new_size;
 
                     // UNCOVERED();
 
-                    Main->keys[idx].compression_mask &= ~GB_COMPRESSION_DICTIONARY;
-                    error                             = readAndWrite(&gbk[idx]);
-                    Main->keys[idx].compression_mask  = old_compression_mask;
+                    compr_mask &= ~GB_COMPRESSION_DICTIONARY;
+                    error       = readAndWrite(&gbk[idx], old_compressed_size, new_size);
+                    compr_mask  = old_compr_mask;
                 }
 
                 if (!error) {
@@ -2508,7 +2518,19 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
                         // compress all data with new dictionary
                         printf("  * Compressing all with new dictionary ...\n");
-                        error = readAndWrite(&gbk[idx]);
+
+                        size_t old_size, new_compressed_size;
+                        error = readAndWrite(&gbk[idx], old_size, new_compressed_size);
+
+                        if (!error) {
+                            printf("    (compressed size: old=%zu new=%zu ratio=%.1f%%)\n",
+                                   old_compressed_size, new_compressed_size, (new_compressed_size*100.0)/old_compressed_size);
+
+                            // @@@ for some keys compression fails (e.g. 'ref');
+                            // need to find out why dictionary is so bad
+                            // gb_assert(new_compressed_size <= old_compressed_size); // @@@ enable this (fails in unit-test)
+                        }
+
                         if (error) {
                             /* critical state: new dictionary has been written, but transaction will be aborted below.
                              * Solution: Write back old dictionary.
