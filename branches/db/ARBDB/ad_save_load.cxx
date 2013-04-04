@@ -272,52 +272,49 @@ static GB_ERROR renameQuicksaves(GB_MAIN_TYPE *Main) {
 
 long gb_ascii_2_bin(const char *source, GBENTRY *gbe) {
     const char *s = source;
-
-    long len = 0;
-    char c   = *(s++);
-
-    long  size;
-    long  memsize;
-    char *d;
-    long  k;
-    long  i;
+    char        c = *(s++);
 
     A_TO_I(c);
     gbe->flags.compressed_data = c;
 
-    if (*s == ':') {
-        size = 0;
-        s++;
-    }
-    else {
-        for (i=0, k = 8; k && (c = *(s++)); k--) {
-            A_TO_I(c);
-            i = (i<<4)+c;
+    {
+        long size;
+        if (*s == ':') {
+            size = 0;
+            s++;
         }
-        size = i;
-    }
-    source = s;
+        else {
+            long i, k;
+            for (i = 0, k = 8; k && (c = *(s++)); k--) {
+                A_TO_I(c);
+                i = (i<<4)+c;
+            }
+            size = i;
+        }
+        source = s;
 
-    while ((c = *(s++))) {
-        if ((c == '.') || (c=='-')) {
+        long len = 0;
+        while ((c = *(s++))) {
+            if ((c == '.') || (c=='-')) {
+                len++;
+                continue;
+            }
+            if ((c == ':') || (c=='=')) {
+                len += 2;
+                continue;
+            }
+            if (!(c = *(s++))) {
+                return 1;
+            };
             len++;
-            continue;
         }
-        if ((c == ':') || (c=='=')) {
-            len += 2;
-            continue;
-        }
-        if (!(c = *(s++))) {
-            return 1;
-        };
-        len++;
+
+        GB_SETSMDMALLOC_UNINITIALIZED(gbe, size, len);
     }
 
-    memsize = len;
+    char *d = GB_GETDATA(gbe);
+    s       = source;
 
-    GB_SETSMDMALLOC_UNINITIALIZED(gbe, size, memsize);
-    d = GB_GETDATA(gbe);
-    s = source;
     while ((c = *(s++))) {
         if (c == '.') {
             *(d++)=0;
@@ -338,7 +335,7 @@ long gb_ascii_2_bin(const char *source, GBENTRY *gbe) {
             continue;
         }
         A_TO_I(c);
-        i = c << 4;
+        long i = c << 4;
         c = *(s++);
         A_TO_I(c);
         *(d++) = (char)(i + c);

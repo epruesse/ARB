@@ -312,32 +312,32 @@ inline int ALPHA_DICT_OFFSET(int idx, GB_DICTIONARY *dict) {
 // #define ALPHA_DICT_OFFSET(i)         ntohl(offset[ntohl(resort[i])])
 // #define INDEX_DICT_OFFSET(i)         ntohl(offset[i])
 
-#define LEN_BITS                4
-#define INDEX_BITS                      2
-#define INDEX_LEN_BITS              1
+#define LEN_BITS       4
+#define INDEX_BITS     2
+#define INDEX_LEN_BITS 1
 
-#define LEN_SHIFT               0
-#define INDEX_SHIFT             (LEN_SHIFT+LEN_BITS)
-#define INDEX_LEN_SHIFT             (INDEX_SHIFT+INDEX_BITS)
+#define LEN_SHIFT       0
+#define INDEX_SHIFT     (LEN_SHIFT+LEN_BITS)
+#define INDEX_LEN_SHIFT (INDEX_SHIFT+INDEX_BITS)
 
-#define BITMASK(bits)               ((1<<(bits))-1)
-#define GETVAL(tag, typ)            (((tag)>>typ##_SHIFT)&BITMASK(typ##_BITS))
+#define BITMASK(bits)   ((1<<(bits))-1)
+#define GETVAL(tag,typ) (((tag)>>typ##_SHIFT)&BITMASK(typ##_BITS))
 
-#define MIN_SHORTLEN            6
-#define MAX_SHORTLEN                (BITMASK(LEN_BITS)+MIN_SHORTLEN-1)
-#define MIN_LONGLEN             (MAX_SHORTLEN+1)
-#define MAX_LONGLEN                     (MIN_LONGLEN+255)
+#define MIN_SHORTLEN 6
+#define MAX_SHORTLEN (BITMASK(LEN_BITS)+MIN_SHORTLEN-1)
+#define MIN_LONGLEN  (MAX_SHORTLEN+1)
+#define MAX_LONGLEN  (MIN_LONGLEN+255)
 
-#define SHORTLEN_DECR               (MIN_SHORTLEN-1) // !! zero is used as flag for long len !!
-#define LONGLEN_DECR                MIN_LONGLEN
+#define SHORTLEN_DECR (MIN_SHORTLEN-1)               // !! zero is used as flag for long len !!
+#define LONGLEN_DECR  MIN_LONGLEN
 
-#define MIN_COMPR_WORD_LEN          MIN_SHORTLEN
-#define MAX_COMPR_WORD_LEN      MAX_LONGLEN
+#define MIN_COMPR_WORD_LEN MIN_SHORTLEN
+#define MAX_COMPR_WORD_LEN MAX_LONGLEN
 
-#define MAX_SHORT_INDEX             BITMASK(INDEX_BITS+8)
-#define MAX_LONG_INDEX          BITMASK(INDEX_BITS+16)
+#define MAX_SHORT_INDEX BITMASK(INDEX_BITS+8)
+#define MAX_LONG_INDEX  BITMASK(INDEX_BITS+16)
 
-#define LAST_COMPRESSED_BIT     64
+#define LAST_COMPRESSED_BIT 64
 
 #ifdef DEBUG
 # define DUMP_COMPRESSION_TEST  0
@@ -378,7 +378,7 @@ static void dumpChunkCounters() {
 #endif // COUNT_CHUNKS
 
 static cu_str lstr(cu_str s, int len) {
-#define BUFLEN 10000
+#define BUFLEN 20000
     static unsigned_char buf[BUFLEN];
 
     gb_assert(len<BUFLEN);
@@ -767,16 +767,14 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, size_t si
 
 #if defined(TEST_DICT)
 
-static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSum, long *compSum)
-{
-    int  cnt;
+static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSum, long *compSum) {
     long uncompressed_sum = 0;
     long compressed_sum   = 0;
-    long dict_size        = (dict->words*2+1)*sizeof(GB_NINT)+dict->textlen;
-    int  i;
-    long char_count[256];
 
-    for (i=0; i<256; i++) char_count[i] = 0;
+    long dict_size = (dict->words*2+1)*sizeof(GB_NINT)+dict->textlen;
+
+    long char_count[256];
+    for (int i=0; i<256; i++) char_count[i] = 0;
 
     printf("  * Testing compression..\n");
 
@@ -784,7 +782,7 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
     clearChunkCounters();
 #endif
 
-    for (cnt=0; cnt<gbk->cnt; cnt++) {
+    for (int cnt=0; cnt<gbk->cnt; cnt++) {
         GBDATA *gbd = gbk->gbds[cnt];
         int type = GB_TYPE(gbd);
 
@@ -792,38 +790,31 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
             size_t size;
             cu_str data = get_data_n_size(gbd, &size);
 
-            u_str  copy;
-            size_t compressedSize;
-            int    last_flag = 0;
-            u_str  compressed;
-            u_str  uncompressed;
-
             if (type==GB_STRING || type == GB_LINK) size--;
-
             if (size<1) continue;
 
-#ifndef NDEBUG
-            copy = (u_str)gbm_get_mem(size, GBM_DICT_INDEX);
+            u_str copy = (u_str)gbm_get_mem(size, GBM_DICT_INDEX);
             gb_assert(copy!=0);
             memcpy(copy, data, size);
-#endif
 
 #if DUMP_COMPRESSION_TEST>=1
             printf("----------------------------\n");
             printf("original    : %3li b = '%s'\n", size, data);
 #endif
 
-            compressed = (u_str)gb_compress_by_dictionary(dict, (GB_CSTR)data, size, &compressedSize, last_flag, 9999, 2);
+            int    last_flag  = 0;
+            size_t compressedSize;
+            u_str  compressed = (u_str)gb_compress_by_dictionary(dict, (GB_CSTR)data, size, &compressedSize, last_flag, 9999, 2);
 
 #if DUMP_COMPRESSION_TEST>=1
             printf("compressed  : %3li b = '%s'\n", compressedSize, lstr(compressed, compressedSize));
             dumpBinary(compressed, compressedSize);
 #endif
 
-            for (i=0; i<compressedSize; i++) char_count[compressed[i]]++;
+            for (size_t i=0; i<compressedSize; i++) char_count[compressed[i]]++;
 
-            size_t new_size = -1;
-            uncompressed    = (u_str)gb_uncompress_by_dictionary(gbd, (char*)compressed+1, size+GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
+            size_t new_size     = -1;
+            u_str  uncompressed = (u_str)gb_uncompress_by_dictionary(gbd, (char*)compressed+1, size+GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
 
 #if DUMP_COMPRESSION_TEST>=1
             printf("copy        : %3li b = '%s'\n", size, lstr(copy, size));
