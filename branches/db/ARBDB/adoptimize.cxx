@@ -789,13 +789,14 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
         int type = GB_TYPE(gbd);
 
         if (COMPRESSIBLE(type)) {
-            long size;
+            size_t size;
             cu_str data = get_data_n_size(gbd, &size);
-            u_str copy;
-            long compressedSize;
-            int last_flag = 0;
-            u_str compressed;
-            u_str uncompressed;
+
+            u_str  copy;
+            size_t compressedSize;
+            int    last_flag = 0;
+            u_str  compressed;
+            u_str  uncompressed;
 
             if (type==GB_STRING || type == GB_LINK) size--;
 
@@ -821,7 +822,8 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
 
             for (i=0; i<compressedSize; i++) char_count[compressed[i]]++;
 
-            uncompressed = (u_str)gb_uncompress_by_dictionary(gbd, (char*)compressed+1, size);
+            size_t new_size = -1;
+            uncompressed    = (u_str)gb_uncompress_by_dictionary(gbd, (char*)compressed+1, size+GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
 
 #if DUMP_COMPRESSION_TEST>=1
             printf("copy        : %3li b = '%s'\n", size, lstr(copy, size));
