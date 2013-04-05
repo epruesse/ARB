@@ -138,7 +138,7 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     // a closure that calls gtk_toggle_tool_button_set_active
     // this /might/ be a bug... I don't understand where gtk...set_active get's its 
     // second parameter from. it works, though... valgrinders beware...
-    guint accel_key =  GDK_KEY_F1 + gtk_toolbar_get_n_items(prvt->mode_menu) - 1;
+    guint accel_key =  GDK_F1 + gtk_toolbar_get_n_items(prvt->mode_menu) - 1;
     GClosure *gclosure = g_cclosure_new_swap(G_CALLBACK(gtk_toggle_tool_button_set_active), button, NULL);
     gtk_accel_group_connect(prvt->accel_group, accel_key,
                             (GdkModifierType)0, GTK_ACCEL_VISIBLE,
