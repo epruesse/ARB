@@ -656,7 +656,7 @@ void gb_check_in_undo_modify(GB_MAIN_TYPE *Main, GBDATA *gbd) {
         return;
     }
 
-    old = GB_GET_EXT_OLD_DATA(gbd);
+    old = gbd->get_oldData();
     ue = new_g_b_undo_entry(Main->undo->valid_u);
     ue->source = gbd;
     ue->gbm_index = GB_GBM_INDEX(gbd);

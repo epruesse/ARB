@@ -735,7 +735,7 @@ char *gb_abort_entry(GBDATA *gbd) {
 
     if (type != GB_DB) {
         GBENTRY *gbe = gbd->as_entry();
-        if (GB_GET_EXT_OLD_DATA(gbe)) {
+        if (gbe->get_oldData()) {
             if (type >= GB_BITS) {
                 gb_uncache(gbe);
                 GB_FREEDATA(gbe);

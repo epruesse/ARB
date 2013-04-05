@@ -15,13 +15,10 @@
 #include "gb_key.h"
 #endif
 
-
 // ---------------------------------------------------------
 //      extern data storage (not directly inside GBDATA)
 
 inline bool GB_CHECKINTERN(int size, int memsize) { return size<256 && memsize<SIZOFINTERN; }
-
-inline gb_transaction_save *GB_GET_EXT_OLD_DATA(GBDATA *gbd) { return gbd->ext ? gbd->ext->old : 0; }
 
 // --------------------------
 //      data and datasize
