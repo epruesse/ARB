@@ -1691,25 +1691,30 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
 
     GB_ERROR error = NULL;
     if (!strchr(name, ':'))  { // don't check remote DB
-        FILE *in = fopen(name, "rb");
-        if (!in) {
-            error = GBS_global_string("Cannot find file '%s'", name);
+        if (GB_is_regularfile(name)) {
+            FILE *in = fopen(name, "rb");
+            if (!in) {
+                error = GBS_global_string("Cannot find file '%s'", name);
+            }
+            else {
+                long i = gb_read_in_uint32(in, 0);
+
+                if (!is_binary_db_id(i)) {
+                    rewind(in);
+                    char buffer[100];
+                    if (!fgets(buffer, 50, in)) {
+                        error = GB_IO_error("reading", name);
+                    }
+                    else {
+                        bool is_ascii = strncmp(buffer, "/*ARBDB AS", 10) == 0;
+                        if (!is_ascii) error = GBS_global_string("'%s' is not an arb file", name);
+                    }
+                }
+                fclose(in);
+            }
         }
         else {
-            long i = gb_read_in_uint32(in, 0);
-
-            if (!is_binary_db_id(i)) {
-                rewind(in);
-                char buffer[100];
-                if (!fgets(buffer, 50, in)) {
-                    error = GB_IO_error("reading", name);
-                }
-                else {
-                    bool is_ascii = strncmp(buffer, "/*ARBDB AS", 10) == 0;
-                    if (!is_ascii) error = GBS_global_string("'%s' is not an arb file", name);
-                }
-            }
-            fclose(in);
+            error = GBS_global_string("'%s' is no file", name);
         }
     }
     return error;
