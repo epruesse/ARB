@@ -16,14 +16,6 @@
 #endif
 
 
-// ------------------------
-//      indexed keys
-
-inline void GB_INDEX_CHECK_IN(GBENTRY *gbe) { if (gbe->flags2.tisa_index) gb_index_check_in(gbe); }
-inline void GB_INDEX_CHECK_OUT(GBENTRY *gbe) { if ((gbe)->flags2.is_indexed) gb_index_check_out(gbe); }
-
-#define GB_GBM_INDEX(gbd) ((gbd)->flags2.gbm_index)
-
 // ---------------------------------------------------------
 //      extern data storage (not directly inside GBDATA)
 
@@ -52,7 +44,7 @@ inline gb_transaction_save *GB_GET_EXT_OLD_DATA(GBDATA *gbd) { return gbd->ext ?
 inline char *GB_GETDATA(GBENTRY *gbe) { return gbe->stored_external() ? GB_EXTERN_DATA_DATA(gbe->info.ex)  : &((gbe)->info.istr.data[0]); } // @@@ move into GBENTRY
 
 inline void GB_FREEDATA(GBENTRY *gbe) { // @@@ move into GBENTRY
-    GB_INDEX_CHECK_OUT(gbe);
+    gbe->index_check_out();
     if (gbe->stored_external() && GB_EXTERN_DATA_DATA(gbe->info.ex)) {
         gbm_free_mem(GB_EXTERN_DATA_DATA(gbe->info.ex), (size_t)(gbe->info.ex.memsize), GB_GBM_INDEX(gbe));
         SET_GB_EXTERN_DATA_DATA(gbe->info.ex, 0);
@@ -79,7 +71,7 @@ inline void GB_SETSMD(GBENTRY *gbe, long siz, long memsiz, char *dat) {
         gbe->info.istr.size = (unsigned char)siz;
         gbe->info.istr.memsize = (unsigned char)memsiz;
     }
-    GB_INDEX_CHECK_IN(gbe);
+    gbe->index_re_check_in();
 }
 
 inline void GB_SETSMDMALLOC(GBENTRY *gbe, long siz, long memsiz, const char *dat) {
@@ -100,7 +92,7 @@ inline void GB_SETSMDMALLOC(GBENTRY *gbe, long siz, long memsiz, const char *dat
         SET_GB_EXTERN_DATA_DATA(gbe->info.ex, exData);
         if (dat) memcpy(exData, (char *)dat, (size_t)(memsiz));
     }
-    GB_INDEX_CHECK_IN(gbe);
+    gbe->index_re_check_in();
 }
 
 inline void GB_SETSMDMALLOC_UNINITIALIZED(GBENTRY *gbe, long siz, long memsiz) {
@@ -117,7 +109,7 @@ inline void GB_SETSMDMALLOC_UNINITIALIZED(GBENTRY *gbe, long siz, long memsiz) {
         exData = (char*)gbm_get_mem((size_t)memsiz, GB_GBM_INDEX(gbe));
         SET_GB_EXTERN_DATA_DATA(gbe->info.ex, exData);
     }
-    GB_INDEX_CHECK_IN(gbe);
+    gbe->index_re_check_in();
 }
 
 #else

@@ -62,7 +62,7 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
     GB_TYPES realtype = GB_TYPE(gb);
     gb_assert(val);
     if (type == GB_STRING) {
-        gb_assert(realtype == GB_STRING || realtype == GB_LINK); // gb_find_internal called with wrong type
+        gb_assert(gb->is_a_string()); // gb_find_internal called with wrong type
     }
     else {
         gb_assert(realtype == type); // gb_find_internal called with wrong type

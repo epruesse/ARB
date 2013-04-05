@@ -755,7 +755,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                 }
                 else {
                     gbd = gbe = gb_make_entry(gbc_dest, NULL, index, key, (GB_TYPES)type2);
-                    GB_INDEX_CHECK_OUT(gbe);
+                    gbe->index_check_out();
                 }
             }
         }

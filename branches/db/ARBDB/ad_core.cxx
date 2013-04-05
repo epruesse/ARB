@@ -579,7 +579,7 @@ void gb_del_ref_and_extern_gb_transaction_save(gb_transaction_save *ts) {
 static void gb_abortdata(GBENTRY *gbe) {
     gb_transaction_save *old;
 
-    GB_INDEX_CHECK_OUT(gbe);
+    gbe->index_check_out();
     old = gbe->ext->old;
     gb_assert(old!=0);
 
@@ -599,7 +599,7 @@ static void gb_abortdata(GBENTRY *gbe) {
     gb_del_ref_and_extern_gb_transaction_save(old);
     gbe->ext->old = NULL;
 
-    GB_INDEX_CHECK_IN(gbe);
+    gbe->index_re_check_in();
 }
 
 
@@ -610,7 +610,7 @@ void gb_save_extern_data_in_ts(GBENTRY *gbe) {
      */
 
     GB_CREATE_EXT(gbe);
-    GB_INDEX_CHECK_OUT(gbe);
+    gbe->index_check_out();
     if (gbe->ext->old || (GB_ARRAY_FLAGS(gbe).changed == GB_CREATED)) {
         GB_FREEDATA(gbe);
     }
@@ -638,12 +638,12 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
     if (Main->is_server()) {
         GBDATA *gbd = GB_HEADER_LIST_GBD(hls[index]);
 
-        if (gbd && (GB_TYPE(gbd) == GB_STRING || GB_TYPE(gbd) == GB_LINK)) { // @@@ put check for GB_STRING or GB_LINK into method (occurs several times)
+        if (gbd && gbd->is_indexable()) {
             GBENTRY        *gbe = gbd->as_entry();
             gb_index_files *ifs = 0;
 
-            GB_INDEX_CHECK_OUT(gbe);
-            gbe->flags2.tisa_index = 0;
+            gbe->index_check_out();
+            gbe->flags2.should_be_indexed = 0; // do not re-checkin
             
             GBCONTAINER *gfather = GB_FATHER(father);
             if (gfather) {
@@ -652,7 +652,7 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
                 }
             }
             hls[index].flags.key_quark = new_index;
-            if (ifs) gb_index_check_in(gbe);
+            if (ifs) gbe->index_check_in();
 
             return;
         }

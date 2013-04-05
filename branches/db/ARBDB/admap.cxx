@@ -450,10 +450,7 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
     }
     else { // GBENTRY
         GBENTRY *gbe = gbd->as_entry();
-
-        bool ex = gbe->stored_external();
-
-        GBENTRY gbecopy;
+        GBENTRY  gbecopy;
 
         // init mem to silence valgrind
         // (GBENTRY contains 4 unused bytes; see ad_load.cxx@TEST_GBDATA_size
@@ -462,7 +459,7 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
 
         gbecopy = *gbe;  // make copy to avoid change of mem
 
-        if (ex) {
+        if (gbe->stored_external()) {
             long   exoffset = *offset;
             size_t ex_size;
 

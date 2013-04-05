@@ -26,45 +26,46 @@
         if (ifs->key == quark) break;                                   \
     }
 
-char *gb_index_check_in(GBENTRY *gbe) { // @@@ bogus result
+void GBENTRY::index_check_in() {
     // write field in index table
 
-    GBCONTAINER *gfather = GB_GRANDPA(gbe);
+    GBCONTAINER *gfather = GB_GRANDPA(this);
     if (gfather) {
-        GBQUARK quark = GB_KEY_QUARK(gbe);
+        GBQUARK quark = GB_KEY_QUARK(this);
         gb_index_files *ifs;
         GB_INDEX_FIND(gfather, ifs, quark);
 
         if (ifs) { // if key is indexed
-            if (GB_TYPE(gbe) == GB_STRING || GB_TYPE(gbe) == GB_LINK) {
-                if (gbe->flags2.is_indexed) {
+            if (is_indexable()) {
+                if (flags2.is_indexed) {
                     GB_internal_error("Double checked in");
                 }
                 else {
-                    GB_CSTR       data = GB_read_char_pntr(gbe);
-                    unsigned long index;
-                    GB_CALC_HASH_INDEX(data, index, ifs->hash_table_size, ifs->case_sens);
+                    GB_CSTR       content = GB_read_char_pntr(this);
+                    unsigned long idx;
+                    GB_CALC_HASH_INDEX(content, idx, ifs->hash_table_size, ifs->case_sens);
                     ifs->nr_of_elements++;
 
                     {
                         GB_REL_IFES   *entries = GB_INDEX_FILES_ENTRIES(ifs);
-                        gb_if_entries *ifes    = (gb_if_entries *)gbm_get_mem(sizeof(gb_if_entries), GB_GBM_INDEX(gbe));
+                        gb_if_entries *ifes    = (gb_if_entries *)gbm_get_mem(sizeof(gb_if_entries), GB_GBM_INDEX(this));
 
-                        SET_GB_IF_ENTRIES_NEXT(ifes, GB_ENTRIES_ENTRY(entries, index));
-                        SET_GB_IF_ENTRIES_GBD(ifes, gbe);
-                        SET_GB_ENTRIES_ENTRY(entries, index, ifes);
+                        SET_GB_IF_ENTRIES_NEXT(ifes, GB_ENTRIES_ENTRY(entries, idx));
+                        SET_GB_IF_ENTRIES_GBD(ifes, this);
+                        SET_GB_ENTRIES_ENTRY(entries, idx, ifes);
                     }
-                    gbe->flags2.tisa_index = 1;
-                    gbe->flags2.is_indexed = 1;
+                    flags2.should_be_indexed = 1;
+                    flags2.is_indexed        = 1;
                 }
             }
         }
     }
-    return 0;
 }
 
-// remove entry from index table
-void gb_index_check_out(GBENTRY *gbe) {
+void GBENTRY::index_check_out() {
+    // remove entry from index table
+
+    GBENTRY *gbe = this; // @@@ elim
     if (gbe->flags2.is_indexed) {
         GB_ERROR        error   = 0;
         GBCONTAINER    *gfather = GB_GRANDPA(gbe);
@@ -78,23 +79,23 @@ void gb_index_check_out(GBENTRY *gbe) {
         else {
             error = GB_push_transaction(gbe);
             if (!error) {
-                GB_CSTR data = GB_read_char_pntr(gbe);
+                GB_CSTR content = GB_read_char_pntr(gbe);
 
-                if (!data) {
+                if (!content) {
                     error = GBS_global_string("can't read key value (%s)", GB_await_error());
                 }
                 else {
-                    unsigned long index;
-                    GB_CALC_HASH_INDEX(data, index, ifs->hash_table_size, ifs->case_sens);
+                    unsigned long idx;
+                    GB_CALC_HASH_INDEX(content, idx, ifs->hash_table_size, ifs->case_sens);
 
                     gb_if_entries *ifes2   = 0;
                     GB_REL_IFES   *entries = GB_INDEX_FILES_ENTRIES(ifs);
                     gb_if_entries *ifes;
 
-                    for (ifes = GB_ENTRIES_ENTRY(entries, index); ifes; ifes = GB_IF_ENTRIES_NEXT(ifes)) {
+                    for (ifes = GB_ENTRIES_ENTRY(entries, idx); ifes; ifes = GB_IF_ENTRIES_NEXT(ifes)) {
                         if (gbe == GB_IF_ENTRIES_GBD(ifes)) {       // entry found
                             if (ifes2) SET_GB_IF_ENTRIES_NEXT(ifes2, GB_IF_ENTRIES_NEXT(ifes));
-                            else SET_GB_ENTRIES_ENTRY(entries, index, GB_IF_ENTRIES_NEXT(ifes));
+                            else SET_GB_ENTRIES_ENTRY(entries, idx, GB_IF_ENTRIES_NEXT(ifes));
 
                             ifs->nr_of_elements--;
                             gbm_free_mem(ifes, sizeof(gb_if_entries), GB_GBM_INDEX(gbe));
@@ -108,7 +109,7 @@ void gb_index_check_out(GBENTRY *gbe) {
         }
 
         if (error) {
-            error = GBS_global_string("gb_index_check_out failed for key '%s' (%s)\n", GB_KEY(gbe), error);
+            error = GBS_global_string("GBENTRY::index_check_out failed for key '%s' (%s)\n", GB_KEY(gbe), error);
             GB_internal_error(error);
         }
     }
@@ -158,8 +159,7 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
                          gb2;
                          gb2 = GB_find_sub_by_quark(gbf, key_quark, gb2, 0))
                     {
-                        if (GB_TYPE(gb2) != GB_STRING && GB_TYPE(gb2) != GB_LINK) continue;
-                        gb_index_check_in(gb2->as_entry());
+                        if (gb2->is_indexable()) gb2->as_entry()->index_check_in();
                     }
                 }
             }
@@ -470,7 +470,7 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
                         gb_del_ref_and_extern_gb_transaction_save(ue->d.ts);
                         ue->d.ts = 0;
 
-                        GB_INDEX_CHECK_IN(gbe);
+                        gbe->index_re_check_in();
                     }
                 }
             }
@@ -691,8 +691,8 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA*& gbd) {
         }
     }
     else {
-        GB_INDEX_CHECK_OUT(gbd->as_entry());
-        gbd->flags2.tisa_index = 0; // never check in again
+        gbd->as_entry()->index_check_out();
+        gbd->flags2.should_be_indexed = 0; // do not re-checkin
     }
     gb_abort_entry(gbd);            // get old version
 

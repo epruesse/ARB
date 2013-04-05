@@ -99,8 +99,6 @@ GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) __ATTR__USERESULT_TOD
 size_t gbs_get_a_prime(size_t above_or_equal_this);
 
 /* adindex.cxx */
-char *gb_index_check_in(GBENTRY *gbe);
-void gb_index_check_out(GBENTRY *gbe);
 void gb_destroy_indices(GBCONTAINER *gbc);
 GBDATA *gb_index_find(GBCONTAINER *gbf, gb_index_files *ifs, GBQUARK quark, const char *val, GB_CASE case_sens, int after_index);
 void gb_init_undo_stack(GB_MAIN_TYPE *Main);

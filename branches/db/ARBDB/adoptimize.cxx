@@ -582,7 +582,7 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /* GBDATA
 char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, size_t size, size_t *new_size)
 {
     GB_DICTIONARY *dict        = gb_get_dictionary(GB_MAIN(gbd), GB_KEY_QUARK(gbd));
-    bool           append_zero = GB_TYPE(gbd)==GB_STRING || GB_TYPE(gbd) == GB_LINK;
+    bool           append_zero = gbd->is_a_string();
 
     if (!dict) {
         GB_ERROR error = GBS_global_string("Cannot decompress db-entry '%s' (no dictionary found)\n", GB_get_db_path(gbd));
@@ -790,7 +790,7 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
             size_t size;
             cu_str data = get_data_n_size(gbd, &size);
 
-            if (type==GB_STRING || type == GB_LINK) size--;
+            if (gbd->is_a_string()) size--;
             if (size<1) continue;
 
             u_str copy = (u_str)gbm_get_mem(size, GBM_DICT_INDEX);
@@ -1791,7 +1791,7 @@ static DictTree build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, size
                 cu_str data = get_data_n_size(gbd, &size);
                 cu_str lastWord;
 
-                if (type==GB_STRING || type == GB_LINK) size--;
+                if (gbd->is_a_string()) size--;
                 if (size<minwordlen) continue;
 
                 *data_sum += size;

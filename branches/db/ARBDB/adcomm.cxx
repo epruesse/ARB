@@ -518,7 +518,7 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
                 long  memsize  = buffer[i++];
                 char *data;
 
-                GB_INDEX_CHECK_OUT(ge2);
+                ge2->index_check_out();
 
                 assert_or_exit(!(ge2->stored_external() && GB_EXTERN_DATA_DATA(ge2->info.ex)));
 

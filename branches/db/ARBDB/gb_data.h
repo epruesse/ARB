@@ -89,7 +89,7 @@ struct gb_flag_types2 {                                                 // priva
     unsigned int extern_data : 1;                                       // data ref. by pntr
     unsigned int header_changed : 1;                                    // used by container
     unsigned int gbm_index : 8;                                         // memory section
-    unsigned int tisa_index : 1;                                        // this should be indexed
+    unsigned int should_be_indexed : 1;                                 // this should be indexed
     unsigned int is_indexed : 1;                                        // this db. field is indexed
 };
 
@@ -129,6 +129,8 @@ inline void SET_GB_DATA_LIST_HEADER(gb_data_list& dl, gb_header_list *head) {
 struct GBENTRY;
 struct GBCONTAINER;
 
+#define GB_GBM_INDEX(gbd) ((gbd)->flags2.gbm_index)
+
 struct GBDATA {
     long              server_id;
     GB_REL_CONTAINER  rel_father;
@@ -143,6 +145,9 @@ struct GBDATA {
         gb_assert(this);
         return GB_TYPES(flags.type);
     }
+
+    bool is_a_string() const { return type() == GB_STRING || type() == GB_LINK; }
+    bool is_indexable() const { return is_a_string(); }
 
     bool is_container() const { return type() == GB_DB; }
     bool is_entry() const { return !is_container(); }
@@ -188,6 +193,11 @@ public:
     size_t memsize() const { return stored_external() ? info.ex.memsize : info.istr.memsize; }
 
     inline size_t uncompressed_size() const;
+
+    void index_check_in();
+    void index_re_check_in() { if (flags2.should_be_indexed) index_check_in(); }
+
+    void index_check_out();
 };
 
 class GBCONTAINER : public GBDATA {
