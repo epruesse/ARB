@@ -1358,7 +1358,7 @@ GB_ERROR gbcmc_end_sendupdate(GBDATA *gbd)
 
 GB_ERROR gbcmc_sendupdate_create(GBDATA *gbd)
 {
-    long    *buffer;
+    long    *buffer; // @@@ fix locs
     GB_ERROR error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     int socket = Main->c_link->socket;
@@ -1388,7 +1388,7 @@ GB_ERROR gbcmc_sendupdate_delete(GBDATA *gbd)
 
 GB_ERROR gbcmc_sendupdate_update(GBDATA *gbd, int send_headera)
 {
-    long    *buffer;
+    long    *buffer; // @@@ fix locs
     GB_ERROR error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
@@ -1403,7 +1403,7 @@ GB_ERROR gbcmc_sendupdate_update(GBDATA *gbd, int send_headera)
 }
 
 static GB_ERROR gbcmc_read_keys(int socket, GBDATA *gbd) {
-    long size;
+    long size; // @@@ fix locs
     int i;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     char *key;
@@ -1434,8 +1434,7 @@ static GB_ERROR gbcmc_read_keys(int socket, GBDATA *gbd) {
 
 GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
 {
-    long    *buffer;
-    long clock[1];
+    long    *buffer; // @@@ fix locs
     GBDATA  *gb2;
     long    d;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
@@ -1450,10 +1449,13 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
     if (gbcm_write_flush(socket)) {
         return GB_export_error("ARB_DB CLIENT ERROR send failed 1626");
     }
-    if (gbcm_read_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0, clock)) {
-        return GB_export_error("ARB_DB CLIENT ERROR receive failed 3656");
-    };
-    Main->clock = clock[0];
+    {
+        long server_clock;
+        if (gbcm_read_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0, &server_clock)) {
+            return GB_export_error("ARB_DB CLIENT ERROR receive failed 3656");
+        }
+        Main->clock = server_clock;
+    }
     while (1) {
         if (gbcm_read(socket, (char *)buffer, sizeof(long)*2) != sizeof(long)*2) {
             return GB_export_error("ARB_DB CLIENT ERROR receive failed 6435");
@@ -1476,7 +1478,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
                 }
                 if (gb2) {
                     gb2->create_extended();
-                    gb2->touch_update(clock[0]);
+                    gb2->touch_update(Main->clock);
                 }
                 break;
             case GBCM_COMMAND_PUT_UPDATE_CREATE:
@@ -1485,7 +1487,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
                 }
                 if (gb2) {
                     gb2->create_extended();
-                    gb2->touch_creation_and_update(clock[0]);
+                    gb2->touch_creation_and_update(Main->clock);
                 }
                 break;
             case GBCM_COMMAND_PUT_UPDATE_DELETE:
@@ -1506,13 +1508,10 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
     return 0;
 }
 
-GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbc)
-{
-    long clock[1];
-    long buffer[4];
-    GB_ERROR error = 0;
-    GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbc);
-    int socket = Main->c_link->socket;
+GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbc) {
+    GB_ERROR      error  = 0;
+    GB_MAIN_TYPE *Main   = GBCONTAINER_MAIN(gbc);
+    int           socket = Main->c_link->socket;
 
     if (gbcm_write_two(socket, GBCM_COMMAND_INIT_TRANSACTION, Main->clock)) {
         return GB_export_errorf("Cannot send '%s' to server", GB_KEY(gbc));
@@ -1522,11 +1521,15 @@ GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbc)
         return GB_export_error("ARB_DB CLIENT ERROR send failed 1426");
     }
 
-    if (gbcm_read_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0, clock)) {
-        return GB_export_error("ARB_DB CLIENT ERROR receive failed 3456");
-    };
-    Main->clock = clock[0];
+    {
+        long server_clock;
+        if (gbcm_read_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0, &server_clock)) {
+            return GB_export_error("ARB_DB CLIENT ERROR receive failed 3456");
+        }
+        Main->clock = server_clock;
+    }
 
+    long buffer[4];
     if (gbcm_read_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0, buffer)) {
         return GB_export_error("ARB_DB CLIENT ERROR receive failed 3654");
     };
