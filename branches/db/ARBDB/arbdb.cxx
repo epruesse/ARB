@@ -856,8 +856,8 @@ void GB_SizeInfo::collect(GBDATA *gbd) {
 }
 
 GB_CSTR GB_read_pntr(GBDATA *gbd) {
-    GBENTRY *gbe  = gbd->as_entry();
-    char    *data = GB_GETDATA(gbe);
+    GBENTRY    *gbe  = gbd->as_entry();
+    const char *data = gbe->data();
 
     if (data) {
         if (gbe->flags.compressed_data) {   // uncompressed data return pntr to database entry
@@ -925,9 +925,9 @@ GB_CSTR GB_read_bits_pntr(GBDATA *gbd, char c_0, char c_1) {
         char *ca = gb_read_cache(gbe);
         if (ca) return ca;
 
-        ca         = gb_alloc_cache_index(gbe, size+1);
-        char *data = GB_GETDATA(gbe);
-        char *da   = gb_uncompress_bits(data, size, c_0, c_1);
+        ca               = gb_alloc_cache_index(gbe, size+1);
+        const char *data = gbe->data();
+        char       *da   = gb_uncompress_bits(data, size, c_0, c_1);
         if (ca) {
             memcpy(ca, da, size+1);
             return ca;
@@ -970,7 +970,7 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
         res = (GB_UINT4 *)GB_read_pntr(gbe);
     }
     else {
-        res = (GB_UINT4 *)GB_GETDATA(gbe);
+        res = (GB_UINT4 *)gbe->data();
     }
     if (!res) return NULL;
 
@@ -1011,7 +1011,7 @@ GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
         res = (char *)GB_read_pntr(gbe);
     }
     else {
-        res = (char *)GB_GETDATA(gbe);
+        res = (char *)gbe->data();
     }
     if (res) {
         long size      = gbe->size();
@@ -1860,7 +1860,7 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
             gb_save_extern_data_in_ts(dest_entry);
             GB_SETSMDMALLOC(dest_entry, source_entry->size(),
                             source_entry->memsize(),
-                            GB_GETDATA(source_entry));
+                            source_entry->data());
 
             dest->flags.compressed_data = source->flags.compressed_data;
             break;

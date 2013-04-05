@@ -312,7 +312,7 @@ long gb_ascii_2_bin(const char *source, GBENTRY *gbe) {
         GB_SETSMDMALLOC_UNINITIALIZED(gbe, size, len);
     }
 
-    char *d = GB_GETDATA(gbe);
+    char *d = gbe->data();
     s       = source;
 
     while ((c = *(s++))) {
@@ -354,10 +354,10 @@ static GB_BUFFER gb_bin_2_ascii(GBENTRY *gbe) {
     char          *buffer;
     int            k;
 
-    char *source     = GB_GETDATA(gbe);
-    long  len        = gbe->memsize();
-    long  xtended    = gbe->size();
-    int   compressed = gbe->flags.compressed_data;
+    const char *source     = gbe->data();
+    long        len        = gbe->memsize();
+    long        xtended    = gbe->size();
+    int         compressed = gbe->flags.compressed_data;
 
     buffer = GB_give_buffer(len * 2 + 10);
     out = (signed char *)buffer;
@@ -595,7 +595,7 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
     putc(i, out);
 
     if (type == GB_STRING_SHRT) {
-        const char *data = GB_GETDATA(gbe);
+        const char *data = gbe->data();
         size_t      len  = strlen(data); // w/o zero-byte!
 
         if ((long)len == size) {
@@ -631,7 +631,7 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
             long memsize = gbe->memsize();
             gb_put_number(size, out);
             gb_put_number(memsize, out);
-            i = fwrite(GB_GETDATA(gbe), (size_t)memsize, 1, out);
+            i = fwrite(gbe->data(), (size_t)memsize, 1, out);
             if (memsize && !i) return -1;
             return 0;
         }

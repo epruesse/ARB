@@ -464,7 +464,7 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
                     memcpy(&gbe->info, &ue->d.ts->info, sizeof(gbe->info)); // restore old information
                     if (type >= GB_BITS) {
                         if (gbe->stored_external()) {
-                            SET_GB_EXTERN_DATA_DATA(gbe->info.ex, ue->d.ts->info.ex.data); // set relative pointers correctly
+                            gbe->info.ex.set_data(ue->d.ts->info.ex.data);
                         }
 
                         gb_del_ref_and_extern_gb_transaction_save(ue->d.ts);

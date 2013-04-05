@@ -27,6 +27,9 @@ struct gb_extern_data {
     GB_REL_STRING rel_data;
     long          memsize;
     long          size;
+
+    char *get_data() { return GB_RESOLVE(char*, this, rel_data); }
+    void set_data(char *data) { GB_SETREL(this, rel_data, data); }
 };
 
 struct GB_INTern_strings {
@@ -193,6 +196,8 @@ public:
     size_t memsize() const { return stored_external() ? info.ex.memsize : info.istr.memsize; }
 
     inline size_t uncompressed_size() const;
+
+    char *data() { return stored_external() ? info.ex.get_data() : &(info.istr.data[0]); }
 
     void index_check_in();
     void index_re_check_in() { if (flags2.should_be_indexed) index_check_in(); }

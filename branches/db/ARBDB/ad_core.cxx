@@ -535,7 +535,7 @@ static gb_transaction_save *gb_new_gb_transaction_save(GBENTRY *gbe) {
     ts->flags2 = gbe->flags2;
 
     if (gbe->stored_external()) {
-        ts->info.ex.data    = GB_EXTERN_DATA_DATA(gbe->info.ex);
+        ts->info.ex.data    = gbe->info.ex.get_data();
         ts->info.ex.memsize = gbe->info.ex.memsize;
         ts->info.ex.size    = gbe->info.ex.size;
     }
@@ -588,7 +588,7 @@ static void gb_abortdata(GBENTRY *gbe) {
 
     if (old->stored_external())
     {
-        SET_GB_EXTERN_DATA_DATA(gbe->info.ex, old->info.ex.data);
+        gbe->info.ex.set_data(old->info.ex.data);
         gbe->info.ex.memsize = old->info.ex.memsize;
         gbe->info.ex.size = old->info.ex.size;
     }
@@ -616,7 +616,7 @@ void gb_save_extern_data_in_ts(GBENTRY *gbe) {
     }
     else {
         gbe->ext->old = gb_new_gb_transaction_save(gbe);
-        SET_GB_EXTERN_DATA_DATA(gbe->info.ex, 0);
+        gbe->info.ex.set_data(0);
     }
 }
 

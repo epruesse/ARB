@@ -868,7 +868,7 @@ bool GB_is_dictionary_compressed(GBDATA *gbd) {
 
     if (type != GB_DB) {
         GBENTRY    *gbe  = gbd->as_entry();
-        const char *data = GB_GETDATA(gbe);
+        const char *data = gbe->data();
 
         if (data) {
             if (gbe->flags.compressed_data) {

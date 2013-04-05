@@ -317,7 +317,7 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
             if (gbcm_write(socket, (const char *)buffer, i* sizeof(long))) {
                 return GB_export_error("ARB_DB WRITE TO SOCKET FAILED");
             }
-            if (gbcm_write(socket, GB_GETDATA(gbe), memsize)) {
+            if (gbcm_write(socket, gbe->data(), memsize)) {
                 return GB_export_error("ARB_DB WRITE TO SOCKET FAILED");
             }
         }
@@ -520,11 +520,11 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
 
                 ge2->index_check_out();
 
-                assert_or_exit(!(ge2->stored_external() && GB_EXTERN_DATA_DATA(ge2->info.ex)));
+                assert_or_exit(!(ge2->stored_external() && ge2->info.ex.get_data()));
 
                 if (GB_CHECKINTERN(realsize, memsize)) {
                     ge2->mark_as_intern();
-                    data = GB_GETDATA(ge2);
+                    data = ge2->data();
                 }
                 else {
                     ge2->mark_as_extern();

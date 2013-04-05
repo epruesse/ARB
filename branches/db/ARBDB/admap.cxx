@@ -463,7 +463,7 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
             long   exoffset = *offset;
             size_t ex_size;
 
-            if (out) ex_size = ftwrite_unaligned(GB_EXTERN_DATA_DATA(gbe->info.ex), gbecopy.info.ex.memsize, out);
+            if (out) ex_size = ftwrite_unaligned(gbe->info.ex.get_data(), gbecopy.info.ex.memsize, out);
             else ex_size     = ALIGN(gbecopy.info.ex.memsize);
 
             *offset                  += ex_size;

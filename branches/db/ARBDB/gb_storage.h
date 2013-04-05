@@ -21,9 +21,6 @@
 
 inline bool GB_CHECKINTERN(int size, int memsize) { return size<256 && memsize<SIZOFINTERN; }
 
-inline char *GB_EXTERN_DATA_DATA(gb_extern_data& ex) { return GB_RESOLVE(char*, (&(ex)), rel_data); }
-inline void SET_GB_EXTERN_DATA_DATA(gb_extern_data& ex, char *data) { GB_SETREL(&ex, rel_data, data); }
-
 inline void GB_CREATE_EXT(GBDATA *gbd) { if (!gbd->ext) gb_create_extended(gbd); }
 inline void GB_DELETE_EXT(GBDATA *gbd, long gbm_index) {
     if (gbd->ext) {
@@ -41,13 +38,14 @@ inline gb_transaction_save *GB_GET_EXT_OLD_DATA(GBDATA *gbd) { return gbd->ext ?
 // --------------------------
 //      data and datasize
 
-inline char *GB_GETDATA(GBENTRY *gbe) { return gbe->stored_external() ? GB_EXTERN_DATA_DATA(gbe->info.ex)  : &((gbe)->info.istr.data[0]); } // @@@ move into GBENTRY
-
 inline void GB_FREEDATA(GBENTRY *gbe) { // @@@ move into GBENTRY
     gbe->index_check_out();
-    if (gbe->stored_external() && GB_EXTERN_DATA_DATA(gbe->info.ex)) {
-        gbm_free_mem(GB_EXTERN_DATA_DATA(gbe->info.ex), (size_t)(gbe->info.ex.memsize), GB_GBM_INDEX(gbe));
-        SET_GB_EXTERN_DATA_DATA(gbe->info.ex, 0);
+    if (gbe->stored_external()) {
+        char *exdata = gbe->info.ex.get_data();
+        if (exdata) {
+            gbm_free_mem(exdata, (size_t)(gbe->info.ex.memsize), GB_GBM_INDEX(gbe));
+            gbe->info.ex.set_data(0);
+        }
     }
 }
 
@@ -65,7 +63,7 @@ inline void GB_SETSMD(GBENTRY *gbe, long siz, long memsiz, char *dat) {
     if (gbe->stored_external()) {
         gbe->info.ex.size = siz;
         gbe->info.ex.memsize = memsiz;
-        SET_GB_EXTERN_DATA_DATA(gbe->info.ex, dat);
+        gbe->info.ex.set_data(dat);
     }
     else {
         gbe->info.istr.size = (unsigned char)siz;
@@ -89,7 +87,7 @@ inline void GB_SETSMDMALLOC(GBENTRY *gbe, long siz, long memsiz, const char *dat
         gbe->info.ex.size = siz;
         gbe->info.ex.memsize = memsiz;
         exData = (char*)gbm_get_mem((size_t)memsiz, GB_GBM_INDEX(gbe));
-        SET_GB_EXTERN_DATA_DATA(gbe->info.ex, exData);
+        gbe->info.ex.set_data(exData);
         if (dat) memcpy(exData, (char *)dat, (size_t)(memsiz));
     }
     gbe->index_re_check_in();
@@ -107,7 +105,7 @@ inline void GB_SETSMDMALLOC_UNINITIALIZED(GBENTRY *gbe, long siz, long memsiz) {
         gbe->info.ex.size = siz;
         gbe->info.ex.memsize = memsiz;
         exData = (char*)gbm_get_mem((size_t)memsiz, GB_GBM_INDEX(gbe));
-        SET_GB_EXTERN_DATA_DATA(gbe->info.ex, exData);
+        gbe->info.ex.set_data(exData);
     }
     gbe->index_re_check_in();
 }
