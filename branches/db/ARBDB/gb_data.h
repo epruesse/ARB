@@ -194,6 +194,8 @@ struct GBDATA {
 
     long creation_date() const { return ext ? ext->creation_date : 0; }
     long update_date()   const { return ext ? ext->update_date   : 0; }
+
+    gb_callback *get_callbacks() const { return ext ? ext->callback : NULL; }
 };
 
 class GBENTRY : public GBDATA {

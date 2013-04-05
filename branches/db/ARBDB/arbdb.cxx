@@ -1113,7 +1113,7 @@ static void gb_do_callbacks(GBDATA *gbd) {
         GBDATA *gbdn           = GB_get_father(gbd);
         bool    need_to_remove = false;
 
-        for (gb_callback *cb = GB_GET_EXT_CALLBACKS(gbd); cb; ) {
+        for (gb_callback *cb = gbd->get_callbacks(); cb; ) {
             gb_callback *cbn = cb->next;
             if (cb->spec.type & GB_CB_CHANGED) {
                 if (!remove_when_finished(cb)) { // do not call if already marked for removal
@@ -2578,7 +2578,7 @@ void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
 
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {
     gb_cb_spec cbs(func, type, clientdata);
-    for (gb_callback *cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb->next) {
+    for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
         if (cb->spec.is_equal_to(cbs) && !remove_when_finished(cb)) {
             return NULL;        // already in cb list
         }

@@ -395,7 +395,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
     long          gbm_index = GB_GBM_INDEX(gbd);
 
     gb_callback *cb_next;
-    for (gb_callback *cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb_next) {
+    for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb_next) {
         gbd->ext->callback = 0;
         cb_next = cb->next;
         if (!gbd->ext->old && type != GB_DB) {
@@ -907,7 +907,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
                     gbd->as_container()->header_update_date = Main->clock;
                 }
 
-                for (gb_callback *cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb->next) {
+                for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
                     if (cb->spec.type & (GB_CB_CHANGED|GB_CB_SON_CREATED)) {
                         gb_add_changed_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(gbtype));
                     }
