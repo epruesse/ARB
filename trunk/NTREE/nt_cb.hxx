@@ -29,7 +29,10 @@ void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 
 /* NT_extern.cxx */
-void nt_exit(AW_window *aws, AW_CL exitcode) __ATTR__NORETURN;
+bool nt_disconnect_from_db(AW_root *aw_root, GBDATA*& gb_main_ref);
+void nt_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID);
+void nt_exit(AW_window *aws, AW_CL exitcode);
+void nt_restart(AW_root *aw_root, const char *arb_ntree_args, bool restart_with_new_ARB_PID);
 GBT_TREE *nt_get_tree_root_of_canvas(AWT_canvas *ntw);
 int NT_get_canvas_id(AWT_canvas *ntw);
 void nt_create_main_window(AW_root *aw_root);

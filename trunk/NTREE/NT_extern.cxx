@@ -14,6 +14,7 @@
 #include "ad_trees.hxx"
 #include "seq_quality.h"
 #include "nt_join.hxx"
+#include "nt_cb.hxx"
 
 #include <multi_probe.hxx>
 #include <st_window.hxx>
@@ -238,13 +239,20 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     if (error) aw_message(error);
 }
 
+// --------------------------------------------------------------------------------
 
-void nt_exit(AW_window *aws, AW_CL exitcode) { // goes to header: __ATTR__NORETURN
-    if (GLOBAL.gb_main) {
-        if (GB_read_clients(GLOBAL.gb_main)>=0) {
-            if (GB_read_clock(GLOBAL.gb_main) > GB_last_saved_clock(GLOBAL.gb_main)) {
+bool nt_disconnect_from_db(AW_root *aw_root, GBDATA*& gb_main_ref) {
+    // ask user if DB was not saved
+    // returns true if user allows to quit
+
+    // @@@ code here could as well be applied to both merge DBs
+    // - question about saving only with target DB!
+
+    if (gb_main_ref) {
+        if (GB_read_clients(gb_main_ref)>=0) {
+            if (GB_read_clock(gb_main_ref) > GB_last_saved_clock(gb_main_ref)) {
                 long secs;
-                secs = GB_last_saved_time(GLOBAL.gb_main);
+                secs = GB_last_saved_time(gb_main_ref);
 
 #if defined(DEBUG)
                 secs =  GB_time_of_day(); // simulate "just saved"
@@ -257,20 +265,25 @@ void nt_exit(AW_window *aws, AW_CL exitcode) { // goes to header: __ATTR__NORETU
                         char *question = GBS_global_string_copy("You last saved your data %li:%li minutes ago\nSure to quit ?", secs/60, secs%60);
                         int   dontQuit = aw_question("quit_arb", question, quit_buttons);
                         free(question);
-                        if (dontQuit) return;
+                        if (dontQuit) {
+                            return false;
+                        }
                     }
                 }
                 else {
-                    if (aw_question("quit_arb", "You never saved any data\nSure to quit ???", quit_buttons)) return;
+                    if (aw_question("quit_arb", "You never saved any data\nSure to quit ???", quit_buttons)) {
+                        return false;
+                    }
                 }
             }
         }
-        GBCMS_shutdown(GLOBAL.gb_main);
 
-        GBDATA *gb_main = GLOBAL.gb_main;
-        GLOBAL.gb_main  = NULL;                     // avoid further usage
+        GBCMS_shutdown(gb_main_ref);
 
-        AW_root *aw_root = aws->get_root();
+        GBDATA *gb_main = gb_main_ref;
+        gb_main_ref     = NULL;                  // avoid further usage
+
+        nt_assert(aw_root);
 #if defined(WARN_TODO)
 #warning instead of directly calling the following functions, try to add them as GB_atclose-callbacks
 #endif
@@ -282,8 +295,60 @@ void nt_exit(AW_window *aws, AW_CL exitcode) { // goes to header: __ATTR__NORETU
 
         GB_close(gb_main);
     }
+    return true;
+}
+
+static void nt_run(const char *command) {
+    GB_ERROR error = GBK_system(command);
+    if (error) {
+        fprintf(stderr, "nt_run: Failed to run '%s' (Reason: %s)\n", command, error);
+#if defined(DEBUG)
+        GBK_dump_backtrace(stderr, "nt_run-error");
+#endif
+    }
+}
+
+void nt_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
+    char *command = GBS_global_string_copy("(%s %s) &", restart_with_new_ARB_PID ? "arb" : "arb_ntree", arb_ntree_args);
+    nt_run(command);
+    free(command);
+}
+
+static void really_exit(int exitcode, bool kill_my_clients) {
+    if (kill_my_clients) {
+        nt_run("(arb_clean >/dev/null 2>&1;echo ARB done) &"); // kills all clients
+    }
     exit(exitcode);
 }
+
+void nt_exit(AW_window *aws, AW_CL exitcode) {
+    if (nt_disconnect_from_db(aws->get_root(), GLOBAL.gb_main)) {
+        really_exit(exitcode, true);
+    }
+}
+void nt_restart(AW_root *aw_root, const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
+    if (nt_disconnect_from_db(aw_root, GLOBAL.gb_main))  {
+        nt_start(arb_ntree_args, restart_with_new_ARB_PID);
+        really_exit(EXIT_SUCCESS, restart_with_new_ARB_PID);
+    }
+}
+
+static void nt_start_2nd_arb(AW_window *aww, AW_CL cl_quit) {
+    // start 2nd arb with intro window
+    AW_root *aw_root = aww->get_root();
+    char    *dir4intro;
+    GB_split_full_path(aw_root->awar(AWAR_DB_PATH)->read_char_pntr(), &dir4intro, NULL, NULL, NULL);
+
+    if (cl_quit) {
+        nt_restart(aw_root, dir4intro, true);
+    }
+    else {
+        nt_start(dir4intro, true);
+    }
+    free(dir4intro);
+}
+
+// --------------------------------------------------------------------------------
 
 static void NT_save_quick_cb(AW_window *aww) {
     AW_root *awr      = aww->get_root();
@@ -1175,7 +1240,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, AW_POPUP, (AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
             if (allow_new_window) {
                 awm->sep______________();
-                awm->insert_menu_topic("new_window",   "New window",                 "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
+                awm->insert_menu_topic("new_window", "New window (same database)", "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
             }
             awm->sep______________();
             awm->insert_menu_topic("optimize_db",  "Optimize database",          "O", "optimize.hlp",  AWM_ALL, AW_POPUP, (AW_CL)NT_create_database_optimization_window, 0);
@@ -1214,13 +1279,13 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_menu_topic("redo",      "Redo",      "d", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_cb,      (AW_CL)GB_UNDO_REDO, (AW_CL)ntw);
             awm->insert_menu_topic("undo_info", "Undo info", "f", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_UNDO, (AW_CL)0);
             awm->insert_menu_topic("redo_info", "Redo info", "o", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_REDO, (AW_CL)0);
+#endif
 
             awm->sep______________();
-#endif
-            if (!GLOBAL.extern_quit_button) {
-                awm->insert_menu_topic("quit",      "Quit",             "Q", "quit.hlp",    AWM_ALL, (AW_CB)nt_exit, EXIT_SUCCESS, 0);
-            }
 
+            awm->insert_menu_topic("restart", "Start second database", "o", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 0);
+            awm->insert_menu_topic("restart", "Quit + load other database",  "l", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 1);
+            awm->insert_menu_topic("quit",    "Quit",                  "Q", "quit.hlp", AWM_ALL, nt_exit,          EXIT_SUCCESS);
         }
 
         // -----------------
