@@ -21,9 +21,6 @@
 
 inline bool GB_CHECKINTERN(int size, int memsize) { return size<256 && memsize<SIZOFINTERN; }
 
-inline long GB_GET_EXT_CREATION_DATE(GBDATA *gbd) { return gbd->ext ? gbd->ext->creation_date : 0; }
-inline long GB_GET_EXT_UPDATE_DATE(GBDATA *gbd) { return gbd->ext ? gbd->ext->update_date : 0; }
-
 inline gb_callback *GB_GET_EXT_CALLBACKS(GBDATA *gbd) { return gbd->ext ? gbd->ext->callback : 0; }
 inline gb_transaction_save *GB_GET_EXT_OLD_DATA(GBDATA *gbd) { return gbd->ext ? gbd->ext->old : 0; }
 

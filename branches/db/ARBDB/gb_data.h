@@ -187,6 +187,13 @@ struct GBDATA {
             ext = NULL;
         }
     }
+
+    void touch_creation(long cdate)           { ext->creation_date = cdate; }
+    void touch_update(long udate)             { ext->update_date   = udate; }
+    void touch_creation_and_update(long date) { ext->creation_date = ext->update_date = date; }
+
+    long creation_date() const { return ext ? ext->creation_date : 0; }
+    long update_date()   const { return ext ? ext->update_date   : 0; }
 };
 
 class GBENTRY : public GBDATA {

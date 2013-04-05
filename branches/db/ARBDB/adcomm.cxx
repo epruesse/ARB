@@ -605,8 +605,8 @@ static GBCM_ServerResult gbcms_write_deleted(int socket, long hsin, long client_
 }
 
 static GBCM_ServerResult gbcms_write_updated(int socket, GBDATA *gbd, long hsin, long client_clock, long *buffer) {
-    if (GB_GET_EXT_UPDATE_DATE(gbd)<=client_clock) return GBCM_SERVER_OK;
-    if (GB_GET_EXT_CREATION_DATE(gbd) > client_clock) {
+    if (gbd->update_date()<=client_clock) return GBCM_SERVER_OK;
+    if (gbd->creation_date() > client_clock) {
         buffer[0] = GBCM_COMMAND_PUT_UPDATE_CREATE;
         buffer[1] = (long)GB_FATHER(gbd);
         if (gbcm_write(socket, (const char *)buffer, sizeof(long)*2)) return GBCM_SERVER_FAULT;
@@ -1476,7 +1476,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
                 }
                 if (gb2) {
                     gb2->create_extended();
-                    gb2->ext->update_date = clock[0];
+                    gb2->touch_update(clock[0]);
                 }
                 break;
             case GBCM_COMMAND_PUT_UPDATE_CREATE:
@@ -1485,7 +1485,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
                 }
                 if (gb2) {
                     gb2->create_extended();
-                    gb2->ext->creation_date = gb2->ext->update_date = clock[0];
+                    gb2->touch_creation_and_update(clock[0]);
                 }
                 break;
             case GBCM_COMMAND_PUT_UPDATE_DELETE:
@@ -1589,8 +1589,8 @@ GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd) {
     if (hs && hs->soci) {
         gbcms_delete_list *dl = (gbcms_delete_list *)gbm_get_mem(sizeof(gbcms_delete_list), GBM_CB_INDEX);
 
-        dl->creation_date = GB_GET_EXT_CREATION_DATE(gbd);
-        dl->update_date   = GB_GET_EXT_UPDATE_DATE(gbd);
+        dl->creation_date = gbd->creation_date();
+        dl->update_date   = gbd->update_date();
         dl->gbd           = gbd;
 
         if (!hs->del_first) {

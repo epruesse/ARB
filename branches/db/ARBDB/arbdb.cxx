@@ -1589,7 +1589,7 @@ bool GB_has_key(GBDATA *gbd, const char *key) {
 
 long GB_read_clock(GBDATA *gbd) {
     if (GB_ARRAY_FLAGS(gbd).changed) return GB_MAIN(gbd)->clock;
-    return GB_GET_EXT_UPDATE_DATE(gbd);
+    return gbd->update_date();
 }
 
 // ---------------------------------------------

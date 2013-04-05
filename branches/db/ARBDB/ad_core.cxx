@@ -280,7 +280,7 @@ GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_p
     }
     if (Main->clock) {
         gbd->create_extended();
-        gbd->ext->creation_date = Main->clock;
+        gbd->touch_creation(Main->clock);
     }
 
     gb_link_entry(father, gbd, index_pos);
@@ -328,7 +328,7 @@ GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQ
     }
     if (Main->clock) {
         gbe->create_extended();
-        gbe->ext->creation_date = Main->clock;
+        gbe->touch_creation(Main->clock);
     }
 
     gb_link_entry(father, gbe, index_pos);
@@ -348,7 +348,7 @@ GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbc
     if (Main->is_server()) gbc->server_id = GBTUM_MAGIC_NUMBER;
     if (Main->clock) {
         gbc->create_extended();
-        gbc->ext->creation_date = Main->clock;
+        gbc->touch_creation(Main->clock);
     }
     gb_link_entry(father, gbc, index_pos);
     gb_write_index_key(father, gbc->index, keyq);
@@ -374,7 +374,7 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
         if (Main->is_server()) gbc->server_id = GBTUM_MAGIC_NUMBER;
         if (Main->clock) {
             gbc->create_extended();
-            gbc->ext->creation_date = Main->clock;
+            gbc->touch_creation(Main->clock);
         }
         gb_link_entry(father, gbc, index_pos);
         if (key)    gb_write_key(gbc, key);
@@ -902,7 +902,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
                     gbtype = (GB_CB_TYPE)(GB_CB_SON_CREATED | GB_CB_CHANGED);
                 }
                 gbd->create_extended();
-                gbd->ext->update_date = Main->clock;
+                gbd->touch_update(Main->clock);
                 if (gbd->flags2.header_changed) {
                     gbd->as_container()->header_update_date = Main->clock;
                 }

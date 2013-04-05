@@ -766,7 +766,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
 
         if (version == 2) {
             gbd->create_extended();
-            gbd->ext->update_date = gbd->ext->creation_date = Main->clock;
+            gbd->touch_creation_and_update(Main->clock);
             header[gbd->index].flags.ever_changed = 1;
         }
         else {

@@ -190,7 +190,7 @@ char *gb_read_cache(GBENTRY *gbe) {
         gb_assert(entry.gbe == gbe);
 
         // check validity
-        if (GB_GET_EXT_UPDATE_DATE(gbe) > entry.clock) {
+        if (gbe->update_date() > entry.clock) {
             flush_cache_entry(cache, index);
         }
         else {
@@ -280,7 +280,7 @@ char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
     entry.sizeof_data = size;
     entry.data        = data;
     entry.gbe         = gbe;
-    entry.clock       = GB_GET_EXT_UPDATE_DATE(gbe);
+    entry.clock       = gbe->update_date();
     
 #if defined(GEN_CACHE_STATS)
     entry.reused     = 0;
