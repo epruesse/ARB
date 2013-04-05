@@ -648,7 +648,7 @@ void gb_check_in_undo_create(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 
 void gb_check_in_undo_modify(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     long                 type = GB_TYPE(gbd);
-    g_b_undo_entry      *ue;
+    g_b_undo_entry      *ue; // @@@ fix locs
     gb_transaction_save *old;
 
     if (!Main->undo->valid_u) {

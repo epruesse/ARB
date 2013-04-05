@@ -765,7 +765,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
         gb_assert(implicated(gbd, contradicted(gbe, gbc)));
 
         if (version == 2) {
-            GB_CREATE_EXT(gbd);
+            gbd->create_extended();
             gbd->ext->update_date = gbd->ext->creation_date = Main->clock;
             header[gbd->index].flags.ever_changed = 1;
         }

@@ -21,14 +21,6 @@
 
 inline bool GB_CHECKINTERN(int size, int memsize) { return size<256 && memsize<SIZOFINTERN; }
 
-inline void GB_CREATE_EXT(GBDATA *gbd) { if (!gbd->ext) gb_create_extended(gbd); }
-inline void GB_DELETE_EXT(GBDATA *gbd, long gbm_index) {
-    if (gbd->ext) {
-        gbm_free_mem(gbd->ext, sizeof(gb_db_extended), gbm_index);
-        gbd->ext = 0;
-    }
-}
-
 inline long GB_GET_EXT_CREATION_DATE(GBDATA *gbd) { return gbd->ext ? gbd->ext->creation_date : 0; }
 inline long GB_GET_EXT_UPDATE_DATE(GBDATA *gbd) { return gbd->ext ? gbd->ext->update_date : 0; }
 

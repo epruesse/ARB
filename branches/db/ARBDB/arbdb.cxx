@@ -2460,7 +2460,7 @@ static GB_ERROR add_priority_callback(GBDATA *gbd, const gb_cb_spec& cbs, int pr
 #endif // DEBUG
 
     GB_test_transaction(gbd); // may return error
-    GB_CREATE_EXT(gbd);
+    gbd->create_extended();
     gb_callback *cb = (gb_callback *)gbm_get_mem(sizeof(gb_callback), GB_GBM_INDEX(gbd));
 
     if (gbd->ext->callback) {

@@ -222,13 +222,6 @@ static void gb_unlink_entry(GBDATA * gbd) {
     }
 }
 
-void gb_create_extended(GBDATA *gbd) {
-    if (!gbd->ext) {
-        int index = GB_GBM_INDEX(gbd);
-        gbd->ext = (gb_db_extended *)gbm_get_mem(sizeof(gb_db_extended), index);
-    }
-}
-
 void GB_MAIN_TYPE::init(const char *db_path) {
     if (db_path) path = strdup(db_path);
     key_2_index_hash = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
@@ -286,7 +279,7 @@ GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_p
         gbd->server_id = GBTUM_MAGIC_NUMBER;
     }
     if (Main->clock) {
-        GB_CREATE_EXT(gbd);
+        gbd->create_extended();
         gbd->ext->creation_date = Main->clock;
     }
 
@@ -334,7 +327,7 @@ GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQ
         gbe->server_id = GBTUM_MAGIC_NUMBER;
     }
     if (Main->clock) {
-        GB_CREATE_EXT(gbe);
+        gbe->create_extended();
         gbe->ext->creation_date = Main->clock;
     }
 
@@ -354,7 +347,7 @@ GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbc
 
     if (Main->is_server()) gbc->server_id = GBTUM_MAGIC_NUMBER;
     if (Main->clock) {
-        GB_CREATE_EXT(gbc);
+        gbc->create_extended();
         gbc->ext->creation_date = Main->clock;
     }
     gb_link_entry(father, gbc, index_pos);
@@ -380,7 +373,7 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
         gbc->main_idx = father->main_idx;
         if (Main->is_server()) gbc->server_id = GBTUM_MAGIC_NUMBER;
         if (Main->clock) {
-            GB_CREATE_EXT(gbc);
+            gbc->create_extended();
             gbc->ext->creation_date = Main->clock;
         }
         gb_link_entry(father, gbc, index_pos);
@@ -432,7 +425,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
         gb_free_cache(Main, gbd->as_entry()); // cant use gb_uncache (since entry is already unlinked!)
     }
     GB_FREE_TRANSACTION_SAVE(gbd);
-    GB_DELETE_EXT(gbd, gbm_index);
+    gbd->destroy_extended();
 }
 
 void gb_delete_entry(GBCONTAINER*& gbc) {
@@ -609,7 +602,7 @@ void gb_save_extern_data_in_ts(GBENTRY *gbe) {
      * Don't call with GBCONTAINER
      */
 
-    GB_CREATE_EXT(gbe);
+    gbe->create_extended();
     gbe->index_check_out();
     if (gbe->ext->old || (GB_ARRAY_FLAGS(gbe).changed == GB_CREATED)) {
         GB_FREEDATA(gbe);
@@ -908,7 +901,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
                 if (son_created) {
                     gbtype = (GB_CB_TYPE)(GB_CB_SON_CREATED | GB_CB_CHANGED);
                 }
-                GB_CREATE_EXT(gbd);
+                gbd->create_extended();
                 gbd->ext->update_date = Main->clock;
                 if (gbd->flags2.header_changed) {
                     gbd->as_container()->header_update_date = Main->clock;

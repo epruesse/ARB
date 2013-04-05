@@ -1475,7 +1475,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
                     return GB_export_error("ARB_DB CLIENT ERROR receive failed 2456");
                 }
                 if (gb2) {
-                    GB_CREATE_EXT(gb2);
+                    gb2->create_extended();
                     gb2->ext->update_date = clock[0];
                 }
                 break;
@@ -1484,7 +1484,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
                     return GB_export_error("ARB_DB CLIENT ERROR receive failed 4236");
                 }
                 if (gb2) {
-                    GB_CREATE_EXT(gb2);
+                    gb2->create_extended();
                     gb2->ext->creation_date = gb2->ext->update_date = clock[0];
                 }
                 break;

@@ -20,7 +20,6 @@ void gb_untouch_children(GBCONTAINER *gbc);
 void gb_untouch_me(GBENTRY *gbe);
 void gb_untouch_children_and_me(GBCONTAINER *gbc);
 void gb_create_header_array(GBCONTAINER *gbc, int size);
-void gb_create_extended(GBDATA *gbd);
 GB_MAIN_TYPE *gb_make_gb_main_type(const char *path);
 void gb_destroy_main(GB_MAIN_TYPE *Main);
 GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos, GBQUARK keyq);

@@ -175,6 +175,18 @@ struct GBDATA {
     }
 
     inline GBCONTAINER *get_father();
+
+    void create_extended() {
+        if (!ext) {
+            ext = (gb_db_extended *)gbm_get_mem(sizeof(gb_db_extended), GB_GBM_INDEX(this));
+        }
+    }
+    void destroy_extended() {
+        if (ext) {
+            gbm_free_mem(ext, sizeof(gb_db_extended), GB_GBM_INDEX(this));
+            ext = NULL;
+        }
+    }
 };
 
 class GBENTRY : public GBDATA {
