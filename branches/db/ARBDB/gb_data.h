@@ -178,8 +178,14 @@ public:
 
     int cache_index;
 
-    size_t size()    const { return flags2.extern_data ? info.ex.size    : info.istr.size; }
-    size_t memsize() const { return flags2.extern_data ? info.ex.memsize : info.istr.memsize; }
+    void mark_as_intern() { flags2.extern_data = 0; }
+    void mark_as_extern() { flags2.extern_data = 1; }
+
+    bool stored_external() const { return flags2.extern_data; }
+    bool stored_internal() const { return !stored_external(); }
+
+    size_t size()    const { return stored_external() ? info.ex.size    : info.istr.size; }
+    size_t memsize() const { return stored_external() ? info.ex.memsize : info.istr.memsize; }
 
     inline size_t uncompressed_size() const;
 };

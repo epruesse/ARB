@@ -463,7 +463,7 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
 
                     memcpy(&gbe->info, &ue->d.ts->info, sizeof(gbe->info)); // restore old information
                     if (type >= GB_BITS) {
-                        if (gbe->flags2.extern_data) {
+                        if (gbe->stored_external()) {
                             SET_GB_EXTERN_DATA_DATA(gbe->info.ex, ue->d.ts->info.ex.data); // set relative pointers correctly
                         }
 
@@ -667,7 +667,7 @@ void gb_check_in_undo_modify(GB_MAIN_TYPE *Main, GBDATA *gbd) {
         ue->d.ts = old;
         if (old) {
             gb_add_ref_gb_transaction_save(old);
-            if (type >= GB_BITS && old->flags2.extern_data && old->info.ex.data) {
+            if (type >= GB_BITS && old->stored_external() && old->info.ex.data) {
                 ue->type = GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY;
                 // move external array from ts to undo entry struct
                 g_b_add_size_to_undo_entry(ue, old->info.ex.memsize);
@@ -712,7 +712,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA*& gbd) {
         g_b_add_size_to_undo_entry(ue, sizeof(GBCONTAINER));
     }
     else {
-        if (type >= GB_BITS && gbd->flags2.extern_data) {
+        if (type >= GB_BITS && gbd->as_entry()->stored_external()) {
             /* we have copied the data structures, now
                mark the old as deleted !!! */
             g_b_add_size_to_undo_entry(ue, gbd->as_entry()->memsize());

@@ -829,11 +829,11 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                 char *p;
                 DEBUG_DUMP_INDENTED(deep, GBS_global_string("size=%li memsize=%li", size, memsize));
                 if (GB_CHECKINTERN(size, memsize)) {
-                    GB_SETINTERN(gbe);
+                    gbe->mark_as_intern();
                     p = &(gbe->info.istr.data[0]);
                 }
                 else {
-                    GB_SETEXTERN(gbe);
+                    gbe->mark_as_extern();
                     // memsize++; // ralf: added +1 because decompress ran out of this block (cant solve like this - breaks memory management!)
                     p = (char*)gbm_get_mem((size_t)memsize+1, GB_GBM_INDEX(gbe)); // again added old hack-around removed in [6654]
                 }

@@ -1220,8 +1220,6 @@ GB_ERROR GB_write_float(GBDATA *gbd, double f)
 }
 
 GB_ERROR gb_write_compressed_pntr(GBENTRY *gbe, const char *s, long memsize, long stored_size) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gbe);
-
     gb_uncache(gbe);
     gb_save_extern_data_in_ts(gbe);
     gbe->flags.compressed_data = 1;

@@ -520,14 +520,14 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
 
                 GB_INDEX_CHECK_OUT(ge2);
 
-                assert_or_exit(!(ge2->flags2.extern_data && GB_EXTERN_DATA_DATA(ge2->info.ex)));
+                assert_or_exit(!(ge2->stored_external() && GB_EXTERN_DATA_DATA(ge2->info.ex)));
 
                 if (GB_CHECKINTERN(realsize, memsize)) {
-                    GB_SETINTERN(ge2);
+                    ge2->mark_as_intern();
                     data = GB_GETDATA(ge2);
                 }
                 else {
-                    GB_SETEXTERN(ge2);
+                    ge2->mark_as_extern();
                     data = (char*)gbm_get_mem((size_t)memsize, GB_GBM_INDEX(ge2));
                 }
                 size = gbcm_read(socket, data, memsize);

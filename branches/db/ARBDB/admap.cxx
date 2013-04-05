@@ -451,7 +451,7 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
     else { // GBENTRY
         GBENTRY *gbe = gbd->as_entry();
 
-        int ex = gbe->flags2.extern_data;
+        bool ex = gbe->stored_external();
 
         GBENTRY gbecopy;
 

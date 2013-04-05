@@ -534,7 +534,7 @@ static gb_transaction_save *gb_new_gb_transaction_save(GBENTRY *gbe) {
     ts->flags  = gbe->flags;
     ts->flags2 = gbe->flags2;
 
-    if (gbe->flags2.extern_data) {
+    if (gbe->stored_external()) {
         ts->info.ex.data    = GB_EXTERN_DATA_DATA(gbe->info.ex);
         ts->info.ex.memsize = gbe->info.ex.memsize;
         ts->info.ex.size    = gbe->info.ex.size;
@@ -557,7 +557,7 @@ void gb_del_ref_gb_transaction_save(gb_transaction_save *ts) {
     if (!ts) return;
     ts->refcount --;
     if (ts->refcount <= 0) {    // no more references !!!!
-        if (ts->flags2.extern_data) {
+        if (ts->stored_external()) {
             if (ts->info.ex.data) {
                 gbm_free_mem(ts->info.ex.data,
                              ts->info.ex.memsize,
@@ -570,7 +570,7 @@ void gb_del_ref_gb_transaction_save(gb_transaction_save *ts) {
 
 void gb_del_ref_and_extern_gb_transaction_save(gb_transaction_save *ts) {
     // remove reference to undo entry and set extern pointer to zero
-    if (ts->flags2.extern_data) {
+    if (ts->stored_external()) {
         ts->info.ex.data = 0;
     }
     gb_del_ref_gb_transaction_save(ts);
@@ -586,7 +586,7 @@ static void gb_abortdata(GBENTRY *gbe) {
     gbe->flags = old->flags;
     gbe->flags2 = old->flags2;
 
-    if (old->flags2.extern_data)
+    if (old->stored_external())
     {
         SET_GB_EXTERN_DATA_DATA(gbe->info.ex, old->info.ex.data);
         gbe->info.ex.memsize = old->info.ex.memsize;

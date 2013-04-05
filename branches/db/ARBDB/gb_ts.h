@@ -43,12 +43,14 @@ struct gb_transaction_save {
     gb_flag_types2           flags2;
     gb_data_base_type_union2 info;
     short                    refcount;              // number of references to this object
+
+    bool stored_external() const { return flags2.extern_data; }
 };
 
 inline GB_TYPES GB_TYPE_TS(gb_transaction_save *ts)   { return GB_TYPES(ts->flags.type); }
-inline long GB_GETSIZE_TS(gb_transaction_save *ts)    { return ts->flags2.extern_data ? ts->info.ex.size     : ts->info.istr.size; }
-inline long GB_GETMEMSIZE_TS(gb_transaction_save *ts) { return ts->flags2.extern_data ? ts->info.ex.memsize  : ts->info.istr.memsize; }
-inline char *GB_GETDATA_TS(gb_transaction_save *ts)   { return ts->flags2.extern_data ? ts->info.ex.data     : &(ts->info.istr.data[0]); }
+inline long GB_GETSIZE_TS(gb_transaction_save *ts)    { return ts->stored_external() ? ts->info.ex.size     : ts->info.istr.size; }
+inline long GB_GETMEMSIZE_TS(gb_transaction_save *ts) { return ts->stored_external() ? ts->info.ex.memsize  : ts->info.istr.memsize; }
+inline char *GB_GETDATA_TS(gb_transaction_save *ts)   { return ts->stored_external() ? ts->info.ex.data     : &(ts->info.istr.data[0]); }
 
 inline void GB_FREE_TRANSACTION_SAVE(GBDATA *gbd) {
     if (gbd->ext && gbd->ext->old) {
