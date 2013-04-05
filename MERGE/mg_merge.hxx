@@ -19,7 +19,7 @@
 extern GBDATA *GLOBAL_gb_src;
 extern GBDATA *GLOBAL_gb_dst;
 
-AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new);
+AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*exit_cb)(const char *));
 void MERGE_create_all_awars(AW_root *awr, AW_default aw_def);
 void MERGE_create_db_file_awars(AW_root *awr, AW_default aw_def, const char *src_name, const char *dst_name);
 

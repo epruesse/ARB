@@ -276,12 +276,12 @@ static void nt_intro_start_existing(AW_window *aw_intro) {
     }
 }
 
-__ATTR__NORETURN static void nt_intro_start_merge(AW_window *aw_intro) {
-    GB_ERROR error = GBK_system("arb_ntree . . &"); // @@@ pass selected dir (or file as 1st param)?
-    if (error) {
-        fprintf(stderr, "Error: %s\n", error);
-    }
-    nt_exit(aw_intro, error ? EXIT_SUCCESS : EXIT_FAILURE);
+static void nt_intro_start_merge(AW_window *aw_intro) {
+    AW_root    *aw_root    = aw_intro->get_root();
+    const char *dir        = aw_root->awar("tmp/nt/arbdb/directory")->read_char_pntr();
+    char       *merge_args = GBS_global_string_copy("'%s' '%s'", dir, dir);
+
+    nt_restart(aw_root, merge_args, false); //  call arb_ntree as merge-tool on exit
 }
 
 static void nt_intro_start_import(AW_window *aw_intro) {
@@ -300,7 +300,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
 
     aws->callback(nt_exit, EXIT_SUCCESS);
     aws->at("close");
-    aws->create_button("CANCEL", "CANCEL", "C");
+    aws->create_button("EXIT", "Exit", "x");
 
     aws->at("help");
     aws->callback(AW_POPUP_HELP, (AW_CL)"arb_intro.hlp");
@@ -595,7 +595,7 @@ public:
     ArgType get_type() const { return type; }
 
     const char *get_dir() const {
-        const char *dir;
+        const char *dir = NULL;
         switch (type) {
             case DIRECTORY:
                 dir = get_fullname();
@@ -724,7 +724,24 @@ struct merge_scheme {
     bool knows_dbs() const { return !src->needs_to_prompt() && !dst->needs_to_prompt(); }
 };
 
-static AW_window *startup_error_window(AW_root *aw_root, AW_CL cl_error) {
+static bool merge_tool_running_as_client = true; // default to safe state (true avoids call of 'arb_clean' at exit)
+static void exit_from_merge(const char *restart_args) {
+    if (merge_tool_running_as_client) { // there is a main ARB running
+        if (restart_args) nt_start(restart_args, true);
+        exit(EXIT_SUCCESS); // exit w/o killing clients (as nt_exit() does)
+    }
+    else {
+        nt_restart(AW_root::SINGLETON, restart_args ? restart_args : "", false);
+        nt_assert(0);
+    }
+}
+
+static void merge_startup_abort_cb(AW_window *, AW_CL) {
+    fputs("Error: merge aborted by user\n", stderr);
+    exit_from_merge(NULL);
+}
+
+static AW_window *merge_startup_error_window(AW_root *aw_root, AW_CL cl_error) {
     AW_window_message *aw_msg = new AW_window_message;
     GB_ERROR           error  = GB_ERROR(cl_error);
 
@@ -737,8 +754,8 @@ static AW_window *startup_error_window(AW_root *aw_root, AW_CL cl_error) {
     aw_msg->create_autosize_button(NULL, error, "", 2);
     aw_msg->at_newline();
 
-    aw_msg->callback(nt_exit, AW_CL(EXIT_FAILURE));
-    aw_msg->create_autosize_button("EXIT", "Exit", "E", 2);
+    aw_msg->callback(merge_startup_abort_cb, 0);
+    aw_msg->create_autosize_button("OK", "Ok", "O", 2);
 
     aw_msg->window_fit();
 
@@ -761,18 +778,13 @@ static AW_window *startup_merge_main_window(AW_root *aw_root, AW_CL cl_merge_sch
     if (!ms->error) {
         MERGE_create_db_file_awars(aw_root, AW_ROOT_DEFAULT, ms->src->get_fullname(), ms->dst->get_fullname());
         bool dst_is_new = ms->dst->arg_type() == NEW_DB;
-        aw_result       = MERGE_create_main_window(aw_root, dst_is_new);
+        aw_result       = MERGE_create_main_window(aw_root, dst_is_new, exit_from_merge);
     }
     else {
-        aw_result = startup_error_window(aw_root, AW_CL(ms->error));
+        aw_result = merge_startup_error_window(aw_root, AW_CL(ms->error));
     }
     delete ms; // was allocated in startup_gui()
     return aw_result;
-}
-
-__ATTR__NORETURN static void merge_startup_abort_cb(AW_window *aww, AW_CL) {
-    fputs("Error: merge aborted by user\n", stderr);
-    nt_exit(aww, EXIT_FAILURE);
 }
 
 static AW_window *startup_merge_prompting_for_nonexplicit_dst_db(AW_root *aw_root, AW_CL cl_merge_scheme) {
@@ -864,6 +876,8 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
             merge_scheme *ms = new merge_scheme( // freed in startup_merge_main_window()
                 new SelectedDatabase(GLOBAL_gb_src, cl.get_arg(0), "Source DB for merge"),
                 new SelectedDatabase(GLOBAL_gb_dst, cl.get_arg(1), "Destination DB for merge"));
+
+            merge_tool_running_as_client = ms->src->arg_type() == RUNNING_DB || ms->dst->arg_type() == RUNNING_DB;
 
             if (ms->src->arg_type() == RUNNING_DB && ms->dst->arg_type() == RUNNING_DB) {
                 error = "You cannot merge from running to running DB";
