@@ -31,24 +31,42 @@
 GBDATA *GLOBAL_gb_src = NULL;
 GBDATA *GLOBAL_gb_dst = NULL;
 
-__ATTR__NORETURN static void MG_exit(AW_window *aww, AW_CL cl_start_dst_db) {
+static void (*MG_exit_cb)(const char *) = NULL;
+
+static void MG_exit(AW_window *aww, AW_CL cl_start_dst_db) {
     int start_dst_db = (int)cl_start_dst_db;
 
+    char *arb_ntree_restart_args = NULL;
+
     if (start_dst_db) {
-        char       *dst_db_name = aww->get_root()->awar(AWAR_DB_DST"/file_name")->read_string();
-        const char *cmd      = GBS_global_string("arb_ntree '%s' &", dst_db_name);
-        int         result   = system(cmd);
-        if (result != 0) fprintf(stderr, "Error running '%s'\n", cmd);
-        free(dst_db_name);
+        // restart with destination DB
+        const char *dst_db_name = aww->get_root()->awar(AWAR_DB_DST"/file_name")->read_char_pntr();
+        arb_ntree_restart_args  = GBS_global_string_copy("'%s'", dst_db_name);
+    }
+    else {
+        // restart in directory of destination- or source-DB
+        const char *dst_db_dir = aww->get_root()->awar(AWAR_DB_DST"/directory")->read_char_pntr();
+        if (GB_is_directory(dst_db_dir)) {
+            arb_ntree_restart_args = GBS_global_string_copy("'%s'", dst_db_dir);
+        }
+        else {
+            const char *src_db_dir = aww->get_root()->awar(AWAR_DB_SRC"/directory")->read_char_pntr();
+            if (GB_is_directory(src_db_dir)) {
+                arb_ntree_restart_args = GBS_global_string_copy("'%s'", src_db_dir);
+            }
+        }
     }
 
+    // @@@ code below duplicates code from nt_disconnect_from_db()
     aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_src);
     aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_dst);
-    
+
     GB_close(GLOBAL_gb_src);
     GB_close(GLOBAL_gb_dst);
-    
-    exit(EXIT_SUCCESS);
+
+    mg_assert(MG_exit_cb);
+
+    MG_exit_cb(arb_ntree_restart_args);
 }
 
 static void MG_save_merge_cb(AW_window *aww) {
@@ -187,7 +205,7 @@ static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window, AW_CL cl
     if (error) aw_message(error);
 }
 
-AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new) {
+AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*exit_cb)(const char *)) {
     // 'dst_is_new' == true -> setup dest DB according to source-DB
     //
     // GLOBAL_gb_src and GLOBAL_gb_dst have to be opened before
@@ -195,6 +213,8 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new) {
     // @@@ add GB_is_client and use that here
     bool src_is_client = GB_read_clients(GLOBAL_gb_src)<0;
     bool dst_is_client = GB_read_clients(GLOBAL_gb_dst)<0;
+
+    MG_exit_cb = exit_cb;
 
     mg_assert(contradicted(src_is_client, GB_is_server(GLOBAL_gb_src)));
     mg_assert(contradicted(dst_is_client, GB_is_server(GLOBAL_gb_dst)));
