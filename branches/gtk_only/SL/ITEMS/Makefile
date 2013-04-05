@@ -51,6 +51,7 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+changekey.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -103,6 +104,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -158,6 +160,7 @@ species.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+species.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx

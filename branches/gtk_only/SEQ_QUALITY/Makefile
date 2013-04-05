@@ -75,6 +75,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -141,6 +142,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx

@@ -52,6 +52,7 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx

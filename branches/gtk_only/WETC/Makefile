@@ -46,6 +46,7 @@ WETC_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+WETC_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx

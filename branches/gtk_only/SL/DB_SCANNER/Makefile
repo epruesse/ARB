@@ -53,6 +53,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx

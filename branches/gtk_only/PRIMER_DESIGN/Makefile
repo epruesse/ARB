@@ -164,6 +164,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx

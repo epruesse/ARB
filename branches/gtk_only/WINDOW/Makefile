@@ -72,6 +72,7 @@ AW_area_management.o: aw_assert.hxx
 AW_area_management.o: aw_at.hxx
 AW_area_management.o: aw_base.hxx
 AW_area_management.o: aw_button.hxx
+AW_area_management.o: aw_cb_struct.hxx
 AW_area_management.o: aw_clipable.hxx
 AW_area_management.o: aw_common.hxx
 AW_area_management.o: aw_common_gtk.hxx
@@ -115,6 +116,7 @@ AW_at.o: aw_assert.hxx
 AW_at.o: aw_at.hxx
 AW_at.o: aw_base.hxx
 AW_at.o: aw_button.hxx
+AW_at.o: aw_cb_struct.hxx
 AW_at.o: aw_clipable.hxx
 AW_at.o: aw_common.hxx
 AW_at.o: aw_common_gtk.hxx
@@ -162,6 +164,7 @@ AW_at_auto.o: aw_assert.hxx
 AW_at_auto.o: aw_at.hxx
 AW_at_auto.o: aw_base.hxx
 AW_at_auto.o: aw_button.hxx
+AW_at_auto.o: aw_cb_struct.hxx
 AW_at_auto.o: aw_clipable.hxx
 AW_at_auto.o: aw_common.hxx
 AW_at_auto.o: aw_common_gtk.hxx
@@ -206,6 +209,7 @@ AW_at_maxsize.o: aw_assert.hxx
 AW_at_maxsize.o: aw_at.hxx
 AW_at_maxsize.o: aw_base.hxx
 AW_at_maxsize.o: aw_button.hxx
+AW_at_maxsize.o: aw_cb_struct.hxx
 AW_at_maxsize.o: aw_clipable.hxx
 AW_at_maxsize.o: aw_common.hxx
 AW_at_maxsize.o: aw_common_gtk.hxx
@@ -251,6 +255,7 @@ AW_awar.o: aw_at.hxx
 AW_awar.o: aw_awar.hxx
 AW_awar.o: aw_base.hxx
 AW_awar.o: aw_button.hxx
+AW_awar.o: aw_cb_struct.hxx
 AW_awar.o: aw_clipable.hxx
 AW_awar.o: aw_common.hxx
 AW_awar.o: aw_common_gtk.hxx
@@ -303,6 +308,7 @@ AW_button.o: aw_assert.hxx
 AW_button.o: aw_at.hxx
 AW_button.o: aw_base.hxx
 AW_button.o: aw_button.hxx
+AW_button.o: aw_cb_struct.hxx
 AW_button.o: aw_clipable.hxx
 AW_button.o: aw_common.hxx
 AW_button.o: aw_common_gtk.hxx
@@ -345,6 +351,7 @@ AW_cb_struct.o: aw_assert.hxx
 AW_cb_struct.o: aw_at.hxx
 AW_cb_struct.o: aw_base.hxx
 AW_cb_struct.o: aw_button.hxx
+AW_cb_struct.o: aw_cb_struct.hxx
 AW_cb_struct.o: aw_clipable.hxx
 AW_cb_struct.o: aw_common.hxx
 AW_cb_struct.o: aw_common_gtk.hxx
@@ -443,6 +450,7 @@ AW_common_gtk.o: aw_assert.hxx
 AW_common_gtk.o: aw_at.hxx
 AW_common_gtk.o: aw_base.hxx
 AW_common_gtk.o: aw_button.hxx
+AW_common_gtk.o: aw_cb_struct.hxx
 AW_common_gtk.o: aw_clipable.hxx
 AW_common_gtk.o: aw_common.hxx
 AW_common_gtk.o: aw_common_gtk.hxx
@@ -657,6 +665,7 @@ AW_file.o: aw_at.hxx
 AW_file.o: aw_awar.hxx
 AW_file.o: aw_base.hxx
 AW_file.o: aw_button.hxx
+AW_file.o: aw_cb_struct.hxx
 AW_file.o: aw_clipable.hxx
 AW_file.o: aw_common.hxx
 AW_file.o: aw_common_gtk.hxx
@@ -741,6 +750,7 @@ AW_functions.o: aw_assert.hxx
 AW_functions.o: aw_at.hxx
 AW_functions.o: aw_base.hxx
 AW_functions.o: aw_button.hxx
+AW_functions.o: aw_cb_struct.hxx
 AW_functions.o: aw_clipable.hxx
 AW_functions.o: aw_common.hxx
 AW_functions.o: aw_common_gtk.hxx
@@ -788,6 +798,7 @@ AW_global_awars.o: aw_awar_defs.hxx
 AW_global_awars.o: aw_awars.hxx
 AW_global_awars.o: aw_base.hxx
 AW_global_awars.o: aw_button.hxx
+AW_global_awars.o: aw_cb_struct.hxx
 AW_global_awars.o: aw_clipable.hxx
 AW_global_awars.o: aw_common.hxx
 AW_global_awars.o: aw_common_gtk.hxx
@@ -838,6 +849,7 @@ AW_help.o: aw_at.hxx
 AW_help.o: aw_awar.hxx
 AW_help.o: aw_base.hxx
 AW_help.o: aw_button.hxx
+AW_help.o: aw_cb_struct.hxx
 AW_help.o: aw_clipable.hxx
 AW_help.o: aw_common.hxx
 AW_help.o: aw_common_gtk.hxx
@@ -892,6 +904,7 @@ AW_modal.o: aw_at.hxx
 AW_modal.o: aw_awar.hxx
 AW_modal.o: aw_base.hxx
 AW_modal.o: aw_button.hxx
+AW_modal.o: aw_cb_struct.hxx
 AW_modal.o: aw_clipable.hxx
 AW_modal.o: aw_common.hxx
 AW_modal.o: aw_common_gtk.hxx
@@ -993,6 +1006,7 @@ AW_preset.o: aw_at.hxx
 AW_preset.o: aw_awar.hxx
 AW_preset.o: aw_base.hxx
 AW_preset.o: aw_button.hxx
+AW_preset.o: aw_cb_struct.hxx
 AW_preset.o: aw_clipable.hxx
 AW_preset.o: aw_color_groups.hxx
 AW_preset.o: aw_common.hxx
@@ -1054,6 +1068,7 @@ AW_root.o: aw_awar.hxx
 AW_root.o: aw_awar_defs.hxx
 AW_root.o: aw_base.hxx
 AW_root.o: aw_button.hxx
+AW_root.o: aw_cb_struct.hxx
 AW_root.o: aw_clipable.hxx
 AW_root.o: aw_common.hxx
 AW_root.o: aw_common_gtk.hxx
@@ -1127,6 +1142,7 @@ AW_select.o: aw_at.hxx
 AW_select.o: aw_awar.hxx
 AW_select.o: aw_base.hxx
 AW_select.o: aw_button.hxx
+AW_select.o: aw_cb_struct.hxx
 AW_select.o: aw_clipable.hxx
 AW_select.o: aw_common.hxx
 AW_select.o: aw_common_gtk.hxx
@@ -1183,6 +1199,7 @@ AW_status.o: aw_awar_defs.hxx
 AW_status.o: aw_awars.hxx
 AW_status.o: aw_base.hxx
 AW_status.o: aw_button.hxx
+AW_status.o: aw_cb_struct.hxx
 AW_status.o: aw_clipable.hxx
 AW_status.o: aw_common.hxx
 AW_status.o: aw_common_gtk.hxx
@@ -1259,6 +1276,7 @@ AW_varUpdateInfo.o: aw_at.hxx
 AW_varUpdateInfo.o: aw_awar.hxx
 AW_varUpdateInfo.o: aw_base.hxx
 AW_varUpdateInfo.o: aw_button.hxx
+AW_varUpdateInfo.o: aw_cb_struct.hxx
 AW_varUpdateInfo.o: aw_clipable.hxx
 AW_varUpdateInfo.o: aw_common.hxx
 AW_varUpdateInfo.o: aw_common_gtk.hxx
@@ -1310,6 +1328,7 @@ AW_window.o: aw_at.hxx
 AW_window.o: aw_awar.hxx
 AW_window.o: aw_base.hxx
 AW_window.o: aw_button.hxx
+AW_window.o: aw_cb_struct.hxx
 AW_window.o: aw_clipable.hxx
 AW_window.o: aw_common.hxx
 AW_window.o: aw_common_gtk.hxx
@@ -1367,6 +1386,7 @@ AW_window_debug.o: aw_assert.hxx
 AW_window_debug.o: aw_at.hxx
 AW_window_debug.o: aw_base.hxx
 AW_window_debug.o: aw_button.hxx
+AW_window_debug.o: aw_cb_struct.hxx
 AW_window_debug.o: aw_clipable.hxx
 AW_window_debug.o: aw_common.hxx
 AW_window_debug.o: aw_common_gtk.hxx
@@ -1413,6 +1433,7 @@ AW_window_gtk.o: aw_assert.hxx
 AW_window_gtk.o: aw_at.hxx
 AW_window_gtk.o: aw_base.hxx
 AW_window_gtk.o: aw_button.hxx
+AW_window_gtk.o: aw_cb_struct.hxx
 AW_window_gtk.o: aw_clipable.hxx
 AW_window_gtk.o: aw_common.hxx
 AW_window_gtk.o: aw_common_gtk.hxx
@@ -1457,6 +1478,7 @@ AW_window_menu_modes.o: aw_assert.hxx
 AW_window_menu_modes.o: aw_at.hxx
 AW_window_menu_modes.o: aw_base.hxx
 AW_window_menu_modes.o: aw_button.hxx
+AW_window_menu_modes.o: aw_cb_struct.hxx
 AW_window_menu_modes.o: aw_clipable.hxx
 AW_window_menu_modes.o: aw_common.hxx
 AW_window_menu_modes.o: aw_common_gtk.hxx
@@ -1505,6 +1527,7 @@ AW_window_message.o: aw_assert.hxx
 AW_window_message.o: aw_at.hxx
 AW_window_message.o: aw_base.hxx
 AW_window_message.o: aw_button.hxx
+AW_window_message.o: aw_cb_struct.hxx
 AW_window_message.o: aw_clipable.hxx
 AW_window_message.o: aw_common.hxx
 AW_window_message.o: aw_common_gtk.hxx
@@ -1549,6 +1572,7 @@ AW_window_simple.o: aw_assert.hxx
 AW_window_simple.o: aw_at.hxx
 AW_window_simple.o: aw_base.hxx
 AW_window_simple.o: aw_button.hxx
+AW_window_simple.o: aw_cb_struct.hxx
 AW_window_simple.o: aw_clipable.hxx
 AW_window_simple.o: aw_common.hxx
 AW_window_simple.o: aw_common_gtk.hxx
@@ -1597,6 +1621,7 @@ AW_window_simple_menu.o: aw_assert.hxx
 AW_window_simple_menu.o: aw_at.hxx
 AW_window_simple_menu.o: aw_base.hxx
 AW_window_simple_menu.o: aw_button.hxx
+AW_window_simple_menu.o: aw_cb_struct.hxx
 AW_window_simple_menu.o: aw_clipable.hxx
 AW_window_simple_menu.o: aw_common.hxx
 AW_window_simple_menu.o: aw_common_gtk.hxx

@@ -58,6 +58,7 @@ ED4_base.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_base.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -124,6 +125,7 @@ ED4_block.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_block.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -195,6 +197,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -257,6 +260,7 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_dots.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -312,6 +316,7 @@ ED4_dump.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_dump.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -371,6 +376,7 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -448,6 +454,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -519,6 +526,7 @@ ED4_manager.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_manager.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -574,6 +582,7 @@ ED4_members.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_members.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -629,6 +638,7 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -688,6 +698,7 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -742,6 +753,7 @@ ED4_nds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_nds.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -809,6 +821,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -870,6 +883,7 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -926,6 +940,7 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -988,6 +1003,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1050,6 +1066,7 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1132,6 +1149,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_root.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1206,6 +1224,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_search.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1271,6 +1290,7 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1340,6 +1360,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1406,6 +1427,7 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_tools.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1468,6 +1490,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1531,6 +1554,7 @@ ED4_window.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+ED4_window.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1590,6 +1614,7 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1650,6 +1675,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_common.hxx

@@ -54,6 +54,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+PH_data.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -106,6 +107,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+PH_display.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -162,6 +164,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -217,6 +220,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+PH_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -268,6 +272,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+PH_matr.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
