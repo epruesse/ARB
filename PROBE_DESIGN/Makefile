@@ -59,6 +59,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -151,6 +152,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx

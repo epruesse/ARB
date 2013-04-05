@@ -49,6 +49,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -110,6 +111,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx

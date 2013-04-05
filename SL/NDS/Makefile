@@ -50,6 +50,7 @@ nds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+nds.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx

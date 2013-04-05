@@ -56,6 +56,7 @@ db_query.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+db_query.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_common.hxx

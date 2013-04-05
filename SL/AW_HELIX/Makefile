@@ -55,6 +55,7 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+AW_helix.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx

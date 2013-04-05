@@ -57,6 +57,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
@@ -118,6 +119,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx

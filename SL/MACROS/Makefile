@@ -50,6 +50,7 @@ macro_gui.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_button.hxx
+macro_gui.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
