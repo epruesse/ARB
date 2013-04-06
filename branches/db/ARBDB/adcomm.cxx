@@ -522,7 +522,7 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
 
                 assert_or_exit(!(ge2->stored_external() && ge2->info.ex.get_data()));
 
-                if (GB_CHECKINTERN(realsize, memsize)) {
+                if (store_inside_entry(realsize, memsize)) {
                     ge2->mark_as_intern();
                     data = ge2->data();
                 }

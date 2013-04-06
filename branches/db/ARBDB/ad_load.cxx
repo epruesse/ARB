@@ -742,7 +742,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                         }
                         else {
                             gbe = gbd->as_entry();
-                            GB_FREEDATA(gbe);
+                            gbe->free_data();
                         }
                     }
                 }
@@ -828,7 +828,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
 
                 char *p;
                 DEBUG_DUMP_INDENTED(deep, GBS_global_string("size=%li memsize=%li", size, memsize));
-                if (GB_CHECKINTERN(size, memsize)) {
+                if (store_inside_entry(size, memsize)) {
                     gbe->mark_as_intern();
                     p = &(gbe->info.istr.data[0]);
                 }

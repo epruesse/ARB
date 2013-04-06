@@ -309,7 +309,7 @@ long gb_ascii_2_bin(const char *source, GBENTRY *gbe) {
             len++;
         }
 
-        GB_SETSMDMALLOC_UNINITIALIZED(gbe, size, len);
+        GB_SETSMDMALLOC_UNINITIALIZED(gbe, size, len); // @@@ imo wrong: does a index_re_check_in() before it contains data
     }
 
     char *d = gbe->data();

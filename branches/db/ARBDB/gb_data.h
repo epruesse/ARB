@@ -220,6 +220,16 @@ public:
     inline size_t uncompressed_size() const;
 
     char *data() { return stored_external() ? info.ex.get_data() : &(info.istr.data[0]); }
+    void free_data() {
+        index_check_out();
+        if (stored_external()) {
+            char *exdata = info.ex.get_data();
+            if (exdata) {
+                gbm_free_mem(exdata, (size_t)(info.ex.memsize), GB_GBM_INDEX(this));
+                info.ex.set_data(0);
+            }
+        }
+    }
 
     void index_check_in();
     void index_re_check_in() { if (flags2.should_be_indexed) index_check_in(); }

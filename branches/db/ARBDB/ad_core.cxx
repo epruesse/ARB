@@ -460,7 +460,7 @@ void gb_delete_entry(GBENTRY*& gbe) {
     long gbm_index = GB_GBM_INDEX(gbe);
 
     gb_pre_delete_entry(gbe);
-    if (gbe->type() >= GB_BITS) GB_FREEDATA(gbe);
+    if (gbe->type() >= GB_BITS) gbe->free_data();
     gbm_free_mem(gbe, sizeof(GBENTRY), gbm_index);
 
     gbe = NULL; // avoid further usage
@@ -605,7 +605,7 @@ void gb_save_extern_data_in_ts(GBENTRY *gbe) {
     gbe->create_extended();
     gbe->index_check_out();
     if (gbe->ext->old || (GB_ARRAY_FLAGS(gbe).changed == GB_CREATED)) {
-        GB_FREEDATA(gbe);
+        gbe->free_data();
     }
     else {
         gbe->ext->old = gb_new_gb_transaction_save(gbe);
@@ -738,7 +738,7 @@ char *gb_abort_entry(GBDATA *gbd) {
         if (gbe->get_oldData()) {
             if (type >= GB_BITS) {
                 gb_uncache(gbe);
-                GB_FREEDATA(gbe);
+                gbe->free_data();
             }
             gb_abortdata(gbe);
         }
