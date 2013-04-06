@@ -220,6 +220,9 @@ public:
     inline size_t uncompressed_size() const;
 
     char *data() { return stored_external() ? info.ex.get_data() : &(info.istr.data[0]); }
+
+    inline char *alloc_data(long Size, long Memsize);
+    inline void insert_data(const char *Data, long Size, long Memsize);
     void free_data() {
         index_check_out();
         if (stored_external()) {
@@ -327,4 +330,6 @@ inline void gb_abort_transaction_local_rek(GBCONTAINER*& gbc) {
 #else
 #error gb_data.h included twice
 #endif // GB_DATA_H
+
+
 

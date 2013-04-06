@@ -313,10 +313,10 @@ GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQ
             type = GB_STRING;
             // fall-through
         case GB_STRING:
-            GB_SETSMDMALLOC(gbe, 6, 7, "<NONE>");
+            gbe->insert_data("<NONE>", 6, 7);
             break;
         case GB_LINK:
-            GB_SETSMDMALLOC(gbe, 1, 2, ":");
+            gbe->insert_data(":", 1, 2);
             break;
         default:
             break;

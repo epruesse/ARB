@@ -277,42 +277,40 @@ long gb_ascii_2_bin(const char *source, GBENTRY *gbe) {
     A_TO_I(c);
     gbe->flags.compressed_data = c;
 
-    {
-        long size;
-        if (*s == ':') {
-            size = 0;
-            s++;
+    long size;
+    if (*s == ':') {
+        size = 0;
+        s++;
+    }
+    else {
+        long i, k;
+        for (i = 0, k = 8; k && (c = *(s++)); k--) {
+            A_TO_I(c);
+            i = (i<<4)+c;
         }
-        else {
-            long i, k;
-            for (i = 0, k = 8; k && (c = *(s++)); k--) {
-                A_TO_I(c);
-                i = (i<<4)+c;
-            }
-            size = i;
-        }
-        source = s;
+        size = i;
+    }
+    source = s;
 
-        long len = 0;
-        while ((c = *(s++))) {
-            if ((c == '.') || (c=='-')) {
-                len++;
-                continue;
-            }
-            if ((c == ':') || (c=='=')) {
-                len += 2;
-                continue;
-            }
-            if (!(c = *(s++))) {
-                return 1;
-            };
+    long len = 0;
+    while ((c = *(s++))) {
+        if ((c == '.') || (c=='-')) {
             len++;
+            continue;
         }
-
-        GB_SETSMDMALLOC_UNINITIALIZED(gbe, size, len); // @@@ imo wrong: does a index_re_check_in() before it contains data
+        if ((c == ':') || (c=='=')) {
+            len += 2;
+            continue;
+        }
+        if (!(c = *(s++))) {
+            return 1;
+        };
+        len++;
     }
 
-    char *d = gbe->data();
+    GBENTRY_memory storage(gbe, size, len);
+
+    char *d = storage;
     s       = source;
 
     while ((c = *(s++))) {
@@ -340,6 +338,7 @@ long gb_ascii_2_bin(const char *source, GBENTRY *gbe) {
         A_TO_I(c);
         *(d++) = (char)(i + c);
     }
+
     return 0;
 }
 // ------------------------

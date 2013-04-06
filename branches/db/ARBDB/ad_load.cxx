@@ -814,7 +814,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                     p = buff + size;
                 }
                   shrtstring_fully_loaded :
-                GB_SETSMDMALLOC(gbe, size, size+1, buff);
+                gbe->insert_data(buff, size, size+1);
                 break;
             }
             case GB_STRING:
@@ -826,23 +826,15 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                 long size    = gb_get_number(in);
                 long memsize = gb_get_number(in);
 
-                char *p;
                 DEBUG_DUMP_INDENTED(deep, GBS_global_string("size=%li memsize=%li", size, memsize));
-                if (store_inside_entry(size, memsize)) {
-                    gbe->mark_as_intern();
-                    p = &(gbe->info.istr.data[0]);
-                }
-                else {
-                    gbe->mark_as_extern();
-                    // memsize++; // ralf: added +1 because decompress ran out of this block (cant solve like this - breaks memory management!)
-                    p = (char*)gbm_get_mem((size_t)memsize+1, GB_GBM_INDEX(gbe)); // again added old hack-around removed in [6654]
-                }
-                long i = fread(p, 1, (size_t)memsize, in);
+
+                GBENTRY_memory storage(gbe, size, memsize);
+
+                long i = fread(storage, 1, (size_t)memsize, in);
                 if (i!=memsize) {
                     gb_read_bin_error(in, gbe, "Unexpected EOF found");
                     return -1;
                 }
-                GB_SETSMD(gbe, size, memsize, p);
                 break;
             }
             case GB_DB: {

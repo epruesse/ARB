@@ -516,27 +516,16 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
             else {
                 long  realsize = buffer[i++];
                 long  memsize  = buffer[i++];
-                char *data;
 
                 ge2->index_check_out();
-
                 assert_or_exit(!(ge2->stored_external() && ge2->info.ex.get_data()));
 
-                if (store_inside_entry(realsize, memsize)) {
-                    ge2->mark_as_intern();
-                    data = ge2->data();
-                }
-                else {
-                    ge2->mark_as_extern();
-                    data = (char*)gbm_get_mem((size_t)memsize, GB_GBM_INDEX(ge2));
-                }
-                size = gbcm_read(socket, data, memsize);
+                GBENTRY_memory storage(ge2, realsize, memsize);
+                size = gbcm_read(socket, storage, memsize);
                 if (size != memsize) {
                     fprintf(stderr, "receive failed data\n");
                     return GBCM_SERVER_FAULT;
                 }
-
-                GB_SETSMD(ge2, realsize, memsize, data);
             }
         }
         else {

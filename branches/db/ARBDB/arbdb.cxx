@@ -1223,7 +1223,7 @@ GB_ERROR gb_write_compressed_pntr(GBENTRY *gbe, const char *s, long memsize, lon
     gb_uncache(gbe);
     gb_save_extern_data_in_ts(gbe);
     gbe->flags.compressed_data = 1;
-    GB_SETSMDMALLOC(gbe, stored_size, (size_t)memsize, (char *)s);
+    gbe->insert_data((char *)s, stored_size, (size_t)memsize);
     gb_touch_entry(gbe, GB_NORMAL_CHANGE);
 
     return 0;
@@ -1281,7 +1281,7 @@ GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, size_t bytes_size, size_t sto
         memsize = bytes_size;
     }
 
-    GB_SETSMDMALLOC(gbe, stored_size, memsize, d);
+    gbe->insert_data(d, stored_size, memsize);
     gb_touch_entry(gbe, GB_NORMAL_CHANGE);
     GB_DO_CALLBACKS(gbe);
 
@@ -1352,7 +1352,7 @@ GB_ERROR GB_write_bits(GBDATA *gbd, const char *bits, long size, const char *c_0
     char *d = gb_compress_bits(bits, size, (const unsigned char *)c_0, &memsize);
 
     gbe->flags.compressed_data = 1;
-    GB_SETSMDMALLOC(gbe, size, memsize, d);
+    gbe->insert_data(d, size, memsize);
     gb_touch_entry(gbe, GB_NORMAL_CHANGE);
     GB_DO_CALLBACKS(gbe);
     return 0;
@@ -1858,9 +1858,7 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
             GBENTRY *dest_entry   = dest->as_entry();
 
             gb_save_extern_data_in_ts(dest_entry);
-            GB_SETSMDMALLOC(dest_entry, source_entry->size(),
-                            source_entry->memsize(),
-                            source_entry->data());
+            dest_entry->insert_data(source_entry->data(), source_entry->size(), source_entry->memsize());
 
             dest->flags.compressed_data = source->flags.compressed_data;
             break;
