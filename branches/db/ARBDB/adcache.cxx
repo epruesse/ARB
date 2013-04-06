@@ -9,6 +9,8 @@
 // =============================================================== //
 
 #include "gb_storage.h"
+#include "gb_main.h"
+#include "gb_tune.h"
 
 struct gb_cache_entry {
     GBENTRY      *gbe;

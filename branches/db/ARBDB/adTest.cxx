@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "gb_storage.h"
+#include "gb_key.h"
 
 const char *GB_get_type_name(GBDATA *gbd) {
     int         type = GB_TYPE(gbd);

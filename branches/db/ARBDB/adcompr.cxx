@@ -12,6 +12,7 @@
 
 #include <arbdbt.h>
 
+#include "gb_key.h"
 #include "gb_t_prot.h"
 #include "gb_compress.h"
 #include "gb_localdata.h"

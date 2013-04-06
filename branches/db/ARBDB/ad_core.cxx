@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
+#include "gb_key.h"
 #include "gb_ts.h"
-#include "gb_storage.h"
 #include "gb_index.h"
 #include "gb_localdata.h"
 

@@ -13,8 +13,10 @@
 
 #include <arbdbt.h>
 
+#include "gb_key.h"
 #include "gb_compress.h"
 #include "gb_dict.h"
+
 #include "arb_progress.h"
 
 #if defined(DEBUG)

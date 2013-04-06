@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "gb_key.h"
 #include "gb_undo.h"
 #include "gb_index.h"
 #include "gb_hashindex.h"

@@ -11,8 +11,8 @@
 #ifndef GB_STORAGE_H
 #define GB_STORAGE_H
 
-#ifndef GB_KEY_H
-#include "gb_key.h" // @@@ remove
+#ifndef GB_DATA_H
+#include "gb_data.h"
 #endif
 
 inline bool store_inside_entry(int size, int memsize) {

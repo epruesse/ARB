@@ -20,6 +20,7 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
+#include "gb_key.h"
 #include "gb_storage.h"
 #include "gb_comm.h"
 #include "gb_localdata.h"
