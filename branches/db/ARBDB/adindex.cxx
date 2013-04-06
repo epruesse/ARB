@@ -64,22 +64,21 @@ void GBENTRY::index_check_in() {
 
 void GBENTRY::index_check_out() {
     // remove entry from index table
+    if (flags2.is_indexed) {
+        GBCONTAINER *gfather = GB_GRANDPA(this);
+        GBQUARK      quark   = GB_KEY_QUARK(this);
 
-    GBENTRY *gbe = this; // @@@ elim
-    if (gbe->flags2.is_indexed) {
-        GB_ERROR        error   = 0;
-        GBCONTAINER    *gfather = GB_GRANDPA(gbe);
-        GBQUARK         quark   = GB_KEY_QUARK(gbe);
+        flags2.is_indexed = 0;
+
         gb_index_files *ifs;
-
-        gbe->flags2.is_indexed = 0;
         GB_INDEX_FIND(gfather, ifs, quark);
 
+        GB_ERROR     error;
         if (!ifs) error = "key is not indexed";
         else {
-            error = GB_push_transaction(gbe);
+            error = GB_push_transaction(this);
             if (!error) {
-                GB_CSTR content = GB_read_char_pntr(gbe);
+                GB_CSTR content = GB_read_char_pntr(this);
 
                 if (!content) {
                     error = GBS_global_string("can't read key value (%s)", GB_await_error());
@@ -93,23 +92,23 @@ void GBENTRY::index_check_out() {
                     gb_if_entries *ifes;
 
                     for (ifes = GB_ENTRIES_ENTRY(entries, idx); ifes; ifes = GB_IF_ENTRIES_NEXT(ifes)) {
-                        if (gbe == GB_IF_ENTRIES_GBD(ifes)) {       // entry found
+                        if (this == GB_IF_ENTRIES_GBD(ifes)) { // entry found
                             if (ifes2) SET_GB_IF_ENTRIES_NEXT(ifes2, GB_IF_ENTRIES_NEXT(ifes));
                             else SET_GB_ENTRIES_ENTRY(entries, idx, GB_IF_ENTRIES_NEXT(ifes));
 
                             ifs->nr_of_elements--;
-                            gbm_free_mem(ifes, sizeof(gb_if_entries), GB_GBM_INDEX(gbe));
+                            gbm_free_mem(ifes, sizeof(gb_if_entries), GB_GBM_INDEX(this));
                             break;
                         }
                         ifes2 = ifes;
                     }
                 }
             }
-            error = GB_end_transaction(gbe, error);
+            error = GB_end_transaction(this, error);
         }
 
         if (error) {
-            error = GBS_global_string("GBENTRY::index_check_out failed for key '%s' (%s)\n", GB_KEY(gbe), error);
+            error = GBS_global_string("GBENTRY::index_check_out failed for key '%s' (%s)\n", GB_KEY(this), error);
             GB_internal_error(error);
         }
     }
@@ -637,40 +636,39 @@ char *gb_disable_undo(GBDATA *gb_main) {
 }
 
 void gb_check_in_undo_create(GB_MAIN_TYPE *Main, GBDATA *gbd) {
-    g_b_undo_entry *ue;
-    if (!Main->undo->valid_u) return;
-    ue = new_g_b_undo_entry(Main->undo->valid_u);
-    ue->type = GB_UNDO_ENTRY_TYPE_CREATED;
-    ue->source = gbd;
-    ue->gbm_index = GB_GBM_INDEX(gbd);
-    ue->flag = 0;
+    if (Main->undo->valid_u) {
+        g_b_undo_entry *ue = new_g_b_undo_entry(Main->undo->valid_u);
+
+        ue->type      = GB_UNDO_ENTRY_TYPE_CREATED;
+        ue->source    = gbd;
+        ue->gbm_index = GB_GBM_INDEX(gbd);
+        ue->flag      = 0;
+    }
 }
 
 void gb_check_in_undo_modify(GB_MAIN_TYPE *Main, GBDATA *gbd) {
-    long                 type = GB_TYPE(gbd);
-    g_b_undo_entry      *ue; // @@@ fix locs
-    gb_transaction_save *old;
-
     if (!Main->undo->valid_u) {
         GB_FREE_TRANSACTION_SAVE(gbd);
-        return;
     }
+    else {
+        gb_transaction_save *old = gbd->get_oldData();
+        g_b_undo_entry      *ue  = new_g_b_undo_entry(Main->undo->valid_u);
 
-    old = gbd->get_oldData();
-    ue = new_g_b_undo_entry(Main->undo->valid_u);
-    ue->source = gbd;
-    ue->gbm_index = GB_GBM_INDEX(gbd);
-    ue->type = GB_UNDO_ENTRY_TYPE_MODIFY;
-    ue->flag =      gbd->flags.saved_flags;
+        ue->source    = gbd;
+        ue->gbm_index = GB_GBM_INDEX(gbd);
+        ue->type      = GB_UNDO_ENTRY_TYPE_MODIFY;
+        ue->flag      = gbd->flags.saved_flags;
 
-    if (type != GB_DB) {
-        ue->d.ts = old;
-        if (old) {
-            gb_add_ref_gb_transaction_save(old);
-            if (type >= GB_BITS && old->stored_external() && old->info.ex.data) {
-                ue->type = GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY;
-                // move external array from ts to undo entry struct
-                g_b_add_size_to_undo_entry(ue, old->info.ex.memsize);
+        long type = GB_TYPE(gbd);
+        if (type != GB_DB) {
+            ue->d.ts = old;
+            if (old) {
+                gb_add_ref_gb_transaction_save(old);
+                if (type >= GB_BITS && old->stored_external() && old->info.ex.data) {
+                    ue->type = GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY;
+                    // move external array from ts to undo entry struct
+                    g_b_add_size_to_undo_entry(ue, old->info.ex.memsize);
+                }
             }
         }
     }
