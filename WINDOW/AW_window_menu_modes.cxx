@@ -62,7 +62,7 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     gtk_container_add(GTK_CONTAINER(scrolledWindow), GTK_WIDGET(prvt->drawing_area));
     
           
-    gtk_widget_realize(GTK_WIDGET(prvt->drawing_area));
+
     prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(GTK_WIDGET(prvt->drawing_area), GTK_WIDGET(prvt->drawing_area)); 
     //FIXME form should be a frame around the area.
 
@@ -83,6 +83,7 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
 
     // make-it-so:
     gtk_widget_realize(GTK_WIDGET(prvt->window)); 
+    gtk_widget_realize(GTK_WIDGET(prvt->drawing_area));
     create_devices();
     aw_insert_default_help_entries(this);
     create_window_variables();
