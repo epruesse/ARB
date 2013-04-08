@@ -172,7 +172,6 @@ public:
 };
 
 class AW_selection_list;
-class RecordingMacro;
 
 class AW_root_Motif : virtual Noncopyable {
     Widget           last_widget;                   // last created (sensitive) widget
@@ -209,8 +208,6 @@ public:
     Display *old_cursor_display;
     Window   old_cursor_window;
     bool     no_exit;
-
-    RecordingMacro *recording;
 
     GB_HASH *action_hash;
 

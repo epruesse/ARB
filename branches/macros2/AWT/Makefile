@@ -261,33 +261,6 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/test_global.h
 
-AWT_macro.o: awt_macro.hxx
-AWT_macro.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/arb_core.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/arb_file.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/arb_string.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/arbtools.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-AWT_macro.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AWT_macro.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
-AWT_macro.o: $(ARBHOME)/INCLUDE/aw_file.hxx
-AWT_macro.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWT_macro.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-AWT_macro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_macro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWT_macro.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/cxxforward.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/gccver.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/smartptr.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/test_global.h
-
 AWT_map_key.o: awt_map_key.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_core.h

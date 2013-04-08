@@ -17,7 +17,7 @@
 #include <insdel.h>
 
 #include <awt.hxx>
-#include <awt_macro.hxx>
+#include <macro_gui.hxx>
 
 #include <aw_advice.hxx>
 #include <aw_question.hxx>
@@ -34,6 +34,7 @@
 #include <arb_progress.h>
 #include <arb_file.h>
 #include <awt_sel_boxes.hxx>
+#include <macros.hxx>
 
 using namespace std;
 
@@ -833,7 +834,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
     GB_set_verbose();
 
     GB_shell shell;
-    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT");
+    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT", new MacroRecorder);
 
     GLOBAL.aw_root = aw_root;
 

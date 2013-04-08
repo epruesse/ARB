@@ -532,7 +532,7 @@ int ARB_main(int argc, const char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root  *aw_root = AWT_create_root("phylo.arb", "ARB_PHYLO");
+    AW_root  *aw_root = AWT_create_root("phylo.arb", "ARB_PHYLO", new NullTracker);
     PH_root  *ph_root = new PH_root;
     GB_ERROR  error   = ph_root->open(db_server);
     if (error) {

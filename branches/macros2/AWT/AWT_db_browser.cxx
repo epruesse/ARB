@@ -1167,8 +1167,8 @@ void AWT_create_debug_menu(AW_window *awmm) {
 
 #endif // DEBUG
 
-AW_root *AWT_create_root(const char *properties, const char *program) {
-    AW_root *aw_root = new AW_root(properties, program, false);
+AW_root *AWT_create_root(const char *properties, const char *program, UserActionTracker *user_tracker) {
+    AW_root *aw_root = new AW_root(properties, program, false, user_tracker);
 #if defined(DEBUG)
     AWT_announce_properties_to_browser(AW_ROOT_DEFAULT, properties);
 #endif // DEBUG

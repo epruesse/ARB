@@ -1,6 +1,6 @@
 // ============================================================= //
 //                                                               //
-//   File      : AW_macro.cxx                                    //
+//   File      : recmac.cxx                                      //
 //   Purpose   :                                                 //
 //                                                               //
 //   Coded by Ralf Westram (coder@reallysoft.de) in April 2012   //
@@ -9,7 +9,7 @@
 //                                                               //
 // ============================================================= //
 
-#include "aw_macro.hxx"
+#include "recmac.hxx"
 #include "aw_msg.hxx"
 #include <arbdbt.h>
 #include <arb_file.h>
@@ -72,12 +72,12 @@ RecordingMacro::RecordingMacro(const char *filename, const char *application_id_
         }
 
         free(content);
-        aw_assert(implicated(error, !out));
+        ma_assert(implicated(error, !out));
     }
 }
 
-void RecordingMacro::record_action(const char *action_id) {
-    aw_assert(out && !error);
+void RecordingMacro::track_action(const char *action_id) {
+    ma_assert(out && !error);
     if (!action_id) {
         warn_unrecordable("anonymous GUI element");
     }
@@ -90,8 +90,8 @@ void RecordingMacro::record_action(const char *action_id) {
     flush();
 }
 
-void RecordingMacro::record_awar_change(AW_awar *awar) {
-    aw_assert(out && !error);
+void RecordingMacro::track_awar_change(AW_awar *awar) {
+    ma_assert(out && !error);
 
     char *svalue = awar->read_as_string();
     if (!svalue) {
@@ -185,7 +185,7 @@ inline bool is_comment(const char *line) {
 }
 
 void RecordingMacro::post_process() {
-    aw_assert(!error);
+    ma_assert(!error);
 
     FileContent macro(path);
     error = macro.has_error();
@@ -207,7 +207,7 @@ void RecordingMacro::post_process() {
                                 line.remove(i);
 
                                 // make sure that it also works for 3 or more consecutive modifications
-                                aw_assert(i>0);
+                                ma_assert(i>0);
                                 i--;
                             }
                             free(mod_next_awar);
