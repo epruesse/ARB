@@ -62,14 +62,17 @@ public:
 
     void run_resize_callback();
     void run_expose_callback();
+    void run_motion_callback(GdkEventMotion*);
 
     AW_cb_struct *get_double_click_cb();
     long get_click_time() const;
     void set_click_time(long click_time);
     
 private:
-    static gboolean draw_area_expose_cb(GtkWidget *widget, GdkEventExpose */*event*/, gpointer area_management);
+    static gboolean configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, gpointer cb_struct);
+    static gboolean expose_event_cb(GtkWidget *widget, GdkEventExpose */*event*/, gpointer area_management);
     static gboolean input_event_cb(GtkWidget *widget, GdkEvent *event, gpointer cb_struct);
+    static gboolean motion_event_cb(GtkWidget *widget, GdkEventMotion *event, gpointer cb_struct);
 };
 
 
