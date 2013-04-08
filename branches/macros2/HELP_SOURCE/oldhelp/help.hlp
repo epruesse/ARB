@@ -1,0 +1,126 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Using embedded help
+
+DESCRIPTION
+
+        There are several versions of ARB help:
+
+              - an embedded, context-sensitive version (press any 'HELP' button inside ARB)
+              - an HTML version which is located in $ARBHOME/lib/help_html
+                - it may be started using the BROWSE button in embedded help windows
+                - If arb is installed in /usr/arb it may be accessible at LINK{file:///usr/arb/lib/help_html/arb.html}.
+              - This HTML help is also available via LINK{http://help.arb-home.de/arb.html}.
+                Please note that the online version may be more recent than your ARB version!
+
+    The following is about the embedded help module:
+
+	The embedded help is available by clicking on the 'HELP' menu
+	(flat) or buttons (raised) located in most windows.
+
+		Clicking on a <HELP> button displays the 'HELP
+		WINDOW' with help for that window.
+
+		Clicking on the 'HELP' menu and choosing 'Click here
+		and then on the questionable button/menu/...' switches
+		to the context-sensitive help mode (indicated by the
+		'open question cursor'). Then click on any button or
+		prompt to display the 'HELP WINDOW' showing help for
+		the pressed button/menu/...
+
+    	There are two formates of embedded 'HELP' texts:
+
+		Normally, ARB uses simple ASCII texts displayed within the
+                'HELP WINDOWS'.
+
+			The titles of help texts on related main- and subtopics
+			linked to the current help file are displayed in the
+			subwindows in the lower part of the 'HELP WINDOW' and
+			are activated by clicking on the tile prompts.
+
+			Press the <BACK> button in the upper part of the 'HELP
+				WINDOW' to display the former help text.
+
+		Some 'HELP' texts are stored as postscript files and displayed
+                using the public domain software 'ghostview'.
+
+                                Press <Ghostview/Page/Next> to display the following
+				page(s), <Ghostview/File/Print> to print the
+				help text. <Ghostview/File/Quit> to leave
+				ghostview.
+
+	Format:
+
+		"text" indicates an important term.
+
+		'text' indicates ARB-specific terms, paths, tools and prompts.
+
+		<text> indicates buttons.
+
+	Terminology:
+
+	  Screen:
+
+		"Windows" are the workstation work areas. The names are
+			displayed at the very top of the window.
+
+		"Subwindows" (indented) are display and input areas within
+			windows.
+
+		"Menu bars" at the top of windows (if present) are used to
+			expose menu choices. The menus are displayed after
+			clicking on the prompts of the menu bar.
+
+		"Menu buttons" are raised rectangular buttons containing a small
+			raised rectangle at the right. Menu options are exposed
+			after clicking on the button.
+
+		"Menus" initiate actions after clicking on the items.
+
+		"Scroll bars" at the extreme right and bottom of windows and
+			subwindows allow to move through the display area in
+			various increments.
+
+	  Mouse buttons communicate commands to the program:
+
+		"Left mouse button" is used for clicking on prompts, checkboxes and buttons.
+                      and to select and modify the main display area.
+
+		"Middle and right mouse buttons" are used for modifying the main display
+			(see LINK{mode.hlp})
+
+                "Mouse-Wheel" is used to scroll the a display-area (vertically or horizontally
+                              when used with ALT/META) or to zoom the display (when used with CTRL).
+
+		"Press" means hold down the mouse button while completing an
+			operation.
+
+		"Release" means to let go of the mouse button.
+
+		"Click on" means positioning the cursor on a location, prompt,
+			button or checkbox, pressing and immediately releasing
+			the mouse button.
+
+		"Choose" from a menu means clicking on the desired menu option.
+
+
+NOTES		The 'HELP' texts for foreign programs or tools which have been
+		incorporated into ARB (see LINK{arb.hlp}) are usually (parts of)
+		the original documentation or help texts.
+
+		The ASCII texts can be edited by clicking on the <EDIT> button
+		of the 'HELP WINDOW' and can be modified by the user. Write
+		permission is needed for '$ARBHOME/lib/help'. (This only works
+                if you build arb from source)
+
+                See LINK{props_www.hlp} on how to configure the BROWSE button.
+
+BUGS		In the current release, the 'open question pointer' is reset to
+		the original symbol when moved to a menu item.

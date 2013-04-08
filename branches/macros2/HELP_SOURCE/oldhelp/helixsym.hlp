@@ -1,0 +1,51 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	arb_edit4.hlp
+UP	helix.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	e4_options.hlp
+SUB	toggle_secinfo.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Define Helix Symbols
+
+OCCURRENCE	ARB_EDIT4/Properties/Helix settings
+
+DESCRIPTION
+
+        Different base pairs in helix regions can be indicated by user-definable symbols.
+        This window allows you to change the mapping between base pairs and displayed
+        symbols.
+
+SECTION Configuration
+
+                Show helix: Toggle display of helix symbols
+
+                Pair definitions. Each line contains two textfields:
+
+                     The left textfield contains one or more base-pairs. Each base
+                     pair contains two characters (bases, gaps-characters, ...).
+                     Base-pairs are separated by spaces (' '). 
+
+                     The right textfield contains the helix symbol used for each
+                     of the specified pairs.
+
+NOTES
+
+        - Pairs are not case-sensitive
+        - If a pair is not defined in any line, the symbol given
+          behind 'Default' is used. 
+
+SECTION Missing
+
+        @@@ description of Non_Standard pairs ...
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
