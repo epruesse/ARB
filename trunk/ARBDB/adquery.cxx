@@ -24,7 +24,7 @@
 static void build_GBDATA_path(GBDATA *gbd, char **buffer) {
     GBCONTAINER *gbc = GB_FATHER(gbd);
     if (gbc) {
-        build_GBDATA_path((GBDATA*)gbc, buffer);
+        build_GBDATA_path(gbc, buffer);
 
         const char *key = GB_KEY(gbd);
         char       *bp  = *buffer;
@@ -59,10 +59,10 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
     bool equal = false;
 
 #if defined(DEBUG)
-    GB_TYPES realtype = GB_TYPE(gb);
+    GB_TYPES realtype = gb->type();
     gb_assert(val);
     if (type == GB_STRING) {
-        gb_assert(realtype == GB_STRING || realtype == GB_LINK); // gb_find_internal called with wrong type
+        gb_assert(gb->is_a_string()); // gb_find_internal called with wrong type
     }
     else {
         gb_assert(realtype == type); // gb_find_internal called with wrong type
@@ -87,7 +87,7 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
             break;
         }
         default: {
-            const char *err = GBS_global_string("Value search not supported for data type %i (%i)", GB_TYPE(gb), type);
+            const char *err = GBS_global_string("Value search not supported for data type %i (%i)", gb->type(), type);
             GB_internal_error(err);
             break;
         }
@@ -96,7 +96,7 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
     return equal;
 }
 
-static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) {
+static GBDATA *find_sub_by_quark(GBCONTAINER *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) {
     /* search an entry with a key 'key_quark' below a container 'father'
        after position 'after'
 
@@ -115,13 +115,10 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
              if key_quark<0 search everything
     */
 
-    int             end, index;
-    GBCONTAINER    *gbf = (GBCONTAINER*)father;
-    gb_header_list *header;
-    GBDATA         *gb;
+    int             end    = father->d.nheader;
+    gb_header_list *header = GB_DATA_LIST_HEADER(father->d);
 
-    end  = gbf->d.nheader;
-    header = GB_DATA_LIST_HEADER(gbf->d);
+    int index;
     if (after) index = (int)after->index+1; else index = 0;
 
     if (key_quark<0) { // unspecific key quark (i.e. search all)
@@ -130,10 +127,11 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
             for (; index < end; index++) {
                 if (header[index].flags.key_quark != 0) {
                     if (header[index].flags.changed >= GB_DELETED) continue;
-                    if (!(gb=GB_HEADER_LIST_GBD(header[index]))) {
+                    GBDATA *gb = GB_HEADER_LIST_GBD(header[index]);
+                    if (!gb) {
                         // @@@ DRY here versus below
-                        gb_unfold(gbf, 0, index);
-                        header = GB_DATA_LIST_HEADER(gbf->d);
+                        gb_unfold(father, 0, index);
+                        header = GB_DATA_LIST_HEADER(father->d);
                         gb     = GB_HEADER_LIST_GBD(header[index]);
                         if (!gb) {
                             const char *err = GBS_global_string("Database entry #%u is missing (in '%s')", index, GB_get_GBDATA_path(father));
@@ -150,10 +148,11 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
         for (; index < end; index++) {
             if ((key_quark == header[index].flags.key_quark)) {
                 if (header[index].flags.changed >= GB_DELETED) continue;
-                if (!(gb=GB_HEADER_LIST_GBD(header[index]))) {
+                GBDATA *gb = GB_HEADER_LIST_GBD(header[index]);
+                if (!gb) {
                     // @@@ DRY here versus section above
-                    gb_unfold(gbf, 0, index);
-                    header = GB_DATA_LIST_HEADER(gbf->d);
+                    gb_unfold(father, 0, index);
+                    header = GB_DATA_LIST_HEADER(father->d);
                     gb     = GB_HEADER_LIST_GBD(header[index]);
                     if (!gb) {
                         const char *err = GBS_global_string("Database entry #%u is missing (in '%s')", index, GB_get_GBDATA_path(father));
@@ -178,66 +177,64 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
 }
 
 GBDATA *GB_find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GBDATA *after, size_t skip_over) {
-    return find_sub_by_quark(father, key_quark, GB_NONE, NULL, GB_MIND_CASE, after, skip_over);
+    return find_sub_by_quark(father->expect_container(), key_quark, GB_NONE, NULL, GB_MIND_CASE, after, skip_over);
 }
 
 static GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) {
-    return find_sub_by_quark(father, key_quark, type, val, case_sens, after, skip_over);
+    return find_sub_by_quark(father->expect_container(), key_quark, type, val, case_sens, after, skip_over);
 }
 
-static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, GBQUARK sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
-    int             end, index;
-    gb_header_list *header;
-    GBCONTAINER    *gbf  = (GBCONTAINER*)father;
-    GBDATA         *gb;
-    GBDATA         *res;
-    gb_index_files *ifs  = NULL;
-    GB_MAIN_TYPE   *Main = GBCONTAINER_MAIN(gbf);
+static GBDATA *find_sub_sub_by_quark(GBCONTAINER *const father, const char *key, GBQUARK sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
+    gb_index_files *ifs    = NULL;
+    GB_MAIN_TYPE   *Main   = GBCONTAINER_MAIN(father);
+    int             end    = father->d.nheader;
+    gb_header_list *header = GB_DATA_LIST_HEADER(father->d);
 
-    end  = gbf->d.nheader;
-    header = GB_DATA_LIST_HEADER(gbf->d);
-
+    int index;
     if (after) index = (int)after->index+1; else index = 0;
 
+    GBDATA *res;
     // ****** look for any hash index tables ********
     // ****** no wildcards allowed       *******
-    if (!Main->local_mode) {
-        if (gbf->flags2.folded_container) {
+    if (Main->is_client()) {
+        if (father->flags2.folded_container) {
             // do the query in the server
-            if (GB_ARRAY_FLAGS(gbf).changed) {
-                if (!gbf->flags2.update_in_server) {
-                    GB_update_server((GBDATA *)gbf);
+            if (GB_ARRAY_FLAGS(father).changed) {
+                if (!father->flags2.update_in_server) {
+                    GB_ERROR error = Main->send_update_to_server(father);
+                    if (error) {
+                        GB_export_error(error);
+                        return NULL;
+                    }
                 }
             }
         }
-        if (gbf->d.size > GB_MAX_LOCAL_SEARCH && val) {
+        if (father->d.size > GB_MAX_LOCAL_SEARCH && val) {
             if (after) res = GBCMC_find(after,  key, type, val, case_sens, SEARCH_CHILD_OF_NEXT);
             else       res = GBCMC_find(father, key, type, val, case_sens, SEARCH_GRANDCHILD);
             return res;
         }
     }
     if (val &&
-        (ifs=GBCONTAINER_IFS(gbf))!=NULL &&
+        (ifs=GBCONTAINER_IFS(father))!=NULL &&
         (!strchr(val, '*')) &&
         (!strchr(val, '?')))
     {
         for (; ifs; ifs = GB_INDEX_FILES_NEXT(ifs)) {
             if (ifs->key != sub_key_quark) continue;
             // ***** We found the index table *****
-            res = gb_index_find(gbf, ifs, sub_key_quark, val, case_sens, index);
+            res = gb_index_find(father, ifs, sub_key_quark, val, case_sens, index);
             return res;
         }
     }
 
-    if (after)  gb = after;
-    else gb        = NULL;
-
+    GBDATA *gb = after ? after : NULL;
     for (; index < end; index++) {
         GBDATA *gbn = GB_HEADER_LIST_GBD(header[index]);
 
         if (header[index].flags.changed >= GB_DELETED) continue;
         if (!gbn) {
-            if (!Main->local_mode) {
+            if (Main->is_client()) {
                 if (gb) res = GBCMC_find(gb,     key, type, val, case_sens, SEARCH_CHILD_OF_NEXT);
                 else    res = GBCMC_find(father, key, type, val, case_sens, SEARCH_GRANDCHILD);
                 return res;
@@ -246,9 +243,10 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, GBQUARK su
             continue;
         }
         gb = gbn;
-        if (GB_TYPE(gb) != GB_DB) continue;
-        res = GB_find_subcontent_by_quark(gb, sub_key_quark, type, val, case_sens, NULL, 0);
-        if (res) return res;
+        if (gb->is_container()) {
+            res = GB_find_subcontent_by_quark(gb, sub_key_quark, type, val, case_sens, NULL, 0);
+            if (res) return res;
+        }
     }
     return NULL;
 }
@@ -271,7 +269,7 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
 
             case SEARCH_CHILD:
             case SEARCH_GRANDCHILD:
-                if (GB_TYPE(gbd) == GB_DB) gbc = (GBCONTAINER*)gbd;
+                if (gbd->is_container()) gbc = gbd->as_container();
                 break;
 
             case SEARCH_CHILD_OF_NEXT:
@@ -286,11 +284,11 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
 
             if (key_quark) { // only search if 'key' is known to db
                 if (gbs == SEARCH_CHILD) {
-                    result = GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after, 0);
+                    result = GB_find_subcontent_by_quark(gbc, key_quark, type, val, case_sens, after, 0);
                 }
                 else {
                     gb_assert(gbs == SEARCH_GRANDCHILD);
-                    result = find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, type, val, case_sens, after);
+                    result = find_sub_sub_by_quark(gbc, key, key_quark, type, val, case_sens, after);
                 }
             }
         }
@@ -345,13 +343,13 @@ GBDATA *GB_entry(GBDATA *father, const char *key) {
 GBDATA *GB_nextEntry(GBDATA *entry) {
     // return next child after 'entry', that has the same fieldname
     // (or NULL if 'entry' is last one)
-    return GB_find_sub_by_quark((GBDATA*)GB_FATHER(entry), GB_get_quark(entry), entry, 0);
+    return GB_find_sub_by_quark(GB_FATHER(entry), GB_get_quark(entry), entry, 0);
 }
 GBDATA *GB_followingEntry(GBDATA *entry, size_t skip_over) {
     // return following child after 'entry', that has the same fieldname
     // (or NULL if no such entry)
     // skips 'skip_over' entries (skip_over == 0 behaves like GB_nextEntry)
-    return GB_find_sub_by_quark((GBDATA*)GB_FATHER(entry), GB_get_quark(entry), entry, skip_over);
+    return GB_find_sub_by_quark(GB_FATHER(entry), GB_get_quark(entry), entry, skip_over);
 }
 
 GBDATA *GB_brother(GBDATA *entry, const char *key) {
@@ -360,31 +358,24 @@ GBDATA *GB_brother(GBDATA *entry, const char *key) {
     return GB_find(entry, key, SEARCH_BROTHER);
 }
 
-GBDATA *gb_find_by_nr(GBDATA *father, int index) {
+GBDATA *gb_find_by_nr(GBCONTAINER *father, int index) {
     /* get a subentry by its internal number:
        Warning: This subentry must exists, otherwise internal error */
 
-    GBCONTAINER    *gbf = (GBCONTAINER*)father;
-    gb_header_list *header;
-    GBDATA         *gb;
-
-    if (GB_TYPE(father) != GB_DB) {
-        GB_internal_error("type is not GB_DB");
-        return NULL;
-    }
-    header = GB_DATA_LIST_HEADER(gbf->d);
-    if (index >= gbf->d.nheader || index <0) {
-        GB_internal_errorf("Index '%i' out of range [%i:%i[", index, 0, gbf->d.nheader);
+    gb_header_list *header = GB_DATA_LIST_HEADER(father->d);
+    if (index >= father->d.nheader || index <0) {
+        GB_internal_errorf("Index '%i' out of range [%i:%i[", index, 0, father->d.nheader);
         return NULL;
     }
     if (header[index].flags.changed >= GB_DELETED || !header[index].flags.key_quark) {
         GB_internal_error("Entry already deleted");
         return NULL;
     }
-    if (!(gb=GB_HEADER_LIST_GBD(header[index])))
-    {
-        gb_unfold(gbf, 0, index);
-        header = GB_DATA_LIST_HEADER(gbf->d);
+
+    GBDATA *gb = GB_HEADER_LIST_GBD(header[index]);
+    if (!gb) {
+        gb_unfold(father, 0, index);
+        header = GB_DATA_LIST_HEADER(father->d);
         gb = GB_HEADER_LIST_GBD(header[index]);
         if (!gb) {
             GB_internal_error("Could not unfold data");
@@ -423,13 +414,13 @@ const char *GB_first_non_key_char(const char *str) {
     return first_non_key_character(str);
 }
 
-inline GBDATA *find_or_create(GBDATA *gb_parent, const char *key, GB_TYPES create, bool internflag) {
+inline GBDATA *find_or_create(GBCONTAINER *gb_parent, const char *key, GB_TYPES create, bool internflag) {
     gb_assert(!first_non_key_character(key));
 
     GBDATA *gbd = GB_entry(gb_parent, key);
     if (create) {
         if (gbd) {
-            GB_TYPES oldType = GB_TYPE(gbd);
+            GB_TYPES oldType = gbd->type();
             if (create != oldType) { // type mismatch
                 GB_export_errorf("Inconsistent type for field '%s' (existing=%i, expected=%i)", key, oldType, create);
                 gbd = NULL;
@@ -448,7 +439,7 @@ inline GBDATA *find_or_create(GBDATA *gb_parent, const char *key, GB_TYPES creat
     return gbd;
 }
 
-GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag) {
+GBDATA *gb_search(GBCONTAINER *gbc, const char *key, GB_TYPES create, int internflag) {
     /* finds a hierarchical key,
      * if create != GB_FIND(==0), then create the key
      * force types if ! internflag
@@ -456,22 +447,22 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
 
     // gb_assert(!GB_have_error()); // @@@ enable later
 
-    GB_test_transaction(gbd);
+    GB_test_transaction(gbc);
 
     if (!key) return NULL; // was allowed in the past (and returned the 1st child). now returns NULL
     
     if (key[0] == '/') {
-        gbd = GB_get_root(gbd);
+        gbc = gb_get_root(gbc);
         key++;
     }
 
     if (!key[0]) {
-        return gbd;
+        return gbc;
     }
 
     GBDATA     *gb_result     = NULL;
     const char *separator     = first_non_key_character(key);
-    if (!separator) gb_result = find_or_create(gbd, key, create, internflag);
+    if (!separator) gb_result = find_or_create(gbc, key, create, internflag);
     else {
         int  len = separator-key;
         char firstKey[len+1];
@@ -482,14 +473,14 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
 
         switch (separator[0]) {
             case '/': {
-                GBDATA *gb_sub = find_or_create(gbd, firstKey, create ? GB_CREATE_CONTAINER : GB_FIND, internflag);
+                GBDATA *gb_sub = find_or_create(gbc, firstKey, create ? GB_CREATE_CONTAINER : GB_FIND, internflag);
                 if (gb_sub) {
-                    if (GB_TYPE(gb_sub) == GB_DB) {
+                    if (gb_sub->is_container()) {
                         if (separator[1] == '/') {
                             GB_export_errorf("Invalid '//' in key '%s'", key);
                         }
                         else {
-                            gb_result = gb_search(gb_sub, separator+1, create, internflag);
+                            gb_result = gb_search(gb_sub->as_container(), separator+1, create, internflag);
                         }
                     }
                     else {
@@ -501,7 +492,7 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
             case '.': {
                 if (separator[1] != '.') invalid_char = separator[0];
                 else {
-                    GBDATA *gb_parent = GB_get_father(gbd);
+                    GBCONTAINER *gb_parent = gbc->get_father();
                     if (gb_parent) {
                         switch (separator[2]) {
                             case 0:   gb_result    = gb_parent; break;
@@ -523,17 +514,17 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
                 if (separator[1] != '>') invalid_char = separator[0];
                 else {
                     if (firstKey[0]) {
-                        GBDATA *gb_link = GB_entry(gbd, firstKey);
+                        GBDATA *gb_link = GB_entry(gbc, firstKey);
                         if (!gb_link) {
                             if (create) {
                                 GB_export_error("Cannot create links on the fly in gb_search");
                             }
                         }
                         else {
-                            if (GB_TYPE(gb_link) == GB_LINK) {
+                            if (gb_link->type() == GB_LINK) {
                                 GBDATA *gb_target = GB_follow_link(gb_link);
                                 if (!gb_target) GB_export_errorf("Link '%s' points nowhere", firstKey);
-                                else    gb_result = gb_search(gb_target, separator+2, create, internflag);
+                                else    gb_result = gb_search(gb_target->as_container(), separator+2, create, internflag);
                             }
                             else GB_export_errorf("'%s' exists, but is not a link", firstKey);
                         }
@@ -557,16 +548,16 @@ GBDATA *gb_search(GBDATA *gbd, const char *key, GB_TYPES create, int internflag)
 }
 
 
-GBDATA *GB_search(GBDATA * gbd, const char *fieldpath, GB_TYPES create) {
-    return gb_search(gbd, fieldpath, create, 0);
+GBDATA *GB_search(GBDATA *gbd, const char *fieldpath, GB_TYPES create) {
+    return gb_search(gbd->expect_container(), fieldpath, create, 0);
 }
 
-static GBDATA *gb_expect_type(GBDATA *gbd, long expected_type, const char *fieldname) {
+static GBDATA *gb_expect_type(GBDATA *gbd, GB_TYPES expected_type, const char *fieldname) {
     gb_assert(expected_type != GB_FIND); // impossible
 
-    long type = GB_TYPE(gbd);
+    GB_TYPES type = gbd->type();
     if (type != expected_type) {
-        GB_export_errorf("Field '%s' has wrong type (found=%li, expected=%li)", fieldname, type, expected_type);
+        GB_export_errorf("Field '%s' has wrong type (found=%i, expected=%i)", fieldname, type, expected_type);
         gbd = 0;
     }
     return gbd;
@@ -655,18 +646,19 @@ static GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstin
 }
 
 long GB_number_of_marked_subentries(GBDATA *gbd) {
-    GBCONTAINER    *gbc     = (GBCONTAINER *)gbd;
-    int             userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
-    int             index;
-    int             end     = gbc->d.nheader;
-    gb_header_list *header;
-    long            count   = 0;
+    long count = 0;
+    if (gbd->is_container()) {
+        GBCONTAINER    *gbc    = gbd->as_container();
+        gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
 
-    header = GB_DATA_LIST_HEADER(gbc->d);
-    for (index = 0; index<end; index++) {
-        if (! (userbit & header[index].flags.flags)) continue;
-        if (header[index].flags.changed >= GB_DELETED) continue;
-        count++;
+        int userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
+        int end     = gbc->d.nheader;
+
+        for (int index = 0; index<end; index++) {
+            if (!(userbit & header[index].flags.flags)) continue;
+            if (header[index].flags.changed >= GB_DELETED) continue;
+            count++;
+        }
     }
     return count;
 }
@@ -674,7 +666,7 @@ long GB_number_of_marked_subentries(GBDATA *gbd) {
 
 
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring) {
-    GBCONTAINER *gbc       = (GBCONTAINER *)gbd;
+    GBCONTAINER *gbc       = gbd->expect_container();
     GBQUARK      key_quark = GB_find_existing_quark(gbd, keystring);
     GB_test_transaction(gbc);
     return key_quark ? gb_search_marked(gbc, key_quark, 0, 0) : NULL;
@@ -1353,7 +1345,7 @@ void TEST_DB_search() {
             TEST_EXPECT_NORESULT__NOERROREXPORTED(GB_followingEntry(gb_sub, -1U));
             TEST_REJECT_NULL(gb_sub = GB_brother(gb_sub, "entry"));   TEST_EXPECT_EQUAL(GBT_get_name(gb_sub), "entry 0");
 
-            TEST_EXPECT_EQUAL(gb_bla = GB_search(gb_4711, "/misc/str", GB_FIND), gb_str);
+            TEST_EXPECT_EQUAL(gb_bla = GB_search(gb_cont1, "/misc/str", GB_FIND), gb_str); // fullpath (ignores passed GBDATA)
 
             // keyless search
             TEST_EXPECT_NORESULT__NOERROREXPORTED(GB_search(db.gb_cont_misc, NULL, GB_FIND));

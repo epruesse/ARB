@@ -13,8 +13,10 @@
 
 #include <arbdbt.h>
 
+#include "gb_key.h"
 #include "gb_compress.h"
 #include "gb_dict.h"
+
 #include "arb_progress.h"
 
 #if defined(DEBUG)
@@ -86,13 +88,11 @@ struct SingleDictTree {
 
 // ******************* Tool functions ******************
 
-static inline cu_str get_data_n_size(GBDATA *gbd, long *size) {
+inline cu_str get_data_n_size(GBDATA *gbd, size_t *size) {
     GB_CSTR data;
-    int     type = GB_TYPE(gbd);
-
     *size = 0;
 
-    switch (type) {
+    switch (gbd->type()) {
         case GB_STRING: data = GB_read_char_pntr(gbd); break;
         case GB_LINK:   data = GB_read_link_pntr(gbd); break;
         case GB_BYTES:  data = GB_read_bytes_pntr(gbd); break;
@@ -104,7 +104,7 @@ static inline cu_str get_data_n_size(GBDATA *gbd, long *size) {
             break;
     }
 
-    if (data) *size = GB_UNCOMPRESSED_SIZE(gbd, type);
+    if (data) *size = gbd->as_entry()->uncompressed_size();
     return (cu_str)data;
 }
 
@@ -114,23 +114,16 @@ static inline long min(long a, long b) {
 
 // **************************************************
 
-static void g_b_opti_scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, O_gbdByKey *gbk)
-{
-    GBQUARK quark;
-
-    if (GB_TYPE(gbd) == GB_DB)  // CONTAINER
-    {
-        int          idx;
-        GBCONTAINER *gbc = (GBCONTAINER *)gbd;
-        GBDATA      *gbd2;
-
-        for (idx=0; idx < gbc->d.nheader; idx++)
-            if ((gbd2=GBCONTAINER_ELEM(gbc, idx))!=NULL)
-                g_b_opti_scanGbdByKey(Main, gbd2, gbk);
+static void g_b_opti_scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, O_gbdByKey *gbk) {
+    if (gbd->is_container()) {
+        GBCONTAINER *gbc = gbd->as_container();
+        for (int idx=0; idx < gbc->d.nheader; idx++) {
+            GBDATA *gbd2 = GBCONTAINER_ELEM(gbc, idx);
+            if (gbd2) g_b_opti_scanGbdByKey(Main, gbd2, gbk);
+        }
     }
 
-    quark = GB_KEY_QUARK(gbd);
-
+    GBQUARK quark = GB_KEY_QUARK(gbd);
     if (quark)
     {
         gb_assert(gbk[quark].cnt < Main->keys[quark].nref || quark==0);
@@ -162,7 +155,7 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
     gbk[0].cnt  = 0;
     gbk[0].gbds = (GBDATA **)GB_calloc(1, sizeof(GBDATA*));
 
-    g_b_opti_scanGbdByKey(Main, (GBDATA*)Main->data, gbk);
+    g_b_opti_scanGbdByKey(Main, Main->gb_main(), gbk);
 
     for (idx=0; idx<gbdByKey_cnt; idx++) {
         if (gbk[idx].cnt != Main->keys[idx].nref && idx)
@@ -183,43 +176,42 @@ static void g_b_opti_freeGbdByKey(O_gbdByKey *gbk) {
 
 // ******************* Convert old compression style to new style ******************
 
-static GB_ERROR gb_convert_compression(GBDATA *source) {
+static GB_ERROR gb_convert_compression(GBDATA *gbd) {
     GB_ERROR error = 0;
-    long     type  = GB_TYPE(source);
 
-    if (type == GB_DB) {
-        GBDATA *gb_p;
-        for (gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
-            if (gb_p->flags.compressed_data || GB_TYPE(gb_p) == GB_DB) {
-                error = gb_convert_compression(gb_p);
+    if (gbd->is_container()) {
+        for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child)) {
+            if (gb_child->flags.compressed_data || gb_child->is_container()) {
+                error = gb_convert_compression(gb_child);
                 if (error) break;
             }
         }
     }
     else {
-        char *string     = 0;
-        long  elems      = GB_GETSIZE(source);
-        long  data_size  = GB_UNCOMPRESSED_SIZE(source, type);
-        long  new_size   = -1;
-        int   expectData = 1;
+        char    *str        = 0;
+        GBENTRY *gbe        = gbd->as_entry();
+        long     elems      = gbe->size();
+        size_t   data_size  = gbe->uncompressed_size();
+        size_t   new_size   = -1;
+        int      expectData = 1;
 
-        switch (type) {
+        switch (gbd->type()) {
             case GB_STRING:
             case GB_LINK:
             case GB_BYTES:
-                string = gb_uncompress_bytes(GB_GETDATA(source), data_size, &new_size);
-                if (string) {
+                str = gb_uncompress_bytes(gbe->data(), data_size, &new_size);
+                if (str) {
                     gb_assert(new_size == data_size);
-                    string = GB_memdup(string, data_size);
+                    str = GB_memdup(str, data_size);
                 }
                 break;
 
             case GB_INTS:
             case GB_FLOATS:
-                string = gb_uncompress_longs_old(GB_GETDATA(source), elems, &new_size);
-                if (string) {
+                str = gb_uncompress_longs_old(gbe->data(), elems, &new_size);
+                if (str) {
                     gb_assert(new_size == data_size);
-                    string = GB_memdup(string, data_size);
+                    str = GB_memdup(str, data_size);
                 }
                 break;
 
@@ -228,31 +220,31 @@ static GB_ERROR gb_convert_compression(GBDATA *source) {
                 break;
         }
 
-        if (!string) {
+        if (!str) {
             if (expectData) {
                 error = GBS_global_string("Can't read old data to convert compression (Reason: %s)", GB_await_error());
             }
         }
         else {
-            switch (type) {
+            switch (gbd->type()) {
                 case GB_STRING:
-                    error             = GB_write_string(source, "");
-                    if (!error) error = GB_write_string(source, string);
+                    error             = GB_write_string(gbe, "");
+                    if (!error) error = GB_write_string(gbe, str);
                     break;
 
                 case GB_LINK:
-                    error             = GB_write_link(source, "");
-                    if (!error) error = GB_write_link(source, string);
+                    error             = GB_write_link(gbe, "");
+                    if (!error) error = GB_write_link(gbe, str);
                     break;
 
                 case GB_BYTES:
-                    error             = GB_write_bytes(source, "", 0);
-                    if (!error) error = GB_write_bytes(source, string, data_size);
+                    error             = GB_write_bytes(gbe, "", 0);
+                    if (!error) error = GB_write_bytes(gbe, str, data_size);
                     break;
 
                 case GB_INTS:
                 case GB_FLOATS:
-                    error = GB_write_pntr(source, string, data_size, elems);
+                    error = GB_write_pntr(gbe, str, data_size, elems);
                     break;
 
                 default:
@@ -260,7 +252,7 @@ static GB_ERROR gb_convert_compression(GBDATA *source) {
                     break;
             }
 
-            free(string);
+            free(str);
         }
     }
     return error;
@@ -319,32 +311,32 @@ inline int ALPHA_DICT_OFFSET(int idx, GB_DICTIONARY *dict) {
 // #define ALPHA_DICT_OFFSET(i)         ntohl(offset[ntohl(resort[i])])
 // #define INDEX_DICT_OFFSET(i)         ntohl(offset[i])
 
-#define LEN_BITS                4
-#define INDEX_BITS                      2
-#define INDEX_LEN_BITS              1
+#define LEN_BITS       4
+#define INDEX_BITS     2
+#define INDEX_LEN_BITS 1
 
-#define LEN_SHIFT               0
-#define INDEX_SHIFT             (LEN_SHIFT+LEN_BITS)
-#define INDEX_LEN_SHIFT             (INDEX_SHIFT+INDEX_BITS)
+#define LEN_SHIFT       0
+#define INDEX_SHIFT     (LEN_SHIFT+LEN_BITS)
+#define INDEX_LEN_SHIFT (INDEX_SHIFT+INDEX_BITS)
 
-#define BITMASK(bits)               ((1<<(bits))-1)
-#define GETVAL(tag, typ)            (((tag)>>typ##_SHIFT)&BITMASK(typ##_BITS))
+#define BITMASK(bits)   ((1<<(bits))-1)
+#define GETVAL(tag,typ) (((tag)>>typ##_SHIFT)&BITMASK(typ##_BITS))
 
-#define MIN_SHORTLEN            6
-#define MAX_SHORTLEN                (BITMASK(LEN_BITS)+MIN_SHORTLEN-1)
-#define MIN_LONGLEN             (MAX_SHORTLEN+1)
-#define MAX_LONGLEN                     (MIN_LONGLEN+255)
+#define MIN_SHORTLEN 6
+#define MAX_SHORTLEN (BITMASK(LEN_BITS)+MIN_SHORTLEN-1)
+#define MIN_LONGLEN  (MAX_SHORTLEN+1)
+#define MAX_LONGLEN  (MIN_LONGLEN+255)
 
-#define SHORTLEN_DECR               (MIN_SHORTLEN-1) // !! zero is used as flag for long len !!
-#define LONGLEN_DECR                MIN_LONGLEN
+#define SHORTLEN_DECR (MIN_SHORTLEN-1)               // !! zero is used as flag for long len !!
+#define LONGLEN_DECR  MIN_LONGLEN
 
-#define MIN_COMPR_WORD_LEN          MIN_SHORTLEN
-#define MAX_COMPR_WORD_LEN      MAX_LONGLEN
+#define MIN_COMPR_WORD_LEN MIN_SHORTLEN
+#define MAX_COMPR_WORD_LEN MAX_LONGLEN
 
-#define MAX_SHORT_INDEX             BITMASK(INDEX_BITS+8)
-#define MAX_LONG_INDEX          BITMASK(INDEX_BITS+16)
+#define MAX_SHORT_INDEX BITMASK(INDEX_BITS+8)
+#define MAX_LONG_INDEX  BITMASK(INDEX_BITS+16)
 
-#define LAST_COMPRESSED_BIT     64
+#define LAST_COMPRESSED_BIT 64
 
 #ifdef DEBUG
 # define DUMP_COMPRESSION_TEST  0
@@ -385,7 +377,7 @@ static void dumpChunkCounters() {
 #endif // COUNT_CHUNKS
 
 static cu_str lstr(cu_str s, int len) {
-#define BUFLEN 10000
+#define BUFLEN 20000
     static unsigned_char buf[BUFLEN];
 
     gb_assert(len<BUFLEN);
@@ -513,7 +505,7 @@ int look(GB_DICTIONARY *dict, GB_CSTR source) {
 
 
 
-static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /* GBDATA *gbd, */ GB_CSTR s_source, const long size, bool append_zero, long *new_size) {
+static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /* GBDATA *gbd, */ GB_CSTR s_source, const size_t size, bool append_zero, size_t *new_size) {
     cu_str source = (cu_str)s_source;
     u_str  dest;
     u_str  buffer;
@@ -586,10 +578,10 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /* GBDATA
     return (char *)buffer;
 }
 
-char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size, long *new_size)
+char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, size_t size, size_t *new_size)
 {
     GB_DICTIONARY *dict        = gb_get_dictionary(GB_MAIN(gbd), GB_KEY_QUARK(gbd));
-    bool           append_zero = GB_TYPE(gbd)==GB_STRING || GB_TYPE(gbd) == GB_LINK;
+    bool           append_zero = gbd->is_a_string();
 
     if (!dict) {
         GB_ERROR error = GBS_global_string("Cannot decompress db-entry '%s' (no dictionary found)\n", GB_get_db_path(gbd));
@@ -600,7 +592,7 @@ char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size, long
     return gb_uncompress_by_dictionary_internal(dict, s_source, size, append_zero, new_size);
 }
 
-char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size, long *msize, int last_flag, int search_backward, int search_forward)
+char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, size_t size, size_t *msize, int last_flag, int search_backward, int search_forward)
 {
     cu_str source           = (cu_str)s_source;
     u_str  dest;
@@ -609,7 +601,7 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
     u_str  lastUncompressed = NULL; // ptr to start of last block of uncompressible bytes (in dest)
 
 #if defined(ASSERTION_USED)
-    const long org_size = size;
+    const size_t org_size = size;
 #endif                          // ASSERTION_USED
 
     gb_assert(size>0); // compression of zero-length data fails!
@@ -760,8 +752,8 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
 
 #if defined(ASSERTION_USED)
     {
-        long  new_size = -1;
-        char *test     = gb_uncompress_by_dictionary_internal(dict, (GB_CSTR)buffer+1, org_size + GB_COMPRESSION_TAGS_SIZE_MAX, true, &new_size);
+        size_t  new_size = -1;
+        char   *test     = gb_uncompress_by_dictionary_internal(dict, (GB_CSTR)buffer+1, org_size + GB_COMPRESSION_TAGS_SIZE_MAX, true, &new_size);
 
         gb_assert(memcmp(test, s_source, org_size) == 0);
         gb_assert((org_size+1) == new_size);
@@ -774,16 +766,14 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
 
 #if defined(TEST_DICT)
 
-static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSum, long *compSum)
-{
-    int  cnt;
+static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSum, long *compSum) {
     long uncompressed_sum = 0;
     long compressed_sum   = 0;
-    long dict_size        = (dict->words*2+1)*sizeof(GB_NINT)+dict->textlen;
-    int  i;
-    long char_count[256];
 
-    for (i=0; i<256; i++) char_count[i] = 0;
+    long dict_size = (dict->words*2+1)*sizeof(GB_NINT)+dict->textlen;
+
+    long char_count[256];
+    for (int i=0; i<256; i++) char_count[i] = 0;
 
     printf("  * Testing compression..\n");
 
@@ -791,44 +781,38 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
     clearChunkCounters();
 #endif
 
-    for (cnt=0; cnt<gbk->cnt; cnt++) {
+    for (int cnt=0; cnt<gbk->cnt; cnt++) {
         GBDATA *gbd = gbk->gbds[cnt];
-        int type = GB_TYPE(gbd);
 
-        if (COMPRESSIBLE(type)) {
-            long size;
+        if (COMPRESSIBLE(gbd->type())) {
+            size_t size;
             cu_str data = get_data_n_size(gbd, &size);
-            u_str copy;
-            long compressedSize;
-            int last_flag = 0;
-            u_str compressed;
-            u_str uncompressed;
 
-            if (type==GB_STRING || type == GB_LINK) size--;
-
+            if (gbd->is_a_string()) size--;
             if (size<1) continue;
 
-#ifndef NDEBUG
-            copy = (u_str)gbm_get_mem(size, GBM_DICT_INDEX);
+            u_str copy = (u_str)gbm_get_mem(size, GBM_DICT_INDEX);
             gb_assert(copy!=0);
             memcpy(copy, data, size);
-#endif
 
 #if DUMP_COMPRESSION_TEST>=1
             printf("----------------------------\n");
             printf("original    : %3li b = '%s'\n", size, data);
 #endif
 
-            compressed = (u_str)gb_compress_by_dictionary(dict, (GB_CSTR)data, size, &compressedSize, last_flag, 9999, 2);
+            int    last_flag  = 0;
+            size_t compressedSize;
+            u_str  compressed = (u_str)gb_compress_by_dictionary(dict, (GB_CSTR)data, size, &compressedSize, last_flag, 9999, 2);
 
 #if DUMP_COMPRESSION_TEST>=1
             printf("compressed  : %3li b = '%s'\n", compressedSize, lstr(compressed, compressedSize));
             dumpBinary(compressed, compressedSize);
 #endif
 
-            for (i=0; i<compressedSize; i++) char_count[compressed[i]]++;
+            for (size_t i=0; i<compressedSize; i++) char_count[compressed[i]]++;
 
-            uncompressed = (u_str)gb_uncompress_by_dictionary(gbd, (char*)compressed+1, size);
+            size_t new_size     = -1;
+            u_str  uncompressed = (u_str)gb_uncompress_by_dictionary(gbd, (char*)compressed+1, size+GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
 
 #if DUMP_COMPRESSION_TEST>=1
             printf("copy        : %3li b = '%s'\n", size, lstr(copy, size));
@@ -1771,7 +1755,7 @@ static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, D
     return expand;
 }
 
-static DictTree build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, long minwordlen, long *data_sum)
+static DictTree build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, size_t minwordlen, long *data_sum)
 /* builds a tree of the most used words
  *
  * 'maxmem' is the amount of memory that will be allocated
@@ -1798,14 +1782,13 @@ static DictTree build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, long
 
         for (cnt=0; cnt<gbk->cnt; cnt++) {
             GBDATA *gbd = gbk->gbds[cnt];
-            int type =  GB_TYPE(gbd);
 
-            if (COMPRESSIBLE(type)) {
-                long   size;
+            if (COMPRESSIBLE(gbd->type())) {
+                size_t size;
                 cu_str data = get_data_n_size(gbd, &size);
                 cu_str lastWord;
 
-                if (type==GB_STRING || type == GB_LINK) size--;
+                if (gbd->is_a_string()) size--;
                 if (size<minwordlen) continue;
 
                 *data_sum += size;
@@ -2263,11 +2246,12 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
         printf("    tree contains %i words *** maximum tree depth = %i\n", words, maxdeep);
 #endif
 
-        dict->words = 0;
+        dict->words   = 0;
         dict->textlen = DICT_STRING_INCR;
-        dict->text = (u_str)gbm_get_mem(DICT_STRING_INCR, GBM_DICT_INDEX);
+
+        dict->text    = (u_str)gbm_get_mem(DICT_STRING_INCR, GBM_DICT_INDEX);
         dict->offsets = (GB_NINT*)gbm_get_mem(sizeof(*(dict->offsets))*words, GBM_DICT_INDEX);
-        dict->resort = (GB_NINT*)gbm_get_mem(sizeof(*(dict->resort))*words, GBM_DICT_INDEX);
+        dict->resort  = (GB_NINT*)gbm_get_mem(sizeof(*(dict->resort))*words, GBM_DICT_INDEX);
 
         memset(buffer, '*', maxdeep);
         tree = remove_word_from_dtree(tree, NULL, 0, buffer, &wordLen, &wordFrequency, &dummy);
@@ -2347,27 +2331,38 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
     return NULL;
 }
 
-static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
-    int      i;
+static void gb_free_dictionary(GB_DICTIONARY*& dict) {
+    gbm_free_mem(dict->text, dict->textlen, GBM_DICT_INDEX);
+    gbm_free_mem(dict->offsets, sizeof(*(dict->offsets))*dict->words, GBM_DICT_INDEX);
+    gbm_free_mem(dict->resort, sizeof(*(dict->resort))*dict->words, GBM_DICT_INDEX);
+
+    gbm_free_mem(dict, sizeof(*dict), GBM_DICT_INDEX);
+    dict = NULL;
+}
+
+static GB_ERROR readAndWrite(O_gbdByKey *gbkp, size_t& old_size, size_t& new_size) {
     GB_ERROR error = 0;
 
-    for (i=0; i<gbkp->cnt && !error; i++) {
-        GBDATA *gbd  = gbkp->gbds[i];
-        int     type = GB_TYPE(gbd);
+    old_size = 0;
+    new_size = 0;
 
-        if (COMPRESSIBLE(type)) {
-            long size;
-            char *data;
+    for (int i=0; i<gbkp->cnt && !error; i++) {
+        GBDATA *gbd = gbkp->gbds[i];
+
+        if (COMPRESSIBLE(gbd->type())) {
+            size_t  size;
+            char   *data;
 
             {
-                char *d = (char*)get_data_n_size(gbd, &size);
+                cu_str d  = (cu_str)get_data_n_size(gbd, &size);
+                old_size += gbd->as_entry()->memsize();
 
                 data = (char*)gbm_get_mem(size, GBM_DICT_INDEX);
                 memcpy(data, d, size);
                 gb_assert(data[size-1] == 0);
             }
 
-            switch (type) {
+            switch (gbd->type()) {
                 case GB_STRING:
                     error             = GB_write_string(gbd, "");
                     if (!error) error = GB_write_string(gbd, data);
@@ -2392,6 +2387,8 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
                     gb_assert(0);
                     break;
             }
+
+            new_size += gbd->as_entry()->memsize();
 
             gbm_free_mem(data, size, GBM_DICT_INDEX);
         }
@@ -2438,8 +2435,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
             GB_DICTIONARY *dict;
             int            compression_mask;
             GB_CSTR        key_name = Main->keys[idx].key;
-            int            type;
-            GBDATA        *gb_main  = (GBDATA*)Main->data;
+            GBDATA        *gb_main  = Main->gb_main();
 
 #ifdef TEST_SOME
             if (!( // add all wanted keys here
@@ -2451,7 +2447,8 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 #ifndef TEST_ONE
             if (!gbk[idx].cnt) continue; // there are no entries with this quark
 
-            type = GB_TYPE(gbk[idx].gbds[0]);
+            GB_TYPES type = gbk[idx].gbds[0]->type();
+
             GB_begin_transaction(gb_main);
             compression_mask = gb_get_compression_mask(Main, idx, type);
             GB_commit_transaction(gb_main);
@@ -2471,14 +2468,19 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
                 printf("  * Uncompressing all with old dictionary ...\n");
 
+                size_t old_compressed_size;
+
                 {
-                    int old_compression_mask = Main->keys[idx].compression_mask;
+                    int& compr_mask     = Main->keys[idx].compression_mask;
+                    int  old_compr_mask = compr_mask;
+
+                    size_t new_size;
 
                     // UNCOVERED();
 
-                    Main->keys[idx].compression_mask &= ~GB_COMPRESSION_DICTIONARY;
-                    error                             = readAndWrite(&gbk[idx]);
-                    Main->keys[idx].compression_mask  = old_compression_mask;
+                    compr_mask &= ~GB_COMPRESSION_DICTIONARY;
+                    error       = readAndWrite(&gbk[idx], old_compressed_size, new_size);
+                    compr_mask  = old_compr_mask;
                 }
 
                 if (!error) {
@@ -2512,7 +2514,19 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
                         // compress all data with new dictionary
                         printf("  * Compressing all with new dictionary ...\n");
-                        error = readAndWrite(&gbk[idx]);
+
+                        size_t old_size, new_compressed_size;
+                        error = readAndWrite(&gbk[idx], old_size, new_compressed_size);
+
+                        if (!error) {
+                            printf("    (compressed size: old=%zu new=%zu ratio=%.1f%%)\n",
+                                   old_compressed_size, new_compressed_size, (new_compressed_size*100.0)/old_compressed_size);
+
+                            // @@@ for some keys compression fails (e.g. 'ref');
+                            // need to find out why dictionary is so bad
+                            // gb_assert(new_compressed_size <= old_compressed_size); // @@@ enable this (fails in unit-test)
+                        }
+
                         if (error) {
                             /* critical state: new dictionary has been written, but transaction will be aborted below.
                              * Solution: Write back old dictionary.
@@ -2531,6 +2545,8 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                     }
 #endif // TEST_DICT
                 }
+
+                gb_free_dictionary(dict);
             }
 
             error = GB_end_transaction(gb_main, error);
@@ -2611,6 +2627,8 @@ void TEST_SLOW_optimize() {
         GB_push_my_security(gb_main);
         TEST_EXPECT_NO_ERROR(GB_optimize(gb_main));
         GB_pop_my_security(gb_main);
+
+        GB_flush_cache(gb_main);
 
         TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, optimized, "b"));
         TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, target_ascii, "a"));

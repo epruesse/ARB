@@ -19,7 +19,7 @@
 #endif
 
 inline void GB_test_transaction(GB_MAIN_TYPE *Main) {
-    if (!Main->transaction) {
+    if (Main->get_transaction_level() == 0) {
         GBK_terminate("No running transaction");
     }
 }

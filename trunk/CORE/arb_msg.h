@@ -46,6 +46,9 @@ void GB_internal_error(const char *message);
 void GB_internal_errorf(const char *templat, ...) __ATTR__FORMAT(1);
 void GBK_terminate(const char *error) __ATTR__NORETURN;
 void GBK_terminatef(const char *templat, ...) __ATTR__FORMAT(1) __ATTR__NORETURN;
+
+ inline void GBK_terminate_on_error(const char *error) { if (error) GBK_terminatef("Fatal error: %s", error); }
+
 void GB_warning(const char *message);
 void GB_warningf(const char *templat, ...) __ATTR__FORMAT(1);
 void GB_information(const char *message);
