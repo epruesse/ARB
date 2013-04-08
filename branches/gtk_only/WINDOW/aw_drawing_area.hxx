@@ -68,6 +68,9 @@ void aw_drawing_area_set_increments(AW_drawing_area *area,
                                     gint vertical_step_increment,
                                     gint vertical_page_increment);
 
+void aw_drawing_area_set_horizontal_slider(AW_drawing_area *area, gdouble pos);
+void aw_drawing_area_set_vertical_slider(AW_drawing_area *area, gdouble pos);
+
 GtkAdjustment* aw_drawing_area_get_vertical_adjustment(AW_drawing_area *area);
 GtkAdjustment* aw_drawing_area_get_horizontal_adjustment(AW_drawing_area *area);
 
