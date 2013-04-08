@@ -71,6 +71,9 @@ struct gb_cache {
     GB_HASH *reused;                                // key = DB_path, value = number of cache entries reused
     GB_HASH *reuse_sum;                             // key = DB_path, value = how often entries were reused
 #endif
+
+    void init();
+    void destroy();
 };
 
 // --------------------------------------------------------------------------------
@@ -79,17 +82,24 @@ struct gb_cache {
 #define ALLOWED_KEYS  15000
 #define ALLOWED_DATES 256
 
-struct GB_MAIN_TYPE {
-    int transaction;
+class GB_MAIN_TYPE {
+    inline GB_ERROR start_transaction();
+    GB_ERROR check_quick_save() const;
+    GB_ERROR initial_client_transaction();
+
+    int transaction_level;
     int aborted_transaction;
-    int local_mode;                                 // 1 = server, 0 = client
-    int client_transaction_socket;
+
+    bool i_am_server;
+
+public:
+
 
     gbcmc_comm     *c_link;
     gb_server_data *server_data;
     GBCONTAINER    *dummy_father;
-    GBCONTAINER    *data;
-    GBDATA         *gb_key_data;
+    GBCONTAINER    *root_container;
+    GBCONTAINER    *gb_key_data;
     char           *path;
     gb_open_types   opentype;
     char           *disabled_path;
@@ -141,6 +151,50 @@ struct GB_MAIN_TYPE {
 
     gb_user    *this_user;
     gb_project *this_project;
+
+    // --------------------
+
+    void init(const char *db_path);
+    void cleanup();
+
+    void free_all_keys();
+    void release_main_idx();
+
+    int get_transaction_level() const { return transaction_level; }
+
+    GBDATA *gb_main() const { return (GBDATA*)root_container; }
+    GBCONTAINER*& gb_main_ref() { return root_container; }
+
+    GB_ERROR login_remote(const char *db_path, const char *opent);
+
+    inline GB_ERROR begin_transaction();
+    inline GB_ERROR commit_transaction();
+    inline GB_ERROR abort_transaction();
+
+    inline GB_ERROR push_transaction();
+    inline GB_ERROR pop_transaction();
+
+    inline GB_ERROR no_transaction();
+
+    __ATTR__USERESULT GB_ERROR send_update_to_server(GBDATA *gbd);
+
+    GB_ERROR check_saveable(const char *new_path, const char *flags) const;
+    GB_ERROR check_quick_saveable(const char *new_path, const char *flags) const {
+        GB_ERROR error = check_quick_save();
+        return error ? error : check_saveable(new_path, flags);
+    }
+
+    GB_ERROR save_quick(const char *refpath);
+
+    GB_ERROR save_as(const char *as_path, const char *savetype);
+    GB_ERROR save_quick_as(const char *as_path);
+
+    GB_ERROR panic_save(const char *db_panic);
+
+    void mark_as_server() { i_am_server = true; }
+
+    bool is_server() const { return i_am_server; }
+    bool is_client() const { return !is_server(); }
 };
 
 

@@ -27,6 +27,9 @@ struct gb_extern_data {
     GB_REL_STRING rel_data;
     long          memsize;
     long          size;
+
+    char *get_data() { return GB_RESOLVE(char*, this, rel_data); }
+    void set_data(char *data) { GB_SETREL(this, rel_data, data); }
 };
 
 struct GB_INTern_strings {
@@ -89,7 +92,7 @@ struct gb_flag_types2 {                                                 // priva
     unsigned int extern_data : 1;                                       // data ref. by pntr
     unsigned int header_changed : 1;                                    // used by container
     unsigned int gbm_index : 8;                                         // memory section
-    unsigned int tisa_index : 1;                                        // this should be indexed
+    unsigned int should_be_indexed : 1;                                 // this should be indexed
     unsigned int is_indexed : 1;                                        // this db. field is indexed
 };
 
@@ -116,6 +119,21 @@ inline void SET_GB_DATA_LIST_HEADER(gb_data_list& dl, gb_header_list *head) {
 
 // --------------------------------------------------------------------------------
 
+#if defined(DEBUG)
+#define ASSERT_STRICT_GBDATA_TYPES // just for refactoring/debugging (slow)
+#endif
+
+#if defined(ASSERT_STRICT_GBDATA_TYPES)
+#define gb_strict_assert(cond) gb_assert(cond)
+#else
+#define gb_strict_assert(cond)
+#endif
+
+struct GBENTRY;
+struct GBCONTAINER;
+
+#define GB_GBM_INDEX(gbd) ((gbd)->flags2.gbm_index)
+
 struct GBDATA {
     long              server_id;
     GB_REL_CONTAINER  rel_father;
@@ -123,21 +141,110 @@ struct GBDATA {
     long              index;
     gb_flag_types     flags;
     gb_flag_types2    flags2;
-    // member above are same as in GBCONTAINER
 
-    gb_data_base_type_union info;
-    int                     cache_index;                                // @@@ should be a member of gb_db_extended and of type gb_cache_idx
+    // ----------------------------------------
+
+    GB_TYPES type() const {
+        gb_assert(this);
+        return GB_TYPES(flags.type);
+    }
+
+    bool is_a_string() const { return type() == GB_STRING || type() == GB_LINK; }
+    bool is_indexable() const { return is_a_string(); }
+
+    bool is_container() const { return type() == GB_DB; }
+    bool is_entry() const { return !is_container(); }
+
+    GBENTRY *as_entry() const {
+        gb_strict_assert(!this || is_entry());
+        return (GBENTRY*)this;
+    }
+    GBCONTAINER *as_container() const {
+        gb_strict_assert(!this || is_container());
+        return (GBCONTAINER*)this;
+    }
+
+    // meant to be used in client interface (i.e. on any GBDATA* passed from outside)
+    GBENTRY *expect_entry() const {
+        if (!is_entry()) GBK_terminate("expected a DB entry, got a container");
+        return as_entry();
+    }
+    GBCONTAINER *expect_container() const {
+        if (!is_container()) GBK_terminate("expected a DB container, got an entry");
+        return as_container();
+    }
+
+    inline GBCONTAINER *get_father();
+
+    void create_extended() {
+        if (!ext) {
+            ext = (gb_db_extended *)gbm_get_mem(sizeof(gb_db_extended), GB_GBM_INDEX(this));
+        }
+    }
+    void destroy_extended() {
+        if (ext) {
+            gbm_free_mem(ext, sizeof(gb_db_extended), GB_GBM_INDEX(this));
+            ext = NULL;
+        }
+    }
+
+    void touch_creation(long cdate)           { ext->creation_date = cdate; }
+    void touch_update(long udate)             { ext->update_date   = udate; }
+    void touch_creation_and_update(long date) { ext->creation_date = ext->update_date = date; }
+
+    long creation_date() const { return ext ? ext->creation_date : 0; }
+    long update_date()   const { return ext ? ext->update_date   : 0; }
+
+    gb_callback *get_callbacks() const { return ext ? ext->callback : NULL; }
+    gb_transaction_save *get_oldData() const { return ext ? ext->old : 0; }
 };
 
-struct GBCONTAINER {
-    long              server_id;
-    GB_REL_CONTAINER  rel_father;
-    gb_db_extended   *ext;
-    long              index;
-    gb_flag_types     flags;
-    gb_flag_types2    flags2;
-    // member above are same as in GBDATA
+class GBENTRY : public GBDATA {
+    // calls that make no sense:
+    bool is_entry() const;
+    GBENTRY *as_entry() const;
+public:
+    gb_data_base_type_union info;
 
+    int cache_index;
+
+    void mark_as_intern() { flags2.extern_data = 0; }
+    void mark_as_extern() { flags2.extern_data = 1; }
+
+    bool stored_external() const { return flags2.extern_data; }
+    bool stored_internal() const { return !stored_external(); }
+
+    size_t size()    const { return stored_external() ? info.ex.size    : info.istr.size; }
+    size_t memsize() const { return stored_external() ? info.ex.memsize : info.istr.memsize; }
+
+    inline size_t uncompressed_size() const;
+
+    char *data() { return stored_external() ? info.ex.get_data() : &(info.istr.data[0]); }
+
+    inline char *alloc_data(long Size, long Memsize);
+    inline void insert_data(const char *Data, long Size, long Memsize);
+    void free_data() {
+        index_check_out();
+        if (stored_external()) {
+            char *exdata = info.ex.get_data();
+            if (exdata) {
+                gbm_free_mem(exdata, (size_t)(info.ex.memsize), GB_GBM_INDEX(this));
+                info.ex.set_data(0);
+            }
+        }
+    }
+
+    void index_check_in();
+    void index_re_check_in() { if (flags2.should_be_indexed) index_check_in(); }
+
+    void index_check_out();
+};
+
+class GBCONTAINER : public GBDATA {
+    // calls that make no sense:
+    bool is_container() const;
+    GBCONTAINER *as_container() const;
+public:
     gb_flag_types3 flags3;
     gb_data_list   d;
 
@@ -151,22 +258,31 @@ struct GBCONTAINER {
     GB_MAIN_IDX main_idx;
     GB_REL_IFS  rel_ifs;
 
+    void set_touched_idx(int idx) {
+        if (!index_of_touched_one_son || index_of_touched_one_son == idx+1) {
+            index_of_touched_one_son = idx+1;
+        }
+        else {
+            index_of_touched_one_son = -1;
+        }
+    }
 };
-
-// --------------------
-//      type access
-
-inline GB_TYPES GB_TYPE(GBDATA *gbd)      { return GB_TYPES(gbd->flags.type); }
-inline GB_TYPES GB_TYPE(GBCONTAINER *gbc) { return GB_TYPES(gbc->flags.type); }
 
 // ----------------------
 //      parent access
 
-inline GBCONTAINER* GB_FATHER(GBDATA *gbd)                       { return GB_RESOLVE(GBCONTAINER*, gbd, rel_father); }
-inline GBCONTAINER* GB_FATHER(GBCONTAINER *gbc)                  { return GB_RESOLVE(GBCONTAINER*, gbc, rel_father); }
-inline void SET_GB_FATHER(GBDATA *gbd, GBCONTAINER *father)      { GB_SETREL(gbd, rel_father, father); }
-inline void SET_GB_FATHER(GBCONTAINER *gbc, GBCONTAINER *father) { GB_SETREL(gbc, rel_father, father); }
-inline GBCONTAINER* GB_GRANDPA(GBDATA *gbd)                      { return GB_FATHER(GB_FATHER(gbd)); }
+inline GBCONTAINER* GB_FATHER(GBDATA *gbd)  { return GB_RESOLVE(GBCONTAINER*, gbd, rel_father); }
+inline GBCONTAINER* GB_GRANDPA(GBDATA *gbd) { return GB_FATHER(GB_FATHER(gbd)); }
+
+inline void SET_GB_FATHER(GBDATA *gbd, GBCONTAINER *father) { GB_SETREL(gbd, rel_father, father); }
+
+GBCONTAINER *GBDATA::get_father() {
+    // like GB_FATHER, but returns NULL for root_container
+    GBCONTAINER *father = GB_FATHER(this);
+    if (father && !GB_FATHER(father)) return NULL;
+    return father;
+}
+
 
 // -----------------------
 //      GB_MAIN access
@@ -174,9 +290,13 @@ inline GBCONTAINER* GB_GRANDPA(GBDATA *gbd)                      { return GB_FAT
 extern GB_MAIN_TYPE *gb_main_array[];
 
 inline GB_MAIN_TYPE *GBCONTAINER_MAIN(GBCONTAINER *gbc) { return gb_main_array[gbc->main_idx]; }
+
 inline GB_MAIN_TYPE *GB_MAIN(GBDATA *gbd)               { return GBCONTAINER_MAIN(GB_FATHER(gbd)); }
 inline GB_MAIN_TYPE *GB_MAIN(GBCONTAINER *gbc)          { return GBCONTAINER_MAIN(gbc); }
-inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd)     { return GB_TYPE(gbd) == GB_DB ? GBCONTAINER_MAIN((GBCONTAINER*)gbd) : GB_MAIN(gbd); }
+
+inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd) {
+    return gbd->is_container() ? GBCONTAINER_MAIN(gbd->as_container()) : GB_MAIN(gbd->as_entry());
+}
 
 // -----------------------
 //      security flags
@@ -188,6 +308,17 @@ inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd)     { return GB_TYPE(gbd) ==
 #define GB_PUT_SECURITY_READ(gb, i)  ((gb)->flags.security_read   = (i))
 #define GB_PUT_SECURITY_WRITE(gb, i) ((gb)->flags.security_write  = (i))
 #define GB_PUT_SECURITY_DELETE(gb, i) ((gb)->flags.security_delete = (i))
+
+// ---------------------------------------------------------
+//      strictly-aliased forwarders for some functions:
+
+inline GB_ERROR gb_commit_transaction_local_rek(GBCONTAINER*& gbc, long mode, int *pson_created) {
+    return gb_commit_transaction_local_rek(StrictlyAliased_BasePtrRef<GBCONTAINER,GBDATA>(gbc).forward(), mode, pson_created);
+}
+
+inline void gb_abort_transaction_local_rek(GBCONTAINER*& gbc) {
+    gb_abort_transaction_local_rek(StrictlyAliased_BasePtrRef<GBCONTAINER,GBDATA>(gbc).forward());
+}
 
 // --------------------------------------------------------------------------------
 

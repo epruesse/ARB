@@ -34,6 +34,8 @@ typedef short GB_MAIN_IDX;      // random-index
 // ------------------------------
 //      forward declare types
 
+struct GBDATA;
+struct GBENTRY;
 struct GBCONTAINER;
 struct GB_MAIN_TYPE;
 

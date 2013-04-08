@@ -455,7 +455,7 @@ static GB_ERROR gbl_apply_binary_operator(GBL_command_arguments *args, gbl_binar
 
         case 2:
             {
-                GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+                GBDATA *gb_main = GB_get_root(args->gb_ref);
                 int     i;
 
                 for (i = 0; i<args->cinput; ++i) {
@@ -492,7 +492,7 @@ static GB_ERROR gbl_command(GBL_command_arguments *args) {
         error = "syntax: command(\"escaped command\")";
     }
     else {
-        GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+        GBDATA *gb_main = GB_get_root(args->gb_ref);
         int     i;
         char   *command;
 
@@ -519,7 +519,7 @@ static GB_ERROR gbl_eval(GBL_command_arguments *args) {
         error = "eval syntax: eval(\"escaped command evaluating to command\")";
     }
     else {
-        GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+        GBDATA *gb_main = GB_get_root(args->gb_ref);
         char   *command;
         char   *to_eval;
 
@@ -595,7 +595,7 @@ static GB_ERROR gbl_do(GBL_command_arguments *args) {
             error = GBS_global_string("Can't do undefined command '%s' - use define(%s, ...) first", name, name);
         }
         else {
-            GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+            GBDATA *gb_main = GB_get_root(args->gb_ref);
             int     i;
 
             GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
@@ -645,7 +645,7 @@ static GB_ERROR gbl_origin(GBL_command_arguments *args) {
         if (!error) {
             char   *command = unEscapeString(args->vparam[0].str);
             int     i;
-            GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+            GBDATA *gb_main = GB_get_root(args->gb_ref);
 
             for (i=0; i<args->cinput && !error; i++) { // go through all orig streams
                 char *result       = GB_command_interpreter(gb_main, args->vinput[i].str, command, gb_origin, args->default_tree_name);
@@ -1450,7 +1450,7 @@ static GB_ERROR gbl_select(GBL_command_arguments *args) {
             error = GBS_global_string("Input stream value (%i) is out of bounds (0 to %i)", value, args->cparam-1);
         }
         else {
-            GBDATA *gb_main    = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+            GBDATA *gb_main    = GB_get_root(args->gb_ref);
             char   *result     = GB_command_interpreter(gb_main, "", args->vparam[value].str, args->gb_ref, args->default_tree_name);
             if (!result) error = GB_await_error();
             else    PASS_2_OUT(args, result);

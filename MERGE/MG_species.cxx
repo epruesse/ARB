@@ -792,10 +792,13 @@ GB_ERROR MERGE_sequences_simple(AW_root *awr) {
                 GBDATA *D_species     = GB_create_container(D_species_data, "species");
                 if (!D_species) error = GB_await_error();
                 else {
-                    error             = GB_copy_with_protection(D_species, S_species, true);
-                    if (!error) GB_write_flag(D_species, 1); // mark species
-                    if (!error) error = GB_write_usr_private(D_species, 255); // put in hitlist
-                    if (!error) error = GBT_write_string(D_species, "name", s_name);
+                    error = GB_copy_with_protection(D_species, S_species, true);
+
+                    if (!error) {
+                        GB_write_flag(D_species, 1);          // mark species
+                        GB_write_usr_private(D_species, 255); // put in hitlist
+                        error = GBT_write_string(D_species, "name", s_name);
+                    }
                 }
 
                 GBS_write_hash(D_species_hash, s_name, (long)D_species);

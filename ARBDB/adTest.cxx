@@ -8,13 +8,12 @@
 //                                                                 //
 // =============================================================== //
 
-#include "gb_storage.h"
+#include "gb_key.h"
 
 const char *GB_get_type_name(GBDATA *gbd) {
-    int         type = GB_TYPE(gbd);
     const char *type_name;
 
-    switch (type) {
+    switch (gbd->type()) {
         case GB_INT:    { type_name = "GB_INT"; break; }
         case GB_FLOAT:  { type_name = "GB_FLOAT"; break; }
         case GB_BYTE:   { type_name = "GB_BYTE"; break; }
@@ -27,7 +26,7 @@ const char *GB_get_type_name(GBDATA *gbd) {
         case GB_DB:     { type_name = "GB_DB"; break; }
         default: {
             static char *unknownType = 0;
-            freeset(unknownType, GBS_global_string_copy("<unknown GB_TYPE=%i>", type));
+            freeset(unknownType, GBS_global_string_copy("<unknown GB_TYPES=%i>", gbd->type()));
             type_name = unknownType;
             break;
         }
@@ -37,7 +36,7 @@ const char *GB_get_type_name(GBDATA *gbd) {
 }
 
 const char *GB_get_db_path(GBDATA *gbd) {
-    GBDATA *gb_father = (GBDATA*)GB_FATHER(gbd);
+    GBDATA *gb_father = GB_FATHER(gbd);
 
     if (gb_father) {
         const char *father_path = GB_get_db_path(gb_father);
@@ -51,9 +50,8 @@ void GB_dump_db_path(GBDATA *gbd) {
     printf("Path to GBDATA %p (type=%s) is '%s'\n", gbd, GB_get_type_name(gbd), GB_get_db_path(gbd));
 }
 
-static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
+static void dump_internal(GBDATA *gbd, int *lines_allowed) {
     static int     indent            = 0;
-    int            type              = GB_TYPE(gbd);
     const char    *type_name         = GB_get_type_name(gbd);
     const char    *key_name          = 0;
     const char    *content           = 0;
@@ -105,9 +103,9 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
         showChildren = false;
     }
     else {                                          // test if we need a transaction
-        if (!GB_MAIN(gbd)->transaction) {
+        if (GB_MAIN(gbd)->get_transaction_level() == 0) {
             GB_push_transaction(gbd);
-            GB_dump_internal(gbd, lines_allowed);
+            dump_internal(gbd, lines_allowed);
             GB_pop_transaction(gbd);
             return;
         }
@@ -123,7 +121,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
             content = "<can't examine - entry is deleted>";
         }
         else {
-            switch (type) {
+            switch (gbd->type()) {
                 case GB_INT:    { content = GBS_global_string("%li", GB_read_int(gbd)); break; }
                 case GB_FLOAT:  { content = GBS_global_string("%f", (float)GB_read_float(gbd)); break; }
                 case GB_BYTE:   { content = GBS_global_string("%i", GB_read_byte(gbd)); break; }
@@ -185,14 +183,13 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
         free(toFree);
     }
 
-    if (type==GB_DB && showChildren) {
-        GBCONTAINER *gbc = (GBCONTAINER*)gbd;
-        GBDATA *gbp;
+    if (gbd->is_container() && showChildren) {
+        GBCONTAINER *gbc = gbd->as_container();
 
         if (gbd->flags2.folded_container) gb_unfold(gbc, -1, -1);
-        for (gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
+        for (GBDATA *gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
             ++indent;
-            GB_dump_internal(gbp, lines_allowed);
+            dump_internal(gbp, lines_allowed);
             --indent;
             if (lines_allowed && (*lines_allowed)<0) break;
         }
@@ -203,7 +200,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
             printf("%*s Showing %s:\n", indent, "", whatto_show_later);
             freenull(whatto_show_later);
             ++indent;
-            GB_dump_internal(gb_show_later, lines_allowed);
+            dump_internal(gb_show_later, lines_allowed);
             --indent;
         }
     }
@@ -211,7 +208,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
 
 NOT4PERL void GB_dump(GBDATA *gbd) {
     int max_lines = 2500;
-    GB_dump_internal(gbd, &max_lines);
+    dump_internal(gbd, &max_lines);
     if (max_lines <= 0) {
         printf("Warning: Dump has been aborted (too many lines)\n"
                "[use GB_dump_no_limit() if you really want to dump all]\n");
@@ -219,15 +216,14 @@ NOT4PERL void GB_dump(GBDATA *gbd) {
 }
 
 NOT4PERL void GB_dump_no_limit(GBDATA *gbd) {
-    GB_dump_internal(gbd, 0);
+    dump_internal(gbd, 0);
 }
 
 // ---------------------
 //      Fix database
 
 static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
-    int type = GB_TYPE(gbd);
-    if (type == GB_DB) {
+    if (gbd->is_container()) {
         for (GBDATA *gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
             gb_fix_recursive(gbp);
         }

@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "gb_key.h"
 #include "gb_map.h"
 #include "gb_storage.h"
 #include "gb_index.h"
@@ -206,7 +207,6 @@ static void ftwrite_aligned(const void *ptr, size_t ali_siz, FILE *fil) {
 
 static char alignment_bytes[ALIGN(1)] = { 0 }; // zero-filled buffer with maximum alignment size
 
-
 static size_t ftwrite_unaligned(const void *ptr, size_t unali_siz, FILE *fil) {
     // ftwrite_unaligned does the same as ftwrite_aligned,
     // but does not access uninitialized memory (that's better for valgrind)
@@ -324,21 +324,19 @@ static void convertFlags4Save(gb_flag_types *flags, gb_flag_types2 *flags2, gb_f
     flags2->update_in_server = 0;
     flags2->header_changed = 0;
 }
-
 static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FILE *out, long *offset, GB_MAIN_IDX main_idx) {
-     /*
-       if out==NULL -> only calculate size
+    /*
+      if out==NULL -> only calculate size
 
        changes     'offset' according to size of written data
        returns     offset of GBDATA in mapfile
      */
-    int  type = GB_TYPE(gbd);
     long gbdoffset;
 
     gb_assert(gbd->flags.temporary==0);
 
-    if (type==GB_DB) { // CONTAINER
-        GBCONTAINER *gbc     = (GBCONTAINER*)gbd;
+    if (gbd->is_container()) {
+        GBCONTAINER *gbc     = gbd->as_container();
         GBCONTAINER  gbccopy = *gbc;
 
         long headeroffset;
@@ -425,11 +423,11 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
         {
             size_t gbccopy_size;
             if (out) {
-                gbdata_offset *dof = find_gbdata_offset(quark, (GBDATA *)gbc);
+                gbdata_offset *dof = find_gbdata_offset(quark, gbc);
                 gbccopy.index = dof->index;
                 gb_assert(dof->index <= gbc->index); // very simple check
 
-                gbccopy.rel_father = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset, (GBDATA*)GB_FATHER(gbc));
+                gbccopy.rel_father = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset, GB_FATHER(gbc));
 
                 gbccopy.ext = NULL;
                 convertFlags4Save(&(gbccopy.flags), &(gbccopy.flags2), &(gbccopy.flags3));
@@ -440,6 +438,8 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
                 gbccopy.header_update_date = 0;
                 gbccopy.rel_ifs = (GB_REL_IFS)MAKEREL(gbdoffset, ifsoffset);
 
+                // TEST_INITIALIZED(gbccopy);
+
                 gbccopy_size = ftwrite_unaligned(&gbccopy, sizeof(gbccopy), out);
             }
             else {
@@ -448,41 +448,51 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
             *offset += gbccopy_size;
         }
     }
-    else { // GBDATA
-        int     ex = gbd->flags2.extern_data;
-        GBDATA  gbdcopy = *gbd; // make copy to avoid change of mem
+    else { // GBENTRY
+        GBENTRY *gbe = gbd->as_entry();
+        GBENTRY  gbecopy;
 
-        if (ex) {
+        // init mem to silence valgrind
+        // (GBENTRY contains 4 unused bytes; see ad_load.cxx@TEST_GBDATA_size
+        // @@@ should be fixed; fix needs mapfile-format-version-increment)
+        memset(&gbecopy, 0, sizeof(gbecopy));
+
+        gbecopy = *gbe;  // make copy to avoid change of mem
+
+        if (gbe->stored_external()) {
             long   exoffset = *offset;
             size_t ex_size;
 
-            if (out) ex_size = ftwrite_unaligned(GB_EXTERN_DATA_DATA(gbd->info.ex), gbdcopy.info.ex.memsize, out);
-            else ex_size     = ALIGN(gbdcopy.info.ex.memsize);
+            if (out) ex_size = ftwrite_unaligned(gbe->info.ex.get_data(), gbecopy.info.ex.memsize, out);
+            else ex_size     = ALIGN(gbecopy.info.ex.memsize);
 
             *offset                  += ex_size;
-            gbdcopy.info.ex.rel_data  = (GB_REL_STRING)MAKEREL(*offset+PTR_DIFF(&(gbd->info), gbd), exoffset);
+            gbecopy.info.ex.rel_data  = (GB_REL_STRING)MAKEREL(*offset+PTR_DIFF(&(gbe->info), gbe), exoffset);
         }
 
         gbdoffset = *offset;
 
         {
-            size_t gbdcopy_size;
+            size_t gbecopy_size;
             if (out) {
-                gbdata_offset *dof = find_gbdata_offset(quark, gbd);
-                gbdcopy.index = dof->index;
-                gb_assert(dof->index <= gbd->index); // very simple check
+                gbdata_offset *dof = find_gbdata_offset(quark, gbe);
+                gbecopy.index = dof->index;
+                gb_assert(dof->index <= gbe->index); // very simple check
 
-                gbdcopy.rel_father  = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset, (GBDATA*)GB_FATHER(gbd));
-                gbdcopy.ext         = NULL;
-                gbdcopy.server_id   = GBTUM_MAGIC_NUMBER;
-                convertFlags4Save(&(gbdcopy.flags), &(gbdcopy.flags2), NULL);
-                gbdcopy.cache_index = 0;
-                gbdcopy_size        = ftwrite_unaligned(&gbdcopy, sizeof(gbdcopy), out);
+                gbecopy.rel_father  = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset, GB_FATHER(gbe));
+                gbecopy.ext         = NULL;
+                gbecopy.server_id   = GBTUM_MAGIC_NUMBER;
+                convertFlags4Save(&(gbecopy.flags), &(gbecopy.flags2), NULL);
+                gbecopy.cache_index = 0;
+
+                // TEST_INITIALIZED(gbecopy);
+
+                gbecopy_size = ftwrite_unaligned(&gbecopy, sizeof(gbecopy), out);
             }
             else {
-                gbdcopy_size = ALIGN(sizeof(gbdcopy));
+                gbecopy_size = ALIGN(sizeof(gbecopy));
             }
-            *offset += gbdcopy_size;
+            *offset += gbecopy_size;
         }
     }
 
@@ -529,24 +539,18 @@ static long calcGbdOffsets(GB_MAIN_TYPE *Main, gbdByKey *gbk)
    handle gbdByKey
    ******************************************************** */
 
-static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey *gbk)
-{
-    GBQUARK quark;
-
+static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey *gbk) {
     if (gbd->flags.temporary) return;
 
-    if (GB_TYPE(gbd) == GB_DB)  // CONTAINER
-    {
-        int         idx;
-        GBCONTAINER     *gbc = (GBCONTAINER *)gbd;
-        GBDATA      *gbd2;
-
-        for (idx=0; idx < gbc->d.nheader; idx++)
-            if ((gbd2=GBCONTAINER_ELEM(gbc, idx))!=NULL)
-                scanGbdByKey(Main, gbd2, gbk);
+    if (gbd->is_container()) {
+        GBCONTAINER *gbc = gbd->as_container();
+        for (int idx=0; idx < gbc->d.nheader; idx++) {
+            GBDATA *gbd2 = GBCONTAINER_ELEM(gbc, idx);
+            if (gbd2) scanGbdByKey(Main, gbd2, gbk);
+        }
     }
 
-    quark = GB_KEY_QUARK(gbd);
+    GBQUARK quark = GB_KEY_QUARK(gbd);
 
 #if defined(DEBUG)
     if (quark == 0) {
@@ -579,7 +583,7 @@ static gbdByKey *createGbdByKey(GB_MAIN_TYPE *Main)
 
     gbk[0].gbdoff = (gbdata_offset *)GB_calloc(1, sizeof(*(gbk[0].gbdoff))); // @@@ FIXME : this is maybe allocated twice (5 lines above and here), maybe idx == 0 is special ?
 
-    scanGbdByKey(Main, (GBDATA*)Main->data, gbk);
+    scanGbdByKey(Main, Main->gb_main(), gbk);
 
     for (idx=0; idx<Main->keycnt; idx++)
         if (gbk[idx].cnt)
@@ -636,16 +640,16 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
             GB_MAIN_IDX main_idx_4_save = gb_make_main_idx(Main); // Generate a new main idx (temporary during save)
             mheader.main_idx            = main_idx_4_save;
 
-            mheader.main_data_offset = getrel_GBDATA(1, (GBDATA*)Main->data)+1;
+            mheader.main_data_offset = getrel_GBDATA(1, Main->gb_main())+1;
 
             ftwrite_unaligned(&mheader, sizeof(mheader), out);
 
-            gb_assert(GB_FATHER(Main->data) == Main->dummy_father);
-            SET_GB_FATHER(Main->data, NULL);
+            gb_assert(GB_FATHER(Main->root_container) == Main->dummy_father);
+            SET_GB_FATHER(Main->root_container, NULL);
     
             IF_ASSERTION_USED(long writeOffset =)
                 writeGbdByKey(Main, gb_gbk, out, main_idx_4_save);
-            SET_GB_FATHER(Main->data, Main->dummy_father);
+            SET_GB_FATHER(Main->root_container, Main->dummy_father);
 
             gb_assert(calcOffset==writeOffset);
 
@@ -655,7 +659,7 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
             {
                 GB_MAIN_IDX org_main_idx     = Main->dummy_father->main_idx;
                 Main->dummy_father->main_idx = main_idx_4_save;
-                gb_release_main_idx(Main);
+                Main->release_main_idx();
                 Main->dummy_father->main_idx = org_main_idx;
             }
         }

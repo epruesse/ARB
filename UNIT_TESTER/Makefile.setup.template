@@ -22,6 +22,7 @@ VALGRIND=# do not valgrind anything
 CHECK_LEAKS=0# check no leaks
 CHECK_LEAKS=1# check definite leaks
 #CHECK_LEAKS=2# check reachable leaks
+# for higher leak resolution edit ../SOURCE_TOOLS/arb_valgrind@resolution
 
 # ---------- restrict tests to modules matching regexpr 'RESTRICT_MODULE': 
 RESTRICT_MODULE='.'

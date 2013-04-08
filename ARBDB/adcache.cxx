@@ -9,9 +9,11 @@
 // =============================================================== //
 
 #include "gb_storage.h"
+#include "gb_main.h"
+#include "gb_tune.h"
 
 struct gb_cache_entry {
-    GBDATA       *gbd;
+    GBENTRY      *gbe;
     gb_cache_idx  prev;
     gb_cache_idx  next;
     char         *data;
@@ -82,8 +84,8 @@ inline void flush_cache_entry(gb_cache& cache, gb_cache_idx index) {
 
     freenull(entry.data);
     cache.sum_data_size    -= entry.sizeof_data;
-    gb_assert(entry.gbd->cache_index == index); // oops - cache error
-    entry.gbd->cache_index  = 0;
+    gb_assert(entry.gbe->cache_index == index); // oops - cache error
+    entry.gbe->cache_index  = 0;
 
     // insert deleted entry in free list
     entry.next            = cache.firstfree_entry;
@@ -102,25 +104,23 @@ inline void flush_cache_entry(gb_cache& cache, gb_cache_idx index) {
 #endif // GEN_CACHE_STATS
 }
 
-void gb_init_cache(GB_MAIN_TYPE *Main) {
-    gb_cache& cache = Main->cache;
+void gb_cache::init() {
+    if (!entries) {
+        entries = (gb_cache_entry *)GB_calloc(sizeof(gb_cache_entry), GB_MAX_CACHED_ENTRIES);
 
-    if (!cache.entries) {
-        cache.entries = (gb_cache_entry *)GB_calloc(sizeof(gb_cache_entry), GB_MAX_CACHED_ENTRIES);
-
-        cache.max_entries       = GB_MAX_CACHED_ENTRIES;
-        cache.max_data_size     = GB_TOTAL_CACHE_SIZE;
-        cache.big_data_min_size = cache.max_data_size / 4;
+        max_entries       = GB_MAX_CACHED_ENTRIES;
+        max_data_size     = GB_TOTAL_CACHE_SIZE;
+        big_data_min_size = max_data_size / 4;
 
         for (gb_cache_idx i=0; i<GB_MAX_CACHED_ENTRIES-1; i++) {
-            cache.entries[i].next = i+1;
+            entries[i].next = i+1;
         }
-        cache.firstfree_entry = 1;
+        firstfree_entry = 1;
 
 #if defined(GEN_CACHE_STATS)
-        cache.not_reused = GBS_create_hash(1000, GB_MIND_CASE);
-        cache.reused     = GBS_create_hash(1000, GB_MIND_CASE);
-        cache.reuse_sum  = GBS_create_hash(1000, GB_MIND_CASE);
+        not_reused = GBS_create_hash(1000, GB_MIND_CASE);
+        reused     = GBS_create_hash(1000, GB_MIND_CASE);
+        reuse_sum  = GBS_create_hash(1000, GB_MIND_CASE);
 #endif // GEN_CACHE_STATS
     }
 }
@@ -145,57 +145,54 @@ static long list_hash_entries(const char *key, long val, void *client_data) {
 }
 #endif // GEN_CACHE_STATS
 
-void gb_destroy_cache(GB_MAIN_TYPE *Main) {
-    // only call this from gb_destroy_main()!
-    gb_cache& cache = Main->cache;
-
-    if (cache.entries) {
-        gb_assert(cache.newest_entry == 0);         // cache is not flushed 
-        gb_assert(cache.sum_data_size == 0);
-        freenull(cache.entries);
+void gb_cache::destroy() {
+    if (entries) {
+        gb_assert(newest_entry == 0); // cache has to be flushed before!
+        gb_assert(sum_data_size == 0);
+        freenull(entries);
 
 #if defined(GEN_CACHE_STATS)
-        size_t not_reused = 0;
-        size_t reused     = 0;
-        size_t reuse_sum  = 0;
+        size_t NotReUsed = 0;
+        size_t ReUsed    = 0;
+        size_t ReUseSum  = 0;
 
-        GBS_hash_do_loop(cache.reuse_sum, sum_hash_values, &reuse_sum);
-        GBS_hash_do_loop(cache.not_reused, sum_hash_values, &not_reused);
-        GBS_hash_do_loop(cache.reused, sum_hash_values, &reused);
+        GBS_hash_do_loop(reuse_sum, sum_hash_values, &ReUseSum);
+        GBS_hash_do_loop(not_reused, sum_hash_values, &NotReUsed);
+        GBS_hash_do_loop(reused, sum_hash_values, &ReUsed);
 
-        size_t overall = not_reused+reused;
+        size_t overall = NotReUsed+ReUsed;
 
         printf("Cache stats:\n"
                "Overall entries:  %zu\n"
                "Reused entries:   %zu (%5.2f%%)\n"
                "Mean reuse count: %5.2f\n",
                overall,
-               reused, (double)reused/overall*100.0,
-               (double)reuse_sum/reused);
+               ReUsed, (double)ReUsed/overall*100.0,
+               (double)ReUseSum/ReUsed);
 
         printf("Not reused:\n");
-        GBS_hash_do_sorted_loop(cache.not_reused, list_hash_entries, GBS_HCF_sortedByKey, NULL);
+        GBS_hash_do_sorted_loop(not_reused, list_hash_entries, GBS_HCF_sortedByKey, NULL);
         printf("Reused:\n");
-        GBS_hash_do_sorted_loop(cache.reused, list_hash_entries, GBS_HCF_sortedByKey, cache.reuse_sum);
+        GBS_hash_do_sorted_loop(reused, list_hash_entries, GBS_HCF_sortedByKey, reuse_sum);
 
-        GBS_free_hash(cache.not_reused);
-        GBS_free_hash(cache.reused);
-        GBS_free_hash(cache.reuse_sum);
+        GBS_free_hash(not_reused);
+        GBS_free_hash(reused);
+        GBS_free_hash(reuse_sum);
 #endif // GEN_CACHE_STATS
     }
 }
 
-char *gb_read_cache(GBDATA *gbd) {
+char *gb_read_cache(GBENTRY *gbe) {
     char         *cached_data = NULL;
-    gb_cache_idx  index       = gbd->cache_index;
+    gb_cache_idx  index       = gbe->cache_index;
 
     if (index) {
-        gb_cache&       cache = GB_MAIN(gbd)->cache;
+        gb_cache&       cache = GB_MAIN(gbe)->cache;
         gb_cache_entry& entry = unlink_cache_entry(cache, index);
-        gb_assert(entry.gbd == gbd);
+        gb_assert(entry.gbe == gbe);
 
         // check validity
-        if (GB_GET_EXT_UPDATE_DATE(gbd) > entry.clock) {
+        if (gbe->update_date() > entry.clock) {
             flush_cache_entry(cache, index);
         }
         else {
@@ -210,14 +207,31 @@ char *gb_read_cache(GBDATA *gbd) {
     return cached_data;
 }
 
-void gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) {
-    gb_cache_idx index = gbd->cache_index;
+void gb_free_cache(GB_MAIN_TYPE *Main, GBENTRY *gbe) {
+    gb_cache_idx index = gbe->cache_index;
 
     if (index) {
         gb_cache& cache = Main->cache;
         unlink_cache_entry(cache, index);
         flush_cache_entry(cache, index);
     }
+}
+
+static void gb_uncache(GBCONTAINER *gbc);
+void gb_uncache(GBENTRY *gbe) { gb_free_cache(GB_MAIN(gbe), gbe); }
+
+inline void gb_uncache(GBDATA *gbd) {
+    if (gbd->is_container()) gb_uncache(gbd->as_container());
+    else                     gb_uncache(gbd->as_entry());
+}
+static void gb_uncache(GBCONTAINER *gbc) {
+    for (GBDATA *gb_child = GB_child(gbc); gb_child; gb_child = GB_nextChild(gb_child)) {
+        gb_uncache(gb_child);
+    }
+}
+void GB_flush_cache(GBDATA *gbd) {
+    // flushes cache of DB-entry or -subtree
+    gb_uncache(gbd);
 }
 
 static char *cache_free_some_memory(gb_cache& cache, size_t needed_mem) {
@@ -249,10 +263,10 @@ static char *cache_free_some_memory(gb_cache& cache, size_t needed_mem) {
     return data;
 }
 
-char *gb_alloc_cache_index(GBDATA *gbd, size_t size) {
-    gb_assert(gbd->cache_index == 0);
+char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
+    gb_assert(gbe->cache_index == 0);
 
-    gb_cache&     cache = GB_MAIN(gbd)->cache;
+    gb_cache&     cache = GB_MAIN(gbe)->cache;
     char         *data  = cache_free_some_memory(cache, size);
     gb_cache_idx  index = cache.firstfree_entry;
 
@@ -267,15 +281,15 @@ char *gb_alloc_cache_index(GBDATA *gbd, size_t size) {
 
     entry.sizeof_data = size;
     entry.data        = data;
-    entry.gbd         = gbd;
-    entry.clock       = GB_GET_EXT_UPDATE_DATE(gbd);
+    entry.gbe         = gbe;
+    entry.clock       = gbe->update_date();
     
 #if defined(GEN_CACHE_STATS)
     entry.reused     = 0;
-    entry.dbpath     = strdup(GB_get_db_path(gbd));
+    entry.dbpath     = strdup(GB_get_db_path(gbe));
 #endif                                              // GEN_CACHE_STATS
 
-    gbd->cache_index = index;
+    gbe->cache_index = index;
 
     link_cache_entry_to_top(cache, index);
     cache.sum_data_size += size; 

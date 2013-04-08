@@ -14,7 +14,7 @@
 
 
 /* adseqcompr.cxx */
-char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss, long size, GB_ERROR *error, long *new_size);
+char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss, size_t size, GB_ERROR *error, size_t *new_size);
 
 #else
 #error gb_t_prot.h included twice

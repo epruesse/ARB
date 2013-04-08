@@ -269,8 +269,6 @@ adcache.o: arb_assert.h
 adcache.o: arbdb.h
 adcache.o: arbdb_base.h
 adcache.o: gb_data.h
-adcache.o: gb_header.h
-adcache.o: gb_key.h
 adcache.o: gb_local.h
 adcache.o: gb_main.h
 adcache.o: gb_memory.h
@@ -597,14 +595,10 @@ admalloc.o: arb_assert.h
 admalloc.o: arbdb.h
 admalloc.o: arbdb_base.h
 admalloc.o: gb_data.h
-admalloc.o: gb_header.h
-admalloc.o: gb_key.h
 admalloc.o: gb_local.h
-admalloc.o: gb_main.h
 admalloc.o: gb_memory.h
 admalloc.o: gb_prot.h
 admalloc.o: gb_storage.h
-admalloc.o: gb_tune.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_core.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -981,7 +975,6 @@ adTest.o: gb_local.h
 adTest.o: gb_main.h
 adTest.o: gb_memory.h
 adTest.o: gb_prot.h
-adTest.o: gb_storage.h
 adTest.o: gb_tune.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_core.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_error.h
