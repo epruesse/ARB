@@ -41,6 +41,7 @@ public:
     AW_cb_struct *double_click_cb;
     AW_cb_struct *expose_cb;
     AW_cb_struct *input_cb;
+    AW_cb_struct *motion_cb;
     
     /**used to simulate resize events*/
     int old_width;
@@ -74,14 +75,14 @@ AW_common *AW_area_management::get_common() const {
     return prvt->common; 
 }
 
-
 /**
- * Handles the drawing areas expose callback.
+ * Handles the drawing area's configure callback.
+ * (Called on resize and move)
  */
-gboolean AW_area_management::draw_area_expose_cb(GtkWidget *widget, GdkEventExpose */*event*/, gpointer area_management)
+gboolean AW_area_management::configure_event_cb(GtkWidget */*widget*/, GdkEventConfigure */*event*/, 
+                                                gpointer area_management)
 {
-    AW_area_management *aram = (AW_area_management *) area_management;
-    
+  /*
     //since there is no explicit resize callback in gtk we simulate it
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
@@ -90,7 +91,20 @@ gboolean AW_area_management::draw_area_expose_cb(GtkWidget *widget, GdkEventExpo
     }
     aram->prvt->old_height = allocation.height;
     aram->prvt->old_width = allocation.width;
-    
+  */
+
+    AW_area_management *aram = (AW_area_management *) area_management;
+    aram->run_resize_callback();    
+    return false; 
+}
+
+/**
+ * Handles the drawing area's expose callback.
+ */
+gboolean AW_area_management::expose_event_cb(GtkWidget */*widget*/, GdkEventExpose */*event*/, 
+                                             gpointer area_management)
+{
+    AW_area_management *aram = (AW_area_management *) area_management;
     aram->run_expose_callback();
     return false; //forward event, gtk needs to know about expose events as well. Otherwise buttons are not drawn.
 }
@@ -196,8 +210,8 @@ gboolean AW_area_management::input_event_cb(GtkWidget *widget, GdkEvent *event, 
     if (run_callback && (cbs->help_text == (char*)0)) {
         cbs->run_callback();
     }
-    
-    FIXME("No return statement");
+
+    return false; // pass event on 
 }
 
 
@@ -207,22 +221,32 @@ void AW_area_management::run_expose_callback() {
     if (prvt->expose_cb) prvt->expose_cb->run_callback();
 }
 
-void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-
-    //copy and paste code from set_resize callback. resize and expose use the same callback.
-    
-    if (!prvt->resize_cb) {//connect the gtk signal upon first call
-
-        //note: we use the expose callback because there is no resize callback in gtk.
+void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL),
+                                             AW_CL cd1, AW_CL cd2) 
+{
+    if (!prvt->expose_cb) { //connect the gtk signal upon first call
         g_signal_connect (prvt->area, "expose_event",
-                          G_CALLBACK (draw_area_expose_cb), (gpointer) this);
+                          G_CALLBACK (expose_event_cb), (gpointer) this);
 
     }
     prvt->expose_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, prvt->expose_cb);
 }
 
-void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    
+/** 
+ * Handles the drawing area's motion event
+ */
+gboolean AW_area_management::motion_event_cb(GtkWidget */*widget*/, GdkEventMotion *event, 
+                                             gpointer area_management) {
+    AW_area_management *aram = (AW_area_management *) area_management;
+    aram->run_motion_callback(event);
+    return false;
+}
+
+
+
+void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
+                                            AW_CL cd1, AW_CL cd2) 
+{
     if(!prvt->input_cb) {
         
         //enabled button press and release events
@@ -241,19 +265,27 @@ void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*
     prvt->input_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, prvt->input_cb);
 }
 
-void AW_area_management::set_motion_callback(AW_window */*aww*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
+                                             AW_CL cd1, AW_CL cd2) 
+{
+    if (!prvt->motion_cb) {
+        gtk_widget_add_events(prvt->area, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+        g_signal_connect(prvt->area, "motion-notify-event", G_CALLBACK (motion_event_cb), (gpointer) this);
+    }
+    prvt->motion_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, prvt->motion_cb);
 }
 
-void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
+                                             AW_CL cd1, AW_CL cd2) 
+{
     // insert resize callback for draw_area
 
     //FIXME do this when handling the expose_cb.
     if (!prvt->resize_cb) {//connect the gtk signal upon first call
 
         //note: we use the expose callback because there is no resize callback in gtk.
-        g_signal_connect (prvt->area, "expose_event",
-                          G_CALLBACK (draw_area_expose_cb), (gpointer) this);
+        g_signal_connect (prvt->area, "configure_event",
+                          G_CALLBACK (configure_event_cb), (gpointer) this);
 
     }
     prvt->resize_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, prvt->resize_cb);
@@ -264,30 +296,44 @@ inline void AW_area_management::run_resize_callback() {
     if (prvt->resize_cb) prvt->resize_cb->run_callback();
 }
 
+void AW_area_management::run_motion_callback(GdkEventMotion *event) {
+    if (prvt->motion_cb) {
+        int x, y;
+        GdkModifierType state;
+        gdk_window_get_pointer(event->window, &x, &y, &state);
+      
+        if (state & GDK_BUTTON1_MASK) {
+            AW_window *aww = prvt->motion_cb->aw;
+            aww->event.type = AW_Mouse_Drag;
+            aww->event.x = x;
+            aww->event.y = y;
+            aww->event.keycode = AW_KEY_NONE;
+            
+            prvt->motion_cb->run_callback();
+        }
+    }
+}
+
 AW_area_management::AW_area_management(GtkWidget* form, GtkWidget* area) {
-    
     prvt = new AW_area_management::Pimpl();
     prvt->form = form;
     prvt->area = area;
     GTK_PARTLY_IMPLEMENTED;
-    
 }
 
-bool AW_area_management::is_input_callback(AW_window* aww,
+bool AW_area_management::is_input_callback(AW_window* /*aww*/,
         void (*f)(AW_window*, AW_CL, AW_CL)) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
+    return prvt->input_cb && prvt->input_cb->contains(f);
 }
 
-bool AW_area_management::is_double_click_callback(AW_window* aww,
+bool AW_area_management::is_double_click_callback(AW_window* /*aww*/,
         void (*f)(AW_window*, AW_CL, AW_CL)) {
     return prvt->double_click_cb && prvt->double_click_cb->contains(f);
 }
 
 bool AW_area_management::is_motion_callback(AW_window* /*aww*/,
-        void (*/*f*/)(AW_window*, AW_CL, AW_CL)) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
+        void (*f)(AW_window*, AW_CL, AW_CL)) {
+    return prvt->motion_cb && prvt->motion_cb->contains(f);
 }
 
 bool AW_area_management::is_expose_callback(AW_window */*aww*/,
@@ -311,7 +357,6 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
 }
 
 AW_device_gtk *AW_area_management::get_screen_device() {
-
     return prvt->screen_device;
 }
 
@@ -319,7 +364,6 @@ AW_device_size *AW_area_management::get_size_device() {
     if (!prvt->size_device) prvt->size_device = new AW_device_size(prvt->common);
     return prvt->size_device;
 }
-
 
 AW_cb_struct *AW_area_management::get_double_click_cb() { return prvt->double_click_cb; }
 long AW_area_management::get_click_time() const { return prvt->click_time; }
