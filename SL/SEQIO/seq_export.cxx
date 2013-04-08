@@ -461,8 +461,10 @@ static GB_ERROR XML_recursive(GBDATA *gbd) {
     else {
         tag = new XML_Tag(key_name);
 
-        const char *name = GBT_read_char_pntr(gbd, "name");
-        if (name) tag->add_attribute("name", name);
+        if (GB_is_container(gbd)) {
+            const char *name = GBT_read_char_pntr(gbd, "name");
+            if (name) tag->add_attribute("name", name);
+        }
     }
 
     if (descend) {

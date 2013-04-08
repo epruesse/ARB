@@ -83,33 +83,33 @@ int MG_copy_and_check_alignments(AW_window */*aww*/) {
     ConstStrArray names;
     GBT_get_alignment_names(names, GLOBAL_gb_src);
 
-    GBDATA *gb_presets2 = NULL;
+    GBDATA *gb_dst_presets = NULL;
 
     for (int i = 0; names[i] && !error; ++i) {
-        const char *name    = names[i];
-        GBDATA     *gb_ali2 = GBT_get_alignment(GLOBAL_gb_dst, name);
+        const char *name       = names[i];
+        GBDATA     *gb_dst_ali = GBT_get_alignment(GLOBAL_gb_dst, name);
 
-        if (!gb_ali2) {
+        if (!gb_dst_ali) {
             GB_clear_error(); // ignore "alignment not found"
 
-            GBDATA *gb_ali1 = GBT_get_alignment(GLOBAL_gb_src, name);
-            mg_assert(gb_ali1);
+            GBDATA *gb_src_ali = GBT_get_alignment(GLOBAL_gb_src, name);
+            mg_assert(gb_src_ali);
 
-            if (!gb_presets2) gb_presets2 = GBT_get_presets(GLOBAL_gb_dst);
+            if (!gb_dst_presets) gb_dst_presets = GBT_get_presets(GLOBAL_gb_dst);
 
-            gb_ali2 = GB_create_container(gb_presets2, "alignment");
-            GB_copy(gb_ali2, gb_ali1);
+            gb_dst_ali = GB_create_container(gb_dst_presets, "alignment");
+            GB_copy(gb_dst_ali, gb_src_ali);
             GBT_add_new_changekey(GLOBAL_gb_dst, (char *)GBS_global_string("%s/data", name), GB_STRING);
         }
 
-        char *type1 = GBT_get_alignment_type_string(GLOBAL_gb_src, name);
-        char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dst, name);
+        char *src_type = GBT_get_alignment_type_string(GLOBAL_gb_src, name);
+        char *dst_type = GBT_get_alignment_type_string(GLOBAL_gb_dst, name);
 
-        if (strcmp(type1, type2) != 0) {
-            error = GBS_global_string("The alignments '%s' have different types (%s != %s)", name, type1, type2);
+        if (strcmp(src_type, dst_type) != 0) {
+            error = GBS_global_string("The alignments '%s' have different types (%s != %s)", name, src_type, dst_type);
         }
-        free(type2);
-        free(type1);
+        free(dst_type);
+        free(src_type);
     }
 
     GB_commit_transaction(GLOBAL_gb_dst);

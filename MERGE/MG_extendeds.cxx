@@ -106,22 +106,22 @@ static void MG_transfer_extended(AW_window *aww, AW_CL force) {
     if (!error) error = GB_begin_transaction(GLOBAL_gb_src);
 
     if (!error) {
-        GBDATA *gb_source = GBT_find_SAI(GLOBAL_gb_src, dest);
+        GBDATA *gb_src = GBT_find_SAI(GLOBAL_gb_src, dest);
 
-        if (!gb_source) error = "Please select the SAI you want to transfer";
+        if (!gb_src) error = "Please select the SAI you want to transfer";
         else {
-            GBDATA *gb_sai_data2     = GBT_get_SAI_data(GLOBAL_gb_dst);
-            if (!gb_sai_data2) error = GB_await_error();
+            GBDATA *gb_dst_sai_data     = GBT_get_SAI_data(GLOBAL_gb_dst);
+            if (!gb_dst_sai_data) error = GB_await_error();
             else {
-                GBDATA *gb_dest_sai = GBT_find_SAI_rel_SAI_data(gb_sai_data2, dest);
+                GBDATA *gb_dest_sai = GBT_find_SAI_rel_SAI_data(gb_dst_sai_data, dest);
                 if (gb_dest_sai) {
                     if (force) error = GB_delete(gb_dest_sai);
                     else error       = GBS_global_string("SAI '%s' exists, delete it first", dest);
                 }
                 if (!error) {
-                    gb_dest_sai             = GB_create_container(gb_sai_data2, "extended");
+                    gb_dest_sai             = GB_create_container(gb_dst_sai_data, "extended");
                     if (!gb_dest_sai) error = GB_await_error();
-                    else error              = GB_copy(gb_dest_sai, gb_source);
+                    else error              = GB_copy(gb_dest_sai, gb_src);
                 }
             }
         }
@@ -141,8 +141,9 @@ inline void map_extended(AW_root *aw_root, DbScanner *scanner, int db_nr) {
     GBDATA *gb_sai  = GBT_find_SAI(gb_main, aw_root->awar(AWAR_EX_NAME(db_nr))->read_char_pntr());
     map_db_scanner(scanner, gb_sai, CHANGE_KEY_PATH);
 }
-static void MG_map_extended1(AW_root *aw_root, AW_CL cl_scanner) { map_extended(aw_root, (DbScanner*)cl_scanner, 1); }
-static void MG_map_extended2(AW_root *aw_root, AW_CL cl_scanner) { map_extended(aw_root, (DbScanner*)cl_scanner, 2); }
+
+static void MG_map_src_extended(AW_root *aw_root, AW_CL cl_scanner) { map_extended(aw_root, (DbScanner*)cl_scanner, 1); }
+static void MG_map_dst_extended(AW_root *aw_root, AW_CL cl_scanner) { map_extended(aw_root, (DbScanner*)cl_scanner, 2); }
 
 AW_window *MG_merge_extendeds_cb(AW_root *awr) {
     static AW_window_simple *aws = 0;
@@ -162,12 +163,12 @@ AW_window *MG_merge_extendeds_cb(AW_root *awr) {
     aws->at("ex1");
     awt_create_selection_list_on_sai(GLOBAL_gb_src, (AW_window *)aws, AWAR_EX_NAME_SRC);
     DbScanner *scanner = create_db_scanner(GLOBAL_gb_src, aws, "info1", 0, 0, 0, DB_SCANNER, 0, 0, 0, SPECIES_get_selector());
-    aws->get_root()->awar(AWAR_EX_NAME_SRC)->add_callback(MG_map_extended1, (AW_CL)scanner);
+    aws->get_root()->awar(AWAR_EX_NAME_SRC)->add_callback(MG_map_src_extended, (AW_CL)scanner);
 
     aws->at("ex2");
     awt_create_selection_list_on_sai(GLOBAL_gb_dst, (AW_window *)aws, AWAR_EX_NAME_DST);
     scanner = create_db_scanner(GLOBAL_gb_dst, aws, "info2", 0, 0, 0, DB_SCANNER, 0, 0, 0, SPECIES_get_selector());
-    aws->get_root()->awar(AWAR_EX_NAME_DST)->add_callback(MG_map_extended2, (AW_CL)scanner);
+    aws->get_root()->awar(AWAR_EX_NAME_DST)->add_callback(MG_map_dst_extended, (AW_CL)scanner);
 
     aws->button_length(20);
 

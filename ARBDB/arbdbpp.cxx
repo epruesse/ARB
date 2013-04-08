@@ -63,7 +63,3 @@ GB_transaction::~GB_transaction() {
     }
 }
 
-
-int GB_info(GBCONTAINER *gbd) {
-    return GB_info((GBDATA *)gbd);
-}

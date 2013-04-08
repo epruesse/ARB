@@ -40,7 +40,7 @@ struct GBCONTAINER;
 
 typedef void            *GB_REL_ADD;
 typedef char            *GB_REL_STRING;
-typedef GBDATA          *GB_REL_GBDATA;
+typedef GBDATA          *GB_REL_GBDATA; // @@@ use GBENTRY?
 typedef GBCONTAINER     *GB_REL_CONTAINER;
 typedef gb_header_list  *GB_REL_HLS;
 typedef gb_if_entries   *GB_REL_IFES;
@@ -107,12 +107,22 @@ enum ARB_MEMORY_INDEX {
 
 // gbm_get_mem returns a block filled with zero (like calloc() does)
 
+#if defined(DEBUG)
+#if defined(DEVEL_RALF)
+#define FILL_MEM_ON_FREE 0xdb
+#endif
+#endif
+
 #if (MEMORY_TEST==1)
 
 void *GB_calloc(unsigned int nelem, unsigned int elsize);
 
-inline void *gbm_get_mem(size_t size, long )          { return (char*)GB_calloc(1, size); }
-inline void gbm_free_mem(void *block, size_t , long ) { free(block); }
+inline void *gbm_get_mem(size_t size, long )              { return (char*)GB_calloc(1, size); }
+#if defined(FILL_MEM_ON_FREE)
+inline void gbm_free_mem(void *block, size_t size, long ) { memset(block, FILL_MEM_ON_FREE, size); free(block); }
+#else // !defined(FILL_MEM_ON_FREE)
+inline void gbm_free_mem(void *block, size_t , long )     { free(block); }
+#endif
 
 #else
 
@@ -120,7 +130,12 @@ void *gbmGetMemImpl(size_t size, long index);
 void gbmFreeMemImpl(void *data, size_t size, long index);
 
 inline void *gbm_get_mem(size_t size, long index)              { return gbmGetMemImpl(size, index); }
-inline void gbm_free_mem(void *block, size_t size, long index) { gbmFreeMemImpl(block, size, index); }
+inline void gbm_free_mem(void *block, size_t size, long index) {
+#if defined(FILL_MEM_ON_FREE)
+    memset(block, FILL_MEM_ON_FREE, size);
+#endif
+    gbmFreeMemImpl(block, size, index);
+}
 
 #endif
 

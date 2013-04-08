@@ -21,6 +21,14 @@ struct gb_header_flags {
     unsigned int key_quark : 24;                    // == 0 -> invalid
     unsigned int changed : 3;
     unsigned int ever_changed : 1;                  // is this element ever changed
+
+    void set_change(GB_CHANGE val) {
+        changed      = val;
+        ever_changed = 1;
+    }
+    void inc_change(GB_CHANGE val) {
+        if (changed<unsigned(val)) set_change(val);
+    }
 };
 
 struct gb_header_list {                             // public fast flags
@@ -38,12 +46,7 @@ inline void SET_GB_HEADER_LIST_GBD(gb_header_list& hl, GBDATA *gbd) {
     GB_SETREL(&hl, rel_hl_gbd, gbd);
 }
 
-inline gb_header_flags& GB_ARRAY_FLAGS(GBDATA *gbd) {
-    return GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[gbd->index].flags;
-}
-inline gb_header_flags& GB_ARRAY_FLAGS(GBCONTAINER *gbc) {
-    return GB_DATA_LIST_HEADER(GB_FATHER(gbc)->d)[gbc->index].flags;
-}
+inline gb_header_flags& GB_ARRAY_FLAGS(GBDATA *gbd) { return GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[gbd->index].flags; }
 
 // ---------------------------------
 //      container element access

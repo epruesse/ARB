@@ -988,18 +988,24 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
 
 #include <test_unit.h>
 
+// #define TEST_TEST_MACROS
+
 #ifdef ENABLE_CRASH_TESTS
 static void provokesegv() { *(int *)0 = 0; }
+# if defined(TEST_TEST_MACROS)
 static void dont_provokesegv() {}
-#if defined(ASSERTION_USED)
+# endif
+# if defined(ASSERTION_USED)
 static void failassertion() { gb_assert(0); }
+#  if defined(TEST_TEST_MACROS)
 static void dont_failassertion() {}
+# endif
 static void provokesegv_does_not_fail_assertion() {
     // provokesegv does not raise assertion
     // -> the following assertion fails
     TEST_EXPECT_CODE_ASSERTION_FAILS(provokesegv);
 }
-#endif
+# endif
 #endif
 
 void TEST_signal_tests() {
@@ -1016,7 +1022,7 @@ void TEST_signal_tests() {
 
     // following section is disabled since it would spam wanted warnings
     // (enable it when changing any of these TEST_..-macros used here)
-#if 0
+#if defined(TEST_TEST_MACROS)
     TEST_EXPECT_SEGFAULT__WANTED(dont_provokesegv);
     TEST_EXPECT_SEGFAULT__UNWANTED(provokesegv);
     TEST_EXPECT_SEGFAULT__UNWANTED(failassertion);

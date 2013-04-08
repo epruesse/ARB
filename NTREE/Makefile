@@ -913,6 +913,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_extern.o: ad_trees.hxx
 NT_extern.o: map_viewer.hxx
+NT_extern.o: nt_cb.hxx
 NT_extern.o: nt_internal.h
 NT_extern.o: nt_join.hxx
 NT_extern.o: ntree.hxx
@@ -1244,6 +1245,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/cb.h
 NT_main.o: $(ARBHOME)/INCLUDE/cxxforward.h

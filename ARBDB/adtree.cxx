@@ -208,8 +208,8 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
             }
 
             if (node_is_used) { // set id for used nodes
-                error             = GBT_write_int(node->gb_node, "id", *startid);
-                if (!error) error = GB_write_usr_private(node->gb_node, 0);
+                error = GBT_write_int(node->gb_node, "id", *startid);
+                if (!error) GB_write_usr_private(node->gb_node, 0);
             }
             else {          // delete unused nodes
                 error = GB_delete(node->gb_node);
@@ -284,7 +284,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
      * If tree is loaded by function GBT_read_tree(..) then 'tree_name' should be NULL
      * else 'gb_tree' should be set to NULL
      *
-     * To copy a tree call GB_copy((GBDATA *)dest,(GBDATA *)source);
+     * To copy a tree call GB_copy(dest,source);
      * or set recursively all tree->gb_node variables to zero (that unlinks the tree),
      *
      * if 'plain_only' == 1 only the plain tree string is written
