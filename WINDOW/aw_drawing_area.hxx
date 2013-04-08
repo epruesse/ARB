@@ -12,8 +12,6 @@
  * This area is always just as big as the visible part of the drawing.
  * It simulates a bigger size for correct scrollbar appearance.
  * 
- * The area emits a signal every time the scrolled position changes.
- * This
  *  
  */
 

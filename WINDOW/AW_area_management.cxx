@@ -20,6 +20,7 @@
 #include "aw_xkey.hxx"
 #include "aw_device_size.hxx"
 #include "aw_device_click.hxx"
+#include "aw_position.hxx"
 
 #include <iostream>
 
@@ -41,6 +42,10 @@ public:
     AW_cb_struct *expose_cb;
     AW_cb_struct *input_cb;
     
+    /**used to simulate resize events*/
+    int old_width;
+    int old_height;
+    
     Pimpl() : 
         form(NULL),
         area(NULL),
@@ -53,7 +58,9 @@ public:
         resize_cb(NULL),
         double_click_cb(NULL),
         expose_cb(NULL),
-        input_cb(NULL){}   
+        input_cb(NULL),
+        old_width(-1),
+        old_height(-1){}   
 };
 
 
@@ -71,10 +78,19 @@ AW_common *AW_area_management::get_common() const {
 /**
  * Handles the drawing areas expose callback.
  */
-static gboolean draw_area_expose_cb(GtkWidget */*widget*/, GdkEventExpose */*event*/, gpointer area_management)
+gboolean AW_area_management::draw_area_expose_cb(GtkWidget *widget, GdkEventExpose */*event*/, gpointer area_management)
 {
     AW_area_management *aram = (AW_area_management *) area_management;
-    aram->run_resize_callback();
+    
+    //since there is no explicit resize callback in gtk we simulate it
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    if(allocation.height != aram->prvt->old_height || allocation.width != aram->prvt->old_width) {
+       aram->run_resize_callback(); 
+    }
+    aram->prvt->old_height = allocation.height;
+    aram->prvt->old_width = allocation.width;
+    
     aram->run_expose_callback();
     return false; //forward event, gtk needs to know about expose events as well. Otherwise buttons are not drawn.
 }
@@ -82,7 +98,7 @@ static gboolean draw_area_expose_cb(GtkWidget */*widget*/, GdkEventExpose */*eve
 /**
  * Handles the key press event
  */
-static gboolean input_event_cb(GtkWidget *widget, GdkEvent *event, gpointer cb_struct)
+gboolean AW_area_management::input_event_cb(GtkWidget *widget, GdkEvent *event, gpointer cb_struct)
 {
     GTK_PARTLY_IMPLEMENTED;
     GdkEventType type = event->type;
