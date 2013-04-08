@@ -1751,12 +1751,8 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
 #if defined(DEBUG) && 0
     fprintf(stderr, "set_horizontal_scrollbar_position to %i\n", position);
 #endif
-    // @@@ test and constrain against limits
-/*
     slider_pos_horizontal = position;
-    gtk_adjustment_set_value(prvt->hAdjustment, position);
-*/
-    FIXME("not implemented");
+    aw_drawing_area_set_horizontal_slider(prvt->drawing_area, position);
 }
 
 void AW_window::set_info_area_height(int /*height*/) {
@@ -1811,13 +1807,9 @@ void AW_window::set_vertical_scrollbar_position(int position){
 #if defined(DEBUG) && 0
     fprintf(stderr, "set_vertical_scrollbar_position to %i\n", position);
 #endif
-        GTK_NOT_IMPLEMENTED;
-    FIXME("reenable vertical change callback.");
-    // @@@ test and constrain against limits
-/*
+    
     slider_pos_vertical = position;
-    gtk_adjustment_set_value(prvt->vAdjustment, position);
-*/
+    aw_drawing_area_set_vertical_slider(prvt->drawing_area, position);
 }
 
 void AW_window::set_window_size(int width, int height) {

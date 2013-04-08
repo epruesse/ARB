@@ -63,6 +63,23 @@ void aw_drawing_area_set_increments(AW_drawing_area *area,
     gtk_adjustment_changed(prvt->verticalAdjustment);   
 }
 
+void aw_drawing_area_set_horizontal_slider(AW_drawing_area *area, gdouble pos) {
+    aw_assert(NULL != area);
+    aw_assert(NULL != area->prvt);
+    AW_drawing_area_private *prvt = area->prvt; 
+    gtk_adjustment_set_value(prvt->horizontalAdjustment, pos);
+    gtk_adjustment_value_changed(prvt->horizontalAdjustment);
+}
+
+void aw_drawing_area_set_vertical_slider(AW_drawing_area *area, gdouble pos) {
+    aw_assert(NULL != area);
+    aw_assert(NULL != area->prvt);
+    AW_drawing_area_private *prvt = area->prvt; 
+    gtk_adjustment_set_value(prvt->verticalAdjustment, pos);
+    gtk_adjustment_value_changed(prvt->verticalAdjustment);
+}
+
+
 void aw_drawing_area_set_picture_size(AW_drawing_area *area, gint picture_width,
                                       gint picture_height, gint visible_width,
                                       gint visible_height) {

@@ -49,7 +49,7 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     FIXME("form should be a frame around area?!");
     prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); 
 
-    //create a table that will contain the drawing area and scrollbars
+
     GtkWidget *scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
     //only show scrollbars if they are needed
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW(scrolledWindow),
