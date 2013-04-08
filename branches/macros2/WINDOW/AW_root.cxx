@@ -116,6 +116,16 @@ AW_root::AW_root(const char *propertyFile) {
 }
 #endif
 
+void AW_root::setUserActionTracker(UserActionTracker *user_tracker) {
+    aw_assert(user_tracker);
+    aw_assert(!tracker->is_tracking());
+    aw_assert(!user_tracker->is_tracking());
+    aw_assert(tracker->is_replaceable());
+
+    delete tracker;
+    tracker = user_tracker;
+}
+
 AW_awar *AW_root::label_is_awar(const char *label) {
     AW_awar *awar_exists = NULL;
     size_t   off         = strcspn(label, "/ ");
@@ -686,5 +696,4 @@ GB_ERROR AW_root::save_properties(const char *filename) {
 
     return error;
 }
-
 

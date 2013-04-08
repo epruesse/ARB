@@ -27,6 +27,7 @@ public:
 
     void track_action(const char *action_id) OVERRIDE;
     void track_awar_change(AW_awar *awar) OVERRIDE;
+    bool is_replaceable() const OVERRIDE { return false; }
 };
 
 #else

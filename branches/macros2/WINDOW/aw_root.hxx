@@ -80,11 +80,13 @@ public:
 
     virtual void track_action(const char *action_id) = 0;
     virtual void track_awar_change(AW_awar *awar)    = 0;
+    virtual bool is_replaceable() const = 0;
 };
 class NullTracker : public UserActionTracker {
 public:
     void track_action(const char */*action_id*/) OVERRIDE {}
     void track_awar_change(AW_awar */*awar*/) OVERRIDE {}
+    bool is_replaceable() const OVERRIDE { return true; }
 };
 
 // -----------------
@@ -141,10 +143,12 @@ public:
 #endif
     ~AW_root();
 
+    void setUserActionTracker(UserActionTracker *user_tracker);
+
     enum { AW_MONO_COLOR, AW_RGB_COLOR }    color_mode;
 
     void main_loop();
-    
+
     void                process_events();           // might block
     void                process_pending_events();   // non-blocking
     AW_ProcessEventType peek_key_event(AW_window *);
