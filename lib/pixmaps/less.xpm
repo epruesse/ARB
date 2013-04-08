@@ -2,7 +2,7 @@
 static char *less[] = {
 /* columns rows colors chars-per-pixel */
 "42 8 2 1 ",
-"  c gray100",
+"  c none",
 ". c black",
 /* pixels */
 "   .   .   .     ..    .....  .....  .....",

@@ -358,6 +358,17 @@ static void RefreshMappingDisplay(AW_window * /* aw */) {
     RefreshCanvas(RNA3D->root);
 }
 
+static void insertShapeSelection(AW_window *aws, const char *at, const char *awar_name) {
+    aws->at(at);
+    aws->create_toggle_field(awar_name, 1);
+    aws->insert_toggle("#circle.xpm",    "C", 0);
+    aws->insert_toggle("#diamond.xpm",   "D", 1);
+    aws->insert_toggle("#polygon.xpm",   "P", 2);
+    aws->insert_toggle("#star.xpm",      "S", 3);
+    aws->insert_toggle("#rectangle.xpm", "R", 4);
+    aws->update_toggle_field();
+}
+
 static AW_window *CreateDisplayBases_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
@@ -397,32 +408,9 @@ static AW_window *CreateDisplayBases_window(AW_root *aw_root) {
         aws->insert_toggle("SHAPES", "S", 1);
         aws->update_toggle_field();
 
-        aws->at("spHelix");
-        aws->create_toggle_field(AWAR_3D_SHAPES_HELIX, 1);
-        aws->insert_toggle("#circle.xpm",    "C", 0);
-        aws->insert_toggle("#diamond.xpm",   "D", 1);
-        aws->insert_toggle("#polygon.xpm",   "P", 2);
-        aws->insert_toggle("#star.xpm",      "S", 3);
-        aws->insert_toggle("#rectangle.xpm", "R", 4);
-        aws->update_toggle_field();
-
-        aws->at("spUnpairedHelix");
-        aws->create_toggle_field(AWAR_3D_SHAPES_UNPAIRED_HELIX, 1);
-        aws->insert_toggle("#circle.xpm",    "C", 0);
-        aws->insert_toggle("#diamond.xpm",   "D", 1);
-        aws->insert_toggle("#polygon.xpm",   "P", 2);
-        aws->insert_toggle("#star.xpm",      "S", 3);
-        aws->insert_toggle("#rectangle.xpm", "R", 4);
-        aws->update_toggle_field();
-
-        aws->at("spNonHelix");
-        aws->create_toggle_field(AWAR_3D_SHAPES_NON_HELIX, 1);
-        aws->insert_toggle("#circle.xpm",    "C", 0);
-        aws->insert_toggle("#diamond.xpm",   "D", 1);
-        aws->insert_toggle("#polygon.xpm",   "P", 2);
-        aws->insert_toggle("#star.xpm",      "S", 3);
-        aws->insert_toggle("#rectangle.xpm", "R", 4);
-        aws->update_toggle_field();
+        insertShapeSelection(aws, "spHelix", AWAR_3D_SHAPES_HELIX);
+        insertShapeSelection(aws, "spUnpairedHelix", AWAR_3D_SHAPES_UNPAIRED_HELIX);
+        insertShapeSelection(aws, "spNonHelix", AWAR_3D_SHAPES_NON_HELIX);
     }
 
     aws->show();
