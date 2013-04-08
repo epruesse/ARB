@@ -66,6 +66,10 @@ public:
     AW_cb_struct *get_double_click_cb();
     long get_click_time() const;
     void set_click_time(long click_time);
+    
+private:
+    static gboolean draw_area_expose_cb(GtkWidget *widget, GdkEventExpose */*event*/, gpointer area_management);
+    static gboolean input_event_cb(GtkWidget *widget, GdkEvent *event, gpointer cb_struct);
 };
 
 

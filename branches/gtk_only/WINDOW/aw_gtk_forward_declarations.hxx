@@ -15,6 +15,7 @@ struct _GtkTreeView;
 struct _GtkListStore;
 struct _GtkTreeSelection;
 union _GdkEvent;
+struct _GdkEventExpose;
 
 typedef struct _GtkWidget        GtkWidget;
 typedef struct _GtkMenuBar       GtkMenuBar;
@@ -23,3 +24,4 @@ typedef struct _GtkTreeView      GtkTreeView;
 typedef struct _GtkListStore     GtkListStore;
 typedef struct _GtkTreeSelection GtkTreeSelection;
 typedef union  _GdkEvent         GdkEvent;
+typedef struct _GdkEventExpose   GdkEventExpose;

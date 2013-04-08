@@ -82,7 +82,7 @@ void AW_window::calculate_scrollbars(){
     aw_drawing_area_set_picture_size(prvt->drawing_area, width, height, scrollArea_width, scrollArea_height);
     
     char buffer[200];
-    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
+     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
     const int hpage_increment = scrollArea.r * get_root()->awar(buffer)->read_int() / 100;
     sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
     const int hstep_increment = get_root()->awar(buffer)->read_int();
