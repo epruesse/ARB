@@ -26,15 +26,13 @@ AW_at::AW_at(AW_window* pWindow) {
     window = pWindow;
     xfig_data = NULL;
     
-    length_of_buttons = 10;
-    height_of_buttons = 0;
     window->get_font_size(font_width, font_height);
 
     shadow_thickness  = 2;
     widget_mask       = AWM_ALL;
     
     shadow_thickness = 0;
-    length_of_buttons = 0;
+    length_of_buttons = 10;
     height_of_buttons = 0;
     length_of_label_for_inputfield = 0;
     highlight = 0;
@@ -268,10 +266,12 @@ void AW_at::increment_at_commands(int width, int height) {
 
     if (max_y_size < (y_for_next_button + biggest_height_of_buttons + 3.0)) {
         max_y_size = y_for_next_button + biggest_height_of_buttons + 3;
+        printf("AW_at: incremented max_y_size to %i\n", max_y_size);
     }
 
     if (max_x_size < (x_for_next_button + font_width)) {
         max_x_size = x_for_next_button + font_width;
+        printf("AW_at: incremented max_x_size to %i\n", max_x_size);
     }
 }
 

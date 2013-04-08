@@ -111,6 +111,11 @@ public:
     AW_window_gtk();
 
     /**
+     * show window
+     */
+    void show();
+
+    /**
      * Set window title.
      */
     void set_title(const char*); 

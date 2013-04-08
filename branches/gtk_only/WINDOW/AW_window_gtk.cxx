@@ -13,6 +13,9 @@ AW_window::AW_window_gtk::AW_window_gtk()
     gtk_window_add_accel_group(window, accel_group);
 } 
 
+void AW_window::AW_window_gtk::show() {
+    gtk_widget_show_all(GTK_WIDGET(window));
+}
 
 void AW_window::AW_window_gtk::set_title(const char* title) {
     gtk_window_set_title(window, title);
