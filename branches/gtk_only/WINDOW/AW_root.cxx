@@ -93,6 +93,16 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
     init_root(properties, program, NoExit, user_tracker, argc, argv);
 }
 
+void AW_root::setUserActionTracker(UserActionTracker *user_tracker) {
+    aw_assert(user_tracker);
+    aw_assert(!tracker->is_tracking());
+    aw_assert(!user_tracker->is_tracking());
+    aw_assert(tracker->is_replaceable());
+
+    delete tracker;
+    tracker = user_tracker;
+}
+
 AW_awar *AW_root::label_is_awar(const char *label) {
     AW_awar *awar_exists = NULL;
     size_t   off         = strcspn(label, "/ ");
