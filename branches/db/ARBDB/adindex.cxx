@@ -121,7 +121,7 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
      */
     GB_ERROR error = 0;
 
-    if (GB_TYPE(gbd) != GB_DB) {
+    if (gbd->is_entry()) {
         error = "GB_create_index used on non CONTAINER Type";
     }
     else if (GB_read_clients(gbd)<0) {
@@ -135,8 +135,6 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
         GB_INDEX_FIND(gbc, ifs, key_quark);
 
         if (!ifs) { // if not already have index (e.g. if fast-loaded)
-            GBDATA *gbf;
-
             ifs = (gb_index_files *)gbm_get_mem(sizeof(gb_index_files), GB_GBM_INDEX(gbc));
             SET_GB_INDEX_FILES_NEXT(ifs, GBCONTAINER_IFS(gbc));
             SET_GBCONTAINER_IFS(gbc, ifs);
@@ -148,14 +146,12 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
 
             SET_GB_INDEX_FILES_ENTRIES(ifs, (gb_if_entries **)gbm_get_mem(sizeof(void *)*(int)ifs->hash_table_size, GB_GBM_INDEX(gbc)));
 
-            for (gbf = GB_find_sub_by_quark(gbd, -1, 0, 0);
+            for (GBDATA *gbf = GB_find_sub_by_quark(gbd, -1, 0, 0);
                  gbf;
                  gbf = GB_find_sub_by_quark(gbd, -1, gbf, 0))
             {
-                if (GB_TYPE(gbf) == GB_DB) {
-                    GBDATA *gb2;
-
-                    for (gb2 = GB_find_sub_by_quark(gbf, key_quark, 0, 0);
+                if (gbf->is_container()) {
+                    for (GBDATA *gb2 = GB_find_sub_by_quark(gbf, key_quark, 0, 0);
                          gb2;
                          gb2 = GB_find_sub_by_quark(gbf, key_quark, gb2, 0))
                     {
@@ -198,8 +194,7 @@ NOT4PERL void GB_dump_indices(GBDATA *gbd) {
     // dump indices of container
 
     char *db_path = strdup(GB_get_db_path(gbd));
-
-    if (GB_TYPE(gbd) != GB_DB) {
+    if (gbd->is_entry()) {
         fprintf(stderr, "'%s' (%s) is no container.\n", db_path, GB_get_type_name(gbd));
     }
     else {
@@ -437,8 +432,7 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
 
         case GB_UNDO_ENTRY_TYPE_DELETED: {
             GBDATA *gbd = ue->d.gs.gbd;
-            int type = GB_TYPE(gbd);
-            if (type == GB_DB) {
+            if (gbd->is_container()) {
                 gbd = gb_make_pre_defined_container(ue->source->as_container(), gbd->as_container(), -1, ue->d.gs.key);
             }
             else {
@@ -452,8 +446,7 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
         case GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY:
         case GB_UNDO_ENTRY_TYPE_MODIFY: {
             GBDATA *gbd = ue->source;
-            int type  = GB_TYPE(gbd);
-            if (type != GB_DB) {
+            if (gbd->is_entry()) {
                 GBENTRY *gbe = gbd->as_entry();
                 gb_save_extern_data_in_ts(gbe); // check out and free string
 
@@ -462,7 +455,7 @@ static GB_ERROR undo_entry(g_b_undo_entry *ue) {
                     gbe->flags2.extern_data = ue->d.ts->flags2.extern_data;
 
                     memcpy(&gbe->info, &ue->d.ts->info, sizeof(gbe->info)); // restore old information
-                    if (type >= GB_BITS) {
+                    if (gbe->type() >= GB_BITS) {
                         if (gbe->stored_external()) {
                             gbe->info.ex.set_data(ue->d.ts->info.ex.data);
                         }
@@ -660,12 +653,11 @@ void gb_check_in_undo_modify(GB_MAIN_TYPE *Main, GBDATA *gbd) {
         ue->type      = GB_UNDO_ENTRY_TYPE_MODIFY;
         ue->flag      = gbd->flags.saved_flags;
 
-        long type = GB_TYPE(gbd);
-        if (type != GB_DB) {
+        if (gbd->is_entry()) {
             ue->d.ts = old;
             if (old) {
                 gb_add_ref_gb_transaction_save(old);
-                if (type >= GB_BITS && old->stored_external() && old->info.ex.data) {
+                if (gbd->type() >= GB_BITS && old->stored_external() && old->info.ex.data) {
                     ue->type = GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY;
                     // move external array from ts to undo entry struct
                     g_b_add_size_to_undo_entry(ue, old->info.ex.memsize);
@@ -681,8 +673,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA*& gbd) {
         return;
     }
 
-    long type = GB_TYPE(gbd);
-    if (type == GB_DB) {
+    if (gbd->is_container()) {
         GBCONTAINER *gbc = gbd->as_container();
         for (int index = 0; (index < gbc->d.nheader); index++) {
             GBDATA *gbd2 = GBCONTAINER_ELEM(gbc, index);
@@ -707,11 +698,11 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA*& gbd) {
 
     gb_pre_delete_entry(gbd);       // get the core of the entry
 
-    if (type == GB_DB) {
+    if (gbd->is_container()) {
         g_b_add_size_to_undo_entry(ue, sizeof(GBCONTAINER));
     }
     else {
-        if (type >= GB_BITS && gbd->as_entry()->stored_external()) {
+        if (gbd->type() >= GB_BITS && gbd->as_entry()->stored_external()) {
             /* we have copied the data structures, now
                mark the old as deleted !!! */
             g_b_add_size_to_undo_entry(ue, gbd->as_entry()->memsize());

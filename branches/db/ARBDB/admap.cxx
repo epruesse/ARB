@@ -331,12 +331,11 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
        changes     'offset' according to size of written data
        returns     offset of GBDATA in mapfile
      */
-    int  type = GB_TYPE(gbd);
     long gbdoffset;
 
     gb_assert(gbd->flags.temporary==0);
 
-    if (type==GB_DB) { // CONTAINER
+    if (gbd->is_container()) {
         GBCONTAINER *gbc     = gbd->as_container();
         GBCONTAINER  gbccopy = *gbc;
 

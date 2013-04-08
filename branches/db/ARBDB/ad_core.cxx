@@ -12,6 +12,7 @@
 #include "gb_ts.h"
 #include "gb_index.h"
 #include "gb_localdata.h"
+#include "gb_storage.h"
 
 // Copy all info + external data mem to an one step undo buffer
 // (needed to abort transactions)
@@ -168,11 +169,6 @@ static void gb_link_entry(GBCONTAINER* father, GBDATA *gbd, long index_pos) {
         return;
     }
 
-    if (GB_TYPE(father) != GB_DB) {
-        GB_internal_errorf("to read a database into a non database keyword %s,"
-                           "probably %%%% is missing\n", GB_read_key_pntr(father));
-        return;
-    }
     if (index_pos < 0) {
         index_pos = father->d.nheader++;
     }
@@ -391,7 +387,7 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
 void gb_pre_delete_entry(GBDATA *gbd) {
     // Reduce an entry to its absolute minimum and remove it from database
     GB_MAIN_TYPE *Main      = GB_MAIN_NO_FATHER(gbd);
-    long          type      = GB_TYPE(gbd);
+    GB_TYPES      type      = gbd->type();
     long          gbm_index = GB_GBM_INDEX(gbd);
 
     gb_callback *cb_next;
@@ -431,7 +427,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
 void gb_delete_entry(GBCONTAINER*& gbc) {
     long gbm_index = GB_GBM_INDEX(gbc);
 
-    gb_assert(GB_TYPE(gbc) == GB_DB);
+    gb_assert(gbc->type() == GB_DB);
 
     for (long index = 0; index < gbc->d.nheader; index++) {
         GBDATA *gbd = GBCONTAINER_ELEM(gbc, index);
@@ -728,15 +724,13 @@ void GB_MAIN_TYPE::free_all_keys() {
 #if defined(WARN_TODO)
 #warning useless return value - always 0
 #endif
-char *gb_abort_entry(GBDATA *gbd) {
-    int type = GB_TYPE(gbd);
-
+char *gb_abort_entry(GBDATA *gbd) { // @@@ result is always 0
     GB_ARRAY_FLAGS(gbd).flags = gbd->flags.saved_flags;
 
-    if (type != GB_DB) {
+    if (gbd->is_entry()) {
         GBENTRY *gbe = gbd->as_entry();
         if (gbe->get_oldData()) {
-            if (type >= GB_BITS) {
+            if (gbe->type() >= GB_BITS) {
                 gb_uncache(gbe);
                 gbe->free_data();
             }

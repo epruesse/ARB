@@ -732,7 +732,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                 }
 
                 if (index >= 0 && (gbd = GB_HEADER_LIST_GBD(header[index]))!=NULL) {
-                    if ((GB_TYPE(gbd) == GB_DB) != (type2 == GB_DB)) {
+                    if ((gbd->type() == GB_DB) != (type2 == GB_DB)) {
                         GB_internal_error("Type changed, you may loose data");
                         gb_delete_entry(gbd);
                         SET_GB_HEADER_LIST_GBD(header[index], NULL);

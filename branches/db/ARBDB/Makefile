@@ -160,6 +160,7 @@ ad_core.o: gb_localdata.h
 ad_core.o: gb_main.h
 ad_core.o: gb_memory.h
 ad_core.o: gb_prot.h
+ad_core.o: gb_storage.h
 ad_core.o: gb_ts.h
 ad_core.o: gb_tune.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_core.h

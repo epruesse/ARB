@@ -59,7 +59,7 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
     bool equal = false;
 
 #if defined(DEBUG)
-    GB_TYPES realtype = GB_TYPE(gb);
+    GB_TYPES realtype = gb->type();
     gb_assert(val);
     if (type == GB_STRING) {
         gb_assert(gb->is_a_string()); // gb_find_internal called with wrong type
@@ -87,7 +87,7 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
             break;
         }
         default: {
-            const char *err = GBS_global_string("Value search not supported for data type %i (%i)", GB_TYPE(gb), type);
+            const char *err = GBS_global_string("Value search not supported for data type %i (%i)", gb->type(), type);
             GB_internal_error(err);
             break;
         }
@@ -243,9 +243,10 @@ static GBDATA *find_sub_sub_by_quark(GBCONTAINER *const father, const char *key,
             continue;
         }
         gb = gbn;
-        if (GB_TYPE(gb) != GB_DB) continue;
-        res = GB_find_subcontent_by_quark(gb, sub_key_quark, type, val, case_sens, NULL, 0);
-        if (res) return res;
+        if (gb->is_container()) {
+            res = GB_find_subcontent_by_quark(gb, sub_key_quark, type, val, case_sens, NULL, 0);
+            if (res) return res;
+        }
     }
     return NULL;
 }
@@ -419,7 +420,7 @@ inline GBDATA *find_or_create(GBCONTAINER *gb_parent, const char *key, GB_TYPES 
     GBDATA *gbd = GB_entry(gb_parent, key);
     if (create) {
         if (gbd) {
-            GB_TYPES oldType = GB_TYPE(gbd);
+            GB_TYPES oldType = gbd->type();
             if (create != oldType) { // type mismatch
                 GB_export_errorf("Inconsistent type for field '%s' (existing=%i, expected=%i)", key, oldType, create);
                 gbd = NULL;
@@ -474,7 +475,7 @@ GBDATA *gb_search(GBCONTAINER *gbc, const char *key, GB_TYPES create, int intern
             case '/': {
                 GBDATA *gb_sub = find_or_create(gbc, firstKey, create ? GB_CREATE_CONTAINER : GB_FIND, internflag);
                 if (gb_sub) {
-                    if (GB_TYPE(gb_sub) == GB_DB) {
+                    if (gb_sub->is_container()) {
                         if (separator[1] == '/') {
                             GB_export_errorf("Invalid '//' in key '%s'", key);
                         }
@@ -520,7 +521,7 @@ GBDATA *gb_search(GBCONTAINER *gbc, const char *key, GB_TYPES create, int intern
                             }
                         }
                         else {
-                            if (GB_TYPE(gb_link) == GB_LINK) {
+                            if (gb_link->type() == GB_LINK) {
                                 GBDATA *gb_target = GB_follow_link(gb_link);
                                 if (!gb_target) GB_export_errorf("Link '%s' points nowhere", firstKey);
                                 else    gb_result = gb_search(gb_target->as_container(), separator+2, create, internflag);
@@ -551,12 +552,12 @@ GBDATA *GB_search(GBDATA *gbd, const char *fieldpath, GB_TYPES create) {
     return gb_search(gbd->expect_container(), fieldpath, create, 0);
 }
 
-static GBDATA *gb_expect_type(GBDATA *gbd, long expected_type, const char *fieldname) {
+static GBDATA *gb_expect_type(GBDATA *gbd, GB_TYPES expected_type, const char *fieldname) {
     gb_assert(expected_type != GB_FIND); // impossible
 
-    long type = GB_TYPE(gbd);
+    GB_TYPES type = gbd->type();
     if (type != expected_type) {
-        GB_export_errorf("Field '%s' has wrong type (found=%li, expected=%li)", fieldname, type, expected_type);
+        GB_export_errorf("Field '%s' has wrong type (found=%i, expected=%i)", fieldname, type, expected_type);
         gbd = 0;
     }
     return gbd;

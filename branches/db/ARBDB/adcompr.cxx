@@ -865,9 +865,7 @@ GB_DICTIONARY * gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key) {
 }
 
 bool GB_is_dictionary_compressed(GBDATA *gbd) {
-    GB_TYPES type = GB_TYPE(gbd);
-
-    if (type != GB_DB) {
+    if (gbd->is_entry()) {
         GBENTRY    *gbe  = gbd->as_entry();
         const char *data = gbe->data();
 
@@ -949,7 +947,7 @@ GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, size_t size,
         }
         dict = gb_get_dictionary(Main, key);
         if (dict) {
-            size_t real_size = size-(GB_TYPE(gbd)==GB_STRING); // for strings w/o trailing zero
+            size_t real_size = size-(gbd->type()==GB_STRING); // for strings w/o trailing zero; @@@ or use is_a_string()?
 
             if (real_size) {
                 data = gb_compress_by_dictionary(dict, source, real_size, msize, last_flag, 9999, 3);

@@ -11,10 +11,9 @@
 #include "gb_key.h"
 
 const char *GB_get_type_name(GBDATA *gbd) {
-    int         type = GB_TYPE(gbd);
     const char *type_name;
 
-    switch (type) {
+    switch (gbd->type()) {
         case GB_INT:    { type_name = "GB_INT"; break; }
         case GB_FLOAT:  { type_name = "GB_FLOAT"; break; }
         case GB_BYTE:   { type_name = "GB_BYTE"; break; }
@@ -27,7 +26,7 @@ const char *GB_get_type_name(GBDATA *gbd) {
         case GB_DB:     { type_name = "GB_DB"; break; }
         default: {
             static char *unknownType = 0;
-            freeset(unknownType, GBS_global_string_copy("<unknown GB_TYPE=%i>", type));
+            freeset(unknownType, GBS_global_string_copy("<unknown GB_TYPES=%i>", gbd->type()));
             type_name = unknownType;
             break;
         }
@@ -53,13 +52,12 @@ void GB_dump_db_path(GBDATA *gbd) {
 
 static void dump_internal(GBDATA *gbd, int *lines_allowed) {
     static int     indent            = 0;
-    int            type              = GB_TYPE(gbd);
     const char    *type_name         = GB_get_type_name(gbd);
     const char    *key_name          = 0;
     const char    *content           = 0;
     unsigned long  content_len       = 0;
     GBCONTAINER   *father            = GB_FATHER(gbd);
-    GBDATA         *gb_show_later     = 0;
+    GBDATA        *gb_show_later     = 0;
     char          *whatto_show_later = 0;
     bool           showChildren      = true;
 
@@ -123,7 +121,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
             content = "<can't examine - entry is deleted>";
         }
         else {
-            switch (type) {
+            switch (gbd->type()) {
                 case GB_INT:    { content = GBS_global_string("%li", GB_read_int(gbd)); break; }
                 case GB_FLOAT:  { content = GBS_global_string("%f", (float)GB_read_float(gbd)); break; }
                 case GB_BYTE:   { content = GBS_global_string("%i", GB_read_byte(gbd)); break; }
@@ -185,7 +183,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
         free(toFree);
     }
 
-    if (type==GB_DB && showChildren) {
+    if (gbd->is_container() && showChildren) {
         GBCONTAINER *gbc = gbd->as_container();
 
         if (gbd->flags2.folded_container) gb_unfold(gbc, -1, -1);
@@ -225,8 +223,7 @@ NOT4PERL void GB_dump_no_limit(GBDATA *gbd) {
 //      Fix database
 
 static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
-    int type = GB_TYPE(gbd);
-    if (type == GB_DB) {
+    if (gbd->is_container()) {
         for (GBDATA *gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
             gb_fix_recursive(gbp);
         }

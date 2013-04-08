@@ -261,7 +261,7 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
 
     *(gb_flag_types *)(&buffer[i++]) = gbd->flags;
 
-    if (GB_TYPE(gbd) == GB_DB) {
+    if (gbd->is_container()) {
         GBCONTAINER *gbc = gbd->as_container();
         int          end = gbc->d.nheader;
 
@@ -303,7 +303,7 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
     }
     else {
         GBENTRY *gbe = gbd->as_entry();
-        if ((unsigned int)GB_TYPE(gbe) < (unsigned int)GB_BITS) {
+        if (gbe->type() < GB_BITS) {
             buffer[i++] = gbe->info.i;
             buffer[1] = i;
             if (gbcm_write(socket, (const char *)buffer, i*sizeof(long))) {
@@ -336,23 +336,14 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
     } while (0)
 
 static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffer, long mode, GBDATA *gb_source, void *cs_main) {
-     /* read an entry into gbc
-      * mode ==  1  server reads data
-      * mode ==  0  client read all data
-      * mode == -1  client read but do not read subobjects -> folded cont
-      * mode == -2  client dummy read
-      */
-    GBDATA *gb2;
-    long    index_pos;
-    long    size;
-    long    id;
-    long    i;
-    int     type;
+    /* read an entry into gbc
+     * mode == 1  server reads data
+     * mode == 0  client read all data
+     * mode == -1  client read but do not read subobjects -> folded cont
+     * mode == -2  client dummy read
+     */
 
-    gb_flag_types  flags;
-    gb_flag_types3 flags3;
-
-    size = gbcm_read(socket, (char *)buffer, sizeof(long) * 3);
+    long size = gbcm_read(socket, (char *)buffer, sizeof(long) * 3);
     if (size != sizeof(long) * 3) {
         fprintf(stderr, "receive failed header size\n");
         return GBCM_SERVER_FAULT;
@@ -361,9 +352,10 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
         fprintf(stderr, "receive failed wrong command\n");
         return GBCM_SERVER_FAULT;
     }
-    id = buffer[2];
-    i = buffer[1];
-    i = sizeof(long) * (i - 3);
+
+    long id = buffer[2];
+    long i  = buffer[1];
+    i       = sizeof(long) * (i - 3);
 
     size = gbcm_read(socket, (char *)buffer, i);
     if (size != i) {
@@ -371,26 +363,28 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
         return GBCM_SERVER_FAULT;
     }
 
-    i = 0;
-    index_pos = buffer[i++];
+    i              = 0;
+    long index_pos = buffer[i++];
     if (!gb_source && gbc && index_pos<gbc->d.nheader) {
         gb_source = GBCONTAINER_ELEM(gbc, index_pos);
     }
-    flags = *(gb_flag_types *)(&buffer[i++]);
-    type = flags.type;
 
+    gb_flag_types flags = *(gb_flag_types *)(&buffer[i++]);
+    GB_TYPES      type  = GB_TYPES(flags.type);
+
+    GBDATA *gb2;
     if (mode >= -1) {   // real read data
         if (gb_source) {
-            int types = GB_TYPE(gb_source);
+            GB_TYPES stype = gb_source->type();
             gb2 = gb_source;
-            if (types != type) {
+            if (stype != type) {
                 GB_internal_error("Type changed in client: Connection aborted\n");
                 return GBCM_SERVER_FAULT;
             }
             if (mode>0) {   // transactions only in server
                 RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gb2);
             }
-            if (types != GB_DB) {
+            if (stype != GB_DB) {
                 gb_save_extern_data_in_ts(gb2->as_entry());
             }
             gb_touch_entry(gb2, GB_NORMAL_CHANGE);
@@ -425,9 +419,10 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
         }
     }
     else {
-    dont_create_in_a_folded_container :
+      dont_create_in_a_folded_container :
         if (type == GB_DB) {
-            flags3 = *((gb_flag_types3 *)&(buffer[i++]));
+            // gb_flag_types3 flags3 = *((gb_flag_types3 *)&(buffer[i++]));
+            ++i;
         }
         gb2 = 0;
     }
@@ -663,7 +658,7 @@ static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void *
     int          index, start, end;
 
     RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbc);
-    if (GB_TYPE(gbc) != GB_DB) return GBCM_SERVER_FAULT;
+    if (gbc->type() != GB_DB) return GBCM_SERVER_FAULT;
     if (gbcm_read_two(socket, GBCM_COMMAND_SETDEEP, 0, deep)) {
         return GBCM_SERVER_FAULT;
     }

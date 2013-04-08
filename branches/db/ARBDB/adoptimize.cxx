@@ -89,12 +89,10 @@ struct SingleDictTree {
 // ******************* Tool functions ******************
 
 inline cu_str get_data_n_size(GBDATA *gbd, size_t *size) {
-    GB_CSTR  data;
-    GB_TYPES type = GB_TYPE(gbd);
-
+    GB_CSTR data;
     *size = 0;
 
-    switch (type) {
+    switch (gbd->type()) {
         case GB_STRING: data = GB_read_char_pntr(gbd); break;
         case GB_LINK:   data = GB_read_link_pntr(gbd); break;
         case GB_BYTES:  data = GB_read_bytes_pntr(gbd); break;
@@ -180,11 +178,10 @@ static void g_b_opti_freeGbdByKey(O_gbdByKey *gbk) {
 
 static GB_ERROR gb_convert_compression(GBDATA *gbd) {
     GB_ERROR error = 0;
-    GB_TYPES type  = GB_TYPE(gbd);
 
-    if (type == GB_DB) {
+    if (gbd->is_container()) {
         for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child)) {
-            if (gb_child->flags.compressed_data || GB_TYPE(gb_child) == GB_DB) {
+            if (gb_child->flags.compressed_data || gb_child->is_container()) {
                 error = gb_convert_compression(gb_child);
                 if (error) break;
             }
@@ -198,7 +195,7 @@ static GB_ERROR gb_convert_compression(GBDATA *gbd) {
         size_t   new_size   = -1;
         int      expectData = 1;
 
-        switch (type) {
+        switch (gbd->type()) {
             case GB_STRING:
             case GB_LINK:
             case GB_BYTES:
@@ -229,7 +226,7 @@ static GB_ERROR gb_convert_compression(GBDATA *gbd) {
             }
         }
         else {
-            switch (type) {
+            switch (gbd->type()) {
                 case GB_STRING:
                     error             = GB_write_string(gbe, "");
                     if (!error) error = GB_write_string(gbe, str);
@@ -786,9 +783,8 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
 
     for (int cnt=0; cnt<gbk->cnt; cnt++) {
         GBDATA *gbd = gbk->gbds[cnt];
-        int type = GB_TYPE(gbd);
 
-        if (COMPRESSIBLE(type)) {
+        if (COMPRESSIBLE(gbd->type())) {
             size_t size;
             cu_str data = get_data_n_size(gbd, &size);
 
@@ -1786,9 +1782,8 @@ static DictTree build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, size
 
         for (cnt=0; cnt<gbk->cnt; cnt++) {
             GBDATA *gbd = gbk->gbds[cnt];
-            int type =  GB_TYPE(gbd);
 
-            if (COMPRESSIBLE(type)) {
+            if (COMPRESSIBLE(gbd->type())) {
                 size_t size;
                 cu_str data = get_data_n_size(gbd, &size);
                 cu_str lastWord;
@@ -2352,10 +2347,9 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp, size_t& old_size, size_t& new_siz
     new_size = 0;
 
     for (int i=0; i<gbkp->cnt && !error; i++) {
-        GBDATA *gbd  = gbkp->gbds[i];
-        int     type = GB_TYPE(gbd);
+        GBDATA *gbd = gbkp->gbds[i];
 
-        if (COMPRESSIBLE(type)) {
+        if (COMPRESSIBLE(gbd->type())) {
             size_t  size;
             char   *data;
 
@@ -2368,7 +2362,7 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp, size_t& old_size, size_t& new_siz
                 gb_assert(data[size-1] == 0);
             }
 
-            switch (type) {
+            switch (gbd->type()) {
                 case GB_STRING:
                     error             = GB_write_string(gbd, "");
                     if (!error) error = GB_write_string(gbd, data);
@@ -2441,7 +2435,6 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
             GB_DICTIONARY *dict;
             int            compression_mask;
             GB_CSTR        key_name = Main->keys[idx].key;
-            int            type;
             GBDATA        *gb_main  = Main->gb_main();
 
 #ifdef TEST_SOME
@@ -2454,7 +2447,8 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 #ifndef TEST_ONE
             if (!gbk[idx].cnt) continue; // there are no entries with this quark
 
-            type = GB_TYPE(gbk[idx].gbds[0]);
+            GB_TYPES type = gbk[idx].gbds[0]->type();
+
             GB_begin_transaction(gb_main);
             compression_mask = gb_get_compression_mask(Main, idx, type);
             GB_commit_transaction(gb_main);

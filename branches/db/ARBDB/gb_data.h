@@ -268,11 +268,6 @@ public:
     }
 };
 
-// --------------------
-//      type access
-
-inline GB_TYPES GB_TYPE(GBDATA *gbd) { return gbd->type(); } // @@@ elim
-
 // ----------------------
 //      parent access
 

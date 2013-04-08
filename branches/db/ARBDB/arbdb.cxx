@@ -70,8 +70,8 @@ inline GB_ERROR gb_transactable_type(GB_TYPES type, GBDATA *gbd) {
         error = "Entry has been deleted";
     }
     else {
-        GB_TYPES gb_type = GB_TYPE(gbd);
-        if (gb_type != type && (type != GB_STRING || GB_TYPE(gbd) != GB_LINK)) {
+        GB_TYPES gb_type = gbd->type();
+        if (gb_type != type && (type != GB_STRING || gb_type != GB_LINK)) {
             char *rtype    = strdup(GB_TYPES_2_name(type));
             char *rgb_type = strdup(GB_TYPES_2_name(gb_type));
             
@@ -804,32 +804,30 @@ inline long calc_size(gb_db_extended *gbe) {
         ? sizeof(*gbe) + calc_size(gbe->callback) + calc_size(gbe->old)
         : 0;
 }
-inline long calc_size(GBDATA *gbd) {
-    if (gbd) {
-        gb_assert(GB_TYPE(gbd) != GB_DB);
-        return sizeof(*gbd) + calc_size(gbd->ext);
-    }
-    return 0;
+inline long calc_size(GBENTRY *gbe) {
+    return gbe
+        ? sizeof(*gbe) + calc_size(gbe->ext)
+        : 0;
 }
-inline long calc_size(GBCONTAINER *gbd) {
-    return gbd
-        ? sizeof(*gbd) + calc_size(gbd->ext) + calc_size(GBCONTAINER_IFS(gbd))
+inline long calc_size(GBCONTAINER *gbc) {
+    return gbc
+        ? sizeof(*gbc) + calc_size(gbc->ext) + calc_size(GBCONTAINER_IFS(gbc))
         : 0;
 }
 
 long GB_calc_structure_size(GBDATA *gbd) {
     long size = 0;
-    if (GB_TYPE(gbd) == GB_DB) {
-        size = calc_size((GBCONTAINER*)gbd);
+    if (gbd->is_container()) {
+        size = calc_size(gbd->as_container());
     }
     else {
-        size = calc_size(gbd);
+        size = calc_size(gbd->as_entry());
     }
     return size;
 }
 
 void GB_SizeInfo::collect(GBDATA *gbd) {
-    if (GB_TYPE(gbd) == GB_DB) {
+    if (gbd->is_container()) {
         ++containers;
         for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child)) {
             collect(gb_child);
@@ -840,7 +838,7 @@ void GB_SizeInfo::collect(GBDATA *gbd) {
         mem += GB_read_memuse(gbd);
 
         long size;
-        switch (GB_TYPE(gbd)) {
+        switch (gbd->type()) {
             case GB_INT:    size = sizeof(int); break;
             case GB_FLOAT:  size = sizeof(float); break;
             case GB_BYTE:   size = sizeof(char); break;
@@ -1046,9 +1044,8 @@ float *GB_read_floats(GBDATA *gbd) { // @@@ only used in unittest - check usage 
     return  (float *)GB_memdup((char *)f, gbd->as_entry()->size()*sizeof(float));
 }
 
-char *GB_read_as_string(GBDATA *gbd)
-{
-    switch (GB_TYPE(gbd)) {
+char *GB_read_as_string(GBDATA *gbd) {
+    switch (gbd->type()) {
         case GB_STRING: return GB_read_string(gbd);
         case GB_LINK:   return GB_read_link(gbd);
         case GB_BYTE:   return GBS_global_string_copy("%i", GB_read_byte(gbd));
@@ -1256,7 +1253,7 @@ GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, size_t bytes_size, size_t sto
     GBENTRY      *gbe  = gbd->as_entry();
     GB_MAIN_TYPE *Main = GB_MAIN(gbe);
     GBQUARK       key  = GB_KEY_QUARK(gbe);
-    GB_TYPES      type = GB_TYPE(gbe);
+    GB_TYPES      type = gbe->type();
 
     gb_assert(implicated(type == GB_STRING, stored_size == bytes_size-1)); // size constraint for strings not fulfilled!
 
@@ -1408,9 +1405,8 @@ GB_ERROR GB_write_floats(GBDATA *gbd, const float *f, long size)
     return GB_write_pntr(gbd, (char *)f, size*sizeof(float), size);
 }
 
-GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val)
-{
-    switch (GB_TYPE(gbd)) {
+GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val) {
+    switch (gbd->type()) {
         case GB_STRING: return GB_write_string(gbd, val);
         case GB_LINK:   return GB_write_link(gbd, val);
         case GB_BYTE:   return GB_write_byte(gbd, atoi(val));
@@ -1516,7 +1512,7 @@ void GB_pop_my_security(GBDATA *gbd) {
 
 GB_TYPES GB_read_type(GBDATA *gbd) {
     GB_test_transaction(gbd);
-    return (GB_TYPES)GB_TYPE(gbd);
+    return gbd->type();
 }
 
 bool GB_is_container(GBDATA *gbd) {
@@ -1681,11 +1677,11 @@ GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
         return NULL;
     }
     GB_test_transaction(father);
-    if (GB_TYPE(father)!=GB_DB) {
+    if (father->is_entry()) {
         GB_export_errorf("GB_create: father (%s) is not of GB_DB type (%i) (creating '%s')",
-                         GB_read_key_pntr(father), GB_TYPE(father), key);
+                         GB_read_key_pntr(father), father->type(), key);
         return NULL;
-    };
+    }
 
     if (type == GB_POINTER) {
         if (!GB_in_temporary_branch(father)) {
@@ -1736,37 +1732,31 @@ GBDATA *GB_create_container(GBDATA *father, const char *key) {
 #endif
 
 static GB_ERROR gb_set_compression(GBDATA *source) {
-    long type;
     GB_ERROR error = 0;
-    GBDATA *gb_p;
-    char *string;
-
     GB_test_transaction(source);
-    type = GB_TYPE(source);
 
-    switch (type) {
-        case GB_STRING:
-            string = GB_read_string(source);
+    switch (source->type()) {
+        case GB_STRING: {
+            char *str = GB_read_string(source);
             GB_write_string(source, "");
-            GB_write_string(source, string);
-            free(string);
+            GB_write_string(source, str);
+            free(str);
             break;
+        }
         case GB_BITS:
         case GB_BYTES:
         case GB_INTS:
         case GB_FLOATS:
             break;
         case GB_DB:
-            for (gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
+            for (GBDATA *gb_p = GB_child(source); gb_p && !error; gb_p = GB_nextChild(gb_p)) {
                 error = gb_set_compression(gb_p);
-                if (error) break;
             }
             break;
         default:
             break;
     }
-    if (error) return error;
-    return 0;
+    return error;
 }
 
 bool GB_allow_compression(GBDATA *gb_main, bool allow_compression) {
@@ -1829,10 +1819,10 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
     GB_ERROR error = 0;
     GB_test_transaction(source);
 
-    GB_TYPES type = GB_TYPE(source);
-    if (GB_TYPE(dest) != type) {
+    GB_TYPES type = source->type();
+    if (dest->type() != type) {
         return GB_export_errorf("incompatible types in GB_copy (source %s:%u != %s:%u",
-                                GB_read_key_pntr(source), type, GB_read_key_pntr(dest), GB_TYPE(dest));
+                                GB_read_key_pntr(source), type, GB_read_key_pntr(dest), dest->type());
     }
 
     switch (type) {
@@ -1867,7 +1857,7 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
         case GB_DB: {
             if (!dest->is_container()) {
                 GB_ERROR err = GB_export_errorf("GB_COPY Type conflict %s:%i != %s:%i",
-                                                GB_read_key_pntr(dest), GB_TYPE(dest), GB_read_key_pntr(source), GB_DB);
+                                                GB_read_key_pntr(dest), dest->type(), GB_read_key_pntr(source), GB_DB);
                 GB_internal_error(err);
                 return err;
             }
@@ -1879,16 +1869,15 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
             if (destc->flags2.folded_container)   gb_unfold(destc, 0, -1);
 
             for (GBDATA *gb_p = GB_child(sourcec); gb_p; gb_p = GB_nextChild(gb_p)) {
-                GB_TYPES    type2 = (GB_TYPES)GB_TYPE(gb_p);
-                const char *key   = GB_read_key_pntr(gb_p);
+                const char *key = GB_read_key_pntr(gb_p);
                 GBDATA     *gb_d;
 
-                if (type2 == GB_DB) {
+                if (gb_p->is_container()) {
                     gb_d = GB_create_container(destc, key);
                     gb_create_header_array(gb_d->as_container(), gb_p->as_container()->d.size);
                 }
                 else {
-                    gb_d = GB_create(destc, key, type2);
+                    gb_d = GB_create(destc, key, gb_p->type());
                 }
 
                 if (!gb_d) error = GB_await_error();
@@ -2752,7 +2741,7 @@ static int gb_info(GBDATA *gbd, int deep) {
     if (gbd==NULL) { printf("NULL\n"); return -1; }
     GB_push_transaction(gbd);
 
-    GB_TYPES type = GB_TYPE(gbd);
+    GB_TYPES type = gbd->type();
 
     if (deep) {
         printf("    ");

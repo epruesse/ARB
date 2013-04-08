@@ -451,8 +451,8 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
         }
         else {
             GBENTRY *gbe = gb->as_entry();
-            switch (GB_TYPE(gbe)) {
-                case    GB_STRING:
+            switch (gbe->type()) {
+                case GB_STRING:
                     strng = GB_read_char_pntr(gbe);
                     if (!strng) {
                         strng = "<entry was broken - replaced during ASCIIsave/arb_repair>";
@@ -466,7 +466,7 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
                     GBS_fwrite_string(strng, out);
                     putc('\n', out);
                     break;
-                case    GB_LINK:
+                case GB_LINK:
                     strng = GB_read_link_pntr(gbe);
                     if (*strng == '%') {
                         putc('%', out);
@@ -555,7 +555,7 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
     GBCONTAINER *gbc  = 0;
     GBENTRY     *gbe  = 0;
     long         size = 0;
-    int          type = GB_TYPE(gbd);
+    GB_TYPES     type = gbd->type();
 
     if (type == GB_DB) {
         gbc = gbd->as_container();
