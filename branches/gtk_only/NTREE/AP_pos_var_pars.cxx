@@ -58,13 +58,13 @@ const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tba
         if (tree->gb_node) {
             GBDATA *gb_data = GBT_read_sequence(tree->gb_node, ali_name);
             if (gb_data) {
-                long seq_len = ali_len;
+                size_t seq_len = ali_len;
                 if (GB_read_string_count(gb_data) < seq_len) {
                     seq_len = GB_read_string_count(gb_data);
                 }
 
                 unsigned char *sequence = (unsigned char*)GB_read_char_pntr(gb_data);
-                for (long i = 0; i< seq_len; i++) {
+                for (size_t i = 0; i< seq_len; i++) {
                     long L = char_2_freq[sequence[i]];
                     if (L) {
                         ap_assert(frequencies[L]);
@@ -73,10 +73,10 @@ const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tba
                 }
 
                 if (bases) {
-                    for (long i = 0; i< seq_len; i++) bases[i] = char_2_transition[sequence[i]];
+                    for (size_t i = 0; i< seq_len; i++) bases[i] = char_2_transition[sequence[i]];
                 }
                 if (tbases) {
-                    for (long i = 0; i< seq_len; i++) tbases[i] = char_2_transversion[sequence[i]];
+                    for (size_t i = 0; i< seq_len; i++) tbases[i] = char_2_transversion[sequence[i]];
                 }
             }
         }

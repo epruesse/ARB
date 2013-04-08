@@ -443,6 +443,8 @@ void GBK_terminatef(const char *templat, ...) {
     GBK_terminate(error);
 }
 
+// AISC_MKPT_PROMOTE: inline void GBK_terminate_on_error(const char *error) { if (error) GBK_terminatef("Fatal error: %s", error); }
+
 void GB_warning(const char *message) {
     /* If program uses GUI, the message is printed via aw_message, otherwise it goes to stdout
      * see also : GB_information

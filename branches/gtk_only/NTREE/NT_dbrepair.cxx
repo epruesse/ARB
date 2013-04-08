@@ -423,7 +423,8 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
                             // delete old-format entries
                             GBvec::const_iterator end = toDelete.end();
                             for (GBvec::const_iterator i = toDelete.begin(); i != end && !error; ++i) {
-                                error = GB_delete(*i);
+                                GBDATA *gb_del = *i;
+                                error = GB_delete(gb_del);
                             }
 
                             if (!error) fixed_genes++;

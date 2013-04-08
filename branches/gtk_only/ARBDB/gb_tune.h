@@ -25,9 +25,9 @@ extern const int GB_MAX_QUICK_SAVES;                // maximum number of quick s
 
 extern const int GB_MAX_LOCAL_SEARCH;               // Maximum number of children before doing a search in the database server
 
-extern const int GBTUM_SHORT_STRING_SIZE;           // the maximum strlen which is stored in short string format
-extern const int GB_HUFFMAN_MIN_SIZE;               // min length, before huffmann code is used
-extern const int GB_RUNLENGTH_MIN_SIZE;             // min length, before runlength code is used
+extern const int      GBTUM_SHORT_STRING_SIZE;      // the maximum strlen which is stored in short string format
+extern const unsigned GB_HUFFMAN_MIN_SIZE;          // min length, before huffmann code is used
+extern const unsigned GB_RUNLENGTH_MIN_SIZE;        // min length, before runlength code is used
 
 extern const int GB_MAX_REDO_CNT;                   // maximum number of redos
 extern const int GB_MAX_UNDO_CNT;                   // maximum number of undos

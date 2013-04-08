@@ -54,7 +54,7 @@ namespace QUERY {
         AW_window         *aws;
         GBDATA            *gb_main;                       // the main database (in merge tool: source db in left query; dest db in right query)
         GBDATA            *gb_ref;                        // second reference database (only used by merge tool; dest db in left query; source db in right query)
-        bool               expect_hit_in_ref_list;        // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for DBII-query)
+        bool               expect_hit_in_ref_list;        // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for target-DB-query)
         AWAR               species_name;
         const char        *tree_name;
         AWAR               awar_keys[QUERY_SEARCHES];

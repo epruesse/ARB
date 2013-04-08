@@ -13,23 +13,22 @@ SUB	arb_merge.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Open, Merge, Create ARB Databases
+TITLE		ARB intro window (Open, merge, create ARB databases)
 
 DESCRIPTION	Allows to open an existing 'ARB' database, to merge two 'ARB'
 		databases, and to create a new 'ARB' database importing external
 		data.
 
-		To open an existing 'ARB' data base, select a '*.arb' file from
-			the 'Existing Files and Directories' subwindow and press
-			the 'OPEN EXISTING' button to display the 'ARB_NT' main
-			window.
+		To open an existing 'ARB' database, select a '*.arb' file from
+                the 'Existing Files and Directories' subwindow and press
+                the 'OPEN SELECTED' button to display the 'ARB_NT' main
+                window.
 
-		To merge (parts of) two 'ARB' databases, press the 'MERGE TWO
-			ARB DATABASES' button to display the 'SELECT AND MERGE
-			TWO DATABASES' window.
+		To merge (parts of) two 'ARB' databases,
+                press the 'MERGE TWO ARB DATABASES' button.
 
 		To create a new 'ARB' database, press the 'CREATE AND IMPORT'
-			button to display the 'ARB IMPORT' window.
+                button to display the 'ARB IMPORT' window.
 
 NOTES		A suffix typed or displayed in the 'Suffix' subwindow is used as
 		a filter for the file names to be displayed in the 'Existing
@@ -50,7 +49,7 @@ NOTES		A suffix typed or displayed in the 'Suffix' subwindow is used as
 		Details can be found in the command line help.
                 Goto a shell and type
 
-                        arb_ntree --help
+                        arb --help
 
 EXAMPLES	None
 

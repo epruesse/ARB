@@ -45,7 +45,7 @@ inline const char *awar_name_tmp(int db_nr, const char *name) {
 
 AW_window *MG_merge_alignment_cb(AW_root *awr);
 AW_window *MG_merge_names_cb(AW_root *awr);
-AW_window *MG_merge_species_cb(AW_root *awr);
+AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new);
 AW_window *MG_select_preserves_cb(AW_root *awr);
 AW_window *MG_merge_extendeds_cb(AW_root *awr);
 AW_window *MG_merge_trees_cb(AW_root *awr);
@@ -60,7 +60,7 @@ void MG_create_species_awars(AW_root *aw_root, AW_default aw_def);
 void MG_create_rename_awars(AW_root *aw_root, AW_default aw_def);
 
 
-void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBDATA *gb_dest);
+void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_src, GBDATA *gb_dst);
 
 void     MG_set_renamed(bool renamed, AW_root *aw_root, const char *reason);
 GB_ERROR MG_expect_renamed();
@@ -71,7 +71,7 @@ int MG_copy_and_check_alignments(AW_window *aww);
 
 void       MG_create_gene_species_awars(AW_root *aw_root, AW_default aw_def);
 AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root);
-GB_ERROR   MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, GB_HASH *error_suppressor, GB_HASH *source_organism_hash); // export defined fields
+GB_ERROR   MG_export_fields(AW_root *aw_root, GBDATA *gb_src, GBDATA *gb_dst, GB_HASH *error_suppressor, GB_HASH *source_organism_hash); // export defined fields
 
 #define AWAR_REMAP_SPECIES_LIST AWAR_MERGE_SAV "remap_species_list"
 #define AWAR_REMAP_ENABLE       AWAR_MERGE_SAV "remap_enable"
