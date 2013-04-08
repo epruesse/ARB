@@ -209,6 +209,9 @@ protected:
     void create_devices();
     void set_background(const char *colorname, GtkWidget* w);
 
+    /* put a widget into prvt->fixedArea according to _at */
+    void put_with_label(GtkWidget* wigdget);
+
     void wm_activate();                                // un-minimize window and give it the focus (use show_and_activate())
 
     /** 
@@ -263,8 +266,6 @@ public:
     void show_modal();
     void set_window_title_intern(char *title);
 
-    int calculate_string_width(int columns) const;
-    int calculate_string_height(int columns, int offset) const;
     char *align_string(const char *string, int columns);
 
     void update_label(GtkWidget* widget, const char *var_value);
@@ -283,7 +284,7 @@ public:
     void _get_area_size(AW_area area, AW_screen_area *square);
     void get_scrollarea_size(AW_screen_area *square);
     
-    int label_widget(void *wgt, AW_label str, char *mnemonic=0, int width = 0, int alignment = 0);
+    int label_widget(void *wgt, const char *str, char *mnemonic=0, int width = 0, int alignment = 0);
 
     // ------------------------------
     //      The read only section
@@ -369,14 +370,14 @@ public:
      * @param mnemonic FIXME
      * @param mask FIXME
      */
-    void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
+    void create_menu(const char *name, const char *mnemonic, AW_active mask = AWM_ALL);
     /**
      * Insert a sub menu into the last created menu.
      * @param name Name of the sub menu.
      * @param mnemonic FIXME
      * @param mask FIXME
      */
-    void insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
+    void insert_sub_menu(const char *name, const char *mnemonic, AW_active mask = AWM_ALL);
     /**
      * Insert a menu item into the last created menu or sub menu.
      * @param id FIXME
@@ -388,9 +389,9 @@ public:
      * @param cd1 Callback parameter 1.
      * @param cd2 Callback parameter 2.
      */
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2);
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, cd1, 0); }
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, 0, 0); }
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2);
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, cd1, 0); }
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, 0, 0); }
     /**
      * insert a separator into the currently open menu
      */
@@ -401,7 +402,7 @@ public:
      */
     void close_sub_menu();
 
-    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    void insert_help_topic(const char *name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
 
 
     // ************** Control the size of the main drawing area + scrollbars  *********
@@ -512,8 +513,8 @@ public:
     void d_callback(AW_cb_struct * /* owner */ awcbs); // Calls f with
     // *** create the buttons ********
 
-    void   create_button(const char *macro_name, AW_label label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
-    void   create_autosize_button(const char *macro_name, AW_label label, const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
+    void   create_button(const char *macro_name, const char *label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
+    void   create_autosize_button(const char *macro_name, const char *label, const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
     GtkWidget* get_last_widget() const;
 
     void create_toggle(const char *var_name);  // int 0/1  string yes/no   float undef
@@ -528,7 +529,7 @@ public:
 
 
     // ***** option_menu is a menu where only one selection is visible at a time
-    AW_option_menu_struct *create_option_menu(const char *awar_name, AW_label label= NULL, const char *mnemonic= NULL);
+    AW_option_menu_struct *create_option_menu(const char *awar_name, const char *label= NULL, const char *mnemonic= NULL);
     void clear_option_menu(AW_option_menu_struct *oms);  // used to redefine available options
 
 private:
@@ -540,40 +541,40 @@ private:
     GType convert_aw_type_to_gtk_type(AW_VARIABLE_TYPE aw_type);
     
     template <class T>
-    void insert_option_internal(AW_label choice_label, const char *mnemonic, T var_value,  const char *name_of_color, bool default_option);
+    void insert_option_internal(const char *choice_label, const char *mnemonic, T var_value,  const char *name_of_color, bool default_option);
 
     template <class T>
-    void insert_toggle_internal(AW_label toggle_label, const char *mnemonic, T var_value, bool default_toggle);
+    void insert_toggle_internal(const char *toggle_label, const char *mnemonic, T var_value, bool default_toggle);
 
     
 public:
 
     // for string
-    void insert_option         (AW_label choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0);  // for string
-    void insert_default_option (AW_label choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0);
+    void insert_option         (const char *choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0);  // for string
+    void insert_default_option (const char *choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0);
     // for int
-    void insert_option         (AW_label choice_label, const char *mnemonic, int var_value,          const char *name_of_color = 0);  // for int
-    void insert_default_option (AW_label choice_label, const char *mnemonic, int var_value,          const char *name_of_color = 0);
+    void insert_option         (const char *choice_label, const char *mnemonic, int var_value,          const char *name_of_color = 0);  // for int
+    void insert_default_option (const char *choice_label, const char *mnemonic, int var_value,          const char *name_of_color = 0);
     // for float
-    void insert_option         (AW_label choice_label, const char *mnemonic, float var_value,        const char *name_of_color = 0);  // for float
-    void insert_default_option (AW_label choice_label, const char *mnemonic, float var_value,        const char *name_of_color = 0);
+    void insert_option         (const char *choice_label, const char *mnemonic, float var_value,        const char *name_of_color = 0);  // for float
+    void insert_default_option (const char *choice_label, const char *mnemonic, float var_value,        const char *name_of_color = 0);
 
     void update_option_menu();
     void refresh_option_menu(AW_option_menu_struct *);  // don't use this
 
 
     // ***** toggle_field is a static menu (all items are visible and only one is selected)
-    void create_toggle_field(const char *awar_name, AW_label label, const char *mnemonic);
+    void create_toggle_field(const char *awar_name, const char *label, const char *mnemonic);
     void create_toggle_field(const char *awar_name, int orientation = 0);  // 1 = horizontal
     // for string
-    void insert_toggle(AW_label toggle_label, const char *mnemonic, const char *var_value);
-    void insert_default_toggle(AW_label toggle_label, const char *mnemonic, const char *var_value);
+    void insert_toggle(const char *toggle_label, const char *mnemonic, const char *var_value);
+    void insert_default_toggle(const char *toggle_label, const char *mnemonic, const char *var_value);
     // for int
-    void insert_toggle(AW_label toggle_label, const char *mnemonic, int var_value);
-    void insert_default_toggle(AW_label toggle_label, const char *mnemonic, int var_value);
+    void insert_toggle(const char *toggle_label, const char *mnemonic, int var_value);
+    void insert_default_toggle(const char *toggle_label, const char *mnemonic, int var_value);
     // for float
-    void insert_toggle(AW_label toggle_label, const char *mnemonic, float var_value);
-    void insert_default_toggle(AW_label toggle_label, const char *mnemonic, float var_value);
+    void insert_toggle(const char *toggle_label, const char *mnemonic, float var_value);
+    void insert_default_toggle(const char *toggle_label, const char *mnemonic, float var_value);
     void update_toggle_field();
 
     // ***** selection list is a redefinable scrolled list of items
@@ -581,8 +582,8 @@ public:
     AW_selection_list *create_selection_list(const char *awar_name, int columns = 4, int rows = 4);
 
     // gtk ready made buttons
-    void create_font_button(const char *awar_name, AW_label label);
-    void create_color_button(const char *awar_name, AW_label label);
+    void create_font_button(const char *awar_name, const char *label);
+    void create_color_button(const char *awar_name, const char *label);
 };
 
 

@@ -252,7 +252,13 @@ void AW_root::init_root(const char* properties, const char *programname, bool No
     no_exit      = NoExit;
     program_name = strdup(programname);
 
-    gtk_init(argc, argv);
+    int dargc = 2;
+    char *name = strdup("arb_ntree");
+    char *arg = strdup("--g-fatal-warnings");
+    char *dargv[] = {name, arg};
+    char **dargvp = dargv;
+
+    gtk_init(&dargc, &dargvp);
 
     // add our own icon path to the gtk theme search path
     gtk_icon_theme_prepend_search_path(gtk_icon_theme_get_default(),
