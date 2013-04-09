@@ -266,12 +266,10 @@ void AW_at::increment_at_commands(int width, int height) {
 
     if (max_y_size < (y_for_next_button + biggest_height_of_buttons + 3.0)) {
         max_y_size = y_for_next_button + biggest_height_of_buttons + 3;
-        printf("AW_at: incremented max_y_size to %i\n", max_y_size);
     }
 
     if (max_x_size < (x_for_next_button + font_width)) {
         max_x_size = x_for_next_button + font_width;
-        printf("AW_at: incremented max_x_size to %i\n", max_x_size);
     }
 }
 
