@@ -186,6 +186,7 @@ public:
     ~AW_root();
 
     void setUserActionTracker(UserActionTracker *user_tracker);
+    UserActionTracker *getTracker() { return tracker; }
 
     enum { AW_MONO_COLOR, //DO NOT USE!!!
            AW_RGB_COLOR
