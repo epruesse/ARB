@@ -20,8 +20,6 @@
 
 #include "aw_gtk_forward_declarations.hxx"
 
-class AW_window;
-
 //gtk boilerplate 
 G_BEGIN_DECLS
 
