@@ -23,7 +23,7 @@ class RequiresActionTracker : public UserActionTracker {
     // that has to be added later (when DB is available)
     //
     // Always "records", i.e. fails instantly on first GUI-action-callback
-    inline void needs_to_be_replaced() {
+    __ATTR__NORETURN inline void needs_to_be_replaced() {
         // this tracker needs to be replaced before any UI action is performed
         GBK_terminate("Broken macro recording ability (no valid tracker)");
     }
@@ -31,8 +31,8 @@ public:
     RequiresActionTracker() {
         set_tracking(true); // always track
     }
-    void track_action(const char *) OVERRIDE { needs_to_be_replaced(); }
-    void track_awar_change(AW_awar *) OVERRIDE { needs_to_be_replaced(); }
+    __ATTR__NORETURN void track_action(const char *) OVERRIDE { needs_to_be_replaced(); }
+    __ATTR__NORETURN void track_awar_change(AW_awar *) OVERRIDE { needs_to_be_replaced(); }
     bool is_replaceable() const OVERRIDE { return true; }
 };
 
