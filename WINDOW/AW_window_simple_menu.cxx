@@ -20,15 +20,10 @@ void AW_window_simple_menu::init(AW_root */*root_in*/, const char *window_name, 
     gtk_menu_item_set_submenu(help_item, GTK_WIDGET(prvt->help_menu));
     gtk_menu_shell_append(GTK_MENU_SHELL(prvt->menu_bar), GTK_WIDGET(help_item));
 
-    // create drawing/info area
-    GtkWidget *fixed_size_area = gtk_fixed_new();
-    prvt->fixed_size_area = GTK_FIXED(fixed_size_area);
-    prvt->areas[AW_INFO_AREA] = new AW_area_management(fixed_size_area, fixed_size_area); 
-
     // put menu+drawing area into vbox into window
     GtkWidget *vbox = gtk_vbox_new(false, 0);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->menu_bar), false, false, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), fixed_size_area, false, false, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
     gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
 
     gtk_widget_realize(GTK_WIDGET(prvt->window));
@@ -40,6 +35,4 @@ void AW_window_simple_menu::init(AW_root */*root_in*/, const char *window_name, 
                      G_CALLBACK(&AW_window_simple_menu::hide),
                      (gpointer)this);
     */
-
-    FIXME("AW_window_simple_menu::init partially redundant with AW_window_simple::init");
 }

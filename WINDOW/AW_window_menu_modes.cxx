@@ -1,6 +1,3 @@
-
-
-
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_window.hxx"
 #include "aw_window_gtk.hxx"
@@ -43,12 +40,6 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     // create vertical toolbar ('mode menu')
     prvt->mode_menu = GTK_TOOLBAR(gtk_toolbar_new());
     gtk_toolbar_set_orientation(prvt->mode_menu, GTK_ORIENTATION_VERTICAL);
-
-    // create area for buttons at top ('info area')
-    prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
-    FIXME("form should be a frame around area?!");
-    prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), GTK_WIDGET(prvt->fixed_size_area)); 
-
 
     GtkWidget *scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
     //only show scrollbars if they are needed
