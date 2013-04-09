@@ -192,6 +192,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/cb.h
 DI_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_main.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_main.o: $(ARBHOME)/INCLUDE/macros.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 DI_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_main.o: $(ARBHOME)/INCLUDE/test_global.h

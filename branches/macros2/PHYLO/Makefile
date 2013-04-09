@@ -154,6 +154,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/cb.h
 PH_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PH_main.o: $(ARBHOME)/INCLUDE/gccver.h
+PH_main.o: $(ARBHOME)/INCLUDE/macros.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_main.o: $(ARBHOME)/INCLUDE/test_global.h
 

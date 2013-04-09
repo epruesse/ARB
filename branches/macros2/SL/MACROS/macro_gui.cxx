@@ -31,14 +31,10 @@
 #define AWAR_MACRO_RECORDING_EXPAND     AWAR_MACRO_BASE"/expand"
 #define AWAR_MACRO_RECORDING_RUNB4      AWAR_MACRO_BASE"/runb4"
 
-inline MacroRecorder& get_recorder(AW_root *awr) {
+inline MacroRecorder *get_recorder(AW_root *awr) {
     UserActionTracker *mr = awr->get_tracker();
     ma_assert(mr);
-
-    MacroRecorder *smr = dynamic_cast<MacroRecorder*>(mr);
-    ma_assert(smr);
-
-    return *smr;
+    return dynamic_cast<MacroRecorder*>(mr);
 }
 
 static void awt_delete_macro_cb(AW_window *aww) {
@@ -69,7 +65,7 @@ static void awt_exec_macro_cb(AW_window *aww, AW_CL cl_gb_main) {
     char    *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
 
 
-    GB_ERROR error = get_recorder(awr).execute(gb_main, macroName, macro_execution_finished, (AW_CL)macroName);
+    GB_ERROR error = get_recorder(awr)->execute(gb_main, macroName, macro_execution_finished, (AW_CL)macroName);
 
     if (error) {
         aw_message(error);
@@ -83,7 +79,7 @@ static void awt_start_macro_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_app_na
     GB_ERROR    error    = NULL;
 
     if (awr->is_tracking()) {
-        error = get_recorder(awr).stop_recording();
+        error = get_recorder(awr)->stop_recording();
     }
     else {
         bool expand = awr->awar(AWAR_MACRO_RECORDING_EXPAND)->read_int();
@@ -97,7 +93,7 @@ static void awt_start_macro_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_app_na
             if (runb4) awt_exec_macro_cb(aww, cl_gb_main);
 
             char *sac = GBS_global_string_copy("%s/%s", aww->window_defaults_name, AWAR_MACRO_RECORD_ID);
-            error     = get_recorder(awr).start_recording(macroName, app_name, sac, expand);
+            error     = get_recorder(awr)->start_recording(macroName, app_name, sac, expand);
             free(sac);
         }
         free(macroName);
@@ -170,7 +166,11 @@ void awt_execute_macro(GBDATA *gb_main, AW_root *root, const char *macroname) {
 
     GB_ERROR error       = 0;
     if (!fullname) error = "file not found";
-    else     error       = get_recorder(root).execute(gb_main, fullname, NULL, 0);
+    else {
+        MacroRecorder *recorder = get_recorder(root);
+        if (!recorder) error    = "macro playback only available in server";
+        else           error    = recorder->execute(gb_main, fullname, NULL, 0);
+    }
 
     if (error) {
         aw_message(GBS_global_string("Can't execute macro '%s' (Reason: %s)", macroname, error));

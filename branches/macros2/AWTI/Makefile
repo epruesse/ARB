@@ -106,6 +106,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GenomeImport.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/items.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/macros.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/seqio.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/test_global.h

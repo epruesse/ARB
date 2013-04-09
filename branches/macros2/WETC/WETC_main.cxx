@@ -31,7 +31,7 @@ int ARB_main(int argc, const char *argv[]) {
         }
         else {
             GB_shell shell;
-            AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_WETC", new NullTracker);
+            AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_WETC", new NullTracker); // no macro recording here
 
             AWT_show_file(aw_root, file);
             aw_root->window_hide(NULL);

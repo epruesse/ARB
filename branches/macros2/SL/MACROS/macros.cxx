@@ -15,6 +15,40 @@
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 
+BoundActionTracker *make_macro_recording_tracker(const char *client_id, GBDATA *gb_main) {
+    // 'client_id' has to be a unique id (used to identify the program which will record/playback).
+    // If multiple programs (or multiple instances of one) use the same id, macro recording shall abort.
+    // If a program is used for different purposes by starting multiple instances (like e.g. arb_ntree),
+    // each purpose/instance should use a different 'client_id'.
+
+    ma_assert(gb_main);
+    ma_assert(client_id && client_id[0]);
+
+    BoundActionTracker *tracker;
+    if (GB_is_server(gb_main)) {
+        tracker = new MacroRecorder(client_id, gb_main);
+    }
+    else {
+        tracker = new ClientActionTracker(client_id, gb_main);
+    }
+    return tracker;
+}
+
+bool BoundActionTracker::reconfigure(const char *application_id, GBDATA *gb_main) {
+    ma_assert(gb_main == gbmain);
+    ma_assert(strcmp(id, "ARB_IMPORT") == 0); // currently only ARB_IMPORT-tracker gets reconfigured
+    freedup(id, application_id);
+    return true;
+}
+
+void configure_macro_recording(AW_root *aw_root, const char *client_id, GBDATA *gb_main) {
+    ma_assert(aw_root);
+
+    BoundActionTracker *existing = get_active_macro_recording_tracker(aw_root);
+    if (existing && existing->reconfigure(client_id, gb_main)) return;
+    aw_root->setUserActionTracker(make_macro_recording_tracker(client_id, gb_main));
+}
+
 GB_ERROR MacroRecorder::start_recording(const char *file, const char *application_id, const char *stop_action_name, bool expand_existing) {
     GB_ERROR error = NULL;
     if (is_tracking()) error = "Already recording macro";
@@ -83,6 +117,8 @@ static void macro_terminated(GBDATA */*gb_terminated*/, int *, GB_CB_TYPE IF_ASS
 static void dont_announce_done(AW_root*, AW_CL) {}
 
 GB_ERROR MacroRecorder::execute(GBDATA *gb_main, const char *file, AW_RCB1 execution_done_cb, AW_CL client_data) {
+    ma_assert(gb_main == get_gbmain());
+
     GB_ERROR  error = NULL;
     char     *path;
     if (file[0] == '/') {
@@ -130,5 +166,14 @@ void MacroRecorder::track_action(const char *action_id) {
 void MacroRecorder::track_awar_change(AW_awar *awar) {
     ma_assert(is_tracking());
     recording->track_awar_change(awar);
+}
+
+
+void ClientActionTracker::track_action(const char */*action_id*/) {
+    ma_assert(0);
+}
+
+void ClientActionTracker::track_awar_change(AW_awar */*awar*/) {
+    ma_assert(0);
 }
 

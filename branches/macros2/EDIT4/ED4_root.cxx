@@ -181,6 +181,7 @@ ED4_returncode ED4_root::refresh_all_windows(bool redraw) {
 #ifdef UNIT_TESTS
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
+#include <macros.hxx>
 #endif
 
 static arb_test::match_expectation correct_win2world_calculation(ED4_foldable& foldable, int xwin_org, int ywin_org, int xwrld_expd, int ywrld_expd) {
@@ -1940,7 +1941,7 @@ static char *detectProperties() {
 ED4_root::ED4_root()
     : most_recently_used_window(0),
       db_name(detectProperties()),
-      aw_root(AWT_create_root(db_name, "ARB_EDIT4", new NullTracker)),
+      aw_root(AWT_create_root(db_name, "ARB_EDIT4", make_macro_recording_tracker("ARB_EDIT4", GLOBAL_gb_main))),
       props_db(AW_ROOT_DEFAULT),
       first_window(0),
       main_manager(0),

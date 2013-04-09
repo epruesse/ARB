@@ -673,6 +673,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_import.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/items.h
+NT_import.o: $(ARBHOME)/INCLUDE/macros.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_import.o: $(ARBHOME)/INCLUDE/test_global.h

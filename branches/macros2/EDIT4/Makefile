@@ -785,6 +785,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_root.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/gccver.h
 ED4_root.o: $(ARBHOME)/INCLUDE/gde.hxx
+ED4_root.o: $(ARBHOME)/INCLUDE/macros.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_root.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_root.o: $(ARBHOME)/INCLUDE/st_window.hxx

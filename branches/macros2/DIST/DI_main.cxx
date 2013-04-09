@@ -18,6 +18,7 @@
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <arbdb.h>
+#include <macros.hxx>
 
 
 AW_HEADER_MAIN
@@ -53,7 +54,7 @@ int ARB_main(int argc, const char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root *aw_root = AWT_create_root("dist.arb", "ARB_DIST", new NullTracker);
+    AW_root *aw_root = AWT_create_root("dist.arb", "ARB_DIST", new RequiresActionTracker);
 
     {
         arb_params *params = arb_trace_argv(&argc, (const char **)argv);
@@ -65,6 +66,8 @@ int ARB_main(int argc, const char *argv[]) {
             aw_message(GB_await_error());
             exit(-1);
         }
+
+        configure_macro_recording(aw_root, "ARB_DIST", GLOBAL_gb_main);
 
 #if defined(DEBUG)
         AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", params->db_server));

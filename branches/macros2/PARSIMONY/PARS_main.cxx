@@ -31,6 +31,7 @@
 #include <TreeCallbacks.hxx>
 
 #include <list>
+#include <macros.hxx>
 
 #if defined(DEBUG)
 # define TESTMENU
@@ -1675,7 +1676,7 @@ int ARB_main(int argc, const char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS", new NullTracker);
+    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS", new RequiresActionTracker);
     AD_map_viewer_aw_root = aw_root;
 
     ap_main     = new AP_main;
@@ -1716,6 +1717,8 @@ int ARB_main(int argc, const char *argv[]) {
 
     GLOBAL_gb_main = GBT_open(db_server, "rw");
     if (!GLOBAL_gb_main) aw_popup_exit(GB_await_error()); // exits
+
+    configure_macro_recording(aw_root, "ARB_PARS", GLOBAL_gb_main);
 
 #if defined(DEBUG)
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));

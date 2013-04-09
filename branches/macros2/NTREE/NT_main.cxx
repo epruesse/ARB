@@ -199,7 +199,10 @@ static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, bool install_c
         }
     }
 
-    if (!error && autorun_macro) awt_execute_macro(GLOBAL.gb_main, aw_root, autorun_macro);
+    if (!error) {
+        configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main);
+        if (autorun_macro) awt_execute_macro(GLOBAL.gb_main, aw_root, autorun_macro);
+    }
     return error;
 }
 
@@ -268,6 +271,7 @@ static void start_main_window_after_import(AW_root *aw_root) {
 static void nt_intro_start_existing(AW_window *aw_intro) {
     aw_intro->hide();
     ARB_ERROR error = load_and_startup_main_window(aw_intro->get_root(), NULL);
+    nt_assert(contradicted(error, got_macro_ability(aw_intro->get_root())));
     if (error) {
         aw_intro->show();
         aw_popup_ok(error.deliver());
@@ -291,7 +295,9 @@ static void nt_intro_start_import(AW_window *aw_intro) {
     AW_root *aw_root = aw_intro->get_root();
     aw_root->awar_string(AWAR_DB_PATH)->write_string("noname.arb");
     aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // Default toggle  in window  "Create&import" is Non-Genom
-    GLOBAL.gb_main   = open_AWTC_import_window(aw_root, "", true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
+
+    GLOBAL.gb_main = open_AWTC_import_window(aw_root, "", true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
+    nt_assert(got_macro_ability(aw_root));
 }
 
 static AW_window *nt_create_intro_window(AW_root *awr) {
@@ -333,7 +339,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
     aws->create_autosize_button("CREATE_AND_IMPORT", "CREATE AND IMPORT", "I");
 
     aws->at("merge");
-    aws->callback((AW_CB1)nt_intro_start_merge, 0);
+    aws->callback(nt_intro_start_merge);
     aws->create_autosize_button("MERGE_TWO_DATABASES", "MERGE TWO ARB DATABASES", "O");
 
     aws->at("expert");
@@ -780,6 +786,8 @@ static AW_window *startup_merge_main_window(AW_root *aw_root, AW_CL cl_merge_sch
         MERGE_create_db_file_awars(aw_root, AW_ROOT_DEFAULT, ms->src->get_fullname(), ms->dst->get_fullname());
         bool dst_is_new = ms->dst->arg_type() == NEW_DB;
         aw_result       = MERGE_create_main_window(aw_root, dst_is_new, exit_from_merge);
+
+        nt_assert(got_macro_ability(aw_root));
     }
     else {
         aw_result = merge_startup_error_window(aw_root, AW_CL(ms->error));
@@ -834,7 +842,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
     GB_set_verbose();
 
     GB_shell shell;
-    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT", new MacroRecorder);
+    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT", new RequiresActionTracker);
 
     GLOBAL.aw_root = aw_root;
 
@@ -890,6 +898,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
 
                 if (!error) {
                     aww->show();
+                    aw_root->setUserActionTracker(new NullTracker); // no macro recording during startup of merge tool (file prompts)
                     aw_root->main_loop();
                     nt_assert(0);
                 }
@@ -906,12 +915,16 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
                 if (mode == IMPORT) {
                     aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
                     GLOBAL.gb_main = open_AWTC_import_window(aw_root, database, true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
+                    nt_assert(got_macro_ability(aw_root));
                     aw_root->main_loop();
                 }
                 else if (mode == NORMAL) {
                     aw_root->awar(AWAR_DB_PATH)->write_string(database);
                     error = load_and_startup_main_window(aw_root, cl.autorun_macro());
-                    if (!error) aw_root->main_loop();
+                    if (!error) {
+                        nt_assert(got_macro_ability(aw_root));
+                        aw_root->main_loop();
+                    }
                 }
                 else if (mode == BROWSE) {
                     aw_root->awar(AWAR_DB"directory")->write_string(browser_startdir);
@@ -930,6 +943,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
                         iws = nt_create_intro_window(aw_root);
                     }
                     iws->show();
+                    aw_root->setUserActionTracker(new NullTracker); // no macro recording inside intro window
                     aw_root->main_loop();
                 }
             }

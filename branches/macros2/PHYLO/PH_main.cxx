@@ -22,6 +22,7 @@
 #include <arb_strarray.h>
 
 #include <iostream>
+#include <macros.hxx>
 
 using namespace std;
 
@@ -532,13 +533,15 @@ int ARB_main(int argc, const char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root  *aw_root = AWT_create_root("phylo.arb", "ARB_PHYLO", new NullTracker);
+    AW_root  *aw_root = AWT_create_root("phylo.arb", "ARB_PHYLO", new RequiresActionTracker);
     PH_root  *ph_root = new PH_root;
     GB_ERROR  error   = ph_root->open(db_server);
     if (error) {
         aw_message(error);
         exit(-1);
     }
+
+    configure_macro_recording(aw_root, "ARB_PHYLO", GLOBAL_gb_main);
 
     // create arb_phylo awars :
     PH_create_filter_variables(aw_root, AW_ROOT_DEFAULT);
