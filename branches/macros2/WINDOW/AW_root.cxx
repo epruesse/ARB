@@ -118,9 +118,7 @@ AW_root::AW_root(const char *propertyFile) {
 
 void AW_root::setUserActionTracker(UserActionTracker *user_tracker) {
     aw_assert(user_tracker);
-    aw_assert(!tracker->is_tracking());
-    aw_assert(!user_tracker->is_tracking());
-    aw_assert(tracker->is_replaceable());
+    aw_assert(tracker->is_replaceable()); // there is already another tracker (program-logic-error)
 
     delete tracker;
     tracker = user_tracker;

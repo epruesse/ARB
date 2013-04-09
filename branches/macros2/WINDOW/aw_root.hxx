@@ -144,6 +144,7 @@ public:
     ~AW_root();
 
     void setUserActionTracker(UserActionTracker *user_tracker);
+    UserActionTracker *getTracker() { return tracker; }
 
     enum { AW_MONO_COLOR, AW_RGB_COLOR }    color_mode;
 
