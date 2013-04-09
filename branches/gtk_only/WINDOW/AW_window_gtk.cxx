@@ -7,6 +7,7 @@ AW_window::AW_window_gtk::AW_window_gtk()
       mode_menu(NULL), radio_last(NULL), toggle_field(NULL), 
       combo_box(NULL),       
       accel_group(gtk_accel_group_new()),
+      areas(AW_MAX_AREA, NULL),
       popup_cb(NULL), focus_cb(NULL), callback(NULL),
       drawing_area(NULL)
 {

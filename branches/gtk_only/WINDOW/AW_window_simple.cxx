@@ -10,18 +10,8 @@ AW_window_simple::~AW_window_simple() {
 
 void AW_window_simple::init(AW_root */*root_in*/, const char *window_name, const char *window_title) {
     init_window(window_name, window_title, 0, 0, true /*resizable*/);
-    prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
+
     gtk_container_add(GTK_CONTAINER(prvt->window), GTK_WIDGET(prvt->fixed_size_area));
-
-    //Creates the GDK (windowing system) resources associated with a widget.
-    //This is done as early as possible because xfig drawing relies on the gdk stuff.
-    gtk_widget_realize(GTK_WIDGET(prvt->window));
-    gtk_widget_realize(GTK_WIDGET(prvt->fixed_size_area));
-    gtk_widget_show(GTK_WIDGET(prvt->fixed_size_area));
-
-    prvt->areas.reserve(AW_MAX_AREA);
-    prvt->areas[0] = NULL;
-    prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->window), GTK_WIDGET(prvt->window));
 
     create_devices();
 }

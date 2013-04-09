@@ -1487,9 +1487,6 @@ AW_window::AW_window()
     reset_scrolled_picture_size();
     
     prvt = new AW_window::AW_window_gtk();
-    for(int i = 0; i < AW_MAX_AREA; i++ ) {
-        prvt->areas.push_back(NULL);
-    }
 }
 
 AW_window::~AW_window() {
@@ -1559,6 +1556,10 @@ void AW_window::init_window(const char *window_name, const char* window_title,
                        window_defaults_name, err->message);
     } 
 
+    // create area for buttons at top ('info area')
+    prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
+    prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), 
+                                                       GTK_WIDGET(prvt->fixed_size_area)); 
 }
 
 void AW_window::recalc_pos_atShow(AW_PosRecalc /*pr*/){
