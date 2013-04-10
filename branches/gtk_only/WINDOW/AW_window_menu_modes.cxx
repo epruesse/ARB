@@ -116,7 +116,7 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     gtk_widget_set_can_default(GTK_WIDGET(button), false);
 
     // add image
-    const char *path  = AW_get_pixmapPath(pixmap);
+    const char *path  = GB_path_in_ARBLIB("pixmaps", pixmap);
     GtkWidget *icon = gtk_image_new_from_file(path);
     gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(button), icon);
        
