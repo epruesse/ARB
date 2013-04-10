@@ -586,25 +586,23 @@ struct remote_awars {
     char awar_result[MAX_REMOTE_AWAR_STRING_LEN];
     char awar_awar[MAX_REMOTE_AWAR_STRING_LEN];
     char awar_value[MAX_REMOTE_AWAR_STRING_LEN];
+
+    remote_awars(const char *application) {
+        gb_assert(strlen(application) <= MAX_REMOTE_APPLICATION_NAME_LEN);
+
+        int length = sprintf(awar_action, AWAR_REMOTE_BASE_TPL, application);
+        gb_assert(length < (MAX_REMOTE_AWAR_STRING_LEN-6)); // Note :  6 is length of longest name appended below !
+
+        strcpy(awar_result, awar_action);
+        strcpy(awar_awar,   awar_action);
+        strcpy(awar_value,  awar_action);
+
+        strcpy(awar_action+length, "action");
+        strcpy(awar_result+length, "result");
+        strcpy(awar_awar+length,   "awar");
+        strcpy(awar_value+length,  "value");
+    }
 };
-
-static void gbt_build_remote_awars(remote_awars *awars, const char *application) {
-    int length;
-
-    gb_assert(strlen(application) <= MAX_REMOTE_APPLICATION_NAME_LEN);
-
-    length = sprintf(awars->awar_action, AWAR_REMOTE_BASE_TPL, application);
-    gb_assert(length < (MAX_REMOTE_AWAR_STRING_LEN-6)); // Note :  6 is length of longest name appended below !
-
-    strcpy(awars->awar_result, awars->awar_action);
-    strcpy(awars->awar_awar, awars->awar_action);
-    strcpy(awars->awar_value, awars->awar_action);
-
-    strcpy(awars->awar_action+length, "action");
-    strcpy(awars->awar_result+length, "result");
-    strcpy(awars->awar_awar+length,   "awar");
-    strcpy(awars->awar_value+length,  "value");
-}
 
 static GBDATA *gbt_remote_search_awar(GBDATA *gb_main, const char *awar_name) {
     GBDATA *gb_action;
@@ -676,10 +674,9 @@ GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char 
 
     mark_as_macro_executor(gb_main, true);
     
-    remote_awars  awars;
+    remote_awars  awars(application);
     GBDATA       *gb_action;
 
-    gbt_build_remote_awars(&awars, application);
     gb_action = gbt_remote_search_awar(gb_main, awars.awar_action);
 
     GB_ERROR error    = GB_begin_transaction(gb_main);
@@ -695,10 +692,9 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
 
     mark_as_macro_executor(gb_main, true);
 
-    remote_awars  awars;
+    remote_awars  awars(application);
     GBDATA       *gb_awar;
 
-    gbt_build_remote_awars(&awars, application);
     gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
 
     GB_ERROR error    = GB_begin_transaction(gb_main);
@@ -716,10 +712,9 @@ GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const ch
 
     mark_as_macro_executor(gb_main, true);
 
-    remote_awars  awars;
+    remote_awars  awars(application);
     GBDATA       *gb_awar;
 
-    gbt_build_remote_awars(&awars, application);
     gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
 
     GB_ERROR error    = GB_begin_transaction(gb_main);
