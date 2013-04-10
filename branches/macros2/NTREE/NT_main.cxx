@@ -41,9 +41,6 @@ AW_HEADER_MAIN
 
 #define nt_assert(bed) arb_assert(bed)
 
-#define NT_SERVE_DB_TIMER 50
-#define NT_CHECK_DB_TIMER 200
-
 NT_global GLOBAL; 
 
 // NT_format_all_alignments may be called after any operation which causes
@@ -156,28 +153,48 @@ static GB_ERROR nt_check_database_consistency() {
     return err;
 }
 
+// --------------------------------------------------------------------------------
 
-static void serve_db_interrupt(AW_root *awr) {
-    bool success = GBCMS_accept_calls(GLOBAL.gb_main, false);
+#define ARB_SERVE_DB_TIMER 50
+#define ARB_CHECK_DB_TIMER 200
+
+struct db_interrupt_data : virtual Noncopyable {
+    char   *remote_awar_base;
+    GBDATA *gb_main;
+
+    db_interrupt_data(GBDATA *gb_main_, const char *application_id)
+        : remote_awar_base(GBT_get_remote_awar_base(application_id)),
+          gb_main(gb_main_)
+    {}
+    ~db_interrupt_data() { free(remote_awar_base); }
+};
+
+// @@@ move DB-interrupt code elsewhere (has to be available in any GUI application able to act as DB-server)
+static void serve_db_interrupt(AW_root *awr, AW_CL cl_db_interrupt_data) { // server
+    db_interrupt_data *dib = (db_interrupt_data*)cl_db_interrupt_data;
+
+    bool success = GBCMS_accept_calls(dib->gb_main, false);
     while (success) {
-        awr->check_for_remote_command((AW_default)GLOBAL.gb_main, AWAR_NT_REMOTE_BASE);
-        success = GBCMS_accept_calls(GLOBAL.gb_main, true);
+        awr->check_for_remote_command(dib->gb_main, dib->remote_awar_base);
+        success = GBCMS_accept_calls(dib->gb_main, true);
     }
 
-    awr->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
+    awr->add_timed_callback(ARB_SERVE_DB_TIMER, serve_db_interrupt, cl_db_interrupt_data);
 }
 
-static void check_db_interrupt(AW_root *awr) {
-    awr->check_for_remote_command((AW_default)GLOBAL.gb_main, AWAR_NT_REMOTE_BASE);
-    awr->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
+static void check_db_interrupt(AW_root *awr, AW_CL cl_db_interrupt_data) { // client
+    db_interrupt_data *dib = (db_interrupt_data*)cl_db_interrupt_data;
+
+    awr->check_for_remote_command(dib->gb_main, dib->remote_awar_base);
+    awr->add_timed_callback(ARB_CHECK_DB_TIMER, check_db_interrupt, cl_db_interrupt_data);
 }
 
-static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, bool install_client_callback, const char *autorun_macro) {
+static GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *gb_main) {
+    nt_assert(got_macro_ability(aw_root));
+
     GB_ERROR error = NULL;
-    nt_create_main_window(aw_root);
-
-    if (GB_read_clients(GLOBAL.gb_main) == 0) { // server
-        error = GBCMS_open(":", 0, GLOBAL.gb_main);
+    if (GB_read_clients(gb_main) == 0) { // server
+        error = GBCMS_open(":", 0, gb_main);
         if (error) {
             error = GBS_global_string("THIS PROGRAM HAS PROBLEMS TO OPEN INTERCLIENT COMMUNICATION:\n"
                                       "Reason: %s\n"
@@ -188,20 +205,27 @@ static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, bool install_c
                                       error);
         }
         else {
-            aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
-            error = nt_check_database_consistency();
+            aw_root->add_timed_callback(ARB_SERVE_DB_TIMER, serve_db_interrupt, AW_CL(new db_interrupt_data(gb_main, application_id)));
         }
     }
     else { // client
-        if (install_client_callback) {
-            aw_root->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
-        }
+        aw_root->add_timed_callback(ARB_CHECK_DB_TIMER, check_db_interrupt, AW_CL(new db_interrupt_data(gb_main, application_id)));
     }
 
+    return error;
+}
+
+static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, const char *autorun_macro) {
+    configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ problematic if called from startup-importer
+    GB_ERROR error = startup_dbserver(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ start in configure_macro_recording?
+
     if (!error) {
-        configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main);
-        if (autorun_macro) awt_execute_macro(aw_root, autorun_macro);
+        nt_create_main_window(aw_root);
+        if (GB_is_server(GLOBAL.gb_main)) error = nt_check_database_consistency();
     }
+
+    if (!error && autorun_macro) awt_execute_macro(aw_root, autorun_macro); // @@@ triggering execution here is ok, but its a bad place to pass 'autorun_macro'. Should be handled more generally
+
     return error;
 }
 
@@ -233,7 +257,7 @@ static ARB_ERROR load_and_startup_main_window(AW_root *aw_root, const char *auto
         AWT_announce_db_to_browser(GLOBAL.gb_main, GBS_global_string("ARB database (%s)", db_server));
 #endif // DEBUG
 
-        GB_ERROR problem = startup_mainwindow_and_dbserver(aw_root, true, autorun_macro);
+        GB_ERROR problem = startup_mainwindow_and_dbserver(aw_root, autorun_macro);
         aw_message_if(problem); // no need to terminate ARB
     }
 
@@ -264,7 +288,7 @@ static void nt_delete_database(AW_window *aww) {
 
 static void start_main_window_after_import(AW_root *aw_root) {
     GLOBAL.aw_root  = aw_root;
-    aw_message_if(startup_mainwindow_and_dbserver(aw_root, false, NULL));
+    aw_message_if(startup_mainwindow_and_dbserver(aw_root, NULL));
 }
 
 static void nt_intro_start_existing(AW_window *aw_intro) {
