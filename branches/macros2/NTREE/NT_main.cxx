@@ -892,13 +892,13 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
                 error = "You cannot merge from running to running DB";
             }
             else {
+                aw_root->setUserActionTracker(new NullTracker); // no macro recording during startup of merge tool (file prompts)
                 AW_window *aww = startup_merge_prompting_for_nonexplicit_dbs(aw_root, AW_CL(ms));
 
                 nt_assert(contradicted(aww, error));
 
                 if (!error) {
                     aww->show();
-                    aw_root->setUserActionTracker(new NullTracker); // no macro recording during startup of merge tool (file prompts)
                     aw_root->main_loop();
                     nt_assert(0);
                 }
