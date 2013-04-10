@@ -18,15 +18,16 @@
 #include "aw_select.hxx"
 
 
-void AW_varUpdateInfo::AW_variable_update_callback_event(GtkWidget *widget, GdkEvent */*event*/, gpointer variable_update_struct) {
+bool AW_varUpdateInfo::AW_variable_update_callback_event(GtkWidget *widget, GdkEvent */*event*/, gpointer variable_update_struct) {
     AW_varUpdateInfo *vui = (AW_varUpdateInfo *) variable_update_struct;
     aw_assert(vui);
     
     vui->change_from_widget((gpointer)widget); 
+    return false; // must continue on
 }
 
 
-void AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer variable_update_struct) {
+bool AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer variable_update_struct) {
     AW_varUpdateInfo *vui = (AW_varUpdateInfo *) variable_update_struct;
     aw_assert(vui);
 
@@ -51,6 +52,7 @@ void AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer v
     else { 
         vui->change_from_widget((gpointer)widget); 
     }
+    return false;
 }
 
 static void track_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
