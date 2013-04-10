@@ -573,10 +573,13 @@ GBDATA *GBT_open(const char *path, const char *opent) {
  * - BIO::remote_read_awar      (use of GBT_remote_read_awar)
  */
 
-
-#define AWAR_REMOTE_BASE_TPL            "tmp/remote/%s/"
+#define AWAR_REMOTE_BASE_TPL            REMOTE_BASE "%s/"
 #define MAX_REMOTE_APPLICATION_NAME_LEN 30
 #define MAX_REMOTE_AWAR_STRING_LEN      (11+MAX_REMOTE_APPLICATION_NAME_LEN+1+6+1)
+
+NOT4PERL char *GBT_get_remote_awar_base(const char *application) {
+    return GBS_global_string_copy(AWAR_REMOTE_BASE_TPL, application);
+}
 
 struct remote_awars {
     char awar_action[MAX_REMOTE_AWAR_STRING_LEN];
