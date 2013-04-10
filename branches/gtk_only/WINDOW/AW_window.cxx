@@ -73,38 +73,6 @@ void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
     at_size->store(_at);
 }
 
-void AW_window::get_scrollarea_size(AW_screen_area *square) {
-    _get_area_size(AW_MIDDLE_AREA, square);
-    FIXME("left indent and right indent not implemented");
-//    square->r -= left_indent_of_horizontal_scrollbar;
-//    square->b -= top_indent_of_vertical_scrollbar;
-}
- 
-void AW_window::calculate_scrollbars(){
-
-    AW_screen_area scrollArea;
-    get_scrollarea_size(&scrollArea);
-
-    const int width = (int)get_scrolled_picture_width();
-    const int height = (int)get_scrolled_picture_height();
-    const int scrollArea_width = scrollArea.r - scrollArea.l;
-    const int scrollArea_height= scrollArea.b - scrollArea.t;
-    
-    aw_drawing_area_set_picture_size(prvt->drawing_area, width, height, scrollArea_width, scrollArea_height);
-    
-    char buffer[200];
-     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
-    const int hpage_increment = scrollArea.r * get_root()->awar(buffer)->read_int() / 100;
-    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
-    const int hstep_increment = get_root()->awar(buffer)->read_int();
-    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);   
-    const int vpage_increment = scrollArea.b * get_root()->awar(buffer)->read_int() / 100;
-    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
-    const int vstep_increment = get_root()->awar(buffer)->read_int();
-
-    aw_drawing_area_set_increments(prvt->drawing_area, hstep_increment, hpage_increment,
-                                   vstep_increment, vpage_increment);
-}
 
 void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
     FIXME("Callback newed every time, possible memory leak");
@@ -120,11 +88,6 @@ void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
 }
 void AW_window::callback(AW_cb_struct * /* owner */ awcbs) {
     prvt->callback = awcbs;
-}
-
-void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
-    AW_area_management *aram = prvt->areas[area];
-    *square = aram->get_common()->get_screen();
 }
 
 /**
@@ -871,24 +834,6 @@ void AW_window::d_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*
     GTK_NOT_IMPLEMENTED;
 }
 
-
-AW_pos AW_window::get_scrolled_picture_width() const {
-    return (picture->r - picture->l);
-}
-
-AW_pos AW_window::get_scrolled_picture_height() const {
-    return (picture->b - picture->t);
-}
-
-void AW_window::set_horizontal_scrollbar_left_indent(int /*indent*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::set_vertical_scrollbar_top_indent(int /*indent*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
-
 void AW_window::draw_line(int /*x1*/, int /*y1*/, int /*x2*/, int /*y2*/, int /*width*/, bool /*resize*/){
    GTK_NOT_IMPLEMENTED;
 }
@@ -1159,28 +1104,6 @@ void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd
     }
 }
 
-static void value_changed_scroll_bar_horizontal(GtkAdjustment *adjustment, gpointer user_data){
-    AW_cb_struct *cbs = (AW_cb_struct *) user_data;
-    (cbs->aw)->slider_pos_horizontal = gtk_adjustment_get_value(adjustment);
-    cbs->run_callback();
-}
-
-void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    aw_assert(NULL != prvt->drawing_area);
-    GtkAdjustment *hAdj = aw_drawing_area_get_horizontal_adjustment(prvt->drawing_area);
-    g_signal_connect((gpointer)hAdj, "value_changed",
-                     G_CALLBACK(value_changed_scroll_bar_horizontal),
-                     (gpointer)new AW_cb_struct(this, f, cd1, cd2, ""));
-
-}
-
-void AW_window::set_horizontal_scrollbar_position(int position) {
-#if defined(DEBUG) && 0
-    fprintf(stderr, "set_horizontal_scrollbar_position to %i\n", position);
-#endif
-    slider_pos_horizontal = position;
-    aw_drawing_area_set_horizontal_slider(prvt->drawing_area, position);
-}
 
 void AW_window::set_info_area_height(int /*height*/) {
     GTK_NOT_IMPLEMENTED;
@@ -1211,11 +1134,120 @@ void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
     aram->set_resize_callback(this, f, cd1, cd2);
 }
 
+
+
+// SCROLL BAR STUFF
+
+void AW_window::tell_scrolled_picture_size(AW_screen_area rectangle) {
+    picture->l = rectangle.l;
+    picture->r = rectangle.r;
+    picture->t = rectangle.t;
+    picture->b = rectangle.b;
+}
+
+void AW_window::tell_scrolled_picture_size(AW_world rectangle) {
+    picture->l = (int)rectangle.l;
+    picture->r = (int)rectangle.r;
+    picture->t = (int)rectangle.t;
+    picture->b = (int)rectangle.b;
+}
+
+AW_pos AW_window::get_scrolled_picture_width() const {
+    return (picture->r - picture->l);
+}
+
+AW_pos AW_window::get_scrolled_picture_height() const {
+    return (picture->b - picture->t);
+}
+
+void AW_window::reset_scrolled_picture_size() {
+    picture->l = 0;
+    picture->r = 0;
+    picture->t = 0;
+    picture->b = 0;
+}
+
+void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
+    AW_area_management *aram = prvt->areas[area];
+    *square = aram->get_common()->get_screen();
+}
+
+void AW_window::get_scrollarea_size(AW_screen_area *square) {
+    _get_area_size(AW_MIDDLE_AREA, square);
+    square->r -= left_indent_of_horizontal_scrollbar;
+    square->b -= top_indent_of_vertical_scrollbar;
+}
+
+void AW_window::calculate_scrollbars(){
+
+    AW_screen_area scrollArea;
+    get_scrollarea_size(&scrollArea);
+
+    const int width = (int)get_scrolled_picture_width();
+    const int height = (int)get_scrolled_picture_height();
+    const int scrollArea_width = scrollArea.r - scrollArea.l;
+    const int scrollArea_height= scrollArea.b - scrollArea.t;
+    
+    aw_drawing_area_set_picture_size(prvt->drawing_area, width, height, scrollArea_width, scrollArea_height);
+    
+    char buffer[200];
+     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
+    const int hpage_increment = scrollArea.r * get_root()->awar(buffer)->read_int() / 100;
+    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
+    const int hstep_increment = get_root()->awar(buffer)->read_int();
+    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);   
+    const int vpage_increment = scrollArea.b * get_root()->awar(buffer)->read_int() / 100;
+    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
+    const int vstep_increment = get_root()->awar(buffer)->read_int();
+
+    aw_drawing_area_set_increments(prvt->drawing_area, hstep_increment, hpage_increment,
+                                   vstep_increment, vpage_increment);
+}
+ 
+
+static void vertical_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
+    GTK_NOT_IMPLEMENTED;
+/*
+    AW_window *aw = (AW_window *)cd;
+    aw->update_scrollbar_settings_from_awars(AW_VERTICAL);
+*/
+}
+
 static void value_changed_scroll_bar_vertical(GtkAdjustment *adjustment, gpointer user_data){
     AW_cb_struct *cbs = (AW_cb_struct *) user_data;
     cbs->aw->slider_pos_vertical = gtk_adjustment_get_value(adjustment);
     cbs->run_callback();
 
+}
+static void horizontal_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
+    GTK_NOT_IMPLEMENTED;
+/*
+    AW_window *aw = (AW_window *)cd;
+    aw->update_scrollbar_settings_from_awars(AW_HORIZONTAL);
+*/
+}
+static void value_changed_scroll_bar_horizontal(GtkAdjustment *adjustment, gpointer user_data){
+    AW_cb_struct *cbs = (AW_cb_struct *) user_data;
+    (cbs->aw)->slider_pos_horizontal = gtk_adjustment_get_value(adjustment);
+    cbs->run_callback();
+}
+
+
+void AW_window::set_vertical_scrollbar_position(int position){
+#if defined(DEBUG) && 0
+    fprintf(stderr, "set_vertical_scrollbar_position to %i\n", position);
+#endif
+    
+    slider_pos_vertical = position;
+    aw_drawing_area_set_vertical_slider(prvt->drawing_area, position);
+}
+
+void AW_window::set_horizontal_scrollbar_position(int position) {
+#if defined(DEBUG) && 0
+    fprintf(stderr, "set_horizontal_scrollbar_position to %i\n", position);
+#endif
+    slider_pos_horizontal = position;
+    aw_drawing_area_set_horizontal_slider(prvt->drawing_area, position);
 }
 
 
@@ -1230,14 +1262,27 @@ void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL)
 
 }
 
-void AW_window::set_vertical_scrollbar_position(int position){
-#if defined(DEBUG) && 0
-    fprintf(stderr, "set_vertical_scrollbar_position to %i\n", position);
-#endif
-    
-    slider_pos_vertical = position;
-    aw_drawing_area_set_vertical_slider(prvt->drawing_area, position);
+void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    aw_assert(NULL != prvt->drawing_area);
+    GtkAdjustment *hAdj = aw_drawing_area_get_horizontal_adjustment(prvt->drawing_area);
+    g_signal_connect((gpointer)hAdj, "value_changed",
+                     G_CALLBACK(value_changed_scroll_bar_horizontal),
+                     (gpointer)new AW_cb_struct(this, f, cd1, cd2, ""));
+
 }
+
+void AW_window::set_vertical_scrollbar_top_indent(int indent) {
+  top_indent_of_vertical_scrollbar =  indent;
+}
+
+void AW_window::set_horizontal_scrollbar_left_indent(int indent) {
+  left_indent_of_horizontal_scrollbar = indent;
+}
+
+
+// END SCROLLBAR STUFF
+
+
 
 void AW_window::set_window_size(int width, int height) {
     // only used from GDE once (looks like a hack) -- delete?
@@ -1275,15 +1320,6 @@ bool AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW
 bool AW_window::is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL)) {
     return prvt->focus_cb && prvt->focus_cb->contains(f);
 }
-
-void AW_window::tell_scrolled_picture_size(AW_world rectangle) {
-    picture->l = (int)rectangle.l;
-    picture->r = (int)rectangle.r;
-    picture->t = (int)rectangle.t;
-    picture->b = (int)rectangle.b;
-}
-
-
 
 bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
     AW_area_management *aram = prvt->areas[area];
@@ -1333,19 +1369,14 @@ void AW_window::auto_increment(int /*dx*/, int /*dy*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::tell_scrolled_picture_size(AW_screen_area rectangle) {
-    picture->l = rectangle.l;
-    picture->r = rectangle.r;
-    picture->t = rectangle.t;
-    picture->b = rectangle.b;
-}
-
 void AW_window::d_callback(void (*/*f*/)(AW_window*)) {
     GTK_NOT_IMPLEMENTED;
 }
 
 AW_window::AW_window() 
   : recalc_size_at_show(AW_KEEP_SIZE),
+    left_indent_of_horizontal_scrollbar(0),
+    top_indent_of_vertical_scrollbar(0),
     prvt(new AW_window::AW_window_gtk()),
     _at(this),
     _d_callback(NULL),
@@ -1466,13 +1497,6 @@ void AW_window::on_hide(aw_hide_cb /*call_on_hide*/){
 }
 
 
-void AW_window::reset_scrolled_picture_size() {
-    picture->l = 0;
-    picture->r = 0;
-    picture->t = 0;
-    picture->b = 0;
-}
-
 AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (!color_table_size) {
         color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
@@ -1499,22 +1523,6 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
         }
     }
     return (AW_color_idx)colnum;
-}
-
-static void horizontal_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
-    GTK_NOT_IMPLEMENTED;
-/*
-    AW_window *aw = (AW_window *)cd;
-    aw->update_scrollbar_settings_from_awars(AW_HORIZONTAL);
-*/
-}
-
-static void vertical_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
-    GTK_NOT_IMPLEMENTED;
-/*
-    AW_window *aw = (AW_window *)cd;
-    aw->update_scrollbar_settings_from_awars(AW_VERTICAL);
-*/
 }
 
 void AW_window::create_window_variables() {
