@@ -202,10 +202,6 @@ static void AW_label_in_awar_list(AW_window *aww, GtkWidget* widget, const char 
     }
 }
 
-void AW_window::set_background(const char */*colorname*/, GtkWidget* /*parentWidget*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
 /**
  * handler for click-callbacks
  * takes care of recording actions and displaying help on ?-cursor

@@ -207,7 +207,6 @@ protected:
 
 
     void create_devices();
-    void set_background(const char *colorname, GtkWidget* w);
 
     /* put a widget into prvt->fixedArea according to _at */
     void put_with_label(GtkWidget* wigdget);
