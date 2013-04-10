@@ -78,6 +78,9 @@ public:
 
     /**The accelerator group */
     GtkAccelGroup *accel_group;
+
+    /**The last created widget */
+    GtkWidget *last_widget;
     
     /**
      * A window consists of several areas.

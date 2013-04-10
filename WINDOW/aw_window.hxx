@@ -210,6 +210,7 @@ protected:
 
     /* put a widget into prvt->fixedArea according to _at */
     void put_with_label(GtkWidget* wigdget);
+    GtkWidget *make_label(const char* label_text, short label_length);
 
     void wm_activate();                                // un-minimize window and give it the focus (use show_and_activate())
 

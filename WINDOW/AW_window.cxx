@@ -122,84 +122,9 @@ void AW_window::callback(AW_cb_struct * /* owner */ awcbs) {
     prvt->callback = awcbs;
 }
 
-
-
-
-
 void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
     AW_area_management *aram = prvt->areas[area];
     *square = aram->get_common()->get_screen();
-}
-
-const char *AW_get_pixmapPath(const char *pixmapName) {
-    return GB_path_in_ARBLIB("pixmaps", pixmapName);
-}
-
-//TODO I think this method should be transformed into a private member
-static char *pixmapPath(const char *pixmapName) {
-    return nulldup(AW_get_pixmapPath(pixmapName));
-}
-
-
-//TODO I think this should be a private member
-const char *aw_str_2_label(const char *str, AW_window *aww) {
-    aw_assert(str);
-
-    static const char *last_label = 0;
-    static const char *last_str   = 0;
-    static AW_window  *last_aww   = 0;
-
-    const char *label;
-    if (str == last_str && aww == last_aww) { // reuse result ?
-        label = last_label;
-    }
-    else {
-        if (str[0] == '#') {
-            label = AW_get_pixmapPath(str+1);
-        }
-        else {
-            AW_awar *is_awar = aww->get_root()->label_is_awar(str);
-
-            if (is_awar) { // for labels displaying awar values, insert dummy text here
-                int wanted_len = aww->_at.length_of_buttons - 2;
-                if (wanted_len < 1) wanted_len = 1;
-
-                char *labelbuf       = GB_give_buffer(wanted_len+1);
-                memset(labelbuf, 'y', wanted_len);
-                labelbuf[wanted_len] = 0;
-
-                label = labelbuf;
-            }
-            else {
-                label = str;
-            }
-        }
-
-        // store results locally, cause aw_str_2_label is nearly always called twice with same arguments
-        // (see RES_LABEL_CONVERT)
-        last_label = label;
-        last_str   = str;
-        last_aww   = aww;
-    }
-    return label;
-}
-
-
-static void AW_label_in_awar_list(AW_window *aww, GtkWidget* widget, const char *str) {
-    AW_awar *is_awar = aww->get_root()->label_is_awar(str);
-    if (is_awar) {
-        char *var_value = is_awar->read_as_string();
-        if (var_value) {
-            aww->update_label(widget, var_value);
-        }
-        else {
-            FIXME("Code only reachable if asserts are disabled");
-            aw_assert(0); // awar not found
-            aww->update_label(widget, str); 
-        }
-        free(var_value);
-        is_awar->tie_widget(0, widget, AW_WIDGET_LABEL_FIELD, aww);
-    }
 }
 
 /**
@@ -271,32 +196,55 @@ AW_area_management* AW_window::get_area(int index) {
     return NULL;
 }
 
+GtkWidget* AW_window::make_label(const char* label_text, short label_length) {
+    aw_assert(label_text);
+    GtkWidget *widget;
+    char *str;
+    
+    AW_awar *is_awar = get_root()->label_is_awar(label_text);
+    if (is_awar) 
+        str = is_awar->read_as_string();
+    else 
+        str = strdup(label_text);
+
+    if (label_text[0] == '#') {
+        widget = gtk_image_new_from_file(GB_path_in_ARBLIB("pixmaps", str+1));
+    }
+    else {
+        widget = gtk_label_new_with_mnemonic(str);
+        if (label_length)
+            gtk_label_set_width_chars(GTK_LABEL(widget), label_length);
+    }
+    
+    if (is_awar) 
+        is_awar->tie_widget(0, widget, AW_WIDGET_LABEL_FIELD, this);
+
+    free(str);
+    return widget;
+}
+
+
 /**
  * Places @param *widget according to _at in prvt->fixedArea
  * - creates label if defined in _at (using hbox)
- * - aligns label+widget as per _at (using alignment)
  **/
 void AW_window::put_with_label(GtkWidget *widget) {
     #define SPACE_BEHIND 5
     #define SPACE_BELOW 5
-    GtkWidget *alignment, *hbox, *label = 0;
+    GtkWidget *hbox, *label = 0;
 
     // create label from label text
     if (_at.label_for_inputfield) {
-        if (_at.label_for_inputfield[0] == '#') {
-            label = gtk_image_new_from_file(aw_str_2_label(_at.label_for_inputfield, this));
-        } else {
-            label = gtk_label_new(aw_str_2_label(_at.label_for_inputfield, this));
-        }
-        AW_label_in_awar_list(this, label, _at.label_for_inputfield);
+        label = make_label(_at.label_for_inputfield, _at.length_of_label_for_inputfield);
     }
     
     // pack widget and label into hbox
     // (having/not having the hbox changes appearance!)
     hbox = gtk_hbox_new(false,0);
     if (label) {
-      // label does not expand (hence "false,false")
-      gtk_box_pack_start(GTK_BOX(hbox), label, false, false, 0);
+        // label does not expand (hence "false,false")
+        gtk_box_pack_start(GTK_BOX(hbox), label, false, false, 0);
+        //gtk_label_set_mnemonic_widget(
     }
     gtk_box_pack_start(GTK_BOX(hbox), widget, true, true, 0);
 
@@ -317,7 +265,8 @@ void AW_window::put_with_label(GtkWidget *widget) {
 
     _at.increment_at_commands(hbox_req.width * (2-_at.correct_for_at_center) / 2. + SPACE_BEHIND, 
                                   hbox_req.height + SPACE_BELOW);
-    this->unset_at_commands();
+    unset_at_commands();
+    prvt->last_widget = hbox;
 }
 
 /**
@@ -334,16 +283,8 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
 
     GtkWidget *button_label, *button;
 
-    // create label from button text
-    if (button_text[0] == '#') {
-        button_label = gtk_image_new_from_file(aw_str_2_label(button_text, this));
-    } else {
-        button_label = gtk_label_new(aw_str_2_label(button_text, this));
-        if (_at.length_of_buttons) {
-          gtk_label_set_width_chars(GTK_LABEL(button_label), _at.length_of_buttons);
-        }
-    }
-    AW_label_in_awar_list(this, button_label, button_text);
+    button_label = make_label(button_text, _at.length_of_buttons);
+
     gtk_widget_show(button_label);
 
     // make 'button' a real button if we've got a callback to run on click
@@ -422,8 +363,7 @@ void AW_window::create_autosize_button(const char *macro_name, const char *butto
 }
 
 GtkWidget* AW_window::get_last_widget() const{
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+    return prvt->last_widget;
 }
 
 void AW_window::create_toggle(const char */*var_name*/){
@@ -533,12 +473,7 @@ void AW_window::create_menu(const char *name, const char *mnemonic, AW_active ma
     aw_assert(legal_mask(mask));
         
     GTK_PARTLY_IMPLEMENTED;
-    FIXME("debug code for duplicate mnemonics missing");
 
-
-//    #ifdef DEBUG
-//        init_duplicate_mnemonic();
-//    #endif
 //    #if defined(DUMP_MENU_LIST)
 //        dumpCloseAllSubMenus();
 //    #endif // DUMP_MENU_LIST
@@ -1036,15 +971,19 @@ void AW_window::insert_help_topic(const char *name, const char */*mnemonic*/, co
 
 void AW_window::insert_menu_topic(const char *topic_id, const char *name, const char *mnemonic, const char *helpText, AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2){
    aw_assert(legal_mask(mask));
+   aw_assert(prvt->menus.size() > 0); //closed too many menus
   
    FIXME("duplicate mnemonic test not implemented");
 
    std::string topicName = AW_motif_gtk_conversion::convert_mnemonic(name, mnemonic);
    
    if (!topic_id) topic_id = name; // hmm, due to this we cannot insert_menu_topic w/o id. Change? @@@
-   
-   GtkWidget *item = gtk_menu_item_new_with_mnemonic(topicName.c_str());
-   aw_assert(prvt->menus.size() > 0); //closed too many menus
+
+   GtkWidget *label = make_label(name, 0);
+   GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
+   gtk_container_add(GTK_CONTAINER(alignment), label);
+   GtkWidget *item = gtk_menu_item_new();
+   gtk_container_add(GTK_CONTAINER(item),alignment);
 
    gtk_menu_shell_append(prvt->menus.top(), item);  
    
@@ -1055,8 +994,6 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *name, const 
 //    test_duplicate_mnemonics(prvt.menu_deep, name, mnemonic);
 #endif
 
-
-    AW_label_in_awar_list(this, item, name);
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, helpText);
     
     
@@ -1354,23 +1291,21 @@ bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW
 }
 
 void AW_window::update_label(GtkWidget* widget, const char *var_value) {
-    
     if (get_root()->changer_of_variable != widget) {
         FIXME("this will break if the labels content should switch from text to image or vice versa");
-        FIXME("only works for labels and buttons right now");
-        
+        if (GTK_IS_HBOX(widget)) {
+          widget = GTK_WIDGET(gtk_container_get_children(GTK_CONTAINER(widget))->data);
+        }
+
         if(GTK_IS_BUTTON(widget)) {
             gtk_button_set_label(GTK_BUTTON(widget), var_value);   
         }
         else if(GTK_IS_LABEL(widget)) {
-            gtk_label_set_text(GTK_LABEL(widget), var_value);
+            gtk_label_set_text_with_mnemonic(GTK_LABEL(widget), var_value);
         }
         else {
             aw_assert(false); //unable to set label of unknown type
         }
-        
-        //old implementation
-        //XtVaSetValues(widget, RES_CONVERT(XmNlabelString, var_value), NULL);
         
     }
     else {
