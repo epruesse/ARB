@@ -23,7 +23,7 @@ void AW_window_simple_menu::init(AW_root */*root_in*/, const char *window_name, 
     // put menu+drawing area into vbox into window
     GtkWidget *vbox = gtk_vbox_new(false, 0);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->menu_bar), false, false, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->fixed_size_area), true, true, 0);
     gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
 
     gtk_widget_realize(GTK_WIDGET(prvt->window));
