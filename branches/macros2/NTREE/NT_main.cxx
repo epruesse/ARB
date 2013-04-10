@@ -201,7 +201,7 @@ static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, bool install_c
 
     if (!error) {
         configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main);
-        if (autorun_macro) awt_execute_macro(GLOBAL.gb_main, aw_root, autorun_macro);
+        if (autorun_macro) awt_execute_macro(aw_root, autorun_macro);
     }
     return error;
 }

@@ -24,6 +24,7 @@
 #include <arb_progress.h>
 #include <arb_file.h>
 #include <macros.hxx>
+#include <macro_gui.hxx>
 
 // AISC_MKPT_PROMOTE:// source and destination DBs for merge:
 // AISC_MKPT_PROMOTE:extern GBDATA *GLOBAL_gb_src;
@@ -305,6 +306,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
             awm->insert_menu_topic("quitnstart", "Quit & start target DB", "D", "quit.hlp", AWM_ALL, MG_exit, 1);
         }
 
+        insert_macro_menu_entry(awm, true);
         awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
         awm->sep______________();

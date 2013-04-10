@@ -54,6 +54,7 @@ public:
     bool reconfigure(const char *application_id, GBDATA *gb_main);
 
     GBDATA *get_gbmain() { return gbmain; }
+    const char *get_application_id() const { return id; }
 };
 
 
@@ -67,9 +68,9 @@ public:
           recording(NULL)
     {}
 
-    GB_ERROR start_recording(const char *file, const char *application_id, const char *stop_action_name, bool expand_existing);
+    GB_ERROR start_recording(const char *file, const char *stop_action_name, bool expand_existing);
     GB_ERROR stop_recording();
-    GB_ERROR execute(GBDATA *gb_main, const char *file, AW_RCB1 execution_done_cb, AW_CL client_data);
+    GB_ERROR execute(const char *file, AW_RCB1 execution_done_cb, AW_CL client_data);
 
     void track_action(const char *action_id) OVERRIDE;
     void track_awar_change(AW_awar *awar) OVERRIDE;
@@ -96,13 +97,10 @@ inline BoundActionTracker *get_active_macro_recording_tracker(AW_root *aw_root) 
     return tracker ? dynamic_cast<BoundActionTracker*>(tracker) : NULL;
 }
 
-#if defined(ASSERTION_USED)
 inline bool got_macro_ability(AW_root *aw_root) {
     // return true if aw_root has a BoundActionTracker
     return get_active_macro_recording_tracker(aw_root);
 }
-#endif
-
 
 #else
 #error macros.hxx included twice

@@ -23,6 +23,7 @@
 
 #include <iostream>
 #include <macros.hxx>
+#include <macro_gui.hxx>
 
 using namespace std;
 
@@ -443,6 +444,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
     awm->create_menu("File", "F");
     awm->insert_menu_topic("export_filter", "Export Filter",      "E", "ph_export_markerline.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)PH_save_markerline, 0);
     awm->insert_menu_topic("export_freq",   "Export Frequencies", "F", "ph_export_markerline.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)PH_save_markerline, 1);
+    insert_macro_menu_entry(awm, false);
     awm->insert_menu_topic("quit",          "Quit",               "Q", "quit.hlp",                 AWM_ALL, (AW_CB)ph_exit,  (AW_CL)ph_root,            0);
 
     // Calculate menu

@@ -31,10 +31,10 @@
 #define AWAR_MACRO_RECORDING_EXPAND     AWAR_MACRO_BASE"/expand"
 #define AWAR_MACRO_RECORDING_RUNB4      AWAR_MACRO_BASE"/runb4"
 
-inline MacroRecorder *get_recorder(AW_root *awr) {
-    UserActionTracker *mr = awr->get_tracker();
-    ma_assert(mr);
-    return dynamic_cast<MacroRecorder*>(mr);
+inline MacroRecorder *getMacroRecorder(AW_root *aw_root) {
+    BoundActionTracker *tracker = get_active_macro_recording_tracker(aw_root);
+    ma_assert(tracker); // application is not able to handle macros
+    return dynamic_cast<MacroRecorder*>(tracker);
 }
 
 static void awt_delete_macro_cb(AW_window *aww) {
@@ -59,27 +59,22 @@ static void macro_execution_finished(AW_root *awr, AW_CL cl_macroName) {
     free(macroName);
 }
 
-static void awt_exec_macro_cb(AW_window *aww, AW_CL cl_gb_main) {
-    GBDATA  *gb_main   = (GBDATA*)cl_gb_main;
-    AW_root *awr       = aww->get_root();
-    char    *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
-
-
-    GB_ERROR error = get_recorder(awr)->execute(gb_main, macroName, macro_execution_finished, (AW_CL)macroName);
-
+static void awt_exec_macro_cb(AW_window *aww) {
+    AW_root  *awr       = aww->get_root();
+    char     *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
+    GB_ERROR  error     = getMacroRecorder(awr)->execute(macroName, macro_execution_finished, (AW_CL)macroName);
     if (error) {
         aw_message(error);
         free(macroName); // only free in error-case (see macro_execution_finished)
     }
 }
 
-static void awt_start_macro_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_app_name) {
-    const char *app_name = (const char *)cl_app_name;
-    AW_root    *awr      = aww->get_root();
-    GB_ERROR    error    = NULL;
+static void awt_start_macro_cb(AW_window *aww) {
+    AW_root  *awr   = aww->get_root();
+    GB_ERROR  error = NULL;
 
     if (awr->is_tracking()) {
-        error = get_recorder(awr)->stop_recording();
+        error = getMacroRecorder(awr)->stop_recording();
     }
     else {
         bool expand = awr->awar(AWAR_MACRO_RECORDING_EXPAND)->read_int();
@@ -90,10 +85,10 @@ static void awt_start_macro_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_app_na
             error = "Please specify name of macro to record";
         }
         else {
-            if (runb4) awt_exec_macro_cb(aww, cl_gb_main);
+            if (runb4) awt_exec_macro_cb(aww);
 
             char *sac = GBS_global_string_copy("%s/%s", aww->window_defaults_name, AWAR_MACRO_RECORD_ID);
-            error     = get_recorder(awr)->start_recording(macroName, app_name, sac, expand);
+            error = getMacroRecorder(awr)->start_recording(macroName, sac, expand);
             free(sac);
         }
         free(macroName);
@@ -117,7 +112,7 @@ void awt_create_macro_variables(AW_root *aw_root) {
     aw_root->awar_int(AWAR_MACRO_RECORDING_RUNB4, 0);
 }
 
-void awt_popup_macro_window(AW_window *aww, const char *application_id, GBDATA *gb_main) { 
+static void awt_popup_macro_window(AW_window *aww) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         AW_root *aw_root = aww->get_root();
@@ -134,13 +129,13 @@ void awt_popup_macro_window(AW_window *aww, const char *application_id, GBDATA *
         aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"macro.hlp");
         aws->create_button("HELP", "HELP");
 
-        aws->at("record"); aws->callback(awt_start_macro_cb, (AW_CL)gb_main, (AW_CL)application_id);
+        aws->at("record"); aws->callback(awt_start_macro_cb);
         aws->create_button(AWAR_MACRO_RECORD_ID, AWAR_MACRO_RECORDING_MACRO_TEXT);
 
         aws->at("expand"); aws->create_toggle(AWAR_MACRO_RECORDING_EXPAND);
         aws->at("runb4");  aws->create_toggle(AWAR_MACRO_RECORDING_RUNB4);
 
-        aws->at("exec"); aws->callback(awt_exec_macro_cb, (AW_CL)gb_main);
+        aws->at("exec"); aws->callback(awt_exec_macro_cb);
         aws->create_button("EXECUTE", "EXECUTE");
 
         aws->at("edit"); aws->callback(awt_edit_macro_cb);
@@ -154,22 +149,30 @@ void awt_popup_macro_window(AW_window *aww, const char *application_id, GBDATA *
     aws->activate();
 }
 
+void insert_macro_menu_entry(AW_window *awm, bool prepend_separator) {
+    if (getMacroRecorder(awm->get_root())) {
+        if (prepend_separator) awm->sep______________();
+        awm->insert_menu_topic("macros", "Macros ", "M", "macro.hlp", AWM_ALL, awt_popup_macro_window);
+    }
+}
+
 inline char *find_macro_in(const char *dir, const char *macroname) {
     char *full = GBS_global_string_copy("%s/%s.amc", dir, macroname);
     if (!GB_is_readablefile(full)) freenull(full);
     return full;
 }
 
-void awt_execute_macro(GBDATA *gb_main, AW_root *root, const char *macroname) {
+void awt_execute_macro(AW_root *root, const char *macroname) {
     char *fullname          = find_macro_in(GB_getenvARBMACROHOME(), macroname);
     if (!fullname) fullname = find_macro_in(GB_getenvARBMACRO(), macroname);
 
     GB_ERROR error       = 0;
     if (!fullname) error = "file not found";
     else {
-        MacroRecorder *recorder = get_recorder(root);
+        // @@@ allow macro playback from client (using server via AWAR)
+        MacroRecorder *recorder = getMacroRecorder(root);
         if (!recorder) error    = "macro playback only available in server";
-        else           error    = recorder->execute(gb_main, fullname, NULL, 0);
+        else           error    = recorder->execute(fullname, NULL, 0);
     }
 
     if (error) {

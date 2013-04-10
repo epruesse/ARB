@@ -40,6 +40,7 @@
 #include <cmath>
 #include <arb_sort.h>
 #include <arb_global_defs.h>
+#include <macro_gui.hxx>
 
 // --------------------------------------------------------------------------------
 
@@ -1417,7 +1418,8 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     AWT_create_debug_menu(aws);
 #endif // DEBUG
 
-    aws->create_menu("FILE", "F", AWM_ALL);
+    aws->create_menu("File", "F", AWM_ALL);
+    insert_macro_menu_entry(aws, false);
     aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)di_exit,  0,  0);
 
     aws->create_menu("Properties", "P", AWM_ALL);

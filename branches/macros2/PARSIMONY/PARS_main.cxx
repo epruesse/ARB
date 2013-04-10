@@ -32,6 +32,7 @@
 
 #include <list>
 #include <macros.hxx>
+#include <macro_gui.hxx>
 
 #if defined(DEBUG)
 # define TESTMENU
@@ -1326,6 +1327,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
     awm->create_menu("File", "F", AWM_ALL);
     {
+        insert_macro_menu_entry(awm, false);
         awm->insert_menu_topic("print_tree", "Print Tree ...",          "P", "tree2prt.hlp", AWM_ALL, AWT_popup_print_window, (AW_CL)ntw, 0);
         awm->insert_menu_topic("quit",      "Quit",             "Q", "quit.hlp",    AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw, 2);
     }

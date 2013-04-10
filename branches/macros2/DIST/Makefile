@@ -251,6 +251,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_matr.o: $(ARBHOME)/INCLUDE/gccver.h
 DI_matr.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/macro_gui.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/neighbourjoin.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_matr.o: $(ARBHOME)/INCLUDE/static_assert.h

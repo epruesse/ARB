@@ -49,11 +49,11 @@ void configure_macro_recording(AW_root *aw_root, const char *client_id, GBDATA *
     aw_root->setUserActionTracker(make_macro_recording_tracker(client_id, gb_main));
 }
 
-GB_ERROR MacroRecorder::start_recording(const char *file, const char *application_id, const char *stop_action_name, bool expand_existing) {
+GB_ERROR MacroRecorder::start_recording(const char *file, const char *stop_action_name, bool expand_existing) {
     GB_ERROR error = NULL;
     if (is_tracking()) error = "Already recording macro";
     else {
-        recording = new RecordingMacro(file, application_id, stop_action_name, expand_existing);
+        recording = new RecordingMacro(file, get_application_id(), stop_action_name, expand_existing);
         set_tracking(true);
 
         error = recording->has_error();
@@ -116,9 +116,7 @@ static void macro_terminated(GBDATA */*gb_terminated*/, int *, GB_CB_TYPE IF_ASS
 
 static void dont_announce_done(AW_root*, AW_CL) {}
 
-GB_ERROR MacroRecorder::execute(GBDATA *gb_main, const char *file, AW_RCB1 execution_done_cb, AW_CL client_data) {
-    ma_assert(gb_main == get_gbmain());
-
+GB_ERROR MacroRecorder::execute(const char *file, AW_RCB1 execution_done_cb, AW_CL client_data) {
     GB_ERROR  error = NULL;
     char     *path;
     if (file[0] == '/') {
@@ -129,7 +127,8 @@ GB_ERROR MacroRecorder::execute(GBDATA *gb_main, const char *file, AW_RCB1 execu
     }
 
     {
-        GB_transaction ta(gb_main);
+        GBDATA         *gb_main = get_gbmain();
+        GB_transaction  ta(gb_main);
 
         GBDATA *gb_term = GB_search(gb_main, MACRO_TRIGGER_CONTAINER "/terminated", GB_FIND);
         if (!gb_term) {

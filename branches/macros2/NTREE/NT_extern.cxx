@@ -1264,7 +1264,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->close_sub_menu();
             awm->sep______________();
 
-            awm->insert_menu_topic("macros",    "Macros ",              "M", "macro.hlp",   AWM_ALL, (AW_CB)awt_popup_macro_window, (AW_CL)"ARB_NT", (AW_CL)GLOBAL.gb_main);
+            insert_macro_menu_entry(awm, false);
 
             awm->insert_sub_menu("Registration/Bug report/Version info",       "R");
             {

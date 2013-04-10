@@ -182,6 +182,7 @@ ED4_returncode ED4_root::refresh_all_windows(bool redraw) {
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
 #include <macros.hxx>
+#include <macro_gui.hxx>
 #endif
 
 static arb_test::match_expectation correct_win2world_calculation(ED4_foldable& foldable, int xwin_org, int ywin_org, int xwrld_expd, int ywrld_expd) {
@@ -1414,6 +1415,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->sep______________();
     awmm->insert_menu_topic("load_config",   "Load Configuration",   "L", 0, AWM_ALL, AW_POPUP,           (AW_CL)ED4_start_editor_on_old_configuration, 0);
     awmm->insert_menu_topic("reload_config", "Reload Configuration", "R", 0, AWM_ALL, ED4_restart_editor, 0,                                            0);
+    insert_macro_menu_entry(awmm, true);
     awmm->sep______________();
     GDE_load_menu(awmm, AWM_ALL, "Print");
     awmm->sep______________();
