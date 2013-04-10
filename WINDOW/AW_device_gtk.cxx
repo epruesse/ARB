@@ -70,7 +70,7 @@ bool AW_device_gtk::line_impl(int gc, const LineVector& Line, AW_bitset)
 
 //this is static
 bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char *str, 
-                                          size_t /* opt_str_len */, size_t /*start*/, 
+                                          size_t /* opt_str_len */, size_t start, 
                                           size_t size, AW_pos x, AW_pos y, 
                                           AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, 
                                           AW_CL /*cduser*/)
@@ -83,7 +83,7 @@ bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char
     cairo_t *cr = device_gtk->get_common()->get_CR(gc);
     if (!cr) return false; // nothing to draw on
 
-    PangoLayout *pl = gtk_widget_create_pango_layout(device_gtk->drawingArea, str);
+    PangoLayout *pl = gtk_widget_create_pango_layout(device_gtk->drawingArea, str+start);
     pango_layout_set_font_description(pl, device_gtk->get_common()->get_font(gc));
     
     double base = pango_layout_get_baseline(pl)  / PANGO_SCALE;
