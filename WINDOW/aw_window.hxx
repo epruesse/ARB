@@ -192,8 +192,8 @@ class AW_window : virtual Noncopyable {
 //
 //    AW_cb_struct *focus_cb;
 //
-//    int left_indent_of_horizontal_scrollbar;
-//    int top_indent_of_vertical_scrollbar;
+    int left_indent_of_horizontal_scrollbar;
+    int top_indent_of_vertical_scrollbar;
 
 //    void all_menus_created() const;
 //    void create_toggle(const char *var_name, aw_toggle_data *tdata);
@@ -282,7 +282,6 @@ public:
     AW_color_idx alloc_named_data_color(int colnum, char *colorname);
 
     void _get_area_size(AW_area area, AW_screen_area *square);
-    void get_scrollarea_size(AW_screen_area *square);
     
     int label_widget(void *wgt, const char *str, char *mnemonic=0, int width = 0, int alignment = 0);
 
@@ -412,13 +411,16 @@ public:
     AW_pos get_scrolled_picture_height() const;
     void reset_scrolled_picture_size();
 
+    void get_scrollarea_size(AW_screen_area *square);
+
     void calculate_scrollbars();
     void set_vertical_scrollbar_position(int position);
     void set_horizontal_scrollbar_position(int position);
     void set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_horizontal_scrollbar_left_indent(int indent);
     void set_vertical_scrollbar_top_indent(int indent);
+    void set_horizontal_scrollbar_left_indent(int indent);
+
 
     void update_scrollbar_settings_from_awars(AW_orientation orientation);
 
