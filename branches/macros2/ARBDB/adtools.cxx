@@ -573,7 +573,7 @@ GBDATA *GBT_open(const char *path, const char *opent) {
  * - BIO::remote_read_awar      (use of GBT_remote_read_awar)
  */
 
-#define AWAR_REMOTE_BASE_TPL            REMOTE_BASE "%s/"
+#define AWAR_REMOTE_BASE_TPL            REMOTE_BASE "%s"
 #define MAX_REMOTE_APPLICATION_NAME_LEN 30
 #define MAX_REMOTE_AWAR_STRING_LEN      (11+MAX_REMOTE_APPLICATION_NAME_LEN+1+6+1)
 
@@ -590,7 +590,7 @@ struct remote_awars {
     remote_awars(const char *application) {
         gb_assert(strlen(application) <= MAX_REMOTE_APPLICATION_NAME_LEN);
 
-        int length = sprintf(awar_action, AWAR_REMOTE_BASE_TPL, application);
+        int length = sprintf(awar_action, AWAR_REMOTE_BASE_TPL "/", application);
         gb_assert(length < (MAX_REMOTE_AWAR_STRING_LEN-6)); // Note :  6 is length of longest name appended below !
 
         strcpy(awar_result, awar_action);
