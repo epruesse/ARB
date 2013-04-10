@@ -30,6 +30,28 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
+dbserver.o: macros.hxx
+dbserver.o: $(ARBHOME)/INCLUDE/ad_prot.h
+dbserver.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+dbserver.o: $(ARBHOME)/INCLUDE/arb_assert.h
+dbserver.o: $(ARBHOME)/INCLUDE/arb_core.h
+dbserver.o: $(ARBHOME)/INCLUDE/arb_error.h
+dbserver.o: $(ARBHOME)/INCLUDE/arb_msg.h
+dbserver.o: $(ARBHOME)/INCLUDE/arb_string.h
+dbserver.o: $(ARBHOME)/INCLUDE/arbdb.h
+dbserver.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+dbserver.o: $(ARBHOME)/INCLUDE/arbdbt.h
+dbserver.o: $(ARBHOME)/INCLUDE/arbtools.h
+dbserver.o: $(ARBHOME)/INCLUDE/attributes.h
+dbserver.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+dbserver.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+dbserver.o: $(ARBHOME)/INCLUDE/cb.h
+dbserver.o: $(ARBHOME)/INCLUDE/cxxforward.h
+dbserver.o: $(ARBHOME)/INCLUDE/dupstr.h
+dbserver.o: $(ARBHOME)/INCLUDE/gccver.h
+dbserver.o: $(ARBHOME)/INCLUDE/smartptr.h
+dbserver.o: $(ARBHOME)/INCLUDE/test_global.h
+
 macro_gui.o: macros.hxx
 macro_gui.o: trackers.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/ad_prot.h

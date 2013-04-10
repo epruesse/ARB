@@ -12,6 +12,10 @@
 #ifndef MACROS_HXX
 #define MACROS_HXX
 
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
+
 class AW_window;
 class AW_root;
 class BoundActionTracker;
@@ -29,6 +33,8 @@ bool got_macro_ability(AW_root *aw_root);
 // gui-interface:
 void insert_macro_menu_entry(AW_window *awm, bool prepend_separator);
 void awt_execute_macro(AW_root *root, const char *macroname);
+
+GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *gb_main); // @@@ remove later
 
 
 #else
