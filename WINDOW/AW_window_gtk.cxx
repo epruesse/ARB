@@ -12,6 +12,7 @@ AW_window::AW_window_gtk::AW_window_gtk()
       drawing_area(NULL)
 {
     gtk_window_add_accel_group(window, accel_group);
+    aw_assert(areas.size() == AW_MAX_AREA);
 } 
 
 void AW_window::AW_window_gtk::show() {
@@ -24,6 +25,10 @@ void AW_window::AW_window_gtk::set_title(const char* title) {
 
 void AW_window::AW_window_gtk::set_size(int width, int height) {
     gtk_window_set_default_size(window, width, height);
+}
+
+void AW_window::AW_window_gtk::get_size(int& width, int& height) {
+    gtk_window_get_size(window, &width, &height);
 }
 
 void AW_window::AW_window_gtk::set_resizable(bool resizable) {

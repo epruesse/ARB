@@ -18,6 +18,7 @@
 #include "aw_device_click.hxx"  
 #include "aw_device_size.hxx"
 #include "aw_at.hxx"
+#include "aw_at_layout.hxx"
 #include "aw_msg.hxx"
 #include "aw_awar.hxx"
 #include "aw_common.hxx"
@@ -39,7 +40,7 @@
 
 const int AW_NUMBER_OF_F_KEYS = 20;
 
-
+// proxy functions handing down stuff to AW_at
 void AW_window::at(int x, int y){ _at.at(x,y); }
 void AW_window::at_x(int x) { _at.at_x(x); }
 void AW_window::at_y(int y){ _at.at_y(y); }
@@ -179,10 +180,6 @@ const char *aw_str_2_label(const char *str, AW_window *aww) {
     return label;
 }
 
-static void aw_attach_widget(GtkWidget* /*w*/, AW_at& /*_at*/, int /*default_width*/ = -1) {
-    GTK_NOT_IMPLEMENTED;
-}
-
 
 static void AW_label_in_awar_list(AW_window *aww, GtkWidget* widget, const char *str) {
     AW_awar *is_awar = aww->get_root()->label_is_awar(str);
@@ -295,6 +292,7 @@ void AW_window::put_with_label(GtkWidget *widget) {
     }
     
     // pack widget and label into hbox
+    // (having/not having the hbox changes appearance!)
     hbox = gtk_hbox_new(false,0);
     if (label) {
       // label does not expand (hence "false,false")
@@ -311,52 +309,15 @@ void AW_window::put_with_label(GtkWidget *widget) {
                                     _at.to_position_y - _at.y_for_next_button);
     }
 
-    int x_pos = _at.x_for_next_button;
     GtkRequisition hbox_req;
     gtk_widget_show_all(hbox);
     gtk_widget_size_request(GTK_WIDGET(hbox), &hbox_req);
 
-    int width;
-    switch(_at.correct_for_at_center) {
-    case 0: // left aligned
-        alignment = hbox;
-        _at.increment_at_commands(hbox_req.width + SPACE_BEHIND, 
-                                  hbox_req.height + SPACE_BELOW);
-        break;
-    case 1: // center aligned
-        alignment = gtk_alignment_new(.5, 0., 0., 0.);
-        gtk_container_add(GTK_CONTAINER(alignment), hbox);
-       
-        if (x_pos > _at.max_x_size/2) {
-            width = (_at.max_x_size - x_pos) * 2;
-            x_pos = _at.max_x_size - width;
-        }
-        else {
-            width = x_pos * 2;
-            x_pos = 0;
-        }
-        gtk_widget_set_size_request(alignment, width, -1);
+    aw_at_layout_put(prvt->fixed_size_area, hbox, &_at);
 
-        _at.increment_at_commands(hbox_req.width/2 + SPACE_BEHIND, 
+    _at.increment_at_commands(hbox_req.width * (2-_at.correct_for_at_center) / 2. + SPACE_BEHIND, 
                                   hbox_req.height + SPACE_BELOW);
-        break;
-    case 2: // right aligned
-        alignment = gtk_alignment_new(1., 0., 0., 0.);
-        gtk_container_add(GTK_CONTAINER(alignment), hbox);
-        gtk_widget_set_size_request(alignment, x_pos, -1);
-        x_pos = 0;
-        _at.increment_at_commands(SPACE_BEHIND, 
-                                  hbox_req.height + SPACE_BELOW);
-        break;
-    default:
-      aw_assert(false);
-    }
-
-    gtk_fixed_put(prvt->fixed_size_area, alignment, x_pos, _at.y_for_next_button);
-
     this->unset_at_commands();
-    
-    //if (_at.attach_any) aw_attach_widget(buttonOrLabel, _at);
 }
 
 /**
@@ -1037,8 +998,8 @@ AW_device_size *AW_window::get_size_device(AW_area area){
     return size_device;
 }
 
-void AW_window::get_window_size(int& /*width*/, int& /*height*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::get_window_size(int& width, int& height){
+    prvt->get_size(width,height);
 }
 
 void AW_window::help_text(const char */*id*/){
@@ -1176,23 +1137,8 @@ void AW_window::update_input_field(GtkWidget */*widget*/, const char */*var_valu
 static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
     AW_device *device = aww->get_device(AW_INFO_AREA);
     device->reset();
+    device->set_offset(AW::Vector(-xfig->minx, -xfig->miny));
 
-    // The INFO_AREA must be gtk_fixed or the window itself for both
-    // the buttons and the lines/text from xfig to show. For some
-    // reason, button placement is relative to the widget origin,
-    // while lines/text are placed relative to the window origin. 
-    // Possibly, this is because the window hasn't been 'exposed' 
-    // at that time yet, whereas we are now at expose time.
-    // Whatever the cause, if the INFO_AREA is not placed exactly
-    // at the origin of the window, lines and text need to be
-    // rendered with offset to appear in the right places. So
-    // that's what we do find out here:
-    GtkAllocation allocation;
-    GtkWidget *area = aww->get_area(AW_INFO_AREA)->get_area();
-    gtk_widget_get_allocation(area, &allocation); 
-    
-    device->set_offset(AW::Vector(-xfig->minx + allocation.x, 
-                                  -xfig->miny + allocation.y));
     xfig->print(device);
 }
 
@@ -1557,7 +1503,9 @@ void AW_window::init_window(const char *window_name, const char* window_title,
     } 
 
     // create area for buttons at top ('info area')
-    prvt->fixed_size_area = GTK_FIXED(gtk_fixed_new());
+    prvt->fixed_size_area = AW_AT_LAYOUT(aw_at_layout_new());
+    // we want this to have its own GdkWindow
+    gtk_widget_set_has_window(GTK_WIDGET(prvt->fixed_size_area),true);
     prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), 
                                                        GTK_WIDGET(prvt->fixed_size_area)); 
 }
@@ -1581,7 +1529,6 @@ void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
 void AW_window::on_hide(aw_hide_cb /*call_on_hide*/){
     GTK_NOT_IMPLEMENTED;
 }
-
 
 
 void AW_window::reset_scrolled_picture_size() {

@@ -89,6 +89,7 @@ public:
 
 
 class AW_at_size {
+protected:
     int  to_offset_x;                               // here we use offsets (not positions like in AW_at)
     int  to_offset_y;
     bool to_position_exists;
