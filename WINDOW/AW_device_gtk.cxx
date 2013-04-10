@@ -190,6 +190,7 @@ void AW_device_gtk::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos
 {
     GdkRectangle rect;
     rect.x = AW_INT(src_x), rect.y = AW_INT(src_y), rect.width=AW_INT(width), rect.height=AW_INT(height);
-    gdk_window_move_region(drawingArea->window, gdk_region_rectangle(&rect), AW_INT(dest_x), AW_INT(dest_y));
+    gdk_window_move_region(drawingArea->window, gdk_region_rectangle(&rect),
+                           AW_INT(dest_x-src_x), AW_INT(dest_y-src_y));
     AUTO_FLUSH(this);
 }
