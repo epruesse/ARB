@@ -30,6 +30,7 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
+dbserver.o: dbserver.hxx
 dbserver.o: macros.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/ad_prot.h
 dbserver.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -108,6 +109,7 @@ recmac.o: $(ARBHOME)/INCLUDE/smartptr.h
 recmac.o: $(ARBHOME)/INCLUDE/test_global.h
 recmac.o: $(ARBHOME)/INCLUDE/test_unit.h
 
+trackers.o: dbserver.hxx
 trackers.o: macros.hxx
 trackers.o: recmac.hxx
 trackers.o: trackers.hxx

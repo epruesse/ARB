@@ -1712,26 +1712,31 @@ int ARB_main(int argc, const char *argv[]) {
     }
 
 
-    if (argc==2) {
-        db_server = argv[1];
-    }
+    if (argc==2) db_server = argv[1];
 
+    GB_ERROR error = NULL;
     GLOBAL_gb_main = GBT_open(db_server, "rw");
-    if (!GLOBAL_gb_main) aw_popup_exit(GB_await_error()); // exits
 
-    configure_macro_recording(aw_root, "ARB_PARS", GLOBAL_gb_main);
+    if (!GLOBAL_gb_main) error = GB_await_error();
+    else {
+        error = configure_macro_recording(aw_root, "ARB_PARS", GLOBAL_gb_main);
 
+        if (!error) {
 #if defined(DEBUG)
-    AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
+            AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
 #endif // DEBUG
 
-    pars_create_all_awars(aw_root, AW_ROOT_DEFAULT);
+            pars_create_all_awars(aw_root, AW_ROOT_DEFAULT);
 
-    AW_window *aww = create_pars_init_window(aw_root, &cmds);
-    aww->show();
+            AW_window *aww = create_pars_init_window(aw_root, &cmds);
+            aww->show();
 
-    AWT_install_cb_guards();
-    aw_root->main_loop();
+            AWT_install_cb_guards();
+            aw_root->main_loop();
+        }
+    }
+
+    if (error) aw_popup_exit(error);
     return EXIT_SUCCESS;
 }
 

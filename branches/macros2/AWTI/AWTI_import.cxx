@@ -1241,7 +1241,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
 
     if (!gb_main) {
         // control macros via temporary import DB (if no main DB available)
-        configure_macro_recording(awr, "ARB_IMPORT", awtcig.gb_main);
+        configure_macro_recording(awr, "ARB_IMPORT", awtcig.gb_main); // @@@ use result
     }
     else {
         awti_assert(got_macro_ability(awr));

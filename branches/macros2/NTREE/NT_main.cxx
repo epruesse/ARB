@@ -153,10 +153,8 @@ static GB_ERROR nt_check_database_consistency() {
     return err;
 }
 
-static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, const char *autorun_macro) {
-    configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ problematic if called from startup-importer
-    GB_ERROR error = startup_dbserver(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ start in configure_macro_recording?
-
+__ATTR__USERESULT static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, const char *autorun_macro) {
+    GB_ERROR error = configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ problematic if called from startup-importer
     if (!error) {
         nt_create_main_window(aw_root);
         if (GB_is_server(GLOBAL.gb_main)) error = nt_check_database_consistency();

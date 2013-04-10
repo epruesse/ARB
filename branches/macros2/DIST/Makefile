@@ -184,6 +184,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt.hxx

@@ -9,6 +9,7 @@
 //                                                               //
 // ============================================================= //
 
+#include "dbserver.hxx"
 #include "macros.hxx"
 
 #include <arbtools.h>
@@ -50,6 +51,12 @@ static void check_db_interrupt(AW_root *awr, AW_CL cl_db_interrupt_data) { // cl
 }
 
 GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *gb_main) {
+#if defined(DEBUG)
+    static bool initialized = false;
+    arb_assert(!initialized); // called twice - not able (yet)
+    initialized = true;
+#endif
+
     arb_assert(got_macro_ability(aw_root));
 
     GB_ERROR error = NULL;

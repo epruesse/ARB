@@ -146,6 +146,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+PH_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt.hxx

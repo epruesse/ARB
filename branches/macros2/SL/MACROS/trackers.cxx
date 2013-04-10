@@ -12,6 +12,7 @@
 #include "trackers.hxx"
 #include "macros.hxx"
 #include "recmac.hxx"
+#include "dbserver.hxx"
 
 #include <arbdbt.h>
 #include <aw_msg.hxx>
@@ -153,7 +154,7 @@ void ClientActionTracker::track_awar_change(AW_awar */*awar*/) {
 // -------------------------
 //      tracker factory
 
-UserActionTracker *make_macro_recording_tracker(const char *client_id, GBDATA *gb_main) {
+static UserActionTracker *make_macro_recording_tracker(const char *client_id, GBDATA *gb_main) {
     // 'client_id' has to be a unique id (used to identify the program which will record/playback).
     // If multiple programs (or multiple instances of one) use the same id, macro recording shall abort.
     // If a program is used for different purposes by starting multiple instances (like e.g. arb_ntree),
@@ -176,12 +177,21 @@ UserActionTracker *need_macro_ability() {
     return new RequiresActionTracker;
 }
 
-void configure_macro_recording(AW_root *aw_root, const char *client_id, GBDATA *gb_main) {
+GB_ERROR configure_macro_recording(AW_root *aw_root, const char *client_id, GBDATA *gb_main) {
     ma_assert(aw_root);
 
     BoundActionTracker *existing = get_active_macro_recording_tracker(aw_root);
-    if (existing && existing->reconfigure(client_id, gb_main)) return;
-    aw_root->setUserActionTracker(make_macro_recording_tracker(client_id, gb_main));
+    GB_ERROR            error    = NULL;
+    if (existing && existing->reconfigure(client_id, gb_main)) {
+        error = "Need to reconfigure dbserver as well";
+        ma_assert(0); // @@@ happens e.g. when running importer from arb-intro
+    }
+    else {
+        aw_root->setUserActionTracker(make_macro_recording_tracker(client_id, gb_main));
+        error = startup_dbserver(aw_root, client_id, gb_main);
+    }
+
+    return error;
 }
 
 bool got_macro_ability(AW_root *aw_root) {

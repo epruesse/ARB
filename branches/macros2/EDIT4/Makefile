@@ -325,6 +325,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+ED4_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -338,6 +339,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_main.o: $(ARBHOME)/INCLUDE/gccver.h
 ED4_main.o: $(ARBHOME)/INCLUDE/gde.hxx
+ED4_main.o: $(ARBHOME)/INCLUDE/macros.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_main.o: $(ARBHOME)/INCLUDE/st_window.hxx
