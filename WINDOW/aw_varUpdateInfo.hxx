@@ -54,13 +54,13 @@ public:
      * @param widget
      * @param variable_update_struct
      */
-    static void AW_variable_update_callback(GtkWidget *widget, gpointer variable_update_struct);
+    static bool AW_variable_update_callback(GtkWidget *widget, gpointer variable_update_struct);
     /**
      * Use this callback for events that provide an additional GdkEvent struct.
      * @param widget
      * @param event
      * @param variable_update_struct
      */
-    static void AW_variable_update_callback_event(GtkWidget *widget, GdkEvent *event, gpointer variable_update_struct);
+    static bool AW_variable_update_callback_event(GtkWidget *widget, GdkEvent *event, gpointer variable_update_struct);
 };
 
