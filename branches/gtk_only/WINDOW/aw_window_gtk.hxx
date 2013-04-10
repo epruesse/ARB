@@ -15,6 +15,7 @@
 #include <gtk-2.0/gtk/gtktoolbar.h>
 
 #include "aw_drawing_area.hxx"
+#include "aw_at_layout.hxx"
 
 
 /**
@@ -31,7 +32,7 @@ public:
      * @note This area might not be present in every window.
      * @note This area is the same as the INFO_AREA
      */
-    GtkFixed *fixed_size_area; 
+    AwAtLayout *fixed_size_area; 
     
     /**
      * A menu bar at the top of the window.
@@ -124,6 +125,11 @@ public:
      * Set window width/height
      */
     void set_size(int width, int height);
+
+    /**
+     * Get window width/height
+     */
+    void get_size(int& width, int& height);
 
     /**
      * Make window resizable (or not)

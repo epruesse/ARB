@@ -22,7 +22,15 @@
 #include "aw_device_click.hxx"
 #include "aw_position.hxx"
 
+#include "gtk/gtkfixed.h"
+
 #include <iostream>
+
+
+const char* gtk_object_to_class_name(GtkWidget* w) {
+    return g_type_name(G_TYPE_FROM_CLASS(w->object.parent_instance.g_type_instance.g_class));
+}
+
 
 class AW_area_management::Pimpl {
 public:
@@ -78,21 +86,15 @@ AW_common *AW_area_management::get_common() const {
 /**
  * Handles the drawing area's configure callback.
  * (Called on resize and move)
+ * Note that this callback only works on aw_drawing_area
+ * and aw_at_layout. GTK normally discards GDK_CONFIGURE
+ * events, the aw_at_layout and the gtk_drawing_area 
+ * (and therefore the aw_drawing_area) issue the event
+ * "manually"
  */
 gboolean AW_area_management::configure_event_cb(GtkWidget */*widget*/, GdkEventConfigure */*event*/, 
                                                 gpointer area_management)
 {
-  /*
-    //since there is no explicit resize callback in gtk we simulate it
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-    if(allocation.height != aram->prvt->old_height || allocation.width != aram->prvt->old_width) {
-       aram->run_resize_callback(); 
-    }
-    aram->prvt->old_height = allocation.height;
-    aram->prvt->old_width = allocation.width;
-  */
-
     AW_area_management *aram = (AW_area_management *) area_management;
     aram->run_resize_callback();    
     return false; 
@@ -278,13 +280,8 @@ void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window
 void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
                                              AW_CL cd1, AW_CL cd2) 
 {
-    // insert resize callback for draw_area
-
-    //FIXME do this when handling the expose_cb.
-    if (!prvt->resize_cb) {//connect the gtk signal upon first call
-
-        //note: we use the expose callback because there is no resize callback in gtk.
-        g_signal_connect (prvt->area, "configure_event",
+    if (!prvt->resize_cb) {
+        g_signal_connect (prvt->area, "configure-event",
                           G_CALLBACK (configure_event_cb), (gpointer) this);
 
     }
@@ -292,8 +289,10 @@ void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window
 }
 
 
-inline void AW_area_management::run_resize_callback() {
-    if (prvt->resize_cb) prvt->resize_cb->run_callback();
+void AW_area_management::run_resize_callback() {
+    if (prvt->resize_cb) {
+        prvt->resize_cb->run_callback();
+    }
 }
 
 void AW_area_management::run_motion_callback(GdkEventMotion *event) {
