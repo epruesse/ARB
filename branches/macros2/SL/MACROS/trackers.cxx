@@ -9,50 +9,18 @@
 //                                                               //
 // ============================================================= //
 
+#include "trackers.hxx"
 #include "macros.hxx"
 #include "recmac.hxx"
-#include "trackers.hxx"
 
-#include <aw_msg.hxx>
 #include <arbdbt.h>
-
-bool got_macro_ability(AW_root *aw_root) {
-    // return true if aw_root has a BoundActionTracker
-    return get_active_macro_recording_tracker(aw_root);
-}
-
-UserActionTracker *make_macro_recording_tracker(const char *client_id, GBDATA *gb_main) {
-    // 'client_id' has to be a unique id (used to identify the program which will record/playback).
-    // If multiple programs (or multiple instances of one) use the same id, macro recording shall abort.
-    // If a program is used for different purposes by starting multiple instances (like e.g. arb_ntree),
-    // each purpose/instance should use a different 'client_id'.
-
-    ma_assert(gb_main);
-    ma_assert(client_id && client_id[0]);
-
-    BoundActionTracker *tracker;
-    if (GB_is_server(gb_main)) {
-        tracker = new MacroRecorder(client_id, gb_main);
-    }
-    else {
-        tracker = new ClientActionTracker(client_id, gb_main);
-    }
-    return tracker;
-}
+#include <aw_msg.hxx>
 
 bool BoundActionTracker::reconfigure(const char *application_id, GBDATA *gb_main) {
     ma_assert(gb_main == gbmain);
     ma_assert(strcmp(id, "ARB_IMPORT") == 0); // currently only ARB_IMPORT-tracker gets reconfigured
     freedup(id, application_id);
     return true;
-}
-
-void configure_macro_recording(AW_root *aw_root, const char *client_id, GBDATA *gb_main) {
-    ma_assert(aw_root);
-
-    BoundActionTracker *existing = get_active_macro_recording_tracker(aw_root);
-    if (existing && existing->reconfigure(client_id, gb_main)) return;
-    aw_root->setUserActionTracker(make_macro_recording_tracker(client_id, gb_main));
 }
 
 GB_ERROR MacroRecorder::start_recording(const char *file, const char *stop_action_name, bool expand_existing) {
@@ -180,5 +148,44 @@ void ClientActionTracker::track_action(const char */*action_id*/) {
 
 void ClientActionTracker::track_awar_change(AW_awar */*awar*/) {
     ma_assert(0);
+}
+
+// -------------------------
+//      tracker factory
+
+UserActionTracker *make_macro_recording_tracker(const char *client_id, GBDATA *gb_main) {
+    // 'client_id' has to be a unique id (used to identify the program which will record/playback).
+    // If multiple programs (or multiple instances of one) use the same id, macro recording shall abort.
+    // If a program is used for different purposes by starting multiple instances (like e.g. arb_ntree),
+    // each purpose/instance should use a different 'client_id'.
+
+    ma_assert(gb_main);
+    ma_assert(client_id && client_id[0]);
+
+    BoundActionTracker *tracker;
+    if (GB_is_server(gb_main)) {
+        tracker = new MacroRecorder(client_id, gb_main);
+    }
+    else {
+        tracker = new ClientActionTracker(client_id, gb_main);
+    }
+    return tracker;
+}
+
+UserActionTracker *need_macro_ability() {
+    return new RequiresActionTracker;
+}
+
+void configure_macro_recording(AW_root *aw_root, const char *client_id, GBDATA *gb_main) {
+    ma_assert(aw_root);
+
+    BoundActionTracker *existing = get_active_macro_recording_tracker(aw_root);
+    if (existing && existing->reconfigure(client_id, gb_main)) return;
+    aw_root->setUserActionTracker(make_macro_recording_tracker(client_id, gb_main));
+}
+
+bool got_macro_ability(AW_root *aw_root) {
+    // return true if aw_root has a BoundActionTracker
+    return get_active_macro_recording_tracker(aw_root);
 }
 

@@ -93,6 +93,12 @@ inline BoundActionTracker *get_active_macro_recording_tracker(AW_root *aw_root) 
     return tracker ? dynamic_cast<BoundActionTracker*>(tracker) : NULL;
 }
 
+inline MacroRecorder *getMacroRecorder(AW_root *aw_root) {
+    BoundActionTracker *tracker = get_active_macro_recording_tracker(aw_root);
+    ma_assert(tracker); // application is not able to handle macros
+    return dynamic_cast<MacroRecorder*>(tracker);
+}
+
 // --------------------------------------------------------------------------------
 
 #else
