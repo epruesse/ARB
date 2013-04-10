@@ -32,7 +32,6 @@
 
 #include <list>
 #include <macros.hxx>
-#include <macro_gui.hxx>
 
 #if defined(DEBUG)
 # define TESTMENU
@@ -1678,7 +1677,7 @@ int ARB_main(int argc, const char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS", new RequiresActionTracker);
+    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS", need_macro_ability());
     AD_map_viewer_aw_root = aw_root;
 
     ap_main     = new AP_main;

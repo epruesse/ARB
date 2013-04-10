@@ -280,7 +280,6 @@ symlink_file ../SL/INSDEL/insdel.h INCLUDE/insdel.h &&
 symlink_file ../SL/ITEMS/items.h INCLUDE/items.h &&
 symlink_file ../SL/ITEMS/item_sel_list.h INCLUDE/item_sel_list.h &&
 symlink_file ../SL/LOCATION/Location.h INCLUDE/Location.h &&
-symlink_file ../SL/MACROS/macro_gui.hxx INCLUDE/macro_gui.hxx &&
 symlink_file ../SL/MACROS/macros.hxx INCLUDE/macros.hxx &&
 symlink_file ../SL/MATRIX/AP_matrix.hxx INCLUDE/AP_matrix.hxx &&
 symlink_file ../SL/NDS/nds.h INCLUDE/nds.h &&

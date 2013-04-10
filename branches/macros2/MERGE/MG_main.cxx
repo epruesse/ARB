@@ -24,7 +24,6 @@
 #include <arb_progress.h>
 #include <arb_file.h>
 #include <macros.hxx>
-#include <macro_gui.hxx>
 
 // AISC_MKPT_PROMOTE:// source and destination DBs for merge:
 // AISC_MKPT_PROMOTE:extern GBDATA *GLOBAL_gb_src;

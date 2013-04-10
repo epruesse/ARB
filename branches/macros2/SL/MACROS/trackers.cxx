@@ -1,6 +1,6 @@
 // ============================================================= //
 //                                                               //
-//   File      : macros.cxx                                      //
+//   File      : trackers.cxx                                    //
 //   Purpose   :                                                 //
 //                                                               //
 //   Coded by Ralf Westram (coder@reallysoft.de) in March 2013   //
@@ -11,11 +11,17 @@
 
 #include "macros.hxx"
 #include "recmac.hxx"
+#include "trackers.hxx"
 
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 
-BoundActionTracker *make_macro_recording_tracker(const char *client_id, GBDATA *gb_main) {
+bool got_macro_ability(AW_root *aw_root) {
+    // return true if aw_root has a BoundActionTracker
+    return get_active_macro_recording_tracker(aw_root);
+}
+
+UserActionTracker *make_macro_recording_tracker(const char *client_id, GBDATA *gb_main) {
     // 'client_id' has to be a unique id (used to identify the program which will record/playback).
     // If multiple programs (or multiple instances of one) use the same id, macro recording shall abort.
     // If a program is used for different purposes by starting multiple instances (like e.g. arb_ntree),

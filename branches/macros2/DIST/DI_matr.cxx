@@ -40,7 +40,7 @@
 #include <cmath>
 #include <arb_sort.h>
 #include <arb_global_defs.h>
-#include <macro_gui.hxx>
+#include <macros.hxx>
 
 // --------------------------------------------------------------------------------
 

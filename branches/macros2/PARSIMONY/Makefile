@@ -301,7 +301,6 @@ PARS_main.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_main.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_main.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
-PARS_main.o: $(ARBHOME)/INCLUDE/macro_gui.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/macros.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/nds.h
 PARS_main.o: $(ARBHOME)/INCLUDE/smartptr.h

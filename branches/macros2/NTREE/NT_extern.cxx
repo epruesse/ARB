@@ -31,7 +31,7 @@
 #include <awti_export.hxx>
 
 #include <awt.hxx>
-#include <macro_gui.hxx>
+#include <macros.hxx>
 #include <awt_config_manager.hxx>
 #include <awt_input_mask.hxx>
 #include <awt_sel_boxes.hxx>

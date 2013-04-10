@@ -9,7 +9,6 @@
 //                                                               //
 // ============================================================= //
 
-#include "macro_gui.hxx"
 #include "macros.hxx"
 
 #include <arbdb.h>
@@ -20,6 +19,7 @@
 #include <aw_file.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+#include "trackers.hxx"
 
 #define ma_assert(bed) arb_assert(bed)
 
@@ -35,6 +35,10 @@ inline MacroRecorder *getMacroRecorder(AW_root *aw_root) {
     BoundActionTracker *tracker = get_active_macro_recording_tracker(aw_root);
     ma_assert(tracker); // application is not able to handle macros
     return dynamic_cast<MacroRecorder*>(tracker);
+}
+
+UserActionTracker *need_macro_ability() {
+    return new RequiresActionTracker;
 }
 
 static void awt_delete_macro_cb(AW_window *aww) {

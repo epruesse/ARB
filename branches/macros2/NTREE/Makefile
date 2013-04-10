@@ -627,7 +627,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_extern.o: $(ARBHOME)/INCLUDE/gde.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/items.h
-NT_extern.o: $(ARBHOME)/INCLUDE/macro_gui.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/macros.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/multi_probe.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/nds.h
 NT_extern.o: $(ARBHOME)/INCLUDE/primer_design.hxx
@@ -783,7 +783,6 @@ NT_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_main.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_main.o: $(ARBHOME)/INCLUDE/insdel.h
-NT_main.o: $(ARBHOME)/INCLUDE/macro_gui.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/macros.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/smartptr.h

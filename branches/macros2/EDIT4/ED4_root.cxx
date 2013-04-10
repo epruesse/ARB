@@ -41,6 +41,7 @@
 #include <arb_version.h>
 #include <arb_file.h>
 #include <arbdbt.h>
+#include <macros.hxx>
 
 #include <cctype>
 
@@ -181,8 +182,6 @@ ED4_returncode ED4_root::refresh_all_windows(bool redraw) {
 #ifdef UNIT_TESTS
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
-#include <macros.hxx>
-#include <macro_gui.hxx>
 #endif
 
 static arb_test::match_expectation correct_win2world_calculation(ED4_foldable& foldable, int xwin_org, int ywin_org, int xwrld_expd, int ywrld_expd) {

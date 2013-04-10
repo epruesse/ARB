@@ -30,8 +30,8 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
-macro_gui.o: macro_gui.hxx
 macro_gui.o: macros.hxx
+macro_gui.o: trackers.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/ad_prot.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -57,31 +57,6 @@ macro_gui.o: $(ARBHOME)/INCLUDE/dupstr.h
 macro_gui.o: $(ARBHOME)/INCLUDE/gccver.h
 macro_gui.o: $(ARBHOME)/INCLUDE/smartptr.h
 macro_gui.o: $(ARBHOME)/INCLUDE/test_global.h
-
-macros.o: macros.hxx
-macros.o: recmac.hxx
-macros.o: $(ARBHOME)/INCLUDE/ad_prot.h
-macros.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-macros.o: $(ARBHOME)/INCLUDE/arb_assert.h
-macros.o: $(ARBHOME)/INCLUDE/arb_core.h
-macros.o: $(ARBHOME)/INCLUDE/arb_error.h
-macros.o: $(ARBHOME)/INCLUDE/arb_msg.h
-macros.o: $(ARBHOME)/INCLUDE/arb_string.h
-macros.o: $(ARBHOME)/INCLUDE/arbdb.h
-macros.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-macros.o: $(ARBHOME)/INCLUDE/arbdbt.h
-macros.o: $(ARBHOME)/INCLUDE/arbtools.h
-macros.o: $(ARBHOME)/INCLUDE/attributes.h
-macros.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-macros.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-macros.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-macros.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-macros.o: $(ARBHOME)/INCLUDE/cb.h
-macros.o: $(ARBHOME)/INCLUDE/cxxforward.h
-macros.o: $(ARBHOME)/INCLUDE/dupstr.h
-macros.o: $(ARBHOME)/INCLUDE/gccver.h
-macros.o: $(ARBHOME)/INCLUDE/smartptr.h
-macros.o: $(ARBHOME)/INCLUDE/test_global.h
 
 recmac.o: recmac.hxx
 recmac.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -110,3 +85,29 @@ recmac.o: $(ARBHOME)/INCLUDE/gccver.h
 recmac.o: $(ARBHOME)/INCLUDE/smartptr.h
 recmac.o: $(ARBHOME)/INCLUDE/test_global.h
 recmac.o: $(ARBHOME)/INCLUDE/test_unit.h
+
+trackers.o: macros.hxx
+trackers.o: recmac.hxx
+trackers.o: trackers.hxx
+trackers.o: $(ARBHOME)/INCLUDE/ad_prot.h
+trackers.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+trackers.o: $(ARBHOME)/INCLUDE/arb_assert.h
+trackers.o: $(ARBHOME)/INCLUDE/arb_core.h
+trackers.o: $(ARBHOME)/INCLUDE/arb_error.h
+trackers.o: $(ARBHOME)/INCLUDE/arb_msg.h
+trackers.o: $(ARBHOME)/INCLUDE/arb_string.h
+trackers.o: $(ARBHOME)/INCLUDE/arbdb.h
+trackers.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+trackers.o: $(ARBHOME)/INCLUDE/arbdbt.h
+trackers.o: $(ARBHOME)/INCLUDE/arbtools.h
+trackers.o: $(ARBHOME)/INCLUDE/attributes.h
+trackers.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+trackers.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+trackers.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+trackers.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+trackers.o: $(ARBHOME)/INCLUDE/cb.h
+trackers.o: $(ARBHOME)/INCLUDE/cxxforward.h
+trackers.o: $(ARBHOME)/INCLUDE/dupstr.h
+trackers.o: $(ARBHOME)/INCLUDE/gccver.h
+trackers.o: $(ARBHOME)/INCLUDE/smartptr.h
+trackers.o: $(ARBHOME)/INCLUDE/test_global.h

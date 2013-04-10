@@ -17,7 +17,6 @@
 #include <insdel.h>
 
 #include <awt.hxx>
-#include <macro_gui.hxx>
 
 #include <aw_advice.hxx>
 #include <aw_question.hxx>
@@ -842,7 +841,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
     GB_set_verbose();
 
     GB_shell shell;
-    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT", new RequiresActionTracker);
+    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT", need_macro_ability());
 
     GLOBAL.aw_root = aw_root;
 
