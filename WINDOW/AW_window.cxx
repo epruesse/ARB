@@ -46,12 +46,16 @@ void AW_window::at_x(int x) { _at.at_x(x); }
 void AW_window::at_y(int y){ _at.at_y(y); }
 void AW_window::at_shift(int x, int y){ _at.at_shift(x,y); }
 void AW_window::at_newline(){ _at.at_newline(); }
-void AW_window::unset_at_commands() { _at.unset_at_commands(); }
 bool AW_window::at_ifdef(const  char *id){  return _at.at_ifdef(id); }
 void AW_window::at_set_to(bool attach_x, bool attach_y, int xoff, int yoff) {
   _at.at_set_to(attach_x, attach_y, xoff, yoff);
 }
 void AW_window::at_unset_to() { _at.at_unset_to(); }
+void AW_window::unset_at_commands() { 
+    _at.unset_at_commands();     
+    prvt->callback = NULL;
+    //prvt->d_callback = NULL;
+}
 void AW_window::at_set_min_size(int xmin, int ymin) { _at.at_set_min_size(xmin, ymin); }
 void AW_window::auto_space(int x, int y){ _at.auto_space(x,y); }
 void AW_window::label_length(int length){ _at.label_length(length); }
