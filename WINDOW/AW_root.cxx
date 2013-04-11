@@ -143,6 +143,10 @@ void AW_root::define_remote_command(AW_cb_struct *cbs) {
     }
 }
 
+AW_cb_struct *AW_root::search_remote_command(const char *action) {
+    return (AW_cb_struct *)GBS_read_hash(prvt->action_hash, action);
+}
+
 static long set_focus_policy(const char *, long cl_aww, void *) {
     AW_window *aww = (AW_window*)cl_aww;
     aww->set_focus_policy(aww->get_root()->focus_follows_mouse);
@@ -469,95 +473,6 @@ AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_def
         GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
     }
     return vs;
-}
-
-#if defined(DEBUG)
-// #define DUMP_REMOTE_ACTIONS
-#endif // DEBUG
-
-GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_base) {
-    // function has no Motif specific stuff in it :)
-    GBDATA *gb_main = (GBDATA *)gb_maind;
-
-    char *awar_action = GBS_global_string_copy("%s/action", rm_base);
-    char *awar_value  = GBS_global_string_copy("%s/value", rm_base);
-    char *awar_awar   = GBS_global_string_copy("%s/awar", rm_base);
-    char *awar_result = GBS_global_string_copy("%s/result", rm_base);
-
-    GB_push_transaction(gb_main);
-
-    char *action   = GBT_readOrCreate_string(gb_main, awar_action, "");
-    char *value    = GBT_readOrCreate_string(gb_main, awar_value, "");
-    char *tmp_awar = GBT_readOrCreate_string(gb_main, awar_awar, "");
-
-    if (tmp_awar[0]) {
-        GB_ERROR error = 0;
-        AW_awar *found_awar = awar_no_error(tmp_awar);
-        if (!found_awar) {
-            error = GBS_global_string("Unknown variable '%s'", tmp_awar);
-        }
-        else {
-            if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
-                char *read_value = this->awar(tmp_awar)->read_as_string();
-                GBT_write_string(gb_main, awar_value, read_value);
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", tmp_awar, read_value);
-#endif // DUMP_REMOTE_ACTIONS
-                free(read_value);
-                // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
-                action[0]        = 0;
-                GBT_write_string(gb_main, awar_action, "");
-            }
-            else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
-                this->awar(tmp_awar)->touch();
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar);
-#endif // DUMP_REMOTE_ACTIONS
-                // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
-                action[0] = 0;
-                GBT_write_string(gb_main, awar_action, "");
-            }
-            else {
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value);
-#endif // DUMP_REMOTE_ACTIONS
-                error = this->awar(tmp_awar)->write_as_string(value);
-            }
-        }
-        GBT_write_string(gb_main, awar_result, error ? error : "");
-        GBT_write_string(gb_main, awar_awar, ""); // tell perl-client call has completed (BIO::remote_awar and BIO:remote_read_awar)
-
-        aw_message_if(error);
-    }
-    GB_pop_transaction(gb_main);
-
-    if (action[0]) {
-        AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash, action);
-
-#if defined(DUMP_REMOTE_ACTIONS)
-        printf("remote command (%s) exists=%i\n", action, int(cbs != 0));
-#endif                          // DUMP_REMOTE_ACTIONS
-        if (cbs) {
-            cbs->run_callback();
-            GBT_write_string(gb_main, awar_result, "");
-        }
-        else {
-            aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
-            GBT_write_string(gb_main, awar_result, GB_await_error());
-        }
-        GBT_write_string(gb_main, awar_action, ""); // tell perl-client call has completed (remote_action)
-    }
-
-    free(tmp_awar);
-    free(value);
-    free(action);
-
-    free(awar_result);
-    free(awar_awar);
-    free(awar_value);
-    free(awar_action);
-
-    return 0;
 }
 
 static long awar_set_temp_if_is_default(const char *, long val, void *cl_gb_db) {
