@@ -112,7 +112,7 @@ cairo_t *AW_common_gtk::get_CR(int gc) {
             cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
             break;
         case AW_COPY:
-            cairo_set_operator(cr, CAIRO_OPERATOR_OVER); 
+            cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE); 
             break;
         default:
             aw_assert(false);
