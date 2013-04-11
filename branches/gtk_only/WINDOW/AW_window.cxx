@@ -918,8 +918,6 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *name, const 
    aw_assert(legal_mask(mask));
    aw_assert(prvt->menus.size() > 0); //closed too many menus
   
-   FIXME("duplicate mnemonic test not implemented");
-
    std::string topicName = AW_motif_gtk_conversion::convert_mnemonic(name, mnemonic);
    
    if (!topic_id) topic_id = name; // hmm, due to this we cannot insert_menu_topic w/o id. Change? @@@
@@ -935,9 +933,6 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *name, const 
 #if defined(DUMP_MENU_LIST)
  //   dumpMenuEntry(name);
 #endif // DUMP_MENU_LIST
-#ifdef DEBUG
-//    test_duplicate_mnemonics(prvt.menu_deep, name, mnemonic);
-#endif
 
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, helpText);
     
@@ -981,13 +976,9 @@ void AW_window::insert_sub_menu(const char *name, const char *mnemonic, AW_activ
     prvt->menus.push(GTK_MENU_SHELL(submenu));
     
     
-    FIXME("duplicate mnemonic test not implemented");
     #if defined(DUMP_MENU_LIST)
         dumpOpenSubMenu(name);
     #endif // DUMP_MENU_LIST
-    #ifdef DEBUG
-       // open_test_duplicate_mnemonics(prvt->menu_deep+1, name, mnemonic);
-    #endif
 
     get_root()->register_widget(GTK_WIDGET(item), mask);
 }
