@@ -162,6 +162,7 @@ AW_at.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_at_auto.o: aw_area_management.hxx
 AW_at_auto.o: aw_assert.hxx
 AW_at_auto.o: aw_at.hxx
+AW_at_auto.o: aw_at_layout.hxx
 AW_at_auto.o: aw_base.hxx
 AW_at_auto.o: aw_button.hxx
 AW_at_auto.o: aw_cb_struct.hxx
@@ -204,9 +205,19 @@ AW_at_auto.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_at_auto.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_at_auto.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AW_at_layout.o: aw_assert.hxx
+AW_at_layout.o: aw_at.hxx
+AW_at_layout.o: aw_at_layout.hxx
+AW_at_layout.o: aw_base.hxx
+AW_at_layout.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_at_layout.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_at_layout.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_at_layout.o: $(ARBHOME)/INCLUDE/test_global.h
+
 AW_at_maxsize.o: aw_area_management.hxx
 AW_at_maxsize.o: aw_assert.hxx
 AW_at_maxsize.o: aw_at.hxx
+AW_at_maxsize.o: aw_at_layout.hxx
 AW_at_maxsize.o: aw_base.hxx
 AW_at_maxsize.o: aw_button.hxx
 AW_at_maxsize.o: aw_cb_struct.hxx
@@ -349,6 +360,7 @@ AW_button.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_cb_struct.o: aw_area_management.hxx
 AW_cb_struct.o: aw_assert.hxx
 AW_cb_struct.o: aw_at.hxx
+AW_cb_struct.o: aw_at_layout.hxx
 AW_cb_struct.o: aw_base.hxx
 AW_cb_struct.o: aw_button.hxx
 AW_cb_struct.o: aw_cb_struct.hxx
@@ -748,6 +760,7 @@ AW_font_group.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_functions.o: aw_area_management.hxx
 AW_functions.o: aw_assert.hxx
 AW_functions.o: aw_at.hxx
+AW_functions.o: aw_at_layout.hxx
 AW_functions.o: aw_base.hxx
 AW_functions.o: aw_button.hxx
 AW_functions.o: aw_cb_struct.hxx
@@ -1325,6 +1338,7 @@ AW_varUpdateInfo.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window.o: aw_area_management.hxx
 AW_window.o: aw_assert.hxx
 AW_window.o: aw_at.hxx
+AW_window.o: aw_at_layout.hxx
 AW_window.o: aw_awar.hxx
 AW_window.o: aw_base.hxx
 AW_window.o: aw_button.hxx
@@ -1431,6 +1445,7 @@ AW_window_debug.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window_gtk.o: aw_area_management.hxx
 AW_window_gtk.o: aw_assert.hxx
 AW_window_gtk.o: aw_at.hxx
+AW_window_gtk.o: aw_at_layout.hxx
 AW_window_gtk.o: aw_base.hxx
 AW_window_gtk.o: aw_button.hxx
 AW_window_gtk.o: aw_cb_struct.hxx
@@ -1476,6 +1491,7 @@ AW_window_gtk.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window_menu_modes.o: aw_area_management.hxx
 AW_window_menu_modes.o: aw_assert.hxx
 AW_window_menu_modes.o: aw_at.hxx
+AW_window_menu_modes.o: aw_at_layout.hxx
 AW_window_menu_modes.o: aw_base.hxx
 AW_window_menu_modes.o: aw_button.hxx
 AW_window_menu_modes.o: aw_cb_struct.hxx
@@ -1525,6 +1541,7 @@ AW_window_menu_modes.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window_message.o: aw_area_management.hxx
 AW_window_message.o: aw_assert.hxx
 AW_window_message.o: aw_at.hxx
+AW_window_message.o: aw_at_layout.hxx
 AW_window_message.o: aw_base.hxx
 AW_window_message.o: aw_button.hxx
 AW_window_message.o: aw_cb_struct.hxx
@@ -1570,6 +1587,7 @@ AW_window_message.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window_simple.o: aw_area_management.hxx
 AW_window_simple.o: aw_assert.hxx
 AW_window_simple.o: aw_at.hxx
+AW_window_simple.o: aw_at_layout.hxx
 AW_window_simple.o: aw_base.hxx
 AW_window_simple.o: aw_button.hxx
 AW_window_simple.o: aw_cb_struct.hxx
@@ -1619,6 +1637,7 @@ AW_window_simple.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window_simple_menu.o: aw_area_management.hxx
 AW_window_simple_menu.o: aw_assert.hxx
 AW_window_simple_menu.o: aw_at.hxx
+AW_window_simple_menu.o: aw_at_layout.hxx
 AW_window_simple_menu.o: aw_base.hxx
 AW_window_simple_menu.o: aw_button.hxx
 AW_window_simple_menu.o: aw_cb_struct.hxx
