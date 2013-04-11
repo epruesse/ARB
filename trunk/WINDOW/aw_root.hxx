@@ -54,6 +54,7 @@ class  AW_awar;
 struct AW_buttons_struct;
 class  AW_root_cblist;
 class  GB_HASH;
+struct AW_cb_struct;
 
 enum AW_ProcessEventType {
     NO_EVENT     = 0,
@@ -163,8 +164,8 @@ public:
     bool is_recording_macro() const;
     GB_ERROR execute_macro(GBDATA *gb_main, const char *file, AW_RCB1 execution_done_cb, AW_CL client_data);
 
-    void define_remote_command(struct AW_cb_struct *cbs);
-    GB_ERROR check_for_remote_command(AW_default gb_main, const char *rm_base);
+    void define_remote_command(AW_cb_struct *cbs);
+    AW_cb_struct *search_remote_command(const char *action);
 
 #if defined(DEBUG)
     size_t callallcallbacks(int mode);
