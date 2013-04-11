@@ -55,6 +55,7 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
 class  AW_awar;
 class  AW_root_cblist;
 class  GB_HASH;
+struct AW_cb_struct;
 
 enum AW_ProcessEventType {
     NO_EVENT     = 0,
@@ -306,8 +307,8 @@ public:
     bool is_tracking() const { return tracker->is_tracking(); }
     UserActionTracker *get_tracker() { return tracker; }
 
-    void define_remote_command(struct AW_cb_struct *cbs);
-    GB_ERROR check_for_remote_command(AW_default gb_main, const char *rm_base);
+    void define_remote_command(AW_cb_struct *cbs);
+    AW_cb_struct *search_remote_command(const char *action);
 
 #if defined(DEBUG)
     size_t callallcallbacks(int mode);
