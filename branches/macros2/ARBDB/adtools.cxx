@@ -18,6 +18,7 @@
 #include <arb_strarray.h>
 
 #include <algorithm>
+#include "ad_remote.h"
 
 using namespace std;
 
@@ -573,44 +574,10 @@ GBDATA *GBT_open(const char *path, const char *opent) {
  * - BIO::remote_read_awar      (use of GBT_remote_read_awar)
  */
 
-#define REMOTE_BASE_LEN     11 // len of REMOTE_BASE
-#define MAX_REMOTE_APP_LEN  30 // max len of application (e.g. "ARB_EDIT4")
-#define MAX_REMOTE_ITEM_LEN 6  // max len of item in APP container ("action", "result", ...)
-
-#define MAX_REMOTE_AWAR_LEN (REMOTE_BASE_LEN + MAX_REMOTE_APP_LEN + 1 + MAX_REMOTE_ITEM_LEN)
-
-#if defined(ASSERTION_USED)
-void assert_valid_application_name(const char *application) {
-    size_t alen = strlen(application);
-    gb_assert(alen>0 && alen <= MAX_REMOTE_APP_LEN);
-}
-#endif
-
 NOT4PERL char *GBT_get_remote_awar_base(const char *application) {
     IF_ASSERTION_USED(assert_valid_application_name(application));
     return GBS_global_string_copy(REMOTE_BASE "%s", application);
 }
-
-class remote_awars {
-    mutable char name[MAX_REMOTE_AWAR_LEN+1];
-    int  length; // of awar-path inclusive last '/'
-
-    const char *item(const char *itemname) const {
-        gb_assert(strlen(itemname) <= MAX_REMOTE_ITEM_LEN);
-        strcpy(name+length, itemname);
-        return name;
-    }
-public:
-    remote_awars(const char *application) {
-        IF_ASSERTION_USED(assert_valid_application_name(application));
-        length = sprintf(name, REMOTE_BASE "%s/", application);
-        gb_assert((length+MAX_REMOTE_ITEM_LEN) <= MAX_REMOTE_AWAR_LEN);
-    }
-    const char *action() const { return item("action"); }
-    const char *result() const { return item("result"); }
-    const char *awar() const   { return item("awar"); }
-    const char *value() const  { return item("value"); }
-};
 
 static GBDATA *gbt_remote_search_awar(GBDATA *gb_main, const char *awar_name) {
     GBDATA *gb_action;

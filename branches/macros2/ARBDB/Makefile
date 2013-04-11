@@ -989,6 +989,7 @@ adTest.o: $(ARBHOME)/INCLUDE/smartptr.h
 adTest.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adtools.o: ad_prot.h
+adtools.o: ad_remote.h
 adtools.o: ad_t_prot.h
 adtools.o: arb_assert.h
 adtools.o: arbdb.h

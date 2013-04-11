@@ -33,6 +33,7 @@ depend.init:
 dbserver.o: dbserver.hxx
 dbserver.o: macros.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/ad_prot.h
+dbserver.o: $(ARBHOME)/INCLUDE/ad_remote.h
 dbserver.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_assert.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_core.h
