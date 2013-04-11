@@ -573,35 +573,43 @@ GBDATA *GBT_open(const char *path, const char *opent) {
  * - BIO::remote_read_awar      (use of GBT_remote_read_awar)
  */
 
-#define AWAR_REMOTE_BASE_TPL            REMOTE_BASE "%s"
-#define MAX_REMOTE_APPLICATION_NAME_LEN 30
-#define MAX_REMOTE_AWAR_STRING_LEN      (11+MAX_REMOTE_APPLICATION_NAME_LEN+1+6+1)
+#define REMOTE_BASE_LEN     11 // len of REMOTE_BASE
+#define MAX_REMOTE_APP_LEN  30 // max len of application (e.g. "ARB_EDIT4")
+#define MAX_REMOTE_ITEM_LEN 6  // max len of item in APP container ("action", "result", ...)
+
+#define MAX_REMOTE_AWAR_LEN (REMOTE_BASE_LEN + MAX_REMOTE_APP_LEN + 1 + MAX_REMOTE_ITEM_LEN)
+
+#if defined(ASSERTION_USED)
+void assert_valid_application_name(const char *application) {
+    size_t alen = strlen(application);
+    gb_assert(alen>0 && alen <= MAX_REMOTE_APP_LEN);
+}
+#endif
 
 NOT4PERL char *GBT_get_remote_awar_base(const char *application) {
-    return GBS_global_string_copy(AWAR_REMOTE_BASE_TPL, application);
+    IF_ASSERTION_USED(assert_valid_application_name(application));
+    return GBS_global_string_copy(REMOTE_BASE "%s", application);
 }
 
-struct remote_awars {
-    char awar_action[MAX_REMOTE_AWAR_STRING_LEN];
-    char awar_result[MAX_REMOTE_AWAR_STRING_LEN];
-    char awar_awar[MAX_REMOTE_AWAR_STRING_LEN];
-    char awar_value[MAX_REMOTE_AWAR_STRING_LEN];
+class remote_awars {
+    mutable char name[MAX_REMOTE_AWAR_LEN+1];
+    int  length; // of awar-path inclusive last '/'
 
-    remote_awars(const char *application) {
-        gb_assert(strlen(application) <= MAX_REMOTE_APPLICATION_NAME_LEN);
-
-        int length = sprintf(awar_action, AWAR_REMOTE_BASE_TPL "/", application);
-        gb_assert(length < (MAX_REMOTE_AWAR_STRING_LEN-6)); // Note :  6 is length of longest name appended below !
-
-        strcpy(awar_result, awar_action);
-        strcpy(awar_awar,   awar_action);
-        strcpy(awar_value,  awar_action);
-
-        strcpy(awar_action+length, "action");
-        strcpy(awar_result+length, "result");
-        strcpy(awar_awar+length,   "awar");
-        strcpy(awar_value+length,  "value");
+    const char *item(const char *itemname) const {
+        gb_assert(strlen(itemname) <= MAX_REMOTE_ITEM_LEN);
+        strcpy(name+length, itemname);
+        return name;
     }
+public:
+    remote_awars(const char *application) {
+        IF_ASSERTION_USED(assert_valid_application_name(application));
+        length = sprintf(name, REMOTE_BASE "%s/", application);
+        gb_assert((length+MAX_REMOTE_ITEM_LEN) <= MAX_REMOTE_AWAR_LEN);
+    }
+    const char *action() const { return item("action"); }
+    const char *result() const { return item("result"); }
+    const char *awar() const   { return item("awar"); }
+    const char *value() const  { return item("value"); }
 };
 
 static GBDATA *gbt_remote_search_awar(GBDATA *gb_main, const char *awar_name) {
@@ -640,7 +648,7 @@ static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, c
 
 static void mark_as_macro_executor(GBDATA *gb_main, bool mark) {
     // call this with 'mark' = true to mark yourself as "client running a macro"
-    // -> GB_close with automatically announce termination of this client to main DB (MACRO_TRIGGER_CONTAINER/terminated)
+    // -> GB_close will automatically announce termination of this client to main DB (MACRO_TRIGGER_CONTAINER/terminated)
     // do NOT call with 'mark' = false
 
     static bool client_is_macro_executor = false;
@@ -673,17 +681,15 @@ GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char 
     // needs to be public (needed by perl-macros)
 
     mark_as_macro_executor(gb_main, true);
-    
-    remote_awars  awars(application);
-    GBDATA       *gb_action;
 
-    gb_action = gbt_remote_search_awar(gb_main, awars.awar_action);
+    remote_awars  remote(application);
+    GBDATA       *gb_action = gbt_remote_search_awar(gb_main, remote.action());
 
     GB_ERROR error    = GB_begin_transaction(gb_main);
     if (!error) error = GB_write_string(gb_action, action_name); // write command
     error             = GB_end_transaction(gb_main, error);
 
-    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_action, awars.awar_result);
+    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_action, remote.result());
     return error;
 }
 
@@ -692,17 +698,15 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
 
     mark_as_macro_executor(gb_main, true);
 
-    remote_awars  awars(application);
-    GBDATA       *gb_awar;
-
-    gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
+    remote_awars  remote(application);
+    GBDATA       *gb_awar = gbt_remote_search_awar(gb_main, remote.awar());
 
     GB_ERROR error    = GB_begin_transaction(gb_main);
     if (!error) error = GB_write_string(gb_awar, awar_name);
-    if (!error) error = GBT_write_string(gb_main, awars.awar_value, value);
+    if (!error) error = GBT_write_string(gb_main, remote.value(), value);
     error             = GB_end_transaction(gb_main, error);
 
-    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_result);
+    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, remote.result());
 
     return error;
 }
@@ -712,17 +716,15 @@ GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const ch
 
     mark_as_macro_executor(gb_main, true);
 
-    remote_awars  awars(application);
-    GBDATA       *gb_awar;
-
-    gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
+    remote_awars  remote(application);
+    GBDATA       *gb_awar = gbt_remote_search_awar(gb_main, remote.awar());
 
     GB_ERROR error    = GB_begin_transaction(gb_main);
     if (!error) error = GB_write_string(gb_awar, awar_name);
-    if (!error) error = GBT_write_string(gb_main, awars.awar_action, "AWAR_REMOTE_READ");
+    if (!error) error = GBT_write_string(gb_main, remote.action(), "AWAR_REMOTE_READ");
     error             = GB_end_transaction(gb_main, error);
 
-    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_value);
+    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, remote.value());
     return error;
 }
 
