@@ -322,14 +322,16 @@ __ATTR__NORETURN static void really_exit(int exitcode, bool kill_my_clients) {
 }
 
 void nt_exit(AW_window *aws, AW_CL exitcode) {
+    bool is_server_and_has_clients = GLOBAL.gb_main && GB_read_clients(GLOBAL.gb_main)>0;
     if (nt_disconnect_from_db(aws->get_root(), GLOBAL.gb_main)) {
-        really_exit(exitcode, true);
+        really_exit(exitcode, is_server_and_has_clients);
     }
 }
 void nt_restart(AW_root *aw_root, const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
+    bool is_server_and_has_clients = GLOBAL.gb_main && GB_read_clients(GLOBAL.gb_main)>0;
     if (nt_disconnect_from_db(aw_root, GLOBAL.gb_main))  {
         nt_start(arb_ntree_args, restart_with_new_ARB_PID);
-        really_exit(EXIT_SUCCESS, restart_with_new_ARB_PID);
+        really_exit(EXIT_SUCCESS, restart_with_new_ARB_PID && is_server_and_has_clients);
     }
 }
 
