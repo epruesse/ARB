@@ -19,9 +19,9 @@ AW_common::AW_common(AW_rgb*& fcolors,
     data_colors_size(dcolors_count)
 {
     screen.t = 0;
-    screen.b = -1;
+    screen.b = 30000;
     screen.l = 0;
-    screen.r = -1;
+    screen.r = 40000;
 }
 
 void AW_common::new_gc(int gc) {

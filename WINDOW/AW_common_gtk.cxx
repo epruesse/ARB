@@ -48,7 +48,6 @@ AW_common_gtk::AW_common_gtk(GdkDisplay *display_in,
       pixelDepth(gdk_screen_get_system_visual(gdk_display_get_default_screen(display))->depth)
 {
     aw_window->set_resize_callback(area, AW_window_resize_cb, (AW_CL)this);
-    AW_window_resize_cb(aw_window, (AW_CL)this, 0);//call the resize cb once in the beginning to get the size
 }
 
 GtkWidget *AW_common_gtk::get_drawing_target() {
