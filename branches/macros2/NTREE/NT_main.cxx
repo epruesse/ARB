@@ -143,6 +143,7 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
 
 // --------------------------------------------------------------------------------
 
+
 static GB_ERROR nt_check_database_consistency() {
     // called once on ARB_NTREE startup
     arb_progress("Checking consistency");

@@ -44,8 +44,12 @@ dbserver.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 dbserver.o: $(ARBHOME)/INCLUDE/arbdbt.h
 dbserver.o: $(ARBHOME)/INCLUDE/arbtools.h
 dbserver.o: $(ARBHOME)/INCLUDE/attributes.h
+dbserver.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+dbserver.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+dbserver.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+dbserver.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/cb.h
 dbserver.o: $(ARBHOME)/INCLUDE/cxxforward.h
 dbserver.o: $(ARBHOME)/INCLUDE/dupstr.h
