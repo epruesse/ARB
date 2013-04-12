@@ -36,9 +36,7 @@
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
-#define DUMP_BUTTON_CREATION
-
-const int AW_NUMBER_OF_F_KEYS = 20;
+//#define DUMP_BUTTON_CREATION
 
 // proxy functions handing down stuff to AW_at
 void AW_window::at(int x, int y){ _at.at(x,y); }
