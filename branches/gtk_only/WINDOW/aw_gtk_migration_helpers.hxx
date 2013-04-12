@@ -16,7 +16,7 @@
 
 #include <cstdio>
 
-#define GTK_SILENT
+//#define GTK_SILENT
 #ifdef GTK_SILENT
 #define GTK_NOT_IMPLEMENTED
 #define GTK_PARTLY_IMPLEMENTED
