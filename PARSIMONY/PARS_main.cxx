@@ -1087,11 +1087,6 @@ static AW_window *NT_create_tree_setting(AW_root *aw_root)
 
 }
 
-static void PA_focus_cb(AW_window *, GBDATA *gb_main_par)
-{
-    GB_transaction dummy(gb_main_par);
-}
-
 // -----------------------
 //      test functions
 
@@ -1518,7 +1513,6 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->set_info_area_height(db_treey);
 
     awm->set_bottom_area_height(0);
-    awm->set_focus_callback((AW_CB)PA_focus_cb, (AW_CL)ntw->gb_main, 0);
 
     aw_parent->hide(); // hide parent
     awm->show();
