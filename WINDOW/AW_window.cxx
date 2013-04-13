@@ -52,7 +52,7 @@ void AW_window::at_unset_to() { _at.at_unset_to(); }
 void AW_window::unset_at_commands() { 
     _at.unset_at_commands();     
     prvt->callback = NULL;
-    //prvt->d_callback = NULL;
+    //  prvt->d_callback = NULL;
 }
 void AW_window::at_set_min_size(int xmin, int ymin) { _at.at_set_min_size(xmin, ymin); }
 void AW_window::auto_space(int x, int y){ _at.auto_space(x,y); }
@@ -71,21 +71,28 @@ void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
     at_size->store(_at);
 }
 
-
-void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    FIXME("Callback newed every time, possible memory leak");
-    prvt->callback = new AW_cb_struct(this, (AW_CB)f, cd1, cd2);
-}
+// FIXME: callback ownership not handled, possible memory leaks
 void AW_window::callback(void (*f)(AW_window*)){
-    FIXME("Callback newed every time, possible memory leak");
     prvt->callback = new AW_cb_struct(this, (AW_CB)f);
 }
 void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
-    FIXME("Callback newed every time, possible memory leak");
     prvt->callback = new AW_cb_struct(this, (AW_CB)f, cd1);
+}
+void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
+    prvt->callback = new AW_cb_struct(this, (AW_CB)f, cd1, cd2);
 }
 void AW_window::callback(AW_cb_struct * /* owner */ awcbs) {
     prvt->callback = awcbs;
+}
+
+void AW_window::d_callback(void (*f)(AW_window*)) {
+    prvt->d_callback = new AW_cb_struct(this, (AW_CB)f);
+}
+void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
+    prvt->d_callback = new AW_cb_struct(this, (AW_CB)f, cd1);
+}
+void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
+    prvt->d_callback = new AW_cb_struct(this, (AW_CB)f, cd1, cd2);
 }
 
 /**
@@ -94,6 +101,7 @@ void AW_window::callback(AW_cb_struct * /* owner */ awcbs) {
  */
 void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
     GTK_PARTLY_IMPLEMENTED;
+    printf("in click handler\n");
 
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     
@@ -141,11 +149,8 @@ void AW_window::_set_activate_callback(GtkWidget *widget) {
             _at.helptext_for_next_button = 0;
         }
         
-        FIXME("this assumes that widget is a button");
-        FIXME("investigate why this code works but the commented one does not");
         g_signal_connect((gpointer)widget, "clicked", G_CALLBACK(AW_window::click_handler),
                          (gpointer)prvt->callback);
-        //g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(AW_server_callback), G_OBJECT(_callback));
     }
     prvt->callback = NULL;
 }
@@ -382,7 +387,6 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     GtkWidget *entry;
     AW_awar *vs = get_root()->awar(var_name);
     aw_assert(NULL != vs);
-    AW_varUpdateInfo *vui         = 0;
 
     // create entry field
     entry = gtk_entry_new();
@@ -398,18 +402,20 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 
     put_with_label(entry);
 
-    // callback for enter
+    AW_varUpdateInfo *vui;
     vui = new AW_varUpdateInfo(this, entry, AW_WIDGET_INPUT_FIELD, vs, prvt->callback);
+
+    // callback for enter
     g_signal_connect(G_OBJECT(entry), "activate",
                      G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
                      (gpointer) vui);
     
-    if (_d_callback) {
+    if (prvt->d_callback) {
         g_signal_connect(G_OBJECT(entry), "activate",
                          G_CALLBACK(AW_window::click_handler),
-                         (gpointer) _d_callback);
-        _d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
-        get_root()->define_remote_command(_d_callback);
+                         (gpointer) prvt->d_callback);
+        prvt->d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
+        get_root()->define_remote_command(prvt->d_callback);
     }
    
     // callback for losing focus
@@ -680,6 +686,13 @@ GType AW_window::convert_aw_type_to_gtk_type(AW_VARIABLE_TYPE aw_type){
     }
 }
 
+static void  row_activated_cb (GtkTreeView       *tree_view,
+                        GtkTreePath       *path,
+                        GtkTreeViewColumn *column,
+                        gpointer           user_data) {
+  AW_cb_struct *cbs = (AW_cb_struct *) user_data;
+  cbs->run_callback();
+}
 
 AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows) {
     aw_assert(var_name); 
@@ -737,12 +750,11 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
                      G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), 
                      (gpointer) vui);
 
-    FIXME("double click callback not implemented");
-//        if (_d_callback) {
-//            XtAddCallback(scrolledList, XmNdefaultActionCallback,
-//                          (XtCallbackProc) AW_server_callback,
-//                          (XtPointer) _d_callback);
-//        }
+    if (prvt->d_callback) {
+        g_signal_connect(G_OBJECT(tree), "row-activated", 
+                         G_CALLBACK(row_activated_cb),
+                         (gpointer) prvt->d_callback);
+    }
 
     vs->tie_widget((AW_CL)get_root()->get_last_selection_list(), tree, AW_WIDGET_SELECTION_LIST, this);
     get_root()->register_widget(tree, _at.widget_mask);
@@ -824,13 +836,6 @@ void AW_window::refresh_toggle_field(int /*toggle_field_number*/) {
 // END TOGGLE FIELD STUFF
 
 
-void AW_window::d_callback(void (*/*f*/)(AW_window*, AW_CL), AW_CL /*cd1*/){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::d_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/){
-    GTK_NOT_IMPLEMENTED;
-}
 
 void AW_window::draw_line(int /*x1*/, int /*y1*/, int /*x2*/, int /*y2*/, int /*width*/, bool /*resize*/){
    GTK_NOT_IMPLEMENTED;
@@ -1358,17 +1363,12 @@ void AW_window::auto_increment(int /*dx*/, int /*dy*/) {
     GTK_NOT_IMPLEMENTED;
 }
 
-void AW_window::d_callback(void (*/*f*/)(AW_window*)) {
-    GTK_NOT_IMPLEMENTED;
-}
-
 AW_window::AW_window() 
   : recalc_size_at_show(AW_KEEP_SIZE),
     left_indent_of_horizontal_scrollbar(0),
     top_indent_of_vertical_scrollbar(0),
     prvt(new AW_window::AW_window_gtk()),
     _at(this),
-    _d_callback(NULL),
     event(),
     click_time(0),
     color_table_size(0),
