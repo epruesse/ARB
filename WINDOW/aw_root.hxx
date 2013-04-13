@@ -297,9 +297,13 @@ public:
      *             A mask matches if (button->mask & mask != 0).
      */
     void apply_sensitivity(AW_active mask);
+
+    /**
+     * This function used to set "focus follows mouse" for motif.
+     * GTK does not have this type of focus.
+     **/ 
     void apply_focus_policy(bool follow_mouse);
     void register_widget(GtkWidget* w, AW_active mask);
-    bool remove_button_from_sens_list(GtkWidget* button);
 
     void track_action(const char *action_id) { tracker->track_action(action_id); }
     void track_awar_change(AW_awar *changed_awar) { tracker->track_awar_change(changed_awar); }
