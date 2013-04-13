@@ -150,19 +150,40 @@ AW_cb_struct *AW_root::search_remote_command(const char *action) {
     return (AW_cb_struct *)GBS_read_hash(action_hash, action);
 }
 
+/**
+ * This function used to set "focus follows mouse" for motif.
+ * GTK does not have this type of focus.
+ **/ 
 void AW_root::apply_focus_policy(bool /*follow_mouse*/) {
-
-    GTK_NOT_IMPLEMENTED;
-//    focus_follows_mouse = follow_mouse;
-//    GBS_hash_do_loop(hash_for_windows, set_focus_policy, 0);
 }
 
+/**
+ * Enables/Disabes widgets according to AW_active mask
+ **/
 void AW_root::apply_sensitivity(AW_active mask) {
     aw_assert(legal_mask(mask));
 
     for (std::vector<AW_button>::iterator btn = button_list.begin();
          btn != button_list.end(); ++btn) {
       btn->apply_sensitivity(mask);
+    }
+}
+
+void AW_root::register_widget(GtkWidget* w, AW_active mask) {
+    // Don't call register_widget directly!
+    //
+    // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets,
+    // set it back using sens_mask(AWM_ALL)
+
+    aw_assert(w);
+    aw_assert(legal_mask(mask));
+    
+    prvt.set_last_widget(w);
+
+    if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
+        AW_button btn(mask, w);
+        button_list.push_back(btn);
+        btn.apply_sensitivity(global_mask);
     }
 }
 
@@ -219,28 +240,6 @@ void AW_root::append_selection_list(AW_selection_list* pList) {
 AW_selection_list* AW_root::get_last_selection_list() {
     return last_selection_list;
 }
-
-
-
-void AW_root::register_widget(GtkWidget* w, AW_active mask) {
-    // Don't call register_widget directly!
-    //
-    // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets,
-    // set it back using sens_mask(AWM_ALL)
-
-    aw_assert(w);
-    aw_assert(legal_mask(mask));
-    
-    prvt.set_last_widget(w);
-
-    if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
-        AW_button btn(mask, w);
-        button_list.push_back(btn);
-        btn.apply_sensitivity(global_mask);
-    }
-}
-
-
 
 void AW_root::init_root(const char* properties, const char *programname, bool NoExit, UserActionTracker *user_tracker, int *argc, char** argv[]) {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
