@@ -400,14 +400,14 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
 void NOTEST_SLOW_maybe_build_tree() {
     // does only test sth if DB is present.
 
-    const char *dbarg      = "-D" "extra_pt_src.arb";
-    const char *testDB     = dbarg+2;
-    const char *resultPT   = "extra_pt_src.arb.pt";
-    const char *expectedPT = "extra_pt_src.arb_expected.pt";
+    char *dbarg      = "-D" "extra_pt_src.arb";
+    char *testDB     = dbarg+2;
+    char *resultPT   = "extra_pt_src.arb.pt";
+    char *expectedPT = "extra_pt_src.arb_expected.pt";
     bool        exists     = GB_is_regularfile(testDB);
 
     if (exists) {
-        const char *argv[] = {
+        char *argv[] = {
             "fake_pt_server",
             "-build",
             dbarg,

@@ -12,7 +12,7 @@
 #include <arb_file.h>
 #include <arbdb.h>
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     char       *data;
     char       *ndata;
     FILE       *out;
