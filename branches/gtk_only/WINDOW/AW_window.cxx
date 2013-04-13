@@ -947,8 +947,6 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *name, const 
     get_root()->register_widget(item, mask);
 }
 
-
-
 void AW_window::insert_sub_menu(const char *name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
     aw_assert(legal_mask(mask));
     aw_assert(NULL != prvt->menus.top());
@@ -975,10 +973,12 @@ void AW_window::insert_sub_menu(const char *name, const char *mnemonic, AW_activ
       gtk_menu_shell_append(prvt->menus.top(), GTK_WIDGET(item));
     }
     
-    //use the new submenu as current menu shell.
+    // use the new submenu as current menu shell.
     prvt->menus.push(GTK_MENU_SHELL(submenu));
-    
-    
+
+    // add tearof item
+    gtk_menu_shell_append(prvt->menus.top(), gtk_tearoff_menu_item_new());
+       
     #if defined(DUMP_MENU_LIST)
         dumpOpenSubMenu(name);
     #endif // DUMP_MENU_LIST
