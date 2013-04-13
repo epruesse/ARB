@@ -1495,7 +1495,7 @@ static void UnknownOption(char option) {
     Usage(buffer);
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     bool exit_if_noargs = false;
 
     if (argv[0] && argv[0][0]) {

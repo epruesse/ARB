@@ -518,7 +518,10 @@ PH_display *PH_display::ph_display=0;
 PHDATA *PHDATA::ROOT = 0;
 
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
+    GB_shell shell;
+    AW_root  *aw_root = AWT_create_root("phylo.arb", "ARB_PHYLO", &argc, &argv);
+
     if (argc > 2 || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
         fprintf(stderr, "Usage: arb_phylo [database]\n");
         return EXIT_FAILURE;
@@ -531,8 +534,6 @@ int ARB_main(int argc, const char *argv[]) {
 
     aw_initstatus();
 
-    GB_shell shell;
-    AW_root  *aw_root = AWT_create_root("phylo.arb", "ARB_PHYLO");
     PH_root  *ph_root = new PH_root;
     GB_ERROR  error   = ph_root->open(db_server);
     if (error) {

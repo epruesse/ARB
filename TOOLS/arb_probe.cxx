@@ -528,7 +528,7 @@ static char *execute(ARB_ERROR& error) {
     return answer;
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     bool ok = parseCommandLine(argc, argv);
     if (ok) {
         ARB_ERROR  error;

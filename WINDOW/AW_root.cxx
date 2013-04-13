@@ -89,7 +89,7 @@ bool AW_root::is_focus_callback(AW_RCB fcb) const {
     return focus_callback_list && focus_callback_list->contains(AW_root_callback(fcb, 0, 0));
 }
 
-AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit) {
+AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, int */*argc*/, char ***/*argv*/) {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
 

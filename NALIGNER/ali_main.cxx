@@ -215,7 +215,7 @@ static int convert_for_back_write(char *seq_new, char *seq_orig) {
 
 
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     int                            i;
     char                           message_buffer[100];
     char                           species_name[100], species_number;
@@ -226,7 +226,7 @@ int ARB_main(int argc, const char *argv[]) {
 
     ali_message(ali_version);
 
-    aligs.init(&argc, argv);
+    aligs.init(&argc, (const char**)argv);
 
     if (!aligs.species_name || argc > 1) {
         printf("Unknowen : ");

@@ -556,7 +556,7 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
     return error;
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     time(&startTime);
 
     int         exitcode = EXIT_SUCCESS;

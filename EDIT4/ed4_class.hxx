@@ -1616,7 +1616,7 @@ public:
 
     void remove_all_callbacks();
     
-    ED4_root();
+    ED4_root(int *argc, char*** argv);
     ~ED4_root();
 };
 

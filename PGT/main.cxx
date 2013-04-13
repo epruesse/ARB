@@ -182,12 +182,12 @@ int CMain::Run(int argc, const char **argv)
 /****************************************************************************
 *  MAIN FUNCTION - NO FURTHER COMMENT NECESSARY... ;-)
 ****************************************************************************/
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     // CREATE THE PGT MAIN EVENT HANDLER
     CMain cmain;
 
     // RUN PGT MAIN EVENT HANDLER
-    int retVal= cmain.Run(argc, argv);
+    int retVal= cmain.Run(argc, (const char**)argv);
 
     // EXIT WITH RETURN VALUE 'retVal'
     return retVal;
