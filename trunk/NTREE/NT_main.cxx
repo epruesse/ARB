@@ -914,14 +914,6 @@ static AW_window *startup_merge_prompting_for_nonexplicit_dbs(AW_root *aw_root, 
 }
 
 static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
-    aw_initstatus();
-    GB_set_verbose();
-
-    GB_shell shell;
-    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT");
-
-    GLOBAL.aw_root = aw_root;
-
     {
         char *message = strdup(GB_path_in_ARBLIB("message"));
         char *stamp   = strdup(GB_path_in_arbprop("msgtime"));
@@ -935,6 +927,8 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
 
     // create some early awars
     // Note: normally you don't like to add your awar-init-function here, but into nt_create_all_awars()
+
+    AW_root* aw_root = GLOBAL.aw_root;
 
     AW_create_fileselection_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb");
     aw_root->awar_string(AWAR_DB_TYPE, "b");
@@ -1025,7 +1019,15 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
     delete aw_root;
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
+    aw_initstatus();
+    GB_set_verbose();
+
+    GB_shell shell;
+    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT", &argc, &argv);
+
+    GLOBAL.aw_root = aw_root;
+
     NtreeCommandLine cl(argc, argv);
     ARB_ERROR        error = cl.parse();
 

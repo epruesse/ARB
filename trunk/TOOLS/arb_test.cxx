@@ -13,7 +13,7 @@
 #include <arb_defs.h>
 #include <unistd.h>
 
-int ARB_main(int , const char *[]) {
+int ARB_main(int , char *[]) {
     fputs("don't call us\n", stderr);
     return EXIT_SUCCESS;
 }

@@ -243,7 +243,7 @@ static void do_conversion(const FormattedFile& in, const FormattedFile& out) {
     convert(in, out);
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     int exitcode = EXIT_SUCCESS;
     try {
         FormattedFile in;
