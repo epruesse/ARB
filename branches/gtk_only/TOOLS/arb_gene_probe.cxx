@@ -476,7 +476,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     return error;
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
 
     printf("\n"
            "arb_gene_probe 1.2 -- (C) 2003/2004 Lehrstuhl fuer Mikrobiologie - TU Muenchen\n"

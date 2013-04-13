@@ -135,7 +135,7 @@ static long count_elements(GBDATA *gbd) {
     return count+1; // self
 }
 
-int ARB_main(int argc, const char *argv[])
+int ARB_main(int argc, char *argv[])
 {
     GB_ERROR error = 0;
 

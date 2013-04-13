@@ -480,7 +480,7 @@ static void seq_colors_changed_cb() {
     ED4_ROOT->request_refresh_for_sequence_terminals();
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     const char *data_path = ":";
     const char *err = NULL;
     char *config_name = NULL;
@@ -533,8 +533,8 @@ int ARB_main(int argc, const char *argv[]) {
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", data_path));
 #endif // DEBUG
 
-    ED4_ROOT = new ED4_root;
-
+    ED4_ROOT = new ED4_root(&argc, &argv);
+ 
     ED4_ROOT->database = new EDB_root_bact;
     ED4_ROOT->init_alignment();
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
