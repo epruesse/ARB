@@ -1846,7 +1846,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     {
         GBDATA *gb_species_data = GBT_get_species_data(GLOBAL.gb_main);
         GB_add_callback(gb_species_data, GB_CB_CHANGED, NT_update_marked_counter, (int*)awm);
-        NT_update_marked_counter(NULL, (int*)awm, 0);
+        NT_update_marked_counter(NULL, (int*)awm, GB_CB_NONE);
     }
 
     // set height of top area:
