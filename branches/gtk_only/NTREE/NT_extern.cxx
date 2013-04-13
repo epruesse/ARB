@@ -846,11 +846,6 @@ static AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
     return aws;
 }
 
-static void NT_focus_cb(AW_window */*aww*/) {
-    GB_transaction dummy(GLOBAL.gb_main);
-}
-
-
 static void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     AWT_canvas *canvas = (AWT_canvas*)cd1;
@@ -1854,7 +1849,6 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     // set height of top area:
     awm->set_info_area_height(bottomy+2);
     awm->set_bottom_area_height(0);
-    awr->set_focus_callback((AW_RCB)NT_focus_cb, (AW_CL)GLOBAL.gb_main, 0);
 
     // ------------------------------------
     //      Autostarts for development
