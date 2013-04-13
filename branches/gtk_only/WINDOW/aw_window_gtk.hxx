@@ -105,6 +105,9 @@ public:
     
     /** Contains the last callback struct created by AW_window::callback(). */
     AW_cb_struct *callback; 
+
+    /** Contains the last callback struct created by AW_window::callback(). */
+    AW_cb_struct *d_callback; 
     
     /**The drawing area of this window. Might be NULL. */
     AW_drawing_area *drawing_area;

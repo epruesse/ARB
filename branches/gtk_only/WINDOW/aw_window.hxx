@@ -230,7 +230,6 @@ public:
     //FIXME move aw_at into pimpl
     //FIXME make _at private. Right now some global functions want to access it. Remove those global functions.
     AW_at _at; /** < Defines the next position at which something will be inserted into the window.  */
-    AW_cb_struct    *_d_callback; //FIXME what is this?
 
     AW_window();
     virtual ~AW_window();
