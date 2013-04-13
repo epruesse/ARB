@@ -78,11 +78,6 @@ static void destroy_AW_root() {
     AW_root::SINGLETON = NULL;
 }
 
-
-bool AW_root::is_focus_callback(AW_RCB fcb) const {
-    return focus_callback_list && focus_callback_list->contains(AW_root_callback(fcb, 0, 0));
-}
-
 AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker) {
     int argc = 0;
     init_root(properties, program, NoExit, user_tracker, &argc, NULL);
@@ -521,10 +516,6 @@ void AW_root::dont_save_awars_with_default_value(GBDATA */*gb_db*/) {
 
 void AW_root::main_loop() {
     gtk_main();
-}
-
-void AW_root::set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2) {
-    GTK_NOT_IMPLEMENTED;
 }
 
 void AW_root::unlink_awars_from_DB(AW_default database) {
