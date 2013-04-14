@@ -19,11 +19,11 @@ __ATTR__NORETURN inline void toggle_type_mismatch(const char *triedType) { type_
 class AW_TypeCheck {
     
 public:
-    static AW_VARIABLE_TYPE getVarType(int) {return AW_INT;}
-    static AW_VARIABLE_TYPE getVarType(float) {return AW_FLOAT;}
-    static AW_VARIABLE_TYPE getVarType(char*) {return AW_STRING;}
-    static AW_VARIABLE_TYPE getVarType(const char*) {return AW_STRING;} 
-    static AW_VARIABLE_TYPE getVarType(std::string) {return AW_STRING;}
-    static AW_VARIABLE_TYPE getVarType(char) {return AW_BYTE;}  
-    static AW_VARIABLE_TYPE getVarType(unsigned char) {return AW_BYTE;}
+    static GB_TYPES getVarType(int) {return GB_INT;}
+    static GB_TYPES getVarType(float) {return GB_FLOAT;}
+    static GB_TYPES getVarType(char*) {return GB_STRING;}
+    static GB_TYPES getVarType(const char*) {return GB_STRING;} 
+    static GB_TYPES getVarType(std::string) {return GB_STRING;}
+    static GB_TYPES getVarType(char) {return GB_BYTE;}  
+    static GB_TYPES getVarType(unsigned char) {return GB_BYTE;}
 };

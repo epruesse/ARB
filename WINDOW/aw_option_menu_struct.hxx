@@ -23,12 +23,12 @@
 
 
 struct AW_option_menu_struct : virtual Noncopyable {
-    AW_option_menu_struct(int numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, GtkWidget *menu_widgeti);
+    AW_option_menu_struct(int numberi, const char *variable_namei, GB_TYPES variable_typei, GtkWidget *menu_widgeti);
 
-    int               option_menu_number;
-    char             *variable_name;
-    AW_VARIABLE_TYPE  variable_type;
-    GtkWidget        *menu_widget;
+    int        option_menu_number;
+    char      *variable_name;
+    GB_TYPES   variable_type;
+    GtkWidget *menu_widget;
     std::vector<std::string> options; /** < Contains all options */
     std::string default_option; /** < This option is selected by default */
     

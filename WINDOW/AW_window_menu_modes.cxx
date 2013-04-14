@@ -2,7 +2,6 @@
 #include "aw_window.hxx"
 #include "aw_window_gtk.hxx"
 #include "aw_drawing_area.hxx"
-#include <arbdb.h>
 #include "gdk/gdkkeysyms.h"
 
 void aw_insert_default_help_entries(AW_window *aww) {

@@ -10,7 +10,7 @@
 
 
 AW_option_menu_struct::AW_option_menu_struct(int numberi, const char *variable_namei,
-                                             AW_VARIABLE_TYPE variable_typei,
+                                             GB_TYPES variable_typei,
                                              GtkWidget *menu_widgeti) {
     option_menu_number = numberi;
     variable_name      = strdup(variable_namei);

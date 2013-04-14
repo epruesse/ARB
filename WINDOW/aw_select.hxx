@@ -76,13 +76,13 @@ class AW_selection_list {
      * @return The newly added list entry. NULL in case of error.
      */
     template <class T>
-    AW_selection_list_entry* insert_generic(const char* displayed, T value, AW_VARIABLE_TYPE expectedType);
+    AW_selection_list_entry* insert_generic(const char* displayed, T value, GB_TYPES expectedType);
     
 public:
-    AW_selection_list(const char *variable_namei, int variable_typei, GtkTreeView *select_list_widgeti);
+    AW_selection_list(const char *variable_namei, GB_TYPES variable_typei, GtkTreeView *select_list_widgeti);
 
     char             *variable_name;
-    AW_VARIABLE_TYPE  variable_type;
+    GB_TYPES          variable_type;
     GtkTreeView      *select_list_widget;
 
     AW_selection_list_entry *list_table;
@@ -222,7 +222,7 @@ void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *);
 __ATTR__NORETURN inline void selection_type_mismatch(const char *triedType);
 
 template <class T>
-AW_selection_list_entry* AW_selection_list::insert_generic(const char* displayed, T value, AW_VARIABLE_TYPE expectedType) {
+AW_selection_list_entry* AW_selection_list::insert_generic(const char* displayed, T value, GB_TYPES expectedType) {
     if (variable_type != expectedType) {
     selection_type_mismatch(typeid(T).name()); //note: gcc mangles the name, however this error will only occur during development.
     return NULL;

@@ -152,7 +152,7 @@ char *AW_awar::read_as_string() {
 }
 
 const char *AW_awar::read_char_pntr() {
-    aw_assert(variable_type == AW_STRING);
+    aw_assert(variable_type == GB_STRING);
 
     if (!gb_var) return "";
     GB_transaction ta(gb_var);
@@ -177,7 +177,7 @@ GBDATA *AW_awar::read_pointer() {
 }
 
 char *AW_awar::read_string() {
-    aw_assert(variable_type == AW_STRING);
+    aw_assert(variable_type == GB_STRING);
 
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
@@ -214,21 +214,21 @@ AW_awar *AW_awar::add_callback(void (*f)(AW_root*)) {
 }
 
 AW_awar *AW_awar::add_target_var(char **ppchr) {
-    assert_var_type(AW_STRING);
+    assert_var_type(GB_STRING);
     target_list = new AW_var_target((void *)ppchr, target_list);
     update_target(target_list);
     return this;
 }
 
 AW_awar *AW_awar::add_target_var(float *pfloat) {
-    assert_var_type(AW_FLOAT);
+    assert_var_type(GB_FLOAT);
     target_list = new AW_var_target((void *)pfloat, target_list);
     update_target(target_list);
     return this;
 }
 
 AW_awar *AW_awar::add_target_var(long *pint) {
-    assert_var_type(AW_INT);
+    assert_var_type(GB_INT);
     target_list = new AW_var_target((void *)pint, target_list);
     update_target(target_list);
     return this;
@@ -239,7 +239,7 @@ void AW_awar::tie_widget(AW_CL cd1, GtkWidget *widget, AW_widget_type type, AW_w
 }
 
 
-AW_VARIABLE_TYPE AW_awar::get_type() const {
+GB_TYPES AW_awar::get_type() const {
     return this->variable_type;
 }
 
@@ -267,7 +267,7 @@ static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
     awar->update();
 }
 
-AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
+AW_awar::AW_awar(GB_TYPES var_type, const char *var_name,
                  const char *var_value, double var_double_value,
                  AW_default default_file, AW_root *rooti) {
     memset((char *)this, 0, sizeof(AW_awar));
@@ -301,10 +301,10 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
 
     // store default-value in member
     switch (var_type) {
-        case AW_STRING:  default_value.s = nulldup(var_value); break;
-        case AW_INT:     default_value.l = (long)var_value; break;
-        case AW_FLOAT:   default_value.d = var_double_value; break;
-        case AW_POINTER: default_value.p = (GBDATA*)var_value; break;
+        case GB_STRING:  default_value.s = nulldup(var_value); break;
+        case GB_INT:     default_value.l = (long)var_value; break;
+        case GB_FLOAT:   default_value.d = var_double_value; break;
+        case GB_POINTER: default_value.p = (GBDATA*)var_value; break;
         default: aw_assert(0); break;
     }
 
@@ -312,28 +312,28 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
         gb_def = GB_search(default_file, var_name, wanted_gbtype);
 
         switch (var_type) {
-            case AW_STRING:
+            case GB_STRING:
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_string '%s' with default value '%s'\n", var_name, default_value.s);
 #endif // DUMP_AWAR_CHANGES
                 GB_write_string(gb_def, default_value.s);
                 break;
 
-            case AW_INT: {
+            case GB_INT: {
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_int '%s' with default value '%li'\n", var_name, default_value.l);
 #endif // DUMP_AWAR_CHANGES
                 GB_write_int(gb_def, default_value.l);
                 break;
             }
-            case AW_FLOAT:
+            case GB_FLOAT:
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, default_value.d);
 #endif // DUMP_AWAR_CHANGES
                 GB_write_float(gb_def, default_value.d);
                 break;
 
-            case AW_POINTER: {
+            case GB_POINTER: {
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_pointer '%s' with default value '%p'\n", var_name, default_value.p);
 #endif // DUMP_AWAR_CHANGES
@@ -364,7 +364,7 @@ void AW_awar::update() {
 
     if (gb_var && ((pp.f.min != pp.f.max) || pp.srt)) {
         switch (variable_type) {
-            case AW_INT: {
+            case GB_INT: {
                 long lo = read_int();
                 if (lo < pp.f.min -.5) {
                     fix_value = true;
@@ -380,7 +380,7 @@ void AW_awar::update() {
                 }
                 break;
             }
-            case AW_FLOAT: {
+            case GB_FLOAT: {
                 float fl = read_float();
                 if (fl < pp.f.min) {
                     fix_value = true;
@@ -396,7 +396,7 @@ void AW_awar::update() {
                 }
                 break;
             }
-            case AW_STRING: {
+            case GB_STRING: {
                 char *str = read_string();
                 char *n   = GBS_string_eval(str, pp.srt, 0);
 
@@ -429,16 +429,16 @@ void AW_awar::update_target(AW_var_target *pntr) {
     // send data to all variables
     if (!pntr->pointer) return;
     switch (variable_type) {
-        case AW_STRING: this->get((char **)pntr->pointer); break;
-        case AW_FLOAT:  this->get((float *)pntr->pointer); break;
-        case AW_INT:    this->get((long *)pntr->pointer); break;
+        case GB_STRING: this->get((char **)pntr->pointer); break;
+        case GB_FLOAT:  this->get((float *)pntr->pointer); break;
+        case GB_INT:    this->get((long *)pntr->pointer); break;
         default: aw_assert(0); GB_warning("Unknown awar type"); break;
     }
 }
 
 
 
-void AW_awar::assert_var_type(AW_VARIABLE_TYPE wanted_type) {
+void AW_awar::assert_var_type(GB_TYPES wanted_type) {
     if (wanted_type != variable_type) {
         GBK_terminatef("AWAR '%s' has wrong type (got=%i, expected=%i)",
                        awar_name, variable_type, wanted_type);
@@ -504,7 +504,7 @@ AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) {
 }
 
 AW_awar *AW_awar::set_minmax(float min, float max) {
-    if (variable_type == AW_STRING) GBK_terminatef("set_minmax does not apply to string AWAR '%s'", awar_name);
+    if (variable_type == GB_STRING) GBK_terminatef("set_minmax does not apply to string AWAR '%s'", awar_name);
     if (min>max) GBK_terminatef("illegal values in set_minmax for AWAR '%s'", awar_name);
 
     pp.f.min = min;
@@ -514,7 +514,7 @@ AW_awar *AW_awar::set_minmax(float min, float max) {
 }
 
 AW_awar *AW_awar::set_srt(const char *srt) {
-    assert_var_type(AW_STRING);
+    assert_var_type(GB_STRING);
     pp.srt = srt;
     return this;
 }
@@ -524,17 +524,17 @@ GB_ERROR AW_awar::toggle_toggle() {
     GB_ERROR    error = 0;
     if (var[0] == '0' || var[0] == 'n') {
         switch (this->variable_type) {
-            case AW_STRING:     error = this->write_string("yes"); break;
-            case AW_INT:        error = this->write_int(1); break;
-            case AW_FLOAT:      error = this->write_float(1.0); break;
+            case GB_STRING:     error = this->write_string("yes"); break;
+            case GB_INT:        error = this->write_int(1); break;
+            case GB_FLOAT:      error = this->write_float(1.0); break;
             default: break;
         }
     }
     else {
         switch (this->variable_type) {
-            case AW_STRING:     error = this->write_string("no"); break;
-            case AW_INT:        error = this->write_int(0); break;
-            case AW_FLOAT:      error = this->write_float(0.0); break;
+            case GB_STRING:     error = this->write_string("no"); break;
+            case GB_INT:        error = this->write_int(0); break;
+            case GB_FLOAT:      error = this->write_float(0.0); break;
             default: break;
         }
     }
@@ -569,10 +569,10 @@ void AW_awar::update_tmp_state_during_change() {
 
         bool has_default_value = false;
         switch (variable_type) {
-            case AW_STRING:  has_default_value = ARB_strNULLcmp(GB_read_char_pntr(gb_origin), default_value.s) == 0; break;
-            case AW_INT:     has_default_value = GB_read_int(gb_origin)     == default_value.l; break;
-            case AW_FLOAT:   has_default_value = GB_read_float(gb_origin)   == default_value.d; break;
-            case AW_POINTER: has_default_value = GB_read_pointer(gb_origin) == default_value.p; break;
+            case GB_STRING:  has_default_value = ARB_strNULLcmp(GB_read_char_pntr(gb_origin), default_value.s) == 0; break;
+            case GB_INT:     has_default_value = GB_read_int(gb_origin)     == default_value.l; break;
+            case GB_FLOAT:   has_default_value = GB_read_float(gb_origin)   == default_value.d; break;
+            case GB_POINTER: has_default_value = GB_read_pointer(gb_origin) == default_value.p; break;
             default: aw_assert(0); GB_warning("Unknown awar type"); break;
         }
 

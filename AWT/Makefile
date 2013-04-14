@@ -416,11 +416,14 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_map_key.o: awt_map_key.hxx
+AWT_map_key.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_string.h
+AWT_map_key.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -462,10 +465,14 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_modules.o: awt_modules.hxx
+AWT_modules.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/arb_string.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/attributes.h

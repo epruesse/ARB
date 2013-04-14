@@ -63,10 +63,10 @@ static int AW_isort_AW_select_table_struct_backward(const void *t1, const void *
 
 
 
-AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei,
+AW_selection_list::AW_selection_list(const char *variable_namei, GB_TYPES variable_typei,
                                      GtkTreeView *select_list_widgeti) :
         variable_name(nulldup(variable_namei)),
-        variable_type((AW_VARIABLE_TYPE)variable_typei),
+        variable_type(variable_typei),
         select_list_widget(select_list_widgeti),
         list_table(NULL),
         last_of_list_table(NULL),
@@ -234,7 +234,7 @@ void AW_selection_list::init_from_array(const CharPtrArray& entries, const char 
     // update selection list with contents of NULL-terminated array 'entries'
     // 'defaultEntry' is used as default selection
     // awar value will be changed to 'defaultEntry' if it does not match any other entry
-    // Note: This works only with selection lists bound to AW_STRING awars.
+    // Note: This works only with selection lists bound to GB_STRING awars.
 
     aw_assert(defaultEntry);
     char *defaultEntryCopy = strdup(defaultEntry); // use a copy (just in case defaultEntry point to a value free'd by clear_selection_list())
@@ -261,7 +261,7 @@ void AW_selection_list::init_from_array(const CharPtrArray& entries, const char 
 
 void AW_selection_list::insert(const char *displayed, const char *value) {
     
-    AW_selection_list_entry* entry = insert_generic(displayed, value, AW_STRING);
+    AW_selection_list_entry* entry = insert_generic(displayed, value, GB_STRING);
     aw_assert(NULL != entry);
 }
 
@@ -280,7 +280,7 @@ void AW_selection_list::append_to_liststore(AW_selection_list_entry* entry)
 }
 
 void AW_selection_list::insert_default(const char *displayed, const char *value) {
-    if (variable_type != AW_STRING) {
+    if (variable_type != GB_STRING) {
         selection_type_mismatch("string");
         return;
     }
@@ -289,12 +289,12 @@ void AW_selection_list::insert_default(const char *displayed, const char *value)
 }
 
 void AW_selection_list::insert(const char *displayed, int32_t value) {
-    AW_selection_list_entry* entry = insert_generic(displayed, value, AW_INT);
+    AW_selection_list_entry* entry = insert_generic(displayed, value, GB_INT);
     aw_assert(NULL != entry);
 }
 
 void AW_selection_list::insert_default(const char *displayed, int32_t value) {
-    if (variable_type != AW_INT) {
+    if (variable_type != GB_INT) {
         selection_type_mismatch("int");
         return;
     }
@@ -305,12 +305,12 @@ void AW_selection_list::insert_default(const char *displayed, int32_t value) {
 }
 
 void AW_selection_list::insert(const char *displayed, GBDATA *pointer) {
-    AW_selection_list_entry* entry = insert_generic(displayed, pointer, AW_POINTER);
+    AW_selection_list_entry* entry = insert_generic(displayed, pointer, GB_POINTER);
     aw_assert(NULL != entry);
 }
 
 void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
-    if (variable_type != AW_POINTER) {
+    if (variable_type != GB_POINTER) {
         selection_type_mismatch("pointer");
         return;
     }
@@ -501,7 +501,7 @@ void AW_selection_list::refresh() {
     gtk_tree_model_get_iter_first(model, &iter);
     
     switch (variable_type) {
-        case AW_STRING: {
+        case GB_STRING: {
             char *var_value = awar->read_string();
             for (lt = list_table; lt; lt = lt->next) {
                 if (strcmp(var_value, lt->value.get_string()) == 0) {
@@ -513,7 +513,7 @@ void AW_selection_list::refresh() {
             free(var_value);
             break;
         }
-        case AW_INT: {
+        case GB_INT: {
             int var_value = awar->read_int();
             for (lt = list_table; lt; lt = lt->next) {
                 if (var_value == lt->value.get_int()) {
@@ -524,7 +524,7 @@ void AW_selection_list::refresh() {
             }
             break;
         }
-        case AW_FLOAT: {
+        case GB_FLOAT: {
             float var_value = awar->read_float();
             for (lt = list_table; lt; lt = lt->next) {
                 if (var_value == lt->value.get_float()) {
@@ -535,7 +535,7 @@ void AW_selection_list::refresh() {
             }
             break;
         }
-        case AW_POINTER: {
+        case GB_POINTER: {
             GBDATA *var_value = awar->read_pointer();
             for (lt = list_table; lt; lt = lt->next) {
                 if (var_value == lt->value.get_pointer()) {
