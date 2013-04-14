@@ -649,43 +649,6 @@ void AW_window::clear_option_menu(AW_option_menu_struct */*oms*/) {
 
 
 
-GType AW_window::convert_aw_type_to_gtk_type(GB_TYPES type){
-
-    switch(type) {
-        //inconvertable types
-        case GB_NONE:
-        case GB_TYPE_MAX:
-        case GB_DB:
-            return G_TYPE_INVALID;
-        case GB_BIT:
-            FIXME("Not sure if AW_BIT and G_TYPE_FLAGS are the same");
-            return G_TYPE_FLAGS;
-        case GB_BYTE:
-            return G_TYPE_UCHAR;
-        case GB_INT:
-            return G_TYPE_INT;
-        case GB_FLOAT:
-            return G_TYPE_FLOAT;
-        case GB_POINTER:
-            return G_TYPE_POINTER;
-        case GB_BITS:
-            return G_TYPE_FLAGS;
-        case GB_BYTES:
-            return G_TYPE_BYTE_ARRAY;
-        case GB_INTS:
-            FIXME("Warning: AW_INTS converted to G_TYPE_ARRAY.");
-            return G_TYPE_ARRAY;
-        case GB_FLOATS:
-            FIXME("Warning: AW_FLOATS converted to G_TYPE_ARRAY.");
-            return G_TYPE_ARRAY;      
-        case GB_STRING:
-       case GB_STRING_SHRT:
-            return G_TYPE_STRING;
-        default:
-            aw_assert(false);
-            return G_TYPE_INVALID;
-    }
-}
 
 static void  row_activated_cb (GtkTreeView       *tree_view,
                         GtkTreePath       *path,

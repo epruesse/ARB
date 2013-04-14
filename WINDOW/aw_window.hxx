@@ -531,12 +531,6 @@ public:
     void clear_option_menu(AW_option_menu_struct *oms);  // used to redefine available options
 
 private:
-    /**
-     * Converts a aw variable type to gtk variable type
-     * @param aw_type
-     * @return The converted type or G_TYPE_INVALID if the conversion fails.
-     */
-    GType convert_aw_type_to_gtk_type(GB_TYPES aw_type);
     
     template <class T>
     void insert_option_internal(const char *choice_label, const char *mnemonic, T var_value,  const char *name_of_color, bool default_option);
