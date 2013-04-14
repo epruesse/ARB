@@ -9,10 +9,10 @@
 // ================================================================ //
 
 #include "awt_map_key.hxx"
+#include <arb_msg.h>
 #include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
-#include <arb_msg.h>
 
 ed_key::ed_key() {
     int i;
