@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include <arbdb.h>
 #include <ed4_extern.hxx>
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
@@ -23,7 +24,6 @@
 #include <aw_question.hxx>
 #include <awt_seq_colors.hxx>
 #include <st_window.hxx>
-#include <arbdb.h>
 
 // -----------------------------------
 //      static terminal properties

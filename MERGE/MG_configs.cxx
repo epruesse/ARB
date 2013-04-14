@@ -15,12 +15,12 @@
 #include "merge.hxx"
 
 #include <ad_config.h>
+#include <arbdb.h>
 #include <awt_sel_boxes.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_window.hxx>
-#include <arbdb.h>
 
 #define AWAR_CONFIG_NAME_SRC AWAR_MERGE_TMP_SRC "name"
 #define AWAR_CONFIG_NAME_DST AWAR_MERGE_TMP_DST "name"

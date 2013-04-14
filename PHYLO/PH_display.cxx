@@ -8,13 +8,13 @@
 //                                                                 //
 // =============================================================== //
 
+#include <arbdb.h>
 #include "phylo.hxx"
 #include "phwin.hxx"
 #include "PH_display.hxx"
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-#include <arbdb.h>
 
 static void vertical_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/) {
     PH_display::ph_display->monitor_vertical_scroll_cb(aww);
