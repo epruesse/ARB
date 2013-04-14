@@ -14,12 +14,12 @@
 
 #include "awt_config_manager.hxx"
 #include "awt.hxx"
+#include <arbdb.h>
 #include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
-#include <arbdb.h>
 
 #include <map>
 #include <string>
