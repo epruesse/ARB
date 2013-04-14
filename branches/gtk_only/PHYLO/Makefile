@@ -257,12 +257,16 @@ PH_main.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PH_matr.o: PH_filter.hxx
 PH_matr.o: phylo.hxx
+PH_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_matr.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
+PH_matr.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PH_matr.o: $(ARBHOME)/INCLUDE/arb_string.h
+PH_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_matr.o: $(ARBHOME)/INCLUDE/attributes.h

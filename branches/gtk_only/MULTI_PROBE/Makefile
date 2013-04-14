@@ -52,11 +52,15 @@ MP_Generation.o: MP_probe.hxx
 MP_Generation.o: mpdefs.h
 MP_Generation.o: MultiProbe.hxx
 MP_Generation.o: SoTl.hxx
+MP_Generation.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_Generation.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_progress.h
+MP_Generation.o: $(ARBHOME)/INCLUDE/arb_string.h
+MP_Generation.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -76,9 +80,14 @@ MP_GenerationDuplicates.o: MP_probe.hxx
 MP_GenerationDuplicates.o: mpdefs.h
 MP_GenerationDuplicates.o: MultiProbe.hxx
 MP_GenerationDuplicates.o: SoTl.hxx
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_core.h
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_string.h
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -91,6 +100,7 @@ MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/test_global.h
 
 MP_main.o: MP_probe.hxx
@@ -99,11 +109,15 @@ MP_main.o: mpdefs.h
 MP_main.o: multi_probe.hxx
 MP_main.o: MultiProbe.hxx
 MP_main.o: SoTl.hxx
+MP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_main.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MP_main.o: $(ARBHOME)/INCLUDE/arb_string.h
+MP_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_main.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -258,9 +272,14 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 MP_permute.o: mpdefs.h
 MP_permute.o: MultiProbe.hxx
 MP_permute.o: SoTl.hxx
+MP_permute.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_permute.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arb_core.h
+MP_permute.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_permute.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MP_permute.o: $(ARBHOME)/INCLUDE/arb_string.h
+MP_permute.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_permute.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -273,6 +292,7 @@ MP_permute.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_permute.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_permute.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_permute.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_permute.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_permute.o: $(ARBHOME)/INCLUDE/test_global.h
 
 MP_probe.o: MP_externs.hxx
@@ -280,12 +300,16 @@ MP_probe.o: MP_probe.hxx
 MP_probe.o: mpdefs.h
 MP_probe.o: MultiProbe.hxx
 MP_probe.o: SoTl.hxx
+MP_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_probe.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_defs.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_probe.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_progress.h
+MP_probe.o: $(ARBHOME)/INCLUDE/arb_string.h
+MP_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -335,9 +359,14 @@ MP_probe_combi_statistic.o: MP_probe.hxx
 MP_probe_combi_statistic.o: mpdefs.h
 MP_probe_combi_statistic.o: MultiProbe.hxx
 MP_probe_combi_statistic.o: SoTl.hxx
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_core.h
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_string.h
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -350,15 +379,21 @@ MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/test_global.h
 
 MP_probe_tabs.o: MP_probe.hxx
 MP_probe_tabs.o: mpdefs.h
 MP_probe_tabs.o: MultiProbe.hxx
 MP_probe_tabs.o: SoTl.hxx
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_core.h
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_string.h
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -371,6 +406,7 @@ MP_probe_tabs.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/test_global.h
 
 MP_sonde.o: MP_externs.hxx

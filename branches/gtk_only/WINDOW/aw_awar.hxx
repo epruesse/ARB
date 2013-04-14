@@ -11,23 +11,20 @@
 
 #pragma once
 
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 #ifndef AW_BASE_HXX
 #include "aw_base.hxx"
 #endif
 #ifndef CB_H
 #include <cb.h>
 #endif
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
-#endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
 #endif
 
 #include "aw_gtk_forward_declarations.hxx"
@@ -88,7 +85,7 @@ class AW_awar : virtual Noncopyable {
     void remove_all_callbacks();
     void remove_all_target_vars();
 
-    void assert_var_type(AW_VARIABLE_TYPE target_var_type);
+    void assert_var_type(GB_TYPES target_var_type);
 
     bool has_managed_tmp_state() const { return !in_tmp_branch && gb_origin; }
 
@@ -103,8 +100,8 @@ public:
 
     // read only
 
-    AW_VARIABLE_TYPE  variable_type;                // type of the awar
-    char             *awar_name;                    // name of the awar
+    GB_TYPES   variable_type;                // type of the awar
+    char      *awar_name;                    // name of the awar
 
     void unlink();                                  // unconditionally unlink from DB
 
@@ -114,7 +111,7 @@ public:
     void update_target(AW_var_target*pntr);
     void update_targets();
 
-    AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *root);
+    AW_awar(GB_TYPES var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *root);
     ~AW_awar();
 
     void tie_widget(AW_CL cd1, GtkWidget* widget, AW_widget_type type, AW_window *aww);
@@ -150,7 +147,7 @@ public:
     void get(double *p_double) { *p_double = read_float(); }
     void get(float *p_float)   { *p_float = read_float(); }
 
-    AW_VARIABLE_TYPE get_type() const;
+    GB_TYPES get_type() const;
 
     char       *read_string();
     const char *read_char_pntr();

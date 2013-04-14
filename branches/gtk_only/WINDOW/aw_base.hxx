@@ -52,30 +52,6 @@ typedef const char *AWAR;
 #define AW_NO_COLOR (-1U)
 typedef guint32 AW_rgb;
 
-enum AW_VARIABLE_TYPE {
-    AW_NONE    = 0,
-    AW_BIT     = 1,
-    AW_BYTE    = 2,
-    AW_INT     = 3,
-    AW_FLOAT   = 4,
-    AW_POINTER = 5,
-    AW_BITS    = 6,
-    // 7 is unused
-    AW_BYTES   = 8,
-    AW_INTS    = 9,
-    AW_FLOATS  = 10,
-    AW_STRING  = 12,
-    // 13 is reserved (GB_STRING_SHRT)
-    // 14 is unused
-    AW_DB      = 15,
-
-    // keep AW_VARIABLE_TYPE consistent with GB_TYPES
-    // see ../ARBDB/arbdb.h@sync_GB_TYPES_AW_VARIABLE_TYPE
-
-    AW_TYPE_MAX = 16
-};
-
-
 enum AW_area {
     AW_INFO_AREA,
     AW_MIDDLE_AREA,

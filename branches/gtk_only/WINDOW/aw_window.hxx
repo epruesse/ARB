@@ -1,19 +1,16 @@
 #pragma once
 
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 #ifndef AW_BASE_HXX
 #include "aw_base.hxx"
-#endif
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
 #endif
 #ifndef ARB_ASSERT_H 
 #include <arb_assert.h>
 #endif
 #ifndef AW_KEYSYM_HXX
 #include "aw_keysym.hxx"
-#endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
 #endif
 
 #include "aw_root.hxx"
@@ -273,7 +270,7 @@ public:
     void update_text_field(GtkWidget* widget, const char *var_value);
 
     void  create_invisible(int columns);
-    void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic, const char *name_of_color);
+    void *_create_option_entry(GB_TYPES type, const char *name, const char *mnemonic, const char *name_of_color);
     void  refresh_toggle_field(int toggle_field_number); 
     void  _set_activate_callback(GtkWidget *widget);
     void  unset_at_commands();
@@ -539,7 +536,7 @@ private:
      * @param aw_type
      * @return The converted type or G_TYPE_INVALID if the conversion fails.
      */
-    GType convert_aw_type_to_gtk_type(AW_VARIABLE_TYPE aw_type);
+    GType convert_aw_type_to_gtk_type(GB_TYPES aw_type);
     
     template <class T>
     void insert_option_internal(const char *choice_label, const char *mnemonic, T var_value,  const char *name_of_color, bool default_option);

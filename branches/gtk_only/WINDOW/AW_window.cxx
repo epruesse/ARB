@@ -649,36 +649,37 @@ void AW_window::clear_option_menu(AW_option_menu_struct */*oms*/) {
 
 
 
-GType AW_window::convert_aw_type_to_gtk_type(AW_VARIABLE_TYPE aw_type){
+GType AW_window::convert_aw_type_to_gtk_type(GB_TYPES type){
 
-    switch(aw_type) {
+    switch(type) {
         //inconvertable types
-        case AW_NONE:
-        case AW_TYPE_MAX:
-        case AW_DB:
+        case GB_NONE:
+        case GB_TYPE_MAX:
+        case GB_DB:
             return G_TYPE_INVALID;
-        case AW_BIT:
+        case GB_BIT:
             FIXME("Not sure if AW_BIT and G_TYPE_FLAGS are the same");
             return G_TYPE_FLAGS;
-        case AW_BYTE:
+        case GB_BYTE:
             return G_TYPE_UCHAR;
-        case AW_INT:
+        case GB_INT:
             return G_TYPE_INT;
-        case AW_FLOAT:
+        case GB_FLOAT:
             return G_TYPE_FLOAT;
-        case AW_POINTER:
+        case GB_POINTER:
             return G_TYPE_POINTER;
-        case AW_BITS:
+        case GB_BITS:
             return G_TYPE_FLAGS;
-        case AW_BYTES:
+        case GB_BYTES:
             return G_TYPE_BYTE_ARRAY;
-        case AW_INTS:
+        case GB_INTS:
             FIXME("Warning: AW_INTS converted to G_TYPE_ARRAY.");
             return G_TYPE_ARRAY;
-        case AW_FLOATS:
+        case GB_FLOATS:
             FIXME("Warning: AW_FLOATS converted to G_TYPE_ARRAY.");
             return G_TYPE_ARRAY;      
-        case AW_STRING:
+        case GB_STRING:
+       case GB_STRING_SHRT:
             return G_TYPE_STRING;
         default:
             aw_assert(false);
@@ -740,8 +741,9 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
     gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
 
-    int type = vs->variable_type;
-    get_root()->append_selection_list(new AW_selection_list(var_name, type, GTK_TREE_VIEW(tree)));
+    get_root()->append_selection_list(new AW_selection_list(var_name, 
+                                                            vs->variable_type, 
+                                                            GTK_TREE_VIEW(tree)));
 
     vui = new AW_varUpdateInfo(this, tree, AW_WIDGET_SELECTION_LIST, vs, prvt->callback);
     vui->set_sellist(get_root()->get_last_selection_list());

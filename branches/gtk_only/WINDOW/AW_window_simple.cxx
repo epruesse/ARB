@@ -1,6 +1,5 @@
 #include "aw_window.hxx"
 #include "aw_window_gtk.hxx"
-#include <arbdb.h>
 
 AW_window_simple::AW_window_simple() : AW_window() {
 }

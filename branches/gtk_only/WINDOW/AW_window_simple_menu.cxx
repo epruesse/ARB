@@ -1,6 +1,5 @@
 #include "aw_window.hxx"
 #include "aw_window_gtk.hxx"
-#include <arbdb.h>
 
 AW_window_simple_menu::AW_window_simple_menu() {
 }
