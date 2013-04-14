@@ -11,11 +11,11 @@
 
 #include "refentries.h"
 
+#include <arb_msg.h>
 #include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
-#include <arb_msg.h>
 #include <arbdbt.h>
 #include <arb_strarray.h>
 
