@@ -70,11 +70,9 @@ AW_selection_list::AW_selection_list(const char *variable_namei, GB_TYPES variab
         select_list_widget(select_list_widgeti),
         list_table(NULL),
         last_of_list_table(NULL),
-        default_select(NULL),
-        next(NULL)
+        default_select(NULL)
 {
     aw_assert(NULL != select_list_widget);
-
 }
 
 void AW_selection::refresh() {
@@ -99,7 +97,6 @@ void AW_selection_list::clear(bool clear_default) {
     }
     
     gtk_list_store_clear(GTK_LIST_STORE(gtk_tree_view_get_model(select_list_widget)));
-
 }
 
 bool AW_selection_list::default_is_selected() const {
@@ -553,13 +550,8 @@ void AW_selection_list::refresh() {
     }
 
     if (found || default_select) {
-//        int top;
-//        int vis;
-//        XtVaGetValues(select_list_widget,
-//                      XmNvisibleItemCount, &vis,
-//                      XmNtopItemPosition, &top,
-//                      NULL);
-         gtk_tree_selection_select_iter(GTK_TREE_SELECTION(gtk_tree_view_get_selection(select_list_widget)), &iter);
+         GtkTreeSelection *selection = gtk_tree_view_get_selection(select_list_widget);
+         gtk_tree_selection_select_iter(selection, &iter);
 
         FIXME("position adjustment not implemented."); //NO IDEA why XmListSetPos is called here....
 //        if (pos < top) {

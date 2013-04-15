@@ -206,8 +206,6 @@ void AW_root::init_variables(AW_default database) {
     hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
     hash_for_windows         = GBS_create_hash(100, GB_MIND_CASE);
     help_active              = false;
-    selection_list           = NULL;
-    last_selection_list      = NULL;
     option_menu_list         = NULL;
     last_option_menu         = NULL;
     current_option_menu      = NULL;
@@ -219,21 +217,6 @@ void AW_root::init_variables(AW_default database) {
     for (int i=0; aw_fb[i].awar; ++i) {
         awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
     }
-}
-
-void AW_root::append_selection_list(AW_selection_list* pList) {
-    if (selection_list) {
-        last_selection_list->next = pList;
-        last_selection_list = last_selection_list->next;
-    }
-    else {
-        last_selection_list = pList;
-        selection_list = pList;
-    }
-}
-
-AW_selection_list* AW_root::get_last_selection_list() {
-    return last_selection_list;
 }
 
 void AW_root::init_root(const char* properties, const char *programname, bool NoExit, UserActionTracker *user_tracker, int *argc, char** argv[]) {
@@ -289,7 +272,6 @@ void AW_root::init_root(const char* properties, const char *programname, bool No
 //
 //    p_r->last_option_menu = p_r->current_option_menu = p_r->option_menu_list = NULL;
 //    p_r->last_toggle_field = p_r->toggle_field_list = NULL;
-//    p_r->last_selection_list = p_r->selection_list = NULL;
 //
 //    value_changed = false;
 //    y_correction_for_input_labels = 5;
