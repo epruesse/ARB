@@ -109,7 +109,7 @@ void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
      
     if (root->is_help_active()) {
         root->set_help_active(false);
-        root->normal_cursor();
+        root->set_cursor(NORMAL_CURSOR);
 
         if (cbs->help_text && ((GBS_string_matches(cbs->help_text, "*.ps", GB_IGNORE_CASE)) ||
                                (GBS_string_matches(cbs->help_text, "*.hlp", GB_IGNORE_CASE)) ||
@@ -129,7 +129,7 @@ void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
         cbs->run_callback();
     }
     else {
-        root->wait_cursor();
+        root->set_cursor(WAIT_CURSOR);
         
         cbs->run_callback();
         FIXME("destruction of old events not implemented");
