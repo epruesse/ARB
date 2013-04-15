@@ -55,13 +55,11 @@ enum AW_widget_type {
 
 
 class AW_awar : virtual Noncopyable {
-    struct {
-        struct {
-            float min;
-            float max;
-        } f;
-        const char *srt;
-    } pp;
+    GB_TYPES   variable_type;                // type of the awar
+
+    float min_value;
+    float max_value;
+    const char *srt_program;
 
     AW_root_cblist       *callback_list;
     std::vector<void*> target_variables;
@@ -73,7 +71,7 @@ class AW_awar : virtual Noncopyable {
         double  d;
         long    l;
         GBDATA *p;
-    } default_value;
+    } default_value, value;
 
     bool in_tmp_branch;
 
@@ -102,7 +100,7 @@ public:
 
     // read only
 
-    GB_TYPES   variable_type;                // type of the awar
+
     char      *awar_name;                    // name of the awar
 
     void unlink();                                  // unconditionally unlink from DB
@@ -147,7 +145,7 @@ public:
     void get(double *p_double) { *p_double = read_float(); }
     void get(float *p_float)   { *p_float = read_float(); }
 
-    GB_TYPES get_type() const;
+    GB_TYPES get_type() const { return this->variable_type; }
 
     char       *read_string();
     const char *read_char_pntr();
