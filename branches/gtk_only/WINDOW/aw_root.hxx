@@ -63,6 +63,13 @@ enum AW_ProcessEventType {
     KEY_RELEASED = 3
 };
 
+enum AW_Cursor {
+    NORMAL_CURSOR,
+    WAIT_CURSOR,
+    HELP_CURSOR
+};
+
+
 void aw_initstatus();
 
 // ---------------------------
@@ -220,20 +227,8 @@ public:
     void set_help_active(bool value);
     
     
-    /**
-     * Set normal cursor
-     */
-    void normal_cursor();
+    void set_cursor(AW_Cursor cursor);
     
-    /**
-     * Set help cursor.
-     */
-    void help_cursor();
-    
-    /*
-     * Set wait cursor
-     */
-    void wait_cursor();
     
     /**
      * Appends the specified list to the list of selection lists

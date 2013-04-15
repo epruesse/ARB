@@ -276,47 +276,15 @@ void AW_root::init_root(const char* properties, const char *programname, bool No
 
     tracker = user_tracker;
 
+    prvt.cursors[NORMAL_CURSOR] = gdk_cursor_new(GDK_LEFT_PTR);
+    prvt.cursors[WAIT_CURSOR] = gdk_cursor_new(GDK_WATCH);
+    prvt.cursors[HELP_CURSOR] = gdk_cursor_new(GDK_QUESTION_ARROW);
+    
+    
     //ARB_install_handlers(aw_handlers);
 
+    
 
-    /**
-     *  Font Hack!
-     * The whole font system is still using X.
-     * right before drawing the fonts are converted to GdkFont and drawn.
-     * This is a quick hack to be able to get the correct fonts.
-    FIXME("The whole font system is still using X");
-
-
-    //TODO font stuff
-    {
-        GBDATA *gbd = (GBDATA*)application_database;
-        const char *font = GB_read_char_pntr(GB_search(gbd, "window/font", GB_FIND));
-        if (!(fontstruct = XLoadQueryFont(display, font))) {
-            if (!(fontstruct = XLoadQueryFont(display, "fixed"))) {
-                printf("can not load font\n");
-                exit(-1);
-            }
-        }
-    }
-//
-//
-    if (fontstruct->max_bounds.width == fontstruct->min_bounds.width) {
-        font_width = fontstruct->max_bounds.width;
-    }
-    else {
-        font_width = (fontstruct->min_bounds.width
-                + fontstruct->max_bounds.width) / 2;
-    }
-
-    font_height = fontstruct->max_bounds.ascent
-            + fontstruct->max_bounds.descent;
-    font_ascent = fontstruct->max_bounds.ascent;
-     */
-
-//
-
-    //prvt.fontlist = XmFontListCreate(fontstruct, XmSTRING_DEFAULT_CHARSET);
-//
 //    button_sens_list = 0;
 //
 //    p_r->last_option_menu = p_r->current_option_menu = p_r->option_menu_list = NULL;
@@ -546,16 +514,10 @@ void AW_root::set_help_active(bool value) {
     help_active = value;
 }
 
-void AW_root::normal_cursor() {
-    GTK_NOT_IMPLEMENTED;
-}
 
-void AW_root::help_cursor()  {
-    GTK_NOT_IMPLEMENTED;
-    FIXME("merge help_cursor(), normal_cursor(), wait_cursor() into set_cursor(enum)");
-}
+void AW_root::set_cursor(AW_Cursor cursor) {
+    GdkWindow* rootWindow = gdk_screen_get_root_window(gdk_screen_get_default());
+    aw_assert(NULL != rootWindow);
+    gdk_window_set_cursor(rootWindow, prvt.cursors[cursor]);
 
-void AW_root::wait_cursor() {
-    GTK_NOT_IMPLEMENTED;
 }
-

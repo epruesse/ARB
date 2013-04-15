@@ -3,11 +3,11 @@
 #include "aw_window_gtk.hxx"
 
 void AW_clock_cursor(AW_root *awr) {
-  awr->wait_cursor();
+  awr->set_cursor(WAIT_CURSOR);
 }
 
 void AW_normal_cursor(AW_root *awr) {
-  awr->normal_cursor();
+  awr->set_cursor(NORMAL_CURSOR);
 }
 
 void AW_help_entry_pressed(AW_window *window) {
@@ -20,7 +20,7 @@ void AW_help_entry_pressed(AW_window *window) {
     
     pRoot->set_help_active(true);
     
-    pRoot->help_cursor();
+    pRoot->set_cursor(HELP_CURSOR);
 }
 
 void AW_POPDOWN(AW_window *window){
