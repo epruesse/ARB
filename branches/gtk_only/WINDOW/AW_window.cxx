@@ -850,8 +850,12 @@ void AW_window::get_window_size(int& width, int& height){
     prvt->get_size(width,height);
 }
 
-void AW_window::help_text(const char */*id*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::help_text(const char *id){
+    if(NULL != _at.helptext_for_next_button)
+    {
+        delete _at.helptext_for_next_button;
+    }
+    _at.helptext_for_next_button   = strdup(id);
 }
 
 void AW_window::hide(){
@@ -1064,8 +1068,17 @@ void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd
 }
 
 
-void AW_window::set_info_area_height(int /*height*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::set_info_area_height(int h) {
+    GtkWidget* widget = GTK_WIDGET(prvt->fixed_size_area);//fixed_size_area is the info area
+    
+    if(NULL != widget)
+    {
+        gint width;
+        gint height;
+        gtk_widget_get_size_request(widget, &width, &height);
+        height = h;
+        gtk_widget_set_size_request(widget, width, height);
+    }
 }
 
 void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
