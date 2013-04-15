@@ -178,8 +178,9 @@ long AW_awar::read_int() {
 }
 
 GBDATA *AW_awar::read_pointer() {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+    if (!gb_var) return NULL;
+    GB_transaction ta(gb_var);
+    return GB_read_pointer(gb_var);
 }
 
 char *AW_awar::read_string() {
@@ -244,12 +245,6 @@ void AW_awar::tie_widget(AW_CL cd1, GtkWidget *widget, AW_widget_type type, AW_w
     refresh_list = new AW_widget_refresh_cb(refresh_list, this, cd1, widget, type, aww);
 }
 
-
-GB_TYPES AW_awar::get_type() const {
-    return this->variable_type;
-}
-
-
 // extern "C"
 static void AW_var_gbdata_callback(GBDATA *, int *cl, GB_CB_TYPE) {
     AW_awar *awar = (AW_awar *)cl;
@@ -275,77 +270,69 @@ static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
 
 AW_awar::AW_awar(GB_TYPES var_type, const char *var_name,
                  const char *var_value, double var_double_value,
-                 AW_default default_file, AW_root *rooti) {
-    memset((char *)this, 0, sizeof(AW_awar));
-    GB_transaction ta(default_file);
-
+                 AW_default default_file, AW_root *rooti) 
+  : variable_type(var_type),
+    min_value(0.), 
+    max_value(0.),
+    srt_program(NULL),
+    callback_list(NULL),
+    target_variables(),
+    refresh_list(NULL),
+    in_tmp_branch(var_name && strncmp(var_name, "tmp/", 4) == 0),
+    root(rooti),
+    gb_var(NULL),
+    gb_origin(NULL),
+    awar_name(strdup(var_name))
+{
     aw_assert(var_name && var_name[0] != 0);
-
 #if defined(DEBUG)
     GB_ERROR err = GB_check_hkey(var_name);
     aw_assert(!err);
 #endif // DEBUG
 
-    this->awar_name = strdup(var_name);
-    this->root      = rooti;
-    GBDATA *gb_def  = GB_search(default_file, var_name, GB_FIND);
-
-    in_tmp_branch = strncmp(var_name, "tmp/", 4) == 0;
-
-    GB_TYPES wanted_gbtype = (GB_TYPES)var_type;
-
-    if (gb_def) { // use value stored in DB
-        GB_TYPES gbtype = GB_read_type(gb_def);
-
-        if (gbtype != wanted_gbtype) {
-            GB_warningf("Existing awar '%s' has wrong type (%i instead of %i) - recreating\n",
-                        var_name, int(gbtype), int(wanted_gbtype));
-            GB_delete(gb_def);
-            gb_def = 0;
-        }
-    }
 
     // store default-value in member
-    switch (var_type) {
+    switch (variable_type) {
         case GB_STRING:  default_value.s = nulldup(var_value); break;
         case GB_INT:     default_value.l = (long)var_value; break;
         case GB_FLOAT:   default_value.d = var_double_value; break;
         case GB_POINTER: default_value.p = (GBDATA*)var_value; break;
         default: aw_assert(0); break;
     }
+  
+    GB_transaction ta(default_file);
+
+    // 
+    GBDATA *gb_def  = GB_search(default_file, var_name, GB_FIND);
+
+    if (gb_def && variable_type != GB_read_type(gb_def)) {
+        GB_warningf("Existing awar '%s' has wrong type (%i instead of %i) - recreating\n",
+                    var_name, int(GB_read_type(gb_def)), int(variable_type));
+        GB_delete(gb_def);
+        gb_def = NULL;
+    }
 
     if (!gb_def) { // set AWAR to default value
-        gb_def = GB_search(default_file, var_name, wanted_gbtype);
-
-        switch (var_type) {
-            case GB_STRING:
 #if defined(DUMP_AWAR_CHANGES)
-                fprintf(stderr, "creating awar_string '%s' with default value '%s'\n", var_name, default_value.s);
+        fprintf(stderr, "creating awar '%s' with type %i and default value '%s'\n", 
+                var_name, variable_type, default_value.s);
 #endif // DUMP_AWAR_CHANGES
+
+        gb_def = GB_search(default_file, var_name, variable_type);
+
+        switch (variable_type) {
+            case GB_STRING:
                 GB_write_string(gb_def, default_value.s);
                 break;
-
-            case GB_INT: {
-#if defined(DUMP_AWAR_CHANGES)
-                fprintf(stderr, "creating awar_int '%s' with default value '%li'\n", var_name, default_value.l);
-#endif // DUMP_AWAR_CHANGES
+            case GB_INT: 
                 GB_write_int(gb_def, default_value.l);
                 break;
-            }
             case GB_FLOAT:
-#if defined(DUMP_AWAR_CHANGES)
-                fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, default_value.d);
-#endif // DUMP_AWAR_CHANGES
                 GB_write_float(gb_def, default_value.d);
                 break;
-
-            case GB_POINTER: {
-#if defined(DUMP_AWAR_CHANGES)
-                fprintf(stderr, "creating awar_pointer '%s' with default value '%p'\n", var_name, default_value.p);
-#endif // DUMP_AWAR_CHANGES
+            case GB_POINTER: 
                 GB_write_pointer(gb_def, default_value.p);
                 break;
-            }
             default:
                 GB_warningf("AWAR '%s' cannot be created because of disallowed type", var_name);
                 break;
@@ -355,7 +342,6 @@ AW_awar::AW_awar(GB_TYPES var_type, const char *var_name,
         if (error) GB_warningf("AWAR '%s': failed to set temporary on creation (Reason: %s)", var_name, error);
     }
 
-    variable_type   = var_type;
     this->gb_origin = gb_def;
     this->map(gb_def);
 
@@ -368,17 +354,17 @@ void AW_awar::update() {
 
     aw_assert(is_valid());
 
-    if (gb_var && ((pp.f.min != pp.f.max) || pp.srt)) {
+    if (gb_var && ((min_value != max_value) || srt_program)) {
         switch (variable_type) {
             case GB_INT: {
                 long lo = read_int();
-                if (lo < pp.f.min -.5) {
+                if (lo < min_value -.5) {
                     fix_value = true;
-                    lo = (int)(pp.f.min + 0.5);
+                    lo = (int)(min_value + 0.5);
                 }
-                if (lo>pp.f.max + .5) {
+                if (lo > max_value + .5) {
                     fix_value = true;
-                    lo = (int)(pp.f.max + 0.5);
+                    lo = (int)(max_value + 0.5);
                 }
                 if (fix_value) {
                     if (root) root->changer_of_variable = 0;
@@ -388,13 +374,13 @@ void AW_awar::update() {
             }
             case GB_FLOAT: {
                 float fl = read_float();
-                if (fl < pp.f.min) {
+                if (fl < min_value) {
                     fix_value = true;
-                    fl = pp.f.min+AWAR_EPS;
+                    fl = min_value +AWAR_EPS;
                 }
-                if (fl>pp.f.max) {
+                if (fl > max_value) {
                     fix_value = true;
-                    fl = pp.f.max-AWAR_EPS;
+                    fl = max_value-AWAR_EPS;
                 }
                 if (fix_value) {
                     if (root) root->changer_of_variable = 0;
@@ -404,9 +390,9 @@ void AW_awar::update() {
             }
             case GB_STRING: {
                 char *str = read_string();
-                char *n   = GBS_string_eval(str, pp.srt, 0);
+                char *n   = GBS_string_eval(str, srt_program, 0);
 
-                if (!n) GBK_terminatef("SRT ERROR %s %s", pp.srt, GB_await_error());
+                if (!n) GBK_terminatef("SRT ERROR %s %s", srt_program, GB_await_error());
 
                 if (strcmp(n, str) != 0) {
                     fix_value = true;
@@ -422,10 +408,8 @@ void AW_awar::update() {
         }
     }
 
-    if (!fix_value) { // function was already recalled by write_xxx() above
-        this->update_targets();
-        this->run_callbacks();
-    }
+    this->update_targets();
+    this->run_callbacks();
 
     aw_assert(is_valid());
 }
@@ -513,15 +497,16 @@ AW_awar *AW_awar::set_minmax(float min, float max) {
     if (variable_type == GB_STRING) GBK_terminatef("set_minmax does not apply to string AWAR '%s'", awar_name);
     if (min>max) GBK_terminatef("illegal values in set_minmax for AWAR '%s'", awar_name);
 
-    pp.f.min = min;
-    pp.f.max = max;
+    min_value = min;
+    max_value = max;
+
     update(); // corrects wrong default value
     return this;
 }
 
 AW_awar *AW_awar::set_srt(const char *srt) {
     assert_var_type(GB_STRING);
-    pp.srt = srt;
+    srt_program = srt;
     return this;
 }
 

@@ -530,7 +530,7 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
     AW_option_menu_struct *next =
         new AW_option_menu_struct(get_root()->number_of_option_menus,
                                   awar_name,
-                                  vs->variable_type,
+                                  vs->get_type(),
                                   prvt->combo_box);
 
     if (get_root()->option_menu_list) {
@@ -706,7 +706,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 
     // MEMORY-LEAK
     AW_selection_list *slist = new AW_selection_list(var_name, 
-                                                     vs->variable_type, 
+                                                     vs->get_type(),
                                                      GTK_TREE_VIEW(tree));
 
     vui = new AW_varUpdateInfo(this, tree, AW_WIDGET_SELECTION_LIST, vs, prvt->callback);
