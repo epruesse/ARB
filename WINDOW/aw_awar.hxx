@@ -29,13 +29,13 @@
 
 #include "aw_gtk_forward_declarations.hxx"
 
+#include <vector>
 
 
 // --------------
 //      AWARS
 
 class  AW_root_cblist;
-struct AW_var_target;
 struct AW_widget_refresh_cb;
 
 typedef AW_RCB  Awar_CB;
@@ -64,7 +64,8 @@ class AW_awar : virtual Noncopyable {
     } pp;
 
     AW_root_cblist       *callback_list;
-    AW_var_target        *target_list;
+    std::vector<void*> target_variables;
+
     AW_widget_refresh_cb *refresh_list;
 
     union {
@@ -90,7 +91,8 @@ class AW_awar : virtual Noncopyable {
     bool has_managed_tmp_state() const { return !in_tmp_branch && gb_origin; }
 
     void update_tmp_state_during_change();
-
+    void update_target(void *pntr);
+    void update_targets();
 public:
     // read only
     class AW_root *root;
@@ -108,8 +110,6 @@ public:
     bool unlink_from_DB(GBDATA *gb_main);
     
     void run_callbacks();
-    void update_target(AW_var_target*pntr);
-    void update_targets();
 
     AW_awar(GB_TYPES var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *root);
     ~AW_awar();
