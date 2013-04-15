@@ -111,6 +111,9 @@ public:
     
     /**The drawing area of this window. Might be NULL. */
     AW_drawing_area *drawing_area;
+    /**ID of the delete event handler for this window. -1 if no handler present.*/
+    int delete_event_handler_id;
+    
        
     /**
      * default constructor

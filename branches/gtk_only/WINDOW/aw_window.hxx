@@ -530,6 +530,9 @@ public:
     AW_option_menu_struct *create_option_menu(const char *awar_name, const char *label= NULL, const char *mnemonic= NULL);
     void clear_option_menu(AW_option_menu_struct *oms);  // used to redefine available options
 
+    /**If set to true the window is not destroyed on close. instead it is hidden.*/
+    void set_hide_on_close(bool value);
+    
 private:
     
     template <class T>
