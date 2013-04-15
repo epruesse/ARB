@@ -156,20 +156,20 @@ public:
     double      read_float();
     GBDATA     *read_pointer();
 
-    GB_ERROR write_string(const char *aw_string);
-    GB_ERROR write_as_string(const char *aw_string);
-    GB_ERROR write_int(long aw_int);
-    GB_ERROR write_float(double aw_double);
-    GB_ERROR write_pointer(GBDATA *aw_pointer);
+    GB_ERROR write_string(const char *aw_string, bool touch = false);
+    GB_ERROR write_as_string(const char *aw_string, bool touch = false);
+    GB_ERROR write_int(long aw_int, bool touch = false);
+    GB_ERROR write_float(double aw_double, bool touch = false);
+    GB_ERROR write_pointer(GBDATA *aw_pointer, bool touch = false);
 
-    GB_ERROR write_as(char *aw_value) { return write_as_string(aw_value); };
+    GB_ERROR write_as(char *aw_value) { return write_as_string(aw_value); }
 
     // same as write_-versions above, but always touches the database field
-    GB_ERROR rewrite_string(const char *aw_string);
-    GB_ERROR rewrite_as_string(const char *aw_string);
-    GB_ERROR rewrite_int(long aw_int);
-    GB_ERROR rewrite_float(double aw_double);
-    GB_ERROR rewrite_pointer(GBDATA *aw_pointer);
+    GB_ERROR rewrite_string(const char *aw_string) { return write_string(aw_string, true);}
+    GB_ERROR rewrite_as_string(const char *aw_string) { return write_as_string(aw_string, true); }
+    GB_ERROR rewrite_int(long aw_int) { return write_int(aw_int, true); }
+    GB_ERROR rewrite_float(double aw_double) { return write_float(aw_double, true); }
+    GB_ERROR rewrite_pointer(GBDATA *aw_pointer) { return write_pointer(aw_pointer, true); }
 
     GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value); };
 

@@ -26,13 +26,6 @@
 
 #define AWAR_EPS 0.00000001
 
-#if defined(DUMP_AWAR_CHANGES)
-#define AWAR_CHANGE_DUMP(name, where, format) fprintf(stderr, "change awar '%s' " where "(" format ")\n", name, para)
-#else
-#define AWAR_CHANGE_DUMP(name, where, format)
-#endif // DEBUG
-
-
 struct AW_widget_refresh_cb : virtual Noncopyable {
     AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, GtkWidget* w, AW_widget_type type, AW_window *awi);
     ~AW_widget_refresh_cb();
@@ -114,35 +107,46 @@ static GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
     "You cannot write to this field because it is either deleted or\n"
     "unmapped. Try to select a different item, reselect this and retry.";
 
-#define concat(x, y) x##y
-
-#define WRITE_BODY(self,format,func)                    \
-    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;           \
-    GB_transaction ta(gb_var);                          \
-    AWAR_CHANGE_DUMP(awar_name, #self, format);         \
-    GB_ERROR error = func(gb_var, para);                \
-    if (!error) update_tmp_state_during_change()
-
-#define WRITE_SKELETON(self,type,format,func)           \
-    GB_ERROR AW_awar::self(type para) {                 \
-        WRITE_BODY(self, format, func);                 \
-        return error;                                   \
-    }                                                   \
-    GB_ERROR AW_awar::concat(re,self)(type para) {      \
-        WRITE_BODY(self, format, func);                 \
-        GB_touch(gb_var);                               \
-        return error;                                   \
-    }
-
-WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewrite_string
-WRITE_SKELETON(write_int, long, "%li", GB_write_int) // defines rewrite_int
-WRITE_SKELETON(write_float, double, "%f", GB_write_float) // defines rewrite_float
-WRITE_SKELETON(write_as_string, const char*, "%s", GB_write_as_string) // defines rewrite_as_string
-WRITE_SKELETON(write_pointer, GBDATA*, "%p", GB_write_pointer) // defines rewrite_pointer
-
-#undef WRITE_SKELETON
-#undef concat
-#undef AWAR_CHANGE_DUMP
+GB_ERROR AW_awar::write_string(const char *para, bool touch) {
+    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
+    GB_transaction ta(gb_var);
+    GB_ERROR error = GB_write_string(gb_var, para);
+    if (!error) update_tmp_state_during_change();
+    if (touch) GB_touch(gb_var);
+    return error;
+}
+GB_ERROR AW_awar::write_as_string(const char *para, bool touch) {
+    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
+    GB_transaction ta(gb_var);
+    GB_ERROR error = GB_write_as_string(gb_var, para);
+    if (!error) update_tmp_state_during_change();
+    if (touch) GB_touch(gb_var);
+    return error;
+}
+GB_ERROR AW_awar::write_int(long para, bool touch) {
+    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
+    GB_transaction ta(gb_var);
+    GB_ERROR error = GB_write_int(gb_var, para);
+    if (!error) update_tmp_state_during_change();
+    if (touch) GB_touch(gb_var);
+    return error;
+}
+GB_ERROR AW_awar::write_float(double para, bool touch) {
+    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
+    GB_transaction ta(gb_var);
+    GB_ERROR error = GB_write_float(gb_var, para);
+    if (!error) update_tmp_state_during_change();
+    if (touch) GB_touch(gb_var);
+    return error;
+}
+GB_ERROR AW_awar::write_pointer(GBDATA *para, bool touch) {
+    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
+    GB_transaction ta(gb_var);
+    GB_ERROR error = GB_write_pointer(gb_var, para);
+    if (!error) update_tmp_state_during_change();
+    if (touch) GB_touch(gb_var);
+    return error;
+}
 
 
 char *AW_awar::read_as_string() {
