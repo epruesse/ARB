@@ -528,6 +528,7 @@ void AW_POPUP_HELP(AW_window *aw, AW_CL /* char */ helpcd) {
         aws->at("edit");
         aws->callback(aw_help_edit_help);
         aws->create_button("EDIT", "EDIT", "E");
+        aws->set_hide_on_close(true); //do not delete window on close. We want to reuse it again
 
     }
 

@@ -1536,3 +1536,18 @@ void AW_window::create_color_button(const char* /*awar_name*/, const char */*lab
 AW_xfig* AW_window::get_xfig_data() {
     return xfig_data;
 }
+
+void AW_window::set_hide_on_close(bool value) {
+    if(value) {
+        if(-1 == prvt->delete_event_handler_id) { //if no signal handler is connected
+            prvt->delete_event_handler_id = g_signal_connect (prvt->window, "delete-event", G_CALLBACK (gtk_widget_hide_on_delete), NULL);
+        }
+    }
+    else
+    {
+        if(-1 != prvt->delete_event_handler_id) {
+            g_signal_handler_disconnect(prvt->window, prvt->delete_event_handler_id);
+            prvt->delete_event_handler_id = -1;
+        }
+    }
+}
