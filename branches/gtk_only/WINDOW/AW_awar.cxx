@@ -24,6 +24,8 @@
 #endif
 #include <arb_str.h>
 
+#include <algorithm>
+
 #define AWAR_EPS 0.00000001
 
 struct AW_widget_refresh_cb : virtual Noncopyable {
@@ -219,22 +221,22 @@ AW_awar *AW_awar::add_callback(void (*f)(AW_root*)) {
 
 AW_awar *AW_awar::add_target_var(char **ppchr) {
     assert_var_type(GB_STRING);
-    target_list = new AW_var_target((void *)ppchr, target_list);
-    update_target(target_list);
+    target_variables.push_back((void*)ppchr);
+    update_target(ppchr);
     return this;
 }
 
 AW_awar *AW_awar::add_target_var(float *pfloat) {
     assert_var_type(GB_FLOAT);
-    target_list = new AW_var_target((void *)pfloat, target_list);
-    update_target(target_list);
+    target_variables.push_back((void*)pfloat);
+    update_target(pfloat);
     return this;
 }
 
 AW_awar *AW_awar::add_target_var(long *pint) {
     assert_var_type(GB_INT);
-    target_list = new AW_var_target((void *)pint, target_list);
-    update_target(target_list);
+    target_variables.push_back((void*)pint);
+    update_target(pint);
     return this;
 }
 
@@ -429,13 +431,13 @@ void AW_awar::update() {
 }
 
 
-void AW_awar::update_target(AW_var_target *pntr) {
+void AW_awar::update_target(void *pntr) {
     // send data to all variables
-    if (!pntr->pointer) return;
+    if (!pntr) return;
     switch (variable_type) {
-        case GB_STRING: this->get((char **)pntr->pointer); break;
-        case GB_FLOAT:  this->get((float *)pntr->pointer); break;
-        case GB_INT:    this->get((long *)pntr->pointer); break;
+        case GB_STRING: this->get((char **)pntr); break;
+        case GB_FLOAT:  this->get((float *)pntr); break;
+        case GB_INT:    this->get((long *)pntr); break;
         default: aw_assert(0); GB_warning("Unknown awar type"); break;
     }
 }
@@ -554,13 +556,10 @@ void AW_awar::run_callbacks() {
     if (allowed_to_run_callbacks) AW_root_cblist::call(callback_list, root);
 }
 
-
 void AW_awar::update_targets() {
-    // send data to all variables
-    AW_var_target*pntr;
-    for (pntr = target_list; pntr; pntr = pntr->next) {
-        update_target(pntr);
-    }
+    // send data to all variables (run update_target on each target)
+    std::for_each(target_variables.begin(), target_variables.end(),
+                  std::bind1st(std::mem_fun(&AW_awar::update_target), this));
 }
 
 void AW_awar::update_tmp_state_during_change() {
