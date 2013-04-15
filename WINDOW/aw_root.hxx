@@ -134,9 +134,6 @@ class AW_root : virtual Noncopyable {
     AW_default load_properties(const char *default_name);
     
     
-    AW_selection_list *selection_list; /** < List of current selection lists */
-    AW_selection_list *last_selection_list; /** < Last created selection list */
-    
 //    void exit_variables();
 
 
@@ -228,18 +225,6 @@ public:
     
     
     void set_cursor(AW_Cursor cursor);
-    
-    
-    /**
-     * Appends the specified list to the list of selection lists
-     */
-    void append_selection_list(AW_selection_list* pList);
-    
-    /**
-     * returns the last selection list
-     */
-    AW_selection_list* get_last_selection_list();
-    
     
     /**
      * Allocates a named color in the global colormap.

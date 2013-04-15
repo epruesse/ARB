@@ -88,7 +88,6 @@ public:
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;
     AW_selection_list_entry *default_select;
-    AW_selection_list       *next;
     
     // ******************** real public ***************
     

@@ -704,12 +704,13 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
     gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
 
-    get_root()->append_selection_list(new AW_selection_list(var_name, 
-                                                            vs->variable_type, 
-                                                            GTK_TREE_VIEW(tree)));
+    // MEMORY-LEAK
+    AW_selection_list *slist = new AW_selection_list(var_name, 
+                                                     vs->variable_type, 
+                                                     GTK_TREE_VIEW(tree));
 
     vui = new AW_varUpdateInfo(this, tree, AW_WIDGET_SELECTION_LIST, vs, prvt->callback);
-    vui->set_sellist(get_root()->get_last_selection_list());
+    vui->set_sellist(slist);
 
     g_signal_connect(G_OBJECT(selection), "changed", 
                      G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), 
@@ -721,10 +722,10 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
                          (gpointer) prvt->d_callback);
     }
 
-    vs->tie_widget((AW_CL)get_root()->get_last_selection_list(), tree, AW_WIDGET_SELECTION_LIST, this);
+    vs->tie_widget((AW_CL)slist, tree, AW_WIDGET_SELECTION_LIST, this);
     get_root()->register_widget(tree, _at.widget_mask);
     
-    return get_root()->get_last_selection_list();
+    return slist;
 }
 
 // BEGIN TOGGLE FIELD STUFF
