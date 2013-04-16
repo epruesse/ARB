@@ -40,6 +40,8 @@ void AW_window::AW_window_gtk::get_font_size(int &width, int& height) {
     PangoFontMetrics *pfm = pango_context_get_metrics(pc, NULL, NULL);
     height = PANGO_PIXELS(pango_font_metrics_get_ascent(pfm) +
                           pango_font_metrics_get_descent(pfm));
-    width = PANGO_PIXELS(pango_font_metrics_get_approximate_char_width(pfm));
+    width = PANGO_PIXELS(std::max(pango_font_metrics_get_approximate_digit_width(pfm),
+                                  pango_font_metrics_get_approximate_char_width(pfm)));
+                         
     pango_font_metrics_unref(pfm);
 }
