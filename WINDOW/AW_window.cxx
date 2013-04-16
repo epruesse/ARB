@@ -38,6 +38,13 @@
 #endif
 //#define DUMP_BUTTON_CREATION
 
+
+static bool AW_value_changed_callback(GtkWidget* /*wgt*/,  gpointer rooti) {
+    AW_root::SINGLETON->value_changed = true;
+    return false; //this event should propagate further
+}
+
+
 // proxy functions handing down stuff to AW_at
 void AW_window::at(int x, int y){ _at.at(x,y); }
 void AW_window::at_x(int x) { _at.at_x(x); }
@@ -332,9 +339,24 @@ GtkWidget* AW_window::get_last_widget() const{
     return prvt->last_widget;
 }
 
-void AW_window::create_toggle(const char */*var_name*/){
+void AW_window::create_toggle(const char *var_name){
     GtkWidget* checkButton = gtk_check_button_new();
     put_with_label(checkButton);
+
+    AW_awar *vs = get_root()->awar(var_name);
+    aw_assert(NULL != vs);
+    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, checkButton, AW_WIDGET_TOGGLE, vs, prvt->callback);
+
+    g_signal_connect(G_OBJECT(checkButton), "released",
+                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
+                     (gpointer) vui);
+    //    g_signal_connect(G_OBJECT(checkButton), "toggled",
+    //                 G_CALLBACK(AW_value_changed_callback),
+    //                 (gpointer) get_root());
+
+    vs->tie_widget(0, checkButton, AW_WIDGET_TOGGLE, this);
+
+
 
     if (prvt->callback) {
       _set_activate_callback(checkButton);
@@ -350,7 +372,11 @@ void AW_window::create_text_toggle(const char */*var_name*/, const char */*noTex
 }
 
 
-void AW_window::update_toggle(GtkWidget */*widget*/, const char */*var*/, AW_CL /*cd_toggle_data*/) {
+void AW_window::update_toggle(GtkWidget *widget, const char *var, AW_CL /*cd_toggle_data*/) {
+  if (get_root()->changer_of_variable == widget) return;
+    aw_assert(var != NULL);
+    bool active = !(var[0] == '0' || var[0] == 'n');
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), active);
 //    aw_toggle_data *tdata = (aw_toggle_data*)cd_toggle_data;
 //    const char     *text  = tdata->bitmapOrText[(var[0] == '0' || var[0] == 'n') ? 0 : 1];
 //
@@ -362,7 +388,6 @@ void AW_window::update_toggle(GtkWidget */*widget*/, const char */*var*/, AW_CL 
 //        XtVaSetValues(widget, RES_CONVERT(XmNlabelPixmap, path), NULL);
 //        free(path);
 //    }
-    GTK_NOT_IMPLEMENTED;
 }
 
 
@@ -378,10 +403,6 @@ void AW_window::allow_delete_window(bool allow_close) {
 }
 
 
-static bool AW_value_changed_callback(GtkWidget* /*wgt*/,  gpointer rooti) {
-    AW_root::SINGLETON->value_changed = true;
-    return false; //this event should propagate further
-}
 
 void AW_window::create_input_field(const char *var_name,   int columns) {
     GtkWidget *entry;
@@ -391,10 +412,10 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     // create entry field
     entry = gtk_entry_new();
     if (columns) {
-      gtk_entry_set_width_chars(GTK_ENTRY(entry), columns);
+        gtk_entry_set_width_chars(GTK_ENTRY(entry), columns);
     } 
     else {
-      gtk_entry_set_width_chars(GTK_ENTRY(entry), _at.length_of_buttons);
+        gtk_entry_set_width_chars(GTK_ENTRY(entry), _at.length_of_buttons);
     }
     char *str   = vs->read_as_string();
     gtk_entry_set_text(GTK_ENTRY(entry), str);
@@ -402,22 +423,13 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 
     put_with_label(entry);
 
-    AW_varUpdateInfo *vui;
-    vui = new AW_varUpdateInfo(this, entry, AW_WIDGET_INPUT_FIELD, vs, prvt->callback);
+    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, entry, AW_WIDGET_INPUT_FIELD, vs, prvt->callback);
 
     // callback for enter
     g_signal_connect(G_OBJECT(entry), "activate",
                      G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
                      (gpointer) vui);
     
-    if (prvt->d_callback) {
-        g_signal_connect(G_OBJECT(entry), "activate",
-                         G_CALLBACK(AW_window::click_handler),
-                         (gpointer) prvt->d_callback);
-        prvt->d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
-        get_root()->define_remote_command(prvt->d_callback);
-    }
-   
     // callback for losing focus
     g_signal_connect(G_OBJECT(entry), "focus-out-event",
                      G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback_event),
@@ -431,8 +443,64 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     get_root()->register_widget(entry, _at.widget_mask);
 }
 
-void AW_window::create_text_field(const char */*awar_name*/, int /*columns*/ /* = 20 */, int /*rows*/ /*= 4*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::update_input_field(GtkWidget *widget, const char *var_value) {
+    aw_assert(GTK_IS_ENTRY(widget));
+    gtk_entry_set_text(GTK_ENTRY(widget), var_value);
+}
+
+
+void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, int rows /*= 4*/){
+    AW_awar *vs = get_root()->awar(var_name);
+    aw_assert(NULL != vs);
+
+    GtkWidget *entry = gtk_text_view_new();
+    GtkTextBuffer *textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(entry));
+    char *str = vs->read_string();
+    gtk_text_buffer_set_text(textbuffer, str, -1);
+    free(str);
+
+    // FIXME: this is identical to create_input_field:
+
+    int char_width, char_height;
+    prvt->get_font_size(char_width, char_height);
+    gtk_widget_set_size_request(entry, char_width * columns, char_height * rows);
+
+    // FIXME: this is identical to create_input_field:
+
+    put_with_label(entry);
+
+    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, entry, AW_WIDGET_TEXT_FIELD, vs, prvt->callback);
+    
+    // callback for enter
+    //g_signal_connect(G_OBJECT(entry), "activate",
+    //                 G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
+    //                 (gpointer) vui);
+    
+    if (prvt->d_callback) {
+        g_signal_connect(G_OBJECT(entry), "activate",
+                         G_CALLBACK(AW_window::click_handler),
+                         (gpointer) prvt->d_callback);
+        prvt->d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
+        get_root()->define_remote_command(prvt->d_callback);
+    }
+   
+    // callback for losing focus
+    // callback for value changed
+    g_signal_connect(G_OBJECT(textbuffer), "changed",
+                     G_CALLBACK(AW_value_changed_callback),
+                     (gpointer) get_root());
+    g_signal_connect(G_OBJECT(textbuffer), "changed",
+                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
+                     (gpointer) vui);  
+    vs->tie_widget(0, entry, AW_WIDGET_TEXT_FIELD, this);
+
+    get_root()->register_widget(entry, _at.widget_mask);
+}
+
+void AW_window::update_text_field(GtkWidget *widget, const char *var_value) {
+    aw_assert(GTK_IS_TEXT_VIEW(widget));
+    GtkTextBuffer *textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
+    gtk_text_buffer_set_text(textbuffer, var_value, -1);
 }
 
 
@@ -968,15 +1036,7 @@ void AW_window::label(const char *_label){
     freedup(_at.label_for_inputfield, _label);
 }
 
-void AW_window::update_text_field(GtkWidget */*widget*/, const char */*var_value*/) {
-   // XtVaSetValues(widget, XmNvalue, var_value, NULL);
-    GTK_NOT_IMPLEMENTED;
-}
 
-void AW_window::update_input_field(GtkWidget */*widget*/, const char */*var_value*/) {
-    //XtVaSetValues(widget, XmNvalue, var_value, NULL);
-    GTK_NOT_IMPLEMENTED;
-}
 
 
 

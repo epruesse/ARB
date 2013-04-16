@@ -5,10 +5,7 @@
  * Created on December 20, 2012, 11:18 AM
  */
 
-#include <gtk-2.0/gtk/gtktreeview.h>
-#include <gtk-2.0/gtk/gtktreeselection.h>
-#include <gtk-2.0/gtk/gtkcheckbutton.h>
-#include <gtk-2.0/gtk/gtkradiobutton.h>
+#include <gtk/gtk.h>
 
 #include "aw_varUpdateInfo.hxx"
 #include "aw_gtk_migration_helpers.hxx"
@@ -17,8 +14,9 @@
 #include "aw_msg.hxx"
 #include "aw_select.hxx"
 
-
 bool AW_varUpdateInfo::AW_variable_update_callback_event(GtkWidget *widget, GdkEvent */*event*/, gpointer variable_update_struct) {
+  DUMP_CALLBACK(widget, "");
+
     AW_varUpdateInfo *vui = (AW_varUpdateInfo *) variable_update_struct;
     aw_assert(vui);
     
@@ -28,6 +26,7 @@ bool AW_varUpdateInfo::AW_variable_update_callback_event(GtkWidget *widget, GdkE
 
 
 bool AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer variable_update_struct) {
+  DUMP_CALLBACK(widget, "");
     AW_varUpdateInfo *vui = (AW_varUpdateInfo *) variable_update_struct;
     aw_assert(vui);
 
@@ -79,8 +78,21 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
 
     bool run_cb = true;
     switch (widget_type) {
-        case AW_WIDGET_INPUT_FIELD:
         case AW_WIDGET_TEXT_FIELD:
+            if (!root->value_changed) {
+                run_cb = false;
+            }
+            else {
+                GtkTextBuffer* textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
+                GtkTextIter begin, end;
+                gtk_text_buffer_get_bounds(textbuffer, &begin, &end);
+                char *str = gtk_text_buffer_get_text(textbuffer, &begin, &end, true);
+                awar->write_string(str);
+                free(str);
+            }
+            break;
+
+        case AW_WIDGET_INPUT_FIELD:
             if (!root->value_changed) {
                 run_cb = false;
             }
@@ -88,11 +100,11 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
                 GtkEditable *field = GTK_EDITABLE(widget);
                 char *new_text = gtk_editable_get_chars(field, 0, -1); //-1 = get text until end
                 error = awar->write_as_string(new_text);
+                free(new_text);
             }
             break;
 
         case AW_WIDGET_TOGGLE:
-            root->changer_of_variable = 0;
             error = awar->toggle_toggle();
             break;
 
