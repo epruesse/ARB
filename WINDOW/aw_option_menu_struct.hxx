@@ -23,9 +23,8 @@
 
 
 struct AW_option_menu_struct : virtual Noncopyable {
-    AW_option_menu_struct(int numberi, const char *variable_namei, GB_TYPES variable_typei, GtkWidget *menu_widgeti);
+    AW_option_menu_struct(const char *variable_namei, GB_TYPES variable_typei, GtkWidget *menu_widgeti);
 
-    int        option_menu_number;
     char      *variable_name;
     GB_TYPES   variable_type;
     GtkWidget *menu_widget;
