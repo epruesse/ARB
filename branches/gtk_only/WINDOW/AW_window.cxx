@@ -592,36 +592,26 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name,
     prvt->combo_box = gtk_combo_box_new_text();
     gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(prvt->combo_box), GTK_SENSITIVITY_ON);
  
-    get_root()->number_of_option_menus++;
-
-
-    AW_option_menu_struct *next =
-        new AW_option_menu_struct(get_root()->number_of_option_menus,
-                                  awar_name,
+    AW_option_menu_struct *option_menu =
+        new AW_option_menu_struct(awar_name,
                                   vs->get_type(),
                                   prvt->combo_box);
 
-    if (get_root()->option_menu_list) {
-        get_root()->last_option_menu->next = next;
-        get_root()->last_option_menu = get_root()->last_option_menu->next;
-    }
-    else {
-        get_root()->last_option_menu = get_root()->option_menu_list = next;
-    }
-    get_root()->current_option_menu = get_root()->last_option_menu;
+    get_root()->current_option_menu = option_menu;
 
-    vs->tie_widget((AW_CL)get_root()->current_option_menu, prvt->combo_box, AW_WIDGET_CHOICE_MENU, this);
+    vs->tie_widget((AW_CL)option_menu, prvt->combo_box, AW_WIDGET_CHOICE_MENU, this);
     
     //connect changed signal
-    g_signal_connect(G_OBJECT(prvt->combo_box), "changed", G_CALLBACK(AW_combo_box_changed), (gpointer) next);
+    g_signal_connect(G_OBJECT(prvt->combo_box), "changed", G_CALLBACK(AW_combo_box_changed), 
+                     (gpointer) option_menu);
    
     get_root()->register_widget(prvt->combo_box, _at.widget_mask);
   
-    return get_root()->current_option_menu;
+    return option_menu;
 }
 
 void AW_window::insert_option(const char *on, const char *mn, const char *vv, const char *noc) {
-        insert_option_internal(on, mn, vv, noc, false); 
+    insert_option_internal(on, mn, vv, noc, false); 
 }
 
 void AW_window::insert_default_option(const char *on, const char *mn, const char *vv, const char *noc) { 
@@ -1446,10 +1436,6 @@ void AW_window::init_window(const char *window_name, const char* window_title,
     awar_width  = get_root()->awar_int((prop_root + "/height").c_str(), width);
     awar_height = get_root()->awar_int((prop_root + "/width").c_str(), height);
         
-    // register window by name
-    if (!GBS_read_hash(get_root()->hash_for_windows, window_defaults_name)) {
-        GBS_write_hash(get_root()->hash_for_windows, window_defaults_name, (long)this);
-    }
     set_window_title(window_title);
     
     set_window_size(awar_width->read_int(), awar_height->read_int());

@@ -9,10 +9,9 @@
 #include "aw_gtk_forward_declarations.hxx"
 
 
-AW_option_menu_struct::AW_option_menu_struct(int numberi, const char *variable_namei,
+AW_option_menu_struct::AW_option_menu_struct(const char *variable_namei,
                                              GB_TYPES variable_typei,
                                              GtkWidget *menu_widgeti) {
-    option_menu_number = numberi;
     variable_name      = strdup(variable_namei);
     variable_type      = variable_typei;
     menu_widget        = menu_widgeti;

@@ -16,6 +16,8 @@
 #include <arbdb.h>
 #endif
 #include <arbdbt.h>
+#include "arb_handlers.h"
+
 #include "aw_awar.hxx"
 #include <gdk/gdkx.h>
 #include <vector>
@@ -26,11 +28,32 @@
 #include "aw_nawar.hxx"
 #include "aw_msg.hxx"
 #include "aw_select.hxx"
+#include "aw_status.hxx"
 
 //globals
 //TODO use static class or namespace for globals
 
 AW_root *AW_root::SINGLETON = NULL;
+
+class AW_root::pimpl {
+private:
+    friend class AW_root;
+
+    GdkColormap* colormap; /** < Contains a color for each value in AW_base::AW_color_idx */
+    AW_rgb  *color_table; /** < Contains pixel values that can be used to retrieve a color from the colormap  */
+    AW_rgb foreground; /** <Pixel value of the foreground color */
+    GtkWidget* last_widget; /** < TODO, no idea what it does */
+    GdkCursor* cursors[3]; /** < The available cursors. Use AW_root::AW_Cursor as index when accessing */    
+    
+    pimpl() : colormap(NULL), color_table(NULL), foreground(0), last_widget(NULL)  {}
+    
+    
+    GtkWidget* get_last_widget() const { return last_widget; }
+    void set_last_widget(GtkWidget* w) { last_widget = w; }
+    
+};
+
+
 
 void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
     if (auto_help_file) AW_POPUP_HELP(aww, (AW_CL)auto_help_file);
@@ -78,16 +101,6 @@ static void destroy_AW_root() {
     AW_root::SINGLETON = NULL;
 }
 
-AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker) {
-    int argc = 0;
-    init_root(properties, program, NoExit, user_tracker, &argc, NULL);
-}
-
-AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker,
-                 int *argc, char **argv[]) {
-    init_root(properties, program, NoExit, user_tracker, argc, argv);
-}
-
 void AW_root::setUserActionTracker(UserActionTracker *user_tracker) {
     aw_assert(user_tracker);
     aw_assert(tracker->is_replaceable()); // there is already another tracker (program-logic-error)
@@ -111,13 +124,13 @@ unsigned int AW_root::alloc_named_data_color(char *colorname){
   
     GdkColor allocatedColor;
     gdk_color_parse(colorname, &allocatedColor);
-    gdk_colormap_alloc_color(prvt.colormap, &allocatedColor, true, true);
+    gdk_colormap_alloc_color(prvt->colormap, &allocatedColor, true, true);
     return allocatedColor.pixel;
 }
 
 GdkColor AW_root::getColor(unsigned int pixel) {
     GdkColor color;
-    gdk_colormap_query_color(prvt.colormap, pixel, &color);
+    gdk_colormap_query_color(prvt->colormap, pixel, &color);
     return color;
     //note: a copy is returned to avoid memory leaks. GdkColor is small and this should not be a problem.
 }
@@ -158,9 +171,10 @@ void AW_root::apply_focus_policy(bool /*follow_mouse*/) {
 void AW_root::apply_sensitivity(AW_active mask) {
     aw_assert(legal_mask(mask));
 
+    active_mask = mask;
     for (std::vector<AW_button>::iterator btn = button_list.begin();
          btn != button_list.end(); ++btn) {
-      btn->apply_sensitivity(mask);
+        btn->apply_sensitivity(active_mask);
     }
 }
 
@@ -173,12 +187,12 @@ void AW_root::register_widget(GtkWidget* w, AW_active mask) {
     aw_assert(w);
     aw_assert(legal_mask(mask));
     
-    prvt.set_last_widget(w);
+    prvt->set_last_widget(w);
 
     if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
         AW_button btn(mask, w);
         button_list.push_back(btn);
-        btn.apply_sensitivity(global_mask);
+        btn.apply_sensitivity(active_mask);
     }
 }
 
@@ -200,45 +214,66 @@ static struct fallbacks aw_fb[] = {
     { 0,            0,                   0 }
 };
 
-
-void AW_root::init_variables(AW_default database) {
-    application_database     = database;
-    hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
-    hash_for_windows         = GBS_create_hash(100, GB_MIND_CASE);
-    help_active              = false;
-    option_menu_list         = NULL;
-    last_option_menu         = NULL;
-    current_option_menu      = NULL;
-    number_of_option_menus   = 0;
-    changer_of_variable      = NULL;
-
-    
-    FIXME("not sure if aw_fb is still needed");
-    for (int i=0; aw_fb[i].awar; ++i) {
-        awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
-    }
+static void aw_message_and_dump_stderr(const char *msg) {
+    fflush(stdout);
+    fprintf(stderr, "ARB: %s\n", msg); // print to console as well
+    fflush(stderr);
+    aw_message(msg);
+}
+static void dump_stdout(const char *msg) {
+    fprintf(stdout, "ARB: %s\n", msg);
 }
 
-void AW_root::init_root(const char* properties, const char *programname, bool NoExit, UserActionTracker *user_tracker, int *argc, char** argv[]) {
+static arb_status_implementation AW_status_impl = {
+    AST_RANDOM,
+    aw_openstatus,
+    aw_closestatus,
+    aw_status_title, // set_title
+    AW_status, // set_subtitle
+    AW_status, // set_gauge
+    AW_status, // user_abort
+};
+
+static arb_handlers aw_handlers = {
+    aw_message_and_dump_stderr,
+    aw_message,
+    dump_stdout,
+    AW_status_impl,
+};
+
+
+
+AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker,
+                 int *argc, char **argv[]) 
+  : prvt(new pimpl),
+    action_hash(GBS_create_hash(1000, GB_MIND_CASE)),
+    application_database(load_properties(properties)),
+    button_list(),
+    no_exit(NoExit),
+    help_active(false),
+    tracker(user_tracker),
+
+    program_name(strdup(program)),
+    value_changed(false),
+    changer_of_variable(NULL),
+    active_mask(AWM_ALL),
+    awar_hash(GBS_create_hash(1000, GB_MIND_CASE)),
+    disable_callbacks(false),
+    current_modal_window(NULL),
+    current_option_menu(NULL),
+    root_window(NULL)
+{
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
-    printf("props: %s", properties);
-
-    memset((char *)this, 0, sizeof(AW_root));//initialize all attributes with 0
-
-    init_variables(load_properties(properties));
-
 
     // initialize ARB gtk application
     //TODO font stuff
-    XFontStruct *fontstruct;
-    char        *fallback_resources[100];
-
     GTK_PARTLY_IMPLEMENTED;
 
-    action_hash  = GBS_create_hash(1000, GB_MIND_CASE);
-    no_exit      = NoExit;
-    program_name = strdup(programname);
+    for (int i=0; aw_fb[i].awar; ++i) {
+        awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
+    }
+
 
     gtk_init(argc, argv);
 
@@ -249,44 +284,13 @@ void AW_root::init_root(const char* properties, const char *programname, bool No
     color_mode = AW_RGB_COLOR; //mono color mode is not supported
     create_colormap();//load the colortable from database
 
-
-    int i;
-    for (i=0; i<1000 && aw_fb[i].fb; i++) {
-        GBDATA *gb_awar       = GB_search((GBDATA*)application_database, aw_fb[i].awar, GB_FIND);
-        fallback_resources[i] = GBS_global_string_copy("*%s: %s", aw_fb[i].fb, GB_read_char_pntr(gb_awar));
-    }
-    fallback_resources[i] = 0;
-
-    tracker = user_tracker;
-
-    prvt.cursors[NORMAL_CURSOR] = gdk_cursor_new(GDK_LEFT_PTR);
-    prvt.cursors[WAIT_CURSOR] = gdk_cursor_new(GDK_WATCH);
-    prvt.cursors[HELP_CURSOR] = gdk_cursor_new(GDK_QUESTION_ARROW);
+    prvt->cursors[NORMAL_CURSOR] = gdk_cursor_new(GDK_LEFT_PTR);
+    prvt->cursors[WAIT_CURSOR] = gdk_cursor_new(GDK_WATCH);
+    prvt->cursors[HELP_CURSOR] = gdk_cursor_new(GDK_QUESTION_ARROW);
     
     
-    //ARB_install_handlers(aw_handlers);
+    ARB_install_handlers(aw_handlers);
 
-    
-
-//    button_sens_list = 0;
-//
-//    p_r->last_option_menu = p_r->current_option_menu = p_r->option_menu_list = NULL;
-//    p_r->last_toggle_field = p_r->toggle_field_list = NULL;
-//
-//    value_changed = false;
-//    y_correction_for_input_labels = 5;
-//    global_mask = AWM_ALL;
-//
-//
-//    p_r->colormap = DefaultColormapOfScreen(XtScreen(p_r->toplevel_widget));
-//    p_r->clock_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget), XC_watch);
-//    p_r->question_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget), XC_question_arrow);
-//
-//    aw_root_create_color_map(this);
-    Display* display = GDK_DISPLAY_XDISPLAY(gdk_display_get_default());
-    aw_root_init_font(display);
-//    aw_install_xkeys(XtDisplay(p_r->toplevel_widget));
-    
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 
@@ -305,9 +309,9 @@ static const char *aw_awar_2_color[] = {
 
 void AW_root::create_colormap() {
 
-    prvt.color_table = (AW_rgb*)GB_calloc(sizeof(AW_rgb), AW_STD_COLOR_IDX_MAX);
+    prvt->color_table = (AW_rgb*)GB_calloc(sizeof(AW_rgb), AW_STD_COLOR_IDX_MAX);
     GBDATA *gbd = check_properties(NULL);
-    prvt.colormap = gdk_colormap_get_system();
+    prvt->colormap = gdk_colormap_get_system();
 
     // Color monitor, B&W monitor is no longer supported
     const char **awar_2_color;
@@ -323,19 +327,23 @@ void AW_root::create_colormap() {
             fprintf(stderr, "gdk_color_parse(%s) failed\n", name_of_color);
         }
         else {
-            gdk_colormap_alloc_color(prvt.colormap, &gdkColor, false, true);
-            prvt.color_table[color] = gdkColor.pixel;
+            gdk_colormap_alloc_color(prvt->colormap, &gdkColor, false, true);
+            prvt->color_table[color] = gdkColor.pixel;
 
         }
     }
 
     GdkColor black;
-    if(gdk_color_black(prvt.colormap, &black)) {
-        prvt.foreground = black.pixel;
+    if(gdk_color_black(prvt->colormap, &black)) {
+        prvt->foreground = black.pixel;
     }
     else {
         fprintf(stderr, "gdk_color_black() failed\n");
     }
+}
+
+AW_rgb*& AW_root::getColorTable() {
+    return prvt->color_table;
 }
 
 
@@ -414,7 +422,7 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_defau
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar(GB_FLOAT, var_name, "", (double)default_value, default_file, this);
-        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
+        GBS_write_hash(awar_hash, var_name, (long)vs);
     }
     return vs;
 }
@@ -424,7 +432,7 @@ AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, A
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar(GB_STRING, var_name, default_value, 0, default_file, this);
-        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
+        GBS_write_hash(awar_hash, var_name, (long)vs);
     }
     return vs;
 }
@@ -434,13 +442,13 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar(GB_INT, var_name, (const char *)default_value, 0, default_file, this);
-        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
+        GBS_write_hash(awar_hash, var_name, (long)vs);
     }
     return vs;
 }
 
 AW_awar *AW_root::awar_no_error(const char *var_name) {
-    return hash_table_for_variables ? (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name) : NULL;
+    return (AW_awar*)GBS_read_hash(awar_hash, var_name);
 }
 
 
@@ -449,7 +457,7 @@ AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_def
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar(GB_POINTER, var_name, (const char *)default_value, 0.0, default_file, this);
-        GBS_write_hash(hash_table_for_variables, var_name, (long)vs);
+        GBS_write_hash(awar_hash, var_name, (long)vs);
     }
     return vs;
 }
@@ -500,6 +508,6 @@ void AW_root::set_help_active(bool value) {
 void AW_root::set_cursor(AW_Cursor cursor) {
     GdkWindow* rootWindow = gdk_screen_get_root_window(gdk_screen_get_default());
     aw_assert(NULL != rootWindow);
-    gdk_window_set_cursor(rootWindow, prvt.cursors[cursor]);
+    gdk_window_set_cursor(rootWindow, prvt->cursors[cursor]);
 
 }

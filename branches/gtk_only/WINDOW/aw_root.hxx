@@ -14,7 +14,6 @@
 #include <attributes.h>
 #endif
 #include "aw_gtk_forward_declarations.hxx"
-#include "aw_root_gtk.hxx"
 #include "aw_assert.hxx"
 //#include "aw_select.hxx"
 #include <string>
@@ -102,20 +101,16 @@ public:
 //      AW_root
 
 class AW_root : virtual Noncopyable {
+    class pimpl;
 
     // gtk dependent attributes are defined in a different header to keep this header portable
-    AW_root_gtk        prvt; /** < Contains all gtk dependent attributes. */
+    pimpl             *prvt; /** < Contains all gtk dependent attributes. */
     GB_HASH           *action_hash; /** < Is used to buffer and replay remote actions. */
     AW_default         application_database; /** < FIXME */
     std::vector<AW_button> button_list;
     bool               no_exit; /** < FIXME; (was/should be) used to protect status window from being closed */
     bool               help_active; /** < true if the help mode is active, false otherwise */
     UserActionTracker *tracker;
-
-    /**
-     * Main initialization function (until we can use C++11)
-     */
-    void init_root(const char* properties, const char *programname, bool NoExit, UserActionTracker *user_tracker, int *argc, char** argv[]);
 
     /**
      * Initializes prvt.colormap
@@ -144,43 +139,30 @@ class AW_root : virtual Noncopyable {
 public:
     static AW_root *SINGLETON;
 
-    char        *program_name;
+    char          *program_name;
     bool           value_changed;
     GtkWidget     *changer_of_variable;
-    int            y_correction_for_input_labels;
-    AW_active      global_mask;
-    bool           focus_follows_mouse;
-    GB_HASH       *hash_table_for_variables;
-    bool           variable_set_by_toggle_field;
-    int            number_of_toggle_fields;
-   
+    AW_active      active_mask;
+    GB_HASH       *awar_hash;
 
     bool            disable_callbacks;
     AW_window      *current_modal_window;
+    AW_option_menu_struct *current_option_menu;
     AW_window      *root_window;
 
-    AW_option_menu_struct *option_menu_list;
-    AW_option_menu_struct *last_option_menu;
-    AW_option_menu_struct *current_option_menu;
-    int number_of_option_menus;
-    
-    int  active_windows;
     void window_show();         // a window is set to screen
     void window_hide(AW_window *aww);
 
     // the read only public section:
-    GB_HASH    *hash_for_windows;
+
 
     // the real public section:
 
-    AW_rgb*& getColorTable() {
-        return prvt.color_table;
-    }
+    AW_rgb*& getColorTable(); 
 
     /**
      * FIXME
      */
-    AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker);
     AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker,
             int *argc, char **argv[]);
           
