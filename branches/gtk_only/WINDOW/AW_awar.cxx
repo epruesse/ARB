@@ -245,28 +245,6 @@ void AW_awar::tie_widget(AW_CL cd1, GtkWidget *widget, AW_widget_type type, AW_w
     refresh_list = new AW_widget_refresh_cb(refresh_list, this, cd1, widget, type, aww);
 }
 
-// extern "C"
-static void AW_var_gbdata_callback(GBDATA *, int *cl, GB_CB_TYPE) {
-    AW_awar *awar = (AW_awar *)cl;
-    awar->update();
-}
-
-
-static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
-    AW_awar *awar = (AW_awar *)cl;
-
-    if (awar->gb_origin == gbd) {
-        // make awar zombie
-        awar->gb_var    = NULL;
-        awar->gb_origin = NULL;
-    }
-    else {
-        aw_assert(awar->gb_var == gbd);             // forgot to remove a callback ?
-        awar->gb_var = awar->gb_origin;             // unmap
-    }
-
-    awar->update();
-}
 
 AW_awar::AW_awar(GB_TYPES var_type, const char *var_name,
                  const char *var_value, double var_double_value,
@@ -435,7 +413,27 @@ void AW_awar::assert_var_type(GB_TYPES wanted_type) {
     }
 }
 
-// extern "C"
+static void AW_var_gbdata_callback(GBDATA *, int *cl, GB_CB_TYPE) {
+    AW_awar *awar = (AW_awar *)cl;
+    awar->update();
+}
+
+static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
+    AW_awar *awar = (AW_awar *)cl;
+
+    if (awar->gb_origin == gbd) {
+        // make awar zombie
+        awar->gb_var    = NULL;
+        awar->gb_origin = NULL;
+    }
+    else {
+        aw_assert(awar->gb_var == gbd);             // forgot to remove a callback ?
+        awar->gb_var = awar->gb_origin;             // unmap
+    }
+
+    awar->update();
+}
+
 static void AW_var_gbdata_callback_delete(GBDATA *gbd, int *cl, GB_CB_TYPE) {
     AW_var_gbdata_callback_delete_intern(gbd, cl);
 }
