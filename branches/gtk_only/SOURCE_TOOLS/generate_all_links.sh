@@ -342,7 +342,6 @@ symlink_file ../WINDOW/aw_position.hxx INCLUDE/aw_position.hxx &&
 symlink_file ../WINDOW/aw_preset.hxx INCLUDE/aw_preset.hxx &&
 symlink_file ../WINDOW/aw_question.hxx INCLUDE/aw_question.hxx &&
 symlink_file ../WINDOW/aw_root.hxx INCLUDE/aw_root.hxx &&
-symlink_file ../WINDOW/aw_root_gtk.hxx INCLUDE/aw_root_gtk.hxx &&
 symlink_file ../WINDOW/aw_scalar.hxx INCLUDE/aw_scalar.hxx &&
 symlink_file ../WINDOW/aw_select.hxx INCLUDE/aw_select.hxx &&
 symlink_file ../WINDOW/aw_simple_device.hxx INCLUDE/aw_simple_device.hxx &&
