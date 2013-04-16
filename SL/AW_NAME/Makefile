@@ -80,7 +80,6 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -138,7 +137,6 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AW_rename.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx

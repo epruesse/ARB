@@ -71,7 +71,6 @@ PH_data.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_data.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -125,7 +124,6 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_display.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -181,7 +179,6 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_filt.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -239,7 +236,6 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -295,7 +291,6 @@ PH_matr.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx

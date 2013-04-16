@@ -86,7 +86,6 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-EXP_interface.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -149,7 +148,6 @@ EXP_main.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-EXP_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -193,7 +191,6 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -245,7 +242,6 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -307,7 +303,6 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -382,7 +377,6 @@ GEN_map.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GEN_map.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -438,7 +432,6 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GEN_nds.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx

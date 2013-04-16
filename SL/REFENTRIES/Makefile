@@ -71,7 +71,6 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-refentries.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_window.hxx

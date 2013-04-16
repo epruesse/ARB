@@ -66,7 +66,6 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -130,7 +129,6 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx

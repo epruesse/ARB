@@ -183,7 +183,6 @@ primer_design.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-primer_design.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx

@@ -89,7 +89,6 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GDE.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -181,7 +180,6 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_window.hxx

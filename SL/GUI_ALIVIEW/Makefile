@@ -81,7 +81,6 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -139,7 +138,6 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ColumnStat.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_window.hxx

@@ -84,7 +84,6 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-irstree_display.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -147,7 +146,6 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -211,7 +209,6 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_window.hxx

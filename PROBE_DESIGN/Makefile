@@ -80,7 +80,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -171,7 +170,6 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_window.hxx

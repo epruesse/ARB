@@ -72,7 +72,6 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AW_helix.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_window.hxx

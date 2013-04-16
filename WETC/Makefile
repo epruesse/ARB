@@ -63,7 +63,6 @@ WETC_main.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-WETC_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx

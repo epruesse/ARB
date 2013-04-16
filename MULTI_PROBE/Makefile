@@ -145,7 +145,6 @@ MP_main.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MP_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -244,7 +243,6 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MP_noclass.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -337,7 +335,6 @@ MP_probe.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MP_probe.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -526,7 +523,6 @@ MP_Window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MP_Window.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
