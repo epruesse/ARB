@@ -48,7 +48,6 @@ AW_advice.o: aw_base.hxx
 AW_advice.o: aw_gtk_forward_declarations.hxx
 AW_advice.o: aw_gtk_migration_helpers.hxx
 AW_advice.o: aw_root.hxx
-AW_advice.o: aw_root_gtk.hxx
 AW_advice.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -89,7 +88,6 @@ AW_area_management.o: aw_help.hxx
 AW_area_management.o: aw_keysym.hxx
 AW_area_management.o: aw_position.hxx
 AW_area_management.o: aw_root.hxx
-AW_area_management.o: aw_root_gtk.hxx
 AW_area_management.o: aw_simple_device.hxx
 AW_area_management.o: aw_stylable.hxx
 AW_area_management.o: aw_window.hxx
@@ -137,7 +135,6 @@ AW_at.o: aw_help.hxx
 AW_at.o: aw_keysym.hxx
 AW_at.o: aw_position.hxx
 AW_at.o: aw_root.hxx
-AW_at.o: aw_root_gtk.hxx
 AW_at.o: aw_simple_device.hxx
 AW_at.o: aw_stylable.hxx
 AW_at.o: aw_window.hxx
@@ -187,7 +184,6 @@ AW_at_auto.o: aw_help.hxx
 AW_at_auto.o: aw_keysym.hxx
 AW_at_auto.o: aw_position.hxx
 AW_at_auto.o: aw_root.hxx
-AW_at_auto.o: aw_root_gtk.hxx
 AW_at_auto.o: aw_simple_device.hxx
 AW_at_auto.o: aw_stylable.hxx
 AW_at_auto.o: aw_window.hxx
@@ -246,7 +242,6 @@ AW_at_maxsize.o: aw_help.hxx
 AW_at_maxsize.o: aw_keysym.hxx
 AW_at_maxsize.o: aw_position.hxx
 AW_at_maxsize.o: aw_root.hxx
-AW_at_maxsize.o: aw_root_gtk.hxx
 AW_at_maxsize.o: aw_simple_device.hxx
 AW_at_maxsize.o: aw_stylable.hxx
 AW_at_maxsize.o: aw_window.hxx
@@ -297,7 +292,6 @@ AW_awar.o: aw_msg.hxx
 AW_awar.o: aw_nawar.hxx
 AW_awar.o: aw_position.hxx
 AW_awar.o: aw_root.hxx
-AW_awar.o: aw_root_gtk.hxx
 AW_awar.o: aw_scalar.hxx
 AW_awar.o: aw_select.hxx
 AW_awar.o: aw_simple_device.hxx
@@ -348,7 +342,6 @@ AW_button.o: aw_help.hxx
 AW_button.o: aw_keysym.hxx
 AW_button.o: aw_position.hxx
 AW_button.o: aw_root.hxx
-AW_button.o: aw_root_gtk.hxx
 AW_button.o: aw_simple_device.hxx
 AW_button.o: aw_stylable.hxx
 AW_button.o: aw_window.hxx
@@ -399,7 +392,6 @@ AW_cb_struct.o: aw_modal.hxx
 AW_cb_struct.o: aw_msg.hxx
 AW_cb_struct.o: aw_position.hxx
 AW_cb_struct.o: aw_root.hxx
-AW_cb_struct.o: aw_root_gtk.hxx
 AW_cb_struct.o: aw_simple_device.hxx
 AW_cb_struct.o: aw_stylable.hxx
 AW_cb_struct.o: aw_window.hxx
@@ -500,7 +492,6 @@ AW_common_gtk.o: aw_help.hxx
 AW_common_gtk.o: aw_keysym.hxx
 AW_common_gtk.o: aw_position.hxx
 AW_common_gtk.o: aw_root.hxx
-AW_common_gtk.o: aw_root_gtk.hxx
 AW_common_gtk.o: aw_simple_device.hxx
 AW_common_gtk.o: aw_stylable.hxx
 AW_common_gtk.o: aw_window.hxx
@@ -533,7 +524,6 @@ AW_detach.o: aw_detach.hxx
 AW_detach.o: aw_gtk_forward_declarations.hxx
 AW_detach.o: aw_gtk_migration_helpers.hxx
 AW_detach.o: aw_root.hxx
-AW_detach.o: aw_root_gtk.hxx
 AW_detach.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_detach.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_detach.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -725,7 +715,6 @@ AW_file.o: aw_msg.hxx
 AW_file.o: aw_position.hxx
 AW_file.o: aw_question.hxx
 AW_file.o: aw_root.hxx
-AW_file.o: aw_root_gtk.hxx
 AW_file.o: aw_scalar.hxx
 AW_file.o: aw_select.hxx
 AW_file.o: aw_simple_device.hxx
@@ -809,7 +798,6 @@ AW_functions.o: aw_help.hxx
 AW_functions.o: aw_keysym.hxx
 AW_functions.o: aw_position.hxx
 AW_functions.o: aw_root.hxx
-AW_functions.o: aw_root_gtk.hxx
 AW_functions.o: aw_simple_device.hxx
 AW_functions.o: aw_stylable.hxx
 AW_functions.o: aw_window.hxx
@@ -861,7 +849,6 @@ AW_global_awars.o: aw_help.hxx
 AW_global_awars.o: aw_keysym.hxx
 AW_global_awars.o: aw_position.hxx
 AW_global_awars.o: aw_root.hxx
-AW_global_awars.o: aw_root_gtk.hxx
 AW_global_awars.o: aw_simple_device.hxx
 AW_global_awars.o: aw_stylable.hxx
 AW_global_awars.o: aw_window.hxx
@@ -914,7 +901,6 @@ AW_help.o: aw_keysym.hxx
 AW_help.o: aw_msg.hxx
 AW_help.o: aw_position.hxx
 AW_help.o: aw_root.hxx
-AW_help.o: aw_root_gtk.hxx
 AW_help.o: aw_scalar.hxx
 AW_help.o: aw_select.hxx
 AW_help.o: aw_simple_device.hxx
@@ -970,7 +956,6 @@ AW_modal.o: aw_msg.hxx
 AW_modal.o: aw_position.hxx
 AW_modal.o: aw_question.hxx
 AW_modal.o: aw_root.hxx
-AW_modal.o: aw_root_gtk.hxx
 AW_modal.o: aw_scalar.hxx
 AW_modal.o: aw_select.hxx
 AW_modal.o: aw_simple_device.hxx
@@ -1001,14 +986,6 @@ AW_modal.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_modal.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_motif_gtk_conversion.o: aw_motif_gtk_conversion.hxx
-
-AW_nawar.o: aw_base.hxx
-AW_nawar.o: aw_gtk_migration_helpers.hxx
-AW_nawar.o: aw_nawar.hxx
-AW_nawar.o: $(ARBHOME)/INCLUDE/arbtools.h
-AW_nawar.o: $(ARBHOME)/INCLUDE/cb.h
-AW_nawar.o: $(ARBHOME)/INCLUDE/cxxforward.h
-AW_nawar.o: $(ARBHOME)/INCLUDE/gccver.h
 
 AW_option_menu_struct.o: aw_assert.hxx
 AW_option_menu_struct.o: aw_awar.hxx
@@ -1071,7 +1048,6 @@ AW_preset.o: aw_keysym.hxx
 AW_preset.o: aw_position.hxx
 AW_preset.o: aw_preset.hxx
 AW_preset.o: aw_root.hxx
-AW_preset.o: aw_root_gtk.hxx
 AW_preset.o: aw_simple_device.hxx
 AW_preset.o: aw_stylable.hxx
 AW_preset.o: aw_window.hxx
@@ -1134,10 +1110,10 @@ AW_root.o: aw_msg.hxx
 AW_root.o: aw_nawar.hxx
 AW_root.o: aw_position.hxx
 AW_root.o: aw_root.hxx
-AW_root.o: aw_root_gtk.hxx
 AW_root.o: aw_scalar.hxx
 AW_root.o: aw_select.hxx
 AW_root.o: aw_simple_device.hxx
+AW_root.o: aw_status.hxx
 AW_root.o: aw_stylable.hxx
 AW_root.o: aw_window.hxx
 AW_root.o: aw_xfont.hxx
@@ -1148,6 +1124,7 @@ AW_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_root.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_root.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -1209,7 +1186,6 @@ AW_select.o: aw_help.hxx
 AW_select.o: aw_keysym.hxx
 AW_select.o: aw_position.hxx
 AW_select.o: aw_root.hxx
-AW_select.o: aw_root_gtk.hxx
 AW_select.o: aw_scalar.hxx
 AW_select.o: aw_select.hxx
 AW_select.o: aw_simple_device.hxx
@@ -1268,7 +1244,6 @@ AW_status.o: aw_msg.hxx
 AW_status.o: aw_position.hxx
 AW_status.o: aw_question.hxx
 AW_status.o: aw_root.hxx
-AW_status.o: aw_root_gtk.hxx
 AW_status.o: aw_simple_device.hxx
 AW_status.o: aw_status.hxx
 AW_status.o: aw_stylable.hxx
@@ -1344,7 +1319,6 @@ AW_varUpdateInfo.o: aw_keysym.hxx
 AW_varUpdateInfo.o: aw_msg.hxx
 AW_varUpdateInfo.o: aw_position.hxx
 AW_varUpdateInfo.o: aw_root.hxx
-AW_varUpdateInfo.o: aw_root_gtk.hxx
 AW_varUpdateInfo.o: aw_scalar.hxx
 AW_varUpdateInfo.o: aw_select.hxx
 AW_varUpdateInfo.o: aw_simple_device.hxx
@@ -1401,7 +1375,6 @@ AW_window.o: aw_msg.hxx
 AW_window.o: aw_option_menu_struct.hxx
 AW_window.o: aw_position.hxx
 AW_window.o: aw_root.hxx
-AW_window.o: aw_root_gtk.hxx
 AW_window.o: aw_scalar.hxx
 AW_window.o: aw_select.hxx
 AW_window.o: aw_simple_device.hxx
@@ -1454,7 +1427,6 @@ AW_window_debug.o: aw_help.hxx
 AW_window_debug.o: aw_keysym.hxx
 AW_window_debug.o: aw_position.hxx
 AW_window_debug.o: aw_root.hxx
-AW_window_debug.o: aw_root_gtk.hxx
 AW_window_debug.o: aw_simple_device.hxx
 AW_window_debug.o: aw_stylable.hxx
 AW_window_debug.o: aw_window.hxx
@@ -1503,7 +1475,6 @@ AW_window_gtk.o: aw_help.hxx
 AW_window_gtk.o: aw_keysym.hxx
 AW_window_gtk.o: aw_position.hxx
 AW_window_gtk.o: aw_root.hxx
-AW_window_gtk.o: aw_root_gtk.hxx
 AW_window_gtk.o: aw_simple_device.hxx
 AW_window_gtk.o: aw_stylable.hxx
 AW_window_gtk.o: aw_window.hxx
@@ -1553,7 +1524,6 @@ AW_window_menu_modes.o: aw_help.hxx
 AW_window_menu_modes.o: aw_keysym.hxx
 AW_window_menu_modes.o: aw_position.hxx
 AW_window_menu_modes.o: aw_root.hxx
-AW_window_menu_modes.o: aw_root_gtk.hxx
 AW_window_menu_modes.o: aw_simple_device.hxx
 AW_window_menu_modes.o: aw_stylable.hxx
 AW_window_menu_modes.o: aw_window.hxx
@@ -1603,7 +1573,6 @@ AW_window_message.o: aw_help.hxx
 AW_window_message.o: aw_keysym.hxx
 AW_window_message.o: aw_position.hxx
 AW_window_message.o: aw_root.hxx
-AW_window_message.o: aw_root_gtk.hxx
 AW_window_message.o: aw_simple_device.hxx
 AW_window_message.o: aw_stylable.hxx
 AW_window_message.o: aw_window.hxx
@@ -1653,7 +1622,6 @@ AW_window_simple.o: aw_help.hxx
 AW_window_simple.o: aw_keysym.hxx
 AW_window_simple.o: aw_position.hxx
 AW_window_simple.o: aw_root.hxx
-AW_window_simple.o: aw_root_gtk.hxx
 AW_window_simple.o: aw_simple_device.hxx
 AW_window_simple.o: aw_stylable.hxx
 AW_window_simple.o: aw_window.hxx
@@ -1703,7 +1671,6 @@ AW_window_simple_menu.o: aw_help.hxx
 AW_window_simple_menu.o: aw_keysym.hxx
 AW_window_simple_menu.o: aw_position.hxx
 AW_window_simple_menu.o: aw_root.hxx
-AW_window_simple_menu.o: aw_root_gtk.hxx
 AW_window_simple_menu.o: aw_simple_device.hxx
 AW_window_simple_menu.o: aw_stylable.hxx
 AW_window_simple_menu.o: aw_window.hxx
@@ -1777,7 +1744,6 @@ AW_xfont.o: aw_gtk_forward_declarations.hxx
 AW_xfont.o: aw_gtk_migration_helpers.hxx
 AW_xfont.o: aw_position.hxx
 AW_xfont.o: aw_root.hxx
-AW_xfont.o: aw_root_gtk.hxx
 AW_xfont.o: aw_stylable.hxx
 AW_xfont.o: aw_xfont.hxx
 AW_xfont.o: aw_zoomable.hxx

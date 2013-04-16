@@ -69,7 +69,6 @@ nds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-nds.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx

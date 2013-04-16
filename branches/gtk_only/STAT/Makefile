@@ -109,7 +109,6 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ST_quality.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -165,7 +164,6 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ST_window.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx

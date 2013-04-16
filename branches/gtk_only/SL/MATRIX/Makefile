@@ -72,7 +72,6 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AP_matrix.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx

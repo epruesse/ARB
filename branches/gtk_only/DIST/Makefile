@@ -89,7 +89,6 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-DI_clusters.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -200,7 +199,6 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -253,7 +251,6 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-DI_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -331,7 +328,6 @@ DI_matr.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-DI_matr.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -467,7 +463,6 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -510,7 +505,6 @@ distanalyse.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-distanalyse.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/cb.h
 distanalyse.o: $(ARBHOME)/INCLUDE/cxxforward.h
 distanalyse.o: $(ARBHOME)/INCLUDE/downcast.h

@@ -70,7 +70,6 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_window.hxx

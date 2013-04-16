@@ -98,7 +98,6 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx

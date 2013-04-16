@@ -80,7 +80,6 @@ ED4_base.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_base.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -145,7 +144,6 @@ ED4_block.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_block.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -218,7 +216,6 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -280,7 +277,6 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_dots.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -335,7 +331,6 @@ ED4_dump.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_dump.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -398,7 +393,6 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -476,7 +470,6 @@ ED4_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -547,7 +540,6 @@ ED4_manager.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_manager.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -603,7 +595,6 @@ ED4_members.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_members.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -661,7 +652,6 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -719,7 +709,6 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -777,7 +766,6 @@ ED4_nds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_nds.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -847,7 +835,6 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -910,7 +897,6 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -968,7 +954,6 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1031,7 +1016,6 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1096,7 +1080,6 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1180,7 +1163,6 @@ ED4_root.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_root.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1254,7 +1236,6 @@ ED4_search.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_search.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1320,7 +1301,6 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1390,7 +1370,6 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1454,7 +1433,6 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_tools.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1520,7 +1498,6 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -1581,7 +1558,6 @@ ED4_window.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_window.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1642,7 +1618,6 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1702,7 +1677,6 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx

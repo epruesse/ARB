@@ -72,7 +72,6 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-db_scanner.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx

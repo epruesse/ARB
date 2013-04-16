@@ -68,7 +68,6 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-changekey.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -121,7 +120,6 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-item_sel_list.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -177,7 +175,6 @@ species.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-species.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx

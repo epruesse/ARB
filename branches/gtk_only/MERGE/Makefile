@@ -101,7 +101,6 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_alignment.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -157,7 +156,6 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -214,7 +212,6 @@ MG_configs.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_configs.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -268,7 +265,6 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -326,7 +322,6 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -390,7 +385,6 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -446,7 +440,6 @@ MG_names.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_names.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -503,7 +496,6 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_preserves.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -567,7 +559,6 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_species.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
@@ -627,7 +618,6 @@ MG_trees.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_trees.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx

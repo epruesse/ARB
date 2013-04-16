@@ -70,7 +70,6 @@ macro_gui.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-macro_gui.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -104,7 +103,6 @@ macros.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-macros.o: $(ARBHOME)/INCLUDE/aw_root_gtk.hxx
 macros.o: $(ARBHOME)/INCLUDE/cb.h
 macros.o: $(ARBHOME)/INCLUDE/cxxforward.h
 macros.o: $(ARBHOME)/INCLUDE/dupstr.h
