@@ -55,23 +55,9 @@ enum AW_widget_type {
 
 
 class AW_awar : virtual Noncopyable {
-    GB_TYPES   variable_type;                // type of the awar
-
-    float min_value;
-    float max_value;
-    const char *srt_program;
-
     AW_root_cblist       *callback_list;
-    std::vector<void*> target_variables;
 
     AW_widget_refresh_cb *refresh_list;
-
-    union {
-        char   *s;
-        double  d;
-        long    l;
-        GBDATA *p;
-    } default_value, value;
 
     bool in_tmp_branch;
 
@@ -86,11 +72,16 @@ class AW_awar : virtual Noncopyable {
 
     void assert_var_type(GB_TYPES target_var_type);
 
-    bool has_managed_tmp_state() const { return !in_tmp_branch && gb_origin; }
+    virtual void update_targets();
+    virtual void do_update() = 0;
 
-    void update_tmp_state_during_change();
-    void update_target(void *pntr);
-    void update_targets();
+    static void gbdata_changed(GBDATA*, int*, GB_CB_TYPE);
+    static void gbdata_deleted(GBDATA*, int*, GB_CB_TYPE);
+
+protected:
+    void update_tmp_state(bool has_default_value);
+    AW_awar(const char *var_name, AW_root *root);
+
 public:
     // read only
     class AW_root *root;
@@ -109,8 +100,7 @@ public:
     
     void run_callbacks();
 
-    AW_awar(GB_TYPES var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *root);
-    ~AW_awar();
+    virtual ~AW_awar();
 
     void tie_widget(AW_CL cd1, GtkWidget* widget, AW_widget_type type, AW_window *aww);
     void untie_all_widgets();
@@ -123,13 +113,13 @@ public:
     AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1);
     AW_awar *remove_callback(Awar_CB0 f);
 
-    AW_awar *add_target_var(char **ppchr);
-    AW_awar *add_target_var(long *pint);
-    AW_awar *add_target_var(float *pfloat);
+    virtual AW_awar *add_target_var(char **ppchr);
+    virtual AW_awar *add_target_var(long *pint);
+    virtual AW_awar *add_target_var(float *pfloat);
     void    update();       // awar has changed
 
-    AW_awar *set_minmax(float min, float max);
-    AW_awar *set_srt(const char *srt);
+    virtual AW_awar *set_minmax(float min, float max);
+    virtual AW_awar *set_srt(const char *srt);
 
     AW_awar *map(const char *awarn);
     AW_awar *map(AW_default dest); // map to new address
@@ -145,20 +135,21 @@ public:
     void get(double *p_double) { *p_double = read_float(); }
     void get(float *p_float)   { *p_float = read_float(); }
 
-    GB_TYPES get_type() const { return this->variable_type; }
+    virtual GB_TYPES get_type() const = 0;
+    virtual const char* get_type_name() const { return "AW_awar"; }
 
-    char       *read_string();
-    const char *read_char_pntr();
-    char       *read_as_string();
-    long        read_int();
-    double      read_float();
-    GBDATA     *read_pointer();
+    virtual char       *read_string();
+    virtual const char *read_char_pntr();
+    virtual char       *read_as_string();
+    virtual long        read_int();
+    virtual double      read_float();
+    virtual GBDATA     *read_pointer();
 
-    GB_ERROR write_string(const char *aw_string, bool touch = false);
-    GB_ERROR write_as_string(const char *aw_string, bool touch = false);
-    GB_ERROR write_int(long aw_int, bool touch = false);
-    GB_ERROR write_float(double aw_double, bool touch = false);
-    GB_ERROR write_pointer(GBDATA *aw_pointer, bool touch = false);
+    virtual GB_ERROR write_string(const char *aw_string, bool touch = false);
+    virtual GB_ERROR write_as_string(const char *aw_string, bool touch = false);
+    virtual GB_ERROR write_int(long aw_int, bool touch = false);
+    virtual GB_ERROR write_float(double aw_double, bool touch = false);
+    virtual GB_ERROR write_pointer(GBDATA *aw_pointer, bool touch = false);
 
     GB_ERROR write_as(char *aw_value) { return write_as_string(aw_value); }
 
@@ -171,7 +162,7 @@ public:
 
     GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value); };
 
-    GB_ERROR toggle_toggle();   // switches between 1/0
+    virtual GB_ERROR toggle_toggle();   // switches between 1/0
     void     touch();
 
     GB_ERROR make_global() __ATTR__USERESULT;       // should be used by ARB_init_global_awars only
