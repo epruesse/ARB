@@ -347,12 +347,12 @@ void AW_window::create_toggle(const char *var_name){
     aw_assert(NULL != vs);
     AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, checkButton, AW_WIDGET_TOGGLE, vs, prvt->callback);
 
+    // use signal "released" rather than "toggled" as the 
+    // latter is issued whenever the state changes 
+    // (currently resulting in endless loop)
     g_signal_connect(G_OBJECT(checkButton), "released",
                      G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
                      (gpointer) vui);
-    //    g_signal_connect(G_OBJECT(checkButton), "toggled",
-    //                 G_CALLBACK(AW_value_changed_callback),
-    //                 (gpointer) get_root());
 
     vs->tie_widget(0, checkButton, AW_WIDGET_TOGGLE, this);
 
@@ -1097,7 +1097,7 @@ void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
 }
 
 
-static void AW_focusCB(GtkWidget* /*wgt*/, gpointer cl_aww) {
+static void AW_focusCB(GtkWidget* /*wgt*/,  GtkDirectionType, gpointer cl_aww) {
     AW_window *aww = (AW_window*)cl_aww;
     aww->run_focus_callback();
 }
