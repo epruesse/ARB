@@ -271,6 +271,7 @@ AW_awar.o: aw_area_management.hxx
 AW_awar.o: aw_assert.hxx
 AW_awar.o: aw_at.hxx
 AW_awar.o: aw_awar.hxx
+AW_awar.o: aw_awar_impl.hxx
 AW_awar.o: aw_base.hxx
 AW_awar.o: aw_button.hxx
 AW_awar.o: aw_cb_struct.hxx
@@ -1087,6 +1088,7 @@ AW_root.o: aw_assert.hxx
 AW_root.o: aw_at.hxx
 AW_root.o: aw_awar.hxx
 AW_root.o: aw_awar_defs.hxx
+AW_root.o: aw_awar_impl.hxx
 AW_root.o: aw_base.hxx
 AW_root.o: aw_button.hxx
 AW_root.o: aw_cb_struct.hxx

@@ -19,6 +19,7 @@
 #include "arb_handlers.h"
 
 #include "aw_awar.hxx"
+#include "aw_awar_impl.hxx"
 #include <gdk/gdkx.h>
 #include <vector>
 #include "aw_xfont.hxx"
@@ -411,6 +412,10 @@ size_t AW_root::callallcallbacks(int mode) {
 }
 #endif
 
+AW_awar *AW_root::awar_no_error(const char *var_name) {
+    return (AW_awar*)GBS_read_hash(awar_hash, var_name);
+}
+
 AW_awar *AW_root::awar(const char *var_name) {
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) GBK_terminatef("AWAR %s not defined", var_name);
@@ -421,7 +426,7 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_defau
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
-        vs           = new AW_awar(GB_FLOAT, var_name, "", (double)default_value, default_file, this);
+        vs           = new AW_awar_float(var_name, (double)default_value, default_file, this);
         GBS_write_hash(awar_hash, var_name, (long)vs);
     }
     return vs;
@@ -431,7 +436,7 @@ AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, A
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
-        vs           = new AW_awar(GB_STRING, var_name, default_value, 0, default_file, this);
+        vs           = new AW_awar_string(var_name, default_value, default_file, this);
         GBS_write_hash(awar_hash, var_name, (long)vs);
     }
     return vs;
@@ -441,22 +446,17 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
-        vs           = new AW_awar(GB_INT, var_name, (const char *)default_value, 0, default_file, this);
+        vs           = new AW_awar_int(var_name, default_value, default_file, this);
         GBS_write_hash(awar_hash, var_name, (long)vs);
     }
     return vs;
 }
 
-AW_awar *AW_root::awar_no_error(const char *var_name) {
-    return (AW_awar*)GBS_read_hash(awar_hash, var_name);
-}
-
-
 AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
-        vs           = new AW_awar(GB_POINTER, var_name, (const char *)default_value, 0.0, default_file, this);
+        vs           = new AW_awar_pointer(var_name, default_value, default_file, this);
         GBS_write_hash(awar_hash, var_name, (long)vs);
     }
     return vs;
