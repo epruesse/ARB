@@ -9,6 +9,9 @@
 
 #include "aw_base.hxx"
 #include "aw_gtk_forward_declarations.hxx"
+#include "aw_keysym.hxx"
+#include <gdk/gdk.h>
+
 class AW_window;
 class AW_root;
 class AW_common_gtk;
@@ -18,18 +21,70 @@ class AW_device_print;
 class AW_device_click;
 class AW_cb_struct;
 class AW_common;
+
+enum AW_key_mod {
+    AW_KEYMODE_NONE    = 0,
+    AW_KEYMODE_SHIFT   = GDK_SHIFT_MASK,
+    AW_KEYMODE_CONTROL = GDK_CONTROL_MASK,
+    AW_KEYMODE_ALT     = GDK_MOD1_MASK,
+};
+
+enum AW_event_type {
+    AW_No_Event         = GDK_NOTHING,
+    AW_Keyboard_Press   = GDK_KEY_PRESS,
+    AW_Keyboard_Release = GDK_KEY_RELEASE,
+    AW_Mouse_Press      = GDK_BUTTON_PRESS,
+    AW_Mouse_Release    = GDK_BUTTON_RELEASE,
+    AW_Mouse_Drag       = GDK_DRAG_MOTION,
+    
+    NO_EVENT = AW_No_Event,
+    KEY_PRESSED  = AW_Keyboard_Press,
+    KEY_RELEASED = AW_Keyboard_Release,
+};
+
+typedef AW_event_type AW_ProcessEventType;
+
+enum AW_MouseButton {
+    AW_BUTTON_NONE   = 0,
+    AW_BUTTON_LEFT   = 1,
+    AW_BUTTON_MIDDLE = 2,
+    AW_BUTTON_RIGHT  = 3,
+    AW_WHEEL_UP      = 4,
+    AW_WHEEL_DOWN    = 5,
+};
+
+
+struct AW_event {
+    // fields always valid
+    AW_event_type type;             // AW_Keyboard or AW_Mouse
+    AW_key_mod    keymodifier;      // control, alt/meta (shift only for type == AW_Mouse)
+
+    // fields valid for type == AW_Mouse
+    AW_MouseButton button;
+    int            x, y;            // pointer x,y coordinates in the event window
+
+    // fields valid for type == AW_Keyboard
+    AW_key_code keycode;            // which key type was pressed
+    char        character;          // the c character
+};
+
+
+
+
+
 /**
  * Contains information about one area inside a window.
  */
 class AW_area_management {
-    
-    class Pimpl;
-    Pimpl* prvt; /* < Contains all private attributes and gtk dependencies */  
-    
 public:
-    AW_area_management(GtkWidget *form, GtkWidget *area);
+    class Pimpl;
+private:
+    Pimpl* prvt; /* < Contains all private attributes and gtk dependencies */  
 
-    GtkWidget *get_form() const;
+public:
+    AW_area_management(GtkWidget *area, AW_window *aww);
+    ~AW_area_management();
+
     GtkWidget *get_area() const;
     AW_common *get_common() const;
 
@@ -50,7 +105,6 @@ public:
     void set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
 
 
@@ -59,20 +113,6 @@ public:
     bool is_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-
-    void run_resize_callback();
-    void run_expose_callback();
-    void run_motion_callback(GdkEventMotion*);
-
-    AW_cb_struct *get_double_click_cb();
-    long get_click_time() const;
-    void set_click_time(long click_time);
-    
-private:
-    static gboolean configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, gpointer cb_struct);
-    static gboolean expose_event_cb(GtkWidget *widget, GdkEventExpose */*event*/, gpointer area_management);
-    static gboolean input_event_cb(GtkWidget *widget, GdkEvent *event, gpointer cb_struct);
-    static gboolean motion_event_cb(GtkWidget *widget, GdkEventMotion *event, gpointer cb_struct);
 };
 
 

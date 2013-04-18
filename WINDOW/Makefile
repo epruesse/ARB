@@ -43,14 +43,36 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 AW_advice.o: aw_advice.hxx
+AW_advice.o: aw_area_management.hxx
 AW_advice.o: aw_assert.hxx
+AW_advice.o: aw_at.hxx
 AW_advice.o: aw_base.hxx
+AW_advice.o: aw_button.hxx
+AW_advice.o: aw_cb_struct.hxx
+AW_advice.o: aw_clipable.hxx
+AW_advice.o: aw_common.hxx
+AW_advice.o: aw_common_gtk.hxx
+AW_advice.o: aw_device.hxx
+AW_advice.o: aw_device_click.hxx
+AW_advice.o: aw_device_gtk.hxx
+AW_advice.o: aw_device_impl.hxx
+AW_advice.o: aw_device_print.hxx
+AW_advice.o: aw_device_size.hxx
+AW_advice.o: aw_font_limits.hxx
 AW_advice.o: aw_gtk_forward_declarations.hxx
 AW_advice.o: aw_gtk_migration_helpers.hxx
+AW_advice.o: aw_help.hxx
+AW_advice.o: aw_keysym.hxx
+AW_advice.o: aw_position.hxx
 AW_advice.o: aw_root.hxx
+AW_advice.o: aw_simple_device.hxx
+AW_advice.o: aw_stylable.hxx
+AW_advice.o: aw_window.hxx
+AW_advice.o: aw_zoomable.hxx
 AW_advice.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_advice.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -60,9 +82,11 @@ AW_advice.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_advice.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_advice.o: $(ARBHOME)/INCLUDE/cb.h
 AW_advice.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_advice.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_advice.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_advice.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_advice.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_advice.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_advice.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_advice.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -91,7 +115,6 @@ AW_area_management.o: aw_root.hxx
 AW_area_management.o: aw_simple_device.hxx
 AW_area_management.o: aw_stylable.hxx
 AW_area_management.o: aw_window.hxx
-AW_area_management.o: aw_xkey.hxx
 AW_area_management.o: aw_zoomable.hxx
 AW_area_management.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_area_management.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -518,12 +541,14 @@ AW_common_gtk.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_common_gtk.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_common_gtk.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AW_detach.o: aw_area_management.hxx
 AW_detach.o: aw_assert.hxx
 AW_detach.o: aw_awar.hxx
 AW_detach.o: aw_base.hxx
 AW_detach.o: aw_detach.hxx
 AW_detach.o: aw_gtk_forward_declarations.hxx
 AW_detach.o: aw_gtk_migration_helpers.hxx
+AW_detach.o: aw_keysym.hxx
 AW_detach.o: aw_root.hxx
 AW_detach.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_detach.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -1736,6 +1761,7 @@ AW_xfig.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_xfig.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_xfig.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AW_xfont.o: aw_area_management.hxx
 AW_xfont.o: aw_assert.hxx
 AW_xfont.o: aw_base.hxx
 AW_xfont.o: aw_clipable.hxx
@@ -1744,6 +1770,7 @@ AW_xfont.o: aw_device_impl.hxx
 AW_xfont.o: aw_font_limits.hxx
 AW_xfont.o: aw_gtk_forward_declarations.hxx
 AW_xfont.o: aw_gtk_migration_helpers.hxx
+AW_xfont.o: aw_keysym.hxx
 AW_xfont.o: aw_position.hxx
 AW_xfont.o: aw_root.hxx
 AW_xfont.o: aw_stylable.hxx
@@ -1767,31 +1794,6 @@ AW_xfont.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/test_global.h
-
-AW_xkey.o: aw_assert.hxx
-AW_xkey.o: aw_gtk_forward_declarations.hxx
-AW_xkey.o: aw_gtk_migration_helpers.hxx
-AW_xkey.o: aw_keysym.hxx
-AW_xkey.o: aw_msg.hxx
-AW_xkey.o: aw_xkey.hxx
-AW_xkey.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/arb_core.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/arb_defs.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/arb_string.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/arbdb.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/arbtools.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/cxxforward.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/gccver.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/smartptr.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_zoomable.o: aw_assert.hxx
 AW_zoomable.o: aw_base.hxx

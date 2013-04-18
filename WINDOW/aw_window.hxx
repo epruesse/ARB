@@ -9,14 +9,11 @@
 #ifndef ARB_ASSERT_H 
 #include <arb_assert.h>
 #endif
-#ifndef AW_KEYSYM_HXX
-#include "aw_keysym.hxx"
-#endif
 
+#include "aw_gtk_forward_declarations.hxx"
 #include "aw_root.hxx"
 #include "aw_at.hxx"
-#include "aw_gtk_forward_declarations.hxx"
-#include "aw_area_management.hxx"
+
 #include "aw_help.hxx"
 #include "aw_button.hxx"
 #include "aw_cb_struct.hxx"
@@ -91,37 +88,6 @@ typedef const char *AW_label;       // label for buttons menus etc
 
 const char *AW_get_pixmapPath(const char *pixmapName);
 
-enum AW_event_type {
-    AW_Keyboard_Press   = 1,
-    AW_Keyboard_Release = 2,
-    AW_Mouse_Press      = 3,
-    AW_Mouse_Release    = 4,
-    AW_Mouse_Drag       = 5
-};
-
-enum AW_MouseButton {
-    AW_BUTTON_NONE   = 0,
-    AW_BUTTON_LEFT   = 1,
-    AW_BUTTON_MIDDLE = 2,
-    AW_BUTTON_RIGHT  = 3,
-    AW_WHEEL_UP      = 4,
-    AW_WHEEL_DOWN    = 5,
-};
-
-struct AW_event {
-    // fields always valid
-    AW_event_type type;             // AW_Keyboard or AW_Mouse
-    unsigned long time;             // time in msec, when event occurred
-    AW_key_mod    keymodifier;      // control, alt/meta (shift only for type == AW_Mouse)
-
-    // fields valid for type == AW_Mouse
-    AW_MouseButton button;
-    int            x, y;            // pointer x,y coordinates in the event window
-
-    // fields valid for type == AW_Keyboard
-    AW_key_code keycode;            // which key type was pressed
-    char        character;          // the c character
-};
 
 void AW_POPDOWN(AW_window *);
 

@@ -15,6 +15,8 @@
 #endif
 #include "aw_gtk_forward_declarations.hxx"
 #include "aw_assert.hxx"
+#include "aw_area_management.hxx"
+
 //#include "aw_select.hxx"
 #include <string>
 #include <vector>
@@ -56,11 +58,6 @@ class  AW_root_cblist;
 class  GB_HASH;
 struct AW_cb_struct;
 
-enum AW_ProcessEventType {
-    NO_EVENT     = GDK_NOTHING,
-    KEY_PRESSED  = GDK_KEY_PRESS,
-    KEY_RELEASED = GDK_KEY_RELEASE
-};
 
 enum AW_Cursor {
     NORMAL_CURSOR,

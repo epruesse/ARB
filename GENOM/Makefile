@@ -183,11 +183,13 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/attributes.h
+GEN_gene.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
+GEN_gene.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
