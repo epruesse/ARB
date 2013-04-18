@@ -143,7 +143,7 @@ enum AW_PosRecalc {
     AW_REPOS_TO_MOUSE_ONCE = 3,                     // like AW_REPOS_TO_MOUSE, but only done once!
 };
 
-typedef void (*aw_hide_cb)(AW_window *aww);
+typedef AW_CB0 aw_hide_cb;
 
 class AW_window : virtual Noncopyable {
     friend class AW_cb_struct;//the cb struct needs access to prvt for strange reasons
@@ -174,8 +174,6 @@ protected:
     /* put a widget into prvt->fixedArea according to _at */
     void put_with_label(GtkWidget* wigdget);
     GtkWidget *make_label(const char* label_text, short label_length);
-
-    void wm_activate();                                // un-minimize window and give it the focus (use show_and_activate())
 
     /** 
      * Common initialization function called from AW_window_xxx::init()
@@ -218,7 +216,7 @@ public:
     void run_focus_callback();
     
     void allow_delete_window(bool allow_close);
-    void on_hide(aw_hide_cb call_on_hide);
+    void on_hide(AW_CB0 call_on_hide);
 
     /**
      * @return The current xfig data or NULL.
@@ -252,8 +250,6 @@ public:
 
     char *window_name;                              // window title
     char *window_defaults_name;
-    bool  window_is_shown;
-
 
     int slider_pos_vertical; /** < current position of the vertical slider */
     int slider_pos_horizontal;/** < current position of the horizontal slider */
@@ -277,7 +273,7 @@ public:
     void show(); // show newly created window or unhide hidden window (aka closed window)
     void hide(); // hide (don't destroy) a window (<->show)
 
-    void activate() { show(); wm_activate(); }      // make_visible, pop window to front and give it the focus
+    void activate(); // make_visible, pop window to front and give it the focus
 
     bool is_shown() const;  // is window visible (== true) or hidden (== false). ?
 
