@@ -69,6 +69,7 @@ public:
         resize_cb(NULL),
         expose_cb(NULL),
         input_cb(NULL),
+        motion_cb(NULL),
         old_width(-1),
         old_height(-1){}   
 
