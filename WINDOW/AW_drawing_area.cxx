@@ -162,6 +162,7 @@ static void aw_drawing_area_class_init(AW_drawing_area_class *clazz) {
 }
 
 static void aw_drawing_area_init(AW_drawing_area *area) {
+    gtk_widget_set_can_focus (GTK_WIDGET (area), TRUE);
     //this is done to avoid calling G_TYPE_INSTANCE_GET_PRIVATE every time 
     area->prvt = G_TYPE_INSTANCE_GET_PRIVATE (area, AW_DRAWING_AREA_TYPE, AW_drawing_area_private);
     area->prvt->horizontalAdjustment = NULL;
