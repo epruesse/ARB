@@ -1109,13 +1109,10 @@ void AW_window::run_focus_callback() {
 }
 
 void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    if (!prvt->focus_cb) {
-        g_signal_connect(G_OBJECT(prvt->areas[AW_MIDDLE_AREA]->get_area()),
-                "focus", G_CALLBACK(AW_focusCB), (gpointer) this);
-    }
-    if (!prvt->focus_cb || !prvt->focus_cb->contains(f)) {
-        prvt->focus_cb = new AW_cb_struct(this, f, cd1, cd2, 0, prvt->focus_cb);
-    }
+    // this is only ever called by AWT_canvas and triggers a re-render of the
+    // middle area. the API was designed for "focus-follows-mouse" mode,
+    // and makes little sense for GTK
+    // (we might need other means to trigger an update of the tree at the right time)
 }
 
 
