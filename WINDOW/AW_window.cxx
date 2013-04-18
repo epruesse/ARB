@@ -77,6 +77,10 @@ void AW_window::restore_at_size_and_attach(const AW_at_size *at_size){
 void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
     at_size->store(_at);
 }
+void AW_window::auto_increment(int /*dx*/, int /*dy*/) {
+    GTK_NOT_IMPLEMENTED;
+}
+
 
 // FIXME: callback ownership not handled, possible memory leaks
 void AW_window::callback(void (*f)(AW_window*)){
@@ -363,6 +367,10 @@ void AW_window::create_toggle(const char *var_name){
     }
 }
 
+void AW_window::create_inverse_toggle(const char */*awar_name*/) {
+    GTK_NOT_IMPLEMENTED;
+}
+
 void AW_window::create_toggle(const char */*awar_name*/, const char */*nobitmap*/, const char */*yesbitmap*/, int /*buttonWidth*/ /* = 0 */){
     GTK_NOT_IMPLEMENTED;
 }
@@ -370,6 +378,8 @@ void AW_window::create_toggle(const char */*awar_name*/, const char */*nobitmap*
 void AW_window::create_text_toggle(const char */*var_name*/, const char */*noText*/, const char */*yesText*/, int /*buttonWidth*/ /*= 0*/) {
     GTK_NOT_IMPLEMENTED;
 }
+
+
 
 
 void AW_window::update_toggle(GtkWidget *widget, const char *var, AW_CL /*cd_toggle_data*/) {
@@ -393,13 +403,6 @@ void AW_window::update_toggle(GtkWidget *widget, const char *var, AW_CL /*cd_tog
 
 static gboolean noop_signal_handler(GtkWidget* /*wgt*/, gpointer /*user_data*/) {
   return true; // stop signal
-}
-
-void AW_window::allow_delete_window(bool allow_close) {
-    gtk_window_set_deletable(prvt->window, allow_close);
-    // the window manager might still show the close button
-    // => do nothing if clicked
-    g_signal_connect(prvt->window, "delete-event", G_CALLBACK(noop_signal_handler), NULL);
 }
 
 
@@ -917,13 +920,6 @@ void AW_window::help_text(const char *id){
     _at.helptext_for_next_button   = strdup(id);
 }
 
-void AW_window::hide(){
-    gtk_widget_hide(GTK_WIDGET(prvt->window));
-}
-
-void AW_window::hide_or_notify(const char */*error*/){
-    GTK_NOT_IMPLEMENTED;
-}
 
 void AW_window::highlight(){
     GTK_NOT_IMPLEMENTED;
@@ -1014,11 +1010,6 @@ void AW_window::insert_sub_menu(const char *name, const char *mnemonic, AW_activ
     get_root()->register_widget(GTK_WIDGET(item), mask);
 }
 
-
-
-bool AW_window::is_shown() const{
-    return gtk_widget_get_visible(GTK_WIDGET(prvt->window));
-}
 
 /* set label for next button 
  */
@@ -1315,12 +1306,7 @@ void AW_window::set_window_title(const char *title){
 }
 
 void AW_window::shadow_width (int /*shadow_thickness*/) {
-    // GTK_NOT_IMPLEMENTED;
     // won't implement
-}
-
-void AW_window::show() {
-    prvt->show();
 }
 
 void AW_window::button_height(int height) {
@@ -1332,6 +1318,7 @@ void AW_window::show_modal() {
     get_root()->current_modal_window = this;
     activate();
 }
+
 bool AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
     AW_area_management *aram = prvt->areas[area];
     return aram && aram->is_expose_callback(this, f);
@@ -1376,19 +1363,6 @@ void AW_window::window_fit() {
     set_window_size(0,0);
 }
 
-/* pops window to front */
-void AW_window::wm_activate() {
-    gtk_window_present(prvt->window);
-}
-
-void AW_window::create_inverse_toggle(const char */*awar_name*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::auto_increment(int /*dx*/, int /*dy*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
 AW_window::AW_window() 
   : recalc_size_at_show(AW_KEEP_SIZE),
     left_indent_of_horizontal_scrollbar(0),
@@ -1403,7 +1377,6 @@ AW_window::AW_window()
     xfig_data(NULL),
     window_name(NULL),
     window_defaults_name(NULL),
-    window_is_shown(false),
     slider_pos_vertical(0),
     slider_pos_horizontal(0),
     main_drag_gc(0),
@@ -1414,6 +1387,9 @@ AW_window::AW_window()
     reset_scrolled_picture_size();
     
     prvt = new AW_window::AW_window_gtk();
+
+    // AW Windows are never destroyed
+    set_hide_on_close(true);
 }
 
 AW_window::~AW_window() {
@@ -1455,6 +1431,7 @@ void AW_window::init_window(const char *window_name, const char* window_title,
         // there is a root, we're a transient to it
         gtk_window_set_transient_for(prvt->window, 
                                      get_root()->root_window->prvt->window);
+
     }
 
     
@@ -1502,9 +1479,6 @@ void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
     recalc_size_at_show = sr;
 }
 
-void AW_window::on_hide(aw_hide_cb /*call_on_hide*/){
-    GTK_NOT_IMPLEMENTED;
-}
 
 
 AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
@@ -1578,6 +1552,43 @@ void AW_window::create_color_button(const char* /*awar_name*/, const char */*lab
 
 AW_xfig* AW_window::get_xfig_data() {
     return xfig_data;
+}
+
+
+/********* window show/hide/delete ***********/
+
+void AW_window::allow_delete_window(bool allow_close) {
+    gtk_window_set_deletable(prvt->window, allow_close);
+    // the window manager might still show the close button
+    // => do nothing if clicked
+    g_signal_connect(prvt->window, "delete-event", G_CALLBACK(noop_signal_handler), NULL);
+}
+
+void AW_window::show() {
+    prvt->show();
+}
+
+bool AW_window::is_shown() const{
+    return gtk_widget_get_visible(GTK_WIDGET(prvt->window));
+}
+
+void AW_window::hide(){
+    gtk_widget_hide(GTK_WIDGET(prvt->window));
+}
+
+void AW_window::hide_or_notify(const char *error){
+    if (error) aw_message(error);
+    else hide();
+}
+
+// make_visible, pop window to front and give it the focus
+void AW_window::activate() {
+    show();
+    gtk_window_present(prvt->window);
+}
+
+void AW_window::on_hide(AW_CB0 f) {
+    g_signal_connect_swapped(prvt->window, "hide", G_CALLBACK(f), this);
 }
 
 void AW_window::set_hide_on_close(bool value) {
