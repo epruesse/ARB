@@ -69,12 +69,12 @@ void AW_root::process_events() {
 
 AW_ProcessEventType AW_root::peek_key_event(AW_window*) {
     GdkEvent *ev = gdk_event_peek();
-    if (!event) return NO_EVENT;
+    if (!ev) return NO_EVENT;
 
-    AW_ProcessEventType awev = (AW_processEventType)ev->type;
+    AW_ProcessEventType awev = (AW_ProcessEventType)ev->type;
 
     gdk_event_free(ev);
-    return event_aw;
+    return awev;
 }
 
 AW_default AW_root::load_properties(const char *default_name) {

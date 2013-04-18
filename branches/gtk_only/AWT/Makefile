@@ -335,9 +335,11 @@ AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/cxxforward.h

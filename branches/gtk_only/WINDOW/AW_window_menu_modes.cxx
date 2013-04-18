@@ -53,10 +53,7 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     aw_assert(NULL != prvt->drawing_area);
     gtk_container_add(GTK_CONTAINER(scrolledWindow), GTK_WIDGET(prvt->drawing_area));
     
-          
-
-    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(GTK_WIDGET(prvt->drawing_area), GTK_WIDGET(prvt->drawing_area)); 
-    //FIXME form should be a frame around the area.
+    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(GTK_WIDGET(prvt->drawing_area), this);
 
     // Layout:
     // fixed_size_area ('info') goes above scrollArea ('middle')

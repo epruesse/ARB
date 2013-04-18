@@ -97,10 +97,12 @@ macros.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 macros.o: $(ARBHOME)/INCLUDE/arbdbt.h
 macros.o: $(ARBHOME)/INCLUDE/arbtools.h
 macros.o: $(ARBHOME)/INCLUDE/attributes.h
+macros.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
+macros.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 macros.o: $(ARBHOME)/INCLUDE/cb.h

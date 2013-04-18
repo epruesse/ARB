@@ -1483,8 +1483,7 @@ void AW_window::init_window(const char *window_name, const char* window_title,
     prvt->fixed_size_area = AW_AT_LAYOUT(aw_at_layout_new());
     // we want this to have its own GdkWindow
     gtk_widget_set_has_window(GTK_WIDGET(prvt->fixed_size_area),true);
-    prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), 
-                                                       GTK_WIDGET(prvt->fixed_size_area)); 
+    prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), this);
 }
 
 void AW_window::recalc_pos_atShow(AW_PosRecalc /*pr*/){

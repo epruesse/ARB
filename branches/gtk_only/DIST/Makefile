@@ -498,11 +498,13 @@ distanalyse.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arbdbt.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arbtools.h
 distanalyse.o: $(ARBHOME)/INCLUDE/attributes.h
+distanalyse.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/cb.h

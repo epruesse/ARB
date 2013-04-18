@@ -11,9 +11,7 @@
 
 #include "aw_advice.hxx"
 #include "aw_gtk_migration_helpers.hxx"
-#include "aw_root.hxx"
-
-#include <arbdb.h>
+#include "aw_window.hxx"
 
 #define AWAR_ADVICE_TMP "/tmp/advices/"
 
