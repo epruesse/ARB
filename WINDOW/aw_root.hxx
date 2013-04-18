@@ -57,9 +57,9 @@ class  GB_HASH;
 struct AW_cb_struct;
 
 enum AW_ProcessEventType {
-    NO_EVENT     = 0,
-    KEY_PRESSED  = 2,
-    KEY_RELEASED = 3
+    NO_EVENT     = GDK_NOTHING,
+    KEY_PRESSED  = GDK_KEY_PRESS,
+    KEY_RELEASED = GDK_KEY_RELEASE
 };
 
 enum AW_Cursor {

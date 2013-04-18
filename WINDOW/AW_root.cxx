@@ -67,9 +67,14 @@ void AW_root::process_events() {
 }
 
 
-AW_ProcessEventType AW_root::peek_key_event(AW_window *) {
-    GTK_NOT_IMPLEMENTED;
-    return (AW_ProcessEventType)0;
+AW_ProcessEventType AW_root::peek_key_event(AW_window*) {
+    GdkEvent *ev = gdk_event_peek();
+    if (!event) return NO_EVENT;
+
+    AW_ProcessEventType awev = (AW_processEventType)ev->type;
+
+    gdk_event_free(ev);
+    return event_aw;
 }
 
 AW_default AW_root::load_properties(const char *default_name) {
