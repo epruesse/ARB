@@ -48,6 +48,8 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     
     // create main drawing area ('middle area')
     prvt->drawing_area = AW_DRAWING_AREA(aw_drawing_area_new());
+
+
     aw_assert(NULL != prvt->drawing_area);
     gtk_container_add(GTK_CONTAINER(scrolledWindow), GTK_WIDGET(prvt->drawing_area));
     
@@ -74,6 +76,12 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     // make-it-so:
     gtk_widget_realize(GTK_WIDGET(prvt->window)); 
     gtk_widget_realize(GTK_WIDGET(prvt->drawing_area));
+
+    // the drawing area needs to have the focus to receive key events
+    gtk_widget_set_can_focus(GTK_WIDGET(prvt->mode_menu), false);
+    gtk_widget_set_can_focus(GTK_WIDGET(prvt->fixed_size_area), false);
+    gtk_widget_grab_focus(GTK_WIDGET(prvt->drawing_area));
+    
     create_devices();
     aw_insert_default_help_entries(this);
     create_window_variables();
