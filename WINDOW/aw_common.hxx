@@ -217,7 +217,7 @@ public:
     void set_screen(const AW_screen_area& screen);
 
     AW_rgb get_color(AW_color_idx color) const {
-        return color > AW_STD_COLOR_IDX_MAX ? data_colors[color] : frame_colors[color];
+        return color >= AW_STD_COLOR_IDX_MAX ? data_colors[color] : frame_colors[color];
     }
     AW_rgb get_data_color(int i) const;
     int find_data_color_idx(AW_rgb color) const;
