@@ -1503,7 +1503,6 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
         if(pMiddleArea) {
             GdkColor color = get_root()->getColor(color_table[colnum]);
             gtk_widget_modify_bg(pMiddleArea->get_area(),GTK_STATE_NORMAL, &color);
-            FIXME("no idea if this works");
         }
     }
     return (AW_color_idx)colnum;
