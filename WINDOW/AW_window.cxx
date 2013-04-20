@@ -71,14 +71,12 @@ int AW_window::get_at_xposition() const { return _at.get_at_xposition(); }
 int AW_window::get_at_yposition() const { return _at.get_at_yposition(); }
 void AW_window::at(const char *at_id) { _at.at(at_id); }
 void AW_window::sens_mask(AW_active mask){  _at.set_mask(mask); }
+void AW_window::auto_increment(int dx, int dy) { _at.auto_increment(dx, dy); }
 void AW_window::restore_at_size_and_attach(const AW_at_size *at_size){
     at_size->restore(_at);
 }
 void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
     at_size->store(_at);
-}
-void AW_window::auto_increment(int /*dx*/, int /*dy*/) {
-    GTK_NOT_IMPLEMENTED;
 }
 
 

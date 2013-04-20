@@ -75,6 +75,7 @@ public:
     bool at_ifdef(const char* id);
     void at_set_to(bool attach_x, bool attach_y, int xoff, int yoff);
     void at_unset_to();
+    void auto_increment(int x, int y);
     void unset_at_commands();
     void increment_at_commands(int x, int y);
     void at_set_min_size(int xmin, int ymin);
