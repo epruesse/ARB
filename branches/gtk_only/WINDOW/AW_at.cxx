@@ -300,6 +300,15 @@ void AW_at::auto_space(int x, int y){
     biggest_height_of_buttons = 0;
 }
 
+void AW_at::auto_increment(int x, int y) {
+    do_auto_increment = true;
+    auto_increment_x  = x;
+    auto_increment_y  = y;
+    x_for_newline     = x_for_next_button;
+    do_auto_space     = false;
+    biggest_height_of_buttons = 0;
+}
+
 void AW_at::label_length(int length){
     length_of_label_for_inputfield = length;
 }
