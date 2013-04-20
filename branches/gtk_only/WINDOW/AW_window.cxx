@@ -462,15 +462,20 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
     gtk_text_buffer_set_text(textbuffer, str, -1);
     free(str);
 
+    GtkWidget *scrolled_entry = gtk_scrolled_window_new(NULL,NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_entry), 
+                                   GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_entry), entry);
+
     // FIXME: this is identical to create_input_field:
 
     int char_width, char_height;
     prvt->get_font_size(char_width, char_height);
-    gtk_widget_set_size_request(entry, char_width * columns, char_height * rows);
+    gtk_widget_set_size_request(scrolled_entry, char_width * columns, char_height * rows);
 
     // FIXME: this is identical to create_input_field:
 
-    put_with_label(entry);
+    put_with_label(scrolled_entry);
 
     AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, entry, AW_WIDGET_TEXT_FIELD, vs, prvt->callback);
     
