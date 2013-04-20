@@ -103,7 +103,6 @@ public:
     virtual ~AW_awar();
 
     void tie_widget(AW_CL cd1, GtkWidget* widget, AW_widget_type type, AW_window *aww);
-    void untie_all_widgets();
 
     AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);
     AW_awar *add_callback(Awar_CB1 f, AW_CL cd1);
