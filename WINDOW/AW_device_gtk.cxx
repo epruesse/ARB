@@ -82,6 +82,9 @@ bool AW_device_gtk::draw_string_on_screen(AW_device *device, int gc, const  char
     AW_device_gtk *device_gtk = DOWNCAST(AW_device_gtk*, device);
     cairo_t *cr = device_gtk->get_common()->get_CR(gc);
     if (!cr) return false; // nothing to draw on
+    
+    // always overlay text (for now)
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
     PangoLayout *pl = gtk_widget_create_pango_layout(device_gtk->drawingArea, str+start);
     pango_layout_set_font_description(pl, device_gtk->get_common()->get_font(gc));
