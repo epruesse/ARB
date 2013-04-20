@@ -181,13 +181,6 @@ GB_ERROR AW_awar::toggle_toggle() {
                            __PRETTY_FUNCTION__, get_type_name());
 }
 
-
-
-
-void AW_awar::untie_all_widgets() {
-    delete refresh_list; refresh_list = NULL;
-}
-
 AW_awar *AW_awar::add_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
     AW_root_cblist::add(callback_list, AW_root_callback(value_changed_cb, cd1, cd2));
     return this;
