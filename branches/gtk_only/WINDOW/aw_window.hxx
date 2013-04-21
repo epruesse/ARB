@@ -229,9 +229,9 @@ public:
     char *align_string(const char *string, int columns);
 
     void update_label(GtkWidget* widget, const char *var_value);
-    void update_toggle(GtkWidget* widget, const char *var_value, AW_CL cd);
     void update_input_field(GtkWidget* widget, const char *var_value);
     void update_text_field(GtkWidget* widget, const char *var_value);
+    void update_toggle(GtkWidget *widget, const char *var, AW_CL /*cd_toggle_data*/);
 
     void  create_invisible(int columns);
     void *_create_option_entry(GB_TYPES type, const char *name, const char *mnemonic, const char *name_of_color);
@@ -477,11 +477,15 @@ public:
     void   create_autosize_button(const char *macro_name, const char *label, const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
     GtkWidget* get_last_widget() const;
 
-    void create_toggle(const char *var_name);  // int 0/1  string yes/no   float undef
-    void create_inverse_toggle(const char *var_name);  // like create_toggle, but displays inverted toggle value
-
-    void create_toggle(const char *var_name, const char *nobitmap, const char *yesbitmap, int buttonWidth = 0);
-    void create_text_toggle(const char *var_name, const char *noText, const char *yesText, int buttonWidth = 0);
+    void create_toggle(const char *var_name, bool inverse=false, const char* yes = NULL, 
+                       const char* no = NULL, int width = 0);  
+    void create_inverse_toggle(const char *var_name) { create_toggle(var_name, true); }
+    void create_toggle(const char *var_name, const char *nobitmap, const char *yesbitmap, int buttonWidth = 0) {
+        create_toggle(var_name, false, yesbitmap, nobitmap, buttonWidth);
+    }
+    void create_text_toggle(const char *var_name, const char *noText, const char *yesText, int buttonWidth = 0) {
+        create_toggle(var_name, false, yesText, noText, buttonWidth);
+    }
 
     void create_input_field(const char *awar_name, int columns = 0);   // One line textfield
     void create_text_field(const char *awar_name, int columns = 20, int rows = 4);   // Multi line textfield
