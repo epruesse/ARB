@@ -14,13 +14,10 @@
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_root.hxx"
 #include "aw_awar.hxx"
+#include <gtk/gtk.h>
 
-#include <gtk/gtktreeview.h>
 #include <string>
 #include <list>
-#include <gtk/gtktreestore.h>
-#include <gtk/gtkliststore.h>
-#include <gtk/gtktreeselection.h>
 
 #ifndef ARBDB_H
 #include <arbdb.h>

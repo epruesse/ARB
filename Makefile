@@ -335,6 +335,15 @@ ifeq ($(GTK),1)
 	dflags += -DARB_GTK
 endif
 
+ifeq ($(GTK),3)
+	GTKCFLAGS:= $(shell pkg-config --cflags gtk+-3.0) -fPIC
+	GTKLIBS:= $(shell pkg-config --libs gtk+-3.0 | $(SED) 's/-pthread//')
+
+	cflags += $(GTKCFLAGS)
+	dflags += -DARB_GTK
+	dflags += -DARB_GTK3
+endif
+
 #---------------------- X11 location
 
 ifdef DARWIN
@@ -704,10 +713,10 @@ ifdef DARWIN
 endif
 
 GUI_LIBS = $(GUI_LIBS_PREFIX) $(LIBS) -lAWT  
-ifeq ($(GTK),1)
-		GUI_LIBS += -lWINDOW $(GTKLIBS)
-else
+ifeq ($(GTK),0)
 		GUI_LIBS += -lWINDOW $(XLIBS)		
+else
+		GUI_LIBS += -lWINDOW $(GTKLIBS)
 endif	
 
 
@@ -856,10 +865,10 @@ ARCHS_AP_TREE = \
 
 link_core:	core
 link_db:	db link_core
-ifeq ($(GTK),1)
-  link_aw:	aw_gtk link_db
-else
+ifeq ($(GTK),0)
   link_aw:	aw link_db
+else
+  link_aw:	aw_gtk link_db
 endif
 link_awt:	awt link_aw
 

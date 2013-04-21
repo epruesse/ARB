@@ -13,12 +13,10 @@
 #include "aw_common_gtk.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_window.hxx"
-#include <gdk/gdkgc.h>
-#include <gdk/gdkpixmap.h>
-#include <gtk/gtkwidget.h>
+#include <gdk/gdk.h>
+#include <gtk/gtk.h>
 #include "aw_xfont.hxx"
 //TODO remove if xfont is gone
-#include <gdk/gdkx.h>
 #include <string>
 #include <algorithm>
 
@@ -28,9 +26,9 @@
  */
 static void AW_window_resize_cb(AW_window *, AW_CL cl_common_gtk, AW_CL) {
     AW_common_gtk *common = (AW_common_gtk*)cl_common_gtk;
-    gint width = common->get_window()->allocation.width;
-    gint height = common->get_window()->allocation.height;
-    common->set_screen_size(width, height);
+    GtkAllocation alloc;
+    gtk_widget_get_allocation(GTK_WIDGET(common->get_window()), &alloc);
+    common->set_screen_size(alloc.width, alloc.height);
 }
 
 AW_common_gtk::AW_common_gtk(GdkDisplay *display_in,
@@ -45,7 +43,7 @@ AW_common_gtk::AW_common_gtk(GdkDisplay *display_in,
       window(window_in),
       aww(aw_window),
       area(area_in),
-      pixelDepth(gdk_screen_get_system_visual(gdk_display_get_default_screen(display))->depth)
+      pixelDepth(gdk_visual_get_depth(gdk_screen_get_system_visual(gdk_display_get_default_screen(display))))
 {
     aw_window->set_resize_callback(area, AW_window_resize_cb, (AW_CL)this);
 }

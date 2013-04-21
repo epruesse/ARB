@@ -139,6 +139,8 @@ static void aw_drawing_area_class_init(AW_drawing_area_class *clazz) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(clazz);
     GObjectClass *object_class = G_OBJECT_CLASS(clazz);
     
+#if GTK_MAJOR_VERSION >2
+#else
     //override set_scroll_adjustments
     clazz->set_scroll_adjustments = set_scroll_adjustments;
     widget_class->set_scroll_adjustments_signal =
@@ -151,6 +153,7 @@ static void aw_drawing_area_class_init(AW_drawing_area_class *clazz) {
                 G_TYPE_NONE, 2,
                 GTK_TYPE_ADJUSTMENT,
                 GTK_TYPE_ADJUSTMENT);  
+#endif
     
     //register destructor
     object_class->dispose = aw_drawing_area_dispose;
