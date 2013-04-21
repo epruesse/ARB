@@ -341,8 +341,42 @@ GtkWidget* AW_window::get_last_widget() const{
     return prvt->last_widget;
 }
 
-void AW_window::create_toggle(const char *var_name){
-    GtkWidget* checkButton = gtk_check_button_new();
+extern "C" gboolean AW_switch_widget_child(GtkWidget *bin, gpointer other_bin) {
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(bin));
+    GtkWidget *other_child = gtk_bin_get_child(GTK_BIN(other_bin));
+    g_object_ref(child);
+    g_object_ref(other_child);
+    gtk_container_remove(GTK_CONTAINER(bin), child);
+    gtk_container_remove(GTK_CONTAINER(other_bin), other_child);
+    gtk_container_add(GTK_CONTAINER(bin), GTK_WIDGET(other_child));
+    gtk_container_add(GTK_CONTAINER(other_bin), GTK_WIDGET(child));
+
+    g_object_unref(child);
+    g_object_unref(other_child);
+}
+
+void AW_window::create_toggle(const char *var_name, bool inverse, 
+                              const char *yes, const char *no, int width) {
+    GtkWidget* checkButton;
+    if (yes) {
+        checkButton = gtk_toggle_button_new();
+        GtkWidget* label = make_label(yes, width);
+        gtk_container_add(GTK_CONTAINER(checkButton), label);
+        
+        GtkWidget* bin = gtk_toggle_button_new();
+        GtkWidget* other_label = make_label(no, width);
+        gtk_container_add(GTK_CONTAINER(bin), other_label);
+
+    gtk_widget_show_all(bin);
+
+
+        g_signal_connect(G_OBJECT(checkButton), "released", 
+                         G_CALLBACK(AW_switch_widget_child),
+                         (gpointer) bin);
+    }
+    else {
+        checkButton = gtk_check_button_new();
+    }
     put_with_label(checkButton);
 
     AW_awar *vs = get_root()->awar(var_name);
@@ -358,27 +392,10 @@ void AW_window::create_toggle(const char *var_name){
 
     vs->tie_widget(0, checkButton, AW_WIDGET_TOGGLE, this);
 
-
-
     if (prvt->callback) {
       _set_activate_callback(checkButton);
     }
 }
-
-void AW_window::create_inverse_toggle(const char */*awar_name*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::create_toggle(const char */*awar_name*/, const char */*nobitmap*/, const char */*yesbitmap*/, int /*buttonWidth*/ /* = 0 */){
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_window::create_text_toggle(const char */*var_name*/, const char */*noText*/, const char */*yesText*/, int /*buttonWidth*/ /*= 0*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
-
-
 
 void AW_window::update_toggle(GtkWidget *widget, const char *var, AW_CL /*cd_toggle_data*/) {
   if (get_root()->changer_of_variable == widget) return;
