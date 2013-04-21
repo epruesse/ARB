@@ -17,7 +17,6 @@ private:
     AW_window* window; /** < The window this cursor belongs to */
     AW_xfig* xfig_data;
 public:
-    short shadow_thickness;
     short length_of_buttons;
     short height_of_buttons;
     int font_width;
