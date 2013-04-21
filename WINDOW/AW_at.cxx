@@ -28,10 +28,8 @@ AW_at::AW_at(AW_window* pWindow) {
     
     window->get_font_size(font_width, font_height);
 
-    shadow_thickness  = 2;
     widget_mask       = AWM_ALL;
-    
-    shadow_thickness = 0;
+
     length_of_buttons = 10;
     height_of_buttons = 0;
     length_of_label_for_inputfield = 0;
