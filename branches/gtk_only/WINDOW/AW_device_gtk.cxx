@@ -12,10 +12,9 @@
 
 #include "aw_gtk_migration_helpers.hxx"
 #include <gdk/gdk.h>
+#include <gtk/gtk.h>
 #include "aw_position.hxx"
 #include "aw_device.hxx"
-#include "gtk/gtkwidget.h"
-#include "gtk/gtkstyle.h"
 #include "aw_device_gtk.hxx"
 
 #if defined(WARN_TODO)
@@ -164,7 +163,10 @@ bool AW_device_gtk::arc_impl(int gc, bool filled, const AW::Position& center,
 
 void AW_device_gtk::clear(AW_bitset filteri) 
 {
-    gdk_window_clear(drawingArea->window);
+#if GTK_MAJOR_VERSION >2
+#else
+    gdk_window_clear(gtk_widget_get_window(drawingArea));
+#endif
 }
 
 void AW_device_gtk::clear_part(const Rectangle& rect, AW_bitset filteri) 
@@ -172,11 +174,14 @@ void AW_device_gtk::clear_part(const Rectangle& rect, AW_bitset filteri)
     Rectangle transRect = transform(rect);
     Rectangle clippedRect;
     if (box_clip(transRect, clippedRect)) {
-        gdk_window_clear_area(drawingArea->window,
+#if GTK_MAJOR_VERSION >2
+#else
+        gdk_window_clear_area(gtk_widget_get_window(drawingArea),
                               AW_INT(clippedRect.left()),
                               AW_INT(clippedRect.top()),
                               AW_INT(clippedRect.width())+1, // see aw_zoomable.hxx@WORLD_vs_PIXEL
                               AW_INT(clippedRect.height())+1);
+#endif
         //TODO the old motif code did not generate expose events on clear area
         AUTO_FLUSH(this);
     }
@@ -193,7 +198,10 @@ void AW_device_gtk::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos
 {
     GdkRectangle rect;
     rect.x = AW_INT(src_x), rect.y = AW_INT(src_y), rect.width=AW_INT(width), rect.height=AW_INT(height);
-    gdk_window_move_region(drawingArea->window, gdk_region_rectangle(&rect),
+#if GTK_MAJOR_VERSION >2
+#else
+    gdk_window_move_region(gtk_widget_get_window(drawingArea), gdk_region_rectangle(&rect),
                            AW_INT(dest_x-src_x), AW_INT(dest_y-src_y));
+#endif
     AUTO_FLUSH(this);
 }

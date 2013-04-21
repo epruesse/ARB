@@ -12,8 +12,8 @@
 #include "aw_area_management.hxx"
 #include "aw_window.hxx"
 #include "aw_gtk_migration_helpers.hxx"
-#include "gdk/gdkscreen.h"
-#include "gtk/gtkwidget.h"
+#include "gdk/gdk.h"
+#include "gtk/gtk.h"
 #include "aw_common_gtk.hxx"
 #include "aw_device_gtk.hxx"
 #include "aw_root.hxx"
@@ -21,14 +21,8 @@
 #include "aw_device_click.hxx"
 #include "aw_position.hxx"
 
-#include "gtk/gtkfixed.h"
-
 #include <iostream>
 
-
-const char* gtk_object_to_class_name(GtkWidget* w) {
-    return g_type_name(G_TYPE_FROM_CLASS(w->object.parent_instance.g_type_instance.g_class));
-}
 
 
 #if defined(DEBUG)

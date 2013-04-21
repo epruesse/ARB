@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <gdk/gdktypes.h>
+#include <gdk/gdk.h>
 class AW_root;
 class AW_window;
 

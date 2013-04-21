@@ -1,18 +1,5 @@
 
-#include <gtk/gtklabel.h>
-#include <gtk/gtkfixed.h>
-#include <gtk/gtkbutton.h>
-#include <gtk/gtkcheckbutton.h>
-#include <gtk/gtkdrawingarea.h>
-#include <gtk/gtkvbox.h>
-#include <gtk/gtkmenubar.h>
-#include <gtk/gtkhbox.h>
-
-#include <vector>
 #include <stack>
-#include <gtk-2.0/gtk/gtkmenuitem.h>
-#include <gtk-2.0/gtk/gtkseparatormenuitem.h>
-#include <gtk-2.0/gtk/gtktoolbar.h>
 
 #include "aw_drawing_area.hxx"
 #include "aw_at_layout.hxx"

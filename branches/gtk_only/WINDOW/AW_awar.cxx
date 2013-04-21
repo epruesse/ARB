@@ -18,8 +18,6 @@
 #include "aw_window.hxx"
 #include "aw_select.hxx"
 
-#include <gtk/gtkwidget.h>
-
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif

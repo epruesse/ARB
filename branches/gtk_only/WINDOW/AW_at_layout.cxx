@@ -19,6 +19,10 @@ struct _AwAtLayoutPrivate {
 G_DEFINE_TYPE(AwAtLayout, aw_at_layout, GTK_TYPE_FIXED);
 
 static void aw_at_layout_size_allocate(GtkWidget*, GtkAllocation*);
+#if GTK_MAJOR_VERSION > 2
+static void aw_at_layout_get_preferred_width(GtkWidget*, gint*, gint*);
+static void aw_at_layout_get_preferred_height(GtkWidget*, gint*, gint*);
+#endif
 static void aw_at_layout_size_request(GtkWidget*, GtkRequisition*);
 // static void aw_at_layout_size_realize(GtkWidget*);
 static GType aw_at_layout_child_type(GtkContainer*) {return GTK_TYPE_WIDGET;}
@@ -30,7 +34,12 @@ static void aw_at_layout_class_init(AwAtLayoutClass *klass) {
 
     // widget_class->realize = aw_at_layout_reqlize;
     widget_class->size_allocate = aw_at_layout_size_allocate;
+#if GTK_MAJOR_VERSION > 2
+    widget_class->get_preferred_width = aw_at_layout_get_preferred_width;
+    widget_class->get_preferred_height = aw_at_layout_get_preferred_height;
+#else
     widget_class->size_request = aw_at_layout_size_request;
+#endif
 
     container_class->child_type = aw_at_layout_child_type;
     container_class->forall = aw_at_layout_forall;
@@ -125,14 +134,28 @@ static void aw_at_layout_size_request(GtkWidget *widget, GtkRequisition *requisi
     //prvt->height = requisition->height;
 }
 
+#if GTK_MAJOR_VERSION > 2
+static void aw_at_layout_get_preferred_width(GtkWidget* widget, gint *minimal_width, gint *natural_width) {
+    GtkRequisition req;
+    aw_at_layout_size_request(widget, &req);
+    *minimal_width = *natural_width = req.width;
+}
+static void aw_at_layout_get_preferred_height(GtkWidget* widget, gint *minimal_height, gint *natural_height) {
+    GtkRequisition req;
+    aw_at_layout_size_request(widget, &req);
+    *minimal_height = *natural_height = req.height;
+}
+#endif
+
 static void aw_at_layout_size_allocate(GtkWidget *widget, GtkAllocation *allocation) {
     AwAtLayout *self = AW_AT_LAYOUT(widget);
     AwAtLayoutPrivate *prvt = AW_AT_LAYOUT_GET_PRIVATE(self);
-    widget->allocation = *allocation;
+    
+    gtk_widget_set_allocation(widget, allocation);
 
     if (gtk_widget_get_has_window(widget)
         &&  gtk_widget_get_realized(widget)) {
-        gdk_window_move_resize(widget->window,
+        gdk_window_move_resize(gtk_widget_get_window(widget),
                                allocation->x, allocation->y,
                                allocation->width, allocation->height);
     }
@@ -154,8 +177,8 @@ static void aw_at_layout_size_allocate(GtkWidget *widget, GtkAllocation *allocat
             child_alloc.height =child_req.height + (allocation->height - prvt->height) * child->yscale;
 
             if (!gtk_widget_get_has_window(widget)) {
-              child_alloc.x += widget->allocation.x;
-              child_alloc.y += widget->allocation.y;
+              child_alloc.x += allocation->x;
+              child_alloc.y += allocation->y;
             }
             
             gtk_widget_size_allocate(child->widget, &child_alloc);
@@ -165,7 +188,7 @@ static void aw_at_layout_size_allocate(GtkWidget *widget, GtkAllocation *allocat
     if (gtk_widget_get_has_window(widget) &&
         gtk_widget_get_realized(widget)) {
         GdkEvent *event = gdk_event_new(GDK_CONFIGURE);
-        event->configure.window = GDK_WINDOW(g_object_ref(widget->window));
+        event->configure.window = GDK_WINDOW(g_object_ref(gtk_widget_get_window(widget)));
         event->configure.send_event = true;
         event->configure.x = allocation->x;
         event->configure.y = allocation->y;
