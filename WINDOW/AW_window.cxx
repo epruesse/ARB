@@ -140,14 +140,25 @@ void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
         root->set_cursor(WAIT_CURSOR);
         
         cbs->run_callback();
+        
+        /**the old motif code searched the event queue and removed the following
+         * events at this line:
+         * ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
+         * KeyPressMask|KeyReleaseMask|PointerMotionMask
+         * 
+         * I have no idea if that is even possible in gtk or why anyone wants
+         * to do that??
+         */
         FIXME("destruction of old events not implemented");
-//        XEvent event; // destroy all old events !!!
-//        while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
-//        ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
-//        KeyPressMask|KeyReleaseMask|PointerMotionMask, &event)) {
-//        }
-    }
 
+
+        if (root->is_help_active()) {
+            root->set_cursor(HELP_CURSOR);
+        }
+        else {
+            root->set_cursor(NORMAL_CURSOR);
+        }
+    }      
 }
 
 void AW_window::_set_activate_callback(GtkWidget *widget) {

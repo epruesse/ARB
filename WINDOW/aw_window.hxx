@@ -126,7 +126,7 @@ typedef char *AW_pixmap;
 class  AW_window_Motif;
 struct AW_selection_list_entry;
 class  AW_selection_list;
-typedef AW_selection_list AW_option_menu_struct;
+typedef AW_selection_list AW_option_menu_struct; //for compatibility reasons with old arb code
 struct aw_toggle_data;
 
 enum AW_SizeRecalc {
@@ -494,7 +494,7 @@ public:
 
     // ***** option_menu is a menu where only one selection is visible at a time
     AW_selection_list* create_option_menu(const char *awar_name, const char *label= NULL, const char *mnemonic= NULL);
-    void clear_option_menu(AW_selection_list *oms);  // used to redefine available options
+    void clear_option_menu(AW_selection_list *list);  // used to redefine available options
 
     /**If set to true the window is not destroyed on close. instead it is hidden.*/
     void set_hide_on_close(bool value);
