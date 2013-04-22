@@ -116,7 +116,7 @@ void AW_at::at(const char *at_id) {
 
     if (!pos) GBK_terminatef("ID '%s' does not exist in xfig file", at_id);
 
-    at((pos->x - xfig->minx), (pos->y - xfig->miny - font_height - 9));
+    at((pos->x - xfig->minx), (pos->y - xfig->miny - font_height));
     correct_for_at_center = pos->center;
 
     sprintf(to_position, "to:%s", at_id);
