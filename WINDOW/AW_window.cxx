@@ -26,7 +26,6 @@
 #include "aw_modal.hxx"
 #include "aw_help.hxx"
 #include "aw_varUpdateInfo.hxx" 
-#include "aw_option_menu_struct.hxx"
 #include "aw_type_checking.hxx"
 #include "aw_select.hxx"
 #include <gtk/gtk.h>
