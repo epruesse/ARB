@@ -292,6 +292,15 @@ static AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
     if (popup) {
+#ifdef ARB_GTK
+        (new AWT_ptserver_selection(aws->create_option_menu(varname, NULL, NULL)))->refresh();
+
+        int old_button_length = aws->get_button_length();
+        aws->button_length(PT_SERVERNAME_LENGTH+1);
+        aws->update_option_menu();
+        aws->button_length(old_button_length);
+#else
+
         AW_root *aw_root              = aws->get_root();
         char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
         int      ptserver_index       = aw_root->awar(varname)->read_int();
@@ -317,6 +326,7 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
 
         free(readable_name);
         free(awar_buttontext_name);
+#endif
     }
     else {
         (new AWT_ptserver_selection(aws->create_selection_list(varname)))->refresh();
