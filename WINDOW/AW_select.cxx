@@ -61,7 +61,7 @@ static int AW_isort_AW_select_table_struct_backward(const void *t1, const void *
 
 
 AW_selection_list::AW_selection_list(const char *variable_namei, GB_TYPES variable_typei,
-                                     GtkTreeView *select_list_widgeti) :
+                                     GtkWidget *select_list_widgeti) :
         variable_name(nulldup(variable_namei)),
         variable_type(variable_typei),
         select_list_widget(select_list_widgeti),
@@ -93,7 +93,14 @@ void AW_selection_list::clear(bool clear_default) {
         default_select = NULL;
     }
     
-    gtk_list_store_clear(GTK_LIST_STORE(gtk_tree_view_get_model(select_list_widget)));
+    GtkListStore* store;
+    if (GTK_IS_COMBO_BOX(select_list_widget)) {
+        store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(select_list_widget)));
+    } else {
+        store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(select_list_widget)));
+    }
+
+    gtk_list_store_clear(store);
 }
 
 bool AW_selection_list::default_is_selected() const {
@@ -102,42 +109,31 @@ bool AW_selection_list::default_is_selected() const {
 }
 
 int AW_selection_list::get_selected_index() const {
-    //note: copy&paste from http://ubuntuforums.org/showthread.php?t=1208655
-    GtkTreeSelection *tsel = gtk_tree_view_get_selection (select_list_widget);
     GtkTreeIter iter;
     GtkTreeModel *tm;
-    GtkTreePath *path;
-    int *i;
-    if (gtk_tree_selection_get_selected (tsel , &tm , &iter))
-        {
-        path = gtk_tree_model_get_path (tm , &iter);
-        i = gtk_tree_path_get_indices(path);
-        return i[0];
-        }
-    return -1;
-}
-
-const char *AW_selection_list::get_selected_value() const { // @@@ refactor
-    FIXME("untested code");
-    AW_selection_list_entry *lt;
-    AW_selection_list_entry *found = 0;
-    GtkTreeIter              iter;
-    GtkTreeModel             *model = GTK_TREE_MODEL(gtk_tree_view_get_model(select_list_widget));
-    GtkTreeSelection         *selection = GTK_TREE_SELECTION(gtk_tree_view_get_selection(select_list_widget));
-
-    //note: this loop only works if the iter walks the items in order
-    if(gtk_tree_model_get_iter_first(model, &iter)) {//if the model is not empty
-        for( lt = list_table; lt; lt=lt->next, gtk_tree_model_iter_next(model, &iter)) {
-            lt->is_selected = gtk_tree_selection_iter_is_selected(selection, &iter);
-            
-            if(lt->is_selected && !found) found = lt;
-        }
+    if (GTK_IS_COMBO_BOX(select_list_widget)) {
+        if (!gtk_combo_box_get_active_iter(GTK_COMBO_BOX(select_list_widget), &iter))
+            return -1;
+        tm = gtk_combo_box_get_model(GTK_COMBO_BOX(select_list_widget));
+    } 
+    else {
+        GtkTreeSelection *tsel = gtk_tree_view_get_selection(GTK_TREE_VIEW(select_list_widget));
+        if (!gtk_tree_selection_get_selected(tsel, &tm, &iter)) 
+            return -1;
     }
-    if (found) printf("selected : %s\n", found->value.get_string());
-    return found ? found->value.get_string() : NULL;
+
+    // fixme: probably need to free path
+    GtkTreePath *path = gtk_tree_model_get_path(tm, &iter);
+    return  gtk_tree_path_get_indices(path)[0];
 }
 
-AW_selection_list_entry *AW_selection_list::get_entry_at(int index) {
+const char *AW_selection_list::get_selected_value() const {
+    int selected_index = get_selected_index();
+    if (selected_index == -1) return NULL;
+    return get_entry_at(selected_index)->get_displayed();
+}
+
+AW_selection_list_entry *AW_selection_list::get_entry_at(int index) const {
     AW_selection_list_entry *entry = list_table;
     while (index && entry) {
         entry = entry->next;
@@ -267,7 +263,11 @@ void AW_selection_list::append_to_liststore(AW_selection_list_entry* entry)
     aw_assert(NULL != entry);
     
     //note: gtk crashes if the store is an attribute.
-    store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(select_list_widget)));
+    if (GTK_IS_COMBO_BOX(select_list_widget)) {
+        store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(select_list_widget)));
+    } else {
+        store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(select_list_widget)));
+    }
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, entry->get_displayed(), -1);    
@@ -454,7 +454,13 @@ void AW_selection_list::update() {
     // update() will not set the connected awar to the default value
     // if it contains a value which is not associated with a list entry!
 
-    gtk_list_store_clear(GTK_LIST_STORE(gtk_tree_view_get_model(select_list_widget)));
+    GtkListStore* store;
+    if (GTK_IS_COMBO_BOX(select_list_widget)) {
+        store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(select_list_widget)));
+    } else {
+        store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(select_list_widget)));
+    }
+    gtk_list_store_clear(store);
     
     for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
         append_to_liststore(lt);
@@ -481,6 +487,20 @@ char *AW_selection_list_entry::copy_string_for_display(const char *str) {
     return out;
 }
 
+void AW_selection_list::update_awar() {
+    AW_awar *awar = AW_root::SINGLETON->awar(variable_name);
+    int selected_index = get_selected_index();
+    if (selected_index == -1) return; 
+
+    if (!get_entry_at(selected_index)) {
+        if (!default_select) GBK_terminate("no default specified for selection list");
+        default_select->value.write_to(awar);
+    }
+    else {
+        get_entry_at(selected_index)->value.write_to(awar);
+    }
+}
+
 void AW_selection_list::refresh() {
 //select the item that matches the awars value
    if (!variable_name) return;     // not connected to awar
@@ -490,7 +510,12 @@ void AW_selection_list::refresh() {
     bool     found = false;
     AW_awar *awar  = root->awar(variable_name);
     GtkTreeIter iter;
-    GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_view_get_model(select_list_widget));
+    GtkTreeModel *model;
+    if (GTK_IS_COMBO_BOX(select_list_widget)) {
+        model = GTK_TREE_MODEL(gtk_combo_box_get_model(GTK_COMBO_BOX(select_list_widget)));
+    } else {
+        model = GTK_TREE_MODEL(gtk_tree_view_get_model(GTK_TREE_VIEW(select_list_widget)));
+    }
     AW_selection_list_entry *lt;
     gtk_tree_model_get_iter_first(model, &iter);
     
@@ -547,22 +572,19 @@ void AW_selection_list::refresh() {
     }
 
     if (found || default_select) {
-         GtkTreeSelection *selection = gtk_tree_view_get_selection(select_list_widget);
-         gtk_tree_selection_select_iter(selection, &iter);
-
-        FIXME("position adjustment not implemented."); //NO IDEA why XmListSetPos is called here....
-//        if (pos < top) {
-//            if (pos > 1) pos --;
-//            XmListSetPos(select_list_widget, pos);
-//        }
-//        if (pos >= top + vis) {
-//            XmListSetBottomPos(select_list_widget, pos + 1);
-//        }
+        if (GTK_IS_COMBO_BOX(select_list_widget)) {
+            gtk_combo_box_set_active_iter(GTK_COMBO_BOX(select_list_widget), &iter);
+        } else {
+            GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(select_list_widget));
+            gtk_tree_selection_select_iter(selection, &iter);
+        }
     }
     else {
         GBK_terminatef("Selection list '%s' has no default selection", variable_name);
     }
 }
+
+
 
 static void AW_DB_selection_refresh_cb(GBDATA *, int *cl_selection, GB_CB_TYPE) {
     AW_DB_selection *selection = (AW_DB_selection*)cl_selection;

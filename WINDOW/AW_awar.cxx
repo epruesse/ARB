@@ -68,12 +68,10 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
             case AW_WIDGET_LABEL_FIELD:
                 widgetlist->aw->update_label(widgetlist->widget, var_value);
                 break;
-            case AW_WIDGET_CHOICE_MENU:
-                widgetlist->aw->refresh_option_menu((AW_option_menu_struct*)widgetlist->cd);
-                break;
             case AW_WIDGET_TOGGLE_FIELD:
                 widgetlist->aw->refresh_toggle_field((int)widgetlist->cd);
                 break;
+            case AW_WIDGET_CHOICE_MENU: // fall-through
             case AW_WIDGET_SELECTION_LIST:
                 ((AW_selection_list *)widgetlist->cd)->refresh();
             default:

@@ -4,7 +4,9 @@
 AW_window::AW_window_gtk::AW_window_gtk() 
   :   window(GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL))), 
       fixed_size_area(NULL), menu_bar(NULL), help_menu(NULL),
-      mode_menu(NULL), radio_last(NULL), toggle_field(NULL), 
+      mode_menu(NULL), radio_last(NULL), 
+      selection_list(NULL),
+      toggle_field(NULL), 
       combo_box(NULL),       
       accel_group(gtk_accel_group_new()),
       areas(AW_MAX_AREA, NULL),

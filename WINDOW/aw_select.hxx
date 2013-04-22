@@ -55,7 +55,7 @@ public:
 
 class AW_selection_list {
     
-    AW_selection_list_entry *get_entry_at(int index);
+    AW_selection_list_entry *get_entry_at(int index) const;
     
     /**
      * 
@@ -79,11 +79,11 @@ class AW_selection_list {
     AW_selection_list_entry* insert_generic(const char* displayed, T value, GB_TYPES expectedType);
     
 public:
-    AW_selection_list(const char *variable_namei, GB_TYPES variable_typei, GtkTreeView *select_list_widgeti);
+    AW_selection_list(const char *variable_namei, GB_TYPES variable_typei, GtkWidget *select_list_widgeti);
 
     char             *variable_name;
     GB_TYPES          variable_type;
-    GtkTreeView      *select_list_widget;
+    GtkWidget      *select_list_widget;
 
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;
@@ -106,6 +106,7 @@ public:
     void init_from_array(const CharPtrArray& entries, const char *defaultEntry);
     
     void update();
+    void update_awar();
     void refresh(); 
 
     void sort(bool backward, bool case_sensitive); // uses displayed value!

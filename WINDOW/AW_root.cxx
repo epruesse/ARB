@@ -266,7 +266,6 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
     awar_hash(GBS_create_hash(1000, GB_MIND_CASE)),
     disable_callbacks(false),
     current_modal_window(NULL),
-    current_option_menu(NULL),
     root_window(NULL)
 {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
