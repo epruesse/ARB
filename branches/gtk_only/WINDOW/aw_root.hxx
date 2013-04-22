@@ -55,7 +55,7 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
 class  AW_awar;
 class  AW_root_cblist;
 class  GB_HASH;
-struct AW_cb_struct;
+class AW_cb_struct;
 
 
 enum AW_Cursor {
