@@ -48,6 +48,11 @@ public:
      */
     GtkWidget *radio_last;
 
+    /**
+     * The current selection list 
+     */
+    AW_selection_list *selection_list;
+
     /*
      * The box for the current toggle field (radio group). NULL if no open field.
      */

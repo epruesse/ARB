@@ -21,7 +21,6 @@
 #include <string>
 #include <vector>
 class AW_selection_list;
-class AW_option_menu_struct;
 class AW_button;
 
 
@@ -144,7 +143,6 @@ public:
 
     bool            disable_callbacks;
     AW_window      *current_modal_window;
-    AW_option_menu_struct *current_option_menu;
     AW_window      *root_window;
 
     void window_show();         // a window is set to screen

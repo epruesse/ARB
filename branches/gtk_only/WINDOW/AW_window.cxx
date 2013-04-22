@@ -223,18 +223,20 @@ void AW_window::put_with_label(GtkWidget *widget) {
     }
     gtk_box_pack_start(GTK_BOX(hbox), widget, true, true, 0);
 
+    GtkRequisition hbox_req;
+    gtk_widget_show_all(hbox);
+    gtk_widget_size_request(GTK_WIDGET(hbox), &hbox_req);
+
     // if size given by xfig, scale hbox
     if (_at.to_position_exists) { 
         aw_assert(_at.to_position_x >_at.x_for_next_button);               
         aw_assert(_at.to_position_y >_at.y_for_next_button);         
-        gtk_widget_set_size_request(hbox, 
-                                    _at.to_position_x - _at.x_for_next_button,
-                                    _at.to_position_y - _at.y_for_next_button);
+        hbox_req.width = std::max(hbox_req.width, _at.to_position_x - _at.x_for_next_button);
+        hbox_req.height = std::max(hbox_req.height, _at.to_position_y - _at.y_for_next_button);
+        
+        gtk_widget_set_size_request(hbox, hbox_req.width, hbox_req.height);
     }
 
-    GtkRequisition hbox_req;
-    gtk_widget_show_all(hbox);
-    gtk_widget_size_request(GTK_WIDGET(hbox), &hbox_req);
 
     aw_at_layout_put(prvt->fixed_size_area, hbox, &_at);
 
@@ -584,75 +586,57 @@ char *AW_window::align_string(const char *label_text, int columns) {
     return result;
 }
 
-/**
- * Is called whenever the selection of a combobox changes
- */
-void AW_combo_box_changed(GtkComboBox* box, gpointer user_data) {
-    
-    AW_option_menu_struct *oms = (AW_option_menu_struct*) user_data;
-    aw_assert(NULL != oms);
-    
-    gchar *selected_option_name = gtk_combo_box_get_active_text(box);
-    
-    aw_assert(NULL != selected_option_name);
-    aw_assert(oms->valueToUpdateInfo.find(selected_option_name) != oms->valueToUpdateInfo.end());
-    
-    AW_varUpdateInfo *vui = oms->valueToUpdateInfo[selected_option_name];
-    
-    //invoke callback
-    AW_varUpdateInfo::AW_variable_update_callback(GTK_WIDGET(box), vui);
-    
-    
-}
 
-AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name, 
+AW_selection_list *AW_window::create_option_menu(const char *var_name, 
                                                      const char *tmp_label, 
                                                      const char *){
-    AW_awar *vs = get_root()->awar(awar_name);
+    AW_awar *vs = get_root()->awar(var_name);
     aw_assert(vs);
 
     if (tmp_label) this->label(tmp_label);
-    prvt->combo_box = gtk_combo_box_new_text();
-    gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(prvt->combo_box), GTK_SENSITIVITY_ON);
- 
-    AW_option_menu_struct *option_menu =
-        new AW_option_menu_struct(awar_name,
-                                  vs->get_type(),
-                                  prvt->combo_box);
+    GtkWidget *combo_box = gtk_combo_box_new();
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo_box), renderer, true);
+    gtk_cell_layout_add_attribute(GTK_CELL_LAYOUT(combo_box), renderer, "text", 0);
+    GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
+    gtk_combo_box_set_model(GTK_COMBO_BOX(combo_box), GTK_TREE_MODEL(store));
 
-    get_root()->current_option_menu = option_menu;
+    AW_selection_list *slist = new AW_selection_list(var_name,
+                                                     vs->get_type(),
+                                                     combo_box);
 
-    vs->tie_widget((AW_CL)option_menu, prvt->combo_box, AW_WIDGET_CHOICE_MENU, this);
-    
+    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, combo_box, AW_WIDGET_CHOICE_MENU, vs, prvt->callback);
+
+    vui->set_sellist(slist);
+
     //connect changed signal
-    g_signal_connect(G_OBJECT(prvt->combo_box), "changed", G_CALLBACK(AW_combo_box_changed), 
-                     (gpointer) option_menu);
+    g_signal_connect(G_OBJECT(combo_box), "changed", 
+                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), 
+                     (gpointer) vui);
    
-    get_root()->register_widget(prvt->combo_box, _at.widget_mask);
-  
-    return option_menu;
+    vs->tie_widget((AW_CL)slist, combo_box, AW_WIDGET_CHOICE_MENU, this);
+    get_root()->register_widget(combo_box, _at.widget_mask);
+
+    prvt->combo_box = combo_box;
+    prvt->selection_list = slist;
+    return slist;
 }
 
 void AW_window::insert_option(const char *on, const char *mn, const char *vv, const char *noc) {
     insert_option_internal(on, mn, vv, noc, false); 
 }
-
 void AW_window::insert_default_option(const char *on, const char *mn, const char *vv, const char *noc) { 
     insert_option_internal(on, mn, vv, noc, true); 
-
 }
 void AW_window::insert_option(const char *on, const char *mn, int vv, const char *noc) { 
     insert_option_internal(on, mn, vv, noc, false);
 }
-
 void AW_window::insert_default_option(const char *on, const char *mn, int vv, const char *noc) { 
     insert_option_internal(on, mn, vv, noc, true); 
-
 }
 void AW_window::insert_option(const char *on, const char *mn, float vv, const char *noc) { 
     insert_option_internal(on, mn, vv, noc, false); 
 }
-
 void AW_window::insert_default_option(const char *on, const char *mn, float vv, const char *noc) { 
     insert_option_internal(on, mn, vv, noc, true); 
 }
@@ -660,68 +644,19 @@ void AW_window::insert_default_option(const char *on, const char *mn, float vv, 
 
 template <class T>
 void AW_window::insert_option_internal(const char *option_name, const char *mnemonic, T var_value, const char *name_of_color, bool default_option) {
-    AW_option_menu_struct *oms = get_root()->current_option_menu;
+    aw_assert(NULL != prvt->selection_list); //current option menu has to be set
+    aw_assert(prvt->selection_list->variable_type == AW_TypeCheck::getVarType(var_value)); //type missmatch
     
-    aw_assert(NULL != oms); //current option menu has to be set
-    aw_assert(oms->variable_type == AW_TypeCheck::getVarType(var_value)); //type missmatch
-    
-    if (oms->variable_type == AW_TypeCheck::getVarType(var_value)) {
-        
-        FIXME("background color not implemented");
-        gtk_combo_box_append_text(GTK_COMBO_BOX(oms->menu_widget), option_name);
-        
+    FIXME("background color not implemented");
+    FIXME("check for distinct per-option callbacks");
+    FIXME("setting sensitivity of option menu entries not implemented");
 
-        AW_cb_struct *cbs   = prvt->callback; // user-own callback
-
-        //create VarUpdateInfo for new choice and add it to the oms.
-        //AW_variable_update_callback() will be called with this VarUpdateInfo
-        //This rather complicated structure is needed because the old interface
-        //allows for every entry to have it's own callback method.
-        AW_varUpdateInfo* vui = new AW_varUpdateInfo(this,
-                                               NULL,
-                                               AW_WIDGET_CHOICE_MENU,
-                                               get_root()->awar(oms->variable_name),
-                                               var_value, cbs);
-        //check for duplicate option name
-        aw_assert(oms->valueToUpdateInfo.find(option_name) == oms->valueToUpdateInfo.end());
-        
-        oms->valueToUpdateInfo[option_name] = vui;
-        oms->add_option(option_name, default_option);
-        
-        if (default_option) {
-          gtk_combo_box_set_active(GTK_COMBO_BOX(oms->menu_widget), 
-                                   oms->options.size()-1);
-        }
-
-       
-        FIXME("setting sensitivity of option menu entries not implemented");
-        // get_root()->register_widget(entry, _at->widget_mask);
-        this->unset_at_commands();
-    } else {
-      printf("arg\n");
-    }
+    prvt->selection_list->insert(option_name, var_value);
 }
 
 void AW_window::update_option_menu() {
+    prvt->selection_list->update();
     put_with_label(prvt->combo_box);
-}
-
-
-void AW_window::refresh_option_menu(AW_option_menu_struct */*oms*/) {
-    GTK_NOT_IMPLEMENTED;
-//    if (get_root()->changer_of_variable != oms->label_widget) {
-//        AW_widget_value_pair *active_choice = oms->first_choice;
-//        {
-//            AW_scalar global_var_value(get_root()->awar(oms->variable_name));
-//            while (active_choice && global_var_value != active_choice->value) {
-//                active_choice = active_choice->next;
-//            }
-//        }
-//
-//        if (!active_choice) active_choice = oms->default_choice;
-//        //if (active_choice) XtVaSetValues(oms->label_widget, XmNmenuHistory, active_choice->widget, NULL);
-//    }
-  
 }
 
 void AW_window::clear_option_menu(AW_option_menu_struct */*oms*/) {
@@ -743,7 +678,6 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     aw_assert(var_name); 
     aw_assert(!_at.label_for_inputfield); // labels have no effect for selection lists
 
-    GTK_PARTLY_IMPLEMENTED;
     GtkListStore *store;
     GtkWidget *tree;
     GtkCellRenderer *renderer;
@@ -788,7 +722,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     // MEMORY-LEAK
     AW_selection_list *slist = new AW_selection_list(var_name, 
                                                      vs->get_type(),
-                                                     GTK_TREE_VIEW(tree));
+                                                     GTK_WIDGET(tree));
 
     vui = new AW_varUpdateInfo(this, tree, AW_WIDGET_SELECTION_LIST, vs, prvt->callback);
     vui->set_sellist(slist);

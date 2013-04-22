@@ -103,39 +103,18 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
                 free(new_text);
             }
             break;
-
         case AW_WIDGET_TOGGLE:
             error = awar->toggle_toggle();
             break;
 
         case AW_WIDGET_TOGGLE_FIELD:
-            // fall-through
-        case AW_WIDGET_CHOICE_MENU:
             error = value.write_to(awar);
             break;
 
+        case AW_WIDGET_CHOICE_MENU:
+            // fall-through
         case AW_WIDGET_SELECTION_LIST: {
-            char *selected;
-            GtkTreeSelection* selection = GTK_TREE_SELECTION(call_data);
-            GtkTreeIter iter;
-            GtkTreeModel *model;
-
-            //if this assert fails no rows are selected, which should be impossible because
-            //this method is called when the selection changes.
-            bool rval = gtk_tree_selection_get_selected(selection, &model, &iter);
-            aw_assert(rval);
-            gtk_tree_model_get(model, &iter, 0, &selected,  -1);
-      
-            AW_selection_list_entry *entry = sellist->list_table;
-            while (entry && strcmp(entry->get_displayed(), selected) != 0) {
-                entry = entry->next;
-            }
-
-            if (!entry) {   
-                entry = sellist->default_select; // use default selection
-                if (!entry) GBK_terminate("no default specified for selection list"); // or die
-            }
-            entry->value.write_to(awar);
+            sellist->update_awar();
             break;
         }
 

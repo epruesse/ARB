@@ -126,7 +126,7 @@ typedef char *AW_pixmap;
 class  AW_window_Motif;
 struct AW_selection_list_entry;
 class  AW_selection_list;
-struct AW_option_menu_struct;
+typedef AW_selection_list AW_option_menu_struct;
 struct aw_toggle_data;
 
 enum AW_SizeRecalc {
@@ -493,8 +493,8 @@ public:
 
 
     // ***** option_menu is a menu where only one selection is visible at a time
-    AW_option_menu_struct *create_option_menu(const char *awar_name, const char *label= NULL, const char *mnemonic= NULL);
-    void clear_option_menu(AW_option_menu_struct *oms);  // used to redefine available options
+    AW_selection_list* create_option_menu(const char *awar_name, const char *label= NULL, const char *mnemonic= NULL);
+    void clear_option_menu(AW_selection_list *oms);  // used to redefine available options
 
     /**If set to true the window is not destroyed on close. instead it is hidden.*/
     void set_hide_on_close(bool value);
@@ -521,8 +521,6 @@ public:
     void insert_default_option (const char *choice_label, const char *mnemonic, float var_value,        const char *name_of_color = 0);
 
     void update_option_menu();
-    void refresh_option_menu(AW_option_menu_struct *);  // don't use this
-
 
     // ***** toggle_field is a static menu (all items are visible and only one is selected)
     void create_toggle_field(const char *awar_name, const char *label, const char *mnemonic);
