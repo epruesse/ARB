@@ -44,15 +44,17 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     //only show scrollbars if they are needed
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW(scrolledWindow),
                                     GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_ETCHED_IN);
 
-    
+
     // create main drawing area ('middle area')
     prvt->drawing_area = AW_DRAWING_AREA(aw_drawing_area_new());
 
 
     aw_assert(NULL != prvt->drawing_area);
     gtk_container_add(GTK_CONTAINER(scrolledWindow), GTK_WIDGET(prvt->drawing_area));
-    
+
+   
     prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(GTK_WIDGET(prvt->drawing_area), this);
 
     // Layout:
