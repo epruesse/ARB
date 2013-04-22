@@ -281,6 +281,19 @@ static int aw_status_read_int(int fd, int poll_flag) {
     return input.as_int;
 }
 
+
+
+/**
+ * reads the next command from the specified pipe.
+ * @param fd file descriptor of the pipe
+ * @param poll_flag FIXME no idea what this does
+ * @param str contains the text if the command is one of the following:
+ *        AW_STATUS_CMD_OPEN
+ *        AW_STATUS_CMD_NEW_TITLE
+ *        AW_STATUS_CMD_MESSAGE
+ * @param gaugePtr contains the gauge value if the command is AW_STATUS_CMD_GAUGE
+ * @return returns a command code of type StatusCommand or -1 in case of EOF
+ */
 static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugePtr = 0)
 {
     char buffer[1024];
@@ -303,23 +316,8 @@ static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugeP
         str = strdup(buffer);
     }
     else if (cmd == AW_STATUS_CMD_GAUGE) {
-        int gauge = aw_status_read_int(fd, 0);
-        if (gaugePtr) *gaugePtr = gauge;
-
-        char *p = buffer;
-        int   i = 0;
-
-        int rough_gauge = (gauge*AW_GAUGE_SIZE)/AW_GAUGE_GRANULARITY;
-        for (; i<rough_gauge && i<AW_GAUGE_SIZE; ++i) *p++ = '*';
-        for (; i<AW_GAUGE_SIZE; ++i) *p++ = '-';
-
-        if (rough_gauge<AW_GAUGE_SIZE) {
-            int fine_gauge = (gauge*AW_GAUGE_SIZE*4)/AW_GAUGE_GRANULARITY;
-            buffer[rough_gauge]  = "-\\|/"[fine_gauge%4];
-        }
-
-        *p  = 0;
-        str = strdup(buffer);
+        aw_assert(NULL != gaugePtr);
+        *gaugePtr = aw_status_read_int(fd, 0);
     }
     else {
         str = 0;
@@ -601,7 +599,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
     else {
         delay = delay*2/3+1;       // shorten time  (was *2/3+1)
     }
-    char *gauge = 0;
+
     while (cmd != EOF) {
         switch (cmd) {
             case AW_STATUS_CMD_OPEN:
@@ -620,7 +618,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 aw_status_append_to_log("----------------------------");
 #endif // ARB_LOGGING
                 awr->awar(AWAR_STATUS_TITLE)->write_string(str);
-                awr->awar(AWAR_STATUS_GAUGE)->write_string("----------------------------");
+                awr->awar(AWAR_STATUS_GAUGE)->write_float(0.0f);
                 awr->awar(AWAR_STATUS_TEXT)->write_string("");
                 awr->awar(AWAR_STATUS_ELAPSED)->write_string("");
                 cmd = EOF;
@@ -659,9 +657,6 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 #if defined(TRACE_STATUS)
                 fprintf(stderr, "received AW_STATUS_CMD_GAUGE\n"); fflush(stdout);
 #endif // TRACE_STATUS
-
-                reassign(gauge, str);
-
                 if (gaugeValue>0) {
                     long sec_elapsed   = time(0)-aw_stg.last_start;
                     long sec_estimated = (sec_elapsed*AW_GAUGE_GRANULARITY)/gaugeValue; // guess overall time
@@ -701,6 +696,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                     }
 
                     awr->awar(AWAR_STATUS_ELAPSED)->write_string(buffer);
+                    awr->awar(AWAR_STATUS_GAUGE)->write_float(double(gaugeValue) / AW_GAUGE_GRANULARITY);//divide by 100 to get
 
 #if defined(TRACE_STATUS)
                     fprintf(stderr, "gauge=%i\n", gaugeValue); fflush(stdout);
@@ -738,10 +734,6 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
     fprintf(stderr, "exited while loop\n"); fflush(stdout);
 #endif // TRACE_STATUS_MORE
 
-    if (gauge) {
-        awr->awar(AWAR_STATUS_GAUGE)->write_string(gauge);
-        free(gauge);
-    }
     if (delay>AW_STATUS_LISTEN_DELAY) delay = AW_STATUS_LISTEN_DELAY;
     else if (delay<0) delay                 = 0;
 #if defined(TRACE_STATUS_MORE)
@@ -764,7 +756,7 @@ static void aw_clear_and_hide_message_cb(AW_window *aww) {
 static void create_status_awars(AW_root *aw_root) {
     aw_root->awar_string(AWAR_STATUS_TITLE,   "------------------------------------");
     aw_root->awar_string(AWAR_STATUS_TEXT,    "");
-    aw_root->awar_string(AWAR_STATUS_GAUGE,   "------------------------------------");
+    aw_root->awar_float(AWAR_STATUS_GAUGE, 0.0f);
     aw_root->awar_string(AWAR_STATUS_ELAPSED, "");
     aw_root->awar_string(AWAR_ERROR_MESSAGES, "");
 }
@@ -823,7 +815,7 @@ void aw_initstatus() {
         aws->create_button(0, AWAR_STATUS_TEXT);
 
         aws->at("Gauge");
-        aws->create_button(0, AWAR_STATUS_GAUGE);
+        aws->create_progressBar(AWAR_STATUS_GAUGE);
 
         aws->at("elapsed");
         aws->create_button(0, AWAR_STATUS_ELAPSED);

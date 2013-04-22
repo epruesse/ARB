@@ -74,7 +74,16 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
             case AW_WIDGET_CHOICE_MENU: // fall-through
             case AW_WIDGET_SELECTION_LIST:
                 ((AW_selection_list *)widgetlist->cd)->refresh();
+                break;
+            case AW_WIDGET_PROGRESS_BAR:
+            {
+                aw_assert(GB_FLOAT == widgetlist->awar->get_type());
+                const double value = widgetlist->awar->read_float();
+                widgetlist->aw->update_progress_bar(widgetlist->widget, value);
+                break;
+            }
             default:
+                aw_assert(false);
                 break;
         }
         free(var_value);

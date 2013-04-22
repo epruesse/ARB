@@ -232,6 +232,7 @@ public:
     void update_input_field(GtkWidget* widget, const char *var_value);
     void update_text_field(GtkWidget* widget, const char *var_value);
     void update_toggle(GtkWidget *widget, const char *var, AW_CL /*cd_toggle_data*/);
+    void update_progress_bar(GtkWidget* progressBar, const double var_value);
 
     void  create_invisible(int columns);
     void *_create_option_entry(GB_TYPES type, const char *name, const char *mnemonic, const char *name_of_color);
@@ -477,6 +478,8 @@ public:
     void   create_autosize_button(const char *macro_name, const char *label, const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
     GtkWidget* get_last_widget() const;
 
+    void create_progressBar(const char *awar); //creates a progress bar bound to the awar
+    
     void create_toggle(const char *var_name, bool inverse=false, const char* yes = NULL, 
                        const char* no = NULL, int width = 0);  
     void create_inverse_toggle(const char *var_name) { create_toggle(var_name, true); }

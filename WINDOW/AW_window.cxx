@@ -256,6 +256,24 @@ void AW_window::put_with_label(GtkWidget *widget) {
     prvt->last_widget = hbox;
 }
 
+
+/** Creates a progress bar that is bound to the specified awar.*/
+void AW_window::create_progressBar(const char *var) {
+    aw_assert(NULL != var);
+    AW_awar *awar = get_root()->awar(var);
+    aw_assert(NULL != awar);
+    
+    const GB_TYPES type = awar->get_type();
+    aw_assert(GB_FLOAT == type);
+
+    
+    GtkWidget *bar = gtk_progress_bar_new();
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar), 0.0);
+    gtk_widget_show(bar);
+    put_with_label(bar);
+    awar->tie_widget(0, bar, AW_WIDGET_PROGRESS_BAR, this);
+}
+
 /**
  * Create a button or text display.
  * If a callback was given via at->callback(), creates a button;
@@ -477,6 +495,12 @@ void AW_window::update_input_field(GtkWidget *widget, const char *var_value) {
     aw_assert(GTK_IS_ENTRY(widget));
     gtk_entry_set_text(GTK_ENTRY(widget), var_value);
 }
+
+void AW_window::update_progress_bar(GtkWidget* progressBar, const double var_value) {
+    aw_assert(GTK_IS_PROGRESS_BAR(progressBar));
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), var_value);
+}
+
 
 
 void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, int rows /*= 4*/){
