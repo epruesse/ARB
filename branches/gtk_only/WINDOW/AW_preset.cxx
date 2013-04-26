@@ -87,7 +87,6 @@ struct AW_MGC_awar_cb_struct {  // one for each awar
 class aw_gc_manager {
     const char            *field;
     const char            *default_value;
-    AW_option_menu_struct *font_size_handle; // the option menu to define the font size of the GC
     AW_MGC_awar_cb_struct *font_change_cb_parameter;
     aw_gc_manager         *next;
 
@@ -95,7 +94,6 @@ public:
     aw_gc_manager(const char *field_, const char *default_value_)
         : field(field_)
         , default_value(default_value_)
-        , font_size_handle(0)
         , next(0)
     {}
 
@@ -108,9 +106,6 @@ public:
     const char *get_default_value() const { return default_value; }
     const aw_gc_manager *get_next() const { return next; }
     aw_gc_manager *get_next() { return next; }
-
-    void set_font_size_handle(AW_option_menu_struct *oms) { font_size_handle = oms; }
-    AW_option_menu_struct *get_font_size_handle() const { return font_size_handle; }
 
     void set_font_change_parameter(AW_MGC_awar_cb_struct *cb_data) { font_change_cb_parameter = cb_data; }
     AW_MGC_awar_cb_struct *get_font_change_parameter() const { return font_change_cb_parameter; }
@@ -176,58 +171,7 @@ static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode
     }
 }
 
-static void add_font_sizes_to_option_menu(AW_window *aww, int count, int *available_sizes) {
-    char ssize[20];
-    bool default_size_set = false;
 
-    for (int idx = 0; idx < count; ++idx) {
-        int size = available_sizes[idx];
-        if (!default_size_set && size > DEF_FONTSIZE) { // insert default size if missing
-            sprintf(ssize, "%i", DEF_FONTSIZE);
-            aww->insert_default_option(ssize, 0, (int) DEF_FONTSIZE);
-            default_size_set = true;
-        }
-        sprintf(ssize, "%i", size);
-        if (size == DEF_FONTSIZE) {
-            aww->insert_default_option(ssize, 0, (int) size);
-            default_size_set = true;
-        }
-        else {
-            aww->insert_option(ssize, 0, (int) size);
-        }
-    }
-
-    if (!default_size_set) {
-        sprintf(ssize, "%i", DEF_FONTSIZE);
-        aww->insert_default_option(ssize, 0, (int) DEF_FONTSIZE);
-    }
-
-    aww->update_option_menu();
-}
-
-static void aw_init_font_sizes(AW_root *awr, AW_MGC_awar_cb_struct *cbs, bool firstCall) {
-    AW_option_menu_struct *oms = cbs->gcmgr->get_font_size_handle();
-    aw_assert(oms);
-
-    if (oms) {                  // has font size definition
-        int  available_sizes[MAX_FONTSIZE-MIN_FONTSIZE+1];
-        char awar_name[256];
-        sprintf(awar_name, AWP_FONTNAME_TEMPLATE, cbs->cbs->window_awar_name, cbs->fontbasename);
-
-        int        font_nr     = awr->awar(awar_name)->read_int();
-        int        found_sizes = cbs->cbs->device->get_available_fontsizes(cbs->gc, font_nr, available_sizes);
-        AW_window *aww         = cbs->gc_def_window;
-        aw_assert(aww);
-
-        if (!firstCall) aww->clear_option_menu(oms);
-        add_font_sizes_to_option_menu(aww, found_sizes, available_sizes);
-    }
-}
-
-static void aw_font_changed_cb(AW_root *awr, AW_CL cl_cbs) {
-    AW_MGC_awar_cb_struct *cbs = (AW_MGC_awar_cb_struct*)cl_cbs;
-    aw_init_font_sizes(awr, cbs, false);
-}
 
 static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode)
 {
@@ -552,7 +496,6 @@ AW_gc_manager AW_manage_GC(AW_window *aww,
                 AW_awar *font_size_awar = aw_root->awar_int(awar_name, DEF_FONTSIZE, aw_def);
 
                 if (gcp.select_font) {
-                    font_awar->add_callback(aw_font_changed_cb, (AW_CL)acbs);
                     gcmgr2->set_font_change_parameter(acbs);
                 }
 
@@ -636,7 +579,7 @@ AW_window *AW_preset_window(AW_root *root) {
     aws->at_newline();
 
     aws->create_color_button("window/color_3", "Color 3");
-    //AW_preset_create_color_chooser(aws, "window/color_3", "Color 3", true, true);
+
     aws->at_x(tabstop);
     aws->create_input_field("window/color_3", 12);
     
@@ -645,6 +588,203 @@ AW_window *AW_preset_window(AW_root *root) {
     aws->window_fit();
     return (AW_window *)aws;
 }
+
+
+
+static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager *gcmgr, bool insert_color_groups) {
+    // returns true if GCs starting with COLOR_GROUP_PREFIX were found
+
+    bool        has_color_groups = false;
+    const char *window_awar_name = gcmgr->get_field();
+
+    for (gcmgr = gcmgr->get_next(); gcmgr; gcmgr = gcmgr->get_next()) {
+        const char *id = gcmgr->get_field();
+        gc_props    gcp;
+
+        id += gcp.parse_decl(id);
+
+        char *fontbasename   = GBS_string_2_key(id);
+        char  awar_name[256];
+        bool  is_color_group = strncmp(id, AW_COLOR_GROUP_PREFIX, AW_COLOR_GROUP_PREFIX_LEN) == 0;
+        int   color_group    = -1;
+
+        if (is_color_group) {
+            has_color_groups = true;
+            color_group      = atoi(id+AW_COLOR_GROUP_PREFIX_LEN);
+            if (!insert_color_groups) continue;
+        }
+        else { // is no color group
+            if (insert_color_groups) continue;
+        }
+
+        if (!gcp.hidden) {
+            sprintf(awar_name, AWP_COLORNAME_TEMPLATE, window_awar_name, fontbasename);
+            aws->label_length(15);
+
+            if (is_color_group) {
+                aw_assert(color_group > 0);
+                char *color_group_name = AW_get_color_group_name(aw_root, color_group);
+                aws->label(color_group_name);
+                free(color_group_name);
+            }
+            else {
+                aws->label(id);
+            }
+
+            if (gcp.select_color) {
+                aws->button_length(5);
+                aws->create_color_button(awar_name, id);
+            }
+            aws->create_input_field(awar_name, 7);
+
+            if (gcp.select_font) {
+                sprintf(awar_name, AWP_FONTNAME_TEMPLATE, window_awar_name, fontbasename);
+
+                aws->label_length(5);
+                aws->create_option_menu(awar_name, "Font", 0);
+                {
+                    int font_nr;
+                    const char *font_string;
+
+                    for (font_nr = 0; ; font_nr++) {
+                        font_string = AW_font_2_ascii((AW_font) font_nr);
+                        if (!font_string) break;
+                        if (gcp.fixed_fonts_only && AW_font_2_xfig((AW_font) font_nr) >= 0) continue;
+                        aws->insert_option(font_string, 0, (int) font_nr);
+                    }
+                    aws->update_option_menu();
+                }
+
+                sprintf(awar_name, AWP_FONTSIZE_TEMPLATE, window_awar_name, fontbasename);
+                aws->label_length(5);
+
+                AW_MGC_awar_cb_struct *acs = gcmgr->get_font_change_parameter();
+                acs->gc_def_window         = aws;
+
+            }
+            if (!gcp.append_same_line)  aws->at_newline();
+        }
+        free(fontbasename);
+    }
+
+    return has_color_groups;
+}
+
+struct attached_window {
+    AW_window_simple       *aws;
+    AW_CL                   attached_to;
+    struct attached_window *next;
+};
+
+static void AW_create_gc_color_groups_name_window(AW_window * /* aww */, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
+    AW_root *aw_root = (AW_root*)cl_aw_root;
+    static struct attached_window *head = 0;
+
+    // search for attached window:
+
+    struct attached_window *look = head;
+    while (look) {
+        if (look->attached_to == cl_gcmgr) break;
+        look = look->next;
+    }
+
+    AW_window_simple *aws = 0;
+
+    if (look) {
+        aws = look->aws;
+    }
+    else {
+        look = new struct attached_window;
+
+        look->aws         = new AW_window_simple;
+        look->attached_to = cl_gcmgr;
+        look->next        = head;
+        head              = look;
+
+        aws = look->aws;
+
+        aws->init(aw_root, "NAME_COLOR_GROUPS", "COLORS GROUP NAMES");
+
+        aws->at(10, 10);
+        aws->auto_space(5, 5);
+
+        aws->callback((AW_CB0) AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
+            aws->at_newline();
+
+            aws->label(GBS_global_string("Name for color group #%i%s", i, (i >= 10) ? "" : " "));
+            aws->create_input_field(AW_get_color_group_name_awarname(i), AW_COLOR_GROUP_NAME_LEN);
+        }
+
+        aws->window_fit();
+    }
+
+    aws->activate();
+}
+
+static void AW_create_gc_color_groups_window(AW_window * /* aww */, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
+    aw_assert(color_groups_initialized);
+
+    AW_root       *aw_root = (AW_root*)cl_aw_root;
+    aw_gc_manager *gcmgr   = (aw_gc_manager*)cl_gcmgr;
+
+    static struct attached_window *head = 0;
+
+    // search for attached window:
+
+    struct attached_window *look = head;
+    while (look) {
+        if (look->attached_to == cl_gcmgr) break;
+        look = look->next;
+    }
+
+    AW_window_simple *aws = 0;
+
+    if (look) {
+        aws = look->aws;
+    }
+    else {
+        look = new struct attached_window;
+
+        look->aws         = new AW_window_simple;
+        look->attached_to = cl_gcmgr;
+        look->next        = head;
+        head              = look;
+
+        aws = look->aws;
+
+        aws->init(aw_root, "PROPS_COLOR_GROUPS", "COLORS GROUPS");
+
+        aws->at(10, 10);
+        aws->auto_space(5, 5);
+
+        aws->callback((AW_CB0) AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->callback(AW_POPUP_HELP, (AW_CL)"color_props_groups.hlp");
+        aws->create_button("HELP", "HELP", "H");
+
+        aws->at_newline();
+
+        aw_insert_gcs(aw_root, aws, gcmgr, true);
+
+        aws->at_newline();
+
+        aws->label_length(16);
+        aws->label("Use color groups");
+        aws->create_toggle(AWAR_COLOR_GROUPS_USE);
+
+        aws->callback((AW_CB)AW_create_gc_color_groups_name_window, (AW_CL)aw_root, cl_gcmgr);
+        aws->create_autosize_button("DEF_NAMES", "Define names", "D");
+
+        aws->window_fit();
+    }
+
+    aws->activate();
+}
+
 
 AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id_par) {
     return AW_create_gc_window_named(aw_root, id_par, "PROPS_GC", "Colors and Fonts");
@@ -670,10 +810,10 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, con
 
     aws->at_newline();
 
-    bool has_color_groups = false;//aw_insert_gcs(aw_root, aws, gcmgr, false);
+    bool has_color_groups = aw_insert_gcs(aw_root, aws, gcmgr, false);
 
     if (has_color_groups) {
-        // aws->callback((AW_CB)AW_create_gc_color_groups_window, (AW_CL)aw_root, (AW_CL)id_par);
+        aws->callback((AW_CB)AW_create_gc_color_groups_window, (AW_CL)aw_root, (AW_CL)id_par);
         aws->create_autosize_button("EDIT_COLOR_GROUP", "Edit color groups", "E");
         aws->at_newline();
     }
