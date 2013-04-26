@@ -207,6 +207,7 @@ static GBDATA* ensure_gbdata(AW_default gb_main, const char* var_name, GB_TYPES 
     aw_assert(var_name && var_name[0] != 0);
 #if defined(DEBUG)
     GB_ERROR err = GB_check_hkey(var_name);
+    GB_warningf("GB_check_hkey failed on %s with error %s\n", var_name, err);
     aw_assert(!err);
 #endif // DEBUG
 
@@ -494,7 +495,8 @@ AW_awar::AW_awar(const char *var_name,  AW_root *rooti)
     root(rooti),
     gb_var(NULL),
     gb_origin(NULL),
-    awar_name(strdup(var_name))
+    awar_name(strdup(var_name)),
+    is_global(false)
 {
 }
 AW_awar::~AW_awar() {
