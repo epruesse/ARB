@@ -168,15 +168,15 @@ char *AW_awar::read_string() {
     GBK_terminatef("AWAR target access failure. Called %s on awar of type %s", \
                    __PRETTY_FUNCTION__, get_type_name())
 
-AW_awar *AW_awar::add_target_var(char **ppchr) {
+__ATTR__NORETURN AW_awar *AW_awar::add_target_var(char **ppchr) {
     AWAR_TARGET_FAILURE;
     return NULL;
 }
-AW_awar *AW_awar::add_target_var(float *pfloat) {
+__ATTR__NORETURN AW_awar *AW_awar::add_target_var(float *pfloat) {
     AWAR_TARGET_FAILURE;
     return NULL;
 }
-AW_awar *AW_awar::add_target_var(long *pint) {
+__ATTR__NORETURN AW_awar *AW_awar::add_target_var(long *pint) {
     AWAR_TARGET_FAILURE;
     return NULL;
 }
@@ -207,7 +207,6 @@ static GBDATA* ensure_gbdata(AW_default gb_main, const char* var_name, GB_TYPES 
     aw_assert(var_name && var_name[0] != 0);
 #if defined(DEBUG)
     GB_ERROR err = GB_check_hkey(var_name);
-    GB_warningf("GB_check_hkey failed on %s with error %s\n", var_name, err);
     aw_assert(!err);
 #endif // DEBUG
 
