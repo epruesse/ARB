@@ -63,6 +63,7 @@ void AW_window::unset_at_commands() {
 void AW_window::at_set_min_size(int xmin, int ymin) { _at.at_set_min_size(xmin, ymin); }
 void AW_window::auto_space(int x, int y){ _at.auto_space(x,y); }
 void AW_window::label_length(int length){ _at.label_length(length); }
+void AW_window::label(const char *_label){ freedup(_at.label_for_inputfield, _label); }
 void AW_window::button_length(int length){ _at.button_length(length); }
 int AW_window::get_button_length() const { return _at.get_button_length(); }
 void AW_window::get_at_position(int *x, int *y) const { _at.get_at_position(x,y); }
@@ -999,11 +1000,6 @@ void AW_window::insert_sub_menu(const char *name, const char *mnemonic, AW_activ
 }
 
 
-/* set label for next button 
- */
-void AW_window::label(const char *_label){
-    freedup(_at.label_for_inputfield, _label);
-}
 
 
 
@@ -1529,12 +1525,20 @@ void AW_window::create_devices() {
 }
 
 
-void AW_window::create_font_button(const char* /*awar_name*/, const char */*label_*/) {
-  GTK_NOT_IMPLEMENTED;
+
+
+void AW_window::create_font_button(const char* var_name, const char *label_) {
+    GtkWidget *font_button = gtk_font_button_new();
+    AW_awar *vs = get_root()->awar(var_name);
+    if (label_) label(label_);
+    put_with_label(font_button);
 }
 
-void AW_window::create_color_button(const char* /*awar_name*/, const char */*label_*/) {
-  GTK_NOT_IMPLEMENTED;
+void AW_window::create_color_button(const char* var_name, const char *label_) {
+    GtkWidget *color_button = gtk_color_button_new();
+    AW_awar *vs = get_root()->awar(var_name);
+    if (label_) label(label_);
+    put_with_label(color_button);
 }
 
 AW_xfig* AW_window::get_xfig_data() {
