@@ -1013,31 +1013,6 @@ AW_modal.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_motif_gtk_conversion.o: aw_motif_gtk_conversion.hxx
 
-AW_option_menu_struct.o: aw_assert.hxx
-AW_option_menu_struct.o: aw_awar.hxx
-AW_option_menu_struct.o: aw_base.hxx
-AW_option_menu_struct.o: aw_gtk_forward_declarations.hxx
-AW_option_menu_struct.o: aw_gtk_migration_helpers.hxx
-AW_option_menu_struct.o: aw_option_menu_struct.hxx
-AW_option_menu_struct.o: aw_scalar.hxx
-AW_option_menu_struct.o: aw_varUpdateInfo.hxx
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/arb_core.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/arb_string.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/arbdb.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/arbtools.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/cb.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/cxxforward.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/gccver.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/smartptr.h
-AW_option_menu_struct.o: $(ARBHOME)/INCLUDE/test_global.h
-
 AW_position.o: aw_assert.hxx
 AW_position.o: aw_base.hxx
 AW_position.o: aw_gtk_migration_helpers.hxx
@@ -1399,7 +1374,6 @@ AW_window.o: aw_keysym.hxx
 AW_window.o: aw_modal.hxx
 AW_window.o: aw_motif_gtk_conversion.hxx
 AW_window.o: aw_msg.hxx
-AW_window.o: aw_option_menu_struct.hxx
 AW_window.o: aw_position.hxx
 AW_window.o: aw_root.hxx
 AW_window.o: aw_scalar.hxx
