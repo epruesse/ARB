@@ -298,6 +298,23 @@ void AW_selection_list::insert_default(const char *displayed, int32_t value) {
     default_select = new AW_selection_list_entry(displayed, value);
 }
 
+void AW_selection_list::insert(const char *displayed, double value) {
+    AW_selection_list_entry* entry = insert_generic(displayed, value, GB_FLOAT);
+    aw_assert(NULL != entry);
+}
+
+void AW_selection_list::insert_default(const char *displayed, double value) {
+    if (variable_type != GB_FLOAT) {
+        selection_type_mismatch("float");
+        return;
+    }
+    if (default_select) {
+        delete default_select;
+    }
+    default_select = new AW_selection_list_entry(displayed, value);
+}
+
+
 void AW_selection_list::insert(const char *displayed, GBDATA *pointer) {
     AW_selection_list_entry* entry = insert_generic(displayed, pointer, GB_POINTER);
     aw_assert(NULL != entry);
