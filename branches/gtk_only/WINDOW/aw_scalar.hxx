@@ -25,14 +25,14 @@ class AW_scalar {
     union {
         char    *s;
         int32_t  i;
-        float    f;
+        double   f;
         GBDATA  *p;
     } value;
 
     GB_TYPES type;
 public:
     explicit AW_scalar(int32_t I)     : type(GB_INT)   { value.i = I; }
-    explicit AW_scalar(float F)       : type(GB_FLOAT) { value.f = F; }
+    explicit AW_scalar(double F)      : type(GB_FLOAT) { value.f = F; }
     explicit AW_scalar(const char *S) : type(GB_STRING)   { value.s = strdup(S); }
     explicit AW_scalar(GBDATA *P)     : type(GB_POINTER)  { value.p = P; }
     explicit AW_scalar(class AW_awar *awar);
@@ -48,12 +48,12 @@ public:
     DECLARE_ASSIGNMENT_OPERATOR(AW_scalar);
 
     int32_t     get_int()     const { aw_assert(type == GB_INT);   return value.i; }
-    float       get_float()   const { aw_assert(type == GB_FLOAT); return value.f; }
+    double      get_float()   const { aw_assert(type == GB_FLOAT); return value.f; }
     const char *get_string()  const { aw_assert(type == GB_STRING);   return value.s; }
     GBDATA     *get_pointer() const { aw_assert(type == GB_POINTER);  return value.p; }
 
     void set_int(int32_t I)        { aw_assert(type == GB_INT);   value.i = I; }
-    void set_float(float F)        { aw_assert(type == GB_FLOAT); value.f = F; }
+    void set_float(double F)       { aw_assert(type == GB_FLOAT); value.f = F; }
     void set_string(const char *S) { aw_assert(type == GB_STRING);   freedup(value.s, S); }
     void set_pointer(GBDATA *P)    { aw_assert(type == GB_POINTER);  value.p = P; }
 
