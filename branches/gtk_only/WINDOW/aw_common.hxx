@@ -88,9 +88,6 @@ class AW_GC : public AW_GC_config, virtual Noncopyable {
     short ascent_of_chars[256];
     short descent_of_chars[256];
 
-    short   fontsize;
-    AW_font fontnr;
-
     void init_char_widths() {
         memset(width_of_chars, 0, ARRAY_ELEMS(width_of_chars)*sizeof(*width_of_chars));
         memset(ascent_of_chars, 0, ARRAY_ELEMS(ascent_of_chars)*sizeof(*ascent_of_chars));
@@ -102,7 +99,7 @@ class AW_GC : public AW_GC_config, virtual Noncopyable {
     virtual void wm_set_foreground_color(AW_rgb col)                      = 0;
     virtual void wm_set_function(AW_function mode)                        = 0;
     virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle) = 0;
-    virtual void wm_set_font(AW_font font_nr, int size, int *found_size)  = 0;
+    virtual void wm_set_font(const char* font_name)                       = 0;
     virtual int get_actual_string_size(const char */*str*/) const {return 0;};
 
 protected:
@@ -124,15 +121,11 @@ public:
         : common(common_),
           default_config(NULL),
           color(0),
-          last_fg_color(0),
-          fontsize(-1), 
-          fontnr(-1) 
+          last_fg_color(0)
     {
         init_char_widths();
     }
     virtual ~AW_GC() { delete default_config; }
-
-    virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const = 0;
 
     AW_common *get_common() const { return common; }
 
@@ -176,9 +169,7 @@ public:
     }
 
     // font
-    void set_font(AW_font font_nr, int size, int *found_size);
-    short get_fontsize() const { return fontsize; }
-    AW_font get_fontnr() const { return fontnr; }
+    void set_font(const char* fontname);
 
     void establish_default() {
         aw_assert(!default_config); // can't establish twice

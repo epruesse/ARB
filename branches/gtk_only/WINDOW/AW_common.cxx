@@ -130,10 +130,8 @@ int AW_GC::get_string_size(const char *str, long textlen) const {
     return width;
 }
 
-void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
+void AW_GC::set_font(const char* fontname) {
     font_limits.reset();
-    wm_set_font(font_nr, size, found_size);
+    wm_set_font(fontname);
     font_limits.calc_height();
-    fontnr   = font_nr;
-    fontsize = size;
 }
