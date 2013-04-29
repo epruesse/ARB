@@ -1477,7 +1477,9 @@ static AW_window *CPRO_showstatistic_cb(AW_root *aw_root, AW_CL which_statistic)
     device->new_gc(GC_black);
     device->set_line_attributes(GC_black, 1, AW_SOLID);
     device->set_foreground_color(GC_black, AW_WINDOW_FG);
+#ifndef ARB_GTK
     device->set_font(GC_black, 0, 10, 0);
+#endif
     device->new_gc(GC_blue);
     device->set_line_attributes(GC_blue, 1, AW_SOLID);
     device->set_foreground_color(GC_blue, AW_WINDOW_C1);
