@@ -627,7 +627,11 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
             break;
         }
         default:
+#ifdef ARB_GTK
+            // there can be many other events here...
+#else
             e4_assert(0);
+#endif
             break;
     }
     return (ED4_R_OK);

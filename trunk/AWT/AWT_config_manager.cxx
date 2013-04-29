@@ -465,7 +465,11 @@ char *AWT_config::config_string() const {
 }
 GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW_root *root) const {
     GB_ERROR        error = 0;
+#ifdef ARB_GTK
+    GB_transaction ta(AW_ROOT_DEFAULT);
+#else
     GB_transaction *ta    = 0;
+#endif
     awt_assert(!parse_error);
     for (config_map::iterator e = mapping->begin(); !error && e != mapping->end(); ++e) {
         const string& config_name(e->first);
@@ -478,13 +482,17 @@ GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW
         else {
             const string&  awar_name(found->second);
             AW_awar       *awar = root->awar(awar_name.c_str());
+#ifndef ARB_GTK
             if (!ta) {
                 ta = new GB_transaction((GBDATA*)awar->gb_var); // do all awar changes in 1 transaction
             }
+#endif
             awar->write_as_string(value.c_str());
         }
     }
+#ifndef ARB_GTK
     if (ta) delete ta; // close transaction
+#endif
     return error;
 }
 
