@@ -2748,7 +2748,12 @@ class fake_AW_GC : public AW_GC {
     virtual void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
     virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
     virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
+#ifdef ARB_GTK
+    virtual void wm_set_font(const char*) OVERRIDE {
+        int size=10;
+#else
     virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) OVERRIDE {
+#endif
         unsigned int i;
         for (i = AW_FONTINFO_CHAR_ASCII_MIN; i <= AW_FONTINFO_CHAR_ASCII_MAX; i++) {
             set_char_size(i, size, 0, size-2); // good fake size for Courier 8pt
@@ -2756,10 +2761,13 @@ class fake_AW_GC : public AW_GC {
     }
 public:
     fake_AW_GC(AW_common *common_) : AW_GC(common_) {}
+#ifdef ARB_GTK
+#else
     virtual int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const OVERRIDE {
         td_assert(0);
         return 0;
     }
+#endif
 };
 
 class fake_AW_common : public AW_common {
@@ -2772,7 +2780,11 @@ public:
             AW_GC *gcm = map_mod_gc(gc);
             gcm->set_line_attributes(1, AW_SOLID);
             gcm->set_function(AW_COPY);
+#ifdef ARB_GTK
+            gcm->set_font("Courier 8");
+#else
             gcm->set_font(12, 8, NULL); // 12 is Courier (use monospaced here, cause font limits are faked)
+#endif
 
             gcm->set_fg_color(colors_def[gc+AW_STD_COLOR_IDX_MAX]);
         }

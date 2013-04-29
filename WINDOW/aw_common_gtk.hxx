@@ -33,7 +33,7 @@ class AW_GC_gtk : public AW_GC { // derived from Noncopyable
     virtual void wm_set_foreground_color(AW_rgb col) OVERRIDE;
     virtual void wm_set_function(AW_function mode) OVERRIDE;
     virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle) OVERRIDE;
-    virtual void wm_set_font(AW_font font_nr, int size, int *found_size) OVERRIDE;
+    virtual void wm_set_font(const char* fontname) OVERRIDE;
  
     virtual int get_actual_string_size(const char *str) const OVERRIDE;
 
@@ -59,7 +59,6 @@ public:
     ~AW_GC_gtk() OVERRIDE;
 
     // AW_GC interface (uses motif call)
-    virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const OVERRIDE;
 
     inline AW_common_gtk *get_common() const;
 

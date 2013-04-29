@@ -18,6 +18,44 @@
 
 #include <climits>
 
+static const char* fonts[] = {
+  "Times Roman", // 0
+  "Times Italic", // 1
+  "Times Bold", // 2
+  "Times Bold Italic", // 3
+  "AvantGarde Book", // 4
+  "AvantGarde Book Oblique", // 5
+  "AvantGarde Demi", // 6
+  "AvantGarde Demi Oblique", // 7
+  "Bookman Light", // 8
+  "Bookman Light Italic", // 9
+  "Bookman Demi", //10
+  "Bookman Demi Italic", //11
+  "Courier", //12
+  "Courier Oblique", //13
+  "Courier Bold", //14
+  "Courier Bold Oblique", //15
+  "Helvetica", //16
+  "Helvetica Oblique", //17
+  "Helvetica Bold", //18
+  "Helvetica Bold Oblique", //19
+  "Helvetica Narrow", //20
+  "Helvetica Narrow Oblique", //21
+  "Helvetica Narrow Bold", //22
+  "Helvetica Narrow Bold Oblique", //23
+  "New Century Schoolbook Roman", //24
+  "New Century Schoolbook Italic", //25
+  "New Century Schoolbook Bold", //26
+  "New Century Schoolbook Bold Italic", //27
+  "Palatino Roman", //28
+  "Palatino Italic", //29
+  "Palatino Bold", //30
+  "Palatino Bold Italic", //31
+  "Symbol", //32
+  "Zapf Chancery Medium Italic", //33
+  "Zapf Dingbats", //34
+  "Lucida Medium" //35
+};
 
 
 inline int scaleAndRound(int unscaled, double scaleFactor) {
@@ -518,7 +556,7 @@ void AW_xfig::create_gcs(AW_device *device)
 {
     GB_HASH *gchash;
     int gc;
-    char fontstring[100];
+    char fontstring[1000];
     gchash = GBS_create_hash(100, GB_MIND_CASE);
 
     struct AW_xfig_text *xtext;
@@ -528,11 +566,12 @@ void AW_xfig::create_gcs(AW_device *device)
     device->set_line_attributes(gc, 1, AW_SOLID);
     gc = 1;         // create gc for texts
     for (xtext = text; xtext; xtext=xtext->next) {
-        sprintf(fontstring, "%i-%i", xtext->font, scaleAndRound(xtext->fontsize, font_scale));
+        // the 0.7 in the next line is magic... :-/
+        sprintf(fontstring, "%s %i", fonts[xtext->font], scaleAndRound(xtext->fontsize, font_scale*0.7));
         if (!(xtext->gc = (int)GBS_read_hash(gchash, fontstring))) {
             device->new_gc(gc);
             device->set_line_attributes(gc, 1, AW_SOLID);
-            device->set_font(gc, xtext->font, scaleAndRound(xtext->fontsize, font_scale), 0);
+            device->set_font(gc, fontstring);
             device->set_foreground_color(gc, AW_WINDOW_FG);
             xtext->gc = gc;
             GBS_write_hash(gchash, fontstring, gc);

@@ -144,66 +144,8 @@ void AW_GC_gtk::replaceInString(const std::string& what,const std::string& with,
     }
 }
 
-static const char* fonts[] = {
-  "Times Roman", // 0
-  "Times Italic", // 1
-  "Times Bold", // 2
-  "Times Bold Italic", // 3
-  "AvantGarde Book", // 4
-  "AvantGarde Book Oblique", // 5
-  "AvantGarde Demi", // 6
-  "AvantGarde Demi Oblique", // 7
-  "Bookman Light", // 8
-  "Bookman Light Italic", // 9
-  "Bookman Demi", //10
-  "Bookman Demi Italic", //11
-  "Courier", //12
-  "Courier Oblique", //13
-  "Courier Bold", //14
-  "Courier Bold Oblique", //15
-  "Helvetica", //16
-  "Helvetica Oblique", //17
-  "Helvetica Bold", //18
-  "Helvetica Bold Oblique", //19
-  "Helvetica Narrow", //20
-  "Helvetica Narrow Oblique", //21
-  "Helvetica Narrow Bold", //22
-  "Helvetica Narrow Bold Oblique", //23
-  "New Century Schoolbook Roman", //24
-  "New Century Schoolbook Italic", //25
-  "New Century Schoolbook Bold", //26
-  "New Century Schoolbook Bold Italic", //27
-  "Palatino Roman", //28
-  "Palatino Italic", //29
-  "Palatino Bold", //30
-  "Palatino Bold Italic", //31
-  "Symbol", //32
-  "Zapf Chancery Medium Italic", //33
-  "Zapf Dingbats", //34
-  "Lucida Medium" //35
-};
-
-
-void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int font_size, int *found_size) {
-    // translate xfig font number to some name
-    if (font_nr < -1) { 
-    } else if (font_nr == -1) {
-      font_desc = pango_font_description_from_string("default");
-    } else if (font_nr < sizeof(fonts)) {
-      font_desc = pango_font_description_from_string(fonts[font_nr]);
-    } else {
-      font_desc = pango_font_description_from_string("default");
-    }
-
-    // set requested size 
-    if (font_size) {
-        pango_font_description_set_absolute_size(font_desc, font_size * PANGO_SCALE);
-        if (found_size) *found_size = font_size;
-    }
-    else {
-      if (found_size) *found_size = 8;
-    }
-
+void AW_GC_gtk::wm_set_font(const char* font_name) {
+    font_desc = pango_font_description_from_string(font_name);
 
     // begin acrobatics to get the glyph sizes
     // get the actual widget we're drawing on, 
@@ -224,11 +166,6 @@ void AW_GC_gtk::wm_set_font(const AW_font font_nr, const int font_size, int *fou
         pango_extents_to_pixels(&rect, 0);
         set_char_size(j, PANGO_ASCENT(rect), PANGO_DESCENT(rect), PANGO_RBEARING(rect));
     }
-}
-
-int AW_GC_gtk::get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
 }
 
 int AW_GC_gtk::get_actual_string_size(const char* str) const {

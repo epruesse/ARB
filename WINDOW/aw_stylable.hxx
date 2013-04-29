@@ -39,7 +39,7 @@ public:
 
     void new_gc(int gc);
     void set_grey_level(int gc, AW_grey_level grey_level); 
-    void set_font(int gc, AW_font fontnr, int size, int *found_size);
+    void set_font(int gc, const char* fontname);
     /**
      *
      * Set width and linestyle of the selected graphic context.
@@ -53,7 +53,5 @@ public:
 
     const AW_font_limits& get_font_limits(int gc, char c) const; // for one characters (c == 0 -> for all characters)
 
-    int get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes);
-    
     void reset_style();
 };

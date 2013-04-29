@@ -145,24 +145,14 @@ static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode
     if (dont_recurse == 0) {
         ++dont_recurse;
         // mode == -1 -> no callback
-        char awar_name[256];
-        int  font;
-        int  size;
+        char     awar_name[256];
+        const char* font;
 
         sprintf(awar_name, AWP_FONTNAME_TEMPLATE, cbs->cbs->window_awar_name, cbs->fontbasename);
-        font = awr->awar(awar_name)->read_int();
+        font = awr->awar(awar_name)->read_char_pntr();
 
-        sprintf(awar_name, AWP_FONTSIZE_TEMPLATE, cbs->cbs->window_awar_name, cbs->fontbasename);
-        AW_awar *awar_font_size = awr->awar(awar_name);
-        size                    = awar_font_size->read_int();
-
-        int found_font_size;
-        cbs->cbs->device->set_font(cbs->gc, font, size, &found_font_size);
-        cbs->cbs->device->set_font(cbs->gc_drag, font, size, 0);
-        if (found_font_size != -1 && found_font_size != size) {
-            // correct awar value if exact fontsize wasn't found
-            awar_font_size->write_int(found_font_size);
-        }
+        cbs->cbs->device->set_font(cbs->gc, font);
+        cbs->cbs->device->set_font(cbs->gc_drag, font);
 
         if (mode != -1) {
             cbs->cbs->f(cbs->cbs->aw, cbs->cbs->cd1, cbs->cbs->cd2);
@@ -365,7 +355,7 @@ AW_gc_manager AW_manage_GC(AW_window *aww,
     const char           *id;
     va_list               parg;
     va_start(parg, default_background_color);
-    AW_font               def_font;
+    const char           *def_font;
     struct aw_gc_manager *gcmgrlast = 0, *gcmgr2=0, *gcmgrfirst=0;
 
     AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, changecb, cd1, cd2);
@@ -464,7 +454,7 @@ AW_gc_manager AW_manage_GC(AW_window *aww,
                 freenull(id_copy);
             }
 
-            def_font = gcp.fixed_fonts_only ? AW_DEFAULT_FIXED_FONT : AW_DEFAULT_NORMAL_FONT;
+            def_font = gcp.fixed_fonts_only ? "monospace 10" : "sans 10";
 
             if ((area != AW_GCM_DATA_AREA) || !first) {
                 device->new_gc(base_gc);
@@ -491,16 +481,13 @@ AW_gc_manager AW_manage_GC(AW_window *aww,
 
             {
                 sprintf(awar_name, AWP_FONTNAME_TEMPLATE, mcbs->window_awar_name, acbs->fontbasename);
-                AW_awar *font_awar = aw_root->awar_int(awar_name, def_font, aw_def);
-                sprintf(awar_name, AWP_FONTSIZE_TEMPLATE,  mcbs->window_awar_name, acbs->fontbasename);
-                AW_awar *font_size_awar = aw_root->awar_int(awar_name, DEF_FONTSIZE, aw_def);
+                AW_awar *font_awar = aw_root->awar_string(awar_name, def_font, aw_def);
 
                 if (gcp.select_font) {
                     gcmgr2->set_font_change_parameter(acbs);
                 }
 
                 font_awar->add_callback((AW_RCB)aw_gc_changed_cb, (AW_CL)acbs, (AW_CL)0);
-                font_size_awar->add_callback((AW_RCB)aw_gc_changed_cb, (AW_CL)acbs, (AW_CL)0);
             }
 
             if (!first) {
@@ -548,8 +535,6 @@ AW_window *AW_preset_window(AW_root *root) {
     aws->at_newline();
 
     aws->create_font_button("window/font", "Main Menu Font");
-    aws->at_x(tabstop);
-    aws->create_input_field("window/font", 12);
 
     aws->at_newline();
 
@@ -640,23 +625,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
             if (gcp.select_font) {
                 sprintf(awar_name, AWP_FONTNAME_TEMPLATE, window_awar_name, fontbasename);
 
-                aws->label_length(5);
-                aws->create_option_menu(awar_name, "Font", 0);
-                {
-                    int font_nr;
-                    const char *font_string;
-
-                    for (font_nr = 0; ; font_nr++) {
-                        font_string = AW_font_2_ascii((AW_font) font_nr);
-                        if (!font_string) break;
-                        if (gcp.fixed_fonts_only && AW_font_2_xfig((AW_font) font_nr) >= 0) continue;
-                        aws->insert_option(font_string, 0, (int) font_nr);
-                    }
-                    aws->update_option_menu();
-                }
-
-                sprintf(awar_name, AWP_FONTSIZE_TEMPLATE, window_awar_name, fontbasename);
-                aws->label_length(5);
+                aws->create_font_button(awar_name, NULL);
 
                 AW_MGC_awar_cb_struct *acs = gcmgr->get_font_change_parameter();
                 acs->gc_def_window         = aws;
