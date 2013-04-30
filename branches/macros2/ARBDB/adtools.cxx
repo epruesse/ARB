@@ -586,7 +586,7 @@ static GBDATA *gbt_remote_search_awar(GBDATA *gb_main, const char *awar_name) {
         gb_action = GB_search(gb_main, awar_name, GB_FIND);
         GB_commit_transaction(gb_main);
         if (gb_action) break;
-        GB_usleep(2000);
+        GB_sleep(2, MS);
     }
     return gb_action;
 }
@@ -597,7 +597,7 @@ static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, c
     // wait to end of action
 
     while (!error) {
-        GB_usleep(2000);
+        GB_sleep(2, MS);
         error = GB_begin_transaction(gb_main);
         if (!error) {
             char *ac = GB_read_string(gb_action);

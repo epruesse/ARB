@@ -39,9 +39,10 @@
 # include <sys/sysctl.h>
 #endif // DARWIN
 
-void GB_usleep(long usec) {
-    usleep(usec);
-}
+
+// AISC_MKPT_PROMOTE:enum TimeUnit { USEC = 1, MS = 1000, SEC = 1000*MS };
+void GB_microsleep(long usec) { usleep(usec); }
+// AISC_MKPT_PROMOTE:inline void GB_sleep(int amount, TimeUnit tu) { GB_microsleep(amount*tu); }
 
 
 static int gbcm_pipe_violation_flag = 0;
@@ -119,8 +120,7 @@ GBCM_ServerResult gbcm_write_flush(int socket) {
     leftsize = leftsize - writesize;
 
     while (leftsize) {
-
-        GB_usleep(10000);
+        GB_sleep(10, MS);
 
         writesize = write(socket, ptr, (size_t)leftsize);
         if (gbcm_pipe_violation_flag || writesize<0) {

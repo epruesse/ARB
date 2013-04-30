@@ -136,7 +136,6 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
 
         {
             char *command = 0;
-            int   delay   = 5;
 
             if (*tcp_id == ':') { // local mode
                 command = GBS_global_string_copy("%s %s -T%s &", server, serverparams, tcp_id);
@@ -158,7 +157,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
 
             if (!error) {
                 error = GBK_system(command);
-                if (do_sleep) sleep(delay);
+                if (do_sleep) GB_sleep(5, SEC);
             }
             free(command);
         }
@@ -174,7 +173,7 @@ static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, const char *tcp_id,
         if (error) return error;
 
         while (!serverctrl->link && wait) {
-            sleep(1);
+            GB_sleep(1, SEC);
             wait--;
             if ((wait%10) == 0 && wait>0) {
                 printf("Waiting for server '%s' to come up (%i seconds left)\n", arb_tcp_env, wait);

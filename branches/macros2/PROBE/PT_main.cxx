@@ -347,14 +347,14 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
           "TUM POS_TREE SERVER (Oliver Strunk) V 1.0 (C) 1993 \n"
           "initializing:\n"
           "- opening connection...\n", stdout);
-    sleep(1);
+    GB_sleep(1, SEC);
     
     Hs_struct *so = NULL;
     for (int i = 0; (i < MAX_TRY) && (!so); i++) {
         so = open_aisc_server(socket_name, TIME_OUT, 0);
         if (!so) {
             fputs("  Cannot bind to socket (retry in 10 seconds)\n", stdout);
-            sleep(10);
+            GB_sleep(10, SEC);
         }
     }
 

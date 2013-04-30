@@ -1216,7 +1216,7 @@ int ARB_main(int argc, const char *argv[]) {
                   MAIN_SHUTDOWN, "ldfiojkherjkh",
                   NULL);
         aisc_close(AN_global.cl_link, AN_global.cl_main); AN_global.cl_link=0;
-        sleep(1);
+        GB_sleep(1, SEC);
     }
     if (((strcmp(argv[1], "-kill")==0)) ||
         ((argc==3) && (strcmp(argv[2], "-kill")==0))) {
@@ -1225,7 +1225,7 @@ int ARB_main(int argc, const char *argv[]) {
     }
     for (i=0, so=0; (i<MAX_TRY) && (!so); i++) {
         so = open_aisc_server(name, NAME_SERVER_SLEEP*1000L, 0);
-        if (!so) sleep(RETRY_SLEEP);
+        if (!so) GB_sleep(RETRY_SLEEP, SEC);
     }
     if (!so) {
         printf("AN_SERVER: Gave up on opening the communication socket!\n");
