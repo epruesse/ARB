@@ -293,7 +293,7 @@ inline void reset_test_local_flags() {
     getLocalFlag(ANY_SETUP).lower_if_up();
 }
 
-inline void sleepms(long ms) {
+void sleepms(long ms) {
     int  seconds = ms/1000;
     long rest_ms = ms - seconds*1000;
 
