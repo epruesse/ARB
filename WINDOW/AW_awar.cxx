@@ -494,8 +494,10 @@ AW_awar::AW_awar(const char *var_name,  AW_root *rooti)
     root(rooti),
     gb_var(NULL),
     gb_origin(NULL),
-    awar_name(strdup(var_name)),
-    is_global(false)
+    awar_name(strdup(var_name))
+#ifdef DEBUG
+    ,is_global(false)
+#endif
 {
 }
 AW_awar::~AW_awar() {
