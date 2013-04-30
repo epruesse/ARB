@@ -348,13 +348,17 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
           "initializing:\n"
           "- opening connection...\n", stdout);
     GB_sleep(1, SEC);
-    
+
     Hs_struct *so = NULL;
-    for (int i = 0; (i < MAX_TRY) && (!so); i++) {
-        so = open_aisc_server(socket_name, TIME_OUT, 0);
-        if (!so) {
-            fputs("  Cannot bind to socket (retry in 10 seconds)\n", stdout);
-            GB_sleep(10, SEC);
+    {
+        const int MAX_STARTUP_SEC = 100;
+        const int RETRY_AFTER_SEC = 5;
+        for (int i = 0; i<MAX_STARTUP_SEC; i += RETRY_AFTER_SEC) {
+            so = open_aisc_server(socket_name, TIME_OUT, 0);
+            if (so) break;
+
+            printf("  Cannot bind to socket (retry in %i seconds)\n", RETRY_AFTER_SEC);
+            GB_sleep(RETRY_AFTER_SEC, SEC);
         }
     }
 
