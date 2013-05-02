@@ -42,9 +42,16 @@ AW_common_gtk::AW_common_gtk(GdkDisplay *display_in,
       display(display_in),
       window(window_in),
       aww(aw_window),
-      area(area_in),
-      pixelDepth(gdk_visual_get_depth(gdk_screen_get_system_visual(gdk_display_get_default_screen(display))))
+      area(area_in)
 {
+    GdkScreen *screen = gdk_display_get_default_screen(display);
+    GdkVisual *visual = gdk_screen_get_system_visual(screen);
+#if GTK_CHECK_VERSION(2, 22, 0)
+    pixelDepth = gdk_visual_get_depth(visual);
+#else
+    pixelDepth = visual->depth;
+#endif
+
     aw_window->set_resize_callback(area, AW_window_resize_cb, (AW_CL)this);
 }
 
