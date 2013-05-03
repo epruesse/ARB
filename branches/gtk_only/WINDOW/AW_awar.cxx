@@ -551,9 +551,6 @@ AW_awar_impl::AW_awar_impl(const char *var_name)
     in_tmp_branch(var_name && strncmp(var_name, "tmp/", 4) == 0),
     gb_var(NULL),
     gb_origin(NULL)
-#ifdef DEBUG
-    ,is_global(false)
-#endif
 {
     awar_name = strdup(var_name);
 }
