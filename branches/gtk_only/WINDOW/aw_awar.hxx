@@ -30,6 +30,7 @@
 #include "aw_gtk_forward_declarations.hxx"
 
 #include <vector>
+#include <list>
 
 
 // --------------
@@ -56,101 +57,64 @@ enum AW_widget_type {
 
 
 class AW_awar : virtual Noncopyable {
-    AW_root_cblist       *callback_list;
-
-    AW_widget_refresh_cb *refresh_list;
-
-    bool in_tmp_branch;
-
-    static bool allowed_to_run_callbacks;
-
-#if defined(DEBUG)
-    bool is_global;
-#endif // DEBUG
-
-    void remove_all_callbacks();
-    void remove_all_target_vars();
-
-    void assert_var_type(GB_TYPES target_var_type);
-
-    virtual void update_targets();
-    virtual void do_update() = 0;
-
-    static void gbdata_changed(GBDATA*, int*, GB_CB_TYPE);
-    static void gbdata_deleted(GBDATA*, int*, GB_CB_TYPE);
-
-protected:
-    void update_tmp_state(bool has_default_value);
-    AW_awar(const char *var_name, AW_root *root);
-
 public:
-    // read only
-    class AW_root *root;
+    char      *awar_name; // deprecated -- use get_name();
 
-    GBDATA *gb_var;                                 // if unmapped, points to same DB elem as 'gb_origin'
-    GBDATA *gb_origin;                              // this is set ONCE on creation of awar
+    virtual ~AW_awar() {};
 
-    // read only
+    virtual GB_TYPES get_type() const = 0;
+    virtual const char* get_type_name() const { return "AW_awar"; }
+    virtual const char* get_name() const { return awar_name; }
 
+    virtual void tie_widget(AW_CL cd1, GtkWidget* widget, AW_widget_type type, AW_window *aww) = 0;
 
-    char      *awar_name;                    // name of the awar
+    // callbacks
+    virtual AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) = 0;
+    virtual AW_awar *add_callback(Awar_CB1 f, AW_CL cd1) = 0;
+    virtual AW_awar *add_callback(Awar_CB0 f) = 0;
+    virtual AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) = 0;   // remove a callback
+    virtual AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1) = 0;
+    virtual AW_awar *remove_callback(Awar_CB0 f) = 0;
 
-    void unlink();                                  // unconditionally unlink from DB
+    // target vars
+    virtual AW_awar *add_target_var(char **ppchr) = 0;
+    virtual AW_awar *add_target_var(long *pint) = 0;
+    virtual AW_awar *add_target_var(float *pfloat) = 0;
+    virtual void     update() = 0;       // awar has changed
 
-    bool unlink_from_DB(GBDATA *gb_main);
-    
-    void run_callbacks();
+    // limits
+    virtual AW_awar *set_minmax(float min, float max) = 0;
+    virtual float    get_min() const = 0;
+    virtual float    get_max() const = 0;
+    virtual AW_awar *set_srt(const char *srt) = 0;
 
-    virtual ~AW_awar();
+    // ARBDB mapping
+    virtual AW_awar *map(const char *awarn) = 0;
+    virtual AW_awar *map(AW_default dest) = 0; // map to new address
+    virtual AW_awar *map(AW_awar *dest) = 0; // map to new address
+    virtual AW_awar *unmap() = 0;           // map to original address
 
-    void tie_widget(AW_CL cd1, GtkWidget* widget, AW_widget_type type, AW_window *aww);
-
-    AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);
-    AW_awar *add_callback(Awar_CB1 f, AW_CL cd1);
-    AW_awar *add_callback(Awar_CB0 f);
-
-    AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);   // remove a callback
-    AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1);
-    AW_awar *remove_callback(Awar_CB0 f);
-
-    virtual AW_awar *add_target_var(char **ppchr);
-    virtual AW_awar *add_target_var(long *pint);
-    virtual AW_awar *add_target_var(float *pfloat);
-    void    update();       // awar has changed
-
-    virtual AW_awar *set_minmax(float min, float max);
-    virtual AW_awar *set_srt(const char *srt);
-
-    AW_awar *map(const char *awarn);
-    AW_awar *map(AW_default dest); // map to new address
-    AW_awar *map(AW_awar *dest); // map to new address
-    AW_awar *unmap();           // map to original address
-
-#if defined(ASSERTION_USED)
-    bool is_valid() const { return correlated(gb_var, gb_origin); } // both or none NULL
-#endif // ASSERTION_USED
-
+    // read access
+    virtual char       *read_string() = 0;
+    virtual const char *read_char_pntr() = 0;
+    virtual char       *read_as_string() = 0;
+    virtual long        read_int() = 0;
+    virtual double      read_float() = 0;
+    virtual double      read_as_float() = 0;
+    virtual GBDATA     *read_pointer() = 0;
+    virtual bool        read_as_bool() = 0;
     void get(char **p_string)  { freeset(*p_string, read_string()); } // deletes existing targets !!!
     void get(long *p_int)      { *p_int = (long)read_int(); }
     void get(double *p_double) { *p_double = read_float(); }
     void get(float *p_float)   { *p_float = read_float(); }
 
-    virtual GB_TYPES get_type() const = 0;
-    virtual const char* get_type_name() const { return "AW_awar"; }
-
-    virtual char       *read_string();
-    virtual const char *read_char_pntr();
-    virtual char       *read_as_string();
-    virtual long        read_int();
-    virtual double      read_float();
-    virtual GBDATA     *read_pointer();
-
-    virtual GB_ERROR write_string(const char *aw_string, bool touch = false);
-    virtual GB_ERROR write_as_string(const char *aw_string, bool touch = false);
-    virtual GB_ERROR write_int(long aw_int, bool touch = false);
-    virtual GB_ERROR write_float(double aw_double, bool touch = false);
-    virtual GB_ERROR write_pointer(GBDATA *aw_pointer, bool touch = false);
-
+    // write access
+    virtual GB_ERROR write_string(const char *aw_string, bool touch = false) = 0;
+    virtual GB_ERROR write_as_string(const char *aw_string, bool touch = false) = 0;
+    virtual GB_ERROR write_int(long aw_int, bool touch = false) = 0;
+    virtual GB_ERROR write_float(double aw_double, bool touch = false) = 0;
+    virtual GB_ERROR write_pointer(GBDATA *aw_pointer, bool touch = false) = 0;
+    virtual GB_ERROR write_as_bool(bool b, bool touch = false) = 0;
     GB_ERROR write_as(char *aw_value) { return write_as_string(aw_value); }
 
     // same as write_-versions above, but always touches the database field
@@ -162,8 +126,8 @@ public:
 
     GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value); };
 
-    virtual GB_ERROR toggle_toggle();   // switches between 1/0
-    void     touch();
+    virtual GB_ERROR toggle_toggle() = 0;   // switches between 1/0
+    virtual void     touch() = 0;
 
     GB_ERROR make_global() __ATTR__USERESULT;       // should be used by ARB_init_global_awars only
     void set_temp_if_is_default(GBDATA *gb_db);

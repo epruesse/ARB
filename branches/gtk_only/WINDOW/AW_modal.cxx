@@ -548,8 +548,9 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
     else {
         inAwar->write_string("");
     }
-
-    aw_assert(GB_get_transaction_level(inAwar->gb_var) <= 0); // otherwise history would not work
+    
+    // FIXME
+    // aw_assert(GB_get_transaction_level(inAwar->gb_var) <= 0); // otherwise history would not work
 
     if (!aw_msg) aw_msg = new_input_window(root, title, NULL);
     else aw_msg->set_window_title(title);
@@ -642,8 +643,9 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     else {
         inAwar->write_string("");
     }
-
-    aw_assert(GB_get_transaction_level(inAwar->gb_var) <= 0); // otherwise history would not work
+    
+    // FIXME
+    // aw_assert(GB_get_transaction_level(inAwar->gb_var) <= 0); // otherwise history would not work
 
     if (!aw_msg) {
         aw_msg = new_input_window(root, title, buttons);

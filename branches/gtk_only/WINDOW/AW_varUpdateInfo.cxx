@@ -57,24 +57,26 @@ bool AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer v
 static void track_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
     AW_awar *awar = (AW_awar*)cl_awar;
     aw_assert(cb_type == GB_CB_CHANGED);
-    awar->root->track_awar_change(awar);
+    AW_root::SINGLETON->track_awar_change(awar);
 }
 
 void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
     AW_cb_struct::useraction_init();
 
     GB_ERROR  error = NULL;
-    AW_root  *root  = awar->root;
+    AW_root  *root  = AW_root::SINGLETON;
 
     if (root->value_changed) {
         root->changer_of_variable = widget;
     }
 
+/* FIXME: awar->gb_var is now private. awar tracking should be done by awar itself anyway. 
     if (root->is_tracking()) {
         // add a callback which writes macro-code (BEFORE any other callback happens; last added, first calledback)
         GB_transaction ta(awar->gb_var);
         GB_add_callback(awar->gb_var, GB_CB_CHANGED, track_awar_change, (int*)awar);
     }
+*/
 
     bool run_cb = true;
     switch (widget_type) {
@@ -127,10 +129,12 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
             break;
     }
     
+/*
     if (root->is_tracking()) {
         GB_transaction ta(awar->gb_var);
         GB_remove_callback(awar->gb_var, GB_CB_CHANGED, track_awar_change, (int*)awar);
     }
+*/
 
     if (error) {
         root->changer_of_variable = 0;
