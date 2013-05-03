@@ -57,7 +57,7 @@ void AW_window::at_set_to(bool attach_x, bool attach_y, int xoff, int yoff) {
 void AW_window::at_unset_to() { _at.at_unset_to(); }
 void AW_window::unset_at_commands() { 
     _at.unset_at_commands();     
-    prvt->callback = NULL;
+   prvt->callback = NULL;
     //  prvt->d_callback = NULL;
 }
 
@@ -231,7 +231,7 @@ void AW_window::put_with_label(GtkWidget *widget) {
     if (label) {
         // label does not expand (hence "false,false")
         gtk_box_pack_start(GTK_BOX(hbox), label, false, false, 0);
-        //gtk_label_set_mnemonic_widget(
+        gtk_misc_set_alignment(GTK_MISC(label),1.0f, 1.0f); //center label in hbox
     }
     gtk_box_pack_start(GTK_BOX(hbox), widget, true, true, 0);
 
@@ -756,7 +756,6 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     prvt->get_font_size(char_width, char_height);
     gtk_widget_set_size_request(scrolled_win, char_width * columns, char_height * rows);
 
-    put_with_label(scrolled_win);
 
     GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
     gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
@@ -782,6 +781,8 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     vs->tie_widget((AW_CL)slist, tree, AW_WIDGET_SELECTION_LIST, this);
     get_root()->register_widget(tree, _at.widget_mask);
     
+    
+    put_with_label(scrolled_win);
     return slist;
 }
 
