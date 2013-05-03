@@ -60,6 +60,7 @@ void AW_window::unset_at_commands() {
     prvt->callback = NULL;
     //  prvt->d_callback = NULL;
 }
+
 void AW_window::at_set_min_size(int xmin, int ymin) { _at.at_set_min_size(xmin, ymin); }
 void AW_window::auto_space(int x, int y){ _at.auto_space(x,y); }
 void AW_window::label_length(int length){ _at.label_length(length); }
@@ -390,6 +391,7 @@ void AW_window::create_toggle(const char *var_name, bool inverse,
                               const char *yes, const char *no, int width) {
     GtkWidget* checkButton;
     if (yes) {
+        aw_assert(NULL != no); //if yes is not null no should be not null as well
         checkButton = gtk_toggle_button_new();
         GtkWidget* label = make_label(yes, width);
         gtk_container_add(GTK_CONTAINER(checkButton), label);
@@ -408,10 +410,13 @@ void AW_window::create_toggle(const char *var_name, bool inverse,
     else {
         checkButton = gtk_check_button_new();
     }
-    put_with_label(checkButton);
+    
 
     AW_awar *vs = get_root()->awar(var_name);
     aw_assert(NULL != vs);
+    //read initial value
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkButton), vs->read_int());
+    
     AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, checkButton, AW_WIDGET_TOGGLE, vs, prvt->callback);
 
     // use signal "released" rather than "toggled" as the 
@@ -422,10 +427,12 @@ void AW_window::create_toggle(const char *var_name, bool inverse,
                      (gpointer) vui);
 
     vs->tie_widget(0, checkButton, AW_WIDGET_TOGGLE, this);
-
+    
     if (prvt->callback) {
       _set_activate_callback(checkButton);
     }
+    
+    put_with_label(checkButton);   
 }
 
 void AW_window::update_toggle(GtkWidget *widget, const char *var, AW_CL /*cd_toggle_data*/) {

@@ -480,6 +480,20 @@ public:
 
     void create_progressBar(const char *awar); //creates a progress bar bound to the awar
     
+    /**
+     * Creates a check box or toggle button.
+     * If yes and no are set a toggle button is created. When the button is
+     * activated the yes text is shown, otherwise the no text is shown.
+     * 
+     * If neither yes nor no is set a check box is created. The check box can
+     * be combined with a label using the at() commands.
+     * 
+     * @param var_name The name of the awar that should be connected to this button
+     * @param inverse If true the check box/toggle button behavior is inverted. (True becomes false and vice versa...)
+     * @param yes Text for active toggle button
+     * @param no Text for inactive toggle button
+     * @param width
+     */
     void create_toggle(const char *var_name, bool inverse=false, const char* yes = NULL, 
                        const char* no = NULL, int width = 0);  
     void create_inverse_toggle(const char *var_name) { create_toggle(var_name, true); }

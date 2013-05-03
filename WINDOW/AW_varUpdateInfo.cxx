@@ -87,7 +87,7 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
                 GtkTextIter begin, end;
                 gtk_text_buffer_get_bounds(textbuffer, &begin, &end);
                 char *str = gtk_text_buffer_get_text(textbuffer, &begin, &end, true);
-                awar->write_string(str);
+                awar->write_string(str); //FIXME write_string returns an error code that should be handled
                 free(str);
             }
             break;
