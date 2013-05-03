@@ -33,7 +33,6 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     GtkMenuItem *help_item = GTK_MENU_ITEM(gtk_menu_item_new_with_mnemonic(help_button));
     prvt->help_menu = GTK_MENU_SHELL(gtk_menu_new());
     gtk_menu_item_set_submenu(help_item, GTK_WIDGET(prvt->help_menu));
-    gtk_menu_item_set_right_justified(help_item, true);
     gtk_menu_shell_append(GTK_MENU_SHELL(prvt->menu_bar), GTK_WIDGET(help_item));
 
     // create vertical toolbar ('mode menu')
