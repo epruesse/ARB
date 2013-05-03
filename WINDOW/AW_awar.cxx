@@ -109,7 +109,7 @@ AW_widget_refresh_cb::~AW_widget_refresh_cb() {
 }
 
 
-bool AW_awar::allowed_to_run_callbacks = true;
+bool AW_awar_impl::allowed_to_run_callbacks = true;
 
 static GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
     "You cannot write to this field because it is either deleted or\n"
@@ -117,49 +117,60 @@ static GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
 
 
 #define AWAR_WRITE_ACCESS_FAILED \
-    GB_export_errorf("AWAR write access failure. Called %s on awar of type %s", \
-                     __PRETTY_FUNCTION__, get_type_name())
+    GB_export_errorf("AWAR write access failure. Called %s on awar %s of type %s", \
+                     __PRETTY_FUNCTION__, get_name(), get_type_name())
 
-GB_ERROR AW_awar::write_as_string(const char* para, bool touch) {
+GB_ERROR AW_awar_impl::write_as_string(const char* para, bool touch) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
-GB_ERROR AW_awar::write_string(const char *para, bool touch) {
+GB_ERROR AW_awar_impl::write_as_bool(bool para, bool touch) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
-GB_ERROR AW_awar::write_int(long para, bool touch) {
+GB_ERROR AW_awar_impl::write_string(const char *para, bool touch) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
-GB_ERROR AW_awar::write_float(double para, bool touch) {
+GB_ERROR AW_awar_impl::write_int(long para, bool touch) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
-GB_ERROR AW_awar::write_pointer(GBDATA *para, bool touch) {
+GB_ERROR AW_awar_impl::write_float(double para, bool touch) {
+    return AWAR_WRITE_ACCESS_FAILED;
+}
+GB_ERROR AW_awar_impl::write_pointer(GBDATA *para, bool touch) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
 
 
 #define AWAR_READ_ACCESS_FAILED \
-    GB_warningf("AWAR read access failure. Called %s on awar of type %s", \
-                __PRETTY_FUNCTION__, get_type_name())
+    GBK_terminatef("AWAR read access failure. Called %s on awar %s of type %s", \
+                __PRETTY_FUNCTION__, get_name(), get_type_name())
 
-const char *AW_awar::read_char_pntr() {
+const char *AW_awar_impl::read_char_pntr() {
     AWAR_READ_ACCESS_FAILED;
     return "";
 }
-double AW_awar::read_float() {
+double AW_awar_impl::read_float() {
     AWAR_READ_ACCESS_FAILED;
     return 0.;
 }
-long AW_awar::read_int() {
+double AW_awar_impl::read_as_float() {
+    AWAR_READ_ACCESS_FAILED;
+    return 0.;
+}
+bool AW_awar_impl::read_as_bool() {
+    AWAR_READ_ACCESS_FAILED;
+    return 0.;
+}
+long AW_awar_impl::read_int() {
     AWAR_READ_ACCESS_FAILED;
     return 0;
 }
 
-GBDATA *AW_awar::read_pointer() {
+GBDATA *AW_awar_impl::read_pointer() {
     AWAR_READ_ACCESS_FAILED;
     return NULL;
 }
 
-char *AW_awar::read_string() {
+char *AW_awar_impl::read_string() {
     AWAR_READ_ACCESS_FAILED;
     return NULL;
 }
@@ -168,38 +179,38 @@ char *AW_awar::read_string() {
     GBK_terminatef("AWAR target access failure. Called %s on awar of type %s", \
                    __PRETTY_FUNCTION__, get_type_name())
 
-__ATTR__NORETURN AW_awar *AW_awar::add_target_var(char **ppchr) {
+__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(char **ppchr) {
     AWAR_TARGET_FAILURE;
     return NULL;
 }
-__ATTR__NORETURN AW_awar *AW_awar::add_target_var(float *pfloat) {
+__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(float *pfloat) {
     AWAR_TARGET_FAILURE;
     return NULL;
 }
-__ATTR__NORETURN AW_awar *AW_awar::add_target_var(long *pint) {
+__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(long *pint) {
     AWAR_TARGET_FAILURE;
     return NULL;
 }
 
-GB_ERROR AW_awar::toggle_toggle() {
+GB_ERROR AW_awar_impl::toggle_toggle() {
     return GB_export_errorf("AWAR toggle access failure. Called %s on awar of type %s", \
                            __PRETTY_FUNCTION__, get_type_name());
 }
 
-AW_awar *AW_awar::add_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
+AW_awar *AW_awar_impl::add_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
     AW_root_cblist::add(callback_list, AW_root_callback(value_changed_cb, cd1, cd2));
     return this;
 }
 
-AW_awar *AW_awar::add_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
+AW_awar *AW_awar_impl::add_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
     return add_callback((AW_RCB)f, cd1, 0);
 }
 
-AW_awar *AW_awar::add_callback(void (*f)(AW_root*)) {
+AW_awar *AW_awar_impl::add_callback(void (*f)(AW_root*)) {
     return add_callback((AW_RCB)f, 0, 0);
 }
 
-void AW_awar::tie_widget(AW_CL cd1, GtkWidget *widget, AW_widget_type type, AW_window *aww) {
+void AW_awar_impl::tie_widget(AW_CL cd1, GtkWidget *widget, AW_widget_type type, AW_window *aww) {
     refresh_list = new AW_widget_refresh_cb(refresh_list, this, cd1, widget, type, aww);
 }
 
@@ -226,8 +237,8 @@ static GBDATA* ensure_gbdata(AW_default gb_main, const char* var_name, GB_TYPES 
 }
 
 
-AW_awar_int::AW_awar_int(const char *var_name, long var_value, AW_default default_file, AW_root *root) 
-  : AW_awar(var_name, root),
+AW_awar_int::AW_awar_int(const char *var_name, long var_value, AW_default default_file, AW_root*) 
+  : AW_awar_impl(var_name),
     min_value(0), max_value(0),
     default_value(var_value),
     value(var_value)
@@ -254,7 +265,7 @@ void AW_awar_int::do_update() {
     if (lo > max_value) lo = max_value;
     if (lo != value) {
         value = lo;
-        if (root) root->changer_of_variable = 0;
+        if (AW_root::SINGLETON) AW_root::SINGLETON->changer_of_variable = 0;
         write_int(lo);
     }
 
@@ -263,12 +274,24 @@ void AW_awar_int::do_update() {
         *target_variables[i] = lo;
     }
 }
-AW_awar *AW_awar_int::set_minmax(float min, float max) {
-    if (min>max) GBK_terminatef("illegal values in set_minmax for AWAR '%s'", awar_name);
+AW_awar* AW_awar_int::set_minmax(float min, float max) {
+    if (min>max) GBK_terminatef("illegal values in set_minmax for AWAR '%s'", get_name());
     min_value = min;
     max_value = max;
     update();
     return this;
+}
+float AW_awar_int::get_min() const {
+    if (min_value == max_value) 
+        return std::numeric_limits<int>::min();
+    else 
+        return min_value;
+}
+float AW_awar_int::get_max() const {
+    if (min_value == max_value) 
+        return std::numeric_limits<int>::max();
+    else 
+        return max_value;
 }
 GB_ERROR AW_awar_int::write_int(long para, bool touch) {
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
@@ -277,6 +300,9 @@ GB_ERROR AW_awar_int::write_int(long para, bool touch) {
     if (!error) update_tmp_state(para == default_value);
     if (touch) GB_touch(gb_var);
     return error;
+}
+GB_ERROR AW_awar_int::write_float(double para, bool touch) {
+    write_int(para, touch);
 }
 GB_ERROR AW_awar_int::write_as_string(const char *para, bool touch) {
     return write_int(atol(para),touch);
@@ -299,9 +325,15 @@ AW_awar *AW_awar_int::add_target_var(long *pint) {
 GB_ERROR AW_awar_int::toggle_toggle() {
     return write_int(read_int() ? 0 : 1);
 }
+bool AW_awar_int::read_as_bool() {
+    return read_int() != 0;
+}
+GB_ERROR AW_awar_int::write_as_bool(bool b, bool touch) {
+    return write_int(b ? 1 : 0, touch);
+}
 
-AW_awar_float::AW_awar_float(const char *var_name, double var_value, AW_default default_file, AW_root *root) 
-  : AW_awar(var_name, root),
+AW_awar_float::AW_awar_float(const char *var_name, double var_value, AW_default default_file, AW_root *) 
+  : AW_awar_impl(var_name),
     min_value(0.), max_value(0.),
     default_value(var_value),
     value(0.)
@@ -325,7 +357,7 @@ void AW_awar_float::do_update() {
     if (fl > max_value) fl = max_value - AWAR_EPS;
     if (fl != value) {
         value = fl;
-        if (root) root->changer_of_variable = 0;
+        if (AW_root::SINGLETON) AW_root::SINGLETON->changer_of_variable = 0;
         write_float(fl);
     }
 
@@ -335,11 +367,23 @@ void AW_awar_float::do_update() {
     }
 }
 AW_awar *AW_awar_float::set_minmax(float min, float max) {
-    if (min>max) GBK_terminatef("illegal values in set_minmax for AWAR '%s'", awar_name);
+    if (min>max) GBK_terminatef("illegal values in set_minmax for AWAR '%s'", get_name());
     min_value = min;
     max_value = max;
     update();
     return this;
+}
+float AW_awar_float::get_min() const {
+    if (min_value == max_value) 
+        return std::numeric_limits<float>::min();
+    else 
+        return min_value;
+}
+float AW_awar_float::get_max() const {
+    if (min_value == max_value) 
+        return std::numeric_limits<float>::max();
+    else 
+        return max_value;
 }
 GB_ERROR AW_awar_float::write_float(double para, bool touch) {
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
@@ -370,10 +414,16 @@ AW_awar *AW_awar_float::add_target_var(float *pfloat) {
 GB_ERROR AW_awar_float::toggle_toggle() {
     return write_float((read_float() != 0.0) ? 0.0 : 1.0);
 }
+bool AW_awar_float::read_as_bool() {
+    return read_float() != 0.0;
+}
+GB_ERROR AW_awar_float::write_as_bool(bool b, bool touch) {
+    return write_float(b ? 1.0 : 0.0, touch);
+}
 
 
-AW_awar_string::AW_awar_string(const char *var_name, const char* var_value, AW_default default_file, AW_root *root) 
-  : AW_awar(var_name, root),
+AW_awar_string::AW_awar_string(const char *var_name, const char* var_value, AW_default default_file, AW_root *) 
+  : AW_awar_impl(var_name),
     srt_program(NULL),
     default_value(nulldup(var_value)),
     value(NULL)
@@ -400,7 +450,7 @@ void AW_awar_string::do_update() {
     if (!n) GBK_terminatef("SRT ERROR %s %s", srt_program, GB_await_error());
     
     if (strcmp(n, str) != 0) {
-        if (root) root->changer_of_variable = 0;
+        if (AW_root::SINGLETON) AW_root::SINGLETON->changer_of_variable = 0;
         write_string(n);
     }
 
@@ -440,7 +490,7 @@ const char *AW_awar_string::read_char_pntr() {
 char *AW_awar_string::read_as_string() {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
-    return GB_read_as_string(gb_var);
+    return GB_read_string(gb_var);
 }
 AW_awar *AW_awar_string::add_target_var(char **ppchr) {
     target_variables.push_back(ppchr);
@@ -452,9 +502,16 @@ GB_ERROR AW_awar_string::toggle_toggle() {
     GB_ERROR err = write_string(strcmp("yes", str) ? "yes" : "no");
     free(str);
 }
+bool AW_awar_string::read_as_bool() {
+    return strcasecmp("yes", read_char_pntr()) == 0;
+}
+GB_ERROR AW_awar_string::write_as_bool(bool b, bool touch) {
+    return write_string(b ? "yes" : "no", touch);
+}
 
-AW_awar_pointer::AW_awar_pointer(const char *var_name, void* var_value, AW_default default_file, AW_root *root) 
-  : AW_awar(var_name, root),
+
+AW_awar_pointer::AW_awar_pointer(const char *var_name, void* var_value, AW_default default_file, AW_root*) 
+  : AW_awar_impl(var_name),
     default_value(var_value),
     value(NULL)
 {
@@ -464,7 +521,7 @@ AW_awar_pointer::AW_awar_pointer(const char *var_name, void* var_value, AW_defau
         GB_write_pointer(gb_origin, (GBDATA*)var_value);
     }
 
-    this->map(gb_origin);
+    map(gb_origin);
     aw_assert(is_valid());
 }
 AW_awar_pointer::~AW_awar_pointer() {
@@ -487,53 +544,52 @@ GBDATA *AW_awar_pointer::read_pointer() {
 }
 
 
-AW_awar::AW_awar(const char *var_name,  AW_root *rooti) 
+AW_awar_impl::AW_awar_impl(const char *var_name) 
   : callback_list(NULL),
     refresh_list(NULL),
     in_tmp_branch(var_name && strncmp(var_name, "tmp/", 4) == 0),
-    root(rooti),
     gb_var(NULL),
-    gb_origin(NULL),
-    awar_name(strdup(var_name))
+    gb_origin(NULL)
 #ifdef DEBUG
     ,is_global(false)
 #endif
 {
+    awar_name = strdup(var_name);
 }
-AW_awar::~AW_awar() {
+AW_awar_impl::~AW_awar_impl() {
+    free(awar_name);
 }
-char *AW_awar::read_as_string() {
+
+char *AW_awar_impl::read_as_string() {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
 }
 
 
-void AW_awar::update() {
+void AW_awar_impl::update() {
     aw_assert(is_valid());
     
     do_update();
-    update_targets();
     run_callbacks();
 
     aw_assert(is_valid());
 }
 
-void AW_awar::touch() {
+void AW_awar_impl::touch() {
     if (gb_var) {
         GB_transaction dummy(gb_var);
         GB_touch(gb_var);
     }
 }
 
-
-void AW_awar::gbdata_changed(GBDATA *, int *cl, GB_CB_TYPE) {
+static void _aw_awar_gbdata_changed(GBDATA *, int *cl, GB_CB_TYPE) {
     AW_awar *awar = (AW_awar *)cl;
     awar->update();
 }
 
-void AW_awar::gbdata_deleted(GBDATA *gbd, int *cl, GB_CB_TYPE) {
-    AW_awar *awar = (AW_awar *)cl;
+static void _aw_awar_gbdata_deleted(GBDATA *gbd, int *cl, GB_CB_TYPE) {
+    AW_awar_impl *awar = (AW_awar_impl *)cl;
 
     if (awar->gb_origin == gbd) {
         // make awar zombie
@@ -548,11 +604,11 @@ void AW_awar::gbdata_deleted(GBDATA *gbd, int *cl, GB_CB_TYPE) {
     awar->update();
 }
 
-AW_awar *AW_awar::map(AW_default gbd) {
+AW_awar *AW_awar_impl::map(AW_default gbd) {
     if (gb_var) {                                   // remove old mapping
-      GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)AW_awar::gbdata_changed, (int *)this);
+      GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)_aw_awar_gbdata_changed, (int *)this);
         if (gb_var != gb_origin) {                  // keep callback if pointing to origin!
-          GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, (GB_CB)AW_awar::gbdata_deleted, (int *)this);
+          GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, (GB_CB)_aw_awar_gbdata_deleted, (int *)this);
         }
         gb_var = NULL;
     }
@@ -564,9 +620,9 @@ AW_awar *AW_awar::map(AW_default gbd) {
     if (gbd) {
         GB_transaction ta(gbd);
 
-        GB_ERROR error = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)AW_awar::gbdata_changed, (int *)this);
+        GB_ERROR error = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)_aw_awar_gbdata_changed, (int *)this);
         if (!error && gbd != gb_origin) {           // do not add delete callback if mapping to origin
-            error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)AW_awar::gbdata_deleted, (int *)this);
+            error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)_aw_awar_gbdata_deleted, (int *)this);
         }
         if (error) aw_message(error);
 
@@ -582,51 +638,57 @@ AW_awar *AW_awar::map(AW_default gbd) {
     return this;
 }
 
-AW_awar *AW_awar::map(AW_awar *dest) {
-    return this->map(dest->gb_var);
+AW_awar *AW_awar_impl::map(AW_awar *dest) {
+    return map(((AW_awar_impl*)dest)->gb_var);
 }
-AW_awar *AW_awar::map(const char *awarn) {
-    return map(root->awar(awarn));
+AW_awar *AW_awar_impl::map(const char *awarn) {
+    return map(AW_root::SINGLETON->awar(awarn));
 }
 
-AW_awar *AW_awar::remove_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
+AW_awar *AW_awar_impl::remove_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
     AW_root_cblist::remove(callback_list, AW_root_callback(value_changed_cb, cd1, cd2));
     return this;
 }
 
-AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
+AW_awar *AW_awar_impl::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
     return remove_callback((AW_RCB) f, cd1, 0);
 }
-AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) {
+AW_awar *AW_awar_impl::remove_callback(void (*f)(AW_root*)) {
     return remove_callback((AW_RCB) f, 0, 0);
 }
 
 
-AW_awar *AW_awar::set_minmax(float min, float max) {
-    GBK_terminatef("set_minmax only applies to numeric awars (in '%s')", awar_name);
+AW_awar *AW_awar_impl::set_minmax(float min, float max) {
+    GBK_terminatef("set_minmax only applies to numeric awars (in '%s')", get_name());
     return this;
 }
 
-AW_awar *AW_awar::set_srt(const char *srt) {
-    GBK_terminatef("set_srt only applies to string awars (in '%s')", awar_name);
+float AW_awar_impl::get_min() const {
+    GBK_terminatef("set_minmax only applies to numeric awars (in '%s')", get_name());
+    return 0.;
+}
+
+float AW_awar_impl::get_max() const {
+    GBK_terminatef("set_minmax only applies to numeric awars (in '%s')", get_name());
+    return 0.;
+}
+
+AW_awar *AW_awar_impl::set_srt(const char *srt) {
+    GBK_terminatef("set_srt only applies to string awars (in '%s')", get_name());
     return this;
 }
 
 
 
-AW_awar *AW_awar::unmap() {
+AW_awar *AW_awar_impl::unmap() {
     return this->map(gb_origin);
 }
 
-void AW_awar::run_callbacks() {
-    if (allowed_to_run_callbacks) AW_root_cblist::call(callback_list, root);
+void AW_awar_impl::run_callbacks() {
+    if (allowed_to_run_callbacks) AW_root_cblist::call(callback_list, AW_root::SINGLETON);
 }
 
-void AW_awar::update_targets() {
-    // send data to all variables (run update_target on each target)
-}
-
-void AW_awar::update_tmp_state(bool has_default_value) {
+void AW_awar_impl::update_tmp_state(bool has_default_value) {
     if (in_tmp_branch || !gb_origin || 
         GB_is_temporary(gb_origin) == has_default_value)
         return;
@@ -635,8 +697,9 @@ void AW_awar::update_tmp_state(bool has_default_value) {
 
     if (error) 
       GB_warning(GBS_global_string("Failed to set temporary for AWAR '%s' (Reason: %s)", 
-                                   awar_name, error));
+                                   get_name(), error));
 }
+
 
 // --------------------------------------------------------------------------------
 
