@@ -24,10 +24,6 @@ class AW_awar_impl : public AW_awar {
 
     static bool allowed_to_run_callbacks;
 
-#if defined(DEBUG)
-    bool is_global;
-#endif // DEBUG
-
     virtual void do_update() = 0;
 
     static void gbdata_changed(GBDATA*, int*, GB_CB_TYPE);

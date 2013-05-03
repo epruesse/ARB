@@ -57,9 +57,7 @@ static void db_updated_cb(GBDATA *gbd, int *cl_awar, GB_CB_TYPE /* cbtype */) {
 
 GB_ERROR AW_awar::make_global() {
 #if defined(DEBUG)
-    aw_assert(!is_global);      // don't make awars global twice!
     aw_assert(gb_main4awar);
-    is_global = true;
 #endif // DEBUG
 
     add_callback(awar_updated_cb, (AW_CL)this);
