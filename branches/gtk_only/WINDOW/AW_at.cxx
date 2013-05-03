@@ -234,9 +234,6 @@ void AW_at::at_set_to(bool attach_x_i, bool attach_y_i, int xoff, int yoff) {
     correct_for_at_center = 0;
 }
 void AW_at::unset_at_commands() {
-    //prvt->callback   = NULL;
-    //_d_callback = NULL;
-
     correct_for_at_center = 0;
     to_position_exists    = false;
     highlight             = false;
