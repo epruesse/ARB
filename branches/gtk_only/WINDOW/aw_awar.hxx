@@ -55,6 +55,16 @@ enum AW_widget_type {
     AW_WIDGET_PROGRESS_BAR
 };
 
+class AW_awar;
+
+/**
+ * Interface for mappers between AW_awar and GValue. 
+ * (see AW_awar::bind())
+ */
+struct AW_awar_gvalue_mapper {
+    virtual bool operator()(GValue*, AW_awar*) = 0;
+    virtual bool operator()(AW_awar*, GValue*) = 0;
+};
 
 class AW_awar : virtual Noncopyable {
 public:
@@ -66,6 +76,9 @@ public:
     virtual const char* get_type_name() const { return "AW_awar"; }
     virtual const char* get_name() const { return awar_name; }
 
+
+    virtual void bind_value(GObject* obj, const char* propname,
+                            AW_awar_gvalue_mapper* mapper=NULL) = 0;
     virtual void tie_widget(AW_CL cd1, GtkWidget* widget, AW_widget_type type, AW_window *aww) = 0;
 
     // callbacks
