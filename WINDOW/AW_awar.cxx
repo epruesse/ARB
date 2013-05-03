@@ -17,6 +17,7 @@
 #include "aw_root.hxx"
 #include "aw_window.hxx"
 #include "aw_select.hxx"
+#include "glib-object.h"
 
 #ifndef ARBDB_H
 #include <arbdb.h>
@@ -699,6 +700,124 @@ void AW_awar_impl::update_tmp_state(bool has_default_value) {
       GB_warning(GBS_global_string("Failed to set temporary for AWAR '%s' (Reason: %s)", 
                                    get_name(), error));
 }
+
+
+static void _aw_awar_on_notify(GObject* obj, GParamSpec *pspec, awar_gparam_binding* binding);
+static void _aw_awar_notify_gparam(AW_root*, AW_CL data);
+
+/**
+ * Creates a binding between the AWAR and a GObject property. Changes in one will be
+ * immediately propagated to the other. While creating the binding, the property
+ * is set to the value of the AWAR.
+ * Standard "translations" exist for G_TYPE_STRING, G_TYPE_DOUBLE, G_TYPE_INT and
+ * G_TYPE_BOOLEAN using the awar read/write accessors. Special translations have to 
+ * be implemented with a custom mapper object.
+ * FIXME: AWAR should take ownership of the mapper and handle destruction.
+ * 
+ * @param obj      Pointer to a GObject (e.g. a GtkEntry)
+ * @param propname Name of the GObject's property to bind (e.g. "value")
+ * @param mapper   Pointer to a mapper object implementing custom translation between the
+ *                 AWAR value and the GValue representing the GObjects property.
+ */
+void AW_awar_impl::bind_value(GObject* obj, const char *propname, AW_awar_gvalue_mapper* mapper) {
+    GParamSpec *pspec = g_object_class_find_property(G_OBJECT_GET_CLASS(obj), propname);
+    aw_assert(NULL != pspec);
+
+    gparam_bindings.push_back(awar_gparam_binding(obj, pspec, this, mapper));
+
+    g_signal_connect(obj, "notify", G_CALLBACK(_aw_awar_on_notify), &gparam_bindings.back());
+    add_callback(_aw_awar_notify_gparam, (AW_CL)&gparam_bindings.back());
+    
+    // update property from awar now:
+    _aw_awar_notify_gparam(NULL, (AW_CL) &gparam_bindings.back());
+}
+
+static void _aw_awar_on_notify(GObject* obj, GParamSpec *pspec, awar_gparam_binding* binding) {
+    // discard notify event if not the property we're registered for:
+    if (g_intern_string(pspec->name) != g_intern_string(binding->pspec->name)) return;
+
+    // don't loop (notify causing update causing notify...)
+    if (binding->frozen) return;
+    binding->frozen = true;
+
+    GValue gval = G_VALUE_INIT;
+    g_value_init(&gval, G_PARAM_SPEC_VALUE_TYPE(binding->pspec));
+    g_object_get_property(obj, pspec->name, &gval);
+
+    if (binding->mapper) {
+        (*binding->mapper)(&gval, binding->awar);
+    } 
+    else {
+        switch(G_VALUE_TYPE(&gval)) {
+        case G_TYPE_STRING:
+            binding->awar->write_string(g_value_get_string(&gval), true);
+            break;
+        case G_TYPE_DOUBLE:
+            binding->awar->write_float(g_value_get_double(&gval), true);
+            break;
+        case G_TYPE_INT:
+            binding->awar->write_int(g_value_get_int(&gval), true);
+            break;
+        case G_TYPE_BOOLEAN:
+            binding->awar->write_as_bool(g_value_get_boolean(&gval), true);
+            break;
+        default:
+            aw_assert(false);
+        }
+    }
+
+    binding->frozen = false;
+    
+    // FIXME: somehow the UserActionTracker in AW_ROOT needs to be informed:
+    // if root->is_tracking(), call root->track_awar_change(awar) after
+    // setting the value, but before running other callbacks. 
+
+    g_value_unset(&gval);
+}
+
+static void _aw_awar_notify_gparam(AW_root*, AW_CL data) {
+    awar_gparam_binding* binding = (awar_gparam_binding*) data;
+
+    // don't loop
+    if (binding->frozen) return;
+    binding->frozen = true;
+
+    GValue gval = G_VALUE_INIT;
+    g_value_init(&gval, G_PARAM_SPEC_VALUE_TYPE(binding->pspec));
+
+    if (binding->mapper) {
+        if (binding->mapper->operator()(binding->awar, &gval)) {
+            g_object_set_property(binding->obj, binding->pspec->name, &gval);
+        }
+    } else {
+        switch(G_VALUE_TYPE(&gval)) {
+        case G_TYPE_STRING: {
+            char* str = binding->awar->read_as_string();
+            g_value_set_string(&gval, str);
+            free(str);
+            break;
+        } 
+        case G_TYPE_DOUBLE:
+            g_value_set_double(&gval, binding->awar->read_as_float());
+            break;
+        case G_TYPE_INT:
+            g_value_set_int(&gval, binding->awar->read_int());
+            break;
+        case G_TYPE_BOOLEAN:
+            g_value_set_boolean(&gval, binding->awar->read_as_bool());
+            break;
+        default:
+            aw_assert(false);
+        }
+        g_object_set_property(binding->obj, binding->pspec->name, &gval);
+    }
+
+    g_value_unset(&gval);
+    binding->frozen = false;
+}
+
+
+
 
 
 // --------------------------------------------------------------------------------

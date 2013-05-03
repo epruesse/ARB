@@ -8,6 +8,7 @@
 
 
 #pragma once
+struct _GObject;
 struct _GtkWidget; 
 struct _GtkMenuBar;
 struct _GtkTreeView;
@@ -19,6 +20,7 @@ struct _GdkEventExpose;
 struct _GdkEventKey;
 struct _GdkEventMotion;
 
+typedef struct _GObject           GObject;
 typedef struct _GtkWidget         GtkWidget;
 typedef struct _GtkMenuBar        GtkMenuBar;
 typedef struct _GtkTreeView       GtkTreeView;

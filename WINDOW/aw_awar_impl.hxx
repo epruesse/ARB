@@ -1,9 +1,26 @@
 #include <list>
 
+class AW_awar_impl;
+
+/**
+ * Describes a binding between an AWAR and a GObject property.
+ */
+struct awar_gparam_binding {
+    GObject      *obj;
+    GParamSpec   *pspec;
+    AW_awar_impl *awar;
+    AW_awar_gvalue_mapper *mapper;
+    bool          frozen;
+    awar_gparam_binding(GObject *obj_, GParamSpec *pspec_, AW_awar_impl* awar_, 
+                        AW_awar_gvalue_mapper* mapper_)
+        : obj(obj_), pspec(pspec_),  awar(awar_), mapper(mapper_), frozen(false) {}
+};
+
 class AW_awar_impl : public AW_awar {
     AW_root_cblist       *callback_list;
     AW_widget_refresh_cb *refresh_list;
     bool in_tmp_branch;
+    std::list<awar_gparam_binding> gparam_bindings;
 
     static bool allowed_to_run_callbacks;
 
@@ -15,6 +32,7 @@ class AW_awar_impl : public AW_awar {
 
     static void gbdata_changed(GBDATA*, int*, GB_CB_TYPE);
     static void gbdata_deleted(GBDATA*, int*, GB_CB_TYPE);
+
 protected:
     void update_tmp_state(bool has_default_value);
     AW_awar_impl(const char *var_name);
@@ -31,7 +49,7 @@ public:
     bool is_valid() const { return correlated(gb_var, gb_origin); } // both or none NULL
 #endif // ASSERTION_USED
 
-
+    void bind_value(GObject* obj, const char* propname, AW_awar_gvalue_mapper* mapper) OVERRIDE;
     void tie_widget(AW_CL cd1, GtkWidget* widget, AW_widget_type type, AW_window *aww) OVERRIDE;
 
     void     update() OVERRIDE;
@@ -39,7 +57,6 @@ public:
     AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) OVERRIDE;
     AW_awar *add_callback(Awar_CB1 f, AW_CL cd1) OVERRIDE;
     AW_awar *add_callback(Awar_CB0 f) OVERRIDE;
-
     AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) OVERRIDE;   // remove a callback
     AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1) OVERRIDE;
     AW_awar *remove_callback(Awar_CB0 f) OVERRIDE;
