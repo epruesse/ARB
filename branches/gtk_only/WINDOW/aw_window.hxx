@@ -229,8 +229,6 @@ public:
     char *align_string(const char *string, int columns);
 
     void update_label(GtkWidget* widget, const char *var_value);
-    void update_input_field(GtkWidget* widget, const char *var_value);
-    void update_text_field(GtkWidget* widget, const char *var_value);
     void update_toggle(GtkWidget *widget, const char *var, AW_CL /*cd_toggle_data*/);
     void update_progress_bar(GtkWidget* progressBar, const double var_value);
 

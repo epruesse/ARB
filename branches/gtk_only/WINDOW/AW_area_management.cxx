@@ -9,8 +9,8 @@
 //                                                               //
 // ============================================================= //
 
-#include "aw_area_management.hxx"
 #include "aw_window.hxx"
+#include "aw_area_management.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 #include "gdk/gdk.h"
 #include "gtk/gtk.h"

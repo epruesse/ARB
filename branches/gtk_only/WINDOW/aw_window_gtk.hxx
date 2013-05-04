@@ -9,7 +9,7 @@
  * This class hides all private or gtk dependent attributes.
  * This is done to avoid gtk includes in the header file.
  */
-class AW_window::AW_window_gtk : virtual Noncopyable {
+class AW_window::AW_window_gtk : public Noncopyable {
 public:
     
     GtkWindow *window; /**< The gtk window instance managed by this aw_window */

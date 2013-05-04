@@ -56,19 +56,6 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
 
         // und benachrichtigen der anderen
         switch (widgetlist->widget_type) {
-
-            case AW_WIDGET_INPUT_FIELD:
-                widgetlist->aw->update_input_field(widgetlist->widget, var_value);
-                break;
-            case AW_WIDGET_TEXT_FIELD:
-                widgetlist->aw->update_text_field(widgetlist->widget, var_value);
-                break;
-            case AW_WIDGET_TOGGLE:
-                widgetlist->aw->update_toggle(widgetlist->widget, var_value, widgetlist->cd);
-                break;
-            case AW_WIDGET_LABEL_FIELD:
-                widgetlist->aw->update_label(widgetlist->widget, var_value);
-                break;
             case AW_WIDGET_TOGGLE_FIELD:
                 widgetlist->aw->refresh_toggle_field((int)widgetlist->cd);
                 break;
@@ -76,13 +63,6 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
             case AW_WIDGET_SELECTION_LIST:
                 ((AW_selection_list *)widgetlist->cd)->refresh();
                 break;
-            case AW_WIDGET_PROGRESS_BAR:
-            {
-                aw_assert(GB_FLOAT == widgetlist->awar->get_type());
-                const double value = widgetlist->awar->read_float();
-                widgetlist->aw->update_progress_bar(widgetlist->widget, value);
-                break;
-            }
             default:
                 aw_assert(false);
                 break;
@@ -121,22 +101,22 @@ static GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
     GB_export_errorf("AWAR write access failure. Called %s on awar %s of type %s", \
                      __PRETTY_FUNCTION__, get_name(), get_type_name())
 
-GB_ERROR AW_awar_impl::write_as_string(const char* para, bool touch) {
+GB_ERROR AW_awar_impl::write_as_string(const char*, bool) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
-GB_ERROR AW_awar_impl::write_as_bool(bool para, bool touch) {
+GB_ERROR AW_awar_impl::write_as_bool(bool, bool) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
-GB_ERROR AW_awar_impl::write_string(const char *para, bool touch) {
+GB_ERROR AW_awar_impl::write_string(const char *, bool) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
-GB_ERROR AW_awar_impl::write_int(long para, bool touch) {
+GB_ERROR AW_awar_impl::write_int(long, bool) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
-GB_ERROR AW_awar_impl::write_float(double para, bool touch) {
+GB_ERROR AW_awar_impl::write_float(double, bool) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
-GB_ERROR AW_awar_impl::write_pointer(GBDATA *para, bool touch) {
+GB_ERROR AW_awar_impl::write_pointer(GBDATA *, bool) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
 
@@ -145,35 +125,28 @@ GB_ERROR AW_awar_impl::write_pointer(GBDATA *para, bool touch) {
     GBK_terminatef("AWAR read access failure. Called %s on awar %s of type %s", \
                 __PRETTY_FUNCTION__, get_name(), get_type_name())
 
-const char *AW_awar_impl::read_char_pntr() {
+__ATTR__NORETURN const char *AW_awar_impl::read_char_pntr() {
     AWAR_READ_ACCESS_FAILED;
-    return "";
 }
-double AW_awar_impl::read_float() {
+__ATTR__NORETURN double AW_awar_impl::read_float() {
     AWAR_READ_ACCESS_FAILED;
-    return 0.;
 }
-double AW_awar_impl::read_as_float() {
+__ATTR__NORETURN double AW_awar_impl::read_as_float() {
     AWAR_READ_ACCESS_FAILED;
-    return 0.;
 }
-bool AW_awar_impl::read_as_bool() {
+__ATTR__NORETURN bool AW_awar_impl::read_as_bool() {
     AWAR_READ_ACCESS_FAILED;
-    return 0.;
 }
-long AW_awar_impl::read_int() {
+__ATTR__NORETURN long AW_awar_impl::read_int() {
     AWAR_READ_ACCESS_FAILED;
-    return 0;
 }
 
-GBDATA *AW_awar_impl::read_pointer() {
+__ATTR__NORETURN GBDATA *AW_awar_impl::read_pointer() {
     AWAR_READ_ACCESS_FAILED;
-    return NULL;
 }
 
-char *AW_awar_impl::read_string() {
+__ATTR__NORETURN char *AW_awar_impl::read_string() {
     AWAR_READ_ACCESS_FAILED;
-    return NULL;
 }
 
 #define AWAR_TARGET_FAILURE \
@@ -182,20 +155,17 @@ char *AW_awar_impl::read_string() {
 
 __ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(char **ppchr) {
     AWAR_TARGET_FAILURE;
-    return NULL;
 }
 __ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(float *pfloat) {
     AWAR_TARGET_FAILURE;
-    return NULL;
 }
 __ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(long *pint) {
     AWAR_TARGET_FAILURE;
-    return NULL;
 }
 
-GB_ERROR AW_awar_impl::toggle_toggle() {
-    return GB_export_errorf("AWAR toggle access failure. Called %s on awar of type %s", \
-                           __PRETTY_FUNCTION__, get_type_name());
+__ATTR__NORETURN GB_ERROR AW_awar_impl::toggle_toggle() {
+    GB_export_errorf("AWAR toggle access failure. Called %s on awar of type %s", \
+                     __PRETTY_FUNCTION__, get_type_name());
 }
 
 AW_awar *AW_awar_impl::add_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
@@ -294,19 +264,19 @@ float AW_awar_int::get_max() const {
     else 
         return max_value;
 }
-GB_ERROR AW_awar_int::write_int(long para, bool touch) {
+GB_ERROR AW_awar_int::write_int(long para, bool do_touch) {
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
     GB_transaction ta(gb_var);
     GB_ERROR error = GB_write_int(gb_var, para);
     if (!error) update_tmp_state(para == default_value);
-    if (touch) GB_touch(gb_var);
+    if (do_touch) GB_touch(gb_var);
     return error;
 }
-GB_ERROR AW_awar_int::write_float(double para, bool touch) {
-    write_int(para, touch);
+GB_ERROR AW_awar_int::write_float(double para, bool do_touch) {
+    write_int(para, do_touch);
 }
-GB_ERROR AW_awar_int::write_as_string(const char *para, bool touch) {
-    return write_int(atol(para),touch);
+GB_ERROR AW_awar_int::write_as_string(const char *para, bool do_touch) {
+    return write_int(atol(para), do_touch);
 }
 long AW_awar_int::read_int() {
     if (!gb_var) return 0;
@@ -329,8 +299,8 @@ GB_ERROR AW_awar_int::toggle_toggle() {
 bool AW_awar_int::read_as_bool() {
     return read_int() != 0;
 }
-GB_ERROR AW_awar_int::write_as_bool(bool b, bool touch) {
-    return write_int(b ? 1 : 0, touch);
+GB_ERROR AW_awar_int::write_as_bool(bool b, bool do_touch) {
+    return write_int(b ? 1 : 0, do_touch);
 }
 
 AW_awar_float::AW_awar_float(const char *var_name, double var_value, AW_default default_file, AW_root *) 
@@ -386,16 +356,16 @@ float AW_awar_float::get_max() const {
     else 
         return max_value;
 }
-GB_ERROR AW_awar_float::write_float(double para, bool touch) {
+GB_ERROR AW_awar_float::write_float(double para, bool do_touch) {
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
     GB_transaction ta(gb_var);
     GB_ERROR error = GB_write_float(gb_var, para);
     if (!error) update_tmp_state(para == default_value);
-    if (touch) GB_touch(gb_var);
+    if (do_touch) GB_touch(gb_var);
     return error;
 }
-GB_ERROR AW_awar_float::write_as_string(const char *para, bool touch) {
-    return write_float(atof(para),touch);
+GB_ERROR AW_awar_float::write_as_string(const char *para, bool do_touch) {
+    return write_float(atof(para),do_touch);
 }
 double AW_awar_float::read_float() {
     if (!gb_var) return 0.0;
@@ -418,8 +388,8 @@ GB_ERROR AW_awar_float::toggle_toggle() {
 bool AW_awar_float::read_as_bool() {
     return read_float() != 0.0;
 }
-GB_ERROR AW_awar_float::write_as_bool(bool b, bool touch) {
-    return write_float(b ? 1.0 : 0.0, touch);
+GB_ERROR AW_awar_float::write_as_bool(bool b, bool do_touch) {
+    return write_float(b ? 1.0 : 0.0, do_touch);
 }
 
 
@@ -467,15 +437,15 @@ AW_awar *AW_awar_string::set_srt(const char *srt) {
     freedup(srt_program, srt);
     return this;
 }
-GB_ERROR AW_awar_string::write_as_string(const char *para, bool touch) {
-    return write_string(para,touch);
+GB_ERROR AW_awar_string::write_as_string(const char *para, bool do_touch) {
+    return write_string(para,do_touch);
 }
-GB_ERROR AW_awar_string::write_string(const char *para, bool touch) {
+GB_ERROR AW_awar_string::write_string(const char *para, bool do_touch) {
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
     GB_transaction ta(gb_var);
     GB_ERROR error = GB_write_as_string(gb_var, para);
     if (!error) update_tmp_state(ARB_strNULLcmp(para, default_value));
-    if (touch) GB_touch(gb_var);
+    if (do_touch) GB_touch(gb_var);
     return error;
 }
 char *AW_awar_string::read_string() {
@@ -506,8 +476,8 @@ GB_ERROR AW_awar_string::toggle_toggle() {
 bool AW_awar_string::read_as_bool() {
     return strcasecmp("yes", read_char_pntr()) == 0;
 }
-GB_ERROR AW_awar_string::write_as_bool(bool b, bool touch) {
-    return write_string(b ? "yes" : "no", touch);
+GB_ERROR AW_awar_string::write_as_bool(bool b, bool do_touch) {
+    return write_string(b ? "yes" : "no", do_touch);
 }
 
 
@@ -530,12 +500,12 @@ AW_awar_pointer::~AW_awar_pointer() {
 }
 void AW_awar_pointer::do_update() {
 }
-GB_ERROR AW_awar_pointer::write_pointer(GBDATA *para, bool touch) {
+GB_ERROR AW_awar_pointer::write_pointer(GBDATA *para, bool do_touch) {
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
     GB_transaction ta(gb_var);
     GB_ERROR error = GB_write_pointer(gb_var, para);
     if (!error) update_tmp_state(para == default_value);
-    if (touch) GB_touch(gb_var);
+    if (do_touch) GB_touch(gb_var);
     return error;
 }
 GBDATA *AW_awar_pointer::read_pointer() {

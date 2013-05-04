@@ -64,9 +64,10 @@ class AW_awar;
 struct AW_awar_gvalue_mapper {
     virtual bool operator()(GValue*, AW_awar*) = 0;
     virtual bool operator()(AW_awar*, GValue*) = 0;
+    virtual ~AW_awar_gvalue_mapper() {}
 };
 
-class AW_awar : virtual Noncopyable {
+class AW_awar : public Noncopyable {
 public:
     char      *awar_name; // deprecated -- use get_name();
 
