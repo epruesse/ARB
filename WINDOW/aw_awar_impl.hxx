@@ -89,7 +89,6 @@ public:
     virtual AW_awar *map(AW_awar *dest) OVERRIDE; // map to new address
     virtual AW_awar *unmap() OVERRIDE;           // map to original addres
     virtual void     touch() OVERRIDE;
-
 };
 
 class AW_awar_int : public AW_awar_impl {

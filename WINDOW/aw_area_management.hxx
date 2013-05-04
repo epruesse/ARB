@@ -75,7 +75,7 @@ struct AW_event {
 /**
  * Contains information about one area inside a window.
  */
-class AW_area_management {
+class AW_area_management : public Noncopyable {
 public:
     class Pimpl;
 private:

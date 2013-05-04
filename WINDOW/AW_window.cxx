@@ -38,7 +38,7 @@
 //#define DUMP_BUTTON_CREATION
 
 
-static bool AW_value_changed_callback(GtkWidget* /*wgt*/,  gpointer rooti) {
+static bool AW_value_changed_callback(GtkWidget*, gpointer) {
     AW_root::SINGLETON->value_changed = true;
     return false; //this event should propagate further
 }
@@ -183,31 +183,31 @@ AW_area_management* AW_window::get_area(int index) {
     return NULL;
 }
 
-GtkWidget* AW_window::make_label(const char* label_text, short label_length) {
+GtkWidget* AW_window::make_label(const char* label_text, short label_len) {
     aw_assert(label_text);
     GtkWidget *widget;
-    char *str;
-    
-    AW_awar *is_awar = get_root()->label_is_awar(label_text);
-    if (is_awar) 
-        str = is_awar->read_as_string();
-    else 
-        str = strdup(label_text);
 
     if (label_text[0] == '#') {
-        widget = gtk_image_new_from_file(GB_path_in_ARBLIB("pixmaps", str+1));
+        widget = gtk_image_new_from_file(GB_path_in_ARBLIB("pixmaps", label_text+1));
     }
     else {
-        widget = gtk_label_new_with_mnemonic(str);
-        if (label_length)
-            gtk_label_set_width_chars(GTK_LABEL(widget), label_length);
+        widget = gtk_label_new_with_mnemonic(label_text);
+    
+        AW_awar *awar = get_root()->label_is_awar(label_text);
+        if (awar) { 
+            awar->bind_value(G_OBJECT(widget), "label");
+        }
+
+        if (label_len) {
+            gtk_label_set_width_chars(GTK_LABEL(widget), label_len);
+        }
     }
     
-    if (is_awar) 
-        is_awar->tie_widget(0, widget, AW_WIDGET_LABEL_FIELD, this);
-
-    free(str);
     return widget;
+}
+
+void AW_window::update_label(GtkWidget* widget, const char* newlabel) {
+    g_object_set(G_OBJECT(widget), "label", newlabel, NULL);
 }
 
 
@@ -218,20 +218,20 @@ GtkWidget* AW_window::make_label(const char* label_text, short label_length) {
 void AW_window::put_with_label(GtkWidget *widget) {
     #define SPACE_BEHIND 5
     #define SPACE_BELOW 5
-    GtkWidget *hbox, *label = 0;
+    GtkWidget *hbox = 0, *wlabel = 0;
 
     // create label from label text
     if (_at.label_for_inputfield) {
-        label = make_label(_at.label_for_inputfield, _at.length_of_label_for_inputfield);
+        wlabel = make_label(_at.label_for_inputfield, _at.length_of_label_for_inputfield);
     }
     
     // pack widget and label into hbox
     // (having/not having the hbox changes appearance!)
     hbox = gtk_hbox_new(false,0);
-    if (label) {
+    if (wlabel) {
         // label does not expand (hence "false,false")
-        gtk_box_pack_start(GTK_BOX(hbox), label, false, false, 0);
-        gtk_misc_set_alignment(GTK_MISC(label),1.0f, 1.0f); //center label in hbox
+        gtk_box_pack_start(GTK_BOX(hbox), wlabel, false, false, 0);
+        gtk_misc_set_alignment(GTK_MISC(wlabel),1.0f, 1.0f); //center label in hbox
     }
     gtk_box_pack_start(GTK_BOX(hbox), widget, true, true, 0);
 
@@ -261,19 +261,14 @@ void AW_window::put_with_label(GtkWidget *widget) {
 
 /** Creates a progress bar that is bound to the specified awar.*/
 void AW_window::create_progressBar(const char *var) {
+    GtkWidget *bar = gtk_progress_bar_new();
+    gtk_widget_show(bar);
+    put_with_label(bar);
+    
     aw_assert(NULL != var);
     AW_awar *awar = get_root()->awar(var);
     aw_assert(NULL != awar);
-    
-    const GB_TYPES type = awar->get_type();
-    aw_assert(GB_FLOAT == type);
-
-    
-    GtkWidget *bar = gtk_progress_bar_new();
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar), 0.0);
-    gtk_widget_show(bar);
-    put_with_label(bar);
-    awar->tie_widget(0, bar, AW_WIDGET_PROGRESS_BAR, this);
+    awar->bind_value(G_OBJECT(bar), "fraction");
 }
 
 /**
@@ -385,7 +380,19 @@ extern "C" gboolean AW_switch_widget_child(GtkWidget *bin, gpointer other_bin) {
 
     g_object_unref(child);
     g_object_unref(other_child);
+    return false; // event not consumed
 }
+
+struct _awar_inverse_bool_mapper : public AW_awar_gvalue_mapper {
+    bool operator()(GValue* gval, AW_awar* awar) OVERRIDE {
+        awar->write_as_bool(!g_value_get_boolean(gval), true);
+        return true;
+    }
+    bool operator()(AW_awar* awar, GValue* gval) OVERRIDE {
+        g_value_set_boolean(gval, !awar->read_as_bool());
+        return true;
+    }
+};
 
 void AW_window::create_toggle(const char *var_name, bool inverse, 
                               const char *yes, const char *no, int width) {
@@ -393,15 +400,14 @@ void AW_window::create_toggle(const char *var_name, bool inverse,
     if (yes) {
         aw_assert(NULL != no); //if yes is not null no should be not null as well
         checkButton = gtk_toggle_button_new();
-        GtkWidget* label = make_label(yes, width);
-        gtk_container_add(GTK_CONTAINER(checkButton), label);
+        GtkWidget* no_label = make_label(no, width);
+        gtk_container_add(GTK_CONTAINER(checkButton), no_label);
         
         GtkWidget* bin = gtk_toggle_button_new();
-        GtkWidget* other_label = make_label(no, width);
+        GtkWidget* other_label = make_label(yes, width);
         gtk_container_add(GTK_CONTAINER(bin), other_label);
 
-    gtk_widget_show_all(bin);
-
+        gtk_widget_show_all(bin);
 
         g_signal_connect(G_OBJECT(checkButton), "released", 
                          G_CALLBACK(AW_switch_widget_child),
@@ -412,22 +418,9 @@ void AW_window::create_toggle(const char *var_name, bool inverse,
     }
     
 
-    AW_awar *vs = get_root()->awar(var_name);
-    aw_assert(NULL != vs);
-    //read initial value
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkButton), vs->read_int());
-    
-    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, checkButton, AW_WIDGET_TOGGLE, vs, prvt->callback);
+    get_root()->awar(var_name)->bind_value(G_OBJECT(checkButton), "active",
+                                           inverse ? new _awar_inverse_bool_mapper() : NULL);
 
-    // use signal "released" rather than "toggled" as the 
-    // latter is issued whenever the state changes 
-    // (currently resulting in endless loop)
-    g_signal_connect(G_OBJECT(checkButton), "released",
-                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
-                     (gpointer) vui);
-
-    vs->tie_widget(0, checkButton, AW_WIDGET_TOGGLE, this);
-    
     if (prvt->callback) {
       _set_activate_callback(checkButton);
     }
@@ -435,80 +428,46 @@ void AW_window::create_toggle(const char *var_name, bool inverse,
     put_with_label(checkButton);   
 }
 
-void AW_window::update_toggle(GtkWidget *widget, const char *var, AW_CL /*cd_toggle_data*/) {
-  if (get_root()->changer_of_variable == widget) return;
-    aw_assert(var != NULL);
-    bool active = !(var[0] == '0' || var[0] == 'n');
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), active);
-//    aw_toggle_data *tdata = (aw_toggle_data*)cd_toggle_data;
-//    const char     *text  = tdata->bitmapOrText[(var[0] == '0' || var[0] == 'n') ? 0 : 1];
-//
-//    if (tdata->isTextToggle) {
-//        XtVaSetValues(widget, RES_CONVERT(XmNlabelString, text), NULL);
-//    }
-//    else {
-//        char *path = pixmapPath(text+1);
-//        XtVaSetValues(widget, RES_CONVERT(XmNlabelPixmap, path), NULL);
-//        free(path);
-//    }
-}
-
-
 static gboolean noop_signal_handler(GtkWidget* /*wgt*/, gpointer /*user_data*/) {
   return true; // stop signal
 }
 
-
-
 void AW_window::create_input_field(const char *var_name,   int columns) {
     GtkWidget *entry;
+    GtkAdjustment *adj;
     AW_awar *vs = get_root()->awar(var_name);
     aw_assert(NULL != vs);
 
-    // create entry field
-    entry = gtk_entry_new();
-    if (columns) {
-        gtk_entry_set_width_chars(GTK_ENTRY(entry), columns);
-    } 
-    else {
-        gtk_entry_set_width_chars(GTK_ENTRY(entry), _at.length_of_buttons);
+    int width = columns ? columns : _at.length_of_buttons;
+
+    switch (vs->get_type()) {
+    case GB_STRING:
+        entry = gtk_entry_new();
+        vs->bind_value(G_OBJECT(entry), "text");
+        break;
+    case GB_FLOAT:
+        adj = GTK_ADJUSTMENT(gtk_adjustment_new(vs->read_as_float(), vs->get_min(), vs->get_max(), 
+                                                1, 5, 0));
+        entry = gtk_spin_button_new(adj, 1, 2);
+        vs->bind_value(G_OBJECT(entry), "value");
+        width--;
+    case GB_INT:
+        adj = GTK_ADJUSTMENT(gtk_adjustment_new(vs->read_as_float(), vs->get_min(), vs->get_max(), 
+                                                1, 5, 0));
+        entry = gtk_spin_button_new(adj, 1, 0);
+        vs->bind_value(G_OBJECT(entry), "value");
+        width--;
+        break;
+    case GB_POINTER:
+    default:
+        aw_assert(false);
     }
-    char *str   = vs->read_as_string();
-    gtk_entry_set_text(GTK_ENTRY(entry), str);
-    free(str);
 
+    gtk_entry_set_width_chars(GTK_ENTRY(entry), width);
     put_with_label(entry);
-
-    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, entry, AW_WIDGET_INPUT_FIELD, vs, prvt->callback);
-
-    // callback for enter
-    g_signal_connect(G_OBJECT(entry), "activate",
-                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
-                     (gpointer) vui);
-    
-    // callback for losing focus
-    g_signal_connect(G_OBJECT(entry), "focus-out-event",
-                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback_event),
-                     (gpointer) vui);  
-    // callback for value changed
-    g_signal_connect(G_OBJECT(entry), "changed",
-                     G_CALLBACK(AW_value_changed_callback),
-                     (gpointer) get_root());
-    vs->tie_widget(0, entry, AW_WIDGET_INPUT_FIELD, this);
 
     get_root()->register_widget(entry, _at.widget_mask);
 }
-
-void AW_window::update_input_field(GtkWidget *widget, const char *var_value) {
-    aw_assert(GTK_IS_ENTRY(widget));
-    gtk_entry_set_text(GTK_ENTRY(widget), var_value);
-}
-
-void AW_window::update_progress_bar(GtkWidget* progressBar, const double var_value) {
-    aw_assert(GTK_IS_PROGRESS_BAR(progressBar));
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressBar), var_value);
-}
-
 
 
 void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, int rows /*= 4*/){
@@ -517,26 +476,20 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
 
     GtkWidget *entry = gtk_text_view_new();
     GtkTextBuffer *textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(entry));
-    char *str = vs->read_string();
-    gtk_text_buffer_set_text(textbuffer, str, -1);
-    free(str);
+    vs->bind_value(G_OBJECT(textbuffer), "text");
 
     GtkWidget *scrolled_entry = gtk_scrolled_window_new(NULL,NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_entry), 
                                    GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_entry), entry);
 
-    // FIXME: this is identical to create_input_field:
-
     int char_width, char_height;
     prvt->get_font_size(char_width, char_height);
     gtk_widget_set_size_request(scrolled_entry, char_width * columns, char_height * rows);
 
-    // FIXME: this is identical to create_input_field:
-
     put_with_label(scrolled_entry);
 
-    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, entry, AW_WIDGET_TEXT_FIELD, vs, prvt->callback);
+  
     
     // callback for enter
     //g_signal_connect(G_OBJECT(entry), "activate",
@@ -551,25 +504,8 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
         get_root()->define_remote_command(prvt->d_callback);
     }
    
-    // callback for losing focus
-    // callback for value changed
-    g_signal_connect(G_OBJECT(textbuffer), "changed",
-                     G_CALLBACK(AW_value_changed_callback),
-                     (gpointer) get_root());
-    g_signal_connect(G_OBJECT(textbuffer), "changed",
-                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
-                     (gpointer) vui);  
-    vs->tie_widget(0, entry, AW_WIDGET_TEXT_FIELD, this);
-
     get_root()->register_widget(entry, _at.widget_mask);
 }
-
-void AW_window::update_text_field(GtkWidget *widget, const char *var_value) {
-    aw_assert(GTK_IS_TEXT_VIEW(widget));
-    GtkTextBuffer *textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
-    gtk_text_buffer_set_text(textbuffer, var_value, -1);
-}
-
 
 void AW_window::create_menu(const char *name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
     aw_assert(legal_mask(mask));
@@ -706,14 +642,12 @@ void AW_window::clear_option_menu(AW_option_menu_struct */*oms*/) {
 }
 
 
-
-
-static void  row_activated_cb (GtkTreeView       *tree_view,
-                        GtkTreePath       *path,
-                        GtkTreeViewColumn *column,
-                        gpointer           user_data) {
-  AW_cb_struct *cbs = (AW_cb_struct *) user_data;
-  cbs->run_callback();
+static void row_activated_cb(GtkTreeView       * /*tree_view*/,
+                             GtkTreePath       * /*path*/,
+                             GtkTreeViewColumn * /*column*/,
+                             gpointer           user_data) {
+    AW_cb_struct *cbs = (AW_cb_struct *) user_data;
+    cbs->run_callback();
 }
 
 AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows) {
@@ -799,6 +733,8 @@ void AW_window::create_toggle_field(const char *awar_name, int orientation /*= 0
     }
     
     prvt->toggle_field_awar_name = awar_name;
+
+    // FIXME bind awar  to widget
     
     get_root()->register_widget(prvt->toggle_field, _at.widget_mask);
 }
@@ -852,10 +788,6 @@ void AW_window::update_toggle_field() {
 
     prvt->radio_last = NULL; // end of radio group
     prvt->toggle_field = NULL;
-}
-
-void AW_window::refresh_toggle_field(int /*toggle_field_number*/) {
-    GTK_NOT_IMPLEMENTED;
 }
 // END TOGGLE FIELD STUFF
 
@@ -1325,29 +1257,6 @@ bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW
     return aram && aram->is_resize_callback(this, f);
 }
 
-void AW_window::update_label(GtkWidget* widget, const char *var_value) {
-    if (get_root()->changer_of_variable != widget) {
-        FIXME("this will break if the labels content should switch from text to image or vice versa");
-        if (GTK_IS_HBOX(widget)) {
-          widget = GTK_WIDGET(gtk_container_get_children(GTK_CONTAINER(widget))->data);
-        }
-
-        if(GTK_IS_BUTTON(widget)) {
-            gtk_button_set_label(GTK_BUTTON(widget), var_value);   
-        }
-        else if(GTK_IS_LABEL(widget)) {
-            gtk_label_set_text_with_mnemonic(GTK_LABEL(widget), var_value);
-        }
-        else {
-            aw_assert(false); //unable to set label of unknown type
-        }
-        
-    }
-    else {
-        get_root()->changer_of_variable = 0;
-    }
-}
-
 void AW_window::window_fit() {
     // let gtk do the sizing based on content
     // (default size will be ignored if requisition of 
@@ -1533,18 +1442,35 @@ void AW_window::create_devices() {
 }
 
 
-
-
 void AW_window::create_font_button(const char* var_name, const char *label_) {
     GtkWidget *font_button = gtk_font_button_new();
     AW_awar *vs = get_root()->awar(var_name);
+    vs->bind_value(G_OBJECT(font_button), "font-name");
     if (label_) label(label_);
     put_with_label(font_button);
 }
 
+struct _awar_gdkcolor_mapper : public AW_awar_gvalue_mapper {
+    bool operator()(GValue* gval, AW_awar* awar) OVERRIDE {
+        GdkColor* col = (GdkColor*)g_value_get_boxed(gval);
+        char* str = gdk_color_to_string(col);
+        awar->write_string(str);
+        free(str);
+        return true;
+    }
+    bool operator()(AW_awar* awar, GValue* gval) OVERRIDE {
+        GdkColor col;
+        if (!gdk_color_parse(awar->read_char_pntr(), &col))
+            return false;
+        g_value_set_boxed(gval, &col);
+        return true;
+    }
+};
+
 void AW_window::create_color_button(const char* var_name, const char *label_) {
     GtkWidget *color_button = gtk_color_button_new();
     AW_awar *vs = get_root()->awar(var_name);
+    vs->bind_value(G_OBJECT(color_button), "color", new _awar_gdkcolor_mapper());
     if (label_) label(label_);
     put_with_label(color_button);
 }
