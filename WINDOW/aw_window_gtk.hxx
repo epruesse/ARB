@@ -102,7 +102,7 @@ public:
     AW_cb_struct *d_callback; 
     
     /**The drawing area of this window. Might be NULL. */
-    AW_drawing_area *drawing_area;
+    AwDrawingArea *drawing_area;
     /**ID of the delete event handler for this window. -1 if no handler present.*/
     int delete_event_handler_id;
     

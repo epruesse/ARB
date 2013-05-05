@@ -3,22 +3,72 @@
 #include "aw_assert.hxx"
 #include <glib.h>
 
-
-
-struct _AW_drawing_area_private {
+struct _AwDrawingAreaPrivate {
     GtkAdjustment *horizontalAdjustment;
     GtkAdjustment *verticalAdjustment;
 };
 
+G_DEFINE_TYPE(AwDrawingArea, aw_drawing_area, GTK_TYPE_DRAWING_AREA);
 
-//see https://developer.gnome.org/gobject/stable/howto-gobject-destruction.html to 
-//learn about gobject finalization
-static void aw_drawing_area_finalize(GObject* object) {
+static void aw_drawing_area_finalize(GObject* object);
+static void aw_drawing_area_dispose(GObject* object);
+static void aw_drawing_area_set_scroll_adjustments(AwDrawingArea *area, 
+                                                   GtkAdjustment *hadj, 
+                                                   GtkAdjustment *vadj);
+static gint aw_drawing_area_button_press(GtkWidget *widget, 
+                                         GdkEventButton *event);
+
+static void aw_drawing_area_class_init(AwDrawingAreaClass *clazz) {
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(clazz);
+    GObjectClass *object_class = G_OBJECT_CLASS(clazz);
+    
+#if GTK_MAJOR_VERSION >2
+#else
+    //override set_scroll_adjustments
+    clazz->set_scroll_adjustments = aw_drawing_area_set_scroll_adjustments;
+    widget_class->set_scroll_adjustments_signal =
+                g_signal_new("set_scroll_adjustments",
+                G_TYPE_FROM_CLASS(clazz),
+                G_SIGNAL_RUN_LAST,
+                G_STRUCT_OFFSET(AwDrawingAreaClass, set_scroll_adjustments),
+                NULL, NULL,
+                g_cclosure_arb_marshal_VOID__OBJECT_OBJECT,
+                G_TYPE_NONE, 2,
+                GTK_TYPE_ADJUSTMENT,
+                GTK_TYPE_ADJUSTMENT);  
+#endif
+    widget_class->button_press_event = aw_drawing_area_button_press;
+
+    //register destructor
+    object_class->dispose = aw_drawing_area_dispose;
+    object_class->finalize = aw_drawing_area_finalize;
+    
+    //register pimpl. This way it will be freed automatically if the drawing area is destroyed 
+    g_type_class_add_private (clazz, sizeof (AwDrawingAreaPrivate));
     
 }
 
+static void aw_drawing_area_init(AwDrawingArea *area) {
+    gtk_widget_set_can_focus (GTK_WIDGET (area), TRUE);
+    //this is done to avoid calling G_TYPE_INSTANCE_GET_PRIVATE every time 
+    area->prvt = G_TYPE_INSTANCE_GET_PRIVATE (area, AW_DRAWING_AREA_TYPE, AwDrawingAreaPrivate);
+    area->prvt->horizontalAdjustment = NULL;
+    area->prvt->verticalAdjustment = NULL;
+}
+
+
+GtkWidget *aw_drawing_area_new() {
+    AwDrawingArea *area = AW_DRAWING_AREA(g_object_new(AW_DRAWING_AREA_TYPE, NULL));
+    return GTK_WIDGET(area);
+}
+
+//see https://developer.gnome.org/gobject/stable/howto-gobject-destruction.html to 
+//learn about gobject finalization
+static void aw_drawing_area_finalize(GObject* /*object*/) {
+}
+
 static void aw_drawing_area_dispose(GObject* object) {
-    AW_drawing_area *area = AW_DRAWING_AREA(object);
+    AwDrawingArea *area = AW_DRAWING_AREA(object);
     if(NULL != area && NULL != area->prvt) { //area might be NULL if the cast fails
         
         if (NULL != area->prvt->horizontalAdjustment) {
@@ -33,25 +83,31 @@ static void aw_drawing_area_dispose(GObject* object) {
     }
 }
 
-GtkAdjustment* aw_drawing_area_get_vertical_adjustment(AW_drawing_area *area) {
+static gint aw_drawing_area_button_press(GtkWidget *widget, GdkEventButton *event) {
+    if (!gtk_widget_has_focus(widget)) 
+        gtk_widget_grab_focus(widget);
+    return false;
+}
+
+GtkAdjustment* aw_drawing_area_get_vertical_adjustment(AwDrawingArea *area) {
     aw_assert(NULL != area);
     aw_assert(NULL != area->prvt);
     return area->prvt->verticalAdjustment;
 }
-GtkAdjustment* aw_drawing_area_get_horizontal_adjustment(AW_drawing_area *area) {
+GtkAdjustment* aw_drawing_area_get_horizontal_adjustment(AwDrawingArea *area) {
     aw_assert(NULL != area);
     aw_assert(NULL != area->prvt);
     return area->prvt->horizontalAdjustment;
 }
 
-void aw_drawing_area_set_increments(AW_drawing_area *area,
+void aw_drawing_area_set_increments(AwDrawingArea *area,
                                     gint horizontal_step_increment,
                                     gint horizontal_page_increment,
                                     gint vertical_step_increment,
                                     gint vertical_page_increment) {
     aw_assert(NULL != area);
     aw_assert(NULL != area->prvt);
-    AW_drawing_area_private *prvt = area->prvt;
+    AwDrawingAreaPrivate *prvt = area->prvt;
     
     gtk_adjustment_set_step_increment(prvt->horizontalAdjustment, horizontal_step_increment);
     gtk_adjustment_set_page_increment(prvt->horizontalAdjustment, horizontal_page_increment);
@@ -63,30 +119,30 @@ void aw_drawing_area_set_increments(AW_drawing_area *area,
     gtk_adjustment_changed(prvt->verticalAdjustment);   
 }
 
-void aw_drawing_area_set_horizontal_slider(AW_drawing_area *area, gdouble pos) {
+void aw_drawing_area_set_horizontal_slider(AwDrawingArea *area, gdouble pos) {
     aw_assert(NULL != area);
     aw_assert(NULL != area->prvt);
-    AW_drawing_area_private *prvt = area->prvt; 
+    AwDrawingAreaPrivate *prvt = area->prvt; 
     gtk_adjustment_set_value(prvt->horizontalAdjustment, pos);
     gtk_adjustment_value_changed(prvt->horizontalAdjustment);
 }
 
-void aw_drawing_area_set_vertical_slider(AW_drawing_area *area, gdouble pos) {
+void aw_drawing_area_set_vertical_slider(AwDrawingArea *area, gdouble pos) {
     aw_assert(NULL != area);
     aw_assert(NULL != area->prvt);
-    AW_drawing_area_private *prvt = area->prvt; 
+    AwDrawingAreaPrivate *prvt = area->prvt; 
     gtk_adjustment_set_value(prvt->verticalAdjustment, pos);
     gtk_adjustment_value_changed(prvt->verticalAdjustment);
 }
 
 
-void aw_drawing_area_set_picture_size(AW_drawing_area *area, gint picture_width,
+void aw_drawing_area_set_picture_size(AwDrawingArea *area, gint picture_width,
                                       gint picture_height, gint visible_width,
                                       gint visible_height) {
 
     aw_assert(NULL != area);
     aw_assert(NULL != area->prvt);
-    AW_drawing_area_private *prvt = area->prvt;
+    AwDrawingAreaPrivate *prvt = area->prvt;
     
     gtk_adjustment_set_lower(prvt->horizontalAdjustment, 0);
     gtk_adjustment_set_upper(prvt->horizontalAdjustment, picture_width);
@@ -103,10 +159,11 @@ void aw_drawing_area_set_picture_size(AW_drawing_area *area, gint picture_width,
     
 }
 
-static void set_scroll_adjustments(AW_drawing_area *area, GtkAdjustment *hadj,
-                                   GtkAdjustment *vadj) {
+static void aw_drawing_area_set_scroll_adjustments(AwDrawingArea *area, 
+                                                   GtkAdjustment *hadj,
+                                                   GtkAdjustment *vadj) {
     if(NULL != area && NULL != area->prvt) {
-        AW_drawing_area_private *prvt = area->prvt;
+        AwDrawingAreaPrivate *prvt = area->prvt;
         
         //unref old adjustments
         if(prvt->horizontalAdjustment && prvt->horizontalAdjustment != hadj) {
@@ -135,67 +192,4 @@ static void set_scroll_adjustments(AW_drawing_area *area, GtkAdjustment *hadj,
     }
 }
 
-static void aw_drawing_area_class_init(AW_drawing_area_class *clazz) {
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(clazz);
-    GObjectClass *object_class = G_OBJECT_CLASS(clazz);
-    
-#if GTK_MAJOR_VERSION >2
-#else
-    //override set_scroll_adjustments
-    clazz->set_scroll_adjustments = set_scroll_adjustments;
-    widget_class->set_scroll_adjustments_signal =
-                g_signal_new("set_scroll_adjustments",
-                G_TYPE_FROM_CLASS(clazz),
-                G_SIGNAL_RUN_LAST,
-                G_STRUCT_OFFSET(AW_drawing_area_class, set_scroll_adjustments),
-                NULL, NULL,
-                g_cclosure_arb_marshal_VOID__OBJECT_OBJECT,
-                G_TYPE_NONE, 2,
-                GTK_TYPE_ADJUSTMENT,
-                GTK_TYPE_ADJUSTMENT);  
-#endif
-    
-    //register destructor
-    object_class->dispose = aw_drawing_area_dispose;
-    object_class->finalize = aw_drawing_area_finalize;
-    
-    //register pimpl. This way it will be freed automatically if the drawing area is destroyed 
-    g_type_class_add_private (clazz, sizeof (AW_drawing_area_private));
-    
-}
 
-static void aw_drawing_area_init(AW_drawing_area *area) {
-    gtk_widget_set_can_focus (GTK_WIDGET (area), TRUE);
-    //this is done to avoid calling G_TYPE_INSTANCE_GET_PRIVATE every time 
-    area->prvt = G_TYPE_INSTANCE_GET_PRIVATE (area, AW_DRAWING_AREA_TYPE, AW_drawing_area_private);
-    area->prvt->horizontalAdjustment = NULL;
-    area->prvt->verticalAdjustment = NULL;
-}
-
-GtkWidget *aw_drawing_area_new() {
-    AW_drawing_area *area = AW_DRAWING_AREA(g_object_new(AW_DRAWING_AREA_TYPE, NULL));
-    return GTK_WIDGET(area);
-}
-
-GType aw_drawing_area_get_type() {
-    static GType type = 0;//type singleton
-    
-    if(0 == type) { //first call
-        static const GTypeInfo type_info = {
-            sizeof(AW_drawing_area_class),
-            NULL,
-            NULL,
-            (GClassInitFunc) aw_drawing_area_class_init,
-            NULL,
-            NULL,
-            sizeof(AW_drawing_area),
-            0,
-            (GInstanceInitFunc) aw_drawing_area_init,
-        };
-        
-        type = g_type_register_static(GTK_TYPE_DRAWING_AREA, "aw_drawing_area",
-                                      &type_info, (GTypeFlags) 0);
-        
-    }
-    return type;
-}
