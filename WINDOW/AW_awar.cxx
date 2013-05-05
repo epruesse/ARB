@@ -20,11 +20,16 @@
 #include "glib-object.h"
 
 #ifndef ARBDB_H
-#include <arbdb.h>
+#  include <arbdb.h>
 #endif
 #include <arb_str.h>
 
 #include <algorithm>
+#include <limits>
+
+#if !GLIB_CHECK_VERSION(2,30,0)
+#  define G_VALUE_INIT  { 0, { { 0 } } }
+#endif
 
 #define AWAR_EPS 0.00000001
 
