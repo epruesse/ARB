@@ -67,7 +67,7 @@ struct AW_awar_gvalue_mapper {
     virtual ~AW_awar_gvalue_mapper() {}
 };
 
-class AW_awar : public Noncopyable {
+class AW_awar : virtual Noncopyable {
 public:
     char      *awar_name; // deprecated -- use get_name();
 
@@ -109,6 +109,7 @@ public:
     virtual AW_awar *unmap() = 0;           // map to original address
 
     // read access
+    virtual bool        has_default_value() = 0;
     virtual char       *read_string() = 0;
     virtual const char *read_char_pntr() = 0;
     virtual char       *read_as_string() = 0;

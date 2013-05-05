@@ -80,31 +80,6 @@ void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
 
     bool run_cb = true;
     switch (widget_type) {
-        case AW_WIDGET_TEXT_FIELD:
-            if (!root->value_changed) {
-                run_cb = false;
-            }
-            else {
-                GtkTextBuffer* textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
-                GtkTextIter begin, end;
-                gtk_text_buffer_get_bounds(textbuffer, &begin, &end);
-                char *str = gtk_text_buffer_get_text(textbuffer, &begin, &end, true);
-                awar->write_string(str); //FIXME write_string returns an error code that should be handled
-                free(str);
-            }
-            break;
-
-        case AW_WIDGET_INPUT_FIELD:
-            if (!root->value_changed) {
-                run_cb = false;
-            }
-            else {
-                GtkEditable *field = GTK_EDITABLE(widget);
-                char *new_text = gtk_editable_get_chars(field, 0, -1); //-1 = get text until end
-                error = awar->write_as_string(new_text);
-                free(new_text);
-            }
-            break;
         case AW_WIDGET_TOGGLE:
             error = awar->toggle_toggle();
             break;

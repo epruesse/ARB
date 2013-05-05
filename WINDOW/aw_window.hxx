@@ -234,7 +234,6 @@ public:
 
     void  create_invisible(int columns);
     void *_create_option_entry(GB_TYPES type, const char *name, const char *mnemonic, const char *name_of_color);
-    void  refresh_toggle_field(int toggle_field_number); 
     void  _set_activate_callback(GtkWidget *widget);
     void  unset_at_commands();
 
