@@ -466,20 +466,64 @@ AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_def
     return vs;
 }
 
-void AW_root::dont_save_awars_with_default_value(GBDATA */*gb_db*/) {
-    GTK_NOT_IMPLEMENTED;
+static long _aw_root_awar_set_temp_if_is_default(const char *, long val, void *cl_gb_db) {
+    AW_awar_impl *awar = (AW_awar_impl*)val;
+    awar->set_temp_if_is_default((GBDATA*)cl_gb_db);
+    return val;
+}
+
+void AW_root::dont_save_awars_with_default_value(GBDATA *gb_db) {
+    // this should only be called
+    // - before saving properties
+    // - before saving any main application DB that may contain AWARs
+    //
+    // Bug: Awars created in main DB by clients (e.g. EDIT4) will stay temporary
+    //      and will never be saved again.
+    //
+    // Note: uninstanciated AWARs will not be affected, so different applications with
+    //       different AWAR subsets should be no problem.
+    //       'different applications' here e.g. also includes different calls to arb_ntree
+    //       (e.g. merge-tool, importer, tree-window, ...)
+    //
+    // Problems arise when an awar with the same name is used for two different purposes
+    // or with different default values (regardless whether in properties or main-DB).
+    // But this has already been problematic before.
+
+    GBS_hash_do_loop(awar_hash, _aw_root_awar_set_temp_if_is_default, (void*)gb_db);
 }
 
 void AW_root::main_loop() {
     gtk_main();
 }
 
+static long _aw_root_unlink_awar_from_db(const char*/*key*/, long cl_awar, void *cl_gb_main) {
+    AW_awar_impl *awar   = (AW_awar_impl*)cl_awar;
+    GBDATA       *gbmain = (GBDATA*)cl_gb_main;
+    awar->unlink_from_DB(gbmain);
+    return cl_awar;
+}
+
 void AW_root::unlink_awars_from_DB(AW_default database) {
-    GTK_NOT_IMPLEMENTED;
+    GBDATA *gb_main = (GBDATA*)database;
+    aw_assert(GB_get_root(gb_main) == gb_main);
+    GB_transaction ta(gb_main);
+    GBS_hash_do_loop(awar_hash, _aw_root_unlink_awar_from_db, gb_main);
+}
+
+static long delete_awar(const char*, long val, void*) {
+    AW_awar* awar = (AW_awar*) val;
+    delete awar;
+    return 0; // remove from hash
 }
 
 AW_root::~AW_root() {
     delete tracker; tracker = NULL;
+
+    GBS_hash_do_loop(awar_hash, delete_awar, NULL);
+    GBS_free_hash(awar_hash);
+    awar_hash = NULL;
+    
+    // clear action hash
 
     if (application_database) {
         GB_close(application_database);

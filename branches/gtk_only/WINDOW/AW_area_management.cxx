@@ -242,7 +242,6 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     AW_root *root = aww->get_root();
     GdkScreen* screen = gtk_widget_get_screen (prvt->area);
     GdkDisplay* pDisplay = gdk_screen_get_display(screen);
-    //FIXME font stuff
     FIXME("parameter global colortable is wrong.");
     prvt->common = new AW_common_gtk(pDisplay, prvt->area, root->getColorTable(), aww->color_table, aww->color_table_size, aww, ar);
     prvt->screen_device = new AW_device_gtk(prvt->common, prvt->area);
