@@ -77,8 +77,8 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     gtk_widget_realize(GTK_WIDGET(prvt->drawing_area));
 
     // the drawing area needs to have the focus to receive key events
-    gtk_widget_set_can_focus(GTK_WIDGET(prvt->mode_menu), false);
-    gtk_widget_set_can_focus(GTK_WIDGET(prvt->fixed_size_area), false);
+    //gtk_widget_set_can_focus(GTK_WIDGET(prvt->mode_menu), false);
+    //gtk_widget_set_can_focus(GTK_WIDGET(prvt->fixed_size_area), false);
     gtk_widget_grab_focus(GTK_WIDGET(prvt->drawing_area));
     
     create_devices();
