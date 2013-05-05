@@ -726,7 +726,10 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
             default:
                 break;
         }
-        free(str);
+        if (str) {
+            free(str);
+            str = 0;
+        }
         cmd = aw_status_read_command(aw_stg.fd_to[0], 1, str, &gaugeValue);
     }
 
