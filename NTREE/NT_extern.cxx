@@ -1190,6 +1190,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awr->awar(AWAR_DTREE_SHOW_BRACKETS)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_CIRCLE_ZOOM)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_GREY_LEVEL)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_USE_ELLIPSE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
 
     awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback((AW_RCB)NT_reinit_treetype, (AW_CL)ntw, 0);

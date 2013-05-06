@@ -647,7 +647,9 @@ void AWT_canvas::scroll(int dx, int dy, bool dont_update_scrollbars) {
     }
 
     // move area
-    if (!gfx->exports.dont_scroll) {
+    // FIXME: scrolling with move region does not work
+    // (e.g. because of brackets in tree)
+    if (!gfx->exports.dont_scroll && false) {
         device->move_region(csx, csy, cwidth, cheight, cdx, cdy);
         // redraw stripes
         this->shift_x_to_fit -= dx/this->trans_to_fit;
@@ -683,7 +685,6 @@ void AWT_canvas::scroll(int dx, int dy, bool dont_update_scrollbars) {
         this->shift_y_to_fit -= dy/this->trans_to_fit;
         AWT_expose_cb(aww, this,  0);
     }
-    this->refresh();
 }
 
 static void scroll_vert_cb(AW_window *aww, AWT_canvas* scr, AW_CL /*cl1*/) {

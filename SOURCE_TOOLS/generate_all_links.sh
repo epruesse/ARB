@@ -323,6 +323,7 @@ symlink_file ../WINDOW/aw_common_gtk.hxx INCLUDE/aw_common_gtk.hxx &&
 symlink_file ../WINDOW/aw_detach.hxx INCLUDE/aw_detach.hxx &&
 symlink_file ../WINDOW/aw_device.hxx INCLUDE/aw_device.hxx &&
 symlink_file ../WINDOW/aw_device_click.hxx INCLUDE/aw_device_click.hxx &&
+symlink_file ../WINDOW/aw_device_cairo.hxx INCLUDE/aw_device_cairo.hxx &&
 symlink_file ../WINDOW/aw_device_gtk.hxx INCLUDE/aw_device_gtk.hxx &&
 symlink_file ../WINDOW/aw_device_impl.hxx INCLUDE/aw_device_impl.hxx &&
 symlink_file ../WINDOW/aw_device_print.hxx INCLUDE/aw_device_print.hxx &&
