@@ -41,11 +41,12 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     gtk_toolbar_set_show_arrow(prvt->mode_menu, false);
     
     GtkWidget *scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
-    //only show scrollbars if they are needed
+    // Scrollbars must be shown alwyas because dynamic display will cause 
+    // a resize event which will cause a zoom reset in @@@AWT/AWT_canvas.cxx
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW(scrolledWindow),
-                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_ETCHED_IN);
+                                    GTK_POLICY_ALWAYS, GTK_POLICY_ALWAYS);
 
+    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_ETCHED_IN);
 
     // create main drawing area ('middle area')
     prvt->drawing_area = AW_DRAWING_AREA(aw_drawing_area_new());
