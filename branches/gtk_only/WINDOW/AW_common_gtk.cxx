@@ -64,24 +64,26 @@ AW_GC *AW_common_gtk::create_gc() {
     return new AW_GC_gtk(this, aww->get_area(area)->get_area(), pixelDepth);
 }
 
-cairo_t *AW_common_gtk::get_CR(int gc) {
+void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
     GtkWidget *widget = aww->get_area(area)->get_area();
     const AW_GC *awgc = map_gc(gc);
 
-    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
-    if (!cr) {
-        // Sometimes the window isn't there yet when ARB already 
-        // tries to draw on it. That's not possible. Return 
-        // NULL (drawing primitives will catch this)
-        return NULL;
-    }
-
     // set color
     AW_rgb col = awgc->get_fg_color();
-    cairo_set_source_rgb(cr, 
-                         (double)((col & 0xff0000)>>16) / 255,
-                         (double)((col & 0xff00)>>8) / 255,
-                         (double)(col & 0xff) / 255);
+    if (use_grey) {
+        cairo_set_source_rgba(cr, 
+                              (double)((col & 0xff0000)>>16) / 255,
+                              (double)((col & 0xff00)>>8) / 255,
+                              (double)(col & 0xff) / 255,
+                              awgc->get_grey_level());
+    } 
+    else {
+        cairo_set_source_rgb(cr, 
+                             (double)((col & 0xff0000)>>16) / 255,
+                             (double)((col & 0xff00)>>8) / 255,
+                             (double)(col & 0xff) / 255);
+    } 
+
 
     // set line width
     cairo_set_line_width(cr, awgc->get_line_width());
@@ -108,8 +110,8 @@ cairo_t *AW_common_gtk::get_CR(int gc) {
     }
 
     // set rounded caps
-    cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND); 
-    cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND); 
+    // cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND); 
+    // cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND); 
 
     // set function (aka operator)
     switch (awgc->get_function()) {
@@ -117,15 +119,11 @@ cairo_t *AW_common_gtk::get_CR(int gc) {
             cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
             break;
         case AW_COPY:
-            cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE); 
+            cairo_set_operator(cr, CAIRO_OPERATOR_OVER); 
             break;
         default:
             aw_assert(false);
     }
-      
-  
-    return cr;
-  
 }
 
 AW_GC_gtk::AW_GC_gtk(AW_common *aw_common, GtkWidget *drawable, int pixelDepth) 

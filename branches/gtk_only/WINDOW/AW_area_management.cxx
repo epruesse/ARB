@@ -97,10 +97,17 @@ extern "C"  gboolean motion_event_cbproxy(GtkWidget *, GdkEventMotion *ev, gpoin
     return ((AW_area_management::Pimpl*)self)->handle_event(ev);
 }
 
-gboolean AW_area_management::Pimpl::handle_event(GdkEventExpose*) {
+gboolean AW_area_management::Pimpl::handle_event(GdkEventExpose* event) {
+    aww->event.type = (AW_event_type) event->type;
+    aww->event.x = event->area.x;
+    aww->event.y = event->area.y;
+    aww->event.width = event->area.width;
+    aww->event.height = event->area.height;
+
     expose_cb->run_callback();
     return false;
 }
+
 gboolean AW_area_management::Pimpl::handle_event(GdkEventConfigure*) {
     resize_cb->run_callback();
     return false;
@@ -260,4 +267,9 @@ AW_device_size *AW_area_management::get_size_device() {
 AW_device_click *AW_area_management::get_click_device() {
     if (!prvt->click_device) prvt->click_device = new AW_device_click(prvt->common);
     return prvt->click_device;
+}
+
+AW_device_print *AW_area_management::get_print_device() {
+    if (!prvt->print_device) prvt->print_device = new AW_device_print(prvt->common);
+    return prvt->print_device;
 }

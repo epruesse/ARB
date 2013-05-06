@@ -8,33 +8,23 @@
 #pragma once
 
 #include "aw_device.hxx"
+#include "aw_device_cairo.hxx"
 
-/* xfig print device */
-class AW_device_print : public AW_device { // derived from a Noncopyable
-    FILE *out;
-    bool  color_mode;
+class AW_device_print : public AW_device_cairo { // derived from a Noncopyable
+private:
+    class Pimpl;
+    Pimpl *prvt;
 
-    bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri) OVERRIDE;
-    bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) OVERRIDE;
-    bool box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri) OVERRIDE;
-    bool circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) OVERRIDE;
-    bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) OVERRIDE;
-    bool filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri) OVERRIDE;
-    bool invisible_impl(const AW::Position& pos, AW_bitset filteri) OVERRIDE;
-
-    void specific_reset() OVERRIDE {}
+protected:
+    cairo_t *get_cr(int gc) OVERRIDE;
+    pango_layout_t *get_pl(int gc) OVERRIDE;
 
 public:
-    AW_device_print(AW_common *common_)
-        : AW_device(common_),
-          out(0),
-          color_mode(false)
-    {}
+    AW_device_print(AW_common *common_);
+    ~AW_device_print();
 
     GB_ERROR open(const char *path) __ATTR__USERESULT;
     void close();
-
-    FILE *get_FILE();
 
     // AW_device interface:
     AW_DEVICE_TYPE type() OVERRIDE;

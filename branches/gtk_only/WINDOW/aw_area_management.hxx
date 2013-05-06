@@ -61,7 +61,7 @@ struct AW_event {
 
     // fields valid for type == AW_Mouse
     AW_MouseButton button;
-    int            x, y;            // pointer x,y coordinates in the event window
+    int            x, y, width, height;    // pointer x,y coordinates in the event window
 
     // fields valid for type == AW_Keyboard
     AW_key_code keycode;            // which key type was pressed

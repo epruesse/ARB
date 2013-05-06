@@ -189,6 +189,7 @@ public:
 class AW_common {
     AW_rgb*& frame_colors;
     AW_rgb*& data_colors;
+    AW_rgb   background_color;
     long&    data_colors_size;
 
     std::map<int, AW_GC*> gcmap;
@@ -213,6 +214,8 @@ public:
     AW_rgb get_data_color(int i) const;
     int find_data_color_idx(AW_rgb color) const;
     int get_data_color_size() const;
+    void set_bg_color(AW_rgb& rgb) {background_color = rgb; }
+    AW_rgb get_bg_color() const {return background_color; }
 
     AW_rgb get_XOR_color() const;
 

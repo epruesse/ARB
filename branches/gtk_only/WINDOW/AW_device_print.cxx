@@ -7,6 +7,7 @@
 
 #include "aw_device_print.hxx"
 #include "aw_gtk_migration_helpers.hxx"
+#include <cairo-pdf.h>
 
 // ---------------------
 //      Please note
@@ -15,57 +16,47 @@
 // see ../../SL/TREEDISP/TreeDisplay.cxx@ENABLE_THIS_TEST 
 
 
-FILE *AW_device_print::get_FILE() {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+struct AW_device_print::Pimpl {
+    cairo_surface_t *surface;
+    cairo_t *cr;
+    Pimpl() : surface(NULL) {}
+};
+
+AW_device_print::AW_device_print(AW_common *common_)
+    : AW_device_cairo(common_),
+      prvt(new Pimpl())
+{
+}
+AW_device_print::~AW_device_print() {
+    delete prvt;
+}
+
+PangoLayout *AW_device_print::get_pl(int gc) {
+    PangoLayout *pl = pango_cairo_create_layout(get_cr(gc));
+    pango_layout_set_font_description(pl, get_common()->get_font(gc));
+    return pl;
+}
+
+cairo_t *AW_device_print::get_cr(int gc) {
+    get_common()->update_cr(prvt->cr, gc);
+    return prvt->cr;
 }
 
 void AW_device_print::close() {
-    GTK_NOT_IMPLEMENTED;
+    cairo_destroy(prvt->cr);
+    cairo_surface_destroy(prvt->surface);
 }
 
-GB_ERROR AW_device_print::open(char const* /*path*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+GB_ERROR AW_device_print::open(char const* path) {
+    AW_screen_area cliprect = get_cliprect();
+    prvt->surface = cairo_pdf_surface_create(path, cliprect.r, cliprect.b);
+    prvt->cr = cairo_create(prvt->surface);
+    clear(AW_ALL_DEVICES);
+    return NULL;
 }
 
 void AW_device_print::set_color_mode(bool /*mode*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
-bool AW_device_print::line_impl(int /*gc*/, const AW::LineVector& /*Line*/, AW_bitset /*filteri*/) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
-}
-
-bool AW_device_print::text_impl(int /*gc*/, const char */*str*/, const AW::Position& /*pos*/, AW_pos /*alignment*/, AW_bitset /*filteri*/, long /*opt_strlen*/) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
-}
-
-bool AW_device_print::box_impl(int /*gc*/, bool /*filled*/, const AW::Rectangle& /*rect*/, AW_bitset /*filteri*/) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
-}
-
-bool AW_device_print::circle_impl(int /*gc*/, bool /*filled*/, const AW::Position& /*center*/, const AW::Vector& /*radius*/, AW_bitset /*filteri*/) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
-}
-
-bool AW_device_print::arc_impl(int /*gc*/, bool /*filled*/, const AW::Position& /*center*/, const AW::Vector& /*radius*/, int /*start_degrees*/, int /*arc_degrees*/, AW_bitset /*filteri*/) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
-}
-
-bool AW_device_print::filled_area_impl(int /*gc*/, int /*npos*/, const AW::Position */*pos*/, AW_bitset /*filteri*/) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
-}
-
-bool AW_device_print::invisible_impl(const AW::Position& /*pos*/, AW_bitset /*filteri*/) {
-    GTK_NOT_IMPLEMENTED;
-    return false;
+    // no mode black and white
 }
 
 AW_DEVICE_TYPE AW_device_print::type() {

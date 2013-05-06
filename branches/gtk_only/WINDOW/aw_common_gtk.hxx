@@ -94,7 +94,7 @@ public:
     GtkWidget *get_window() const { return window; }
     GtkWidget *get_drawing_target(); 
 
-    cairo_t *get_CR(int gc);
+    void update_cr(cairo_t *cr, int gc, bool use_grey=false);
     PangoFontDescription* get_font(int gc) { return map_gc(gc)->get_font(); }
 
 };

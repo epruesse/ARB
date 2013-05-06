@@ -511,7 +511,6 @@ AW_xfig::~AW_xfig()
 
 void AW_xfig::print(AW_device *device) {
     const AW_screen_area&  window_size = device->get_area_size();
-    device->clear(-1);
     struct AW_xfig_text   *xtext;
     for (xtext = text; xtext; xtext=xtext->next) {
         char *str = xtext->text;

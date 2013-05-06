@@ -820,13 +820,15 @@ void AW_window::get_event(AW_event *eventi) const {
     *eventi = event;
 }
 
-AW_device_print *AW_window::get_print_device(AW_area /*area*/){
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+AW_device_print *AW_window::get_print_device(AW_area area){
+    AW_area_management *aram = prvt->areas[area];
+    aw_assert(NULL != aram);
+    return aram->get_print_device();
 }
 
 AW_device_size *AW_window::get_size_device(AW_area area){
     AW_area_management *aram        = prvt->areas[area];
+    aw_assert(NULL != aram);
     AW_device_size     *size_device = NULL;
 
     if (aram) {
@@ -1402,8 +1404,9 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (colnum == AW_DATA_BG) {
         AW_area_management* pMiddleArea = prvt->areas[AW_MIDDLE_AREA];
         if(pMiddleArea) {
-            GdkColor color = get_root()->getColor(color_table[colnum]);
-            gtk_widget_modify_bg(pMiddleArea->get_area(),GTK_STATE_NORMAL, &color);
+            // GdkColor color = get_root()->getColor(color_table[colnum]);
+            // gtk_widget_modify_bg(pMiddleArea->get_area(),GTK_STATE_NORMAL, &color);
+            pMiddleArea->get_common()->set_bg_color(color_table[colnum]);
         }
     }
     return (AW_color_idx)colnum;
