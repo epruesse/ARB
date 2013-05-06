@@ -23,12 +23,35 @@
 
 #include <iostream>
 
+// #define DUMP_EVENTS
 
-
-#if defined(DEBUG)
-// #define DUMP_KEYEVENTS
+#if defined(DUMP_EVENTS)
+#  define DUMP_EVENT(type)                                              \
+    printf("event %s: x=%4i y=%4i w=%4i h=%4i  "                        \
+           "b=%i m=%i(%s%s%s) k=%i(%c)\n", \
+           type, aww->event.x, aww->event.y, aww->event.width,          \
+           aww->event.height, aww->event.button,                        \
+           aww->event.keymodifier,                                      \
+           aww->event.keymodifier & AW_KEYMODE_SHIFT ? "S" : "",        \
+           aww->event.keymodifier & AW_KEYMODE_CONTROL ? "C" : "",      \
+           aww->event.keymodifier & AW_KEYMODE_ALT ? "A" : "",          \
+           aww->event.keycode,                                          \
+           aww->event.character)
+#else
+#  define DUMP_EVENT(type)
 #endif // DEBUG
 
+static void aw_event_clear(AW_window* aww) {
+    aww->event.type        = AW_No_Event;
+    aww->event.button      = AW_BUTTON_NONE;
+    aww->event.x           = -1;
+    aww->event.y           = -1;
+    aww->event.width       = -1;
+    aww->event.height      = -1;
+    aww->event.keymodifier = AW_KEYMODE_NONE;
+    aww->event.keycode     = AW_KEY_NONE;
+    aww->event.character   = '\0';
+}
 
 class AW_area_management::Pimpl {
 public:
@@ -98,66 +121,79 @@ extern "C"  gboolean motion_event_cbproxy(GtkWidget *, GdkEventMotion *ev, gpoin
 }
 
 gboolean AW_area_management::Pimpl::handle_event(GdkEventExpose* event) {
-    aww->event.type = (AW_event_type) event->type;
-    aww->event.x = event->area.x;
-    aww->event.y = event->area.y;
-    aww->event.width = event->area.width;
-    aww->event.height = event->area.height;
+    aw_event_clear(aww);
+    aww->event.type        = (AW_event_type) event->type;
+    aww->event.x           = event->area.x;
+    aww->event.y           = event->area.y;
+    aww->event.width       = event->area.width;
+    aww->event.height      = event->area.height;
 
+    DUMP_EVENT("expose");
     expose_cb->run_callback();
     return false;
 }
 
-gboolean AW_area_management::Pimpl::handle_event(GdkEventConfigure*) {
+gboolean AW_area_management::Pimpl::handle_event(GdkEventConfigure* event) {
+    aw_event_clear(aww);
+    aww->event.type   = (AW_event_type) event->type;
+    aww->event.x      = event->x;
+    aww->event.y      = event->y;
+    aww->event.width  = event->width;
+    aww->event.height = event->height;
+
+    DUMP_EVENT("resize");
     resize_cb->run_callback();
     return false;
 }
 
 gboolean AW_area_management::Pimpl::handle_event(GdkEventButton *event) {
+    aw_event_clear(aww);
     aww->event.type        = (AW_event_type) event->type;    
     aww->event.button      = (AW_MouseButton) event->button;
     aww->event.x           = event->x;
     aww->event.y           = event->y; 
     aww->event.keymodifier = (AW_key_mod) event->state;
-    aww->event.keycode     = AW_KEY_NONE;
-    aww->event.character   = '\0';
 
+    DUMP_EVENT("input/button");
     input_cb->run_callback();
     return false;
 }
+
 gboolean AW_area_management::Pimpl::handle_event(GdkEventKey *event) {
+    aw_event_clear(aww);
     aww->event.type        = (AW_event_type) event->type;    
-    aww->event.button      = AW_BUTTON_NONE;
-    aww->event.x           = 0; 
-    aww->event.y           = 0; 
     aww->event.keycode     = (AW_key_code) event->keyval;
-    aww->event.keymodifier = (AW_key_mod) event->state;      
-    aww->event.character   = '\0';
-  
+    aww->event.keymodifier = (AW_key_mod) event->state;
+
     gchar* str = gdk_keyval_name(event->keyval);
     if (strlen(str) == 1) {
         aww->event.character = str[0];
         aww->event.keycode = AW_KEY_ASCII;
     }
  
+    DUMP_EVENT("input/key");
     input_cb->run_callback();
     return true;
 }
+
 gboolean AW_area_management::Pimpl::handle_event(GdkEventMotion *event) {
-    int x, y;
-    GdkModifierType state;
-    gdk_window_get_pointer(event->window, &x, &y, &state);
-    
-    if (state & GDK_BUTTON1_MASK) {
-        /*
-          aww->event.type = AW_Mouse_Drag;
-          aww->event.x = x;
-          aww->event.y = y;
-          aww->event.keycode = AW_KEY_NONE;
-        */
-            
-        motion_cb->run_callback();
+    aw_event_clear(aww);
+    aww->event.type        = (AW_event_type) event->type;
+    aww->event.x           = event->x;
+    aww->event.y           = event->y;
+    aww->event.keymodifier = (AW_key_mod) event->state;
+
+    if (event->state & GDK_BUTTON1_MASK) {
+        aww->event.button = AW_BUTTON_LEFT;
+    } else if (event->state & GDK_BUTTON2_MASK) {
+        aww->event.button = AW_BUTTON_MIDDLE;
+    } else if (event->state & GDK_BUTTON3_MASK) {
+        aww->event.button = AW_BUTTON_RIGHT;
     }
+  
+    DUMP_EVENT("motion");
+    motion_cb->run_callback();
+
     return false;
 }
 
