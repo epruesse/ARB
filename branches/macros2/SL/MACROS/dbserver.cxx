@@ -25,7 +25,7 @@
 
 #if defined(DEBUG)
 // # define DUMP_REMOTE_ACTIONS
-// # define DUMP_AUTHORIZATION
+// # define DUMP_AUTHORIZATION // see also ../../ARBDB/adtools.cxx@DUMP_AUTH_HANDSHAKE
 #endif
 
 #if defined(DUMP_REMOTE_ACTIONS)
@@ -90,7 +90,8 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
                     }
                     else { // another process with same app-id acknowledged faster
                         IF_DUMP_AUTH(fprintf(stderr, "did not acknowledge '%s' with pid %i (pid %i was faster)\n", remote.authAck(), pid, authAck));
-                        // @@@ we got two potential clients which could execute macro code -> should set global macro error (and abort macro execution)
+                        const char *merr = GBS_global_string("Detected two clients with id '%s'", remote.appID());
+                        error            = GB_set_macro_error(gb_main, merr);
                     }
                 }
             }

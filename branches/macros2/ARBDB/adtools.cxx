@@ -616,7 +616,7 @@ static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, c
 
 static void mark_as_macro_executor(GBDATA *gb_main, bool mark) {
     // call this with 'mark' = true to mark yourself as "client running a macro"
-    // -> GB_close will automatically announce termination of this client to main DB (MACRO_TRIGGER_CONTAINER/terminated)
+    // -> GB_close will automatically announce termination of this client to main DB (MACRO_TRIGGER_TERMINATED)
     // do NOT call with 'mark' = false
 
     static bool client_is_macro_executor = false;
@@ -633,7 +633,7 @@ static void mark_as_macro_executor(GBDATA *gb_main, bool mark) {
         if (client_is_macro_executor) {
             GB_transaction ta(gb_main);
 
-            GBDATA *gb_terminated = GB_search(gb_main, MACRO_TRIGGER_CONTAINER "/terminated", GB_FIND);
+            GBDATA *gb_terminated = GB_search(gb_main, MACRO_TRIGGER_TERMINATED, GB_FIND);
             gb_assert(gb_terminated); // should have been created by macro caller
             if (gb_terminated) {
                 error = GB_write_int(gb_terminated, GB_read_int(gb_terminated)+1); // notify macro caller
@@ -651,7 +651,7 @@ inline GB_ERROR set_intEntry_to(GBDATA *gb_main, const char *path, int value) {
 }
 
 #if defined(DEBUG)
-// # define DUMP_AUTH_HANDSHAKE
+// # define DUMP_AUTH_HANDSHAKE // see also ../SL/MACROS/dbserver.cxx@DUMP_AUTHORIZATION
 #endif
 
 #if defined(DUMP_AUTH_HANDSHAKE)
@@ -659,6 +659,43 @@ inline GB_ERROR set_intEntry_to(GBDATA *gb_main, const char *path, int value) {
 #else
 # define IF_DUMP_HANDSHAKE(cmd)
 #endif
+
+GB_ERROR GB_set_macro_error(GBDATA *gb_main, const char *curr_error) {
+    GB_ERROR        error          = NULL;
+    GB_transaction  ta(gb_main);
+    GBDATA         *gb_macro_error = GB_searchOrCreate_string(gb_main, MACRO_TRIGGER_ERROR, curr_error);
+    if (gb_macro_error) {
+        const char *prev_error = GB_read_char_pntr(gb_macro_error);
+        if (prev_error && prev_error[0]) { // already have an error
+            if (strstr(prev_error, curr_error) == 0) { // do not add message twice
+                error = GB_write_string(gb_macro_error, GBS_global_string("%s\n%s", prev_error, curr_error));
+            }
+        }
+        else {
+            error = GB_write_string(gb_macro_error, curr_error);
+        }
+    }
+    return error;
+}
+GB_ERROR GB_get_macro_error(GBDATA *gb_main) {
+    GB_ERROR error = NULL;
+
+    GB_transaction  ta(gb_main);
+    GBDATA         *gb_macro_error = GB_search(gb_main, MACRO_TRIGGER_ERROR, GB_FIND);
+    if (gb_macro_error) {
+        const char *macro_error       = GB_read_char_pntr(gb_macro_error);
+        if (!macro_error) macro_error = GBS_global_string("failed to retrieve error message (Reason: %s)", GB_await_error());
+        if (macro_error[0]) error     = GBS_global_string("macro-error: %s", macro_error);
+    }
+    return error;
+}
+GB_ERROR GB_clear_macro_error(GBDATA *gb_main) {
+    GB_transaction  ta(gb_main);
+    GB_ERROR        error          = NULL;
+    GBDATA         *gb_macro_error = GB_search(gb_main, MACRO_TRIGGER_ERROR, GB_FIND);
+    if (gb_macro_error) error      = GB_write_string(gb_macro_error, "");
+    return error;
+}
 
 static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remote_awars& remote) {
     // Called before any remote command will be written to DB.
@@ -668,7 +705,8 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
 
     bool wait_for_app = false;
 
-    GB_ERROR error = GB_begin_transaction(gb_main);
+    GB_ERROR error    = GB_begin_transaction(gb_main);
+    if (!error) error = GB_get_macro_error(gb_main);
     if (!error) {
         GBDATA *gb_granted     = GB_searchOrCreate_int(gb_main, remote.granted(), 0);
         if (!gb_granted) error = GB_await_error();
@@ -714,12 +752,6 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
                                 wait_for_app = false;
                                 IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [granted permission to execute macros to pid %i]\n", ack_pid));
                             }
-                        }
-                        else {
-                            // @@@ fail here in case we are recording? or fail generally?
-                            GB_warningf("Warning: two instances of %s detected (pids=%li and %li)\n"
-                                        "One of them (%li) has been randomly chosen to execute macro commands",
-                                        remote.appID(), old_pid, ack_pid, old_pid);
                         }
                     }
                     else {

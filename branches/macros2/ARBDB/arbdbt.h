@@ -39,8 +39,10 @@
 
 #define ERROR_CONTAINER_PATH    "tmp/message/pending"
 
-#define REMOTE_BASE             "tmp/remote/"
-#define MACRO_TRIGGER_CONTAINER REMOTE_BASE "trigger"
+#define REMOTE_BASE              "tmp/remote/"
+#define MACRO_TRIGGER_CONTAINER  REMOTE_BASE "trigger"
+#define MACRO_TRIGGER_TERMINATED MACRO_TRIGGER_CONTAINER "/terminated"
+#define MACRO_TRIGGER_ERROR      MACRO_TRIGGER_CONTAINER "/error"
 
 #ifdef FAKE_VTAB_PTR
 // if defined, FAKE_VTAB_PTR contains 'char'

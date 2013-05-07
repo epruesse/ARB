@@ -114,17 +114,14 @@ class ExecutingMacro {
 public:
 
     static void add(AW_RCB1 execution_done_cb, AW_CL client_data) { new ExecutingMacro(execution_done_cb, client_data); }
-    static void done(GBDATA *gbd) {
-        ma_assert(head); // fails when a macro is called from command line
+    static bool done() {
+        // returns true if the last macro (of all recursively called macros) terminates
+        ma_assert(head);
         if (head) {
             head->call();
             head->destroy();
         }
-
-        if (!head) { // last macro terminates
-            GB_ERROR error = clearMacroExecutionAuthorization(GB_get_root(gbd));
-            aw_message_if(error);
-        }
+        return !head;
     }
 };
 
@@ -132,7 +129,22 @@ ExecutingMacro *ExecutingMacro::head = NULL;
 
 static void macro_terminated(GBDATA *gb_terminated, int *, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
     ma_assert(cb_type == GB_CB_CHANGED);
-    ExecutingMacro::done(gb_terminated);
+    bool allMacrosTerminated = ExecutingMacro::done();
+    if (allMacrosTerminated) {
+        GBDATA   *gb_main = GB_get_root(gb_terminated);
+        GB_ERROR  error   = clearMacroExecutionAuthorization(gb_main);
+        aw_message_if(error);
+
+        // check for global macro error
+        GB_ERROR macro_error = GB_get_macro_error(gb_main);
+        if (macro_error) {
+            aw_message_if(macro_error);
+            aw_message("Warning: macro terminated (somewhere in the middle)");
+
+            GB_ERROR clr_error = GB_clear_macro_error(gb_main);
+            if (clr_error) fprintf(stderr, "Warning: failed to clear macro error (Reason: %s)\n", clr_error);
+        }
+    }
 }
 
 static void dont_announce_done(AW_root*, AW_CL) {}
@@ -151,9 +163,9 @@ GB_ERROR MacroRecorder::execute(const char *file, AW_RCB1 execution_done_cb, AW_
         GBDATA         *gb_main = get_gbmain();
         GB_transaction  ta(gb_main);
 
-        GBDATA *gb_term = GB_search(gb_main, MACRO_TRIGGER_CONTAINER "/terminated", GB_FIND);
+        GBDATA *gb_term = GB_search(gb_main, MACRO_TRIGGER_TERMINATED, GB_FIND);
         if (!gb_term) {
-            gb_term = GB_search(gb_main, MACRO_TRIGGER_CONTAINER "/terminated", GB_INT);
+            gb_term = GB_search(gb_main, MACRO_TRIGGER_TERMINATED, GB_INT);
             if (!gb_term) {
                 error = GB_await_error();
             }
