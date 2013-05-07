@@ -11,13 +11,13 @@
 // #define FINDCORR
 
 #include <servercntrl.h>
+#include <arbdb.h>
 #include <awt.hxx>
 #include <awt_canvas.hxx>
 
 #include <aw_preset.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
-#include <arbdb.h>
 #include <macros.hxx>
 #include <aw_question.hxx>
 
@@ -43,7 +43,12 @@ static void DI_timer(AW_root *aw_root, AW_CL cl_gbmain, AW_CL cd2) {
     aw_root->add_timed_callback(500, DI_timer, cl_gbmain, cd2);
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
+    aw_initstatus();
+
+    GB_shell shell;
+    AW_root *aw_root = AWT_create_root("dist.arb", "ARB_DIST", need_macro_ability(), &argc, &argv);
+
     if (argc >= 2 && strcmp(argv[1], "--help") == 0) {
         fprintf(stderr,
                 "Usage: arb_dist\n"
@@ -51,11 +56,6 @@ int ARB_main(int argc, const char *argv[]) {
                 );
         exit(-1);
     }
-
-    aw_initstatus();
-
-    GB_shell shell;
-    AW_root *aw_root = AWT_create_root("dist.arb", "ARB_DIST", need_macro_ability());
 
     GB_ERROR error = NULL;
     {

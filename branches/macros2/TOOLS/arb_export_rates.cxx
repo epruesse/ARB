@@ -27,7 +27,7 @@
 #define CATSCALE 0.71           // downscale factor for rates
 #define MIO      1000000        // factor to scale rate-values to integers (for RAxML)
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     argc--; argv++;
 
     if (argc<1 || strcmp(argv[0], "--help") == 0) {

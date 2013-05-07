@@ -848,11 +848,6 @@ static AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
     return aws;
 }
 
-static void NT_focus_cb(AW_window */*aww*/) {
-    GB_transaction dummy(GLOBAL.gb_main);
-}
-
-
 static void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     AWT_canvas *canvas = (AWT_canvas*)cd1;
@@ -990,18 +985,21 @@ static AW_window *create_colorize_species_window(AW_root *aw_root) {
     return QUERY::create_colorize_items_window(aw_root, GLOBAL.gb_main, SPECIES_get_selector());
 }
 
-static void NT_update_marked_counter(AW_window *aww, long count) {
-    const char *buffer = count ? GBS_global_string("%li marked", count) : "";
-    aww->get_root()->awar(AWAR_MARKED_SPECIES_COUNTER)->write_string(buffer);
-}
-
-static void nt_count_marked(AW_window *aww) {
+/**
+ * Updates marked counter and issues redraw on tree if #marked changes.
+ * Called on any change of species_information container.
+ */
+static void NT_update_marked_counter(GBDATA* /*species_info*/, int* cl_aww, GB_CB_TYPE /*cbt*/) {
+    AW_window* aww = (AW_window*) cl_aww;
     long count = GBT_count_marked_species(GLOBAL.gb_main);
-    NT_update_marked_counter(aww, count);
-}
-
-static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE) {
-    nt_count_marked((AW_window*)cl_aww);
+    const char *buffer = count ? GBS_global_string("%li marked", count) : "";
+    AW_awar *counter = aww->get_root()->awar(AWAR_MARKED_SPECIES_COUNTER);
+    char *oldval = counter->read_string();
+    if (strcmp(oldval, buffer)) {
+        counter->write_string(buffer);
+        aww->get_root()->awar(AWAR_TREE_REFRESH)->touch();
+    }
+    free(oldval);
 }
 
 static void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
@@ -1849,14 +1847,13 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->create_button("selection_admin", AWAR_MARKED_SPECIES_COUNTER);
     {
         GBDATA *gb_species_data = GBT_get_species_data(GLOBAL.gb_main);
-        GB_add_callback(gb_species_data, GB_CB_CHANGED, nt_auto_count_marked_species, (int*)awm);
-        nt_count_marked(awm);
+        GB_add_callback(gb_species_data, GB_CB_CHANGED, NT_update_marked_counter, (int*)awm);
+        NT_update_marked_counter(NULL, (int*)awm, GB_CB_NONE);
     }
 
     // set height of top area:
     awm->set_info_area_height(bottomy+2);
     awm->set_bottom_area_height(0);
-    awr->set_focus_callback((AW_RCB)NT_focus_cb, (AW_CL)GLOBAL.gb_main, 0);
 
     // ------------------------------------
     //      Autostarts for development

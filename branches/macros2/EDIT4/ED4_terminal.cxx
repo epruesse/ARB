@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include <arbdb.h>
 #include <ed4_extern.hxx>
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
@@ -23,7 +24,6 @@
 #include <aw_question.hxx>
 #include <awt_seq_colors.hxx>
 #include <st_window.hxx>
-#include <arbdb.h>
 
 // -----------------------------------
 //      static terminal properties
@@ -627,7 +627,11 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
             break;
         }
         default:
+#ifdef ARB_GTK
+            // there can be many other events here...
+#else
             e4_assert(0);
+#endif
             break;
     }
     return (ED4_R_OK);

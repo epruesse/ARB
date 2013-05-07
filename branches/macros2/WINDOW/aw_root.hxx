@@ -138,7 +138,7 @@ public:
     GB_HASH    *hash_for_windows;
 
     // the real public section:
-    AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker);
+    AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int* argc, char*** argv);
 #if defined(UNIT_TESTS)
     AW_root(const char *properties); // fake-root for unit-tests (allows access to awar-subsystem)
 #endif

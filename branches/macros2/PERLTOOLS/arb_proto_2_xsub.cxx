@@ -925,7 +925,7 @@ static void loadTypemap(const char *typemap_filename) {
     Type::globalTypemap.load(*typemap);
 }
 
-int ARB_main(int argc, const char **argv)
+int ARB_main(int argc, char **argv)
 {
     bool error_occurred = false;
     try {

@@ -108,7 +108,7 @@ static GB_ERROR save_tree_as_newick(GBT_TREE *tree, const char *savename) {
     return error;
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     GB_ERROR error = NULL;
 
     if (argc<2) {

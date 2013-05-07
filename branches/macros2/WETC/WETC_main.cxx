@@ -8,15 +8,18 @@
 //                                                                  //
 // ================================================================ //
 
+#include <arbdb.h>
 #include <awt.hxx>
 #include <aw_window.hxx>
 #include <aw_root.hxx>
-#include <arbdb.h>
 
 AW_HEADER_MAIN
 
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
+    GB_shell shell;
+    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_WETC", new NullTracker, &argc, &argv); // no macro recording here
+
     GB_ERROR error = NULL;
 
     if (argc != 3) {
@@ -30,9 +33,6 @@ int ARB_main(int argc, const char *argv[]) {
             error = GBS_global_string("Unexpected parameter '%s'", com);
         }
         else {
-            GB_shell shell;
-            AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_WETC", new NullTracker); // no macro recording here
-
             AWT_show_file(aw_root, file);
             aw_root->window_hide(NULL);
             AWT_install_cb_guards();

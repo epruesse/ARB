@@ -1088,11 +1088,6 @@ static AW_window *NT_create_tree_setting(AW_root *aw_root)
 
 }
 
-static void PA_focus_cb(AW_window *, GBDATA *gb_main_par)
-{
-    GB_transaction dummy(gb_main_par);
-}
-
 // -----------------------
 //      test functions
 
@@ -1520,7 +1515,6 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->set_info_area_height(db_treey);
 
     awm->set_bottom_area_height(0);
-    awm->set_focus_callback((AW_CB)PA_focus_cb, (AW_CL)ntw->gb_main, 0);
 
     aw_parent->hide(); // hide parent
     awm->show();
@@ -1673,11 +1667,11 @@ void PARS_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype) {
     }
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS", need_macro_ability());
+    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS", need_macro_ability(), &argc, &argv);
     AD_map_viewer_aw_root = aw_root;
 
     ap_main     = new AP_main;

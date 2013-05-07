@@ -249,7 +249,7 @@ static void show_help() {
     arb_print_server_params();
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     arb_params *params = arb_trace_argv(&argc, (const char **)argv);
 
     bool        help  = false;

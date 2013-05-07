@@ -8,10 +8,10 @@
 //                                                                 //
 // =============================================================== //
 
+#include <arbdb.h>
 #include "ed4_class.hxx"
 #include <aw_msg.hxx>
 #include <aw_question.hxx>
-#include <arbdb.h>
 
 ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4_properties prop,  ED4_base **found_member, ED4_level return_level)
 {
