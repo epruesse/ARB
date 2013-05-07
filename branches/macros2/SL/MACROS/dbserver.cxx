@@ -21,8 +21,29 @@
 #include <aw_msg.hxx>
 #include <aw_window.hxx>
 
-#define ARB_SERVE_DB_TIMER 50
-#define ARB_CHECK_DB_TIMER 200
+#include <unistd.h>
+
+#if defined(DEBUG)
+// # define DUMP_REMOTE_ACTIONS
+// # define DUMP_AUTHORIZATION
+#endif
+
+#if defined(DUMP_REMOTE_ACTIONS)
+# define IF_DUMP_ACTION(cmd) cmd
+#else
+# define IF_DUMP_ACTION(cmd)
+#endif
+
+#if defined(DUMP_AUTHORIZATION)
+# define IF_DUMP_AUTH(cmd) cmd
+#else
+# define IF_DUMP_AUTH(cmd)
+#endif
+
+
+
+#define ARB_SERVE_DB_TIMER 50  // ms
+#define ARB_CHECK_DB_TIMER 200 // ms
 
 struct db_interrupt_data : virtual Noncopyable {
     remote_awars  remote;
@@ -34,78 +55,119 @@ struct db_interrupt_data : virtual Noncopyable {
     {}
 };
 
-static GB_ERROR check_for_remote_command(AW_root *aw_root, AW_default gb_maind, const remote_awars& remote) {
-    GBDATA *gb_main = (GBDATA *)gb_maind;
+__ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, const db_interrupt_data& dib) { // @@@ make member of db_interrupt_data?
+    GB_ERROR             error   = 0;
+    GBDATA              *gb_main = dib.gb_main;
+    const remote_awars&  remote  = dib.remote;
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(gb_main); // @@@ begin required/possible here?
 
-    char *action   = GBT_readOrCreate_string(gb_main, remote.action(), "");
-    char *value    = GBT_readOrCreate_string(gb_main, remote.value(), "");
-    char *tmp_awar = GBT_readOrCreate_string(gb_main, remote.awar(), "");
+    long  *granted    = GBT_readOrCreate_int(gb_main, remote.granted(), 0);
+    pid_t  pid        = getpid();
+    bool   authorized = granted && *granted == pid;
 
-    if (tmp_awar[0]) {
-        GB_ERROR error = 0;
-        AW_awar *found_awar = aw_root->awar_no_error(tmp_awar);
-        if (!found_awar) {
-            error = GBS_global_string("Unknown variable '%s'", tmp_awar);
-        }
+    if (!authorized) {
+        if (!granted) error = GBS_global_string("Failed to access '%s'", remote.granted());
         else {
-            if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
-                char *read_value = aw_root->awar(tmp_awar)->read_as_string();
-                GBT_write_string(gb_main, remote.value(), read_value);
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", tmp_awar, read_value);
-#endif // DUMP_REMOTE_ACTIONS
-                free(read_value);
-                // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
-                action[0]        = 0;
-                GBT_write_string(gb_main, remote.action(), "");
+            arb_assert(*granted != pid);
+
+            // @@@ differ between *granted == 0 and *granted != 0?
+
+            long *authReq       = GBT_readOrCreate_int(gb_main, remote.authReq(), 0);
+            if (!authReq) error = GBS_global_string("Failed to access '%s'", remote.authReq());
+            else if (*authReq) {
+                GBDATA *gb_authAck     = GB_searchOrCreate_int(gb_main, remote.authAck(), 0);
+                if (!gb_authAck) error = GBS_global_string("Failed to access '%s'", remote.authAck());
+                else {
+                    pid_t authAck = GB_read_int(gb_authAck);
+                    if (authAck == 0) {
+                        // ack this process can execute remote commands
+                        error = GB_write_int(gb_authAck, pid);
+                        IF_DUMP_AUTH(fprintf(stderr, "acknowledging '%s' with pid %i\n", remote.authAck(), pid));
+                    }
+                    else if (authAck == pid) {
+                        // already acknowledged -- wait
+                    }
+                    else { // another process with same app-id acknowledged faster
+                        IF_DUMP_AUTH(fprintf(stderr, "did not acknowledge '%s' with pid %i (pid %i was faster)\n", remote.authAck(), pid, authAck));
+                        // @@@ we got two potential clients which could execute macro code -> should set global macro error (and abort macro execution)
+                    }
+                }
             }
-            else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
-                aw_root->awar(tmp_awar)->touch();
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar);
-#endif // DUMP_REMOTE_ACTIONS
-                // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
-                action[0] = 0;
-                GBT_write_string(gb_main, remote.action(), "");
+        }
+        error = GB_end_transaction(gb_main, error);
+    }
+    else {
+        char *action   = GBT_readOrCreate_string(gb_main, remote.action(), "");
+        char *value    = GBT_readOrCreate_string(gb_main, remote.value(), "");
+        char *tmp_awar = GBT_readOrCreate_string(gb_main, remote.awar(), "");
+
+        if (tmp_awar[0]) {
+            AW_awar *found_awar = aw_root->awar_no_error(tmp_awar);
+            if (!found_awar) {
+                error = GBS_global_string("Unknown variable '%s'", tmp_awar);
             }
             else {
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value);
-#endif // DUMP_REMOTE_ACTIONS
-                error = aw_root->awar(tmp_awar)->write_as_string(value);
+                if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
+                    char *read_value = aw_root->awar(tmp_awar)->read_as_string();
+                    GBT_write_string(gb_main, remote.value(), read_value);
+                    IF_DUMP_ACTION(printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", tmp_awar, read_value));
+                    free(read_value);
+                    action[0] = 0; // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
+                    GBT_write_string(gb_main, remote.action(), "");
+                }
+                else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
+                    aw_root->awar(tmp_awar)->touch();
+                    IF_DUMP_ACTION(printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar));
+                    action[0] = 0; // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
+                    GBT_write_string(gb_main, remote.action(), "");
+                }
+                else {
+                    IF_DUMP_ACTION(printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value));
+                    error = aw_root->awar(tmp_awar)->write_as_string(value);
+                }
             }
-        }
-        GBT_write_string(gb_main, remote.result(), error ? error : "");
-        GBT_write_string(gb_main, remote.awar(), ""); // tell perl-client call has completed (BIO::remote_awar and BIO:remote_read_awar)
+            GBT_write_string(gb_main, remote.result(), error ? error : "");
+            GBT_write_string(gb_main, remote.awar(), ""); // tell perl-client call has completed (BIO::remote_awar and BIO:remote_read_awar)
 
-        aw_message_if(error);
+            aw_message_if(error);
+        }
+        GB_pop_transaction(gb_main); // @@@ end required/possible here?
+
+        if (action[0]) {
+            AW_cb_struct *cbs = aw_root->search_remote_command(action);
+
+            if (cbs) {
+                IF_DUMP_ACTION(printf("remote command (%s) found, running callback\n", action));
+                cbs->run_callback();
+                GBT_write_string(gb_main, remote.result(), "");
+            }
+            else {
+                IF_DUMP_ACTION(printf("remote command (%s) is unknown\n", action));
+                aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
+                GBT_write_string(gb_main, remote.result(), GB_await_error());
+            }
+            GBT_write_string(gb_main, remote.action(), ""); // tell perl-client call has completed (remote_action)
+        }
+
+        free(tmp_awar);
+        free(value);
+        free(action);
     }
-    GB_pop_transaction(gb_main);
 
-    if (action[0]) {
-        AW_cb_struct *cbs = aw_root->search_remote_command(action);
+    if (error) fprintf(stderr, "Error in check_for_remote_command: %s\n", error);
+    return error;
+}
 
-#if defined(DUMP_REMOTE_ACTIONS)
-        printf("remote command (%s) exists=%i\n", action, int(cbs != 0));
-#endif // DUMP_REMOTE_ACTIONS
-        if (cbs) {
-            cbs->run_callback();
-            GBT_write_string(gb_main, remote.result(), "");
-        }
-        else {
-            aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
-            GBT_write_string(gb_main, remote.result(), GB_await_error());
-        }
-        GBT_write_string(gb_main, remote.action(), ""); // tell perl-client call has completed (remote_action)
+static bool remote_command_handler(AW_root *awr, const db_interrupt_data& dib) { // @@@ use a callback instead of repeatedly calling this function
+    // @@@ make member of db_interrupt_data?
+    // returns false in case of errors
+    GB_ERROR error = check_for_remote_command(awr, dib);
+    if (error) {
+        aw_message(error);
+        return false;
     }
-
-    free(tmp_awar);
-    free(value);
-    free(action);
-
-    return 0;
+    return true;
 }
 
 static void serve_db_interrupt(AW_root *awr, AW_CL cl_db_interrupt_data) { // server
@@ -113,8 +175,7 @@ static void serve_db_interrupt(AW_root *awr, AW_CL cl_db_interrupt_data) { // se
 
     bool success = GBCMS_accept_calls(dib->gb_main, false);
     while (success) {
-        check_for_remote_command(awr, dib->gb_main, dib->remote);
-        success = GBCMS_accept_calls(dib->gb_main, true);
+        success = remote_command_handler(awr, *dib) && GBCMS_accept_calls(dib->gb_main, true);
     }
 
     awr->add_timed_callback(ARB_SERVE_DB_TIMER, serve_db_interrupt, cl_db_interrupt_data);
@@ -122,8 +183,7 @@ static void serve_db_interrupt(AW_root *awr, AW_CL cl_db_interrupt_data) { // se
 
 static void check_db_interrupt(AW_root *awr, AW_CL cl_db_interrupt_data) { // client
     db_interrupt_data *dib = (db_interrupt_data*)cl_db_interrupt_data;
-
-    check_for_remote_command(awr, dib->gb_main, dib->remote);
+    remote_command_handler(awr, *dib);
     awr->add_timed_callback(ARB_CHECK_DB_TIMER, check_db_interrupt, cl_db_interrupt_data);
 }
 
@@ -154,6 +214,11 @@ GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *
     }
     else { // client
         aw_root->add_timed_callback(ARB_CHECK_DB_TIMER, check_db_interrupt, AW_CL(new db_interrupt_data(gb_main, application_id)));
+    }
+
+    if (!error) {
+        // handle remote commands once (to create DB-entries; w/o they are created after startup of first DB-client)
+        remote_command_handler(aw_root, db_interrupt_data(gb_main, application_id));
     }
 
     return error;

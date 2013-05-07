@@ -16,6 +16,8 @@
 
 #include <arbdbt.h>
 #include <aw_msg.hxx>
+#include <arb_strarray.h>
+#include <ad_remote.h>
 
 bool BoundActionTracker::reconfigure(const char *application_id, GBDATA *gb_main) {
     ma_assert(gb_main == gbmain);
@@ -52,6 +54,45 @@ GB_ERROR MacroRecorder::stop_recording() {
     return error;
 }
 
+static void getKnownMacroClients(ConstStrArray& clientNames, GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+
+    GBDATA *gb_remote  = GB_search(gb_main, REMOTE_BASE, GB_FIND);
+    GBDATA *gb_control = GB_search(gb_main, MACRO_TRIGGER_CONTAINER, GB_FIND);
+
+    clientNames.erase();
+    if (gb_remote) {
+        for (GBDATA *gb_client = GB_child(gb_remote); gb_client; gb_client = GB_nextChild(gb_client)) {
+            if (gb_client != gb_control) {
+                const char *client_id = GB_read_key_pntr(gb_client);
+                clientNames.put(client_id);
+            }
+        }
+    }
+}
+__ATTR__USERESULT inline GB_ERROR setIntEntryToZero(GBDATA *gb_main, const char *entryPath) {
+    GBDATA *gbe = GB_search(gb_main, entryPath, GB_INT);
+    return gbe ? GB_write_int(gbe, 0) : GB_await_error();
+}
+
+__ATTR__USERESULT static GB_ERROR clearMacroExecutionAuthorization(GBDATA *gb_main) {
+    // clear all granted client authorizations
+    GB_transaction ta(gb_main);
+    GB_ERROR       error = NULL;
+
+    ConstStrArray clientNames;
+    getKnownMacroClients(clientNames, gb_main);
+
+    for (size_t i = 0; i<clientNames.size() && !error; ++i) {
+        remote_awars remote(clientNames[i]);
+        error             = setIntEntryToZero(gb_main, remote.authReq());
+        if (!error) error = setIntEntryToZero(gb_main, remote.authAck());
+        if (!error) error = setIntEntryToZero(gb_main, remote.granted());
+    }
+    if (error) error = GBS_global_string("error in clearMacroExecutionAuthorization: %s", error);
+    return error;
+}
+
 class ExecutingMacro {
     AW_RCB1 done_cb;
     AW_CL   cd;
@@ -73,20 +114,25 @@ class ExecutingMacro {
 public:
 
     static void add(AW_RCB1 execution_done_cb, AW_CL client_data) { new ExecutingMacro(execution_done_cb, client_data); }
-    static void done() {
-        // ma_assert(head); // fails when a macro is called from command line
+    static void done(GBDATA *gbd) {
+        ma_assert(head); // fails when a macro is called from command line
         if (head) {
             head->call();
             head->destroy();
+        }
+
+        if (!head) { // last macro terminates
+            GB_ERROR error = clearMacroExecutionAuthorization(GB_get_root(gbd));
+            aw_message_if(error);
         }
     }
 };
 
 ExecutingMacro *ExecutingMacro::head = NULL;
 
-static void macro_terminated(GBDATA */*gb_terminated*/, int *, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
+static void macro_terminated(GBDATA *gb_terminated, int *, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
     ma_assert(cb_type == GB_CB_CHANGED);
-    ExecutingMacro::done();
+    ExecutingMacro::done(gb_terminated);
 }
 
 static void dont_announce_done(AW_root*, AW_CL) {}

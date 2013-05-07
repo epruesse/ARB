@@ -1148,7 +1148,7 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
 
     if (wait_extra_time) {
         timeout.tv_sec = 0;
-        timeout.tv_usec = 100000;
+        timeout.tv_usec = 100000; // 100 ms
     }
     else {
         timeout.tv_sec = (int)(hs->timeout / 1000);

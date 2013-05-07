@@ -119,11 +119,13 @@ trackers.o: macros.hxx
 trackers.o: recmac.hxx
 trackers.o: trackers.hxx
 trackers.o: $(ARBHOME)/INCLUDE/ad_prot.h
+trackers.o: $(ARBHOME)/INCLUDE/ad_remote.h
 trackers.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_assert.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_core.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_error.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_msg.h
+trackers.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_string.h
 trackers.o: $(ARBHOME)/INCLUDE/arbdb.h
 trackers.o: $(ARBHOME)/INCLUDE/arbdb_base.h

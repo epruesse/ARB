@@ -574,21 +574,23 @@ GBDATA *GBT_open(const char *path, const char *opent) {
  * - BIO::remote_read_awar      (use of GBT_remote_read_awar)
  */
 
-NOT4PERL char *GBT_get_remote_awar_base(const char *application) {
-    IF_ASSERTION_USED(assert_valid_application_name(application));
-    return GBS_global_string_copy(REMOTE_BASE "%s", application);
-}
-
-static GBDATA *gbt_remote_search_awar(GBDATA *gb_main, const char *awar_name) {
-    GBDATA *gb_action;
+static GBDATA *wait_for_dbentry(GBDATA *gb_main, const char *entry) {
+    GBDATA *gbd;
     while (1) {
         GB_begin_transaction(gb_main);
-        gb_action = GB_search(gb_main, awar_name, GB_FIND);
+        gbd = GB_search(gb_main, entry, GB_FIND);
         GB_commit_transaction(gb_main);
-        if (gb_action) break;
+        if (gbd) break;
         GB_sleep(10, MS);
     }
-    return gb_action;
+    return gbd;
+}
+
+static GBDATA *wait_for_dbentry_verboose(GBDATA *gb_main, const char *entry) {
+    GB_warningf("[waiting for DBENTRY '%s']", entry); // only prints onto console (ARB_NT is blocked as long as start_remote_command_for_application blocks)
+    GBDATA *gbd = wait_for_dbentry(gb_main, entry);
+    GB_warningf("[found DBENTRY '%s']", entry);
+    return gbd;
 }
 
 static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, const char *awar_read) {
@@ -643,54 +645,152 @@ static void mark_as_macro_executor(GBDATA *gb_main, bool mark) {
     }
 }
 
-GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name) {
-    // needs to be public (needed by perl-macros)
+inline GB_ERROR set_intEntry_to(GBDATA *gb_main, const char *path, int value) {
+    GBDATA *gbd = GB_searchOrCreate_int(gb_main, path, value);
+    return gbd ? GB_write_int(gbd, value) : GB_await_error();
+}
+
+#if defined(DEBUG)
+// # define DUMP_AUTH_HANDSHAKE
+#endif
+
+#if defined(DUMP_AUTH_HANDSHAKE)
+# define IF_DUMP_HANDSHAKE(cmd) cmd
+#else
+# define IF_DUMP_HANDSHAKE(cmd)
+#endif
+
+static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remote_awars& remote) {
+    // Called before any remote command will be written to DB.
+    // Application specific initialization is done here.
 
     mark_as_macro_executor(gb_main, true);
 
-    remote_awars  remote(application);
-    GBDATA       *gb_action = gbt_remote_search_awar(gb_main, remote.action());
+    bool wait_for_app = false;
 
-    GB_ERROR error    = GB_begin_transaction(gb_main);
-    if (!error) error = GB_write_string(gb_action, action_name); // write command
-    error             = GB_end_transaction(gb_main, error);
+    GB_ERROR error = GB_begin_transaction(gb_main);
+    if (!error) {
+        GBDATA *gb_granted     = GB_searchOrCreate_int(gb_main, remote.granted(), 0);
+        if (!gb_granted) error = GB_await_error();
+        else {
+            if (GB_read_int(gb_granted)) {
+                // ok - authorization already granted
+            }
+            else {
+                error        = set_intEntry_to(gb_main, remote.authReq(), 1); // ask client to ack execution
+                wait_for_app = !error;
 
-    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_action, remote.result());
+                if (!error) {
+                    IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [set %s to 1]\n", remote.authReq()));
+                }
+            }
+        }
+    }
+    error = GB_end_transaction(gb_main, error);
+
+    while (wait_for_app) {
+        int sleep_ms = 100;
+
+        gb_assert(!error);
+
+        IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [waiting for %s]\n", remote.authAck()));
+
+        GBDATA *gb_authAck = wait_for_dbentry_verboose(gb_main, remote.authAck());
+        if (gb_authAck) {
+            error = GB_begin_transaction(gb_main);
+            if (!error) {
+                long ack_pid = GB_read_int(gb_authAck);
+                if (ack_pid) {
+                    IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [got authAck %i]\n", ack_pid));
+                    
+                    GBDATA *gb_granted = GB_searchOrCreate_int(gb_main, remote.granted(), ack_pid);
+                    long    old_pid    = GB_read_int(gb_granted);
+
+                    if (old_pid != ack_pid) { // we have two applications with same id that acknowledged the execution request
+                        if (old_pid == 0) {
+                            error             = GB_write_int(gb_granted, ack_pid); // grant rights to execute remote-command to ack_pid
+                            if (!error) error = GB_write_int(gb_authAck, 0);       // allow a second application to acknowledge the request
+                            if (!error) {
+                                wait_for_app = false;
+                                IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [granted permission to execute macros to pid %i]\n", ack_pid));
+                            }
+                        }
+                        else {
+                            // @@@ fail here in case we are recording? or fail generally?
+                            GB_warningf("Warning: two instances of %s detected (pids=%li and %li)\n"
+                                        "One of them (%li) has been randomly chosen to execute macro commands",
+                                        remote.appID(), old_pid, ack_pid, old_pid);
+                        }
+                    }
+                    else {
+                        error = GB_write_int(gb_authAck, 0); // allow a second application to acknowledge the request
+                    }
+                }
+                else {
+                    // old entry with value 0 -> wait until client acknowledges authReq
+                    sleep_ms = 400;
+                    IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [no %s yet]\n", remote.authAck()));
+                }
+            }
+            error = GB_end_transaction(gb_main, error);
+        }
+        else {
+            gb_assert(0); // happens when?
+        }
+
+        if (wait_for_app) GB_sleep(sleep_ms, MS);
+    }
+
+    return error;
+}
+
+GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name) {
+    // needs to be public (needed by perl-macros)
+
+    remote_awars remote(application);
+    GB_ERROR     error = start_remote_command_for_application(gb_main, remote);
+
+    if (!error) {
+        GBDATA *gb_action = wait_for_dbentry(gb_main, remote.action());
+        error             = GB_begin_transaction(gb_main);
+        if (!error) error = GB_write_string(gb_action, action_name); // write command
+        error             = GB_end_transaction(gb_main, error);
+        if (!error) error = gbt_wait_for_remote_action(gb_main, gb_action, remote.result());
+    }
     return error;
 }
 
 GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value) {
     // needs to be public (needed by perl-macros)
 
-    mark_as_macro_executor(gb_main, true);
+    remote_awars remote(application);
+    GB_ERROR     error = start_remote_command_for_application(gb_main, remote);
 
-    remote_awars  remote(application);
-    GBDATA       *gb_awar = gbt_remote_search_awar(gb_main, remote.awar());
-
-    GB_ERROR error    = GB_begin_transaction(gb_main);
-    if (!error) error = GB_write_string(gb_awar, awar_name);
-    if (!error) error = GBT_write_string(gb_main, remote.value(), value);
-    error             = GB_end_transaction(gb_main, error);
-
-    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, remote.result());
-
+    if (!error) {
+        GBDATA *gb_awar   = wait_for_dbentry(gb_main, remote.awar());
+        error             = GB_begin_transaction(gb_main);
+        if (!error) error = GB_write_string(gb_awar, awar_name);
+        if (!error) error = GBT_write_string(gb_main, remote.value(), value);
+        error             = GB_end_transaction(gb_main, error);
+        if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, remote.result());
+    }
     return error;
 }
 
 GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
     // needs to be public (needed by perl-macros)
 
-    mark_as_macro_executor(gb_main, true);
+    remote_awars remote(application);
+    GB_ERROR     error = start_remote_command_for_application(gb_main, remote);
 
-    remote_awars  remote(application);
-    GBDATA       *gb_awar = gbt_remote_search_awar(gb_main, remote.awar());
-
-    GB_ERROR error    = GB_begin_transaction(gb_main);
-    if (!error) error = GB_write_string(gb_awar, awar_name);
-    if (!error) error = GBT_write_string(gb_main, remote.action(), "AWAR_REMOTE_READ");
-    error             = GB_end_transaction(gb_main, error);
-
-    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, remote.value());
+    if (!error) {
+        GBDATA *gb_awar   = wait_for_dbentry(gb_main, remote.awar());
+        error             = GB_begin_transaction(gb_main);
+        if (!error) error = GB_write_string(gb_awar, awar_name);
+        if (!error) error = GBT_write_string(gb_main, remote.action(), "AWAR_REMOTE_READ");
+        error             = GB_end_transaction(gb_main, error);
+        if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, remote.value());
+    }
     return error;
 }
 
