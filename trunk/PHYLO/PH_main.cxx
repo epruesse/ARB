@@ -519,6 +519,8 @@ PHDATA *PHDATA::ROOT = 0;
 
 
 int ARB_main(int argc, char *argv[]) {
+    aw_initstatus();
+
     GB_shell shell;
     AW_root  *aw_root = AWT_create_root("phylo.arb", "ARB_PHYLO", &argc, &argv);
 
@@ -531,8 +533,6 @@ int ARB_main(int argc, char *argv[]) {
 
     PH_used_windows *puw = new PH_used_windows;
     PH_display      *phd = new PH_display;
-
-    aw_initstatus();
 
     PH_root  *ph_root = new PH_root;
     GB_ERROR  error   = ph_root->open(db_server);
