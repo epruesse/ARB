@@ -120,7 +120,7 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
     int len        = opt_strlen ? opt_strlen : strlen(str);
     int text_width = (int)get_string_size(gc, str, len);
 
-    X0        = x_alignment(X0, text_width, alignment);
+    X0        = AW::x_alignment(X0, text_width, alignment);
     AW_pos X1 = X0+text_width;
 
     // check against left right clipping areas

@@ -330,9 +330,6 @@ public:
 
     virtual void move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
 
-    void fast(); // e.g. zoom linewidth off
-    void slow();
-
     virtual void flush(); // empty X11 buffers
 };
 

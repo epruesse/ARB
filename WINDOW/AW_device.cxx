@@ -276,19 +276,11 @@ bool AW_device::generic_filled_area(int gc, int npos, const AW::Position *pos, A
 }
 void AW_device::move_region(AW_pos /*src_x*/, AW_pos /*src_y*/, AW_pos /*width*/, AW_pos /*height*/
                           , AW_pos /*dest_x*/, AW_pos /*dest_y*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_device::fast() {
-    GTK_NOT_IMPLEMENTED;
-}
-
-void AW_device::slow() {
-    GTK_NOT_IMPLEMENTED;
+    // empty default
 }
 
 void AW_device::flush() {
-    GTK_NOT_IMPLEMENTED;
+    // empty default
 }
 
 static const AW_screen_area& get_universe() {
@@ -348,13 +340,6 @@ void AW_device::set_filter(AW_bitset filteri) {
 }
 
 
-
-
-
-
-
-
-
 //aw_clipable
 
 inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
@@ -362,10 +347,6 @@ inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
     if (val >= high) return high;
     return val;
 }
-
-
-
-
 
 void AW_zoomable::reset() {
     unscale = scale   = 1.0;
@@ -376,6 +357,3 @@ void AW_zoomable::zoom(AW_pos val) {
     scale   *= val;
     unscale  = 1.0/scale;
 }
-
-
-
