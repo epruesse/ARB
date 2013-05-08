@@ -76,6 +76,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -187,6 +188,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -237,6 +239,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -313,6 +316,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -449,6 +453,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

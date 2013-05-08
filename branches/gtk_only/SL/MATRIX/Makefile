@@ -60,6 +60,7 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_matrix.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

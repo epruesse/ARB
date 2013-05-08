@@ -72,6 +72,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -136,6 +137,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+EXP_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -230,6 +232,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -291,6 +294,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -363,6 +367,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GEN_map.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -421,6 +426,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

@@ -63,6 +63,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ad_ali.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -120,6 +121,7 @@ ad_ext.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ad_ext.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -185,6 +187,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -247,6 +250,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ad_transpro.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -309,6 +313,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -373,6 +378,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_consensus.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -426,6 +432,7 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -481,6 +488,7 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -539,6 +547,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -596,6 +605,7 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -658,6 +668,7 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -717,6 +728,7 @@ NT_cb.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_cb.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -775,6 +787,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -870,6 +883,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -941,6 +955,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -1024,6 +1039,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -1083,6 +1099,7 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -1139,6 +1156,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_join.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -1205,6 +1223,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -1270,6 +1289,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_sort.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -1327,6 +1347,7 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -1410,6 +1431,7 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_validManual.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -1469,6 +1491,7 @@ NT_validNames.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_validNames.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

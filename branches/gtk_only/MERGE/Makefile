@@ -87,6 +87,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_alignment.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -143,6 +144,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -199,6 +201,7 @@ MG_configs.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_configs.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -252,6 +255,7 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -309,6 +313,7 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -368,6 +373,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -426,6 +432,7 @@ MG_names.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_names.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -483,6 +490,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_preserves.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -544,6 +552,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -605,6 +614,7 @@ MG_trees.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_trees.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

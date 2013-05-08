@@ -169,6 +169,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

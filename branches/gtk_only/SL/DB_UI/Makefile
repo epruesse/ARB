@@ -59,6 +59,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

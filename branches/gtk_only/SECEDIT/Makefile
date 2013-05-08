@@ -114,6 +114,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_db.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -183,6 +184,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -245,6 +247,7 @@ SEC_helix.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_helix.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -287,6 +290,7 @@ SEC_io.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_io.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -328,6 +332,7 @@ SEC_layout.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_layout.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -385,6 +390,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -453,6 +459,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -506,6 +513,7 @@ SEC_read.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_read.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -549,6 +557,7 @@ SEC_split.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_split.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -590,6 +599,7 @@ SEC_structure.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_structure.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -638,6 +648,7 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

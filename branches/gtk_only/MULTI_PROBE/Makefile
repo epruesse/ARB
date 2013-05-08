@@ -133,6 +133,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MP_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -230,6 +231,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -322,6 +324,7 @@ MP_probe.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MP_probe.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -509,6 +512,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MP_Window.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

@@ -51,6 +51,7 @@ WETC_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+WETC_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
