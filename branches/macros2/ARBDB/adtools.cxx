@@ -581,7 +581,7 @@ static GBDATA *wait_for_dbentry(GBDATA *gb_main, const char *entry) {
         gbd = GB_search(gb_main, entry, GB_FIND);
         GB_commit_transaction(gb_main);
         if (gbd) break;
-        GB_sleep(10, MS);
+        GB_sleep(250, MS);
     }
     return gbd;
 }
@@ -726,8 +726,10 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
     }
     error = GB_end_transaction(gb_main, error);
 
+    int max_sleep = 100;
+
     while (wait_for_app) {
-        int sleep_ms = 100;
+        int sleep_ms = max_sleep;
 
         gb_assert(!error);
 
@@ -739,7 +741,7 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
             if (!error) {
                 long ack_pid = GB_read_int(gb_authAck);
                 if (ack_pid) {
-                    IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [got authAck %i]\n", ack_pid));
+                    IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [got authAck %li]\n", ack_pid));
                     
                     GBDATA *gb_granted = GB_searchOrCreate_int(gb_main, remote.granted(), ack_pid);
                     long    old_pid    = GB_read_int(gb_granted);
@@ -750,7 +752,7 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
                             if (!error) error = GB_write_int(gb_authAck, 0);       // allow a second application to acknowledge the request
                             if (!error) {
                                 wait_for_app = false;
-                                IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [granted permission to execute macros to pid %i]\n", ack_pid));
+                                IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [granted permission to execute macros to pid %li]\n", ack_pid));
                             }
                         }
                     }
@@ -770,7 +772,10 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
             gb_assert(0); // happens when?
         }
 
-        if (wait_for_app) GB_sleep(sleep_ms, MS);
+        if (wait_for_app) {
+            GB_sleep(sleep_ms, MS);
+            max_sleep = min(500, max_sleep+100);
+        }
     }
 
     return error;

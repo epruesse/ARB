@@ -175,7 +175,7 @@ static void serve_db_interrupt(AW_root *awr, AW_CL cl_db_interrupt_data) { // se
     db_interrupt_data *dib = (db_interrupt_data*)cl_db_interrupt_data;
 
     bool success = GBCMS_accept_calls(dib->gb_main, false);
-    while (success) {
+    while (success) { // @@@ maybe abort this loop after some time? (otherwise: if a client polls to fast, the GUI of the server locks)
         success = remote_command_handler(awr, *dib) && GBCMS_accept_calls(dib->gb_main, true);
     }
 
