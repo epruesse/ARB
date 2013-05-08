@@ -59,6 +59,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PH_data.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -111,6 +112,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PH_display.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -167,6 +169,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -222,6 +225,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PH_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -277,6 +281,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

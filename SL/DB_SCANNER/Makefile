@@ -58,6 +58,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

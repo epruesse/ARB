@@ -53,6 +53,7 @@ AW_advice.o: aw_clipable.hxx
 AW_advice.o: aw_common.hxx
 AW_advice.o: aw_common_gtk.hxx
 AW_advice.o: aw_device.hxx
+AW_advice.o: aw_device_cairo.hxx
 AW_advice.o: aw_device_click.hxx
 AW_advice.o: aw_device_gtk.hxx
 AW_advice.o: aw_device_impl.hxx
@@ -100,6 +101,7 @@ AW_area_management.o: aw_clipable.hxx
 AW_area_management.o: aw_common.hxx
 AW_area_management.o: aw_common_gtk.hxx
 AW_area_management.o: aw_device.hxx
+AW_area_management.o: aw_device_cairo.hxx
 AW_area_management.o: aw_device_click.hxx
 AW_area_management.o: aw_device_gtk.hxx
 AW_area_management.o: aw_device_impl.hxx
@@ -146,6 +148,7 @@ AW_at.o: aw_clipable.hxx
 AW_at.o: aw_common.hxx
 AW_at.o: aw_common_gtk.hxx
 AW_at.o: aw_device.hxx
+AW_at.o: aw_device_cairo.hxx
 AW_at.o: aw_device_click.hxx
 AW_at.o: aw_device_gtk.hxx
 AW_at.o: aw_device_impl.hxx
@@ -194,6 +197,7 @@ AW_at_auto.o: aw_clipable.hxx
 AW_at_auto.o: aw_common.hxx
 AW_at_auto.o: aw_common_gtk.hxx
 AW_at_auto.o: aw_device.hxx
+AW_at_auto.o: aw_device_cairo.hxx
 AW_at_auto.o: aw_device_click.hxx
 AW_at_auto.o: aw_device_gtk.hxx
 AW_at_auto.o: aw_device_impl.hxx
@@ -252,6 +256,7 @@ AW_at_maxsize.o: aw_clipable.hxx
 AW_at_maxsize.o: aw_common.hxx
 AW_at_maxsize.o: aw_common_gtk.hxx
 AW_at_maxsize.o: aw_device.hxx
+AW_at_maxsize.o: aw_device_cairo.hxx
 AW_at_maxsize.o: aw_device_click.hxx
 AW_at_maxsize.o: aw_device_gtk.hxx
 AW_at_maxsize.o: aw_device_impl.hxx
@@ -302,6 +307,7 @@ AW_awar.o: aw_clipable.hxx
 AW_awar.o: aw_common.hxx
 AW_awar.o: aw_common_gtk.hxx
 AW_awar.o: aw_device.hxx
+AW_awar.o: aw_device_cairo.hxx
 AW_awar.o: aw_device_click.hxx
 AW_awar.o: aw_device_gtk.hxx
 AW_awar.o: aw_device_impl.hxx
@@ -354,6 +360,7 @@ AW_button.o: aw_clipable.hxx
 AW_button.o: aw_common.hxx
 AW_button.o: aw_common_gtk.hxx
 AW_button.o: aw_device.hxx
+AW_button.o: aw_device_cairo.hxx
 AW_button.o: aw_device_click.hxx
 AW_button.o: aw_device_gtk.hxx
 AW_button.o: aw_device_impl.hxx
@@ -401,6 +408,7 @@ AW_cb_struct.o: aw_clipable.hxx
 AW_cb_struct.o: aw_common.hxx
 AW_cb_struct.o: aw_common_gtk.hxx
 AW_cb_struct.o: aw_device.hxx
+AW_cb_struct.o: aw_device_cairo.hxx
 AW_cb_struct.o: aw_device_click.hxx
 AW_cb_struct.o: aw_device_gtk.hxx
 AW_cb_struct.o: aw_device_impl.hxx
@@ -504,6 +512,7 @@ AW_common_gtk.o: aw_common.hxx
 AW_common_gtk.o: aw_common_gtk.hxx
 AW_common_gtk.o: aw_def.hxx
 AW_common_gtk.o: aw_device.hxx
+AW_common_gtk.o: aw_device_cairo.hxx
 AW_common_gtk.o: aw_device_click.hxx
 AW_common_gtk.o: aw_device_gtk.hxx
 AW_common_gtk.o: aw_device_impl.hxx
@@ -573,6 +582,7 @@ AW_device.o: aw_clipable.hxx
 AW_device.o: aw_common.hxx
 AW_device.o: aw_common_gtk.hxx
 AW_device.o: aw_device.hxx
+AW_device.o: aw_device_cairo.hxx
 AW_device.o: aw_device_click.hxx
 AW_device.o: aw_device_gtk.hxx
 AW_device.o: aw_device_impl.hxx
@@ -595,6 +605,36 @@ AW_device.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_device.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_device.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_device.o: $(ARBHOME)/INCLUDE/test_global.h
+
+AW_device_cairo.o: aw_assert.hxx
+AW_device_cairo.o: aw_base.hxx
+AW_device_cairo.o: aw_clipable.hxx
+AW_device_cairo.o: aw_common.hxx
+AW_device_cairo.o: aw_common_gtk.hxx
+AW_device_cairo.o: aw_device.hxx
+AW_device_cairo.o: aw_device_cairo.hxx
+AW_device_cairo.o: aw_device_click.hxx
+AW_device_cairo.o: aw_device_gtk.hxx
+AW_device_cairo.o: aw_device_impl.hxx
+AW_device_cairo.o: aw_device_size.hxx
+AW_device_cairo.o: aw_font_limits.hxx
+AW_device_cairo.o: aw_gtk_forward_declarations.hxx
+AW_device_cairo.o: aw_gtk_migration_helpers.hxx
+AW_device_cairo.o: aw_position.hxx
+AW_device_cairo.o: aw_simple_device.hxx
+AW_device_cairo.o: aw_stylable.hxx
+AW_device_cairo.o: aw_zoomable.hxx
+AW_device_cairo.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_device_cairo.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_device_cairo.o: $(ARBHOME)/INCLUDE/arb_defs.h
+AW_device_cairo.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_device_cairo.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_device_cairo.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_device_cairo.o: $(ARBHOME)/INCLUDE/downcast.h
+AW_device_cairo.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_device_cairo.o: $(ARBHOME)/INCLUDE/gccver.h
+AW_device_cairo.o: $(ARBHOME)/INCLUDE/static_assert.h
+AW_device_cairo.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_device_click.o: aw_assert.hxx
 AW_device_click.o: aw_base.hxx
@@ -626,6 +666,7 @@ AW_device_gtk.o: aw_clipable.hxx
 AW_device_gtk.o: aw_common.hxx
 AW_device_gtk.o: aw_common_gtk.hxx
 AW_device_gtk.o: aw_device.hxx
+AW_device_gtk.o: aw_device_cairo.hxx
 AW_device_gtk.o: aw_device_click.hxx
 AW_device_gtk.o: aw_device_gtk.hxx
 AW_device_gtk.o: aw_device_impl.hxx
@@ -655,6 +696,7 @@ AW_device_print.o: aw_clipable.hxx
 AW_device_print.o: aw_common.hxx
 AW_device_print.o: aw_common_gtk.hxx
 AW_device_print.o: aw_device.hxx
+AW_device_print.o: aw_device_cairo.hxx
 AW_device_print.o: aw_device_click.hxx
 AW_device_print.o: aw_device_gtk.hxx
 AW_device_print.o: aw_device_impl.hxx
@@ -726,6 +768,7 @@ AW_file.o: aw_clipable.hxx
 AW_file.o: aw_common.hxx
 AW_file.o: aw_common_gtk.hxx
 AW_file.o: aw_device.hxx
+AW_file.o: aw_device_cairo.hxx
 AW_file.o: aw_device_click.hxx
 AW_file.o: aw_device_gtk.hxx
 AW_file.o: aw_device_impl.hxx
@@ -776,6 +819,7 @@ AW_font_group.o: aw_clipable.hxx
 AW_font_group.o: aw_common.hxx
 AW_font_group.o: aw_common_gtk.hxx
 AW_font_group.o: aw_device.hxx
+AW_font_group.o: aw_device_cairo.hxx
 AW_font_group.o: aw_device_click.hxx
 AW_font_group.o: aw_device_gtk.hxx
 AW_font_group.o: aw_device_impl.hxx
@@ -811,6 +855,7 @@ AW_functions.o: aw_clipable.hxx
 AW_functions.o: aw_common.hxx
 AW_functions.o: aw_common_gtk.hxx
 AW_functions.o: aw_device.hxx
+AW_functions.o: aw_device_cairo.hxx
 AW_functions.o: aw_device_click.hxx
 AW_functions.o: aw_device_gtk.hxx
 AW_functions.o: aw_device_impl.hxx
@@ -862,6 +907,7 @@ AW_global_awars.o: aw_clipable.hxx
 AW_global_awars.o: aw_common.hxx
 AW_global_awars.o: aw_common_gtk.hxx
 AW_global_awars.o: aw_device.hxx
+AW_global_awars.o: aw_device_cairo.hxx
 AW_global_awars.o: aw_device_click.hxx
 AW_global_awars.o: aw_device_gtk.hxx
 AW_global_awars.o: aw_device_impl.hxx
@@ -912,6 +958,7 @@ AW_help.o: aw_clipable.hxx
 AW_help.o: aw_common.hxx
 AW_help.o: aw_common_gtk.hxx
 AW_help.o: aw_device.hxx
+AW_help.o: aw_device_cairo.hxx
 AW_help.o: aw_device_click.hxx
 AW_help.o: aw_device_gtk.hxx
 AW_help.o: aw_device_impl.hxx
@@ -966,6 +1013,7 @@ AW_modal.o: aw_clipable.hxx
 AW_modal.o: aw_common.hxx
 AW_modal.o: aw_common_gtk.hxx
 AW_modal.o: aw_device.hxx
+AW_modal.o: aw_device_cairo.hxx
 AW_modal.o: aw_device_click.hxx
 AW_modal.o: aw_device_gtk.hxx
 AW_modal.o: aw_device_impl.hxx
@@ -1036,6 +1084,7 @@ AW_preset.o: aw_common.hxx
 AW_preset.o: aw_common_gtk.hxx
 AW_preset.o: aw_def.hxx
 AW_preset.o: aw_device.hxx
+AW_preset.o: aw_device_cairo.hxx
 AW_preset.o: aw_device_click.hxx
 AW_preset.o: aw_device_gtk.hxx
 AW_preset.o: aw_device_impl.hxx
@@ -1097,6 +1146,7 @@ AW_root.o: aw_common.hxx
 AW_root.o: aw_common_gtk.hxx
 AW_root.o: aw_def.hxx
 AW_root.o: aw_device.hxx
+AW_root.o: aw_device_cairo.hxx
 AW_root.o: aw_device_click.hxx
 AW_root.o: aw_device_gtk.hxx
 AW_root.o: aw_device_impl.hxx
@@ -1176,6 +1226,7 @@ AW_select.o: aw_clipable.hxx
 AW_select.o: aw_common.hxx
 AW_select.o: aw_common_gtk.hxx
 AW_select.o: aw_device.hxx
+AW_select.o: aw_device_cairo.hxx
 AW_select.o: aw_device_click.hxx
 AW_select.o: aw_device_gtk.hxx
 AW_select.o: aw_device_impl.hxx
@@ -1232,6 +1283,7 @@ AW_status.o: aw_clipable.hxx
 AW_status.o: aw_common.hxx
 AW_status.o: aw_common_gtk.hxx
 AW_status.o: aw_device.hxx
+AW_status.o: aw_device_cairo.hxx
 AW_status.o: aw_device_click.hxx
 AW_status.o: aw_device_gtk.hxx
 AW_status.o: aw_device_impl.hxx
@@ -1308,6 +1360,7 @@ AW_varUpdateInfo.o: aw_clipable.hxx
 AW_varUpdateInfo.o: aw_common.hxx
 AW_varUpdateInfo.o: aw_common_gtk.hxx
 AW_varUpdateInfo.o: aw_device.hxx
+AW_varUpdateInfo.o: aw_device_cairo.hxx
 AW_varUpdateInfo.o: aw_device_click.hxx
 AW_varUpdateInfo.o: aw_device_gtk.hxx
 AW_varUpdateInfo.o: aw_device_impl.hxx
@@ -1360,6 +1413,7 @@ AW_window.o: aw_clipable.hxx
 AW_window.o: aw_common.hxx
 AW_window.o: aw_common_gtk.hxx
 AW_window.o: aw_device.hxx
+AW_window.o: aw_device_cairo.hxx
 AW_window.o: aw_device_click.hxx
 AW_window.o: aw_device_gtk.hxx
 AW_window.o: aw_device_impl.hxx
@@ -1416,6 +1470,7 @@ AW_window_debug.o: aw_clipable.hxx
 AW_window_debug.o: aw_common.hxx
 AW_window_debug.o: aw_common_gtk.hxx
 AW_window_debug.o: aw_device.hxx
+AW_window_debug.o: aw_device_cairo.hxx
 AW_window_debug.o: aw_device_click.hxx
 AW_window_debug.o: aw_device_gtk.hxx
 AW_window_debug.o: aw_device_impl.hxx
@@ -1463,6 +1518,7 @@ AW_window_gtk.o: aw_clipable.hxx
 AW_window_gtk.o: aw_common.hxx
 AW_window_gtk.o: aw_common_gtk.hxx
 AW_window_gtk.o: aw_device.hxx
+AW_window_gtk.o: aw_device_cairo.hxx
 AW_window_gtk.o: aw_device_click.hxx
 AW_window_gtk.o: aw_device_gtk.hxx
 AW_window_gtk.o: aw_device_impl.hxx
@@ -1512,6 +1568,7 @@ AW_window_menu_modes.o: aw_clipable.hxx
 AW_window_menu_modes.o: aw_common.hxx
 AW_window_menu_modes.o: aw_common_gtk.hxx
 AW_window_menu_modes.o: aw_device.hxx
+AW_window_menu_modes.o: aw_device_cairo.hxx
 AW_window_menu_modes.o: aw_device_click.hxx
 AW_window_menu_modes.o: aw_device_gtk.hxx
 AW_window_menu_modes.o: aw_device_impl.hxx
@@ -1561,6 +1618,7 @@ AW_window_message.o: aw_clipable.hxx
 AW_window_message.o: aw_common.hxx
 AW_window_message.o: aw_common_gtk.hxx
 AW_window_message.o: aw_device.hxx
+AW_window_message.o: aw_device_cairo.hxx
 AW_window_message.o: aw_device_click.hxx
 AW_window_message.o: aw_device_gtk.hxx
 AW_window_message.o: aw_device_impl.hxx
@@ -1610,6 +1668,7 @@ AW_window_simple.o: aw_clipable.hxx
 AW_window_simple.o: aw_common.hxx
 AW_window_simple.o: aw_common_gtk.hxx
 AW_window_simple.o: aw_device.hxx
+AW_window_simple.o: aw_device_cairo.hxx
 AW_window_simple.o: aw_device_click.hxx
 AW_window_simple.o: aw_device_gtk.hxx
 AW_window_simple.o: aw_device_impl.hxx
@@ -1659,6 +1718,7 @@ AW_window_simple_menu.o: aw_clipable.hxx
 AW_window_simple_menu.o: aw_common.hxx
 AW_window_simple_menu.o: aw_common_gtk.hxx
 AW_window_simple_menu.o: aw_device.hxx
+AW_window_simple_menu.o: aw_device_cairo.hxx
 AW_window_simple_menu.o: aw_device_click.hxx
 AW_window_simple_menu.o: aw_device_gtk.hxx
 AW_window_simple_menu.o: aw_device_impl.hxx
@@ -1703,6 +1763,7 @@ AW_xfig.o: aw_clipable.hxx
 AW_xfig.o: aw_common.hxx
 AW_xfig.o: aw_common_gtk.hxx
 AW_xfig.o: aw_device.hxx
+AW_xfig.o: aw_device_cairo.hxx
 AW_xfig.o: aw_device_click.hxx
 AW_xfig.o: aw_device_gtk.hxx
 AW_xfig.o: aw_device_impl.hxx

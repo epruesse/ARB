@@ -62,6 +62,7 @@ db_query.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+db_query.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

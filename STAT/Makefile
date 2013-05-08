@@ -97,6 +97,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -151,6 +152,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

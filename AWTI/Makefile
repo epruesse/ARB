@@ -62,6 +62,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -123,6 +124,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

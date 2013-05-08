@@ -75,6 +75,7 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -165,6 +166,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

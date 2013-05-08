@@ -80,6 +80,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -146,6 +147,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

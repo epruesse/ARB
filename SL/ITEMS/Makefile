@@ -56,6 +56,7 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+changekey.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -108,6 +109,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
@@ -163,6 +165,7 @@ species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+species.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx

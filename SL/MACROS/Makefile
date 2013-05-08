@@ -55,6 +55,7 @@ macro_gui.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+macro_gui.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
