@@ -23,7 +23,7 @@
 
 #include <iostream>
 
-// #define DUMP_EVENTS
+//#define DUMP_EVENTS
 
 #if defined(DUMP_EVENTS)
 #  define DUMP_EVENT(type)                                              \
@@ -143,7 +143,8 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventConfigure* event) {
 
     DUMP_EVENT("resize");
     resize_cb->run_callback();
-    return false;
+
+    return true; // event handled
 }
 
 gboolean AW_area_management::Pimpl::handle_event(GdkEventButton *event) {
@@ -189,12 +190,15 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventMotion *event) {
         aww->event.button = AW_BUTTON_MIDDLE;
     } else if (event->state & GDK_BUTTON3_MASK) {
         aww->event.button = AW_BUTTON_RIGHT;
+    } else {
+        return false;
     }
   
     DUMP_EVENT("motion");
+    expose_cb->run_callback(); // work around for XOR drawing
     motion_cb->run_callback();
-
-    return false;
+    gdk_event_request_motions(event);
+    return true;
 }
 
 

@@ -43,7 +43,7 @@ protected:
 
 public:
     AW_device_cairo(AW_common* awc);
-    ~AW_device_cairo() {}
+    ~AW_device_cairo();
 
     AW_common_gtk *get_common() const { return DOWNCAST(AW_common_gtk*, AW_device::get_common()); }
 
@@ -59,3 +59,5 @@ public:
                                         AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL /*cduser*/);
 
 };
+
+

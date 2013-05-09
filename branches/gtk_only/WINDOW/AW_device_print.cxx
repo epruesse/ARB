@@ -56,7 +56,10 @@ GB_ERROR AW_device_print::open(char const* path) {
 }
 
 void AW_device_print::set_color_mode(bool /*mode*/) {
-    // no mode black and white
+    // we won't do b&W mode here
+    // if this is desired, there should be a color profile
+    // for the entire tree that has b&w or grey colors
+    // selected
 }
 
 AW_DEVICE_TYPE AW_device_print::type() {

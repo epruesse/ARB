@@ -471,6 +471,11 @@ void AWT_graphic_tree::rot_show_line(AW_device *device) {
 
 void AWT_graphic_tree::rot_show_triangle(AW_device *device)
 {
+#ifdef ARB_GTK
+    // drag_gc (XOR based) does not work in GTK
+    return;
+#endif
+
     double   w;
     double   len;
     double   sx, sy;
@@ -2749,6 +2754,7 @@ class fake_AW_GC : public AW_GC {
     virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
     virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
 #ifdef ARB_GTK
+    virtual void wm_set_grey_level(AW_grey_level) OVERRIDE {}
     virtual void wm_set_font(const char*) OVERRIDE {
         int size=10;
 #else

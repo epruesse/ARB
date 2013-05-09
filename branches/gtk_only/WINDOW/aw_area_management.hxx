@@ -35,7 +35,7 @@ enum AW_event_type {
     AW_Keyboard_Release = GDK_KEY_RELEASE,
     AW_Mouse_Press      = GDK_BUTTON_PRESS,
     AW_Mouse_Release    = GDK_BUTTON_RELEASE,
-    AW_Mouse_Drag       = GDK_DRAG_MOTION,
+    AW_Mouse_Drag       = GDK_MOTION_NOTIFY,
     
     NO_EVENT = AW_No_Event,
     KEY_PRESSED  = AW_Keyboard_Press,
@@ -75,7 +75,7 @@ struct AW_event {
 /**
  * Contains information about one area inside a window.
  */
-class AW_area_management : public Noncopyable {
+class AW_area_management : virtual Noncopyable {
 public:
     class Pimpl;
 private:

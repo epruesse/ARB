@@ -1141,13 +1141,28 @@ void AW_window::calculate_scrollbars(){
                                    vstep_increment, vpage_increment);
 }
  
+static void _aw_window_recalc_scrollbar_cb(AW_root*, AW_CL cd) {
+    ((AW_window*)cd)->calculate_scrollbars();
+}
 
-static void vertical_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
-    GTK_NOT_IMPLEMENTED;
-/*
-    AW_window *aw = (AW_window *)cd;
-    aw->update_scrollbar_settings_from_awars(AW_VERTICAL);
-*/
+void AW_window::create_window_variables() {
+    char buffer[200];
+
+    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
+    get_root()->awar_int(buffer, 50);
+    get_root()->awar(buffer)->add_callback(_aw_window_recalc_scrollbar_cb, (AW_CL)this);
+
+    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
+    get_root()->awar_int(buffer, 50);
+    get_root()->awar(buffer)->add_callback(_aw_window_recalc_scrollbar_cb, (AW_CL)this);
+
+    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
+    get_root()->awar_int(buffer, 9);
+    get_root()->awar(buffer)->add_callback(_aw_window_recalc_scrollbar_cb, (AW_CL)this);
+
+    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
+    get_root()->awar_int(buffer, 20);
+    get_root()->awar(buffer)->add_callback(_aw_window_recalc_scrollbar_cb, (AW_CL)this);
 }
 
 static void value_changed_scroll_bar_vertical(GtkAdjustment *adjustment, gpointer user_data){
@@ -1156,13 +1171,7 @@ static void value_changed_scroll_bar_vertical(GtkAdjustment *adjustment, gpointe
     cbs->run_callback();
 
 }
-static void horizontal_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
-    GTK_NOT_IMPLEMENTED;
-/*
-    AW_window *aw = (AW_window *)cd;
-    aw->update_scrollbar_settings_from_awars(AW_HORIZONTAL);
-*/
-}
+
 static void value_changed_scroll_bar_horizontal(GtkAdjustment *adjustment, gpointer user_data){
     AW_cb_struct *cbs = (AW_cb_struct *) user_data;
     (cbs->aw)->slider_pos_horizontal = gtk_adjustment_get_value(adjustment);
@@ -1412,25 +1421,6 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     return (AW_color_idx)colnum;
 }
 
-void AW_window::create_window_variables() {
-    char buffer[200];
-
-    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
-    get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
-
-    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
-    get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
-
-    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
-    get_root()->awar_int(buffer, 9);
-    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
-
-    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
-    get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
-}
 
 void AW_window::create_devices() {
     if (prvt->areas[AW_INFO_AREA]) {
