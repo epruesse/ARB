@@ -164,7 +164,6 @@ static void expert_mode_changed_cb(AW_root *aw_root) {
 }
 
 static void NT_toggle_expert_mode(AW_window *aww, AW_CL, AW_CL) { aww->get_root()->awar(AWAR_EXPERT)->toggle_toggle(); }
-static void NT_toggle_focus_policy(AW_window *aww, AW_CL, AW_CL) { aww->get_root()->awar(AWAR_AW_FOCUS_FOLLOWS_MOUSE)->toggle_toggle(); }
 
 static void nt_create_all_awars(AW_root *awr, AW_default def) {
     // creates awars for all modules reachable from ARB_NT main window
@@ -1621,7 +1620,6 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_menu_topic("props_www", "Search world wide web (WWW)", "W", "props_www.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window, (AW_CL)GLOBAL.gb_main);
             awm->sep______________();
             awm->insert_menu_topic("!toggle_expert", "Toggle expert mode",         "x", 0,            AWM_ALL, NT_toggle_expert_mode,              0, 0);
-            awm->insert_menu_topic("!toggle_focus",  "Toggle focus follows mouse", "f", 0,            AWM_ALL, NT_toggle_focus_policy,             0, 0);
             awm->sep______________();
             AW_insert_common_property_menu_entries(awm);
             awm->sep______________();

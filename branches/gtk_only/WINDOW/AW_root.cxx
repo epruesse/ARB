@@ -31,6 +31,10 @@
 #include "aw_select.hxx"
 #include "aw_status.hxx"
 
+// for gdb detection; should go into CORE, actually
+#include <sys/ptrace.h>
+#include <sys/wait.h>
+
 //globals
 //TODO use static class or namespace for globals
 
@@ -54,9 +58,8 @@ private:
     
 };
 
-
-
 void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
+    aw_assert(NULL != command);
     if (auto_help_file) AW_POPUP_HELP(aww, (AW_CL)auto_help_file);
     aw_message_if(GBK_system(command));
 }
@@ -251,34 +254,29 @@ static arb_handlers aw_handlers = {
 
 AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker,
                  int *argc, char **argv[]) 
-  : prvt(new pimpl),
-    action_hash(GBS_create_hash(1000, GB_MIND_CASE)),
-    application_database(load_properties(properties)),
-    button_list(),
-    no_exit(NoExit),
-    help_active(false),
-    tracker(user_tracker),
-
-    program_name(strdup(program)),
-    value_changed(false),
-    changer_of_variable(NULL),
-    active_mask(AWM_ALL),
-    awar_hash(GBS_create_hash(1000, GB_MIND_CASE)),
-    disable_callbacks(false),
-    current_modal_window(NULL),
-    root_window(NULL)
+    : prvt(new pimpl),
+      action_hash(GBS_create_hash(1000, GB_MIND_CASE)),
+      application_database(load_properties(properties)),
+      button_list(),
+      no_exit(NoExit),
+      help_active(false),
+      tracker(user_tracker),
+      
+      program_name(strdup(program)),
+      value_changed(false),
+      changer_of_variable(NULL),
+      active_mask(AWM_ALL),
+      awar_hash(GBS_create_hash(1000, GB_MIND_CASE)),
+      disable_callbacks(false),
+      current_modal_window(NULL),
+      root_window(NULL)
 {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
-
-    // initialize ARB gtk application
-    //TODO font stuff
-    GTK_PARTLY_IMPLEMENTED;
-
+    
     for (int i=0; aw_fb[i].awar; ++i) {
         awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
     }
-
 
     gtk_init(argc, argv);
 
@@ -293,12 +291,62 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
     prvt->cursors[WAIT_CURSOR] = gdk_cursor_new(GDK_WATCH);
     prvt->cursors[HELP_CURSOR] = gdk_cursor_new(GDK_QUESTION_ARROW);
     
-    
     ARB_install_handlers(aw_handlers);
-
+    
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 
+#if defined(UNIT_TESTS)
+AW_root::AW_root(const char *propertyFile) 
+    : prvt(new pimpl),
+      action_hash(GBS_create_hash(1000, GB_MIND_CASE)),
+      application_database(load_properties(propertyFile)),
+      button_list(),
+      no_exit(false),
+      help_active(false),
+      tracker(NULL),
+      
+      program_name("dummy"),
+      value_changed(false),
+      changer_of_variable(NULL),
+      active_mask(AWM_ALL),
+      awar_hash(GBS_create_hash(1000, GB_MIND_CASE)),
+      disable_callbacks(false),
+      current_modal_window(NULL),
+      root_window(NULL)
+{
+    aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
+    AW_root::SINGLETON = this;
+    
+    atexit(destroy_AW_root); // do not call this before opening properties DB!
+}
+#endif
+
+
+    static long delete_awar(const char*, long val, void*) {
+    AW_awar* awar = (AW_awar*) val;
+    delete awar;
+    return 0; // remove from hash
+}
+
+AW_root::~AW_root() {
+    delete tracker; tracker = NULL;
+
+    GBS_hash_do_loop(awar_hash, delete_awar, NULL);
+    GBS_free_hash(awar_hash);
+    awar_hash = NULL;
+    
+    // FIXME: clear action hash
+
+    if (application_database) {
+        GB_close(application_database);
+        application_database = NULL;
+    }
+
+    delete prvt;
+    free(program_name);
+    AW_root::SINGLETON = NULL;
+}
 
 /**
  * A list of awar names that contain color names
@@ -313,7 +361,6 @@ static const char *aw_awar_2_color[] = {
 };
 
 void AW_root::create_colormap() {
-
     prvt->color_table = (AW_rgb*)GB_calloc(sizeof(AW_rgb), AW_STD_COLOR_IDX_MAX);
     GBDATA *gbd = check_properties(NULL);
     prvt->colormap = gdk_colormap_get_system();
@@ -352,8 +399,18 @@ AW_rgb*& AW_root::getColorTable() {
 }
 
 
-void AW_root::window_hide(AW_window */*aww*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_root::window_hide(AW_window *aww) {
+    active_windows--;
+    if (active_windows < 0) {
+        exit(0);
+    }
+    if (current_modal_window == aww) {
+        current_modal_window = NULL;
+    }
+}
+
+void AW_root::window_show() {
+    active_windows++;
 }
 
 /// begin timer stuff 
@@ -408,13 +465,6 @@ void AW_root::add_timed_callback_never_disabled(int ms, AW_RCB2 f, AW_CL cd1, AW
 }
 /// end timer stuff
 
-
-#if defined(DEBUG)
-size_t AW_root::callallcallbacks(int mode) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-#endif
 
 AW_awar *AW_root::awar_no_error(const char *var_name) {
     return (AW_awar*)GBS_read_hash(awar_hash, var_name);
@@ -510,28 +560,6 @@ void AW_root::unlink_awars_from_DB(AW_default database) {
     GBS_hash_do_loop(awar_hash, _aw_root_unlink_awar_from_db, gb_main);
 }
 
-static long delete_awar(const char*, long val, void*) {
-    AW_awar* awar = (AW_awar*) val;
-    delete awar;
-    return 0; // remove from hash
-}
-
-AW_root::~AW_root() {
-    delete tracker; tracker = NULL;
-
-    GBS_hash_do_loop(awar_hash, delete_awar, NULL);
-    GBS_free_hash(awar_hash);
-    awar_hash = NULL;
-    
-    // clear action hash
-
-    if (application_database) {
-        GB_close(application_database);
-        application_database = NULL;
-    }
-    GTK_PARTLY_IMPLEMENTED;
-}
-
 AW_default AW_root::check_properties(AW_default aw_props) {
     return aw_props ? aw_props : application_database;
 }
@@ -551,11 +579,66 @@ bool AW_root::is_help_active() const {
 void AW_root::set_help_active(bool value) {
     help_active = value;
 }
-
-
 void AW_root::set_cursor(AW_Cursor cursor) {
     GdkWindow* rootWindow = gdk_screen_get_root_window(gdk_screen_get_default());
     aw_assert(NULL != rootWindow);
     gdk_window_set_cursor(rootWindow, prvt->cursors[cursor]);
+}
 
+typedef std::list<GBDATA*> DataPointers;
+
+static GB_ERROR set_parents_with_only_temp_childs_temp(GBDATA *gbd, DataPointers& made_temp) {
+    GB_ERROR error = NULL;
+
+    if (GB_read_type(gbd) == GB_DB && !GB_is_temporary(gbd)) {
+        bool has_savable_child = false;
+        for (GBDATA *gb_child = GB_child(gbd); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
+            bool is_tmp = GB_is_temporary(gb_child);
+            if (!is_tmp) {
+                error              = set_parents_with_only_temp_childs_temp(gb_child, made_temp);
+                if (!error) is_tmp = GB_is_temporary(gb_child);         // may have changed
+
+                if (!is_tmp) has_savable_child = true;
+            }
+        }
+        if (!error && !has_savable_child) {
+            error = GB_set_temporary(gbd);
+            made_temp.push_back(gbd);
+        }
+    }
+
+    return error;
+}
+
+static GB_ERROR clear_temp_flags(DataPointers& made_temp) {
+    GB_ERROR error = NULL;
+    for (DataPointers::iterator mt = made_temp.begin(); mt != made_temp.end() && !error; ++mt) {
+        error = GB_clear_temporary(*mt);
+    }
+    return error;
+}
+
+GB_ERROR AW_root::save_properties(const char *filename) {
+    GB_ERROR  error   = NULL;
+    GBDATA   *gb_prop = application_database;
+
+    if (!gb_prop) {
+        error = "No properties loaded - won't save";
+    }
+    else {
+        error = GB_push_transaction(gb_prop);
+        if (!error) {
+            error = GB_pop_transaction(gb_prop);
+            if (!error) {
+                dont_save_awars_with_default_value(gb_prop);
+
+                DataPointers made_temp;
+                error             = set_parents_with_only_temp_childs_temp(gb_prop, made_temp); // avoid saving empty containers
+                if (!error) error = GB_save_in_arbprop(gb_prop, filename, "a");
+                if (!error) error = clear_temp_flags(made_temp);
+            }
+        }
+    }
+
+    return error;
 }

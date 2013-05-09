@@ -104,6 +104,7 @@ class AW_root : virtual Noncopyable {
     GB_HASH           *action_hash; /** < Is used to buffer and replay remote actions. */
     AW_default         application_database; /** < FIXME */
     std::vector<AW_button> button_list;
+    int                active_windows;  // number of open windows
     bool               no_exit; /** < FIXME; (was/should be) used to protect status window from being closed */
     bool               help_active; /** < true if the help mode is active, false otherwise */
     UserActionTracker *tracker;
@@ -141,11 +142,12 @@ public:
     AW_active      active_mask;
     GB_HASH       *awar_hash;
 
-    bool            disable_callbacks;
-    AW_window      *current_modal_window;
-    AW_window      *root_window;
+    bool           disable_callbacks;
+    AW_window     *current_modal_window;
+    AW_window     *root_window;
 
-    void window_show();         // a window is set to screen
+    // keep track of open windows
+    void window_show();
     void window_hide(AW_window *aww);
 
     // the read only public section:
@@ -160,7 +162,6 @@ public:
      */
     AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker,
             int *argc, char **argv[]);
-          
 #if defined(UNIT_TESTS)
     AW_root(const char *properties); // fake-root for unit-tests (allows access to awar-subsystem)
 #endif

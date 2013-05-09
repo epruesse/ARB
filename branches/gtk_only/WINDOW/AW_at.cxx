@@ -328,6 +328,10 @@ int AW_at::get_at_yposition() const {
 }
 
 
+
+// -------------------
+//      AW_at_size
+
 void AW_at_size::store(const AW_at& at) {
     to_position_exists = at.to_position_exists;
     if (to_position_exists) {
@@ -352,5 +356,61 @@ void AW_at_size::restore(AW_at& at) const {
     at.attach_lx  = attach_lx;
     at.attach_ly  = attach_ly;
     at.attach_any = attach_any;
+}
+
+// -------------------
+//      AW_at_maxsize
+
+void AW_at_maxsize::store(const AW_at &at) {
+    maxx = at.max_x_size;
+    maxy = at.max_y_size;
+}
+
+void AW_at_maxsize::restore(AW_at &at) const {
+    at.max_x_size = maxx;
+    at.max_y_size = maxy;
+}
+
+// -------------------
+//      AW_at_auto
+
+void AW_at_auto::store(const AW_at &at) {
+    if   (at.do_auto_increment) { 
+        type = INC;   
+        x = at.auto_increment_x; 
+        y = at.auto_increment_y; 
+    }
+    else if (at.do_auto_space)  { 
+        type = SPACE; 
+        x = at.auto_space_x;
+        y = at.auto_space_y;     
+    }
+    else {
+        type = OFF; 
+    }
+
+    xfn  = at.x_for_newline;
+    xfnb = at.x_for_next_button;
+    yfnb = at.y_for_next_button;
+    bhob = at.biggest_height_of_buttons;
+}
+
+void AW_at_auto::restore(AW_at &at) const {
+    at.do_auto_space     = (type == SPACE);
+    at.do_auto_increment = (type == INC);
+
+    if      (at.do_auto_space) {
+        at.auto_space_x     = x;
+        at.auto_space_y     = y; 
+    }
+    else if (at.do_auto_increment) {
+        at.auto_increment_x = x;
+        at.auto_increment_y = y; 
+    }
+
+    at.x_for_newline             = xfn;
+    at.x_for_next_button         = xfnb;
+    at.y_for_next_button         = yfnb;
+    at.biggest_height_of_buttons = bhob;
 }
 

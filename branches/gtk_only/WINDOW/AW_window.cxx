@@ -38,12 +38,6 @@
 //#define DUMP_BUTTON_CREATION
 
 
-static bool AW_value_changed_callback(GtkWidget*, gpointer) {
-    AW_root::SINGLETON->value_changed = true;
-    return false; //this event should propagate further
-}
-
-
 // proxy functions handing down stuff to AW_at
 void AW_window::at(int x, int y){ _at.at(x,y); }
 void AW_window::at_x(int x) { _at.at_x(x); }
@@ -79,6 +73,28 @@ void AW_window::restore_at_size_and_attach(const AW_at_size *at_size){
 void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
     at_size->store(_at);
 }
+void AW_window::get_window_size(int& width, int& height){
+    width  = _at.max_x_size;
+    height = _at.max_y_size;
+}
+
+/**
+ * set help text for next created button
+ */
+void AW_window::help_text(const char *id){
+    if(NULL != _at.helptext_for_next_button)
+    {
+        delete _at.helptext_for_next_button;
+    }
+    _at.helptext_for_next_button   = strdup(id);
+}
+
+/**
+ * make next created button default button
+ */
+void AW_window::highlight(){
+    _at.highlight = true;
+}
 
 
 // FIXME: callback ownership not handled, possible memory leaks
@@ -110,9 +126,6 @@ void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL
  * takes care of recording actions and displaying help on ?-cursor
  */
 void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
-    GTK_PARTLY_IMPLEMENTED;
-    printf("in click handler\n");
-
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     
     AW_root *root = AW_root::SINGLETON;
@@ -143,17 +156,6 @@ void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
         
         cbs->run_callback();
         
-        /**the old motif code searched the event queue and removed the following
-         * events at this line:
-         * ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
-         * KeyPressMask|KeyReleaseMask|PointerMotionMask
-         * 
-         * I have no idea if that is even possible in gtk or why anyone wants
-         * to do that??
-         */
-        FIXME("destruction of old events not implemented");
-
-
         if (root->is_help_active()) {
             root->set_cursor(HELP_CURSOR);
         }
@@ -309,6 +311,7 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
         
         if (_at.highlight) {
             gtk_widget_grab_default(button);
+            _at.highlight = false;
         }
 
         get_root()->register_widget(button, _at.widget_mask);
@@ -509,8 +512,6 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
 
 void AW_window::create_menu(const char *name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
     aw_assert(legal_mask(mask));
-        
-    GTK_PARTLY_IMPLEMENTED;
 
 //    #if defined(DUMP_MENU_LIST)
 //        dumpCloseAllSubMenus();
@@ -621,7 +622,9 @@ void AW_window::insert_default_option(const char *on, const char *mn, float vv, 
 
 
 template <class T>
-void AW_window::insert_option_internal(const char *option_name, const char *mnemonic, T var_value, const char *name_of_color, bool default_option) {
+void AW_window::insert_option_internal(const char *option_name, const char */*mnemonic*/, 
+                                       T var_value, const char */*name_of_color*/, 
+                                       bool /*default_option*/) {
     aw_assert(NULL != prvt->selection_list); //current option menu has to be set
     aw_assert(prvt->selection_list->variable_type == AW_TypeCheck::getVarType(var_value)); //type missmatch
     
@@ -637,8 +640,8 @@ void AW_window::update_option_menu() {
     put_with_label(prvt->combo_box);
 }
 
-void AW_window::clear_option_menu(AW_option_menu_struct */*oms*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_window::clear_option_menu(AW_selection_list *sel) {
+    sel->clear(true);
 }
 
 
@@ -661,7 +664,6 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     AW_awar *vs = get_root()->awar(var_name);
     aw_assert(vs);
     AW_varUpdateInfo *vui = 0;
-    AW_cb_struct  *cbs = 0;
     
     tree = gtk_tree_view_new();
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
@@ -681,11 +683,6 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_win), tree);
 
     
-    int width_of_list;
-    int height_of_list;
-    int width_of_last_widget  = 0;
-    int height_of_last_widget = 0;
-
     int char_width, char_height;
     prvt->get_font_size(char_width, char_height);
     gtk_widget_set_size_request(scrolled_win, char_width * columns, char_height * rows);
@@ -791,10 +788,16 @@ void AW_window::update_toggle_field() {
 }
 // END TOGGLE FIELD STUFF
 
+void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize){
+    aw_assert(xfig_data);  // forgot to call load_xfig ?
+    
+    xfig_data->add_line(x1, y1, x2, y2, width);
+    _at.set_xfig(xfig_data);
 
-
-void AW_window::draw_line(int /*x1*/, int /*y1*/, int /*x2*/, int /*y2*/, int /*width*/, bool /*resize*/){
-   GTK_NOT_IMPLEMENTED;
+    if (resize) {
+        recalc_size_atShow(AW_RESIZE_ANY);
+        set_window_size(_at.max_x_size+1000, _at.max_y_size+1000);
+    }
 }
 
 
@@ -839,25 +842,6 @@ AW_device_size *AW_window::get_size_device(AW_area area){
     return size_device;
 }
 
-void AW_window::get_window_size(int& width, int& height){
-    prvt->get_size(width,height);
-}
-
-void AW_window::help_text(const char *id){
-    if(NULL != _at.helptext_for_next_button)
-    {
-        delete _at.helptext_for_next_button;
-    }
-    _at.helptext_for_next_button   = strdup(id);
-}
-
-
-void AW_window::highlight(){
-    GTK_NOT_IMPLEMENTED;
-}
-
-
-
 
 void AW_window::insert_help_topic(const char *name, const char */*mnemonic*/, const char */*help_text_*/, AW_active /*mask*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/){
     aw_assert(NULL != prvt->help_menu);
@@ -872,7 +856,9 @@ void AW_window::insert_help_topic(const char *name, const char */*mnemonic*/, co
 }
 
 
-void AW_window::insert_menu_topic(const char *topic_id, const char *name, const char *mnemonic, const char *helpText, AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2){
+void AW_window::insert_menu_topic(const char *topic_id, const char *name, 
+                                  const char *mnemonic, const char *helpText, 
+                                  AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2){
    aw_assert(legal_mask(mask));
    aw_assert(prvt->menus.size() > 0); //closed too many menus
   
@@ -880,9 +866,9 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *name, const 
    
    if (!topic_id) topic_id = name; // hmm, due to this we cannot insert_menu_topic w/o id. Change? @@@
 
-   GtkWidget *label = make_label(name, 0);
+   GtkWidget *wlabel = make_label(name, 0);
    GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
-   gtk_container_add(GTK_CONTAINER(alignment), label);
+   gtk_container_add(GTK_CONTAINER(alignment), wlabel);
    GtkWidget *item = gtk_menu_item_new();
    gtk_container_add(GTK_CONTAINER(item),alignment);
 
@@ -950,6 +936,7 @@ void AW_window::insert_sub_menu(const char *name, const char *mnemonic, AW_activ
 static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
     AW_device *device = aww->get_device(AW_INFO_AREA);
     device->reset();
+
     device->set_offset(AW::Vector(-xfig->minx, -xfig->miny));
 
     xfig->print(device);
@@ -962,9 +949,11 @@ void AW_window::get_font_size(int& width, int& height) {
 void AW_window::load_xfig(const char *file, bool resize /*= true*/){
     int width, height;
     prvt->get_font_size(width, height);
-  
-    FIXME("scaling to 80% for unknown reason -- just fits that way");
-    if (file)   xfig_data = new AW_xfig(file, width*0.8, height*0.8);
+
+    // 0.8 is _exactly_ right, +/- 0.01 already looks off
+    width *= 0.8; height *=0.8;
+
+    if (file)   xfig_data = new AW_xfig(file, width, height);
     else        xfig_data = new AW_xfig(width, height); // create an empty xfig
 
     xfig_data->create_gcs(get_device(AW_INFO_AREA)); 
@@ -982,17 +971,16 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
 
     }
 
-    set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data, 0);
+    set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data);
 }
 
-const char *AW_window::local_id(const char */*id*/) const{
-    GTK_NOT_IMPLEMENTED;
-    return 0;
+/**
+ * Construct window-local id. 
+ * Prefixes @param id with @member window_defaults_name + "/"
+ */
+const char *AW_window::local_id(const char *id) const{
+    return GBS_global_string("%s/%s", window_defaults_name, id);
 }
-
-
-
-
 
 void AW_window::sep______________() {
     
@@ -1004,46 +992,49 @@ void AW_window::sep______________() {
     
 }
 
-void AW_window::set_bottom_area_height(int /*height*/) {
-    GTK_NOT_IMPLEMENTED;
-}
-
 void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
     AW_area_management *aram = prvt->areas[area];
     if (aram) aram->set_expose_callback(this, f, cd1, cd2);
 }
 
-
-static void AW_focusCB(GtkWidget* /*wgt*/,  GtkDirectionType, gpointer cl_aww) {
-    AW_window *aww = (AW_window*)cl_aww;
-    aww->run_focus_callback();
-}
-
-void AW_window::run_focus_callback() {
-
-    FIXME("i have never actually seen this. But set_focus_callback is called several times.");
-    if (prvt->focus_cb) prvt->focus_cb->run_callback();
-}
-
+/**
+ * Registers a focus callback.
+ * They used to be called as soon as the mouse entered the main drawing area. 
+ * For now, they are not called at all.
+ */
 void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     // this is only ever called by AWT_canvas and triggers a re-render of the
     // middle area. the API was designed for "focus-follows-mouse" mode,
     // and makes little sense for GTK
     // (we might need other means to trigger an update of the tree at the right time)
+    prvt->focus_cb = new AW_cb_struct(this, f, cd1, cd2, 0, prvt->focus_cb);
 }
 
+/**
+ * Registers callback to be executed after the window is shown.
+ * Called multiple times if a show() follows a hide().
+ */
+void AW_window::set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    prvt->popup_cb = new AW_cb_struct(this, f, cd1, cd2, 0, prvt->popup_cb);
+}
 
 void AW_window::set_info_area_height(int h) {
-    GtkWidget* widget = GTK_WIDGET(prvt->fixed_size_area);//fixed_size_area is the info area
+    if (NULL == prvt->fixed_size_area) return;
+    gtk_widget_set_size_request(GTK_WIDGET(prvt->fixed_size_area), -1, h);
+}
+
+void AW_window::set_bottom_area_height(int h) {
+    if (NULL == prvt->bottom_area) return;
     
-    if(NULL != widget)
-    {
-        gint width;
-        gint height;
-        gtk_widget_get_size_request(widget, &width, &height);
-        height = h;
-        gtk_widget_set_size_request(widget, width, height);
-    }
+    // FIXME: workaround for @@@PH_main.cxx
+    // Every client besides PHYLO calls with h=0;
+    // PHYLO however sets a fixed height. So we have to scale according
+    // to font height (which PHYLO assumes to be 13)
+    int char_width, char_height;
+    prvt->get_font_size(char_width, char_height);
+    h *= (double)char_height/13;
+
+    gtk_widget_set_size_request(GTK_WIDGET(prvt->bottom_area), -1, h);
 }
 
 void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -1058,10 +1049,6 @@ void AW_window::set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
     if (!aram)
         return;
     aram->set_motion_callback(this, f, cd1, cd2);
-}
-
-void AW_window::set_popup_callback(void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    GTK_NOT_IMPLEMENTED;
 }
 
 void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
@@ -1240,6 +1227,10 @@ void AW_window::set_window_title(const char *title){
     freedup(window_name, title);
 }
 
+const char* AW_window::get_window_title() const {
+    return window_name;
+}
+
 void AW_window::shadow_width (int /*shadow_thickness*/) {
     // won't implement
 }
@@ -1277,6 +1268,7 @@ void AW_window::window_fit() {
 
 AW_window::AW_window() 
   : recalc_size_at_show(AW_KEEP_SIZE),
+    recalc_pos_at_show(AW_KEEP_POS),
     left_indent_of_horizontal_scrollbar(0),
     top_indent_of_vertical_scrollbar(0),
     prvt(new AW_window::AW_window_gtk()),
@@ -1309,10 +1301,10 @@ AW_window::~AW_window() {
     delete prvt;
 }
 
-void AW_window::init_window(const char *window_name, const char* window_title,
+void AW_window::init_window(const char *window_name_, const char* window_title,
                             int width, int height, bool resizable) {
     // clean unwanted chars from window_name 
-    window_defaults_name = GBS_string_2_key(window_name);
+    window_defaults_name = GBS_string_2_key(window_name_);
 
     // get (and create if necessary) x,y,w,h awars for window
     std::string prop_root = std::string("window/windows/") + window_defaults_name;
@@ -1375,13 +1367,12 @@ void AW_window::init_window(const char *window_name, const char* window_title,
     prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), this);
 }
 
-void AW_window::recalc_pos_atShow(AW_PosRecalc /*pr*/){
-    GTK_NOT_IMPLEMENTED;
+void AW_window::recalc_pos_atShow(AW_PosRecalc pr){
+    recalc_pos_at_show = pr;
 }
 
 AW_PosRecalc AW_window::get_recalc_pos_atShow() const {
-    GTK_NOT_IMPLEMENTED;
-    return AW_KEEP_POS; // 0
+    return recalc_pos_at_show;
 }
 
 void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
@@ -1390,8 +1381,6 @@ void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
     }
     recalc_size_at_show = sr;
 }
-
-
 
 AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (!color_table_size) {
@@ -1482,16 +1471,40 @@ void AW_window::allow_delete_window(bool allow_close) {
     g_signal_connect(prvt->window, "delete-event", G_CALLBACK(noop_signal_handler), NULL);
 }
 
-void AW_window::show() {
-    prvt->show();
-}
-
 bool AW_window::is_shown() const{
     return gtk_widget_get_visible(GTK_WIDGET(prvt->window));
 }
 
+void AW_window::show() {
+    if (is_shown()) return; 
+
+    switch (recalc_pos_at_show) {
+    case AW_KEEP_POS:
+        break;
+    case AW_REPOS_TO_CENTER:
+        gtk_window_set_position(prvt->window, GTK_WIN_POS_CENTER);
+        break;
+    case AW_REPOS_TO_MOUSE_ONCE:
+        recalc_pos_at_show = AW_KEEP_POS;
+        //fall though
+    case AW_REPOS_TO_MOUSE:
+        gtk_window_set_position(prvt->window, GTK_WIN_POS_MOUSE);
+        break;
+    default:
+        aw_assert(false);
+    }
+
+    prvt->show();
+    get_root()->window_show(); // increment window counter
+
+    if (prvt->popup_cb) prvt->popup_cb->run_callback();
+}
+
 void AW_window::hide(){
+    if (!is_shown()) return;
+    
     gtk_widget_hide(GTK_WIDGET(prvt->window));
+    get_root()->window_hide(this);  // decrement window counter
 }
 
 void AW_window::hide_or_notify(const char *error){

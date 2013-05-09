@@ -16,7 +16,7 @@ struct awar_gparam_binding {
         : obj(obj_), pspec(pspec_),  awar(awar_), mapper(mapper_), frozen(false) {}
 };
 
-class AW_awar_impl : public AW_awar {
+class AW_awar_impl : public AW_awar, virtual Noncopyable {
     AW_root_cblist       *callback_list;
     AW_widget_refresh_cb *refresh_list;
     bool in_tmp_branch;
@@ -97,7 +97,7 @@ public:
     virtual void     touch() OVERRIDE;
 };
 
-class AW_awar_int : public AW_awar_impl {
+class AW_awar_int : public AW_awar_impl, virtual Noncopyable {
     long min_value;
     long max_value;
     long default_value;
@@ -156,7 +156,7 @@ public:
     GB_ERROR    toggle_toggle() OVERRIDE;
 };
 
-class AW_awar_string : public AW_awar_impl {
+class AW_awar_string : public AW_awar_impl, virtual Noncopyable {
     char* srt_program;
     char* default_value;
     char* value;
@@ -181,7 +181,7 @@ public:
     GB_ERROR    toggle_toggle() OVERRIDE;
 };
 
-class AW_awar_pointer : public AW_awar_impl {
+class AW_awar_pointer : public AW_awar_impl, virtual Noncopyable {
     void *default_value;
     void *value;
     void     remove_all_target_vars() OVERRIDE;

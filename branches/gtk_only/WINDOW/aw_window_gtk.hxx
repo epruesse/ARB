@@ -9,7 +9,9 @@
  * This class hides all private or gtk dependent attributes.
  * This is done to avoid gtk includes in the header file.
  */
-class AW_window::AW_window_gtk : public Noncopyable {
+class AW_window::AW_window_gtk  {
+    AW_window_gtk(const AW_window_gtk&);
+    AW_window_gtk& operator=(const AW_window_gtk&);
 public:
     
     GtkWindow *window; /**< The gtk window instance managed by this aw_window */
@@ -103,6 +105,11 @@ public:
     
     /**The drawing area of this window. Might be NULL. */
     AwDrawingArea *drawing_area;
+
+    /**The bottom area of this window. Might be NULL. */
+    AwDrawingArea *bottom_area;
+
+
     /**ID of the delete event handler for this window. -1 if no handler present.*/
     int delete_event_handler_id;
     

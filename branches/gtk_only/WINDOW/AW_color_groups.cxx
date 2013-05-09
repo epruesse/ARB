@@ -13,31 +13,11 @@
 #include "aw_color_groups.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_assert.hxx"
+#include "aw_root.hxx"
+#include "aw_awar.hxx"
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
 
+#include <arbdbt.h>
 
-
-
-
-GB_ERROR AW_set_color_group(GBDATA */*gbd*/, long /*color_group*/) {
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-
-
-
-
-char *AW_get_color_group_name(AW_root */*awr*/, int /*color_group*/){
-    GTK_NOT_IMPLEMENTED;
-    return 0;
-}
-
-
-
-#if defined(UNIT_TESTS) 
-void fake_AW_init_color_groups() {
-    GTK_NOT_IMPLEMENTED;
-}
-#endif

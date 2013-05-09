@@ -71,8 +71,8 @@ void AW_cb_struct::run_callback() {
 
         bool isModalCallback = (f == AW_CB(message_cb) ||
                                 f == AW_CB(input_history_cb) ||
-                                f == AW_CB(input_cb) ||
-                                f == AW_CB(file_selection_cb));
+                                f == AW_CB(input_cb));
+
 
         bool isPopdown = (f == AW_CB(AW_POPDOWN));
         bool isHelp    = (f == AW_CB(AW_POPUP_HELP));

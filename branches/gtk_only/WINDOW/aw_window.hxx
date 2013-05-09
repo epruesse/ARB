@@ -56,31 +56,6 @@ class AW_at;
 enum AW_orientation { AW_HORIZONTAL, AW_VERTICAL };
 
 
-class AW_at_maxsize {
-    int maxx;
-    int maxy;
-
-public:
-    AW_at_maxsize()
-        : maxx(0),
-          maxy(0)
-    {}
-    
-    void store(const AW_at &at);
-    void restore(AW_at &at) const;
-};
-
-class AW_at_auto {
-    enum { INC, SPACE, OFF } type;
-    int x, y;
-    int xfn, xfnb, yfnb, bhob;
-public:
-    AW_at_auto() : type(OFF) {}
-
-    void store(const AW_at &at);
-    void restore(AW_at &at) const;
-};
-
 typedef const char *AW_label;       // label for buttons menus etc
 // "fsdf" simple label  // no '/' symbol !!!
 // "awarname/asdf"  // awar name (any '/' in string)
@@ -147,7 +122,8 @@ typedef AW_CB0 aw_hide_cb;
 
 class AW_window : virtual Noncopyable {
     friend class AW_cb_struct;//the cb struct needs access to prvt for strange reasons
-    enum AW_SizeRecalc recalc_size_at_show;
+    AW_SizeRecalc recalc_size_at_show;
+    AW_PosRecalc  recalc_pos_at_show;
 //    enum AW_PosRecalc  recalc_pos_at_show;
 //    aw_hide_cb         hide_cb;
 //
@@ -213,8 +189,7 @@ public:
 
     void recalc_size_atShow(enum AW_SizeRecalc sr);
 
-    void run_focus_callback();
-    
+   
     void allow_delete_window(bool allow_close);
     void on_hide(AW_CB0 call_on_hide);
 
@@ -280,7 +255,7 @@ public:
     void    message(char *title, int ms);   // Set for ms milliseconds the title of the window
     void    set_window_title(const char *title);   // Set the window title forever
 
-    const char *get_window_title();       // Get the window's title
+    const char *get_window_title() const;       // Get the window's title
 
     const char *local_id(const char *id) const;
 
@@ -420,7 +395,7 @@ public:
     void button_height(int height);   // Sets the height of all following buttons (in lines)
     int  get_button_length() const; // returns the current width of buttons
     int  get_button_height() const; // returns the current height of buttons
-    void highlight();           // Creates a frame around the button
+    void highlight();
     void auto_increment(int dx, int dy);   // enable automatic placement of buttons
     // dx is the horizontal distance between the left
     // borders of two buttons

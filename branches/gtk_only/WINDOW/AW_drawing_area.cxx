@@ -83,7 +83,7 @@ static void aw_drawing_area_dispose(GObject* object) {
     }
 }
 
-static gint aw_drawing_area_button_press(GtkWidget *widget, GdkEventButton *event) {
+static gint aw_drawing_area_button_press(GtkWidget *widget, GdkEventButton *) {
     if (!gtk_widget_has_focus(widget)) 
         gtk_widget_grab_focus(widget);
     return false;

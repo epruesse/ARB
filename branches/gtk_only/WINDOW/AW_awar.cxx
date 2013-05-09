@@ -65,7 +65,6 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
         // und benachrichtigen der anderen
         switch (widgetlist->widget_type) {
             case AW_WIDGET_TOGGLE_FIELD:
-                GTK_NOT_IMPLEMENTED;
                 // widgetlist->aw->refresh_toggle_field((int)widgetlist->cd);
                 break;
             case AW_WIDGET_CHOICE_MENU: // fall-through
@@ -166,19 +165,19 @@ __ATTR__NORETURN char   *AW_awar_impl::read_string() {
     GBK_terminatef("AWAR target access failure. Called %s on awar of type %s", \
                    __PRETTY_FUNCTION__, get_type_name())
 
-__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(char **ppchr) {
+__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(char **) {
     AWAR_TARGET_FAILURE;
 }
-__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(float *pfloat) {
+__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(float *) {
     AWAR_TARGET_FAILURE;
 }
-__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(long *pint) {
+__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(long *) {
     AWAR_TARGET_FAILURE;
 }
 __ATTR__NORETURN GB_ERROR AW_awar_impl::toggle_toggle() {
     AWAR_TARGET_FAILURE;
 }
-__ATTR__NORETURN AW_awar *AW_awar_impl::set_minmax(float min, float max) {
+__ATTR__NORETURN AW_awar *AW_awar_impl::set_minmax(float, float) {
     AWAR_TARGET_FAILURE;
 }
 __ATTR__NORETURN float    AW_awar_impl::get_min() const {
@@ -187,7 +186,7 @@ __ATTR__NORETURN float    AW_awar_impl::get_min() const {
 __ATTR__NORETURN float    AW_awar_impl::get_max() const {
     AWAR_TARGET_FAILURE;
 }
-__ATTR__NORETURN AW_awar *AW_awar_impl::set_srt(const char *srt) {
+__ATTR__NORETURN AW_awar *AW_awar_impl::set_srt(const char *) {
     AWAR_TARGET_FAILURE;
 }
 
@@ -337,7 +336,7 @@ GB_ERROR AW_awar_int::write_int(long para, bool do_touch) {
 }
 
 GB_ERROR AW_awar_int::write_float(double para, bool do_touch) {
-    write_int(para, do_touch);
+    return write_int(para, do_touch);
 }
 
 GB_ERROR AW_awar_int::write_as_string(const char *para, bool do_touch) {
@@ -417,7 +416,7 @@ void AW_awar_float::do_update() {
     }
 
     // update targets
-    for (int i=0; i<target_variables.size(); i++) {
+    for (unsigned int i=0; i<target_variables.size(); i++) {
         *target_variables[i] = fl;
     }
 }
@@ -534,7 +533,7 @@ void AW_awar_string::do_update() {
     }
 
     // update targets
-    for (int i=0; i<target_variables.size(); i++) {
+    for (unsigned int i=0; i<target_variables.size(); i++) {
         freeset(*target_variables[i], n);
     }
 
@@ -596,6 +595,7 @@ GB_ERROR AW_awar_string::toggle_toggle() {
     char* str = read_string();
     GB_ERROR err = write_string(strcmp("yes", str) ? "yes" : "no");
     free(str);
+    return err;
 }
 
 bool AW_awar_string::read_as_bool() {
@@ -657,8 +657,8 @@ AW_awar_impl::AW_awar_impl(const char *var_name)
   : callback_list(NULL),
     refresh_list(NULL),
     in_tmp_branch(var_name && strncmp(var_name, "tmp/", 4) == 0),
-    gb_var(NULL),
-    gb_origin(NULL)
+    gb_origin(NULL),
+    gb_var(NULL)
 {
     awar_name = strdup(var_name);
 }
@@ -784,12 +784,12 @@ void AW_awar_impl::unlink_from_DB(GBDATA *gb_main) {
     aw_assert(is_valid());
 }
 
-void AW_awar_impl::update_tmp_state(bool has_default_value) {
+void AW_awar_impl::update_tmp_state(bool has_default_value_) {
     if (in_tmp_branch || !gb_origin || 
-        GB_is_temporary(gb_origin) == has_default_value)
+        GB_is_temporary(gb_origin) == has_default_value_)
         return;
 
-    GB_ERROR error = has_default_value ? GB_set_temporary(gb_origin) : GB_clear_temporary(gb_origin);
+    GB_ERROR error = has_default_value_ ? GB_set_temporary(gb_origin) : GB_clear_temporary(gb_origin);
 
     if (error) 
       GB_warning(GBS_global_string("Failed to set temporary for AWAR '%s' (Reason: %s)", 
