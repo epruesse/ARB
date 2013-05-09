@@ -91,8 +91,6 @@ public:
     }
 };
 
-void aw_update_all_window_geometry_awars(AW_root *awr);
-
 #else
 #error aw_nawar.hxx included twice
 #endif // AW_NAWAR_HXX

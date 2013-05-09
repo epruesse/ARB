@@ -17,6 +17,8 @@
 #include "aw_awar.hxx"
 #include "aw_device.hxx"
 #include "aw_advice.hxx"
+#include "aw_question.hxx"
+#include "aw_msg.hxx"
 #include "aw_assert.hxx"
 #include <arbdbt.h>
 
@@ -111,26 +113,57 @@ public:
     AW_MGC_awar_cb_struct *get_font_change_parameter() const { return font_change_cb_parameter; }
 };
 
-void AW_save_properties(AW_window */*aw*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_save_properties(AW_window *aw) {
+    AW_save_specific_properties(aw, NULL);
 }
 
-void AW_copy_GCs(AW_root */*aw_root*/, const char */*source_window*/, const char */*dest_window*/, bool /*has_font_info*/, const char */*id0*/, ...) {
-    GTK_NOT_IMPLEMENTED;
+void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, 
+                 bool has_font_info, const char *id0, ...) {
+    // read the values of the specified GCs from 'source_window'
+    // and write the values into same-named GCs of 'dest_window'
+    //
+    // 'id0' is the first of a list of color ids
+    // a NULL pointer has to be given behind the last color!
+
+    va_list parg;
+    va_start(parg, id0);
+
+    const char *id = id0;
+    while (id) {
+        char *value = aw_root->awar(GBS_global_string(AWP_COLORNAME_TEMPLATE, source_window, id))->read_string();
+        aw_root->awar(GBS_global_string(AWP_COLORNAME_TEMPLATE, dest_window, id))->write_string(value);
+        free(value);
+
+        if (has_font_info) {
+            int ivalue = aw_root->awar(GBS_global_string(AWP_FONTNAME_TEMPLATE, source_window, id))->read_int();
+            aw_root->awar(GBS_global_string(AWP_FONTNAME_TEMPLATE, dest_window, id))->write_int(ivalue);
+        }
+
+        id = va_arg(parg, const char*); // another argument ?
+    }
+
+    va_end(parg);
+}
+
+void AW_save_specific_properties(AW_window *aw, const char *filename) {  // special version for EDIT4
+    GB_ERROR error = aw->get_root()->save_properties(filename);
+    if (error) aw_message(error);
 }
 
 
-void AW_save_specific_properties(AW_window */*aw*/, const char */*filename*/) {
-    GTK_NOT_IMPLEMENTED;
+static void add_common_property_menu_entries(AW_window *aw) {
+    aw->insert_menu_topic("enable_advices",   "Reactivate advices",   "R", "advice.hlp",   
+                          AWM_ALL, (AW_CB)AW_reactivate_all_advices,   0, 0);
+    aw->insert_menu_topic("enable_questions", "Reactivate questions", "q", "questions.hlp", 
+                          AWM_ALL, (AW_CB)AW_reactivate_all_questions, 0, 0);
 }
 
-void AW_insert_common_property_menu_entries(AW_window_menu_modes */*awmm*/) {
-    GTK_NOT_IMPLEMENTED;
-
+void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm) {
+    add_common_property_menu_entries(awmm);
 }
 
-void AW_insert_common_property_menu_entries(AW_window_simple_menu */*awsm*/) {
-    GTK_NOT_IMPLEMENTED;
+void AW_insert_common_property_menu_entries(AW_window_simple_menu *awsm) {
+    add_common_property_menu_entries(awsm);
 }
 
 static bool color_groups_initialized = false;
@@ -161,6 +194,24 @@ static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode
     }
 }
 
+static const char *AW_get_color_group_name_awarname(int color_group) {
+    if (color_group>0 && color_group <= AW_COLOR_GROUPS) {
+        static char buf[sizeof(AWAR_COLOR_GROUPS_PREFIX)+1+4+2+1];
+        sprintf(buf, AWAR_COLOR_GROUPS_PREFIX "/name%i", color_group);
+        return buf;
+    }
+    return 0;
+}
+
+GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
+    return GBT_write_int(gbd, AW_COLOR_GROUP_ENTRY, color_group);
+}
+
+char *AW_get_color_group_name(AW_root *awr, int color_group){
+    aw_assert(color_groups_initialized);
+    aw_assert(color_group>0 && color_group <= AW_COLOR_GROUPS);
+    return awr->awar(AW_get_color_group_name_awarname(color_group))->read_string();
+}
 
 
 static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode)
@@ -188,17 +239,6 @@ static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, lo
     free(colorname);
 }
 
-static const char *AW_get_color_group_name_awarname(int color_group) {
-    if (color_group>0 && color_group <= AW_COLOR_GROUPS) {
-        static char buf[sizeof(AWAR_COLOR_GROUPS_PREFIX)+1+4+2+1];
-        sprintf(buf, AWAR_COLOR_GROUPS_PREFIX "/name%i", color_group);
-        return buf;
-    }
-    return 0;
-}
-
-
-
 long AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag) {
     /* species/genes etc. may have a color group entry ('ARB_color')
      * call with ignore_usage_flag == true to read color group regardless of global usage flag (AWAR_COLOR_GROUPS_USE)
@@ -223,6 +263,7 @@ static void AW_color_group_name_changed_cb(AW_root *) {
               "save properties and restart the program.",
               AW_ADVICE_TOGGLE, "Color group name has been changed", 0);
 }
+
 
 
 static void AW_init_color_groups(AW_root *awr, AW_default def) {
@@ -515,7 +556,6 @@ AW_gc_manager AW_manage_GC(AW_window *aww,
 
 
 AW_window *AW_preset_window(AW_root *root) {
-    GTK_PARTLY_IMPLEMENTED;
     AW_window_simple *aws = new AW_window_simple;
     const int   tabstop = 400;
     aws->init(root, "PROPS_FRAME", "WINDOW_PROPERTIES");
@@ -791,7 +831,11 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, con
     return (AW_window *) aws;
 }
 
-
-
-
-
+#if defined(UNIT_TESTS) 
+void fake_AW_init_color_groups() {
+    if (!color_groups_initialized) {
+        use_color_groups = true;
+    }
+    color_groups_initialized = true;
+}
+#endif

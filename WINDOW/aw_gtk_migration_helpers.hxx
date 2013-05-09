@@ -18,7 +18,6 @@
 
 //#define GTK_SILENT
 #ifdef GTK_SILENT
-#define GTK_NOT_IMPLEMENTED
 #define GTK_PARTLY_IMPLEMENTED
 #if defined(DEVEL_RALF)
 #define FIXME
@@ -27,19 +26,6 @@
 #define FIXME(str)
 #endif
 #else
-#define GTK_NOT_IMPLEMENTED printf("NOT IMPLEMENTED %s\n",  __PRETTY_FUNCTION__)
-#define GTK_PARTLY_IMPLEMENTED printf("PARTLY IMPLEMENTED %s\n",  __PRETTY_FUNCTION__)
 #define FIXME(str)  printf("FIXME: %s %s\n", __PRETTY_FUNCTION__, str)
-#define DUMP_CALLBACK(widget, str) do { \
-    char *wname; \
-    if (GTK_IS_WIDGET(widget)) { \
-      g_object_get(GTK_WIDGET(widget), "name", &wname, NULL);             \
-    } else { \
-      wname = strdup("not_a_widget"); \
-    } \
-    printf("DUMP_CALLBACK: %s \"%s:%s\" %s\n", __PRETTY_FUNCTION__, G_OBJECT_TYPE_NAME(widget), wname, str); \
-    free(wname); \
-  } while(0)
-
 #endif
 

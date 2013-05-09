@@ -88,12 +88,7 @@ protected:
         short         line_width;
         AW_linestyle  style;
         AW_rgb        color;
-        config() : 
-            function(AW_COPY),
-            grey_level(0),
-            line_width(GC_DEFAULT_LINE_WIDTH),
-            style(AW_SOLID), 
-            color(0) {}
+        config(); 
         bool operator==(const config& o) const;
     };
 

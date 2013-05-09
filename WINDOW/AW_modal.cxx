@@ -19,9 +19,10 @@
 #include "aw_select.hxx"
 #include "aw_help.hxx"
 
-
 #include <arbdbt.h>
 #include <arb_strarray.h>
+
+#include <gtk/gtk.h>
 
 #include <deque>
 #include <string>
@@ -117,179 +118,180 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
 
     if (have_auto_answer>0) {
         aw_message_cb_result = have_auto_answer-1;
+        free(awar_name_neverAskAgain);
+        return aw_message_cb_result;
     }
-    else {
-        char *button_list = strdup(buttons ? buttons : "OK");
-        if (button_list[0] == 0) {
-            freedup(button_list, "Maybe ok,EXIT");
-            GBK_dump_backtrace(stderr, "Empty buttonlist");
-            question = GBS_global_string_copy("%s\n"
-                                              "(Program error - Unsure what happens when you click ok\n"
-                                              " Check console for backtrace and report error)",
-                                              question);
-        }
 
-        AW_awar *awar_quest     = root->awar_string(AWAR_QUESTION);
-        if (!question) question = "<oops - no question?!>";
-        awar_quest->write_string(question);
+    char *button_list = strdup(buttons ? buttons : "OK");
+    if (button_list[0] == 0) {
+        freedup(button_list, "Maybe ok,EXIT");
+        GBK_dump_backtrace(stderr, "Empty buttonlist");
+        question = GBS_global_string_copy("%s\n"
+                                          "(Program error - Unsure what happens when you click ok\n"
+                                          " Check console for backtrace and report error)",
+                                          question);
+    }
 
-        size_t question_length, question_lines;
-        aw_detect_text_size(question, question_length, question_lines);
+    AW_awar *awar_quest     = root->awar_string(AWAR_QUESTION);
+    if (!question) question = "<oops - no question?!>";
+    awar_quest->write_string(question);
 
-        // hash key to find matching window
-        char *hindex = GBS_global_string_copy("%s$%s$%zu$%zu$%i$%s",
-                                              button_list, uniqueID ? uniqueID : "<NOID>",
-                                              question_length, question_lines, int(fixedSizeButtons),
-                                              helpfile ? helpfile : "");
+    size_t question_length, question_lines;
+    aw_detect_text_size(question, question_length, question_lines);
 
-        static GB_HASH    *hash_windows = 0;
-        if (!hash_windows) hash_windows = GBS_create_hash(256, GB_MIND_CASE);
-        AW_window_message *aw_msg       = (AW_window_message *)GBS_read_hash(hash_windows, hindex);
+    // hash key to find matching window
+    char *hindex = GBS_global_string_copy("%s$%s$%zu$%zu$%i$%s",
+                                          button_list, uniqueID ? uniqueID : "<NOID>",
+                                          question_length, question_lines, int(fixedSizeButtons),
+                                          helpfile ? helpfile : "");
+
+    static GB_HASH    *hash_windows = 0;
+    if (!hash_windows) hash_windows = GBS_create_hash(256, GB_MIND_CASE);
+    AW_window_message *aw_msg       = (AW_window_message *)GBS_read_hash(hash_windows, hindex);
 
 #if defined(DEBUG)
-        printf("hindex='%s'\n", hindex);
+    printf("hindex='%s'\n", hindex);
 #endif // DEBUG
 
-        if (!aw_msg) {
-            aw_msg = new AW_window_message;
-            GBS_write_hash(hash_windows, hindex, (long)aw_msg);
+    if (!aw_msg) {
+        aw_msg = new AW_window_message;
+        GBS_write_hash(hash_windows, hindex, (long)aw_msg);
 
-            aw_msg->init(root, "QUESTION BOX", false);
-            aw_msg->recalc_size_atShow(AW_RESIZE_DEFAULT); // force size recalc (ignores user size)
+        aw_msg->init(root, "QUESTION BOX", false);
+        aw_msg->recalc_size_atShow(AW_RESIZE_DEFAULT); // force size recalc (ignores user size)
 
-            aw_msg->label_length(10);
+        aw_msg->label_length(10);
 
-            aw_msg->at(10, 10);
-            aw_msg->auto_space(10, 10);
+        aw_msg->at(10, 10);
+        aw_msg->auto_space(10, 10);
 
-            aw_msg->button_length(question_length+3);
-            aw_msg->button_height(question_lines+1);
+        aw_msg->button_length(question_length+3);
+        aw_msg->button_height(question_lines+1);
 
-            aw_msg->create_button(0, AWAR_QUESTION);
+        aw_msg->create_button(0, AWAR_QUESTION);
 
-            aw_msg->button_height(0);
+        aw_msg->button_height(0);
 
-            aw_msg->at_newline();
+        aw_msg->at_newline();
 
-            if (fixedSizeButtons) {
-                size_t  max_button_length = helpfile ? 4 : 0;
-                char   *pos               = button_list;
+        if (fixedSizeButtons) {
+            size_t  max_button_length = helpfile ? 4 : 0;
+            char   *pos               = button_list;
 
-                while (1) {
-                    char *comma       = strchr(pos, ',');
-                    if (!comma) comma = strchr(pos, 0);
+            while (1) {
+                char *comma       = strchr(pos, ',');
+                if (!comma) comma = strchr(pos, 0);
 
-                    size_t len                                   = comma-pos;
-                    if (len>max_button_length) max_button_length = len;
+                size_t len                                   = comma-pos;
+                if (len>max_button_length) max_button_length = len;
 
-                    if (!comma[0]) break;
-                    pos = comma+1;
-                }
-
-                aw_msg->button_length(max_button_length+2);
-            }
-            else {
-                aw_msg->button_length(0);
+                if (!comma[0]) break;
+                pos = comma+1;
             }
 
-            // insert the buttons:
-            char *ret              = strtok(button_list, ",");
-            bool  help_button_done = false;
-            int   counter          = 0;
-
-            while (ret) {
-                if (ret[0] == '^') {
-                    if (helpfile && !help_button_done) {
-                        aw_msg->callback(AW_POPUP_HELP, (AW_CL)helpfile);
-                        aw_msg->create_button("HELP", "HELP", "H");
-                        help_button_done = true;
-                    }
-                    aw_msg->at_newline();
-                    ++ret;
-                }
-                if (strcmp(ret, "EXIT") == 0) {
-                    aw_msg->callback(message_cb, -1);
-                }
-                else {
-                    aw_msg->callback(message_cb, (AW_CL)counter++);
-                }
-
-                if (fixedSizeButtons) {
-                    aw_msg->create_button(0, ret);
-                }
-                else {
-                    aw_msg->create_autosize_button(0, ret);
-                }
-                ret = strtok(NULL, ",");
-            }
-
-            if (helpfile && !help_button_done) { // if not done above
-                aw_msg->callback(AW_POPUP_HELP, (AW_CL)helpfile);
-                aw_msg->create_button("HELP", "HELP", "H");
-                help_button_done = true;
-            }
-
-            if (uniqueID) {
-                aw_msg->at_newline();
-                const char *label = counter>1 ? "Never ask again" : "Never notify me again";
-                aw_msg->label_length(strlen(label));
-                aw_msg->label(label);
-                aw_msg->create_toggle(awar_name_neverAskAgain);
-            }
-
-            aw_msg->window_fit();
+            aw_msg->button_length(max_button_length+2);
         }
         else {
-#if defined(DEBUG)
-            printf("[Reusing existing aw_question-window]\n");
-#endif
+            aw_msg->button_length(0);
         }
-        free(hindex);
-        aw_msg->show_modal();
 
-        free(button_list);
-        aw_message_cb_result = -13;
+        // insert the buttons:
+        char *ret              = strtok(button_list, ",");
+        bool  help_button_done = false;
+        int   counter          = 0;
+
+        while (ret) {
+            if (ret[0] == '^') {
+                if (helpfile && !help_button_done) {
+                    aw_msg->callback(AW_POPUP_HELP, (AW_CL)helpfile);
+                    aw_msg->create_button("HELP", "HELP", "H");
+                    help_button_done = true;
+                }
+                aw_msg->at_newline();
+                ++ret;
+            }
+            if (strcmp(ret, "EXIT") == 0) {
+                aw_msg->callback(message_cb, -1);
+            }
+            else {
+                aw_msg->callback(message_cb, (AW_CL)counter++);
+            }
+
+            if (fixedSizeButtons) {
+                aw_msg->create_button(0, ret);
+            }
+            else {
+                aw_msg->create_autosize_button(0, ret);
+            }
+            ret = strtok(NULL, ",");
+        }
+
+        if (helpfile && !help_button_done) { // if not done above
+            aw_msg->callback(AW_POPUP_HELP, (AW_CL)helpfile);
+            aw_msg->create_button("HELP", "HELP", "H");
+            help_button_done = true;
+        }
+
+        if (uniqueID) {
+            aw_msg->at_newline();
+            const char *label = counter>1 ? "Never ask again" : "Never notify me again";
+            aw_msg->label_length(strlen(label));
+            aw_msg->label(label);
+            aw_msg->create_toggle(awar_name_neverAskAgain);
+        }
+
+        aw_msg->window_fit();
+    }
+    else {
+#if defined(DEBUG)
+        printf("[Reusing existing aw_question-window]\n");
+#endif
+    }
+    free(hindex);
+    aw_msg->show_modal();
+
+    free(button_list);
+    aw_message_cb_result = -13;
 
 #if defined(TRACE_STATUS_MORE)
-        fprintf(stderr, "add aw_message_timer_listen_event with delay = %i\n", AW_MESSAGE_LISTEN_DELAY); fflush(stdout);
+    fprintf(stderr, "add aw_message_timer_listen_event with delay = %i\n", AW_MESSAGE_LISTEN_DELAY); fflush(stdout);
 #endif // TRACE_STATUS_MORE
-        root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
+    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
 
-        {
-            LocallyModify<bool> flag(root->disable_callbacks, true);
-            while (aw_message_cb_result == -13) {
-                root->process_events();
-            }
+    {
+        LocallyModify<bool> flag(root->disable_callbacks, true);
+        while (aw_message_cb_result == -13) {
+            root->process_events();
         }
-        aw_msg->hide();
+    }
+    aw_msg->hide();
 
-        if (awar_name_neverAskAgain) {
-            AW_awar *awar_neverAskAgain = root->awar(awar_name_neverAskAgain);
+    if (awar_name_neverAskAgain) {
+        AW_awar *awar_neverAskAgain = root->awar(awar_name_neverAskAgain);
 
-            if (awar_neverAskAgain->read_int()) { // user checked "Never ask again"
-                int givenAnswer = aw_message_cb_result >= 0 ? aw_message_cb_result+1 : 0;
-                awar_neverAskAgain->write_int(givenAnswer); // store given answer for "never asking again"
+        if (awar_neverAskAgain->read_int()) { // user checked "Never ask again"
+            int givenAnswer = aw_message_cb_result >= 0 ? aw_message_cb_result+1 : 0;
+            awar_neverAskAgain->write_int(givenAnswer); // store given answer for "never asking again"
 
-                if (givenAnswer && strchr(buttons, ',') != 0) {
-                    const char *appname = root->program_name;
-                    char       *advice  = GBS_global_string_copy("You will not be asked that question again in this session.\n"
-                                                                 "%s will always assume the answer you just gave.\n"
-                                                                 "\n"
-                                                                 "When you restart %s that question will be asked again.\n"
-                                                                 "To disable that question permanently for future sessions,\n"
-                                                                 "you need to save properties.\n"
-                                                                 "\n"
-                                                                 "Depending on the type of question doing that might be\n"
-                                                                 "helpful or obstructive.\n"
-                                                                 "Disabled questions can be reactivated from the properties menu.\n",
-                                                                 appname, appname);
-                    AW_advice(advice, AW_ADVICE_TOGGLE, "Disabling questions", NULL);
-                    free(advice);
-                }
+            if (givenAnswer && strchr(buttons, ',') != 0) {
+                const char *appname = root->program_name;
+                char       *advice  = GBS_global_string_copy("You will not be asked that question again in this session.\n"
+                                                             "%s will always assume the answer you just gave.\n"
+                                                             "\n"
+                                                             "When you restart %s that question will be asked again.\n"
+                                                             "To disable that question permanently for future sessions,\n"
+                                                             "you need to save properties.\n"
+                                                             "\n"
+                                                             "Depending on the type of question doing that might be\n"
+                                                             "helpful or obstructive.\n"
+                                                             "Disabled questions can be reactivated from the properties menu.\n",
+                                                             appname, appname);
+                AW_advice(advice, AW_ADVICE_TOGGLE, "Disabling questions", NULL);
+                free(advice);
             }
         }
     }
-
+ 
     free(awar_name_neverAskAgain);
 
     switch (aw_message_cb_result) {
@@ -341,14 +343,6 @@ static void create_input_awars(AW_root *aw_root) {
     aw_root->awar_string(AW_INPUT_TITLE_AWAR, "", AW_ROOT_DEFAULT);
     aw_root->awar_string(AW_INPUT_AWAR,       "", AW_ROOT_DEFAULT);
 }
-
-static void create_fileSelection_awars(AW_root *aw_root) {
-    aw_root->awar_string(AW_FILE_SELECT_TITLE_AWAR, "", AW_ROOT_DEFAULT);
-    aw_root->awar_string(AW_FILE_SELECT_DIR_AWAR, "", AW_ROOT_DEFAULT);
-    aw_root->awar_string(AW_FILE_SELECT_FILE_AWAR, "", AW_ROOT_DEFAULT);
-    aw_root->awar_string(AW_FILE_SELECT_FILTER_AWAR, "", AW_ROOT_DEFAULT);
-}
-
 
 // -------------------------
 //      aw_input history
@@ -435,17 +429,6 @@ void input_cb(AW_window *aw, AW_CL cd1) {
     }
 }
 
-void file_selection_cb(AW_window *aw, AW_CL cd1) {
-    // any previous contents were passed to client (who is responsible to free the resources)
-    // so DON'T free aw_input_cb_result here:
-    aw_input_cb_result        = 0;
-    aw_string_selected_button = int(cd1);
-
-    if (cd1 >= 0) {              // <0 = cancel button -> no result
-        // create heap-copy of result -> client will get the owner
-        aw_input_cb_result = aw->get_root()->awar(AW_FILE_SELECT_FILE_AWAR)->read_as_string();
-    }
-}
 
 #define INPUT_SIZE 50           // size of input prompts in aw_input and aw_string_selection
 
@@ -735,64 +718,37 @@ char *aw_string_selection2awar(const char *title, const char *prompt, const char
 //      aw_file_selection
 
 char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix) {
-    AW_root *root = AW_root::SINGLETON;
+    GtkWidget *dialog = gtk_file_chooser_dialog_new(title,
+                                                    NULL,
+                                                    GTK_FILE_CHOOSER_ACTION_SAVE,
+                                                    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                                    GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+                                                    NULL);
+       
+    gtk_window_set_modal(GTK_WINDOW(dialog), true);
 
-    static AW_window_simple *aw_msg = 0;
-    if (!aw_msg) create_fileSelection_awars(root);
+    char *edir      = GBS_eval_env(dir);    
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), edir);
+    free(edir);
 
-    {
-        char *edir      = GBS_eval_env(dir);
-        char *edef_name = GBS_eval_env(def_name);
+    char *edef_name = GBS_eval_env(def_name);
+    const char* edef_name_suffix = GBS_global_string("%s%s", edef_name, suffix);
+    free(edef_name);
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), edef_name_suffix);
 
-        root->awar(AW_FILE_SELECT_TITLE_AWAR) ->write_string(title);
-        root->awar(AW_FILE_SELECT_DIR_AWAR)   ->write_string(edir);
-        root->awar(AW_FILE_SELECT_FILE_AWAR)  ->write_string(edef_name);
-        root->awar(AW_FILE_SELECT_FILTER_AWAR)->write_string(suffix);
-
-        free(edef_name);
-        free(edir);
+    GtkFileFilter *filter = gtk_file_filter_new();
+    const char *pattern = GBS_global_string("*%s", suffix);
+    gtk_file_filter_add_pattern(filter, pattern);
+    gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), filter);
+    
+    char *filename = NULL;
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
     }
+        
+    gtk_widget_destroy(dialog);
 
-    if (!aw_msg) {
-        aw_msg = new AW_window_simple;
-
-        aw_msg->init(root, "AW_FILE_SELECTION", "File selection");
-        aw_msg->allow_delete_window(false); // disable closing the window
-
-        aw_msg->load_xfig("fileselect.fig");
-
-        aw_msg->at("title");
-        aw_msg->create_button(0, AW_FILE_SELECT_TITLE_AWAR);
-
-        AW_create_fileselection(aw_msg, AW_FILE_SELECT_BASE);
-
-        aw_msg->button_length(7);
-
-        aw_msg->at("ok");
-        aw_msg->callback(file_selection_cb, 0);
-        aw_msg->create_button("OK", "OK", "O");
-
-        aw_msg->at("cancel");
-        aw_msg->callback(file_selection_cb, -1);
-        aw_msg->create_button("CANCEL", "CANCEL", "C");
-
-        aw_msg->window_fit();
-    }
-
-    aw_msg->show_modal();
-    char dummy[] = "";
-    aw_input_cb_result = dummy;
-
-    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
-    {
-        LocallyModify<bool> flag(root->disable_callbacks, true);
-        while (aw_input_cb_result == dummy) {
-            root->process_events();
-        }
-    }
-    aw_msg->hide();
-
-    return aw_input_cb_result;
+    return filename;
 }
 
 

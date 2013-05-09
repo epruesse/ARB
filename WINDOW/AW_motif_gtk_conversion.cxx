@@ -11,7 +11,7 @@ std::string AW_motif_gtk_conversion::convert_mnemonic(const char* text, const ch
     std::string strText(text);
     std::string strMnemonic(mnemonic);
     if(NULL != mnemonic) {
-        int mnemonicPos = strText.find(strMnemonic);
+        size_t mnemonicPos = strText.find(strMnemonic);
         if (strText.npos == mnemonicPos) {
             //mnemonic string is not part of the name, append it
             strText = strText + "(_" + strMnemonic + ")";

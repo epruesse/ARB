@@ -17,12 +17,12 @@ AW_window_menu_modes::AW_window_menu_modes() {
 AW_window_menu_modes::~AW_window_menu_modes() {
 }
 
-void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, const char *window_title, 
+void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name_, const char *window_title, 
                                 int width, int height) {
-    init_window(window_name, window_title, width, height, true /*resizable*/);
+    init_window(window_name_, window_title, width, height, true /*resizable*/);
     
 #if defined(DUMP_MENU_LIST)
-    initMenuListing(windowname);
+    initMenuListing(window_name_);
 #endif // DUMP_MENU_LIST
     const char *help_button   = "_HELP"; //underscore + mnemonic 
 
@@ -50,19 +50,25 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
 
     // create main drawing area ('middle area')
     prvt->drawing_area = AW_DRAWING_AREA(aw_drawing_area_new());
+    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(GTK_WIDGET(prvt->drawing_area), this);
+
+    // create secondary drawing area ('bottom_area')
+    prvt->bottom_area = AW_DRAWING_AREA(aw_drawing_area_new());
+    prvt->areas[AW_BOTTOM_AREA] = new AW_area_management(GTK_WIDGET(prvt->bottom_area), this);
 
 
     aw_assert(NULL != prvt->drawing_area);
     gtk_container_add(GTK_CONTAINER(scrolledWindow), GTK_WIDGET(prvt->drawing_area));
 
    
-    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(GTK_WIDGET(prvt->drawing_area), this);
+
 
     // Layout:
     // fixed_size_area ('info') goes above scrollArea ('middle')
     GtkWidget *vbox2 = gtk_vbox_new(false, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), scrolledWindow, true, true, 0);   
+    gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->bottom_area), false, false, 0);
     // Both go right of the mode_menu / vert. toolbar
     GtkWidget *hbox = gtk_hbox_new(false, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prvt->mode_menu), false, false, 0);
@@ -76,12 +82,8 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name, c
     // make-it-so:
     gtk_widget_realize(GTK_WIDGET(prvt->window)); 
     gtk_widget_realize(GTK_WIDGET(prvt->drawing_area));
+    gtk_widget_realize(GTK_WIDGET(prvt->bottom_area));
 
-    // the drawing area needs to have the focus to receive key events
-    //gtk_widget_set_can_focus(GTK_WIDGET(prvt->mode_menu), false);
-    //gtk_widget_set_can_focus(GTK_WIDGET(prvt->fixed_size_area), false);
-    gtk_widget_grab_focus(GTK_WIDGET(prvt->drawing_area));
-    
     create_devices();
     aw_insert_default_help_entries(this);
     create_window_variables();
@@ -118,11 +120,6 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     }
     gtk_toolbar_insert(prvt->mode_menu, button, -1); //-1 = append
 
-    // trying to NOT allow "default" buttons in the toolbar. 
-    // doesn't seem to help, though...
-    gtk_widget_set_can_focus(GTK_WIDGET(button), false);
-    gtk_widget_set_can_default(GTK_WIDGET(button), false);
-
     // add image
     const char *path  = GB_path_in_ARBLIB("pixmaps", pixmap);
     GtkWidget *icon = gtk_image_new_from_file(path);
@@ -131,7 +128,7 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     // register clicked callback
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
     cbs->help_text = helpText;
-    g_signal_connect((gpointer)button, "clicked", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
+    g_signal_connect((gpointer)button, "toggled", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
 
     // register F1 - Fn accelerators
     // jumping through some hoops here. the "toggled" signal doesn't work, so we create

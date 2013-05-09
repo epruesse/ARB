@@ -15,8 +15,6 @@
 #include "aw_select.hxx"
 
 bool AW_varUpdateInfo::AW_variable_update_callback_event(GtkWidget *widget, GdkEvent */*event*/, gpointer variable_update_struct) {
-  DUMP_CALLBACK(widget, "");
-
     AW_varUpdateInfo *vui = (AW_varUpdateInfo *) variable_update_struct;
     aw_assert(vui);
     
@@ -26,7 +24,6 @@ bool AW_varUpdateInfo::AW_variable_update_callback_event(GtkWidget *widget, GdkE
 
 
 bool AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer variable_update_struct) {
-  DUMP_CALLBACK(widget, "");
     AW_varUpdateInfo *vui = (AW_varUpdateInfo *) variable_update_struct;
     aw_assert(vui);
 
@@ -54,13 +51,15 @@ bool AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer v
     return false;
 }
 
+/*
 static void track_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
     AW_awar *awar = (AW_awar*)cl_awar;
     aw_assert(cb_type == GB_CB_CHANGED);
     AW_root::SINGLETON->track_awar_change(awar);
 }
+*/
 
-void AW_varUpdateInfo::change_from_widget(gpointer call_data) {
+void AW_varUpdateInfo::change_from_widget(gpointer) {
     AW_cb_struct::useraction_init();
 
     GB_ERROR  error = NULL;

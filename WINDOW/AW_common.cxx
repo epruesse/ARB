@@ -10,6 +10,7 @@
 // ============================================================= //
 
 #include "aw_common.hxx"
+#include <vector>
 
 struct AW_common::Pimpl {
     AW_rgb*& frame_colors;
@@ -69,7 +70,9 @@ void AW_common::set_bg_color(AW_rgb& rgb) {
 }
 
 AW_rgb AW_common::get_bg_color() const {
-    return prvt->background_color; 
+    return prvt->data_colors 
+        ? prvt->data_colors[AW_DATA_BG] 
+        : prvt->frame_colors[AW_WINDOW_BG];
 }
 
 
@@ -203,6 +206,14 @@ AW_GC::AW_GC(AW_common *common)
 AW_GC::~AW_GC() {  
     delete prvt;
 }
+
+AW_GC::config::config() 
+    : function(AW_COPY),
+      grey_level(0.5),
+      line_width(GC_DEFAULT_LINE_WIDTH),
+      style(AW_SOLID), 
+      color(0) 
+{}
 
 bool AW_GC::config::operator==(const AW_GC::config& o) const {
     return

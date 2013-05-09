@@ -115,3 +115,29 @@ public:
     void store(const AW_at& at);
     void restore(AW_at& at) const;
 };
+
+
+class AW_at_auto {
+    enum { INC, SPACE, OFF } type;
+    int x, y;
+    int xfn, xfnb, yfnb, bhob;
+public:
+    AW_at_auto() : type(OFF) {}
+
+    void store(const AW_at &at);
+    void restore(AW_at &at) const;
+};
+
+class AW_at_maxsize {
+    int maxx;
+    int maxy;
+
+public:
+    AW_at_maxsize()
+        : maxx(0),
+          maxy(0)
+    {}
+    
+    void store(const AW_at &at);
+    void restore(AW_at &at) const;
+};

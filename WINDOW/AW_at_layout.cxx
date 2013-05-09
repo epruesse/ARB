@@ -47,7 +47,7 @@ static void aw_at_layout_class_init(AwAtLayoutClass *klass) {
     g_type_class_add_private(G_OBJECT_CLASS (klass), sizeof(AwAtLayoutPrivate));
 }
 
-static void aw_at_layout_init(AwAtLayout *self) {
+static void aw_at_layout_init(AwAtLayout *) {
 }
 
 GtkWidget *aw_at_layout_new() {
@@ -200,7 +200,7 @@ static void aw_at_layout_size_allocate(GtkWidget *widget, GtkAllocation *allocat
 
 }
 
-static void aw_at_layout_forall(GtkContainer *self, gboolean intern, GtkCallback cb, gpointer cd) {
+static void aw_at_layout_forall(GtkContainer *self, gboolean /*intern*/, GtkCallback cb, gpointer cd) {
     GList *children = AW_AT_LAYOUT(self)->children;
     while(children) {
         AwAtLayoutChild *child = (AwAtLayoutChild*) children->data;
