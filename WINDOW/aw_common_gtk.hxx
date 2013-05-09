@@ -15,8 +15,33 @@
 #include <string> 
 #include <cairo.h>
 
+class AW_GC_gtk;
 
-class AW_common_gtk;
+class AW_common_gtk: public AW_common { // derived from Noncopyable
+    struct Pimpl;
+    Pimpl *prvt;
+public:
+    AW_common_gtk(GdkDisplay *display_in,
+                  GtkWidget  *window_in,
+                  AW_rgb*&    fcolors,
+                  AW_rgb*&    dcolors,
+                  long&       dcolors_count,
+                  AW_window  *aww,
+                  AW_area     area);
+    ~AW_common_gtk();
+
+    virtual AW_GC   *create_gc() OVERRIDE;
+
+    const AW_GC_gtk *map_gc(int gc) const { return DOWNCAST(const AW_GC_gtk*, AW_common::map_gc(gc)); }
+    AW_GC_gtk       *map_mod_gc(int gc) { return DOWNCAST(AW_GC_gtk*, AW_common::map_mod_gc(gc)); }
+
+    GdkDisplay *get_display() const;
+    GtkWidget  *get_window() const;
+    GtkWidget  *get_drawing_target(); 
+
+    void update_cr(cairo_t *cr, int gc, bool use_grey=false);
+    PangoFontDescription* get_font(int gc);
+};
 
 /**
  * All drawing operations in GDK take a graphics context (GC) argument.
@@ -34,6 +59,7 @@ class AW_GC_gtk : public AW_GC { // derived from Noncopyable
     virtual void wm_set_function(AW_function mode) OVERRIDE;
     virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle) OVERRIDE;
     virtual void wm_set_font(const char* fontname) OVERRIDE;
+    virtual void wm_set_grey_level(AW_grey_level) OVERRIDE;
  
     virtual int get_actual_string_size(const char *str) const OVERRIDE;
 
@@ -49,16 +75,8 @@ public:
     AW_linestyle lstyle;
     short lwidth;
 
-
-
-    /**
-     * Create a gc with specified pixel depth.
-     * @note>: The gc can only be used to draw on surfaces that have the same pixel depth.
-     */
-    AW_GC_gtk(AW_common *common, GtkWidget *drawable,  int pixelDepth);
+    AW_GC_gtk(AW_common *common);
     ~AW_GC_gtk() OVERRIDE;
-
-    // AW_GC interface (uses motif call)
 
     inline AW_common_gtk *get_common() const;
 
@@ -68,36 +86,6 @@ public:
 
 
 
-class AW_common_gtk: public AW_common { // derived from Noncopyable
-    GdkDisplay *display;
-    GtkWidget  *window;
-    AW_window  *aww;
-    AW_area    area;
-    int pixelDepth; /** < Pixel depth of all drawing surfaces  */
-
-
-public:
-    AW_common_gtk(GdkDisplay *display_in,
-                 GtkWidget    *window_in,
-                 AW_rgb*&   fcolors,
-                 AW_rgb*&   dcolors,
-                 long&      dcolors_count,
-                 AW_window *aww,
-                 AW_area    area);
-
-    virtual AW_GC *create_gc() OVERRIDE;
-
-    const AW_GC_gtk *map_gc(int gc) const { return DOWNCAST(const AW_GC_gtk*, AW_common::map_gc(gc)); }
-    AW_GC_gtk *map_mod_gc(int gc) { return DOWNCAST(AW_GC_gtk*, AW_common::map_mod_gc(gc)); }
-
-    GdkDisplay *get_display() const { return display; }
-    GtkWidget *get_window() const { return window; }
-    GtkWidget *get_drawing_target(); 
-
-    void update_cr(cairo_t *cr, int gc, bool use_grey=false);
-    PangoFontDescription* get_font(int gc) { return map_gc(gc)->get_font(); }
-
-};
 
 inline AW_common_gtk *AW_GC_gtk::get_common() const {
     return DOWNCAST(AW_common_gtk*, AW_GC::get_common());

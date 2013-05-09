@@ -16,8 +16,6 @@ AW_device_click::AW_device_click(AW_common *common_)
     init(0, 0, -1, -1, 0, AW_ALL_DEVICES);
 }
 
-
-
 void AW_device_click::init(AW_pos mousex, AW_pos mousey, AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos /*radi*/, AW_bitset filteri) {
     mouse_x           = mousex;
     mouse_y           = mousey;
@@ -34,8 +32,7 @@ AW_DEVICE_TYPE AW_device_click::type() {
     return AW_DEVICE_CLICK;
 }
 
-
-bool AW_device_click::line_impl(int /*gc*/, const AW::LineVector& Line, AW_bitset filteri) {
+bool AW_device_click::line_impl(int /*gc*/, const AW::LineVector& Line, AW_bitset /*filteri*/) {
     AW::LineVector transLine = transform(Line);
     AW::LineVector clippedLine;
     if (!clip(transLine, clippedLine)) return false;
@@ -71,7 +68,7 @@ bool AW_device_click::line_impl(int /*gc*/, const AW::LineVector& Line, AW_bitse
 
 
 bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos, 
-                                AW_pos alignment, AW_bitset filteri, long opt_strlen) {
+                                AW_pos alignment, AW_bitset /*filteri*/, long opt_strlen) {
     AW_pos X0, Y0;          // Transformed pos
     this->transform(pos.xpos(), pos.ypos(), X0, Y0);
 

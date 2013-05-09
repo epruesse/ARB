@@ -279,6 +279,10 @@ void AW_device::move_region(AW_pos /*src_x*/, AW_pos /*src_y*/, AW_pos /*width*/
     // empty default
 }
 
+void AW_device::invalidate() {
+    // empty default
+}
+
 void AW_device::flush() {
     // empty default
 }
@@ -305,19 +309,13 @@ void AW_device::reset() {
     specific_reset();
 }
 
-void AW_device::clear(AW_bitset filteri) {
-    GTK_NOT_IMPLEMENTED;
-}
-
 bool AW_device::generic_invisible(const AW::Position& pos, AW_bitset filteri) {
     return (filter & filteri) ? !is_outside_clip(transform(pos)) : false;
 }
 
-
 const AW_screen_area&  AW_device::get_common_screen(const AW_common *common_) {
     return common_->get_screen();
 }
-
 
 bool AW_device::generic_box(int gc, bool /*filled*/, const AW::Rectangle& rect, AW_bitset filteri) {
     // Note: 'filled' is not supported on this device
@@ -331,8 +329,12 @@ bool AW_device::generic_box(int gc, bool /*filled*/, const AW::Rectangle& rect, 
     return drawflag;
 }
 
-void AW_device::clear_part(const AW::Rectangle& rect, AW_bitset filteri) {
-    GTK_NOT_IMPLEMENTED;
+void AW_device::clear(AW_bitset) {
+    // nothing to do
+}
+
+void AW_device::clear_part(const AW::Rectangle&, AW_bitset) {
+    // nothing to do
 }
 
 void AW_device::set_filter(AW_bitset filteri) {

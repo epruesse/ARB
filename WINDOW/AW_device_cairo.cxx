@@ -17,7 +17,7 @@
 using namespace AW;
 
 AW_device_cairo::AW_device_cairo(AW_common *awc) : AW_device(awc) {}
-AW_device_cairo::~AW_device_cairo();
+AW_device_cairo::~AW_device_cairo() {};
 
 bool AW_device_cairo::line_impl(int gc, const LineVector& Line, AW_bitset filteri) 
 {
@@ -30,21 +30,22 @@ bool AW_device_cairo::line_impl(int gc, const LineVector& Line, AW_bitset filter
     aw_assert(clippedLine.valid());
 
     cairo_t *cr = get_cr(gc);
-    if (!cr) return false; // nothing to draw on
+    if (!cr) return true;
 
     // In cairo, userspace coordinates are "between" pixels. To get
     // "1px wide" lines (rather than blurry 2px wide ones) 
     // we have to add 0.5 to x and y coords.
     // see also aw_zoomable.hxx@WORLD_vs_PIXEL
-
-    cairo_move_to(cr,
-                  AW_INT(clippedLine.start().xpos())+.5,
-                  AW_INT(clippedLine.start().ypos())+.5);
-    cairo_line_to(cr,
-                  AW_INT(clippedLine.head().xpos())+.5,
-                  AW_INT(clippedLine.head().ypos())+.5);
-    cairo_stroke(cr);
     
+    AW_pos x      = AW_INT(clippedLine.start().xpos())+.5;
+    AW_pos y      = AW_INT(clippedLine.start().ypos())+.5;
+    AW_pos width  = AW_INT(clippedLine.line_vector().x());
+    AW_pos height = AW_INT(clippedLine.line_vector().y());
+
+    cairo_move_to(cr, x, y);
+    cairo_line_to(cr, x+width, y+height);
+    cairo_stroke(cr);
+
     AUTO_FLUSH(this);
     return true;
 }
@@ -52,30 +53,30 @@ bool AW_device_cairo::line_impl(int gc, const LineVector& Line, AW_bitset filter
 //this is static
 bool AW_device_cairo::draw_string_on_screen(AW_device *device, int gc, const  char *str, 
                                             size_t /* opt_str_len */, size_t start, 
-                                            size_t size, AW_pos x, AW_pos y, 
+                                            size_t size, AW_pos x_, AW_pos y_, 
                                             AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, 
                                             AW_CL /*cduser*/)
 {
     AW_pos X, Y;
-    device->transform(x, y, X, Y);
+    device->transform(x_, y_, X, Y);
     aw_assert(size <= strlen(str));
 
     AW_device_cairo *device_cairo = DOWNCAST(AW_device_cairo*, device);
     cairo_t *cr = device_cairo->get_cr(gc);
-    if (!cr) return false; // nothing to draw on
-    
-    // always overlay text (for now)
-    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+    if (!cr) return true; 
 
     PangoLayout *pl = device_cairo->get_pl(gc);
     pango_layout_set_text(pl, str+start, -1);
    
-    double base = pango_layout_get_baseline(pl)  / PANGO_SCALE;
+    AW_pos base = pango_layout_get_baseline(pl)  / PANGO_SCALE;
+    AW_pos x      = AW_INT(X) + 0.5;
+    AW_pos y      = AW_INT(Y - base -1) + 0.5;
 
-    cairo_move_to(cr, AW_INT(X)+.5, AW_INT(Y - base - 1)+.5); 
+    cairo_move_to(cr, x, y);
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     pango_cairo_show_layout(cr, pl);
 
-    AUTO_FLUSH(device);
+    AUTO_FLUSH(device_cairo);
     return true;
 }
 
@@ -93,23 +94,29 @@ bool AW_device_cairo::box_impl(int gc, bool filled, const Rectangle& rect, AW_bi
     Rectangle transRect = transform(rect);
     Rectangle clippedRect;
     if (!box_clip(transRect, clippedRect)) return false;
+
     cairo_t *cr = get_cr(gc);
-    if (!cr) return false; // nothing to draw on
-    cairo_rectangle(cr,
-                    AW_INT(clippedRect.left())-.5,
-                    AW_INT(clippedRect.top())-.5,
-                    AW_INT(clippedRect.width()) + 1,
-                    AW_INT(clippedRect.height()) +1);
+    if (!cr) return true;
+
+    AW_pos x      = AW_INT(clippedRect.left())  - 0.5;
+    AW_pos y      = AW_INT(clippedRect.top())   - 0.5;
+    AW_pos width  = AW_INT(clippedRect.width()) + 1.0;
+    AW_pos height = AW_INT(clippedRect.height())+ 1.0;
+
+    cairo_rectangle(cr, x, y, width, height);
+
     if (filled) {
         get_common()->update_cr(cr, gc, true);
+        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
         cairo_fill_preserve(cr);
-        get_common()->update_cr(cr, gc, false);
     }
-    cairo_stroke(cr);
+    else {
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+        cairo_stroke(cr);
+    }
+
     return true;
 }
-
-
 
 bool AW_device_cairo::filled_area_impl(int gc, int npos, 
                                        const AW::Position *pos, 
@@ -118,7 +125,7 @@ bool AW_device_cairo::filled_area_impl(int gc, int npos,
     if (! (filteri & filter)) return false;
     
     cairo_t *cr = get_cr(gc);
-    if (!cr) return false; // nothing to draw on
+    if (!cr) return true;
 
     // move to first point
     Position transPos = transform(pos[0]);
@@ -135,7 +142,9 @@ bool AW_device_cairo::filled_area_impl(int gc, int npos,
     }
     cairo_close_path(cr); // draw line to first point
     get_common()->update_cr(cr, gc, true);
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     cairo_fill_preserve(cr);
+    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
     get_common()->update_cr(cr, gc, false);
     cairo_stroke(cr);
     
@@ -167,7 +176,7 @@ bool AW_device_cairo::arc_impl(int gc, bool filled, const AW::Position& center,
     Vector   tradius = transform(radius);
 
     cairo_t *cr = get_cr(gc);
-    if (!cr) return false; // nothing to draw on
+    if (!cr) return true;
 
     cairo_save(cr); 
     cairo_translate(cr, AW_INT(tcenter.xpos())+.5, AW_INT(tcenter.ypos())+.5);
@@ -176,8 +185,10 @@ bool AW_device_cairo::arc_impl(int gc, bool filled, const AW::Position& center,
     cairo_arc(cr, 0., 0., 1.,  start_degrees * (M_PI / 180.), arc_degrees * (M_PI / 180.));
     if (filled) {
         get_common()->update_cr(cr, gc, true);
+        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
         cairo_fill_preserve(cr);
         get_common()->update_cr(cr, gc, false);
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
     }
     cairo_stroke(cr);
     cairo_restore(cr);
@@ -196,7 +207,7 @@ void AW_device_cairo::clear(AW_bitset filteri)
     if (! (filteri & filter)) return;
 
     cairo_t *cr = get_cr(0);
-    if (!cr) return; // nothing to draw on
+    if (!cr) return;
     
     AW_rgb col = get_common()->get_bg_color();
     cairo_set_source_rgb(cr, 
@@ -215,7 +226,7 @@ void AW_device_cairo::clear_part(const Rectangle& rect, AW_bitset filteri)
     Rectangle clippedRect;
     if (box_clip(transRect, clippedRect)) {
         cairo_t *cr = get_cr(0);
-        if (!cr) return; // nothing to draw on
+        if (!cr) return;
 
         AW_rgb col = get_common()->get_bg_color();
         cairo_set_source_rgb(cr, 

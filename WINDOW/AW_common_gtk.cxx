@@ -31,115 +31,115 @@ static void AW_window_resize_cb(AW_window *, AW_CL cl_common_gtk, AW_CL) {
     common->set_screen_size(alloc.width, alloc.height);
 }
 
-AW_common_gtk::AW_common_gtk(GdkDisplay *display_in,
-             GtkWidget    *window_in,
+struct AW_common_gtk::Pimpl {
+    GdkDisplay *display;
+    GtkWidget  *window;
+    AW_window  *aww;
+    AW_area    area;
+
+    Pimpl() {}
+};
+
+AW_common_gtk::AW_common_gtk(GdkDisplay *display,
+             GtkWidget *window,
              AW_rgb*&   fcolors,
              AW_rgb*&   dcolors,
              long&      dcolors_count,
              AW_window *aw_window,
-             AW_area    area_in)
+             AW_area    area)
     : AW_common(fcolors, dcolors, dcolors_count),
-      display(display_in),
-      window(window_in),
-      aww(aw_window),
-      area(area_in)
+      prvt(new Pimpl) 
 {
-    GdkScreen *screen = gdk_display_get_default_screen(display);
-    GdkVisual *visual = gdk_screen_get_system_visual(screen);
-#if GTK_CHECK_VERSION(2, 22, 0)
-    pixelDepth = gdk_visual_get_depth(visual);
-#else
-    pixelDepth = visual->depth;
-#endif
+    prvt->display = display;
+    prvt->window  = window;
+    prvt->aww     = aw_window;
+    prvt->area    = area;
 
     aw_window->set_resize_callback(area, AW_window_resize_cb, (AW_CL)this);
 }
 
+AW_common_gtk::~AW_common_gtk() {
+    delete prvt;
+}
+
+GdkDisplay *AW_common_gtk::get_display() const { 
+    return prvt->display; 
+}
+
+GtkWidget  *AW_common_gtk::get_window() const { 
+    return prvt->window; 
+}
+
 GtkWidget *AW_common_gtk::get_drawing_target() {
-    return aww->get_area(area)->get_area(); 
+    return prvt->aww->get_area(prvt->area)->get_area();
 } 
 
 
 AW_GC *AW_common_gtk::create_gc() {
-    return new AW_GC_gtk(this, aww->get_area(area)->get_area(), pixelDepth);
+    return new AW_GC_gtk(this);
 }
 
 void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
-    GtkWidget *widget = aww->get_area(area)->get_area();
     const AW_GC *awgc = map_gc(gc);
 
     // set color
     AW_rgb col = awgc->get_fg_color();
+    double r = (double)((col & 0xff0000)>>16) / 255;
+    double g = (double)((col & 0xff00)>>8) / 255;
+    double b = (double)(col & 0xff) / 255;
     if (use_grey) {
-        cairo_set_source_rgba(cr, 
-                              (double)((col & 0xff0000)>>16) / 255,
-                              (double)((col & 0xff00)>>8) / 255,
-                              (double)(col & 0xff) / 255,
-                              awgc->get_grey_level());
+        double a = awgc->get_grey_level();
+        cairo_set_source_rgba(cr, r, g, b, a);
     } 
     else {
-        cairo_set_source_rgb(cr, 
-                             (double)((col & 0xff0000)>>16) / 255,
-                             (double)((col & 0xff00)>>8) / 255,
-                             (double)(col & 0xff) / 255);
+        cairo_set_source_rgb(cr, r, g, b);
     } 
-
 
     // set line width
     cairo_set_line_width(cr, awgc->get_line_width());
 
     // set line style
+    const double dotted[] = {1.0};
+    const double dashed[] = {8.0, 3.0};
     switch (awgc->get_line_style()) {
         case AW_SOLID:
             cairo_set_dash(cr, NULL, 0, 0);
             break;
         case AW_DOTTED:
-            {
-                double dash[] = {1.0};
-                cairo_set_dash(cr, dash, 1, 0);
-            }
+            cairo_set_dash(cr, dotted, 1, 0);
             break;
         case AW_DASHED:
-            {
-                double dash[] = {8.0, 3.0};
-                cairo_set_dash(cr, dash, 2, 0);
-            }
+            cairo_set_dash(cr, dashed, 2, 0);
             break;
         default:
           aw_assert(false);
     }
 
-    // set rounded caps
-    // cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND); 
-    // cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND); 
-
-    // set function (aka operator)
-    switch (awgc->get_function()) {
-        case AW_XOR:
-            cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
-            break;
-        case AW_COPY:
-            cairo_set_operator(cr, CAIRO_OPERATOR_OVER); 
-            break;
-        default:
-            aw_assert(false);
-    }
+    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE); 
 }
 
-AW_GC_gtk::AW_GC_gtk(AW_common *aw_common, GtkWidget *drawable, int pixelDepth) 
-  : AW_GC(aw_common) 
+PangoFontDescription* AW_common_gtk::get_font(int gc) { 
+    return map_gc(gc)->get_font(); 
+}
+
+AW_GC_gtk::AW_GC_gtk(AW_common *aw_common) 
+    : AW_GC(aw_common) 
 {
 }
+
 AW_GC_gtk::~AW_GC_gtk(){};
 
 
-void AW_GC_gtk::wm_set_foreground_color(AW_rgb col){
+void AW_GC_gtk::wm_set_foreground_color(AW_rgb /*col*/){
 }
 
-void AW_GC_gtk::wm_set_function(AW_function mode_in){
+void AW_GC_gtk::wm_set_function(AW_function /*mode_in*/){
 }
 
-void AW_GC_gtk::wm_set_lineattributes(short lwidth_in, AW_linestyle lstyle_in){
+void AW_GC_gtk::wm_set_lineattributes(short /*lwidth_in*/, AW_linestyle /*lstyle_in*/){
+}
+
+void AW_GC_gtk::wm_set_grey_level(AW_grey_level /*l*/) {
 }
 
 void AW_GC_gtk::replaceInString(const std::string& what,const std::string& with, std::string& text){
@@ -172,6 +172,7 @@ void AW_GC_gtk::wm_set_font(const char* font_name) {
         set_char_size(j, PANGO_ASCENT(rect), PANGO_DESCENT(rect), PANGO_RBEARING(rect));
     }
 }
+
 
 int AW_GC_gtk::get_actual_string_size(const char* str) const {
     GtkWidget *widget = get_common()->get_drawing_target();

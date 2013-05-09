@@ -14,10 +14,12 @@ do_WINDOW.a:
 do_libWINDOW.a: $(LIB_SHARED)
 
 $(LIB_SHARED): $(OBJECTS)
-	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
+	@echo "LDLIB  $@"
+	@$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(CPPLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	@echo "CPPLIB WINDOW/$@"
+	@$(CPPLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 .c.o:
 	$(ACCLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
