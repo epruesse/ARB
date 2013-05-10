@@ -18,6 +18,7 @@
 #include <aw_msg.hxx>
 #include <arb_strarray.h>
 #include <ad_remote.h>
+#include <unistd.h>
 
 bool BoundActionTracker::reconfigure(const char *application_id, GBDATA *gb_main) {
     ma_assert(gb_main == gbmain);
@@ -207,6 +208,34 @@ void ClientActionTracker::track_action(const char */*action_id*/) {
 
 void ClientActionTracker::track_awar_change(AW_awar */*awar*/) {
     ma_assert(0);
+}
+
+void ClientActionTracker::ungrant_client_and_confirm_quit_action() {
+    // shutdown macro client
+    // - confirm action (needed in case the quit has been triggered by a macro; otherwise macro hangs forever)
+    // - unauthorize this process for macro execution
+
+    GBDATA         *gb_main = get_gbmain();
+    GB_transaction  ta(gb_main);
+    remote_awars    remote(get_application_id());
+    GB_ERROR        error   = NULL;
+
+    GBDATA *gb_granted = GB_search(gb_main, remote.granted(), GB_FIND);
+    if (gb_granted) {
+        pid_t pid         = getpid();
+        pid_t granted_pid = GB_read_int(gb_granted);
+
+        if (pid == granted_pid) { // this is the client with macro execution rights
+            GBDATA *gb_action    = GB_search(gb_main, remote.action(), GB_FIND);
+            if (gb_action) error = GB_write_string(gb_action, ""); // signal macro, that action was executed
+            if (!error) error    = GB_write_int(gb_granted, 0);    // un-authorize this process
+        }
+    }
+
+    if (error) {
+        error = GB_set_macro_error(gb_main, GBS_global_string("error during client quit: %s", error));
+        if (error) fprintf(stderr, "Error in ungrant_client_and_confirm_quit_action: %s\n", error);
+    }
 }
 
 // -------------------------

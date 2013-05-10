@@ -80,6 +80,8 @@ public:
 
 class ClientActionTracker : public BoundActionTracker {
     bool released;
+
+    void ungrant_client_and_confirm_quit_action();
 public:
     ClientActionTracker(const char *application_id, GBDATA *gb_main_)
         : BoundActionTracker(application_id, gb_main_),
@@ -91,7 +93,10 @@ public:
 
     void track_action(const char *action_id) OVERRIDE;
     void track_awar_change(AW_awar *awar) OVERRIDE;
-    void release() OVERRIDE { released = true; }
+    void release() OVERRIDE {
+        ungrant_client_and_confirm_quit_action();
+        released = true;
+    }
 };
 
 // --------------------------------------------------------------------------------
