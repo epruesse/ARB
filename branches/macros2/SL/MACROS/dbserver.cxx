@@ -54,7 +54,7 @@ struct db_interrupt_data : virtual Noncopyable {
     {}
 };
 
-__ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, const db_interrupt_data& dib) { // @@@ make member of db_interrupt_data?
+__ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, const db_interrupt_data& dib) {
     GB_ERROR  error   = 0;
     GBDATA   *gb_main = dib.gb_main;
 
@@ -172,11 +172,7 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
     return error;
 }
 
-static db_interrupt_data *idle_interrupt = NULL;
-
- // @@@ remove db_interrupt_data-arguments below (use 'idle_interrupt' instead)
-static bool remote_command_handler(AW_root *awr, const db_interrupt_data& dib) { // @@@ use a callback instead of repeatedly calling this function
-    // @@@ make member of db_interrupt_data?
+inline bool remote_command_handler(AW_root *awr, const db_interrupt_data& dib) {
     // returns false in case of errors
     GB_ERROR error = check_for_remote_command(awr, dib);
     if (error) {
@@ -211,6 +207,8 @@ GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *
 #endif
 
     arb_assert(got_macro_ability(aw_root));
+
+    static db_interrupt_data *idle_interrupt = NULL;
 
     GB_ERROR error = NULL;
     if (GB_read_clients(gb_main) == 0) { // server
