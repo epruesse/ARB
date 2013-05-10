@@ -490,9 +490,6 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
     prvt->get_font_size(char_width, char_height);
     gtk_widget_set_size_request(scrolled_entry, char_width * columns, char_height * rows);
 
-    put_with_label(scrolled_entry);
-
-  
     
     // callback for enter
     //g_signal_connect(G_OBJECT(entry), "activate",
@@ -506,7 +503,7 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
         prvt->d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
         get_root()->define_remote_command(prvt->d_callback);
     }
-   
+   put_with_label(scrolled_entry);
     get_root()->register_widget(entry, _at.widget_mask);
 }
 
