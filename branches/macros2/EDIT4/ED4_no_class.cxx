@@ -29,7 +29,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
-
+#include <macros.hxx>
 #include <arb_defs.h>
 
 #include <cctype>
@@ -784,6 +784,9 @@ void ED4_exit() {
 
     while (ED4_ROOT->first_window)
         ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
+
+
+    shutdown_macro_recording(ED4_ROOT->aw_root);
 
     GBDATA *gb_main = GLOBAL_gb_main;
     GLOBAL_gb_main  = NULL;

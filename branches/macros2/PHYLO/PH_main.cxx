@@ -74,7 +74,9 @@ static void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww) {
 __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
     GBDATA *gb_main = ph_root->get_gb_main();
     if (gb_main) {
-        aw_window->get_root()->unlink_awars_from_DB(gb_main);
+        AW_root *aw_root = aw_window->get_root();
+        shutdown_macro_recording(aw_root);
+        aw_root->unlink_awars_from_DB(gb_main);
 #if defined(DEBUG)
         AWT_browser_forget_db(gb_main);
 #endif // DEBUG

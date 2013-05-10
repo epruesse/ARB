@@ -252,6 +252,11 @@ GB_ERROR configure_macro_recording(AW_root *aw_root, const char *client_id, GBDA
     return error;
 }
 
+void shutdown_macro_recording(AW_root *aw_root) {
+    BoundActionTracker *tracker = get_active_macro_recording_tracker(aw_root);
+    if (tracker) tracker->release();
+}
+
 bool got_macro_ability(AW_root *aw_root) {
     // return true if aw_root has a BoundActionTracker
     return get_active_macro_recording_tracker(aw_root);

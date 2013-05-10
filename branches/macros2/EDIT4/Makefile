@@ -573,6 +573,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/gccver.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/items.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/macros.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/st_window.hxx

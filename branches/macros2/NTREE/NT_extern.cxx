@@ -322,8 +322,10 @@ __ATTR__NORETURN static void really_exit(int exitcode, bool kill_my_clients) {
 }
 
 void nt_exit(AW_window *aws, AW_CL exitcode) {
+    AW_root *aw_root = aws->get_root();
+    shutdown_macro_recording(aw_root);
     bool is_server_and_has_clients = GLOBAL.gb_main && GB_read_clients(GLOBAL.gb_main)>0;
-    if (nt_disconnect_from_db(aws->get_root(), GLOBAL.gb_main)) {
+    if (nt_disconnect_from_db(aw_root, GLOBAL.gb_main)) {
         really_exit(exitcode, is_server_and_has_clients);
     }
 }

@@ -54,6 +54,8 @@ public:
 
     GBDATA *get_gbmain() { return gbmain; }
     const char *get_application_id() const { return id; }
+
+    virtual void release() = 0;
 };
 
 
@@ -73,17 +75,23 @@ public:
 
     void track_action(const char *action_id) OVERRIDE;
     void track_awar_change(AW_awar *awar) OVERRIDE;
+    void release() OVERRIDE {}
 };
 
 class ClientActionTracker : public BoundActionTracker {
-
+    bool released;
 public:
     ClientActionTracker(const char *application_id, GBDATA *gb_main_)
-        : BoundActionTracker(application_id, gb_main_)
+        : BoundActionTracker(application_id, gb_main_),
+          released(false)
     {}
+    ~ClientActionTracker() {
+        ma_assert(released);
+    }
 
     void track_action(const char *action_id) OVERRIDE;
     void track_awar_change(AW_awar *awar) OVERRIDE;
+    void release() OVERRIDE { released = true; }
 };
 
 // --------------------------------------------------------------------------------

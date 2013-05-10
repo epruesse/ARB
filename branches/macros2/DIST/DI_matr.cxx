@@ -1338,7 +1338,9 @@ static void di_autodetect_callback(AW_window *aww)
 
 __ATTR__NORETURN static void di_exit(AW_window *aww) {
     if (GLOBAL_gb_main) {
-        aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
+        AW_root *aw_root = aww->get_root();
+        shutdown_macro_recording(aw_root);
+        aw_root->unlink_awars_from_DB(GLOBAL_gb_main);
         GB_close(GLOBAL_gb_main);
     }
     exit(0);
