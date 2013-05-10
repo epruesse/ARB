@@ -903,6 +903,7 @@ static void _aw_awar_notify_gparam(AW_root*, AW_CL data) {
             g_object_set_property(binding->obj, binding->pspec->name, &gval);
         }
     } else {
+        long temp;
         switch(G_VALUE_TYPE(&gval)) {
         case G_TYPE_STRING: {
             char* str = binding->awar->read_as_string();
