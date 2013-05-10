@@ -318,6 +318,7 @@ struct PT_statistic {
         else {
             puts("indexsize exactly matches counted memory");
         }
+        fflush_all();
     }
 };
 #endif
