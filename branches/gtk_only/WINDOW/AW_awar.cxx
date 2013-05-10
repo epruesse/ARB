@@ -917,7 +917,13 @@ static void _aw_awar_notify_gparam(AW_root*, AW_CL data) {
             g_value_set_int(&gval, binding->awar->read_int());
             break;
         case G_TYPE_BOOLEAN:
-            g_value_set_boolean(&gval, binding->awar->read_as_bool());
+            FIXME("Replace workaround with a real solution");
+            binding->awar->get(&temp);
+            g_value_set_boolean(&gval, temp != 0);
+            
+            //old code:
+            //g_value_set_boolean(&gval, binding->awar->read_as_bool());
+            
             break;
         default:
             aw_assert(false);
