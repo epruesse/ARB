@@ -13,6 +13,7 @@
 #include <arb_assert.h>
 
 #include <unistd.h>
+#include <utime.h>
 #include <sys/stat.h>
 #include <cstdio>
 #include <cerrno>
@@ -44,6 +45,16 @@ unsigned long GB_time_of_file(const char *path) {
     struct stat stt;
     if (!path || stat(path, &stt)) return 0; // return epoch for missing files
     return stt.st_mtime;
+}
+
+GB_ERROR GB_set_time_of_file(const char *path, unsigned long new_time) {
+    utimbuf ut;
+
+    ut.actime  = new_time;
+    ut.modtime = new_time;
+
+    int res = utime(path, &ut);
+    return res ? GB_IO_error("setting timestamp of", path) : NULL;
 }
 
 long GB_mode_of_file(const char *path) {

@@ -942,7 +942,8 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
                     if (error) unlinkMapfiles = true;
                     else if (sec_mappath) {
                         error             = GB_rename_file(sec_mappath, mappath);
-                        if (!error) error = GB_set_mode_of_file(mappath, GB_mode_of_file(as_path)); // set mapfile to same mode as DB file
+                        if (!error) error = GB_set_mode_of_file(mappath, GB_mode_of_file(as_path)); // set mapfile to same mode ...
+                        if (!error) error = GB_set_time_of_file(mappath, GB_time_of_file(as_path)); // ... and same time as DB file
                         if (error) {
                             GB_warningf("Error: %s\n[Falling back to non-fastload-save]", error);
                             error          = 0;
@@ -1257,6 +1258,7 @@ void TEST_SLOW_loadsave() {
         TEST_EXPECT_RESULT__NOERROREXPORTED(gb_nomap = GB_open(bin_db, "rw"));
         TEST_EXPECT_NO_ERROR(GB_save_as(gb_nomap, "fast.arb", "bm"));
         TEST_EXPECT(GB_is_regularfile("fast.ARM")); // assert map file has been saved
+        TEST_EXPECT_EQUAL(GB_time_of_file("fast.ARM"), GB_time_of_file("fast.arb"));
         GB_close(gb_nomap);
     }
     {

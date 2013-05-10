@@ -20,6 +20,7 @@
 long GB_size_of_file(const char *path);
 long GB_size_of_FILE(FILE *in);
 unsigned long GB_time_of_file(const char *path);
+GB_ERROR GB_set_time_of_file(const char *path, unsigned long new_time);
 long GB_mode_of_file(const char *path);
 long GB_mode_of_link(const char *path);
 bool GB_is_regularfile(const char *path);
