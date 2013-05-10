@@ -26,7 +26,7 @@ depend.init:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 names.o: names.h
 names.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -45,7 +45,9 @@ names.o: $(ARBHOME)/INCLUDE/attributes.h
 names.o: $(ARBHOME)/INCLUDE/bytestring.h
 names.o: $(ARBHOME)/INCLUDE/client.h
 names.o: $(ARBHOME)/INCLUDE/client_types.h
+names.o: $(ARBHOME)/INCLUDE/cxxforward.h
 names.o: $(ARBHOME)/INCLUDE/dupstr.h
+names.o: $(ARBHOME)/INCLUDE/gccver.h
 names.o: $(ARBHOME)/INCLUDE/names_client.h
 names.o: $(ARBHOME)/INCLUDE/names_prototypes.h
 names.o: $(ARBHOME)/INCLUDE/names_server.h

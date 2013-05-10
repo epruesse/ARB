@@ -10,7 +10,7 @@ SUB	aci.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Define fields exported with gene species
 
-OCCURRENCE	ARB_NT/Export/Export .. to new ARB database/Transfer Species/DB1->DB2/Define field transfer for gene species
+OCCURRENCE	ARB_NT/Export/Export .. to new ARB database/Transfer Species/Source->Target/Define field transfer for gene species
 
 DESCRIPTION     Here you can define which fields (of the origin organism or of the origin gene of
                 a gene species) should be transferred to the new database and how they should be

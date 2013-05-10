@@ -33,7 +33,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AP_Tree.o: AP_Tree.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -57,7 +57,10 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
+AP_Tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/test_global.h

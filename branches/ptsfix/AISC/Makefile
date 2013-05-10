@@ -29,13 +29,13 @@ clean:
 	rm -f $(OBJECTS) $(BINARY)
 
 proto:
-	../AISC_MKPTPS/aisc_mkpt -A -P -G -w aisc_proto.h *.c >aisc_proto.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -G -w aisc_proto.h *.c >aisc_proto.h.tmp
 	../SOURCE_TOOLS/mv_if_diff aisc_proto.h.tmp aisc_proto.h
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 aisc.o: aisc_def.h
 aisc.o: aisc_inline.h
@@ -47,7 +47,9 @@ aisc.o: aisc_token.h
 aisc.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc.o: $(ARBHOME)/INCLUDE/dupstr.h
+aisc.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 aisc_commands.o: aisc_def.h
@@ -61,7 +63,9 @@ aisc_commands.o: aisc_token.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc_commands.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/dupstr.h
+aisc_commands.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/test_global.h
 
 aisc_eval.o: aisc_def.h
@@ -72,7 +76,9 @@ aisc_eval.o: aisc_proto.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc_eval.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/dupstr.h
+aisc_eval.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/test_global.h
 
 aisc_mix.o: aisc_def.h
@@ -85,7 +91,9 @@ aisc_mix.o: aisc_token.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc_mix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/dupstr.h
+aisc_mix.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/test_global.h
 
 aisc_parser.o: aisc_def.h
@@ -96,7 +104,9 @@ aisc_parser.o: aisc_token.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc_parser.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/dupstr.h
+aisc_parser.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/test_global.h
 
 aisc_var_ref.o: aisc_def.h
@@ -109,5 +119,7 @@ aisc_var_ref.o: aisc_token.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/attributes.h
+aisc_var_ref.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/dupstr.h
+aisc_var_ref.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/test_global.h

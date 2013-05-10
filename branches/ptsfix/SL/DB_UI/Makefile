@@ -28,7 +28,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 ui_species.o: dbui.h
 ui_species.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -61,9 +61,11 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/cb.h
+ui_species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_query.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/dupstr.h
+ui_species.o: $(ARBHOME)/INCLUDE/gccver.h
 ui_species.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ui_species.o: $(ARBHOME)/INCLUDE/items.h
 ui_species.o: $(ARBHOME)/INCLUDE/pos_range.h

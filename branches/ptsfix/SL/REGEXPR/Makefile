@@ -33,7 +33,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 RegExpr.o: RegExpr.hxx
 RegExpr.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -48,7 +48,9 @@ RegExpr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arbtools.h
 RegExpr.o: $(ARBHOME)/INCLUDE/attributes.h
+RegExpr.o: $(ARBHOME)/INCLUDE/cxxforward.h
 RegExpr.o: $(ARBHOME)/INCLUDE/dupstr.h
+RegExpr.o: $(ARBHOME)/INCLUDE/gccver.h
 RegExpr.o: $(ARBHOME)/INCLUDE/smartptr.h
 RegExpr.o: $(ARBHOME)/INCLUDE/test_global.h
 RegExpr.o: $(ARBHOME)/INCLUDE/test_unit.h

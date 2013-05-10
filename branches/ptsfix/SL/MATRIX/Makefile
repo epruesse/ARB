@@ -33,7 +33,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AP_matrix.o: AP_matrix.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -54,6 +54,8 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/cb.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/test_global.h

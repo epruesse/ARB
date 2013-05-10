@@ -2,6 +2,8 @@
 MENUS = ARB_GDEmenus
 MENUS_SRC = ARB_GDEmenus.source
 
+SED:=$(ARBHOME)/SH/arb_sed
+
 HELPFILELIST=helpfiles.lst
 GENHELPDEST=./HELP_GEN
 GENDOCDEST=./HELP_DOC_GEN
@@ -17,7 +19,7 @@ all: $(MENUS) help
 MENUS/%.genmenu : genmenu.header
 
 MENUS/%.genmenu : MENUS/%.menu
-		( cat genmenu.header; sed -e "s/^[ ]*//" ) < $< > $@
+		( cat genmenu.header; $(SED) -e "s/^[ ]*//" ) < $< > $@
 
 $(MENUS) : $(MENUS_SRC) $(GENMENUS) Makefile $(PPP) $(CLEAN)
 	-chmod a+w $@
@@ -32,7 +34,7 @@ help: $(HELPFILELIST)
 	@$(MAKE) -f Makefile.helpfiles "GENHELPDEST=$(GENHELPDEST)" "GENDOCDEST=$(GENDOCDEST)" "HELPFILELIST=$(HELPFILELIST)"
 
 $(HELPFILELIST): $(SUBMENUS)
-	grep -i '^itemhelp:' < $< | sed -e 's/^itemhelp://' | sort | uniq > $@
+	grep -i '^itemhelp:' < $< | $(SED) -e 's/^itemhelp://' | sort | uniq > $@
 
 # ------------------------------------------------------------
 

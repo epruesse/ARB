@@ -427,7 +427,7 @@ namespace arb_test {
     
 
 #define HASTOBE_CLONABLE(type) virtual type *clone() const = 0
-#define MAKE_CLONABLE(type)    type *clone() const { return new type(*this); }
+#define MAKE_CLONABLE(type)    type *clone() const OVERRIDE { return new type(*this); }
 
     // ------------------------------
     //      abstract expectation
@@ -518,7 +518,7 @@ namespace arb_test {
     };
 
     class debug_asserter : public asserter {
-        virtual void announce_failure() const {
+        virtual void announce_failure() const OVERRIDE {
             print("<<< would trigger assertion now! >>>\n");
         }
     public:
@@ -575,15 +575,15 @@ namespace arb_test {
         {}
         DECLARE_ASSIGNMENT_OPERATOR(match_expectation);
         MAKE_CLONABLE(match_expectation);
-        ~match_expectation() {
+        ~match_expectation() OVERRIDE {
             delete thing;
             delete condition;
         }
 
-        bool fulfilled() const { return condition->matches(*thing); }
+        bool fulfilled() const OVERRIDE { return condition->matches(*thing); }
         bool unfulfilled() const { return !fulfilled(); }
-        void explain(int indent) const { condition->dump_expectation(*thing, indent); }
-        void dump_brief_description() const { condition->dump_brief_description(*thing); }
+        void explain(int indent) const OVERRIDE { condition->dump_expectation(*thing, indent); }
+        void dump_brief_description() const OVERRIDE { condition->dump_brief_description(*thing); }
     };
 
     // -------------------
@@ -670,8 +670,8 @@ namespace arb_test {
         const copy<T>& value() const { return val; }
         char *gen_description() const { return StaticCode::strf("%s (=%s)", code, val.readable()); }
 
-        const char *name() const { return code; }
-        const char *readable_value() const {
+        const char *name() const OVERRIDE { return code; }
+        const char *readable_value() const OVERRIDE {
             if (!readable.exists()) readable = arb_test::readable(val);
             return readable.value();
         }
@@ -719,19 +719,19 @@ namespace arb_test {
         matchable_value<T> expected;
     public:
         value_matcher(const matchable_value<T>& expected_) : expected(expected_) {}
-        virtual ~value_matcher() {}
+        virtual ~value_matcher() OVERRIDE {}
 
-        virtual bool matches(const copy<T>& v1, const copy<T>& v2) const       = 0;
-        virtual const char *relation(bool isMatch) const                       = 0;
+        virtual bool matches(const copy<T>& v1, const copy<T>& v2) const = 0;
+        virtual const char *relation(bool isMatch) const                 = 0;
 
         const matchable_value<T>& get_expected() const { return expected; }
 
-        bool matches(const matchable& thing) const {
+        bool matches(const matchable& thing) const OVERRIDE {
             const matchable_value<T>& value_thing = dynamic_cast<const matchable_value<T>&>(thing);
             return matches(value_thing.value(), expected.value());
         }
 
-        void dump_expectation(const matchable& thing, int indent) const {
+        void dump_expectation(const matchable& thing, int indent) const OVERRIDE {
             bool isMatch = matches(thing);
             print_indent(indent);
             fprintf(stderr, "'%s' %s '%s'", thing.name(), relation(isMatch), expected.name());
@@ -749,7 +749,7 @@ namespace arb_test {
                 print_indent(indent); fprintf(stderr, "'%s'%*s is %s",        expected.name(), (diff<0 ? 0 : diff),  "", expected.readable_value());
             }
         }
-        void dump_brief_description(const matchable& thing) const {
+        void dump_brief_description(const matchable& thing) const OVERRIDE {
             print(thing.name());
             print('.');
             print(relation(true));
@@ -776,8 +776,8 @@ namespace arb_test {
         {}
         MAKE_CLONABLE(predicate_matcher);
 
-        bool matches(const copy<T>& v1, const copy<T>& v2) const { return correlated(pred.matches(v1, v2), expected_result); }
-        const char *relation(bool isMatch) const { return pred.describe(expected_result, correlated(isMatch, expected_result)); }
+        bool matches(const copy<T>& v1, const copy<T>& v2) const OVERRIDE { return correlated(pred.matches(v1, v2), expected_result); }
+        const char *relation(bool isMatch) const OVERRIDE { return pred.describe(expected_result, correlated(isMatch, expected_result)); }
     };
 
     template <typename T> template <typename FUNC>
@@ -815,7 +815,7 @@ namespace arb_test {
                 depend_on[i] = other.depend_on[i]->clone();
             }
         }
-        virtual ~expectation_group() {
+        virtual ~expectation_group() OVERRIDE {
             for (int i = 0; i<count; ++i) {
                 delete depend_on[i];
             }
@@ -824,10 +824,10 @@ namespace arb_test {
 
         expectation_group& add(const expectation& e) { depend_on[count++] = e.clone(); arb_assert(count <= MAX_GROUP_SIZE); return *this; }
 
-        const char *name() const {
+        const char *name() const OVERRIDE {
             return "<expectation_group>";
         }
-        const char *readable_value() const {
+        const char *readable_value() const OVERRIDE {
             return "<value of expectation_group>";
         }
 
@@ -956,11 +956,11 @@ namespace arb_test {
     public:
         MAKE_CLONABLE(group_matcher);
 
-        bool matches(const matchable& thing) const {
+        bool matches(const matchable& thing) const OVERRIDE {
             return group_match(dynamic_cast<const expectation_group&>(thing), min, max).diff == 0;
         }
 
-        void dump_expectation(const matchable& thing, int indent) const {
+        void dump_expectation(const matchable& thing, int indent) const OVERRIDE {
             const expectation_group& group = dynamic_cast<const expectation_group&>(thing);
             group_match matching(group, min, max);
             matching.dump(group, indent);
@@ -991,7 +991,7 @@ namespace arb_test {
             return match_expectation(group, *this);
         }
 
-        void dump_brief_description(const matchable& thing) const {
+        void dump_brief_description(const matchable& thing) const OVERRIDE {
             if (max == -1) {
                 if (min == -1) {
                     print("all");
@@ -1326,6 +1326,9 @@ namespace arb_test {
 #define TEST_EXPECT_TEXTFILES_EQUAL(f1,f2)         TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,0)
 #define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2) TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,0)
 
+#define TEST_EXPECT_MEM_EQUAL(m1,m2,size)         TEST_EXPECT(arb_test::test_mem_equal(m1,m2,size)) 
+#define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_EXPECT__BROKEN(arb_test::test_mem_equal(m1,m2,size)) 
+
 #else
 
 #define WARN_MISS_ADPROT() need_include__ad_prot_h__BEFORE__test_unit_h
@@ -1338,6 +1341,8 @@ namespace arb_test {
 #define TEST_EXPECT_FILES_EQUAL__BROKEN(f1,f2)                          WARN_MISS_ADPROT()
 #define TEST_EXPECT_TEXTFILES_EQUAL(f1,f2)                              WARN_MISS_ADPROT()
 #define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2)                      WARN_MISS_ADPROT()
+#define TEST_EXPECT_MEM_EQUAL(m1,m2,size)                               WARN_MISS_ADPROT()
+#define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size)                       WARN_MISS_ADPROT()
 
 #endif // AD_PROT_H
 
@@ -1345,7 +1350,7 @@ namespace arb_test {
 
 #define TEST_SETUP_GLOBAL_ENVIRONMENT(modulename) do {                                                          \
         arb_test::test_data().raiseLocalFlag(ANY_SETUP);                                                        \
-        TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("../test_environment setup %s",  (modulename))));      \
+        TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("../test_environment setup %s",  (modulename))));     \
     } while(0)
 // cleanup is done (by Makefile.suite) after all unit tests have been run
 

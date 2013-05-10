@@ -9,7 +9,7 @@ $(MAIN): $(OBJECTS)
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 proto:
-	../AISC_MKPTPS/aisc_mkpt -A -P -w servercntrl.h $(OBJECTS:.o=.cxx) >servercntrl.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -P -w servercntrl.h $(OBJECTS:.o=.cxx) >servercntrl.h.tmp
 	../SOURCE_TOOLS/mv_if_diff servercntrl.h.tmp servercntrl.h
 
 clean:
@@ -30,7 +30,7 @@ depend.init:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 servercntrl.o: servercntrl.h
 servercntrl.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -49,7 +49,9 @@ servercntrl.o: $(ARBHOME)/INCLUDE/bytestring.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client_privat.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client_types.h
+servercntrl.o: $(ARBHOME)/INCLUDE/cxxforward.h
 servercntrl.o: $(ARBHOME)/INCLUDE/dupstr.h
+servercntrl.o: $(ARBHOME)/INCLUDE/gccver.h
 servercntrl.o: $(ARBHOME)/INCLUDE/SigHandler.h
 servercntrl.o: $(ARBHOME)/INCLUDE/smartptr.h
 servercntrl.o: $(ARBHOME)/INCLUDE/test_global.h

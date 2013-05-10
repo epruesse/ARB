@@ -33,7 +33,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 TreeWrite.o: TreeWrite.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -50,7 +50,9 @@ TreeWrite.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/attributes.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+TreeWrite.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/dupstr.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/nds.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/test_global.h

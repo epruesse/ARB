@@ -54,6 +54,7 @@ class  AW_awar;
 struct AW_buttons_struct;
 class  AW_root_cblist;
 class  GB_HASH;
+struct AW_cb_struct;
 
 enum AW_ProcessEventType {
     NO_EVENT     = 0,
@@ -66,6 +67,8 @@ void aw_initstatus();
 class AW_root : virtual Noncopyable {
     AW_default         application_database;
     AW_buttons_struct *button_sens_list;
+
+    void create_colormap();
 
     void init_variables(AW_default database);
     void exit_variables();
@@ -104,7 +107,7 @@ public:
     GB_HASH    *hash_for_windows;
 
     // the real public section:
-    AW_root(const char *properties, const char *program, bool no_exit);
+    AW_root(const char *properties, const char *program, bool no_exit, int* argc, char*** argv);
 #if defined(UNIT_TESTS)
     AW_root(const char *properties); // fake-root for unit-tests (allows access to awar-subsystem)
 #endif
@@ -133,7 +136,7 @@ public:
     AW_awar *awar(const char *awar);
     AW_awar *awar_no_error(const char *awar);
 
-    void dont_save_awars_with_default_value(GBDATA *gb_main);
+    void dont_save_awars_with_default_value(GBDATA *gb_db);
 
     AW_awar *awar_string (const char *var_name, const char *default_value = "", AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_int    (const char *var_name, long default_value = 0,         AW_default default_file = AW_ROOT_DEFAULT);
@@ -161,8 +164,8 @@ public:
     bool is_recording_macro() const;
     GB_ERROR execute_macro(GBDATA *gb_main, const char *file, AW_RCB1 execution_done_cb, AW_CL client_data);
 
-    void define_remote_command(struct AW_cb_struct *cbs);
-    GB_ERROR check_for_remote_command(AW_default gb_main, const char *rm_base);
+    void define_remote_command(AW_cb_struct *cbs);
+    AW_cb_struct *search_remote_command(const char *action);
 
 #if defined(DEBUG)
     size_t callallcallbacks(int mode);

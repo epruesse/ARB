@@ -94,9 +94,10 @@ static const char *readable_result[] = {
 // --------------------------------------------------------------------------------
 
 static jmp_buf UNITTEST_return_after_segv;
+static bool    terminate_was_called = false;
 
 enum TrapCode {
-    TRAP_UNEXPECTED = 668, 
+    TRAP_UNEXPECTED = 668,
     TRAP_SEGV,
     TRAP_INT,
     TRAP_TERM,
@@ -123,7 +124,12 @@ __ATTR__NORETURN static void UNITTEST_sigsegv_handler(int sig) {
 
             case SIGTERM:
                 trap_code = TRAP_TERM;
-                backtrace_cause = "Catched SIGTERM (deadlock in uninterruptable test function?)";
+                if (terminate_was_called) {
+                    backtrace_cause = "Catched SIGTERM, cause std::terminate() has been called in test-code (might be an invalid throw)";
+                }
+                else {
+                    backtrace_cause = "Catched SIGTERM (deadlock in uninterruptable test function?)";
+                }
                 break;
 
             default:
@@ -151,7 +157,16 @@ __ATTR__NORETURN static void UNITTEST_sigsegv_handler(int sig) {
 
 #define SECOND 1000000
 
+static void terminate_called() {
+    // example-test triggering call of terminate_called(): ../CORE/arb_signal.cxx@TEST_throw_during_throw
+    terminate_was_called = true;
+    raise(SIGTERM);
+    // GBK_dump_backtrace(stdout, "just raised SIGTERM - wtf am i doing here"); fflush(stdout);
+}
+
 static UnitTestResult execute_guarded_ClientCode(UnitTest_function fun, long *duration_usec) {
+    terminate_handler old_terminate = std::set_terminate(terminate_called);
+
     SigHandler old_int_handler  = INSTALL_SIGHANDLER(SIGINT,  UNITTEST_sigsegv_handler, "execute_guarded");
     SigHandler old_term_handler = INSTALL_SIGHANDLER(SIGTERM, UNITTEST_sigsegv_handler, "execute_guarded");
     SigHandler old_segv_handler = INSTALL_SIGHANDLER(SIGSEGV, UNITTEST_sigsegv_handler, "execute_guarded");
@@ -183,10 +198,12 @@ static UnitTestResult execute_guarded_ClientCode(UnitTest_function fun, long *du
         // Note: fun() may do several ugly things, e.g.
         // - segfault                           (handled)
         // - never return                       (handled by caller)
-        // - exit() or abort()
+        // - exit() or abort()                  (std::terminate is handled, direct call to abort is not)
+        // - throw an exception                 (catched by caller of execute_guarded_ClientCode)
         // - change working dir                 (should always be reset before i get called)
 
         fun();
+
         // sleep(10); // simulate a deadlock
     }
     // end of critical section
@@ -201,6 +218,13 @@ static UnitTestResult execute_guarded_ClientCode(UnitTest_function fun, long *du
     UNINSTALL_SIGHANDLER(SIGSEGV, UNITTEST_sigsegv_handler, old_segv_handler, "execute_guarded");
     UNINSTALL_SIGHANDLER(SIGTERM, UNITTEST_sigsegv_handler, old_term_handler, "execute_guarded");
     UNINSTALL_SIGHANDLER(SIGINT,  UNITTEST_sigsegv_handler, old_int_handler,  "execute_guarded");
+
+    terminate_handler handler = std::set_terminate(old_terminate);
+    if (handler != terminate_called) {
+        fputs("Error: test-code has modified std::terminate (this is invalid)\n", stderr);
+        fflush(stderr);
+        result = TEST_INVALID;
+    }
 
     return result;
 }
@@ -324,7 +348,8 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
 
     pid_t child_pid = fork();
     if (child_pid) { // parent
-        result = execute_guarded_ClientCode(fun, duration_usec);
+        try { result = execute_guarded_ClientCode(fun, duration_usec); }
+        catch (...) { result = TEST_THREW; }
         if (kill(child_pid, SIGKILL) != 0) {
             fprintf(stderr, "Failed to kill deadlock-guard (%s)\n", strerror(errno)); fflush(stderr);
         }
@@ -414,9 +439,17 @@ bool SimpleTester::perform(size_t which) {
         case TEST_TRAPPED:
             fprintf(stderr, "%s: Error: %s failed (details above)\n", test.location, test.name);
             break;
-            
+
         case TEST_INTERRUPTED:
             fprintf(stderr, "%s: Error: %s has been interrupted (details above)\n", test.location, test.name);
+            break;
+
+        case TEST_THREW:
+            fprintf(stderr, "%s: Error: %s has thrown an exception\n", test.location, test.name);
+            break;
+
+        case TEST_INVALID:
+            fprintf(stderr, "%s: Error: %s is invalid (see above)\n", test.location, test.name);
             break;
     }
 

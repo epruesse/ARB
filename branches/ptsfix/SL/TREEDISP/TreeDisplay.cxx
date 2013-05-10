@@ -688,6 +688,9 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
     return error;
 }
 
+/**
+ * Called from AWT_graphic_tree::command() to handle AW_Event_Type=AW_Keyboard_Press.
+ */
 void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_modifier, char key_char,
                                    AW_pos /* x */, AW_pos /* y */, AW_clicked_line *cl, AW_clicked_text *ct)
 {
@@ -953,6 +956,12 @@ static bool command_on_GBDATA(GBDATA *gbd, AWT_COMMAND_MODE cmd, AW_event_type t
     return refresh;
 }
 
+/**
+ * Handle input_events
+ *
+ * Overrides pure virtual in AWT_graphic, which in turn is called by the
+ * input_event() handler registered by AWT_graphic.
+ */
 void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                                int button, AW_key_mod key_modifier, AW_key_code /* key_code */, char key_char,
                                AW_event_type type, AW_pos x, AW_pos y,
@@ -1416,7 +1425,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
                                 at->reset_child_linewidths();
-                                at->set_linewidth(0);
+                                at->set_linewidth(1);
                                 exports.save    = 1;
                                 exports.refresh = 1;
                             }
@@ -2736,10 +2745,10 @@ static AW_rgb *dcolors       = colors_def;
 static long    dcolors_count = ARRAY_ELEMS(colors_def);
 
 class fake_AW_GC : public AW_GC {
-    virtual void wm_set_foreground_color(AW_rgb /*col*/) {  }
-    virtual void wm_set_function(AW_function /*mode*/) { td_assert(0); }
-    virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) {}
-    virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) {
+    virtual void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
+    virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
+    virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
+    virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) OVERRIDE {
         unsigned int i;
         for (i = AW_FONTINFO_CHAR_ASCII_MIN; i <= AW_FONTINFO_CHAR_ASCII_MAX; i++) {
             set_char_size(i, size, 0, size-2); // good fake size for Courier 8pt
@@ -2747,7 +2756,7 @@ class fake_AW_GC : public AW_GC {
     }
 public:
     fake_AW_GC(AW_common *common_) : AW_GC(common_) {}
-    virtual int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const {
+    virtual int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const OVERRIDE {
         td_assert(0);
         return 0;
     }
@@ -2768,7 +2777,7 @@ public:
             gcm->set_fg_color(colors_def[gc+AW_STD_COLOR_IDX_MAX]);
         }
     }
-    virtual ~fake_AW_common() {}
+    virtual ~fake_AW_common() OVERRIDE {}
 
     virtual AW_GC *create_gc() {
         return new fake_AW_GC(this);
@@ -2778,7 +2787,7 @@ public:
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
     int var_mode;
 
-    virtual void read_tree_settings() {
+    virtual void read_tree_settings() OVERRIDE {
         scaled_branch_distance = 1.0; // not final value!
         // var_mode is in range [0..3]
         // it is used to vary tree settings such that many different combinations get tested

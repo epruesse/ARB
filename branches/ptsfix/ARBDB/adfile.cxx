@@ -671,8 +671,8 @@ void TEST_diff_files() {
 }
 
 static char *remove_path(const char *fullname, void *cl_path) {
-    const char *path   = (const char *)cl_path;
-    return strdup(fullname+(ARB_strscmp(fullname, path) == 0 ? strlen(path) : 0));
+    const char *path = (const char *)cl_path;
+    return strdup(fullname+(ARB_strBeginsWith(fullname, path) ? strlen(path) : 0));
 }
 
 static void GBT_transform_names(StrArray& dest, const StrArray& source, char *transform(const char *, void *), void *client_data) {

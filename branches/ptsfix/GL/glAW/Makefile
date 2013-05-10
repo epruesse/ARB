@@ -36,7 +36,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from GL)
 
 AW_window_ogl.o: aw_window_ogl.hxx
 AW_window_ogl.o: GLwDrawA.h
@@ -58,7 +58,9 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window_ogl.o: $(ARBHOME)/WINDOW/aw_scalar.hxx

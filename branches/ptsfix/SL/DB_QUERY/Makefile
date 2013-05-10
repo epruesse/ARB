@@ -28,7 +28,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 db_query.o: db_query.h
 db_query.o: db_query_local.h
@@ -63,7 +63,9 @@ db_query.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_query.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 db_query.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 db_query.o: $(ARBHOME)/INCLUDE/cb.h
+db_query.o: $(ARBHOME)/INCLUDE/cxxforward.h
 db_query.o: $(ARBHOME)/INCLUDE/dupstr.h
+db_query.o: $(ARBHOME)/INCLUDE/gccver.h
 db_query.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 db_query.o: $(ARBHOME)/INCLUDE/items.h
 db_query.o: $(ARBHOME)/INCLUDE/smartptr.h

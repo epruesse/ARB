@@ -2858,9 +2858,9 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             dbq_assert(query->selector.type == QUERY_ITEM_SPECIES); // stuff below works only for species
             aws->sep______________();
             if (query->expect_hit_in_ref_list) {
-                aws->insert_menu_topic("search_equal_fields_and_listed_in_I", "Search entries existing in both DBs and listed in the DB I hitlist", "S",
+                aws->insert_menu_topic("search_equal_fields_and_listed_in_I", "Search entries existing in both DBs and listed in the source DB hitlist", "S",
                                        "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, EXT_QUERY_COMPARE_LINES);
-                aws->insert_menu_topic("search_equal_words_and_listed_in_I",  "Search words existing in entries of both DBs and listed in the DB I hitlist", "W",
+                aws->insert_menu_topic("search_equal_words_and_listed_in_I",  "Search words existing in entries of both DBs and listed in the source DB hitlist", "W",
                                        "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, EXT_QUERY_COMPARE_WORDS);
             }
             else {

@@ -24,7 +24,7 @@ depend.init:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 probe_design.o: probe_design.hxx
 probe_design.o: probe_match_parser.hxx
@@ -74,8 +74,10 @@ probe_design.o: $(ARBHOME)/INCLUDE/bytestring.h
 probe_design.o: $(ARBHOME)/INCLUDE/cb.h
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
 probe_design.o: $(ARBHOME)/INCLUDE/client_types.h
+probe_design.o: $(ARBHOME)/INCLUDE/cxxforward.h
 probe_design.o: $(ARBHOME)/INCLUDE/downcast.h
 probe_design.o: $(ARBHOME)/INCLUDE/dupstr.h
+probe_design.o: $(ARBHOME)/INCLUDE/gccver.h
 probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/items.h
 probe_design.o: $(ARBHOME)/INCLUDE/iupac.h
@@ -83,6 +85,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_server.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 probe_design.o: $(ARBHOME)/INCLUDE/smartptr.h
+probe_design.o: $(ARBHOME)/INCLUDE/static_assert.h
 probe_design.o: $(ARBHOME)/INCLUDE/test_global.h
 probe_design.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
@@ -101,7 +104,9 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/attributes.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/cxxforward.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/dupstr.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/gccver.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/smartptr.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -134,7 +139,9 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cb.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/dupstr.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/gccver.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/items.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/nds.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/smartptr.h

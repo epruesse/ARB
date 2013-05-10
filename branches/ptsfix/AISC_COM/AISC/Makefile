@@ -1,6 +1,8 @@
 THIS=AISC/Makefile
 MAKETHIS=$(MAKE) -f $(THIS)
 #MAKETHIS=$(MAKE) -d -f $(THIS)
+SED:=$(ARBHOME)/SH/arb_sed
+READLINK:=$(ARBHOME)/SH/arb_readlink
 
 .SUFFIXES: .o .c .h .aisc
 
@@ -17,16 +19,23 @@ RUN_AISC:=$(AISC)
 GEN_INCLUDES = GENH/aisc.h GENH/aisc_com.h
 INCLUDE_INCLUDES = aisc_include.header
 
-GEN_SERVER_PROTO = GENH/aisc_server_proto.h
-S_GEN_SERVER_PROTO = GENC/aisc_server.c
-
 SERVER_OBJECTS = O/server.o O/struct_man.o O/aisc_extern.o
-GEN_SERVER_OBJECTS = GENC/aisc_global.o GENC/aisc_server.o
+
+GEN_SERVER_PROTO_OBJECTS = GENC/aisc_server.o
+GEN_SERVER_OTHER_OBJECTS = GENC/aisc_global.o
+GEN_SERVER_OBJECTS = $(GEN_SERVER_PROTO_OBJECTS) $(GEN_SERVER_OTHER_OBJECTS)
+
+GEN_SERVER_PROTO_SOURCES = $(GEN_SERVER_PROTO_OBJECTS:.o=.c)
+GEN_SERVER_SOURCES = $(GEN_SERVER_OBJECTS:.o=.c)
+
 GEN_SERVER_INCLUDES = C/aisc_server.h C/common.h
+GEN_SERVER_PROTO = GENH/aisc_server_proto.h
 GEN_SERVER_EXTERN_PROTO = GENH/aisc_server_extern.h
 
-CLIENT_OBJECTS = O/client.o
-CLIENT_INCLUDES = C/client_privat.h C/client.h C/common.h
+SERVER_INCLUDES = $(GEN_INCLUDES) $(GEN_SERVER_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_EXTERN_PROTO)
+
+CLIENT_OBJECTS = O/client.o 
+CLIENT_INCLUDES = $(GEN_INCLUDES) C/client_privat.h C/client.h C/common.h
 
 COMMON_OBJECTS = O/common.o
 COMMON_INCLUDES = C/common.h
@@ -51,7 +60,7 @@ FAIL_ON_CHANGE=1# 0=continue on change, 1=fail on change
 
 # ----------------------------------------
 
-COMPARE_WITH_OTHER_ARB:=$(shell readlink $(LINK_TO_OTHER_ARB))
+COMPARE_WITH_OTHER_ARB:=$(shell $(READLINK) $(LINK_TO_OTHER_ARB))
 ifneq ($(COMPARE_WITH_OTHER_ARB),)
 THIS__COMDIR=$(shell pwd)
 COMDIRNAME=$(subst $(ARBHOME),,$(THIS__COMDIR))
@@ -95,7 +104,7 @@ else
  endif
 endif
 
-pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c)
+pregenerate: $(GEN_SERVER_SOURCES) $(SERVER_INCLUDES) $(CLIENT_INCLUDES) $(AISC_EXTERNALS)
 
 directories:
 	@mkdir -p GENH GENC O DUMP
@@ -111,20 +120,13 @@ $(SERVER): $(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
 $(CLIENT): $(CLIENT_OBJECTS) $(GEN_CLIENT_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
 
-$(COMMON): $(COMMON_OBJECTS)
-	$(LINK_STATIC_LIB) $@ $^
-
-$(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
-					$(GEN_INCLUDES) $(GEN_SERVER_PROTO)  \
-					$(GEN_SERVER_EXTERN_PROTO) $(IMPORT_PROTO) \
-					$(GEN_SERVER_OBJECTS:.o=.c) \
-					$(PRIVATE_SERVER_OBJECTS:.o=.c)
+$(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): $(SERVER_INCLUDES) $(GEN_SERVER_SOURCES) $(PRIVATE_SERVER_OBJECTS:.o=.c)
 	$(COMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE) $(POST_COMPILE)
 
 O/%.o: C/%.c $(GEN_INCLUDES) $(CLIENT_INCLUDES) C/server.h
 	$(COMPILER) -c -o $@ $< -IGENH -I. -IC $(POST_COMPILE)
 
-$(CLIENT_OBJECTS):	$(CLIENT_OBJECTS:O/%.o=C/%.c) $(GEN_INCLUDES) $(CLIENT_INCLUDES)
+$(CLIENT_OBJECTS): $(CLIENT_OBJECTS:O/%.o=C/%.c) $(GEN_INCLUDES) $(CLIENT_INCLUDES)
 	$(CLIENTCOMPILER) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC $(POST_COMPILE)
 
 $(DUMPDIR): 
@@ -142,7 +144,7 @@ GENH/%.h: AISC/%.pa $(AISC_DEPENDS) $(INCLUDE_INCLUDES)
 GENC/%.c: AISC/%.pa $(AISC_DEPENDS) $(AISC_SERVER_EXTERN) $(GEN_SERVER_INCLUDES)
 	$(RUN_AISC) $< $(MAIN_SOURCE) $@ $(AISC_SERVER_EXTERN) $(IMPORT_PROTO) $(GLOBALS_AISC)
 
-$(IMPORT_PROTO): GENC/aisc_server.c
+$(IMPORT_PROTO): $(GEN_SERVER_PROTO_SOURCES)
 	echo $@
 
 $(AISC_SERVER_EXTERN): $(AISC_EXTERNALS) $(AISC_MKPT) $(THIS) 
@@ -151,11 +153,11 @@ $(AISC_SERVER_EXTERN): $(AISC_EXTERNALS) $(AISC_MKPT) $(THIS)
 
 $(GEN_SERVER_EXTERN_PROTO): $(AISC_EXTERNALS) $(AISC_MKPT) $(THIS)
 	rm -f $(GEN_SERVER_EXTERN_PROTO)
-	$(AISC_MKPT) -z -A -w $(subst GENH/,,$@) $(AISC_EXTERNALS) >$@
+	$(AISC_MKPT) -w $(subst GENH/,,$@) $(AISC_EXTERNALS) >$@
 
-$(GEN_SERVER_PROTO): $(S_GEN_SERVER_PROTO) $(AISC_MKPT) $(THIS)
+$(GEN_SERVER_PROTO): $(GEN_SERVER_PROTO_SOURCES) $(AISC_MKPT) $(THIS)
 	rm -f $@
-	$(AISC_MKPT) -z -A -w $(subst GENH/,,$@) $(S_GEN_SERVER_PROTO) >$@
+	$(AISC_MKPT) -w $(subst GENH/,,$@) $(GEN_SERVER_PROTO_SOURCES) >$@
 
 clean:
 	@rm -f *.[ao] */*.[ao]
@@ -165,7 +167,7 @@ clean:
 .depends:
 	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) C/*.c GENC/*.c -I GENH -I C -f- -w1 2>/dev/null \
 		| grep -v ' /usr' \
-		| sed -e 's/^C/O/ig' \
+		| $(SED) -e 's/^C/O/ig' \
 		> .depends_new
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff .depends_new .depends
 

@@ -32,7 +32,7 @@ NOT4PERL void GBT_reverseComplementNucSequence(char *seq, long length, char T_or
 GBDATA *GBT_get_presets(GBDATA *gb_main);
 int GBT_count_alignments(GBDATA *gb_main);
 GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name);
-void GBT_get_alignment_names(ConstStrArray &names, GBDATA *gbd);
+void GBT_get_alignment_names(ConstStrArray& names, GBDATA *gbd);
 GB_ERROR GBT_check_alignment_name(const char *alignment_name);
 GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long aligned, long security, const char *type);
 GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *dest, int copy, int dele);
@@ -52,10 +52,6 @@ GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname);
 bool GBT_is_alignment_protein(GBDATA *gb_main, const char *alignment_name);
 NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revComplement, char partSeparator, size_t *gene_length);
 char *GBT_read_gene_sequence(GBDATA *gb_gene, bool use_revComplement, char partSeparator);
-
-/* adcolumns.cxx */
-GB_ERROR GBT_format_alignment(GBDATA *Main, const char *alignment_name);
-GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos, long count, const char *char_delete);
 
 /* aditem.cxx */
 GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, bool markCreated);
@@ -100,7 +96,7 @@ GB_ERROR GBT_abort_rename_session(void);
 GB_ERROR GBT_commit_rename_session(void) __ATTR__USERESULT;
 
 /* adseqcompr.cxx */
-GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, const char *ali_name) __ATTR__USERESULT;
+GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const char *ali_name) __ATTR__USERESULT;
 void GBT_compression_test(void *, GBDATA *gb_main);
 
 /* adtables.cxx */
@@ -121,7 +117,7 @@ GBDATA *GBT_find_or_create(GBDATA *father, const char *key, long delete_level);
 char *GBT_get_default_helix(GBDATA *);
 char *GBT_get_default_helix_nr(GBDATA *);
 char *GBT_get_default_ref(GBDATA *);
-void GBT_scan_db(StrArray &fieldNames, GBDATA *gbd, const char *datapath);
+void GBT_scan_db(StrArray& fieldNames, GBDATA *gbd, const char *datapath);
 void GBT_install_message_handler(GBDATA *gb_main);
 void GBT_message(GBDATA *gb_main, const char *msg);
 char *GBT_read_string(GBDATA *gb_container, const char *fieldpath);
@@ -173,7 +169,7 @@ const char *GBT_name_of_largest_tree(GBDATA *gb_main);
 const char *GBT_name_of_bottom_tree(GBDATA *gb_main);
 const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int maxTreeNameLen);
 long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name);
-void GBT_get_tree_names(ConstStrArray &names, GBDATA *gb_main, bool sorted);
+void GBT_get_tree_names(ConstStrArray& names, GBDATA *gb_main, bool sorted);
 NOT4PERL GB_ERROR GBT_move_tree(GBDATA *gb_moved_tree, GBT_ORDER_MODE mode, GBDATA *gb_target_tree);
 GB_ERROR GBT_copy_tree(GBDATA *gb_main, const char *source_name, const char *dest_name);
 GB_ERROR GBT_rename_tree(GBDATA *gb_main, const char *source_name, const char *dest_name);

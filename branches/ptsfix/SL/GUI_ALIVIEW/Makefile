@@ -37,7 +37,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AWT_filter.o: awt_filter.hxx
 AWT_filter.o: ga_local.h
@@ -66,7 +66,9 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -95,7 +97,9 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/cb.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/dupstr.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/gccver.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/smartptr.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -108,5 +112,7 @@ GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_core.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbtools.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/dupstr.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/gccver.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/test_global.h

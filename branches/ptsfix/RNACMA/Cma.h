@@ -24,15 +24,32 @@
 #ifndef CMA_H
 #define CMA_H
 
+#ifndef _GLIBCXX_IOSTREAM
 #include <iostream>
-#include <eigen/Eigen/Eigen>
+#endif
+#ifndef _GLIBCXX_VECTOR
 #include <vector>
+#endif
+#ifndef _GLIBCXX_MAP
 #include <map>
-#include <math.h>
+#endif
+#ifndef _GLIBCXX_CMATH
+#include <cmath>
+#endif
+#ifndef _GLIBCXX_STRING
 #include <string>
+#endif
+#ifndef _GLIBCXX_LIST
 #include <list>
+#endif
 
-using namespace std;
+#include <eigen/Eigen/Eigen>
+
+#ifndef CXXFORWARD_H
+#include <cxxforward.h>
+#endif
+
+using namespace std; // @@@ wtf! this really is a nono
 using Eigen::VectorXd;
 using Eigen::VectorXi;
 using Eigen::MatrixXd;
@@ -51,19 +68,17 @@ struct MITuple {
     double MI;
 };
 
-
-
 class Cma {
 
 private:
     /**
      * This is used for numerical stability and to compare floating point numbers.
      */
-    static const double epsilon = 1.0e-9;
+    static CONSTEXPR double epsilon = 1.0e-9;
     /**
      * See documentation of project, p. 7.
      */
-    static const double penalty = 5.;
+    static CONSTEXPR double penalty = 5.;
     /**
      * The alphabet considered.
      */

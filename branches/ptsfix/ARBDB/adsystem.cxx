@@ -38,7 +38,7 @@ GB_ERROR gb_load_dictionary_data(GBDATA *gb_main, const char *key, char **dict_d
 
     *dict_data = 0;
     *size      = -1;
-    gb_main    = (GBDATA *)Main->data;
+    gb_main    = Main->gb_main();
 
     if (key[0] == '@') {
         error = GB_export_error("No dictionaries for system fields");
@@ -125,7 +125,7 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
         return;
     }
 
-    gb_main = (GBDATA *)Main->data;
+    gb_main = Main->gb_main();
     if (key[0] == '@') {
         ks->compression_mask = 0;
         ks->dictionary       = 0;
@@ -133,15 +133,16 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
         ks->gb_master_ali    = 0;
     }
     else {
-        GBDATA *gb_key_data = Main->gb_key_data;
-        GBDATA *gb_key, *gb_name, *gb_dict;
+        GBCONTAINER *gb_key_data = Main->gb_key_data;
         GB_push_my_security(gb_main);
-        gb_name = GB_find_string(gb_key_data, "@name", key, GB_MIND_CASE, SEARCH_GRANDCHILD);
+
+        GBDATA      *gb_name = GB_find_string(gb_key_data, "@name", key, GB_MIND_CASE, SEARCH_GRANDCHILD);
+        GBCONTAINER *gb_key;
         if (gb_name) {
-            gb_key = GB_get_father(gb_name);
+            gb_key = GB_FATHER(gb_name);
         }
         else {
-            gb_key = gb_create_container(gb_key_data, "@key");
+            gb_key  = gb_create_container(gb_key_data, "@key");
             gb_name = gb_create(gb_key, "@name", GB_STRING);
             GB_write_string(gb_name, key);
         }
@@ -154,14 +155,14 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
         }
 
         ks->compression_mask = *GBT_readOrCreate_int(gb_key, "compression_mask", -1);
-        gb_dict              = GB_entry(gb_key, "@dictionary");
+        GBDATA *gb_dict      = GB_entry(gb_key, "@dictionary");
         ks->dictionary       = gb_dict ? gb_create_dict(gb_dict) : 0;
         ks->gb_key           = gb_key;
 
         {
             char buffer[256];
             sprintf(buffer, "%s/@master_data/@%s", GB_SYSTEM_FOLDER, key);
-            ks->gb_master_ali = GB_search(gb_main, buffer, GB_FIND);
+            ks->gb_master_ali = GB_search(gb_main, buffer, GB_FIND)->as_container();
             if (ks->gb_master_ali) {
                 GB_remove_callback(ks->gb_master_ali, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), gb_system_master_changed_cb, (int *)q);
                 GB_add_callback   (ks->gb_master_ali, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), gb_system_master_changed_cb, (int *)q);
@@ -175,23 +176,25 @@ GB_ERROR gb_save_dictionary_data(GBDATA *gb_main, const char *key, const char *d
     // if 'dict' is NULL, an existing directory gets deleted
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
     GB_ERROR      error = 0;
-    gb_main             = (GBDATA *)Main->data;
+    gb_main             = Main->gb_main();
     if (key[0] == '@') {
         error = GB_export_error("No dictionaries for system fields");
     }
     else {
-        GBDATA *gb_key_data = Main->gb_key_data;
-        GBDATA *gb_key, *gb_name, *gb_dict;
+        GBCONTAINER *gb_key_data = Main->gb_key_data;
         GB_push_my_security(gb_main);
-        gb_name = GB_find_string(gb_key_data, "@name", key, GB_MIND_CASE, SEARCH_GRANDCHILD);
+
+        GBDATA      *gb_name = GB_find_string(gb_key_data, "@name", key, GB_MIND_CASE, SEARCH_GRANDCHILD);
+        GBCONTAINER *gb_key;
         if (gb_name) {
-            gb_key = GB_get_father(gb_name);
+            gb_key = GB_FATHER(gb_name);
         }
         else {
             gb_key = gb_create_container(gb_key_data, "@key");
             gb_name = gb_create(gb_key, "@name", GB_STRING);
             GB_write_string(gb_name, key);
         }
+        GBDATA *gb_dict;
         if (dict) {
             gb_dict = gb_search(gb_key, "@dictionary", GB_BYTES, 1);
             error   = GB_write_bytes(gb_dict, dict, size);
@@ -211,17 +214,17 @@ GB_ERROR gb_save_dictionary_data(GBDATA *gb_main, const char *key, const char *d
     return error;
 }
 
-GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main) { // goes to header: __ATTR__USERESULT
-    GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
-    GB_ERROR      error = NULL;
+GB_ERROR gb_load_key_data_and_dictionaries(GB_MAIN_TYPE *Main) { // goes to header: __ATTR__USERESULT
+    GBCONTAINER *gb_main = Main->root_container;
+    GB_ERROR     error   = NULL;
 
-    GBDATA *gb_key_data = gb_search(gb_main, GB_SYSTEM_FOLDER "/" GB_SYSTEM_KEY_DATA, GB_CREATE_CONTAINER, 1);
+    GBCONTAINER *gb_key_data = gb_search(gb_main, GB_SYSTEM_FOLDER "/" GB_SYSTEM_KEY_DATA, GB_CREATE_CONTAINER, 1)->as_container();
     if (!gb_key_data) {
         error = GB_await_error();
     }
     else {
         Main->gb_key_data = gb_key_data;
-        if (Main->local_mode) { // do not create anything at the client side
+        if (Main->is_server()) { // do not create anything at the client side
             GB_push_my_security(gb_main);
 
             // search unused keys and delete them

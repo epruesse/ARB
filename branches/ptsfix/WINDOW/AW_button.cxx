@@ -43,86 +43,6 @@
 // #define DUMP_BUTTON_CREATION
 #endif // DEBUG
 
-struct AW_widget_refresh_cb : virtual Noncopyable {
-    AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, Widget w, AW_widget_type type, AW_window *awi);
-    ~AW_widget_refresh_cb();
-
-    AW_CL           cd;
-    AW_awar        *awar;
-    Widget          widget;
-    AW_widget_type  widget_type;
-    AW_window      *aw;
-
-    AW_widget_refresh_cb *next;
-};
-
-static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
-    AW_widget_refresh_cb *widgetlist = (AW_widget_refresh_cb*)cl_widget_refresh_cb;
-    if (widgetlist->widget == root->changer_of_variable) {
-        root->changer_of_variable = 0;
-        root->value_changed = false;
-        return;
-    }
-
-    {
-        char *var_value;
-        var_value = widgetlist->awar->read_as_string();
-
-        // und benachrichtigen der anderen
-        switch (widgetlist->widget_type) {
-
-            case AW_WIDGET_INPUT_FIELD:
-                widgetlist->aw->update_input_field(widgetlist->widget, var_value);
-                break;
-            case AW_WIDGET_TEXT_FIELD:
-                widgetlist->aw->update_text_field(widgetlist->widget, var_value);
-                break;
-            case AW_WIDGET_TOGGLE:
-                widgetlist->aw->update_toggle(widgetlist->widget, var_value, widgetlist->cd);
-                break;
-            case AW_WIDGET_LABEL_FIELD:
-                widgetlist->aw->update_label(widgetlist->widget, var_value);
-                break;
-            case AW_WIDGET_CHOICE_MENU:
-                widgetlist->aw->refresh_option_menu((AW_option_menu_struct*)widgetlist->cd);
-                break;
-            case AW_WIDGET_TOGGLE_FIELD:
-                widgetlist->aw->refresh_toggle_field((int)widgetlist->cd);
-                break;
-            case AW_WIDGET_SELECTION_LIST:
-                ((AW_selection_list *)widgetlist->cd)->refresh();
-            default:
-                break;
-        }
-        free(var_value);
-    }
-    root->value_changed = false;     // Maybe value changed is set because Motif calls me
-}
-
-AW_widget_refresh_cb::AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, Widget w, AW_widget_type type, AW_window *awi) {
-    cd          = cd1;
-    widget      = w;
-    widget_type = type;
-    awar        = vs;
-    aw          = awi;
-    next        = previous;
-
-    awar->add_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
-}
-
-AW_widget_refresh_cb::~AW_widget_refresh_cb() {
-    if (next) delete next;
-    awar->remove_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
-}
-
-void AW_awar::tie_widget(AW_CL cd1, Widget widget, AW_widget_type type, AW_window *aww) {
-    refresh_list = new AW_widget_refresh_cb(refresh_list, this, cd1, widget, type, aww);
-}
-void AW_awar::untie_all_widgets() {
-    delete refresh_list; refresh_list = NULL;
-}
-
-
 class VarUpdateInfo : virtual Noncopyable { // used to refresh single items on change
     AW_window         *aw_parent;
     Widget             widget;
@@ -342,8 +262,15 @@ static void aw_attach_widget(Widget w, AW_at *_at, int default_width = -1) {
     args.assign_to_widget(w);
 }
 
+const char *AW_get_pixmapPath(const char *pixmapName) {
+    // const char *pixmapsDir = "pixmaps"; // normal pixmaps (as used in gtk branch)
+    const char *pixmapsDir = "motifHack/pixmaps"; // see ../lib/motifHack/README
+
+    return GB_path_in_ARBLIB(pixmapsDir, pixmapName);
+}
+
 static char *pixmapPath(const char *pixmapName) {
-    return nulldup(GB_path_in_ARBLIB("pixmaps", pixmapName));
+    return nulldup(AW_get_pixmapPath(pixmapName));
 }
 
 
@@ -490,7 +417,7 @@ void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
 }
 
 void AW_window::create_autosize_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, unsigned xtraSpace) {
-    aw_assert(buttonlabel[0] != '#');    // use create_button() for graphical buttons!
+    aw_assert(buttonlabel[0] != '#');    // use create_button for graphical buttons!
     aw_assert(!_at->to_position_exists); // wont work if to-position exists
 
     AW_awar *is_awar = get_root()->label_is_awar(buttonlabel);
@@ -522,7 +449,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     // If a callback is bound via at->callback(), a button is created.
     // Otherwise a text display is created.
     //
-    // if buttonlabel starts with '#' the rest of buttonlabel is used as name of bitmap file used for button
+    // if buttonlabel starts with '#' the rest of buttonlabel is used as name of pixmap file used for button
     // if buttonlabel contains a '/' it's interpreted as AWAR name and the button displays the content of the awar
     // otherwise buttonlabel is interpreted as button label (may contain '\n').
     //
@@ -731,7 +658,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 
             button = XtVaCreateManagedWidget("button", xmPushButtonWidgetClass, fatherwidget, RES_LABEL_CONVERT(buttonlabel), NULL);
         }
-        else { // button w/o callback (flat, not clickable)
+        else { // button w/o callback; (flat, not clickable)
             button = XtVaCreateManagedWidget("label", xmLabelWidgetClass, parent_widget, RES_LABEL_CONVERT(buttonlabel), NULL);
             args.add(XmNalignment, (org_correct_for_at_center == 1) ? XmALIGNMENT_CENTER : XmALIGNMENT_BEGINNING);
         }
@@ -908,13 +835,13 @@ void AW_window::create_text_toggle(const char *var_name, const char *noText, con
 
 
 void AW_window::create_toggle(const char *var_name) {
-    create_toggle(var_name, "#no.bitmap", "#yes.bitmap");
+    create_toggle(var_name, "#no.xpm", "#yes.xpm");
 }
 
 void AW_window::create_inverse_toggle(const char *var_name) {
     // like create_toggle, but displays inverse value
     // (i.e. it's checked if value is zero, and unchecked otherwise)
-    create_toggle(var_name, "#yes.bitmap", "#no.bitmap");
+    create_toggle(var_name, "#yes.xpm", "#no.xpm");
 }
 
 // ---------------------

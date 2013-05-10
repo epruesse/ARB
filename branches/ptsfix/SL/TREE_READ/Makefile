@@ -33,7 +33,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 TreeRead.o: TreeRead.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -49,7 +49,9 @@ TreeRead.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeRead.o: $(ARBHOME)/INCLUDE/attributes.h
+TreeRead.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeRead.o: $(ARBHOME)/INCLUDE/dupstr.h
+TreeRead.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeRead.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeRead.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -66,6 +68,8 @@ TreeTools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeTools.o: $(ARBHOME)/INCLUDE/attributes.h
+TreeTools.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeTools.o: $(ARBHOME)/INCLUDE/dupstr.h
+TreeTools.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeTools.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeTools.o: $(ARBHOME)/INCLUDE/test_global.h

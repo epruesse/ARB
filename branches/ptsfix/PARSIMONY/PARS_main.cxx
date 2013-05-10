@@ -43,27 +43,25 @@ AW_HEADER_MAIN
 #define AWAR_COLUMNSTAT_BASE "tmp/pars/colstat"
 #define AWAR_COLUMNSTAT_NAME AWAR_COLUMNSTAT_BASE "/name"
 
-GBDATA *GLOBAL_gb_main;                             // global gb_main for arb_pars
+GBDATA              *GLOBAL_gb_main = NULL;
+static ArbParsimony *GLOBAL_PARS    = NULL;
 
-#if defined(WARN_TODO)
-#warning make GLOBAL_PARS static!
-#endif
-PARS_global *GLOBAL_PARS;
+inline AWT_graphic_tree *global_tree() { return GLOBAL_PARS->get_tree(); }
 
 // waaah more globals :(
 AP_main *ap_main;
 
 static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
-    ap_assert((AWT_TREE(ntw) == GLOBAL_PARS->tree));
+    ap_assert((AWT_TREE(ntw) == global_tree()));
 
-    GB_ERROR error = GLOBAL_PARS->tree->save(ntw->gb_main, 0, 0, 0);
+    GB_ERROR error = global_tree()->save(ntw->gb_main, 0, 0, 0);
     if (error) aw_message(error);
 
     ntw->zoom_reset_and_refresh();
 }
 
 static void pars_export_tree() {
-    GB_ERROR error = GLOBAL_PARS->tree->save(0, 0, 0, 0);
+    GB_ERROR error = global_tree()->save(0, 0, 0, 0);
     if (error) aw_message(error);
 }
 
@@ -1028,7 +1026,7 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, AW_CL limit_only) {
 
 static void NT_optimize(AW_window *, AWT_canvas *ntw) {
     arb_progress progress("Optimizing Tree");
-    PARS_optimizer_cb(rootNode(), progress);
+    GLOBAL_PARS->optimize_tree(rootNode(), progress);
     ASSERT_VALID_TREE(rootNode());
     rootEdge()->calc_branchlengths();
     AWT_TREE(ntw)->resort_tree(0);
@@ -1087,11 +1085,6 @@ static AW_window *NT_create_tree_setting(AW_root *aw_root)
 
     return (AW_window *)aws;
 
-}
-
-static void PA_focus_cb(AW_window *, GBDATA *gb_main_par)
-{
-    GB_transaction dummy(gb_main_par);
 }
 
 // -----------------------
@@ -1266,32 +1259,32 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
     AW_gc_manager aw_gc_manager = 0;
 
-    GLOBAL_PARS->tree = PARS_generate_tree(awr, wfilt);
+    GLOBAL_PARS->generate_tree(wfilt);
 
     AWT_canvas *ntw;
     {
-        AP_tree_sort  old_sort_type = GLOBAL_PARS->tree->tree_sort;
-        GLOBAL_PARS->tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
-        ntw = new AWT_canvas(GLOBAL_gb_main, (AW_window *)awm, GLOBAL_PARS->tree, aw_gc_manager, AWAR_TREE);
-        GLOBAL_PARS->tree->set_tree_type(old_sort_type, ntw);
+        AP_tree_sort  old_sort_type = global_tree()->tree_sort;
+        global_tree()->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
+        ntw = new AWT_canvas(GLOBAL_gb_main, (AW_window *)awm, global_tree(), aw_gc_manager, AWAR_TREE);
+        global_tree()->set_tree_type(old_sort_type, ntw);
     }
 
     {
         GB_ERROR error = 0;
         arb_progress progress("loading tree");
         NT_reload_tree_event(awr, ntw, 0);             // load tree (but do not expose - first zombies need to be removed)
-        if (!GLOBAL_PARS->tree->get_root_node()) {
+        if (!global_tree()->get_root_node()) {
             error = "I cannot load the selected tree";
         }
         else {
             AP_tree_edge::initialize(rootNode());   // builds edges
-            long removed = GLOBAL_PARS->tree->tree_static->remove_leafs(AWT_REMOVE_DELETED);
+            long removed = global_tree()->tree_static->remove_leafs(AWT_REMOVE_DELETED);
 
-            PARS_tree_init(GLOBAL_PARS->tree);
-            removed += GLOBAL_PARS->tree->tree_static->remove_leafs(AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
+            PARS_tree_init(global_tree());
+            removed += global_tree()->tree_static->remove_leafs(AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
 
-            if (!GLOBAL_PARS->tree->get_root_node()) {
-                const char *aliname = GLOBAL_PARS->tree->tree_static->get_aliview()->get_aliname();
+            if (!global_tree()->get_root_node()) {
+                const char *aliname = global_tree()->tree_static->get_aliview()->get_aliname();
                 error               = GBS_global_string("Less than 2 species contain data in '%s'\n"
                                                         "Tree vanished", aliname);
             }
@@ -1415,24 +1408,22 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     }
     awm->button_length(5);
 
-    awm->insert_help_topic("How to use Help",    "H", "help.hlp",     AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp",     0);
-    awm->insert_help_topic("ARB Help",           "A", "arb.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",      0);
-    awm->insert_help_topic("ARB PARSIMONY Help", "N", "arb_pars.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
+    awm->insert_help_topic("ARB_PARSIMONY help", "N", "arb_pars.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
 
-    awm->create_mode("select.bitmap", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
-    awm->create_mode("mark.bitmap",   "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
-    awm->create_mode("group.bitmap",  "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
-    awm->create_mode("pzoom.bitmap",  "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode("lzoom.bitmap",  "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
-    awm->create_mode("swap.bitmap",   "mode_swap.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
-    awm->create_mode("move.bitmap",   "mode_move.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
+    awm->create_mode("select.xpm", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
+    awm->create_mode("mark.xpm",   "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
+    awm->create_mode("group.xpm",  "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
+    awm->create_mode("pzoom.xpm",  "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
+    awm->create_mode("lzoom.xpm",  "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
+    awm->create_mode("swap.xpm",   "mode_swap.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
+    awm->create_mode("move.xpm",   "mode_move.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
 #ifdef NNI_MODES
-    awm->create_mode("nearestn.bitmap", "mode_nni.hlp",      AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_NNI);
-    awm->create_mode("kernlin.bitmap",  "mode_kernlin.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_KERNINGHAN);
-    awm->create_mode("optimize.bitmap", "mode_optimize.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_OPTIMIZE);
+    awm->create_mode("nearestn.xpm", "mode_nni.hlp",      AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_NNI);
+    awm->create_mode("kernlin.xpm",  "mode_kernlin.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_KERNINGHAN);
+    awm->create_mode("optimize.xpm", "mode_optimize.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_OPTIMIZE);
 #endif // NNI_MODES
-    awm->create_mode("setroot.bitmap", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
-    awm->create_mode("reset.bitmap",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
+    awm->create_mode("setroot.xpm", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
+    awm->create_mode("reset.xpm",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
 
     awm->at(5, 2);
     awm->auto_space(0, -2);
@@ -1462,13 +1453,13 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->get_at_position(&db_parsx, &db_parsy);
 
     awm->button_length(10);
-    awm->create_button(0, AWAR_PARSIMONY);
+    awm->create_button(0, AWAR_PARSIMONY, 0, "+");
 
     awm->button_length(0);
 
     awm->callback((AW_CB)NT_jump_cb, (AW_CL)ntw, 1);
     awm->help_text("tr_jump.hlp");
-    awm->create_button("JUMP", "#pjump.bitmap", 0);
+    awm->create_button("JUMP", "Jump", 0);
 
     awm->callback(AW_POPUP_HELP, (AW_CL)"arb_pars.hlp");
     awm->help_text("help.hlp");
@@ -1487,25 +1478,27 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->help_text("ap_stack.hlp");
     awm->create_button("PUSH", "STORE", 0);
 
-    awm->button_length(7);
-
-    awm->at_x(db_treex);
-    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_RADIAL);
-    awm->help_text("tr_type_radial.hlp");
-    awm->create_button("RADIAL_TREE", "#radial.bitmap", 0);
-
-    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_NORMAL);
-    awm->help_text("tr_type_list.hlp");
-    awm->create_button("LIST_TREE", "#list.bitmap", 0);
-
     awm->at_x(db_parsx);
     awm->label_length(14);
     awm->label("Optimal Pars:");
 
     awm->button_length(10);
-    awm->create_button(0, AWAR_BEST_PARSIMONY);
+    awm->create_button(0, AWAR_BEST_PARSIMONY, 0, "+");
+
+    awm->button_length(0);
+    awm->auto_space(0, -2);
+
+    awm->at_x(db_treex);
+    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_RADIAL);
+    awm->help_text("tr_type_radial.hlp");
+    awm->create_button("RADIAL_TREE", "#radial.xpm", 0);
+
+    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_NORMAL);
+    awm->help_text("tr_type_list.hlp");
+    awm->create_button("LIST_TREE", "#dendro.xpm", 0);
 
     awm->at_newline();
+    awm->at(db_treex, awm->get_at_yposition());
 
     {
         AW_at_maxsize maxSize; // store size (so AWAR_FOOTER does not affect min. window size)
@@ -1517,10 +1510,9 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     }
 
     awm->get_at_position(&db_treex, &db_treey);
-    awm->set_info_area_height(db_treey+6);
+    awm->set_info_area_height(db_treey);
 
     awm->set_bottom_area_height(0);
-    awm->set_focus_callback((AW_CB)PA_focus_cb, (AW_CL)ntw->gb_main, 0);
 
     aw_parent->hide(); // hide parent
     awm->show();
@@ -1673,17 +1665,15 @@ void PARS_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype) {
     }
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS");
+    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS", &argc, &argv);
     AD_map_viewer_aw_root = aw_root;
 
-    ap_main = new AP_main;
-
-    GLOBAL_PARS      = (PARS_global *)calloc(sizeof(PARS_global), 1);
-    GLOBAL_PARS->awr = aw_root;
+    ap_main     = new AP_main;
+    GLOBAL_PARS = new ArbParsimony(aw_root);
 
     const char *db_server = ":";
 
@@ -1734,4 +1724,5 @@ int ARB_main(int argc, const char *argv[]) {
     aw_root->main_loop();
     return EXIT_SUCCESS;
 }
+
 

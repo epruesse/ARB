@@ -11,13 +11,14 @@
 #
 # ------------------------------------------------------------------------
 
+SED=${ARBHOME}/SH/arb_sed
 
 find_deps_for() {
-    grep -w -H $1 *.java | sed -e 's/^\([^:]*\)\.java:.*$/\1.class/ig' | sort | uniq
+    grep -w -H $1 *.java | $SED -e 's/^\([^:]*\)\.java:.*$/\1.class/ig' | sort | uniq
 }
 
 append_dep() {
-    sed -e "s/$/ : $1/ig"
+    $SED -e "s/$/ : $1/ig"
 }
 
 make_dependencies() {

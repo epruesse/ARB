@@ -14,6 +14,7 @@
 #include "ad_trees.hxx"
 #include "seq_quality.h"
 #include "nt_join.hxx"
+#include "nt_cb.hxx"
 
 #include <multi_probe.hxx>
 #include <st_window.hxx>
@@ -61,8 +62,9 @@
 void create_probe_design_variables(AW_root *aw_root, AW_default def, AW_default global);
 void create_cprofile_var(AW_root *aw_root, AW_default aw_def);
 
-void create_insertchar_variables(AW_root *root, AW_default db1);
-AW_window *create_insertchar_window(AW_root *root, AW_default def);
+void       create_insertDeleteColumn_variables(AW_root *root, AW_default db1);
+AW_window *create_insertDeleteColumn_window(AW_root *root);
+AW_window *create_insertDeleteBySAI_window(AW_root *root, AW_CL cl_gbmain);
 
 AW_window *create_tree_window(AW_root *aw_root, AWT_graphic *awd);
 
@@ -199,7 +201,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     awr->awar(AWAR_SECURITY_LEVEL)->write_int(6); // no security for debugging..
 #endif // DEBUG
 
-    create_insertchar_variables(awr, def);
+    create_insertDeleteColumn_variables(awr, def);
     create_probe_design_variables(awr, def, GLOBAL.gb_main);
     create_primer_design_variables(awr, def, GLOBAL.gb_main);
     create_trees_var(awr, def);
@@ -237,13 +239,20 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     if (error) aw_message(error);
 }
 
+// --------------------------------------------------------------------------------
 
-static void nt_exit(AW_window *aws) {
-    if (GLOBAL.gb_main) {
-        if (GB_read_clients(GLOBAL.gb_main)>=0) {
-            if (GB_read_clock(GLOBAL.gb_main) > GB_last_saved_clock(GLOBAL.gb_main)) {
+bool nt_disconnect_from_db(AW_root *aw_root, GBDATA*& gb_main_ref) {
+    // ask user if DB was not saved
+    // returns true if user allows to quit
+
+    // @@@ code here could as well be applied to both merge DBs
+    // - question about saving only with target DB!
+
+    if (gb_main_ref) {
+        if (GB_read_clients(gb_main_ref)>=0) {
+            if (GB_read_clock(gb_main_ref) > GB_last_saved_clock(gb_main_ref)) {
                 long secs;
-                secs = GB_last_saved_time(GLOBAL.gb_main);
+                secs = GB_last_saved_time(gb_main_ref);
 
 #if defined(DEBUG)
                 secs =  GB_time_of_day(); // simulate "just saved"
@@ -256,20 +265,25 @@ static void nt_exit(AW_window *aws) {
                         char *question = GBS_global_string_copy("You last saved your data %li:%li minutes ago\nSure to quit ?", secs/60, secs%60);
                         int   dontQuit = aw_question("quit_arb", question, quit_buttons);
                         free(question);
-                        if (dontQuit) return;
+                        if (dontQuit) {
+                            return false;
+                        }
                     }
                 }
                 else {
-                    if (aw_question("quit_arb", "You never saved any data\nSure to quit ???", quit_buttons)) return;
+                    if (aw_question("quit_arb", "You never saved any data\nSure to quit ???", quit_buttons)) {
+                        return false;
+                    }
                 }
             }
         }
-        GBCMS_shutdown(GLOBAL.gb_main);
 
-        GBDATA *gb_main = GLOBAL.gb_main;
-        GLOBAL.gb_main  = NULL;                     // avoid further usage
+        GBCMS_shutdown(gb_main_ref);
 
-        AW_root *aw_root = aws->get_root();
+        GBDATA *gb_main = gb_main_ref;
+        gb_main_ref     = NULL;                  // avoid further usage
+
+        nt_assert(aw_root);
 #if defined(WARN_TODO)
 #warning instead of directly calling the following functions, try to add them as GB_atclose-callbacks
 #endif
@@ -281,8 +295,60 @@ static void nt_exit(AW_window *aws) {
 
         GB_close(gb_main);
     }
-    exit(0);
+    return true;
 }
+
+static void nt_run(const char *command) {
+    GB_ERROR error = GBK_system(command);
+    if (error) {
+        fprintf(stderr, "nt_run: Failed to run '%s' (Reason: %s)\n", command, error);
+#if defined(DEBUG)
+        GBK_dump_backtrace(stderr, "nt_run-error");
+#endif
+    }
+}
+
+void nt_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
+    char *command = GBS_global_string_copy("(%s %s) &", restart_with_new_ARB_PID ? "arb" : "arb_ntree", arb_ntree_args);
+    nt_run(command);
+    free(command);
+}
+
+__ATTR__NORETURN static void really_exit(int exitcode, bool kill_my_clients) {
+    if (kill_my_clients) {
+        nt_run("(arb_clean >/dev/null 2>&1;echo ARB done) &"); // kills all clients
+    }
+    exit(exitcode);
+}
+
+void nt_exit(AW_window *aws, AW_CL exitcode) {
+    if (nt_disconnect_from_db(aws->get_root(), GLOBAL.gb_main)) {
+        really_exit(exitcode, true);
+    }
+}
+void nt_restart(AW_root *aw_root, const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
+    if (nt_disconnect_from_db(aw_root, GLOBAL.gb_main))  {
+        nt_start(arb_ntree_args, restart_with_new_ARB_PID);
+        really_exit(EXIT_SUCCESS, restart_with_new_ARB_PID);
+    }
+}
+
+static void nt_start_2nd_arb(AW_window *aww, AW_CL cl_quit) {
+    // start 2nd arb with intro window
+    AW_root *aw_root = aww->get_root();
+    char    *dir4intro;
+    GB_split_full_path(aw_root->awar(AWAR_DB_PATH)->read_char_pntr(), &dir4intro, NULL, NULL, NULL);
+
+    if (cl_quit) {
+        nt_restart(aw_root, dir4intro, true);
+    }
+    else {
+        nt_start(dir4intro, true);
+    }
+    free(dir4intro);
+}
+
+// --------------------------------------------------------------------------------
 
 static void NT_save_quick_cb(AW_window *aww) {
     AW_root *awr      = aww->get_root();
@@ -780,11 +846,6 @@ static AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
     return aws;
 }
 
-static void NT_focus_cb(AW_window */*aww*/) {
-    GB_transaction dummy(GLOBAL.gb_main);
-}
-
-
 static void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     AWT_canvas *canvas = (AWT_canvas*)cd1;
@@ -875,21 +936,21 @@ static void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
 class nt_item_type_species_selector : public awt_item_type_selector {
 public:
     nt_item_type_species_selector() : awt_item_type_selector(AWT_IT_SPECIES) {}
-    virtual ~nt_item_type_species_selector() {}
+    virtual ~nt_item_type_species_selector() OVERRIDE {}
 
-    virtual const char *get_self_awar() const {
+    virtual const char *get_self_awar() const OVERRIDE {
         return AWAR_SPECIES_NAME;
     }
-    virtual size_t get_self_awar_content_length() const {
+    virtual size_t get_self_awar_content_length() const OVERRIDE {
         return 12; // should be enough for "nnaammee.999"
     }
-    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
+    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // add callbacks to awars
         root->awar(get_self_awar())->add_callback(f, cl_mask);
     }
-    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // remove callbacks to awars
+    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // remove callbacks to awars
         root->awar(get_self_awar())->remove_callback(f, cl_mask);
     }
-    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const { // give the current item
+    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char           *species_name = root->awar(get_self_awar())->read_string();
         GBDATA         *gb_species   = 0;
 
@@ -901,7 +962,7 @@ public:
         free(species_name);
         return gb_species;
     }
-    virtual const char *getKeyPath() const { // give the keypath for items
+    virtual const char *getKeyPath() const OVERRIDE { // give the keypath for items
         return CHANGE_KEY_PATH;
     }
 };
@@ -922,18 +983,21 @@ static AW_window *create_colorize_species_window(AW_root *aw_root) {
     return QUERY::create_colorize_items_window(aw_root, GLOBAL.gb_main, SPECIES_get_selector());
 }
 
-static void NT_update_marked_counter(AW_window *aww, long count) {
-    const char *buffer = count ? GBS_global_string("%li marked", count) : "";
-    aww->get_root()->awar(AWAR_MARKED_SPECIES_COUNTER)->write_string(buffer);
-}
-
-static void nt_count_marked(AW_window *aww) {
+/**
+ * Updates marked counter and issues redraw on tree if #marked changes.
+ * Called on any change of species_information container.
+ */
+static void NT_update_marked_counter(GBDATA* /*species_info*/, int* cl_aww, GB_CB_TYPE /*cbt*/) {
+    AW_window* aww = (AW_window*) cl_aww;
     long count = GBT_count_marked_species(GLOBAL.gb_main);
-    NT_update_marked_counter(aww, count);
-}
-
-static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE) {
-    nt_count_marked((AW_window*)cl_aww);
+    const char *buffer = count ? GBS_global_string("%li marked", count) : "";
+    AW_awar *counter = aww->get_root()->awar(AWAR_MARKED_SPECIES_COUNTER);
+    char *oldval = counter->read_string();
+    if (strcmp(oldval, buffer)) {
+        counter->write_string(buffer);
+        aww->get_root()->awar(AWAR_TREE_REFRESH)->touch();
+    }
+    free(oldval);
 }
 
 static void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
@@ -1174,7 +1238,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, AW_POPUP, (AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
             if (allow_new_window) {
                 awm->sep______________();
-                awm->insert_menu_topic("new_window",   "New window",                 "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
+                awm->insert_menu_topic("new_window", "New window (same database)", "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
             }
             awm->sep______________();
             awm->insert_menu_topic("optimize_db",  "Optimize database",          "O", "optimize.hlp",  AWM_ALL, AW_POPUP, (AW_CL)NT_create_database_optimization_window, 0);
@@ -1182,17 +1246,18 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("Import",      "I");
             {
-                awm->insert_menu_topic("import_seq", "Import sequences and fields", "I", "arb_import.hlp", AWM_ALL, NT_import_sequences, 0, 0);
+                awm->insert_menu_topic("import_seq", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree . \":\" &", 0);
+                awm->insert_menu_topic("import_seq", "Import from external format",   "I", "arb_import.hlp",     AWM_ALL, NT_import_sequences, 0,                            0);
                 GDE_load_menu(awm, AWM_EXP, "Import");
             }
             awm->close_sub_menu();
 
             awm->insert_sub_menu("Export",      "E");
             {
-                awm->insert_menu_topic("export_to_ARB", "Export seq/tree/SAI's to new ARB database", "A", "arb_ntree.hlp",      AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree -export &", 0);
-                awm->insert_menu_topic("export_seqs",   "Export sequences to foreign format",        "f", "arb_export.hlp",     AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL.gb_main);
+                awm->insert_menu_topic("export_to_ARB", "Merge to (new) ARB database",             "A", "arb_merge_outof.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree \":\" . &", 0);
+                awm->insert_menu_topic("export_seqs",   "Export to external format",               "f", "arb_export.hlp",      AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL.gb_main);
                 GDE_load_menu(awm, AWM_ALL, "Export");
-                awm->insert_menu_topic("export_nds",    "Export fields (to calc-sheet using NDS)",   "N", "arb_export_nds.hlp", AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
+                awm->insert_menu_topic("export_nds",    "Export fields (to calc-sheet using NDS)", "N", "arb_export_nds.hlp",  AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
             }
             awm->close_sub_menu();
             awm->sep______________();
@@ -1212,13 +1277,13 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_menu_topic("redo",      "Redo",      "d", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_cb,      (AW_CL)GB_UNDO_REDO, (AW_CL)ntw);
             awm->insert_menu_topic("undo_info", "Undo info", "f", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_UNDO, (AW_CL)0);
             awm->insert_menu_topic("redo_info", "Redo info", "o", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_REDO, (AW_CL)0);
+#endif
 
             awm->sep______________();
-#endif
-            if (!GLOBAL.extern_quit_button) {
-                awm->insert_menu_topic("quit",      "Quit",             "Q", "quit.hlp",    AWM_ALL, (AW_CB)nt_exit,    0, 0);
-            }
 
+            awm->insert_menu_topic("restart", "Start second database", "o", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 0);
+            awm->insert_menu_topic("restart", "Quit + load other database",  "l", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 1);
+            awm->insert_menu_topic("quit",    "Quit",                  "Q", "quit.hlp", AWM_ALL, nt_exit,          EXIT_SUCCESS);
         }
 
         // -----------------
@@ -1289,8 +1354,13 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->create_menu("Sequence", "S", AWM_ALL);
         {
-            awm->insert_menu_topic("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL,  AW_POPUP, (AW_CL)NT_create_alignment_window, 0);
-            awm->insert_menu_topic("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp", AWM_ALL,  AW_POPUP, (AW_CL)create_insertchar_window,   0);
+            awm->insert_menu_topic("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL, AW_POPUP, (AW_CL)NT_create_alignment_window,       0);
+            awm->insert_sub_menu("Insert/delete", "I");
+            {
+                awm->insert_menu_topic("ins_del_col", ".. column",     "I", "insdel.hlp",     AWM_ALL, AW_POPUP, (AW_CL)create_insertDeleteColumn_window, 0);
+                awm->insert_menu_topic("ins_del_sai", ".. using SAI",  "S", "insdel_sai.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_insertDeleteBySAI_window,  (AW_CL)GLOBAL.gb_main);
+            }
+            awm->close_sub_menu();
             awm->sep______________();
 
             awm->insert_sub_menu("Edit Sequences", "E");
@@ -1447,9 +1517,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         awm->close_sub_menu();
         awm->insert_sub_menu("Beautify tree", "e");
         {
-            awm->insert_menu_topic(awm->local_id("beautifyt_tree"), "#beautifyt.bitmap", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 0);
-            awm->insert_menu_topic(awm->local_id("beautifyc_tree"), "#beautifyc.bitmap", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 1);
-            awm->insert_menu_topic(awm->local_id("beautifyb_tree"), "#beautifyb.bitmap", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 2);
+            awm->insert_menu_topic(awm->local_id("beautifyt_tree"), "#beautifyt.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 0);
+            awm->insert_menu_topic(awm->local_id("beautifyc_tree"), "#beautifyc.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 1);
+            awm->insert_menu_topic(awm->local_id("beautifyb_tree"), "#beautifyb.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 2);
         }
         awm->close_sub_menu();
         awm->insert_sub_menu("Modify branches", "M");
@@ -1558,26 +1628,24 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         }
     }
 
-    awm->insert_help_topic("How to use help", "H", "help.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp",      0);
-    awm->insert_help_topic("ARB help",        "A", "arb.hlp",       AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",       0);
     awm->insert_help_topic("ARB_NT help",     "N", "arb_ntree.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_ntree.hlp", 0);
 
-    awm->create_mode("select.bitmap",   "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
-    awm->create_mode("mark.bitmap",     "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
-    awm->create_mode("group.bitmap",    "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
-    awm->create_mode("pzoom.bitmap",    "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode("lzoom.bitmap",    "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
-    awm->create_mode("modify.bitmap",   "mode_info.hlp",   AWM_ALL, (AW_CB)NT_modify_cb,  (AW_CL)ntw, (AW_CL)AWT_MODE_EDIT);
-    awm->create_mode("www_mode.bitmap", "mode_www.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_WWW);
+    awm->create_mode("select.xpm",   "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
+    awm->create_mode("mark.xpm",     "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
+    awm->create_mode("group.xpm",    "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
+    awm->create_mode("pzoom.xpm",    "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
+    awm->create_mode("lzoom.xpm",    "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
+    awm->create_mode("modify.xpm",   "mode_info.hlp",   AWM_ALL, (AW_CB)NT_modify_cb,  (AW_CL)ntw, (AW_CL)AWT_MODE_EDIT);
+    awm->create_mode("www_mode.xpm", "mode_www.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_WWW);
 
-    awm->create_mode("line.bitmap",    "mode_width.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LINE);
-    awm->create_mode("rot.bitmap",     "mode_rotate.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ROT);
-    awm->create_mode("spread.bitmap",  "mode_angle.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SPREAD);
-    awm->create_mode("swap.bitmap",    "mode_swap.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
-    awm->create_mode("length.bitmap",  "mode_length.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LENGTH);
-    awm->create_mode("move.bitmap",    "mode_move.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
-    awm->create_mode("setroot.bitmap", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
-    awm->create_mode("reset.bitmap",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
+    awm->create_mode("line.xpm",    "mode_width.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LINE);
+    awm->create_mode("rot.xpm",     "mode_rotate.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ROT);
+    awm->create_mode("spread.xpm",  "mode_angle.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SPREAD);
+    awm->create_mode("swap.xpm",    "mode_swap.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
+    awm->create_mode("length.xpm",  "mode_length.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LENGTH);
+    awm->create_mode("move.xpm",    "mode_move.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
+    awm->create_mode("setroot.xpm", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
+    awm->create_mode("reset.xpm",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
 
     awm->set_info_area_height(250);
     awm->at(5, 2);
@@ -1601,7 +1669,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         awm->create_button("CLOSE", "#close.xpm");
     }
     else {
-        awm->callback(nt_exit);
+        awm->callback(nt_exit, EXIT_SUCCESS);
         awm->help_text("quit.hlp");
         awm->create_button("QUIT", "#quit.xpm");
     }
@@ -1630,11 +1698,11 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     // undo/redo:
     awm->callback(NT_undo_cb, (AW_CL)GB_UNDO_UNDO, (AW_CL)ntw);
     awm->help_text("undo.hlp");
-    awm->create_button("UNDO", "#undo.bitmap");
+    awm->create_button("UNDO", "#undo.xpm");
 
     awm->callback(NT_undo_cb, (AW_CL)GB_UNDO_REDO, (AW_CL)ntw);
     awm->help_text("undo.hlp");
-    awm->create_button("REDO", "#redo.bitmap");
+    awm->create_button("REDO", "#redo.xpm");
 
     int db_pathx2 = awm->get_at_xposition();
 
@@ -1674,7 +1742,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_LIST_NDS);
     awm->help_text("tr_type_nds.hlp");
-    awm->create_button("NO_TREE_TYPE", "#listdisp.bitmap");
+    awm->create_button("NO_TREE_TYPE", "#listdisp.xpm");
 
     int db_treex2 = awm->get_at_xposition();
 
@@ -1777,14 +1845,13 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->create_button("selection_admin", AWAR_MARKED_SPECIES_COUNTER);
     {
         GBDATA *gb_species_data = GBT_get_species_data(GLOBAL.gb_main);
-        GB_add_callback(gb_species_data, GB_CB_CHANGED, nt_auto_count_marked_species, (int*)awm);
-        nt_count_marked(awm);
+        GB_add_callback(gb_species_data, GB_CB_CHANGED, NT_update_marked_counter, (int*)awm);
+        NT_update_marked_counter(NULL, (int*)awm, GB_CB_NONE);
     }
 
     // set height of top area:
     awm->set_info_area_height(bottomy+2);
     awm->set_bottom_area_height(0);
-    awr->set_focus_callback((AW_RCB)NT_focus_cb, (AW_CL)GLOBAL.gb_main, 0);
 
     // ------------------------------------
     //      Autostarts for development

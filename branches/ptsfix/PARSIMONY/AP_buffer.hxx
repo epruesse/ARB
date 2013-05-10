@@ -131,7 +131,7 @@ struct AP_tree_buffer {
 class AP_tree_stack : public AP_STACK {
 public:
     AP_tree_stack() {}
-    virtual ~AP_tree_stack() {}
+    virtual ~AP_tree_stack() OVERRIDE {}
     void  push(AP_tree_buffer *value) { AP_STACK::push((void *)value); }
     AP_tree_buffer * pop() { return (AP_tree_buffer *) AP_STACK::pop(); }
     AP_tree_buffer * get() { return (AP_tree_buffer *) AP_STACK::get(); }

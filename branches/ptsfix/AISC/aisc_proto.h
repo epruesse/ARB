@@ -23,7 +23,7 @@ char *read_aisc_file(const char *path, const Location *loc);
 const char *formatted(const char *format, ...) __ATTR__FORMAT(1);
 
 /* aisc_var_ref.c */
-char *get_var_string(const Data &data, char *var, bool allow_missing_var);
+char *get_var_string(const Data& data, char *var, bool allow_missing_var);
 
 #else
 #error aisc_proto.h included twice

@@ -2,7 +2,7 @@
 # typemap for ARB perl interface
 # 
 # Note: if you have problems with enum types
-# see ../TOOLS/arb_proto_2_xsub.cxx@enum_type_replacement
+# see ../PERLTOOLS/arb_proto_2_xsub.cxx@enum_type_replacement
 
 TYPEMAP
 

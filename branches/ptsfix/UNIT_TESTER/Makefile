@@ -53,7 +53,7 @@ depend.init:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 TestEnvironment.o: test_global.h
 TestEnvironment.o: test_unit.h
@@ -75,7 +75,9 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/attributes.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/bytestring.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/client.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/client_types.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/dupstr.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/gccver.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/PT_com.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/servercntrl.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -89,7 +91,9 @@ UnitTester.o: $(ARBHOME)/INCLUDE/arb_core.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_msg.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arbtools.h
 UnitTester.o: $(ARBHOME)/INCLUDE/attributes.h
+UnitTester.o: $(ARBHOME)/INCLUDE/cxxforward.h
 UnitTester.o: $(ARBHOME)/INCLUDE/dupstr.h
+UnitTester.o: $(ARBHOME)/INCLUDE/gccver.h
 UnitTester.o: $(ARBHOME)/INCLUDE/SigHandler.h
 UnitTester.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
 UnitTester.o: $(ARBHOME)/INCLUDE/valgrind.h

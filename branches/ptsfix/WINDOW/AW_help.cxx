@@ -165,13 +165,13 @@ static void aw_help_edit_help(AW_window *aww) {
     char *helpfile = get_full_qualified_help_file_name(aww->get_root(), true);
 
     if (GB_size_of_file(helpfile)<=0) {
-#if defined(DEBUG)
-        const char *base = GB_path_in_ARBHOME("HELP_SOURCE/oldhelp");
-#else
+#if defined(RELEASE)
         const char *base = GB_path_in_ARBLIB("help");
+#else
+        const char *base = GB_path_in_ARBHOME("HELP_SOURCE/oldhelp");
 #endif // DEBUG
 
-        const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile); // def_hlp_res("FORM.hlp"); (see check_ressources.pl)
+        const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile); // uses_hlp_res("FORM.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
         aw_message_if(GBK_system(copy_cmd));
     }
 
@@ -409,7 +409,7 @@ static void aw_help_search(AW_window *aww) {
 
             if (!helpfilename) error = GB_await_error();
             else {
-                const char *gen_help_tmpl = "cd %s;grep -i '^[^#]*%s' `find . -name \"*.hlp\"` | sed -e 'sI:.*IIg' -e 'sI^\\./IIg' | sort | uniq > %s";
+                const char *gen_help_tmpl = "cd %s;grep -i '^[^#]*%s' `find . -name \"*.hlp\"` | arb_sed -e 'sI:.*IIg' -e 'sI^\\./IIg' | sort | uniq > %s";
                 char       *gen_help_cmd  = GBS_global_string_copy(gen_help_tmpl, GB_getenvDOCPATH(), searchtext, helpfilename);
 
                 error = GBK_system(gen_help_cmd);

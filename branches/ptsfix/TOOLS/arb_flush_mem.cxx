@@ -13,7 +13,7 @@
 #include <arb_misc.h>
 #include <arb_progress.h>
 
-int ARB_main(int , const char *[]) {
+int ARB_main(int , char *[]) {
     GB_ULONG blocks_to_flush  = GB_get_usable_memory()*4; // no of 256b-blocks
     GB_ULONG mem_to_flush = blocks_to_flush*256;
     printf("Flushing %s of your memory\n", GBS_readable_size(mem_to_flush, "b"));

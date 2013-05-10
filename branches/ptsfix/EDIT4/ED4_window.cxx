@@ -8,12 +8,12 @@
 //                                                                 //
 // =============================================================== //
 
+#include <arbdb.h>
 #include <ed4_extern.hxx>
 #include "ed4_class.hxx"
 #include "ed4_tools.hxx"
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
-#include <arbdb.h>
 
 int ED4_window::no_of_windows = 0;                  // static variable has to be initialized only once
 
@@ -307,7 +307,7 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
 
     scrolled_rect.scroll(dx, dy);
 
-    skip_move = (ABS(int(dy)) > (bottom_y - top_y - 20)) || (ABS(int(dx)) > (right_x - left_x - 20));
+    skip_move = (abs(int(dy)) > (bottom_y - top_y - 20)) || (abs(int(dx)) > (right_x - left_x - 20));
 
     AW_pos leftmost_x = coords.middle_area_x;
     AW_pos toptop_y = coords.top_area_y;

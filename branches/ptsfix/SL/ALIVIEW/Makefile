@@ -33,7 +33,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AliView.o: AliView.hxx
 AliView.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
@@ -41,5 +41,7 @@ AliView.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AliView.o: $(ARBHOME)/INCLUDE/arb_core.h
 AliView.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AliView.o: $(ARBHOME)/INCLUDE/arbtools.h
+AliView.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AliView.o: $(ARBHOME)/INCLUDE/dupstr.h
+AliView.o: $(ARBHOME)/INCLUDE/gccver.h
 AliView.o: $(ARBHOME)/INCLUDE/test_global.h

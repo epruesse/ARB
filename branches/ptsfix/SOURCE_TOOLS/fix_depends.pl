@@ -102,13 +102,17 @@ sub read_input_stream(\@) {
 }
 
 sub main() {
+  my $comment = join(' ',@ARGV);
+  if ($comment ne '') { $comment = ' '.$comment }
+  @ARGV = ();
+
   my @depends=();
   read_input_stream(@depends);
 
-  @depends = sort arb_dependency_order @depends; 
+  @depends = sort arb_dependency_order @depends;
 
   print "\n# Do not add dependencies manually - use 'make depend' in \$ARBHOME\n";
-  print "# For formatting issues see SOURCE_TOOLS/fix_depends.pl\n";
+  print "# For formatting issues see SOURCE_TOOLS/fix_depends.pl$comment\n";
 
   # print dependency lines
   my $prefix = '';

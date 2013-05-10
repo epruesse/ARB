@@ -127,6 +127,8 @@ static bool ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_
     char            *buffer = GB_give_buffer(size+1);
     long             i, j, k;
 
+    size = std::min(rm->get_max_screen_pos(), size);
+
     for (k=0; size_t(k)<size; k++) {
         i = rm->screen_to_sequence(k+start);
 

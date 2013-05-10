@@ -159,7 +159,7 @@ public:
                          int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
                          AW_event_type type, AW_pos x, AW_pos y,
                          AW_clicked_line *cl, AW_clicked_text *ct);
-    virtual void text(AW_device *device, char *text);
+    void text(AW_device *device, char *text);
 
 };
 
@@ -167,19 +167,19 @@ class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
     // a partly implementation of AWT_graphic
 public:
     AWT_nonDB_graphic() {}
-    virtual ~AWT_nonDB_graphic() {}
+    virtual ~AWT_nonDB_graphic() OVERRIDE {}
 
     // dummy functions, only spittings out warnings:
-    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
-    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
-    int  check_update(GBDATA *gb_main);
-    void update(GBDATA *gb_main);
+    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
+    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
+    int  check_update(GBDATA *gb_main) OVERRIDE;
+    void update(GBDATA *gb_main) OVERRIDE;
 };
 
 
 #define EPS               0.0001 // div zero check
 #define CLIP_OVERLAP      15
-#define AWT_CATCH_LINE    50    // pixel
+#define AWT_CATCH_LINE    5     // pixel
 #define AWT_CATCH_TEXT    5     // pixel
 #define AWT_ZOOM_OUT_STEP 40    // (pixel) rand um screen
 #define AWT_MIN_WIDTH     100   // Minimum center screen (= screen-offset)

@@ -41,7 +41,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 align.o: defs.h
 align.o: i-hopper.h
@@ -60,12 +60,15 @@ island_hopping.o: $(ARBHOME)/INCLUDE/arb_assert.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arb_core.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arbtools.h
 island_hopping.o: $(ARBHOME)/INCLUDE/attributes.h
+island_hopping.o: $(ARBHOME)/INCLUDE/cxxforward.h
 island_hopping.o: $(ARBHOME)/INCLUDE/dupstr.h
+island_hopping.o: $(ARBHOME)/INCLUDE/gccver.h
 island_hopping.o: $(ARBHOME)/INCLUDE/pos_range.h
 island_hopping.o: $(ARBHOME)/INCLUDE/test_global.h
 
 mem.o: mem.h
 mem.o: $(ARBHOME)/INCLUDE/attributes.h
+mem.o: $(ARBHOME)/INCLUDE/gccver.h
 
 trnsprob.o: defs.h
 trnsprob.o: mem.h

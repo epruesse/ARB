@@ -260,8 +260,8 @@ struct POS_TREE2 { // pos-tree (stage 2)
 #define SHORT_CHAIN_HEADER_FLAG_BIT  (1<<4)
 #define SHORT_CHAIN_HEADER_SIZE_MASK 0x07
 
-COMPILE_ASSERT(SHORT_CHAIN_HEADER_SIZE_MASK >= SHORT_CHAIN_HEADER_ELEMS);
-COMPILE_ASSERT((SHORT_CHAIN_HEADER_SIZE_MASK & SHORT_CHAIN_HEADER_FLAG_BIT) == 0);
+STATIC_ASSERT(SHORT_CHAIN_HEADER_SIZE_MASK >= SHORT_CHAIN_HEADER_ELEMS);
+STATIC_ASSERT((SHORT_CHAIN_HEADER_SIZE_MASK & SHORT_CHAIN_HEADER_FLAG_BIT) == 0);
 
 struct PT_short_chain_header {
     unsigned name[SHORT_CHAIN_HEADER_ELEMS];
@@ -277,8 +277,8 @@ struct PT_long_chain_header {
     char     *entrymem;
 };
 
-COMPILE_ASSERT(sizeof(PT_long_chain_header) >= sizeof(PT_short_chain_header)); // SHORT_CHAIN_HEADER_ELEMS is too big
-COMPILE_ASSERT((sizeof(PT_short_chain_header)/SHORT_CHAIN_HEADER_ELEMS*(SHORT_CHAIN_HEADER_ELEMS+1)) > sizeof(PT_long_chain_header)); // SHORT_CHAIN_HEADER_ELEMS is too small
+STATIC_ASSERT(sizeof(PT_long_chain_header) >= sizeof(PT_short_chain_header)); // SHORT_CHAIN_HEADER_ELEMS is too big
+STATIC_ASSERT((sizeof(PT_short_chain_header)/SHORT_CHAIN_HEADER_ELEMS*(SHORT_CHAIN_HEADER_ELEMS+1)) > sizeof(PT_long_chain_header)); // SHORT_CHAIN_HEADER_ELEMS is too small
 
 inline size_t PT_node_size(POS_TREE2 *node) { // @@@ become member
     size_t size = 1; // flags

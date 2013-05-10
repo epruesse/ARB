@@ -29,12 +29,14 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 xml.o: xml.hxx
 xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 xml.o: $(ARBHOME)/INCLUDE/arb_core.h
 xml.o: $(ARBHOME)/INCLUDE/arbtools.h
 xml.o: $(ARBHOME)/INCLUDE/attributes.h
+xml.o: $(ARBHOME)/INCLUDE/cxxforward.h
 xml.o: $(ARBHOME)/INCLUDE/dupstr.h
+xml.o: $(ARBHOME)/INCLUDE/gccver.h
 xml.o: $(ARBHOME)/INCLUDE/test_global.h

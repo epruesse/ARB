@@ -1667,7 +1667,7 @@ void print_standard_prologue(char *datestring) {
 /*
  * Main routine for a2ps.
  */
-int ARB_main(int argc, const char *cargv[]) {
+int ARB_main(int argc, char *cargv[]) {
     char       **argv = (char**)cargv;
     int          narg;
     char        *arg;

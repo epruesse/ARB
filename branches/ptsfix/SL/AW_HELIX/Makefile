@@ -33,7 +33,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AW_helix.o: AW_helix.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -57,6 +57,8 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/cb.h
+AW_helix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_helix.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_helix.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_helix.o: $(ARBHOME)/INCLUDE/test_global.h

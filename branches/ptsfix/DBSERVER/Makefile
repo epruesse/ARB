@@ -26,7 +26,7 @@ depend.init:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 db_server.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -39,7 +39,9 @@ db_server.o: $(ARBHOME)/INCLUDE/arbdb.h
 db_server.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 db_server.o: $(ARBHOME)/INCLUDE/arbtools.h
 db_server.o: $(ARBHOME)/INCLUDE/attributes.h
+db_server.o: $(ARBHOME)/INCLUDE/cxxforward.h
 db_server.o: $(ARBHOME)/INCLUDE/dupstr.h
+db_server.o: $(ARBHOME)/INCLUDE/gccver.h
 db_server.o: $(ARBHOME)/INCLUDE/servercntrl.h
 db_server.o: $(ARBHOME)/INCLUDE/smartptr.h
 db_server.o: $(ARBHOME)/INCLUDE/test_global.h

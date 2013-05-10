@@ -412,7 +412,7 @@ void POS_TREE1::clear_fathers() {
 void PTD_put_longlong(FILE *out, ULONG i) {
     pt_assert(i == (unsigned long) i);
     const size_t SIZE = 8;
-    COMPILE_ASSERT(sizeof(uint_big) == SIZE); // this function only works and only gets called at 64-bit
+    STATIC_ASSERT(sizeof(uint_big) == SIZE); // this function only works and only gets called at 64-bit
 
     unsigned char buf[SIZE];
     PT_write_long(buf, i);
@@ -424,7 +424,7 @@ void PTD_put_int(FILE *out, ULONG i) {
     pt_assert(i == (unsigned int) i);
     const size_t SIZE = 4;
 #ifndef ARB_64
-    COMPILE_ASSERT(sizeof(PT_PNTR) == SIZE); // in 32bit mode ints are used to store pointers
+    STATIC_ASSERT(sizeof(PT_PNTR) == SIZE); // in 32bit mode ints are used to store pointers
 #endif
     unsigned char buf[SIZE];
     PT_write_int(buf, i);
@@ -463,9 +463,9 @@ int PTD_put_compact_nat(FILE *out, uint_32 nat) {
 const int BITS_FOR_SIZE = 4; // size is stored inside POS_TREEx->flags, if it fits into lower 4 bits
 const int SIZE_MASK     = (1<<BITS_FOR_SIZE)-1;
 
-COMPILE_ASSERT(PT1_BASE_SIZE <= PT1_EMPTY_LEAF_SIZE);
-COMPILE_ASSERT(PT1_BASE_SIZE <= PT1_CHAIN_SHORT_HEAD_SIZE);
-COMPILE_ASSERT(PT1_BASE_SIZE <= PT1_EMPTY_NODE_SIZE);
+STATIC_ASSERT(PT1_BASE_SIZE <= PT1_EMPTY_LEAF_SIZE);
+STATIC_ASSERT(PT1_BASE_SIZE <= PT1_CHAIN_SHORT_HEAD_SIZE);
+STATIC_ASSERT(PT1_BASE_SIZE <= PT1_EMPTY_NODE_SIZE);
 
 const uint_32 MIN_SIZE_IN_FLAGS = PT1_BASE_SIZE;
 const uint_32 MAX_SIZE_IN_FLAGS = PT1_BASE_SIZE+SIZE_MASK-1;
@@ -482,7 +482,7 @@ static void PTD_set_object_to_saved_status(POS_TREE1 *node, long pos_start, uint
 
     pt_assert(former_size >= PT1_BASE_SIZE);
 
-    COMPILE_ASSERT((MAX_SIZE_IN_FLAGS-MIN_SIZE_IN_FLAGS+1) == SIZE_MASK); // ????0000 means "size not stored in flags"
+    STATIC_ASSERT((MAX_SIZE_IN_FLAGS-MIN_SIZE_IN_FLAGS+1) == SIZE_MASK); // ????0000 means "size not stored in flags"
 
     if (former_size >= MIN_SIZE_IN_FLAGS && former_size <= MAX_SIZE_IN_FLAGS) {
         pt_assert(former_size >= int(sizeof(uint_big)));
@@ -833,7 +833,7 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE2*& root_ptr) { //
 #ifdef ARB_64
         if (i == 0xffffffff) {                    // 0xffffffff signalizes that "last_obj" is stored
             main -= 8;                            // in the previous 8 byte (in a long long)
-            COMPILE_ASSERT(sizeof(PT_PNTR) == 8); // 0xffffffff is used to signalize to be compatible with older pt-servers
+            STATIC_ASSERT(sizeof(PT_PNTR) == 8);  // 0xffffffff is used to signalize to be compatible with older pt-servers
             i      = PT_read_big(main);           // this search tree can only be loaded at 64 Bit
             psg.big_db = true;
         }
@@ -907,8 +907,8 @@ const char *get_blocksize_description(int blocksize) {
         case PT1_EMPTY_LEAF_SIZE:       known = "PT1_EMPTY_LEAF_SIZE      and PT1_CHAIN_SHORT_HEAD_SIZE"; break;
         case PT1_NODE_WITHSONS_SIZE(2): known = "PT1_NODE_WITHSONS_SIZE(2) and PT1_CHAIN_LONG_HEAD_SIZE"; break;
 
-        COMPILE_ASSERT(PT1_CHAIN_SHORT_HEAD_SIZE == PT1_EMPTY_LEAF_SIZE);
-        COMPILE_ASSERT(PT1_CHAIN_LONG_HEAD_SIZE == PT1_NODE_WITHSONS_SIZE(2));
+        STATIC_ASSERT(PT1_CHAIN_SHORT_HEAD_SIZE == PT1_EMPTY_LEAF_SIZE);
+        STATIC_ASSERT(PT1_CHAIN_LONG_HEAD_SIZE == PT1_NODE_WITHSONS_SIZE(2));
 #endif
         case PT1_NODE_WITHSONS_SIZE(1): known = "PT1_NODE_WITHSONS_SIZE(1)"; break;
         case PT1_NODE_WITHSONS_SIZE(3): known = "PT1_NODE_WITHSONS_SIZE(3)"; break;
@@ -976,7 +976,7 @@ void TEST_saved_state() {
     EnterStage1 env;
 
     const size_t SIZE = PT1_BASE_SIZE+6;
-    COMPILE_ASSERT(SIZE >= (1+sizeof(uint_big)+sizeof(int)));
+    STATIC_ASSERT(SIZE >= (1+sizeof(uint_big)+sizeof(int)));
 
     POS_TREE1 *node = (POS_TREE1*)malloc(SIZE);
 
@@ -1000,14 +1000,14 @@ void TEST_saved_state() {
     TEST_SIZE_SAVED_IN_FLAGS(node, 9);
 
 #ifdef ARB_64
-    COMPILE_ASSERT(PT1_BASE_SIZE == 9);
+    STATIC_ASSERT(PT1_BASE_SIZE == 9);
 #else
     TEST_SIZE_SAVED_IN_FLAGS(node, 8);
     TEST_SIZE_SAVED_IN_FLAGS(node, 7);
     TEST_SIZE_SAVED_IN_FLAGS(node, 6);
     TEST_SIZE_SAVED_IN_FLAGS(node, 5);
 
-    COMPILE_ASSERT(PT1_BASE_SIZE == 5);
+    STATIC_ASSERT(PT1_BASE_SIZE == 5);
 #endif
 
     free(node);

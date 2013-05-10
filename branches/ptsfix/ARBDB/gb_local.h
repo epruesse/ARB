@@ -34,6 +34,8 @@ typedef short GB_MAIN_IDX;      // random-index
 // ------------------------------
 //      forward declare types
 
+struct GBDATA;
+struct GBENTRY;
 struct GBCONTAINER;
 struct GB_MAIN_TYPE;
 
@@ -44,6 +46,8 @@ struct gb_index_files;
 struct GB_DICTIONARY;
 struct gb_compress_list;
 struct gb_compress_tree;
+
+struct gb_cb_spec;
 
 struct gb_map_header;
 

@@ -18,6 +18,9 @@
 #ifndef _GLIBCXX_NEW
 #include <new>
 #endif
+#ifndef CXXFORWARD_H
+#include <cxxforward.h>
+#endif
 
 //  Base class for classes that may not be copied, neither via copy
 //  constructor or assignment operator.
@@ -28,6 +31,7 @@ class Noncopyable {
 public:
     Noncopyable() {}
 };
+
 
 // helper macros to make inplace-reconstruction less obfuscated
 #define INPLACE_RECONSTRUCT(type,this)          \
@@ -49,6 +53,7 @@ public:
     }
 
 
+// generic below/above predicates
 template<typename T>
 class isBelow {
     T t;
@@ -65,6 +70,8 @@ public:
     bool operator()(T o) { return o>t; }
 };
 
+
+// typedef iterator types
 #define DEFINE_NAMED_ITERATORS(type,name)               \
     typedef type::iterator name##Iter;                  \
     typedef type::const_iterator name##CIter;           \
@@ -73,6 +80,8 @@ public:
 
 #define DEFINE_ITERATORS(type) DEFINE_NAMED_ITERATORS(type,type)
 
+
+// locally modify a value, restore on destruction
 template<typename T>
 class LocallyModify : virtual Noncopyable {
     T& var;
@@ -83,6 +92,28 @@ public:
 
     T old_value() const { return prevValue; }
 };
+
+
+// StrictlyAliased_BasePtrRef allows to pass a 'DERIVED*&'
+// to a function which expects a 'BASE*&'
+// without breaking strict aliasing rules
+template <typename DERIVED, typename BASE>
+class StrictlyAliased_BasePtrRef : virtual Noncopyable {
+    DERIVED*&  user_ptr;
+    BASE      *forwarded_ptr;
+
+public:
+    StrictlyAliased_BasePtrRef(DERIVED*& ptr)
+        : user_ptr(ptr),
+          forwarded_ptr(ptr)
+    {}
+    ~StrictlyAliased_BasePtrRef() {
+        user_ptr = static_cast<DERIVED*>(forwarded_ptr);
+    }
+
+    BASE*& forward() { return forwarded_ptr; }
+};
+
 
 #else
 #error arbtools.h included twice

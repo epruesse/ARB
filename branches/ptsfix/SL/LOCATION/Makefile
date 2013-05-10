@@ -28,7 +28,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 Location.o: Location.h
 Location.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -43,7 +43,9 @@ Location.o: $(ARBHOME)/INCLUDE/arbdb.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Location.o: $(ARBHOME)/INCLUDE/arbtools.h
 Location.o: $(ARBHOME)/INCLUDE/attributes.h
+Location.o: $(ARBHOME)/INCLUDE/cxxforward.h
 Location.o: $(ARBHOME)/INCLUDE/dupstr.h
+Location.o: $(ARBHOME)/INCLUDE/gccver.h
 Location.o: $(ARBHOME)/INCLUDE/smartptr.h
 Location.o: $(ARBHOME)/INCLUDE/test_global.h
 Location.o: $(ARBHOME)/INCLUDE/test_unit.h

@@ -1429,7 +1429,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->sep______________();
     aws->insert_menu_topic("save_props",  "Save Properties (dist.arb)", "S", "savedef.hlp",     AWM_ALL,          (AW_CB)AW_save_properties, 0, 0);
 
-    aws->insert_help_topic("help ...", "h", "dist.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"dist.hlp", 0);
+    aws->insert_help_topic("ARB_DIST help", "h", "dist.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"dist.hlp", 0);
 
     // ------------------
     //      left side

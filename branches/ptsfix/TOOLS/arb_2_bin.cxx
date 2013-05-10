@@ -11,7 +11,7 @@
 
 #include <arbdbt.h>
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     GB_ERROR error = 0;
 
     fprintf(stderr, "arb_2_bin - ARB database ascii to binary converter\n");

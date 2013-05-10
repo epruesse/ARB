@@ -1,5 +1,7 @@
 .SUFFIXES: .o .cxx 
 
+SED:=$(ARBHOME)/SH/arb_sed
+
 all:
 		@echo "use make clean"
 
@@ -33,8 +35,12 @@ dep.clean:
 
 CORE_LIB=lib/libCORE.so
 
-dep.alltargets.tmp:
-	./needed_libs.pl -U -I -F $(CORE_LIB) | sed -e 's/ /\n/g' >$@
+TMP=dep.alltargets.tmp.tmp
+
+dep.alltargets.tmp: Makefile needed_libs.pl
+	./needed_libs.pl -U -I -F $(CORE_LIB) > $(TMP)
+	$(SED) -e 's/ /\n/g' < $(TMP) > $@
+	rm $(TMP)
 	echo $(CORE_LIB) >>$@
 
 dep.libtargets: dep.alltargets

@@ -9,9 +9,9 @@
 # mkdir my_arb_compile; cd my_arb_compile
 # 
 # 2. checkout arb, e.g. (the last argument is the name of the target directory) 
-# svn co svn+ssh://USERNAME@menuett.mikro.biologie.tu-muenchen.de/menuett1/repository/ARB/trunk myARB
+# svn co svn+ssh://USERNAME@svn.arb-home.de/svn/ARB/trunk myARB
 # # or
-# svn co --username coder --password gimmeARBsource http://svn.mikro.biologie.tu-muenchen.de/svn/trunk myARB
+# svn co --username coder --password gimmeARBsource http://svn.arb-home.de/svn/trunk myARB
 #
 # 3. link the included compile script, e.g.
 # ln -s myARB/util/arb_compile.sh compile_myARB.sh
@@ -48,6 +48,7 @@
 # The name used as checkout directory has to be changed for subsequent
 # versions. Change 'myARB' to a different name in steps A.2., A.3. and A.7
 #
+
 
 default_config() {
     echo "# config to compile ARB via $BASENAME.sh"
@@ -100,7 +101,7 @@ fi
 OLDARBHOME=$ARBHOME
 
 BASEDIR=`pwd`
-BASENAME=`basename $0 | sed -e 's/.sh//'`
+BASENAME=`basename $0 | perl -pne 's/.sh//'`
 
 echo "BASENAME='$BASENAME'"
 

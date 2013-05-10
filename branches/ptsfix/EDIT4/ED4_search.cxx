@@ -1220,8 +1220,8 @@ char *ED4_SearchResults::buildColorString(const ED4_sequence_terminal *seq_termi
 
         if (shown[what]) {
             int color = ED4_G_SBACK_0 + what;
-            int s = max(pos->get_start_pos(), start)-start;
-            int e = min(pos->get_end_pos(), end)-start;
+            int s = std::max(pos->get_start_pos(), start)-start;
+            int e = std::min(pos->get_end_pos(), end)-start;
 
             for (i=s; i<=e; i++) {
                 if (buffer[i]==0 || abs(buffer[i])>abs(color)) {
@@ -1757,11 +1757,11 @@ AW_window *ED4_create_search_window(AW_root *root, AW_CL cl_type_and_ed4w) {
 
     aws->at("next");
     aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(+1, type), (AW_CL)ed4w);
-    aws->create_button("SEARCH_NEXT", "#edit/next.bitmap", "N");
+    aws->create_button("SEARCH_NEXT", "#edit/next.xpm", "N");
 
     aws->at("previous");
     aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(-1, type), (AW_CL)ed4w);
-    aws->create_button("SEARCH_LAST", "#edit/last.bitmap", "L");
+    aws->create_button("SEARCH_LAST", "#edit/last.xpm", "L");
 
     aws->at("mark");
     aws->callback(ED4_mark_matching_species, (AW_CL)type);

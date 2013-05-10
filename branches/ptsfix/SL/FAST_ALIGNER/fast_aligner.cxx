@@ -1772,7 +1772,7 @@ public:
           gb_alignTo(gb_alignTo_) 
     {}
 
-    ARB_ERROR align_to(GBDATA *gb_toalign) const {
+    ARB_ERROR align_to(GBDATA *gb_toalign) const OVERRIDE {
         return alignTo(gb_toalign, get_alignment(), targetSequence, gb_alignTo, get_max_seq_length(), get_ali_params());
     }
 };
@@ -1793,7 +1793,7 @@ public:
           get_consensus(get_consensus_) 
     {}
     
-    ARB_ERROR align_to(GBDATA *gb_toalign) const {
+    ARB_ERROR align_to(GBDATA *gb_toalign) const OVERRIDE {
         return alignToGroupConsensus(gb_toalign, get_alignment(), get_consensus, get_max_seq_length(), get_ali_params());
     }
 };
@@ -1817,7 +1817,7 @@ public:
           turnAllowed(turnAllowed_) 
     {}
 
-    ARB_ERROR align_to(GBDATA *gb_toalign) const {
+    ARB_ERROR align_to(GBDATA *gb_toalign) const OVERRIDE {
         return alignToNextRelative(relSearch, get_max_seq_length(), turnAllowed, get_alignment(), gb_toalign, get_ali_params());
     }
 };
@@ -2300,7 +2300,7 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
                         char *sai_data = GB_read_string(gb_data);
                         char *set_bits = root->awar(FA_AWAR_SAI_RANGE_CHARS)->read_string();
 
-                        ranges = build_RangeList_from_string(sai_data, set_bits);
+                        ranges = build_RangeList_from_string(sai_data, set_bits, false);
 
                         free(set_bits);
                         free(sai_data);
@@ -2888,7 +2888,7 @@ public:
           oligo_len(oligo_len_)
     {}
 
-    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) { // @@@ use min_score
+    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) OVERRIDE { // @@@ use min_score
         // 'sequence' has to contain full sequence or part corresponding to 'range'
 
         TEST_EXPECT_EQUAL(compl_mode, FF_FORWARD); // not fit for other modes

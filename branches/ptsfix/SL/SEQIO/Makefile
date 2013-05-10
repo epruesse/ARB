@@ -36,7 +36,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 seq_export.o: seqio.hxx
 seq_export.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -55,7 +55,9 @@ seq_export.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 seq_export.o: $(ARBHOME)/INCLUDE/arbdbt.h
 seq_export.o: $(ARBHOME)/INCLUDE/arbtools.h
 seq_export.o: $(ARBHOME)/INCLUDE/attributes.h
+seq_export.o: $(ARBHOME)/INCLUDE/cxxforward.h
 seq_export.o: $(ARBHOME)/INCLUDE/dupstr.h
+seq_export.o: $(ARBHOME)/INCLUDE/gccver.h
 seq_export.o: $(ARBHOME)/INCLUDE/smartptr.h
 seq_export.o: $(ARBHOME)/INCLUDE/test_global.h
 seq_export.o: $(ARBHOME)/INCLUDE/test_unit.h
@@ -72,6 +74,8 @@ seqio.o: $(ARBHOME)/INCLUDE/arbdb.h
 seqio.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 seqio.o: $(ARBHOME)/INCLUDE/arbtools.h
 seqio.o: $(ARBHOME)/INCLUDE/attributes.h
+seqio.o: $(ARBHOME)/INCLUDE/cxxforward.h
 seqio.o: $(ARBHOME)/INCLUDE/dupstr.h
+seqio.o: $(ARBHOME)/INCLUDE/gccver.h
 seqio.o: $(ARBHOME)/INCLUDE/smartptr.h
 seqio.o: $(ARBHOME)/INCLUDE/test_global.h

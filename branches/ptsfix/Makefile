@@ -44,10 +44,14 @@ endif
 FORCEMASK = umask 002
 NODIR=--no-print-directory
 
+SED:=$(ARBHOME)/SH/arb_sed
+READLINK:=$(ARBHOME)/SH/arb_readlink
+
 # ---------------------- [basic compiler setting]
 
 ifdef DARWIN
-#       GCC and GPP now set in the Portfile
+	GCC:= clang
+	GPP:= clang++
 else
 	GCC:=$(CC)
 	GPP:=$(CXX)
@@ -70,7 +74,9 @@ ALLOWED_GCC_4xx_VERSIONS=\
 	4.4.1       4.4.3       4.4.5 4.4.6 \
 	      4.5.2 \
 	4.6.1 \
-	4.7.1 
+	4.7.1 4.7.2 \
+	4.8.0
+# Note: gcc 4.8 is not released yet (just experimenting with gcc-dev-version)
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
@@ -87,6 +93,7 @@ USE_GCC_PATCHLEVEL:=$(word 3,$(SPLITTED_VERSION))
 
 USE_GCC_452_OR_HIGHER:=
 USE_GCC_47_OR_HIGHER:=
+USE_GCC_48_OR_HIGHER:=
 
 ifeq ($(USE_GCC_MAJOR),4)
  ifeq ($(USE_GCC_MINOR),5)
@@ -98,12 +105,16 @@ ifeq ($(USE_GCC_MAJOR),4)
    USE_GCC_452_OR_HIGHER:=yes
    ifneq ($(USE_GCC_MINOR),6)
     USE_GCC_47_OR_HIGHER:=yes
+    ifneq ($(USE_GCC_MINOR),7)
+     USE_GCC_48_OR_HIGHER:=yes
+    endif
    endif
   endif
  endif
 else
  USE_GCC_452_OR_HIGHER:=yes
  USE_GCC_47_OR_HIGHER:=yes
+ USE_GCC_48_OR_HIGHER:=yes
 endif
 
 #---------------------- define special directories for non standard builds
@@ -145,6 +156,7 @@ ifeq ($(DEBUG),1)
 	gdb_common := -g -g3 -ggdb -ggdb3
 
 	cflags := -O0 $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
+#	cflags := -O0 $(gdb_common) -gdwarf-3 # (specify explicit dwarf format)
 #	cflags := -O0  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
 #	cflags := -O0  $(gdb_common) -gstabs  # using stabs (same here IIRC)
 #	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
@@ -183,9 +195,6 @@ ifeq ($(DEBUG),1)
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
-  ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
-	extended_cpp_warnings += -Wc++11-compat# gcc 4.7 
-  endif
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
@@ -309,6 +318,9 @@ cflags += -funit-at-a-time
 cflags += -fPIC
 cflags += -fno-common# link all global data into one namespace
 cflags += -fstrict-aliasing# gcc 3.4
+ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
+ cflags += -fno-diagnostics-show-caret#gcc 4.8 (4.7.?)
+endif
 #cflags += -save-temps# uncomment to see preprocessor output
 
 #---------------------- X11 location
@@ -367,7 +379,7 @@ else
 
 endif
 
-
+RNA3D_LIB_4_DEPENDS := RNA3D/RNA3D.a
 
 GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
@@ -414,14 +426,14 @@ cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
 
 cppflags := $(extended_cpp_warnings)
 
-ifeq ($(DEVELOPER),RALF)
- ifeq ('$(USE_GCC_47_OR_HIGHER)','')
+ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
+cppflags += -std=gnu++11# see also TEMPLATES/cxxforward.h@USE_Cxx11
+else
 # only use for gcc versions between 4.3 and <4.7 (4.7++ adds -Wc++11-compat above)
 HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(GCC_VERSION_FOUND)`
-  ifeq ($(HAVE_GNUPP0X),1)
+ ifeq ($(HAVE_GNUPP0X),1)
 # ensure compatibility with upcoming C++ standard
 cppflags += -std=gnu++0x
-  endif
  endif
 endif
 
@@ -637,6 +649,7 @@ check_TOOLS:
 		"$(ACC)" \
 		"$(CPP)" \
 		"$(GPP)" \
+		"$(GCC)" \
 		"$(ACCLIB)" \
 		"$(CPPLIB)" \
 		"$(XMKMF)" \
@@ -686,7 +699,7 @@ DEST_BIN = bin
 
 AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
 CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-MAKEDEPENDFLAGS := -- $(cflags) -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
+MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
 ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # Some code in ARB depends on the location of the vtable pointer
@@ -738,7 +751,7 @@ arbmainwrapper:
 # - 'depends' and
 # - 'clean'
 #
-# when adding new libs here, also add a dependency vs 'links' or 'links_non_perl' below 
+# when adding new libs here, also add a dependency vs 'links' or 'links_non_perl' in .@DD_links_non_perl
 
 ARCHS = \
 			$(ARCHS_PT_SERVER) \
@@ -831,7 +844,7 @@ link_aw:	aw link_db
 link_awt:	awt link_aw
 
 #***************************************************************************************
-#		Individual Programs Section
+#		Individual_Programs_Section 
 #***************************************************************************************
 
 #***********************************	arb_ntree **************************************
@@ -862,6 +875,7 @@ ARCHS_NTREE = \
 		SL/REFENTRIES/REFENTRIES.a \
 		SL/NDS/NDS.a \
 		SL/ITEMS/ITEMS.a \
+		SL/INSDEL/INSDEL.a \
 		SL/LOCATION/LOCATION.a \
 		SL/TRANSLATE/TRANSLATE.a \
 		SL/TREEDISP/TREEDISP.a \
@@ -1144,10 +1158,10 @@ include SOURCE_TOOLS/export2sub
 		"AUTODEPENDS=1" \
 		"MAIN=nothing" \
 		"cflags=noCflagsHere_use_MAKEDEPENDFLAGS" \
-		depends;
+		depends
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null
 	@cat $(@D)/Makefile \
-		| SOURCE_TOOLS/fix_depends.pl \
+		| SOURCE_TOOLS/fix_depends.pl "(from main)" \
 		>$(@D)/Makefile.2
 	@mv $(@D)/Makefile.old $(@D)/Makefile # restore old Makefile
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
@@ -1218,21 +1232,21 @@ CORE/libCORE.dummy:			links
 
 PERLTOOLS/PERLTOOLS.dummy:		core db
 
-# all subdirs perl not depends on go here:
+# all subdirs perl not depends on go here (ADD_links_non_perl)
 AWT/libAWT.dummy:			links_non_perl
 AWTI/AWTI.dummy:			links_non_perl
 CONSENSUS_TREE/CONSENSUS_TREE.dummy:	links_non_perl
 CONVERTALN/CONVERTALN.dummy:		links_non_perl
 DBSERVER/DBSERVER.dummy:		links_non_perl
 DIST/DIST.dummy:			links_non_perl
-EDIT4/EDIT4.dummy:			links_non_perl templ com
+EDIT4/EDIT4.dummy:			links_non_perl genheaders com
 EISPACK/EISPACK.dummy:			links_non_perl
 GDE/GDE.dummy:				links_non_perl
 GENOM/GENOM.dummy:			links_non_perl
 GENOM_IMPORT/GENOM_IMPORT.dummy:	links_non_perl
 ISLAND_HOPPING/ISLAND_HOPPING.dummy:	links_non_perl
 MERGE/MERGE.dummy:			links_non_perl
-NTREE/NTREE.dummy:			links_non_perl templ
+NTREE/NTREE.dummy:			links_non_perl genheaders
 PARSIMONY/PARSIMONY.dummy:		links_non_perl
 PGT/PGT.dummy:				links_non_perl
 PHYLO/PHYLO.dummy:			links_non_perl
@@ -1254,6 +1268,7 @@ SL/FAST_ALIGNER/FAST_ALIGNER.dummy:	links_non_perl
 SL/FILTER/FILTER.dummy:			links_non_perl
 SL/GUI_ALIVIEW/GUI_ALIVIEW.dummy:	links_non_perl
 SL/HELIX/HELIX.dummy:			links_non_perl
+SL/INSDEL/INSDEL.dummy:			links_non_perl
 SL/ITEMS/ITEMS.dummy:			links_non_perl
 SL/LOCATION/LOCATION.dummy:		links_non_perl
 SL/MATRIX/MATRIX.dummy:			links_non_perl
@@ -1419,13 +1434,12 @@ wetc:	$(WETC)
 pgt:	$(PGT)
 xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
-templ:	TEMPLATES/TEMPLATES.dummy
 stat:   STAT/STAT.dummy $(NTREE) $(EDIT4)
 fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 
-up_by_remake: depends proto libdepends
+up_by_remake: depends proto
 
 up: up_by_remake tags valgrind_update
 
@@ -1440,20 +1454,30 @@ modified: touch
 #********************************************************************************
 
 libdepends:
-	$(MAKE) -C "SOURCE_TOOLS" libdepends
+	$(MAKE) -C "SOURCE_TOOLS" \
+		"RNA3D_LIB=$(RNA3D_LIB_4_DEPENDS)" \
+		libdepends
 
 #********************************************************************************
 
-depends: templ comtools
-	@echo "$(SEP) Partially build com interface"
+# create generated headers:
+genheaders: TEMPLATES/TEMPLATES.dummy
+
+clrdotdepends:
 	-rm PROBE_COM/.depends
 	-rm NAMES_COM/.depends
 	-rm PERL2ARB/.depends
+
+comdepends: comtools clrdotdepends
+	@echo "$(SEP) Partially build com interface"
 	$(MAKE) PROBE_COM/PROBE_COM.depends
 	$(MAKE) NAMES_COM/NAMES_COM.depends
-	@echo $(SEP) Updating dependencies
+
+depends: genheaders comdepends
+	@echo "$(SEP) Updating other dependencies"
 	$(MAKE) $(ARCHS:.a=.depends) \
-			HELP_SOURCE/HELP_SOURCE.depends \
+		HELP_SOURCE/HELP_SOURCE.depends
+	$(MAKE) libdepends
 
 depend: depends
 
@@ -1470,6 +1494,7 @@ proto: proto_tools
 		CORE/CORE.proto \
 		CONVERTALN/CONVERTALN.proto \
 		NTREE/NTREE.proto \
+		MERGE/MERGE.proto \
 		$(ARCHS_PT_SERVER:.a=.proto) \
 		SERVERCNTRL/SERVERCNTRL.proto \
 		SL/SL.proto \
@@ -1498,12 +1523,12 @@ ETAGS_REST =--C-kinds=dev    --C++-kinds=dev
 $(TAG_SOURCE_HEADERS): links
 #	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
 #	workaround a bug in ctags 5.8:
-	find . \( -name '*.hxx' -o -name "*.h" \) -type f | grep -v -i perl5 | sed -e 's/^.\///g' > $@
+	find . \( -name '*.hxx' -o -name "*.h" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
 
 $(TAG_SOURCE_CODE): links
 #	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
 #	workaround a bug in ctags 5.8:
-	find . \( -name '*.cxx' -o -name "*.c" \) -type f | grep -v -i perl5 | sed -e 's/^.\///g' > $@
+	find . \( -name '*.cxx' -o -name "*.c" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
 
 tags: $(TAG_SOURCE_LISTS)
 	$(ETAGS)    $(ETAGS_TYPES) -L $(TAG_SOURCE_HEADERS)
@@ -1709,7 +1734,7 @@ clean2: $(ARCHS:.a=.clean) \
 	rm -f *.last_gcc config.makefile.bak
 
 # links are needed for cleanup
-clean: redo_links
+clean: redo_links motif_xpm_hack_clean
 	$(MAKE) clean2
 	$(MAKE) clean_cov_all clean_links
 
@@ -1804,7 +1829,7 @@ do_release:
 	@echo ARBHOME=$(ARBHOME)
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) testsave
-	$(MAKE) templ # auto upgrades version early
+	$(MAKE) genheaders # auto upgrades version early
 	$(MAKE) tarfile sourcetarfile
 
 release_quick:
@@ -1829,8 +1854,14 @@ arb_external: convert tools gde readseq tg pst xmlin
 
 arb_no_perl: arbapplications help arb_external
 
-arb:
+arb: motif_xpm_hack
 	$(MAKE) "WITHPERL=1" perl arb_no_perl
+
+motif_xpm_hack:
+	$(MAKE) -r -C "lib/motifHack" all
+
+motif_xpm_hack_clean:
+	$(MAKE) -r -C "lib/motifHack" clean
 
 # --------------------------------------------------------------------------------
 # special targets for SOURCE_TOOLS/remake_after_change.pl
@@ -1928,12 +1959,14 @@ UNITS_TESTED_FIRST = \
 	TOOLS/arb_consensus_tree.test \
 	TOOLS/arb_test.test \
 	TOOLS/arb_probe.test \
+	PERLTOOLS/arb_proto_2_xsub.test \
 	AWTC/AWTC.test \
 
 UNITS_TESTED = \
 	DBSERVER/DBSERVER.test \
 	AWT/libAWT.test \
 	CORE/libCORE.test \
+	SL/INSDEL/INSDEL.test \
 	SL/TREEDISP/TREEDISP.test \
 	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \

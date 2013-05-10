@@ -26,7 +26,7 @@ depend.init:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 AWTC_next_neighbours.o: awtc_next_neighbours.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -51,7 +51,9 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/bytestring.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cb.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client_types.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/pos_range.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_com.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_global_defs.h
@@ -84,6 +86,8 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/cb.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/test_global.h

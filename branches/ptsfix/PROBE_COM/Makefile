@@ -38,7 +38,7 @@ clean:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 aisc_extern.o: aisc_extern_privat.h
 aisc_extern.o: aisc_func_types.h
@@ -50,13 +50,16 @@ aisc_extern.o: $(ARBHOME)/INCLUDE/arb_core.h
 aisc_extern.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_extern.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc_extern.o: $(ARBHOME)/INCLUDE/bytestring.h
+aisc_extern.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aisc_extern.o: $(ARBHOME)/INCLUDE/dupstr.h
+aisc_extern.o: $(ARBHOME)/INCLUDE/gccver.h
 aisc_extern.o: $(ARBHOME)/INCLUDE/test_global.h
 
 client.o: aisc_global.h
 client.o: client.h
 client.o: client_privat.h
 client.o: client_types.h
+client.o: common.h
 client.o: trace.h
 client.o: $(ARBHOME)/INCLUDE/arb_assert.h
 client.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -64,9 +67,20 @@ client.o: $(ARBHOME)/INCLUDE/arb_cs.h
 client.o: $(ARBHOME)/INCLUDE/arbtools.h
 client.o: $(ARBHOME)/INCLUDE/attributes.h
 client.o: $(ARBHOME)/INCLUDE/bytestring.h
+client.o: $(ARBHOME)/INCLUDE/cxxforward.h
 client.o: $(ARBHOME)/INCLUDE/dupstr.h
+client.o: $(ARBHOME)/INCLUDE/gccver.h
 client.o: $(ARBHOME)/INCLUDE/SigHandler.h
 client.o: $(ARBHOME)/INCLUDE/test_global.h
+
+common.o: common.h
+common.o: $(ARBHOME)/INCLUDE/arb_assert.h
+common.o: $(ARBHOME)/INCLUDE/arb_core.h
+common.o: $(ARBHOME)/INCLUDE/arb_cs.h
+common.o: $(ARBHOME)/INCLUDE/arb_msg.h
+common.o: $(ARBHOME)/INCLUDE/attributes.h
+common.o: $(ARBHOME)/INCLUDE/dupstr.h
+common.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GENC/aisc_global.o: aisc_func_types.h
 GENC/aisc_global.o: aisc_global.h
@@ -83,7 +97,9 @@ GENC/aisc_global.o: $(ARBHOME)/INCLUDE/arb_core.h
 GENC/aisc_global.o: $(ARBHOME)/INCLUDE/arbtools.h
 GENC/aisc_global.o: $(ARBHOME)/INCLUDE/attributes.h
 GENC/aisc_global.o: $(ARBHOME)/INCLUDE/bytestring.h
+GENC/aisc_global.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GENC/aisc_global.o: $(ARBHOME)/INCLUDE/dupstr.h
+GENC/aisc_global.o: $(ARBHOME)/INCLUDE/gccver.h
 GENC/aisc_global.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GENC/aisc_server.o: aisc_func_types.h
@@ -100,11 +116,14 @@ GENC/aisc_server.o: $(ARBHOME)/INCLUDE/arb_core.h
 GENC/aisc_server.o: $(ARBHOME)/INCLUDE/arbtools.h
 GENC/aisc_server.o: $(ARBHOME)/INCLUDE/attributes.h
 GENC/aisc_server.o: $(ARBHOME)/INCLUDE/bytestring.h
+GENC/aisc_server.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GENC/aisc_server.o: $(ARBHOME)/INCLUDE/dupstr.h
+GENC/aisc_server.o: $(ARBHOME)/INCLUDE/gccver.h
 GENC/aisc_server.o: $(ARBHOME)/INCLUDE/test_global.h
 
 server.o: aisc_func_types.h
 server.o: aisc_global.h
+server.o: common.h
 server.o: GENH/aisc_com.h
 server.o: server.h
 server.o: trace.h
@@ -114,7 +133,9 @@ server.o: $(ARBHOME)/INCLUDE/arb_cs.h
 server.o: $(ARBHOME)/INCLUDE/arbtools.h
 server.o: $(ARBHOME)/INCLUDE/attributes.h
 server.o: $(ARBHOME)/INCLUDE/bytestring.h
+server.o: $(ARBHOME)/INCLUDE/cxxforward.h
 server.o: $(ARBHOME)/INCLUDE/dupstr.h
+server.o: $(ARBHOME)/INCLUDE/gccver.h
 server.o: $(ARBHOME)/INCLUDE/SigHandler.h
 server.o: $(ARBHOME)/INCLUDE/static_assert.h
 server.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -127,5 +148,7 @@ struct_man.o: $(ARBHOME)/INCLUDE/arb_core.h
 struct_man.o: $(ARBHOME)/INCLUDE/arbtools.h
 struct_man.o: $(ARBHOME)/INCLUDE/attributes.h
 struct_man.o: $(ARBHOME)/INCLUDE/bytestring.h
+struct_man.o: $(ARBHOME)/INCLUDE/cxxforward.h
 struct_man.o: $(ARBHOME)/INCLUDE/dupstr.h
+struct_man.o: $(ARBHOME)/INCLUDE/gccver.h
 struct_man.o: $(ARBHOME)/INCLUDE/test_global.h

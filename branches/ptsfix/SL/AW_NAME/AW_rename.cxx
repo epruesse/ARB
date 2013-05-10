@@ -128,7 +128,6 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
 //      class NameServerConnection
 
 class NameServerConnection {
-private:
     aisc_com   *link;
     T_AN_LOCAL  locs;
     T_AN_MAIN   com;

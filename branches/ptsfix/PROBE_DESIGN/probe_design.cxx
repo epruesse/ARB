@@ -1211,7 +1211,7 @@ static AW_window *create_probe_expert_window(AW_root *root, AW_CL for_design) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)(for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp"));
+    aws->callback(AW_POPUP_HELP, (AW_CL)(for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp")); // uses_hlp_res("pm_spec_param.hlp", "pd_spec_param.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
     aws->at("help");
     aws->create_button("HELP", "HELP", "C");
 
@@ -2060,7 +2060,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
     }
 }
 
-static void create_probe_group_groups_window(AW_window *aww) {
+static void create_probe_group_groups_window(AW_window *aww, AW_CL) {
     AW_root *aw_root = aww->get_root();
     GBDATA  *gb_main = pg_global.ntw->gb_main;
 
@@ -2093,8 +2093,7 @@ AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canva
     freenull(pg_global.awar_pg_result_filename);
     pg_global.ntw = (AWT_canvas*)cl_AW_canvas_ntw;
 
-    return awt_create_load_box(awr, "arb_probe_group result", "arb", &pg_global.awar_pg_result_filename,
-                               create_probe_group_groups_window,
-                               0);
+    return awt_create_load_box(awr, "Load", "arb_probe_group result", ".", "arb", &pg_global.awar_pg_result_filename,
+                               create_probe_group_groups_window, NULL, NULL, NULL, NULL);
 }
 

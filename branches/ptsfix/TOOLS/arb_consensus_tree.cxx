@@ -66,7 +66,7 @@ static char *create_tree_name(const char *savename) {
     }
 
     // make sure tree name starts with 'tree_'
-    if (ARB_strscmp(tree_name, "tree_") != 0) {
+    if (!ARB_strBeginsWith(tree_name, "tree_")) {
         freeset(tree_name, GBS_global_string_copy("tree_%s", tree_name));
     }
     return tree_name;
@@ -108,7 +108,7 @@ static GB_ERROR save_tree_as_newick(GBT_TREE *tree, const char *savename) {
     return error;
 }
 
-int ARB_main(int argc, const char *argv[]) {
+int ARB_main(int argc, char *argv[]) {
     GB_ERROR error = NULL;
 
     if (argc<2) {

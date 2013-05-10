@@ -28,7 +28,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 ptclean.o: ptclean.h
 ptclean.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -45,7 +45,9 @@ ptclean.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ptclean.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ptclean.o: $(ARBHOME)/INCLUDE/arbtools.h
 ptclean.o: $(ARBHOME)/INCLUDE/attributes.h
+ptclean.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ptclean.o: $(ARBHOME)/INCLUDE/dupstr.h
+ptclean.o: $(ARBHOME)/INCLUDE/gccver.h
 ptclean.o: $(ARBHOME)/INCLUDE/smartptr.h
 ptclean.o: $(ARBHOME)/INCLUDE/test_global.h
 ptclean.o: $(ARBHOME)/INCLUDE/test_unit.h

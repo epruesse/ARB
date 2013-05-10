@@ -8,7 +8,6 @@
 #include "parser.h"
 #endif
 
-
 struct GenbankRef {
     char *ref;
     char *author;
@@ -41,7 +40,7 @@ struct GenbankRef {
 };
 
 class GenBank : public InputFormat, public RefContainer<GenbankRef> { // derived from a Noncopyable
-    char *create_id() const {
+    char *create_id() const OVERRIDE {
         char buf[TOKENSIZE];
         genbank_key_word(locus, 0, buf);
         return strdup(buf);
@@ -64,7 +63,7 @@ public:
         source     = no_content();
         organism   = no_content();
     }
-    virtual ~GenBank() {
+    virtual ~GenBank() OVERRIDE {
         freenull(locus);
         freenull(definition);
         freenull(accession);
@@ -81,8 +80,8 @@ public:
     }
 
     // InputFormat interface
-    void reinit() { INPLACE_RECONSTRUCT(GenBank, this); }
-    Format format() const { return GENBANK; }
+    void reinit() OVERRIDE { INPLACE_RECONSTRUCT(GenBank, this); }
+    Format format() const OVERRIDE { return GENBANK; }
 };
 
 class GenbankReader : public SimpleFormatReader {
@@ -95,8 +94,8 @@ public:
         genbank_key_word(line() + offset, 0, key);
         return shorttimecopy(key);
     }
-    bool read_one_entry(Seq& seq) __ATTR__USERESULT;
-    InputFormat& get_data() { return data; }
+    bool read_one_entry(Seq& seq) OVERRIDE __ATTR__USERESULT;
+    InputFormat& get_data() OVERRIDE { return data; }
 };
 
 // ----------------------
@@ -108,9 +107,9 @@ class GenbankParser : public Parser {
     void parse_keyed_section(const char *key);
 public:
     GenbankParser(GenBank& gbk_, Seq& seq_, GenbankReader& reader_) : Parser(seq_, reader_), gbk(gbk_) {}
-    void parse_section();
+    void parse_section() OVERRIDE;
 
-    const GenBank& get_data() const { return gbk; }
+    const GenBank& get_data() const OVERRIDE { return gbk; }
 };
 
 #else

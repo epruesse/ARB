@@ -60,7 +60,7 @@ NOTES ASCII format
 
     ARBDB HIERARCHY
 
-        ARB DB is a hierarchical data base system, so here's a short description
+        ARB DB is a hierarchical database system, so here's a short description
         of the hierarchy:
 
         ARBDB ::=	species_data		// container containing all species

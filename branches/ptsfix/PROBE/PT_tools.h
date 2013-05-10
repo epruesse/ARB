@@ -200,7 +200,7 @@ inline void PT_write_compact_nat(char*& toMem, uint_32 nat) { write_nat_with_res
 //      read/write pointers
 
 
-COMPILE_ASSERT(sizeof(void*) == sizeof(uint_big));
+STATIC_ASSERT(sizeof(void*) == sizeof(uint_big));
 
 inline void *PT_read_void_pointer(const void *fromMem) { return (void*)PT_read_big(fromMem); }
 inline void PT_write_pointer(void *toMem, const void *thePtr) { PT_write_big(toMem, (uint_big)thePtr); }

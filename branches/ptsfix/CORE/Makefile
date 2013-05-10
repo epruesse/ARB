@@ -28,7 +28,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(CPPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 .cxx.genh:
-	../AISC_MKPTPS/aisc_mkpt -P -G -A -w $(subst .genh,.h,$@) $< > $@
+	../AISC_MKPTPS/aisc_mkpt -P -G -w $(subst .genh,.h,$@) $< > $@
 
 %.genheader: %.genh
 	../SOURCE_TOOLS/mv_if_diff $< $(subst .genheader,.h,$@)
@@ -53,7 +53,7 @@ depend.init:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 arb_cs.o: arb_core.h
 arb_cs.o: arb_cs.h
@@ -61,7 +61,9 @@ arb_cs.o: arb_msg.h
 arb_cs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_cs.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_cs.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_cs.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_cs.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_cs.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_cs.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_cs.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -71,7 +73,9 @@ arb_file.o: arb_msg.h
 arb_file.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_file.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_file.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_file.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_file.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_file.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_file.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_file.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -83,7 +87,9 @@ arb_handlers.o: $(ARBHOME)/INCLUDE/arb_algo.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_handlers.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_handlers.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -93,6 +99,7 @@ arb_misc.o: arb_msg.h
 arb_misc.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_misc.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_misc.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_misc.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_misc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_msg.o: arb_core.h
@@ -103,7 +110,9 @@ arb_msg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_msg.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 arb_msg.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_msg.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_msg.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_msg.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_msg.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_msg.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_msg.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -115,7 +124,9 @@ arb_progress.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_progress.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_progress.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_progress.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_progress.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_progress.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_progress.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_progress.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_progress.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -126,10 +137,13 @@ arb_signal.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_signal.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 arb_signal.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_signal.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_signal.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_signal.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_signal.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_signal.o: $(ARBHOME)/INCLUDE/SigHandler.h
 arb_signal.o: $(ARBHOME)/INCLUDE/SuppressOutput.h
 arb_signal.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_signal.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_signal.o: $(ARBHOME)/INCLUDE/valgrind.h
 
 arb_sort.o: arb_sort.h
@@ -143,7 +157,9 @@ arb_strarray.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_strarray.o: $(ARBHOME)/INCLUDE/arb_str.h
 arb_strarray.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_strarray.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_strarray.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_strarray.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_strarray.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_strarray.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_strarray.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -152,7 +168,9 @@ arb_strbuf.o: arb_strbuf.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_strbuf.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_strbuf.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_string.o: arb_core.h
@@ -160,7 +178,9 @@ arb_string.o: arb_string.h
 arb_string.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_string.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_string.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_string.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_string.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_string.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -168,7 +188,9 @@ FileBuffer.o: arb_core.h
 FileBuffer.o: FileBuffer.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/cxxforward.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/gccver.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/smartptr.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -182,7 +204,9 @@ FileContent.o: FileContent.h
 FileContent.o: $(ARBHOME)/INCLUDE/arb_assert.h
 FileContent.o: $(ARBHOME)/INCLUDE/arbtools.h
 FileContent.o: $(ARBHOME)/INCLUDE/attributes.h
+FileContent.o: $(ARBHOME)/INCLUDE/cxxforward.h
 FileContent.o: $(ARBHOME)/INCLUDE/dupstr.h
+FileContent.o: $(ARBHOME)/INCLUDE/gccver.h
 FileContent.o: $(ARBHOME)/INCLUDE/test_global.h
 FileContent.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -192,6 +216,9 @@ pos_range.o: pos_range.h
 pos_range.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pos_range.o: $(ARBHOME)/INCLUDE/arbtools.h
 pos_range.o: $(ARBHOME)/INCLUDE/attributes.h
+pos_range.o: $(ARBHOME)/INCLUDE/cxxforward.h
 pos_range.o: $(ARBHOME)/INCLUDE/dupstr.h
+pos_range.o: $(ARBHOME)/INCLUDE/gccver.h
+pos_range.o: $(ARBHOME)/INCLUDE/smartptr.h
 pos_range.o: $(ARBHOME)/INCLUDE/test_global.h
 pos_range.o: $(ARBHOME)/INCLUDE/test_unit.h

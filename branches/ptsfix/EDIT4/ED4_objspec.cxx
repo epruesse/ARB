@@ -10,11 +10,10 @@
 // =============================================================== //
 
 #include "ed4_class.hxx"
-#include <static_assert.h>
 
 #define MAX_POSSIBLE_SPECIFIED_OBJECT_TYPES ((sizeof(ED4_level)*8)-1)
 
-COMPILE_ASSERT(SPECIFIED_OBJECT_TYPES <= MAX_POSSIBLE_SPECIFIED_OBJECT_TYPES);
+STATIC_ASSERT(SPECIFIED_OBJECT_TYPES <= MAX_POSSIBLE_SPECIFIED_OBJECT_TYPES);
 
 inline int level2index(ED4_level lev) {
     int index = 0;

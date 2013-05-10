@@ -130,7 +130,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
             search_sequence_data_rek(multi_sequence_manager, ref_sequence_info_terminal, ref_sequence_terminal, gb_datamode,
                                      count_two, &seq_coords, &max_seq_terminal_length, ED4_A_DEFAULT, datamode == ED4_D_EXTENDED);
 
-            local_count_position += max(name_coords, seq_coords);
+            local_count_position += std::max(name_coords, seq_coords);
         }
     }
 
@@ -254,7 +254,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
 
                 pixel_length = device->get_string_size(ED4_G_SEQUENCES, NULL, string_length) + 100;
 
-                *max_sequence_terminal_length = max(*max_sequence_terminal_length, pixel_length);
+                *max_sequence_terminal_length = std::max(*max_sequence_terminal_length, long(pixel_length));
                 text_terminal->extension.size[WIDTH] = pixel_length;
 
                 if (MAXSEQUENCECHARACTERLENGTH < string_length) {

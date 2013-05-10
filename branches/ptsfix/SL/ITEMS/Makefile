@@ -28,7 +28,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 changekey.o: item_sel_list.h
 changekey.o: items.h
@@ -50,7 +50,9 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+changekey.o: $(ARBHOME)/INCLUDE/cxxforward.h
 changekey.o: $(ARBHOME)/INCLUDE/dupstr.h
+changekey.o: $(ARBHOME)/INCLUDE/gccver.h
 changekey.o: $(ARBHOME)/INCLUDE/smartptr.h
 changekey.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -73,7 +75,9 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/cxxforward.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/dupstr.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/gccver.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -101,6 +105,8 @@ species.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 species.o: $(ARBHOME)/INCLUDE/cb.h
+species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 species.o: $(ARBHOME)/INCLUDE/dupstr.h
+species.o: $(ARBHOME)/INCLUDE/gccver.h
 species.o: $(ARBHOME)/INCLUDE/smartptr.h
 species.o: $(ARBHOME)/INCLUDE/test_global.h

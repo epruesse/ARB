@@ -20,7 +20,7 @@ all: $(BINARIES)
 	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 $(ARBHOME)/bin/%: %.o
-	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIB_ARBDB) $(EXECLIBS)
 
 clean:
 	rm -f $(BINARIES)
@@ -47,20 +47,25 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_str.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/test_unit.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h

@@ -19,6 +19,7 @@
 #include <arb_str.h>
 #include <arb_defs.h>
 #include <arb_sort.h>
+
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 
@@ -33,7 +34,6 @@
 #endif
 
 #define MIN_DESIGN_PROBE_LENGTH DOMAIN_MIN_LENGTH
-
 int Complement::calc_complement(int base) {
     switch (base) {
         case PT_A: return PT_T;

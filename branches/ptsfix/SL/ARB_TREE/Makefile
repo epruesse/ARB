@@ -33,7 +33,7 @@ depend.init:
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 ARB_Tree.o: ARB_Tree.hxx
 ARB_Tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -51,7 +51,10 @@ ARB_Tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arbtools.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/attributes.h
+ARB_Tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/dupstr.h
+ARB_Tree.o: $(ARBHOME)/INCLUDE/gccver.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/smartptr.h
+ARB_Tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/test_global.h

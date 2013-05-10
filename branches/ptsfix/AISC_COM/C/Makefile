@@ -9,8 +9,7 @@ GENERATED_HEADERS= \
 	server.h \
 	struct_man.h \
 
-AISC_MKPT_FLAGS=-P -G -z -A
-
+AISC_MKPT_FLAGS=-P -G
 MKPT_DEP=../../AISC_MKPTPS/aisc_mkpt Makefile
 
 proto:

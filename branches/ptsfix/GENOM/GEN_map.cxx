@@ -1374,21 +1374,21 @@ static AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
 class GEN_item_type_species_selector : public awt_item_type_selector {
 public:
     GEN_item_type_species_selector() : awt_item_type_selector(AWT_IT_GENE) {}
-    virtual ~GEN_item_type_species_selector() {}
+    virtual ~GEN_item_type_species_selector() OVERRIDE {}
 
-    virtual const char *get_self_awar() const {
+    virtual const char *get_self_awar() const OVERRIDE {
         return AWAR_COMBINED_GENE_NAME;
     }
-    virtual size_t get_self_awar_content_length() const {
+    virtual size_t get_self_awar_content_length() const OVERRIDE {
         return 12 + 1 + 40; // species-name+'/'+gene_name
     }
-    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
+    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // add callbacks to awars
         root->awar(get_self_awar())->add_callback(f, cl_mask);
     }
-    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const {
+    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE {
         root->awar(get_self_awar())->remove_callback(f, cl_mask);
     }
-    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const { // give the current item
+    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char   *species_name = root->awar(AWAR_ORGANISM_NAME)->read_string();
         char   *gene_name   = root->awar(AWAR_GENE_NAME)->read_string();
         GBDATA *gb_gene      = 0;
@@ -1406,7 +1406,7 @@ public:
 
         return gb_gene;
     }
-    virtual const char *getKeyPath() const { // give the keypath for items
+    virtual const char *getKeyPath() const OVERRIDE { // give the keypath for items
         return CHANGE_KEY_PATH_GENES;
     }
 };
@@ -1657,9 +1657,9 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     // ----------------------
     //      mode buttons
 
-    create_mode("select.bitmap", "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_SELECT);
-    create_mode("pzoom.bitmap",  "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_ZOOM);
-    create_mode("info.bitmap",   "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_EDIT);
+    create_mode("select.xpm", "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_SELECT);
+    create_mode("pzoom.xpm",  "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_ZOOM);
+    create_mode("info.xpm",   "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_EDIT);
 
     // -------------------
     //      info area
@@ -1733,11 +1733,11 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     at(dtype_x1, first_line_y);
     help_text("gen_disp_radial.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_RADIAL);
-    create_button("RADIAL_DISPLAY_TYPE", "#gen_radial.bitmap", 0);
+    create_button("RADIAL_DISPLAY_TYPE", "#gen_radial.xpm", 0);
 
     help_text("gen_disp_book.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_BOOK);
-    create_button("BOOK_DISPLAY_TYPE", "#gen_book.bitmap", 0);
+    create_button("BOOK_DISPLAY_TYPE", "#gen_book.xpm", 0);
 
     get_at_position(&cur_x, &cur_y);
     int jump_x = cur_x;
@@ -1745,7 +1745,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     at(dtype_x1, second_line_y);
     help_text("gen_disp_vertical.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_VERTICAL);
-    create_button("VERTICAL_DISPLAY_TYPE", "#gen_vertical.bitmap", 0);
+    create_button("VERTICAL_DISPLAY_TYPE", "#gen_vertical.xpm", 0);
 
     // jump button:
 

@@ -23,17 +23,16 @@
 #include <cstring>
 #include <cstdarg>
 
-#define SIMPLE_ARB_ASSERT
+#include <arb_early_check.h>
 #include <attributes.h>
+
+#define SIMPLE_ARB_ASSERT
 #include <arb_assert.h>
 #include <arbtools.h>
 
 #define mp_assert(cond) arb_assert(cond)
 
 static void Version();
-
-
-#define check_heap_sanity() do { char *x = malloc(10); free(x); } while (0)
 
 #if defined(DEBUG)
 // #define DEBUG_PRINTS
@@ -49,15 +48,15 @@ static void Version();
 
 #define PRINT(s) fputs((s), stdout)
 
-#define ISCSYM(x) ((x) > 0 && (isalnum(x) || (x) == '_'))
-#define ABORTED   ((Word *) -1)
-#define MAXPARAM  20                                // max. number of parameters to a function
-#define NEWBUFSIZ (20480*sizeof(char))              // new buffer size
+#define IS_CSYM(x) ((x) > 0 && (isalnum(x) || (x) == '_'))
+#define ABORTED    ((Word *) -1)
+#define MAXPARAM   20                               // max. number of parameters to a function
+#define NEWBUFSIZ  (20480*sizeof(char))             // new buffer size
 
 
 static int donum               = 0;                 // print line numbers?
-static int define_macro        = 1;                 // define macro for prototypes?
-static int use_macro           = 1;                 // use a macro for prototypes?
+static int define_macro        = 0;                 // define macro for K&R prototypes?
+static int use_macro           = 0;                 // use a macro to support K&R prototypes?
 static int use_main            = 0;                 // add prototype for main?
 static int no_parm_names       = 0;                 // no parm names - only types
 static int print_extern        = 0;                 // use "extern" before function declarations
@@ -67,7 +66,6 @@ static int aisc                = 0;                 // aisc compatible output
 static int cansibycplus        = 0;                 // produce extern "C"
 static int promote_extern_c    = 0;                 // produce extern "C" into prototype
 static int extern_c_seen       = 0;                 // true if extern "C" was parsed
-static int search__attribute__ = 0;                 // search for gnu-extension __attribute__(()) ?
 static int search__ATTR__      = 0;                 // search for ARB-__attribute__-macros (__ATTR__) ?
 
 static const char *include_wrapper = NULL;          // add include wrapper (contains name of header or NULL)
@@ -330,13 +328,12 @@ static int ngetc(FILE *f) {
 #define MAX_COMMENT_SIZE 10000
 
 static char  last_comment[MAX_COMMENT_SIZE];
-static int   lc_size            = 0;
-static char *found__attribute__ = 0;
-static char *found__ATTR__      = 0;
+static int   lc_size       = 0;
+static char *found__ATTR__ = 0;
 
 static void clear_found_attribute() {
-    free(found__attribute__); found__attribute__ = 0;
-    free(found__ATTR__);      found__ATTR__      = 0;
+    free(found__ATTR__);
+    found__ATTR__ = 0;
 }
 
 static const char *nextNonSpace(const char* ptr) {
@@ -531,33 +528,13 @@ public:
 };
 
 static void search_comment_for_attribute() {
-    if (found__attribute__ || found__ATTR__) return; // only parse once (until reset)
-    last_comment[lc_size] = 0;  // close string
+    if (!found__ATTR__) { // only parse once (until reset)
+        if (search__ATTR__) {
+            last_comment[lc_size] = 0;  // close string
 
-    static AttributeParser attribute_parser("__attribute__", false, true);
-    static AttributeParser ATTR_parser("__ATTR__", true, false);
-
-    char *seen_attribute = attribute_parser.parse(last_comment, lc_size);
-    char *seen_ATTR      = ATTR_parser.parse(last_comment, lc_size);
-
-    if (search__attribute__) {
-        mp_assert(!search__ATTR__);
-        found__attribute__ = seen_attribute;
-        if (seen_ATTR) {
-            error("Expected not to see '__ATTR__..' (when looking for '__attribute__(...)')");
+            static AttributeParser ATTR_parser("__ATTR__", true, false);
+            found__ATTR__ = ATTR_parser.parse(last_comment, lc_size);
         }
-    }
-
-    if (search__ATTR__) {
-        mp_assert(!search__attribute__);
-        found__ATTR__ = seen_ATTR;
-        if (seen_attribute) {
-            error("Expected not to see '__attribute__(...)' (when looking for '__ATTR__..')");
-        }
-    }
-
-    if (found__attribute__ && found__ATTR__) {
-        error("Either specify __attribute__ or __ATTR__... - not both\n");
     }
 }
 
@@ -655,9 +632,6 @@ static void search_comment_for_promotion() {
  * read and skip the next character. Any comment sequence is converted
  * to a blank.
  *
- * if a comment contains __attribute__ and search__attribute__ != 0
- * the attribute string is stored in found__attribute__
- *
  * if a comment contains __ATTR__ and search__ATTR__ != 0
  * the attribute string is stored in found__ATTR__
  */
@@ -695,7 +669,7 @@ static int fnextch(FILE *f) {
                     return c;
                 }
             }
-            if (search__attribute__ || search__ATTR__) search_comment_for_attribute();
+            if (search__ATTR__) search_comment_for_attribute();
             if (promote_lines) search_comment_for_promotion();
             return fnextch(f);
         }
@@ -714,7 +688,7 @@ static int fnextch(FILE *f) {
                 if (lastc != '\\' && c == '\n') incomment = 0;
                 else if (c < 0) break;
             }
-            if (search__attribute__ || search__ATTR__) search_comment_for_attribute();
+            if (search__ATTR__) search_comment_for_attribute();
             if (promote_lines) search_comment_for_promotion();
 
             if (c == '\n') return c;
@@ -872,7 +846,7 @@ static int getsym(char *buf, FILE *f) {
         glastc = nextch(f);
         DEBUG_PRINT("getsym: returning brackets '");
     }
-    else if (!ISCSYM(c)) {
+    else if (!IS_CSYM(c)) {
         *buf++ = c;
         *buf   = 0;
         glastc = nextch(f);
@@ -880,7 +854,7 @@ static int getsym(char *buf, FILE *f) {
         DEBUG_PRINT("getsym: returning special symbol '");
     }
     else {
-        while (ISCSYM(c)) {
+        while (IS_CSYM(c)) {
             *buf++ = c;
             c = nextch(f);
         }
@@ -939,7 +913,7 @@ static int is_type_word(char *s) {
  * losing too many type specifiers. (sg)
  */
 #define IS_PARM_NAME(w) \
-    (ISCSYM(*(w)->string) && !is_type_word((w)->string) && \
+    (IS_CSYM(*(w)->string) && !is_type_word((w)->string) && \
     (!(w)->next || *(w)->next->string == ',' || \
      *(w)->next->string == '['))
 
@@ -953,7 +927,7 @@ static Word *typelist(Word *p) {
     r = w = word_alloc("");
     while (p && p->next) {
         // handle int *x --> int
-        if (p->string[0] && !ISCSYM(p->string[0]))
+        if (p->string[0] && !IS_CSYM(p->string[0]))
             break;
         // handle int x[] --> int
         if (p->next->string[0] == '[')
@@ -1141,6 +1115,16 @@ static Word *getparamlist(FILE *f) {
     return plist;
 }
 
+inline Word *getLastPtrRef(Word *w) {
+    Word *last = NULL;
+    while (w) {
+        if (strchr("&*", w->string[0]) == NULL) break;
+        last = w;
+        w    = w->next;
+    }
+    return last;
+}
+
 static void emit(Word *wlist, Word *plist, long startline) {
     // emit a function declaration. The attributes and name of the function
     // are in wlist; the parameters are in plist.
@@ -1263,7 +1247,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
         }
         printf("%s", w->string);
         DEBUG_PRINT_STRING("emit[2] ", w->string);
-        spaceBeforeNext = ISCSYM(w->string[0]);
+        spaceBeforeNext = IS_CSYM(w->string[0]);
     }
 
     if (use_macro) printf(" %s((", macro_name);
@@ -1282,11 +1266,22 @@ static void emit(Word *wlist, Word *plist, long startline) {
         if (tokStart == ',')                       spaceBeforeNext = 1;
         else if (strchr("[])", tokStart) != NULL)  spaceBeforeNext = 0;
         else {
+            int nextSpaceBeforeNext;
+            if (strchr("&*", tokStart) != NULL) {
+                if (spaceBeforeNext) {
+                    Word *lastPtrRef = getLastPtrRef(w);
+                    if (lastPtrRef->string[0] == '&') spaceBeforeNext = 0;
+                }
+                nextSpaceBeforeNext = tokStart == '&';
+            }
+            else {
+                nextSpaceBeforeNext = IS_CSYM(tokStart);;
+            }
             if (spaceBeforeNext) {
                 putchar(' ');
                 DEBUG_PRINT("emit[4] ' '\n");
             }
-            spaceBeforeNext = ISCSYM(tokStart);
+            spaceBeforeNext = nextSpaceBeforeNext;
         }
         fputs(token, stdout);
         DEBUG_PRINT_STRING("emit[5] ", token);
@@ -1296,7 +1291,6 @@ static void emit(Word *wlist, Word *plist, long startline) {
     else            PRINT(")");
     DEBUG_PRINT("emit[6] ')'\n");
 
-    if (found__attribute__) { PRINT(" "); PRINT(found__attribute__); }
     if (found__ATTR__) { PRINT(" "); PRINT(found__ATTR__); }
 
     PRINT(";\n");
@@ -1447,42 +1441,42 @@ static void getdecl(FILE *f, const char *header) {
     }
 }
 
-__ATTR__NORETURN static void Usage() {
-    fprintf(stderr, "Usage: %s [flags] [files ...]", ourname);
-    fputs("\nSupported flags:"
-          "\n   -a               make a function list for aisc_includes (default: generate C prototypes)"
-          "\n"
-          "\n   -e               put an explicit \"extern\" keyword in declarations"
-          "\n"
-          "\n   -n               put line numbers of declarations as comments"
-          "\n"
-          "\n   -m               promote declaration of 'main()' (default is to skip it)"
+__ATTR__NORETURN static void Usage(const char *msg = NULL) {
+    fprintf(stderr,
+            "\naisc_mkpts - ARB prototype generator"
+            "\nUsage: %s [options] [files ...]", ourname);
+    fputs("\nSupported options:"
           "\n   -F part[,part]*  only promote declarations for functionnames containing one of the parts"
           "\n                    if 'part' starts with a '^' functionname has to start with rest of part"
-          "\n   -S (like -F)     do NOT promote matching declarations (defaults to -S '^TEST_')"
+          "\n   -S (like -F)     do NOT promote matching declarations (defaults to -S '^TEST_,^NOTEST_')"
           "\n"
-          "\n   -W               don't promote types in old style declarations"
-          "\n   -x               omit parameter names in prototypes"
+          "\n   -G               search for ARB macro __ATTR__ in comment behind function header"
+          "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
           "\n"
-          "\n   -p sym           use \"sym\" as the prototype macro (default \"P_\")"
-          "\n   -z               omit prototype macro definition"
-          "\n   -A               omit prototype macro; header files are strict ANSI"
+          "\n   -w gen.h         add standard include wrapper (needs name of generated header)"
+          "\n   -c \"text\"        add text as comment into header"
           "\n"
           "\n   -C               insert 'extern \"C\"'"
           "\n   -E               prefix 'extern \"C\"' at prototype"
           "\n"
-          "\n   -g               search for GNU extension __attribute__ in comment behind function header"
-          "\n   -G               search for ARB macro     __ATTR__      in comment behind function header"
+          "\n   -W               don't promote types in old style declarations"
+          "\n   -x               omit parameter names in prototypes"
           "\n"
-          "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
+          "\n   -K               use K&R prototype macro (default assumes header files are strict ANSI)"
+          "\n   -D               define K&R prototype macro"
+          "\n   -p sym           use \"sym\" as the prototype macro (default \"P_\")"
           "\n"
-          "\n   -w gen.h         add standard include wrapper (needs name of generated header)"
-          "\n"
-          "\n   -c \"text\"      add text as comment into header"
+          "\n   -m               promote declaration of 'main()' (default is to skip it)"
+          "\n   -a               make a function list for aisc_includes (default: generate C prototypes)"
+          "\n   -e               put an explicit \"extern\" keyword in declarations"
+          "\n   -n               put line numbers of declarations as comments"
           "\n"
           "\n   -V               print version number"
+          "\n   -h               print this help"
           "\n"
           , stderr);
+    if (msg) fprintf(stderr, "\nError: %s", msg);
+    fputc('\n', stderr);
     exit(EXIT_FAILURE);
 }
 
@@ -1490,7 +1484,18 @@ static int string_comparator(const void *v0, const void *v1) {
     return strcmp(*(const char **)v0, *(const char **)v1);
 }
 
-int ARB_main(int argc, const char *argv[]) {
+static void MissingArgumentFor(char option) {
+    char buffer[100];
+    sprintf(buffer, "option -%c expects an argument", option);
+    Usage(buffer);
+}
+static void UnknownOption(char option) {
+    char buffer[100];
+    sprintf(buffer, "unknown option -%c", option);
+    Usage(buffer);
+}
+
+int ARB_main(int argc, char *argv[]) {
     bool exit_if_noargs = false;
 
     if (argv[0] && argv[0][0]) {
@@ -1508,46 +1513,45 @@ int ARB_main(int argc, const char *argv[]) {
         const char *t = *argv++; --argc; t++;
         while (*t) {
             if (*t == 'e')      print_extern        = 1;
-            else if (*t == 'A') use_macro           = 0;
             else if (*t == 'C') cansibycplus        = 1;
             else if (*t == 'E') promote_extern_c    = 1;
             else if (*t == 'W') dont_promote        = 1;
             else if (*t == 'a') aisc                = 1;
-            else if (*t == 'g') search__attribute__ = 1;
             else if (*t == 'G') search__ATTR__      = 1;
             else if (*t == 'n') donum               = 1;
             else if (*t == 'x') no_parm_names       = 1; // no parm names, only types (sg)
-            else if (*t == 'z') define_macro        = 0;
+            else if (*t == 'D') define_macro        = 1;
+            else if (*t == 'K') use_macro           = 1;
             else if (*t == 'P') promote_lines       = 1;
             else if (*t == 'm') use_main            = 1;
             else if (*t == 'p') {
                 t = *argv++; --argc;
-                if (!t) Usage();
+                if (!t) MissingArgumentFor(*t);
                 use_macro = 1;
                 macro_name = t;
                 break;
             }
             else if (*t == 'c') {
                 t = *argv++; --argc;
-                if (!t) Usage();
+                if (!t) MissingArgumentFor(*t);
                 header_comment = t;
                 break;
             }
             else if (*t == 'w') {
                 t = *argv++; --argc;
-                if (!t) Usage();
+                if (!t) MissingArgumentFor(*t);
                 include_wrapper = t;
                 break;
             }
             else if (*t == 'F') {
                 t = *argv++; --argc;
-                if (!t) Usage();
+                if (!t) MissingArgumentFor(*t);
                 addRequiredSymParts(t);
                 break;
             }
             else if (*t == 'S') {
                 t = *argv++; --argc;
-                if (!t) Usage();
+                if (!t) MissingArgumentFor(*t);
                 freeExcludedSymParts();
                 addExcludedSymParts(t);
                 break;
@@ -1556,14 +1560,10 @@ int ARB_main(int argc, const char *argv[]) {
                 exit_if_noargs = true;
                 Version();
             }
-            else Usage();
+            else if (*t == 'h') Usage();
+            else UnknownOption(*t);
             t++;
         }
-    }
-
-    if (search__ATTR__ && search__attribute__) {
-        fputs("Either use option -g or -G (not both)", stderr);
-        exit(EXIT_FAILURE);
     }
 
     if (argc == 0 && exit_if_noargs) {
@@ -1626,14 +1626,6 @@ int ARB_main(int argc, const char *argv[]) {
                         "#endif\n\n",
                         macro_name, macro_name);
             }
-        }
-        if (search__attribute__) {
-            fputs("/* hide __attribute__'s for non-gcc compilers: */\n"
-                  "#ifndef __GNUC__\n"
-                  "# ifndef __attribute__\n"
-                  "#  define __attribute__(x)\n"
-                  "# endif\n"
-                  "#endif\n\n", stdout);
         }
         if (search__ATTR__) {
             fputs("/* define ARB attributes: */\n"
@@ -1730,12 +1722,8 @@ static void Version() {
 
 #include <test_unit.h>
 
-inline char*& searchResult(bool ATTR) { return ATTR ? found__ATTR__ : found__attribute__; }
-inline int& doSearchFor(bool ATTR) { return ATTR ? search__ATTR__ : search__attribute__; }
-
 inline const char *test_extract(bool ATTR, const char *str) {
-    doSearchFor(ATTR)  = true;
-    doSearchFor(!ATTR) = false;
+    search__ATTR__ = true;
 
     clear_found_attribute();
 
@@ -1744,20 +1732,15 @@ inline const char *test_extract(bool ATTR, const char *str) {
 
     search_comment_for_attribute();
 
-    TEST_REJECT(searchResult(!ATTR));
-    return searchResult(ATTR);
+    return found__ATTR__;
 }
 
 #define TEST_ATTR_____(comment,extracted) TEST_EXPECT_EQUAL(test_extract(true, comment), extracted)
-#define TEST_attribute(comment,extracted) TEST_EXPECT_EQUAL(test_extract(false, comment), extracted)
-
-#define TEST_both(c,e) do { TEST_attribute(c,e); TEST_ATTR_____(c,e); } while(0)
 
 void TEST_attribute_parser() {
-    TEST_both("",             (const char*)NULL);
-    TEST_both("nothing here", (const char*)NULL);
+    TEST_ATTR_____("",             (const char*)NULL);
+    TEST_ATTR_____("nothing here", (const char*)NULL);
 
-    TEST_attribute("bla bla __attribute__(whatever) more content",             "__attribute__(whatever)");
     TEST_ATTR_____("bla bla __ATTR__DEPRECATED(\" my reason \") more content", "__ATTR__DEPRECATED(\" my reason \")");
     TEST_ATTR_____("bla bla __ATTR__FORMAT(pos) more content",                 "__ATTR__FORMAT(pos)");
     

@@ -29,7 +29,7 @@ depend.init:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 AWTI_export.o: awti_export.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -59,7 +59,9 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/cb.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/seqio.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -97,7 +99,9 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/cb.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GenomeImport.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/item_sel_list.h

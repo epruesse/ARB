@@ -1,5 +1,6 @@
 #include "GDE_extglob.h"
 #include <ctime>
+#include <algorithm>
 
 /*
   Copyright (c) 1989-1990, University of Illinois board of trustees.  All
@@ -252,8 +253,8 @@ void ReadGen(char *filename, NA_Alignment *dataset) {
     Cfree(buffer);
     fclose(file);
     for (j=0; j<dataset->numelements; j++)
-        dataset->maxlen = MAX(dataset->maxlen,
-                              dataset->element[j].seqlen+dataset->element[j].offset);
+        dataset->maxlen = std::max(dataset->maxlen,
+                                   dataset->element[j].seqlen+dataset->element[j].offset);
 }
 
 int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)

@@ -27,13 +27,11 @@ struct NT_global {
     AW_root           *aw_root;
     GBDATA            *gb_main;
     AW_Window_Creator  window_creator;
-    bool               extern_quit_button;
 
     NT_global()
         : aw_root(NULL),
           gb_main(NULL),
-          window_creator(NULL),
-          extern_quit_button(false)
+          window_creator(NULL)
     {}
 };
 
