@@ -701,6 +701,10 @@ bool ST_ML::update_ml_likelihood(char *result[4], int& latest_update, const char
      *        You should NOT allocate result yourself, but you can reuse it for multiple calls.
      * @param latest_update has to contain and will be set to the latest statistic modification time
      *        (0 is a good start value)
+     * @param species_name name of the species (for which the column statistic shall be calculated)
+     * @param node of the current tree (for which the column statistic shall be calculated)
+     *
+     * Note: either 'species_name' or 'node' needs to be specified, but NOT BOTH
      */
 
     st_assert(contradicted(species_name, node));

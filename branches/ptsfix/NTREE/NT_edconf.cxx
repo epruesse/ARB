@@ -118,6 +118,9 @@ static int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct
 {
     /*! Builds a configuration string from a tree.
      *
+     * @param used                      all species inserted by this function are stored here
+     * @param tree                      used for group information
+     * @param memfile                   generated configuration string is stored here
      * @param extra_marked_species      all extra marked species are inserted here
      * @param use_species_aside         number of species to mark left and right of marked species
      * @param auto_mark                 number species to extra-mark (if not already marked)

@@ -261,7 +261,8 @@ inline size_t hash_size(size_t estimated_elements) {
 GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens) {
     /*! Create a hash
      * @param estimated_elements estimated number of elements added to hash (if you add more elements, hash will still work, but get slow)
-     * Uses linked lists to avoid collisions,
+     * @param case_sens GB_IGNORE_CASE or GB_MIND_CASE
+     * Uses linked lists to avoid collisions.
      */
     GB_HASH *hs;
     long     size = hash_size(estimated_elements);

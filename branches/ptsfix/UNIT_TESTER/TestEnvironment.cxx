@@ -508,7 +508,7 @@ public:
         : cb(cb_),
           name(name_),
           is_setup(name_),
-          changing(GBS_global_string("changing_%s", name_)), 
+          changing(GBS_global_string("changing_%s", name_)),
           failed(GBS_global_string("failed_%s", name_))
     {}
 

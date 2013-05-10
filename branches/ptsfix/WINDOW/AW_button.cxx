@@ -1652,6 +1652,7 @@ void AW_selection_list::init_from_array(const CharPtrArray& entries, const char 
 
 void AW_selection_list::to_array(StrArray& array, bool values) {
     /*! read contents of selection list into an array.
+     * @param array contents are stored here
      * @param values true->read values, false->read displayed strings
      * Use GBT_free_names() to free the result.
      *

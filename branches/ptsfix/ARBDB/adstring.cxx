@@ -187,6 +187,8 @@ char *GBS_escape_string(const char *str, const char *chars_to_escape, char escap
      * uses a special escape-method, which eliminates all 'chars_to_escape' completely
      * from str (this makes further processing of the string more easy)
      *
+     * @param str string to escape
+     *
      * @param escape_char is the character used for escaping. For performance reasons it
      * should be a character rarely used in 'str'.
      *
@@ -1022,6 +1024,18 @@ void TEST_signal_tests() {
     TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
     TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
     TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
+#endif
+
+    // following section is disabled since it would spam wanted warnings
+    // (enable it when changing any of these TEST_..-macros used here)
+#if 0
+    TEST_ASSERT_SEGFAULT__WANTED(dont_provokesegv);
+    TEST_ASSERT_SEGFAULT__UNWANTED(provokesegv);
+    TEST_ASSERT_SEGFAULT__UNWANTED(failassertion);
+
+    TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
 #endif
 }
 
