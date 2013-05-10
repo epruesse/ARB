@@ -64,8 +64,6 @@ struct gb_cache {
     size_t max_data_size;
     size_t big_data_min_size;
 
-    size_t max_entries;
-
 #if defined(GEN_CACHE_STATS)
     GB_HASH *not_reused;                            // key = DB_path, value = number of cache entries not reused
     GB_HASH *reused;                                // key = DB_path, value = number of cache entries reused
