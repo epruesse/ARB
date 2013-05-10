@@ -10,12 +10,16 @@
 // ============================================================= //
 
 #include "recmac.hxx"
-#include "aw_msg.hxx"
 #include <arbdbt.h>
 #include <arb_file.h>
 #include <arb_defs.h>
 #include <FileContent.h>
 #include <cctype>
+#include <aw_msg.hxx>
+
+void warn_unrecordable(const char *what) {
+    aw_message(GBS_global_string("could not record %s", what));
+}
 
 void RecordingMacro::write_dated_comment(const char *what) const {
     write("# ");
@@ -24,11 +28,6 @@ void RecordingMacro::write_dated_comment(const char *what) const {
     write(GB_date_string());
     write('\n');
 }
-
-void RecordingMacro::warn_unrecordable(const char *what) const {
-    aw_message(GBS_global_string("could not record %s", what));
-}
-
 
 RecordingMacro::RecordingMacro(const char *filename, const char *application_id_, const char *stop_action_name_, bool expand_existing)
     : stop_action_name(strdup(stop_action_name_)),
@@ -76,21 +75,36 @@ RecordingMacro::RecordingMacro(const char *filename, const char *application_id_
     }
 }
 
+void RecordingMacro::write_action(const char *app_id, const char *action_name) {
+    write("BIO::remote_action($gb_main");
+    write_quoted_param(app_id);
+    write(','); GBS_fwrite_string(action_name, out);
+    write(");\n");
+    flush();
+}
+void RecordingMacro::write_awar_change(const char *app_id, const char *awar_name, const char *content) {
+    write("BIO::remote_awar($gb_main");
+    write_quoted_param(app_id);
+    write(','); GBS_fwrite_string(awar_name, out);
+    write(','); GBS_fwrite_string(content, out);
+    write(");\n");
+    flush();
+}
+
+
 void RecordingMacro::track_action(const char *action_id) {
     ma_assert(out && !error);
     if (!action_id) {
         warn_unrecordable("anonymous GUI element");
     }
     else if (strcmp(action_id, stop_action_name) != 0) { // silently ignore stop-recording button press
-        write("BIO::remote_action($gb_main");
-        write_quoted_param(application_id);
-        write(','); GBS_fwrite_string(action_id, out);
-        write(");\n");
+        write_action(application_id, action_id);
     }
-    flush();
 }
 
 void RecordingMacro::track_awar_change(AW_awar *awar) {
+    // see also trackers.cxx@AWAR_CHANGE_TRACKING
+
     ma_assert(out && !error);
 
     char *svalue = awar->read_as_string();
@@ -98,15 +112,9 @@ void RecordingMacro::track_awar_change(AW_awar *awar) {
         warn_unrecordable(GBS_global_string("change of '%s'", awar->awar_name));
     }
     else {
-        write("BIO::remote_awar($gb_main");
-        write_quoted_param(application_id);
-        write(','); GBS_fwrite_string(awar->awar_name, out);
-        write(','); GBS_fwrite_string(svalue, out);
-        write(");\n");
-
+        write_awar_change(application_id, awar->awar_name, svalue);
         free(svalue);
     }
-    flush();
 }
 
 GB_ERROR RecordingMacro::stop() {

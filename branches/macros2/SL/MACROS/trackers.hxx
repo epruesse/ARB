@@ -52,9 +52,10 @@ public:
     bool is_replaceable() const OVERRIDE { return false; }
     bool reconfigure(const char *application_id, GBDATA *gb_main);
 
-    GBDATA *get_gbmain() { return gbmain; }
+    GBDATA *get_gbmain() { ma_assert(gbmain); return gbmain; }
     const char *get_application_id() const { return id; }
 
+    void forgetDatabase() { gbmain = NULL; }
     virtual void release() = 0;
 };
 
@@ -63,11 +64,15 @@ class RecordingMacro;
 
 class MacroRecorder : public BoundActionTracker { // derived from Noncopyable
     RecordingMacro *recording;
+
 public:
     MacroRecorder(const char *application_id, GBDATA *gb_main_)
         : BoundActionTracker(application_id, gb_main_),
           recording(NULL)
     {}
+    ~MacroRecorder() {
+        ma_assert(!recording);
+    }
 
     GB_ERROR start_recording(const char *file, const char *stop_action_name, bool expand_existing);
     GB_ERROR stop_recording();
@@ -75,28 +80,41 @@ public:
 
     void track_action(const char *action_id) OVERRIDE;
     void track_awar_change(AW_awar *awar) OVERRIDE;
-    void release() OVERRIDE {}
+
+    GB_ERROR handle_tracked_client_action(char *&tracked); // dont use
+    void release() OVERRIDE { BoundActionTracker::forgetDatabase(); }
 };
 
 class ClientActionTracker : public BoundActionTracker {
     bool released;
 
+    void bind_callbacks(bool install);
+    void send_client_action(const char *action);
     void ungrant_client_and_confirm_quit_action();
 public:
     ClientActionTracker(const char *application_id, GBDATA *gb_main_)
         : BoundActionTracker(application_id, gb_main_),
           released(false)
-    {}
+    {
+        bind_callbacks(true);
+    }
     ~ClientActionTracker() {
-        ma_assert(released);
+        ma_assert(released); // you have to call release() before the dtor is called
+    }
+
+    void release() OVERRIDE {
+        if (!released) {
+            bind_callbacks(false);
+            ungrant_client_and_confirm_quit_action();
+            BoundActionTracker::forgetDatabase();
+            released = true;
+        }
     }
 
     void track_action(const char *action_id) OVERRIDE;
     void track_awar_change(AW_awar *awar) OVERRIDE;
-    void release() OVERRIDE {
-        ungrant_client_and_confirm_quit_action();
-        released = true;
-    }
+
+    void set_tracking_according_to(GBDATA *gb_recording); // dont use
 };
 
 // --------------------------------------------------------------------------------

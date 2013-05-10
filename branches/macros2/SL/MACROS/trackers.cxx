@@ -27,6 +27,12 @@ bool BoundActionTracker::reconfigure(const char *application_id, GBDATA *gb_main
     return true;
 }
 
+static GB_ERROR announce_recording(GBDATA *gb_main, int record) {
+    GB_transaction  ta(gb_main);
+    GBDATA         *gb_recording = GB_searchOrCreate_int(gb_main, MACRO_TRIGGER_RECORDING, record);
+    return gb_recording ? GB_write_int(gb_recording, record) : GB_await_error();
+}
+
 GB_ERROR MacroRecorder::start_recording(const char *file, const char *stop_action_name, bool expand_existing) {
     GB_ERROR error = NULL;
     if (is_tracking()) error = "Already recording macro";
@@ -34,8 +40,12 @@ GB_ERROR MacroRecorder::start_recording(const char *file, const char *stop_actio
         recording = new RecordingMacro(file, get_application_id(), stop_action_name, expand_existing);
         set_tracking(true);
 
-        error = recording->has_error();
-        if (error) stop_recording();
+        error             = recording->has_error();
+        if (!error) error = announce_recording(get_gbmain(), 1);
+        if (error) {
+            GB_ERROR stop_error = stop_recording();
+            if (stop_error) fprintf(stderr, "Error while stopping macro recording: %s\n", stop_error);
+        }
     }
     return error;
 }
@@ -51,6 +61,14 @@ GB_ERROR MacroRecorder::stop_recording() {
         delete recording;
         recording = NULL;
         set_tracking(false);
+
+        GB_ERROR ann_error = announce_recording(get_gbmain(), 0);
+        if (error) {
+            if (ann_error) fprintf(stderr, "Error in announce_recording: %s\n", ann_error);
+        }
+        else {
+            error = ann_error;
+        }
     }
     return error;
 }
@@ -117,7 +135,6 @@ public:
     static void add(AW_RCB1 execution_done_cb, AW_CL client_data) { new ExecutingMacro(execution_done_cb, client_data); }
     static bool done() {
         // returns true if the last macro (of all recursively called macros) terminates
-        ma_assert(head);
         if (head) {
             head->call();
             head->destroy();
@@ -201,13 +218,146 @@ void MacroRecorder::track_awar_change(AW_awar *awar) {
     recording->track_awar_change(awar);
 }
 
+GB_ERROR MacroRecorder::handle_tracked_client_action(char *&tracked) {
+    GB_ERROR error = NULL;
 
-void ClientActionTracker::track_action(const char */*action_id*/) {
-    ma_assert(0);
+    ma_assert(tracked && tracked[0]);
+    if (tracked && tracked[0]) {
+        char *saveptr = NULL;
+        char *app_id  = strtok_r(tracked, "*", &saveptr);
+        char *cmd     = strtok_r(NULL,    "*", &saveptr);
+        char *rest    = strtok_r(NULL,    "", &saveptr);
+
+        if (recording) {
+            if (strcmp(cmd, "AWAR") == 0) {
+                char *awar_name = strtok_r(rest, "*", &saveptr);
+                char *content   = strtok_r(NULL, "",  &saveptr);
+
+                recording->write_awar_change(app_id, awar_name, content);
+            }
+            else if (strcmp(cmd, "ACTION") == 0) {
+                recording->write_action(app_id, rest);
+            }
+            else {
+                error = GBS_global_string("Unknown client action '%s'", cmd);
+            }
+        }
+        else {
+            fprintf(stderr, "Warning: tracked action '%s' from client '%s' (dropped because not recording)\n", cmd, app_id);
+        }
+    }
+
+    return error;
 }
 
-void ClientActionTracker::track_awar_change(AW_awar */*awar*/) {
-    ma_assert(0);
+// -----------------------------
+//      ClientActionTracker
+
+void ClientActionTracker::set_tracking_according_to(GBDATA *gb_recording) {
+    bool recording = GB_read_int(gb_recording);
+    if (is_tracking() != recording) set_tracking(recording);
+}
+
+static void record_state_changed_cb(GBDATA *gb_recording, int *cl_ClientActionTracker, GB_CB_TYPE) {
+    ClientActionTracker *cat = (ClientActionTracker*)cl_ClientActionTracker;
+    cat->set_tracking_according_to(gb_recording);
+}
+
+void ClientActionTracker::bind_callbacks(bool install) {
+    GB_transaction  ta(get_gbmain());
+    GB_ERROR        error        = NULL;
+    GBDATA         *gb_recording = GB_searchOrCreate_int(get_gbmain(), MACRO_TRIGGER_RECORDING, 0);
+
+    if (!gb_recording) {
+        error = GB_await_error();
+    }
+    else {
+        if (install) {
+            error = GB_add_callback(gb_recording, GB_CB_CHANGED, record_state_changed_cb, (int*)this);
+            record_state_changed_cb(gb_recording, (int*)this, GB_CB_CHANGED); // call once
+        }
+        else {
+            GB_remove_callback(gb_recording, GB_CB_CHANGED, record_state_changed_cb, (int*)this);
+        }
+    }
+
+    if (error) {
+        aw_message(GBS_global_string("Failed to %s ClientActionTracker: %s", install ? "init" : "cleanup", error));
+    }
+}
+
+
+void ClientActionTracker::track_action(const char *action_id) {
+    ma_assert(strchr(action_id, '*') == 0);
+    send_client_action(GBS_global_string("ACTION*%s", action_id));
+}
+
+void ClientActionTracker::track_awar_change(AW_awar *awar) {
+    // see also recmac.cxx@AWAR_CHANGE_TRACKING
+
+    char *svalue = awar->read_as_string();
+    if (!svalue) {
+        warn_unrecordable(GBS_global_string("change of '%s'", awar->awar_name));
+    }
+    else {
+        ma_assert(strchr(awar->awar_name, '*') == 0);
+        send_client_action(GBS_global_string("AWAR*%s*%s", awar->awar_name, svalue));
+        free(svalue);
+    }
+}
+
+void ClientActionTracker::send_client_action(const char *action) {
+    // action is either
+    // "ACTION*<actionId>" or
+    // "AWAR*<awarName>*<awarValue>"
+
+    // send action
+    GB_ERROR  error;
+    GBDATA   *gb_clientTrack = NULL;
+    {
+        error = GB_begin_transaction(get_gbmain());
+        if (!error) {
+            gb_clientTrack = GB_searchOrCreate_string(get_gbmain(), MACRO_TRIGGER_TRACKED, "");
+            if (!gb_clientTrack) error = GB_await_error();
+            else {
+                const char *prev_track = GB_read_char_pntr(gb_clientTrack);
+
+                if (!prev_track) error        = GB_await_error();
+                else if (prev_track[0]) error = GBS_global_string("Cant send_client_action: have pending client action (%s)", prev_track);
+
+                if (!error) {
+                    ma_assert(strchr(get_application_id(), '*') == 0);
+                    error = GB_write_string(gb_clientTrack, GBS_global_string("%s*%s", get_application_id(), action));
+                }
+            }
+        }
+        error = GB_end_transaction(get_gbmain(), error);
+    }
+
+    if (!error) {
+        // wait for recorder to consume action
+        bool consumed = false;
+        int  count    = 0;
+        while (!consumed && !error) {
+            GB_sleep(200, MS);
+            ++count;
+            if ((count%25) == 0) {
+                fprintf(stderr, "[Waiting for macro recorder to consume action tracked by %s]\n", get_application_id());
+            }
+
+            error = GB_begin_transaction(get_gbmain());
+
+            const char *track    = GB_read_char_pntr(gb_clientTrack);
+            if (!track) error    = GB_await_error();
+            else        consumed = !track[0];
+
+            error = GB_end_transaction(get_gbmain(), error);
+        }
+    }
+
+    if (error) {
+        aw_message(GBS_global_string("Failed to record client action (Reason: %s)", error));
+    }
 }
 
 void ClientActionTracker::ungrant_client_and_confirm_quit_action() {

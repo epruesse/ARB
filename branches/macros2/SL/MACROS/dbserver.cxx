@@ -9,14 +9,13 @@
 //                                                               //
 // ============================================================= //
 
+#include "trackers.hxx"
 #include "dbserver.hxx"
 #include "macros.hxx"
 
-#include <arbtools.h>
 #include <arbdbt.h>
 #include <ad_remote.h>
 
-#include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_window.hxx>
@@ -56,11 +55,24 @@ struct db_interrupt_data : virtual Noncopyable {
 };
 
 __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, const db_interrupt_data& dib) { // @@@ make member of db_interrupt_data?
-    GB_ERROR             error   = 0;
-    GBDATA              *gb_main = dib.gb_main;
-    const remote_awars&  remote  = dib.remote;
+    GB_ERROR  error   = 0;
+    GBDATA   *gb_main = dib.gb_main;
 
     GB_push_transaction(gb_main); // @@@ begin required/possible here?
+
+    if (GB_is_server(gb_main)) {
+        char *client_action = GBT_readOrCreate_string(gb_main, MACRO_TRIGGER_TRACKED, "");
+        if (client_action && client_action[0]) {
+            UserActionTracker *tracker       = aw_root->get_tracker();
+            MacroRecorder     *macroRecorder = dynamic_cast<MacroRecorder*>(tracker);
+
+            error = macroRecorder->handle_tracked_client_action(client_action);
+            error = GBT_write_string(gb_main, MACRO_TRIGGER_TRACKED, "");                            // tell client that action has been recorded
+        }
+        free(client_action);
+    }
+
+    const remote_awars& remote = dib.remote;
 
     long  *granted    = GBT_readOrCreate_int(gb_main, remote.granted(), 0);
     pid_t  pid        = getpid();
@@ -160,6 +172,9 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
     return error;
 }
 
+static db_interrupt_data *idle_interrupt = NULL;
+
+ // @@@ remove db_interrupt_data-arguments below (use 'idle_interrupt' instead)
 static bool remote_command_handler(AW_root *awr, const db_interrupt_data& dib) { // @@@ use a callback instead of repeatedly calling this function
     // @@@ make member of db_interrupt_data?
     // returns false in case of errors
@@ -210,21 +225,21 @@ GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *
                                       error);
         }
         else {
-            aw_root->add_timed_callback(ARB_SERVE_DB_TIMER, serve_db_interrupt, AW_CL(new db_interrupt_data(gb_main, application_id)));
+            idle_interrupt = new db_interrupt_data(gb_main, application_id);
+            aw_root->add_timed_callback(ARB_SERVE_DB_TIMER, serve_db_interrupt, AW_CL(idle_interrupt));
         }
     }
     else { // client
-        aw_root->add_timed_callback(ARB_CHECK_DB_TIMER, check_db_interrupt, AW_CL(new db_interrupt_data(gb_main, application_id)));
+        idle_interrupt = new db_interrupt_data(gb_main, application_id);
+        aw_root->add_timed_callback(ARB_CHECK_DB_TIMER, check_db_interrupt, AW_CL(idle_interrupt));
     }
 
     if (!error) {
         // handle remote commands once (to create DB-entries; w/o they are created after startup of first DB-client)
-        remote_command_handler(aw_root, db_interrupt_data(gb_main, application_id));
+        arb_assert(idle_interrupt);
+        if (idle_interrupt) remote_command_handler(aw_root, *idle_interrupt);
     }
 
     return error;
 }
-
-
-
 
