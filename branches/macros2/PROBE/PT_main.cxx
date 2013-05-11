@@ -19,6 +19,7 @@
 #include <arb_file.h>
 #include <arb_defs.h>
 #include <arb_misc.h>
+#include <arb_sleep.h>
 #include <servercntrl.h>
 #include <server.h>
 #include <client.h>

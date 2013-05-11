@@ -11,6 +11,7 @@
 
 #include <arbdbt.h>
 #include <arb_defs.h>
+#include <arb_sleep.h>
 #include <unistd.h>
 
 int ARB_main(int , char *[]) {

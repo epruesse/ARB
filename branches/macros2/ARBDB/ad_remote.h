@@ -15,6 +15,9 @@
 #ifndef ARB_ASSERT_H
 #include "arb_assert.h"
 #endif
+#ifndef ARBDBT_H
+#include "arbdbt.h"
+#endif
 
 #define REMOTE_BASE_LEN     11 // len of REMOTE_BASE
 #define MAX_REMOTE_APP_LEN  30 // max len of application (e.g. "ARB_EDIT4")

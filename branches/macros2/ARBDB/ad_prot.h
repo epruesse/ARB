@@ -219,13 +219,6 @@ GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring);
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name);
 
 /* adsocket.cxx */
-
-enum TimeUnit { USEC = 1, MS = 1000, SEC = 1000*MS };
-
-void GB_microsleep(long usec);
-
-inline void GB_sleep(int amount, TimeUnit tu) { GB_microsleep(amount*tu); }
-
 char *GB_read_fp(FILE *in);
 char *GB_read_file(const char *path);
 char *GB_map_FILE(FILE *in, int writeable);

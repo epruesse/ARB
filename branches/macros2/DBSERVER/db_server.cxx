@@ -12,6 +12,7 @@
 #include <servercntrl.h>
 #include <ut_valgrinded.h>
 #include <arb_file.h>
+#include <arb_sleep.h>
 
 #define TIMEOUT 1000*60*2       // save every 2 minutes
 #define LOOPS   30              // wait 30*TIMEOUT (1 hour) till shutdown

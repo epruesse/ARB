@@ -14,9 +14,9 @@
 #include "recmac.hxx"
 #include "dbserver.hxx"
 
-#include <arbdbt.h>
 #include <aw_msg.hxx>
 #include <arb_strarray.h>
+#include <arb_sleep.h>
 #include <ad_remote.h>
 #include <unistd.h>
 

@@ -27,6 +27,7 @@
 #include <arb_str.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
+#include <arb_sleep.h>
 
 #include "gb_comm.h"
 #include "gb_data.h"
@@ -38,12 +39,6 @@
 #if defined(DARWIN)
 # include <sys/sysctl.h>
 #endif // DARWIN
-
-
-// AISC_MKPT_PROMOTE:enum TimeUnit { USEC = 1, MS = 1000, SEC = 1000*MS };
-void GB_microsleep(long usec) { usleep(usec); }
-// AISC_MKPT_PROMOTE:inline void GB_sleep(int amount, TimeUnit tu) { GB_microsleep(amount*tu); }
-
 
 static int gbcm_pipe_violation_flag = 0;
 void gbcms_sigpipe(int) {

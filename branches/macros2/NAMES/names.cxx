@@ -14,6 +14,8 @@
 
 #include <arbdb.h>
 #include <arb_file.h>
+#include <arb_sleep.h>
+
 #include <names_prototypes.h>
 #include <server.h>
 #include <client.h>

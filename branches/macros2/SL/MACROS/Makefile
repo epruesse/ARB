@@ -128,6 +128,7 @@ trackers.o: $(ARBHOME)/INCLUDE/arb_assert.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_core.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_error.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_msg.h
+trackers.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_string.h
 trackers.o: $(ARBHOME)/INCLUDE/arbdb.h
