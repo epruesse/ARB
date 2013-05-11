@@ -62,6 +62,7 @@ dbserver.o: $(ARBHOME)/INCLUDE/test_global.h
 macro_gui.o: macros.hxx
 macro_gui.o: trackers.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/ad_prot.h
+macro_gui.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_core.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -70,6 +71,7 @@ macro_gui.o: $(ARBHOME)/INCLUDE/arb_msg.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_string.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arbdb.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+macro_gui.o: $(ARBHOME)/INCLUDE/arbdbt.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arbtools.h
 macro_gui.o: $(ARBHOME)/INCLUDE/attributes.h
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_awar.hxx

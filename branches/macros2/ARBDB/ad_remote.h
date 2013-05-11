@@ -61,11 +61,12 @@ public:
     const char *awar() const   { return item("awar"); }
     const char *value() const  { return item("value"); }
 
-
     // synchronization (needed to avoid that multiple clients with same application_id randomly accept remote-commands)
     const char *authReq() const  { return item("authReq"); } // == 1 -> a macro wants to remote-execute in some client [set to 1 by macro, reset to 0 by server when last macro terminates]
     const char *authAck() const  { return item("authAck"); } // == pid -> client received and accepted 'authReq' [set to its pid by client, reset to 0 by macro when granting authorization or by server when last macro terminates]
     const char *granted() const  { return item("granted"); } // == pid -> client with pid is authorized to remote-execute commands [set to the clients pid by macro, reset by server when last macro terminates]
+
+    const char *recAuth() const  { return item("recAuth"); } // == pid -> client/server with pid is authorized to record commands [set/cleared by client/server; results in error if multiple pids try to authorize]
 
     const char *appID() const { return app_id; }
 };

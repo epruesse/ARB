@@ -27,6 +27,43 @@ bool BoundActionTracker::reconfigure(const char *application_id, GBDATA *gb_main
     return true;
 }
 
+void BoundActionTracker::set_recording(bool recording) {
+    GB_ERROR error = NULL;
+    {
+        GB_transaction ta(get_gbmain());
+        remote_awars  remote(get_application_id());
+        GBDATA       *gb_recAuth = GB_searchOrCreate_int(get_gbmain(), remote.recAuth(), 0);
+
+        if (!gb_recAuth) {
+            error = GB_await_error();
+        }
+        else {
+            pid_t pid    = getpid();
+            pid_t recPid = GB_read_int(gb_recAuth);
+
+            if (recording) {
+                if (recPid == 0) {
+                    error = GB_write_int(gb_recAuth, pid); // allocate permission to record
+                }
+                else {
+                    error = GBS_global_string("Detected two recording clients with id '%s'", get_application_id());
+                }
+            }
+            else {
+                if (recPid == pid) { // this is the authorized process
+                    error = GB_write_int(gb_recAuth, 0); // clear permission
+                }
+            }
+        }
+
+        if (error) {
+            error = GB_set_macro_error(get_gbmain(), error);
+            if (error) GBK_terminatef("Failed to set macro-error: %s", error);
+        }
+    }
+    set_tracking(recording);
+}
+
 static GB_ERROR announce_recording(GBDATA *gb_main, int record) {
     GB_transaction  ta(gb_main);
     GBDATA         *gb_recording = GB_searchOrCreate_int(gb_main, MACRO_TRIGGER_RECORDING, record);
@@ -38,7 +75,7 @@ GB_ERROR MacroRecorder::start_recording(const char *file, const char *stop_actio
     if (is_tracking()) error = "Already recording macro";
     else {
         recording = new RecordingMacro(file, get_application_id(), stop_action_name, expand_existing);
-        set_tracking(true);
+        set_recording(true);
 
         error             = recording->has_error();
         if (!error) error = announce_recording(get_gbmain(), 1);
@@ -60,7 +97,7 @@ GB_ERROR MacroRecorder::stop_recording() {
 
         delete recording;
         recording = NULL;
-        set_tracking(false);
+        set_recording(false);
 
         GB_ERROR ann_error = announce_recording(get_gbmain(), 0);
         if (error) {
@@ -107,6 +144,7 @@ __ATTR__USERESULT static GB_ERROR clearMacroExecutionAuthorization(GBDATA *gb_ma
         error             = setIntEntryToZero(gb_main, remote.authReq());
         if (!error) error = setIntEntryToZero(gb_main, remote.authAck());
         if (!error) error = setIntEntryToZero(gb_main, remote.granted());
+        // if (!error) error = setIntEntryToZero(gb_main, remote.recAuth()); // @@@ clear elsewhere
     }
     if (error) error = GBS_global_string("error in clearMacroExecutionAuthorization: %s", error);
     return error;
@@ -219,9 +257,9 @@ void MacroRecorder::track_awar_change(AW_awar *awar) {
 }
 
 GB_ERROR MacroRecorder::handle_tracked_client_action(char *&tracked) {
-    GB_ERROR error = NULL;
-
     ma_assert(tracked && tracked[0]);
+
+    GB_ERROR error = NULL;
     if (tracked && tracked[0]) {
         char *saveptr = NULL;
         char *app_id  = strtok_r(tracked, "*", &saveptr);
@@ -255,7 +293,7 @@ GB_ERROR MacroRecorder::handle_tracked_client_action(char *&tracked) {
 
 void ClientActionTracker::set_tracking_according_to(GBDATA *gb_recording) {
     bool recording = GB_read_int(gb_recording);
-    if (is_tracking() != recording) set_tracking(recording);
+    if (is_tracking() != recording) set_recording(recording);
 }
 
 static void record_state_changed_cb(GBDATA *gb_recording, int *cl_ClientActionTracker, GB_CB_TYPE) {
@@ -386,6 +424,8 @@ void ClientActionTracker::ungrant_client_and_confirm_quit_action() {
         error = GB_set_macro_error(gb_main, GBS_global_string("error during client quit: %s", error));
         if (error) fprintf(stderr, "Error in ungrant_client_and_confirm_quit_action: %s\n", error);
     }
+
+    if (is_tracking()) set_recording(false);
 }
 
 // -------------------------

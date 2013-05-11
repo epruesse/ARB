@@ -20,6 +20,7 @@
 #include <aw_file.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+#include <arbdbt.h>
 
 #define ma_assert(bed) arb_assert(bed)
 
@@ -63,6 +64,10 @@ static void awt_exec_macro_cb(AW_window *aww) {
     }
 }
 
+inline void update_macro_record_button(AW_root *awr) {
+    awr->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string(awr->is_tracking() ? "STOP" : "RECORD");
+}
+
 static void awt_start_macro_cb(AW_window *aww) {
     AW_root  *awr   = aww->get_root();
     GB_ERROR  error = NULL;
@@ -87,9 +92,9 @@ static void awt_start_macro_cb(AW_window *aww) {
         }
         free(macroName);
     }
-    
+
     AW_refresh_fileselection(awr, AWAR_MACRO_BASE);
-    awr->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string(awr->is_tracking() ? "STOP" : "RECORD");
+    update_macro_record_button(awr);
     if (error) aw_message(error);
 }
 
@@ -99,11 +104,33 @@ static void awt_edit_macro_cb(AW_window *aww) {
     free(path);
 }
 
+static void macro_recording_changed_cb(GBDATA *, int *, GB_CB_TYPE ) {
+    update_macro_record_button(AW_root::SINGLETON);
+}
+
 void awt_create_macro_variables(AW_root *aw_root) {
     AW_create_fileselection_awars(aw_root, AWAR_MACRO_BASE, ".", ".amc", "");
     aw_root->awar_string(AWAR_MACRO_RECORDING_MACRO_TEXT, "RECORD");
     aw_root->awar_int(AWAR_MACRO_RECORDING_EXPAND, 0);
     aw_root->awar_int(AWAR_MACRO_RECORDING_RUNB4, 0);
+
+    {
+        UserActionTracker *tracker       = aw_root->get_tracker();
+        MacroRecorder     *macroRecorder = dynamic_cast<MacroRecorder*>(tracker);
+
+        GBDATA   *gb_main = macroRecorder->get_gbmain();
+        GB_ERROR  error   = NULL;
+
+        GB_transaction ta(gb_main);
+
+        GBDATA *gb_recording     = GB_searchOrCreate_int(gb_main, MACRO_TRIGGER_RECORDING, 0);
+        if (!gb_recording) error = GB_await_error();
+        else    error            = GB_add_callback(gb_recording, GB_CB_CHANGED, macro_recording_changed_cb, 0);
+
+        if (error) aw_message(GBS_global_string("Failed to bind macro_recording_changed_cb (Reason: %s)", error));
+    }
+
+    update_macro_record_button(aw_root);
 }
 
 static void awt_popup_macro_window(AW_window *aww) {

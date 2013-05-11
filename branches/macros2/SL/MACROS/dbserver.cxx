@@ -54,7 +54,7 @@ struct db_interrupt_data : virtual Noncopyable {
     {}
 };
 
-__ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, const db_interrupt_data& dib) {
+__ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, const db_interrupt_data& dib) { // @@@ split into several functions
     GB_ERROR  error   = 0;
     GBDATA   *gb_main = dib.gb_main;
 
@@ -66,106 +66,129 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
             UserActionTracker *tracker       = aw_root->get_tracker();
             MacroRecorder     *macroRecorder = dynamic_cast<MacroRecorder*>(tracker);
 
-            error = macroRecorder->handle_tracked_client_action(client_action);
-            error = GBT_write_string(gb_main, MACRO_TRIGGER_TRACKED, "");                            // tell client that action has been recorded
+            error               = macroRecorder->handle_tracked_client_action(client_action);
+            GB_ERROR trig_error = GBT_write_string(gb_main, MACRO_TRIGGER_TRACKED, "");                            // tell client that action has been recorded
+            if (!error) error   = trig_error;
         }
         free(client_action);
-    }
 
-    const remote_awars& remote = dib.remote;
+        if (!error) {
+            GB_ERROR macro_error = GB_get_macro_error(gb_main);
+            if (macro_error) {
+                UserActionTracker *tracker       = aw_root->get_tracker();
+                MacroRecorder     *macroRecorder = dynamic_cast<MacroRecorder*>(tracker);
 
-    long  *granted    = GBT_readOrCreate_int(gb_main, remote.granted(), 0);
-    pid_t  pid        = getpid();
-    bool   authorized = granted && *granted == pid;
+                if (macroRecorder->is_tracking()) { // only handle recording error here
+                    aw_message(GBS_global_string("%s\n"
+                                                 "macro recording aborted", macro_error));
+                    error = macroRecorder->stop_recording();
 
-    if (!authorized) {
-        if (!granted) error = GBS_global_string("Failed to access '%s'", remote.granted());
-        else {
-            arb_assert(*granted != pid);
-
-            // @@@ differ between *granted == 0 and *granted != 0?
-
-            long *authReq       = GBT_readOrCreate_int(gb_main, remote.authReq(), 0);
-            if (!authReq) error = GBS_global_string("Failed to access '%s'", remote.authReq());
-            else if (*authReq) {
-                GBDATA *gb_authAck     = GB_searchOrCreate_int(gb_main, remote.authAck(), 0);
-                if (!gb_authAck) error = GBS_global_string("Failed to access '%s'", remote.authAck());
-                else {
-                    pid_t authAck = GB_read_int(gb_authAck);
-                    if (authAck == 0) {
-                        // ack this process can execute remote commands
-                        error = GB_write_int(gb_authAck, pid);
-                        IF_DUMP_AUTH(fprintf(stderr, "acknowledging '%s' with pid %i\n", remote.authAck(), pid));
-                    }
-                    else if (authAck == pid) {
-                        // already acknowledged -- wait
-                    }
-                    else { // another process with same app-id acknowledged faster
-                        IF_DUMP_AUTH(fprintf(stderr, "did not acknowledge '%s' with pid %i (pid %i was faster)\n", remote.authAck(), pid, authAck));
-                        const char *merr = GBS_global_string("Detected two clients with id '%s'", remote.appID());
-                        error            = GB_set_macro_error(gb_main, merr);
-                    }
+                    GB_ERROR clr_error = GB_clear_macro_error(gb_main);
+                    if (!error) error  = clr_error;
                 }
             }
         }
-        error = GB_end_transaction(gb_main, error);
+    }
+
+    if (error) {
+        GB_pop_transaction(gb_main);
     }
     else {
-        char *action   = GBT_readOrCreate_string(gb_main, remote.action(), "");
-        char *value    = GBT_readOrCreate_string(gb_main, remote.value(), "");
-        char *tmp_awar = GBT_readOrCreate_string(gb_main, remote.awar(), "");
+        const remote_awars& remote = dib.remote;
 
-        if (tmp_awar[0]) {
-            AW_awar *found_awar = aw_root->awar_no_error(tmp_awar);
-            if (!found_awar) {
-                error = GBS_global_string("Unknown variable '%s'", tmp_awar);
-            }
+        long  *granted    = GBT_readOrCreate_int(gb_main, remote.granted(), 0);
+        pid_t  pid        = getpid();
+        bool   authorized = granted && *granted == pid;
+
+        if (!authorized) {
+            if (!granted) error = GBS_global_string("Failed to access '%s'", remote.granted());
             else {
-                if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
-                    char *read_value = aw_root->awar(tmp_awar)->read_as_string();
-                    GBT_write_string(gb_main, remote.value(), read_value);
-                    IF_DUMP_ACTION(printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", tmp_awar, read_value));
-                    free(read_value);
-                    action[0] = 0; // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
-                    GBT_write_string(gb_main, remote.action(), "");
+                arb_assert(*granted != pid);
+
+                // @@@ differ between *granted == 0 and *granted != 0?
+
+                long *authReq       = GBT_readOrCreate_int(gb_main, remote.authReq(), 0);
+                if (!authReq) error = GBS_global_string("Failed to access '%s'", remote.authReq());
+                else if (*authReq) {
+                    GBDATA *gb_authAck     = GB_searchOrCreate_int(gb_main, remote.authAck(), 0);
+                    if (!gb_authAck) error = GBS_global_string("Failed to access '%s'", remote.authAck());
+                    else {
+                        pid_t authAck = GB_read_int(gb_authAck);
+                        if (authAck == 0) {
+                            // ack this process can execute remote commands
+                            error = GB_write_int(gb_authAck, pid);
+                            IF_DUMP_AUTH(fprintf(stderr, "acknowledging '%s' with pid %i\n", remote.authAck(), pid));
+                        }
+                        else if (authAck == pid) {
+                            // already acknowledged -- wait
+                        }
+                        else { // another process with same app-id acknowledged faster
+                            IF_DUMP_AUTH(fprintf(stderr, "did not acknowledge '%s' with pid %i (pid %i was faster)\n", remote.authAck(), pid, authAck));
+                            const char *merr = GBS_global_string("Detected two clients with id '%s'", remote.appID());
+                            error            = GB_set_macro_error(gb_main, merr);
+                        }
+                    }
                 }
-                else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
-                    aw_root->awar(tmp_awar)->touch();
-                    IF_DUMP_ACTION(printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar));
-                    action[0] = 0; // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
-                    GBT_write_string(gb_main, remote.action(), "");
+            }
+            error = GB_end_transaction(gb_main, error);
+        }
+        else {
+            char *action   = GBT_readOrCreate_string(gb_main, remote.action(), "");
+            char *value    = GBT_readOrCreate_string(gb_main, remote.value(), "");
+            char *tmp_awar = GBT_readOrCreate_string(gb_main, remote.awar(), "");
+
+            if (tmp_awar[0]) {
+                AW_awar *found_awar = aw_root->awar_no_error(tmp_awar);
+                if (!found_awar) {
+                    error = GBS_global_string("Unknown variable '%s'", tmp_awar);
                 }
                 else {
-                    IF_DUMP_ACTION(printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value));
-                    error = aw_root->awar(tmp_awar)->write_as_string(value);
+                    if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
+                        char *read_value = aw_root->awar(tmp_awar)->read_as_string();
+                        GBT_write_string(gb_main, remote.value(), read_value);
+                        IF_DUMP_ACTION(printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", tmp_awar, read_value));
+                        free(read_value);
+                        action[0] = 0; // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
+                        GBT_write_string(gb_main, remote.action(), "");
+                    }
+                    else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
+                        aw_root->awar(tmp_awar)->touch();
+                        IF_DUMP_ACTION(printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar));
+                        action[0] = 0; // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
+                        GBT_write_string(gb_main, remote.action(), "");
+                    }
+                    else {
+                        IF_DUMP_ACTION(printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value));
+                        error = aw_root->awar(tmp_awar)->write_as_string(value);
+                    }
                 }
-            }
-            GBT_write_string(gb_main, remote.result(), error ? error : "");
-            GBT_write_string(gb_main, remote.awar(), ""); // tell perl-client call has completed (BIO::remote_awar and BIO:remote_read_awar)
+                GBT_write_string(gb_main, remote.result(), error ? error : "");
+                GBT_write_string(gb_main, remote.awar(), ""); // tell perl-client call has completed (BIO::remote_awar and BIO:remote_read_awar)
 
-            aw_message_if(error);
+                aw_message_if(error);
+            }
+            GB_pop_transaction(gb_main); // @@@ end required/possible here?
+
+            if (action[0]) {
+                AW_cb_struct *cbs = aw_root->search_remote_command(action);
+
+                if (cbs) {
+                    IF_DUMP_ACTION(printf("remote command (%s) found, running callback\n", action));
+                    cbs->run_callback();
+                    GBT_write_string(gb_main, remote.result(), "");
+                }
+                else {
+                    IF_DUMP_ACTION(printf("remote command (%s) is unknown\n", action));
+                    aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
+                    GBT_write_string(gb_main, remote.result(), GB_await_error());
+                }
+                GBT_write_string(gb_main, remote.action(), ""); // tell perl-client call has completed (remote_action)
+            }
+
+            free(tmp_awar);
+            free(value);
+            free(action);
         }
-        GB_pop_transaction(gb_main); // @@@ end required/possible here?
-
-        if (action[0]) {
-            AW_cb_struct *cbs = aw_root->search_remote_command(action);
-
-            if (cbs) {
-                IF_DUMP_ACTION(printf("remote command (%s) found, running callback\n", action));
-                cbs->run_callback();
-                GBT_write_string(gb_main, remote.result(), "");
-            }
-            else {
-                IF_DUMP_ACTION(printf("remote command (%s) is unknown\n", action));
-                aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
-                GBT_write_string(gb_main, remote.result(), GB_await_error());
-            }
-            GBT_write_string(gb_main, remote.action(), ""); // tell perl-client call has completed (remote_action)
-        }
-
-        free(tmp_awar);
-        free(value);
-        free(action);
     }
 
     if (error) fprintf(stderr, "Error in check_for_remote_command: %s\n", error);
