@@ -40,7 +40,7 @@ class BoundActionTracker : public UserActionTracker, virtual Noncopyable {
     char   *id;     // application id (e.g. "ARB_NT", "ARB_EDIT4", ...)
     GBDATA *gbmain; // DB used to record/playback macros
 
-    void set_tracking(bool track) OVERRIDE { UserActionTracker::set_tracking(track); }
+    void set_tracking(bool track) { UserActionTracker::set_tracking(track); }
 
 protected:
     void set_recording(bool recording);
