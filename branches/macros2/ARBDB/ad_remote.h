@@ -18,6 +18,13 @@
 #ifndef ARBDBT_H
 #include "arbdbt.h"
 #endif
+#ifndef ARB_SLEEP_H
+#include <arb_sleep.h>
+#endif
+
+struct MacroTalkSleep : public ARB_inc_sleep {
+    MacroTalkSleep() : ARB_inc_sleep(30, 250, MS, 20) {}
+};
 
 #define REMOTE_BASE_LEN     11 // len of REMOTE_BASE
 #define MAX_REMOTE_APP_LEN  30 // max len of application (e.g. "ARB_EDIT4")

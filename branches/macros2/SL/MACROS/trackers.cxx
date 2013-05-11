@@ -374,10 +374,12 @@ void ClientActionTracker::send_client_action(const char *action) {
 
     if (!error) {
         // wait for recorder to consume action
-        bool consumed = false;
-        int  count    = 0;
+        bool          consumed = false;
+        int           count    = 0;
+        MacroTalkSleep increasing;
+
         while (!consumed && !error) {
-            GB_sleep(200, MS);
+            increasing.sleep();
             ++count;
             if ((count%25) == 0) {
                 fprintf(stderr, "[Waiting for macro recorder to consume action tracked by %s]\n", get_application_id());

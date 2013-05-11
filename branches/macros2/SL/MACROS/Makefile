@@ -40,6 +40,7 @@ dbserver.o: $(ARBHOME)/INCLUDE/arb_assert.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_core.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_error.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_msg.h
+dbserver.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_string.h
 dbserver.o: $(ARBHOME)/INCLUDE/arbdb.h
 dbserver.o: $(ARBHOME)/INCLUDE/arbdb_base.h

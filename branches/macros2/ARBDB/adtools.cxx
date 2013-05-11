@@ -574,13 +574,14 @@ GBDATA *GBT_open(const char *path, const char *opent) {
  */
 
 static GBDATA *wait_for_dbentry(GBDATA *gb_main, const char *entry) {
+    MacroTalkSleep increasing;
     GBDATA *gbd;
     while (1) {
         GB_begin_transaction(gb_main);
         gbd = GB_search(gb_main, entry, GB_FIND);
         GB_commit_transaction(gb_main);
         if (gbd) break;
-        GB_sleep(250, MS);
+        increasing.sleep();
     }
     return gbd;
 }
@@ -595,9 +596,10 @@ static GBDATA *wait_for_dbentry_verboose(GBDATA *gb_main, const char *entry) {
 static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, const char *awar_read) {
     // waits until remote action has finished
 
+    MacroTalkSleep increasing;
     GB_ERROR error = 0;
     while (!error) {
-        GB_sleep(10, MS);
+        increasing.sleep();
         error = GB_begin_transaction(gb_main);
         if (!error) {
             char *ac = GB_read_string(gb_action);
@@ -725,11 +727,8 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
     }
     error = GB_end_transaction(gb_main, error);
 
-    int max_sleep = 100;
-
+    MacroTalkSleep increasing;
     while (wait_for_app) {
-        int sleep_ms = max_sleep;
-
         gb_assert(!error);
 
         IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [waiting for %s]\n", remote.authAck()));
@@ -761,7 +760,6 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
                 }
                 else {
                     // old entry with value 0 -> wait until client acknowledges authReq
-                    sleep_ms = 400;
                     IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [no %s yet]\n", remote.authAck()));
                 }
             }
@@ -772,8 +770,7 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
         }
 
         if (wait_for_app) {
-            GB_sleep(sleep_ms, MS);
-            max_sleep = min(500, max_sleep+100);
+            increasing.sleep();
         }
     }
 
