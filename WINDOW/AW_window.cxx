@@ -309,18 +309,21 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
        
         this->_set_activate_callback(button);
         
-        if (_at.highlight) {
-            gtk_widget_grab_default(button);
-            _at.highlight = false;
-        }
-
         get_root()->register_widget(button, _at.widget_mask);
     } 
     else {
         button = button_label;
     }
 
+    bool highlight = _at.highlight;
+
     put_with_label(button);
+
+    if (highlight) {
+        gtk_widget_set_can_default(button, true);
+        gtk_widget_grab_default(button);
+        gtk_widget_grab_focus(button);
+    }
 }
 
 void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
@@ -467,6 +470,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     }
 
     gtk_entry_set_width_chars(GTK_ENTRY(entry), width);
+    gtk_entry_set_activates_default(GTK_ENTRY(entry), true);
     put_with_label(entry);
 
     get_root()->register_widget(entry, _at.widget_mask);
