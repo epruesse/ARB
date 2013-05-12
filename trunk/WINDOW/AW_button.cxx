@@ -476,6 +476,11 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
             _callback->id = 0;
         }
     }
+#if defined(DEVEL_RALF) && 1
+    else {
+        aw_assert(!macro_name); // please pass NULL for buttons w/o callback
+    }
+#endif
 
 #define SPACE_BEHIND_LABEL  10
 #define SPACE_BEHIND_BUTTON 3
