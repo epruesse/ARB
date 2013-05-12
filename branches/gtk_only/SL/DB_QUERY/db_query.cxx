@@ -2759,6 +2759,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         aws->at(awtqs->do_query_pos_fig);
         aws->callback(perform_query_cb, (AW_CL)query, EXT_QUERY_NONE);
         char *macro_id = GBS_global_string_copy("SEARCH_%s", query_id);
+        aws->highlight();
         aws->create_button(macro_id, "Search");
         free(macro_id);
     }
