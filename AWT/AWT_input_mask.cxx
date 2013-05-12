@@ -26,6 +26,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <climits>
+#include <set>
 
 using namespace std;
 
@@ -1423,6 +1424,56 @@ static GB_ERROR writeDefaultMaskfile(const string& fullname, const string& maskn
     return 0;
 }
 
+class ID_checker {
+    bool        reloading;
+    set<string> seen;
+    set<string> dup;
+    string      curr_id;
+
+    bool is_known(const string& id) { return seen.find(id) != seen.end(); }
+
+    string makeUnique(string id) {
+        if (is_known(id)) {
+            dup.insert(id);
+            for (int i = 0; ; ++i) {
+                string undup = GBS_global_string("%s%i", id.c_str(), i);
+                if (!is_known(undup)) {
+                    id = undup;
+                    break;
+                }
+            }
+        }
+        seen.insert(id);
+        return id;
+    }
+
+public:
+    ID_checker(bool reloading_)
+        : reloading(reloading_)
+    {}
+
+    const char *fromKey(const char *id) {
+        curr_id = makeUnique(id);
+        return reloading ? NULL : curr_id.c_str();
+    }
+    const char *fromText(const string& anystr) {
+        SmartCharPtr key = GBS_string_2_key(anystr.c_str());
+        return fromKey(&*key);
+    }
+
+    bool seenDups() const { return !dup.empty(); }
+    const char *get_dup_error(const string& maskName) const {
+        string dupList;
+        for (set<string>::iterator d = dup.begin(); d != dup.end(); ++d) {
+            dupList = dupList+" '"+*d+"'";
+        }
+        return GBS_global_string("Warning: duplicated IDs seen in '%s':\n"
+                                 "%s\n"
+                                 "(they need to be unique; change button texts etc. to change them)",
+                                 maskName.c_str(), dupList.c_str());
+    }
+};
+
 static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel,
                                                 const string& mask_name, bool local, GB_ERROR& error, bool reloading) {
     awt_input_mask_ptr mask;
@@ -1513,22 +1564,22 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             AW_window_simple*& aws = mask->get_window();
             aws                    = new AW_window_simple;
 
-            // do not use callback ids for reloaded masks
-#define ID(id) (reloading ? NULL : id)
+            ID_checker ID(reloading);
 
             {
                 char *window_id = GBS_global_string_copy("INPUT_MASK_%s", mask->mask_global().get_maskid().c_str()); // create a unique id for each mask
                 aws->init(root, window_id, title.c_str());
                 free(window_id);
             }
+
             aws->load_xfig(0, true);
             aws->recalc_size_atShow(AW_RESIZE_DEFAULT); // ignore user size!
 
             aws->auto_space(x_spacing, y_spacing);
             aws->at_newline();
 
-            aws->callback((AW_CB0)AW_POPDOWN);                          aws->create_button(ID("CLOSE"), "CLOSE", "C");
-            aws->callback(AW_POPUP_HELP, (AW_CL)"input_mask.hlp");      aws->create_button(ID("HELP"), "HELP", "H");
+            aws->callback((AW_CB0)AW_POPDOWN);                          aws->create_button(ID.fromKey("CLOSE"), "CLOSE", "C");
+            aws->callback(AW_POPUP_HELP, (AW_CL)"input_mask.hlp");      aws->create_button(ID.fromKey("HELP"), "HELP", "H");
 
             if (edit_reload) {
                 aws->callback(AWT_edit_input_mask, (AW_CL)&mask->mask_global().get_maskname(), (AW_CL)mask->mask_global().is_local_mask());   aws->create_button(0, "EDIT", "E");
@@ -1551,7 +1602,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
 
             aws->at_newline();
 
-            vector<int> horizontal_lines; // y-positions of horizontal lines
+            vector<int>         horizontal_lines; // y-positions of horizontal lines
             map<string, size_t> referenced_ids; // all ids that where referenced by the script (size_t contains lineNo of last reference)
             map<string, size_t> declared_ids; // all ids that where declared by the script (size_t contains lineNo of declaration)
 
@@ -1723,16 +1774,16 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     check_last_parameter(error, command);
 
                                     if (!error) {
-                                        char   *key                    = ID(GBS_string_2_key(label.c_str()));
-                                        AW_CB   cb                     = cmd == CMD_OPENMASK ? AWT_open_input_mask : AWT_change_input_mask;
-                                        string  mask_to_start_internal = find_internal_name(mask_to_start, local);
+                                        AW_CB  cb                     = cmd == CMD_OPENMASK ? AWT_open_input_mask : AWT_change_input_mask;
+                                        string mask_to_start_internal = find_internal_name(mask_to_start, local);
 
                                         if (mask_to_start_internal.length() == 0) {
                                             error = "Can't detect which mask to load";
                                         }
                                         else {
-                                            string *cl_arg1 = new string(mask->mask_global().get_internal_maskname());
-                                            string *cl_arg2 = new string(mask_to_start_internal);
+                                            const char *key     = ID.fromText(label);
+                                            string     *cl_arg1 = new string(mask->mask_global().get_internal_maskname());
+                                            string     *cl_arg2 = new string(mask_to_start_internal);
 
                                             awt_assert(cl_arg1);
                                             awt_assert(cl_arg2);
@@ -1741,8 +1792,6 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                             aws->button_length(label.length()+2);
                                             aws->create_button(key, label.c_str());
                                         }
-
-                                        free(key);
                                     }
                                 }
                                 else if (cmd == CMD_WWW) {
@@ -1752,13 +1801,10 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     check_last_parameter(error, command);
 
                                     if (!error) {
-                                        char *key = ID(GBS_string_2_key(button_text.c_str()));
-
+                                        const char *key = ID.fromText(button_text);
                                         aws->callback(AWT_input_mask_browse_url, (AW_CL)new string(url_srt), (AW_CL)&*mask);
                                         aws->button_length(button_text.length()+2);
                                         aws->create_button(key, button_text.c_str());
-
-                                        free(key);
                                     }
                                 }
                                 else if (cmd == CMD_ASSIGN) {
@@ -1772,13 +1818,10 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                         referenced_ids[id_source] = lineNo;
                                         referenced_ids[id_dest]   = lineNo;
 
-                                        char *key = ID(GBS_string_2_key(button_text.c_str()));
-
+                                        const char *key = ID.fromText(button_text);
                                         aws->callback(AWT_input_mask_perform_action, (AW_CL)new awt_assignment(mask, id_dest, id_source), 0);
                                         aws->button_length(button_text.length()+2);
                                         aws->create_button(key, button_text.c_str());
-
-                                        free(key);
                                     }
                                 }
                                 else if (cmd == CMD_TEXT) {
@@ -1787,22 +1830,16 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     check_last_parameter(error, command);
 
                                     if (!error) {
-                                        char *key = ID(GBS_string_2_key(text.c_str()));
                                         aws->button_length(text.length()+2);
-                                        aws->create_button(key, text.c_str());
-                                        free(key);
+                                        aws->create_button(NULL, text.c_str());
                                     }
                                 }
                                 else if (cmd == CMD_SELF) {
                                     check_no_parameter(line, scan_pos, error, command);
                                     if (!error) {
-                                        const awt_item_type_selector *selector         = mask->mask_global().get_selector();
-                                        string                        button_awar_name = selector->get_self_awar();
-                                        char                         *key              = ID(GBS_string_2_key(button_awar_name.c_str()));
-
+                                        const awt_item_type_selector *selector = mask->mask_global().get_selector();
                                         aws->button_length(selector->get_self_awar_content_length());
-                                        aws->create_button(key, button_awar_name.c_str());
-                                        free(key);
+                                        aws->create_button(NULL, selector->get_self_awar());
                                     }
                                 }
                                 else if (cmd == CMD_NEW_LINE) {
@@ -1918,10 +1955,8 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                 aws->window_fit();
             }
 
-            // link to database
             if (!error) link_mask_to_database(mask);
-
-#undef ID
+            if (ID.seenDups()) aw_message(ID.get_dup_error(mask_name));
         }
 
         if (error) {
