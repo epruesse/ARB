@@ -87,7 +87,13 @@ public:
     void track_awar_change(AW_awar *awar) OVERRIDE;
 
     GB_ERROR handle_tracked_client_action(char *&tracked); // dont use
-    void release() OVERRIDE { BoundActionTracker::forgetDatabase(); }
+    void release() OVERRIDE {
+        if (is_tracking()) {
+            GB_ERROR error = stop_recording();
+            if (error) fprintf(stderr, "Error in stop_recording: %s (while exiting server)\n", error);
+        }
+        BoundActionTracker::forgetDatabase();
+    }
 };
 
 class ClientActionTracker : public BoundActionTracker {
