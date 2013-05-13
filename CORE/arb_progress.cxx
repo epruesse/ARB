@@ -211,7 +211,7 @@ public:
         : arb_parent_progress(counter_, title),
           user_abort(false)
     {
-        arb_assert(title); // initial progress should have a title
+        if (!title) title = "..."; // use fake title (arb_parent_progress got no title, so it will be replaced by child title)
         impl->openstatus(title);
 #if defined(DUMP_PROGRESS)
         freedup(name, GBS_global_string("initial: %s", title));

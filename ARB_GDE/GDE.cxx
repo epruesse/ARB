@@ -465,7 +465,7 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const 
                     help = 0;
                 }
                 hotkey[0]     = menuitem->meta;
-                awm->insert_menu_topic(0, menuitem->label, hotkey,
+                awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,
                                        help, mask,
                                        AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
             }

@@ -600,7 +600,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
 
         aws->at("store");
         aws->callback(nt_store_configuration, (AW_CL)ntw);
-        aws->create_button("STORE", "STORE", "S");
+        aws->create_button(GBS_global_string("STORE_%i", ntw_id), "STORE", "S");
 
         aws->at("extract");
         aws->callback(nt_extract_configuration, CONF_EXTRACT);

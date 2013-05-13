@@ -61,7 +61,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
         else {
             error = strchr(name, '*')
                 ? "Please use 'AUTO DETECT' or manually select an import format"
-                : GB_export_IO_error("loading import filter", name);
+                : GB_IO_error("loading import filter", name);
         }
     }
     else {
@@ -1058,7 +1058,7 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
             }
 
             if (awtcig.filenames[0] == 0) {
-                error = GB_export_error("Cannot find selected file(s)");
+                error = "Cannot find selected file(s)";
             }
 
             if (!error) {

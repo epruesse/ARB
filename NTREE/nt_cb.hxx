@@ -22,7 +22,7 @@
 class AWT_canvas;
 
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
-AW_window *NT_open_select_tree_window(AW_root *awr, char *awar_tree);
+AW_window *NT_create_select_tree_window(AW_root *awr, char *awar_tree);
 void NT_select_bottom_tree(AW_window *aww, char *awar_tree);
 AW_window *NT_open_select_alignment_window(AW_root *awr);
 void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
