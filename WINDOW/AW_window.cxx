@@ -2555,8 +2555,6 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
     aw_assert(legal_mask(mask));
     Widget button;
 
-    if (!topic_id) topic_id = name; // hmm, due to this we cannot insert_menu_topic w/o id. Change? @@@
-
     TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_MENUTOPIC); // set background color for normal menu topics
 
 #if defined(DUMP_MENU_LIST)
@@ -2588,6 +2586,11 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
 
+#if defined(DEVEL_RALF) // wanted version
+    aw_assert(topic_id);
+#else // !defined(DEVEL_RALF)
+    if (!topic_id) topic_id = name;
+#endif
     cbs->id = strdup(topic_id);
     root->define_remote_command(cbs);
     root->make_sensitive(button, mask);
