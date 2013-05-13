@@ -186,7 +186,7 @@ static void ed_submit_parse_event(AW_window *aww)
         if (!dest) dest = strdup(GB_await_error());
     }
     else {
-        dest = strdup("submission form not found");
+        dest = GBS_global_string_copy("submission form not found\n(Reason: %s)", GB_await_error());
     }
 
     awtc_assert(dest); // should contain partly filled form or error message
