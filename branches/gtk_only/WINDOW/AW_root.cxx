@@ -305,8 +305,7 @@ AW_root::AW_root(const char *propertyFile)
       no_exit(false),
       help_active(false),
       tracker(NULL),
-      
-      program_name("dummy"),
+      program_name(strdup("dummy")),
       value_changed(false),
       changer_of_variable(NULL),
       active_mask(AWM_ALL),
