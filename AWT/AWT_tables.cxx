@@ -287,7 +287,7 @@ static void create_ad_table_field_admin(AW_window *aww, GBDATA *gb_main, const c
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("table_name");
-        aws->create_button(table_name, table_name, "A");
+        aws->create_button(NULL, table_name, "A");
 
         aws->button_length(13);
 
