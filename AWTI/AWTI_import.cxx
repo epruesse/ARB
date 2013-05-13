@@ -61,7 +61,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
         else {
             error = strchr(name, '*')
                 ? "Please use 'AUTO DETECT' or manually select an import format"
-                : GB_export_IO_error("loading import filter", name);
+                : GB_IO_error("loading import filter", name);
         }
     }
     else {
