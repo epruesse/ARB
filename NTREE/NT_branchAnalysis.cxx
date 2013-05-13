@@ -71,42 +71,56 @@ private:
         get_canvas()->refresh();
     }
 
+    bool have_tree() {
+        if (get_tree()) return true;
+        set_info("No tree selected");
+        return false;
+    }
+
 public:
     void set_info(const char *msg) const { awar_info->write_string(msg); }
     void unmark_all() const { NT_mark_all_cb(get_window(), (AW_CL)get_canvas(), 0); }
 
     void markDegeneratedBranches() {
-        GB_transaction ta(get_gbmain());
-        double         degeneration_factor = awar(AWAR_BA_DEGENERATION)->read_float();
+        if (have_tree()) {
+            GB_transaction ta(get_gbmain());
+            double         degeneration_factor = awar(AWAR_BA_DEGENERATION)->read_float();
 
-        unmark_all();
-        set_info(get_tree()->mark_degenerated_branches(degeneration_factor));
-        postmark_action();
+            unmark_all();
+            set_info(get_tree()->mark_degenerated_branches(degeneration_factor));
+            postmark_action();
+        }
     }
     void markDeepLeafs() {
-        GB_transaction ta(get_gbmain());
+        if (have_tree()) {
+            GB_transaction ta(get_gbmain());
 
-        int    min_depth    = awar(AWAR_BA_MIN_DEPTH)->read_int();
-        double min_rootdist = awar(AWAR_BA_MIN_ROOTDIST)->read_float();
+            int    min_depth    = awar(AWAR_BA_MIN_DEPTH)->read_int();
+            double min_rootdist = awar(AWAR_BA_MIN_ROOTDIST)->read_float();
 
-        unmark_all();
-        set_info(get_tree()->mark_deep_leafs(min_depth, min_rootdist));
-        postmark_action();
+            unmark_all();
+            set_info(get_tree()->mark_deep_leafs(min_depth, min_rootdist));
+            postmark_action();
+        }
     }
     void markLongBranches() {
-        GB_transaction ta(get_gbmain());
+        if (have_tree()) {
+            GB_transaction ta(get_gbmain());
 
-        float min_rel_diff = awar(AWAR_BA_MIN_REL_DIFF)->read_float()/100.0;
-        float min_abs_diff = awar(AWAR_BA_MIN_ABS_DIFF)->read_float();
+            float min_rel_diff = awar(AWAR_BA_MIN_REL_DIFF)->read_float()/100.0;
+            float min_abs_diff = awar(AWAR_BA_MIN_ABS_DIFF)->read_float();
 
-        unmark_all();
-        set_info(get_tree()->mark_long_branches(min_rel_diff, min_abs_diff));
-        postmark_action();
+            unmark_all();
+            set_info(get_tree()->mark_long_branches(min_rel_diff, min_abs_diff));
+            postmark_action();
+        }
     }
 
     void analyseDistances() {
-        GB_transaction ta(get_gbmain());
-        set_info(get_tree()->analyse_distances());
+        if (have_tree()) {
+            GB_transaction ta(get_gbmain());
+            set_info(get_tree()->analyse_distances());
+        }
     }
 };
 
