@@ -59,26 +59,28 @@ void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
 }
 
 
-AW_window * NT_open_select_tree_window(AW_root *awr, char *awar_tree) {
-    AW_window_simple *aws = new AW_window_simple;
+AW_window * NT_create_select_tree_window(AW_root *awr, char *awar_tree) {
+    static AW_window_simple *aws = NULL;
+    if (!aws) {
+        aws = new AW_window_simple;
 
-    aws->init(awr, "SELECT_TREE", "SELECT A TREE");
-    aws->load_xfig("select_simple.fig");
+        aws->init(awr, "SELECT_TREE", "SELECT A TREE");
+        aws->load_xfig("select_simple.fig");
 
-    aws->at("selection");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, awar_tree);
+        aws->at("selection");
+        awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, awar_tree);
 
-    aws->auto_space(5, 5);
-    aws->button_length(6);
+        aws->auto_space(5, 5);
+        aws->button_length(6);
 
-    aws->at("button");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->at("button");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(popup_tree_admin_window, (AW_CL)aws);
-    aws->help_text("treeadm.hlp");
-    aws->create_button("MODIFY", "ADMIN", "A");
-
+        aws->callback(popup_tree_admin_window, (AW_CL)aws);
+        aws->help_text("treeadm.hlp");
+        aws->create_button("MODIFY", "ADMIN", "A");
+    }
     return aws;
 }
 

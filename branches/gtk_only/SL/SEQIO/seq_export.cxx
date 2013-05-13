@@ -85,7 +85,7 @@ static GB_ERROR read_export_format(export_format *efo, const char *file, bool lo
         char *fullfile = nulldup(GB_path_in_ARBHOME(file));
         FILE *in       = fopen(fullfile, "r");
 
-        if (!in) error = GB_export_IO_error("reading export form", fullfile);
+        if (!in) error = GB_IO_error("reading export form", fullfile);
         else {
             efo->export_mode = EXPORT_USING_FORM; // default mode
             {
@@ -573,7 +573,7 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
         }
         else {
             FILE *out       = fopen(*resulting_outname, "wt");
-            if (!out) error = GB_export_IO_error("writing", *resulting_outname);
+            if (!out) error = GB_IO_error("writing", *resulting_outname);
             else {
                 XML_Document *xml = 0;
 

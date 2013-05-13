@@ -910,7 +910,7 @@ char *GBS_fconvert_string(char *buffer) {
 
 char *GBS_replace_tabs_by_spaces(const char *text) {
     int            tlen   = strlen(text);
-    GBS_strstruct *mfile  = GBS_stropen(tlen * 3/2);
+    GBS_strstruct *mfile  = GBS_stropen(tlen * 3/2 + 1);
     int            tabpos = 0;
     int            c;
 

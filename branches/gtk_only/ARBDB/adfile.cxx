@@ -234,60 +234,62 @@ void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
 
     gb_assert(dir);             // dir == NULL was allowed before 12/2008, forbidden now!
 
-    char *fulldir   = strdup(GB_canonical_path(dir));
-    DIR  *dirstream = opendir(fulldir);
+    if (dir[0]) {
+        char *fulldir   = strdup(GB_canonical_path(dir));
+        DIR  *dirstream = opendir(fulldir);
 
-    if (!dirstream) {
-        if (GB_is_readablefile(fulldir)) { // fixed: returned true for directories before (4/2012)
-            names.put(strdup(fulldir));
+        if (!dirstream) {
+            if (GB_is_readablefile(fulldir)) { // fixed: returned true for directories before (4/2012)
+                names.put(strdup(fulldir));
+            }
+            else {
+                // @@@ does too much voodoo here - fix
+                char *lslash = strrchr(fulldir, '/');
+
+                if (lslash) {
+                    lslash[0]  = 0;
+                    char *name = lslash+1;
+                    if (GB_is_directory(fulldir)) {
+                        GBS_read_dir(names, fulldir, name); // @@@ concat mask to name?
+                    }
+                    lslash[0] = '/';
+                }
+
+                if (names.empty()) GB_export_errorf("can't read directory '%s'", fulldir); // @@@ wrong place for error; maybe return error as result
+            }
         }
         else {
-            // @@@ does too much voodoo here - fix
-            char *lslash = strrchr(fulldir, '/');
+            if (mask == NULL) mask = "*";
 
-            if (lslash) {
-                lslash[0]  = 0;
-                char *name = lslash+1;
-                if (GB_is_directory(fulldir)) {
-                    GBS_read_dir(names, fulldir, name); // @@@ concat mask to name?
-                }
-                lslash[0] = '/';
-            }
+            GBS_string_matcher *matcher = GBS_compile_matcher(mask, GB_MIND_CASE);
+            if (matcher) {
+                dirent *entry;
+                while ((entry = readdir(dirstream)) != 0) {
+                    const char *name = entry->d_name;
 
-            if (names.empty()) GB_export_errorf("can't read directory '%s'", fulldir); // @@@ wrong place for error; maybe return error as result
-        }
-    }
-    else {
-        if (mask == NULL) mask = "*";
-
-        GBS_string_matcher *matcher = GBS_compile_matcher(mask, GB_MIND_CASE);
-        if (matcher) {
-            dirent *entry;
-            while ((entry = readdir(dirstream)) != 0) {
-                const char *name = entry->d_name;
-
-                if (name[0] == '.' && (name[1] == 0 || (name[1] == '.' && name[2] == 0))) {
-                    ; // skip '.' and '..'
-                }
-                else {
-                    if (GBS_string_matches_regexp(name, matcher)) {
-                        const char *full = GB_concat_path(fulldir, name);
-                        if (!GB_is_directory(full)) { // skip directories
-                            names.put(strdup(full));
+                    if (name[0] == '.' && (name[1] == 0 || (name[1] == '.' && name[2] == 0))) {
+                        ; // skip '.' and '..'
+                    }
+                    else {
+                        if (GBS_string_matches_regexp(name, matcher)) {
+                            const char *full = GB_concat_path(fulldir, name);
+                            if (!GB_is_directory(full)) { // skip directories
+                                names.put(strdup(full));
+                            }
                         }
                     }
                 }
+
+                names.sort(GB_string_comparator, 0);
+
+                GBS_free_matcher(matcher);
             }
 
-            names.sort(GB_string_comparator, 0);
-
-            GBS_free_matcher(matcher);
+            closedir(dirstream);
         }
 
-        closedir(dirstream);
+        free(fulldir);
     }
-
-    free(fulldir);
 }
 
 // --------------------------------------------------------------------------------
@@ -679,15 +681,19 @@ static void GBT_transform_names(StrArray& dest, const StrArray& source, char *tr
     for (int i = 0; source[i]; ++i) dest.put(transform(source[i], client_data));
 }
 
+#define TEST_JOINED_FULLDIR_CONTENT_EQUALS(fulldir,mask,expected) do {                  \
+        StrArray  contents;                                                             \
+        GBS_read_dir(contents, fulldir, mask);                                          \
+        StrArray  contents_no_path;                                                     \
+        GBT_transform_names(contents_no_path, contents, remove_path, (void*)fulldir);   \
+        char     *joined  = GBT_join_names(contents_no_path, '!');                      \
+        TEST_EXPECT_EQUAL(joined, expected);                                            \
+        free(joined);                                                                   \
+    } while(0)
+
 #define TEST_JOINED_DIR_CONTENT_EQUALS(subdir,mask,expected) do {       \
         char     *fulldir = strdup(GB_path_in_ARBHOME(subdir));         \
-        StrArray  contents;                                             \
-        GBS_read_dir(contents, fulldir, mask);                          \
-        StrArray  contents_no_path;                                     \
-        GBT_transform_names(contents_no_path, contents, remove_path, (void*)fulldir); \
-        char     *joined  = GBT_join_names(contents_no_path, '!');      \
-        TEST_EXPECT_EQUAL(joined, expected);                            \
-        free(joined);                                                   \
+        TEST_JOINED_FULLDIR_CONTENT_EQUALS(fulldir,mask,expected);      \
         free(fulldir);                                                  \
     } while(0)
 
@@ -696,6 +702,8 @@ void TEST_GBS_read_dir() {
     TEST_JOINED_DIR_CONTENT_EQUALS("GDE/CLUSTAL", "/s.*\\.c/", "/clustalv.c!/myers.c!/sequence.c!/showpair.c!/trees.c");
     TEST_JOINED_DIR_CONTENT_EQUALS("GDE",         NULL,        "/Makefile!/README");
     TEST_JOINED_DIR_CONTENT_EQUALS("GDE",         "*",         "/Makefile!/README");
+
+    TEST_JOINED_FULLDIR_CONTENT_EQUALS("", "", ""); // allow GBS_read_dir to be called with "" -> returns empty filelist
 }
 
 void TEST_find_file() {
