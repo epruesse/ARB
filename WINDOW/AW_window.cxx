@@ -313,6 +313,9 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
     } 
     else {
         button = button_label;
+#if defined(DEVEL_RALF) && 1
+        aw_assert(!macro_name); // please pass NULL for buttons w/o callback
+#endif
     }
 
     bool highlight = _at.highlight;
