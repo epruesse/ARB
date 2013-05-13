@@ -868,8 +868,6 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *name,
   
    std::string topicName = AW_motif_gtk_conversion::convert_mnemonic(name, mnemonic);
    
-   if (!topic_id) topic_id = name; // hmm, due to this we cannot insert_menu_topic w/o id. Change? @@@
-
    GtkWidget *wlabel = make_label(name, 0);
    GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
    gtk_container_add(GTK_CONTAINER(alignment), wlabel);
@@ -887,6 +885,11 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *name,
     
     g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
 
+#if defined(DEVEL_RALF) // wanted version
+    aw_assert(topic_id);
+#else // !defined(DEVEL_RALF)
+    if (!topic_id) topic_id = name;
+#endif
     cbs->id = strdup(topic_id);
     get_root()->define_remote_command(cbs);
     get_root()->register_widget(item, mask);
