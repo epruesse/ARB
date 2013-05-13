@@ -1,6 +1,6 @@
 // =========================================================== //
 //                                                             //
-//   File      : AW_debug.cxx                                  //
+//   File      : AW_root_debug.cxx                             //
 //   Purpose   :                                               //
 //                                                             //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2009   //
