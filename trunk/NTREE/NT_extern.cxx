@@ -777,7 +777,7 @@ static AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("what");
-    aws->create_autosize_button("WHAT", (bug_report ? "Bug report" : "ARB Registration"));
+    aws->create_autosize_button(NULL, (bug_report ? "Bug report" : "ARB Registration"));
 
     char *awar_name_start = GBS_global_string_copy("/tmp/nt/feedback/%s", bug_report ? "bugreport" : "registration");
 
@@ -1246,7 +1246,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("Import",      "I");
             {
-                awm->insert_menu_topic("import_seq", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree . \":\" &", 0);
+                awm->insert_menu_topic("merge_from", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree . \":\" &", 0);
                 awm->insert_menu_topic("import_seq", "Import from external format",   "I", "arb_import.hlp",     AWM_ALL, NT_import_sequences, 0,                            0);
                 GDE_load_menu(awm, AWM_EXP, "Import");
             }
@@ -1281,9 +1281,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->sep______________();
 
-            awm->insert_menu_topic("restart", "Start second database", "o", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 0);
-            awm->insert_menu_topic("restart", "Quit + load other database",  "l", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 1);
-            awm->insert_menu_topic("quit",    "Quit",                  "Q", "quit.hlp", AWM_ALL, nt_exit,          EXIT_SUCCESS);
+            awm->insert_menu_topic("new_arb",     "Start second database",      "o", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 0);
+            awm->insert_menu_topic("restart_arb", "Quit + load other database", "l", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 1);
+            awm->insert_menu_topic("quit",        "Quit",                       "Q", "quit.hlp", AWM_ALL, nt_exit,          EXIT_SUCCESS);
         }
 
         // -----------------
@@ -1541,8 +1541,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->sep______________();
 
-        awm->insert_menu_topic(awm->local_id("tree_select"),        "Select Tree",      "T", 0, AWM_ALL, AW_POPUP, (AW_CL)NT_open_select_tree_window, (AW_CL)awar_tree);
-        awm->insert_menu_topic(awm->local_id("tree_select_latest"), "Select Last Tree", "L", 0, AWM_ALL,          (AW_CB)NT_select_bottom_tree,        (AW_CL)awar_tree, 0);
+        awm->insert_menu_topic(awm->local_id("tree_select"),        "Select Tree",      "T", 0, AWM_ALL, AW_POPUP,                     (AW_CL)NT_create_select_tree_window, (AW_CL)awar_tree);
+        awm->insert_menu_topic(awm->local_id("tree_select_latest"), "Select Last Tree", "L", 0, AWM_ALL, (AW_CB)NT_select_bottom_tree, (AW_CL)awar_tree, 0);
 
         awm->sep______________();
 
@@ -1749,7 +1749,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->at(db_treex, first_liney);
     // size of tree-name button is determined by buttons below:
     awm->at_set_to(false, false, db_treex2-db_treex-1, second_uppery-first_liney+1);
-    awm->callback((AW_CB2)AW_POPUP, (AW_CL)NT_open_select_tree_window, (AW_CL)awar_tree);
+    awm->callback((AW_CB2)AW_POPUP, (AW_CL)NT_create_select_tree_window, (AW_CL)awar_tree);
     awm->help_text("nt_tree_select.hlp");
     awm->create_button("SELECT_A_TREE", awar_tree);
 
@@ -1767,7 +1767,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     awm->at(protectx+2, first_liney+1);
     awm->button_length(0);
-    awm->create_button("PROTECT", "#protect.xpm");
+    awm->create_button(NULL, "#protect.xpm");
 
     awm->at(protectx, second_liney+2);
     awm->create_option_menu(AWAR_SECURITY_LEVEL);
