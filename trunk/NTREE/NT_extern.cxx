@@ -1217,7 +1217,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     if (clone) {
         awm->create_menu("File", "F", AWM_ALL);
         if (allow_new_window) {
-            awm->insert_menu_topic("new_window",   "New window", "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
+            awm->insert_menu_topic(awm->local_id("new_window"), "New window (same database)", "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
         }
         awm->insert_menu_topic("close", "Close", "C", 0, AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
     }
