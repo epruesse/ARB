@@ -1058,7 +1058,7 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
             }
 
             if (awtcig.filenames[0] == 0) {
-                error = GB_export_error("Cannot find selected file(s)");
+                error = "Cannot find selected file(s)";
             }
 
             if (!error) {
