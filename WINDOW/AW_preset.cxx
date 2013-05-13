@@ -117,7 +117,7 @@ static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name
         aws->at_newline();
 
         aws->button_length(20);
-        aws->create_button("LABEL", AWAR_GLOBAL_COLOR_NAME, "A");
+        aws->create_button(NULL, AWAR_GLOBAL_COLOR_NAME, "A");
         aws->get_at_position(&x2, &y2);
         aws->at_newline();
 
