@@ -80,7 +80,7 @@ public:
 
     virtual void bind_value(GObject* obj, const char* propname,
                             AW_awar_gvalue_mapper* mapper=NULL) = 0;
-    virtual void tie_widget(AW_CL cd1, GtkWidget* widget, AW_widget_type type, AW_window *aww) = 0;
+    virtual void unbind(GObject* obj) = 0;
 
     // callbacks
     virtual AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) = 0;

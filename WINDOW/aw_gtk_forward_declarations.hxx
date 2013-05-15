@@ -8,23 +8,12 @@
 
 
 #pragma once
-struct _GObject;
-struct _GtkWidget; 
-struct _GtkMenuBar;
-struct _GtkTreeView;
-struct _GtkListStore;
-struct _GtkTreeSelection;
-union _GdkEvent;
-struct _GdkEventConfigure;
-struct _GdkEventExpose;
-struct _GdkEventKey;
-struct _GdkEventMotion;
-
 typedef struct _GObject           GObject;
 typedef struct _GtkWidget         GtkWidget;
 typedef struct _GtkMenuBar        GtkMenuBar;
 typedef struct _GtkTreeView       GtkTreeView;
 typedef struct _GtkListStore      GtkListStore;
+typedef struct _GtkTreeModel      GtkTreeModel;
 typedef struct _GtkTreeSelection  GtkTreeSelection;
 typedef union  _GdkEvent          GdkEvent;
 typedef struct _GdkEventConfigure GdkEventConfigure;

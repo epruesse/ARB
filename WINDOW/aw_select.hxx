@@ -54,14 +54,13 @@ public:
 
 
 class AW_selection_list {
+    AW_awar      *awar;
+    GtkTreeModel *model;
+    GtkWidget    *widget;
+    unsigned long handler_id;
+    int           selected_index;
     
     AW_selection_list_entry *get_entry_at(int index) const;
-    
-    /**
-     * 
-     * @return The index of the selected item or -1 
-     */
-    int get_selected_index() const;
     
     /**
      * Appends the specified entry to the list store
@@ -79,18 +78,23 @@ class AW_selection_list {
     AW_selection_list_entry* insert_generic(const char* displayed, T value, GB_TYPES expectedType);
     
 public:
-    AW_selection_list(const char *variable_namei, GB_TYPES variable_typei, GtkWidget *select_list_widgeti);
+    void update_from_widget();  // called from internal callback
 
-    char             *variable_name;
-    GB_TYPES          variable_type;
-    GtkWidget      *select_list_widget;
+    AW_selection_list(AW_awar*);
+    ~AW_selection_list();
+
+    void bind_widget(GtkWidget*);
+    //    char             *variable_name;
+    //  GB_TYPES          variable_type;
+
 
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;
     AW_selection_list_entry *default_select;
     
     // ******************** real public ***************
-    
+
+    AW_awar* get_awar() { return awar; }
     void selectAll();
     void deselectAll();
 
@@ -108,7 +112,6 @@ public:
     void init_from_array(const CharPtrArray& entries, const char *defaultEntry);
     
     void update();
-    void update_awar();
     void refresh(); 
 
     void sort(bool backward, bool case_sensitive); // uses displayed value!
@@ -222,21 +225,3 @@ void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *);
 
     
 __ATTR__NORETURN inline void selection_type_mismatch(const char *triedType);
-
-template <class T>
-AW_selection_list_entry* AW_selection_list::insert_generic(const char* displayed, T value, GB_TYPES expectedType) {
-    if (variable_type != expectedType) {
-    selection_type_mismatch(typeid(T).name()); //note: gcc mangles the name, however this error will only occur during development.
-    return NULL;
-    }
-    if (list_table) {
-        last_of_list_table->next = new AW_selection_list_entry(displayed, value);
-        last_of_list_table = last_of_list_table->next;
-        last_of_list_table->next = NULL;
-    }
-    else {
-        last_of_list_table = list_table = new AW_selection_list_entry(displayed, value);
-    }
-
-    return last_of_list_table;
-}

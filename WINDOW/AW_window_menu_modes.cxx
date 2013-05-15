@@ -90,17 +90,8 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name_, 
 }
 
 void AW_window_menu_modes::select_mode(int mode) {
-    // FIXME!
-    // this function is only called by modes_cb in ED4_root.cxx to 
-    // keep the selected mode synchronized among the editor windows
-    // to allow this without running into a loop, we have to disable
-    // callbacks while we are changing the mode
-    // this isn't good. 
-  
     GtkToolItem* button = gtk_toolbar_get_nth_item(prvt->mode_menu, mode);
-    get_root()->disable_callbacks = true;
     gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(button), true);
-    get_root()->disable_callbacks = false;
 }
 
 void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText, AW_active mask, 

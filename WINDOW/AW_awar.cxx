@@ -34,74 +34,6 @@
 #define AWAR_EPS 0.00000001
 
 // --------------------------------------------------------------------------------
-// AW_widget_refresh
-// FIXME: refactor until gone
-
-struct AW_widget_refresh_cb : virtual Noncopyable {
-    AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, GtkWidget* w, AW_widget_type type, AW_window *awi);
-    ~AW_widget_refresh_cb();
-
-    AW_CL           cd;
-    AW_awar        *awar;
-    GtkWidget      *widget;
-    AW_widget_type  widget_type;
-    AW_window      *aw;
-
-    AW_widget_refresh_cb *next;
-};
-
-static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
-    AW_widget_refresh_cb *widgetlist = (AW_widget_refresh_cb*)cl_widget_refresh_cb;
-    if (widgetlist->widget == root->changer_of_variable) {
-        root->changer_of_variable = 0;
-        root->value_changed = false;
-        return;
-    }
-
-    {
-        char *var_value;
-        var_value = widgetlist->awar->read_as_string();
-
-        // und benachrichtigen der anderen
-        switch (widgetlist->widget_type) {
-            case AW_WIDGET_TOGGLE_FIELD:
-                // widgetlist->aw->refresh_toggle_field((int)widgetlist->cd);
-                break;
-            case AW_WIDGET_CHOICE_MENU: // fall-through
-            case AW_WIDGET_SELECTION_LIST:
-                ((AW_selection_list *)widgetlist->cd)->refresh();
-                break;
-            default:
-                aw_assert(false);
-                break;
-        }
-        free(var_value);
-    }
-    root->value_changed = false;     // Maybe value changed is set because Motif calls me
-}
-
-
-AW_widget_refresh_cb::AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, GtkWidget *w, AW_widget_type type, AW_window *awi) {
-    cd          = cd1;
-    widget      = w;
-    widget_type = type;
-    awar        = vs;
-    aw          = awi;
-    next        = previous;
-
-    awar->add_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
-}
-
-AW_widget_refresh_cb::~AW_widget_refresh_cb() {
-    if (next) delete next;
-    awar->remove_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
-}
-
-void AW_awar_impl::tie_widget(AW_CL cd1, GtkWidget *widget, AW_widget_type type, AW_window *aww) {
-    refresh_list = new AW_widget_refresh_cb(refresh_list, this, cd1, widget, type, aww);
-}
-
-// --------------------------------------------------------------------------------
 // AW_awar_impl -- default methods with warning/failure messages
 
 bool AW_awar_impl::allowed_to_run_callbacks = true;
@@ -815,9 +747,6 @@ void AW_awar_impl::set_temp_if_is_default(GBDATA *gb_db) {
 // --------------------------------------------------------------------------------
 // AW_awar binding with GObject properties
 
-static void _aw_awar_on_notify(GObject* obj, GParamSpec *pspec, awar_gparam_binding* binding);
-static void _aw_awar_notify_gparam(AW_root*, AW_CL data);
-
 /**
  * Creates a binding between the AWAR and a GObject property. Changes in one will be
  * immediately propagated to the other. While creating the binding, the property
@@ -831,18 +760,68 @@ static void _aw_awar_notify_gparam(AW_root*, AW_CL data);
  * @param propname Name of the GObject's property to bind (e.g. "value")
  * @param mapper   Pointer to a mapper object implementing custom translation between the
  *                 AWAR value and the GValue representing the GObjects property.
+ *                 Ownership is transfered, mapper will be deleted with binding.
  */
 void AW_awar_impl::bind_value(GObject* obj, const char *propname, AW_awar_gvalue_mapper* mapper) {
-    GParamSpec *pspec = g_object_class_find_property(G_OBJECT_GET_CLASS(obj), propname);
-    aw_assert(NULL != pspec);
+    gparam_bindings.push_back(awar_gparam_binding(this, obj));
+    if (!gparam_bindings.back().connect(propname, mapper)) {
+        gparam_bindings.pop_back();
+    }
+}
 
-    gparam_bindings.push_back(awar_gparam_binding(obj, pspec, this, mapper));
+/**
+ * Destroys a previously created binding.
+ */
+void AW_awar_impl::unbind(GObject* obj) {
+    gparam_bindings.remove(awar_gparam_binding(this, obj));
+}
 
-    g_signal_connect(obj, "notify", G_CALLBACK(_aw_awar_on_notify), &gparam_bindings.back());
-    add_callback(_aw_awar_notify_gparam, (AW_CL)&gparam_bindings.back());
+static void _aw_awar_on_notify(GObject* obj, GParamSpec *pspec, awar_gparam_binding* binding);
+static void _aw_awar_on_destroy(void* binding, GObject* obj);
+static void _aw_awar_notify_gparam(AW_root*, AW_CL data);
+
+/**
+ * Connects a binding to callbacks:
+ *  - awar change
+ *  - notify on gobject
+ *  - destroy on gobject
+ * @return false if binding failed
+ */
+bool awar_gparam_binding::connect(const char* propname_, AW_awar_gvalue_mapper* mapper_) {
+    mapper = mapper_;
+
+    aw_return_val_if_fail(G_IS_OBJECT(obj), false);
+    aw_return_val_if_fail(propname_ != NULL, false);
+
+    pspec =  g_object_class_find_property(G_OBJECT_GET_CLASS(obj), propname_);
+    aw_return_val_if_fail(pspec != NULL, false);
+
+    g_object_weak_ref(obj, _aw_awar_on_destroy, this);
+
+    handler_id = g_signal_connect(obj, "notify", G_CALLBACK(_aw_awar_on_notify), this);
+
+    awar->add_callback(_aw_awar_notify_gparam, (AW_CL)this);
     
     // update property from awar now:
-    _aw_awar_notify_gparam(NULL, (AW_CL) &gparam_bindings.back());
+    _aw_awar_notify_gparam(NULL, (AW_CL)this);
+
+    return true;
+}
+
+awar_gparam_binding::~awar_gparam_binding() {
+    awar->remove_callback(_aw_awar_notify_gparam, (AW_CL) this);
+
+    if (handler_id) {
+        g_signal_handler_disconnect(obj, handler_id);
+        g_object_weak_unref(obj, _aw_awar_on_destroy, this);
+    }
+    if (mapper) 
+        delete mapper;
+}
+
+static void _aw_awar_on_destroy(void* binding, GObject *obj) {
+    ((awar_gparam_binding*)binding)->handler_id = 0; // handler is already gone
+    ((awar_gparam_binding*)binding)->awar->unbind(obj);
 }
 
 static void _aw_awar_on_notify(GObject* obj, GParamSpec *pspec, awar_gparam_binding* binding) {

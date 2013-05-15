@@ -15,7 +15,7 @@
 class AW_root;
 class AW_window;
 
-typedef long AW_CL; // client data (casted from pointer or value)
+typedef long int AW_CL; // client data (casted from pointer or value)
 
 typedef void (*AW_CB)(AW_window*, AW_CL, AW_CL);
 typedef void (*AW_CB0)(AW_window*);

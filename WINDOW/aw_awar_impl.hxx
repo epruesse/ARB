@@ -6,14 +6,31 @@ class AW_awar_impl;
  * Describes a binding between an AWAR and a GObject property.
  */
 struct awar_gparam_binding {
-    GObject      *obj;
-    GParamSpec   *pspec;
-    AW_awar_impl *awar;
-    AW_awar_gvalue_mapper *mapper;
+    AW_awar_impl *awar;  // owned by root
+    GObject      *obj;   // weak
+    GParamSpec   *pspec; // owned by obj
+    gulong        handler_id;
+    AW_awar_gvalue_mapper *mapper; // owned by us
     bool          frozen;
-    awar_gparam_binding(GObject *obj_, GParamSpec *pspec_, AW_awar_impl* awar_, 
-                        AW_awar_gvalue_mapper* mapper_)
-        : obj(obj_), pspec(pspec_),  awar(awar_), mapper(mapper_), frozen(false) {}
+
+    awar_gparam_binding(AW_awar_impl* awar_, GObject *obj_)
+        : awar(awar_), obj(obj_), 
+          pspec(NULL), handler_id(0),
+          mapper(NULL), frozen(false) {}
+    ~awar_gparam_binding();
+    
+    /* bindings are equal if obj and awar are equal */
+    bool operator==(const awar_gparam_binding& other) 
+    { return obj  == other.obj  && awar == other.awar; }
+    /* copying just transfers obj and awar */
+    awar_gparam_binding(const awar_gparam_binding& other) 
+        : awar(other.awar), obj(other.obj),
+          pspec(NULL), handler_id(0),
+          mapper(NULL), frozen(false){}
+    awar_gparam_binding& operator=(const awar_gparam_binding& other) 
+    { awar = other.awar, obj=other.obj; return *this;}
+
+    bool connect(const char* propname, AW_awar_gvalue_mapper* mapper);
 };
 
 class AW_awar_impl : public AW_awar, virtual Noncopyable {
@@ -47,7 +64,7 @@ public:
 #endif // ASSERTION_USED
 
     void bind_value(GObject* obj, const char* propname, AW_awar_gvalue_mapper* mapper) OVERRIDE;
-    void tie_widget(AW_CL cd1, GtkWidget* widget, AW_widget_type type, AW_window *aww) OVERRIDE;
+    void unbind(GObject* obj) OVERRIDE;
 
     void unlink();
     void unlink_from_DB(GBDATA*);
