@@ -2,7 +2,6 @@
 #include "aw_window_gtk.hxx"
 #include "aw_root.hxx"
 #include "aw_msg.hxx"
-#include "aw_modal.hxx"
 
 //TODO comment
 AW_cb_struct_guard AW_cb_struct::guard_before = NULL;
@@ -69,14 +68,9 @@ void AW_cb_struct::run_callback() {
 
         // the following callbacks are allowed even if disable_callbacks is true
 
-        bool isModalCallback = (f == AW_CB(message_cb) ||
-                                f == AW_CB(input_history_cb) ||
-                                f == AW_CB(input_cb));
-
-
         bool isPopdown = (f == AW_CB(AW_POPDOWN));
         bool isHelp    = (f == AW_CB(AW_POPUP_HELP));
-        bool allow     = isModalCallback || isHelp || isPopdown;
+        bool allow     = isHelp || isPopdown;
 
         bool isInfoResizeExpose = false;
 
@@ -112,8 +106,7 @@ void AW_cb_struct::run_callback() {
         }
 #if defined(TRACE_CALLBACKS)
         else {
-            if (isModalCallback) printf("allowed modal callback %p\n", f);
-            else if (isPopdown) printf("allowed AW_POPDOWN\n");
+            if (isPopdown) printf("allowed AW_POPDOWN\n");
             else if (isHelp) printf("allowed AW_POPUP_HELP\n");
             else if (isInfoResizeExpose) printf("allowed expose/resize infoarea\n");
             else printf("allowed other (unknown) callback %p\n", f);

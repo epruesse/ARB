@@ -17,7 +17,6 @@
 #include "aw_assert.hxx"
 #include "aw_area_management.hxx"
 
-//#include "aw_select.hxx"
 #include <string>
 #include <vector>
 class AW_selection_list;
@@ -36,21 +35,6 @@ typedef void (*AW_RCB)(AW_root*, AW_CL, AW_CL);
 extern char AW_ERROR_BUFFER[1024];
 
 void aw_set_local_message(); // no message window, AWAR_ERROR_MESSAGES instead (used by EDIT4)
-
-// Read a string from the user :
-char *aw_input(const char *title, const char *prompt, const char *default_input);
-char *aw_input(const char *prompt, const char *default_input);
-inline char *aw_input(const char *prompt) { return aw_input(prompt, NULL); }
-
-char *aw_input2awar(const char *prompt, const char *awar_value);
-
-char *aw_string_selection     (const char *title, const char *prompt, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*));
-char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name,     const char *value_list, const char *buttons, char *(*check_fun)(const char*));
-
-int aw_string_selection_button();   // returns index of last selected button (destroyed by aw_string_selection and aw_input)
-
-char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix);
-
 
 class  AW_awar;
 class  AW_root_cblist;

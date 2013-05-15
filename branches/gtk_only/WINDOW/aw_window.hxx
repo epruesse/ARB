@@ -25,6 +25,24 @@
 #include "aw_device_click.hxx"
 #include "aw_device_size.hxx"
 
+// aw modal calls
+
+// Read a string from the user :
+
+char *aw_input(const char *title, const char *prompt, const char *default_input);
+char *aw_input(const char *prompt, const char *default_input);
+inline char *aw_input(const char *prompt) { return aw_input(prompt, NULL); }
+
+char *aw_input2awar(const char *prompt, const char *awar_value, const char* title = "Enter text");
+
+char *aw_string_selection     (const char *title, const char *prompt, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*));
+char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name,     const char *value_list, const char *buttons, char *(*check_fun)(const char*));
+
+int aw_string_selection_button();   // returns index of last selected button (destroyed by aw_string_selection and aw_input)
+
+char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix);
+
+
 
 class AW_window;
 class AW_xfig;
@@ -148,8 +166,8 @@ protected:
     void create_devices();
 
     /* put a widget into prvt->fixedArea according to _at */
-    void put_with_label(GtkWidget* wigdget);
-    GtkWidget *make_label(const char* label_text, short label_length);
+    void put_with_label(GtkWidget* widget);
+    GtkWidget *make_label(const char* label_text, short label_length=0, const char* mnemonic=NULL);
 
     /** 
      * Common initialization function called from AW_window_xxx::init()
@@ -198,10 +216,7 @@ public:
      */
     AW_xfig* get_xfig_data();
 
-    void show_modal();
     void set_window_title_intern(char *title);
-
-    char *align_string(const char *string, int columns);
 
     void update_label(GtkWidget* widget, const char *var_value);
     void update_toggle(GtkWidget *widget, const char *var, AW_CL /*cd_toggle_data*/);

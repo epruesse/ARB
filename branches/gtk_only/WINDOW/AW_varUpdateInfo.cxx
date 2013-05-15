@@ -28,16 +28,7 @@ bool AW_varUpdateInfo::AW_variable_update_callback(GtkWidget *widget, gpointer v
     aw_assert(vui);
 
 
-    if(GTK_IS_TREE_SELECTION(widget)) {
-        //if this event is coming from a tree view widget
-        //it is called twice, once for deselecting the old item and once for selecting
-        //the new one. We don't want to handle the deselect
-        if(gtk_tree_selection_count_selected_rows(GTK_TREE_SELECTION(widget)) > 0)
-        {
-            vui->change_from_widget((gpointer)widget); 
-        }
-    }
-    else if(GTK_IS_RADIO_BUTTON(widget)) {
+    if(GTK_IS_RADIO_BUTTON(widget)) {
         //the radio button extends toggle button. 
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
             //this method is also called when a radio button is unchecked
@@ -79,20 +70,10 @@ void AW_varUpdateInfo::change_from_widget(gpointer) {
 
     bool run_cb = true;
     switch (widget_type) {
-        case AW_WIDGET_TOGGLE:
-            error = awar->toggle_toggle();
-            break;
-
         case AW_WIDGET_TOGGLE_FIELD:
             error = value.write_to(awar);
             break;
 
-        case AW_WIDGET_CHOICE_MENU:
-            // fall-through
-        case AW_WIDGET_SELECTION_LIST: {
-            sellist->update_awar();
-            break;
-        }
 
         case AW_WIDGET_LABEL_FIELD:
             FIXME("AW_WIDGET_LABEL_FIELD handling not implemented");

@@ -59,7 +59,8 @@ private:
 };
 
 void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
-    aw_assert(NULL != command);
+    aw_return_if_fail(command);
+
     if (auto_help_file) AW_POPUP_HELP(aww, (AW_CL)auto_help_file);
     aw_message_if(GBK_system(command));
 }
@@ -111,23 +112,12 @@ static void destroy_AW_root() {
 }
 
 void AW_root::setUserActionTracker(UserActionTracker *user_tracker) {
-    aw_assert(user_tracker);
-    aw_assert(tracker->is_replaceable()); // there is already another tracker (program-logic-error)
+    aw_return_if_fail(user_tracker);
+    aw_return_if_fail(tracker->is_replaceable());
 
     delete tracker;
     tracker = user_tracker;
 }
-
-AW_awar *AW_root::label_is_awar(const char *label) {
-    AW_awar *awar_exists = NULL;
-    size_t   off         = strcspn(label, "/ ");
-
-    if (label[off] == '/') {                        // contains '/' and no space before first '/'
-        awar_exists = awar_no_error(label);
-    }
-    return awar_exists;
-}
-
 
 unsigned int AW_root::alloc_named_data_color(char *colorname){
   
@@ -145,22 +135,20 @@ GdkColor AW_root::getColor(unsigned int pixel) {
 }
 
 void AW_root::define_remote_command(AW_cb_struct *cbs) {
-    if (cbs->f == (AW_CB)AW_POPDOWN) {
-        aw_assert(!cbs->get_cd1() && !cbs->get_cd2()); // popdown takes no parameters (please pass ", 0, 0"!)
-    }
+    // popdown takes no parameters:
+    aw_return_if_fail(cbs->f != (AW_CB)AW_POPDOWN || !(cbs->get_cd1() || cbs->get_cd2()));
 
     AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(action_hash, cbs->id, (long)cbs);
-    if (old_cbs) {
-        if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
+    // do not free old_cbs, cause it's still reachable from first widget that defined this remote command    
+
+    if (!old_cbs || old_cbs->is_equal(*cbs)) return;
+
 #if defined(DEBUG)
-            fputs(GBS_global_string("Warning: reused callback id '%s' for different callback\n", old_cbs->id), stderr);
+    fprintf(stderr, "Warning: reused callback id '%s' for different callback\n", old_cbs->id);
 #if defined(DEVEL_RALF) && 1
             aw_assert(0);
 #endif // DEVEL_RALF
 #endif // DEBUG
-        }
-        // do not free old_cbs, cause it's still reachable from first widget that defined this remote command
-    }
 }
 
 AW_cb_struct *AW_root::search_remote_command(const char *action) {
@@ -178,7 +166,7 @@ void AW_root::apply_focus_policy(bool /*follow_mouse*/) {
  * Enables/Disabes widgets according to AW_active mask
  **/
 void AW_root::apply_sensitivity(AW_active mask) {
-    aw_assert(legal_mask(mask));
+    aw_return_if_fail(legal_mask(mask));
 
     active_mask = mask;
     for (std::vector<AW_button>::iterator btn = button_list.begin();
@@ -188,14 +176,15 @@ void AW_root::apply_sensitivity(AW_active mask) {
 }
 
 void AW_root::register_widget(GtkWidget* w, AW_active mask) {
+    aw_return_if_fail(w);
+    aw_return_if_fail(legal_mask(mask));
+
     // Don't call register_widget directly!
     //
     // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets,
     // set it back using sens_mask(AWM_ALL)
 
-    aw_assert(w);
-    aw_assert(legal_mask(mask));
-    
+  
     prvt->set_last_widget(w);
 
     if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
@@ -250,7 +239,12 @@ static arb_handlers aw_handlers = {
     AW_status_impl,
 };
 
-
+static void aw_log_handler(const char* /*domain*/, 
+                           GLogLevelFlags /*log_level*/,
+                           const gchar *message,
+                           gpointer /*user_data*/) {
+    aw_message(message);
+}
 
 AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker,
                  int *argc, char **argv[]) 
@@ -271,7 +265,9 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
       current_modal_window(NULL),
       root_window(NULL)
 {
-    aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
+    // hmm. we should probably throw an exception here. 
+    aw_return_if_fail(AW_root::SINGLETON == NULL);  // only one instance allowed
+    
     AW_root::SINGLETON = this;
     
     for (int i=0; aw_fb[i].awar; ++i) {
@@ -292,6 +288,12 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
     prvt->cursors[HELP_CURSOR] = gdk_cursor_new(GDK_QUESTION_ARROW);
     
     ARB_install_handlers(aw_handlers);
+
+    // register handler with glib to use our own message display system
+    g_log_set_handler(NULL, // just application messages
+                      (GLogLevelFlags)(G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION),
+                      aw_log_handler, 
+                      NULL);
     
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
@@ -314,9 +316,9 @@ AW_root::AW_root(const char *propertyFile)
       current_modal_window(NULL),
       root_window(NULL)
 {
-    aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
+    g_return_if_fail(AW_root::SINGLETON == NULL);
+
     AW_root::SINGLETON = this;
-    
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 #endif
@@ -465,17 +467,37 @@ void AW_root::add_timed_callback_never_disabled(int ms, AW_RCB2 f, AW_CL cd1, AW
 /// end timer stuff
 
 
+/// begin awar stuff
+static bool AW_IS_VALID_AWAR_NAME(const char* key) {
+    GB_ERROR err = GB_check_hkey(key);
+    if (err) g_warning("%s",err);
+    return err == NULL;
+}
+
 AW_awar *AW_root::awar_no_error(const char *var_name) {
+    aw_return_val_if_fail(AW_IS_VALID_AWAR_NAME(var_name), NULL);
+
     return (AW_awar*)GBS_read_hash(awar_hash, var_name);
+}
+
+AW_awar *AW_root::label_is_awar(const char *label) {
+    if (GB_check_hkey(label)) { 
+        GB_clear_error();
+        return NULL; // not a valid key
+    } else {
+        return awar_no_error(label); // might exist
+    }
 }
 
 AW_awar *AW_root::awar(const char *var_name) {
     AW_awar *vs = awar_no_error(var_name);
-    if (!vs) GBK_terminatef("AWAR %s not defined", var_name);
+    if (!vs) GBK_terminatef("AWAR '%s' not defined", var_name);
     return vs;
 }
 
 AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_default default_file) {
+    aw_return_val_if_fail(AW_IS_VALID_AWAR_NAME(var_name), NULL);
+
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
@@ -486,6 +508,8 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_defau
 }
 
 AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, AW_default default_file) {
+    aw_return_val_if_fail(AW_IS_VALID_AWAR_NAME(var_name), NULL);
+
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
@@ -496,6 +520,8 @@ AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, A
 }
 
 AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default default_file) {
+    aw_return_val_if_fail(AW_IS_VALID_AWAR_NAME(var_name), NULL);
+
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
@@ -506,6 +532,8 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
 }
 
 AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
+    aw_return_val_if_fail(AW_IS_VALID_AWAR_NAME(var_name), NULL);
+
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
@@ -552,9 +580,9 @@ static long _aw_root_unlink_awar_from_db(const char*/*key*/, long cl_awar, void 
     return cl_awar;
 }
 
-void AW_root::unlink_awars_from_DB(AW_default database) {
-    GBDATA *gb_main = (GBDATA*)database;
-    aw_assert(GB_get_root(gb_main) == gb_main);
+void AW_root::unlink_awars_from_DB(GBDATA* gb_main) {
+    g_return_if_fail(GB_get_root(gb_main) == gb_main);
+
     GB_transaction ta(gb_main);
     GBS_hash_do_loop(awar_hash, _aw_root_unlink_awar_from_db, gb_main);
 }
@@ -580,7 +608,9 @@ void AW_root::set_help_active(bool value) {
 }
 void AW_root::set_cursor(AW_Cursor cursor) {
     GdkWindow* rootWindow = gdk_screen_get_root_window(gdk_screen_get_default());
-    aw_assert(NULL != rootWindow);
+
+    aw_return_if_fail(rootWindow);
+
     gdk_window_set_cursor(rootWindow, prvt->cursors[cursor]);
 }
 

@@ -23,7 +23,6 @@
 #include "aw_awar.hxx"
 #include "aw_common.hxx"
 #include "aw_motif_gtk_conversion.hxx"
-#include "aw_modal.hxx"
 #include "aw_help.hxx"
 #include "aw_varUpdateInfo.hxx" 
 #include "aw_type_checking.hxx"
@@ -36,7 +35,6 @@
 #include <arbdb.h>
 #endif
 //#define DUMP_BUTTON_CREATION
-
 
 // proxy functions handing down stuff to AW_at
 void AW_window::at(int x, int y){ _at.at(x,y); }
@@ -185,15 +183,77 @@ AW_area_management* AW_window::get_area(int index) {
     return NULL;
 }
 
-GtkWidget* AW_window::make_label(const char* label_text, short label_len) {
-    aw_assert(label_text);
+/** 
+ * checks if a label string is an image reference.
+ * image references have "#" as their first character
+ *
+ * @param ref the label string
+ * @return true if ref is an image reference
+ */
+static bool AW_IS_IMAGEREF(const char* ref) {
+    return ref[0] == '#';
+}
+
+/** 
+ * Converts ARB type mnemonics into GTK style mnemoics.
+ * @param  text     the label text
+ * @param  mnemonic the mnemonic character
+ * @return copy of @param text with a _ inserted before the first
+ *         occurance of @param mnemonic. MUST BE FREED.
+ */
+static char* aw_convert_mnemonic(const char* text, const char* mnemonic) {
+    char *rval = (char*) malloc(strlen(text)
+                                + 1 // \0 terminator
+                                + 1 // _ character
+                                + 4 // " (x)"
+                                );
+    aw_return_val_if_fail(rval, NULL);
+    strcpy(rval, text);
+
+    if (AW_IS_IMAGEREF(text) || !mnemonic || mnemonic[0]=='\0') {
+        return rval;
+    }
+
+    size_t pos = strcspn(text, mnemonic);
+    aw_return_val_if_fail(pos <= strlen(text), rval); // paranoia check
+
+    if (pos == strlen(text)) { // mnemonic does not occur in text
+        rval[pos++] = ' ';
+        rval[pos++] = '(';
+        rval[pos++] = '_';
+        rval[pos++] = mnemonic[0];
+        rval[pos++] = ')';
+        rval[pos++] = '\0';
+    } else {
+        rval[pos]='_';
+        strcpy(rval + pos + 1, text + pos);
+    }
+
+    return rval;
+}
+
+/**
+ * creates a label widget from ARB label descriptions
+ * @param  label_text The text of the label. Image labels begin with a #.
+ * @param  label_len  A fixed label width in characters or 0.
+ * @param  mnemonic   Mnemononic char to be used
+ * @return An GtkImage or a GtkLabel, depending. 
+ */
+GtkWidget* AW_window::make_label(const char* label_text, short label_len, const char* mnemonic) {
+    aw_return_val_if_fail(label_text, NULL);
     GtkWidget *widget;
 
-    if (label_text[0] == '#') {
+    if (AW_IS_IMAGEREF(label_text)) {
         widget = gtk_image_new_from_file(GB_path_in_ARBLIB("pixmaps", label_text+1));
     }
     else {
-        widget = gtk_label_new_with_mnemonic(label_text);
+        if (mnemonic) {
+            char *label_w_mnemonic = aw_convert_mnemonic(label_text, mnemonic);        
+            widget = gtk_label_new_with_mnemonic(label_w_mnemonic);
+            free(label_w_mnemonic);
+        } else {
+            widget = gtk_label_new_with_mnemonic(label_text);
+        }
     
         AW_awar *awar = get_root()->label_is_awar(label_text);
         if (awar) { 
@@ -243,8 +303,8 @@ void AW_window::put_with_label(GtkWidget *widget) {
 
     // if size given by xfig, scale hbox
     if (_at.to_position_exists) { 
-        aw_assert(_at.to_position_x >_at.x_for_next_button);               
-        aw_assert(_at.to_position_y >_at.y_for_next_button);         
+        aw_warn_if_fail(_at.to_position_x >_at.x_for_next_button);               
+        aw_warn_if_fail(_at.to_position_y >_at.y_for_next_button);         
         hbox_req.width = std::max(hbox_req.width, _at.to_position_x - _at.x_for_next_button);
         hbox_req.height = std::max(hbox_req.height, _at.to_position_y - _at.y_for_next_button);
         
@@ -262,14 +322,14 @@ void AW_window::put_with_label(GtkWidget *widget) {
 
 
 /** Creates a progress bar that is bound to the specified awar.*/
-void AW_window::create_progressBar(const char *var) {
+void AW_window::create_progressBar(const char *var_name) {
+    AW_awar* awar = get_root()->awar_no_error(var_name);
+    aw_return_if_fail(awar != NULL);
+
     GtkWidget *bar = gtk_progress_bar_new();
     gtk_widget_show(bar);
     put_with_label(bar);
     
-    aw_assert(NULL != var);
-    AW_awar *awar = get_root()->awar(var);
-    aw_assert(NULL != awar);
     awar->bind_value(G_OBJECT(bar), "fraction");
 }
 
@@ -279,7 +339,7 @@ void AW_window::create_progressBar(const char *var) {
  * otherwise creates a label.
  */ 
 void AW_window::create_button(const char *macro_name, const char *button_text, 
-                              const char */*mnemonic*/, const char */*color*/) {
+                              const char *mnemonic, const char */*color*/) {
 #if defined(DUMP_BUTTON_CREATION)
     printf("------------------------------ Button '%s'\n", button_text);
     printf("x_for_next_button=%i y_for_next_button=%i\n", _at.x_for_next_button, _at.y_for_next_button);
@@ -287,9 +347,10 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
 
     GtkWidget *button_label, *button;
 
-    button_label = make_label(button_text, _at.length_of_buttons);
+    button_label = make_label(button_text, _at.length_of_buttons, mnemonic);
 
     gtk_widget_show(button_label);
+
 
     // make 'button' a real button if we've got a callback to run on click
     if (prvt->callback) {
@@ -318,57 +379,48 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
 #endif
     }
 
-    bool highlight = _at.highlight;
+    bool do_highlight = _at.highlight;
 
     put_with_label(button);
 
-    if (highlight) {
+    if (do_highlight) {
         gtk_widget_set_can_default(button, true);
         gtk_widget_grab_default(button);
         gtk_widget_grab_focus(button);
     }
 }
 
-void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
-    size_t text_width = strcspn(text, "\n");
-
-    if (text[text_width]) {
-        aw_assert(text[text_width] == '\n');
-
-        aw_detect_text_size(text+text_width+1, width, height);
-        if (text_width>width) width = text_width;
-        height++;
-    }
-    else { // EOS
-        width  = text_width;
-        height = 1;
-    }
-}
-
 void AW_window::create_autosize_button(const char *macro_name, const char *buttonlabel, 
                                        const char *mnemonic /* = 0*/, unsigned xtraSpace /* = 1 */){
-    aw_assert(buttonlabel[0] != '#');    // use create_button for graphical buttons!
-    aw_assert(!_at.to_position_exists); // wont work if to-position exists
+    aw_return_if_fail(buttonlabel != NULL);
+    aw_return_if_fail(!AW_IS_IMAGEREF(buttonlabel)); 
+    aw_return_if_fail(!_at.to_position_exists); // wont work if to-position exists
 
-    AW_awar *is_awar = get_root()->label_is_awar(buttonlabel);
-    size_t   width, height;
-    if (is_awar) {
-        char *content = is_awar->read_as_string();
-        aw_assert(content[0]); /* you need to fill the awar before calling create_autosize_button,
-                                * otherwise size cannot be detected */
-        aw_detect_text_size(content, width, height);
-    }
-    else {
-        aw_detect_text_size(buttonlabel, width, height);
+    const char* content = buttonlabel;
+
+    if (get_root()->label_is_awar(buttonlabel)) {
+        content = get_root()->awar(buttonlabel)->read_char_pntr();
+
+        // awar must be filled before calling create_autosize_button,
+        // otherwise size cannot be detected 
+        aw_return_if_fail(strlen(content)>0);
     }
 
-    int   len               = width+(xtraSpace*2);
+    size_t width = 0, height = 0, line_width;
+    const char *ptr = content;
+    while ( (line_width = strcspn(ptr, "\n")) ) {
+        if (line_width > width) width = line_width;
+        height ++;
+        ptr += line_width + 1;
+    }
+
     short length_of_buttons = _at.length_of_buttons;
     short height_of_buttons = _at.height_of_buttons;
 
-    _at.length_of_buttons = len+1;
+    _at.length_of_buttons = width+(xtraSpace*2) + 1 ;
     _at.height_of_buttons = height;
     create_button(macro_name, buttonlabel, mnemonic);
+
     _at.length_of_buttons = length_of_buttons;
     _at.height_of_buttons = height_of_buttons;
 }
@@ -405,9 +457,14 @@ struct _awar_inverse_bool_mapper : public AW_awar_gvalue_mapper {
 
 void AW_window::create_toggle(const char *var_name, bool inverse, 
                               const char *yes, const char *no, int width) {
+    AW_awar* awar = get_root()->awar_no_error(var_name);
+    aw_return_if_fail(awar != NULL);
+    aw_return_if_fail((yes==NULL) == (no==NULL)); // either both or none
+
     GtkWidget* checkButton;
     if (yes) {
-        aw_assert(NULL != no); //if yes is not null no should be not null as well
+        // create our own switching labels toggle
+        
         checkButton = gtk_toggle_button_new();
         GtkWidget* no_label = make_label(no, width);
         gtk_container_add(GTK_CONTAINER(checkButton), no_label);
@@ -423,12 +480,12 @@ void AW_window::create_toggle(const char *var_name, bool inverse,
                          (gpointer) bin);
     }
     else {
+        // just use a normal check button
         checkButton = gtk_check_button_new();
     }
     
-
-    get_root()->awar(var_name)->bind_value(G_OBJECT(checkButton), "active",
-                                           inverse ? new _awar_inverse_bool_mapper() : NULL);
+    awar->bind_value(G_OBJECT(checkButton), "active",
+                     inverse ? new _awar_inverse_bool_mapper() : NULL);
 
     if (prvt->callback) {
       _set_activate_callback(checkButton);
@@ -438,55 +495,63 @@ void AW_window::create_toggle(const char *var_name, bool inverse,
 }
 
 static gboolean noop_signal_handler(GtkWidget* /*wgt*/, gpointer /*user_data*/) {
-  return true; // stop signal
+    return true; // stop signal
 }
 
 void AW_window::create_input_field(const char *var_name,   int columns) {
+    AW_awar* awar = get_root()->awar_no_error(var_name);
+    aw_return_if_fail(awar != NULL);
+    
     GtkWidget *entry;
-    GtkAdjustment *adj;
-    AW_awar *vs = get_root()->awar(var_name);
-    aw_assert(NULL != vs);
 
     int width = columns ? columns : _at.length_of_buttons;
 
-    switch (vs->get_type()) {
-    case GB_STRING:
+    if (awar->get_type() == GB_STRING) {
         entry = gtk_entry_new();
-        vs->bind_value(G_OBJECT(entry), "text");
-        break;
-    case GB_FLOAT:
-        adj = GTK_ADJUSTMENT(gtk_adjustment_new(vs->read_as_float(), vs->get_min(), vs->get_max(), 
-                                                1, 5, 0));
-        entry = gtk_spin_button_new(adj, 1, 2);
-        vs->bind_value(G_OBJECT(entry), "value");
-        width--;
-    case GB_INT:
-        adj = GTK_ADJUSTMENT(gtk_adjustment_new(vs->read_as_float(), vs->get_min(), vs->get_max(), 
-                                                1, 5, 0));
-        entry = gtk_spin_button_new(adj, 1, 0);
-        vs->bind_value(G_OBJECT(entry), "value");
-        width--;
-        break;
-    case GB_POINTER:
-    default:
-        aw_assert(false);
+        awar->bind_value(G_OBJECT(entry), "text");
+    }
+    else {
+        GtkAdjustment *adj;
+
+        int climb_rate = 1;
+        int precision;
+        double step;
+        if        (awar->get_type() == GB_FLOAT) {
+            precision = 2;
+            step      = 0.1;
+        } else if (awar->get_type() == GB_INT) {
+            precision = 0;
+            step      = 1;
+        } else {
+            aw_return_if_reached();
+        }
+
+        adj = GTK_ADJUSTMENT(gtk_adjustment_new(awar->read_as_float(), 
+                                                awar->get_min(), awar->get_max(), 
+                                                step, 50 *step, 0));
+        entry = gtk_spin_button_new(adj, climb_rate, precision);
+        awar->bind_value(G_OBJECT(entry), "value");
+     
+        width--; // make room for the spinner
     }
 
-    gtk_entry_set_width_chars(GTK_ENTRY(entry), width);
+    if (width > 0) {
+        gtk_entry_set_width_chars(GTK_ENTRY(entry), width);
+    }
+
     gtk_entry_set_activates_default(GTK_ENTRY(entry), true);
     put_with_label(entry);
-
     get_root()->register_widget(entry, _at.widget_mask);
 }
 
 
 void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, int rows /*= 4*/){
-    AW_awar *vs = get_root()->awar(var_name);
-    aw_assert(NULL != vs);
+    AW_awar* awar = get_root()->awar_no_error(var_name);
+    aw_return_if_fail(awar != NULL);
 
     GtkWidget *entry = gtk_text_view_new();
     GtkTextBuffer *textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(entry));
-    vs->bind_value(G_OBJECT(textbuffer), "text");
+    awar->bind_value(G_OBJECT(textbuffer), "text");
 
     GtkWidget *scrolled_entry = gtk_scrolled_window_new(NULL,NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_entry), 
@@ -510,17 +575,13 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
         prvt->d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
         get_root()->define_remote_command(prvt->d_callback);
     }
-   put_with_label(scrolled_entry);
+    put_with_label(scrolled_entry);
     get_root()->register_widget(entry, _at.widget_mask);
 }
 
 void AW_window::create_menu(const char *name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
-    aw_assert(legal_mask(mask));
+    aw_return_if_fail(legal_mask(mask));
 
-//    #if defined(DUMP_MENU_LIST)
-//        dumpCloseAllSubMenus();
-//    #endif // DUMP_MENU_LIST
-        
     // The user might leave sub menus open. Close them before creating a new top level menu.
     while(prvt->menus.size() > 1) {
         close_sub_menu();
@@ -530,74 +591,25 @@ void AW_window::create_menu(const char *name, const char *mnemonic, AW_active ma
 }
 
 void AW_window::close_sub_menu(){
-    arb_assert(NULL != prvt);
-    arb_assert(prvt->menus.size() > 1);
+    aw_return_if_fail(prvt->menus.size() > 1);
     
     prvt->menus.pop();
-    
 }
-
-
-char *AW_window::align_string(const char *label_text, int columns) {
-    // shortens or expands 'label_text' to 'columns' columns
-    // if label_text contains '\n', each "line" is handled separately
-
-    const char *lf     = strchr(label_text, '\n');
-    char       *result = 0;
-
-    if (!lf) {
-        result = (char*)malloc(columns+1);
-
-        int len              = strlen(label_text);
-        if (len>columns) len = columns;
-
-        memcpy(result, label_text, len);
-        if (len<columns) memset(result+len, ' ', columns-len);
-        result[columns] = 0;
-    }
-    else {
-        char *part1    = GB_strpartdup(label_text, lf-1);
-        char *aligned1 = align_string(part1, columns);
-        char *aligned2 = align_string(lf+1, columns);
-
-        result = GBS_global_string_copy("%s\n%s", aligned1, aligned2);
-
-        free(aligned2);
-        free(aligned1);
-        free(part1);
-    }
-    return result;
-}
-
 
 AW_selection_list *AW_window::create_option_menu(const char *var_name, 
                                                      const char *tmp_label, 
                                                      const char *){
-    AW_awar *vs = get_root()->awar(var_name);
-    aw_assert(vs);
+    AW_awar* awar = get_root()->awar_no_error(var_name);
+    aw_return_val_if_fail(awar, NULL);
 
     if (tmp_label) this->label(tmp_label);
+
     GtkWidget *combo_box = gtk_combo_box_new();
-    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo_box), renderer, true);
-    gtk_cell_layout_add_attribute(GTK_CELL_LAYOUT(combo_box), renderer, "text", 0);
-    GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
-    gtk_combo_box_set_model(GTK_COMBO_BOX(combo_box), GTK_TREE_MODEL(store));
+    AW_selection_list *slist = new AW_selection_list(awar);
+    slist->bind_widget(combo_box);
 
-    AW_selection_list *slist = new AW_selection_list(var_name,
-                                                     vs->get_type(),
-                                                     combo_box);
+    //prvt->callback
 
-    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, combo_box, AW_WIDGET_CHOICE_MENU, vs, prvt->callback);
-
-    vui->set_sellist(slist);
-
-    //connect changed signal
-    g_signal_connect(G_OBJECT(combo_box), "changed", 
-                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), 
-                     (gpointer) vui);
-   
-    vs->tie_widget((AW_CL)slist, combo_box, AW_WIDGET_CHOICE_MENU, this);
     get_root()->register_widget(combo_box, _at.widget_mask);
 
     prvt->combo_box = combo_box;
@@ -629,8 +641,8 @@ template <class T>
 void AW_window::insert_option_internal(const char *option_name, const char */*mnemonic*/, 
                                        T var_value, const char */*name_of_color*/, 
                                        bool /*default_option*/) {
-    aw_assert(NULL != prvt->selection_list); //current option menu has to be set
-    aw_assert(prvt->selection_list->variable_type == AW_TypeCheck::getVarType(var_value)); //type missmatch
+    aw_return_if_fail(prvt->selection_list != NULL); //current option menu has to be set
+    //aw_return_if_fail(prvt->selection_list->variable_type == AW_TypeCheck::getVarType(var_value)); //type missmatch
     
     FIXME("background color not implemented");
     FIXME("check for distinct per-option callbacks");
@@ -658,54 +670,24 @@ static void row_activated_cb(GtkTreeView       * /*tree_view*/,
 }
 
 AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows) {
-    aw_assert(var_name); 
-    aw_assert(!_at.label_for_inputfield); // labels have no effect for selection lists
+    AW_awar* awar = get_root()->awar_no_error(var_name);
+    aw_return_val_if_fail(awar, NULL);
+    aw_warn_if_fail(!_at.label_for_inputfield); // labels have no effect for selection lists
 
-    GtkListStore *store;
-    GtkWidget *tree;
-    GtkCellRenderer *renderer;
-    GtkTreeViewColumn *column;
-    AW_awar *vs = get_root()->awar(var_name);
-    aw_assert(vs);
-    AW_varUpdateInfo *vui = 0;
-    
-    tree = gtk_tree_view_new();
+   
+    GtkWidget *tree = gtk_tree_view_new();
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
-
-    renderer = gtk_cell_renderer_text_new ();
-    g_object_set(renderer, "family", "monospace", NULL);
-    column = gtk_tree_view_column_new_with_attributes("List Items",
-             renderer, "text", 0, NULL); //column headers are disabled, text does not matter
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
-
-    store = gtk_list_store_new(1, G_TYPE_STRING);
-    gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(store));
-
+   
     GtkWidget *scrolled_win = gtk_scrolled_window_new(NULL, NULL);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_win),
-                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_win), tree);
+    gtk_container_add(GTK_CONTAINER(scrolled_win), tree);
 
-    
+    // set size
     int char_width, char_height;
     prvt->get_font_size(char_width, char_height);
     gtk_widget_set_size_request(scrolled_win, char_width * columns, char_height * rows);
 
-
-    GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
-    gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
-
-    // MEMORY-LEAK
-    AW_selection_list *slist = new AW_selection_list(var_name, 
-                                                     vs->get_type(),
-                                                     GTK_WIDGET(tree));
-
-    vui = new AW_varUpdateInfo(this, tree, AW_WIDGET_SELECTION_LIST, vs, prvt->callback);
-    vui->set_sellist(slist);
-
-    g_signal_connect(G_OBJECT(selection), "changed", 
-                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback), 
-                     (gpointer) vui);
+    AW_selection_list *slist = new AW_selection_list(awar);
+    slist->bind_widget(tree);
 
     if (prvt->d_callback) {
         g_signal_connect(G_OBJECT(tree), "row-activated", 
@@ -713,17 +695,14 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
                          (gpointer) prvt->d_callback);
     }
 
-    vs->tie_widget((AW_CL)slist, tree, AW_WIDGET_SELECTION_LIST, this);
     get_root()->register_widget(tree, _at.widget_mask);
-    
-    
     put_with_label(scrolled_win);
     return slist;
 }
 
 // BEGIN TOGGLE FIELD STUFF
 
-void AW_window::create_toggle_field(const char *awar_name, int orientation /*= 0*/){
+void AW_window::create_toggle_field(const char *var_name, int orientation /*= 0*/){
     // orientation = 0 -> vertical else horizontal layout
 
     if (orientation == 0) {
@@ -733,39 +712,43 @@ void AW_window::create_toggle_field(const char *awar_name, int orientation /*= 0
       prvt->toggle_field = gtk_hbox_new(true, 2);
     }
     
-    prvt->toggle_field_awar_name = awar_name;
+    prvt->toggle_field_awar_name = var_name;
 
-    // FIXME bind awar  to widget
+    FIXME("bind awar  to widget");
     
     get_root()->register_widget(prvt->toggle_field, _at.widget_mask);
 }
 
-void AW_window::create_toggle_field(const char *var_name, const char *labeli, const char */*mnemonic*/) {
-    if (labeli) this->label(labeli);
+void AW_window::create_toggle_field(const char *var_name, const char *labeli, const char *mnemonic) {
+    char *lab = aw_convert_mnemonic(labeli, mnemonic);
+    if (labeli) this->label(lab);
+    free(lab);
     create_toggle_field(var_name);
 }
 
 template <class T>
 void AW_window::insert_toggle_internal(const char *toggle_label, const char *mnemonic, 
                                        T var_value, bool default_toggle) {
-    GtkWidget *radio;  
-    std::string mnemonicLabel = AW_motif_gtk_conversion::convert_mnemonic(toggle_label, mnemonic);
-    // create and chain radio button
-    radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(prvt->radio_last), 
-                                                           mnemonicLabel.c_str());
-    prvt->radio_last = radio;
+    AW_awar* awar = get_root()->awar_no_error(prvt->toggle_field_awar_name);
+    aw_return_if_fail(awar != NULL);
+
+    prvt->radio_last = GTK_RADIO_BUTTON(gtk_radio_button_new_from_widget(prvt->radio_last));
+
+    gtk_container_add(GTK_CONTAINER(prvt->radio_last),
+                      make_label(toggle_label, 0, mnemonic));
     
-    gtk_box_pack_start(GTK_BOX(prvt->toggle_field), radio, true, true, 2);
+    gtk_box_pack_start(GTK_BOX(prvt->toggle_field), 
+                       GTK_WIDGET(prvt->radio_last), true, true, 2);
     
+
     AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, NULL, AW_WIDGET_TOGGLE_FIELD,
-                                                 get_root()->awar(prvt->toggle_field_awar_name), 
-                                                 var_value, prvt->callback);
-    g_signal_connect((gpointer)radio, "clicked", 
+                                                 awar, var_value, prvt->callback);
+    g_signal_connect((gpointer)prvt->radio_last, "clicked", 
                      G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
                      (gpointer)vui);
     
     if(default_toggle){
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), true);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prvt->radio_last), true);
     }
 }
 
@@ -793,7 +776,7 @@ void AW_window::update_toggle_field() {
 // END TOGGLE FIELD STUFF
 
 void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize){
-    aw_assert(xfig_data);  // forgot to call load_xfig ?
+    aw_return_if_fail(xfig_data != NULL);  // forgot to call load_xfig ?
     
     xfig_data->add_line(x1, y1, x2, y2, width);
     _at.set_xfig(xfig_data);
@@ -829,84 +812,73 @@ void AW_window::get_event(AW_event *eventi) const {
 
 AW_device_print *AW_window::get_print_device(AW_area area){
     AW_area_management *aram = prvt->areas[area];
-    aw_assert(NULL != aram);
+    aw_return_val_if_fail(aram, NULL);
     return aram->get_print_device();
 }
 
 AW_device_size *AW_window::get_size_device(AW_area area){
     AW_area_management *aram        = prvt->areas[area];
-    aw_assert(NULL != aram);
-    AW_device_size     *size_device = NULL;
+    aw_return_val_if_fail(aram, NULL);
 
-    if (aram) {
-        size_device = aram->get_size_device();
-        size_device->forget_tracked();
-        size_device->reset(); // @@@ hm
-    }
+    AW_device_size *size_device = aram->get_size_device();
+    aw_return_val_if_fail(size_device, NULL); //paranoia
+
+    size_device->forget_tracked();
+    size_device->reset(); // @@@ hm
+
     return size_device;
 }
 
 
-void AW_window::insert_help_topic(const char *name, const char */*mnemonic*/, const char */*help_text_*/, AW_active /*mask*/, void (*/*f*/)(AW_window*, AW_CL, AW_CL), AW_CL /*cd1*/, AW_CL /*cd2*/){
-    aw_assert(NULL != prvt->help_menu);
+void AW_window::insert_help_topic(const char *labeli, 
+                                  const char *mnemonic, const char *helpText,
+                                  AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2) {
+    aw_return_if_fail(prvt->help_menu != NULL);
     
-    FIXME("mnemonic not working");
-    FIXME("help entry callback not working");
-    FIXME("Help text not working");
-    GtkWidget *item = gtk_menu_item_new_with_label(name);
-    gtk_menu_shell_append(prvt->help_menu, item);
-    
-        
+    prvt->menus.push(prvt->help_menu);
+    insert_menu_topic("", labeli, mnemonic, helpText, mask, f, cd1, cd2);
+    prvt->menus.pop();
 }
 
 
-void AW_window::insert_menu_topic(const char *topic_id, const char *name, 
+void AW_window::insert_menu_topic(const char *cmd, const char *labeli, 
                                   const char *mnemonic, const char *helpText, 
                                   AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2){
-   aw_assert(legal_mask(mask));
-   aw_assert(prvt->menus.size() > 0); //closed too many menus
+    aw_return_if_fail(legal_mask(mask));
+    aw_return_if_fail(prvt->menus.size() > 0); //closed too many menus
+    aw_return_if_fail(cmd != NULL);
   
-   std::string topicName = AW_motif_gtk_conversion::convert_mnemonic(name, mnemonic);
-   
-   GtkWidget *wlabel = make_label(name, 0);
-   GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
-   gtk_container_add(GTK_CONTAINER(alignment), wlabel);
-   GtkWidget *item = gtk_menu_item_new();
-   gtk_container_add(GTK_CONTAINER(item),alignment);
+    GtkWidget *wlabel    = make_label(labeli, 0, mnemonic);
+    GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
+    GtkWidget *item      = gtk_menu_item_new();
+    gtk_container_add(GTK_CONTAINER(alignment), wlabel);
+    gtk_container_add(GTK_CONTAINER(item),      alignment);
 
-   gtk_menu_shell_append(prvt->menus.top(), item);  
+    gtk_menu_shell_append(prvt->menus.top(), item);  
    
-#if defined(DUMP_MENU_LIST)
- //   dumpMenuEntry(name);
-#endif // DUMP_MENU_LIST
-
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, helpText);
-    
     
     g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
 
-#if defined(DEVEL_RALF) // wanted version
-    aw_assert(topic_id);
-#else // !defined(DEVEL_RALF)
-    if (!topic_id) topic_id = name;
-#endif
-    cbs->id = strdup(topic_id);
+    cbs->id = strdup(cmd);
     get_root()->define_remote_command(cbs);
     get_root()->register_widget(item, mask);
 }
 
-void AW_window::insert_sub_menu(const char *name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
-    aw_assert(legal_mask(mask));
-    aw_assert(NULL != prvt->menus.top());
-    
-    //construct mnemonic string
-    std::string menuName = AW_motif_gtk_conversion::convert_mnemonic(name, mnemonic);
-    
+void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
+    aw_return_if_fail(legal_mask(mask));
+    aw_return_if_fail(prvt->menus.top());
+  
+  
     //create new menu item with attached submenu
-    GtkMenu *submenu  = GTK_MENU(gtk_menu_new());
-    GtkMenuItem *item = GTK_MENU_ITEM(gtk_menu_item_new_with_mnemonic(menuName.c_str()));
-    
-    gtk_menu_item_set_submenu(item, GTK_WIDGET(submenu));
+    GtkWidget   *wlabel    = make_label(labeli, 0, mnemonic);
+    GtkWidget   *submenu   = gtk_menu_new();
+    GtkMenuItem *item      = GTK_MENU_ITEM(gtk_menu_item_new());
+    GtkWidget   *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
+
+    gtk_container_add(GTK_CONTAINER(alignment), wlabel);
+    gtk_container_add(GTK_CONTAINER(item), alignment);
+    gtk_menu_item_set_submenu(item, submenu);
 
     if (prvt->menus.size() == 1) { // Insert new menu second-to-last (last is HELP)
       // Count entries in menu
@@ -933,12 +905,6 @@ void AW_window::insert_sub_menu(const char *name, const char *mnemonic, AW_activ
 
     get_root()->register_widget(GTK_WIDGET(item), mask);
 }
-
-
-
-
-
-
 
 static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
     AW_device *device = aww->get_device(AW_INFO_AREA);
@@ -990,16 +956,18 @@ const char *AW_window::local_id(const char *id) const{
 }
 
 void AW_window::sep______________() {
-    
-    aw_assert(NULL != prvt);
-    aw_assert(prvt->menus.size() > 0);
+    aw_return_if_fail(prvt->menus.size() > 0);
     
     GtkWidget *item = gtk_separator_menu_item_new();
     gtk_menu_shell_append(prvt->menus.top(), item);
-    
 }
 
-void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
+/**
+ * Registers an expose callback.
+ * Called whenever the @param area receives an expose event.
+ * This is where any drawing should be handled.
+ */
+void AW_window::set_expose_callback(AW_area area, AW_CB f, AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
     AW_area_management *aram = prvt->areas[area];
     if (aram) aram->set_expose_callback(this, f, cd1, cd2);
 }
@@ -1009,7 +977,7 @@ void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
  * They used to be called as soon as the mouse entered the main drawing area. 
  * For now, they are not called at all.
  */
-void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_focus_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
     // this is only ever called by AWT_canvas and triggers a re-render of the
     // middle area. the API was designed for "focus-follows-mouse" mode,
     // and makes little sense for GTK
@@ -1021,17 +989,17 @@ void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd
  * Registers callback to be executed after the window is shown.
  * Called multiple times if a show() follows a hide().
  */
-void AW_window::set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_popup_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
     prvt->popup_cb = new AW_cb_struct(this, f, cd1, cd2, 0, prvt->popup_cb);
 }
 
 void AW_window::set_info_area_height(int h) {
-    if (NULL == prvt->fixed_size_area) return;
+    aw_return_if_fail(prvt->fixed_size_area != NULL);
     gtk_widget_set_size_request(GTK_WIDGET(prvt->fixed_size_area), -1, h);
 }
 
 void AW_window::set_bottom_area_height(int h) {
-    if (NULL == prvt->bottom_area) return;
+    aw_return_if_fail(prvt->bottom_area != NULL);
     
     // FIXME: workaround for @@@PH_main.cxx
     // Every client besides PHYLO calls with h=0;
@@ -1044,28 +1012,23 @@ void AW_window::set_bottom_area_height(int h) {
     gtk_widget_set_size_request(GTK_WIDGET(prvt->bottom_area), -1, h);
 }
 
-void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_input_callback(AW_area area, AW_CB f, AW_CL cd1, AW_CL cd2) {
     AW_area_management *aram = prvt->areas[area];
-    if (!aram)
-        return;
+    aw_return_if_fail(aram != NULL);
     aram->set_input_callback(this, f, cd1, cd2);
 }
 
-void AW_window::set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_motion_callback(AW_area area, AW_CB f, AW_CL cd1, AW_CL cd2) {
     AW_area_management *aram = prvt->areas[area];
-    if (!aram)
-        return;
+    aw_return_if_fail(aram != NULL);
     aram->set_motion_callback(this, f, cd1, cd2);
 }
 
-void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
+void AW_window::set_resize_callback(AW_area area, AW_CB f, AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
     AW_area_management *aram = prvt->areas[area];
-    if (!aram)
-        return;
+    aw_return_if_fail(aram != NULL);
     aram->set_resize_callback(this, f, cd1, cd2);
 }
-
-
 
 // SCROLL BAR STUFF
 
@@ -1100,17 +1063,18 @@ void AW_window::reset_scrolled_picture_size() {
 
 void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
     AW_area_management *aram = prvt->areas[area];
+    aw_return_if_fail(aram != NULL);
     *square = aram->get_common()->get_screen();
 }
 
 void AW_window::get_scrollarea_size(AW_screen_area *square) {
+    aw_return_if_fail(square != NULL);
     _get_area_size(AW_MIDDLE_AREA, square);
     square->r -= left_indent_of_horizontal_scrollbar;
     square->b -= top_indent_of_vertical_scrollbar;
 }
 
 void AW_window::calculate_scrollbars(){
-
     AW_screen_area scrollArea;
     get_scrollarea_size(&scrollArea);
 
@@ -1135,8 +1099,8 @@ void AW_window::calculate_scrollbars(){
                                    vstep_increment, vpage_increment);
 }
  
-static void _aw_window_recalc_scrollbar_cb(AW_root*, AW_CL cd) {
-    ((AW_window*)cd)->calculate_scrollbars();
+static void _aw_window_recalc_scrollbar_cb(AW_root*, AW_window* aww) {
+    aww->calculate_scrollbars();
 }
 
 void AW_window::create_window_variables() {
@@ -1144,34 +1108,30 @@ void AW_window::create_window_variables() {
 
     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback(_aw_window_recalc_scrollbar_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback((AW_RCB1)_aw_window_recalc_scrollbar_cb, (AW_CL)this);
 
     sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback(_aw_window_recalc_scrollbar_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback((AW_RCB1)_aw_window_recalc_scrollbar_cb, (AW_CL)this);
 
     sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 9);
-    get_root()->awar(buffer)->add_callback(_aw_window_recalc_scrollbar_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback((AW_RCB1)_aw_window_recalc_scrollbar_cb, (AW_CL)this);
 
     sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(_aw_window_recalc_scrollbar_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback((AW_RCB1)_aw_window_recalc_scrollbar_cb, (AW_CL)this);
 }
 
-static void value_changed_scroll_bar_vertical(GtkAdjustment *adjustment, gpointer user_data){
-    AW_cb_struct *cbs = (AW_cb_struct *) user_data;
+static void value_changed_scroll_bar_vertical(GtkAdjustment *adjustment, AW_cb_struct *cbs) {
     cbs->aw->slider_pos_vertical = gtk_adjustment_get_value(adjustment);
     cbs->run_callback();
-
 }
 
-static void value_changed_scroll_bar_horizontal(GtkAdjustment *adjustment, gpointer user_data){
-    AW_cb_struct *cbs = (AW_cb_struct *) user_data;
+static void value_changed_scroll_bar_horizontal(GtkAdjustment *adjustment, AW_cb_struct *cbs) {
     (cbs->aw)->slider_pos_horizontal = gtk_adjustment_get_value(adjustment);
     cbs->run_callback();
 }
-
 
 void AW_window::set_vertical_scrollbar_position(int position){
 #if defined(DEBUG) && 0
@@ -1190,9 +1150,8 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
     aw_drawing_area_set_horizontal_slider(prvt->drawing_area, position);
 }
 
-
-void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    aw_assert(NULL != prvt->drawing_area);
+void AW_window::set_vertical_change_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
+    aw_return_if_fail(prvt->drawing_area != NULL);
     
     GtkAdjustment *hAdj = aw_drawing_area_get_vertical_adjustment(prvt->drawing_area);
     
@@ -1203,7 +1162,7 @@ void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL)
 }
 
 void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    aw_assert(NULL != prvt->drawing_area);
+    aw_return_if_fail(prvt->drawing_area != NULL);
     GtkAdjustment *hAdj = aw_drawing_area_get_horizontal_adjustment(prvt->drawing_area);
     g_signal_connect((gpointer)hAdj, "value_changed",
                      G_CALLBACK(value_changed_scroll_bar_horizontal),
@@ -1244,12 +1203,6 @@ void AW_window::shadow_width (int /*shadow_thickness*/) {
 
 void AW_window::button_height(int height) {
     _at.height_of_buttons = height>1 ? height : 0; 
-}
-
-void AW_window::show_modal() {
-    recalc_pos_atShow(AW_REPOS_TO_MOUSE);
-    get_root()->current_modal_window = this;
-    activate();
 }
 
 bool AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
@@ -1432,9 +1385,12 @@ void AW_window::create_devices() {
 
 
 void AW_window::create_font_button(const char* var_name, const char *label_) {
+    AW_awar* awar = get_root()->awar_no_error(var_name);
+    aw_return_if_fail(awar != NULL);
+    
     GtkWidget *font_button = gtk_font_button_new();
-    AW_awar *vs = get_root()->awar(var_name);
-    vs->bind_value(G_OBJECT(font_button), "font-name");
+    awar->bind_value(G_OBJECT(font_button), "font-name");
+
     if (label_) label(label_);
     put_with_label(font_button);
 }
@@ -1457,9 +1413,13 @@ struct _awar_gdkcolor_mapper : public AW_awar_gvalue_mapper {
 };
 
 void AW_window::create_color_button(const char* var_name, const char *label_) {
+    AW_awar* awar = get_root()->awar_no_error(var_name);
+    aw_return_if_fail(awar != NULL);
+
     GtkWidget *color_button = gtk_color_button_new();
-    AW_awar *vs = get_root()->awar(var_name);
-    vs->bind_value(G_OBJECT(color_button), "color", new _awar_gdkcolor_mapper());
+    awar->bind_value(G_OBJECT(color_button), 
+                     "color", new _awar_gdkcolor_mapper());
+
     if (label_) label(label_);
     put_with_label(color_button);
 }
@@ -1498,7 +1458,7 @@ void AW_window::show() {
         gtk_window_set_position(prvt->window, GTK_WIN_POS_MOUSE);
         break;
     default:
-        aw_assert(false);
+        aw_warn_if_reached();
     }
 
     prvt->show();

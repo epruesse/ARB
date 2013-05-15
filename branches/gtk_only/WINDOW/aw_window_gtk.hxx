@@ -48,7 +48,7 @@ public:
     /**
      * The last created radio button. NULL if no open group.
      */
-    GtkWidget *radio_last;
+    GtkRadioButton *radio_last;
 
     /**
      * The current selection list 

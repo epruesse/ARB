@@ -20,8 +20,10 @@
 
 #include "aw_assert.hxx"
 
+class AW_awar;
 
 class AW_scalar {
+private:
     union {
         char    *s;
         int32_t  i;
@@ -30,12 +32,13 @@ class AW_scalar {
     } value;
 
     GB_TYPES type;
+    
 public:
     explicit AW_scalar(int32_t I)     : type(GB_INT)   { value.i = I; }
     explicit AW_scalar(double F)      : type(GB_FLOAT) { value.f = F; }
     explicit AW_scalar(const char *S) : type(GB_STRING)   { value.s = strdup(S); }
     explicit AW_scalar(GBDATA *P)     : type(GB_POINTER)  { value.p = P; }
-    explicit AW_scalar(class AW_awar *awar);
+    explicit AW_scalar(AW_awar *awar);
 
     explicit AW_scalar(const AW_scalar& other)
         : value(other.value),
@@ -57,7 +60,7 @@ public:
     void set_string(const char *S) { aw_assert(type == GB_STRING);   freedup(value.s, S); }
     void set_pointer(GBDATA *P)    { aw_assert(type == GB_POINTER);  value.p = P; }
 
-    GB_ERROR write_to(class AW_awar *awar);
+    GB_ERROR write_to(AW_awar *awar);
 
     bool operator == (const AW_scalar& other) const {
         aw_assert(type == other.type); // type mismatch!
@@ -72,4 +75,6 @@ public:
         return equal;
     }
     bool operator != (const AW_scalar& other) const { return !(*this == other); }
+
+    bool operator == (AW_awar*& awar) const;   
 };

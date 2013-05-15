@@ -18,9 +18,6 @@
 #include "aw_base.hxx"
 #endif
 
-void aw_detect_text_size(const char *text, size_t& width, size_t& height);
-
-
 #else
 #error aw_global.hxx included twice
 #endif // AW_GLOBAL_HXX

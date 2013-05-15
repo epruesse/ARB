@@ -324,7 +324,6 @@ AW_cb_struct.o: aw_gtk_forward_declarations.hxx
 AW_cb_struct.o: aw_gtk_migration_helpers.hxx
 AW_cb_struct.o: aw_help.hxx
 AW_cb_struct.o: aw_keysym.hxx
-AW_cb_struct.o: aw_modal.hxx
 AW_cb_struct.o: aw_msg.hxx
 AW_cb_struct.o: aw_position.hxx
 AW_cb_struct.o: aw_root.hxx
@@ -657,6 +656,57 @@ AW_device_size.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_device_size.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_device_size.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AW_dialog.o: aw_area_management.hxx
+AW_dialog.o: aw_assert.hxx
+AW_dialog.o: aw_at.hxx
+AW_dialog.o: aw_awar.hxx
+AW_dialog.o: aw_base.hxx
+AW_dialog.o: aw_button.hxx
+AW_dialog.o: aw_cb_struct.hxx
+AW_dialog.o: aw_clipable.hxx
+AW_dialog.o: aw_common.hxx
+AW_dialog.o: aw_common_gtk.hxx
+AW_dialog.o: aw_device.hxx
+AW_dialog.o: aw_device_cairo.hxx
+AW_dialog.o: aw_device_click.hxx
+AW_dialog.o: aw_device_gtk.hxx
+AW_dialog.o: aw_device_impl.hxx
+AW_dialog.o: aw_device_print.hxx
+AW_dialog.o: aw_device_size.hxx
+AW_dialog.o: aw_dialog.hxx
+AW_dialog.o: aw_font_limits.hxx
+AW_dialog.o: aw_gtk_forward_declarations.hxx
+AW_dialog.o: aw_gtk_migration_helpers.hxx
+AW_dialog.o: aw_help.hxx
+AW_dialog.o: aw_keysym.hxx
+AW_dialog.o: aw_position.hxx
+AW_dialog.o: aw_root.hxx
+AW_dialog.o: aw_scalar.hxx
+AW_dialog.o: aw_select.hxx
+AW_dialog.o: aw_simple_device.hxx
+AW_dialog.o: aw_stylable.hxx
+AW_dialog.o: aw_window.hxx
+AW_dialog.o: aw_zoomable.hxx
+AW_dialog.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/arb_defs.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/arb_string.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/cb.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/downcast.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/gccver.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/static_assert.h
+AW_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
+
 AW_drawing_area.o: aw_assert.hxx
 AW_drawing_area.o: aw_drawing_area.hxx
 AW_drawing_area.o: aw_gtk_closures.hxx
@@ -979,6 +1029,7 @@ AW_modal.o: aw_device_gtk.hxx
 AW_modal.o: aw_device_impl.hxx
 AW_modal.o: aw_device_print.hxx
 AW_modal.o: aw_device_size.hxx
+AW_modal.o: aw_dialog.hxx
 AW_modal.o: aw_file.hxx
 AW_modal.o: aw_font_limits.hxx
 AW_modal.o: aw_global.hxx
@@ -994,6 +1045,7 @@ AW_modal.o: aw_scalar.hxx
 AW_modal.o: aw_select.hxx
 AW_modal.o: aw_simple_device.hxx
 AW_modal.o: aw_stylable.hxx
+AW_modal.o: aw_varUpdateInfo.hxx
 AW_modal.o: aw_window.hxx
 AW_modal.o: aw_zoomable.hxx
 AW_modal.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -1018,8 +1070,6 @@ AW_modal.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_modal.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_modal.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_modal.o: $(ARBHOME)/INCLUDE/test_global.h
-
-AW_motif_gtk_conversion.o: aw_motif_gtk_conversion.hxx
 
 AW_position.o: aw_assert.hxx
 AW_position.o: aw_base.hxx
@@ -1086,11 +1136,15 @@ AW_preset.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_preset.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_preset.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AW_question.o: aw_advice.hxx
 AW_question.o: aw_area_management.hxx
 AW_question.o: aw_assert.hxx
+AW_question.o: aw_awar.hxx
 AW_question.o: aw_base.hxx
+AW_question.o: aw_dialog.hxx
 AW_question.o: aw_gtk_forward_declarations.hxx
 AW_question.o: aw_keysym.hxx
+AW_question.o: aw_msg.hxx
 AW_question.o: aw_question.hxx
 AW_question.o: aw_root.hxx
 AW_question.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -1453,8 +1507,6 @@ AW_window.o: aw_gtk_forward_declarations.hxx
 AW_window.o: aw_gtk_migration_helpers.hxx
 AW_window.o: aw_help.hxx
 AW_window.o: aw_keysym.hxx
-AW_window.o: aw_modal.hxx
-AW_window.o: aw_motif_gtk_conversion.hxx
 AW_window.o: aw_msg.hxx
 AW_window.o: aw_position.hxx
 AW_window.o: aw_root.hxx
