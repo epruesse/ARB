@@ -241,6 +241,7 @@ static char *readable_pt_servername(int index, int maxlength) {
 #ifdef DEBUG
         printf("awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index\n");
 #endif
+        GB_clear_error();
         return strdup("-undefined-");
     }
 
@@ -304,6 +305,8 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
         char  *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
         AW_CL  cl_varname    = (AW_CL)strdup(varname); // make copy of awar_name for callbacks
 
+        awt_assert(!GB_have_error());
+        
         aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
         aw_root->awar(varname)->add_callback(update_ptserver_button, cl_varname);
 
