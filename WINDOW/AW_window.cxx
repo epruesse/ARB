@@ -22,7 +22,6 @@
 #include "aw_msg.hxx"
 #include "aw_awar.hxx"
 #include "aw_common.hxx"
-#include "aw_motif_gtk_conversion.hxx"
 #include "aw_help.hxx"
 #include "aw_varUpdateInfo.hxx" 
 #include "aw_type_checking.hxx"
