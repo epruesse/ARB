@@ -1316,10 +1316,7 @@ static void refresh_on_gc_change_cb(AW_window *, AW_CL, AW_CL) {
     ED4_request_full_instant_refresh();
 }
 
-ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_window)
-{
-    AW_window_menu_modes *awmm;
-
+ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_window) {
     {
         ED4_window *ed4w = first_window;
 
@@ -1339,12 +1336,17 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         return ED4_R_BREAK;
     }
 
-    awmm = new AW_window_menu_modes;
+    AW_window_menu_modes *awmm = new AW_window_menu_modes;
     {
-        int   len = strlen(alignment_name)+35;
-        char *buf = GB_give_buffer(len);
-        snprintf(buf, len-1, "ARB_EDIT4 *%d* [%s]", ED4_window::no_of_windows+1, alignment_name);
-        awmm->init(aw_root, "ARB_EDIT4", buf, 800, 450);
+        int   len      = strlen(alignment_name)+35;
+        int   winNum   = ED4_window::no_of_windows+1;
+        char *winName  = winNum>1 ? GBS_global_string_copy("ARB_EDIT4_%i", winNum) : strdup("ARB_EDIT4");
+        char *winTitle = GBS_global_string_copy("ARB_EDIT4 *%d* [%s]", winNum, alignment_name);
+
+        awmm->init(aw_root, winName, winTitle, 800, 450);
+
+        free(winTitle);
+        free(winName);
     }
 
     *device     = awmm->get_device(AW_MIDDLE_AREA); // points to Middle Area device
@@ -1514,7 +1516,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
             hotkey[0]                     = hotkeys[s];
             ED4_search_type_and_ed4w *taw = new ED4_search_type_and_ed4w(type, current_ed4w());
-            awmm->insert_menu_topic(macro_name, menu_entry_name, hotkey, "e4_search.hlp", AWM_ALL, AW_POPUP, AW_CL(ED4_create_search_window), AW_CL(taw));
+            awmm->insert_menu_topic(awmm->local_id(macro_name), menu_entry_name, hotkey, "e4_search.hlp", AWM_ALL, AW_POPUP, AW_CL(ED4_create_search_window), AW_CL(taw));
         }
     }
     awmm->close_sub_menu();
