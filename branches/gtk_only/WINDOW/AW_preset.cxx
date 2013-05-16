@@ -113,12 +113,16 @@ public:
     AW_MGC_awar_cb_struct *get_font_change_parameter() const { return font_change_cb_parameter; }
 };
 
+
+void AW_save_specific_properties(AW_window *aw, const char *filename) {  // special version for EDIT4
+    GB_ERROR error = aw->get_root()->save_properties(filename);
+    if (error) aw_message(error);
+}
 void AW_save_properties(AW_window *aw) {
     AW_save_specific_properties(aw, NULL);
 }
 
-void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, 
-                 bool has_font_info, const char *id0, ...) {
+void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) {
     // read the values of the specified GCs from 'source_window'
     // and write the values into same-named GCs of 'dest_window'
     //
@@ -145,30 +149,16 @@ void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_w
     va_end(parg);
 }
 
-void AW_save_specific_properties(AW_window *aw, const char *filename) {  // special version for EDIT4
-    GB_ERROR error = aw->get_root()->save_properties(filename);
-    if (error) aw_message(error);
-}
-
-
 static void add_common_property_menu_entries(AW_window *aw) {
-    aw->insert_menu_topic("enable_advices",   "Reactivate advices",   "R", "advice.hlp",   
-                          AWM_ALL, (AW_CB)AW_reactivate_all_advices,   0, 0);
-    aw->insert_menu_topic("enable_questions", "Reactivate questions", "q", "questions.hlp", 
-                          AWM_ALL, (AW_CB)AW_reactivate_all_questions, 0, 0);
+    aw->insert_menu_topic("enable_advices",   "Reactivate advices",   "R", "advice.hlp",    AWM_ALL, (AW_CB)AW_reactivate_all_advices,   0, 0);
+    aw->insert_menu_topic("enable_questions", "Reactivate questions", "q", "questions.hlp", AWM_ALL, (AW_CB)AW_reactivate_all_questions, 0, 0);
 }
+void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm) { add_common_property_menu_entries(awmm); }
+void AW_insert_common_property_menu_entries(AW_window_simple_menu *awsm) { add_common_property_menu_entries(awsm); }
 
-void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm) {
-    add_common_property_menu_entries(awmm);
-}
-
-void AW_insert_common_property_menu_entries(AW_window_simple_menu *awsm) {
-    add_common_property_menu_entries(awsm);
-}
-
-static bool color_groups_initialized = false;
-static bool use_color_groups = false;
-static const char **color_group_gc_defaults = 0;
+static bool         color_groups_initialized = false;
+static bool         use_color_groups         = false;
+static const char **color_group_gc_defaults  = 0;
 
 
 static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode)
@@ -178,7 +168,7 @@ static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode
     if (dont_recurse == 0) {
         ++dont_recurse;
         // mode == -1 -> no callback
-        char     awar_name[256];
+        char awar_name[256];
         const char* font;
 
         sprintf(awar_name, AWP_FONTNAME_TEMPLATE, cbs->cbs->window_awar_name, cbs->fontbasename);
@@ -207,7 +197,7 @@ GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
     return GBT_write_int(gbd, AW_COLOR_GROUP_ENTRY, color_group);
 }
 
-char *AW_get_color_group_name(AW_root *awr, int color_group){
+char *AW_get_color_group_name(AW_root *awr, int color_group) {
     aw_assert(color_groups_initialized);
     aw_assert(color_group>0 && color_group <= AW_COLOR_GROUPS);
     return awr->awar(AW_get_color_group_name_awarname(color_group))->read_string();
@@ -359,11 +349,11 @@ void AW_init_color_group_defaults(const char *for_program) {
 
 AW_gc_manager AW_manage_GC(AW_window *aww,
                            AW_device *device, int base_gc, int base_drag, AW_GCM_AREA area,
-                           void (*changecb)(AW_window*, AW_CL, AW_CL), AW_CL  cd1, AW_CL cd2,
+                           void (*changecb)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2,
                            bool define_color_groups,
                            const char *default_background_color,
                            ...) {
-   /*  Parameter:
+    /*  Parameter:
      *          aww:                    base window
      *          device:                 screen device
      *          base_gc:                first gc number
@@ -669,7 +659,6 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
 
                 AW_MGC_awar_cb_struct *acs = gcmgr->get_font_change_parameter();
                 acs->gc_def_window         = aws;
-
             }
             if (!gcp.append_same_line)  aws->at_newline();
         }
@@ -800,8 +789,7 @@ AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id_par) {
 }
 
 
-AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, const char *wid, 
-                                     const char *windowname){
+AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, const char *wid, const char *windowname) {
     AW_window_simple * aws = new AW_window_simple;
 
     aws->init(aw_root, wid, windowname);

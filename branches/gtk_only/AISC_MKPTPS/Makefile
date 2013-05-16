@@ -36,7 +36,6 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 mkptypes.o: $(ARBHOME)/INCLUDE/arb_assert.h
-mkptypes.o: $(ARBHOME)/INCLUDE/arb_core.h
 mkptypes.o: $(ARBHOME)/INCLUDE/arb_early_check.h
 mkptypes.o: $(ARBHOME)/INCLUDE/arbtools.h
 mkptypes.o: $(ARBHOME)/INCLUDE/attributes.h
