@@ -35,12 +35,6 @@ enum AW_GCM_AREA {
     AW_GCM_WINDOW_AREA
 };
 
-AW_gc_manager AW_manage_GC(AW_window                                       *aww,
-                           AW_device                                       *device, int base_gc, int base_drag, AW_GCM_AREA area,
-                           void (*changecb)(AW_window*, AW_CL, AW_CL), AW_CL  cd1, AW_CL cd2,
-                           bool                                             define_color_groups,
-                           const char                                      *default_background_color,
-                           ...) __ATTR__SENTINEL;
 /* creates some GC pairs: one for normal operation,
                     the other for drag mode
         eg.
@@ -56,6 +50,15 @@ AW_gc_manager AW_manage_GC(AW_window                                       *aww,
 
             When the GCs are modified the 'changecb' is called
 */
+AW_gc_manager AW_manage_GC(AW_window                                       *aww,
+                           AW_device                                       *device, int base_gc, int base_drag, AW_GCM_AREA area,
+                           void (*changecb)(AW_window*, AW_CL, AW_CL), AW_CL  cd1, AW_CL cd2,
+                           bool                                             define_color_groups,
+                           const char                                      *default_background_color,
+                           ...) __ATTR__SENTINEL;
+
+
+
 
 AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id); // opens the properties Window
 
