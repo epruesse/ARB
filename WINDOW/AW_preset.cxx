@@ -13,18 +13,113 @@
 #endif
 
 #include <aw_color_groups.hxx>
-#include <aw_def.hxx>
-#include <aw_preset.hxx>
-#include <aw_advice.hxx>
-#include <aw_awar.hxx>
-#include <aw_msg.hxx>
-#include "aw_device.hxx"
+#include "aw_preset.hxx"
+
+#include "aw_def.hxx"
 #include "aw_root.hxx"
+#include "aw_awar.hxx"
+#include "aw_device.hxx"
+#include "aw_advice.hxx"
 #include "aw_question.hxx"
+#include "aw_msg.hxx"
 
 #include <arbdbt.h>
 
-#include <cstdarg>
+// values optimized for ARB_NTREE :
+static const char *ARB_NTREE_color_group[AW_COLOR_GROUPS+1] = {
+    "+-" AW_COLOR_GROUP_PREFIX  "1$#D50000", "-" AW_COLOR_GROUP_PREFIX  "2$#00ffff",
+    "+-" AW_COLOR_GROUP_PREFIX  "3$#00FF77", "-" AW_COLOR_GROUP_PREFIX  "4$#c700c7",
+    "+-" AW_COLOR_GROUP_PREFIX  "5$#0000ff", "-" AW_COLOR_GROUP_PREFIX  "6$#FFCE5B",
+
+    "+-" AW_COLOR_GROUP_PREFIX  "7$#AB2323", "-" AW_COLOR_GROUP_PREFIX  "8$#008888",
+    "+-" AW_COLOR_GROUP_PREFIX  "9$#008800", "-" AW_COLOR_GROUP_PREFIX "10$#880088",
+    "+-" AW_COLOR_GROUP_PREFIX "11$#000088", "-" AW_COLOR_GROUP_PREFIX "12$#888800",
+
+    0
+};
+
+// values optimized for ARB_EDIT4 :
+static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
+    "+-" AW_COLOR_GROUP_PREFIX  "1$#FFAFAF", "-" AW_COLOR_GROUP_PREFIX  "2$#A1FFFF",
+    "+-" AW_COLOR_GROUP_PREFIX  "3$#AAFFAA", "-" AW_COLOR_GROUP_PREFIX  "4$#c700c7",
+    "+-" AW_COLOR_GROUP_PREFIX  "5$#C5C5FF", "-" AW_COLOR_GROUP_PREFIX  "6$#FFE370",
+
+    "+-" AW_COLOR_GROUP_PREFIX  "7$#F87070", "-" AW_COLOR_GROUP_PREFIX  "8$#DAFFFF",
+    "+-" AW_COLOR_GROUP_PREFIX  "9$#8DE28D", "-" AW_COLOR_GROUP_PREFIX "10$#880088",
+    "+-" AW_COLOR_GROUP_PREFIX "11$#000088", "-" AW_COLOR_GROUP_PREFIX "12$#F1F169",
+
+    0
+};
+
+struct AW_MGC_cb_struct {   // one for each window
+    AW_MGC_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i);
+
+    AW_window *aw;
+    void (*f)(AW_window*, AW_CL, AW_CL);
+    AW_CL      cd1;
+    AW_CL      cd2;
+    char      *window_awar_name;
+    AW_device *device;
+
+    struct AW_MGC_awar_cb_struct *next_drag;
+};
+
+AW_MGC_cb_struct::AW_MGC_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i) {
+    memset((char*)this, 0, sizeof(AW_MGC_cb_struct));
+    aw  = awi;
+    f   = g;
+    cd1 = cd1i;
+    cd2 = cd2i;
+
+    window_awar_name = strdup(awi->get_window_id());
+}
+
+class aw_gc_manager;
+struct AW_MGC_awar_cb_struct {  // one for each awar
+    struct AW_MGC_cb_struct      *cbs;
+    const char                   *fontbasename;
+    const char                   *colorbasename;
+    short                         gc;
+    short                         gc_drag;
+    short                         colorindex;
+    aw_gc_manager                *gcmgr;
+    AW_window                    *gc_def_window;
+    struct AW_MGC_awar_cb_struct *next;
+};
+
+
+class aw_gc_manager {
+    const char            *field;
+    const char            *default_value;
+    AW_option_menu_struct *font_size_handle; // the option menu to define the font size of the GC
+    AW_MGC_awar_cb_struct *font_change_cb_parameter;
+    aw_gc_manager         *next;
+
+public:
+    aw_gc_manager(const char *field_, const char *default_value_)
+        : field(field_)
+        , default_value(default_value_)
+        , font_size_handle(0)
+        , next(0)
+    {}
+
+    void enqueue(aw_gc_manager *next_) {
+        aw_assert(!next);
+        next = next_;
+    }
+
+    const char *get_field() const { return field; }
+    const char *get_default_value() const { return default_value; }
+    const aw_gc_manager *get_next() const { return next; }
+    aw_gc_manager *get_next() { return next; }
+
+    void set_font_size_handle(AW_option_menu_struct *oms) { font_size_handle = oms; }
+    AW_option_menu_struct *get_font_size_handle() const { return font_size_handle; }
+
+    void set_font_change_parameter(AW_MGC_awar_cb_struct *cb_data) { font_change_cb_parameter = cb_data; }
+    AW_MGC_awar_cb_struct *get_font_change_parameter() const { return font_change_cb_parameter; }
+};
+
 
 void AW_save_specific_properties(AW_window *aw, const char *filename) {  // special version for EDIT4
     GB_ERROR error = aw->get_root()->save_properties(filename);
@@ -34,18 +129,322 @@ void AW_save_properties(AW_window *aw) {
     AW_save_specific_properties(aw, NULL);
 }
 
+void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) {
+    // read the values of the specified GCs from 'source_window'
+    // and write the values into same-named GCs of 'dest_window'
+    //
+    // 'id0' is the first of a list of color ids
+    // a NULL pointer has to be given behind the last color!
+
+    va_list parg;
+    va_start(parg, id0);
+
+    const char *id = id0;
+    while (id) {
+        char *value = aw_root->awar(GBS_global_string(AWP_COLORNAME_TEMPLATE, source_window, id))->read_string();
+        aw_root->awar(GBS_global_string(AWP_COLORNAME_TEMPLATE, dest_window, id))->write_string(value);
+        free(value);
+
+        if (has_font_info) {
+            int ivalue = aw_root->awar(GBS_global_string(AWP_FONTNAME_TEMPLATE, source_window, id))->read_int();
+            aw_root->awar(GBS_global_string(AWP_FONTNAME_TEMPLATE, dest_window, id))->write_int(ivalue);
+            ivalue     = aw_root->awar(GBS_global_string(AWP_FONTSIZE_TEMPLATE, source_window, id))->read_int();
+            aw_root->awar(GBS_global_string(AWP_FONTSIZE_TEMPLATE, dest_window, id))->write_int(ivalue);
+        }
+
+        id = va_arg(parg, const char*); // another argument ?
+    }
+
+    va_end(parg);
+}
+
+static void add_common_property_menu_entries(AW_window *aw) {
+    aw->insert_menu_topic("enable_advices",   "Reactivate advices",   "R", "advice.hlp",    AWM_ALL, (AW_CB)AW_reactivate_all_advices,   0, 0);
+    aw->insert_menu_topic("enable_questions", "Reactivate questions", "q", "questions.hlp", AWM_ALL, (AW_CB)AW_reactivate_all_questions, 0, 0);
+}
+void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm) { add_common_property_menu_entries(awmm); }
+void AW_insert_common_property_menu_entries(AW_window_simple_menu *awsm) { add_common_property_menu_entries(awsm); }
+
+static bool         color_groups_initialized = false;
+static bool         use_color_groups         = false;
+static const char **color_group_gc_defaults  = 0;
+
+
+static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode)
+{
+    static int dont_recurse = 0;
+
+    if (dont_recurse == 0) {
+        ++dont_recurse;
+        // mode == -1 -> no callback
+        char awar_name[256];
+        int font;
+        int size;
+
+        sprintf(awar_name, AWP_FONTNAME_TEMPLATE, cbs->cbs->window_awar_name, cbs->fontbasename);
+        font = awr->awar(awar_name)->read_int();
+
+        sprintf(awar_name, AWP_FONTSIZE_TEMPLATE, cbs->cbs->window_awar_name, cbs->fontbasename);
+        AW_awar *awar_font_size = awr->awar(awar_name);
+        size                    = awar_font_size->read_int();
+
+        int found_font_size;
+        cbs->cbs->device->set_font(cbs->gc, font, size, &found_font_size);
+        cbs->cbs->device->set_font(cbs->gc_drag, font, size, 0);
+        if (found_font_size != -1 && found_font_size != size) {
+            // correct awar value if exact fontsize wasn't found
+            awar_font_size->write_int(found_font_size);
+        }
+
+        if (mode != -1) {
+            cbs->cbs->f(cbs->cbs->aw, cbs->cbs->cd1, cbs->cbs->cd2);
+        }
+        --dont_recurse;
+    }
+}
+
+static const char *AW_get_color_group_name_awarname(int color_group) {
+    if (color_group>0 && color_group <= AW_COLOR_GROUPS) {
+        static char buf[sizeof(AWAR_COLOR_GROUPS_PREFIX)+1+4+2+1];
+        sprintf(buf, AWAR_COLOR_GROUPS_PREFIX "/name%i", color_group);
+        return buf;
+    }
+    return 0;
+}
+
+GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
+    return GBT_write_int(gbd, AW_COLOR_GROUP_ENTRY, color_group);
+}
+
+char *AW_get_color_group_name(AW_root *awr, int color_group) {
+    aw_assert(color_groups_initialized);
+    aw_assert(color_group>0 && color_group <= AW_COLOR_GROUPS);
+    return awr->awar(AW_get_color_group_name_awarname(color_group))->read_string();
+}
+
+
+static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode)
+{
+    char awar_name[256];
+    char *colorname;
+
+    sprintf(awar_name, AWP_COLORNAME_TEMPLATE, cbs->cbs->window_awar_name, cbs->colorbasename);
+    colorname = root->awar(awar_name)->read_string();
+    AW_color_idx color = (AW_color_idx)cbs->colorindex;
+    cbs->cbs->aw->alloc_named_data_color(color, colorname);
+    if (color != AW_DATA_BG) {
+        cbs->cbs->device->set_foreground_color(cbs->gc, color);
+        cbs->cbs->device->set_foreground_color(cbs->gc_drag, color);
+    }
+    else {
+        struct AW_MGC_awar_cb_struct *acbs;
+        for (acbs = cbs->cbs->next_drag; acbs; acbs=acbs->next) {
+            cbs->cbs->device->set_foreground_color(acbs->gc_drag, (AW_color_idx)acbs->colorindex);
+        }
+    }
+    if (mode != -1) {
+        cbs->cbs->f(cbs->cbs->aw, cbs->cbs->cd1, cbs->cbs->cd2);
+    }
+    free(colorname);
+}
+
+long AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag) {
+    /* species/genes etc. may have a color group entry ('ARB_color')
+     * call with ignore_usage_flag == true to read color group regardless of global usage flag (AWAR_COLOR_GROUPS_USE)
+     */
+    aw_assert(color_groups_initialized);
+    if (!use_color_groups && !ignore_usage_flag) return 0;
+
+    GBDATA *gb_group = GB_entry(gbd, AW_COLOR_GROUP_ENTRY);
+    if (gb_group) return GB_read_int(gb_group);
+    return 0;                   // no color group
+}
+
+static void AW_color_group_usage_changed_cb(AW_root *awr, AW_CL /* cl_ntw */) {
+    use_color_groups       = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
+    //     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
+    //     ntw->refresh();
+    // @@@ FIXME: a working refresh is missing
+}
+
+static void AW_color_group_name_changed_cb(AW_root *) {
+    AW_advice("To activate the new names for color groups you have to\n"
+              "save properties and restart the program.",
+              AW_ADVICE_TOGGLE, "Color group name has been changed", 0);
+}
+
+
+
+static void AW_init_color_groups(AW_root *awr, AW_default def) {
+    if (!color_groups_initialized) {
+        AW_awar *useAwar = awr->awar_int(AWAR_COLOR_GROUPS_USE, 1, def);
+        use_color_groups = useAwar->read_int();
+        useAwar->add_callback(AW_color_group_usage_changed_cb, (AW_CL)0);
+
+        char name_buf[AW_COLOR_GROUP_NAME_LEN+1];
+        for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
+            sprintf(name_buf, "color_group_%i", i);
+            awr->awar_string(AW_get_color_group_name_awarname(i), name_buf, def)->add_callback(AW_color_group_name_changed_cb);
+        }
+        color_groups_initialized = true;
+    }
+}
+
+struct gc_props {
+    bool hidden; 
+    bool select_font;
+    bool select_color;
+
+    bool fixed_fonts_only;
+    bool append_same_line;
+
+    gc_props()
+        : hidden(false),
+          select_font(true), 
+          select_color(true),
+          fixed_fonts_only(false),
+          append_same_line(false)
+    {}
+
+private:
+    bool parse_char(char c) {
+        switch (c) {
+            case '#': fixed_fonts_only = true; break;
+            case '+': append_same_line = true; break;
+
+            case '=': select_color = false; break;
+            case '-': {
+                if (select_font) select_font = false;
+                else hidden                  = true; // two '-' means 'hidden'
+                break;
+            }
+
+            default : return false;
+        }
+        return true;
+    }
+
+    void correct() {
+        if (!select_font && !select_color) hidden             = true;
+        if (append_same_line && select_font) append_same_line = false;
+    }
+public:
+
+    int parse_decl(const char *decl) {
+        // returns number of (interpreted) prefix characters
+        int offset = 0;
+        while (decl[offset]) {
+            if (!parse_char(decl[offset])) break;
+            offset++;
+        }
+        correct();
+        return offset;
+    }
+};
+
+void AW_init_color_group_defaults(const char *for_program) {
+    // if for_program == NULL defaults of arb_ntree are silently used
+    // if for_program is unknown a warning is shown
+
+    aw_assert(color_group_gc_defaults == 0); // oops - called twice
+
+    if (for_program) {
+        if (strcmp(for_program, "arb_ntree")      == 0) color_group_gc_defaults = ARB_NTREE_color_group;
+        else if (strcmp(for_program, "arb_edit4") == 0) color_group_gc_defaults = ARB_EDIT4_color_group;
+    }
+
+    if (!color_group_gc_defaults) {
+        if (for_program) { // unknown program ?
+#if defined(DEBUG)
+            fprintf(stderr, "No specific defaults for color groups defined (using those from ARB_NTREE)\n");
+#endif // DEBUG
+        }
+        color_group_gc_defaults = ARB_NTREE_color_group;
+    }
+
+    aw_assert(color_group_gc_defaults);
+}
+
+// --------------------
+//      motif only
+
+static void add_font_sizes_to_option_menu(AW_window *aww, int count, int *available_sizes) {
+    char ssize[20];
+    bool default_size_set = false;
+
+    for (int idx = 0; idx < count; ++idx) {
+        int size = available_sizes[idx];
+        if (!default_size_set && size > DEF_FONTSIZE) { // insert default size if missing
+            sprintf(ssize, "%i", DEF_FONTSIZE);
+            aww->insert_default_option(ssize, 0, (int) DEF_FONTSIZE);
+            default_size_set = true;
+        }
+        sprintf(ssize, "%i", size);
+        if (size == DEF_FONTSIZE) {
+            aww->insert_default_option(ssize, 0, (int) size);
+            default_size_set = true;
+        }
+        else {
+            aww->insert_option(ssize, 0, (int) size);
+        }
+    }
+
+    if (!default_size_set) {
+        sprintf(ssize, "%i", DEF_FONTSIZE);
+        aww->insert_default_option(ssize, 0, (int) DEF_FONTSIZE);
+    }
+
+    aww->update_option_menu();
+}
+static void aw_init_font_sizes(AW_root *awr, AW_MGC_awar_cb_struct *cbs, bool firstCall) {
+    AW_option_menu_struct *oms = cbs->gcmgr->get_font_size_handle();
+    aw_assert(oms);
+
+    if (oms) {                  // has font size definition
+        int  available_sizes[MAX_FONTSIZE-MIN_FONTSIZE+1];
+        char awar_name[256];
+        sprintf(awar_name, AWP_FONTNAME_TEMPLATE, cbs->cbs->window_awar_name, cbs->fontbasename);
+
+        int        font_nr     = awr->awar(awar_name)->read_int();
+        int        found_sizes = cbs->cbs->device->get_available_fontsizes(cbs->gc, font_nr, available_sizes);
+        AW_window *aww         = cbs->gc_def_window;
+        aw_assert(aww);
+
+        if (!firstCall) aww->clear_option_menu(oms);
+        add_font_sizes_to_option_menu(aww, found_sizes, available_sizes);
+    }
+}
+static void aw_font_changed_cb(AW_root *awr, AW_CL cl_cbs) {
+    AW_MGC_awar_cb_struct *cbs = (AW_MGC_awar_cb_struct*)cl_cbs;
+    aw_init_font_sizes(awr, cbs, false);
+}
 
 static void aw_message_reload(AW_root *) {
     aw_message("Sorry, to activate new colors:\n"
                 "   save properties\n"
                 "   and restart application");
 }
-static char *aw_glob_font_awar_name = 0;
+static void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label, bool message_reload) {
+    if (message_reload) aws->get_root()->awar(awar)->add_callback(aw_message_reload);
 
-static void aw_set_color(AW_window *aww, AW_CL cl_color_name) {
-    const char *color_name = (const char *)cl_color_name;
-    aww->get_root()->awar(aw_glob_font_awar_name)->write_string(color_name);
+    aws->create_option_menu(awar, label);
+    aws->insert_option        ("5x8",   "5", "5x8");
+    aws->insert_option        ("6x10",   "6", "6x10");
+    aws->insert_option        ("7x13",   "7", "7x13");
+    aws->insert_option        ("7x13bold",   "7", "7x13bold");
+    aws->insert_option        ("8x13",   "8", "8x13");
+    aws->insert_option        ("8x13bold",   "8", "8x13bold");
+    aws->insert_option        ("9x15",   "9", "9x15");
+    aws->insert_option        ("9x15bold",   "9", "9x15bold");
+    aws->insert_option        ("helvetica-12",   "9", "helvetica-12");
+    aws->insert_option        ("helvetica-bold-12",   "9", "helvetica-bold-12");
+    aws->insert_option        ("helvetica-13",   "9", "helvetica-13");
+    aws->insert_option        ("helvetica-bold-13",   "9", "helvetica-bold-13");
+    aws->insert_default_option("other", "o", "");
+    aws->update_option_menu();
 }
+
+static char *aw_glob_font_awar_name = 0;
 
 static int hex2dez(char c) {
     if (c>='0' && c<='9') return c-'0';
@@ -53,7 +452,6 @@ static int hex2dez(char c) {
     if (c>='a' && c<='f') return c-'a'+10;
     return -1;
 }
-
 static void aw_incdec_color(AW_window *aww, const char *action) {
     // action is sth like "r+" "b-" "g++" "r--"
     AW_awar *awar  = aww->get_root()->awar(aw_glob_font_awar_name);
@@ -100,6 +498,10 @@ static void aw_incdec_color(AW_window *aww, const char *action) {
 
 #define AWAR_GLOBAL_COLOR_NAME "tmp/aw/color_label"
 
+static void aw_set_color(AW_window *aww, AW_CL cl_color_name) {
+    const char *color_name = (const char *)cl_color_name;
+    aww->get_root()->awar(aw_glob_font_awar_name)->write_string(color_name);
+}
 static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *label_name) {
     AW_root *awr = aww->get_root();
     static AW_window_simple *aws = 0;
@@ -172,7 +574,6 @@ static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name
     freedup(aw_glob_font_awar_name, awar_name);
     aws->activate();
 }
-
 static void AW_preset_create_color_chooser(AW_window *aws, const char *awar_name, const char *label, bool message_reload, bool show_label)
 {
     if (message_reload) aws->get_root()->awar(awar_name)->add_callback(aw_message_reload);
@@ -188,396 +589,16 @@ static void AW_preset_create_color_chooser(AW_window *aws, const char *awar_name
     free(color);
 }
 
-static void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label, bool message_reload)
-{
-    if (message_reload) {
-        aws->get_root()->awar(awar)->add_callback(aw_message_reload);
-    }
-
-    aws->create_option_menu(awar, label);
-    aws->insert_option        ("5x8",   "5", "5x8");
-    aws->insert_option        ("6x10",   "6", "6x10");
-    aws->insert_option        ("7x13",   "7", "7x13");
-    aws->insert_option        ("7x13bold",   "7", "7x13bold");
-    aws->insert_option        ("8x13",   "8", "8x13");
-    aws->insert_option        ("8x13bold",   "8", "8x13bold");
-    aws->insert_option        ("9x15",   "9", "9x15");
-    aws->insert_option        ("9x15bold",   "9", "9x15bold");
-    aws->insert_option        ("helvetica-12",   "9", "helvetica-12");
-    aws->insert_option        ("helvetica-bold-12",   "9", "helvetica-bold-12");
-    aws->insert_option        ("helvetica-13",   "9", "helvetica-13");
-    aws->insert_option        ("helvetica-bold-13",   "9", "helvetica-bold-13");
-    aws->insert_default_option("other", "o", "");
-    aws->update_option_menu();
-}
-
-struct AW_MGC_awar_cb_struct;
-
-class aw_gc_manager {
-    const char            *field;
-    const char            *default_value;
-    AW_option_menu_struct *font_size_handle; // the option menu to define the font size of the GC
-    AW_MGC_awar_cb_struct *font_change_cb_parameter;
-    aw_gc_manager         *next;
-
-public:
-    aw_gc_manager(const char *field_, const char *default_value_)
-        : field(field_)
-        , default_value(default_value_)
-        , font_size_handle(0)
-        , next(0)
-    {}
-
-    void enqueue(aw_gc_manager *next_) {
-        aw_assert(!next);
-        next = next_;
-    }
-
-    const char *get_field() const { return field; }
-    const char *get_default_value() const { return default_value; }
-    const aw_gc_manager *get_next() const { return next; }
-    aw_gc_manager *get_next() { return next; }
-
-    void set_font_size_handle(AW_option_menu_struct *oms) { font_size_handle = oms; }
-    AW_option_menu_struct *get_font_size_handle() const { return font_size_handle; }
-
-    void set_font_change_parameter(AW_MGC_awar_cb_struct *cb_data) { font_change_cb_parameter = cb_data; }
-    AW_MGC_awar_cb_struct *get_font_change_parameter() const { return font_change_cb_parameter; }
-};
-
-struct AW_MGC_cb_struct {   // one for each window
-    AW_MGC_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i);
-
-    AW_window *aw;
-    void (*f)(AW_window*, AW_CL, AW_CL);
-    AW_CL      cd1;
-    AW_CL      cd2;
-    char      *window_awar_name;
-    AW_device *device;
-
-    struct AW_MGC_awar_cb_struct *next_drag;
-};
-
-AW_MGC_cb_struct::AW_MGC_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i) {
-    memset((char*)this, 0, sizeof(AW_MGC_cb_struct));
-    aw  = awi;
-    f   = g;
-    cd1 = cd1i;
-    cd2 = cd2i;
-
-    window_awar_name = strdup(awi->get_window_id());
-}
-
-struct AW_MGC_awar_cb_struct {  // one for each awar
-    struct AW_MGC_cb_struct      *cbs;
-    const char                   *fontbasename;
-    const char                   *colorbasename;
-    short                         gc;
-    short                         gc_drag;
-    short                         colorindex;
-    aw_gc_manager                *gcmgr;
-    AW_window                    *gc_def_window;
-    struct AW_MGC_awar_cb_struct *next;
-};
-
-static void add_font_sizes_to_option_menu(AW_window *aww, int count, int *available_sizes) {
-    char ssize[20];
-    bool default_size_set = false;
-
-    for (int idx = 0; idx < count; ++idx) {
-        int size = available_sizes[idx];
-        if (!default_size_set && size > DEF_FONTSIZE) { // insert default size if missing
-            sprintf(ssize, "%i", DEF_FONTSIZE);
-            aww->insert_default_option(ssize, 0, (int) DEF_FONTSIZE);
-            default_size_set = true;
-        }
-        sprintf(ssize, "%i", size);
-        if (size == DEF_FONTSIZE) {
-            aww->insert_default_option(ssize, 0, (int) size);
-            default_size_set = true;
-        }
-        else {
-            aww->insert_option(ssize, 0, (int) size);
-        }
-    }
-
-    if (!default_size_set) {
-        sprintf(ssize, "%i", DEF_FONTSIZE);
-        aww->insert_default_option(ssize, 0, (int) DEF_FONTSIZE);
-    }
-
-    aww->update_option_menu();
-}
-
-static void aw_init_font_sizes(AW_root *awr, AW_MGC_awar_cb_struct *cbs, bool firstCall) {
-    AW_option_menu_struct *oms = cbs->gcmgr->get_font_size_handle();
-    aw_assert(oms);
-
-    if (oms) {                  // has font size definition
-        int  available_sizes[MAX_FONTSIZE-MIN_FONTSIZE+1];
-        char awar_name[256];
-        sprintf(awar_name, AWP_FONTNAME_TEMPLATE, cbs->cbs->window_awar_name, cbs->fontbasename);
-
-        int        font_nr     = awr->awar(awar_name)->read_int();
-        int        found_sizes = cbs->cbs->device->get_available_fontsizes(cbs->gc, font_nr, available_sizes);
-        AW_window *aww         = cbs->gc_def_window;
-        aw_assert(aww);
-
-        if (!firstCall) aww->clear_option_menu(oms);
-        add_font_sizes_to_option_menu(aww, found_sizes, available_sizes);
-    }
-}
-
-static void aw_font_changed_cb(AW_root *awr, AW_CL cl_cbs) {
-    AW_MGC_awar_cb_struct *cbs = (AW_MGC_awar_cb_struct*)cl_cbs;
-    aw_init_font_sizes(awr, cbs, false);
-}
-
-static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode)
-{
-    static int dont_recurse = 0;
-
-    if (dont_recurse == 0) {
-        ++dont_recurse;
-        // mode == -1 -> no callback
-        char awar_name[256];
-        int  font;
-        int  size;
-
-        sprintf(awar_name, AWP_FONTNAME_TEMPLATE, cbs->cbs->window_awar_name, cbs->fontbasename);
-        font = awr->awar(awar_name)->read_int();
-
-        sprintf(awar_name, AWP_FONTSIZE_TEMPLATE, cbs->cbs->window_awar_name, cbs->fontbasename);
-        AW_awar *awar_font_size = awr->awar(awar_name);
-        size                    = awar_font_size->read_int();
-
-        int found_font_size;
-        cbs->cbs->device->set_font(cbs->gc, font, size, &found_font_size);
-        cbs->cbs->device->set_font(cbs->gc_drag, font, size, 0);
-        if (found_font_size != -1 && found_font_size != size) {
-            // correct awar value if exact fontsize wasn't found
-            awar_font_size->write_int(found_font_size);
-        }
-
-        if (mode != -1) {
-            cbs->cbs->f(cbs->cbs->aw, cbs->cbs->cd1, cbs->cbs->cd2);
-        }
-        --dont_recurse;
-    }
-}
-
-static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode)
-{
-    char awar_name[256];
-    char *colorname;
-
-    sprintf(awar_name, AWP_COLORNAME_TEMPLATE, cbs->cbs->window_awar_name, cbs->colorbasename);
-    colorname = root->awar(awar_name)->read_string();
-    AW_color_idx color = (AW_color_idx)cbs->colorindex;
-    cbs->cbs->aw->alloc_named_data_color(color, colorname);
-    if (color != AW_DATA_BG) {
-        cbs->cbs->device->set_foreground_color(cbs->gc, color);
-        cbs->cbs->device->set_foreground_color(cbs->gc_drag, color);
-    }
-    else {
-        struct AW_MGC_awar_cb_struct *acbs;
-        for (acbs = cbs->cbs->next_drag; acbs; acbs=acbs->next) {
-            cbs->cbs->device->set_foreground_color(acbs->gc_drag, (AW_color_idx)acbs->colorindex);
-        }
-    }
-    if (mode != -1) {
-        cbs->cbs->f(cbs->cbs->aw, cbs->cbs->cd1, cbs->cbs->cd2);
-    }
-    free(colorname);
-}
-
-static bool color_groups_initialized = false;
-static bool use_color_groups = false;
-
-static const char *AW_get_color_group_name_awarname(int color_group) {
-    if (color_group>0 && color_group <= AW_COLOR_GROUPS) {
-        static char buf[sizeof(AWAR_COLOR_GROUPS_PREFIX)+1+4+2+1];
-        sprintf(buf, AWAR_COLOR_GROUPS_PREFIX "/name%i", color_group);
-        return buf;
-    }
-    return 0;
-}
-
-char *AW_get_color_group_name(AW_root *awr, int color_group) {
-    aw_assert(color_groups_initialized);
-    aw_assert(color_group>0 && color_group <= AW_COLOR_GROUPS);
-    return awr->awar(AW_get_color_group_name_awarname(color_group))->read_string();
-}
-
-static void AW_color_group_name_changed_cb(AW_root *) {
-    AW_advice("To activate the new names for color groups you have to\n"
-              "save properties and restart the program.",
-              AW_ADVICE_TOGGLE, "Color group name has been changed", 0);
-}
-static void AW_color_group_usage_changed_cb(AW_root *awr, AW_CL /* cl_ntw */) {
-    use_color_groups       = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
-    //     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
-    //     ntw->refresh();
-    // @@@ FIXME: a working refresh is missing
-}
-
-static void AW_init_color_groups(AW_root *awr, AW_default def) {
-    if (!color_groups_initialized) {
-        AW_awar *useAwar = awr->awar_int(AWAR_COLOR_GROUPS_USE, 1, def);
-        use_color_groups = useAwar->read_int();
-        useAwar->add_callback(AW_color_group_usage_changed_cb, (AW_CL)0);
-
-        char name_buf[AW_COLOR_GROUP_NAME_LEN+1];
-        for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
-            sprintf(name_buf, "color_group_%i", i);
-            awr->awar_string(AW_get_color_group_name_awarname(i), name_buf, def)->add_callback(AW_color_group_name_changed_cb);
-        }
-        color_groups_initialized = true;
-    }
-}
-
-#if defined(UNIT_TESTS)
-void fake_AW_init_color_groups() {
-    if (!color_groups_initialized) {
-        use_color_groups = true;
-    }
-    color_groups_initialized = true;
-}
-#endif
-
-
-// values optimized for ARB_NTREE :
-static const char *ARB_NTREE_color_group[AW_COLOR_GROUPS+1] = {
-    "+-" AW_COLOR_GROUP_PREFIX  "1$#D50000", "-" AW_COLOR_GROUP_PREFIX  "2$#00ffff",
-    "+-" AW_COLOR_GROUP_PREFIX  "3$#00FF77", "-" AW_COLOR_GROUP_PREFIX  "4$#c700c7",
-    "+-" AW_COLOR_GROUP_PREFIX  "5$#0000ff", "-" AW_COLOR_GROUP_PREFIX  "6$#FFCE5B",
-
-    "+-" AW_COLOR_GROUP_PREFIX  "7$#AB2323", "-" AW_COLOR_GROUP_PREFIX  "8$#008888",
-    "+-" AW_COLOR_GROUP_PREFIX  "9$#008800", "-" AW_COLOR_GROUP_PREFIX "10$#880088",
-    "+-" AW_COLOR_GROUP_PREFIX "11$#000088", "-" AW_COLOR_GROUP_PREFIX "12$#888800",
-
-    0
-};
-
-// values optimized for ARB_EDIT4 :
-static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
-    "+-" AW_COLOR_GROUP_PREFIX  "1$#FFAFAF", "-" AW_COLOR_GROUP_PREFIX  "2$#A1FFFF",
-    "+-" AW_COLOR_GROUP_PREFIX  "3$#AAFFAA", "-" AW_COLOR_GROUP_PREFIX  "4$#c700c7",
-    "+-" AW_COLOR_GROUP_PREFIX  "5$#C5C5FF", "-" AW_COLOR_GROUP_PREFIX  "6$#FFE370",
-
-    "+-" AW_COLOR_GROUP_PREFIX  "7$#F87070", "-" AW_COLOR_GROUP_PREFIX  "8$#DAFFFF",
-    "+-" AW_COLOR_GROUP_PREFIX  "9$#8DE28D", "-" AW_COLOR_GROUP_PREFIX "10$#880088",
-    "+-" AW_COLOR_GROUP_PREFIX "11$#000088", "-" AW_COLOR_GROUP_PREFIX "12$#F1F169",
-
-    0
-};
-
-static const char **color_group_gc_defaults = 0;
-
-void AW_init_color_group_defaults(const char *for_program) {
-    // if for_program == NULL defaults of arb_ntree are silently used
-    // if for_program is unknown a warning is shown
-
-    aw_assert(color_group_gc_defaults == 0); // oops - called twice
-
-    if (for_program) {
-        if (strcmp(for_program, "arb_ntree")      == 0) color_group_gc_defaults = ARB_NTREE_color_group;
-        else if (strcmp(for_program, "arb_edit4") == 0) color_group_gc_defaults = ARB_EDIT4_color_group;
-    }
-
-    if (!color_group_gc_defaults) {
-        if (for_program) { // unknown program ?
-#if defined(DEBUG)
-            fprintf(stderr, "No specific defaults for color groups defined (using those from ARB_NTREE)\n");
-#endif // DEBUG
-        }
-        color_group_gc_defaults = ARB_NTREE_color_group;
-    }
-
-    aw_assert(color_group_gc_defaults);
-}
-
-
-long AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag) {
-    /* species/genes etc. may have a color group entry ('ARB_color')
-     * call with ignore_usage_flag == true to read color group regardless of global usage flag (AWAR_COLOR_GROUPS_USE)
-     */
-    aw_assert(color_groups_initialized);
-    if (!use_color_groups && !ignore_usage_flag) return 0;
-
-    GBDATA *gb_group = GB_entry(gbd, AW_COLOR_GROUP_ENTRY);
-    if (gb_group) return GB_read_int(gb_group);
-    return 0;                   // no color group
-}
-
-GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
-    return GBT_write_int(gbd, AW_COLOR_GROUP_ENTRY, color_group);
-}
-
-struct gc_props {
-    bool hidden; 
-    bool select_font;
-    bool select_color;
-
-    bool fixed_fonts_only;
-    bool append_same_line;
-
-    gc_props()
-        : hidden(false),
-          select_font(true), 
-          select_color(true),
-          fixed_fonts_only(false),
-          append_same_line(false)
-    {}
-
-private:
-    bool parse_char(char c) {
-        switch (c) {
-            case '#': fixed_fonts_only = true; break;
-            case '+': append_same_line = true; break;
-
-            case '=': select_color = false; break;
-            case '-': {
-                if (select_font) select_font = false;
-                else hidden                  = true; // two '-' means 'hidden'
-                break;
-            }
-
-            default : return false;
-        }
-        return true;
-    }
-
-    void correct() {
-        if (!select_font && !select_color) hidden             = true;
-        if (append_same_line && select_font) append_same_line = false;
-    }
-public:
-
-    int parse_decl(const char *decl) {
-        // returns number of (interpreted) prefix characters
-        int offset = 0;
-        while (decl[offset]) {
-            if (!parse_char(decl[offset])) break;
-            offset++;
-        }
-        correct();
-        return offset;
-    }
-};
-
-AW_gc_manager AW_manage_GC(AW_window   *aww,
-                           AW_device   *device,
-                           int          base_gc,
-                           int          base_drag,
-                           AW_GCM_AREA  area,
-                           void (*changecb)(AW_window*, AW_CL, AW_CL),
-                           AW_CL        cd1,
-                           AW_CL        cd2,
-                           bool         define_color_groups,
-                           const char  *default_background_color,
-                           ...)
-{
+//      motif only (end)
+// --------------------------
+
+
+AW_gc_manager AW_manage_GC(AW_window *aww,
+                           AW_device *device, int base_gc, int base_drag, AW_GCM_AREA area,
+                           void (*changecb)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2,
+                           bool define_color_groups,
+                           const char *default_background_color,
+                           ...) {
     /*  Parameter:
      *          aww:                    base window
      *          device:                 screen device
@@ -773,34 +794,68 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
     return (AW_gc_manager)gcmgrfirst;
 }
 
-void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) {
-    // read the values of the specified GCs from 'source_window'
-    // and write the values into same-named GCs of 'dest_window'
-    //
-    // 'id0' is the first of a list of color ids
-    // a NULL pointer has to be given behind the last color!
+AW_window *AW_preset_window(AW_root *root) {
+    AW_window_simple *aws = new AW_window_simple;
+    const int   tabstop = 400;
+    aws->init(root, "PROPS_FRAME", "WINDOW_PROPERTIES");
 
-    va_list parg;
-    va_start(parg, id0);
+    aws->label_length(25);
+    aws->button_length(20);
 
-    const char *id = id0;
-    while (id) {
-        char *value = aw_root->awar(GBS_global_string(AWP_COLORNAME_TEMPLATE, source_window, id))->read_string();
-        aw_root->awar(GBS_global_string(AWP_COLORNAME_TEMPLATE, dest_window, id))->write_string(value);
-        free(value);
+    aws->at           (10, 10);
+    aws->auto_space(10, 10);
 
-        if (has_font_info) {
-            int ivalue = aw_root->awar(GBS_global_string(AWP_FONTNAME_TEMPLATE, source_window, id))->read_int();
-            aw_root->awar(GBS_global_string(AWP_FONTNAME_TEMPLATE, dest_window, id))->write_int(ivalue);
-            ivalue     = aw_root->awar(GBS_global_string(AWP_FONTSIZE_TEMPLATE, source_window, id))->read_int();
-            aw_root->awar(GBS_global_string(AWP_FONTSIZE_TEMPLATE, dest_window, id))->write_int(ivalue);
-        }
+    aws->callback     (AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-        id = va_arg(parg, const char*); // another argument ?
-    }
+    aws->callback(AW_POPUP_HELP, (AW_CL)"props_frame.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
-    va_end(parg);
+    aws->at_newline();
+
+    AW_preset_create_font_chooser(aws, "window/font", "Main Menu Font", 1);
+    aws->at_x(tabstop);
+    aws->create_input_field("window/font", 12);
+
+    aws->at_newline();
+
+    aws->button_length(10);
+    AW_preset_create_color_chooser(aws, "window/background", "Application Background", true, true);
+    aws->at_x(tabstop);
+    aws->create_input_field("window/background", 12);
+
+    aws->at_newline();
+
+    AW_preset_create_color_chooser(aws, "window/foreground", "Application Foreground", true, true);
+    aws->at_x(tabstop);
+    aws->create_input_field("window/foreground", 12);
+
+    aws->at_newline();
+
+    AW_preset_create_color_chooser(aws, "window/color_1", "Color 1", true, true);
+    aws->at_x(tabstop);
+    aws->create_input_field("window/color_1", 12);
+
+    aws->at_newline();
+
+    AW_preset_create_color_chooser(aws, "window/color_2", "Color 2", true, true);
+    aws->at_x(tabstop);
+    aws->create_input_field("window/color_2", 12);
+
+    aws->at_newline();
+
+    AW_preset_create_color_chooser(aws, "window/color_3", "Color 3", true, true);
+
+    aws->at_x(tabstop);
+    aws->create_input_field("window/color_3", 12);
+
+    aws->at_newline();
+
+    aws->window_fit();
+    return (AW_window *)aws;
 }
+
+
 
 static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager *gcmgr, bool insert_color_groups) {
     // returns true if GCs starting with COLOR_GROUP_PREFIX were found
@@ -1000,7 +1055,13 @@ static void AW_create_gc_color_groups_window(AW_window * /* aww */, AW_CL cl_aw_
     aws->activate();
 }
 
-AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager id_par, const char *wid, const char *windowname) {
+
+AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id_par) {
+    return AW_create_gc_window_named(aw_root, id_par, "PROPS_GC", "Colors and Fonts");
+}
+
+
+AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, const char *wid, const char *windowname) {
     AW_window_simple * aws = new AW_window_simple;
 
     aws->init(aw_root, wid, windowname);
@@ -1030,75 +1091,12 @@ AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager id_par, co
     return (AW_window *) aws;
 
 }
-AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
-{
-    return AW_create_gc_window_named(aw_root, id_par, "PROPS_GC", "Colors and Fonts");
+
+#if defined(UNIT_TESTS)
+void fake_AW_init_color_groups() {
+    if (!color_groups_initialized) {
+        use_color_groups = true;
+    }
+    color_groups_initialized = true;
 }
-
-AW_window *AW_preset_window(AW_root *root) {
-    AW_window_simple *aws = new AW_window_simple;
-    const int   tabstop = 400;
-    aws->init(root, "PROPS_FRAME", "WINDOW_PROPERTIES");
-
-    aws->label_length(25);
-    aws->button_length(20);
-
-    aws->at           (10, 10);
-    aws->auto_space(10, 10);
-
-    aws->callback     (AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->callback(AW_POPUP_HELP, (AW_CL)"props_frame.hlp");
-    aws->create_button("HELP", "HELP", "H");
-
-    aws->at_newline();
-
-    AW_preset_create_font_chooser(aws, "window/font", "Main Menu Font", 1);
-    aws->at_x(tabstop);
-    aws->create_input_field("window/font", 12);
-
-    aws->at_newline();
-
-    aws->button_length(10);
-    AW_preset_create_color_chooser(aws, "window/background", "Application Background", true, true);
-    aws->at_x(tabstop);
-    aws->create_input_field("window/background", 12);
-
-    aws->at_newline();
-
-    AW_preset_create_color_chooser(aws, "window/foreground", "Application Foreground", true, true);
-    aws->at_x(tabstop);
-    aws->create_input_field("window/foreground", 12);
-
-    aws->at_newline();
-
-    AW_preset_create_color_chooser(aws, "window/color_1", "Color 1", true, true);
-    aws->at_x(tabstop);
-    aws->create_input_field("window/color_1", 12);
-
-    aws->at_newline();
-
-    AW_preset_create_color_chooser(aws, "window/color_2", "Color 2", true, true);
-    aws->at_x(tabstop);
-    aws->create_input_field("window/color_2", 12);
-
-    aws->at_newline();
-
-    AW_preset_create_color_chooser(aws, "window/color_3", "Color 3", true, true);
-    aws->at_x(tabstop);
-    aws->create_input_field("window/color_3", 12);
-    
-    aws->at_newline();
-
-    aws->window_fit();
-    return (AW_window *)aws;
-
-}
-
-static void add_common_property_menu_entries(AW_window *aw) {
-    aw->insert_menu_topic("enable_advices",   "Reactivate advices",   "R", "advice.hlp",    AWM_ALL, (AW_CB)AW_reactivate_all_advices,   0, 0);
-    aw->insert_menu_topic("enable_questions", "Reactivate questions", "q", "questions.hlp", AWM_ALL, (AW_CB)AW_reactivate_all_questions, 0, 0);
-}
-void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm) { add_common_property_menu_entries(awmm); }
-void AW_insert_common_property_menu_entries(AW_window_simple_menu *awsm) { add_common_property_menu_entries(awsm); }
+#endif
