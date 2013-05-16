@@ -1766,7 +1766,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     // draw protection icon AFTER protection!!
     awmm->at("pico");
-    awmm->create_button("PROTECT", "#protect.xpm");
+    awmm->create_button(NULL, "#protect.xpm");
 
     // draw align/edit-button AFTER protection!!
     awmm->at("edit");
