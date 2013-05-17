@@ -236,7 +236,7 @@ public:
 
     // real public
 
-    AWT_canvas(GBDATA *gb_main, AW_window *aww, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awar);
+    AWT_canvas(GBDATA *gb_main, AW_window *aww, AWT_graphic *awd, const char *user_awar);
 
     inline void push_transaction() const;
     inline void pop_transaction() const;

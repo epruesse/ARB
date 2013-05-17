@@ -698,10 +698,10 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
 
     AW_window_menu *awm = new AW_window_menu();
     awm->init(awr, "MATCH_SAI", "PROBE AND SAI", 200, 300);
-    AW_gc_manager gc_manager;
-    SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, gb_main);
 
-    AWT_canvas *scr = new AWT_canvas(gb_main, awm, saiProbeGraphic, gc_manager, AWAR_TARGET_STRING);
+    SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, gb_main);
+    AWT_canvas  *scr             = new AWT_canvas(gb_main, awm, saiProbeGraphic, AWAR_TARGET_STRING);
+
     scr->recalc_size();
 
     awm->insert_help_topic("How to Visualize SAI`s ?", "H", "saiProbeHelp.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"saiProbeHelp.hlp", 0);
@@ -713,7 +713,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     awm->insert_menu_topic("selectDispField", "Select Display Field",      "F", "displayField.hlp", AWM_ALL, AW_POPUP,                     AW_CL(createDisplayField_window),           AW_CL(gb_main));
     awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", NULL,               AWM_ALL, awt_popup_sai_selection_list, AW_CL(AWAR_SPV_SAI_2_PROBE),                AW_CL(gb_main));
     awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", NULL,               AWM_ALL, AW_POPUP,                     AW_CL(create_colorTranslationTable_window), 0);
-    awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, AW_POPUP,                     AW_CL(createSaiColorWindow),                AW_CL(gc_manager));
+    awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, AW_POPUP,                     AW_CL(createSaiColorWindow),                AW_CL(scr->gc_manager));
 
     addCallBacks(awr, scr);
 
