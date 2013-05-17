@@ -190,6 +190,7 @@ enum {
 
 class AWT_canvas : virtual Noncopyable {
     bool consider_text_for_size;
+    char *gc_base_name;
 
 public:
     // too many callbacks -> public
@@ -236,7 +237,7 @@ public:
 
     // real public
 
-    AWT_canvas(GBDATA *gb_main, AW_window *aww, AWT_graphic *awd, const char *user_awar);
+    AWT_canvas(GBDATA *gb_main, AW_window *aww, const char *gc_base_name_, AWT_graphic *awd, const char *user_awar);
 
     inline void push_transaction() const;
     inline void pop_transaction() const;
@@ -261,8 +262,10 @@ public:
     void scroll(const AW::Vector& delta, bool dont_update_scrollbars = false) {
         scroll(int(delta.x()), int(delta.y()), dont_update_scrollbars);
     }
-    
+
     bool handleWheelEvent(AW_device *device, const AW_event& event);
+
+    const char *get_gc_base_name() const { return gc_base_name; }
 };
 
 inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {

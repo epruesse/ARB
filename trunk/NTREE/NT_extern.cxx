@@ -1160,7 +1160,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         AP_tree_sort old_sort_type = tree->tree_sort;
         tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
 
-        ntw = new AWT_canvas(GLOBAL.gb_main, awm, tree, awar_tree);
+        ntw = new AWT_canvas(GLOBAL.gb_main, awm, "ARB_NT", tree, awar_tree);
         tree->set_tree_type(old_sort_type, ntw);
         ntw->set_mode(AWT_MODE_SELECT);
     }

@@ -13,7 +13,7 @@ using namespace std;
 AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
     AW_gc_manager gc_manager =
         AW_manage_GC (aww,
-                      aww->get_window_id(),
+                      scr->get_gc_base_name(),
                       device,
                       RNA3D_GC_FOREGROUND,
                       RNA3D_GC_MAX,
