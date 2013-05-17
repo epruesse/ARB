@@ -44,7 +44,7 @@ static const char *getAwarName(int awarNo) {
 }
 
 AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
-    AW_gc_manager preset_window =
+    AW_gc_manager gc_manager =
         AW_manage_GC (aww,
                       device,
                       SAI_GC_HIGHLIGHT,
@@ -65,7 +65,7 @@ AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                       "+-COLOR 8$#404040", "-COLOR 9$#303030",
                       NULL);
 
-    return preset_window;
+    return gc_manager;
 }
 
 SAI_graphic::SAI_graphic(AW_root *aw_rooti, GBDATA *gb_maini) {
