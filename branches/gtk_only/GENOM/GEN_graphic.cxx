@@ -48,18 +48,18 @@ GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_ins
 GEN_graphic::~GEN_graphic() {}
 
 AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
-    disp_device                 = device;
-    AW_gc_manager preset_window = AW_manage_GC(aww, device,
-                                               GEN_GC_FIRST_FONT, GEN_GC_MAX, AW_GCM_DATA_AREA,
-                                               (AW_CB)AWT_resize_cb, (AW_CL)scr, cd2,
-                                               true, // define color groups
-                                               "#55C0AA",
-                                               "Default$#5555ff",
-                                               "Gene$#000000",
-                                               "Marked$#ffff00",
-                                               "Cursor$#ff0000",
-                                               NULL);
-    return preset_window;
+    disp_device              = device;
+    AW_gc_manager gc_manager = AW_manage_GC(aww, device,
+                                            GEN_GC_FIRST_FONT, GEN_GC_MAX, AW_GCM_DATA_AREA,
+                                            (AW_CB)AWT_resize_cb, (AW_CL)scr, cd2,
+                                            true, // define color groups
+                                            "#55C0AA",
+                                            "Default$#5555ff",
+                                            "Gene$#000000",
+                                            "Marked$#ffff00",
+                                            "Cursor$#ff0000",
+                                            NULL);
+    return gc_manager;
 }
 
 void GEN_graphic::show(AW_device *device) {

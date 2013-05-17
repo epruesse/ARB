@@ -1105,7 +1105,7 @@ static char *cat(char *toBuf, const char *s1, const char *s2)
 static void insert_search_fields(AW_window_menu_modes *awmm,
                                  const char *label_prefix, const char *macro_prefix,
                                  const char *pattern_awar_name, const char *show_awar_name,
-                                 int short_form, ED4_search_type_and_ed4w *taw)
+                                 int short_form, ED4_SearchPositionType type, ED4_window *ed4w)
 {
     char buf[200];
 
@@ -1115,15 +1115,15 @@ static void insert_search_fields(AW_window_menu_modes *awmm,
     }
 
     awmm->at(cat(buf, label_prefix, "n"));
-    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, taw->type), (AW_CL)taw->ed4w);
+    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, type), (AW_CL)ed4w);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_NEXT"), "#edit/next.xpm");
 
     awmm->at(cat(buf, label_prefix, "l"));
-    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, taw->type), (AW_CL)taw->ed4w);
+    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, type), (AW_CL)ed4w);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_LAST"), "#edit/last.xpm");
 
     awmm->at(cat(buf, label_prefix, "d"));
-    awmm->callback(AW_POPUP, (AW_CL)ED4_create_search_window, (AW_CL)taw);
+    awmm->callback(ED4_popup_search_window, (AW_CL)type);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_DETAIL"), "#edit/detail.xpm");
 
     awmm->at(cat(buf, label_prefix, "s"));
@@ -1316,10 +1316,7 @@ static void refresh_on_gc_change_cb(AW_window *, AW_CL, AW_CL) {
     ED4_request_full_instant_refresh();
 }
 
-ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_window)
-{
-    AW_window_menu_modes *awmm;
-
+ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_window) {
     {
         ED4_window *ed4w = first_window;
 
@@ -1339,12 +1336,16 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         return ED4_R_BREAK;
     }
 
-    awmm = new AW_window_menu_modes;
+    AW_window_menu_modes *awmm = new AW_window_menu_modes;
     {
-        int   len = strlen(alignment_name)+35;
-        char *buf = GB_give_buffer(len);
-        snprintf(buf, len-1, "ARB_EDIT4 *%d* [%s]", ED4_window::no_of_windows+1, alignment_name);
-        awmm->init(aw_root, "ARB_EDIT4", buf, 800, 450);
+        int   winNum   = ED4_window::no_of_windows+1;
+        char *winName  = winNum>1 ? GBS_global_string_copy("ARB_EDIT4_%i", winNum) : strdup("ARB_EDIT4");
+        char *winTitle = GBS_global_string_copy("ARB_EDIT4 *%d* [%s]", winNum, alignment_name);
+
+        awmm->init(aw_root, winName, winTitle, 800, 450);
+
+        free(winTitle);
+        free(winName);
     }
 
     *device     = awmm->get_device(AW_MIDDLE_AREA); // points to Middle Area device
@@ -1362,7 +1363,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     ED4_LocalWinContext uses(*new_window);
 
                                                     // each window has its own gc-manager
-    aw_gc_manager = AW_manage_GC(awmm,              // window
+    gc_manager = AW_manage_GC(awmm,              // window
                                  *device,           // device-handle of window
                                  ED4_G_STANDARD,    // GC_Standard configuration
                                  ED4_G_DRAG,
@@ -1396,7 +1397,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     // since the gc-managers of all EDIT4-windows point to the same window properties,
     // changing fonts and colors is always done on first gc-manager
     static AW_gc_manager first_gc_manager = 0;
-    if (!first_gc_manager) first_gc_manager = aw_gc_manager;
+    if (!first_gc_manager) first_gc_manager = gc_manager;
 
     // --------------
     //      File
@@ -1512,9 +1513,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
             }
             sprintf(menu_entry_name, "%s Search", id);
 
-            hotkey[0]                     = hotkeys[s];
-            ED4_search_type_and_ed4w *taw = new ED4_search_type_and_ed4w(type, current_ed4w());
-            awmm->insert_menu_topic(macro_name, menu_entry_name, hotkey, "e4_search.hlp", AWM_ALL, AW_POPUP, AW_CL(ED4_create_search_window), AW_CL(taw));
+            hotkey[0] = hotkeys[s];
+            awmm->insert_menu_topic(awmm->local_id(macro_name), menu_entry_name, hotkey, "e4_search.hlp", AWM_ALL, ED4_popup_search_window, AW_CL(type));
         }
     }
     awmm->close_sub_menu();
@@ -1766,7 +1766,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     // draw protection icon AFTER protection!!
     awmm->at("pico");
-    awmm->create_button("PROTECT", "#protect.xpm");
+    awmm->create_button(NULL, "#protect.xpm");
 
     // draw align/edit-button AFTER protection!!
     awmm->at("edit");
@@ -1843,14 +1843,15 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     // search
 
     awmm->button_length(0);
-#define INSERT_SEARCH_FIELDS(Short, label_prefix, prefix)                                                               \
-    insert_search_fields(awmm,                                                                                          \
-                         #label_prefix,                                                                                 \
-                         #prefix,                                                                                       \
-                         ED4_AWAR_##prefix##_SEARCH_PATTERN,                                                            \
-                         ED4_AWAR_##prefix##_SEARCH_SHOW,                                                               \
-                         Short,                                                                                         \
-                         new ED4_search_type_and_ed4w(ED4_##prefix##_PATTERN, current_ed4w())                           \
+#define INSERT_SEARCH_FIELDS(Short, label_prefix, prefix)       \
+    insert_search_fields(awmm,                                  \
+                         #label_prefix,                         \
+                         #prefix,                               \
+                         ED4_AWAR_##prefix##_SEARCH_PATTERN,    \
+                         ED4_AWAR_##prefix##_SEARCH_SHOW,       \
+                         Short,                                 \
+                         ED4_##prefix##_PATTERN,                \
+                         current_ed4w()                         \
         )
 
     INSERT_SEARCH_FIELDS(0, u1, USER1);
@@ -1956,7 +1957,7 @@ ED4_root::ED4_root(int* argc, char*** argv)
       alignment_type(GB_AT_UNKNOWN),
       reference(0),
       sequence_colors(0),
-      aw_gc_manager(0),
+      gc_manager(0),
       st_ml(0),
       helix(0),
       helix_spacing(0),

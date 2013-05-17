@@ -1559,7 +1559,7 @@ public:
     GB_alignment_type        alignment_type;
     AWT_reference           *reference;
     AWT_seq_colors          *sequence_colors;
-    AW_gc_manager            aw_gc_manager;
+    AW_gc_manager            gc_manager;
     ST_ML                   *st_ml;
     AW_helix                *helix;
     int                      helix_spacing;
