@@ -271,6 +271,7 @@ public:
     void    set_window_title(const char *title);   // Set the window title forever
 
     const char *get_window_title() const;       // Get the window's title
+    const char *get_window_id() const { return window_defaults_name; } // Get the window's internal name
 
     const char *local_id(const char *id) const;
 
