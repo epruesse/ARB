@@ -1293,8 +1293,19 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access) {
 static AW_window *ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAccess) {
     AlignDataAccess *data_access = (AlignDataAccess*)cl_AlignDataAccess;
 
-    ED4_init_aligner_data_access(data_access);
-    return FastAligner_create_window(awr, data_access);
+#if defined(DEBUG)
+    static AlignDataAccess *last_data_access = NULL;
+
+    e4_assert(!last_data_access || (last_data_access == data_access)); // there shall be only one AlignDataAccess
+    last_data_access = data_access;
+#endif
+
+    static AW_window *aws = NULL;
+    if (!aws) {
+        ED4_init_aligner_data_access(data_access);
+        aws = FastAligner_create_window(awr, data_access);
+    }
+    return aws;
 }
 
 static void ED4_save_properties(AW_window *aw, AW_CL cl_mode, AW_CL) {
