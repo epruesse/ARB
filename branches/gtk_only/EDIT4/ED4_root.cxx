@@ -1362,37 +1362,38 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     ED4_LocalWinContext uses(*new_window);
 
-                                                    // each window has its own gc-manager
-    gc_manager = AW_manage_GC(awmm,              // window
-                                 *device,           // device-handle of window
-                                 ED4_G_STANDARD,    // GC_Standard configuration
-                                 ED4_G_DRAG,
-                                 AW_GCM_DATA_AREA,
-                                 refresh_on_gc_change_cb, 0, 0, // callback triggering refresh on gc-change
-                                 true,              // use color groups
+    // each window has its own gc-manager
+    gc_manager = AW_manage_GC(awmm,
+                              awmm->get_window_id(),
+                              *device,
+                              ED4_G_STANDARD,    // GC_Standard configuration
+                              ED4_G_DRAG,
+                              AW_GCM_DATA_AREA,
+                              refresh_on_gc_change_cb, 0, 0, // callback triggering refresh on gc-change
+                              true, // use color groups
 
-                                 "#f8f8f8",
-                                 "STANDARD$black",  // Standard Color showing sequences
-                                 "#SEQUENCES (0)$#505050", // default color for sequences (color 0)
-                                 "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
-                                 "+-COLOR 4$#80f",       "+-COLOR 5$#c0a020",    "-COLOR 6$grey",
-                                 "+-COLOR 7$#ff0000",    "+-COLOR 8$#44aaff",    "-COLOR 9$#ffaa00",
+                              "#f8f8f8",
+                              "STANDARD$black",  // Standard Color showing sequences
+                              "#SEQUENCES (0)$#505050", // default color for sequences (color 0)
+                              "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
+                              "+-COLOR 4$#80f",       "+-COLOR 5$#c0a020",    "-COLOR 6$grey",
+                              "+-COLOR 7$#ff0000",    "+-COLOR 8$#44aaff",    "-COLOR 9$#ffaa00",
 
-                                 "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#F0F0F0",    "-RANGE 2$#E0E0E0",
-                                 "+-RANGE 3$#D8D8D8",    "+-RANGE 4$#D0D0D0",    "-RANGE 5$#C8C8C8",
-                                 "+-RANGE 6$#C0C0C0",    "+-RANGE 7$#B8B8B8",    "-RANGE 8$#B0B0B0",
-                                 "-RANGE 9$#A0A0A0",
+                              "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#F0F0F0",    "-RANGE 2$#E0E0E0",
+                              "+-RANGE 3$#D8D8D8",    "+-RANGE 4$#D0D0D0",    "-RANGE 5$#C8C8C8",
+                              "+-RANGE 6$#C0C0C0",    "+-RANGE 7$#B8B8B8",    "-RANGE 8$#B0B0B0",
+                              "-RANGE 9$#A0A0A0",
 
-                                 // colors used to Paint search patterns
-                                 // (do not change the names of these gcs)
-                                 "+-User1$#B8E2F8",      "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
-                                 "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
-                                 "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
+                              // colors used to Paint search patterns
+                              // (do not change the names of these gcs)
+                              "+-User1$#B8E2F8",      "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
+                              "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
+                              "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
 
-                                 "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
-                                 "+-MARKED$#f4f8e0",     "-SELECTED$#FFFF80",
+                              "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
+                              "+-MARKED$#f4f8e0",     "-SELECTED$#FFFF80",
 
-                                 NULL);
+                              NULL);
 
     // since the gc-managers of all EDIT4-windows point to the same window properties,
     // changing fonts and colors is always done on first gc-manager
