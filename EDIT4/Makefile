@@ -122,6 +122,38 @@ ED4_block.o: $(ARBHOME)/INCLUDE/static_assert.h
 ED4_block.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_block.o: $(ARBHOME)/INCLUDE/test_unit.h
 
+ED4_colStat.o: ed4_class.hxx
+ED4_colStat.o: ed4_colStat.hxx
+ED4_colStat.o: ed4_defs.hxx
+ED4_colStat.o: ed4_extern.hxx
+ED4_colStat.o: ed4_search.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/arbtools.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/cb.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/downcast.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/gccver.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/pos_range.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/smartptr.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/st_window.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/static_assert.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/test_global.h
+
 ED4_cursor.o: ed4_awars.hxx
 ED4_cursor.o: ed4_class.hxx
 ED4_cursor.o: ed4_defs.hxx
@@ -573,7 +605,6 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/items.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/smartptr.h
-ED4_no_class.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/static_assert.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -728,6 +759,7 @@ ED4_root.o: ../WINDOW/aw_status.hxx
 ED4_root.o: ed4_awars.hxx
 ED4_root.o: ed4_block.hxx
 ED4_root.o: ed4_class.hxx
+ED4_root.o: ed4_colStat.hxx
 ED4_root.o: ed4_defs.hxx
 ED4_root.o: ed4_dots.hxx
 ED4_root.o: ed4_extern.hxx
@@ -787,7 +819,6 @@ ED4_root.o: $(ARBHOME)/INCLUDE/gccver.h
 ED4_root.o: $(ARBHOME)/INCLUDE/gde.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_root.o: $(ARBHOME)/INCLUDE/smartptr.h
-ED4_root.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/static_assert.h
 ED4_root.o: $(ARBHOME)/INCLUDE/svn_revision.h
 ED4_root.o: $(ARBHOME)/INCLUDE/test_global.h
