@@ -228,7 +228,9 @@ AW_gc_manager AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *dev
     AW_init_color_group_defaults("arb_pars");
 
     AW_gc_manager gc_manager =
-        AW_manage_GC(aww, device, AWT_GC_CURSOR, AWT_GC_MAX, /* AWT_GC_CURSOR+7, */ AW_GCM_DATA_AREA,
+        AW_manage_GC(aww,
+                     aww->get_window_id(),
+                     device, AWT_GC_CURSOR, AWT_GC_MAX, /* AWT_GC_CURSOR+7, */ AW_GCM_DATA_AREA,
                      (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
                      true,      // uses color groups
                      "#AAAA55",

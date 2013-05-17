@@ -31,6 +31,7 @@ AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
 {
     AW_gc_manager gc_manager =
         AW_manage_GC(aww,
+                     aww->get_window_id(),
                      device,
                      SEC_GC_LOOP,
                      SEC_GC_MAX,

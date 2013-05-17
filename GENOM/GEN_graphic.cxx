@@ -49,7 +49,9 @@ GEN_graphic::~GEN_graphic() {}
 
 AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
     disp_device              = device;
-    AW_gc_manager gc_manager = AW_manage_GC(aww, device,
+    AW_gc_manager gc_manager = AW_manage_GC(aww,
+                                            aww->get_window_id(),
+                                            device,
                                             GEN_GC_FIRST_FONT, GEN_GC_MAX, AW_GCM_DATA_AREA,
                                             (AW_CB)AWT_resize_cb, (AW_CL)scr, cd2,
                                             true, // define color groups

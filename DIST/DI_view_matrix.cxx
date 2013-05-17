@@ -720,7 +720,9 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     awm->set_motion_callback(AW_MIDDLE_AREA, (AW_CB) motion_cb,        (AW_CL)dmatrix, 0);
 
     AW_gc_manager gc_manager =
-        AW_manage_GC(awm, dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
+        AW_manage_GC(awm,
+                     awm->get_window_id(),
+                     dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
                      (AW_CB)resize_needed, (AW_CL)dmatrix, 0,
                      false,
                      "#D0D0D0",
