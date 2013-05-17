@@ -703,7 +703,7 @@ static void scroll_hor_cb(AW_window *aww, AWT_canvas* scr, AW_CL /*cl1*/) {
 }
 
 
-AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_gc_manager &set_gc_manager, const char *user_awari)
+AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, const char *user_awari)
     : consider_text_for_size(true) 
     , user_awar(strdup(user_awari))
     , shift_x_to_fit(0)
@@ -717,7 +717,6 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
     , mode(AWT_MODE_NONE)
 {
     gfx->drag_gc   = drag_gc;
-    set_gc_manager = gc_manager;
 
     memset((char *)&clicked_line, 0, sizeof(clicked_line));
     memset((char *)&clicked_text, 0, sizeof(clicked_text));

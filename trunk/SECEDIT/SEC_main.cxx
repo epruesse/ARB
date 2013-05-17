@@ -721,8 +721,7 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     AW_window_menu_modes *awm = new AW_window_menu_modes();
     awm->init(awr, "ARB_SECEDIT", "ARB_SECEDIT: Secondary structure editor", 200, 200);
 
-    AW_gc_manager gc_manager;
-    AWT_canvas *scr = new AWT_canvas(gb_main, awm, gfx, gc_manager, AWAR_SPECIES_NAME);
+    AWT_canvas *scr = new AWT_canvas(gb_main, awm, gfx, AWAR_SPECIES_NAME);
     root->init(gfx, scr, host);
 
     scr->recalc_size();
@@ -750,7 +749,7 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->create_menu("Properties", "P", AWM_ALL);
     awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
     awm->sep______________();
-    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "secedit_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)gc_manager);
+    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "secedit_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)scr->gc_manager);
     awm->sep______________();
     awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)1, 0);
     awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)2, 0);
