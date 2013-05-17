@@ -1363,7 +1363,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     ED4_LocalWinContext uses(*new_window);
 
                                                     // each window has its own gc-manager
-    aw_gc_manager = AW_manage_GC(awmm,              // window
+    gc_manager = AW_manage_GC(awmm,              // window
                                  *device,           // device-handle of window
                                  ED4_G_STANDARD,    // GC_Standard configuration
                                  ED4_G_DRAG,
@@ -1397,7 +1397,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     // since the gc-managers of all EDIT4-windows point to the same window properties,
     // changing fonts and colors is always done on first gc-manager
     static AW_gc_manager first_gc_manager = 0;
-    if (!first_gc_manager) first_gc_manager = aw_gc_manager;
+    if (!first_gc_manager) first_gc_manager = gc_manager;
 
     // --------------
     //      File
@@ -1957,7 +1957,7 @@ ED4_root::ED4_root(int* argc, char*** argv)
       alignment_type(GB_AT_UNKNOWN),
       reference(0),
       sequence_colors(0),
-      aw_gc_manager(0),
+      gc_manager(0),
       st_ml(0),
       helix(0),
       helix_spacing(0),

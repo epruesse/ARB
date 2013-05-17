@@ -1134,7 +1134,7 @@ int NT_get_canvas_id(AWT_canvas *ntw) {
 
 static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     GB_push_transaction(GLOBAL.gb_main);
-    AW_gc_manager aw_gc_manager;
+    AW_gc_manager gc_manager;
     
     char  window_title[256];
     char * const awar_tree = (char *)GB_calloc(sizeof(char), strlen(AWAR_TREE) + 10);          // do not free this
@@ -1161,7 +1161,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         AP_tree_sort old_sort_type = tree->tree_sort;
         tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
 
-        ntw = new AWT_canvas(GLOBAL.gb_main, awm, tree, aw_gc_manager, awar_tree);
+        ntw = new AWT_canvas(GLOBAL.gb_main, awm, tree, gc_manager, awar_tree);
         tree->set_tree_type(old_sort_type, ntw);
         ntw->set_mode(AWT_MODE_SELECT);
     }
@@ -1614,7 +1614,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_sub_menu("Tree settings",  "T");
             {
                 awm->insert_menu_topic(awm->local_id("props_tree2"), "Tree options",        "o", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw);
-                awm->insert_menu_topic("props_tree",                 "Tree colors & fonts", "c", "nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,    (AW_CL)aw_gc_manager);
+                awm->insert_menu_topic("props_tree",                 "Tree colors & fonts", "c", "nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,    (AW_CL)gc_manager);
             }
             awm->close_sub_menu();
             awm->insert_menu_topic("props_www", "Search world wide web (WWW)", "W", "props_www.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window, (AW_CL)GLOBAL.gb_main);
