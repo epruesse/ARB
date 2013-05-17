@@ -670,12 +670,12 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
     awm = new AW_window_menu_modes_opengl();
     awm->init(awr, "RNA3D", "RNA3D: 3D Structure of Ribosomal RNA", WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    AW_gc_manager   aw_gc_manager;
+    AW_gc_manager   gc_manager;
     RNA3D_Graphics *rna3DGraphics = new RNA3D_Graphics(awr, gb_main);
 
     Structure3D::gb_main = gb_main;
 
-    RNA3D->gl_Canvas = new AWT_canvas(Structure3D::gb_main, awm, rna3DGraphics, aw_gc_manager, AWAR_SPECIES_NAME);
+    RNA3D->gl_Canvas = new AWT_canvas(Structure3D::gb_main, awm, rna3DGraphics, gc_manager, AWAR_SPECIES_NAME);
 
     RNA3D->gl_Canvas->recalc_size_and_refresh();
     RNA3D->gl_Canvas->set_mode(AWT_MODE_NONE);
@@ -710,7 +710,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
         awm->create_toggle(AWAR_3D_DISPLAY_MASK, "#unmask.xpm", "#mask.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);
-        awm->callback(AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager);
+        awm->callback(AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)gc_manager);
         awm->button_length(0);
         awm->create_button("setColors", "#colors.xpm");
 

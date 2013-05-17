@@ -1613,8 +1613,8 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     gen_graphic = new GEN_graphic(awr, gb_main, GEN_gene_container_cb_installer, window_nr);
 
-    AW_gc_manager aw_gc_manager;
-    gen_canvas = new AWT_canvas(gb_main, this, gen_graphic, aw_gc_manager, AWAR_SPECIES_NAME);
+    AW_gc_manager gc_manager;
+    gen_canvas = new AWT_canvas(gb_main, this, gen_graphic, gc_manager, AWAR_SPECIES_NAME);
 
     GEN_add_local_awar_callbacks(awr, AW_ROOT_DEFAULT, this);
 
@@ -1644,7 +1644,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     create_menu("Properties", "r", AWM_ALL);
     insert_menu_topic("gene_props_menu",   "Menu: Colors and Fonts ...",   "M", "props_frame.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
     // @@@ FIXME: replace AW_preset_window by local function returning same window for all mapped views
-    insert_menu_topic("gene_props",        "GENEMAP: Colors and Fonts ...", "C", "gene_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager);
+    insert_menu_topic("gene_props",        "GENEMAP: Colors and Fonts ...", "C", "gene_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)gc_manager);
     // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
     insert_menu_topic("gene_layout",       "Layout",   "L", "gene_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_layout_window, 0);
     insert_menu_topic("gene_options",      "Options",  "O", "gene_options.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_options_window, 0);
