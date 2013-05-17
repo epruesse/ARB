@@ -1364,17 +1364,17 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     // each window has its own gc-manager
     gc_manager = AW_manage_GC(awmm,
-                              awmm->get_window_id(),
+                              "ARB_EDIT4",                   // but all gc-managers use the same colors
                               *device,
-                              ED4_G_STANDARD,    // GC_Standard configuration
+                              ED4_G_STANDARD,                // GC_Standard configuration
                               ED4_G_DRAG,
                               AW_GCM_DATA_AREA,
                               refresh_on_gc_change_cb, 0, 0, // callback triggering refresh on gc-change
-                              true, // use color groups
+                              true,                          // use color groups
 
                               "#f8f8f8",
-                              "STANDARD$black",  // Standard Color showing sequences
-                              "#SEQUENCES (0)$#505050", // default color for sequences (color 0)
+                              "STANDARD$black",              // Standard Color showing sequences
+                              "#SEQUENCES (0)$#505050",      // default color for sequences (color 0)
                               "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
                               "+-COLOR 4$#80f",       "+-COLOR 5$#c0a020",    "-COLOR 6$grey",
                               "+-COLOR 7$#ff0000",    "+-COLOR 8$#44aaff",    "-COLOR 9$#ffaa00",

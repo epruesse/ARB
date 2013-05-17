@@ -46,7 +46,7 @@ static const char *getAwarName(int awarNo) {
 AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
     AW_gc_manager gc_manager =
         AW_manage_GC(aww,
-                     aww->get_window_id(),
+                     scr->get_gc_base_name(),
                      device,
                      SAI_GC_HIGHLIGHT,
                      SAI_GC_MAX,
@@ -701,7 +701,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     awm->init(awr, "MATCH_SAI", "PROBE AND SAI", 200, 300);
 
     SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, gb_main);
-    AWT_canvas  *scr             = new AWT_canvas(gb_main, awm, saiProbeGraphic, AWAR_TARGET_STRING);
+    AWT_canvas  *scr             = new AWT_canvas(gb_main, awm, awm->get_window_id(), saiProbeGraphic, AWAR_TARGET_STRING);
 
     scr->recalc_size();
 

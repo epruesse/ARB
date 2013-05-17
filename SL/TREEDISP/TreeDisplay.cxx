@@ -35,7 +35,7 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
 {
     AW_gc_manager gc_manager =
         AW_manage_GC(aww,
-                     aww->get_window_id(),
+                     ntw->get_gc_base_name(),
                      device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
                      true,      // define color groups
