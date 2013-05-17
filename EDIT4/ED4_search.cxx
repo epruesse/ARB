@@ -29,6 +29,7 @@
 #include <climits>
 #include <cctype>
 #include <cerrno>
+#include <map>
 
 static int result_counter      = 0;
 static int ignore_more_results = false;
@@ -1651,14 +1652,36 @@ static void load_search_paras_from_file(AW_window *aw, AW_CL cl_type) {
     free(filename);
 }
 
-static AW_window *loadsave_search_parameters(AW_root *root, ED4_SearchPositionType type, int load) {
+static void aws_init_localized(AW_root *root, AW_window_simple *aws, GB_CSTR id_format, GB_CSTR title_format, GB_CSTR typeId, int winNum) {
+    char *window_title  = GBS_global_string_copy(title_format, typeId);
+    char *window_id_src = GBS_global_string_copy(id_format, typeId, winNum);
+    char *window_id     = GBS_string_2_key(window_id_src);
+
+    aws->init(root, window_id, window_title);
+
+    free(window_id);
+    free(window_id_src);
+    free(window_title);
+}
+
+struct LoadSaveSearchParam {
+    ED4_SearchPositionType type;
+    int                    winNum;
+
+    LoadSaveSearchParam(ED4_SearchPositionType type_, int winNum_)
+        : type(type_),
+          winNum(winNum_)
+    {}
+};
+
+static AW_window *loadsave_search_parameters(AW_root *root, const LoadSaveSearchParam& param, bool load) {
     AW_window_simple *aws = new AW_window_simple;
 
     if (load) {
-        ED4_aws_init(root, aws, "load_%s_search_para", "Load %s Search Parameters", ED4_SearchPositionTypeId[type]);
+        aws_init_localized(root, aws, "load_%s_search_para_%i", "Load %s Search Parameters", ED4_SearchPositionTypeId[param.type], param.winNum);
     }
     else {
-        ED4_aws_init(root, aws, "save_%s_search_para", "Save %s Search Parameters", ED4_SearchPositionTypeId[type]);
+        aws_init_localized(root, aws, "save_%s_search_para_%i", "Save %s Search Parameters", ED4_SearchPositionTypeId[param.type], param.winNum);
     }
 
     aws->load_xfig("edit4/save_search.fig");
@@ -1678,23 +1701,25 @@ static AW_window *loadsave_search_parameters(AW_root *root, ED4_SearchPositionTy
 
     aws->at("save");
     if (load) {
-        aws->callback(load_search_paras_from_file, (AW_CL)type);
+        aws->callback(load_search_paras_from_file, (AW_CL)param.type);
         aws->create_button("LOAD", "LOAD", "L");
     }
     else {
-        aws->callback(save_search_paras_to_file, (AW_CL)type);
+        aws->callback(save_search_paras_to_file, (AW_CL)param.type);
         aws->create_button("SAVE", "SAVE", "S");
     }
 
     return aws;
 }
 
-static AW_window *load_search_parameters(AW_root *root, AW_CL cl_type) {
-    return loadsave_search_parameters(root, ED4_SearchPositionType(cl_type), 1);
+static AW_window *load_search_parameters(AW_root *root, AW_CL cl_param) {
+    LoadSaveSearchParam *param = (LoadSaveSearchParam*)cl_param;
+    return loadsave_search_parameters(root, *param, true);
 }
 
-static AW_window *save_search_parameters(AW_root *root, AW_CL cl_type) {
-    return loadsave_search_parameters(root, ED4_SearchPositionType(cl_type), 0);
+static AW_window *save_search_parameters(AW_root *root, AW_CL cl_param) {
+    LoadSaveSearchParam *param = (LoadSaveSearchParam*)cl_param;
+    return loadsave_search_parameters(root, *param, false);
 }
 
 
@@ -1728,93 +1753,115 @@ static void search_restore_config(AW_window *aww, const char *stored_string, AW_
     cdef.write(stored_string);
 }
 
+struct search_windows : public Noncopyable {
+    AW_window_simple *windows[SEARCH_PATTERNS];
+    search_windows() { for (int i = 0; i<SEARCH_PATTERNS; ++i) windows[i] = NULL; }
+};
 
-AW_window *ED4_create_search_window(AW_root *root, AW_CL cl_type_and_ed4w) {
-    ED4_search_type_and_ed4w *taw      = (ED4_search_type_and_ed4w*)cl_type_and_ed4w;
-    ED4_SearchPositionType    type     = taw->type;
-    ED4_window               *ed4w     = taw->ed4w;
-    SearchAwarList           *awarList = &awar_list[type];
-    AW_window_simple         *aws      = new AW_window_simple;
+typedef std::map<ED4_window*, SmartPtr<search_windows> > search_window_map;
 
-    ED4_aws_init(root, aws, "%s_search", "%s Search", ED4_SearchPositionTypeId[type]);
-    aws->load_xfig("edit4/search.fig");
+void ED4_popup_search_window(AW_window *aww, AW_CL cl_search_type) {
+    ED4_SearchPositionType type = (ED4_SearchPositionType)cl_search_type;
 
-    aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    ED4_WinContext  uses(aww);
+    ED4_window     *ed4w = uses.get_ed4w();
 
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"e4_search.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    static search_window_map swm;
+    {   // create search windows pointer array for current ed4w
+        search_window_map::iterator sw4win = swm.find(ed4w);
+        if (sw4win == swm.end()) swm[ed4w] = new search_windows;
+    }
 
-    aws->at("load");
-    aws->callback(AW_POPUP, (AW_CL)load_search_parameters, (AW_CL)type);
-    aws->create_button("LOAD", "LOAD", "L");
+    SmartPtr<search_windows>  sw  = swm[ed4w];
+    AW_window_simple         *aws = sw->windows[type];
+    if (!aws) {
+        SearchAwarList *awarList = &awar_list[type];
 
-    aws->at("save");
-    aws->callback(AW_POPUP, (AW_CL)save_search_parameters, (AW_CL)type);
-    aws->create_button("SAVE", "SAVE", "S");
+        sw->windows[type] = aws = new AW_window_simple;
 
-    aws->at("next");
-    aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(+1, type), (AW_CL)ed4w);
-    aws->create_button("SEARCH_NEXT", "#edit/next.xpm", "N");
+        aws_init_localized(aww->get_root(), aws, "%s_search_%i", "%s Search", ED4_SearchPositionTypeId[type], ed4w->id);
+        aws->load_xfig("edit4/search.fig");
 
-    aws->at("previous");
-    aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(-1, type), (AW_CL)ed4w);
-    aws->create_button("SEARCH_LAST", "#edit/last.xpm", "L");
+        aws->at("close");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("mark");
-    aws->callback(ED4_mark_matching_species, (AW_CL)type);
-    aws->create_autosize_button("MARK_SPECIES", "Mark species with matches", "M");
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"e4_search.hlp");
+        aws->create_button("HELP", "HELP", "H");
 
-    aws->at("show");
-    aws->create_toggle(awarList->show);
+        LoadSaveSearchParam *param = new LoadSaveSearchParam(type, ed4w->id); // bound to callbacks (dont free)
 
-    aws->at("open");
-    aws->create_toggle(awarList->openFolded);
+        aws->at("load");
+        aws->callback(AW_POPUP, (AW_CL)load_search_parameters, (AW_CL)param);
+        aws->create_button("LOAD", "LOAD", "L");
 
-    aws->at("jump");
-    aws->create_toggle(awarList->autoJump);
+        aws->at("save");
+        aws->callback(AW_POPUP, (AW_CL)save_search_parameters, (AW_CL)param);
+        aws->create_button("SAVE", "SAVE", "S");
 
-    aws->at("pattern");
-    aws->create_text_field(awarList->pattern, 28, 17);
+        aws->at("next");
+        aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(+1, type), (AW_CL)ed4w);
+        aws->create_button("SEARCH_NEXT", "#edit/next.xpm", "N");
 
-    aws->at("minmis");
-    aws->create_toggle_field(awarList->min_mismatches, 1);
-    aws->insert_default_toggle("0", "0", 0);
-    aws->insert_toggle("1", "1", 1);
-    aws->insert_toggle("2", "2", 2);
-    aws->update_toggle_field();
+        aws->at("previous");
+        aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(-1, type), (AW_CL)ed4w);
+        aws->create_button("SEARCH_LAST", "#edit/last.xpm", "L");
 
-    aws->at("maxmis");
-    aws->create_toggle_field(awarList->max_mismatches, 1);
-    aws->insert_default_toggle("0", "0", 0);
-    aws->insert_toggle("1", "1", 1);
-    aws->insert_toggle("2", "2", 2);
-    aws->insert_toggle("3", "3", 3);
-    aws->insert_toggle("4", "4", 4);
-    aws->insert_toggle("5", "5", 5);
-    aws->update_toggle_field();
+        aws->at("mark");
+        aws->callback(ED4_mark_matching_species, (AW_CL)type);
+        aws->create_autosize_button("MARK_SPECIES", "Mark species with matches", "M");
 
-    aws->at("seq_gaps");
-    aws->create_toggle(awarList->seq_gaps);
-    aws->at("pat_gaps");
-    aws->create_toggle(awarList->pat_gaps);
-    aws->at("tu");
-    aws->create_toggle(awarList->tu);
-    aws->at("case");
-    aws->create_toggle(awarList->case_sensitive);
-    aws->at("reverse");
-    aws->create_toggle(awarList->reverse);
-    aws->at("complement");
-    aws->create_toggle(awarList->complement);
-    aws->at("exact");
-    aws->create_toggle(awarList->exact);
+        aws->at("show");
+        aws->create_toggle(awarList->show);
 
-    aws->at("config");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "search", search_store_config, search_restore_config, (AW_CL)type, 0);
+        aws->at("open");
+        aws->create_toggle(awarList->openFolded);
 
-    return (AW_window *)aws;
+        aws->at("jump");
+        aws->create_toggle(awarList->autoJump);
+
+        aws->at("pattern");
+        aws->create_text_field(awarList->pattern, 28, 17);
+
+        aws->at("minmis");
+        aws->create_toggle_field(awarList->min_mismatches, 1);
+        aws->insert_default_toggle("0", "0", 0);
+        aws->insert_toggle("1", "1", 1);
+        aws->insert_toggle("2", "2", 2);
+        aws->update_toggle_field();
+
+        aws->at("maxmis");
+        aws->create_toggle_field(awarList->max_mismatches, 1);
+        aws->insert_default_toggle("0", "0", 0);
+        aws->insert_toggle("1", "1", 1);
+        aws->insert_toggle("2", "2", 2);
+        aws->insert_toggle("3", "3", 3);
+        aws->insert_toggle("4", "4", 4);
+        aws->insert_toggle("5", "5", 5);
+        aws->update_toggle_field();
+
+        aws->at("seq_gaps");
+        aws->create_toggle(awarList->seq_gaps);
+        aws->at("pat_gaps");
+        aws->create_toggle(awarList->pat_gaps);
+        aws->at("tu");
+        aws->create_toggle(awarList->tu);
+        aws->at("case");
+        aws->create_toggle(awarList->case_sensitive);
+        aws->at("reverse");
+        aws->create_toggle(awarList->reverse);
+        aws->at("complement");
+        aws->create_toggle(awarList->complement);
+        aws->at("exact");
+        aws->create_toggle(awarList->exact);
+
+        aws->at("config");
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "search", search_store_config, search_restore_config, (AW_CL)type, 0);
+
+    }
+
+    aws->activate();
 }
 
 

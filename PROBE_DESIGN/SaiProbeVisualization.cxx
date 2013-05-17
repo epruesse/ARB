@@ -44,7 +44,7 @@ static const char *getAwarName(int awarNo) {
 }
 
 AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
-    AW_gc_manager preset_window =
+    AW_gc_manager gc_manager =
         AW_manage_GC (aww,
                       device,
                       SAI_GC_HIGHLIGHT,
@@ -65,7 +65,7 @@ AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                       "+-COLOR 8$#404040", "-COLOR 9$#303030",
                       NULL);
 
-    return preset_window;
+    return gc_manager;
 }
 
 SAI_graphic::SAI_graphic(AW_root *aw_rooti, GBDATA *gb_maini) {
@@ -687,7 +687,7 @@ static AW_window *createDisplayField_window(AW_root *aw_root, AW_CL cl_gb_main) 
 }
 
 static AW_window *createSaiColorWindow(AW_root *aw_root, AW_CL cl_gc_manager) {
-    return AW_create_gc_window_named(aw_root, (AW_gc_manager*)cl_gc_manager, "GC_PROPS_SAI", "Probe/SAI Colors and Fonts");
+    return AW_create_gc_window_named(aw_root, AW_gc_manager(cl_gc_manager), "GC_PROPS_SAI", "Probe/SAI Colors and Fonts");
 }
 
 AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
@@ -698,10 +698,10 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
 
     AW_window_menu *awm = new AW_window_menu();
     awm->init(awr, "MATCH_SAI", "PROBE AND SAI", 200, 300);
-    AW_gc_manager aw_gc_manager;
-    SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, gb_main);
 
-    AWT_canvas *scr = new AWT_canvas(gb_main, awm, saiProbeGraphic, aw_gc_manager, AWAR_TARGET_STRING);
+    SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, gb_main);
+    AWT_canvas  *scr             = new AWT_canvas(gb_main, awm, saiProbeGraphic, AWAR_TARGET_STRING);
+
     scr->recalc_size();
 
     awm->insert_help_topic("How to Visualize SAI`s ?", "H", "saiProbeHelp.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"saiProbeHelp.hlp", 0);
@@ -713,7 +713,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     awm->insert_menu_topic("selectDispField", "Select Display Field",      "F", "displayField.hlp", AWM_ALL, AW_POPUP,                     AW_CL(createDisplayField_window),           AW_CL(gb_main));
     awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", NULL,               AWM_ALL, awt_popup_sai_selection_list, AW_CL(AWAR_SPV_SAI_2_PROBE),                AW_CL(gb_main));
     awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", NULL,               AWM_ALL, AW_POPUP,                     AW_CL(create_colorTranslationTable_window), 0);
-    awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, AW_POPUP,                     AW_CL(createSaiColorWindow),                AW_CL(aw_gc_manager));
+    awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, AW_POPUP,                     AW_CL(createSaiColorWindow),                AW_CL(scr->gc_manager));
 
     addCallBacks(awr, scr);
 

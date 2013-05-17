@@ -11,7 +11,7 @@ using namespace std;
 
 
 AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
-    AW_gc_manager preset_window =
+    AW_gc_manager gc_manager =
         AW_manage_GC (aww,
                       device,
                       RNA3D_GC_FOREGROUND,
@@ -42,7 +42,7 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
                       "+-Cursor$#FFFFFF",    "+-Comments$#808080",    "-MoleculeMask$#00FF00",
                       NULL);
 
-    return preset_window;
+    return gc_manager;
 }
 
 RNA3D_Graphics::RNA3D_Graphics(AW_root *aw_root_, GBDATA *gb_main_) {
