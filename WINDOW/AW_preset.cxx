@@ -51,28 +51,28 @@ static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
     0
 };
 
-struct AW_MGC_cb_struct {   // one for each window
-    AW_MGC_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i);
-
+struct AW_MGC_cb_struct {   // one for each canvas
     AW_window *aw;
-    void (*f)(AW_window*, AW_CL, AW_CL);
-    AW_CL      cd1;
-    AW_CL      cd2;
+
+    AW_GC_change_cb f;
+    AW_CL           cd1;
+    AW_CL           cd2;
+
     char      *window_awar_name;
     AW_device *device;
 
     struct AW_MGC_awar_cb_struct *next_drag;
+
+    AW_MGC_cb_struct(AW_window *aw_, const char *gc_base_name, AW_GC_change_cb g, AW_CL cd1_, AW_CL cd2_)
+        : aw(aw_),
+          f(g),
+          cd1(cd1_),
+          cd2(cd2_),
+          window_awar_name(strdup(gc_base_name)),
+          device(NULL),
+          next_drag(NULL)
+    {}
 };
-
-AW_MGC_cb_struct::AW_MGC_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i) {
-    memset((char*)this, 0, sizeof(AW_MGC_cb_struct));
-    aw  = awi;
-    f   = g;
-    cd1 = cd1i;
-    cd2 = cd2i;
-
-    window_awar_name = strdup(awi->get_window_id());
-}
 
 class aw_gc_manager;
 struct AW_MGC_awar_cb_struct {  // one for each awar
@@ -593,11 +593,12 @@ static void AW_preset_create_color_chooser(AW_window *aws, const char *awar_name
 // --------------------------
 
 
-AW_gc_manager AW_manage_GC(AW_window *aww,
-                           AW_device *device, int base_gc, int base_drag, AW_GCM_AREA area,
-                           void (*changecb)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2,
-                           bool define_color_groups,
-                           const char *default_background_color,
+AW_gc_manager AW_manage_GC(AW_window       *aww,
+                           const char      *gc_base_name,
+                           AW_device       *device, int base_gc, int base_drag, AW_GCM_AREA area,
+                           AW_GC_change_cb  changecb, AW_CL  cd1, AW_CL cd2,
+                           bool             define_color_groups,
+                           const char      *default_background_color,
                            ...) {
     /*  Parameter:
      *          aww:                    base window
@@ -635,7 +636,7 @@ AW_gc_manager AW_manage_GC(AW_window *aww,
     AW_font               def_font;
     struct aw_gc_manager *gcmgrlast = 0, *gcmgr2=0, *gcmgrfirst=0;
 
-    AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, changecb, cd1, cd2);
+    AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, gc_base_name, changecb, cd1, cd2);
     mcbs->device = device;
 
     int col = AW_WINDOW_BG;

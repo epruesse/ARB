@@ -45,25 +45,26 @@ static const char *getAwarName(int awarNo) {
 
 AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
     AW_gc_manager gc_manager =
-        AW_manage_GC (aww,
-                      device,
-                      SAI_GC_HIGHLIGHT,
-                      SAI_GC_MAX,
-                      AW_GCM_DATA_AREA,
-                      (AW_CB)AWT_resize_cb,
-                      (AW_CL)scr,
-                      cd2,
-                      false,
-                      "#005500",
-                      "Selected Probe$#FF0000",
-                      "Foreground$#FFAA00",
-                      "Probe$#FFFF00",
-                      "+-COLOR 0$#FFFFFF", "-COLOR 1$#E0E0E0",
-                      "+-COLOR 2$#C0C0C0", "-COLOR 3$#A0A0A0",
-                      "+-COLOR 4$#909090", "-COLOR 5$#808080",
-                      "+-COLOR 6$#707070", "-COLOR 7$#505050",
-                      "+-COLOR 8$#404040", "-COLOR 9$#303030",
-                      NULL);
+        AW_manage_GC(aww,
+                     aww->get_window_id(),
+                     device,
+                     SAI_GC_HIGHLIGHT,
+                     SAI_GC_MAX,
+                     AW_GCM_DATA_AREA,
+                     (AW_CB)AWT_resize_cb,
+                     (AW_CL)scr,
+                     cd2,
+                     false,
+                     "#005500",
+                     "Selected Probe$#FF0000",
+                     "Foreground$#FFAA00",
+                     "Probe$#FFFF00",
+                     "+-COLOR 0$#FFFFFF", "-COLOR 1$#E0E0E0",
+                     "+-COLOR 2$#C0C0C0", "-COLOR 3$#A0A0A0",
+                     "+-COLOR 4$#909090", "-COLOR 5$#808080",
+                     "+-COLOR 6$#707070", "-COLOR 7$#505050",
+                     "+-COLOR 8$#404040", "-COLOR 9$#303030",
+                     NULL);
 
     return gc_manager;
 }
