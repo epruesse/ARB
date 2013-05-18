@@ -1263,7 +1263,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     {
         AP_tree_sort  old_sort_type = global_tree()->tree_sort;
         global_tree()->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
-        ntw = new AWT_canvas(GLOBAL_gb_main, awm, global_tree(), AWAR_TREE);
+        ntw = new AWT_canvas(GLOBAL_gb_main, awm, awm->get_window_id(), global_tree(), AWAR_TREE);
         global_tree()->set_tree_type(old_sort_type, ntw);
     }
 
