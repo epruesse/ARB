@@ -882,7 +882,7 @@ static void _aw_awar_notify_gparam(AW_root*, AW_CL data) {
             g_object_set_property(binding->obj, binding->pspec->name, &gval);
         }
     } else {
-        long temp;
+        FIXME("Replace OSX workaround with a real solution");
         switch(G_VALUE_TYPE(&gval)) {
         case G_TYPE_STRING: {
             char* str = binding->awar->read_as_string();
@@ -890,14 +890,20 @@ static void _aw_awar_notify_gparam(AW_root*, AW_CL data) {
             free(str);
             break;
         } 
-        case G_TYPE_DOUBLE:
-            g_value_set_double(&gval, binding->awar->read_as_float());
+        case G_TYPE_DOUBLE: {
+            double temp;
+            binding->awar->get(&temp);
+            g_value_set_double(&gval, temp);
             break;
-        case G_TYPE_INT:
-            g_value_set_int(&gval, binding->awar->read_int());
+        }
+        case G_TYPE_INT: {
+            long temp;
+            binding->awar->get(&temp);
+            g_value_set_int(&gval, temp);
             break;
-        case G_TYPE_BOOLEAN:
-            FIXME("Replace workaround with a real solution");
+        }
+        case G_TYPE_BOOLEAN: {
+            long temp;
             binding->awar->get(&temp);
             g_value_set_boolean(&gval, temp != 0);
             
@@ -905,6 +911,7 @@ static void _aw_awar_notify_gparam(AW_root*, AW_CL data) {
             //g_value_set_boolean(&gval, binding->awar->read_as_bool());
             
             break;
+        }
         default:
             aw_assert(false);
         }
