@@ -2716,7 +2716,6 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         for (int key = 0; key<QUERY_SEARCHES; ++key) {
             aws->at(xpos_calc[2], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
-            aws->d_callback(perform_query_cb, (AW_CL)query, EXT_QUERY_NONE); // enable ENTER in searchfield to start search
             aws->create_input_field(query->awar_queries[key], 12);
         }
     }
