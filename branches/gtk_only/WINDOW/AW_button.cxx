@@ -7,12 +7,12 @@
 AW_button::AW_button(AW_active maski, GtkWidget* w) 
     : mask(maski), button(w)
 {
-  aw_assert(w);
-  aw_assert(legal_mask(maski));
+   
+    aw_assert(w);
+    aw_assert(legal_mask(maski));
 }
   
-void
-AW_button::apply_sensitivity(AW_active maski) 
+void AW_button::apply_sensitivity(AW_active maski) 
 {
     gtk_widget_set_sensitive(button, (mask & maski) ? true : false);
 }

@@ -59,9 +59,7 @@ public:
     GBDATA    *gb_origin;                    // this is set ONCE on creation of awar
     GBDATA    *gb_var;                       // if unmapped, points to same DB elem as 'gb_origin'
 
-#if defined(ASSERTION_USED)
     bool is_valid() const { return correlated(gb_var, gb_origin); } // both or none NULL
-#endif // ASSERTION_USED
 
     void bind_value(GObject* obj, const char* propname, AW_awar_gvalue_mapper* mapper) OVERRIDE;
     void unbind(GObject* obj) OVERRIDE;
