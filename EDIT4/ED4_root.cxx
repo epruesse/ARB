@@ -21,11 +21,11 @@
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 #include "graph_aligner_gui.hxx"
+#include "ed4_colStat.hxx"
 
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
 #include <AW_helix.hxx>
-#include <st_window.hxx>
 #include <gde.hxx>
 #include <awt.hxx>
 #include <awt_seq_colors.hxx>
@@ -986,31 +986,6 @@ void ED4_testSplitNMerge(AW_window *aw, AW_CL, AW_CL)
 
 #endif
 
-inline void set_col_stat_activated_and_refresh(bool activated) {
-    ED4_ROOT->column_stat_activated = activated;
-    ED4_ROOT->request_refresh_for_sequence_terminals(); 
-}
-
-static void col_stat_activated(AW_window *) {
-    ED4_ROOT->column_stat_initialized  = true;
-    set_col_stat_activated_and_refresh(true);
-}
-
-static void activate_col_stat(AW_window *aww, AW_CL, AW_CL) {
-    if (!ED4_ROOT->column_stat_initialized) {
-        AW_window *aww_st = STAT_create_main_window(ED4_ROOT->aw_root, ED4_ROOT->st_ml, (AW_CB0)col_stat_activated, (AW_window *)aww);
-        aww_st->show();
-    }
-    else { // re-activate
-        set_col_stat_activated_and_refresh(true);
-    }
-}
-static void disable_col_stat(AW_window *, AW_CL, AW_CL) {
-    if (ED4_ROOT->column_stat_initialized && ED4_ROOT->column_stat_activated) {
-        set_col_stat_activated_and_refresh(false);
-    }
-}
-
 static void toggle_helix_for_SAI(AW_window *aww, AW_CL, AW_CL) {
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
@@ -1293,8 +1268,19 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access) {
 static AW_window *ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAccess) {
     AlignDataAccess *data_access = (AlignDataAccess*)cl_AlignDataAccess;
 
-    ED4_init_aligner_data_access(data_access);
-    return FastAligner_create_window(awr, data_access);
+#if defined(DEBUG)
+    static AlignDataAccess *last_data_access = NULL;
+
+    e4_assert(!last_data_access || (last_data_access == data_access)); // there shall be only one AlignDataAccess
+    last_data_access = data_access;
+#endif
+
+    static AW_window *aws = NULL;
+    if (!aws) {
+        ED4_init_aligner_data_access(data_access);
+        aws = FastAligner_create_window(awr, data_access);
+    }
+    return aws;
 }
 
 static void ED4_save_properties(AW_window *aw, AW_CL cl_mode, AW_CL) {
@@ -1364,17 +1350,17 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     // each window has its own gc-manager
     gc_manager = AW_manage_GC(awmm,
-                              awmm->get_window_id(),
+                              "ARB_EDIT4",                   // but all gc-managers use the same colors
                               *device,
-                              ED4_G_STANDARD,    // GC_Standard configuration
+                              ED4_G_STANDARD,                // GC_Standard configuration
                               ED4_G_DRAG,
                               AW_GCM_DATA_AREA,
                               refresh_on_gc_change_cb, 0, 0, // callback triggering refresh on gc-change
-                              true, // use color groups
+                              true,                          // use color groups
 
                               "#f8f8f8",
-                              "STANDARD$black",  // Standard Color showing sequences
-                              "#SEQUENCES (0)$#505050", // default color for sequences (color 0)
+                              "STANDARD$black",              // Standard Color showing sequences
+                              "#SEQUENCES (0)$#505050",      // default color for sequences (color 0)
                               "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
                               "+-COLOR 4$#80f",       "+-COLOR 5$#c0a020",    "-COLOR 6$grey",
                               "+-COLOR 7$#ff0000",    "+-COLOR 8$#44aaff",    "-COLOR 9$#ffaa00",
@@ -1531,8 +1517,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("show_all",      "Show all bases ",                   "a", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 1, 0);
     awmm->insert_menu_topic("show_diff",     "Show only differences to selected", "d", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0);
     awmm->sep______________();
-    awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, activate_col_stat,                0, 0);
-    awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, disable_col_stat,                 0, 0);
+    awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat,            0, 0);
+    awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, ED4_disable_col_stat,             0, 0);
     awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "c", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats, 0, 0);
     awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,       0, 0);
     awmm->sep______________();
