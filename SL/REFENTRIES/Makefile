@@ -76,7 +76,6 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-refentries.o: $(ARBHOME)/INCLUDE/cb.h
 refentries.o: $(ARBHOME)/INCLUDE/cxxforward.h
 refentries.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 refentries.o: $(ARBHOME)/INCLUDE/downcast.h

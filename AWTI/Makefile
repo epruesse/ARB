@@ -82,7 +82,6 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/cb.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/downcast.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -148,7 +147,6 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
-AWTI_import.o: $(ARBHOME)/INCLUDE/cb.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/downcast.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/dupstr.h

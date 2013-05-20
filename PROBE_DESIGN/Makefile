@@ -91,7 +91,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/bytestring.h
-probe_design.o: $(ARBHOME)/INCLUDE/cb.h
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
 probe_design.o: $(ARBHOME)/INCLUDE/client_types.h
 probe_design.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -179,7 +178,6 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cb.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/downcast.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/dupstr.h

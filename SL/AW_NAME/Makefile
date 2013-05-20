@@ -86,7 +86,6 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/cb.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -144,7 +143,6 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/bytestring.h
-AW_rename.o: $(ARBHOME)/INCLUDE/cb.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client_types.h
 AW_rename.o: $(ARBHOME)/INCLUDE/cxxforward.h

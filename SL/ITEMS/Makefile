@@ -75,7 +75,6 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-changekey.o: $(ARBHOME)/INCLUDE/cb.h
 changekey.o: $(ARBHOME)/INCLUDE/cxxforward.h
 changekey.o: $(ARBHOME)/INCLUDE/downcast.h
 changekey.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -128,7 +127,6 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-item_sel_list.o: $(ARBHOME)/INCLUDE/cb.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cxxforward.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/downcast.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -184,7 +182,6 @@ species.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-species.o: $(ARBHOME)/INCLUDE/cb.h
 species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 species.o: $(ARBHOME)/INCLUDE/downcast.h
 species.o: $(ARBHOME)/INCLUDE/dupstr.h

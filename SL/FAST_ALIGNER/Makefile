@@ -106,7 +106,6 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/cb.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/downcast.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/dupstr.h

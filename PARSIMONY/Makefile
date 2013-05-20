@@ -106,7 +106,6 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-AP_main.o: $(ARBHOME)/INCLUDE/cb.h
 AP_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_main.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -167,7 +166,6 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-AP_tree_edge.o: $(ARBHOME)/INCLUDE/cb.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -228,7 +226,6 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-AP_tree_nlen.o: $(ARBHOME)/INCLUDE/cb.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -277,7 +274,6 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-PARS_debug.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -348,7 +344,6 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-PARS_dtree.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -399,7 +394,6 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-PARS_klprops.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -471,7 +465,6 @@ PARS_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-PARS_main.o: $(ARBHOME)/INCLUDE/cb.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PARS_main.o: $(ARBHOME)/INCLUDE/downcast.h

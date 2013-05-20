@@ -86,7 +86,6 @@ ED4_base.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_base.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_base.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_base.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_base.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -154,7 +153,6 @@ ED4_block.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_block.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_block.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_block.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_block.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -213,7 +211,6 @@ ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_colStat.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_colStat.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_colStat.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_colStat.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -283,7 +280,6 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-ED4_cursor.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -345,7 +341,6 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_dots.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -399,7 +394,6 @@ ED4_dump.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_dump.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -464,7 +458,6 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-ED4_edit_string.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -544,7 +537,6 @@ ED4_main.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-ED4_main.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_main.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_main.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -611,7 +603,6 @@ ED4_manager.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_manager.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -667,7 +658,6 @@ ED4_members.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_members.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_members.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_members.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_members.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -725,7 +715,6 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_mini_classes.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -783,7 +772,6 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-ED4_naligner.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -841,7 +829,6 @@ ED4_nds.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_nds.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -917,7 +904,6 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-ED4_no_class.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -973,7 +959,6 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_objspec.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1031,7 +1016,6 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_plugins.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1094,7 +1078,6 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1160,7 +1143,6 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1248,7 +1230,6 @@ ED4_root.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-ED4_root.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_root.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_root.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_root.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1318,7 +1299,6 @@ ED4_search.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_search.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_search.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_search.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_search.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1384,7 +1364,6 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_terminal.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1456,7 +1435,6 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-ED4_text_terminals.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1517,7 +1495,6 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_tools.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1587,7 +1564,6 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1644,7 +1620,6 @@ ED4_window.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-ED4_window.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_window.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_window.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_window.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1705,7 +1680,6 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
-EDB_root_bact.o: $(ARBHOME)/INCLUDE/cb.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/cxxforward.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/downcast.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -1766,7 +1740,6 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/bytestring.h
-graph_aligner_gui.o: $(ARBHOME)/INCLUDE/cb.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client_types.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/cxxforward.h

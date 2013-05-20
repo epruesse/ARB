@@ -78,7 +78,6 @@ nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-nds.o: $(ARBHOME)/INCLUDE/cb.h
 nds.o: $(ARBHOME)/INCLUDE/cxxforward.h
 nds.o: $(ARBHOME)/INCLUDE/downcast.h
 nds.o: $(ARBHOME)/INCLUDE/dupstr.h
