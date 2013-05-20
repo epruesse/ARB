@@ -17,9 +17,7 @@
 #ifndef AW_BASE_HXX
 #include "aw_base.hxx"
 #endif
-#ifndef CB_H
-#include <cb.h>
-#endif
+#include "aw_root.hxx"
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif

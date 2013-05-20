@@ -79,7 +79,6 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-db_scanner.o: $(ARBHOME)/INCLUDE/cb.h
 db_scanner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 db_scanner.o: $(ARBHOME)/INCLUDE/downcast.h
 db_scanner.o: $(ARBHOME)/INCLUDE/dupstr.h

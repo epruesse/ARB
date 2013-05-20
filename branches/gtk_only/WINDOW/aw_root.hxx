@@ -7,9 +7,6 @@
 #ifndef ARB_ERROR_H
 #include <arb_error.h>
 #endif
-#ifndef CB_H
-#include <cb.h>
-#endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
@@ -22,7 +19,7 @@
 class AW_selection_list;
 class AW_button;
 
-
+typedef void (*AW_RCB)(AW_root*, AW_CL, AW_CL);
 typedef void (*AW_RCB0)(AW_root*);
 typedef void (*AW_RCB1)(AW_root*, AW_CL);
 typedef AW_RCB AW_RCB2;

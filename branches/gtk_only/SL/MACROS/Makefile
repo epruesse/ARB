@@ -75,7 +75,6 @@ macro_gui.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-macro_gui.o: $(ARBHOME)/INCLUDE/cb.h
 macro_gui.o: $(ARBHOME)/INCLUDE/cxxforward.h
 macro_gui.o: $(ARBHOME)/INCLUDE/downcast.h
 macro_gui.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -106,7 +105,6 @@ macros.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 macros.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-macros.o: $(ARBHOME)/INCLUDE/cb.h
 macros.o: $(ARBHOME)/INCLUDE/cxxforward.h
 macros.o: $(ARBHOME)/INCLUDE/dupstr.h
 macros.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -133,7 +131,6 @@ recmac.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-recmac.o: $(ARBHOME)/INCLUDE/cb.h
 recmac.o: $(ARBHOME)/INCLUDE/cxxforward.h
 recmac.o: $(ARBHOME)/INCLUDE/dupstr.h
 recmac.o: $(ARBHOME)/INCLUDE/FileContent.h

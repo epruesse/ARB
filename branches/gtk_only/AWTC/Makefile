@@ -72,7 +72,6 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/bytestring.h
-AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cb.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client_types.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -135,7 +134,6 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-AWTC_submission.o: $(ARBHOME)/INCLUDE/cb.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/downcast.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/dupstr.h

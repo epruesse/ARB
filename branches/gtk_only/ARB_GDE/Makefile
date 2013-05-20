@@ -96,7 +96,6 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-GDE.o: $(ARBHOME)/INCLUDE/cb.h
 GDE.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -187,7 +186,6 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/cb.h
 GDE_event.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE_event.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_event.o: $(ARBHOME)/INCLUDE/dupstr.h

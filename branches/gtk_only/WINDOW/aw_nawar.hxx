@@ -11,9 +11,6 @@
 #ifndef AW_NAWAR_HXX
 #define AW_NAWAR_HXX
 
-#ifndef CB_H
-#include <cb.h>
-#endif
 #ifndef _GLIBCXX_CSTDDEF
 #include <cstddef>
 #endif
