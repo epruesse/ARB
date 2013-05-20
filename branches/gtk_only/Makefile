@@ -49,20 +49,8 @@ READLINK:=$(ARBHOME)/SH/arb_readlink
 
 # ---------------------- [basic compiler setting]
 
-ifdef DARWIN
-	GCC:= clang
-	GPP:= clang++
-else
-	GCC:=$(CC)
-	GPP:=$(CXX)
-
-#       to use clang-static-analyzer , call make like this:
-#       setenv CLANG_STATIC_CHECKER 1 ; scan-build make -j5 build
-	ifeq ($(CLANG_STATIC_CHECKER),1)
-		CCC_ANALYZER_CPLUSPLUS=1
-	endif
-endif
-
+GCC ?= $(CC)
+GPP ?= $(CXX)
 
 # ---------------------- compiler version detection
 
