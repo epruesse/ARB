@@ -33,7 +33,10 @@
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
-//#define DUMP_BUTTON_CREATION
+
+void AW_POPDOWN(AW_window *window){
+    window->hide();
+}
 
 // proxy functions handing down stuff to AW_at
 void AW_window::at(int x, int y){ _at.at(x,y); }

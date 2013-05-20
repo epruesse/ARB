@@ -58,6 +58,8 @@ private:
     
 };
 
+/// functions
+
 void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
     aw_return_if_fail(command);
 
@@ -65,6 +67,18 @@ void AW_system(AW_window *aww, const char *command, const char *auto_help_file) 
     aw_message_if(GBK_system(command));
 }
 
+void AW_clock_cursor(AW_root *awr) {
+  awr->set_cursor(WAIT_CURSOR);
+}
+
+void AW_normal_cursor(AW_root *awr) {
+  awr->set_cursor(NORMAL_CURSOR);
+}
+
+void AW_help_entry_pressed(AW_window */*window*/) {
+    AW_root::SINGLETON->set_help_active(true);
+    AW_root::SINGLETON->set_cursor(HELP_CURSOR);
+}
 
 void AW_root::process_events() {
     gtk_main_iteration();
