@@ -301,6 +301,26 @@ AW_button.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_button.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_button.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AW_cb.o: aw_area_management.hxx
+AW_cb.o: aw_assert.hxx
+AW_cb.o: aw_base.hxx
+AW_cb.o: aw_cb.hxx
+AW_cb.o: aw_gtk_forward_declarations.hxx
+AW_cb.o: aw_keysym.hxx
+AW_cb.o: aw_root.hxx
+AW_cb.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_cb.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_cb.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_cb.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_cb.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_cb.o: $(ARBHOME)/INCLUDE/cb.h
+AW_cb.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_cb.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_cb.o: $(ARBHOME)/INCLUDE/gccver.h
+AW_cb.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_cb.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_cb.o: $(ARBHOME)/INCLUDE/test_unit.h
+
 AW_cb_struct.o: aw_area_management.hxx
 AW_cb_struct.o: aw_assert.hxx
 AW_cb_struct.o: aw_at.hxx
