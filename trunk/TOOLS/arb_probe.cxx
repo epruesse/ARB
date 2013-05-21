@@ -1295,7 +1295,7 @@ void TEST_SLOW_variable_defaults_in_server() {
     TEST_EXPECT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag));
 
     const char *servername = GBS_read_arb_tcp(server_tag);;
-    TEST_EXPECT_EQUAL(servername, "localhost:3200"); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER
+    TEST_EXPECT_EQUAL(servername, ":/tmp/pt.socket"); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER
 
     T_PT_MAIN com;
     T_PT_LOCS locs;
