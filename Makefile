@@ -451,7 +451,7 @@ endif
 ifdef DARWIN
 	XMKMF := $(PREFIX)/bin/xmkmf
 else
-	XMKMF := /usr/bin/X11/xmkmf
+	XMKMF := xmkmf
 endif
 
 MAKEDEPEND_PLAIN = makedepend
