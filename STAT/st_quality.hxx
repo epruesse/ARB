@@ -112,6 +112,7 @@ public:
 };
 
 class WeightedFilter;
+class ColumnStat;
 
 GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
                                       const char *alignment_name, ColumnStat *colstat, const WeightedFilter *weighted_filter, int bucket_size,
