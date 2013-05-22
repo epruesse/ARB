@@ -23,7 +23,7 @@
 #define aw_return_if_fail(cond) g_return_if_fail(cond)
 #define aw_return_val_if_fail(cond, val) g_return_val_if_fail(cond, val)
 #define aw_return_if_reached() g_return_if_reached()
-#define aw_return_val_if_reached(val) g_return_val_if_reacher(val)
+#define aw_return_val_if_reached(val) g_return_val_if_reached(val)
 #define aw_warn_if_fail(cond) g_warn_if_fail(cond)
 #define aw_warn_if_reached() g_warn_if_reached()
 #define aw_debug g_debug

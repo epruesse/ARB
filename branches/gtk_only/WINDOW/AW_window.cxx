@@ -457,6 +457,38 @@ struct _awar_inverse_bool_mapper : public AW_awar_gvalue_mapper {
     }
 };
 
+/**should be used if the awar is of type int but gtk needs float to work properly e.g. for spin boxes or sliders*/
+struct _awar_float_to_int_mapper : public AW_awar_gvalue_mapper {
+    bool operator()(GValue* gval, AW_awar* awar) OVERRIDE {
+        int value = -1;
+        
+        if(G_VALUE_HOLDS_FLOAT(gval)){
+            value = (int)g_value_get_float(gval);
+        }
+        else if(G_VALUE_HOLDS_DOUBLE(gval)) {
+            value = (int)g_value_get_double(gval);
+        }
+        else {
+            aw_return_val_if_reached(false);
+        }
+        awar->write_int(value, true);
+        return true;
+    }
+    bool operator()(AW_awar* awar, GValue* gval) OVERRIDE {
+        if(G_VALUE_HOLDS_FLOAT(gval)) {
+            g_value_set_float(gval, awar->read_as_float());
+        }
+        else if(G_VALUE_HOLDS_DOUBLE(gval)) {
+            g_value_set_double(gval, awar->read_as_float());
+        }
+        else {
+            aw_return_val_if_reached(false);
+        }
+        return true;
+    }
+};
+
+
 void AW_window::create_toggle(const char *var_name, bool inverse, 
                               const char *yes, const char *no, int width) {
     AW_awar* awar = get_root()->awar_no_error(var_name);
@@ -532,7 +564,14 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
                                                 awar->get_min(), awar->get_max(), 
                                                 step, 50 *step, 0));
         entry = gtk_spin_button_new(adj, climb_rate, precision);
-        awar->bind_value(G_OBJECT(entry), "value");
+        if(awar->get_type() == GB_INT)
+        {//spin button value is always float, if we want to connect it to an int we need to use a wrapper
+            awar->bind_value(G_OBJECT(entry), "value", new _awar_float_to_int_mapper());
+        }
+        else
+        {
+            awar->bind_value(G_OBJECT(entry), "value");
+        }
      
         width--; // make room for the spinner
     }
