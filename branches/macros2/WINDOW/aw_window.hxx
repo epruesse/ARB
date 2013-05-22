@@ -628,8 +628,8 @@ public:
     void init(AW_root *root, const char *windowname, bool allow_close);
 };
 
+typedef struct aw_gc_manager *AW_gc_manager;
 
-typedef void* AW_gc_manager;
 
 #else
 #error aw_window.hxx included twice

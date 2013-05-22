@@ -572,7 +572,7 @@ static void GBS_erase_hash(GB_HASH *hs) {
         }
 #else
         if (hs->nelem >= (2*hsize)) {
-            GB_warningf("Performance leak - very slow hash detected (elems=%li, size=%li)\n", hs->nelem, hs->size);
+            GB_warningf("Performance leak - very slow hash detected (elems=%zu, size=%zu)\n", hs->nelem, hs->size);
             GBK_dump_backtrace(stderr, "detected performance leak");
         }
 #endif // DEBUG

@@ -781,7 +781,7 @@ static AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("what");
-    aws->create_autosize_button("WHAT", (bug_report ? "Bug report" : "ARB Registration"));
+    aws->create_autosize_button(NULL, (bug_report ? "Bug report" : "ARB Registration"));
 
     char *awar_name_start = GBS_global_string_copy("/tmp/nt/feedback/%s", bug_report ? "bugreport" : "registration");
 
@@ -1138,8 +1138,7 @@ int NT_get_canvas_id(AWT_canvas *ntw) {
 
 static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     GB_push_transaction(GLOBAL.gb_main);
-    AW_gc_manager aw_gc_manager;
-    
+
     char  window_title[256];
     char * const awar_tree = (char *)GB_calloc(sizeof(char), strlen(AWAR_TREE) + 10);          // do not free this
 
@@ -1165,7 +1164,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         AP_tree_sort old_sort_type = tree->tree_sort;
         tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
 
-        ntw = new AWT_canvas(GLOBAL.gb_main, awm, tree, aw_gc_manager, awar_tree);
+        ntw = new AWT_canvas(GLOBAL.gb_main, awm, "ARB_NT", tree, awar_tree);
         tree->set_tree_type(old_sort_type, ntw);
         ntw->set_mode(AWT_MODE_SELECT);
     }
@@ -1221,7 +1220,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     if (clone) {
         awm->create_menu("File", "F", AWM_ALL);
         if (allow_new_window) {
-            awm->insert_menu_topic("new_window",   "New window", "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
+            awm->insert_menu_topic(awm->local_id("new_window"), "New window (same database)", "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
         }
         awm->insert_menu_topic("close", "Close", "C", 0, AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
     }
@@ -1250,7 +1249,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("Import",      "I");
             {
-                awm->insert_menu_topic("import_seq", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree . \":\" &", 0);
+                awm->insert_menu_topic("merge_from", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree . \":\" &", 0);
                 awm->insert_menu_topic("import_seq", "Import from external format",   "I", "arb_import.hlp",     AWM_ALL, NT_import_sequences, 0,                            0);
                 GDE_load_menu(awm, AWM_EXP, "Import");
             }
@@ -1285,9 +1284,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->sep______________();
 
-            awm->insert_menu_topic("restart", "Start second database", "o", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 0);
-            awm->insert_menu_topic("restart", "Quit + load other database",  "l", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 1);
-            awm->insert_menu_topic("quit",    "Quit",                  "Q", "quit.hlp", AWM_ALL, nt_exit,          EXIT_SUCCESS);
+            awm->insert_menu_topic("new_arb",     "Start second database",      "o", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 0);
+            awm->insert_menu_topic("restart_arb", "Quit + load other database", "l", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 1);
+            awm->insert_menu_topic("quit",        "Quit",                       "Q", "quit.hlp", AWM_ALL, nt_exit,          EXIT_SUCCESS);
         }
 
         // -----------------
@@ -1545,8 +1544,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->sep______________();
 
-        awm->insert_menu_topic(awm->local_id("tree_select"),        "Select Tree",      "T", 0, AWM_ALL, AW_POPUP, (AW_CL)NT_open_select_tree_window, (AW_CL)awar_tree);
-        awm->insert_menu_topic(awm->local_id("tree_select_latest"), "Select Last Tree", "L", 0, AWM_ALL,          (AW_CB)NT_select_bottom_tree,        (AW_CL)awar_tree, 0);
+        awm->insert_menu_topic(awm->local_id("tree_select"),        "Select Tree",      "T", 0, AWM_ALL, AW_POPUP,                     (AW_CL)NT_create_select_tree_window, (AW_CL)awar_tree);
+        awm->insert_menu_topic(awm->local_id("tree_select_latest"), "Select Last Tree", "L", 0, AWM_ALL, (AW_CB)NT_select_bottom_tree, (AW_CL)awar_tree, 0);
 
         awm->sep______________();
 
@@ -1618,7 +1617,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_sub_menu("Tree settings",  "T");
             {
                 awm->insert_menu_topic(awm->local_id("props_tree2"), "Tree options",        "o", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw);
-                awm->insert_menu_topic("props_tree",                 "Tree colors & fonts", "c", "nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,    (AW_CL)aw_gc_manager);
+                awm->insert_menu_topic("props_tree",                 "Tree colors & fonts", "c", "nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,    (AW_CL)ntw->gc_manager);
             }
             awm->close_sub_menu();
             awm->insert_menu_topic("props_www", "Search world wide web (WWW)", "W", "props_www.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window, (AW_CL)GLOBAL.gb_main);
@@ -1753,7 +1752,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->at(db_treex, first_liney);
     // size of tree-name button is determined by buttons below:
     awm->at_set_to(false, false, db_treex2-db_treex-1, second_uppery-first_liney+1);
-    awm->callback((AW_CB2)AW_POPUP, (AW_CL)NT_open_select_tree_window, (AW_CL)awar_tree);
+    awm->callback((AW_CB2)AW_POPUP, (AW_CL)NT_create_select_tree_window, (AW_CL)awar_tree);
     awm->help_text("nt_tree_select.hlp");
     awm->create_button("SELECT_A_TREE", awar_tree);
 
@@ -1771,7 +1770,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     awm->at(protectx+2, first_liney+1);
     awm->button_length(0);
-    awm->create_button("PROTECT", "#protect.xpm");
+    awm->create_button(NULL, "#protect.xpm");
 
     awm->at(protectx, second_liney+2);
     awm->create_option_menu(AWAR_SECURITY_LEVEL);

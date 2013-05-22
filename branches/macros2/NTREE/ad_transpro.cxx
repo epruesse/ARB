@@ -45,11 +45,12 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
     {
         GBDATA *gb_source = GBT_get_alignment(gb_main, ali_source);
         if (!gb_source) {
-            error = "Please select a valid source alignment";
+            error = GBS_global_string("No valid source alignment (%s)", GB_await_error());
         }
         else {
             GBDATA *gb_dest = GBT_get_alignment(gb_main, ali_dest);
             if (!gb_dest) {
+                GB_clear_error();
                 const char *msg = GBS_global_string("You have not selected a destination alignment\n"
                                                     "Shall I create one ('%s_pro') for you?", ali_source);
                 if (!aw_ask_sure("create_protein_ali", msg)) {

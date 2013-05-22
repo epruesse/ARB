@@ -1559,7 +1559,7 @@ public:
     GB_alignment_type        alignment_type;
     AWT_reference           *reference;
     AWT_seq_colors          *sequence_colors;
-    AW_gc_manager            aw_gc_manager;
+    AW_gc_manager            gc_manager;
     ST_ML                   *st_ml;
     AW_helix                *helix;
     int                      helix_spacing;
@@ -2347,9 +2347,6 @@ void        ED4_jump_to_cursor_position (AW_window *aww, AW_CL cl_awar_name, AW_
 void        ED4_remote_set_cursor_cb    (AW_root *awr, AW_CL, AW_CL);
 void        ED4_change_cursor       (AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */);
 void        ED4_set_reference_species   (AW_window *aww, AW_CL cd1, AW_CL cd2);
-
-void        ED4_toggle_detailed_column_stats  (AW_window *aww, AW_CL, AW_CL);
-void        ED4_set_col_stat_threshold  (AW_window *aww, AW_CL, AW_CL);
 
 void        ED4_new_editor_window       (AW_window *aww, AW_CL cd1, AW_CL cd2);
 

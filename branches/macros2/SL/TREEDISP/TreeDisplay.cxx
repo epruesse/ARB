@@ -33,8 +33,10 @@ using namespace AW;
 
 AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
 {
-    AW_gc_manager preset_window =
-        AW_manage_GC(aww, device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
+    AW_gc_manager gc_manager =
+        AW_manage_GC(aww,
+                     ntw->get_gc_base_name(),
+                     device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
                      true,      // define color groups
                      "#3be",
@@ -59,7 +61,7 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
                      "+-Probe 3$blue",      "-All probes$white",
                      NULL);
 
-    return preset_window;
+    return gc_manager;
 }
 
 AP_tree *AWT_graphic_tree::search(AP_tree *node, const char *name) {
@@ -1425,7 +1427,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
                                 at->reset_child_linewidths();
-                                at->set_linewidth(0);
+                                at->set_linewidth(1);
                                 exports.save    = 1;
                                 exports.refresh = 1;
                             }

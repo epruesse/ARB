@@ -21,11 +21,11 @@
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 #include "graph_aligner_gui.hxx"
+#include "ed4_colStat.hxx"
 
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
 #include <AW_helix.hxx>
-#include <st_window.hxx>
 #include <gde.hxx>
 #include <awt.hxx>
 #include <awt_seq_colors.hxx>
@@ -987,31 +987,6 @@ void ED4_testSplitNMerge(AW_window *aw, AW_CL, AW_CL)
 
 #endif
 
-inline void set_col_stat_activated_and_refresh(bool activated) {
-    ED4_ROOT->column_stat_activated = activated;
-    ED4_ROOT->request_refresh_for_sequence_terminals(); 
-}
-
-static void col_stat_activated(AW_window *) {
-    ED4_ROOT->column_stat_initialized  = true;
-    set_col_stat_activated_and_refresh(true);
-}
-
-static void activate_col_stat(AW_window *aww, AW_CL, AW_CL) {
-    if (!ED4_ROOT->column_stat_initialized) {
-        AW_window *aww_st = STAT_create_main_window(ED4_ROOT->aw_root, ED4_ROOT->st_ml, (AW_CB0)col_stat_activated, (AW_window *)aww);
-        aww_st->show();
-    }
-    else { // re-activate
-        set_col_stat_activated_and_refresh(true);
-    }
-}
-static void disable_col_stat(AW_window *, AW_CL, AW_CL) {
-    if (ED4_ROOT->column_stat_initialized && ED4_ROOT->column_stat_activated) {
-        set_col_stat_activated_and_refresh(false);
-    }
-}
-
 static void toggle_helix_for_SAI(AW_window *aww, AW_CL, AW_CL) {
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
@@ -1106,7 +1081,7 @@ static char *cat(char *toBuf, const char *s1, const char *s2)
 static void insert_search_fields(AW_window_menu_modes *awmm,
                                  const char *label_prefix, const char *macro_prefix,
                                  const char *pattern_awar_name, const char *show_awar_name,
-                                 int short_form, ED4_search_type_and_ed4w *taw)
+                                 int short_form, ED4_SearchPositionType type, ED4_window *ed4w)
 {
     char buf[200];
 
@@ -1116,15 +1091,15 @@ static void insert_search_fields(AW_window_menu_modes *awmm,
     }
 
     awmm->at(cat(buf, label_prefix, "n"));
-    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, taw->type), (AW_CL)taw->ed4w);
+    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, type), (AW_CL)ed4w);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_NEXT"), "#edit/next.xpm");
 
     awmm->at(cat(buf, label_prefix, "l"));
-    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, taw->type), (AW_CL)taw->ed4w);
+    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, type), (AW_CL)ed4w);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_LAST"), "#edit/last.xpm");
 
     awmm->at(cat(buf, label_prefix, "d"));
-    awmm->callback(AW_POPUP, (AW_CL)ED4_create_search_window, (AW_CL)taw);
+    awmm->callback(ED4_popup_search_window, (AW_CL)type);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_DETAIL"), "#edit/detail.xpm");
 
     awmm->at(cat(buf, label_prefix, "s"));
@@ -1294,8 +1269,19 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access) {
 static AW_window *ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAccess) {
     AlignDataAccess *data_access = (AlignDataAccess*)cl_AlignDataAccess;
 
-    ED4_init_aligner_data_access(data_access);
-    return FastAligner_create_window(awr, data_access);
+#if defined(DEBUG)
+    static AlignDataAccess *last_data_access = NULL;
+
+    e4_assert(!last_data_access || (last_data_access == data_access)); // there shall be only one AlignDataAccess
+    last_data_access = data_access;
+#endif
+
+    static AW_window *aws = NULL;
+    if (!aws) {
+        ED4_init_aligner_data_access(data_access);
+        aws = FastAligner_create_window(awr, data_access);
+    }
+    return aws;
 }
 
 static void ED4_save_properties(AW_window *aw, AW_CL cl_mode, AW_CL) {
@@ -1317,10 +1303,7 @@ static void refresh_on_gc_change_cb(AW_window *, AW_CL, AW_CL) {
     ED4_request_full_instant_refresh();
 }
 
-ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_window)
-{
-    AW_window_menu_modes *awmm;
-
+ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_window) {
     {
         ED4_window *ed4w = first_window;
 
@@ -1340,12 +1323,16 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         return ED4_R_BREAK;
     }
 
-    awmm = new AW_window_menu_modes;
+    AW_window_menu_modes *awmm = new AW_window_menu_modes;
     {
-        int   len = strlen(alignment_name)+35;
-        char *buf = GB_give_buffer(len);
-        snprintf(buf, len-1, "ARB_EDIT4 *%d* [%s]", ED4_window::no_of_windows+1, alignment_name);
-        awmm->init(aw_root, "ARB_EDIT4", buf, 800, 450);
+        int   winNum   = ED4_window::no_of_windows+1;
+        char *winName  = winNum>1 ? GBS_global_string_copy("ARB_EDIT4_%i", winNum) : strdup("ARB_EDIT4");
+        char *winTitle = GBS_global_string_copy("ARB_EDIT4 *%d* [%s]", winNum, alignment_name);
+
+        awmm->init(aw_root, winName, winTitle, 800, 450);
+
+        free(winTitle);
+        free(winName);
     }
 
     *device     = awmm->get_device(AW_MIDDLE_AREA); // points to Middle Area device
@@ -1362,42 +1349,43 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     ED4_LocalWinContext uses(*new_window);
 
-                                                    // each window has its own gc-manager
-    aw_gc_manager = AW_manage_GC(awmm,              // window
-                                 *device,           // device-handle of window
-                                 ED4_G_STANDARD,    // GC_Standard configuration
-                                 ED4_G_DRAG,
-                                 AW_GCM_DATA_AREA,
-                                 refresh_on_gc_change_cb, 0, 0, // callback triggering refresh on gc-change
-                                 true,              // use color groups
+    // each window has its own gc-manager
+    gc_manager = AW_manage_GC(awmm,
+                              "ARB_EDIT4",                   // but all gc-managers use the same colors
+                              *device,
+                              ED4_G_STANDARD,                // GC_Standard configuration
+                              ED4_G_DRAG,
+                              AW_GCM_DATA_AREA,
+                              refresh_on_gc_change_cb, 0, 0, // callback triggering refresh on gc-change
+                              true,                          // use color groups
 
-                                 "#f8f8f8",
-                                 "STANDARD$black",  // Standard Color showing sequences
-                                 "#SEQUENCES (0)$#505050", // default color for sequences (color 0)
-                                 "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
-                                 "+-COLOR 4$#80f",       "+-COLOR 5$#c0a020",    "-COLOR 6$grey",
-                                 "+-COLOR 7$#ff0000",    "+-COLOR 8$#44aaff",    "-COLOR 9$#ffaa00",
+                              "#f8f8f8",
+                              "STANDARD$black",              // Standard Color showing sequences
+                              "#SEQUENCES (0)$#505050",      // default color for sequences (color 0)
+                              "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
+                              "+-COLOR 4$#80f",       "+-COLOR 5$#c0a020",    "-COLOR 6$grey",
+                              "+-COLOR 7$#ff0000",    "+-COLOR 8$#44aaff",    "-COLOR 9$#ffaa00",
 
-                                 "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#F0F0F0",    "-RANGE 2$#E0E0E0",
-                                 "+-RANGE 3$#D8D8D8",    "+-RANGE 4$#D0D0D0",    "-RANGE 5$#C8C8C8",
-                                 "+-RANGE 6$#C0C0C0",    "+-RANGE 7$#B8B8B8",    "-RANGE 8$#B0B0B0",
-                                 "-RANGE 9$#A0A0A0",
+                              "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#F0F0F0",    "-RANGE 2$#E0E0E0",
+                              "+-RANGE 3$#D8D8D8",    "+-RANGE 4$#D0D0D0",    "-RANGE 5$#C8C8C8",
+                              "+-RANGE 6$#C0C0C0",    "+-RANGE 7$#B8B8B8",    "-RANGE 8$#B0B0B0",
+                              "-RANGE 9$#A0A0A0",
 
-                                 // colors used to Paint search patterns
-                                 // (do not change the names of these gcs)
-                                 "+-User1$#B8E2F8",      "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
-                                 "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
-                                 "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
+                              // colors used to Paint search patterns
+                              // (do not change the names of these gcs)
+                              "+-User1$#B8E2F8",      "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
+                              "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
+                              "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
 
-                                 "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
-                                 "+-MARKED$#f4f8e0",     "-SELECTED$#FFFF80",
+                              "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
+                              "+-MARKED$#f4f8e0",     "-SELECTED$#FFFF80",
 
-                                 NULL);
+                              NULL);
 
     // since the gc-managers of all EDIT4-windows point to the same window properties,
     // changing fonts and colors is always done on first gc-manager
     static AW_gc_manager first_gc_manager = 0;
-    if (!first_gc_manager) first_gc_manager = aw_gc_manager;
+    if (!first_gc_manager) first_gc_manager = gc_manager;
 
     // --------------
     //      File
@@ -1514,9 +1502,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
             }
             sprintf(menu_entry_name, "%s Search", id);
 
-            hotkey[0]                     = hotkeys[s];
-            ED4_search_type_and_ed4w *taw = new ED4_search_type_and_ed4w(type, current_ed4w());
-            awmm->insert_menu_topic(macro_name, menu_entry_name, hotkey, "e4_search.hlp", AWM_ALL, AW_POPUP, AW_CL(ED4_create_search_window), AW_CL(taw));
+            hotkey[0] = hotkeys[s];
+            awmm->insert_menu_topic(awmm->local_id(macro_name), menu_entry_name, hotkey, "e4_search.hlp", AWM_ALL, ED4_popup_search_window, AW_CL(type));
         }
     }
     awmm->close_sub_menu();
@@ -1532,8 +1519,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("show_all",      "Show all bases ",                   "a", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 1, 0);
     awmm->insert_menu_topic("show_diff",     "Show only differences to selected", "d", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0);
     awmm->sep______________();
-    awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, activate_col_stat,                0, 0);
-    awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, disable_col_stat,                 0, 0);
+    awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat,            0, 0);
+    awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, ED4_disable_col_stat,             0, 0);
     awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "c", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats, 0, 0);
     awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,       0, 0);
     awmm->sep______________();
@@ -1768,7 +1755,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     // draw protection icon AFTER protection!!
     awmm->at("pico");
-    awmm->create_button("PROTECT", "#protect.xpm");
+    awmm->create_button(NULL, "#protect.xpm");
 
     // draw align/edit-button AFTER protection!!
     awmm->at("edit");
@@ -1845,14 +1832,15 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     // search
 
     awmm->button_length(0);
-#define INSERT_SEARCH_FIELDS(Short, label_prefix, prefix)                                                               \
-    insert_search_fields(awmm,                                                                                          \
-                         #label_prefix,                                                                                 \
-                         #prefix,                                                                                       \
-                         ED4_AWAR_##prefix##_SEARCH_PATTERN,                                                            \
-                         ED4_AWAR_##prefix##_SEARCH_SHOW,                                                               \
-                         Short,                                                                                         \
-                         new ED4_search_type_and_ed4w(ED4_##prefix##_PATTERN, current_ed4w())                           \
+#define INSERT_SEARCH_FIELDS(Short, label_prefix, prefix)       \
+    insert_search_fields(awmm,                                  \
+                         #label_prefix,                         \
+                         #prefix,                               \
+                         ED4_AWAR_##prefix##_SEARCH_PATTERN,    \
+                         ED4_AWAR_##prefix##_SEARCH_SHOW,       \
+                         Short,                                 \
+                         ED4_##prefix##_PATTERN,                \
+                         current_ed4w()                         \
         )
 
     INSERT_SEARCH_FIELDS(0, u1, USER1);
@@ -1958,7 +1946,7 @@ ED4_root::ED4_root(int* argc, char*** argv)
       alignment_type(GB_AT_UNKNOWN),
       reference(0),
       sequence_colors(0),
-      aw_gc_manager(0),
+      gc_manager(0),
       st_ml(0),
       helix(0),
       helix_spacing(0),

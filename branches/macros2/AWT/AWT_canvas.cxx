@@ -703,8 +703,9 @@ static void scroll_hor_cb(AW_window *aww, AWT_canvas* scr, AW_CL /*cl1*/) {
 }
 
 
-AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_gc_manager &set_gc_manager, const char *user_awari)
-    : consider_text_for_size(true) 
+AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_name_, AWT_graphic *awd, const char *user_awari)
+    : consider_text_for_size(true)
+    , gc_base_name(strdup(gc_base_name_))
     , user_awar(strdup(user_awari))
     , shift_x_to_fit(0)
     , shift_y_to_fit(0)
@@ -712,12 +713,11 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
     , aww(awwi)
     , awr(aww->get_root())
     , gfx(awd)
-    , gc_manager(gfx->init_devices(aww, aww->get_device (AW_MIDDLE_AREA), this, (AW_CL)0))
+    , gc_manager(gfx->init_devices(aww, aww->get_device(AW_MIDDLE_AREA), this, (AW_CL)0))
     , drag_gc(aww->main_drag_gc)
     , mode(AWT_MODE_NONE)
 {
     gfx->drag_gc   = drag_gc;
-    set_gc_manager = gc_manager;
 
     memset((char *)&clicked_line, 0, sizeof(clicked_line));
     memset((char *)&clicked_text, 0, sizeof(clicked_text));

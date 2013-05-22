@@ -1041,17 +1041,20 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
     nodecnt = gb_read_in_uint32(in, reversed);
     GB_give_buffer(256);
 
-    if (version==1) {                               // teste auf map file falls version == 1
-        long    mode = GB_mode_of_link(Main->path); // old master
-        GB_CSTR map_path;
+    if (version==1) {                                     // teste auf map file falls version == 1
+        long          mode = GB_mode_of_link(Main->path); // old master
+        GB_CSTR       map_path;
+        unsigned long time_of_db;
 
         if (S_ISLNK(mode)) {
             char *path2 = GB_follow_unix_link(Main->path);
-            map_path = gb_mapfile_name(path2);
+            map_path    = gb_mapfile_name(path2);
+            time_of_db  = GB_time_of_file(path2);
             free(path2);
         }
         else {
             map_path = gb_mapfile_name(Main->path);
+            time_of_db  = GB_time_of_file(Main->path);
         }
 
         bool          mapped          = false;
@@ -1062,43 +1065,60 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
             case -1: map_fail_reason = GBS_global_string("no FastLoad File '%s' found", map_path); break;
             case  0: map_fail_reason = GB_await_error(); break;
             case  1: {
-                if (gb_main_array[mheader.main_idx]==NULL) {
-                    GBCONTAINER *new_gbc = (GBCONTAINER*)gb_map_mapfile(map_path);
+                unsigned long time_of_map = GB_time_of_file(map_path);
 
-                    if (new_gbc) {
-                        GBCONTAINER *father  = GB_FATHER(gbc);
-                        GB_MAIN_IDX  new_idx = mheader.main_idx;
-                        GB_MAIN_IDX  old_idx = father->main_idx;
+                if (time_of_map != time_of_db) { // timestamp of mapfile differs
+                    unsigned long diff = time_of_map>time_of_db ? time_of_map-time_of_db : time_of_db-time_of_map;
+                    fprintf(stderr, "Warning: modification times of DB and fastload file differ (DB=%lu fastload=%lu diff=%lu)\n",
+                            time_of_db, time_of_map, diff);
 
-                        long gbc_index = gbc->index;
-
-                        GB_commit_transaction(gbc);
-
-                        gb_assert(new_gbc->main_idx == new_idx);
-                        gb_assert((new_idx % GB_MAIN_ARRAY_SIZE) == new_idx);
-
-                        gb_main_array[new_idx] = Main;
-
-                        gbm_free_mem(Main->root_container, sizeof(GBCONTAINER), GB_QUARK_2_GBMINDEX(Main, 0));
-
-                        Main->root_container = new_gbc;
-                        father->main_idx     = new_idx;
-
-                        SET_GBCONTAINER_ELEM(father, gbc_index, NULL); // unlink old main-entry
-
-                        gbc = new_gbc;
-                        SET_GB_FATHER(gbc, father);
-                        
-                        SET_GBCONTAINER_ELEM(father, gbc->index, gbc); // link new main-entry
-
-                        gb_main_array[old_idx]    = NULL;
-
-                        GB_begin_transaction(gbc);
-                        mapped = true;
+                    if (diff>5) {
+                        map_fail_reason = "modification times of DB and fastload file differ (too much)";
+                    }
+                    else {
+                        fprintf(stderr, "(accepting modification time difference of %li seconds)\n", diff);
                     }
                 }
-                else {
-                    map_fail_reason = GBS_global_string("FastLoad-File index conflict (%s, %i)", map_path, mheader.main_idx);
+
+                if (!map_fail_reason) {
+                    if (gb_main_array[mheader.main_idx]==NULL) {
+                        GBCONTAINER *new_gbc = (GBCONTAINER*)gb_map_mapfile(map_path);
+
+                        if (new_gbc) {
+                            GBCONTAINER *father  = GB_FATHER(gbc);
+                            GB_MAIN_IDX  new_idx = mheader.main_idx;
+                            GB_MAIN_IDX  old_idx = father->main_idx;
+
+                            long gbc_index = gbc->index;
+
+                            GB_commit_transaction((GBDATA*)gbc);
+
+                            gb_assert(new_gbc->main_idx == new_idx);
+                            gb_assert((new_idx % GB_MAIN_ARRAY_SIZE) == new_idx);
+
+                            gb_main_array[new_idx] = Main;
+
+                            gbm_free_mem(Main->root_container, sizeof(GBCONTAINER), GB_QUARK_2_GBMINDEX(Main, 0));
+
+                            Main->root_container = new_gbc;
+                            father->main_idx     = new_idx;
+
+                            SET_GBCONTAINER_ELEM(father, gbc_index, NULL); // unlink old main-entry
+
+                            gbc = new_gbc;
+                            SET_GB_FATHER(gbc, father);
+                        
+                            SET_GBCONTAINER_ELEM(father, gbc->index, (GBDATA*)gbc); // link new main-entry
+
+                            gb_main_array[old_idx]    = NULL;
+
+                            GB_begin_transaction((GBDATA*)gbc);
+                            mapped = true;
+                        }
+                    }
+                    else {
+                        map_fail_reason = GBS_global_string("FastLoad-File index conflict (%s, %i)", map_path, mheader.main_idx);
+                    }
                 }
             
                 break;

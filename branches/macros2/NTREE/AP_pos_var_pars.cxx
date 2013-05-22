@@ -309,7 +309,7 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
         tree_name = root->awar(AWAR_PVP_TREE)->read_string();
         tree = GBT_read_tree(GLOBAL.gb_main, tree_name, sizeof(GBT_TREE));
         if (!tree) {
-            error = "Please select a valid tree";
+            error = GB_await_error();
         }
         else {
             GBT_link_tree(tree, GLOBAL.gb_main, true, 0, 0);

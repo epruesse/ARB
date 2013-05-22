@@ -49,20 +49,8 @@ READLINK:=$(ARBHOME)/SH/arb_readlink
 
 # ---------------------- [basic compiler setting]
 
-ifdef DARWIN
-	GCC:= clang
-	GPP:= clang++
-else
-	GCC:=$(CC)
-	GPP:=$(CXX)
-
-#       to use clang-static-analyzer , call make like this:
-#       setenv CLANG_STATIC_CHECKER 1 ; scan-build make -j5 build
-	ifeq ($(CLANG_STATIC_CHECKER),1)
-		CCC_ANALYZER_CPLUSPLUS=1
-	endif
-endif
-
+GCC ?= $(CC)
+GPP ?= $(CXX)
 
 # ---------------------- compiler version detection
 
@@ -71,10 +59,10 @@ endif
 ALLOWED_GCC_4xx_VERSIONS=\
 	4.2.1 \
 	4.3.1 4.3.2 4.3.3 4.3.4 \
-	4.4.1       4.4.3       4.4.5 4.4.6 \
+	4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
 	      4.5.2 \
 	4.6.1       4.6.3 \
-	4.7.1 4.7.2 \
+	4.7.1 4.7.2 4.7.3 \
 	4.8.0
 # Note: gcc 4.8 is not released yet (just experimenting with gcc-dev-version)
 
@@ -187,7 +175,9 @@ ifeq ($(DEBUG),1)
 
 # ------- above only warnings available in 3.0
 
+ ifneq ('$(GCC_VERSION_FOUND)','4.7.3') # g++ crashes on GenomeImport.cxx when -Weffc++ is active (bug reported)
 	extended_cpp_warnings += -Weffc++# gcc 3.0.1
+ endif
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
 #	extended_cpp_warnings += -Wold-style-cast# gcc 3.0.4 (warn about 28405 old-style casts)
 	extended_cpp_warnings += -Winit-self# gcc 3.4.0
@@ -461,7 +451,7 @@ endif
 ifdef DARWIN
 	XMKMF := $(PREFIX)/bin/xmkmf
 else
-	XMKMF := /usr/bin/X11/xmkmf
+	XMKMF := xmkmf
 endif
 
 MAKEDEPEND_PLAIN = makedepend
