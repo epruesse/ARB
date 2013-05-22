@@ -246,6 +246,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/cb.h
 MG_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MG_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 MG_main.o: $(ARBHOME)/INCLUDE/gccver.h
+MG_main.o: $(ARBHOME)/INCLUDE/macros.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_main.o: $(ARBHOME)/INCLUDE/test_global.h
 

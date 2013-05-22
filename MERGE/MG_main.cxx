@@ -23,6 +23,7 @@
 
 #include <arb_progress.h>
 #include <arb_file.h>
+#include <macros.hxx>
 
 // AISC_MKPT_PROMOTE:// source and destination DBs for merge:
 // AISC_MKPT_PROMOTE:extern GBDATA *GLOBAL_gb_src;
@@ -224,6 +225,26 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
     bool save_src_enabled = !src_is_client;
     bool save_dst_enabled = !dst_is_client;
 
+    {
+        GBDATA     *gb_main_4_macros = NULL;
+        const char *app_id           = NULL;
+
+        if (src_is_client) {
+            gb_main_4_macros = GLOBAL_gb_src;
+            app_id           = "ARB_MERGE_OUTOF";
+        }
+        else if (dst_is_client) {
+            gb_main_4_macros = GLOBAL_gb_dst;
+            app_id           = "ARB_MERGE_INTO";
+        }
+        else {
+            gb_main_4_macros = GLOBAL_gb_dst; // does not matter
+            app_id           = "ARB_MERGE";
+        }
+
+        configure_macro_recording(aw_root, app_id, gb_main_4_macros); // @@@ use result
+    }
+
     mg_assert(aw_root);
 
     {
@@ -284,6 +305,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
             awm->insert_menu_topic("quitnstart", "Quit & start target DB", "D", "quit.hlp", AWM_ALL, MG_exit, 1);
         }
 
+        insert_macro_menu_entry(awm, true);
         awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
         awm->sep______________();

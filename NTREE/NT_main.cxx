@@ -17,7 +17,6 @@
 #include <insdel.h>
 
 #include <awt.hxx>
-#include <awt_macro.hxx>
 
 #include <aw_advice.hxx>
 #include <aw_question.hxx>
@@ -34,15 +33,13 @@
 #include <arb_progress.h>
 #include <arb_file.h>
 #include <awt_sel_boxes.hxx>
+#include <macros.hxx>
 
 using namespace std;
 
 AW_HEADER_MAIN
 
 #define nt_assert(bed) arb_assert(bed)
-
-#define NT_SERVE_DB_TIMER 50
-#define NT_CHECK_DB_TIMER 200
 
 NT_global GLOBAL; 
 
@@ -146,90 +143,6 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR check_for_remote_command(AW_root *aw_root, AW_default gb_maind, const char *rm_base) {
-    // function has no Motif specific stuff in it :)
-    GBDATA *gb_main = (GBDATA *)gb_maind;
-
-    char *awar_action = GBS_global_string_copy("%s/action", rm_base);
-    char *awar_value  = GBS_global_string_copy("%s/value", rm_base);
-    char *awar_awar   = GBS_global_string_copy("%s/awar", rm_base);
-    char *awar_result = GBS_global_string_copy("%s/result", rm_base);
-
-    GB_push_transaction(gb_main);
-
-    char *action   = GBT_readOrCreate_string(gb_main, awar_action, "");
-    char *value    = GBT_readOrCreate_string(gb_main, awar_value, "");
-    char *tmp_awar = GBT_readOrCreate_string(gb_main, awar_awar, "");
-
-    if (tmp_awar[0]) {
-        GB_ERROR error = 0;
-        AW_awar *found_awar = aw_root->awar_no_error(tmp_awar);
-        if (!found_awar) {
-            error = GBS_global_string("Unknown variable '%s'", tmp_awar);
-        }
-        else {
-            if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
-                char *read_value = aw_root->awar(tmp_awar)->read_as_string();
-                GBT_write_string(gb_main, awar_value, read_value);
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", tmp_awar, read_value);
-#endif // DUMP_REMOTE_ACTIONS
-                free(read_value);
-                // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
-                action[0]        = 0;
-                GBT_write_string(gb_main, awar_action, "");
-            }
-            else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
-                aw_root->awar(tmp_awar)->touch();
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar);
-#endif // DUMP_REMOTE_ACTIONS
-                // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
-                action[0] = 0;
-                GBT_write_string(gb_main, awar_action, "");
-            }
-            else {
-#if defined(DUMP_REMOTE_ACTIONS)
-                printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value);
-#endif // DUMP_REMOTE_ACTIONS
-                error = aw_root->awar(tmp_awar)->write_as_string(value);
-            }
-        }
-        GBT_write_string(gb_main, awar_result, error ? error : "");
-        GBT_write_string(gb_main, awar_awar, ""); // tell perl-client call has completed (BIO::remote_awar and BIO:remote_read_awar)
-
-        aw_message_if(error);
-    }
-    GB_pop_transaction(gb_main);
-
-    if (action[0]) {
-        AW_cb_struct *cbs = aw_root->search_remote_command(action);
-
-#if defined(DUMP_REMOTE_ACTIONS)
-        printf("remote command (%s) exists=%i\n", action, int(cbs != 0));
-#endif // DUMP_REMOTE_ACTIONS
-        if (cbs) {
-            cbs->run_callback();
-            GBT_write_string(gb_main, awar_result, "");
-        }
-        else {
-            aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
-            GBT_write_string(gb_main, awar_result, GB_await_error());
-        }
-        GBT_write_string(gb_main, awar_action, ""); // tell perl-client call has completed (remote_action)
-    }
-
-    free(tmp_awar);
-    free(value);
-    free(action);
-
-    free(awar_result);
-    free(awar_awar);
-    free(awar_value);
-    free(awar_action);
-
-    return 0;
-}
 
 static GB_ERROR nt_check_database_consistency() {
     // called once on ARB_NTREE startup
@@ -241,49 +154,15 @@ static GB_ERROR nt_check_database_consistency() {
     return err;
 }
 
-
-static void serve_db_interrupt(AW_root *awr) {
-    bool success = GBCMS_accept_calls(GLOBAL.gb_main, false);
-    while (success) {
-        check_for_remote_command(awr, (AW_default)GLOBAL.gb_main, AWAR_NT_REMOTE_BASE);
-        success = GBCMS_accept_calls(GLOBAL.gb_main, true);
+__ATTR__USERESULT static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, const char *autorun_macro) {
+    GB_ERROR error = configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ problematic if called from startup-importer
+    if (!error) {
+        nt_create_main_window(aw_root);
+        if (GB_is_server(GLOBAL.gb_main)) error = nt_check_database_consistency();
     }
 
-    awr->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
-}
+    if (!error && autorun_macro) awt_execute_macro(aw_root, autorun_macro); // @@@ triggering execution here is ok, but its a bad place to pass 'autorun_macro'. Should be handled more generally
 
-static void check_db_interrupt(AW_root *awr) {
-    check_for_remote_command(awr, (AW_default)GLOBAL.gb_main, AWAR_NT_REMOTE_BASE);
-    awr->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
-}
-
-static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, bool install_client_callback, const char *autorun_macro) {
-    GB_ERROR error = NULL;
-    nt_create_main_window(aw_root);
-
-    if (GB_read_clients(GLOBAL.gb_main) == 0) { // server
-        error = GBCMS_open(":", 0, GLOBAL.gb_main);
-        if (error) {
-            error = GBS_global_string("THIS PROGRAM HAS PROBLEMS TO OPEN INTERCLIENT COMMUNICATION:\n"
-                                      "Reason: %s\n"
-                                      "(maybe there is already another server running)\n"
-                                      "You cannot use any EDITOR or other external SOFTWARE from here.\n"
-                                      "Advice: Close ARB again, open a console, type 'arb_clean' and restart arb.\n"
-                                      "Caution: Any unsaved data in an eventually running ARB will be lost.\n",
-                                      error);
-        }
-        else {
-            aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
-            error = nt_check_database_consistency();
-        }
-    }
-    else { // client
-        if (install_client_callback) {
-            aw_root->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
-        }
-    }
-
-    if (!error && autorun_macro) awt_execute_macro(GLOBAL.gb_main, aw_root, autorun_macro);
     return error;
 }
 
@@ -315,7 +194,7 @@ static ARB_ERROR load_and_startup_main_window(AW_root *aw_root, const char *auto
         AWT_announce_db_to_browser(GLOBAL.gb_main, GBS_global_string("ARB database (%s)", db_server));
 #endif // DEBUG
 
-        GB_ERROR problem = startup_mainwindow_and_dbserver(aw_root, true, autorun_macro);
+        GB_ERROR problem = startup_mainwindow_and_dbserver(aw_root, autorun_macro);
         aw_message_if(problem); // no need to terminate ARB
     }
 
@@ -346,12 +225,13 @@ static void nt_delete_database(AW_window *aww) {
 
 static void start_main_window_after_import(AW_root *aw_root) {
     GLOBAL.aw_root  = aw_root;
-    aw_message_if(startup_mainwindow_and_dbserver(aw_root, false, NULL));
+    aw_message_if(startup_mainwindow_and_dbserver(aw_root, NULL));
 }
 
 static void nt_intro_start_existing(AW_window *aw_intro) {
     aw_intro->hide();
     ARB_ERROR error = load_and_startup_main_window(aw_intro->get_root(), NULL);
+    nt_assert(contradicted(error, got_macro_ability(aw_intro->get_root())));
     if (error) {
         aw_intro->show();
         aw_popup_ok(error.deliver());
@@ -375,7 +255,9 @@ static void nt_intro_start_import(AW_window *aw_intro) {
     AW_root *aw_root = aw_intro->get_root();
     aw_root->awar_string(AWAR_DB_PATH)->write_string("noname.arb");
     aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // Default toggle  in window  "Create&import" is Non-Genom
-    GLOBAL.gb_main   = open_AWTC_import_window(aw_root, "", true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
+
+    GLOBAL.gb_main = open_AWTC_import_window(aw_root, "", true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
+    nt_assert(got_macro_ability(aw_root));
 }
 
 static AW_window *nt_create_intro_window(AW_root *awr) {
@@ -417,7 +299,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
     aws->create_autosize_button("CREATE_AND_IMPORT", "CREATE AND IMPORT", "I");
 
     aws->at("merge");
-    aws->callback((AW_CB1)nt_intro_start_merge, 0);
+    aws->callback(nt_intro_start_merge);
     aws->create_autosize_button("MERGE_TWO_DATABASES", "MERGE TWO ARB DATABASES", "O");
 
     aws->at("expert");
@@ -864,6 +746,8 @@ static AW_window *startup_merge_main_window(AW_root *aw_root, AW_CL cl_merge_sch
         MERGE_create_db_file_awars(aw_root, AW_ROOT_DEFAULT, ms->src->get_fullname(), ms->dst->get_fullname());
         bool dst_is_new = ms->dst->arg_type() == NEW_DB;
         aw_result       = MERGE_create_main_window(aw_root, dst_is_new, exit_from_merge);
+
+        nt_assert(got_macro_ability(aw_root));
     }
     else {
         aw_result = merge_startup_error_window(aw_root, AW_CL(ms->error));
@@ -962,6 +846,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
                 error = "You cannot merge from running to running DB";
             }
             else {
+                aw_root->setUserActionTracker(new NullTracker); // no macro recording during startup of merge tool (file prompts)
                 AW_window *aww = startup_merge_prompting_for_nonexplicit_dbs(aw_root, AW_CL(ms));
 
                 nt_assert(contradicted(aww, error));
@@ -984,12 +869,16 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
                 if (mode == IMPORT) {
                     aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
                     GLOBAL.gb_main = open_AWTC_import_window(aw_root, database, true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
+                    nt_assert(got_macro_ability(aw_root));
                     aw_root->main_loop();
                 }
                 else if (mode == NORMAL) {
                     aw_root->awar(AWAR_DB_PATH)->write_string(database);
                     error = load_and_startup_main_window(aw_root, cl.autorun_macro());
-                    if (!error) aw_root->main_loop();
+                    if (!error) {
+                        nt_assert(got_macro_ability(aw_root));
+                        aw_root->main_loop();
+                    }
                 }
                 else if (mode == BROWSE) {
                     aw_root->awar(AWAR_DB"directory")->write_string(browser_startdir);
@@ -1008,6 +897,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
                         iws = nt_create_intro_window(aw_root);
                     }
                     iws->show();
+                    aw_root->setUserActionTracker(new NullTracker); // no macro recording inside intro window
                     aw_root->main_loop();
                 }
             }
@@ -1024,7 +914,7 @@ int ARB_main(int argc, char *argv[]) {
     GB_set_verbose();
 
     GB_shell shell;
-    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT", &argc, &argv);
+    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_NT", need_macro_ability(), &argc, &argv);
 
     GLOBAL.aw_root = aw_root;
 

@@ -146,6 +146,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+PH_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -154,6 +155,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/cb.h
 PH_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PH_main.o: $(ARBHOME)/INCLUDE/gccver.h
+PH_main.o: $(ARBHOME)/INCLUDE/macros.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_main.o: $(ARBHOME)/INCLUDE/test_global.h
 

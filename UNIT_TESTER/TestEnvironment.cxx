@@ -105,7 +105,7 @@ public:
                     GBK_terminatef("[%s] Failed to get mutex for more than %i seconds", now(), maxwait);
                 }
                 printf("[%s] mutex '%s' exists.. sleeping\n", now(), name.c_str());
-                sleep(1);
+                sleepms(1000);
                 wait++;
             }
             else {
@@ -545,7 +545,7 @@ public:
             bool reached = false;
             while (!reached && !error.isSet()) {
                 StaticCode::printf("[waiting until environment '%s' reaches '%s']\n", get_name(), mode_command[mode]);
-                sleep(1);
+                sleepms(1000);
                 {
                     Mutex m(FLAG_MUTEX);
                     if (!changing && is_setup == want_setup) reached = true;

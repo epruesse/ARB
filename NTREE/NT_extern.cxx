@@ -31,7 +31,7 @@
 #include <awti_export.hxx>
 
 #include <awt.hxx>
-#include <awt_macro.hxx>
+#include <macros.hxx>
 #include <awt_config_manager.hxx>
 #include <awt_input_mask.hxx>
 #include <awt_sel_boxes.hxx>
@@ -322,14 +322,18 @@ __ATTR__NORETURN static void really_exit(int exitcode, bool kill_my_clients) {
 }
 
 void nt_exit(AW_window *aws, AW_CL exitcode) {
-    if (nt_disconnect_from_db(aws->get_root(), GLOBAL.gb_main)) {
-        really_exit(exitcode, true);
+    AW_root *aw_root = aws->get_root();
+    shutdown_macro_recording(aw_root);
+    bool is_server_and_has_clients = GLOBAL.gb_main && GB_read_clients(GLOBAL.gb_main)>0;
+    if (nt_disconnect_from_db(aw_root, GLOBAL.gb_main)) {
+        really_exit(exitcode, is_server_and_has_clients);
     }
 }
 void nt_restart(AW_root *aw_root, const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
+    bool is_server_and_has_clients = GLOBAL.gb_main && GB_read_clients(GLOBAL.gb_main)>0;
     if (nt_disconnect_from_db(aw_root, GLOBAL.gb_main))  {
         nt_start(arb_ntree_args, restart_with_new_ARB_PID);
-        really_exit(EXIT_SUCCESS, restart_with_new_ARB_PID);
+        really_exit(EXIT_SUCCESS, restart_with_new_ARB_PID && is_server_and_has_clients);
     }
 }
 
@@ -1094,6 +1098,43 @@ static AW_window *create_mark_by_refentries_window(AW_root *awr, AW_CL cl_gbmain
 
 // --------------------------------------------------------------------------------------------------
 
+static void merge_from_to(AW_root *awr, const char *db_awar_name, bool merge_to) {
+    const char *db_name = awr->awar(db_awar_name)->read_char_pntr();
+
+    char *cmd = GBS_global_string_copy(
+        merge_to
+        ? "arb_ntree : %s &"
+        : "arb_ntree %s : &",
+        db_name);
+
+    aw_message_if(GBK_system(cmd));
+    free(cmd);
+}
+
+static void merge_from_cb(AW_window *aww, AW_CL cl_awarNamePtr) { merge_from_to(aww->get_root(), *(const char**)cl_awarNamePtr, false); }
+static void merge_into_cb(AW_window *aww, AW_CL cl_awarNamePtr) { merge_from_to(aww->get_root(), *(const char**)cl_awarNamePtr, true); }
+
+static AW_window *NT_create_merge_from_window(AW_root *awr, AW_CL) {
+    static char *awar_name = NULL; // do not free, bound to callback
+
+    AW_window *aw_from =
+        awt_create_load_box(awr, "Merge data from", "other ARB database",
+                            ".", ".arb", &awar_name,
+                            merge_from_cb, NULL, NULL, NULL, AW_CL(&awar_name));
+    return aw_from;
+}
+static AW_window *NT_create_merge_to_window(AW_root *awr, AW_CL) {
+    static char *awar_name = NULL; // do not free, bound to callback
+
+    AW_window *aw_to =
+        awt_create_load_box(awr, "Merge data to", "other ARB database",
+                            ".", ".arb", &awar_name,
+                            merge_into_cb, NULL, NULL, NULL, AW_CL(&awar_name));
+    return aw_to;
+}
+
+// --------------------------------------------------------------------------------------------------
+
 int NT_get_canvas_id(AWT_canvas *ntw) {
     // return number of canvas [0..MAX_NT_WINDOWS-1]
 
@@ -1245,23 +1286,23 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("Import",      "I");
             {
-                awm->insert_menu_topic("merge_from", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree . \":\" &", 0);
-                awm->insert_menu_topic("import_seq", "Import from external format",   "I", "arb_import.hlp",     AWM_ALL, NT_import_sequences, 0,                            0);
+                awm->insert_menu_topic("merge_from", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, AW_POPUP,            (AW_CL)NT_create_merge_from_window, 0);
+                awm->insert_menu_topic("import_seq", "Import from external format",   "I", "arb_import.hlp",     AWM_ALL, NT_import_sequences, 0,                                  0);
                 GDE_load_menu(awm, AWM_EXP, "Import");
             }
             awm->close_sub_menu();
 
             awm->insert_sub_menu("Export",      "E");
             {
-                awm->insert_menu_topic("export_to_ARB", "Merge to (new) ARB database",             "A", "arb_merge_outof.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree \":\" . &", 0);
-                awm->insert_menu_topic("export_seqs",   "Export to external format",               "f", "arb_export.hlp",      AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL.gb_main);
+                awm->insert_menu_topic("export_to_ARB", "Merge to (new) ARB database", "A", "arb_merge_outof.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_merge_to_window, 0);
+                awm->insert_menu_topic("export_seqs",   "Export to external format",   "f", "arb_export.hlp",      AWM_ALL, AW_POPUP, (AW_CL)open_AWTC_export_window,   (AW_CL)GLOBAL.gb_main);
                 GDE_load_menu(awm, AWM_ALL, "Export");
-                awm->insert_menu_topic("export_nds",    "Export fields (to calc-sheet using NDS)", "N", "arb_export_nds.hlp",  AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
+                awm->insert_menu_topic("export_nds",    "Export fields (to calc-sheet using NDS)", "N", "arb_export_nds.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_nds_export_window, 0);
             }
             awm->close_sub_menu();
             awm->sep______________();
 
-            awm->insert_menu_topic("macros",    "Macros ",              "M", "macro.hlp",   AWM_ALL, (AW_CB)awt_popup_macro_window, (AW_CL)"ARB_NT", (AW_CL)GLOBAL.gb_main);
+            insert_macro_menu_entry(awm, false);
 
             awm->insert_sub_menu("Registration/Bug report/Version info",       "R");
             {

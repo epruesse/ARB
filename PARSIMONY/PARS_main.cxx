@@ -31,6 +31,7 @@
 #include <TreeCallbacks.hxx>
 
 #include <list>
+#include <macros.hxx>
 
 #if defined(DEBUG)
 # define TESTMENU
@@ -66,7 +67,9 @@ static void pars_export_tree() {
 }
 
 __ATTR__NORETURN static void pars_exit(AW_window *aww) {
-    aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
+    AW_root *aw_root = aww->get_root();
+    shutdown_macro_recording(aw_root);
+    aw_root->unlink_awars_from_DB(GLOBAL_gb_main);
 #if defined(DEBUG)
     AWT_browser_forget_db(GLOBAL_gb_main);
 #endif // DEBUG
@@ -1318,6 +1321,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
     awm->create_menu("File", "F", AWM_ALL);
     {
+        insert_macro_menu_entry(awm, false);
         awm->insert_menu_topic("print_tree", "Print Tree ...",          "P", "tree2prt.hlp", AWM_ALL, AWT_popup_print_window, (AW_CL)ntw, 0);
         awm->insert_menu_topic("quit",      "Quit",             "Q", "quit.hlp",    AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw, 2);
     }
@@ -1667,7 +1671,7 @@ int ARB_main(int argc, char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS", &argc, &argv);
+    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS", need_macro_ability(), &argc, &argv);
     AD_map_viewer_aw_root = aw_root;
 
     ap_main     = new AP_main;
@@ -1702,24 +1706,31 @@ int ARB_main(int argc, char *argv[]) {
     }
 
 
-    if (argc==2) {
-        db_server = argv[1];
-    }
+    if (argc==2) db_server = argv[1];
 
+    GB_ERROR error = NULL;
     GLOBAL_gb_main = GBT_open(db_server, "rw");
-    if (!GLOBAL_gb_main) aw_popup_exit(GB_await_error()); // exits
 
+    if (!GLOBAL_gb_main) error = GB_await_error();
+    else {
+        error = configure_macro_recording(aw_root, "ARB_PARS", GLOBAL_gb_main);
+
+        if (!error) {
 #if defined(DEBUG)
-    AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
+            AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
 #endif // DEBUG
 
-    pars_create_all_awars(aw_root, AW_ROOT_DEFAULT);
+            pars_create_all_awars(aw_root, AW_ROOT_DEFAULT);
 
-    AW_window *aww = create_pars_init_window(aw_root, &cmds);
-    aww->show();
+            AW_window *aww = create_pars_init_window(aw_root, &cmds);
+            aww->show();
 
-    AWT_install_cb_guards();
-    aw_root->main_loop();
+            AWT_install_cb_guards();
+            aw_root->main_loop();
+        }
+    }
+
+    if (error) aw_popup_exit(error);
     return EXIT_SUCCESS;
 }
 

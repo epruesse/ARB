@@ -114,7 +114,7 @@ public:
             }
             fflush(arbout);
 #if defined(DEBUG)
-            // usleep(25000); // uncomment to see slow status
+            // GB_sleep(25, MS); // uncomment to see slow status
 #endif
         }
     }

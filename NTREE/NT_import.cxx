@@ -20,6 +20,7 @@
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
 #include <arbdbt.h>
+#include <macros.hxx>
 
 #define nt_assert(bed) arb_assert(bed)
 
@@ -50,6 +51,7 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
     awr->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // value is overwritten below
 
     GLOBAL_gb_src = open_AWTC_import_window(aww->get_root(), "", false, GLOBAL.gb_main, (AW_RCB)nt_seq_load_cb, 0, 0);
+    nt_assert(got_macro_ability(awr));
 
     // change awar values (import window just opened!)
 
