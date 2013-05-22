@@ -29,7 +29,7 @@
 #include <gtk/gtk.h>
 
 #include <string>
-
+#include <sstream>
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
@@ -348,7 +348,6 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
 #endif // DUMP_BUTTON_CREATION
 
     GtkWidget *button_label, *button;
-
     button_label = make_label(button_text, _at.length_of_buttons, mnemonic);
 
     gtk_widget_show(button_label);
@@ -382,9 +381,12 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
     }
 
     bool do_highlight = _at.highlight;
-
+    GtkRequisition size;
+    gtk_widget_size_request(button, &size);
+    printf("width before: %i\n", size.width);
     put_with_label(button);
-
+    gtk_widget_size_request(button, &size);
+    printf("width after: %i\n", size.width);
     if (do_highlight) {
         gtk_widget_set_can_default(button, true);
         gtk_widget_grab_default(button);
@@ -408,12 +410,14 @@ void AW_window::create_autosize_button(const char *macro_name, const char *butto
         aw_return_if_fail(strlen(content)>0);
     }
 
-    size_t width = 0, height = 0, line_width;
-    const char *ptr = content;
-    while ( (line_width = strcspn(ptr, "\n")) ) {
-        if (line_width > width) width = line_width;
-        height ++;
-        ptr += line_width + 1;
+    size_t width = 0, height = 0;
+    std::stringstream labelLines;
+    labelLines << buttonlabel;
+    std::string line;
+    while(std::getline(labelLines, line))
+    {
+        if (line.size() > width) width = line.size();
+        height++;
     }
 
     short length_of_buttons = _at.length_of_buttons;
