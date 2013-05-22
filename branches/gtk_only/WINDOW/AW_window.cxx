@@ -381,12 +381,8 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
     }
 
     bool do_highlight = _at.highlight;
-    GtkRequisition size;
-    gtk_widget_size_request(button, &size);
-    printf("width before: %i\n", size.width);
     put_with_label(button);
-    gtk_widget_size_request(button, &size);
-    printf("width after: %i\n", size.width);
+
     if (do_highlight) {
         gtk_widget_set_can_default(button, true);
         gtk_widget_grab_default(button);
