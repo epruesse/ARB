@@ -51,6 +51,8 @@ READLINK:=$(ARBHOME)/SH/arb_readlink
 
 GCC ?= $(CC)
 GPP ?= $(CXX)
+export GCC
+export GPP
 
 # ---------------------- compiler version detection
 
