@@ -145,6 +145,8 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/RENAME",                            5);
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/STORE_0",                           5);
     GBS_write_hash(dontCallHash, "del_marked",                                           5);
+    GBS_write_hash(dontCallHash, "create_group",                                         5);
+    GBS_write_hash(dontCallHash, "dcs_threshold",                                        5);
 #endif
 
     GB_HASH *autodontCallHash = GBS_create_hash(100, GB_MIND_CASE);
