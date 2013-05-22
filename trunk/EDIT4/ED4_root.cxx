@@ -41,6 +41,7 @@
 #include <arb_version.h>
 #include <arb_file.h>
 #include <arbdbt.h>
+#include <macros.hxx>
 
 #include <cctype>
 
@@ -1401,6 +1402,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->sep______________();
     awmm->insert_menu_topic("load_config",   "Load Configuration",   "L", 0, AWM_ALL, AW_POPUP,           (AW_CL)ED4_start_editor_on_old_configuration, 0);
     awmm->insert_menu_topic("reload_config", "Reload Configuration", "R", 0, AWM_ALL, ED4_restart_editor, 0,                                            0);
+    insert_macro_menu_entry(awmm, true);
     awmm->sep______________();
     GDE_load_menu(awmm, AWM_ALL, "Print");
     awmm->sep______________();
@@ -1928,7 +1930,7 @@ static char *detectProperties() {
 ED4_root::ED4_root(int* argc, char*** argv)
     : most_recently_used_window(0),
       db_name(detectProperties()),
-      aw_root(AWT_create_root(db_name, "ARB_EDIT4", argc, argv)),
+      aw_root(AWT_create_root(db_name, "ARB_EDIT4", need_macro_ability(), argc, argv)),
       props_db(AW_ROOT_DEFAULT),
       first_window(0),
       main_manager(0),

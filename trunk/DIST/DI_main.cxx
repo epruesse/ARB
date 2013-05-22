@@ -18,6 +18,8 @@
 #include <aw_preset.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
+#include <macros.hxx>
+#include <aw_question.hxx>
 
 
 AW_HEADER_MAIN
@@ -45,7 +47,7 @@ int ARB_main(int argc, char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root *aw_root = AWT_create_root("dist.arb", "ARB_DIST", &argc, &argv);
+    AW_root *aw_root = AWT_create_root("dist.arb", "ARB_DIST", need_macro_ability(), &argc, &argv);
 
     if (argc >= 2 && strcmp(argv[1], "--help") == 0) {
         fprintf(stderr,
@@ -55,7 +57,7 @@ int ARB_main(int argc, char *argv[]) {
         exit(-1);
     }
 
-
+    GB_ERROR error = NULL;
     {
         arb_params *params = arb_trace_argv(&argc, (const char **)argv);
         if (argc==2) {
@@ -63,31 +65,35 @@ int ARB_main(int argc, char *argv[]) {
         }
         GLOBAL_gb_main = GB_open(params->db_server, "rw");
         if (!GLOBAL_gb_main) {
-            aw_message(GB_await_error());
-            exit(-1);
+            error = GB_await_error();
         }
+        else {
+            error = configure_macro_recording(aw_root, "ARB_DIST", GLOBAL_gb_main);
 
 #if defined(DEBUG)
-        AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", params->db_server));
+            if (!error) AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", params->db_server));
 #endif // DEBUG
-
+        }
         free_arb_params(params);
     }
 
-    DI_create_matrix_variables(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
+    if (!error) {
+        DI_create_matrix_variables(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
 #ifdef FINDCORR
-    bc_create_bc_variables(aw_root, AW_ROOT_DEFAULT);
+        bc_create_bc_variables(aw_root, AW_ROOT_DEFAULT);
 #endif
-    ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
+        ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
 
-    AW_window *aww = DI_create_matrix_window(aw_root);
-    aww->show();
+        AW_window *aww = DI_create_matrix_window(aw_root);
+        aww->show();
 
-    AWT_install_cb_guards();
+        AWT_install_cb_guards();
 
-    aw_root->add_timed_callback(2000, DI_timer, AW_CL(GLOBAL_gb_main), 0);
-    aw_root->main_loop();
+        aw_root->add_timed_callback(2000, DI_timer, AW_CL(GLOBAL_gb_main), 0);
+        aw_root->main_loop();
+    }
 
+    if (error) aw_popup_exit(error);
     return EXIT_SUCCESS;
 }
 

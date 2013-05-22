@@ -62,11 +62,42 @@ enum AW_ProcessEventType {
     KEY_RELEASED = 3
 };
 
-void aw_initstatus(); 
+void aw_initstatus();
+
+// ---------------------------
+//      UserActionTracker
+
+class UserActionTracker : virtual Noncopyable {
+    bool tracking;
+
+protected:
+    void set_tracking(bool track) { tracking = track; }
+
+public:
+    UserActionTracker() : tracking(false) {}
+    virtual ~UserActionTracker() {}
+
+    bool is_tracking() const { return tracking; }
+
+    virtual void track_action(const char *action_id) = 0;
+    virtual void track_awar_change(AW_awar *awar)    = 0;
+    virtual bool is_replaceable() const = 0;
+};
+class NullTracker : public UserActionTracker {
+public:
+    void track_action(const char */*action_id*/) OVERRIDE {}
+    void track_awar_change(AW_awar */*awar*/) OVERRIDE {}
+    bool is_replaceable() const OVERRIDE { return true; }
+};
+
+// -----------------
+//      AW_root
 
 class AW_root : virtual Noncopyable {
     AW_default         application_database;
     AW_buttons_struct *button_sens_list;
+
+    UserActionTracker *tracker;
 
     void create_colormap();
 
@@ -107,16 +138,19 @@ public:
     GB_HASH    *hash_for_windows;
 
     // the real public section:
-    AW_root(const char *properties, const char *program, bool no_exit, int* argc, char*** argv);
+    AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int* argc, char*** argv);
 #if defined(UNIT_TESTS)
     AW_root(const char *properties); // fake-root for unit-tests (allows access to awar-subsystem)
 #endif
     ~AW_root();
 
+    void setUserActionTracker(UserActionTracker *user_tracker);
+    UserActionTracker *getTracker() { return tracker; }
+
     enum { AW_MONO_COLOR, AW_RGB_COLOR }    color_mode;
 
     void main_loop();
-    
+
     void                process_events();           // might block
     void                process_pending_events();   // non-blocking
     AW_ProcessEventType peek_key_event(AW_window *);
@@ -159,10 +193,11 @@ public:
     void make_sensitive(Widget w, AW_active mask);
     bool remove_button_from_sens_list(Widget button);
 
-    GB_ERROR start_macro_recording(const char *file, const char *application_id, const char *stop_action_name, bool expand_existing);
-    GB_ERROR stop_macro_recording();
-    bool is_recording_macro() const;
-    GB_ERROR execute_macro(GBDATA *gb_main, const char *file, AW_RCB1 execution_done_cb, AW_CL client_data);
+    void track_action(const char *action_id) { tracker->track_action(action_id); }
+    void track_awar_change(AW_awar *changed_awar) { tracker->track_awar_change(changed_awar); }
+
+    bool is_tracking() const { return tracker->is_tracking(); }
+    UserActionTracker *get_tracker() { return tracker; }
 
     void define_remote_command(AW_cb_struct *cbs);
     AW_cb_struct *search_remote_command(const char *action);

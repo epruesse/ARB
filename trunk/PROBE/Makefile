@@ -223,6 +223,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_file.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_misc.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PT_main.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h

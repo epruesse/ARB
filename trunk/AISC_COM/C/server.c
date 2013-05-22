@@ -239,7 +239,7 @@ static int aisc_s_write(int socket, char *ptr, int size) {
         if (writesize<0) return -1;
         ptr += writesize;
         leftsize -= writesize;
-        if (leftsize) usleep(10000);
+        if (leftsize) usleep(10000); // 10 ms
     }
 
 #if defined(DUMP_COMMUNICATION)

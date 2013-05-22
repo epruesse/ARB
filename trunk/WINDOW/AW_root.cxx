@@ -89,7 +89,7 @@ bool AW_root::is_focus_callback(AW_RCB fcb) const {
     return focus_callback_list && focus_callback_list->contains(AW_root_callback(fcb, 0, 0));
 }
 
-AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, int */*argc*/, char ***/*argv*/) {
+AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int */*argc*/, char ***/*argv*/) {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
 
@@ -99,6 +99,8 @@ AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, in
 
     init_variables(load_properties(propertyFile));
     init_root(program, no_exit);
+
+    tracker = user_tracker;
 
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
@@ -113,6 +115,14 @@ AW_root::AW_root(const char *propertyFile) {
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 #endif
+
+void AW_root::setUserActionTracker(UserActionTracker *user_tracker) {
+    aw_assert(user_tracker);
+    aw_assert(tracker->is_replaceable()); // there is already another tracker (program-logic-error)
+
+    delete tracker;
+    tracker = user_tracker;
+}
 
 AW_awar *AW_root::label_is_awar(const char *label) {
     AW_awar *awar_exists = NULL;
@@ -526,6 +536,8 @@ void AW_root::unlink_awars_from_DB(AW_default database) {
 }
 
 AW_root::~AW_root() {
+    delete tracker;
+
     AW_root_cblist::clear(focus_callback_list);
     delete button_sens_list;    button_sens_list = NULL;
 
@@ -597,5 +609,4 @@ GB_ERROR AW_root::save_properties(const char *filename) {
 
     return error;
 }
-
 

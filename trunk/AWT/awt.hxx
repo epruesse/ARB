@@ -74,7 +74,8 @@ void AWT_browser_forget_db(GBDATA *gb_main);
 void AWT_create_debug_menu(AW_window *awmm);
 #endif // DEBUG
 
-AW_root *AWT_create_root(const char *properties, const char *program, int* argc, char*** argv);
+class UserActionTracker;
+AW_root *AWT_create_root(const char *properties, const char *program, UserActionTracker *user_tracker, int* argc, char*** argv);
 
 void AWT_install_cb_guards();
 void AWT_install_postcb_cb(AW_postcb_cb postcb_cb);

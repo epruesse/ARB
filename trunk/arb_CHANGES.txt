@@ -34,7 +34,7 @@ Major changes for next release:
  - probe design:
    - added LOAD to result window
  - automation
-   - tweaked macro recording
+   - macro recording works in ARB client applications (ARB_EDIT4, ARB_PARS, ARB_MERGE, ..)
    - arb_ntree can execute macro from command line
    - added "Never ask again" to modal question boxes (for better compatibility with macros)
  - load/save for window specific settings (e.g. allows to share parts of configuration with other users)

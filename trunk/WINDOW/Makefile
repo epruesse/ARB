@@ -127,7 +127,6 @@ AW_button.o: aw_common.hxx
 AW_button.o: aw_common_xm.hxx
 AW_button.o: aw_device.hxx
 AW_button.o: aw_keysym.hxx
-AW_button.o: aw_macro.hxx
 AW_button.o: aw_msg.hxx
 AW_button.o: aw_nawar.hxx
 AW_button.o: aw_position.hxx
@@ -330,34 +329,6 @@ AW_help.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_help.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_help.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_help.o: $(ARBHOME)/INCLUDE/test_global.h
-
-AW_macro.o: aw_awar.hxx
-AW_macro.o: aw_base.hxx
-AW_macro.o: aw_macro.hxx
-AW_macro.o: aw_msg.hxx
-AW_macro.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AW_macro.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arb_core.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arb_defs.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arb_file.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arb_strarray.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arb_string.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arbdb.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AW_macro.o: $(ARBHOME)/INCLUDE/arbtools.h
-AW_macro.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_macro.o: $(ARBHOME)/INCLUDE/cb.h
-AW_macro.o: $(ARBHOME)/INCLUDE/cxxforward.h
-AW_macro.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_macro.o: $(ARBHOME)/INCLUDE/FileContent.h
-AW_macro.o: $(ARBHOME)/INCLUDE/gccver.h
-AW_macro.o: $(ARBHOME)/INCLUDE/smartptr.h
-AW_macro.o: $(ARBHOME)/INCLUDE/test_global.h
-AW_macro.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AW_modal.o: aw_advice.hxx
 AW_modal.o: aw_awar.hxx
@@ -634,7 +605,6 @@ AW_window.o: aw_common.hxx
 AW_window.o: aw_common_xm.hxx
 AW_window.o: aw_device.hxx
 AW_window.o: aw_keysym.hxx
-AW_window.o: aw_macro.hxx
 AW_window.o: aw_msg.hxx
 AW_window.o: aw_nawar.hxx
 AW_window.o: aw_position.hxx
