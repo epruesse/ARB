@@ -46,8 +46,8 @@ static void st_ok_cb(AW_window *aww, AW_CL cl_st_ml) {
 
     GB_ERROR error = GB_push_transaction(st_ml->get_gb_main());
     if (!error) {
-        error = st_ml->init_st_ml(tree_name, alignment_name, NULL, marked_only, st_ml->get_column_statistic(), NULL);
-        if (!error) st_ml->do_refresh();
+        error = st_ml->calc_st_ml(tree_name, alignment_name, NULL, marked_only, st_ml->get_column_statistic(), NULL);
+        if (!error) st_ml->do_postcalc_callback();
     }
 
     error = GB_end_transaction(st_ml->get_gb_main(), error);
@@ -57,7 +57,11 @@ static void st_ok_cb(AW_window *aww, AW_CL cl_st_ml) {
     free(alignment_name);
 }
 
-AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_func, AW_window *refreshed_win) {
+void STAT_set_postcalc_callback(ST_ML *st_ml, AW_CB0 postcalc_cb, AW_window *cb_win) {
+    st_ml->set_postcalc_callback(postcalc_cb, cb_win);
+}
+
+AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "COLUMN_STATISTIC", "COLUMN STATISTIC");
 
@@ -78,7 +82,6 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_f
     root->awar_string(AWAR_TREE, "", st_ml->get_gb_main());
 
     st_ml->create_column_statistic(root, ST_ML_AWAR_COLSTAT_NAME, awar_default_alignment);
-    st_ml->set_refresh_callback(refresh_func, refreshed_win);
 
     aws->at("GO");
     aws->callback(st_ok_cb, (AW_CL)st_ml);

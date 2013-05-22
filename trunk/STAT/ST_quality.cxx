@@ -245,7 +245,7 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA     *gb_main, const char *tree_name
 #warning parameter 'alignment_name' can be retrieved from WeightedFilter (as soon as automatic mapping works for filters)    
 #endif
     ST_ML    st_ml(gb_main);
-    GB_ERROR error = st_ml.init_st_ml(tree_name, alignment_name, 0, marked_only, colstat, weighted_filter);
+    GB_ERROR error = st_ml.calc_st_ml(tree_name, alignment_name, 0, marked_only, colstat, weighted_filter);
     arb_progress glob_progress("Sequence Quality Check");
 
     if (!error) {
