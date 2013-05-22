@@ -30,8 +30,8 @@ ARB_TCP_DAT_VERSION 2
 
 #***********    Test Servers  ******************
 
-ARB_TEST_PT_SERVER          :/tmp/pt.socket              arb_pt_server   -D$(ARBHOME)/UNIT_TESTER/run/TEST_pt.arb
-ARB_TEST_PT_SERVER_GENE     :/tmp/ptgene.socket          arb_pt_server   -D$(ARBHOME)/UNIT_TESTER/run/TEST_gpt.arb
+ARB_TEST_PT_SERVER          :$(ARBHOME)/UNIT_TESTER/sockets/pt.socket       arb_pt_server -D$(ARBHOME)/UNIT_TESTER/run/TEST_pt.arb
+ARB_TEST_PT_SERVER_GENE     :$(ARBHOME)/UNIT_TESTER/sockets/ptgene.socket  arb_pt_server -D$(ARBHOME)/UNIT_TESTER/run/TEST_gpt.arb
 
 #***********    Private Servers (for each user) ******************
 #
