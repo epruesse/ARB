@@ -168,8 +168,8 @@ MostLikelySeq::MostLikelySeq(const AliView *aliview, ST_ML *st_ml_)
 
 MostLikelySeq::~MostLikelySeq() {
     delete [] sequence;
-    delete color_out;
-    delete color_out_valid_till;
+    free(color_out);
+    free(color_out_valid_till);
 
     unbind_from_species(true);
 }
@@ -343,7 +343,7 @@ ST_ML::~ST_ML() {
     delete [] inv_base_frequencies;
     delete [] rate_matrices;
     if (!column_stat) {
-        // rates and ttratio have been allocated (see ST_ML::init_st_ml)
+        // rates and ttratio have been allocated (see ST_ML::calc_st_ml)
         delete [] rates;
         delete [] ttratio;
     }
@@ -468,18 +468,31 @@ inline GB_ERROR tree_size_ok(AP_tree_root *tree_root) {
     return error;
 }
 
-GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
+void ST_ML::cleanup() {
+    freenull(alignment_name);
+
+    if (MostLikelySeq::tmp_out) {
+        delete MostLikelySeq::tmp_out;
+        MostLikelySeq::tmp_out = NULL;
+    }
+
+    delete tree_root;               tree_root = NULL;
+    GBS_free_hash(hash_2_ap_tree);  hash_2_ap_tree = NULL;
+
+    is_initialized = false;
+}
+
+GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
                            const char *species_names, int marked_only,
                            ColumnStat *colstat, const WeightedFilter *weighted_filter)
 {
-    //! this is the real constructor, call only once
+    // acts as contructor, leaks as hell when called twice
 
     GB_ERROR error = 0;
 
-    if (is_initialized) {
-        error = "Column statistic can't be re-initialized";
-    }
-    else {
+    if (is_initialized) cleanup();
+
+    {
         GB_transaction ta(gb_main);
         arb_progress progress("Activating column statistic");
 
@@ -581,15 +594,10 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
                 MostLikelySeq::tmp_out = new ST_base_vector[filtered_length]; // @@@ error: never freed!
                 is_initialized         = true;
             }
-
-            if (error) {
-                delete tree_root;               tree_root      = NULL;
-                GBS_free_hash(hash_2_ap_tree);  hash_2_ap_tree = NULL;
-            }
         }
 
         if (error) {
-            freenull(alignment_name);
+            cleanup();
             error = ta.close(error);
         }
     }
@@ -858,5 +866,4 @@ AP_tree *ST_ML::find_node_by_name(const char *species_name) {
 const AP_filter *ST_ML::get_filter() const { return tree_root->get_filter(); }
 size_t ST_ML::get_filtered_length() const { return get_filter()->get_filtered_length(); }
 size_t ST_ML::get_alignment_length() const { return get_filter()->get_length(); }
-
 

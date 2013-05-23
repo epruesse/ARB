@@ -251,6 +251,9 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
     }
     else {        // UNIX
         sockaddr_un so_ad;
+        if (strlen(machName) >= sizeof(so_ad.sun_path)) {
+            return "Could not open socket on Server (socket name too long)";
+        }
         memset((char *)&so_ad, 0, sizeof(so_ad));
         *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
         if (*psocket <= 0) {
