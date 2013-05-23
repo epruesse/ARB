@@ -127,10 +127,14 @@ recmac.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 recmac.o: $(ARBHOME)/INCLUDE/arbdbt.h
 recmac.o: $(ARBHOME)/INCLUDE/arbtools.h
 recmac.o: $(ARBHOME)/INCLUDE/attributes.h
+recmac.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
+recmac.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
+recmac.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+recmac.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 recmac.o: $(ARBHOME)/INCLUDE/cxxforward.h
 recmac.o: $(ARBHOME)/INCLUDE/dupstr.h
 recmac.o: $(ARBHOME)/INCLUDE/FileContent.h
