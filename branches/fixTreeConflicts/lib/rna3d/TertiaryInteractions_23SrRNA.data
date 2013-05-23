@@ -1,0 +1,41 @@
+HEAD ==============================================================================
+HEAD Tertiary Interactions of 23S ribosomal RNA model of E.coli. 
+HEAD Reference : http://www.rna.icmb.utexas.edu/
+HEAD Year of Last Update : 2001.
+HEAD Pseudoknots(K) and Triple Base Pairs(R) are extracted and displayed in the 3D model.
+HEAD ==============================================================================
+
+KNOT 61:93
+KNOT 62:92
+KNOT 64:90
+KNOT 65:89
+KNOT 66:88
+KNOT 67:74
+KNOT 317:334
+KNOT 318:333
+KNOT 413:2410
+KNOT 414:2409
+KNOT 415:2408
+KNOT 416:2407
+KNOT 1005:1138
+KNOT 1006:1137
+KNOT 1343:1404
+KNOT 1344:1403
+KNOT 1782:2586
+KNOT 2112:2169
+KNOT 2113:2170
+KNOT 2117:2172
+KNOT 2283:2325
+KNOT 2326:2389
+KNOT 2328:2387
+KNOT 2329:2386
+KNOT 2330:2385
+KNOT 2359:2428
+KNOT 2626:2777
+TRIPLE 1055:1104:1085 	 
+TRIPLE 1091:1100:1071 	 
+TRIPLE 1092:1099:1072 	 
+TRIPLE 1935:1962:1940 	 
+TRIPLE 1950:1956:1954 	 
+TRIPLE 2057:2611:746 	 
+TRIPLE 2144:2147:2111
