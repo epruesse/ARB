@@ -17,9 +17,9 @@
 
 class ST_ML;
 class AP_tree;
-class ColumnStat;
 
-AW_window *STAT_create_main_window(AW_root *aw_root, ST_ML *st_ml, AW_CB0 refresh_func, AW_window *refreshed_win);
+void       STAT_set_postcalc_callback(ST_ML *st_ml, AW_CB0 postcalc_cb, AW_window *cb_win);
+AW_window *STAT_create_main_window(AW_root *aw_root, ST_ML *st_ml);
 ST_ML     *STAT_create_ST_ML(GBDATA *gb_main);
 
 typedef unsigned char ST_ML_Color;

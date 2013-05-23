@@ -61,7 +61,7 @@ export GPP
 ALLOWED_GCC_4xx_VERSIONS=\
 	4.2.1 \
 	4.3.1 4.3.2 4.3.3 4.3.4 \
-	4.4.1       4.4.3       4.4.5 4.4.6 \
+	4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
 	      4.5.2 \
 	4.6.1       4.6.3 \
 	4.7.1 4.7.2 4.7.3 \
@@ -474,7 +474,7 @@ endif
 ifdef DARWIN
 	XMKMF := $(PREFIX)/bin/xmkmf
 else
-	XMKMF := /usr/bin/X11/xmkmf
+	XMKMF := xmkmf
 endif
 
 MAKEDEPEND_PLAIN = makedepend
