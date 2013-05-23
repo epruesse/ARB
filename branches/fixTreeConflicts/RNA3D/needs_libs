@@ -1,7 +1,0 @@
-# libraries needed to link against RNA3D/RNA3D.a
-
-lib/libAWT.so
-GL/glAW/libglAW.a
-GL/glpng/libglpng_arb.a
-SL/HELIX/HELIX.a
-
