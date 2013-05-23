@@ -251,6 +251,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
@@ -262,6 +263,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_main.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_main.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_main.o: $(ARBHOME)/INCLUDE/macros.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 DI_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_main.o: $(ARBHOME)/INCLUDE/static_assert.h
@@ -344,6 +346,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_matr.o: $(ARBHOME)/INCLUDE/gccver.h
 DI_matr.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/macros.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/neighbourjoin.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_matr.o: $(ARBHOME)/INCLUDE/static_assert.h

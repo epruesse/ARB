@@ -2,5 +2,6 @@
 
 lib/libAWT.so
 SL/MATRIX/MATRIX.a
+SL/MACROS/MACROS.a
 
 

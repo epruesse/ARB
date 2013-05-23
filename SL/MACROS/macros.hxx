@@ -12,23 +12,29 @@
 #ifndef MACROS_HXX
 #define MACROS_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
 #endif
 
-class RecordingMacro;
+class AW_window;
+class AW_root;
+class UserActionTracker;
 
-class MacroRecorder : public UserActionTracker {
-    RecordingMacro *recording;
-public:
-    GB_ERROR start_recording(const char *file, const char *application_id, const char *stop_action_name, bool expand_existing);
-    GB_ERROR stop_recording();
-    GB_ERROR execute(GBDATA *gb_main, const char *file, AW_RCB1 execution_done_cb, AW_CL client_data);
+struct GBDATA;
 
-    void track_action(const char *action_id) OVERRIDE;
-    void track_awar_change(AW_awar *awar) OVERRIDE;
-    bool is_replaceable() const OVERRIDE { return false; }
-};
+// tracker factory:
+UserActionTracker          *need_macro_ability();
+__ATTR__USERESULT GB_ERROR  configure_macro_recording(AW_root *aw_root, const char *client_id, GBDATA *gb_main); // replaces active tracker
+void                        shutdown_macro_recording(AW_root *aw_root);
+
+bool got_macro_ability(AW_root *aw_root);
+
+// gui-interface:
+void insert_macro_menu_entry(AW_window *awm, bool prepend_separator);
+void awt_execute_macro(AW_root *root, const char *macroname);
 
 #else
 #error macros.hxx included twice

@@ -127,7 +127,7 @@ static void destroy_AW_root() {
 
 void AW_root::setUserActionTracker(UserActionTracker *user_tracker) {
     aw_return_if_fail(user_tracker);
-    aw_return_if_fail(tracker->is_replaceable());
+    aw_return_if_fail(tracker->is_replaceable()); // there is already another tracker (program-logic-error)
 
     delete tracker;
     tracker = user_tracker;

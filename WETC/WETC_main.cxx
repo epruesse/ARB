@@ -18,7 +18,7 @@ AW_HEADER_MAIN
 
 int ARB_main(int argc, char *argv[]) {
     GB_shell shell;
-    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_WETC", new NullTracker, &argc, &argv);
+    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_WETC", new NullTracker, &argc, &argv); // no macro recording here
 
     GB_ERROR error = NULL;
 

@@ -1,28 +1,29 @@
 // ============================================================= //
 //                                                               //
-//   File      : macro_gui.hxx                                   //
+//   File      : dbserver.hxx                                    //
 //   Purpose   :                                                 //
 //                                                               //
-//   Coded by Ralf Westram (coder@reallysoft.de) in May 2005     //
+//   Coded by Ralf Westram (coder@reallysoft.de) in April 2013   //
 //   Institute of Microbiology (Technical University Munich)     //
 //   http://www.arb-home.de/                                     //
 //                                                               //
 // ============================================================= //
 
-#ifndef MACRO_GUI_HXX
-#define MACRO_GUI_HXX
+#ifndef DBSERVER_HXX
+#define DBSERVER_HXX
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+#ifndef ARB_CORE_H
+#include <arb_core.h>
 #endif
 
-
-class AW_window;
 class AW_root;
+struct GBDATA;
 
-void awt_popup_macro_window(AW_window *aww, const char *application_id, GBDATA *gb_main);
-void awt_execute_macro(GBDATA *gb_main, AW_root *root, const char *macroname);
+__ATTR__USERESULT GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *gb_main);
 
 #else
-#error macro_gui.hxx included twice
-#endif // MACRO_GUI_HXX
+#error dbserver.hxx included twice
+#endif // DBSERVER_HXX

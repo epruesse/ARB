@@ -134,6 +134,9 @@ GB_ERROR GBT_write_int(GBDATA *gb_container, const char *fieldpath, long content
 GB_ERROR GBT_write_byte(GBDATA *gb_container, const char *fieldpath, unsigned char content);
 GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double content);
 GBDATA *GBT_open(const char *path, const char *opent);
+GB_ERROR GB_set_macro_error(GBDATA *gb_main, const char *curr_error);
+GB_ERROR GB_get_macro_error(GBDATA *gb_main);
+GB_ERROR GB_clear_macro_error(GBDATA *gb_main);
 GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name);
 GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value);
 GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name);

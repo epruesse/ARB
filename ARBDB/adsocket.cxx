@@ -27,6 +27,7 @@
 #include <arb_str.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
+#include <arb_sleep.h>
 
 #include "gb_comm.h"
 #include "gb_data.h"
@@ -38,11 +39,6 @@
 #if defined(DARWIN)
 # include <sys/sysctl.h>
 #endif // DARWIN
-
-void GB_usleep(long usec) {
-    usleep(usec);
-}
-
 
 static int gbcm_pipe_violation_flag = 0;
 void gbcms_sigpipe(int) {
@@ -119,8 +115,7 @@ GBCM_ServerResult gbcm_write_flush(int socket) {
     leftsize = leftsize - writesize;
 
     while (leftsize) {
-
-        GB_usleep(10000);
+        GB_sleep(10, MS);
 
         writesize = write(socket, ptr, (size_t)leftsize);
         if (gbcm_pipe_violation_flag || writesize<0) {

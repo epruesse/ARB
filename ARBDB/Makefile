@@ -849,6 +849,7 @@ adsocket.o: $(ARBHOME)/INCLUDE/arb_cs.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_file.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adsocket.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_str.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -989,6 +990,7 @@ adTest.o: $(ARBHOME)/INCLUDE/smartptr.h
 adTest.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adtools.o: ad_prot.h
+adtools.o: ad_remote.h
 adtools.o: ad_t_prot.h
 adtools.o: arb_assert.h
 adtools.o: arbdb.h
@@ -1002,6 +1004,7 @@ adtools.o: gb_prot.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adtools.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_sort.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_str.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_strarray.h
