@@ -35,7 +35,6 @@ class RecordingMacro : virtual Noncopyable {
     void write_quoted_param(const char *value) const { write(",\""); write(value); write('\"'); }
 
     void write_dated_comment(const char *what) const;
-    void warn_unrecordable(const char *what) const;
 
     void flush() const { fflush(out); }
 
@@ -55,8 +54,13 @@ public:
     void track_action(const char *action_id);
     void track_awar_change(AW_awar *awar);
 
+    void write_action(const char *app_id, const char *action_name);
+    void write_awar_change(const char *app_id, const char *awar_name, const char *content);
+
     GB_ERROR stop();
 };
+
+void warn_unrecordable(const char *what);
 
 #else
 #error AW_macro.hxx included twice

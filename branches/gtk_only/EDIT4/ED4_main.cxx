@@ -39,6 +39,8 @@
 #include <arbdbt.h>
 
 #include <arb_defs.h>
+#include <macros.hxx>
+#include <aw_question.hxx>
 
 AW_HEADER_MAIN
 
@@ -482,7 +484,6 @@ static void seq_colors_changed_cb() {
 
 int ARB_main(int argc, char *argv[]) {
     const char *data_path = ":";
-    const char *err = NULL;
     char *config_name = NULL;
 
     if (argc > 1 && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0))) {
@@ -498,7 +499,7 @@ int ARB_main(int argc, char *argv[]) {
                 "Options:\n"
                 "-c config          loads configuration 'config' (default: 'default_configuration')\n"
                 "\n"
-                );
+            );
     }
 
     if (argc > 1 && strcmp(argv[1], "-c") == 0) {
@@ -508,10 +509,7 @@ int ARB_main(int argc, char *argv[]) {
     }
     else { // load 'default_configuration' if no command line is given
         config_name = strdup("default_configuration");
-        err = "Using 'default_configuration'";
-#ifndef NDEBUG
-        err = 0;
-#endif
+        printf("Using 'default_configuration'\n");
     }
 
     if (argc>1) {
@@ -522,111 +520,112 @@ int ARB_main(int argc, char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
+    GB_ERROR error = NULL;
     GLOBAL_gb_main = GB_open(data_path, "rwt");
-    if (!GLOBAL_gb_main)
-    {
-        GB_print_error();
-        exit (-1);
+    if (!GLOBAL_gb_main) {
+        error = GB_await_error();
     }
-
+    else {
 #if defined(DEBUG)
-    AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", data_path));
+        AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", data_path));
 #endif // DEBUG
 
-    ED4_ROOT = new ED4_root(&argc, &argv);
- 
-    ED4_ROOT->database = new EDB_root_bact;
-    ED4_ROOT->init_alignment();
-    ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
+        ED4_ROOT = new ED4_root(&argc, &argv);
 
-    ED4_ROOT->st_ml           = STAT_create_ST_ML(GLOBAL_gb_main);
-    ED4_ROOT->sequence_colors = new AWT_seq_colors(ED4_G_SEQUENCES, seq_colors_changed_cb);
+        error = configure_macro_recording(ED4_ROOT->aw_root, "ARB_EDIT4", GLOBAL_gb_main);
+        if (!error) {
+            ED4_ROOT->database = new EDB_root_bact;
+            ED4_ROOT->init_alignment();
+            ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
-    ED4_ROOT->edk = new ed_key;
-    ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);
+            ED4_ROOT->st_ml           = STAT_create_ST_ML(GLOBAL_gb_main);
+            ED4_ROOT->sequence_colors = new AWT_seq_colors(ED4_G_SEQUENCES, seq_colors_changed_cb);
 
-    ED4_ROOT->helix = new AW_helix(ED4_ROOT->aw_root);
+            ED4_ROOT->edk = new ed_key;
+            ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);
 
-    if (err) {
-        aw_message(err);
-        err = 0;
-    }
+            ED4_ROOT->helix = new AW_helix(ED4_ROOT->aw_root);
 
-    switch (ED4_ROOT->alignment_type) {
-        case GB_AT_RNA:
-        case GB_AT_DNA:
-            err = ED4_ROOT->helix->init(GLOBAL_gb_main);
-            break;
+            {
+                GB_ERROR warning = NULL;
+                switch (ED4_ROOT->alignment_type) {
+                    case GB_AT_RNA:
+                    case GB_AT_DNA:
+                        warning = ED4_ROOT->helix->init(GLOBAL_gb_main);
+                        break;
 
-        case GB_AT_AA:
-            err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);
-            break;
+                    case GB_AT_AA:
+                        warning = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);
+                        break;
 
-        default:
-            e4_assert(0);
-            break;
-    }
+                    default:
+                        e4_assert(0);
+                        break;
+                }
 
-    if (err) aw_message(err); // write to console
-    ED4_ROOT->create_new_window(); // create first editor window
-    if (err) aw_message(err); // write again to status window
-
-    ED4_objspec::init_object_specs();
-    
-    {
-        int found_config = 0;
-        ED4_LocalWinContext uses(ED4_ROOT->first_window);
-
-        if (config_name)
-        {
-            GB_begin_transaction(GLOBAL_gb_main);
-            GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, config_name);
-
-            if (gb_configuration) {
-                GBDATA *gb_middle_area = GB_search(gb_configuration, "middle_area", GB_FIND);
-                GBDATA *gb_top_area = GB_search(gb_configuration, "top_area", GB_FIND);
-                char *config_data_middle = GB_read_as_string(gb_middle_area);
-                char *config_data_top   = GB_read_as_string(gb_top_area);
-
-                ED4_ROOT->create_hierarchy(config_data_middle, config_data_top); // create internal hierarchy
-                free(config_data_middle);
-                free(config_data_top);
-
-                found_config = 1;
-            }
-            else {
-                aw_message(GBS_global_string("Could not find configuration '%s'", config_name));
+                if (warning) aw_message(warning); // write to console
+                ED4_ROOT->create_new_window(); // create first editor window
+                if (warning) { aw_message(warning); warning = 0; } // write again to status window
             }
 
-            GB_commit_transaction(GLOBAL_gb_main);
-        }
+            ED4_objspec::init_object_specs();
+            {
+                int found_config = 0;
+                ED4_LocalWinContext uses(ED4_ROOT->first_window);
 
-        if (!found_config) {
-            // create internal hierarchy
+                if (config_name)
+                {
+                    GB_begin_transaction(GLOBAL_gb_main);
+                    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, config_name);
 
-            char *as_mid = ED4_ROOT->database->make_string();
-            char *as_top = ED4_ROOT->database->make_top_bot_string();
+                    if (gb_configuration) {
+                        GBDATA *gb_middle_area = GB_search(gb_configuration, "middle_area", GB_FIND);
+                        GBDATA *gb_top_area = GB_search(gb_configuration, "top_area", GB_FIND);
+                        char *config_data_middle = GB_read_as_string(gb_middle_area);
+                        char *config_data_top   = GB_read_as_string(gb_top_area);
 
-            ED4_ROOT->create_hierarchy(as_mid, as_top);
+                        ED4_ROOT->create_hierarchy(config_data_middle, config_data_top); // create internal hierarchy
+                        free(config_data_middle);
+                        free(config_data_top);
 
-            delete as_mid;
-            delete as_top;
+                        found_config = 1;
+                    }
+                    else {
+                        aw_message(GBS_global_string("Could not find configuration '%s'", config_name));
+                    }
+
+                    GB_commit_transaction(GLOBAL_gb_main);
+                }
+
+                if (!found_config) {
+                    // create internal hierarchy
+
+                    char *as_mid = ED4_ROOT->database->make_string();
+                    char *as_top = ED4_ROOT->database->make_top_bot_string();
+
+                    ED4_ROOT->create_hierarchy(as_mid, as_top);
+
+                    delete as_mid;
+                    delete as_top;
+                }
+            }
+
+            // now bind DB depending callbacks
+            ed4_bind_mainDB_awar_callbacks(ED4_ROOT->aw_root);
+
+            // Create Additional sequence (aminoacid) terminals to be used in Protein Viewer
+            if (ED4_ROOT->alignment_type == GB_AT_DNA) {
+                PV_CallBackFunction(ED4_ROOT->aw_root);
+            }
+
+            AWT_install_postcb_cb(ED4_postcbcb);
+            AWT_install_cb_guards();
+            e4_assert(!ED4_WinContext::have_context()); // no global context shall be active
+            ED4_ROOT->aw_root->main_loop(); // enter main-loop
         }
     }
 
-    // now bind DB depending callbacks
-    ed4_bind_mainDB_awar_callbacks(ED4_ROOT->aw_root);
-
-    // Create Additional sequence (aminoacid) terminals to be used in Protein Viewer
-    if (ED4_ROOT->alignment_type == GB_AT_DNA) {
-        PV_CallBackFunction(ED4_ROOT->aw_root);
-    }
-
-    AWT_install_postcb_cb(ED4_postcbcb);
-    AWT_install_cb_guards();
-    e4_assert(!ED4_WinContext::have_context()); // no global context shall be active
-    ED4_ROOT->aw_root->main_loop(); // enter main-loop
-
+    if (error) aw_popup_exit(error);
     return EXIT_SUCCESS;
 }
 

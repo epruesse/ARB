@@ -204,7 +204,7 @@ static UnitTestResult execute_guarded_ClientCode(UnitTest_function fun, long *du
 
         fun();
 
-        // sleep(10); // simulate a deadlock
+        // sleepms(10000); // simulate a deadlock
     }
     // end of critical section
     // ----------------------------------------
@@ -293,7 +293,7 @@ inline void reset_test_local_flags() {
     getLocalFlag(ANY_SETUP).lower_if_up();
 }
 
-inline void sleepms(long ms) {
+void sleepms(long ms) {
     int  seconds = ms/1000;
     long rest_ms = ms - seconds*1000;
 
