@@ -1169,6 +1169,7 @@ void AWT_create_debug_menu(AW_window *awmm) {
 }
 
 #endif // DEBUG
+
 AW_root *AWT_create_root(const char *properties, const char *program, UserActionTracker *user_tracker, int *argc, char*** argv) {
     AW_root *aw_root = new AW_root(properties, program, false, user_tracker, argc, argv);
 #if defined(DEBUG)

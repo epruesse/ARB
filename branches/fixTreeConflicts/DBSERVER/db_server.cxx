@@ -12,6 +12,7 @@
 #include <servercntrl.h>
 #include <ut_valgrinded.h>
 #include <arb_file.h>
+#include <arb_sleep.h>
 
 #define TIMEOUT 1000*60*2       // save every 2 minutes
 #define LOOPS   30              // wait 30*TIMEOUT (1 hour) till shutdown
@@ -347,7 +348,7 @@ void TEST_SLOW_dbserver() {
         bool down = true;
         int max_wait = 2000/50;
         while (down) {
-            GB_usleep(25*1000);
+            GB_sleep(25, MS);
             down = server_is_down(tcp);
             TEST_EXPECT(max_wait-->0);
         }
@@ -479,7 +480,7 @@ void TEST_SLOW_dbserver() {
     }
     else { // child ("the server")
 #if !defined(DEBUG_SERVER)
-        GB_usleep(100*1000);
+        GB_sleep(100, MS);
         TEST_RUN_TOOL(GBS_global_string("arb_db_server -T%s -d%s -A", tcp, db)); // start the server (in ASCII-mode)
 #endif
         exit(EXIT_SUCCESS);

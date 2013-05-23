@@ -380,6 +380,7 @@ arb_test.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_file.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_test.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_test.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_test.o: $(ARBHOME)/INCLUDE/arbdb_base.h

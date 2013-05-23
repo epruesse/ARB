@@ -155,6 +155,7 @@ symlink_file ../TEMPLATES/arb_early_check.h INCLUDE/arb_early_check.h &&
 symlink_file ../TEMPLATES/arb_global_defs.h INCLUDE/arb_global_defs.h &&
 symlink_file ../TEMPLATES/arb_error.h INCLUDE/arb_error.h &&
 symlink_file ../TEMPLATES/arb_str.h INCLUDE/arb_str.h &&
+symlink_file ../TEMPLATES/arb_sleep.h INCLUDE/arb_sleep.h &&
 symlink_file ../TEMPLATES/arb_unit_test.h INCLUDE/arb_unit_test.h &&
 symlink_file ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
 symlink_file ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
@@ -199,6 +200,7 @@ symlink_file ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h &&
 symlink_file ../ARBDB/adGene.h INCLUDE/adGene.h &&
 symlink_file ../ARBDB/ad_config.h INCLUDE/ad_config.h &&
 symlink_file ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
+symlink_file ../ARBDB/ad_remote.h INCLUDE/ad_remote.h &&
 symlink_file ../ARBDB/adperl.h INCLUDE/adperl.h &&
 symlink_file ../ARBDB/ad_p_prot.h INCLUDE/ad_p_prot.h &&
 symlink_file ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h &&
@@ -280,7 +282,6 @@ symlink_file ../SL/INSDEL/insdel.h INCLUDE/insdel.h &&
 symlink_file ../SL/ITEMS/items.h INCLUDE/items.h &&
 symlink_file ../SL/ITEMS/item_sel_list.h INCLUDE/item_sel_list.h &&
 symlink_file ../SL/LOCATION/Location.h INCLUDE/Location.h &&
-symlink_file ../SL/MACROS/macro_gui.hxx INCLUDE/macro_gui.hxx &&
 symlink_file ../SL/MACROS/macros.hxx INCLUDE/macros.hxx &&
 symlink_file ../SL/MATRIX/AP_matrix.hxx INCLUDE/AP_matrix.hxx &&
 symlink_file ../SL/NDS/nds.h INCLUDE/nds.h &&

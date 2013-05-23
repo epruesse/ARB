@@ -30,6 +30,7 @@
 
 #include <climits>
 #include <unistd.h>
+#include <macros.hxx>
 
 using namespace std;
 
@@ -1219,8 +1220,7 @@ static void import_window_close_cb(AW_window *aww) {
     AW_POPDOWN(aww);
 }
 
-GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit, GBDATA *gb_main, AWTC_RCB(func), AW_CL cd1, AW_CL cd2)
-{
+GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit, GBDATA *gb_main, AWTC_RCB(func), AW_CL cd1, AW_CL cd2) {
     static AW_window_simple *aws = 0;
 
 #if defined(WARN_TODO)
@@ -1238,6 +1238,14 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
 #endif // DEBUG
 
     awtcig.gb_other_main = gb_main;
+
+    if (!gb_main) {
+        // control macros via temporary import DB (if no main DB available)
+        configure_macro_recording(awr, "ARB_IMPORT", awtcig.gb_main); // @@@ use result
+    }
+    else {
+        awti_assert(got_macro_ability(awr));
+    }
 
     awtcig.doExit = do_exit; // change/set behavior of CLOSE button
 

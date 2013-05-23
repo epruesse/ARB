@@ -11,6 +11,7 @@
 
 #include <arbdbt.h>
 #include <arb_defs.h>
+#include <arb_sleep.h>
 #include <unistd.h>
 
 int ARB_main(int , char *[]) {
@@ -321,7 +322,7 @@ static void test_notification_cb(const char *message, void *cd) {
 #define TEST_DBSERVER_SERVE_UNTIL(gbmain, cond) do {                    \
         bool success            = GBCMS_accept_calls(gb_main, false);   \
         while (success) success = GBCMS_accept_calls(gb_main, true);    \
-        GB_usleep(10000);                                               \
+        GB_sleep(10, MS);                                               \
     } while(!(cond))
 
 #define TEST_DBSERVER_CLOSE(gbmain) GBCMS_shutdown(gb_main)
