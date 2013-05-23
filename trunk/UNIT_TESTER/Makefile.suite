@@ -11,6 +11,8 @@ TEST_REPORTER = ./reporter.pl
 TEST_LOG_DIR = ./logs
 TEST_FLAG_DIR = ./flags
 
+JUNIT_LOG = $(TEST_LOG_DIR)/junit_log.xml# see also reporter.pl@JUNITLOGNAME
+
 PATCHNAMEBASE:=TestsOk
 PATCHNAMESUFFIX:=
 
@@ -69,6 +71,7 @@ unskip:
 
 init:
 	@echo "$(SEP) Running unit tests"
+	@rm $(JUNIT_LOG)
 #ifeq ($(VALGRIND_EXTERNAL),E)
 	./valgrind/arb_valgrind_logged INIT "$(VALGRIND_EXTERNAL)" $(CHECK_LEAKS)
 #endif
