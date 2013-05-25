@@ -42,13 +42,28 @@ void sleepms(long ms);
 //      execution time limits
 
 const long SECONDS = 1000;
+const long MINUTES = 60*SECONDS;
 
-const long MAX_EXEC_MS_NORMAL =  8 * SECONDS;        // kill with segfault after time passed
+#if defined(DEVEL_RALF)
+
+const long MAX_EXEC_MS_NORMAL = 8 * SECONDS;        // kill with segfault after time passed
 const long MAX_EXEC_MS_SLOW   = 30 * SECONDS;       // same for slow tests
 const long MAX_EXEC_MS_ENV    = 40 * SECONDS;       // same for environment setup/cleanup
 const long MAX_EXEC_MS_VGSYS  = 70 * SECONDS;       // same for valgrinded system calls (especially pt_server)
 
 const long WARN_SLOW_ABOVE_MS = 1 * SECONDS;        // when too warn about slow test
+
+#else // !defined(DEVEL_RALF)
+
+// these are temporary test-timings to avoid test timeouts on jenkins build server
+
+const long MAX_EXEC_MS_NORMAL = 15 * MINUTES;       // kill with segfault after time passed
+const long MAX_EXEC_MS_SLOW   = 15 * MINUTES;       // same for slow tests
+const long MAX_EXEC_MS_ENV    = 15 * MINUTES;       // same for environment setup/cleanup
+const long MAX_EXEC_MS_VGSYS  = 15 * MINUTES;       // same for valgrinded system calls (especially pt_server)
+const long WARN_SLOW_ABOVE_MS = 15 * MINUTES;       // when too warn about slow test
+
+#endif
 
 #define FLAGS_DIR "flags"
 #define FLAGS_EXT "flag"
