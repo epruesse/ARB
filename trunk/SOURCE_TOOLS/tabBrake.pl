@@ -12,6 +12,8 @@ use warnings;
 my $forceAll  = 0; # 1 -> force scan of all files if no stamp, 0 -> assume all ok, scan only new files
 my $defsStart = 15; # lineno of start of definition
 
+my $checkForOldLogs = 1; # whether to check for old logfile and delete them
+
 my %scan_extension = map { $_ => 1; } (
                                        'c', 'h',
                                        'cxx', 'hxx',
@@ -153,7 +155,7 @@ sub recurse_dirs($$) {
 
           # check if it's a log from an aborted compile
           if (/^[^.]+\.([0-9]+)\.log$/o) {
-            if ($modtime<($files_newer_than+3*60)) {
+            if ($checkForOldLogs and $modtime<$files_newer_than) {
               print "Old log file: $full -- removing\n";
               unlink($full) || print "$full:0: can't unlink (Reason: $!)\n";
             }
@@ -280,6 +282,7 @@ else {
   else {
     print "Initial call - assuming everything is TAB-free\n";
     $files_newer_than = time;
+    $checkForOldLogs  = 0; # do not check for old logs (sometimes fails on fresh checkouts, e.g. in jenkins build server)
   }
 }
 
