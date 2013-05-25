@@ -150,12 +150,12 @@ sub recurse_dirs($$) {
         my $modtime   = getModtime($full);
 
         if ($modtime<$files_newer_than) {
-          # file was created before last compile start
+          # file was created before last run of tabBrake.pl
           $scan = 0;
 
           # check if it's a log from an aborted compile
           if (/^[^.]+\.([0-9]+)\.log$/o) {
-            if ($checkForOldLogs and $modtime<$files_newer_than) {
+            if ($checkForOldLogs and $modtime<($files_newer_than-3*60)) {
               print "Old log file: $full -- removing\n";
               unlink($full) || print "$full:0: can't unlink (Reason: $!)\n";
             }
