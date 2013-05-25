@@ -78,5 +78,6 @@ init:
 	(export CHECK_RESTRICT=$(RESTRICT_LIB); $(TEST_REPORTER) init $(TEST_LOG_DIR) $(SKIP_SLOW))
 
 cleanup: update_patches_if_passed
+	ls -al $(JUNIT_LOG)
 	@echo "$(SEP) All unit tests passed"
 
