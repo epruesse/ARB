@@ -249,6 +249,8 @@ void TEST_range_containment() {
     TEST_REJECT(till50.contains(from30));
     TEST_EXPECT(till50.contains(part));
 
+    TEST_EXPECT(0); // @@@ check test failure
+
     TEST_REJECT(from30.contains(empty));
     TEST_REJECT(from30.contains(whole));
     TEST_REJECT(from30.contains(till50));
