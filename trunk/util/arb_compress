@@ -1,24 +1,23 @@
-    rm -f arb.tgz
-    tar cfo - demo.arb \
-              arb_install.sh \
-              arb_*.txt \
-        `(  find bin ! -type d; \
-            find PERL_SCRIPTS ! -type d; \
-            find SH ! -type d; \
-            find GDEHELP -name "ARB_GDEmenus"; \
-            find GDEHELP/DATA_FILES ! -type d; \
-            find lib ! -type d | grep -v "/pts/") \
-        | grep -v "^.svn/" \
-        | grep -v "^CVS/" \
-        | grep -v "/.svn/" \
-        | grep -v "/CVS/" \
-        | grep -v "/unused/" \
-        | grep -v "ChangeLog$" \
-        | grep -v 'lib\/nas\/names.dat$' \
-        | grep -v '/\..*$' \
-        | grep -v '/#[^/]*$' \
-        ` \
-    |gzip >arb.tgz
+#!/bin/bash
+set -e
 
-    ls -al arb.tgz
+rm -f arb.tgz arb-dev.tgz
 
+tar -czf arb.tgz -T <(
+  find demo.arb arb_install.sh arb_*.txt GDEHELP/ARB_GDEmenus
+  find bin lib PERL_SCRIPTS SH GDEHELP/DATA_FILES \
+     ! -type d \
+     ! -path \*/pts/\* \
+     ! -path \*/.svn/\* \
+     ! -path \*/unused/\* \
+     ! -path \*ChangeLog \
+     ! -path \*lib/nas/names.dat \
+     ! -name \#\* \
+     ! -name .\*
+)
+   
+tar -czhf arb-dev.tgz -T <(
+  find -name \*.a -o -path \*/INCLUDE/\*.h\*
+)
+
+ls -al arb*.tgz
