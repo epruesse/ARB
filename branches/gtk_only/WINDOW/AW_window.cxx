@@ -761,9 +761,11 @@ void AW_window::create_toggle_field(const char *var_name, int orientation /*= 0*
 }
 
 void AW_window::create_toggle_field(const char *var_name, const char *labeli, const char *mnemonic) {
-    char *lab = aw_convert_mnemonic(labeli, mnemonic);
-    if (labeli) this->label(lab);
-    free(lab);
+    if(labeli){
+        char *lab = aw_convert_mnemonic(labeli, mnemonic);
+        this->label(lab);
+        free(lab);
+    }
     create_toggle_field(var_name);
 }
 
