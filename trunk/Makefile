@@ -63,8 +63,7 @@ ALLOWED_GCC_4xx_VERSIONS=\
 	      4.5.2 \
 	4.6.1 4.6.2 4.6.3 \
 	4.7.1 4.7.2 4.7.3 \
-	4.8.0
-# Note: gcc 4.8 is not released yet (just experimenting with gcc-dev-version)
+	4.8.0 4.8.1
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
