@@ -1033,7 +1033,7 @@ AW_window *ED4_create_modsai_window(AW_root *root) {
 static arb_test::match_expectation blockop_expected_io(const ED4_block_operator& blockop, const char *oversized_input, const char *expected_result, const char *part_of_error) {
     int      whole_len = strlen(oversized_input);
     SeqPart  part(oversized_input, 1, whole_len-2);
-    int      new_len; 
+    int      new_len   = 0;
     char    *result    = blockop.operate(part, new_len);
 
     using namespace arb_test;

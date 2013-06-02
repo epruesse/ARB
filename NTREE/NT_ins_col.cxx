@@ -83,8 +83,8 @@ static void range_count_update_cb(AW_root *root) {
 }
 
 static void range_changed_cb(AW_root *root) {
-    UseRange    use = UseRange(root->awar(AWAR_INSDEL_RANGE)->read_int());
-    const char *what;
+    UseRange    use  = UseRange(root->awar(AWAR_INSDEL_RANGE)->read_int());
+    const char *what = NULL;
     switch (use) {
         case RANGES:         what = "selected ranges";  break;
         case SINGLE_COLUMNS: what = "selected columns"; break;

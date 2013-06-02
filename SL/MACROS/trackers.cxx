@@ -20,7 +20,7 @@
 #include <ad_remote.h>
 #include <unistd.h>
 
-bool BoundActionTracker::reconfigure(const char *application_id, GBDATA *gb_main) {
+bool BoundActionTracker::reconfigure(const char *application_id, GBDATA *IF_ASSERTION_USED(gb_main)) {
     ma_assert(gb_main == gbmain);
     ma_assert(strcmp(id, "ARB_IMPORT") == 0); // currently only ARB_IMPORT-tracker gets reconfigured
     freedup(id, application_id);

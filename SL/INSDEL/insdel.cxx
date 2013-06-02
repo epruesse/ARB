@@ -97,7 +97,7 @@ public:
     GB_ERROR check_delete_allowed(size_t start, size_t count) const {
         op_error      = NULL;
         id_assert(start <= size);
-        int forbidden = operate_on_mem(NULL, start, std::min(count, size-start), CHECK_DELETE);
+        IF_ASSERTION_USED(int forbidden =) operate_on_mem(NULL, start, std::min(count, size-start), CHECK_DELETE);
         id_assert(correlated(forbidden, op_error));
         return op_error;
     }
@@ -685,7 +685,7 @@ inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) {
         free(ad_copy);                                          \
     }while(0)
 
-#if defined(ENABLE_CRASH_TESTS)
+#if defined(ENABLE_CRASH_TESTS) && defined(ASSERTION_USED)
 static void illegal_alidata_composition() {
     const int ELEMS = 5;
 
@@ -1070,7 +1070,7 @@ public:
         int allowed_size = knows_size->get_allowed_size(to->elems(), wanted_len);
         return format(to, allowed_size, error);
     }
-    GB_ERROR check_applicable_to(const Alignment& ali, size_t& resulting_ali_length) const OVERRIDE {
+    GB_ERROR check_applicable_to(const Alignment& IF_ASSERTION_USED(ali), size_t& resulting_ali_length) const OVERRIDE {
         id_assert(ali.get_len() == wanted_len);
         resulting_ali_length     = wanted_len;
         return NULL;
@@ -1465,7 +1465,7 @@ GB_ERROR ARB_insert_columns_using_SAI(GBDATA *Main, const char *alignment_name, 
         for (RangeList::reverse_iterator r = ranges.rbegin(); r != ranges.rend(); ++r) {
             switch (units) {
                 case RANGES: {
-                    int pos;
+                    int pos = 0;
                     switch (where) {
                         case INFRONTOF: pos = r->start(); break;
                         case BEHIND:    pos = r->end()+1; break;
