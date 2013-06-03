@@ -76,7 +76,7 @@ static GB_ERROR sec_scan_doubles(const char * string_buffer, double *number_1, d
 
 static GB_ERROR sec_expect_keyword_and_ints(const char *string_buffer, const char *keyword, size_t keywordlen, int *number_1, int *number_2) {
     // scans 'KEYWORD = NUM:NUM' or 'KEYWORD=NUM'
-    // 1 or 2 numbers are returned via number_1 and number_2
+    // 1 or 2 numbers are returned via number_1 and number_2 (depending on whether NULL is passed for number_X or not)
 
     sec_assert(strlen(keyword) == keywordlen);
 
@@ -109,7 +109,7 @@ static GB_ERROR sec_expect_keyword_and_doubles(const char *string_buffer, const 
 }
 
 static GB_ERROR sec_expect_constraints(const char *string_buffer, const char *keyword, size_t keywordlen, SEC_constrainted *elem) {
-    double   min, max;
+    double   min   = 0, max = 0;
     GB_ERROR error = sec_expect_keyword_and_doubles(string_buffer, keyword, keywordlen, &min, &max);
     if (!error) elem->setConstraints(min, max);
     return error;
@@ -123,7 +123,7 @@ static GB_ERROR sec_expect_closing_bracket(istream& in) {
 }
 
 GB_ERROR SEC_region::read(istream & in, SEC_root *root, int /* version */) {
-    int         seq_start, seq_end;
+    int         seq_start     = 0, seq_end = 0;
     const char *string_buffer = sec_read_line(in);
     GB_ERROR    error         = sec_expect_keyword_and_ints(string_buffer, "SEQ", 3, &seq_start, &seq_end);
 
@@ -158,7 +158,7 @@ GB_ERROR SEC_helix::read(istream & in, int version, double& old_angle_in) {
     old_angle_in = NAN;     // illegal for version >= 3
 
     if (version >= 3) {
-        double angle;
+        double angle = 0;
 
         error = sec_expect_keyword_and_doubles(string_buffer, "REL", 3, &angle, 0);
 
@@ -168,7 +168,7 @@ GB_ERROR SEC_helix::read(istream & in, int version, double& old_angle_in) {
         }
     }
     else { // version 2 or lower
-        double angle;
+        double angle = 0;
 
         error = sec_expect_keyword_and_doubles(string_buffer, "DELTA", 5, &angle, 0);
         if (!error) {
@@ -265,8 +265,8 @@ GB_ERROR SEC_loop::read(SEC_helix_strand *rootside_strand, istream & in, int ver
         if (version == 3) {
             string_buffer = sec_read_line(in);
 
-            double angle;
-            error = sec_expect_keyword_and_doubles(string_buffer, "REL", 3, &angle, 0);
+            double angle = 0;
+            error        = sec_expect_keyword_and_doubles(string_buffer, "REL", 3, &angle, 0);
             if (!error) set_rel_angle(angle);
         }
         else {

@@ -42,59 +42,71 @@ Major changes for next release:
  - many internal refactorings
 
 
-Fixes for arb_5.3:
+Fixes for arb_5.5 (15 Nov 2012):
 
- * bugfixes
+ * arb_5.4 was broken (several external tools missing)
+
+
+Fixes for arb_5.4 (14 Nov 2012):
+
+ * make it obvious when probe matches are truncated. Truncate all hits beyond 1 million (was 100000)
+ * fixed realigner (better interaction with fields 'transl_table' and 'codon_start'; improved error handling)
+ * fixed several compilation issues (OSX; recent distro releases)
+
+
+Fixes for arb_5.3 (10 Nov 2011):
+
+ - bugfixes
    - fixed wrong absolute/ecoli position reported for some designed probes
    - decompression error handling (pt-server build issues)
    - fixed 'codon_start' generated with wrong type
    - fixed a buffer overflow in ACI
    - report failures to write to /tmp
- * changes
+ - changes
    - markSpecies.pl:
      mark by accession number
      partial/ambiguous matches
- * internal fixes
+ - internal fixes
    - compilation fixes for OSX
    - some patches for debian version (removed refs to xview, textedit, removed molphy(protml))
    - removed obsolete dependency from libXp
 
 
-Fixes for arb_5.2:
+Fixes for arb_5.2 (5 Sep 2010):
 
- * bugfixes
+ - bugfixes
    - quicksave did silently do nothing (especially not save anything) if an error occurred 
    - ARB_EDIT4: crashed when using config with MANY unknown species
    - ARB_SECEDIT: crashed when trying to paint strand w/o any base
    - ARB_NTREE/ARB_PARS: crashed when clicking on inner tree node w/o groupinfo
- * changes
+ - changes
    - ARB uses xdg-open to display web-pages
- * internal fixes
+ - internal fixes
    - karmic koala (gcc 4.4.1)
    - installation script
    - arb build process uses xsltproc instead of sablotron 
 
 
-Fixes for arb_5.1:
+Fixes for arb_5.1 (1 Oct 2009):
 
- * fixed a bug in 'Create species from consensus' (created sequence was corrupted)
- * fixed 2 bugs in optimize DB (alignment w/o data, missing transaction)
- * updated installation instructions, fixed install script, added OSX instruction (thx to Matt Cottrell)
- * fixed broken demo.arb
+ - fixed a bug in 'Create species from consensus' (created sequence was corrupted)
+ - fixed 2 bugs in optimize DB (alignment w/o data, missing transaction)
+ - updated installation instructions, fixed install script, added OSX instruction (thx to Matt Cottrell)
+ - fixed broken demo.arb
 
 
-Major changes for arb_5.00:
+Major changes for arb_5.00 (4 Sep 2009):
 
  - ARB 64bit version
  - new genome importer
  - search for next relatives improved (normal search and fast-aligner)
-   * new parameters to precise search
-   * improved speed
-   * partial sequence reach normal scores
+   - new parameters to precise search
+   - improved speed
+   - partial sequence reach normal scores
  - search&query
-   * supports regular expressions and ACI
-   * track hit information
-   * result sorting
+   - supports regular expressions and ACI
+   - track hit information
+   - result sorting
  - Nameservers with add.field have to be started with default value
    You need to correct parameter -f in lib/arb_tcp.dat (according to lib/arb_tcp_org.dat)
  - multiple PT-servers may be used in parallel
@@ -102,42 +114,42 @@ Major changes for arb_5.00:
  - type-conversion for DB fields
  - SILVA compatible import filters
  - Newick tree export:
-   * optionally save in human-readable format (big)
-   * closer to newick standard format (quoting style, comment, special chars in data)
+   - optionally save in human-readable format (big)
+   - closer to newick standard format (quoting style, comment, special chars in data)
  - Upgraded RAxML to 7.0.3 (many features now usable from ARB interface)
  - Fixed sequence quality calculation
  - Secondary structures for proteins (DSSP)
  - Distance matrix (arb_dist): mark by distance to selected
  - ARB core
-   * many bugfixes and improvements to reliability
-   * faster sorting (general speedup)
-   * improved sequence compression (avoid worse trees, better ratio)
-   * improved handling of temporary files (permission/removal)
-   * prints backtraces in userland
-   * regular expression are POSIX standard now
+   - many bugfixes and improvements to reliability
+   - faster sorting (general speedup)
+   - improved sequence compression (avoid worse trees, better ratio)
+   - improved handling of temporary files (permission/removal)
+   - prints backtraces in userland
+   - regular expression are POSIX standard now
  - macro record/playback
-   * fixed several bugs
-   * you need to re-record your old macros!
+   - fixed several bugs
+   - you need to re-record your old macros!
  - GUI:
-   * disabled auto-focus, you need to click now
-   * auto-raise windows on access
+   - disabled auto-focus, you need to click now
+   - auto-raise windows on access
  - Minor things:
-   * Ubuntu: packet installation for ARB
-   * Fixed novice/expert mode
-   * Mark deep/degenerated branches
-   * Increased NDS entries
+   - Ubuntu: packet installation for ARB
+   - Fixed novice/expert mode
+   - Mark deep/degenerated branches
+   - Increased NDS entries
  - up-to-date Mac port (thx to Matt Cottrell)
 
-Major changes in ARB 07.12.07org:
+Major changes in ARB 07.12.07org (7 Dec 2007):
 
  - rewrote secondary structure editor
  - Sequence quality check
  - Nameserver may use one field additional to 'acc' (useful to keep multiple species with same acc)
  - tweaked base frequency filter generation
  - Normal export (not using readseq) improved:
-   * supports filters and gap removal
-   * optimized for big amount of data
-   * reworked export filters
+   - supports filters and gap removal
+   - optimized for big amount of data
+   - reworked export filters
  - Display translation with different ORFs in EDIT4
  - ARB exports in FIG 3.2 format (optionally in colors). Thanks to Elmar Pruesse.
  - added PHYML 2.4.5 (thanks to Stephane Guidon for the permission to distribute that great tool)
@@ -152,32 +164,32 @@ Major changes in ARB 07.12.07org:
  - improved import-filter error-messages
  - NDS-display of groups (e.g. in tree) is now handled by ACI-command 'taxonomy'. This gives
    several new possibilities:
-   * export taxonomy via 'Export NDS list'
-   * display taxonomy in Editor etc.
-   * display of cascaded taxonomies
-   * display taxonomy of tree_1 in tree_2
-   * allows to write taxonomy into database field of species
-   * compare taxonomies of two trees
-   * ...
+   - export taxonomy via 'Export NDS list'
+   - display taxonomy in Editor etc.
+   - display of cascaded taxonomies
+   - display taxonomy of tree_1 in tree_2
+   - allows to write taxonomy into database field of species
+   - compare taxonomies of two trees
+   - ...
  - ACI:
-   * many new ACI commands
-   * unified handling of binary ACI-operators
-   * tracing of ACI actions for debugging purpose
+   - many new ACI commands
+   - unified handling of binary ACI-operators
+   - tracing of ACI actions for debugging purpose
  - ARB Neighbour joining:
-   * bootstrap limit configurable
-   * bugfix: when aborting bootstrap calculation, sometimes no tree was generated
+   - bootstrap limit configurable
+   - bugfix: when aborting bootstrap calculation, sometimes no tree was generated
  - EDIT4:
-   * added unalign right (block-op)
-   * added 'Save loaded properties'
+   - added unalign right (block-op)
+   - added 'Save loaded properties'
  - GENE MAP:
-   * multiple views possible at the same time
-   * origin now at "12 o'clock"
-   * implemented 'jump to gene'
+   - multiple views possible at the same time
+   - origin now at "12 o'clock"
+   - implemented 'jump to gene'
  - tweaked file selection
  - Enhanced Search Depth for Probe Match --> max 20 MM
  - CLUSTALW:
-   * separated menus for fast and slow alignment
-   * most parameters accessible from inside ARB now
+   - separated menus for fast and slow alignment
+   - most parameters accessible from inside ARB now
  - upgraded to PHYLIP 3.6 (adds PROML)
  - external programs may be called parallel (e.g. several treeing programs)
  - fixed bugs in protml and integration of protml
@@ -199,7 +211,7 @@ Major changes in ARB 07.12.07org:
  - import XML tree files
  - help for external tools now properly shown inside ARB
 
-Major changes in Beta 2003_08_22:
+Major changes in Beta 2003_08_22 (22 Aug 2003):
 
  - automatic formatting of alignments
  - SECEDIT may use EDIT4 colors
@@ -235,11 +247,11 @@ Major changes in Beta 2003_08_22:
  - Fixed missing-character-bug in Xfig, Print and Edit4-Info-Display
  - 'IslandHopper' -- a new integrated aligner (beta)
  - Many improvements and bugfixes to secondary structure editor:
-   * highlighting of search (i.e for probes) like in EDIT4
-   * interactive constraint editing (stretch/compress)
-   * probe info
-   * editing secondary structure in XFIG now possible
-   * visualization of SAIs
+   - highlighting of search (i.e for probes) like in EDIT4
+   - interactive constraint editing (stretch/compress)
+   - probe info
+   - editing secondary structure in XFIG now possible
+   - visualization of SAIs
  - import reads Unix, DOS, and MAC linefeeds
  - NTREE/SAI/Etc/GnuPlot: calls gnuplot directly; more plotting features; basic help
  - tree and sequence export to XML ( DTDs are provided in ./lib/dtd )
@@ -266,7 +278,7 @@ Major changes in Beta 2003_08_22:
      - a HTML version is in $ARBHOME/lib/help_html
      - a text version is in $ARBHOME/lib/help (like before, but now generated)
 
-Major changes in Beta 2001_11_07:
+Major changes in Beta 2001_11_07 (7 Nov 2001):
 
  - design probes to maximum length of 60 nucleotides
  - fastAligner1.03 bug fixed (chooses best match now in 'auto search' mode)
@@ -279,7 +291,7 @@ Major changes in Beta 2001_11_07:
  - reads EMBL genom files
  - support for experiments (genom databases only)
 
-Major changes in Beta 2001_07_24:
+Major changes in Beta 2001_07_24 (24 Jul 2001):
 
  - basic support for genoms (Gene Map, reads Genebank files)
  - ported to libc6

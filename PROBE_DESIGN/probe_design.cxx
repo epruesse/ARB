@@ -2086,6 +2086,6 @@ AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canva
     pg_global.ntw = (AWT_canvas*)cl_AW_canvas_ntw;
 
     return awt_create_load_box(awr, "Load", "arb_probe_group result", ".", "arb", &pg_global.awar_pg_result_filename,
-                               create_probe_group_groups_window, NULL, NULL, NULL, NULL);
+                               create_probe_group_groups_window, NULL, NULL, NULL, 0);
 }
 
