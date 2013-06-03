@@ -698,7 +698,7 @@ void AW_window::update_option_menu() {
 }
 
 void AW_window::clear_option_menu(AW_selection_list *sel) {
-    sel->clear(true);
+    sel->clear();
 }
 
 

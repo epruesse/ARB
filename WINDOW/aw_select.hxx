@@ -60,6 +60,9 @@ class AW_selection_list {
     unsigned long handler_id;
     int           selected_index;
     
+    /**
+     * @return NULL if there is no entry at this index 
+     */
     AW_selection_list_entry *get_entry_at(int index) const;
     
     /**
@@ -84,9 +87,6 @@ public:
     ~AW_selection_list();
 
     void bind_widget(GtkWidget*);
-    //    char             *variable_name;
-    //  GB_TYPES          variable_type;
-
 
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;
@@ -127,7 +127,7 @@ public:
 
     void select_default();
 
-    const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default_selection)
+    const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default)
 
     int get_index_of(const char *searched_value);
     int get_index_of_displayed(const char *displayed);
@@ -142,8 +142,15 @@ public:
 
     void delete_element_at(int index);
     void delete_value(const char *value);
-    void clear(bool clear_default = true); 
+    /**Removes the default entry from the list*/
+    void delete_default();
+    
+    /**Remove all items from the list. Default item is removed as well.*/
+    void clear(); 
 
+    /**moves content to another selection list.
+     * @note default value is not moved.
+     **/
     void move_content_to(AW_selection_list *target_list);
 
     void to_array(StrArray& array, bool values);
@@ -165,6 +172,7 @@ public:
     AW_selection_list_iterator(AW_selection_list *sellist, int index)
         : entry(sellist->list_table)
     {
+        aw_return_if_fail(index >= 0);
         forward(index);
     }
 

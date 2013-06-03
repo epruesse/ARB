@@ -166,10 +166,6 @@ void AW_selection_list::update() {
         append_to_liststore(lt);
     }
 
-    if (default_select) {
-        append_to_liststore(default_select);
-    }
-
     refresh();
 }
 
@@ -185,7 +181,7 @@ void AW_selection_list::refresh() {
         if (lt->value == awar) break;
     }
     
-    if (lt || default_select) {
+    if (lt) {
         GtkTreeIter iter;
         gtk_tree_model_iter_nth_child(model, &iter, NULL, i);
 
@@ -195,6 +191,9 @@ void AW_selection_list::refresh() {
             GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
             gtk_tree_selection_select_iter(selection, &iter);
         }
+    }
+    else if(NULL != default_select) {//the awar value does not match any entrie, not even the default entry, we set the default entry anyway
+        select_default();
     }
     else {
         GBK_terminatef("Selection list '%s' has no default selection", awar->get_name());
@@ -207,7 +206,7 @@ void AW_selection::refresh() {
     sellist->update();
 }
 
-void AW_selection_list::clear(bool clear_default) {
+void AW_selection_list::clear() {
     while (list_table) {
         AW_selection_list_entry *nextEntry = list_table->next;
         delete list_table;
@@ -215,11 +214,7 @@ void AW_selection_list::clear(bool clear_default) {
     }
     list_table = NULL;
     last_of_list_table = NULL;
-
-    if (clear_default && default_select) {
-        delete default_select;
-        default_select = NULL;
-    }
+    default_select = NULL;
 
     gtk_list_store_clear(GTK_LIST_STORE(model));
 }
@@ -231,7 +226,12 @@ bool AW_selection_list::default_is_selected() const {
 
 const char *AW_selection_list::get_selected_value() const {
     if (selected_index == -1) return NULL;
-    return get_entry_at(selected_index)->get_displayed();
+    AW_selection_list_entry *entry = get_entry_at(selected_index);
+    
+    if(entry){
+        return entry->get_displayed();
+    }
+    return NULL;
 }
 
 AW_selection_list_entry *AW_selection_list::get_entry_at(int index) const {
@@ -249,12 +249,12 @@ void AW_selection_list::select_default() {
 }
 
 void AW_selection_list::delete_element_at(const int index) {
-    if (index<0) return;
+    aw_return_if_fail(index >= 0);
     
     AW_selection_list_entry *prev = NULL;
     if (index>0) {
         prev = get_entry_at(index-1);
-        if (!prev) return; // invalid index
+        aw_return_if_fail(prev);
     }
     
     if (index == selected_index) select_default();
@@ -348,7 +348,8 @@ void AW_selection_list::init_from_array(const CharPtrArray& entries, const char 
 }
 
 void AW_selection_list::insert(const char *displayed, const char *value) {
-    
+    aw_return_if_fail(displayed);
+    aw_return_if_fail(value);
     AW_selection_list_entry* entry = insert_generic(displayed, value, GB_STRING);
     aw_assert(NULL != entry);
 }
@@ -364,13 +365,16 @@ void AW_selection_list::append_to_liststore(AW_selection_list_entry* entry)
                        -1);    
 }
 
-void AW_selection_list::insert_default(const char *displayed, const char *value) {
-    if (awar->get_type() != GB_STRING) {
-        selection_type_mismatch("string");
-        return;
+void AW_selection_list::delete_default() {
+    if(default_select) {
+        delete_value(get_default_value());
+        default_select = NULL;
     }
-    if (default_select) delete default_select;
-    default_select = new AW_selection_list_entry(displayed, value);
+}
+
+void AW_selection_list::insert_default(const char *displayed, const char *value) {
+    if (default_select) delete_default();
+    default_select = insert_generic(displayed, value, GB_STRING);
 }
 
 void AW_selection_list::insert(const char *displayed, int32_t value) {
@@ -379,14 +383,8 @@ void AW_selection_list::insert(const char *displayed, int32_t value) {
 }
 
 void AW_selection_list::insert_default(const char *displayed, int32_t value) {
-    if (awar->get_type() != GB_INT) {
-        selection_type_mismatch("int");
-        return;
-    }
-    if (default_select) {
-        delete default_select;
-    }
-    default_select = new AW_selection_list_entry(displayed, value);
+    if (default_select) delete_default();
+    default_select = insert_generic(displayed, value, GB_INT);
 }
 
 void AW_selection_list::insert(const char *displayed, double value) {
@@ -395,14 +393,8 @@ void AW_selection_list::insert(const char *displayed, double value) {
 }
 
 void AW_selection_list::insert_default(const char *displayed, double value) {
-    if (awar->get_type() != GB_FLOAT) {
-        selection_type_mismatch("float");
-        return;
-    }
-    if (default_select) {
-        delete default_select;
-    }
-    default_select = new AW_selection_list_entry(displayed, value);
+    if (default_select) delete_default();
+    default_select = insert_generic(displayed, value, GB_FLOAT);
 }
 
 
@@ -412,12 +404,8 @@ void AW_selection_list::insert(const char *displayed, GBDATA *pointer) {
 }
 
 void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
-    if (awar->get_type() != GB_POINTER) {
-        selection_type_mismatch("pointer");
-        return;
-    }
-    if (default_select) delete default_select;
-    default_select = new AW_selection_list_entry(displayed, pointer);
+    if (default_select) delete_default();
+    default_select = insert_generic(displayed, pointer, GB_POINTER);
 }
 
 
@@ -426,21 +414,21 @@ void AW_selection_list::move_content_to(AW_selection_list *target_list) {
 
     AW_selection_list_entry *entry = list_table;
     while (entry) {
-        aw_assert(default_select != entry); // should not be possible
+        if(entry != default_select) {//default selection should not be coied over
         
-        if (!target_list->list_table) {
-            target_list->last_of_list_table = target_list->list_table = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
+            if (!target_list->list_table) {
+                target_list->last_of_list_table = target_list->list_table = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
+            }
+            else {
+                target_list->last_of_list_table->next = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
+                target_list->last_of_list_table = target_list->last_of_list_table->next;
+                target_list->last_of_list_table->next = NULL;
+            }
         }
-        else {
-            target_list->last_of_list_table->next = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
-            target_list->last_of_list_table = target_list->last_of_list_table->next;
-            target_list->last_of_list_table->next = NULL;
-        }
-
         entry = entry->next;
     }
 
-    clear(false);
+    clear();
 }
 
 void AW_selection_list::move_selection(int offset) {
