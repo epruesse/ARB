@@ -55,16 +55,17 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
 
     // change awar values (import window just opened!)
 
-    int gb_main_is_genom_db, gb_merge_is_genom_db;
+    int gb_main_is_genom_db;
     {
         GB_transaction t1(GLOBAL.gb_main);
         GB_transaction t2(GLOBAL_gb_src);
 
-        gb_main_is_genom_db  = GEN_is_genome_db(GLOBAL.gb_main, 0);
-        gb_merge_is_genom_db = GEN_is_genome_db(GLOBAL_gb_src, gb_main_is_genom_db);
+        gb_main_is_genom_db = GEN_is_genome_db(GLOBAL.gb_main, 0);
+        IF_ASSERTION_USED(int gb_merge_is_genom_db =) GEN_is_genome_db(GLOBAL_gb_src, gb_main_is_genom_db);
+
+        nt_assert(gb_main_is_genom_db == gb_merge_is_genom_db);
     }
 
-    nt_assert(gb_main_is_genom_db == gb_merge_is_genom_db);
 
     awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? IMP_GENOME_FLATFILE : IMP_PLAIN_SEQUENCE);
 
