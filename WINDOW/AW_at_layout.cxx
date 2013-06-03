@@ -147,6 +147,10 @@ static void aw_at_layout_get_preferred_height(GtkWidget* widget, gint *minimal_h
 }
 #endif
 
+#if GTK_MAJOR_VERSION == 2 && GTK_MINOR_VERSION < 20
+#define gtk_widget_get_realized(widget) GTK_WIDGET_REALIZED(widget)
+#endif
+
 static void aw_at_layout_size_allocate(GtkWidget *widget, GtkAllocation *allocation) {
     AwAtLayout *self = AW_AT_LAYOUT(widget);
     AwAtLayoutPrivate *prvt = AW_AT_LAYOUT_GET_PRIVATE(self);
