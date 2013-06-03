@@ -370,7 +370,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
         char *acc       = gb_acc ?      GB_read_string   (gb_acc)      : strdup("");
         char *addid     = gb_addfield ? GB_read_as_string(gb_addfield) : strdup("");
 
-        int   deleted = 0;
+        long   deleted = 0;
         char *shrt    = 0;
 
         if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
