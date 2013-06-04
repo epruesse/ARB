@@ -10,8 +10,7 @@
 /*                                                                                       */
 // =======================================================================================
 
-#include "ntree.hxx"
-#include "nt_internal.h"
+#include "nt_local.h"
 
 #include <items.h>
 #include <item_sel_list.h>
@@ -25,8 +24,6 @@
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <awt_modules.hxx>
-
-#define nt_assert(bed) arb_assert(bed)
 
 using namespace std;
 

@@ -8,9 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
 #include "map_viewer.hxx"
-#include "nt_internal.h"
+#include "nt_local.h"
 #include "ad_trees.hxx"
 #include "seq_quality.h"
 #include "nt_join.hxx"
@@ -57,7 +56,10 @@
 #include <arb_version.h>
 #include <refentries.h>
 
-#define nt_assert(bed) arb_assert(bed)
+#define AWAR_EXPORT_NDS             "tmp/export_nds"
+#define AWAR_EXPORT_NDS_SEPARATOR   AWAR_EXPORT_NDS "/separator"
+#define AWAR_MARKED_SPECIES_COUNTER "tmp/disp_marked_species"
+#define AWAR_NTREE_TITLE_MODE       "tmp/title_mode"
 
 void create_probe_design_variables(AW_root *aw_root, AW_default def, AW_default global);
 void create_cprofile_var(AW_root *aw_root, AW_default aw_def);

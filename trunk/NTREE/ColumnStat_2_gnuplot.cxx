@@ -8,8 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
-#include "nt_internal.h"
+#include "nt_local.h"
 
 #include <ColumnStat.hxx>
 #include <AP_filter.hxx>
@@ -23,8 +22,6 @@
 #include <arb_file.h>
 
 #include <unistd.h>
-
-#define nt_assert(bed) arb_assert(bed)
 
 #define AWAR_CS2GP "tmp/ntree/colstat_2_gnuplot"
 

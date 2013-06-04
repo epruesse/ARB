@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
+#include "nt_local.h"
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
@@ -20,8 +20,6 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
-
-#define nt_assert(bed) arb_assert(bed)
 
 #define AWAR_SELECTED_VALNAME "tmp/validNames/selectedName"
 #define AWAR_INPUT_INITIALS   "tmp/validNames/inputInitials"

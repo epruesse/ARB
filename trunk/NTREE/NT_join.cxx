@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
+#include "nt_local.h"
 #include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
 #include <aw_awar.hxx>
@@ -16,8 +16,6 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <arbdbt.h>
-
-#define nt_assert(bed) arb_assert(bed)
 
 #define AWAR_SPECIES_JOIN_FIELD "/tmp/NT/species_join/field"
 #define AWAR_SPECIES_JOIN_SEP   "/tmp/NT/species_join/separator"

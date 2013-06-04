@@ -8,8 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
-#include "nt_internal.h"
+#include "nt_local.h"
 #include "nt_cb.hxx"
 
 #include <mg_merge.hxx>
@@ -24,6 +23,7 @@
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 
 #include <arbdbt.h>
@@ -38,8 +38,6 @@
 using namespace std;
 
 AW_HEADER_MAIN
-
-#define nt_assert(bed) arb_assert(bed)
 
 NT_global GLOBAL; 
 

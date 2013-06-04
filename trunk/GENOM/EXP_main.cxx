@@ -17,9 +17,9 @@
 #include <awt.hxx>
 #include <awt_input_mask.hxx>
 #include <aw_awars.hxx>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <arbdbt.h>
-#include <ntree.hxx>
 #include <db_query.h>
 
 class AWT_canvas;

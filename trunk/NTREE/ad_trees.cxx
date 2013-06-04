@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
+#include "nt_local.h"
 #include "ad_trees.hxx"
 #include "nt_tree_cmp.hxx"
 
@@ -34,8 +34,6 @@
 #include <cctype>
 #include <aw_select.hxx>
 #include <CT_ctree.hxx>
-
-#define nt_assert(bed) arb_assert(bed)
 
 #define AWAR_TREE_SAV "ad_tree/"
 #define AWAR_TREE_TMP "tmp/ad_tree/"

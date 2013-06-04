@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
+#include "nt_local.h"
 #include "nt_cb.hxx"
 
 #include <item_sel_list.h>

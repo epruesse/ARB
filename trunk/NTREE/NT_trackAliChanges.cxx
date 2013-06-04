@@ -9,11 +9,12 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
+#include "nt_local.h"
 #include "NT_trackAliChanges.h"
 
 #include <awt_sel_boxes.hxx>
 #include <aw_awar.hxx>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>

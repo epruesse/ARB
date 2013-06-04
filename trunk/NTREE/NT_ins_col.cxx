@@ -8,18 +8,17 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
+#include "nt_local.h"
 
 #include <RangeList.h>
 #include <arbdbt.h>
 #include <insdel.h>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <awt_sel_boxes.hxx>
 #include <arb_defs.h>
-
-#define nt_assert(bed) arb_assert(bed)
 
 #define AWAR_INSDEL     "insdel/"
 #define TMP_AWAR_INSDEL "tmp/" AWAR_INSDEL

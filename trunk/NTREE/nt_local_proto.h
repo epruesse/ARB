@@ -2,8 +2,8 @@
  * Any changes you make here will be overwritten later!
  */
 
-#ifndef NT_INTERNAL_H
-#define NT_INTERNAL_H
+#ifndef NT_LOCAL_PROTO_H
+#define NT_LOCAL_PROTO_H
 
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
@@ -12,11 +12,6 @@
 
 
 /* AP_consensus.cxx */
-
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
-#endif
-
 void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def);
 AW_window *AP_open_con_expert_window(AW_root *aw_root);
 AW_window *AP_open_max_freq_window(AW_root *aw_root);
@@ -111,5 +106,5 @@ void NT_create_transpro_variables(AW_root *root, AW_default db1);
 AW_window *NT_create_consense_window(AW_root *aw_root);
 
 #else
-#error nt_internal.h included twice
-#endif /* NT_INTERNAL_H */
+#error nt_local_proto.h included twice
+#endif /* NT_LOCAL_PROTO_H */
