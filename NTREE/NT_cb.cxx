@@ -8,9 +8,9 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
-#include "nt_cb.hxx"
-#include "ad_trees.hxx"
+#include "NT_local.h"
+#include "NT_cb.h"
+#include "ad_trees.h"
 
 #include <awt_canvas.hxx>
 #include <awt_sel_boxes.hxx>

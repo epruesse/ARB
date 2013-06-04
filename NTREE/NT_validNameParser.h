@@ -1,6 +1,6 @@
 // =============================================================== //
 //                                                                 //
-//   File      : nt_validNameParser.hxx                            //
+//   File      : NT_validNameParser.h                              //
 //   Purpose   :                                                   //
 //                                                                 //
 //   Coded by Lothar Richter in November 2002                      //
@@ -9,8 +9,8 @@
 //                                                                 //
 // =============================================================== //
 
-#ifndef NT_VALIDNAMEPARSER_HXX
-#define NT_VALIDNAMEPARSER_HXX
+#ifndef NT_VALIDNAMEPARSER_H
+#define NT_VALIDNAMEPARSER_H
 
 #ifndef __LIST__
 #include <list>
@@ -79,5 +79,5 @@ namespace validNames {
 }; // end namespace
 
 #else
-#error nt_validNameParser.hxx included twice
-#endif // NT_VALIDNAMEPARSER_HXX
+#error NT_validNameParser.h included twice
+#endif // NT_VALIDNAMEPARSER_H 

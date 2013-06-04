@@ -1,6 +1,6 @@
 // ================================================================ //
 //                                                                  //
-//   File      : map_viewer.hxx                                     //
+//   File      : map_viewer.h                                       //
 //   Purpose   :                                                    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in February 2010   //
@@ -9,8 +9,8 @@
 //                                                                  //
 // ================================================================ //
 
-#ifndef MAP_VIEWER_HXX
-#define MAP_VIEWER_HXX
+#ifndef MAP_VIEWER_H
+#define MAP_VIEWER_H
 
 #ifndef TREEDISPLAY_HXX
 #include <TreeDisplay.hxx>
@@ -19,5 +19,5 @@
 void launch_MapViewer_cb(GBDATA *gbd, enum AD_MAP_VIEWER_TYPE type);
 
 #else
-#error map_viewer.hxx included twice
-#endif // MAP_VIEWER_HXX
+#error map_viewer.h included twice
+#endif // MAP_VIEWER_H

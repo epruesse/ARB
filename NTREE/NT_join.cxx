@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
+#include "NT_local.h"
 #include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
 #include <aw_awar.hxx>
@@ -146,8 +146,7 @@ static void species_rename_join(AW_window *aww) {
 }
 
 
-AW_window *create_species_join_window(AW_root *root)
-{
+AW_window *NT_create_species_join_window(AW_root *root) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
 

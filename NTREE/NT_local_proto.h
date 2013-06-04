@@ -65,6 +65,9 @@ int NT_get_canvas_id(AWT_canvas *ntw);
 /* NT_import.cxx */
 void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
 
+/* NT_join.cxx */
+AW_window *NT_create_species_join_window(AW_root *root);
+
 /* NT_main.cxx */
 GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
 
@@ -106,5 +109,5 @@ void NT_create_transpro_variables(AW_root *root, AW_default db1);
 AW_window *NT_create_consense_window(AW_root *aw_root);
 
 #else
-#error nt_local_proto.h included twice
+#error NT_local_proto.h included twice
 #endif /* NT_LOCAL_PROTO_H */

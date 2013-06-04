@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
-#include "nt_cb.hxx"
+#include "NT_local.h"
+#include "NT_cb.h"
 
 #include <item_sel_list.h>
 #include <aw_awar.hxx>

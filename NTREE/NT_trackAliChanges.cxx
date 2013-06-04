@@ -9,7 +9,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
+#include "NT_local.h"
 #include "NT_trackAliChanges.h"
 
 #include <awt_sel_boxes.hxx>
