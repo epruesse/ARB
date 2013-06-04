@@ -22,9 +22,6 @@
 #include <arbdbt.h>
 #include <db_query.h>
 
-class AWT_canvas;
-#include <../NTREE/nt_cb.hxx>
-
 using namespace std;
 
 static void EXP_species_name_changed_cb(AW_root * /* awr */) {
