@@ -321,7 +321,7 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
         awr->awar_float(AWAR_APRINT_DX)->write_float(1.0);
     }
     else {
-        aws = new AW_window_simple();
+        aws = new AW_window_simple;
         aws->init(awr, "PRINT", "PRINT");
         aws->load_xfig("awt/ascii_print.fig");
         awr->awar_string(AWAR_APRINT_TITLE);

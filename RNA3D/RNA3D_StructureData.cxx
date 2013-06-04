@@ -65,7 +65,7 @@ Structure3D::Structure3D(ED4_plugin_host& host_)
       HelixBase(500),
       EColiRef(NULL),
       Host(host_),
-      GRAPHICS(new OpenGLGraphics())
+      GRAPHICS(new OpenGLGraphics)
 {
 }
 
@@ -1412,7 +1412,7 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr) {
                     const char *pTemplateSeqData  = GB_read_char_pntr(gbTemplateSeqData);
 
                     if (!RNA3D->bEColiRefInitialized) {
-                        EColiRef = new BI_ecoli_ref();
+                        EColiRef = new BI_ecoli_ref;
                         EColiRef->init(gb_main);
                         RNA3D->bEColiRefInitialized = true;
                     }

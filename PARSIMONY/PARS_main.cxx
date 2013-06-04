@@ -1257,7 +1257,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     }
 
 
-    AW_window_menu_modes *awm = new AW_window_menu_modes();
+    AW_window_menu_modes *awm = new AW_window_menu_modes;
     awm->init(awr, "ARB_PARSIMONY", "ARB_PARSIMONY", 400, 200);
 
     GLOBAL_PARS->generate_tree(wfilt);

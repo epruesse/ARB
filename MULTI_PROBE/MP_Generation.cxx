@@ -275,7 +275,7 @@ void Generation::gen_determ_combis(int beg,
 
     for (i=beg; i <= mp_main->get_p_eval()->get_pool_length() - len; i++)
     {
-        bastel_probe_combi = new probe_combi_statistic();
+        bastel_probe_combi = new probe_combi_statistic;
 
         for (j=0; j < mp_gl_awars.no_of_probes - len; j++)
             bastel_probe_combi->set_probe_combi(j, p->get_probe_combi(j));
@@ -327,7 +327,7 @@ void Generation::init_valuation()
     }
 
     counter = 0;
-    pcs = new probe_combi_statistic();
+    pcs = new probe_combi_statistic;
 
     while (counter < probe_combi_array_length)      // Hier erfolgt die Generierung des probe_combi_stat_array
     {
@@ -342,7 +342,7 @@ void Generation::init_valuation()
         {
             probe_combi_stat_array[counter++] = pcs;
             if (counter < probe_combi_array_length)
-                pcs = new probe_combi_statistic();
+                pcs = new probe_combi_statistic;
         }
     }
 }

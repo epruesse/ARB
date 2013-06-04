@@ -98,7 +98,7 @@ public:
             return one_false_IDs->size();
         }
         else {
-            one_false_IDs = new ID2IDSet();
+            one_false_IDs = new ID2IDSet;
             false_IDs     = 0;
             PS_BitSet::IndexSet falseIndices;       // temp. set to hold IDs of falses per ID
             // iterate over _min_id .. _max_id range in map
@@ -440,7 +440,7 @@ public:
         SpeciesID id1;
         SpeciesID id2;
         _file->get_ulong(count);
-        one_false_IDs = (count) ? new ID2IDSet() : 0;
+        one_false_IDs = (count) ? new ID2IDSet : 0;
         for (; count > 0; --count) {
             _file->get_int(id1);
             _file->get_int(id2);

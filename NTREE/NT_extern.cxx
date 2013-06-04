@@ -1187,7 +1187,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         sprintf(awar_tree, AWAR_TREE);
         sprintf(window_title, "ARB_NT");
     }
-    AW_window_menu_modes *awm = new AW_window_menu_modes();
+    AW_window_menu_modes *awm = new AW_window_menu_modes;
     awm->init(awr, window_title, window_title, 0, 0);
 
     awm->button_length(5);

@@ -2178,7 +2178,7 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
 
     fa_assert(island_hopper == 0);
     if (root->awar(FA_AWAR_USE_ISLAND_HOPPING)->read_int()) {
-        island_hopper = new IslandHopping();
+        island_hopper = new IslandHopping;
         if (root->awar(FA_AWAR_USE_SECONDARY)->read_int()) {
             if (data_access->helix_string) island_hopper->set_helix(data_access->helix_string);
             else error = "Warning: No HELIX found. Can't use secondary structure";
@@ -2940,7 +2940,7 @@ public:
             const OligoCounter& spec_oligo_count = oligos_counted[name];
             size_t              score            = seq_oligo_count.similarity_score(spec_oligo_count);
 
-            FamilyList *newMember = new FamilyList();
+            FamilyList *newMember = new FamilyList;
 
             newMember->name        = strdup(name.c_str());
             newMember->matches     = score;

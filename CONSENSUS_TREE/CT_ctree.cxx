@@ -27,7 +27,7 @@ ConsensusTree::ConsensusTree(const CharPtrArray& names_)
     }
 
     size     = new PartitionSize(leaf_count);
-    registry = new PartRegistry();
+    registry = new PartRegistry;
 }
 
 ConsensusTree::~ConsensusTree() {
