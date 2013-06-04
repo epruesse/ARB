@@ -604,12 +604,10 @@ static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest, AW_CL) {
     free(tree_name);
 }
 
-void popup_tree_admin_window(AW_window *aws, AW_CL cl_popmedown) {
-    popup_tree_admin_window(aws->get_root(), cl_popmedown);
+void popup_tree_admin_window(AW_window *aws) {
+    popup_tree_admin_window(aws->get_root());
 }
-void popup_tree_admin_window(AW_root *aw_root, AW_CL cl_popmedown) {
-    if (cl_popmedown) ((AW_window*)cl_popmedown)->hide();
-
+void popup_tree_admin_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;

@@ -83,7 +83,7 @@ AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree) {
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(popup_tree_admin_window, (AW_CL)aws);
+        aws->callback(popup_tree_admin_window);
         aws->help_text("treeadm.hlp");
         aws->create_button("MODIFY", "ADMIN", "A");
 
