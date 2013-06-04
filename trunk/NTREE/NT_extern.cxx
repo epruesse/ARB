@@ -1589,7 +1589,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         awm->sep______________();
 
         if (!clone) {
-            awm->insert_menu_topic("tree_admin", "Tree admin",               "i", "treeadm.hlp",   AWM_ALL, popup_tree_admin_window, 0);
+            awm->insert_menu_topic("tree_admin", "Tree admin",               "i", "treeadm.hlp",   AWM_ALL, popup_tree_admin_window);
             awm->insert_menu_topic("nds",        "NDS (Node display setup)", "N", "props_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)GLOBAL.gb_main);
         }
         awm->sep______________();

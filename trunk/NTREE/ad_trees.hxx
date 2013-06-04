@@ -18,8 +18,8 @@
 #define AWAR_TREE_NAME "tmp/ad_tree/tree_name"
 
 void create_trees_var(AW_root *aw_root, AW_default aw_def);
-void popup_tree_admin_window(AW_root *aw_root, AW_CL cl_popmedown);
-void popup_tree_admin_window(AW_window *aws, AW_CL cl_popmedown);
+void popup_tree_admin_window(AW_root *aw_root);
+void popup_tree_admin_window(AW_window *aws);
 
 #else
 #error ad_trees.hxx included twice
