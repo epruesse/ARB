@@ -702,7 +702,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     di_bind_dist_awars(awr, dmatrix);
     create_matrix_awars(awr, dmatrix);
     
-    AW_window_menu *awm = new AW_window_menu();
+    AW_window_menu *awm = new AW_window_menu;
     awm->init(awr, "SHOW_MATRIX", "ARB_SHOW_MATRIX", 800, 600);
 
     dmatrix->device = awm->get_device(AW_MIDDLE_AREA);

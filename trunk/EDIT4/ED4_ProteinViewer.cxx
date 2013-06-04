@@ -477,7 +477,7 @@ static void PV_SaveData(AW_window */*aww*/) {
     // 6. write to the database
     gbWritingData = true;
     if (gTerminalsCreated) {
-        ASKtoOverWriteData = new AW_repeated_question();
+        ASKtoOverWriteData = new AW_repeated_question;
 
         for (ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
              terminal;

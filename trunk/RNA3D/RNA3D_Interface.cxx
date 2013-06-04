@@ -667,7 +667,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
 
     RNA3D_init_global_data(host);
 
-    awm = new AW_window_menu_modes_opengl();
+    awm = new AW_window_menu_modes_opengl;
     awm->init(awr, "RNA3D", "RNA3D: 3D Structure of Ribosomal RNA", WINDOW_WIDTH, WINDOW_HEIGHT);
 
     RNA3D_Graphics *rna3DGraphics = new RNA3D_Graphics(awr, gb_main);

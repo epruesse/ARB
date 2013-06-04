@@ -1210,7 +1210,7 @@ int imageDialog::updateImage()
     if(m_filename && (!strcmp(filename, m_filename))) return -1;
 
     // CREATE NEW IMAGE CLASS IF NECESSARY
-    if(!m_image) m_image= new TIFFimage();
+    if(!m_image) m_image= new TIFFimage;
 
     // OPEN TIFF IMAGE FILE
     if(m_image->open(filename)) return -1;

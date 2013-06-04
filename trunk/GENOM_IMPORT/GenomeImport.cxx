@@ -60,7 +60,7 @@ ImportSession::ImportSession(GBDATA *gb_species_data_, int estimated_genomes_cou
     : gb_species_data(gb_species_data_)
 {
     und_species                    = new UniqueNameDetector(gb_species_data, estimated_genomes_count);
-    ok_to_ignore_wrong_start_codon = new AW_repeated_question();
+    ok_to_ignore_wrong_start_codon = new AW_repeated_question;
 }
 
 ImportSession::~ImportSession() {
