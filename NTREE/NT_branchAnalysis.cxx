@@ -9,15 +9,12 @@
 //                                                                //
 // ============================================================== //
 
-#include "ntree.hxx"
-#include "nt_internal.h"
+#include "nt_local.h"
 #include <TreeCallbacks.hxx>
 #include <aw_awar.hxx>
 #include <awt_canvas.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-
-#define nt_assert(bed) arb_assert(bed)
 
 #define AWAR_BRANCH_ANALYSIS     "branch_analysis"
 #define AWAR_BRANCH_ANALYSIS_TMP "tmp/" AWAR_BRANCH_ANALYSIS

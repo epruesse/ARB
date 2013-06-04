@@ -8,14 +8,14 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
-#include "nt_internal.h"
+#include "nt_local.h"
 
 #include <awt_sel_boxes.hxx>
 #include <Translate.hxx>
 #include <AP_codon_table.hxx>
 #include <AP_pro_a_nucs.hxx>
 #include <aw_awars.hxx>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <aw_msg.hxx>
@@ -23,8 +23,6 @@
 #include <arbdbt.h>
 #include <cctype>
 #include <arb_defs.h>
-
-#define nt_assert(bed) arb_assert(bed)
 
 static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, int selected_startpos,
                         bool    translate_all, const char *ali_source, const char *ali_dest)

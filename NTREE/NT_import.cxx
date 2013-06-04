@@ -8,8 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
-#include "nt_internal.h"
+#include "nt_local.h"
 
 #include <awt.hxx>
 #include <dbui.h>
@@ -21,8 +20,6 @@
 #include <aw_root.hxx>
 #include <arbdbt.h>
 #include <macros.hxx>
-
-#define nt_assert(bed) arb_assert(bed)
 
 static void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {
     GLOBAL_gb_dst     = GLOBAL.gb_main;

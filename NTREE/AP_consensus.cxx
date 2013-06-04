@@ -46,18 +46,15 @@
  * -----------------------------------------------------------------
  */
 
-#include "ntree.hxx"
+#include "nt_local.h"
 #include <awt_sel_boxes.hxx>
 #include <arb_progress.h>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
-
-// AISC_MKPT_PROMOTE:#ifndef AW_BASE_HXX
-// AISC_MKPT_PROMOTE:#include <aw_base.hxx>
-// AISC_MKPT_PROMOTE:#endif
 
 #define AWAR_MAX_FREQ   "tmp/CON_MAX_FREQ/"
 

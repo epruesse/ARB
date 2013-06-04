@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_internal.h"
+#include "nt_local.h"
 #include "ap_conservProfile2Gnuplot.hxx"
 
 #include <aw_window.hxx>

@@ -8,19 +8,17 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
 #include "nt_cb.hxx"
-#include "nt_internal.h"
+#include "nt_local.h"
 
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <ad_config.h>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
-
-#define nt_assert(bed) arb_assert(bed)
 
 static void init_config_awars(AW_root *root) {
     root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);

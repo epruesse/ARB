@@ -8,8 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
-#include "nt_internal.h"
+#include "nt_local.h"
 #include "nt_cb.hxx"
 #include "ad_trees.hxx"
 
@@ -32,7 +31,6 @@
 // AISC_MKPT_PROMOTE:#endif
 // AISC_MKPT_PROMOTE:class AWT_canvas;
 
-#define nt_assert(bed) arb_assert(bed)
 #define AWT_TREE(ntw)  DOWNCAST(AWT_graphic_tree *, (ntw)->tree_disp)
 
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {

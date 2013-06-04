@@ -8,9 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
+#include "nt_local.h"
 #include "map_viewer.hxx"
-#include "nt_internal.h"
 
 #include <dbui.h>
 
@@ -25,9 +24,6 @@
 #include <arb_defs.h>
 
 #include <cctype>
-
-
-#define nt_assert(bed) arb_assert(bed)
 
 static const char * const SAI_COUNTED_CHARS = "COUNTED_CHARS";
 

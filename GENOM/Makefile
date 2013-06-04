@@ -112,7 +112,6 @@ EXP_main.o: $(ARBHOME)/INCLUDE/db_query.h
 EXP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 EXP_main.o: $(ARBHOME)/INCLUDE/items.h
-EXP_main.o: $(ARBHOME)/INCLUDE/ntree.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/test_global.h
 

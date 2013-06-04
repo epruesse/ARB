@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
+#include "nt_local.h"
 #include "nt_validNameParser.hxx"
 
 #include <arbdbt.h>
@@ -20,8 +20,6 @@
 #include <iterator>
 
 using namespace std;
-
-#define nt_assert(bed) arb_assert(bed)
 
 #if defined(DEVEL_LOTHAR)
 #define DUMP

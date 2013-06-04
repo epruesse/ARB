@@ -8,16 +8,15 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
+#include "nt_local.h"
 #include <db_scanner.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
-
-#define nt_assert(bed) arb_assert(bed)
 
 static void rename_SAI_cb(AW_window *aww) {
     AW_awar  *awar_sai = aww->get_root()->awar(AWAR_SAI_NAME);

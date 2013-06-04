@@ -8,12 +8,13 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
+#include "nt_local.h"
 #include "ap_pos_var_pars.hxx"
 
 #include <AP_pro_a_nucs.hxx>
 #include <awt_sel_boxes.hxx>
 #include <arb_progress.h>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
