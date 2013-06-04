@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
-#include "ap_pos_var_pars.hxx"
+#include "NT_local.h"
+#include "AP_pos_var_pars.h"
 
 #include <AP_pro_a_nucs.hxx>
 #include <awt_sel_boxes.hxx>

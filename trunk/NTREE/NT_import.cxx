@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
+#include "NT_local.h"
 
 #include <awt.hxx>
 #include <dbui.h>

@@ -46,7 +46,7 @@
  * -----------------------------------------------------------------
  */
 
-#include "nt_local.h"
+#include "NT_local.h"
 #include <awt_sel_boxes.hxx>
 #include <arb_progress.h>
 #include <aw_window.hxx>

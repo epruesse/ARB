@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
-#include "nt_validNameParser.hxx"
+#include "NT_local.h"
+#include "NT_validNameParser.h"
 
 #include <arbdbt.h>
 #include <aw_msg.hxx>

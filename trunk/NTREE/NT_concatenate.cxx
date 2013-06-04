@@ -10,7 +10,7 @@
 /*                                                                                       */
 // =======================================================================================
 
-#include "nt_local.h"
+#include "NT_local.h"
 
 #include <items.h>
 #include <item_sel_list.h>

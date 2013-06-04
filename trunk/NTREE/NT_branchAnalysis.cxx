@@ -9,7 +9,7 @@
 //                                                                //
 // ============================================================== //
 
-#include "nt_local.h"
+#include "NT_local.h"
 #include <TreeCallbacks.hxx>
 #include <aw_awar.hxx>
 #include <awt_canvas.hxx>

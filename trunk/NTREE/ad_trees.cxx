@@ -8,9 +8,9 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
-#include "ad_trees.hxx"
-#include "nt_tree_cmp.hxx"
+#include "NT_local.h"
+#include "ad_trees.h"
+#include "NT_tree_cmp.h"
 
 #include <TreeAdmin.h>
 #include <TreeRead.h>

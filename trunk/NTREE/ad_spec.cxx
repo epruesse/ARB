@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
-#include "map_viewer.hxx"
+#include "NT_local.h"
+#include "map_viewer.h"
 
 #include <dbui.h>
 

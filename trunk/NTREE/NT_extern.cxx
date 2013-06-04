@@ -8,13 +8,12 @@
 //                                                                 //
 // =============================================================== //
 
-#include "map_viewer.hxx"
-#include "nt_local.h"
-#include "ad_trees.hxx"
-#include "seq_quality.h"
-#include "nt_join.hxx"
-#include "nt_cb.hxx"
+#include "map_viewer.h"
+#include "NT_local.h"
+#include "ad_trees.h"
+#include "NT_cb.h"
 
+#include <seq_quality.h>
 #include <multi_probe.hxx>
 #include <st_window.hxx>
 #include <GEN.hxx>
@@ -1364,7 +1363,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_sub_menu("Merge Species", "g", AWM_EXP);
             {
                 awm->insert_menu_topic("merge_species", "Create merged species from similar species", "m", "sp_merge.hlp",     AWM_EXP, AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow, 0);
-                awm->insert_menu_topic("join_marked",   "Join Marked Species",                        "J", "join_species.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_species_join_window,         0);
+                awm->insert_menu_topic("join_marked",   "Join Marked Species",                        "J", "join_species.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_create_species_join_window,      0);
             }
             awm->close_sub_menu();
 

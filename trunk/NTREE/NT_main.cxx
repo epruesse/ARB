@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
-#include "nt_cb.hxx"
+#include "NT_local.h"
+#include "NT_cb.h"
 
 #include <mg_merge.hxx>
 #include <awti_import.hxx>

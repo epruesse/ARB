@@ -2,8 +2,8 @@
  * Any changes you make here will be overwritten later!
  */
 
-#ifndef NT_CB_HXX
-#define NT_CB_HXX
+#ifndef NT_CB_H
+#define NT_CB_H
 
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
@@ -38,5 +38,5 @@ int NT_get_canvas_id(AWT_canvas *ntw);
 void nt_create_main_window(AW_root *aw_root);
 
 #else
-#error nt_cb.hxx included twice
-#endif /* NT_CB_HXX */
+#error NT_cb.h included twice
+#endif /* NT_CB_H */

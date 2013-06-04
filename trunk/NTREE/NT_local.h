@@ -1,6 +1,6 @@
 // ============================================================ //
 //                                                              //
-//   File      : nt_local.h                                     //
+//   File      : NT_local.h                                     //
 //   Purpose   : NTREE local defines                            //
 //                                                              //
 //   Institute of Microbiology (Technical University Munich)    //
@@ -39,9 +39,9 @@ struct NT_global {
 extern NT_global GLOBAL;
 
 #ifndef NT_LOCAL_PROTO_H
-#include "nt_local_proto.h"
+#include "NT_local_proto.h"
 #endif
 
 #else
-#error nt_local.h included twice
+#error NT_local.h included twice
 #endif // NT_LOCAL_H

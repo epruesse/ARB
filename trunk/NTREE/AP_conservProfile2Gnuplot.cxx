@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
-#include "ap_conservProfile2Gnuplot.hxx"
+#include "NT_local.h"
+#include "AP_conservProfile2Gnuplot.h"
 
 #include <aw_window.hxx>
 #include <aw_file.hxx>

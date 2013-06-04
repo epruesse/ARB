@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_local.h"
+#include "NT_local.h"
 #include <insdel.h>
 #include <awt_sel_boxes.hxx>
 #include <aw_window.hxx>

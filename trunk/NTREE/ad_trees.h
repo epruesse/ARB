@@ -1,6 +1,6 @@
 // ============================================================ //
 //                                                              //
-//   File      : ad_trees.hxx                                   //
+//   File      : ad_trees.h                                     //
 //   Purpose   :                                                //
 //                                                              //
 //   Institute of Microbiology (Technical University Munich)    //
@@ -8,8 +8,8 @@
 //                                                              //
 // ============================================================ //
 
-#ifndef AD_TREES_HXX
-#define AD_TREES_HXX
+#ifndef AD_TREES_H
+#define AD_TREES_H
 
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
@@ -22,5 +22,5 @@ void popup_tree_admin_window(AW_root *aw_root);
 void popup_tree_admin_window(AW_window *aws);
 
 #else
-#error ad_trees.hxx included twice
-#endif // AD_TREES_HXX
+#error ad_trees.h included twice
+#endif // AD_TREES_H

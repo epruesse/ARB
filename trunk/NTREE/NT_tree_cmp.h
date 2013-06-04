@@ -1,6 +1,6 @@
 // =============================================================== //
 //                                                                 //
-//   File      : nt_tree_cmp.hxx                                   //
+//   File      : NT_tree_cmp.h                                     //
 //   Purpose   :                                                   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#ifndef NT_TREE_CMP_HXX
-#define NT_TREE_CMP_HXX
+#ifndef NT_TREE_CMP_H
+#define NT_TREE_CMP_H
 
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
@@ -70,5 +70,5 @@ public:
 void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, bool compare_node_info, bool overwrite_old_nodes, bool nodes_with_marked_only);
 
 #else
-#error nt_tree_cmp.hxx included twice
-#endif // NT_TREE_CMP_HXX
+#error NT_tree_cmp.h included twice
+#endif // NT_TREE_CMP_H
