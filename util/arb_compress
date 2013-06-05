@@ -12,8 +12,7 @@ tar -czf arb.tgz -T <(
      ! -path \*/unused/\* \
      ! -path \*ChangeLog \
      ! -path \*lib/nas/names.dat \
-     ! -name \#\* \
-     ! -name .\*
+     ! -name \#\* 
 )
    
 tar -czhf arb-dev.tgz -T <(
