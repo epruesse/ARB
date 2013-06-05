@@ -260,3 +260,9 @@ AW_window *AWT_open_www_window(AW_root *aw_root, AW_CL cgb_main) {
     awt_www_select_change(aws, aw_root->awar(AWAR_WWW_SELECT)->read_int());
     return (AW_window *)aws;
 }
+
+void AWT_openURL_cb(AW_window *aww, AW_CL cl_url) {
+    const char *url = (const char*)cl_url;
+    AW_openURL(aww->get_root(), url);
+}
+
