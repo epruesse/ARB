@@ -1,0 +1,36 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Save As
+
+OCCURRENCE	ARB_NT/File/Save As
+
+DESCRIPTION	Copies the current version of the database including any
+		changes that have been made since the last save to the name
+		specified.
+
+		Choose the 'Save as' option from the 'File' menu to display the 
+			'SAVE ARB DB' window.
+
+		Select a file name from the 'Directories and Files' subwindow or
+			type the full path and file name to the subwindow
+			'FILE NAME:', press the <SAVE> button and wait until the
+			'SAVE ARB DB' window disappears.
+
+NOTES		The suffix shown in the 'SUFFIX' subwindow is appended to the
+		file name. It has to be '.arb' to make the file readable to
+		the ARB programs.
+
+EXAMPLES	None
+
+WARNINGS	!!! All local file-permissions are removed.!!!
+
+BUGS		No bugs known
+
