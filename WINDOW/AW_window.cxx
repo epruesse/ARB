@@ -681,15 +681,20 @@ void AW_window::insert_default_option(const char *on, const char *mn, float vv, 
 template <class T>
 void AW_window::insert_option_internal(const char *option_name, const char */*mnemonic*/, 
                                        T var_value, const char */*name_of_color*/, 
-                                       bool /*default_option*/) {
+                                       bool default_option) {
     aw_return_if_fail(prvt->selection_list != NULL); //current option menu has to be set
     //aw_return_if_fail(prvt->selection_list->variable_type == AW_TypeCheck::getVarType(var_value)); //type missmatch
     
     FIXME("background color not implemented");
     FIXME("check for distinct per-option callbacks");
     FIXME("setting sensitivity of option menu entries not implemented");
-
-    prvt->selection_list->insert(option_name, var_value);
+    
+    if(default_option) {
+        prvt->selection_list->insert_default(option_name, var_value);
+    }
+    else {
+        prvt->selection_list->insert(option_name, var_value);
+    }
 }
 
 void AW_window::update_option_menu() {
