@@ -282,7 +282,7 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
     free(cfgName);
 
     if (error) {
-        aw_popup_ok(error);
+        aw_message(error);
         reopen = true;
     }
     if (reopen) AWT_start_config_manager(aww, cl_config);
