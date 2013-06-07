@@ -241,7 +241,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                     }
                     max_results--;
 
-                    FamilyList *fl = new FamilyList();
+                    FamilyList *fl = new FamilyList;
 
                     (tail ? tail->next : family_list) = fl;
                     tail                              = fl;

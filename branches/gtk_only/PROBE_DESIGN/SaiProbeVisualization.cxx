@@ -697,7 +697,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
 
     createSaiProbeAwars(awr); // creating awars for colors ( 0 to 9)
 
-    AW_window_menu *awm = new AW_window_menu();
+    AW_window_menu *awm = new AW_window_menu;
     awm->init(awr, "MATCH_SAI", "PROBE AND SAI", 200, 300);
 
     SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, gb_main);

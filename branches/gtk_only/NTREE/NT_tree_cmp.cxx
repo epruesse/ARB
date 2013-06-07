@@ -8,13 +8,13 @@
 //                                                                 //
 // =============================================================== //
 
-#include "nt_tree_cmp.hxx"
+#include "NT_tree_cmp.h"
+#include "NT_local.h"
+
 #include <AP_Tree.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <string>
-
-#define nt_assert(bed) arb_assert(bed)
 
 using namespace std;
 

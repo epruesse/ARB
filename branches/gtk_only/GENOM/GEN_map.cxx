@@ -117,7 +117,7 @@ GEN_map_manager::GEN_map_manager()
 GEN_map_manager *GEN_map_manager::get_map_manager() {
     if (!the_manager) {
         gen_assert(aw_root);    // call initialize() before!
-        new GEN_map_manager();  // sets the manager
+        new GEN_map_manager;  // sets the manager
         gen_assert(the_manager);
     }
     return the_manager;
@@ -1108,8 +1108,8 @@ static void gene_extract_cb(AW_window *aww, AW_CL cl_GEN_extract_mode_param) {
         aw_message(error);
     }
     else {
-        ask_about_existing_gene_species = new AW_repeated_question();
-        ask_to_overwrite_alignment      = new AW_repeated_question();
+        ask_about_existing_gene_species = new AW_repeated_question;
+        ask_to_overwrite_alignment      = new AW_repeated_question;
 
         arb_progress progress("Extracting pseudo-species");
         {

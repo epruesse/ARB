@@ -253,7 +253,6 @@ symlink_file ../GENOM_IMPORT/GenomeImport.h INCLUDE/GenomeImport.h &&
 symlink_file ../ISLAND_HOPPING/island_hopping.h INCLUDE/island_hopping.h &&
 symlink_file ../MERGE/mg_merge.hxx INCLUDE/mg_merge.hxx &&
 symlink_file ../MULTI_PROBE/multi_probe.hxx INCLUDE/multi_probe.hxx &&
-symlink_file ../NTREE/ntree.hxx INCLUDE/ntree.hxx &&
 symlink_file ../PRIMER_DESIGN/primer_design.hxx INCLUDE/primer_design.hxx &&
 symlink_file ../PROBE_DESIGN/probe_design.hxx INCLUDE/probe_design.hxx &&
 symlink_file ../PROBE/PT_global_defs.h INCLUDE/PT_global_defs.h &&

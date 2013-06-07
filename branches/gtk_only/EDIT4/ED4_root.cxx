@@ -551,7 +551,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
     GB_push_transaction(GLOBAL_gb_main);
 
-    ecoli_ref = new BI_ecoli_ref();
+    ecoli_ref = new BI_ecoli_ref;
     ecoli_ref->init(GLOBAL_gb_main);
 
     // [former position of ali-init-code]

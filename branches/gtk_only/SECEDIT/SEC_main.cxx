@@ -718,7 +718,7 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     SEC_graphic *gfx  = new SEC_graphic(awr, gb_main); // never freed
     SEC_root    *root = gfx->sec_root;
 
-    AW_window_menu_modes *awm = new AW_window_menu_modes();
+    AW_window_menu_modes *awm = new AW_window_menu_modes;
     awm->init(awr, "ARB_SECEDIT", "ARB_SECEDIT: Secondary structure editor", 200, 200);
 
     AWT_canvas *scr = new AWT_canvas(gb_main, awm, awm->get_window_id(), gfx, AWAR_SPECIES_NAME);

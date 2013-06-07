@@ -28,7 +28,7 @@ Analyser::Analyser() {
     alphabet.push_back("G");
     alphabet.push_back("T");
 
-    loader = new AlignedSequenceLoader();
+    loader = new AlignedSequenceLoader;
     VecVecType *seqs = loader->getSequences();
 
     cma = new Cma(alphabet, seqs->size());
@@ -145,7 +145,7 @@ int main(void) {
         << "eigen is copyrighted by LGPL3" << endl
         << endl;
 
-    Analyser *a   = new Analyser();
+    Analyser *a   = new Analyser;
     Cma      *cma = a->getCma();
 
     cma->computeMutualInformationP(*(a->getLoader()->getSequences()));

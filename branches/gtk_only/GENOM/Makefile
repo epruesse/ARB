@@ -107,7 +107,6 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/static_assert.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/test_global.h
 
-EXP_main.o: ../NTREE/nt_cb.hxx
 EXP_main.o: EXP.hxx
 EXP_main.o: EXP_local.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -161,7 +160,6 @@ EXP_main.o: $(ARBHOME)/INCLUDE/downcast.h
 EXP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 EXP_main.o: $(ARBHOME)/INCLUDE/items.h
-EXP_main.o: $(ARBHOME)/INCLUDE/ntree.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 EXP_main.o: $(ARBHOME)/INCLUDE/test_global.h
