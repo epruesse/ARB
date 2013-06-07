@@ -412,7 +412,7 @@ static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
 }
 
 static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graphic * /*awd*/) {
-    AW_window_menu_modes *awm = new AW_window_menu_modes();
+    AW_window_menu_modes *awm = new AW_window_menu_modes;
     awm->init(aw_root, "ARB_PHYLO", "ARB_PHYLO", 830, 630);
 
     // create menus and menu inserts with callbacks

@@ -43,10 +43,10 @@ RNA3D_Global::RNA3D_Global(ED4_plugin_host& host) {
     ROTATION_SPEED = 0.5;
     scale = 0.01;
 
-    cGraphics  = new OpenGLGraphics();
+    cGraphics  = new OpenGLGraphics;
     cStructure = new Structure3D(host);
-    cTexture   = new Texture2D();
-    cRenderer  = new GLRenderer();
+    cTexture   = new Texture2D;
+    cRenderer  = new GLRenderer;
 
     Viewer = Vector3(0.0, 0.0, -2);
     Center = Vector3(0.0, 0.0, 0.0);

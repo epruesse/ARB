@@ -469,7 +469,7 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
 
 GB_ERROR DI_MATRIX::haeschoe(const char *path) {
     static BI_helix *helix = 0;
-    if (!helix) helix      = new BI_helix();
+    if (!helix) helix      = new BI_helix;
 
     GB_ERROR error = helix->init(get_gb_main());
     if (!error) {
@@ -1018,7 +1018,7 @@ static void di_view_matrix_cb(AW_window *aww, AW_CL cl_sparam) {
     GB_ERROR            error  = di_calculate_matrix(aww, sparam->weighted_filter, 0, true, NULL);
     if (error) return;
 
-    if (!di_dmatrix) di_dmatrix = new DI_dmatrix();
+    if (!di_dmatrix) di_dmatrix = new DI_dmatrix;
 
     static AW_window *viewer = 0;
     if (!viewer) viewer = DI_create_view_matrix_window(aww->get_root(), di_dmatrix, sparam);

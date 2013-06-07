@@ -269,7 +269,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                         e4_assert(!error); // see ED4_Edit_String::edit()
                         move_cursor = 1;
                         if (!ED4_ROOT->edit_string) {
-                            ED4_ROOT->edit_string = new ED4_Edit_String();
+                            ED4_ROOT->edit_string = new ED4_Edit_String;
                         }
                         error = group_manager->route_down_hierarchy(call_edit, (AW_CL)work_info);
                         group_manager->rebuild_consensi(group_manager, ED4_U_UP_DOWN);

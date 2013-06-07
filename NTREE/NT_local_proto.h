@@ -2,8 +2,8 @@
  * Any changes you make here will be overwritten later!
  */
 
-#ifndef NT_INTERNAL_H
-#define NT_INTERNAL_H
+#ifndef NT_LOCAL_PROTO_H
+#define NT_LOCAL_PROTO_H
 
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
@@ -12,11 +12,6 @@
 
 
 /* AP_consensus.cxx */
-
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
-#endif
-
 void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def);
 AW_window *AP_open_con_expert_window(AW_root *aw_root);
 AW_window *AP_open_max_freq_window(AW_root *aw_root);
@@ -44,8 +39,8 @@ AW_window *NT_open_branch_analysis_window(AW_root *aw_root, AW_CL cl_ntw);
 class AWT_canvas;
 
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
-AW_window *NT_create_select_tree_window(AW_root *awr, char *awar_tree);
-void NT_select_bottom_tree(AW_window *aww, char *awar_tree);
+AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree);
+void NT_select_bottom_tree(AW_window *aww, const char *awar_tree);
 AW_window *NT_open_select_alignment_window(AW_root *awr);
 void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
@@ -69,6 +64,9 @@ int NT_get_canvas_id(AWT_canvas *ntw);
 
 /* NT_import.cxx */
 void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
+
+/* NT_join.cxx */
+AW_window *NT_create_species_join_window(AW_root *root);
 
 /* NT_main.cxx */
 GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
@@ -111,5 +109,5 @@ void NT_create_transpro_variables(AW_root *root, AW_default db1);
 AW_window *NT_create_consense_window(AW_root *aw_root);
 
 #else
-#error nt_internal.h included twice
-#endif /* NT_INTERNAL_H */
+#error NT_local_proto.h included twice
+#endif /* NT_LOCAL_PROTO_H */

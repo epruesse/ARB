@@ -1186,7 +1186,7 @@ void TEST_char_table() {
     ED4_init_is_align_character(gapChars);
 
     TEST_REJECT(BK);
-    BK = new ConsensusBuildParams();
+    BK = new ConsensusBuildParams;
 
     // BK->lower = 70; BK->upper = 95; BK->gapbound = 60; // defaults from awars
     BK->lower    = 40; BK->upper = 70; BK->gapbound = 40;

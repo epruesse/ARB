@@ -1,6 +1,6 @@
 // =============================================================== //
 //                                                                 //
-//   File      : ap_pos_var_pars.hxx                               //
+//   File      : AP_pos_var_pars.h                                 //
 //   Purpose   :                                                   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#ifndef AP_POS_VAR_PARS_HXX
-#define AP_POS_VAR_PARS_HXX
+#ifndef AP_POS_VAR_PARS_H
+#define AP_POS_VAR_PARS_H
 
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
@@ -58,5 +58,5 @@ public:
 };
 
 #else
-#error ap_pos_var_pars.hxx included twice
-#endif // AP_POS_VAR_PARS_HXX
+#error AP_pos_var_pars.h included twice
+#endif // AP_POS_VAR_PARS_H

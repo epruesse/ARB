@@ -295,8 +295,8 @@ void PrimerDesign::buildPrimerTrees ()
     //
     if (root1) delete root1;
     if (root2) delete root2;
-    root1 = new Node();
-    root2 = new Node();
+    root1 = new Node;
+    root2 = new Node;
 
     reset_node_counters();
 

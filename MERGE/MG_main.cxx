@@ -286,7 +286,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
 
         MG_set_renamed(false, aw_root, "Not renamed yet.");
 
-        AW_window_simple_menu *awm = new AW_window_simple_menu();
+        AW_window_simple_menu *awm = new AW_window_simple_menu;
         awm->init(aw_root, "ARB_MERGE", "ARB_MERGE");
         awm->load_xfig("merge/main.fig");
 

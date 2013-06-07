@@ -190,38 +190,54 @@ static int query_count_items(DbQuery *query, QUERY_RANGE range, QUERY_MODES mode
 
 const int MAX_CRITERIA = int(sizeof(unsigned long)*8/QUERY_SORT_CRITERIA_BITS);
 
-static QUERY_RESULT_ORDER split_sort_mask(unsigned long sort_mask, QUERY_RESULT_ORDER *order) {
-    // splits the sort order bit mask 'sort_mask' into single sort criteria
-    // (order[0] contains the primary sort criteria)
-    //
-    // Returns the first criteria matching
-    // QUERY_SORT_BY_1STFIELD_CONTENT or QUERY_SORT_BY_HIT_DESCRIPTION
-    // (or QUERY_SORT_NONE if no sort order defined)
+static void split_sort_mask(unsigned long sort_mask, QUERY_RESULT_ORDER *order) {
+    // splits the sort order bit mask 'sort_mask' into single sort criteria and write these into 'order'
+    // (order[0] will contain the primary sort criteria, order[1] the secondary, ...)
 
-    QUERY_RESULT_ORDER first = QUERY_SORT_NONE;
-
-    for (int o = 0; o<MAX_CRITERIA; o++) {
+    for (int o = 0; o<MAX_CRITERIA; ++o) {
         order[o] = QUERY_RESULT_ORDER(sort_mask&QUERY_SORT_CRITERIA_MASK);
         dbq_assert(order[o] == (order[o]&QUERY_SORT_CRITERIA_MASK));
-
-        if (first == QUERY_SORT_NONE) {
-            if (order[o] & (QUERY_SORT_BY_1STFIELD_CONTENT|QUERY_SORT_BY_HIT_DESCRIPTION)) {
-                first = order[o];
-            }
-        }
-
         sort_mask = sort_mask>>QUERY_SORT_CRITERIA_BITS;
     }
+}
+
+static QUERY_RESULT_ORDER find_display_determining_sort_order(QUERY_RESULT_ORDER *order) {
+    // Returns the first criteria in 'order' (which has to have MAX_CRITERIA elements)
+    // that matches
+    // - QUERY_SORT_BY_1STFIELD_CONTENT or
+    // - QUERY_SORT_BY_HIT_DESCRIPTION
+    // (or QUERY_SORT_NONE if none of the above is used)
+
+    QUERY_RESULT_ORDER first = QUERY_SORT_NONE;
+    for (int o = 0; o<MAX_CRITERIA && first == QUERY_SORT_NONE; ++o) {
+        if (order[o] & (QUERY_SORT_BY_1STFIELD_CONTENT|QUERY_SORT_BY_HIT_DESCRIPTION)) {
+            first = order[o];
+        }
+    }
     return first;
+}
+
+static void remove_keydependent_sort_criteria(QUERY_RESULT_ORDER *order) {
+    // removes all sort-criteria from order which would use the order of the currently selected primary key
+
+    int n = 0;
+    for (int o = 0; o<MAX_CRITERIA; ++o) {
+        if (order[o] != QUERY_SORT_BY_1STFIELD_CONTENT) {
+            order[n++] = order[o];
+        }
+    }
+    for (; n<MAX_CRITERIA; ++n) {
+        order[n] = QUERY_SORT_NONE;
+    }
 }
 
 static void first_searchkey_changed_cb(AW_root *, AW_CL cl_query) {
     DbQuery *query = reinterpret_cast<DbQuery*>(cl_query);
 
     QUERY_RESULT_ORDER order[MAX_CRITERIA];
-    QUERY_RESULT_ORDER first = split_sort_mask(query->sort_mask, order);
+    split_sort_mask(query->sort_mask, order);
 
-    if (first != QUERY_SORT_BY_HIT_DESCRIPTION) { // do we display values?
+    if (find_display_determining_sort_order(order) != QUERY_SORT_BY_HIT_DESCRIPTION) { // do we display values?
         DbQuery_update_list(query);
     }
 }
@@ -235,11 +251,11 @@ inline bool keep_criteria(QUERY_RESULT_ORDER old_criteria, QUERY_RESULT_ORDER ne
 
 static void sort_order_changed_cb(AW_root *aw_root, AW_CL cl_query) {
     // adds the new selected sort order to the sort order mask
-    // (removes itself, if previously existed in sort order mask)
+    // (added order removes itself, if it previously existed in sort order mask)
     //
     // if 'unsorted' is selected -> delete sort order
 
-    DbQuery                *query          = reinterpret_cast<DbQuery*>(cl_query);
+    DbQuery            *query        = reinterpret_cast<DbQuery*>(cl_query);
     QUERY_RESULT_ORDER  new_criteria = (QUERY_RESULT_ORDER)aw_root->awar(query->awar_sort)->read_int();
 
     if (new_criteria == QUERY_SORT_NONE) {
@@ -356,6 +372,20 @@ static long detectMaxNameLength(const char *key, long val, void *cl_len) {
     return val;
 }
 
+#if defined(ASSERTION_USED)
+inline bool SLOW_is_pseudo_key(const char *key) {
+    return
+        strcmp(key, PSEUDO_FIELD_ANY_FIELD) == 0 ||
+        strcmp(key, PSEUDO_FIELD_ALL_FIELDS) == 0;
+}
+#endif
+inline bool is_pseudo_key(const char *key) {
+    // returns true, if 'key' is a pseudo-key
+    bool is_pseudo = key[0] == '[';
+    dbq_assert(is_pseudo == SLOW_is_pseudo_key(key));
+    return is_pseudo;
+}
+
 void QUERY::DbQuery_update_list(DbQuery *query) {
     GB_push_transaction(query->gb_main);
 
@@ -387,14 +417,18 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
 
     // sort hits
 
-    bool show_value = true; // default
     hits_sort_params param = { query, NULL, {} };
     param.first_key = aww->get_root()->awar(query->awar_keys[0])->read_string();
 
-    if (query->sort_mask != QUERY_SORT_NONE) {    // unsorted -> don't sort
-        QUERY_RESULT_ORDER main_criteria = split_sort_mask(query->sort_mask, param.order);
+    bool is_pseudo  = is_pseudo_key(param.first_key);
+    bool show_value = !is_pseudo; // cannot refer to key-value of pseudo key
 
-        if (main_criteria == QUERY_SORT_BY_HIT_DESCRIPTION) {
+    if (query->sort_mask != QUERY_SORT_NONE) {    // unsorted -> don't sort
+        split_sort_mask(query->sort_mask, param.order);
+        if (is_pseudo) {
+            remove_keydependent_sort_criteria(param.order);
+        }
+        if (show_value && find_display_determining_sort_order(param.order) == QUERY_SORT_BY_HIT_DESCRIPTION) {
             show_value = false;
         }
         GB_sort((void**)sorted, 0, count, compare_hits, &param);
@@ -694,13 +728,6 @@ public:
     }
 
     void negate();
-
-    bool prefers_sort_by_hit() {
-        return
-            match_field == AQFT_ALL_FIELDS ||
-            match_field == AQFT_ANY_FIELD ||
-            (next && next->prefers_sort_by_hit());
-    }
 
 #if defined(DEBUG)
     string dump_str() const { return string(key)+(Not ? "!=" : "==")+expr; }
@@ -1155,11 +1182,6 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
 #if defined(DEBUG)
                 else { fputs("query: ", stdout); qinfo.dump(); fputc('\n', stdout); }
 #endif // DEBUG
-
-                if (qinfo.prefers_sort_by_hit()) {
-                    // automatically switch to sorting 'by hit' if 'any field' or 'all fields' is selected
-                    aw_root->awar(query->awar_sort)->write_int(QUERY_SORT_BY_HIT_DESCRIPTION);
-                }
 
                 for (GBDATA *gb_item_container = selector.get_first_item_container(query->gb_main, aw_root, range);
                      gb_item_container && !error;

@@ -385,7 +385,7 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main, AP_filter
                     int sequenceLength = filter->get_filtered_length();
 
                     // calculate physical layout of sequence
-                    SQ_physical_layout *ps_chan = new SQ_physical_layout();
+                    SQ_physical_layout *ps_chan = new SQ_physical_layout;
                     ps_chan->SQ_calc_physical_layout(rawSequence, sequenceLength, gb_quality_ali);
 
                     // calculate the average number of bases in group
@@ -395,7 +395,7 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main, AP_filter
                     delete ps_chan;
 
                     // get values for ambiguities
-                    SQ_ambiguities *ambi_chan = new SQ_ambiguities();
+                    SQ_ambiguities *ambi_chan = new SQ_ambiguities;
                     ambi_chan->SQ_count_ambiguities(rawSequence, sequenceLength, gb_quality_ali);
                     delete ambi_chan;
 

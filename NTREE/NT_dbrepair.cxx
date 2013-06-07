@@ -9,7 +9,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "NT_dbrepair.hxx"
+#include "NT_local.h"
 
 #include <arbdbt.h>
 #include <adGene.h>
@@ -29,9 +29,6 @@
 #include <set>
 #include <string>
 #include <vector>
-
-
-#define nt_assert(bed) arb_assert(bed)
 
 using namespace std;
 

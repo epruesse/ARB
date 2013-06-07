@@ -2,8 +2,8 @@
  * Any changes you make here will be overwritten later!
  */
 
-#ifndef NT_CB_HXX
-#define NT_CB_HXX
+#ifndef NT_CB_H
+#define NT_CB_H
 
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
@@ -22,8 +22,8 @@
 class AWT_canvas;
 
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
-AW_window *NT_create_select_tree_window(AW_root *awr, char *awar_tree);
-void NT_select_bottom_tree(AW_window *aww, char *awar_tree);
+AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree);
+void NT_select_bottom_tree(AW_window *aww, const char *awar_tree);
 AW_window *NT_open_select_alignment_window(AW_root *awr);
 void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
@@ -38,5 +38,5 @@ int NT_get_canvas_id(AWT_canvas *ntw);
 void nt_create_main_window(AW_root *aw_root);
 
 #else
-#error nt_cb.hxx included twice
-#endif /* NT_CB_HXX */
+#error NT_cb.h included twice
+#endif /* NT_CB_H */
