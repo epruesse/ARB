@@ -26,7 +26,7 @@
 #if !defined(_STDLIB_H) && !defined(_STDLIB_H_)
 #error Need cstdlib included
 #endif
-#if !defined(_ERRNO_H) && !defined(_ERRNO_H_)
+#if !defined(_ERRNO_H) && !defined(_SYS_ERRNO_H_)
 #error Need cerrno included
 #endif
 #if !defined(_STRING_H) && !defined(_STRING_H_)
