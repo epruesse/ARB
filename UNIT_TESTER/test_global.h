@@ -20,16 +20,16 @@
 #error Need cstdarg included
 #endif
 #endif
-#ifndef _STDIO_H
+#if !defined(_STDIO_H) && !defined(_STDIO_H_)
 #error Need cstdio included
 #endif
-#ifndef _STDLIB_H
+#if !defined(_STDLIB_H) && !defined(_STDLIB_H_)
 #error Need cstdlib included
 #endif
-#ifndef _ERRNO_H
+#if !defined(_ERRNO_H) && !defined(_ERRNO_H_)
 #error Need cerrno included
 #endif
-#ifndef _STRING_H
+#if !defined(_STRING_H) && !defined(_STRING_H_)
 #error Need cstring included
 #endif
 
