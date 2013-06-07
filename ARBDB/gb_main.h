@@ -80,7 +80,8 @@ struct gb_cache {
 #define ALLOWED_KEYS  15000
 #define ALLOWED_DATES 256
 
-class GB_MAIN_TYPE {
+struct GB_MAIN_TYPE {
+private:
     inline GB_ERROR start_transaction();
     GB_ERROR check_quick_save() const;
     GB_ERROR initial_client_transaction();
