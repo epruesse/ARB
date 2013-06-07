@@ -34,9 +34,9 @@ class AP_filter;
 class AW_DB_selection;
 class AW_selection;
 class AW_selection_list;
-struct StrArray;
-struct ConstStrArray;
-struct CharPtrArray;
+class StrArray;
+class ConstStrArray;
+class CharPtrArray;
 struct adfiltercbstruct;
 
 class TypedSelectionList {
