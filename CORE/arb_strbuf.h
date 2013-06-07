@@ -25,7 +25,8 @@
 // -----------------------
 //      String streams
 
-class GBS_strstruct : virtual Noncopyable {
+struct GBS_strstruct : virtual Noncopyable {
+private:
     char   *data;
     size_t  buffer_size;
     size_t  pos;
