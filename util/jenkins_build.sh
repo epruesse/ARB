@@ -63,7 +63,7 @@ make tarfile_quick
 if [ $MODE = "DEBUG" ]; then
   DEBUG="-dbg"
 fi
-mv arb.tgz arb-r${SVN_REVISION}${DEBUG}.${TGTNAME}.tgz
-mv arb-dev.tgz arb-r${SVN_REVISION}${DEBUG}-dev.${TGTNAME}.tgz
+mv arb.tgz arb-gtk-r${SVN_REVISION}${DEBUG}.${TGTNAME}.tgz
+mv arb-dev.tgz arb-gtk-r${SVN_REVISION}${DEBUG}-dev.${TGTNAME}.tgz
 
 make ut
