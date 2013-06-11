@@ -55,6 +55,7 @@ echo "PTPAN := 0" >> config.makefile
 echo "ARB_64 := 1" >> config.makefile
 echo "TRACESYM := 1" >> config.makefile
 echo "COVERAGE := 0" >> config.makefile
+echo "GTK := 1" >> config.makefile
 
 make build
 make tarfile_quick
