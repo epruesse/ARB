@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 set -e
 
 rm -f arb.tgz arb-dev.tgz
@@ -16,7 +17,7 @@ tar -czf arb.tgz -T <(
 )
    
 tar -czhf arb-dev.tgz -T <(
-  find -name \*.a -o -path \*/INCLUDE/\*.h\*
+  find . -name \*.a -o -path \*/INCLUDE/\*.h\*
 )
 
 ls -al arb*.tgz
