@@ -11,9 +11,9 @@
 # The ARB Makefile is aware of the following defines:
 #
 # BUILDHOST_64=0/1      1=>compile on 64 bit platform (defaults to ARB_64)
-# DEVELOPER=name	    special compilation (values: ANY,RELEASE,your name)
+# DEVELOPER=name        special compilation (values: ANY,RELEASE,your name)
 # OPENGL=0/1            whether OPENGL is available
-# GTK=0/1               Use the new gtk gui
+# GTK=2/3               gtk version to use
 # -----------------------------------------------------
 # ARB Makefile and ARB source code are aware of the following defines:
 #
@@ -318,14 +318,13 @@ endif
 
 #---------------------- GTK 
 
-ifeq ($(GTK),1)
+ifeq ($(GTK),2)
 	GTKCFLAGS:= $(shell pkg-config --cflags gtk+-2.0) -fPIC
 	GTKLIBS:= $(shell pkg-config --libs gtk+-2.0 | $(SED) 's/-pthread//')
 
 	cflags += $(GTKCFLAGS)
 	dflags += -DARB_GTK
-endif
-
+else
 ifeq ($(GTK),3)
 	GTKCFLAGS:= $(shell pkg-config --cflags gtk+-3.0) -fPIC
 	GTKLIBS:= $(shell pkg-config --libs gtk+-3.0 | $(SED) 's/-pthread//')
@@ -333,25 +332,9 @@ ifeq ($(GTK),3)
 	cflags += $(GTKCFLAGS)
 	dflags += -DARB_GTK
 	dflags += -DARB_GTK3
-endif
-
-#---------------------- X11 location
-
-ifdef DARWIN
-	XHOME:=$(PREFIX)
 else
-	XHOME:=/usr/X11R6
+$(error Unsupported GTK version $(GTK) (possible values: 2, 3))
 endif
-
-XINCLUDES:=-I$(XHOME)/include
-ifdef DARWIN
-	XINCLUDES += -I$(OSX_FW)/GLUT.framework/Headers -I$(OSX_FW)/OpenGL.framework/Headers -I$(OSX_SDK)/usr/include/krb5
-
-	XLIBS := -L$(XHOME)/lib -lXm -lpng -lz -lXt -lX11 -lXext -lXp -lXmu -lXi
-	XLIBS += -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGL.dylib:$(OSX_FW_OPENGL)/libGL.dylib
-	XLIBS += -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGLU.dylib:$(OSX_FW_OPENGL)/libGLU.dylib
-else
-	XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXt -lXext -lX11
 endif
 
 #---------------------- open GL
@@ -704,20 +687,15 @@ ifdef DARWIN
 endif
 
 GUI_LIBS = $(GUI_LIBS_PREFIX) $(LIBS) -lAWT  
-ifeq ($(GTK),0)
-		GUI_LIBS += -lWINDOW $(XLIBS)		
-else
-		GUI_LIBS += -lWINDOW $(GTKLIBS)
-endif	
-
+GUI_LIBS += -lWINDOW $(GTKLIBS)
 
 LIBPATH = -L$(ARBHOME)/lib
 
 DEST_LIB = lib
 DEST_BIN = bin
 
-AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+AINCLUDES := -I. -I$(ARBHOME)/INCLUDE
+CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE
 
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
@@ -855,11 +833,7 @@ ARCHS_AP_TREE = \
 
 link_core:	core
 link_db:	db link_core
-ifeq ($(GTK),0)
-  link_aw:	aw link_db
-else
-  link_aw:	aw_gtk link_db
-endif
+link_aw:	aw link_db
 link_awt:	awt link_aw
 
 #***************************************************************************************
@@ -1352,8 +1326,7 @@ show:
 		@echo ''
 		@echo '  com    communication libraries'
 		@echo '  db     ARB database'
-		@echo '  aw     GUI lib'
-		@echo '  aw_gtk New GTK gui lib'		
+		@echo '  aw     GUI lib (GTK)'
 		@echo '  awt    GUI toolkit'
 		@echo '  awtc   general purpose library'
 		@echo '  awti   import/export library'
@@ -1393,7 +1366,7 @@ HELP_SOURCE/HELP_SOURCE.dummy: link_db xml menus
 
 db:	ARBDB/libARBDB.dummy
 core:	CORE/libCORE.dummy
-aw_gtk:	WINDOW/libWINDOW.dummy
+aw:	WINDOW/libWINDOW.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
 awti:	AWTI/AWTI.dummy
