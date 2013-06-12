@@ -304,11 +304,6 @@ sub acceptAll($) {
   return ($res_param);
 }
 
-sub isPGTres($) {
-  my ($res_param) = @_;
-  return ('pgt/'.$res_param);
-}
-
 sub isPixmapRef($) {
   my ($res_param) = @_;
   if ($res_param =~ /^#/) { return ($'); }
@@ -351,7 +346,6 @@ my @defs =
   (
    # regexp for function,                  param numbers,         expectInIndex, isRessource,
    [ qr/\b(AW_POPUP_HELP)\b/,              [ 2 ],                 \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(PGT_LoadPixmap)\b/,             [ 1 ],                 \%pixmap,      \&isPGTres,      ],
    [ qr/\b(callback)\b/,                   [ -1, -2 ],            \%helpfile,    \&isHelpPopup,   ],
    [ qr/\b(create_button)\b/,              [ 2 ],                 \%pixmap,      \&isPixmapRef,   ],
    [ qr/\b(create_mode)\b/,                [ 1 ],                 \%pixmap,      \&acceptAll,     ],

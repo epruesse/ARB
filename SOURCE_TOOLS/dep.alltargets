@@ -18,7 +18,6 @@ NAMES/NAMES.a
 NTREE/NTREE.a
 PARSIMONY/PARSIMONY.a
 PERLTOOLS/arb_proto_2_xsub.o
-PGT/PGT.a
 PHYLO/PHYLO.a
 PRIMER_DESIGN/PRIMER_DESIGN.a
 PROBE/PROBE.a
@@ -71,7 +70,6 @@ arb_naligner
 arb_name_server
 arb_ntree
 arb_pars
-arb_pgt
 arb_phylo
 arb_pt_server
 arb_wetc
