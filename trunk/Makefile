@@ -771,7 +771,6 @@ ARCHS = \
 			NTREE/NTREE.a \
 			PARSIMONY/PARSIMONY.a \
 			PERLTOOLS/PERLTOOLS.a \
-			PGT/PGT.a \
 			PHYLO/PHYLO.a \
 			PRIMER_DESIGN/PRIMER_DESIGN.a \
 			PROBE_COM/server.a \
@@ -927,23 +926,6 @@ $(RNACMA) : $(ARCHS_RNACMA:.a=.dummy) link_db
 		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
-
-#***********************************	arb_pgt **************************************
-
-PGT = bin/arb_pgt
-ARCHS_PGT = \
-		PGT/PGT.a \
-
-PGT_SYS_LIBS=$(XLIBS) $(TIFFLIBS) $(LIBS)
-
-$(PGT) : $(ARCHS_PGT:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PGT) || ( \
-		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS)	"; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS) && \
-		echo "$(SEP) Link $@ [done]"; \
-		)
-
 
 #***********************************	arb_wetc **************************************
 WETC = bin/arb_wetc
@@ -1238,7 +1220,6 @@ ISLAND_HOPPING/ISLAND_HOPPING.dummy:	links_non_perl
 MERGE/MERGE.dummy:			links_non_perl
 NTREE/NTREE.dummy:			links_non_perl genheaders
 PARSIMONY/PARSIMONY.dummy:		links_non_perl
-PGT/PGT.dummy:				links_non_perl
 PHYLO/PHYLO.dummy:			links_non_perl
 PRIMER_DESIGN/PRIMER_DESIGN.dummy:	links_non_perl
 PROBE_SET/PROBE_SET.dummy:		links_non_perl link_db
@@ -1422,7 +1403,6 @@ e4:	$(EDIT4) readseq menus
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
 wetc:	$(WETC)
 
-pgt:	$(PGT)
 xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
 stat:   STAT/STAT.dummy $(NTREE) $(EDIT4)
@@ -1841,7 +1821,7 @@ reset_committed_build:
 
 # --------------------------------------------------------------------------------
 
-arbapplications: nt pa e4 wetc pt na nal di ph ds pgt wetc cma
+arbapplications: nt pa e4 wetc pt na nal di ph ds wetc cma
 
 arb_external: convert tools gde readseq tg pst xmlin
 
@@ -1869,7 +1849,6 @@ rac_arb_naligner:	nal
 rac_arb_pt_server:	pt
 rac_arb_db_server:	ds
 rac_arb_name_server:	na
-rac_arb_pgt:		pgt
 rac_arb_convert_aln:	convert
 rac_arb_treegen:	tg
 rac_arb_rnacma:		cma
@@ -1902,7 +1881,6 @@ UNITS_WORKING = \
 	NALIGNER/NALIGNER.test \
 	NAMES/NAMES.test \
 	PARSIMONY/PARSIMONY.test \
-	PGT/PGT.test \
 	PHYLO/PHYLO.test \
 	PRIMER_DESIGN/PRIMER_DESIGN.test \
 	PROBE_DESIGN/PROBE_DESIGN.test \
