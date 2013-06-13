@@ -22,7 +22,6 @@
 #include "aw_awar_impl.hxx"
 #include <gdk/gdkx.h>
 #include <vector>
-#include "aw_xfont.hxx"
 #include "aw_awar_defs.hxx"
 #include "aw_window.hxx"
 #include "aw_global_awars.hxx"

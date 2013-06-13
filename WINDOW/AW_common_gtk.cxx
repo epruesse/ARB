@@ -15,8 +15,6 @@
 #include "aw_window.hxx"
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
-#include "aw_xfont.hxx"
-//TODO remove if xfont is gone
 #include <string>
 #include <algorithm>
 
