@@ -39,7 +39,6 @@ else
             echo \
                 gnuplot \
                 gv \
-                libmotif4 \
                 xfig \
                 transfig \
                 xterm \
@@ -54,16 +53,12 @@ else
         elif [ "$2" == "compile_common" ]; then
             echo \
                 g++ \
-                libmotif-dev \
+                libgtk2.0-dev \
                 libtiff4-dev \
                 libx11-dev \
-                libxaw7-dev \
                 libxext-dev \
                 libxml2-utils \
-                libxpm-dev \
-                libxt-dev \
                 lynx \
-                x11proto-print-dev \
                 xsltproc \
                 xutils-dev \
 
@@ -71,7 +66,7 @@ else
             $0 echo arb_noOpenGL
             $0 echo compile_common
             
-        elif [ "$2" == "compile_OpenGL" ]; then
+        elif [ "$2" == "compile_OpenGL" ]; then  # @@@ when opengl compile works, update dependencies below 
             $0 echo arb_OpenGL
             $0 echo compile_common
             echo \
@@ -89,7 +84,6 @@ else
                 valgrind \
                 pixmap \
                 ctags \
-                libgtk2.0-dev \
 
         elif [ "$2" == "devdox" ]; then
             $0 echo develop
