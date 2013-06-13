@@ -414,7 +414,6 @@ AW_common_gtk.o: aw_cb_struct.hxx
 AW_common_gtk.o: aw_clipable.hxx
 AW_common_gtk.o: aw_common.hxx
 AW_common_gtk.o: aw_common_gtk.hxx
-AW_common_gtk.o: aw_def.hxx
 AW_common_gtk.o: aw_device.hxx
 AW_common_gtk.o: aw_device_cairo.hxx
 AW_common_gtk.o: aw_device_click.hxx
@@ -432,7 +431,6 @@ AW_common_gtk.o: aw_root.hxx
 AW_common_gtk.o: aw_simple_device.hxx
 AW_common_gtk.o: aw_stylable.hxx
 AW_common_gtk.o: aw_window.hxx
-AW_common_gtk.o: aw_xfont.hxx
 AW_common_gtk.o: aw_zoomable.hxx
 AW_common_gtk.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_common_gtk.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -1109,7 +1107,6 @@ AW_root.o: aw_cb_struct.hxx
 AW_root.o: aw_clipable.hxx
 AW_root.o: aw_common.hxx
 AW_root.o: aw_common_gtk.hxx
-AW_root.o: aw_def.hxx
 AW_root.o: aw_device.hxx
 AW_root.o: aw_device_cairo.hxx
 AW_root.o: aw_device_click.hxx
@@ -1133,7 +1130,6 @@ AW_root.o: aw_simple_device.hxx
 AW_root.o: aw_status.hxx
 AW_root.o: aw_stylable.hxx
 AW_root.o: aw_window.hxx
-AW_root.o: aw_xfont.hxx
 AW_root.o: aw_zoomable.hxx
 AW_root.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
