@@ -204,7 +204,6 @@ symlink_file ../ARBDB/ad_remote.h INCLUDE/ad_remote.h &&
 symlink_file ../ARBDB/adperl.h INCLUDE/adperl.h &&
 symlink_file ../ARBDB/ad_p_prot.h INCLUDE/ad_p_prot.h &&
 symlink_file ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h &&
-symlink_file ../ARBDB/arb_assert.h INCLUDE/arb_assert.h &&
 symlink_file ../ARBDB/arbdb.h INCLUDE/arbdb.h &&
 symlink_file ../ARBDB/arbdb_base.h INCLUDE/arbdb_base.h &&
 symlink_file ../ARBDB/arbdbt.h INCLUDE/arbdbt.h &&
@@ -229,6 +228,7 @@ symlink_file ../AWTI/awti_export.hxx INCLUDE/awti_export.hxx &&
 symlink_file ../AWTI/awti_import.hxx INCLUDE/awti_import.hxx &&
 symlink_file ../BUGEX/bugex.h INCLUDE/bugex.h &&
 symlink_file ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx &&
+symlink_file ../CORE/arb_assert.h INCLUDE/arb_assert.h &&
 symlink_file ../CORE/arb_core.h INCLUDE/arb_core.h &&
 symlink_file ../CORE/arb_cs.h INCLUDE/arb_cs.h &&
 symlink_file ../CORE/arb_file.h INCLUDE/arb_file.h &&

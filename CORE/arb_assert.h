@@ -38,7 +38,7 @@
 
 /* ------------------------------------------------------------
  * Define SIMPLE_ARB_ASSERT before including this header
- * to avoid ARBDB dependency!
+ * to avoid dependency from CORE library!
  *
  * ASSERT_CRASH                 if assert fails debugger stops at assert macro
  * ASSERT_BACKTRACE_AND_CRASH   like ASSERT_CRASH - with backtrace
@@ -100,7 +100,7 @@ inline void provoke_core_dump() {
 
 #if defined(SIMPLE_ARB_ASSERT)
 
-// code here is independent from ARBDB!
+// code here is independent from CORE library
 
 #define ARB_SIGSEGV(backtrace) do {                             \
         provoke_core_dump();                                    \
