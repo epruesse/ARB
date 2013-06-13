@@ -9,7 +9,7 @@
 //                                                                   //
 // ================================================================= //
 
-#define SIMPLE_ARB_ASSERT
+#include <arb_simple_assert.h>
 
 #include <arb_defs.h>
 #include <arb_str.h>

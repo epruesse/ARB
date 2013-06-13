@@ -12,8 +12,7 @@
 #include "defs.h"
 #include "mem.h"
 
-#define SIMPLE_ARB_ASSERT
-#include <arb_assert.h>
+#include <arb_simple_assert.h>
 #include <stdio.h>
 
 #define ih_assert(bed) arb_assert(bed)

@@ -21,7 +21,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#define SIMPLE_ARB_ASSERT
+#include <arb_simple_assert.h>
 #include <test_unit.h>
 #include <arb_backtrace.h>
 #include <ut_valgrinded.h>

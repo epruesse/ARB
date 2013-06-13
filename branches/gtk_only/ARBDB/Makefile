@@ -125,12 +125,12 @@ depend.init:
 ad_config.o: ad_config.h
 ad_config.o: ad_prot.h
 ad_config.o: ad_t_prot.h
-ad_config.o: arb_assert.h
 ad_config.o: arbdb.h
 ad_config.o: arbdb_base.h
 ad_config.o: arbdbt.h
 ad_config.o: gb_local.h
 ad_config.o: gb_prot.h
+ad_config.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -148,7 +148,6 @@ ad_config.o: $(ARBHOME)/INCLUDE/test_global.h
 ad_config.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ad_core.o: ad_prot.h
-ad_core.o: arb_assert.h
 ad_core.o: arbdb.h
 ad_core.o: arbdb_base.h
 ad_core.o: gb_data.h
@@ -163,6 +162,7 @@ ad_core.o: gb_prot.h
 ad_core.o: gb_storage.h
 ad_core.o: gb_ts.h
 ad_core.o: gb_tune.h
+ad_core.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -178,7 +178,6 @@ ad_core.o: $(ARBHOME)/INCLUDE/test_global.h
 ad_load.o: ad_io_inline.h
 ad_load.o: ad_prot.h
 ad_load.o: ad_t_prot.h
-ad_load.o: arb_assert.h
 ad_load.o: arbdb.h
 ad_load.o: arbdb_base.h
 ad_load.o: arbdbt.h
@@ -194,6 +193,7 @@ ad_load.o: gb_memory.h
 ad_load.o: gb_prot.h
 ad_load.o: gb_storage.h
 ad_load.o: gb_tune.h
+ad_load.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -212,7 +212,6 @@ ad_load.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ad_save_load.o: ad_io_inline.h
 ad_save_load.o: ad_prot.h
-ad_save_load.o: arb_assert.h
 ad_save_load.o: arbdb.h
 ad_save_load.o: arbdb_base.h
 ad_save_load.o: gb_data.h
@@ -226,6 +225,7 @@ ad_save_load.o: gb_memory.h
 ad_save_load.o: gb_prot.h
 ad_save_load.o: gb_storage.h
 ad_save_load.o: gb_tune.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_file.h
@@ -244,12 +244,12 @@ ad_save_load.o: $(ARBHOME)/INCLUDE/test_unit.h
 adali.o: ad_prot.h
 adali.o: ad_t_prot.h
 adali.o: adGene.h
-adali.o: arb_assert.h
 adali.o: arbdb.h
 adali.o: arbdb_base.h
 adali.o: arbdbt.h
 adali.o: gb_local.h
 adali.o: gb_prot.h
+adali.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adali.o: $(ARBHOME)/INCLUDE/arb_core.h
 adali.o: $(ARBHOME)/INCLUDE/arb_error.h
 adali.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -265,7 +265,6 @@ adali.o: $(ARBHOME)/INCLUDE/test_global.h
 adali.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adcache.o: ad_prot.h
-adcache.o: arb_assert.h
 adcache.o: arbdb.h
 adcache.o: arbdb_base.h
 adcache.o: gb_data.h
@@ -275,6 +274,7 @@ adcache.o: gb_memory.h
 adcache.o: gb_prot.h
 adcache.o: gb_storage.h
 adcache.o: gb_tune.h
+adcache.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adcache.o: $(ARBHOME)/INCLUDE/arb_core.h
 adcache.o: $(ARBHOME)/INCLUDE/arb_error.h
 adcache.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -289,12 +289,12 @@ adcache.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adChangeKey.o: ad_prot.h
 adChangeKey.o: ad_t_prot.h
-adChangeKey.o: arb_assert.h
 adChangeKey.o: arbdb.h
 adChangeKey.o: arbdb_base.h
 adChangeKey.o: arbdbt.h
 adChangeKey.o: gb_local.h
 adChangeKey.o: gb_prot.h
+adChangeKey.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_core.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_error.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -308,7 +308,6 @@ adChangeKey.o: $(ARBHOME)/INCLUDE/smartptr.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adcomm.o: ad_prot.h
-adcomm.o: arb_assert.h
 adcomm.o: arbdb.h
 adcomm.o: arbdb_base.h
 adcomm.o: gb_comm.h
@@ -322,6 +321,7 @@ adcomm.o: gb_memory.h
 adcomm.o: gb_prot.h
 adcomm.o: gb_storage.h
 adcomm.o: gb_tune.h
+adcomm.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_core.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_error.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_file.h
@@ -339,7 +339,6 @@ adcomm.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adcompr.o: ad_prot.h
 adcompr.o: ad_t_prot.h
-adcompr.o: arb_assert.h
 adcompr.o: arbdb.h
 adcompr.o: arbdb_base.h
 adcompr.o: arbdbt.h
@@ -355,6 +354,7 @@ adcompr.o: gb_prot.h
 adcompr.o: gb_storage.h
 adcompr.o: gb_t_prot.h
 adcompr.o: gb_tune.h
+adcompr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adcompr.o: $(ARBHOME)/INCLUDE/arb_core.h
 adcompr.o: $(ARBHOME)/INCLUDE/arb_error.h
 adcompr.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -370,12 +370,12 @@ adcompr.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adExperiment.o: ad_prot.h
 adExperiment.o: ad_t_prot.h
-adExperiment.o: arb_assert.h
 adExperiment.o: arbdb.h
 adExperiment.o: arbdb_base.h
 adExperiment.o: arbdbt.h
 adExperiment.o: gb_local.h
 adExperiment.o: gb_prot.h
+adExperiment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adExperiment.o: $(ARBHOME)/INCLUDE/arb_core.h
 adExperiment.o: $(ARBHOME)/INCLUDE/arb_error.h
 adExperiment.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -389,12 +389,12 @@ adExperiment.o: $(ARBHOME)/INCLUDE/smartptr.h
 adExperiment.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adfile.o: ad_prot.h
-adfile.o: arb_assert.h
 adfile.o: arbdb.h
 adfile.o: arbdb_base.h
 adfile.o: gb_load.h
 adfile.o: gb_local.h
 adfile.o: gb_prot.h
+adfile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_core.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_error.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_file.h
@@ -415,12 +415,12 @@ adfile.o: $(ARBHOME)/INCLUDE/test_unit.h
 adGene.o: ad_prot.h
 adGene.o: ad_t_prot.h
 adGene.o: adGene.h
-adGene.o: arb_assert.h
 adGene.o: arbdb.h
 adGene.o: arbdb_base.h
 adGene.o: arbdbt.h
 adGene.o: gb_local.h
 adGene.o: gb_prot.h
+adGene.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_core.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -439,7 +439,6 @@ adGene.o: $(ARBHOME)/INCLUDE/test_global.h
 adGene.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adhash.o: ad_prot.h
-adhash.o: arb_assert.h
 adhash.o: arbdb.h
 adhash.o: arbdb_base.h
 adhash.o: gb_data.h
@@ -449,6 +448,7 @@ adhash.o: gb_main.h
 adhash.o: gb_memory.h
 adhash.o: gb_prot.h
 adhash.o: gb_tune.h
+adhash.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_core.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_error.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -466,12 +466,12 @@ adhash.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adhashtools.o: ad_prot.h
 adhashtools.o: ad_t_prot.h
-adhashtools.o: arb_assert.h
 adhashtools.o: arbdb.h
 adhashtools.o: arbdb_base.h
 adhashtools.o: arbdbt.h
 adhashtools.o: gb_local.h
 adhashtools.o: gb_prot.h
+adhashtools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adhashtools.o: $(ARBHOME)/INCLUDE/arb_core.h
 adhashtools.o: $(ARBHOME)/INCLUDE/arb_error.h
 adhashtools.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -485,7 +485,6 @@ adhashtools.o: $(ARBHOME)/INCLUDE/smartptr.h
 adhashtools.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adindex.o: ad_prot.h
-adindex.o: arb_assert.h
 adindex.o: arbdb.h
 adindex.o: arbdb_base.h
 adindex.o: gb_data.h
@@ -501,6 +500,7 @@ adindex.o: gb_storage.h
 adindex.o: gb_ts.h
 adindex.o: gb_tune.h
 adindex.o: gb_undo.h
+adindex.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_core.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_error.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -516,12 +516,12 @@ adindex.o: $(ARBHOME)/INCLUDE/test_global.h
 
 aditem.o: ad_prot.h
 aditem.o: ad_t_prot.h
-aditem.o: arb_assert.h
 aditem.o: arbdb.h
 aditem.o: arbdb_base.h
 aditem.o: arbdbt.h
 aditem.o: gb_local.h
 aditem.o: gb_prot.h
+aditem.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_core.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_error.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -538,7 +538,6 @@ aditem.o: $(ARBHOME)/INCLUDE/test_global.h
 adlang1.o: ad_prot.h
 adlang1.o: ad_t_prot.h
 adlang1.o: adGene.h
-adlang1.o: arb_assert.h
 adlang1.o: arbdb.h
 adlang1.o: arbdb_base.h
 adlang1.o: arbdbt.h
@@ -552,6 +551,7 @@ adlang1.o: gb_main.h
 adlang1.o: gb_memory.h
 adlang1.o: gb_prot.h
 adlang1.o: gb_tune.h
+adlang1.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_core.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -570,7 +570,6 @@ adlang1.o: $(ARBHOME)/INCLUDE/static_assert.h
 adlang1.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adlink.o: ad_prot.h
-adlink.o: arb_assert.h
 adlink.o: arbdb.h
 adlink.o: arbdb_base.h
 adlink.o: gb_data.h
@@ -578,6 +577,7 @@ adlink.o: gb_local.h
 adlink.o: gb_main.h
 adlink.o: gb_memory.h
 adlink.o: gb_prot.h
+adlink.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adlink.o: $(ARBHOME)/INCLUDE/arb_core.h
 adlink.o: $(ARBHOME)/INCLUDE/arb_error.h
 adlink.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -591,7 +591,6 @@ adlink.o: $(ARBHOME)/INCLUDE/smartptr.h
 adlink.o: $(ARBHOME)/INCLUDE/test_global.h
 
 admalloc.o: ad_prot.h
-admalloc.o: arb_assert.h
 admalloc.o: arbdb.h
 admalloc.o: arbdb_base.h
 admalloc.o: gb_data.h
@@ -599,6 +598,7 @@ admalloc.o: gb_local.h
 admalloc.o: gb_memory.h
 admalloc.o: gb_prot.h
 admalloc.o: gb_storage.h
+admalloc.o: $(ARBHOME)/INCLUDE/arb_assert.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_core.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -613,7 +613,6 @@ admalloc.o: $(ARBHOME)/INCLUDE/smartptr.h
 admalloc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 admap.o: ad_prot.h
-admap.o: arb_assert.h
 admap.o: arbdb.h
 admap.o: arbdb_base.h
 admap.o: gb_data.h
@@ -627,6 +626,7 @@ admap.o: gb_memory.h
 admap.o: gb_prot.h
 admap.o: gb_storage.h
 admap.o: gb_tune.h
+admap.o: $(ARBHOME)/INCLUDE/arb_assert.h
 admap.o: $(ARBHOME)/INCLUDE/arb_core.h
 admap.o: $(ARBHOME)/INCLUDE/arb_error.h
 admap.o: $(ARBHOME)/INCLUDE/arb_file.h
@@ -642,11 +642,11 @@ admap.o: $(ARBHOME)/INCLUDE/static_assert.h
 admap.o: $(ARBHOME)/INCLUDE/test_global.h
 
 admatch.o: ad_prot.h
-admatch.o: arb_assert.h
 admatch.o: arbdb.h
 admatch.o: arbdb_base.h
 admatch.o: gb_local.h
 admatch.o: gb_prot.h
+admatch.o: $(ARBHOME)/INCLUDE/arb_assert.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_core.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_error.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -661,11 +661,11 @@ admatch.o: $(ARBHOME)/INCLUDE/smartptr.h
 admatch.o: $(ARBHOME)/INCLUDE/test_global.h
 
 admath.o: ad_prot.h
-admath.o: arb_assert.h
 admath.o: arbdb.h
 admath.o: arbdb_base.h
 admath.o: gb_local.h
 admath.o: gb_prot.h
+admath.o: $(ARBHOME)/INCLUDE/arb_assert.h
 admath.o: $(ARBHOME)/INCLUDE/arb_core.h
 admath.o: $(ARBHOME)/INCLUDE/arb_error.h
 admath.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -681,12 +681,12 @@ admath.o: $(ARBHOME)/INCLUDE/test_global.h
 adname.o: ad_config.h
 adname.o: ad_prot.h
 adname.o: ad_t_prot.h
-adname.o: arb_assert.h
 adname.o: arbdb.h
 adname.o: arbdb_base.h
 adname.o: arbdbt.h
 adname.o: gb_local.h
 adname.o: gb_prot.h
+adname.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adname.o: $(ARBHOME)/INCLUDE/arb_core.h
 adname.o: $(ARBHOME)/INCLUDE/arb_error.h
 adname.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -704,7 +704,6 @@ adname.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adoptimize.o: ad_prot.h
 adoptimize.o: ad_t_prot.h
-adoptimize.o: arb_assert.h
 adoptimize.o: arbdb.h
 adoptimize.o: arbdb_base.h
 adoptimize.o: arbdbt.h
@@ -719,6 +718,7 @@ adoptimize.o: gb_memory.h
 adoptimize.o: gb_prot.h
 adoptimize.o: gb_storage.h
 adoptimize.o: gb_tune.h
+adoptimize.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_core.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_error.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_file.h
@@ -736,11 +736,11 @@ adoptimize.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adperl.o: ad_prot.h
 adperl.o: adperl.h
-adperl.o: arb_assert.h
 adperl.o: arbdb.h
 adperl.o: arbdb_base.h
 adperl.o: gb_local.h
 adperl.o: gb_prot.h
+adperl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adperl.o: $(ARBHOME)/INCLUDE/arb_core.h
 adperl.o: $(ARBHOME)/INCLUDE/arb_error.h
 adperl.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -754,7 +754,6 @@ adperl.o: $(ARBHOME)/INCLUDE/smartptr.h
 adperl.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adquery.o: ad_prot.h
-adquery.o: arb_assert.h
 adquery.o: arbdb.h
 adquery.o: arbdb_base.h
 adquery.o: gb_aci.h
@@ -770,6 +769,7 @@ adquery.o: gb_memory.h
 adquery.o: gb_prot.h
 adquery.o: gb_ta.h
 adquery.o: gb_tune.h
+adquery.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_core.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_error.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -786,10 +786,10 @@ adquery.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adRevCompl.o: ad_prot.h
 adRevCompl.o: ad_t_prot.h
-adRevCompl.o: arb_assert.h
 adRevCompl.o: arbdb.h
 adRevCompl.o: arbdb_base.h
 adRevCompl.o: arbdbt.h
+adRevCompl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/arb_core.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/arb_error.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -804,7 +804,6 @@ adRevCompl.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adseqcompr.o: ad_prot.h
 adseqcompr.o: ad_t_prot.h
-adseqcompr.o: arb_assert.h
 adseqcompr.o: arbdb.h
 adseqcompr.o: arbdb_base.h
 adseqcompr.o: arbdbt.h
@@ -816,6 +815,7 @@ adseqcompr.o: gb_main.h
 adseqcompr.o: gb_memory.h
 adseqcompr.o: gb_prot.h
 adseqcompr.o: gb_tune.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_core.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_error.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_file.h
@@ -834,7 +834,6 @@ adseqcompr.o: $(ARBHOME)/INCLUDE/test_global.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adsocket.o: ad_prot.h
-adsocket.o: arb_assert.h
 adsocket.o: arbdb.h
 adsocket.o: arbdb_base.h
 adsocket.o: gb_comm.h
@@ -844,6 +843,7 @@ adsocket.o: gb_localdata.h
 adsocket.o: gb_main.h
 adsocket.o: gb_memory.h
 adsocket.o: gb_prot.h
+adsocket.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_core.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_cs.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -864,7 +864,6 @@ adsocket.o: $(ARBHOME)/INCLUDE/test_global.h
 adsocket.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adstring.o: ad_prot.h
-adstring.o: arb_assert.h
 adstring.o: arbdb.h
 adstring.o: arbdb_base.h
 adstring.o: gb_data.h
@@ -875,6 +874,7 @@ adstring.o: gb_main.h
 adstring.o: gb_memory.h
 adstring.o: gb_prot.h
 adstring.o: gb_tune.h
+adstring.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_core.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -895,7 +895,6 @@ adstring.o: $(ARBHOME)/INCLUDE/valgrind.h
 
 adsystem.o: ad_prot.h
 adsystem.o: ad_t_prot.h
-adsystem.o: arb_assert.h
 adsystem.o: arbdb.h
 adsystem.o: arbdb_base.h
 adsystem.o: arbdbt.h
@@ -908,6 +907,7 @@ adsystem.o: gb_main.h
 adsystem.o: gb_memory.h
 adsystem.o: gb_prot.h
 adsystem.o: gb_tune.h
+adsystem.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adsystem.o: $(ARBHOME)/INCLUDE/arb_core.h
 adsystem.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsystem.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -922,7 +922,6 @@ adsystem.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adtables.o: ad_prot.h
 adtables.o: ad_t_prot.h
-adtables.o: arb_assert.h
 adtables.o: arbdb.h
 adtables.o: arbdb_base.h
 adtables.o: arbdbt.h
@@ -931,6 +930,7 @@ adtables.o: gb_local.h
 adtables.o: gb_main.h
 adtables.o: gb_memory.h
 adtables.o: gb_prot.h
+adtables.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adtables.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtables.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtables.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -945,12 +945,12 @@ adtables.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adtcp.o: ad_prot.h
 adtcp.o: ad_t_prot.h
-adtcp.o: arb_assert.h
 adtcp.o: arbdb.h
 adtcp.o: arbdb_base.h
 adtcp.o: arbdbt.h
 adtcp.o: gb_local.h
 adtcp.o: gb_prot.h
+adtcp.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adtcp.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtcp.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtcp.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -966,7 +966,6 @@ adtcp.o: $(ARBHOME)/INCLUDE/test_global.h
 adtcp.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adTest.o: ad_prot.h
-adTest.o: arb_assert.h
 adTest.o: arbdb.h
 adTest.o: arbdb_base.h
 adTest.o: gb_data.h
@@ -977,6 +976,7 @@ adTest.o: gb_main.h
 adTest.o: gb_memory.h
 adTest.o: gb_prot.h
 adTest.o: gb_tune.h
+adTest.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_core.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_error.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -992,7 +992,6 @@ adTest.o: $(ARBHOME)/INCLUDE/test_global.h
 adtools.o: ad_prot.h
 adtools.o: ad_remote.h
 adtools.o: ad_t_prot.h
-adtools.o: arb_assert.h
 adtools.o: arbdb.h
 adtools.o: arbdb_base.h
 adtools.o: arbdbt.h
@@ -1001,6 +1000,7 @@ adtools.o: gb_local.h
 adtools.o: gb_main.h
 adtools.o: gb_memory.h
 adtools.o: gb_prot.h
+adtools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -1020,12 +1020,12 @@ adtools.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adtree.o: ad_prot.h
 adtree.o: ad_t_prot.h
-adtree.o: arb_assert.h
 adtree.o: arbdb.h
 adtree.o: arbdb_base.h
 adtree.o: arbdbt.h
 adtree.o: gb_local.h
 adtree.o: gb_prot.h
+adtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
@@ -1045,7 +1045,6 @@ adtree.o: $(ARBHOME)/INCLUDE/test_unit.h
 adtune.o: gb_tune.h
 
 arbdb.o: ad_prot.h
-arbdb.o: arb_assert.h
 arbdb.o: arbdb.h
 arbdb.o: arbdb_base.h
 arbdb.o: gb_cb.h
@@ -1064,6 +1063,7 @@ arbdb.o: gb_storage.h
 arbdb.o: gb_ta.h
 arbdb.o: gb_ts.h
 arbdb.o: gb_tune.h
+arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_core.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -1078,11 +1078,11 @@ arbdb.o: $(ARBHOME)/INCLUDE/test_global.h
 arbdb.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arbdbpp.o: ad_prot.h
-arbdbpp.o: arb_assert.h
 arbdbpp.o: arbdb.h
 arbdbpp.o: arbdb_base.h
 arbdbpp.o: gb_local.h
 arbdbpp.o: gb_prot.h
+arbdbpp.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/arb_core.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/arb_error.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/arb_msg.h
