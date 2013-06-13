@@ -25,7 +25,7 @@ include AISC/export2sub
 $(MAIN): server.a
 
 server.a: $(MAIN_SOURCE) $(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES) $(AISC_DEPENDS) $(MAIN_HEADER)
-	@$(MAKE) -r -f AISC/Makefile
+	@$(MAKE) -r -f AISC/Makefile "AUTODEPENDS=0"
 
 depends:
 	@rm -f .depends
