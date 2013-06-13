@@ -12,7 +12,6 @@
 #include <aw_color_groups.hxx>
 #include "aw_preset.hxx"
 #include "aw_gtk_migration_helpers.hxx"
-#include "aw_def.hxx"
 #include "aw_root.hxx"
 #include "aw_awar.hxx"
 #include "aw_device.hxx"
