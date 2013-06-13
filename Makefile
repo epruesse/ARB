@@ -318,6 +318,9 @@ endif
 
 #---------------------- GTK 
 
+ifeq ($(GTK),)
+$(warning GTK undefined (no config.makefile generated yet?))
+else
 ifeq ($(GTK),2)
 	GTKCFLAGS:= $(shell pkg-config --cflags gtk+-2.0) -fPIC
 	GTKLIBS:= $(shell pkg-config --libs gtk+-2.0 | $(SED) 's/-pthread//')
@@ -334,6 +337,7 @@ ifeq ($(GTK),3)
 	dflags += -DARB_GTK3
 else
 $(error Unsupported GTK version $(GTK) (possible values: 2, 3))
+endif
 endif
 endif
 
