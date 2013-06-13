@@ -37,8 +37,9 @@
 #endif
 
 /* ------------------------------------------------------------
- * Define SIMPLE_ARB_ASSERT before including this header
- * to avoid dependency from CORE library!
+ * Include arb_simple_assert.h to avoid dependency from CORE library!
+ * ------------------------------------------------------------
+ * available assertion flavors:
  *
  * ASSERT_CRASH                 if assert fails debugger stops at assert macro
  * ASSERT_BACKTRACE_AND_CRASH   like ASSERT_CRASH - with backtrace
@@ -63,8 +64,8 @@
 #error arb_assert already defined
 #endif
 
-// only use ONE of the following ASSERT_xxx defines :
-
+// --------------------------------------------------------------------
+// use exactly ONE of the following ASSERT_xxx defines in each section:
 #if defined(DEBUG) && !defined(DEVEL_RELEASE)
 
 // assert that raises SIGSEGV (recommended for DEBUG version!)

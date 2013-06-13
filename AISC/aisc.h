@@ -11,9 +11,8 @@
 #ifndef AISC_H
 #define AISC_H
 
-#define SIMPLE_ARB_ASSERT
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+#ifndef ARB_SIMPLE_ASSERT_H
+#include <arb_simple_assert.h>
 #endif
 #ifndef DUPSTR_H
 #include <dupstr.h>
