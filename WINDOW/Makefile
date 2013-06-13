@@ -1025,7 +1025,6 @@ AW_preset.o: aw_clipable.hxx
 AW_preset.o: aw_color_groups.hxx
 AW_preset.o: aw_common.hxx
 AW_preset.o: aw_common_gtk.hxx
-AW_preset.o: aw_def.hxx
 AW_preset.o: aw_device.hxx
 AW_preset.o: aw_device_cairo.hxx
 AW_preset.o: aw_device_click.hxx
