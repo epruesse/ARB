@@ -19,16 +19,13 @@ mainwrapper: $(OBJECTS)
 
 # --------------------------------------------------------------------------------
 
-clean: dep.clean
+clean: 
 		rm -f stamp.* valgrind2grep.lst postcompile.sav $(OBJECTS)
 
 valgrind_update:
 		./arb_valgrind update
 
 # --------------------------------------------------------------------------------
-
-dep.clean:
-	rm -f dep.*
 
 % : %.tmp
 	./mv_if_diff $< $@
