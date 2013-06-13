@@ -6,14 +6,18 @@ OBJECTS = $(subst .c,.o,$(SOURCES))
 
 BINARY=aisc
 
+LOCAL_DEFINES=-DSIMPLE_ARB_ASSERT
+LOCAL_CFLAGS=$(cflags) $(LOCAL_DEFINES)
+LOCAL_MAKEDEPENDFLAGS=$(MAKEDEPENDFLAGS) $(LOCAL_DEFINES)
+
 $(MAIN): proto
 	$(MAKE) $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	$(CPP) $(cflags) -o $@ $(OBJECTS)
+	$(CPP) $(LOCAL_CFLAGS) -o $@ $(OBJECTS)
 
 .c.o:
-	$(CPP) -x c++ $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(CPP) -x c++ $(LOCAL_CFLAGS) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
@@ -21,9 +25,9 @@ depends: $(DEPENDS)
 	@rm $(DEPENDS)
 $(DEPENDS): depend.init
 depend.init:
-	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+	$(MAKEDEPEND) $(LOCAL_MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
 .c.depend:
-	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+	$(MAKEDEPEND) -f- $(LOCAL_MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 clean:
 	rm -f $(OBJECTS) $(BINARY)
@@ -45,6 +49,7 @@ aisc.o: aisc_parser.h
 aisc.o: aisc_proto.h
 aisc.o: aisc_token.h
 aisc.o: $(ARBHOME)/INCLUDE/arb_assert.h
+aisc.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 aisc.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -61,6 +66,7 @@ aisc_commands.o: aisc_parser.h
 aisc_commands.o: aisc_proto.h
 aisc_commands.o: aisc_token.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/arb_assert.h
+aisc_commands.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -74,6 +80,7 @@ aisc_eval.o: aisc_inline.h
 aisc_eval.o: aisc_location.h
 aisc_eval.o: aisc_proto.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/arb_assert.h
+aisc_eval.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc_eval.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -89,6 +96,7 @@ aisc_mix.o: aisc_parser.h
 aisc_mix.o: aisc_proto.h
 aisc_mix.o: aisc_token.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/arb_assert.h
+aisc_mix.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -102,6 +110,7 @@ aisc_parser.o: aisc_location.h
 aisc_parser.o: aisc_parser.h
 aisc_parser.o: aisc_token.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/arb_assert.h
+aisc_parser.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc_parser.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -117,6 +126,7 @@ aisc_var_ref.o: aisc_parser.h
 aisc_var_ref.o: aisc_proto.h
 aisc_var_ref.o: aisc_token.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/arb_assert.h
+aisc_var_ref.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/cxxforward.h

@@ -4,9 +4,8 @@
 #ifndef AISC_DEF_H
 #define AISC_DEF_H
 
-#define SIMPLE_ARB_ASSERT
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+#ifndef ARB_SIMPLE_ASSERT_H
+#include <arb_simple_assert.h>
 #endif
 
 #define aisc_assert(cond) arb_assert(cond)
