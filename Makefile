@@ -1441,16 +1441,36 @@ clrdotdepends:
 
 comdepends: comtools clrdotdepends
 	@echo "$(SEP) Partially build com interface"
-	$(MAKE) PROBE_COM/PROBE_COM.depends
-	$(MAKE) NAMES_COM/NAMES_COM.depends
+	$(MAKE) PROBE_COM/PROBE_COM.depends NAMES_COM/NAMES_COM.depends
+	$(MAKE) PROBE_COM/server.depends    NAMES_COM/server.depends
 
 depends: genheaders comdepends
 	@echo "$(SEP) Updating other dependencies"
-	$(MAKE) $(ARCHS:.a=.depends) \
+	$(MAKE) $(subst NAMES_COM/server.depends,,$(subst PROBE_COM/server.depends,,$(ARCHS:.a=.depends))) \
 		HELP_SOURCE/HELP_SOURCE.depends
 	$(MAKE) libdepends
 
 depend: depends
+
+# ------------------------------------------------------------
+# dependency generation tests for AISC code
+#(all should work w/o creating wrong dependencies;
+# neither in XXX_COM/Makefile nor in code using AISC interface)
+dependstest1: silent_clean
+	$(MAKE) depends
+dependstest2: silent_clean
+	$(MAKE) com
+dependstest3: silent_clean
+	$(MAKE) aw
+dependstest4: silent_clean
+	$(MAKE) pt
+dependstest5: silent_clean
+	$(MAKE) na
+dependstest6: silent_clean
+	$(MAKE) nt
+dependstest7: silent_clean
+	$(MAKE) all
+# ------------------------------------------------------------
 
 AISC_MKPTPS/AISC_MKPTPS.dummy: links
 
@@ -1708,6 +1728,9 @@ clean2: $(ARCHS:.a=.clean) \
 clean: redo_links motif_xpm_hack_clean
 	$(MAKE) clean2
 	$(MAKE) clean_cov_all clean_links
+
+silent_clean:
+	$(MAKE) clean >/dev/null
 
 # 'relocated' is about 50% faster than 'rebuild'
 reloc_clean: links
