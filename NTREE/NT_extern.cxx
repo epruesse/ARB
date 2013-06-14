@@ -1202,7 +1202,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->sep______________();
 
-            awm->insert_menu_topic("new_names", "Generate New Names", "e", "sp_rename.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWTC_create_rename_window, (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("new_names", "Synchronize IDs", "e", "sp_rename.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWTC_create_rename_window, (AW_CL)GLOBAL.gb_main);
 
             awm->insert_sub_menu("Valid Names ...", "V", AWM_EXP);
             {
@@ -1447,7 +1447,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->create_menu("Tools", "o", AWM_ALL);
         {
-            awm->insert_menu_topic("names_admin",      "Name server admin",    "s", "namesadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("names_admin",      "Name server admin (IDs)",    "s", "namesadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL.gb_main);
             awm->insert_sub_menu("DB admin", "D", AWM_EXP);
             {
                 awm->insert_menu_topic("db_admin", "Re-repair DB", "R", "rerepair.hlp", AWM_EXP, NT_rerepair_DB, (AW_CL)GLOBAL.gb_main, 0);

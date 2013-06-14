@@ -13,6 +13,6 @@ TITLE		NOTES:   gde
 OCCURRENCE	ARB_IMPORT
 
 DESCRIPTION	This is just an experimental GDE file reader. It only reads
-		the name and sequence. You should not use it if you can avoid
+		the species ID and sequence. You should not use it if you can avoid
 		it.
 

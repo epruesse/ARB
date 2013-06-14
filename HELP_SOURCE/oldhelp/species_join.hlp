@@ -39,7 +39,7 @@ EXAMPLES
                           real name of the species.
                           That means the species_name of the 16s sequence
                           should be the same as of the 23s seq.
-                          Do not use the 'names' field because it is
+                          Do not use the 'name'-field because it is
                           used as a UNIQUE id to the database.
 
 			- ARB_NT/Species/Merge Species/Join Marked Species

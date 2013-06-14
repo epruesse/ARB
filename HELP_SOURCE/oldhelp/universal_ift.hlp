@@ -17,8 +17,8 @@ DESCRIPTION	This input format reader should read every sequence format,
 			- removes all other information
 			- maybe adds additional words to the beginning
 			  or end of the sequence
-		The final name of the species will be 'spec#', where '#' is
-		a numerical number. You should rename the species as soon
+		The final ID of the species will be 'spec#', where '#' is
+		a numerical number. You should 'Synchronize species IDs' as soon
 		as possible.
 
         INTERNAL	This format scans the file for long strings containing more

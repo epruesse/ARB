@@ -49,8 +49,8 @@ SECTION FORMAT
 
 EXAMPLES	None
 
-WARNINGS	!!! The names associated with terminal nodes have to be
-		consistent with those of the current database.!!!
+WARNINGS	The ID associated with terminal nodes have to be
+		consistent with those of the current database!
 
                 Never give your groups numeric names or the ARB Newick enhancement will not work for you.
 

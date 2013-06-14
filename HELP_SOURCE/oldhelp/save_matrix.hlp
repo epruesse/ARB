@@ -18,7 +18,7 @@ SECTION         FORMATS
 
                 Phylip Format:		Format to be reused in Phylip Programs
 
-		Readable (using NDS):	Use NDS to replace the short names
+		Readable (using NDS):	Use NDS to replace the species IDs (shortnames)
 					by a user defined selection of fields
 					and generate a pretty view of the
 					matrix

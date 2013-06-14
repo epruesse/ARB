@@ -8,33 +8,33 @@ SUB	rename.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Generate new names
+TITLE		Synchronize species IDs
 
-OCCURRENCE	ARB_NT/Species/Generate new names
+OCCURRENCE	ARB_NT/Species/Synchronize IDs
 
-DESCRIPTION	Creates automatically unique names (=identifiers) for the
+DESCRIPTION	Automatically creates unique identifiers (=shortnames) for the
 		species entries in the database. The entries are identified by
-		their accession numbers (public databases). The names are given
-		using the 'full_name' information. Usually, the first three
-		letters are taken from the genus designation, the remaining
-		letters from the species name.
+		their accession numbers (public databases).
+                These IDs are created using information from the 'full_name'.
+                Usually, the first three letters are taken from the genus designation,
+                the remaining letters from the species name.
 
 		If there are duplicated entries (same accession number -
 		different 'full_name'; no accession number - same 'full_name')
 		the different versions are indicated by appending running
 		numbers separated from the 'name' by a dot.
 
-		Press the 'Rename' button of the 'Species' menu to display 
-		the 'AUTORENAME SPECIES' window.
+		Select the 'Synchronize IDs' entry of the 'Species' menu to display
+		the 'Synchronize species IDs' window.
 		
 		
-NOTES		The names are stored with the database. The names can be changed
-		by the user (ARB_NT/Species/Info/SPECIES/Rename). However, the
-		names are protected to prevent to assign the same name to
-		different sequences.
+NOTES		The IDs are stored with the database. They are protected versus change
+                to avoid assigning the same ID to different species.
 
-		It is recommended to assign accession numbers to species entries
-		(sequences) which are not from public databases.	
+                It is recommended to assign accession numbers (field 'acc') to species
+                entries (sequences) which are not from public databases and therefore
+                dont have an accession number yet. This is done automatically when
+                importing new sequences.
 
 EXAMPLES	None
 

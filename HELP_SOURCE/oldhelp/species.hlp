@@ -22,12 +22,12 @@ DESCRIPTION	One species is one database entry containing many database entries
 
 		[Database field name]		[Comment]
 
-		name				Unique name for a species
-						max 8 characters long
+		name				Unique identifier of the species
+						(max 8 characters long)
 
 		acc				Accession number
 
-		full_name			Name for a species
+		full_name			(User defined) name of the species
 
 		strain
 

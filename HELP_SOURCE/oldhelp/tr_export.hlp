@@ -23,9 +23,9 @@ DESCRIPTION	Writes a tree to file in Newick format
 
                Nodetype
 
-                      Species name
+                      Species ID
 
-                              This is the normal format using species names as leaf names.
+                              This is the traditional format using species IDs as leaf names.
 
                       NDS
 

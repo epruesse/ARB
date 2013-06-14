@@ -86,7 +86,7 @@ DESCRIPTION	'ARB_NT' is the main window for the current ARB database and
 					'alignment' (subdatabase; see LINK{glossary.hlp})
                                         and allows switching to another 'Alignment.
 
-		Fourth large button:	Displays the name of the selected
+		Fourth large button:	Displays the ID ('name') of the selected
 					'species' (see LINK{glossary.hlp}) and
 					provides access to the database search
 					tools.

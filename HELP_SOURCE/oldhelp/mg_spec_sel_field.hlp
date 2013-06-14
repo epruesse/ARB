@@ -14,7 +14,7 @@ OCCURRENCE	ARB_MERGE/Transfer Species/Transfer Field ...
 
 DESCRIPTION	Copies just one field from all species listed in the source database (DB)
                 on the left side, to the corresponding species (i.e. the species with
-                identical 'name' entry) in the target DB on the right side.
+                same ID aka 'name'-entry) in the target DB on the right side.
 
 		If no such corresponding species exists, it will be created.
 

@@ -70,7 +70,7 @@ DESCRIPTION	The main idea of ARB is to manage database access via a tree.
 
 			Click on <GO>
 
-		WARNING: Sequence names have to contain at least 3 characters.
+		WARNING: Species IDs have to contain at least 3 characters.
 
 		Reconstruct an initial tree:
 
