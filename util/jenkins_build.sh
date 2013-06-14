@@ -44,7 +44,7 @@ Darwin)
 Linux)
  echo "LINUX := 1" >> config.makefile
  echo "MACH := LINUX" >> config.makefile
- echo "UNIT_TESTS := 0" >> config.makefile
+ echo "UNIT_TESTS := 1" >> config.makefile
  ;;
 esac
 
