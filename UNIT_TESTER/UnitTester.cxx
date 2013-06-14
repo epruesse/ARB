@@ -32,6 +32,7 @@
 #include <setjmp.h>
 #include <unistd.h>
 #include <string>
+#include <signal.h>
 
 using namespace std;
 
@@ -321,7 +322,7 @@ __ATTR__NORETURN static void deadlockguard(long max_allowed_duration_ms, bool de
         max_allowed_duration_ms += additional;
     }
 
-    const long aBIT = 50*1000; // µs
+    const long aBIT = 50*1000; // ï¿½s
 
     fprintf(stderr,
             "[deadlockguard woke up after %li ms]\n"
