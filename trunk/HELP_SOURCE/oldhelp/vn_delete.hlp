@@ -12,7 +12,7 @@ TITLE		Delete Valid Names form Database
 
 OCCURRENCE	ARB_NT/species/Valid Names/Delete names from DB
 
-DESCRIPTION     Deletes the database section used for the storage of the list of validly publishe names.
+DESCRIPTION     Deletes the database section used for the storage of the list of validly published names.
                 This is necessary before a newer version of the list can be imported.
 
 NOTES		None

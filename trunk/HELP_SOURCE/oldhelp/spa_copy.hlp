@@ -22,7 +22,7 @@ DESCRIPTION	Copies a species/gene entry.
 		<GO>
 
 NOTES		In case of copying species the ARB name server ensures that
-            no duplicated names are created.
+                no duplicated IDs are created.
 
 		To overwrite the entries of an existing species/gene a protection
 		level equal or higher than that assigned to this entry has to be

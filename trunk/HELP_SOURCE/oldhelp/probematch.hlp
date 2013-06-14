@@ -55,7 +55,7 @@ DESCRIPTION	Finds and displays all occurrences of a given target and/or
 
                 Brief description of the listed columns:
 
-                  - name: short name of the matched species
+                  - name: ID (shortname) of matched species
                   - fullname: full name of the matched species
                   - mis: number of mismatches
                   - N_mis: number of pairings with ambiguous residues (N)
@@ -65,8 +65,8 @@ DESCRIPTION	Finds and displays all occurrences of a given target and/or
 
                 Results from gene PT_servers consist of different columns:
 
-                  - organism: short name of the matched organism
-                  - genename: short name of the gene
+                  - organism: ID (shortname) of matched organism
+                  - genename: ID (shortname) of matched gene
                   - mis, N_mis, wmis, rev (same meaning as with normal PT_server)
                   - pos: position of match in genome sequence
                   - gpos: position of match in gene sequence

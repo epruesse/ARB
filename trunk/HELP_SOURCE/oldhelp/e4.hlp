@@ -43,7 +43,7 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 
 	Display:
 
-			First Column:	Name of sequences or name of groups.
+			First Column:	Species ID or group name.
 			Second C.	Protection level and subtype of sequence.
 			Last c.		Sequence and secondary structure and more.
 

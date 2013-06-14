@@ -22,15 +22,15 @@ DESCRIPTION     The top area of the window displays the source and the
                 they need to
 
                 - share consistent alignments (see LINK{mg_alignment.hlp})
-                - use the same short names for species (see LINK{mg_names.hlp})
+                - use synchronized IDs for species (see LINK{mg_names.hlp})
 
-                Whenever you merge into an existing database (DB) you need to 'Check names'
+                Whenever you merge into an existing database (DB) you need to 'Check IDs ...'
                 before you will be able to transfer items (species, SAIs, trees, ...).
                 This isn't neccessary if you are exporting from a DB into a new DB (in which
                 case the 'Check..'-buttons will be inactive)
 
 
-                After alignments and names have been harmonized, select any of
+                After alignments and IDs have been synchronized, select any of
                 the 'Transfer..'-buttons to transfer different items from the
                 source to the target DB. Please refer to the corresponding 'Subtopics'
                 for more information.

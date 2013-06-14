@@ -15,7 +15,7 @@ OCCURRENCE	ARB_NT/Tools/Name server admin
 SECTION         General warning
 
 			Most of the functions here will destroy or at least affect the consistency
-			of the short names for all users of the affected names.dat. 
+			of the species IDs (shortnames) for all users of the affected names.dat. 
 
 			Please only use these functions if you really know what you are doing.
 			Otherwise ask your local ARB guru.
@@ -29,8 +29,8 @@ DESCRIPTION     Delete old names file
                        your data curation or if you had species in one of your database
                        which you don't store anymore.
 
-                       To get rid of these unused names click 'Delete old names file'.
-                       Your names database will be deleted and names will be regenerated.
+                       To get rid of these unused IDs click 'Delete old names file'.
+                       Your names database will be deleted and all IDs will be regenerated.
 
                 Edit names file
 
@@ -49,7 +49,7 @@ DESCRIPTION     Delete old names file
 
 		After using any of the above functions 
 
-			you should consider to regenerate names (see LINK{sp_rename.hlp}) in 
+			you should consider to synchronize IDs (see LINK{sp_rename.hlp}) in 
 			all your arb-databases.
 
                 Additional species ID field
@@ -57,7 +57,7 @@ DESCRIPTION     Delete old names file
                        If you have good reasons, why you have to keep several species
                        with identical accession numbers in your databases, you'll normally
                        get problems with the ARB nameserver, because it handles these species
-                       as "identical" and gives them names like 'HalHalob.2', 'HalHalob.3' etc.
+                       as "identical" and gives them IDs like 'HalHalob.2', 'HalHalob.3' etc.
                        to mark them as duplicates.
 
                        Here you can specify an additional DB-species-field, which will be used
@@ -74,7 +74,7 @@ DESCRIPTION     Delete old names file
 
                        - Names between database using different additional fields (or no add.
                          field) are NOT compatible. To merge such databases, change this setting
-                         such that both databases use equal additional fields and generate new names.
+                         such that both databases use equal additional fields and synchronize species IDs.
                          Otherwise you'll most likely merge the data of non-equal species, which will
                          corrupt your data!
 

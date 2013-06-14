@@ -21,8 +21,17 @@ DESCRIPTION	Renames a 'species/gene' (see LINK{glossary.hlp}) entry.
 		'SPECIES/GENE RENAME' window. Type a name to this window and press
 		<GO>
 
-NOTES		In case of renaming species the ARB name server ensures that
-            no duplicated names are created.
+NOTES		In case of renaming SPECIES you'll be asked whether you want to recreate
+                the species ID. In case you have added a new species manually, we
+                recommend doing so.
+
+                If you choose to recreate the species ID, the ARB nameserver will be asked
+                to forget any previously assigned ID and will really create a new ID
+                from scratch. Therefore you will have to call 'Species/Synchronize IDs' in
+                all databases that also contain the species.
+
+                If you are sure that the species only occurs in the current database,
+                you may recreate the species ID without any further action.
 
 		To change the name of 'species/gene' entries, a protection level
 		equal or higher than that assigned to this entry has to be set

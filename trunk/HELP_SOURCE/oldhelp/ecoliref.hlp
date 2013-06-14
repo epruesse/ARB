@@ -24,9 +24,9 @@ DESCRIPTION	The SAI entry 'ECOLI' is used by the editor and other
 		 * Search your ecoli sequence and select it.
                  * Go to species information window and
                    * press SPECIES/COPY to create a copy of the selected species
-                     This will create a species named 'xxx0' or similar, where 'xxx' is
-                     the name of your selected species. 
-                   * select the name field and change it to 'ECOLI'
+                     This will create a species with ID 'xxx0' or similar, where 'xxx' is
+                     the ID of your selected species.
+                   * select the 'name' field and change it to 'ECOLI'
                    * press 'SPECIES/Convert to SAI' 
 
 NOTES		After inserting or deleting gaps in the whole alignment (ARB_NT/

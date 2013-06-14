@@ -9,39 +9,38 @@ SUB	rename.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Synchronize names
+TITLE		Synchronize species IDs
 
 DESCRIPTION     When merging two databases it is VERY IMPORTANT to use identical
-                short names for identical species and different short names for
-                different species. If not, data of different species will be merged or
-                overwritten.
+                IDs ('name') for identical species and different IDs for different species.
+                If not, data of different species will be merged or overwritten.
 
                 Species are identified using the accession number and (optionally) one
                 additional field. If you use an additional field, a different nameserver
-                is used to rename species.
+                is used to synchronize species IDs.
 
                 Because of different name servers, merging two databases is only possible
-                if both databases use no additional field or if they use the same.
+                if both databases use no additional field or if they use the same field.
 
-                To rename all species in both databases, press the 'Check names...' button
-                to open the 'Synchronize names' window.
+                To synchronize IDs of all species in both databases, press the 'Check IDs ...' button
+                to open the 'Synchronize IDs' window.
 
                 Make sure both databases use the same additional id.
 
-                Press the 'Rename species' button to generate new names for both databases.
+                Press the 'Synchronize' button to synchronize species IDs in both databases.
 
 
-NOTES		Creates automatically unique names (=identifiers) for all
+NOTES		Automatically creates unique IDs (=shortname) for all
 		species entries in the database. The entries are identified by
-		their accession numbers (public databases). The names are created
+		their accession numbers (public databases). The IDs are created
 		using the 'full_name' information. Usually, the first three
 		letters are taken from the genus designation, the remaining
 		letters from the species name.
 
                 In some cases where you are absolutely sure that both databases use
-                identical names for identical species, but renaming creates
-                different names (e.g. because one DB lacks accession numbers) 
-                you can override renaming by checking the 'Override' toggle.
+                identical IDs for identical species, but renaming creates
+                different IDs (e.g. because one DB lacks accession numbers)
+                you can override ID synchronization by checking the 'Override' toggle.
 
 WARNINGS        If there are duplicated entries (same accession number -
 		different 'full_name'; no accession number - same 'full_name')

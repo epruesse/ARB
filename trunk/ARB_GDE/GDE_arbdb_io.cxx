@@ -265,7 +265,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
         if (bad_names) {
             aw_message(GBS_global_string("Problematic names found: %i\n"
                                          "External program call may fail or produce invalid results.\n"
-                                         "You might want to use 'Generate new names' and read the associated help.",
+                                         "You might want to use 'Species/Synchronize IDs' and read the associated help.",
                                          bad_names));
         }
 

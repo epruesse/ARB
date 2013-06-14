@@ -10,13 +10,13 @@ UP	mg_names.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Generate new names
+TITLE		Synchronize species IDs
 
-OCCURRENCE	ARB_NT/Species/Generate new names
-                ARB_MERGE/Check Names/Rename species
+OCCURRENCE	ARB_NT/Species/Synchronize IDs
+                ARB_MERGE/Check IDs/Synchronize
 
-DESCRIPTION	Starts the 'NAME SERVER' to update names within the specified
-		database according to the information stored in the file
+DESCRIPTION	Starts the 'NAME SERVER' to update species IDs ('name') within the
+                specified database according to the information stored in the file
 		'$ARBHOME/lib/nas/names.dat'.
 
 		Press the 'GO' button.

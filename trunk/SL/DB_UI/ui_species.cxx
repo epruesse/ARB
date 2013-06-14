@@ -239,8 +239,12 @@ static void species_rename_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
                 error = GB_write_string(gb_full_name, new_full_name);
             }
             if (!error) {
-                if (aw_ask_sure("recreate_name_field", "Do you want to re-create the 'name' field?")) {
-                    arb_progress progress("Recreating species name", 1);
+                bool recreateID = ARB_in_expert_mode(aw_root) && // never re-create ID in novice mode
+                    aw_ask_sure("recreate_name_field",
+                                "Regenerate species identifier ('name')?\n"
+                                "(only do this if you know what you're doing)");
+                if (recreateID) {
+                    arb_progress progress("Regenerating species ID", 1);
                     error = AWTC_recreate_name(gb_species);
                     if (!error) aw_root->awar(AWAR_SPECIES_NAME)->write_string(GBT_read_name(gb_species)); // set focus
                 }

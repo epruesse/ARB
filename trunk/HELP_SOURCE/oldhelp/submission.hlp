@@ -12,8 +12,8 @@ TITLE		Write to Submission Forms
 
 OCCURRENCE	ARB_NT/Species/Submission
 
-DESCRIPTION	First you have to select the species you want to submit (or enter the short name
-                of the species by hand)
+DESCRIPTION	First you have to select the species you want to submit (or
+                enter the species ID (shortname) of the species by hand).
 
                 Then click on 'READ INFO' to extract some needed data from that species. The extracted
                 data will show up in the nearby edit field.

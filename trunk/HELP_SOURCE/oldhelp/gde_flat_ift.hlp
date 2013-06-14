@@ -14,10 +14,10 @@ OCCURRENCE	ARB_IMPORT
 
 DESCRIPTION	A very simple format. Looks like
 
-		#name_of_species
+		#species_ID
 		acgtcgacgactgactgacacgacg
 		acgaacgacggacgc
-		#next_name
+		#second_species_ID
 		acgacgugactgacugacgcguagcuacgagcacucg
 
 

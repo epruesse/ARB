@@ -1127,10 +1127,10 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
 
         if (ask_generate_names) {
             if (aw_question("generate_short_names",
-                            "You may generate short names using the full_name and accession entry of the species",
-                            "Generate new short names (recommended),Use found names")==0)
+                            "It's recommended to generate unique species identifiers now.\n",
+                            "Generate unique species IDs,Use found IDs") == 0)
             {
-                progress.subtitle("Pass 3: Generate unique names");
+                progress.subtitle("Pass 3: Generate unique species IDs");
                 error = AW_select_nameserver(GB_MAIN, awtcig.gb_other_main);
                 if (!error) {
                     error = AWTC_pars_names(GB_MAIN);

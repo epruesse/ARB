@@ -15,10 +15,10 @@ OCCURRENCE	ARB_IMPORT
 DESCRIPTION	The fasta format is the most simple format available.
 		It looks like this:
 
-		>name_of_species   some_additional_information
+		>species_ID   some_additional_information
 		acgtuacgacgcaacg
 		acgcacgtutcat
-		>name_of_second_species
+		>second_species_ID
 		acgtuacgacgcaacg
 
 NOTES		The fasta format is relatively fool prove.
