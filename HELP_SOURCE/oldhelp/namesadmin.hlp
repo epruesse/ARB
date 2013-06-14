@@ -1,24 +1,24 @@
 #Please insert up references in the next lines (line starts with keyword UP)
-UP	arb.hlp
-UP	glossary.hlp
+UP      arb.hlp
+UP      glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
+#SUB    subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		NAME_SERVER ADMIN
+TITLE           NAME_SERVER ADMIN
 
-OCCURRENCE	ARB_NT/Tools/Name server admin
+OCCURRENCE      ARB_NT/Tools/Name server admin
 
 SECTION         General warning
 
-			Most of the functions here will destroy or at least affect the consistency
-			of the species IDs (shortnames) for all users of the affected names.dat. 
+                        Most of the functions here will destroy or at least affect the consistency
+                        of the species IDs (shortnames) for all users of the affected names.dat.
 
-			Please only use these functions if you really know what you are doing.
-			Otherwise ask your local ARB guru.
+                        Please only use these functions if you really know what you are doing.
+                        Otherwise ask your local ARB guru.
 
 DESCRIPTION     Delete old names file
 
@@ -47,10 +47,10 @@ DESCRIPTION     Delete old names file
                        Use this to get rid of all nameserver entries using ARB_xxx accession
                        numbers.
 
-		After using any of the above functions 
+                After using any of the above functions
 
-			you should consider to synchronize IDs (see LINK{sp_rename.hlp}) in 
-			all your arb-databases.
+                        you should consider to synchronize IDs (see LINK{sp_rename.hlp}) in
+                        all your arb-databases.
 
                 Additional species ID field
 
@@ -78,12 +78,12 @@ DESCRIPTION     Delete old names file
                          Otherwise you'll most likely merge the data of non-equal species, which will
                          corrupt your data!
 
-NOTES		If you comment out the default ARB_NAME_SERVER entry in arb_tcp.dat, renaming
+NOTES           If you comment out the default ARB_NAME_SERVER entry in arb_tcp.dat, renaming
                 with empty 'Additional species ID field' will lead to an error. Use this to
                 avoid creating databases that use the standard name server with no additional field.
 
-EXAMPLES	None
+EXAMPLES        None
 
-WARNINGS	None
+WARNINGS        None
 
-BUGS		No bugs known
+BUGS            No bugs known
