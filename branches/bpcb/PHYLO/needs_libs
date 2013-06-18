@@ -1,0 +1,7 @@
+# libraries needed to link against PHYLO/PHYLO.a
+
+lib/libAWT.so
+SL/MATRIX/MATRIX.a
+SL/MACROS/MACROS.a
+
+

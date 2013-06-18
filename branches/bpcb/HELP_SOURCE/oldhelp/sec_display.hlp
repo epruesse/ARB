@@ -1,0 +1,47 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		SECEDIT Display settings 
+
+OCCURRENCE	ARB_SECEDIT/Properties/Display settings
+
+DESCRIPTION     Here you can change various options:
+
+                Show Helix Numbers
+
+                     Toggles the display of Helix numbers
+
+                Distance between strands
+
+                     Sets the distance between opposite helix strands (default=1)
+
+                Hide bonds
+
+                     Toggle and define display of bonds.
+
+                Hide bases
+
+                     Toggle display of bases
+
+                Visualize SAIs
+
+                     Toggle SAI visualization
+
+                Display Structure Skeleton + Skeleton thickness
+
+                     Draw a skeleton of the secondary structure with variable line thickness.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

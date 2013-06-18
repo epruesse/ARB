@@ -1,0 +1,3 @@
+# libraries needed to link against AWT/libAWT.so
+
+lib/libWINDOW.so
