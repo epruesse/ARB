@@ -111,7 +111,10 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/cb.h
+SQ_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SQ_main.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+SQ_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/test_global.h
+SQ_main.o: $(ARBHOME)/INCLUDE/ttypes.h

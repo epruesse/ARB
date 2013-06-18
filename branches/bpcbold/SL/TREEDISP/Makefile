@@ -105,10 +105,13 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/cb.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/cbtypes.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/test_global.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 TreeDisplay.o: ../../WINDOW/aw_common.hxx
 TreeDisplay.o: TreeDisplay.hxx
@@ -145,9 +148,12 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cb.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/cbtypes.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/nds.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/smartptr.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/test_global.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/test_unit.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/ttypes.h

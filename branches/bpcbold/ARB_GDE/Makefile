@@ -73,9 +73,12 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GDE.o: $(ARBHOME)/INCLUDE/cb.h
+GDE.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE.o: $(ARBHOME)/INCLUDE/test_global.h
+GDE.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GDE_arbdb_io.o: gde.hxx
 GDE_arbdb_io.o: GDE_def.h
@@ -133,9 +136,12 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/cb.h
+GDE_event.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE_event.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_event.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_event.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_event.o: $(ARBHOME)/INCLUDE/test_global.h
+GDE_event.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GDE_FileIO.o: gde.hxx
 GDE_FileIO.o: GDE_def.h

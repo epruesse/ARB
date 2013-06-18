@@ -98,6 +98,9 @@ species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 species.o: $(ARBHOME)/INCLUDE/cb.h
+species.o: $(ARBHOME)/INCLUDE/cbtypes.h
 species.o: $(ARBHOME)/INCLUDE/dupstr.h
 species.o: $(ARBHOME)/INCLUDE/smartptr.h
+species.o: $(ARBHOME)/INCLUDE/static_assert.h
 species.o: $(ARBHOME)/INCLUDE/test_global.h
+species.o: $(ARBHOME)/INCLUDE/ttypes.h

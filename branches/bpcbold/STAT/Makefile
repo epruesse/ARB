@@ -116,10 +116,13 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/cb.h
+ST_window.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ST_window.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_window.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ST_window.o: $(ARBHOME)/INCLUDE/items.h
 ST_window.o: $(ARBHOME)/INCLUDE/smartptr.h
+ST_window.o: $(ARBHOME)/INCLUDE/static_assert.h
 ST_window.o: $(ARBHOME)/INCLUDE/test_global.h
+ST_window.o: $(ARBHOME)/INCLUDE/ttypes.h

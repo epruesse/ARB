@@ -54,9 +54,12 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GLwMDrawA.o: GLwDrawA.c
 GLwMDrawA.o: GLwDrawA.h

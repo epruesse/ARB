@@ -80,11 +80,14 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/cb.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/cbtypes.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/dupstr.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/smartptr.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/static_assert.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/test_global.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/test_unit.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 seq_search.o: seq_search.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
