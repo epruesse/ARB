@@ -1,0 +1,11 @@
+# libraries needed to link against GENOM/GENOM.a
+
+# depends on NTREE/NTREE.a # fix this
+
+SL/DB_UI/DB_UI.a
+#SL/DB_SCANNER/DB_SCANNER.a
+#SL/DB_QUERY/DB_QUERY.a
+SL/NDS/NDS.a
+SL/TRANSLATE/TRANSLATE.a
+
+

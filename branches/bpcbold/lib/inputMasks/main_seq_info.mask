@@ -1,0 +1,39 @@
+ARB-Input-Mask
+# New mask 'main_seq_info.mask'
+
+# What kind of item to edit:
+@ITEMTYPE=Species
+
+# Window title:
+@TITLE=Sequence information
+
+# Should mask appear in 'User mask' menu
+@HIDE=1
+
+# Spacing in window:
+@X_SPACING=5
+@Y_SPACING=3
+
+# Show edit/reload button?
+@EDIT=1
+# Show 'edit enable' toggle?
+@EDIT_ENABLE=1
+# Show 'marked' toggle?
+@SHOW_MARKED=1
+
+# ---------------------------
+# The definition of the mask:
+
+@MASK_BEGIN
+
+    TEXT("You are editing") SELF()
+    NEW_SECTION()
+    TEXTFIELD("G+C content                    ", "GC", 30)
+    TEXTFIELD("G+C content (helical parts)    ", "GCH", 30)
+    TEXTFIELD("G+C content (non-helical parts)", "GCN", 30)
+    NEW_SECTION()
+    TEXT("See 'Species/Search/More functions/Modify fields'")
+    TEXT("about how to calculate these fields")
+
+@MASK_END
+

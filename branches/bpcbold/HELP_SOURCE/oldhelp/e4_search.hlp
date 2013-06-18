@@ -1,0 +1,115 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Search
+
+OCCURRENCE	ARB_EDIT4/Edit/Search
+
+DESCRIPTION	Search
+
+		Search patterns
+
+			In the text field you can enter multiple search patterns.
+			Different patterns are separated by newlines or commas.
+
+			'?' is treated as single letter wildcard
+
+			'#' is an end-of-line comment
+
+				Text written behind # will not be used for search.
+				Instead this text will be displayed in the message
+				window when you position your cursor on a found
+				pattern.
+
+                Mark species with matches
+
+                        Marks all species which match one of the current search patterns.
+                        Does not unmark rest on species.
+
+		Last/Next
+
+			Jumps to the last/next occurrence of any of the given patterns.
+			You can repeat your last search by pressing CTRL-S.
+
+		Show ?
+
+			If checked, the found parts are shown in different
+			background colors (defined at Properties/Data Search)
+
+			If the different search patterns overlap, they are shown
+			in the following order:
+
+				User (shown above all others)
+				Probe
+				Primer (shown below all other)
+
+		Open folded?
+
+			If checked, the Last/Next-Button will open folded groups,
+			to jump to the next occurrence. Otherwise search will jump
+			over folded groups.
+
+		Auto jump?
+
+			If checked, the cursor will automatically jump to the
+			nearest occurrence, if you change the search pattern or
+			other search parameters.
+
+		Ignore gaps in sequence?
+
+			If checked, gaps in sequence will be ignored.
+			(ACGU will find A-CG-U, AC---GU, ...)
+
+		Ignore gaps in pattern?
+
+			If checked, gaps in the search pattern will be ignored.
+			(A-CG-U, AC---GU, ... will find ACGU)
+
+		Treat T and U as match?
+
+			If checked, T and U will be treated as equal.
+			(ACGU will find ACGT and vice versa)
+
+		Ignore case?
+
+			If checked, a and A, c and C, ... are treated as
+			equal (aCGu will find ACGU, AcgU, acgu, ...)
+
+		Search for complement?
+
+			If checked, search will go as well for complemented
+			patterns.
+
+		Search for reverse?
+
+			If checked, search will go as well for reversed patterns.
+
+		Exact!
+
+			If checked, search will only go for the given combination
+			of 'complement' and 'reverse'.
+
+			Example: If 'Exact', 'complement' and 'reverse' are checked,
+				 search will go only for complemented AND reversed
+				 patterns.
+
+		Allowed mismatches
+
+			Defines the minimum and maximum allowed number of
+			non-matching base characters.
+
+NOTES		Found patterns hide possibly activated column statistics.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
+
