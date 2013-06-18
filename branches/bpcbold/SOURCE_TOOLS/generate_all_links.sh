@@ -164,7 +164,6 @@ symlink_file ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
 symlink_file ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
 symlink_file ../TEMPLATES/attributes.h INCLUDE/attributes.h &&
 symlink_file ../TEMPLATES/bytestring.h INCLUDE/bytestring.h &&
-symlink_file ../TEMPLATES/cb.h INCLUDE/cb.h &&
 symlink_file ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
 symlink_file ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
 symlink_file ../TEMPLATES/dupstr.h INCLUDE/dupstr.h &&
@@ -172,6 +171,7 @@ symlink_file ../TEMPLATES/output.h INCLUDE/output.h &&
 symlink_file ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
 symlink_file ../TEMPLATES/smartptr.h INCLUDE/smartptr.h &&
 symlink_file ../TEMPLATES/static_assert.h INCLUDE/static_assert.h &&
+symlink_file ../TEMPLATES/ttypes.h INCLUDE/ttypes.h &&
 symlink_file ../TEMPLATES/ut_valgrinded.h INCLUDE/ut_valgrinded.h &&
 symlink_file ../TEMPLATES/valgrind.h INCLUDE/valgrind.h &&
 
@@ -257,6 +257,8 @@ symlink_file ../SL/AP_TREE/AP_Tree.hxx INCLUDE/AP_Tree.hxx &&
 symlink_file ../SL/ARB_TREE/ARB_Tree.hxx INCLUDE/ARB_Tree.hxx &&
 symlink_file ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink_file ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
+symlink_file ../SL/CB/cb.h INCLUDE/cb.h &&
+symlink_file ../SL/CB/cbtypes.h INCLUDE/cbtypes.h &&
 symlink_file ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&
 symlink_file ../SL/DB_UI/dbui.h INCLUDE/dbui.h &&

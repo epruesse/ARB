@@ -13,6 +13,9 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef AW_BASE_HXX
+#include "aw_base.hxx" // @@@ remove later
+#endif
 
 #ifndef aw_assert
 #define aw_assert(bed) arb_assert(bed)
