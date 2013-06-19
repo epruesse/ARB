@@ -115,10 +115,11 @@ endif
 
 #----------------------
 
+# LINK_STATIC is exported because it needs to be visible in the UNIT_TESTER sub-makefiles
 ifdef DARWIN
-	LINK_STATIC=1# link static
+	export LINK_STATIC=1# link static
 else
-	LINK_STATIC=0# link dynamically
+	export LINK_STATIC=0# link dynamically
 endif
 
 shared_cflags :=# flags for shared lib compilation
