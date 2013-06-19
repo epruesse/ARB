@@ -947,6 +947,11 @@ sub main() {
 
     foreach (@libs) { push @out, $_; }
   }
+  #if static linking is enabled: replace .so with .a in dependencies
+  if ($printStatic==1){
+    foreach (@out) {$_ =~ s/\.so/\.a/; }
+      
+  }
 
   if (scalar(@out)>0) { print join(' ',@out)."\n"; }
 }
