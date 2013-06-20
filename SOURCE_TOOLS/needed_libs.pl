@@ -40,6 +40,24 @@ sub fullpath($) {
 
 # --------------------------------------------------------------------------------
 
+my $LINK_STATIC = $ENV{LINK_STATIC};
+defined $LINK_STATIC || die "Environmentvariable 'LINK_STATIC' is not defined";
+# LINK_STATIC==1 (used on OSX) ->
+# - shared ARB-libraries (e.g. lib/libWINDOW.so) are created/linked statically (as lib/libWINDOW.a)
+# - in contrast to "normal" static libs
+#   - they do NOT reside in the source-code directory and
+#   - they have a 'lib'-prefix
+
+sub fixFileSuffix($) {
+  my ($file) = @_;
+  if ($LINK_STATIC==1) { # true on OSX
+    $file =~ s/\.so/\.a/; # correct lib-suffix
+  }
+  $file;
+}
+
+# --------------------------------------------------------------------------------
+
 sub dirOf($) {
   my ($full) = @_;
   if ($full =~ /\/([^\/]+)$/o) { $`; }
@@ -122,7 +140,7 @@ sub target2dependencyFile($) {
 
   if (defined $dir) {
     if ($dir eq 'lib') {
-      if ($target =~ /^lib\/lib([A-Z]+)\.so$/) {
+      if ($target =~ /^lib\/lib([A-Z]+)\.(so|a)$/) {
         $depfile = $1.'/'.$libdepend_file.'.lib'.$1.'_so';
       }
       else {
@@ -715,7 +733,7 @@ sub pushFilesTo($\@\@) {
   my ($pathPrefix,$depends_r,$out_r) = @_;
   foreach my $dep (@$depends_r) {
     if (is_file($dep)) {
-      push @$out_r, prefix($pathPrefix,$dep);
+      push @$out_r, fixFileSuffix(prefix($pathPrefix,$dep));
     }
   }
 }
@@ -777,8 +795,14 @@ sub die_usage($) {
   print "Scans directories of 'lib|obj's for files named '$libdepend_file' or '$libdepend_file.libname'\n";
   print "In case of an executable, it scans for a file named 'BINDEP/$libdepend_file.executable'.\n";
   print "\n";
-  print "These files have to contain the name(s) of the libraries needed by 'lib',\n";
-  print "either as ARBHOME-relativ path to lib file or as link instruction (containing '-l')\n";
+  print "These files have to contain the name(s) of the libraries needed by 'lib', either\n";
+  print "as ARBHOME-relative path to the lib file or\n";
+  print "as link instruction (containing '-l') for non-ARB-libraries\n";
+  print "\n";
+  print "Libraries in directory '\$ARBHOME/lib' are handled special:\n";
+  print "- they need to be specified as lib/libNAME.so\n";
+  print "- their source directory is assumed to be \$ARBHOME/NAME\n";
+  print "- they are called 'dynamic' in the context of this script (even if \$LINK_STATIC=1, where they aren't dynamic)\n";
   print "\n";
   print "They may as well contain \${ENVVAR}\n";
   print "If no '$libdepend_file' exists, the 'lib' is assumed to be independent.\n";
@@ -787,11 +811,12 @@ sub die_usage($) {
   print "\n";
   print "options:\n";
   print "  -D          output dirs lib depends on (e.g. ARBDB/ARBDB SL/ARB_TREE/ARB_TREE ..)\n";
-  print "  -F          output libfiles lib depends on (e.g. ARBDB/libARBDB.so SL/ARB_TREE/ARB_TREE.a ..)\n";
+  print "  -F          output all libfiles the given lib depends on (e.g. ARBDB/libARBDB.so SL/ARB_TREE/ARB_TREE.a ..)\n";
+  print "              (suffix used for \"dynamic\" libs depends on setting of \$LINK_STATIC)\n";
   print "  -l          output link params (e.g. -lARBDB SL/ARB_TREE/ARB_TREE.a ..)\n";
-  print "  -s          output static lib names (e.g. SL/ARB_TREE/ARB_TREE.a ..)\n";
-  print "  -d          output dynamic lib names (e.g. -lARBDB ..)\n";
-  print "  -A dir      prefix paths with 'dir' (not for dynamic libs)\n";
+  print "  -s          output names of \"static\" libs (e.g. SL/ARB_TREE/ARB_TREE.a ..)\n";
+  print "  -d          output names of \"dynamic\" libs (e.g. -lARBDB ..)\n";
+  print "  -A dir      prefix paths with 'dir' (not for \"dynamic\" libs)\n";
   print "  -U          do not die on undefined environment variables\n";
   print "  -G outgif   Draw dependency graph (using dot)\n";
   print "  -V          Dump dependencies\n";
@@ -946,11 +971,6 @@ sub main() {
     if ($printDynamic==1) { pushDynamicLibsTo(@track,@libs); }
 
     foreach (@libs) { push @out, $_; }
-  }
-  #if static linking is enabled: replace .so with .a in dependencies
-  if ($printStatic==1){
-    foreach (@out) {$_ =~ s/\.so/\.a/; }
-      
   }
 
   if (scalar(@out)>0) { print join(' ',@out)."\n"; }
