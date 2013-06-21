@@ -118,7 +118,7 @@ void MG_set_renamed(bool renamed, AW_root *aw_root, const char *reason) {
 
 GB_ERROR MG_expect_renamed() {
     GB_ERROR error = 0;
-    if (!was_renamed) error = "First you have to rename species in both databases";
+    if (!was_renamed) error = "First you have to synchronize species IDs in both databases";
     return error;
 }
 
@@ -180,7 +180,7 @@ AW_window *MG_merge_names_cb(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(awr, "MERGE_AUTORENAME_SPECIES", "Synchronize names");
+        aws->init(awr, "MERGE_AUTORENAME_SPECIES", "Synchronize IDs");
         aws->load_xfig("merge/names.fig");
 
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
@@ -216,7 +216,7 @@ AW_window *MG_merge_names_cb(AW_root *awr) {
 
         aws->at("rename");
         aws->callback(rename_both_databases);
-        aws->create_autosize_button("RENAME_DATABASES", "Rename species");
+        aws->create_autosize_button("RENAME_DATABASES", "Synchronize");
 
         aws->button_length(0);
         aws->shadow_width(1);

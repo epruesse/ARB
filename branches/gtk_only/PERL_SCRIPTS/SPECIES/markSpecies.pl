@@ -125,7 +125,7 @@ sub die_usage($) {
   print "       -partial    Allow partial match for field content (slow!)\n";
   print "\n";
   print "specieslist is a file containing one entry per line\n";
-  print "   normally the entry will be the short name as used in your DB\n";
+  print "   normally the entry will be the species ID (shortname) as used in your DB\n";
   print "   when you specify 'field' you may use other entries (e.g. 'acc')\n";
   print "\n";
   print "Use '-' as filename to read from STDIN\n";

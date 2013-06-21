@@ -117,11 +117,11 @@ endif
 
 #----------------------
 
-# LINK_STATIC is exported because it needs to be visible in the UNIT_TESTER sub-makefiles
 ifdef DARWIN
-	export LINK_STATIC=1# link static
+	LINK_STATIC=1# link static
 else
-	export LINK_STATIC=0# link dynamically
+	LINK_STATIC=0# link dynamically
+#	LINK_STATIC=1# link static (testing only)
 endif
 
 shared_cflags :=# flags for shared lib compilation
@@ -1014,8 +1014,8 @@ ARCHS_CONVERT_ALN =	\
 $(CONVERT_ALN) : $(ARCHS_CONVERT_ALN:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(ARBDB_LIB) $(EXECLIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(ARBDB_LIB) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 

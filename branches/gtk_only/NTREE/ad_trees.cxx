@@ -283,7 +283,7 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->auto_space(10, 10);
     aws->label("Nodetype");
     aws->create_toggle_field(AWAR_TREE_EXPORT_NDS, 1);
-    aws->insert_default_toggle("Species name", "S", 0);
+    aws->insert_default_toggle("Species ID ('name')", "S", 0);
     aws->insert_toggle("NDS", "N", 1);
     aws->update_toggle_field();
 

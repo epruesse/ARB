@@ -20,10 +20,10 @@ Single
 2 1 0 1 0 7 50 -1 -1 0.000 0 0 -1 0 0 1
 	 1260 675
 4 2 -1 0 0 18 12 0.0000 4 225 570 8175 1050 $help\001
-4 1 -1 0 0 18 12 0.0000 4 165 3810 4800 1200 This module creates new names from\001
-4 1 -1 0 0 18 12 0.0000 4 210 6000 4800 1740 It is mandatory to generate new names for both databases\001
-4 1 -1 0 0 18 12 0.0000 4 210 5295 4800 1470 accession numbers and an optional additional field\001
-4 1 -1 0 0 18 12 0.0000 4 210 4740 4800 2010 to create identical names for identical species\001
+4 1 -1 0 0 18 12 0.0000 4 165 3810 4800 1200 This module creates new species IDs from\001
+4 1 -1 0 0 18 12 0.0000 4 210 5295 4800 1470 accession numbers and an optional additional field.\001
+4 1 -1 0 0 18 12 0.0000 4 210 6000 4800 1740 It is mandatory to synchronize species IDs for both databases\001
+4 1 -1 0 0 18 12 0.0000 4 210 4740 4800 2010 to create identical IDs for identical species.\001
 4 1 -1 0 0 18 12 0.0000 4 210 570 4890 2625 $icon\001
 4 1 -1 0 0 18 12 0.0000 4 210 825 3150 3975 $addid1\001
 4 1 -1 0 0 18 12 0.0000 4 210 825 6660 3975 $addid2\001
