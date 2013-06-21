@@ -27,6 +27,13 @@ valgrind_update:
 
 # --------------------------------------------------------------------------------
 
+# library dependencies generated here always use dynamic libnames,
+# even if LINK_STATIC=1 defined in ../Makefile@LINK_STATIC
+#
+# The files generated here are not used yet (so the above does not matter)
+# They are intended to be used to link all ARB binaries
+# (instead of using explicit link commands in ../Makefile)
+
 % : %.tmp
 	./mv_if_diff $< $@
 
@@ -35,7 +42,7 @@ CORE_LIB=lib/libCORE.so
 TMP=dep.alltargets.tmp.tmp
 
 dep.alltargets.tmp: Makefile needed_libs.pl
-	./needed_libs.pl -U -I -F $(CORE_LIB) > $(TMP)
+	LINK_STATIC=0;./needed_libs.pl -U -I -F $(CORE_LIB) > $(TMP)
 	$(SED) -e 's/ /\n/g' < $(TMP) > $@
 	rm $(TMP)
 	echo $(CORE_LIB) >>$@

@@ -34,7 +34,7 @@ ISSHAREDLIB=$(findstring $(UNITDIR),$(SHAREDLIBS))
 ISEXEOBJECT=$(findstring $(UNITDIR),$(EXEOBJDIRS))
 
 ifneq ($(ISSHAREDLIB),)
-	UNITLIB=$(UNITLIBNAME).so
+	UNITLIB=$(UNITLIBNAME).$(SHARED_LIB_SUFFIX)
 else
 ifneq ($(ISEXEOBJECT),)
 	UNITLIB=$(UNITLIBNAME).o
@@ -75,13 +75,8 @@ ifeq ($(UNITLIB),.a)
 LINKLIST=
 LINKDEPS=
 else
-ifeq ($(LINK_STATIC),1)
-LINKLIST=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -l $(FULLLIB))
-LINKDEPS=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -F -s $(FULLLIB))
-else
 LINKLIST=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -l $(FULLLIB))
 LINKDEPS=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -F $(FULLLIB))
-endif
 endif
 
 ifeq ($(CHECK_LEAKS),0)

@@ -138,8 +138,8 @@ DESCRIPTION     First of all the converter appends all import files maching
 
                         DONT_GEN_NAMES:
 
-                                Do not try to generate unique short names for the species
-                                using the full_name field.
+                                Do not try to generate unique identifiers (shortnames) for
+                                the species using the full_name field.
 
                 General commands:
 

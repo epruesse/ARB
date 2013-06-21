@@ -699,7 +699,7 @@ struct EG2PS_data : virtual Noncopyable {
                                          , duplicateSpecies));
         }
         if (nameProblem) {
-            aw_message("Naming problems occurred.\nYou have to call 'Generate new names'!");
+            aw_message("Naming problems occurred.\nYou have to call 'Species/Synchronize IDs'!");
         }
         GBS_free_hash(pseudo_hash);
         free(ali);

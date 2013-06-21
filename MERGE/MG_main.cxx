@@ -338,7 +338,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
             awm->at("names");
             awm->callback((AW_CB1)AW_POPUP, (AW_CL)MG_merge_names_cb);
             awm->help_text("mg_names.hlp");
-            awm->create_button("CHECK_NAMES", "Check names ...");
+            awm->create_button("CHECK_NAMES", "Check IDs ...");
 
             if (dst_is_new) {
                 awm->sens_mask(AWM_ALL);
