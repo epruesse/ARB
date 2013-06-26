@@ -42,8 +42,8 @@ sub fail_if_no_tests_defined($) {
   my $active  = scalar(keys %simple_test);
 
   if (($skipped+$active)==0) {
-    # my $makefileDefiningTests = $ENV{ARBHOME}.'/Makefile';
-    my $makefileDefiningTests = '../Makefile';
+    my $makefileDefiningTests = $ENV{ARBHOME}.'/Makefile';
+    # my $makefileDefiningTests = '../Makefile';
     my $thisTest = $libname;
 
     $thisTest =~ s/\.(a|o|so)/.test/o;
