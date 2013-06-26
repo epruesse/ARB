@@ -488,18 +488,13 @@ int ARB_main(int argc, char *argv[]) {
 
     if (argc > 1 && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0))) {
         fprintf(stderr,
-                "\n"
-                "arb_edit4 commandline reference:\n"
-                "--------------------------------\n"
-                "\n"
                 "Usage: arb_edit4 [options] database\n"
+                "       database    name of database or ':' to connect to arb-database-server\n"
                 "\n"
-                "database           name of database or ':' to connect to arb-database-server\n"
-                "\n"
-                "Options:\n"
-                "-c config          loads configuration 'config' (default: 'default_configuration')\n"
-                "\n"
+                "       options:\n"
+                "       -c config   loads configuration 'config' (default: 'default_configuration')\n"
             );
+        return EXIT_SUCCESS;
     }
 
     if (argc > 1 && strcmp(argv[1], "-c") == 0) {
@@ -623,9 +618,17 @@ int ARB_main(int argc, char *argv[]) {
             e4_assert(!ED4_WinContext::have_context()); // no global context shall be active
             ED4_ROOT->aw_root->main_loop(); // enter main-loop
         }
+
+        GB_close(GLOBAL_gb_main);
     }
 
-    if (error) aw_popup_exit(error);
+    bool have_aw_root = ED4_ROOT && ED4_ROOT->aw_root;
+    if (error) {
+        if (have_aw_root) aw_popup_exit(error);
+        else fprintf(stderr, "arb_edit4: Error: %s\n", error);
+    }
+    if (have_aw_root) delete ED4_ROOT->aw_root;
+
     return EXIT_SUCCESS;
 }
 
