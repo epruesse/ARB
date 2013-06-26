@@ -68,7 +68,8 @@ ALLOWED_GCC_4xx_VERSIONS=\
 	      4.3.1 4.3.2 4.3.3 \
 	      4.4.1       4.4.3 \
 	      4.6.1       4.6.3 \
-	      4.7.1
+	      4.7.1       4.7.3 \
+	      4.8.1
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
 
