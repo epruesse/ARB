@@ -531,66 +531,73 @@ int ARB_main(int argc, char *argv[]) {
     GB_shell shell;
     AW_root  *aw_root = AWT_create_root("phylo.arb", "ARB_PHYLO", need_macro_ability(), &argc, &argv);
 
+    int exitcode = EXIT_SUCCESS;
     if (argc > 2 || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
         fprintf(stderr, "Usage: arb_phylo [database]\n");
-        return EXIT_FAILURE;
+        exitcode = EXIT_FAILURE;
     }
+    else {
+        const char *db_server = (argc == 2 ? argv[1] : ":");
 
-    const char *db_server = (argc == 2 ? argv[1] : ":");
+        PH_used_windows *puw = new PH_used_windows;
+        PH_display      *phd = new PH_display;
 
-    PH_used_windows *puw = new PH_used_windows;
-    PH_display      *phd = new PH_display;
+        PH_root  *ph_root = new PH_root;
+        GB_ERROR  error   = ph_root->open(db_server);
 
-    PH_root  *ph_root = new PH_root;
-    GB_ERROR  error   = ph_root->open(db_server);
-
-    if (!error) error = configure_macro_recording(aw_root, "ARB_PHYLO", GLOBAL_gb_main);
-    if (!error) {
-        // create arb_phylo awars :
-        PH_create_filter_variables(aw_root, AW_ROOT_DEFAULT);
-        PH_create_matrix_variables(aw_root, AW_ROOT_DEFAULT);
-        ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
+        if (!error) error = configure_macro_recording(aw_root, "ARB_PHYLO", GLOBAL_gb_main);
+        if (!error) {
+            // create arb_phylo awars :
+            PH_create_filter_variables(aw_root, AW_ROOT_DEFAULT);
+            PH_create_matrix_variables(aw_root, AW_ROOT_DEFAULT);
+            ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
 #if defined(DEBUG)
-        AWT_create_db_browser_awars(aw_root, AW_ROOT_DEFAULT);
+            AWT_create_db_browser_awars(aw_root, AW_ROOT_DEFAULT);
 #endif // DEBUG
 
 #if defined(DEBUG)
-        AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
+            AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
 #endif // DEBUG
 
-        create_filter_text();
+            create_filter_text();
 
-        // create main window :
+            // create main window :
 
-        puw->phylo_main_window = create_phyl_main_window(aw_root, ph_root, 0);
-        puw->windowList        = puw;
+            puw->phylo_main_window = create_phyl_main_window(aw_root, ph_root, 0);
+            puw->windowList        = puw;
 
-        phd->ph_display = phd;
+            phd->ph_display = phd;
 
-        // loading database
-        GB_push_transaction(GLOBAL_gb_main);
+            // loading database
+            GB_push_transaction(GLOBAL_gb_main);
 
-        ConstStrArray alignment_names;
-        GBT_get_alignment_names(alignment_names, GLOBAL_gb_main);
+            ConstStrArray alignment_names;
+            GBT_get_alignment_names(alignment_names, GLOBAL_gb_main);
 
-        int num_alignments;
-        for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) {}
+            int num_alignments;
+            for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) {}
 
-        if (num_alignments > 1) {
-            AW_window *sel_ali_aww = create_select_alignment_window(aw_root, (AW_CL)puw->phylo_main_window);
-            sel_ali_aww->show();
+            if (num_alignments > 1) {
+                AW_window *sel_ali_aww = create_select_alignment_window(aw_root, (AW_CL)puw->phylo_main_window);
+                sel_ali_aww->show();
+            }
+            else {
+                aw_root->awar("phyl/alignment")->write_string(alignment_names[0]);
+                startup_sequence_cb(0, (AW_CL)aw_root, (AW_CL)puw->phylo_main_window);
+            }
+            GB_pop_transaction(GLOBAL_gb_main);
+
+            AWT_install_cb_guards();
+            aw_root->main_loop();
         }
-        else {
-            aw_root->awar("phyl/alignment")->write_string(alignment_names[0]);
-            startup_sequence_cb(0, (AW_CL)aw_root, (AW_CL)puw->phylo_main_window);
-        }
-        GB_pop_transaction(GLOBAL_gb_main);
 
-        AWT_install_cb_guards();
-        aw_root->main_loop();
+        if (error) {
+            aw_popup_exit(error);
+            exitcode = EXIT_FAILURE;
+        }
     }
 
-    if (error) aw_popup_exit(error);
-    return EXIT_SUCCESS;
+    delete aw_root;
+    return exitcode;
 }
 
