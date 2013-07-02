@@ -937,6 +937,8 @@ int ARB_main(int argc, char *argv[]) {
         error.expect_no_error();
     }
 
+    delete aw_root;
+
     return exitcode;
 }
 

@@ -267,7 +267,8 @@ sub parse_log($\@) {
   }
 
   if (not $seenSummary) {
-    print "Warning: No summary found in '$log' (maybe the test did not compile or crashed)\n";
+    my $ARBHOME = $ENV{ARBHOME};
+    print "$ARBHOME/UNIT_TESTER/$log:1:0: Warning: No summary found in '$log' (maybe the test did not compile or crashed)\n";
     $crashed++;
   }
 
