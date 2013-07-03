@@ -1582,8 +1582,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->sep______________();
 
-    static AW_cb_struct *refresh_all_cb = 0;
-    if (!refresh_all_cb) refresh_all_cb = new AW_cb_struct(awmm, (AW_CB)ED4_request_relayout);
+    static AW_cb *refresh_all_cb = 0;
+    if (!refresh_all_cb) refresh_all_cb = new AW_cb(awmm, (AW_CB)ED4_request_relayout);
 
     if (alignment_type == GB_AT_AA) awmm->insert_menu_topic("props_pfold",     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_pfold_create_props_window, (AW_CL)refresh_all_cb);
     else                            awmm->insert_menu_topic("props_helix_sym", "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window,     (AW_CL)refresh_all_cb);
