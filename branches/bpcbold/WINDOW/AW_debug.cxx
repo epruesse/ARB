@@ -249,7 +249,7 @@ size_t AW_root::callallcallbacks(int mode) {
 
                             GB_clear_error();
 
-                            cbs->run_callback();
+                            cbs->run_callbacks();
                             callCount++;
                             process_pending_events();
 

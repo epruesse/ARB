@@ -193,7 +193,7 @@ static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cl_cb_st
         awar_pair->write_string(pairdef); // write back uppercase version
         recursion = false;
 
-        awcbs->run_callback();
+        awcbs->run_callbacks();
 
         free(pairdef);
     }

@@ -232,7 +232,7 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
 
             fprintf(root->prvt->recording_macro_file, ");\n");
         }
-        if (cbs) cbs->run_callback();
+        if (cbs) cbs->run_callbacks();
         root->value_changed = false;
     }
 }
