@@ -1,0 +1,3 @@
+# libraries needed to link against SL/CB/CB.a
+lib/libCORE.so
+
