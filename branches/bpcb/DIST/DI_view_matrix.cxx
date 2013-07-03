@@ -723,7 +723,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
         AW_manage_GC(awm,
                      awm->get_window_id(),
                      dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
-                     (AW_CB)resize_needed, (AW_CL)dmatrix, 0,
+                     makeWindowCallback(resize_needed, dmatrix),
                      false,
                      "#D0D0D0",
                      "#Standard$#000000",
