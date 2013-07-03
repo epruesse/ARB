@@ -260,6 +260,9 @@ public:
     }                                                                   \
 
 #define CBTYPE_FVV_BUILDER_TEMPLATES(BUILDER,CB,RESULT,FIXED,SIG)                                       \
+    inline CB BUILDER(RESULT (*cb)()) {                                                                 \
+        return CB((SIG)cb, 0, 0);                                                                       \
+    }                                                                                                   \
     inline CB BUILDER(RESULT (*cb)(FIXED)) {                                                            \
         return CB((SIG)cb, 0, 0);                                                                       \
     }                                                                                                   \
