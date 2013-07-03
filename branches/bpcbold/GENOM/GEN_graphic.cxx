@@ -55,7 +55,7 @@ AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
     disp_device                 = device;
     AW_gc_manager preset_window = AW_manage_GC(aww, device,
                                                GEN_GC_FIRST_FONT, GEN_GC_MAX, AW_GCM_DATA_AREA,
-                                               (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
+                                               makeWindowCallback(AWT_resize_cb, ntw, cd2),
                                                true, // define color groups
                                                "#55C0AA",
                                                "Default$#5555ff",

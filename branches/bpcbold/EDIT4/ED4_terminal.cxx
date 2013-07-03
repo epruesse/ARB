@@ -691,7 +691,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                             ED4_ROOT->remove_from_selected(dragged_name_terminal);
                         }
 
-                        ED4_expose_cb(ED4_ROOT->get_aww(), 0, 0);
+                        ED4_expose_cb(ED4_ROOT->get_aww());
 
                         pressed_left_button = 0;
                         dragged_name_terminal = 0;

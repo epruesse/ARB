@@ -123,7 +123,7 @@ void ED4_expose_recalculations() {
     ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
 }
 
-void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void ED4_expose_cb(AW_window *aww) {
     static bool dummy = 0;
 
     ED4_ROOT->use_window(aww);
@@ -808,7 +808,7 @@ void ED4_gc_is_modified(AW_window *aww, AW_CL cd1, AW_CL cd2)                   
     ED4_ROOT->use_window(aww);
 
     ED4_resize_cb(aww, cd1, cd2);
-    ED4_expose_cb(aww, cd1, cd2);
+    ED4_expose_cb(aww);
 }
 
 void ED4_exit() {
@@ -1461,7 +1461,7 @@ void ED4_compression_changed_cb(AW_root *awr) {
         cursor.jump_sequence_pos(aww, seq_pos, ED4_JUMP_KEEP_POSITION);
         cursor.set_screen_relative_pos(aww, rel_pos);
 
-        ED4_expose_cb(aww, 0, 0); // does pop_clip_scale + refresh
+        ED4_expose_cb(aww); // does pop_clip_scale + refresh
     }
 }
 

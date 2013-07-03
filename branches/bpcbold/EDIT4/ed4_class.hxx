@@ -1747,7 +1747,7 @@ inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfo
 
 extern      ST_ML *st_ml;
 
-void ED4_expose_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
+void ED4_expose_cb(AW_window *aww);
 void ED4_expose_all_windows();
 
 void        ED4_calc_terminal_extentions();

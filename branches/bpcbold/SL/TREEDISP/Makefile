@@ -67,11 +67,15 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/cb.h
+irstree_display.o: $(ARBHOME)/INCLUDE/cbtypes.h
 irstree_display.o: $(ARBHOME)/INCLUDE/downcast.h
 irstree_display.o: $(ARBHOME)/INCLUDE/dupstr.h
 irstree_display.o: $(ARBHOME)/INCLUDE/nds.h
 irstree_display.o: $(ARBHOME)/INCLUDE/smartptr.h
+irstree_display.o: $(ARBHOME)/INCLUDE/static_assert.h
 irstree_display.o: $(ARBHOME)/INCLUDE/test_global.h
+irstree_display.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 TreeCallbacks.o: TreeCallbacks.hxx
 TreeCallbacks.o: TreeDisplay.hxx

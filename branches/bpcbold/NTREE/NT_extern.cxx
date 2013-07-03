@@ -782,8 +782,8 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
     return aws;
 }
 
-void NT_focus_cb(AW_window */*aww*/) {
-    GB_transaction dummy(GLOBAL_gb_main);
+static void NT_focus_cb(AW_root *, GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
 }
 
 
@@ -1807,7 +1807,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     // set height of top area:
     awm->set_info_area_height(bottomy+2);
     awm->set_bottom_area_height(0);
-    awr->set_focus_callback((AW_RCB)NT_focus_cb, (AW_CL)GLOBAL_gb_main, 0);
+    awr->set_focus_callback(makeRootCallback(NT_focus_cb, GLOBAL_gb_main));
 
     //  -----------------------------------
     //  Autostarts for development

@@ -61,10 +61,14 @@ MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/cb.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/dupstr.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/smartptr.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/static_assert.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_global.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_unit.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 MG_alignment.o: merge.hxx
 MG_alignment.o: mg_merge.hxx
