@@ -310,13 +310,19 @@ AWT_modules.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arbtools.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_modules.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/gccver.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/test_global.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_sel_boxes.o: awt.hxx
 AWT_sel_boxes.o: awt_modules.hxx

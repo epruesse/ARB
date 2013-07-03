@@ -83,6 +83,8 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/cb.h
+AP_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_main.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -91,6 +93,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/test_global.h
 AP_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AP_tree_edge.o: AP_buffer.hxx
 AP_tree_edge.o: ap_main.hxx
@@ -120,6 +123,8 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/cb.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -128,6 +133,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/test_global.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AP_tree_nlen.o: AP_buffer.hxx
 AP_tree_nlen.o: ap_main.hxx
@@ -184,11 +190,15 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+PARS_debug.o: $(ARBHOME)/INCLUDE/cb.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/gccver.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/smartptr.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/test_global.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 PARS_dtree.o: AP_buffer.hxx
 PARS_dtree.o: ap_main.hxx
@@ -249,13 +259,19 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arbtools.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+PARS_klprops.o: $(ARBHOME)/INCLUDE/cb.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/gccver.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/smartptr.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/test_global.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 PARS_main.o: AP_buffer.hxx
 PARS_main.o: ap_main.hxx

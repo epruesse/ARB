@@ -160,6 +160,8 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/cb.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -169,6 +171,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 DI_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
