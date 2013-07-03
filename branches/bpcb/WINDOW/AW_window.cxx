@@ -263,13 +263,13 @@ static void value_changed_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb *cbs = (AW_cb *) aw_cb_struct;
     (cbs->aw)->slider_pos_horizontal = sbcbs->value; // setzt Scrollwerte im AW_window
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 static void drag_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb *cbs = (AW_cb *) aw_cb_struct;
     (cbs->aw)->slider_pos_horizontal = sbcbs->value; // setzt Scrollwerte im AW_window
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddCallback(p_w->scroll_bar_horizontal, XmNvalueChangedCallback,
@@ -284,13 +284,13 @@ static void value_changed_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_st
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb *cbs = (AW_cb *) aw_cb_struct;
     cbs->aw->slider_pos_vertical = sbcbs->value; // setzt Scrollwerte im AW_window
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 static void drag_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb *cbs = (AW_cb *) aw_cb_struct;
     cbs->aw->slider_pos_vertical = sbcbs->value; // setzt Scrollwerte im AW_window
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 
 void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -558,8 +558,8 @@ AW_cb_struct_guard AW_cb::guard_before = NULL;
 AW_cb_struct_guard AW_cb::guard_after  = NULL;
 AW_postcb_cb       AW_cb::postcb       = NULL;
 
-void AW_cb::run_callback() {
-    if (next) next->run_callback();                 // callback the whole list
+void AW_cb::run_callbacks() {
+    if (next) next->run_callbacks();                // callback the whole list
     if (!f) return;                                 // run no callback
 
     AW_root *root = aw->get_root();
@@ -646,7 +646,7 @@ void AW_cb::run_callback() {
             }
         }
         if (pop_up_window && p_aww(pop_up_window)->popup_cb)
-            p_aww(pop_up_window)->popup_cb->run_callback();
+            p_aww(pop_up_window)->popup_cb->run_callbacks();
     }
     else {
         f(aw, cd1, cd2);
@@ -713,13 +713,13 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
     if (root->is_tracking()) root->track_action(cbs->id);
 
     if (cbs->f == AW_POPUP) {
-        cbs->run_callback();
+        cbs->run_callbacks();
     }
     else {
         p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
                 XtWindow(p_aww(cbs->aw)->shell),
                 p_global->clock_cursor);
-        cbs->run_callback();
+        cbs->run_callbacks();
 
         XEvent event; // destroy all old events !!!
         while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
@@ -770,7 +770,7 @@ static void AW_focusCB(Widget /*wgt*/, XtPointer cl_aww, XEvent*, Boolean*) {
     aww->run_focus_callback();
 }
 void AW_window::run_focus_callback() {
-    if (focus_cb) focus_cb->run_callback();
+    if (focus_cb) focus_cb->run_callbacks();
 }
 
 void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -789,7 +789,7 @@ bool AW_window::is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL)) {
 //      expose
 
 inline void AW_area_management::run_expose_callback() {
-    if (expose_cb) expose_cb->run_callback();
+    if (expose_cb) expose_cb->run_callbacks();
 }
 
 static void AW_exposeCB(Widget /*wgt*/, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
@@ -929,7 +929,7 @@ static void cleanupResizeEvents(Display *display) {
 
 
 inline void AW_area_management::run_resize_callback() {
-    if (resize_cb) resize_cb->run_callback();
+    if (resize_cb) resize_cb->run_callbacks();
 }
 
 static void AW_resizeCB_draw_area(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call_data*/) {
@@ -1033,7 +1033,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         if (!mykey->awmod && mykey->awkey >= AW_KEY_F1 && mykey->awkey
                 <= AW_KEY_F12 && p_aww(aww)->modes_f_callbacks && p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1]
                 && aww->event.type == AW_Keyboard_Press) {
-            p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1]->run_callback();
+            p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1]->run_callbacks();
         }
         else {
             run_callback = true;
@@ -1042,16 +1042,16 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
 
     if (run_double_click_callback) {
         if (cbs->help_text == (char*)1) {
-            cbs->run_callback();
+            cbs->run_callbacks();
         }
         else {
             if (area)
-                area->get_double_click_cb()->run_callback();
+                area->get_double_click_cb()->run_callbacks();
         }
     }
 
     if (run_callback && (cbs->help_text == (char*)0)) {
-        cbs->run_callback();
+        cbs->run_callbacks();
     }
 }
 
@@ -1094,7 +1094,7 @@ static void AW_motionCB(Widget /*w*/, XtPointer aw_cb_struct, XEvent *ev, Boolea
     cbs->aw->event.y       = ev->xmotion.y;
     cbs->aw->event.keycode = AW_KEY_NONE;
 
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window *, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddEventHandler(area, ButtonMotionMask, False,
@@ -2200,7 +2200,7 @@ void AW_window::select_mode(int mode) {
 
 static void aw_mode_callback(AW_window *aww, long mode, AW_cb *cbs) {
     aww->select_mode((int)mode);
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 
 #define MODE_BUTTON_OFFSET 34

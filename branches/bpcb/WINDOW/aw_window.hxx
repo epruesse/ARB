@@ -174,7 +174,7 @@ public:
                  const char   *help_texti = 0,
                  AW_cb *next       = 0);
 
-    void run_callback();                            // runs the whole list
+    void run_callbacks();                           // runs the whole list
     bool contains(AW_CB g);                         // test if contained in list
     bool is_equal(const AW_cb& other) const;
 

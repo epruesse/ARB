@@ -174,7 +174,7 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
 
                 if (cbs) {
                     IF_DUMP_ACTION(printf("remote command (%s) found, running callback\n", action));
-                    cbs->run_callback();
+                    cbs->run_callbacks();
                     GBT_write_string(gb_main, remote.result(), "");
                 }
                 else {

@@ -166,7 +166,7 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
         aw_message(error);
     }
     else {
-        if (cbs && run_cb) cbs->run_callback();
+        if (cbs && run_cb) cbs->run_callbacks();
         root->value_changed = false;
 
         if (GB_have_error()) aw_message(GB_await_error()); // show error exported by awar-change-callback
