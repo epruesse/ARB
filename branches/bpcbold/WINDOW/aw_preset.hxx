@@ -17,6 +17,9 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 
 #define AWP_COLORNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/colorname"
 #define AWP_FONTNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/font"
@@ -34,7 +37,7 @@ enum AW_GCM_AREA {
 
 AW_gc_manager AW_manage_GC(AW_window                                       *aww,
                            AW_device                                       *device, int base_gc, int base_drag, AW_GCM_AREA area,
-                           void (*changecb)(AW_window*, AW_CL, AW_CL), AW_CL  cd1, AW_CL cd2,
+                           const WindowCallback&                            changecb,
                            bool                                             define_color_groups,
                            const char                                      *default_background_color,
                            ...) __ATTR__SENTINEL;

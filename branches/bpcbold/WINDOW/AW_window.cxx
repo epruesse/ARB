@@ -64,6 +64,20 @@ AW_cb::AW_cb(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW
     id = NULL;
 }
 
+AW_cb::AW_cb(AW_window *awi, const WindowCallback& cb, const char *help_texti, class AW_cb *nexti) {
+    aw = awi;
+
+    f   = AW_CB(cb.callee());
+    cd1 = cb.inspect_CD1();
+    cd2 = cb.inspect_CD2();
+
+    help_text     = help_texti;
+    pop_up_window = NULL;
+    this->next    = nexti;
+
+    id = NULL;
+}
+
 AW_timer_cb_struct::AW_timer_cb_struct(AW_root *ari, AW_RCB g, AW_CL cd1i, AW_CL cd2i) {
     ar = ari;
     f = g;
@@ -344,6 +358,10 @@ void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_C
             (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
 }
 
+void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
+    set_horizontal_change_callback(AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
+}
+
 static void value_changed_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb *cbs = (AW_cb *) aw_cb_struct;
@@ -372,6 +390,11 @@ void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL)
             (XtCallbackProc) drag_scroll_bar_vertical,
             (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
 }
+
+void AW_window::set_vertical_change_callback(const WindowCallback& wcb) {
+    set_vertical_change_callback(AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
+}
+
 
 void AW_window::tell_scrolled_picture_size(AW_screen_area rectangle) {
     picture->l = rectangle.l;
@@ -860,8 +883,8 @@ static void AW_root_focusCB(Widget /*wgt*/, XtPointer awrp, XEvent*, Boolean*) {
     AW_root_cblist::call(aw_root->focus_callback_list, aw_root);
 }
 
-void AW_root::set_focus_callback(AW_RCB f, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::add(focus_callback_list, AW_root_callback(f, cd1, cd2));
+void AW_root::set_focus_callback(RootCallback fcb) {
+    AW_root_cblist::add(focus_callback_list, AW_root_callback(fcb));
 }
 
 static void AW_focusCB(Widget /*wgt*/, XtPointer aw_cb_struct, XEvent*, Boolean*) {
@@ -905,6 +928,10 @@ void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window
 void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     AW_area_management *aram = MAP_ARAM(area);
     if (aram) aram->set_expose_callback(this, f, cd1, cd2);
+}
+void AW_window::set_expose_callback(AW_area area, const WindowCallback& wcb) {
+    AW_area_management *aram = MAP_ARAM(area);
+    if (aram) aram->set_expose_callback(this, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
 }
 
 bool AW_area_management::is_expose_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
@@ -1043,6 +1070,10 @@ void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
     if (!aram)
         return;
     aram->set_resize_callback(this, f, cd1, cd2);
+}
+
+void AW_window::set_resize_callback(AW_area area, const WindowCallback& wcb) {
+    set_resize_callback(area, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
 }
 
 // -------------------
@@ -2909,6 +2940,11 @@ void AW_window::close_sub_menu() {
 #endif // DUMP_MENU_LIST
     if (p_w->menu_deep>0)
         p_w->menu_deep--;
+}
+
+void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb) {
+    insert_menu_topic(topic_id, name, mnemonic, helpText, Mask,
+                      AW_CB(cb.callee()), cb.inspect_CD1(), cb.inspect_CD2());
 }
 
 void AW_window::insert_menu_topic(const char *topic_id, AW_label name,

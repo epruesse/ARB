@@ -518,9 +518,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                            int          base_gc,
                            int          base_drag,
                            AW_GCM_AREA  area,
-                           void (*changecb)(AW_window*, AW_CL, AW_CL),
-                           AW_CL        cd1,
-                           AW_CL        cd2,
+                           const WindowCallback& changecb,
                            bool         define_color_groups,
                            const char  *default_background_color,
                            ...)
@@ -561,7 +559,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
     AW_font               def_font;
     struct aw_gc_manager *gcmgrlast = 0, *gcmgr2=0, *gcmgrfirst=0;
 
-    AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, changecb, cd1, cd2);
+    AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, AW_CB(changecb.callee()), changecb.inspect_CD1(), changecb.inspect_CD2());
     mcbs->device = device;
 
     int col = AW_WINDOW_BG;

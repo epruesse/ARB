@@ -26,6 +26,11 @@ class AW_root_callback {
     AW_CL  cd1;
     AW_CL  cd2;
 public:
+    AW_root_callback(RootCallback rcb)
+        : cb(AW_RCB(rcb.callee())),
+          cd1(rcb.inspect_CD1()),
+          cd2(rcb.inspect_CD2())
+    {}
     AW_root_callback(AW_RCB cb_, AW_CL cd1_, AW_CL cd2_) : cb(cb_), cd1(cd1_), cd2(cd2_) {}
 
     void call(AW_root *root) const { cb(root, cd1, cd2); }

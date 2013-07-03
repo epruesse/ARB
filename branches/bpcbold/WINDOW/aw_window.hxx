@@ -16,6 +16,9 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 
 class AW_window;
 class AW_device;
@@ -140,12 +143,17 @@ public:
     char       *id;
 
     // real public section:
-    AW_cb(AW_window    *awi,
-                 AW_CB         g,
-                 AW_CL         cd1i       = 0,
-                 AW_CL         cd2i       = 0,
-                 const char   *help_texti = 0,
-                 AW_cb *next       = 0);
+    AW_cb(AW_window  *awi,
+          AW_CB       g,
+          AW_CL       cd1i       = 0,
+          AW_CL       cd2i       = 0,
+          const char *help_texti = 0,
+          AW_cb      *next       = 0);
+
+    AW_cb(AW_window             *awi,
+          const WindowCallback&  cb,
+          const char            *help_texti = 0,
+          AW_cb                 *next       = 0);
 
     void run_callbacks();                           // runs the whole list
     bool contains(AW_CB g);                         // test if contained in list
@@ -331,8 +339,11 @@ public:
     void set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
 
+    void set_expose_callback(AW_area area, const WindowCallback& wcb);
+    void set_resize_callback(AW_area area, const WindowCallback& wcb);
     void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+
     void set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
@@ -358,6 +369,7 @@ public:
     void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
     void insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb);
     void close_sub_menu();
 
     void insert_separator();
@@ -378,12 +390,15 @@ public:
     void calculate_scrollbars();
     void set_vertical_scrollbar_position(int position);
     void set_horizontal_scrollbar_position(int position);
-    void set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+
     void set_horizontal_scrollbar_left_indent(int indent);
     void set_vertical_scrollbar_top_indent(int indent);
     void set_vertical_scrollbar_bottom_indent(int indent);
 
+    void set_vertical_change_callback(const WindowCallback& wcb);
+    void set_horizontal_change_callback(const WindowCallback& wcb);
+    void set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
 
     // ************** Control window size  *********
     void set_window_size(int width, int height);
@@ -461,11 +476,13 @@ public:
     void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1);
     void callback(void (*f)(AW_window*));
     void callback(AW_cb * /* owner */ awcbs); // Calls f with
+    void callback(const WindowCallback& cb);
     // aww in awcbs
     void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // double click callbacks
     void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1); // selection lists only !!
     void d_callback(void (*f)(AW_window*));
     void d_callback(AW_cb * /* owner */ awcbs); // Calls f with
+    void d_callback(const WindowCallback& cb);
     // *** create the buttons ********
 
     void   create_button(const char *macro_name, AW_label label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
