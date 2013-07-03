@@ -99,6 +99,9 @@ void AW_window::callback(void (*f)(AW_window*)) {
 void AW_window::callback(AW_cb * /* owner */ awcbs) {
     _callback = awcbs;
 }
+void AW_window::callback(const WindowCallback& cb) {
+    _callback = new AW_cb(this, cb);
+}
 
 void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     _d_callback = new AW_cb(this, (AW_CB)f, cd1, cd2);
@@ -113,6 +116,9 @@ void AW_window::d_callback(void (*f)(AW_window*)) {
 }
 void AW_window::d_callback(AW_cb * /* owner */ awcbs) {
     _d_callback = awcbs;
+}
+void AW_window::d_callback(const WindowCallback& cb) {
+    _d_callback = new AW_cb(this, cb);
 }
 
 void AW_window::label(const char *Label) {
