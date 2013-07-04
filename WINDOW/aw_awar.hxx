@@ -120,6 +120,7 @@ public:
     AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);
     AW_awar *add_callback(Awar_CB1 f, AW_CL cd1);
     AW_awar *add_callback(Awar_CB0 f);
+    AW_awar *add_callback(const RootCallback& cb);
 
     AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);   // remove a callback
     AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1);
