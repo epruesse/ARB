@@ -235,13 +235,13 @@ public:
 #define CBTYPE_FVV_BUILDER_P1(BUILDER,CB,RESULT,FIXED,SIG,P1,P1fun)                                             \
     template<typename P1>                                                                                       \
     inline CB BUILDER(RESULT (*cb)(FIXED, P1fun), P1 p1) {                                                      \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                  \
+        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                   \
         return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), 0);                                                            \
     }                                                                                                           \
     template<typename P1>                                                                                       \
     inline CB BUILDER(RESULT (*cb)(FIXED, P1fun),                                                               \
                       void (*dealloc)(P1), P1 p1) {                                                             \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                  \
+        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                   \
         return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1), 0);     \
     }
 
@@ -249,13 +249,13 @@ public:
     template<typename P1, typename P2>                                  \
     inline CB BUILDER(RESULT (*cb)(FIXED, P1fun, P2fun),                \
                       P1 p1, P2 p2) {                                   \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2)); \
+        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2));  \
         return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), CAST_TO_AW_CL(P2,p2)); \
     }                                                                   \
     template<typename P1, typename P2>                                  \
     inline CB BUILDER(RESULT (*cb)(FIXED, P1fun, P2fun),                \
                       void (*dealloc)(P1,P2), P1 p1, P2 p2) {           \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2)); \
+        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2));  \
         return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1), CAST_TO_AW_CL(P2,p2)); \
     }                                                                   \
 
@@ -276,13 +276,13 @@ public:
 #define CBTYPE_FVF_BUILDER_P1(BUILDER,CB,RESULT,F1,F2,SIG,P1,P1fun)                                             \
     template<typename P1>                                                                                       \
     inline CB BUILDER(RESULT (*cb)(F1, P1fun, F2), P1 p1) {                                                     \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                  \
+        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                   \
         return CB((SIG)cb, CAST_TO_AW_CL(P1,p1));                                                               \
     }                                                                                                           \
     template<typename P1>                                                                                       \
     inline CB BUILDER(RESULT (*cb)(F1, P1fun, F2),                                                              \
                       void (*dealloc)(P1), P1 p1) {                                                             \
-        COMPILE_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                  \
+        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                   \
         return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1));        \
     }
 

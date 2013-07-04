@@ -38,9 +38,6 @@ namespace arb_compile_assertion {
 
 #endif
 
-// @@@ ease cb-merge (replace occurrances by STATIC_ASSERTs later)
-#define COMPILE_ASSERT(const_expression) STATIC_ASSERT(const_expression)
-
 #else
 #error static_assert.h included twice
 #endif // STATIC_ASSERT_H
