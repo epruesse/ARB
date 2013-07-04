@@ -83,6 +83,7 @@ class AW_selection_list {
 public:
     void update_from_widget();  // called from internal callback
 
+    /**the value of the selected item will be written to the awar*/
     AW_selection_list(AW_awar*);
     ~AW_selection_list();
 

@@ -128,18 +128,18 @@ void AW_selection_list::bind_widget(GtkWidget *widget_) {
 
 
 void AW_selection_list::update_from_widget() {
+    aw_return_if_fail(GTK_IS_COMBO_BOX(widget) || GTK_IS_TREE_VIEW(widget));
+    
     GtkTreeIter iter;
+    //set iter to the currently active item
     if (GTK_IS_COMBO_BOX(widget)) {
-        if (!gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter))
+        if (!gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter)) 
             return;
     } 
     else if (GTK_IS_TREE_VIEW(widget)) {
         GtkTreeSelection *tsel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
         if (!gtk_tree_selection_get_selected(tsel, NULL, &iter)) 
             return;
-    }
-    else {
-        //aw_warning("unknown widget type");
     }
 
     GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
