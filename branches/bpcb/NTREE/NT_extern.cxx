@@ -1053,7 +1053,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         tree_awar->add_callback((AW_RCB)NT_reload_tree_event, (AW_CL)ntw, 1);
     }
 
-    awr->awar(AWAR_SPECIES_NAME)->add_callback((AW_RCB)NT_jump_cb_auto, (AW_CL)ntw, 0);
+    awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw));
     awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback((AW_RCB)AWT_resize_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_BASELINEWIDTH)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_SHOW_CIRCLE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
@@ -1068,7 +1068,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awr->awar(AWAR_DTREE_DENDRO_XPAD)->add_callback((AW_RCB)NT_reinit_treetype, (AW_CL)ntw, 0);
 
     awr->awar(AWAR_TREE_REFRESH)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
-    awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback((AW_RCB)NT_recompute_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback(makeRootCallback(TREE_recompute_cb, ntw));
 
     GBDATA *gb_arb_presets =    GB_search(GLOBAL.gb_main, "arb_presets", GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets, GB_CB_CHANGED, (GB_CB)AWT_expose_cb, (int *)ntw);
@@ -1696,7 +1696,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->create_button("SEARCH",  "Search");
 
     awm->at(db_searchx, second_uppery);
-    awm->callback((AW_CB)NT_jump_cb, (AW_CL)ntw, 1);
+    awm->callback(makeWindowCallback(NT_jump_cb, ntw, true));
     awm->help_text("tr_jump.hlp");
     awm->create_button("JUMP", "Jump");
 

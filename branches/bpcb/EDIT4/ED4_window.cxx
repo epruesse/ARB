@@ -386,7 +386,7 @@ static void ED4_expose_cb(AW_window *aww) {
     ED4_ROOT->special_window_refresh(true);
 }
 
-static void ED4_resize_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+static void ED4_resize_cb(AW_window *aww) {
     ED4_LocalWinContext uses(aww);
     GB_transaction      ta(GLOBAL_gb_main);
 
@@ -416,7 +416,7 @@ ED4_window *ED4_window::insert_window(AW_window *new_aww) {
 
     // treat devices
     new_aww->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(ED4_expose_cb));
-    new_aww->set_resize_callback(AW_MIDDLE_AREA, ED4_resize_cb, 0, 0);
+    new_aww->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(ED4_resize_cb));
     new_aww->set_input_callback (AW_MIDDLE_AREA, ED4_input_cb,  0, 0);
     new_aww->set_motion_callback(AW_MIDDLE_AREA, ED4_motion_cb, 0, 0);
 

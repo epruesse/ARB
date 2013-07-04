@@ -146,17 +146,15 @@ static void map_viewkey(AW_root *aw_root, AW_default awdef, int i, GBDATA *gb_vi
     Awar = viewkeyAwar(aw_root, awdef, i, "leaf",     false); Awar->map(gb_leaf);
 }
 
-static void map_viewkeys(AW_root *aw_root, AW_CL cl_awdef, AW_CL cl_gb_main) {
+static void map_viewkeys(AW_root *aw_root, /*AW_default*/ GBDATA *awdef, GBDATA *gb_main) {
     // map visible viewkeys to internal db entries
     static bool  initialized        = false;
-    AW_default   awdef              = (AW_default)cl_awdef;
-    GBDATA      *gb_main            = (GBDATA*)cl_gb_main;
     AW_awar     *awar_selected_page = 0;
 
     if (!initialized) {
         awar_selected_page = aw_root->awar_int(AWAR_NDS_PAGE, 0);
-        awar_selected_page->add_callback(map_viewkeys, cl_awdef, cl_gb_main); // bind to self
-        initialized        = true;
+        awar_selected_page->add_callback(makeRootCallback(map_viewkeys, awdef, gb_main)); // bind to self
+        initialized = true;
     }
     else {
         awar_selected_page = aw_root->awar(AWAR_NDS_PAGE);
@@ -265,7 +263,7 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
     aw_root->awar_string(AWAR_KEY_SELECT, "", awdef);
     GB_pop_transaction(gb_main);
 
-    map_viewkeys(aw_root, (AW_CL)awdef, (AW_CL)gb_main); // call once
+    map_viewkeys(aw_root, awdef, gb_main); // call once
 }
 
 static void awt_pre_to_view(AW_root *aw_root) {

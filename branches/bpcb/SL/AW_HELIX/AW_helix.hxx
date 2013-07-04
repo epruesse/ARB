@@ -34,7 +34,7 @@ public:
     bool is_enabled() const { return (enabled != 0) && (size()>0); }
 };
 
-AW_window *create_helix_props_window(AW_root *awr, AW_cb * /* owner */ awcbs);
+AW_window *create_helix_props_window(AW_root *awr, AW_cb *awcbs);
 
 #else
 #error AW_helix.hxx included twice

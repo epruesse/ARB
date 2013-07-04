@@ -714,8 +714,8 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     awm->set_vertical_change_callback  ((AW_CB2)vertical_change_cb,   (AW_CL)dmatrix, 0);
     awm->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, (AW_CL)dmatrix, 0);
 
-    awm->set_resize_callback(AW_MIDDLE_AREA, (AW_CB2)resize_needed,    (AW_CL)dmatrix, 0);
-    awm->set_expose_callback(AW_MIDDLE_AREA, (AW_CB2)redisplay_needed, (AW_CL)dmatrix, 0);
+    awm->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(resize_needed, dmatrix));
+    awm->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(redisplay_needed, dmatrix));
     awm->set_input_callback (AW_MIDDLE_AREA, (AW_CB) input_cb,         (AW_CL)dmatrix, 0);
     awm->set_motion_callback(AW_MIDDLE_AREA, (AW_CB) motion_cb,        (AW_CL)dmatrix, 0);
 
