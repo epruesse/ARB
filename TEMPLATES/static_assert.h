@@ -38,8 +38,6 @@ namespace arb_compile_assertion {
 
 #endif
 
-
-
 #else
 #error static_assert.h included twice
 #endif // STATIC_ASSERT_H
