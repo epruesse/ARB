@@ -15,7 +15,7 @@
 #endif
 
 class AW_window;
-class AW_cb_struct;
+class AW_cb;
 class AW_selection_list;
 
 class AW_varUpdateInfo : virtual Noncopyable { // used to refresh single items on change
@@ -24,18 +24,18 @@ class AW_varUpdateInfo : virtual Noncopyable { // used to refresh single items o
     AW_widget_type     widget_type;
     AW_awar           *awar;
     AW_scalar          value;
-    AW_cb_struct      *cbs;
+    AW_cb      *cbs;
     AW_selection_list *sellist;
 
 public:
-    AW_varUpdateInfo(AW_window *aw, GtkWidget *w, AW_widget_type wtype, AW_awar *a, AW_cb_struct *cbs_)
+    AW_varUpdateInfo(AW_window *aw, GtkWidget *w, AW_widget_type wtype, AW_awar *a, AW_cb *cbs_)
         : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
           value(a),
           cbs(cbs_), sellist(NULL)
     {
     }
     template<typename T>
-    AW_varUpdateInfo(AW_window *aw, GtkWidget *w, AW_widget_type wtype, AW_awar *a, T t, AW_cb_struct *cbs_)
+    AW_varUpdateInfo(AW_window *aw, GtkWidget *w, AW_widget_type wtype, AW_awar *a, T t, AW_cb *cbs_)
         : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
           value(t),
           cbs(cbs_), sellist(NULL)

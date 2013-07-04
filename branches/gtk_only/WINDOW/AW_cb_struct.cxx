@@ -4,12 +4,12 @@
 #include "aw_msg.hxx"
 
 //TODO comment
-AW_cb_struct_guard AW_cb_struct::guard_before = NULL;
-AW_cb_struct_guard AW_cb_struct::guard_after  = NULL;
-AW_postcb_cb       AW_cb_struct::postcb       = NULL;
+AW_cb_struct_guard AW_cb::guard_before = NULL;
+AW_cb_struct_guard AW_cb::guard_after  = NULL;
+AW_postcb_cb       AW_cb::postcb       = NULL;
 
 
-AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb_struct *nexti) {
+AW_cb::AW_cb(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb *nexti) {
     aw            = awi;
     f             = g;
     cd1           = cd1i;
@@ -22,11 +22,11 @@ AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), 
 }
 
 
-bool AW_cb_struct::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
+bool AW_cb::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
     return (f == g) || (next && next->contains(g));
 }
 
-bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
+bool AW_cb::is_equal(const AW_cb& other) const {
     bool equal = false;
     if (f == other.f) {                             // same callback function
         equal = (cd1 == other.cd1) && (cd2 == other.cd2);
@@ -55,8 +55,8 @@ bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
 
 
 
-void AW_cb_struct::run_callback() {
-    if (next) next->run_callback();                 // callback the whole list
+void AW_cb::run_callbacks() {
+    if (next) next->run_callbacks();                // callback the whole list
     if (!f) return;                                 // run no callback
 
     AW_root *root = aw->get_root();
@@ -136,7 +136,7 @@ void AW_cb_struct::run_callback() {
             }
         }
         if (pop_up_window && pop_up_window->prvt->popup_cb)
-            pop_up_window->prvt->popup_cb->run_callback();
+            pop_up_window->prvt->popup_cb->run_callbacks();
     }
     else {
         f(aw, cd1, cd2);

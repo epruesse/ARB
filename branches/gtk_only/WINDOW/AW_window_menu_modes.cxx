@@ -117,7 +117,7 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(button), icon);
        
     // register clicked callback
-    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
+    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, 0);
     cbs->help_text = helpText;
     g_signal_connect((gpointer)button, "toggled", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
 

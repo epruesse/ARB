@@ -1037,7 +1037,7 @@ static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL om
 }
 
 
-AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
+AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb *awcbs) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "PFOLD_PROPS", "PROTEIN_MATCH_SETTINGS");
 

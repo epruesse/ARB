@@ -99,26 +99,26 @@ void AW_window::highlight(){
 
 // FIXME: callback ownership not handled, possible memory leaks
 void AW_window::callback(void (*f)(AW_window*)){
-    prvt->callback = new AW_cb_struct(this, (AW_CB)f);
+    prvt->callback = new AW_cb(this, (AW_CB)f);
 }
 void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
-    prvt->callback = new AW_cb_struct(this, (AW_CB)f, cd1);
+    prvt->callback = new AW_cb(this, (AW_CB)f, cd1);
 }
 void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    prvt->callback = new AW_cb_struct(this, (AW_CB)f, cd1, cd2);
+    prvt->callback = new AW_cb(this, (AW_CB)f, cd1, cd2);
 }
-void AW_window::callback(AW_cb_struct * /* owner */ awcbs) {
+void AW_window::callback(AW_cb * /* owner */ awcbs) {
     prvt->callback = awcbs;
 }
 
 void AW_window::d_callback(void (*f)(AW_window*)) {
-    prvt->d_callback = new AW_cb_struct(this, (AW_CB)f);
+    prvt->d_callback = new AW_cb(this, (AW_CB)f);
 }
 void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
-    prvt->d_callback = new AW_cb_struct(this, (AW_CB)f, cd1);
+    prvt->d_callback = new AW_cb(this, (AW_CB)f, cd1);
 }
 void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    prvt->d_callback = new AW_cb_struct(this, (AW_CB)f, cd1, cd2);
+    prvt->d_callback = new AW_cb(this, (AW_CB)f, cd1, cd2);
 }
 
 /**
@@ -126,7 +126,7 @@ void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL
  * takes care of recording actions and displaying help on ?-cursor
  */
 void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
-    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
+    AW_cb *cbs = (AW_cb *) aw_cb_struct;
     
     AW_root *root = AW_root::SINGLETON;
      
@@ -149,12 +149,12 @@ void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
     if (root->is_tracking()) root->track_action(cbs->id);
 
     if (cbs->f == AW_POPUP) {
-        cbs->run_callback();
+        cbs->run_callbacks();
     }
     else {
         root->set_cursor(WAIT_CURSOR);
         
-        cbs->run_callback();
+        cbs->run_callbacks();
         
         if (root->is_help_active()) {
             root->set_cursor(HELP_CURSOR);
@@ -728,8 +728,8 @@ static void row_activated_cb(GtkTreeView       * /*tree_view*/,
                              GtkTreePath       * /*path*/,
                              GtkTreeViewColumn * /*column*/,
                              gpointer           user_data) {
-    AW_cb_struct *cbs = (AW_cb_struct *) user_data;
-    cbs->run_callback();
+    AW_cb *cbs = (AW_cb *) user_data;
+    cbs->run_callbacks();
 }
 
 AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows) {
@@ -921,7 +921,7 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
 
     gtk_menu_shell_append(prvt->menus.top(), item);  
    
-    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, helpText);
+    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, helpText);
     
     g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
 
@@ -1047,7 +1047,7 @@ void AW_window::set_focus_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
     // middle area. the API was designed for "focus-follows-mouse" mode,
     // and makes little sense for GTK
     // (we might need other means to trigger an update of the tree at the right time)
-    prvt->focus_cb = new AW_cb_struct(this, f, cd1, cd2, 0, prvt->focus_cb);
+    prvt->focus_cb = new AW_cb(this, f, cd1, cd2, 0, prvt->focus_cb);
 }
 
 /**
@@ -1055,7 +1055,7 @@ void AW_window::set_focus_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
  * Called multiple times if a show() follows a hide().
  */
 void AW_window::set_popup_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
-    prvt->popup_cb = new AW_cb_struct(this, f, cd1, cd2, 0, prvt->popup_cb);
+    prvt->popup_cb = new AW_cb(this, f, cd1, cd2, 0, prvt->popup_cb);
 }
 
 void AW_window::set_info_area_height(int h) {
@@ -1188,14 +1188,14 @@ void AW_window::create_window_variables() {
     get_root()->awar(buffer)->add_callback((AW_RCB1)_aw_window_recalc_scrollbar_cb, (AW_CL)this);
 }
 
-static void value_changed_scroll_bar_vertical(GtkAdjustment *adjustment, AW_cb_struct *cbs) {
+static void value_changed_scroll_bar_vertical(GtkAdjustment *adjustment, AW_cb *cbs) {
     cbs->aw->slider_pos_vertical = gtk_adjustment_get_value(adjustment);
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 
-static void value_changed_scroll_bar_horizontal(GtkAdjustment *adjustment, AW_cb_struct *cbs) {
+static void value_changed_scroll_bar_horizontal(GtkAdjustment *adjustment, AW_cb *cbs) {
     (cbs->aw)->slider_pos_horizontal = gtk_adjustment_get_value(adjustment);
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 
 void AW_window::set_vertical_scrollbar_position(int position){
@@ -1222,7 +1222,7 @@ void AW_window::set_vertical_change_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
     
     g_signal_connect((gpointer)hAdj, "value_changed",
                      G_CALLBACK(value_changed_scroll_bar_vertical),
-                     (gpointer)new AW_cb_struct(this, f, cd1, cd2, ""));
+                     (gpointer)new AW_cb(this, f, cd1, cd2, ""));
 
 }
 
@@ -1231,7 +1231,7 @@ void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_C
     GtkAdjustment *hAdj = aw_drawing_area_get_horizontal_adjustment(prvt->drawing_area);
     g_signal_connect((gpointer)hAdj, "value_changed",
                      G_CALLBACK(value_changed_scroll_bar_horizontal),
-                     (gpointer)new AW_cb_struct(this, f, cd1, cd2, ""));
+                     (gpointer)new AW_cb(this, f, cd1, cd2, ""));
 
 }
 
@@ -1529,7 +1529,7 @@ void AW_window::show() {
     prvt->show();
     get_root()->window_show(); // increment window counter
 
-    if (prvt->popup_cb) prvt->popup_cb->run_callback();
+    if (prvt->popup_cb) prvt->popup_cb->run_callbacks();
 }
 
 void AW_window::hide(){
