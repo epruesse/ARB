@@ -565,6 +565,8 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_question.hxx
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/cb.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/EXP.hxx
@@ -572,7 +574,9 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/items.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/test_global.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_edconf.o: NT_cb.h
 NT_edconf.o: NT_local.h
