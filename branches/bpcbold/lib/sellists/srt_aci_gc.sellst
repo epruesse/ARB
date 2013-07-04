@@ -1,7 +1,0 @@
-CNT_NUCS  ! count nucleotides,                              nuc#|sequence|count("agctuAGCTU")
-CNT_NUCS_TERM ! count nucleotides gene,                     nuc_term#|sequence|filter(SAI=ECOLI,exclude=.-)|count("ACGTU")
-CNT_AACIDS  ! count amino acids,                            aa#|sequence|count("ACDEFGHIKLMNPQRSTVWYacdefghiklmnpqrstvwy")
-GC_CONT ! calculate G+C content,                            GC#|sequence|count("gcGC");count("agctuAGCTU")|"G+C:";per_cent
-GC_CONTH !calculate G+C content helical parts only,         GCH#|sequence|filter(SAI=HELIX;exclude=.-)|count("gcGC");count("agctuAGCTU")|"GCH=";per_cent;"(";cut(2);")"
-GC_CONTNH ! calculate G+C content non helical parts only,   GCN#|sequence|filter(SAI=HELIX;include=.-)|count("gcGC");count("agctuAGCTU")|"GCN=";per_cent;"(";cut(2);")"
-

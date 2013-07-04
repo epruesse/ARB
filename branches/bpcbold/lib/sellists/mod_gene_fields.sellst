@@ -1,3 +1,0 @@
-remove all '"',                                     :"=
-calculate sequence checksum,                        seqcheck#|sequence|"ARB_";checksum(exclude=.-n;toupper)
-calculate length,                                   length#|sequence|len
