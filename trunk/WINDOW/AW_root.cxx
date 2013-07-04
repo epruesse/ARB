@@ -134,12 +134,12 @@ AW_awar *AW_root::label_is_awar(const char *label) {
     return awar_exists;
 }
 
-void AW_root::define_remote_command(AW_cb_struct *cbs) {
+void AW_root::define_remote_command(AW_cb *cbs) {
     if (cbs->f == (AW_CB)AW_POPDOWN) {
         aw_assert(!cbs->get_cd1() && !cbs->get_cd2()); // popdown takes no parameters (please pass ", 0, 0"!)
     }
 
-    AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(prvt->action_hash, cbs->id, (long)cbs);
+    AW_cb *old_cbs = (AW_cb*)GBS_write_hash(prvt->action_hash, cbs->id, (long)cbs);
     if (old_cbs) {
         if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
 #if defined(DEBUG)
@@ -153,8 +153,8 @@ void AW_root::define_remote_command(AW_cb_struct *cbs) {
     }
 }
 
-AW_cb_struct *AW_root::search_remote_command(const char *action) {
-    return (AW_cb_struct *)GBS_read_hash(prvt->action_hash, action);
+AW_cb *AW_root::search_remote_command(const char *action) {
+    return (AW_cb *)GBS_read_hash(prvt->action_hash, action);
 }
 
 static long set_focus_policy(const char *, long cl_aww, void *) {
