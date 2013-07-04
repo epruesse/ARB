@@ -1056,15 +1056,13 @@ bool query_info::matches(const char *data, GBDATA *gb_item) const {
     return applyNot(hit);
 }
 
-static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
-    DbQuery       *query    = (DbQuery*)cl_query;
-    ItemSelector&  selector = query->selector;
+static void perform_query_cb(AW_window*, DbQuery *query, EXT_QUERY_TYPES ext_query) {
+    ItemSelector& selector = query->selector;
 
     GB_push_transaction(query->gb_main);
 
-    EXT_QUERY_TYPES  ext_query = (EXT_QUERY_TYPES)cl_ext_query;
-    AW_root         *aw_root   = query->aws->get_root();
-    query_info       qinfo(query);
+    AW_root    *aw_root = query->aws->get_root();
+    query_info  qinfo(query);
 
     QUERY_MODES mode  = (QUERY_MODES)aw_root->awar(query->awar_ere)->read_int();
     QUERY_RANGE range = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
@@ -2527,9 +2525,8 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     return aws;
 }
 
-static void toggle_flag_cb(AW_window *aww, AW_CL cl_query) {
-    DbQuery        *query   = (DbQuery*)cl_query;
-    GB_transaction  dummy(query->gb_main);
+static void toggle_flag_cb(AW_window *aww, DbQuery *query) {
+    GB_transaction  ta(query->gb_main);
     GBDATA         *gb_item = query->selector.get_selected_item(query->gb_main, aww->get_root());
     if (gb_item) {
         long flag = GB_read_flag(gb_item);
@@ -2738,7 +2735,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         for (int key = 0; key<QUERY_SEARCHES; ++key) {
             aws->at(xpos_calc[2], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
-            aws->d_callback(perform_query_cb, (AW_CL)query, EXT_QUERY_NONE); // enable ENTER in searchfield to start search
+            aws->d_callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE)); // enable ENTER in searchfield to start search
             aws->create_input_field(query->awar_queries[key], 12);
         }
     }
@@ -2748,7 +2745,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         if (awtqs->create_view_window) {
             aws->callback(query_box_popup_view_window, (AW_CL)awtqs->create_view_window, (AW_CL)query->gb_main);
         }
-        aws->d_callback(toggle_flag_cb, (AW_CL)query);
+        aws->d_callback(makeWindowCallback(toggle_flag_cb, query));
 
         {
             char    *this_awar_name = GBS_global_string_copy("tmp/dbquery_%s/select", query_id); // do not free this, cause it's passed to new_selection_made_cb
@@ -2779,7 +2776,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     aws->button_length(18);
     if (awtqs->do_query_pos_fig) {
         aws->at(awtqs->do_query_pos_fig);
-        aws->callback(perform_query_cb, (AW_CL)query, EXT_QUERY_NONE);
+        aws->callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE));
         char *macro_id = GBS_global_string_copy("SEARCH_%s", query_id);
         aws->create_button(macro_id, "Search");
         free(macro_id);
@@ -2881,15 +2878,15 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             aws->sep______________();
             if (query->expect_hit_in_ref_list) {
                 aws->insert_menu_topic("search_equal_fields_and_listed_in_I", "Search entries existing in both DBs and listed in the source DB hitlist", "S",
-                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, EXT_QUERY_COMPARE_LINES);
+                                       "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_LINES));
                 aws->insert_menu_topic("search_equal_words_and_listed_in_I",  "Search words existing in entries of both DBs and listed in the source DB hitlist", "W",
-                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, EXT_QUERY_COMPARE_WORDS);
+                                       "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_WORDS));
             }
             else {
                 aws->insert_menu_topic("search_equal_field_in_both_db", "Search entries existing in both DBs", "S",
-                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, EXT_QUERY_COMPARE_LINES);
+                                       "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_LINES));
                 aws->insert_menu_topic("search_equal_word_in_both_db", "Search words existing in entries of both DBs", "W",
-                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, EXT_QUERY_COMPARE_WORDS);
+                                       "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_WORDS));
             }
         }
     }
