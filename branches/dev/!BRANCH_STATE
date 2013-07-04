@@ -129,6 +129,7 @@ BRANCH->TRUNK
                 7975 8034 8002 8004 -> 8040
                 7990 7991 7992 7993 7994 7995 7996 7998 8001 8003 8005 8006 8007 8008 8009 8011 8012 8019 -> 8041
                 8219 -> 8220
+                7876 7877 -> 10160
 
     skipped patches (depends, already there, this file, ...)
 
@@ -138,6 +139,40 @@ BRANCH->TRUNK
                 crap:           7278 7280 7545 7756 
                 sync 2 trunk:   7281
                 from trunk:     7505 7654 7656 7657 7658 7678 7745 7874 7889 7901 7902 7903 7920 7921 7932 7988 7989
+
+    merged into helper-branch bpcbold:
+
+                Note: part affecting lib WINDOW were not applied (refactoring shall happen in gtk-branch)
+
+                7849 safeCallbacks (collect all cb-types)
+                7850 depends [7849]
+                7852 safeCallbacks (module stub)
+                7853 reverts partof [7851]
+                7854 safeCallbacks (type inspection)
+                7856 safeCallbacks (cb-types+tests)
+                7857 safeCallbacks (type inspection)
+                7858 safeCallbacks (publish)
+                7859 depends [7858]
+                7861 safeCallbacks (tests) 
+                7862 safeCallbacks (double=invalid cb-param)
+                7863 safeCallbacks (publish RootCallback, WindowCallback and WindowCreatorCallback)
+                7866 safeCallbacks (dynamic cb-data)
+                7870 safeCallbacks (fix 32-bit tests) 
+                7872 safeCallbacks (type inspection; missing type)
+                7873 safeCallbacks (type inspection; gcc 4.3.2 fix)
+
+                7878 safeCallbacks (new type to catch arbdbCallbacks)
+                7879 safeCallbacks (warning)
+                7880 safeCallbacks (introduce RootCallback)
+                7881 safeCallbacks (use RootCallback for Awars)
+                7882 safeCallbacks (refactor AW_cb(_struct)) -- see [7956]
+                7883 safeCallbacks (refactor AW_cb)
+                7884 safeCallbacks (strict order)
+                7906 safeCallbacks (deprecation)
+                7907 safeCallbacks (introduce WindowCallback)
+                7908 safeCallbacks ([partially merged: skipped cb.h])
+                7909 safeCallbacks (several WindowCallback as examples)
+                7956 fix for [7882]
 
     not merged yet:
 
@@ -166,37 +201,6 @@ BRANCH->TRUNK
                 7847 ACI (streamlimit removed)
                 7848 ACI (avoid streamcopies)
                 7939 adlang DEBUG prints
-
-                7849 safeCallbacks (collect all cb-types)
-                7850 depends [7849]
-                7852 safeCallbacks (module stub)
-                7853 reverts partof [7851]
-                7854 safeCallbacks (type inspection)
-                7856 safeCallbacks (cb-types+tests)
-                7857 safeCallbacks (type inspection)
-                7858 safeCallbacks (publish)
-                7859 depends [7858]
-                7861 safeCallbacks (tests) 
-                7862 safeCallbacks (double=invalid cb-param)
-                7863 safeCallbacks (publish RootCallback, WindowCallback and WindowCreatorCallback)
-                7866 safeCallbacks (dynamic cb-data)
-                7870 safeCallbacks (fix 32-bit tests) 
-                7872 safeCallbacks (type inspection; missing type)
-                7873 safeCallbacks (type inspection; gcc 4.3.2 fix)
-                7876 arbdbCallbackTests
-                7877 arbdbCallbackTests 
-                7878 safeCallbacks (new type to catch arbdbCallbacks)
-                7879 safeCallbacks (warning)
-                7880 safeCallbacks (introduce RootCallback)
-                7881 safeCallbacks (use RootCallback for Awars)
-                7882 safeCallbacks (refactor AW_cb(_struct)) -- see [7956]
-                7883 safeCallbacks (refactor AW_cb)
-                7884 safeCallbacks (strict order)
-                7906 safeCallbacks (deprecation)
-                7907 safeCallbacks (introduce WindowCallback)
-                7908 safeCallbacks ([partially merged: skipped cb.h])
-                7909 safeCallbacks (several WindowCallback as examples)
-                7956 fix for [7882]
 
                 7912 clickDevice (Rectangle)
                 7914 clickDevice (fix click behavior)
