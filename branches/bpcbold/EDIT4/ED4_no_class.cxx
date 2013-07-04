@@ -145,7 +145,7 @@ void ED4_expose_cb(AW_window *aww) {
     GB_pop_transaction(GLOBAL_gb_main);
 }
 
-void ED4_resize_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void ED4_resize_cb(AW_window *aww) {
     ED4_ROOT->use_window(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
@@ -803,11 +803,9 @@ void ED4_set_iupac(AW_window * /* aww */, char *awar_name, bool /* callback_flag
     }
 }
 
-void ED4_gc_is_modified(AW_window *aww, AW_CL cd1, AW_CL cd2)                       // callback if gc is modified
-{
+void ED4_gc_is_modified(AW_window *aww) {
     ED4_ROOT->use_window(aww);
-
-    ED4_resize_cb(aww, cd1, cd2);
+    ED4_resize_cb(aww);
     ED4_expose_cb(aww);
 }
 

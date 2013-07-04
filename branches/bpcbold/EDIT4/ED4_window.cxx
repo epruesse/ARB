@@ -556,7 +556,7 @@ ED4_window *ED4_window::insert_window(AW_window *new_aww)
 
     // treat devices
     new_aww->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(ED4_expose_cb));
-    new_aww->set_resize_callback(AW_MIDDLE_AREA, ED4_resize_cb, 0, 0);
+    new_aww->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(ED4_resize_cb));
     new_aww->set_input_callback (AW_MIDDLE_AREA, ED4_input_cb,  0, 0);
     new_aww->set_motion_callback(AW_MIDDLE_AREA, ED4_motion_cb, 0, 0);
 

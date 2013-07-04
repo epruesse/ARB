@@ -690,27 +690,19 @@ void AWT_canvas::scroll(AW_window *, int dx, int dy, bool dont_update_scrollbars
     this->refresh();
 }
 
-static void scroll_vert_cb(AW_window *aww, AWT_canvas* ntw, AW_CL /*cl1*/) {
-    int delta_screen_y;
-
-    int new_vert = aww->slider_pos_vertical;
-    delta_screen_y = (new_vert - ntw->old_vert_scroll_pos);
-
+static void scroll_vert_cb(AW_window *aww, AWT_canvas* ntw) {
+    int new_vert       = aww->slider_pos_vertical;
+    int delta_screen_y = (new_vert - ntw->old_vert_scroll_pos);
 
     ntw->scroll(aww, 0, delta_screen_y, true);
-
-    ntw->old_vert_scroll_pos = (int)new_vert;
-
+    ntw->old_vert_scroll_pos = new_vert;
 }
 
-static void scroll_hor_cb(AW_window *aww, AWT_canvas* ntw, AW_CL /*cl1*/) {
-    int delta_screen_x;
-
-    int new_hor = aww->slider_pos_horizontal;
-    delta_screen_x = (new_hor - ntw->old_hor_scroll_pos);
+static void scroll_hor_cb(AW_window *aww, AWT_canvas* ntw) {
+    int new_hor        = aww->slider_pos_horizontal;
+    int delta_screen_x = (new_hor - ntw->old_hor_scroll_pos);
 
     ntw->scroll(aww, delta_screen_x, 0, true);
-
     ntw->old_hor_scroll_pos = new_hor;
 }
 
@@ -741,8 +733,8 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
     aww->set_focus_callback((AW_CB)focus_cb, (AW_CL)this, 0);
 
     aww->set_motion_callback(AW_MIDDLE_AREA, (AW_CB)motion_event, (AW_CL)this, 0);
-    aww->set_horizontal_change_callback((AW_CB)scroll_hor_cb, (AW_CL)this, 0);
-    aww->set_vertical_change_callback((AW_CB)scroll_vert_cb, (AW_CL)this, 0);
+    aww->set_horizontal_change_callback(makeWindowCallback(scroll_hor_cb, this));
+    aww->set_vertical_change_callback(makeWindowCallback(scroll_vert_cb, this));
 }
 
 // --------------------
