@@ -169,10 +169,13 @@ primer_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/cb.h
+primer_design.o: $(ARBHOME)/INCLUDE/cbtypes.h
 primer_design.o: $(ARBHOME)/INCLUDE/cxxforward.h
 primer_design.o: $(ARBHOME)/INCLUDE/dupstr.h
 primer_design.o: $(ARBHOME)/INCLUDE/gccver.h
 primer_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/items.h
 primer_design.o: $(ARBHOME)/INCLUDE/smartptr.h
+primer_design.o: $(ARBHOME)/INCLUDE/static_assert.h
 primer_design.o: $(ARBHOME)/INCLUDE/test_global.h
+primer_design.o: $(ARBHOME)/INCLUDE/ttypes.h

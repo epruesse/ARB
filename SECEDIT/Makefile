@@ -115,13 +115,16 @@ SEC_db.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_db.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_db.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_db.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_db.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_db.o: $(ARBHOME)/INCLUDE/smartptr.h
+SEC_db.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_db.o: $(ARBHOME)/INCLUDE/test_global.h
+SEC_db.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 SEC_graphic.o: SEC_abspos.hxx
 SEC_graphic.o: SEC_db.hxx
@@ -163,13 +166,16 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_graphic.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
+SEC_graphic.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/test_global.h
+SEC_graphic.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 SEC_helix.o: SEC_abspos.hxx
 SEC_helix.o: SEC_db.hxx
@@ -291,13 +297,16 @@ SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_main.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 SEC_main.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+SEC_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_main.o: $(ARBHOME)/INCLUDE/test_global.h
+SEC_main.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 SEC_paint.o: SEC_abspos.hxx
 SEC_paint.o: SEC_bonddef.hxx
@@ -332,6 +341,8 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_paint.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
@@ -339,7 +350,9 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/iupac.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/smartptr.h
+SEC_paint.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/test_global.h
+SEC_paint.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 SEC_read.o: SEC_abspos.hxx
 SEC_read.o: SEC_db.hxx
@@ -437,8 +450,12 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+SEC_toggle.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_toggle.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/smartptr.h
+SEC_toggle.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/test_global.h
+SEC_toggle.o: $(ARBHOME)/INCLUDE/ttypes.h

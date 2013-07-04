@@ -61,6 +61,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/cb.h
+ui_species.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ui_species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_query.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
@@ -72,4 +73,6 @@ ui_species.o: $(ARBHOME)/INCLUDE/pos_range.h
 ui_species.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/PT_global_defs.h
 ui_species.o: $(ARBHOME)/INCLUDE/smartptr.h
+ui_species.o: $(ARBHOME)/INCLUDE/static_assert.h
 ui_species.o: $(ARBHOME)/INCLUDE/test_global.h
+ui_species.o: $(ARBHOME)/INCLUDE/ttypes.h

@@ -54,8 +54,11 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/cb.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/ttypes.h
