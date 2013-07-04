@@ -175,6 +175,7 @@ symlink_file ../TEMPLATES/SigHandler.h INCLUDE/SigHandler.h &&
 symlink_file ../TEMPLATES/smartptr.h INCLUDE/smartptr.h &&
 symlink_file ../TEMPLATES/static_assert.h INCLUDE/static_assert.h &&
 symlink_file ../TEMPLATES/SuppressOutput.h INCLUDE/SuppressOutput.h &&
+symlink_file ../TEMPLATES/ttypes.h INCLUDE/ttypes.h &&
 symlink_file ../TEMPLATES/ut_valgrinded.h INCLUDE/ut_valgrinded.h &&
 symlink_file ../TEMPLATES/valgrind.h INCLUDE/valgrind.h &&
 
@@ -266,6 +267,8 @@ symlink_file ../SL/AP_TREE/AP_Tree.hxx INCLUDE/AP_Tree.hxx &&
 symlink_file ../SL/ARB_TREE/ARB_Tree.hxx INCLUDE/ARB_Tree.hxx &&
 symlink_file ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink_file ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
+symlink_file ../SL/CB/cb.h INCLUDE/cb.h &&
+symlink_file ../SL/CB/cbtypes.h INCLUDE/cbtypes.h &&
 symlink_file ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&
 symlink_file ../SL/DB_UI/dbui.h INCLUDE/dbui.h &&

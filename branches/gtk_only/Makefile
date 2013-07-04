@@ -1965,6 +1965,10 @@ UNITS_TESTED_FIRST = \
 	PERLTOOLS/arb_proto_2_xsub.test \
 	AWTC/AWTC.test \
 
+# plain test-libaries not linked anywhere
+TEST_SANDBOXES = \
+	SL/CB/CB.test \
+
 UNITS_TESTED = \
 	DBSERVER/DBSERVER.test \
 	AWT/libAWT.test \
@@ -1988,6 +1992,7 @@ UNITS_TESTED = \
 	SL/DB_QUERY/DB_QUERY.test \
 
 TESTED_UNITS_MANUAL = \
+	$(TEST_SANDBOXES) \
 	$(UNITS_TESTED_FIRST) \
 	$(UNITS_TESTED) \
 
@@ -2010,7 +2015,7 @@ TEST_MAKE_FLAGS+=-j1
 endif
 
 
-%.test: %.dummy
+%.test:
 	-@( export ID=$$$$; mkdir -p $(TEST_LOG_DIR); \
 	( \
 	    $(MAKE) -C UNIT_TESTER -f Makefile.test -r \
@@ -2024,7 +2029,7 @@ endif
 	) >$(TEST_LOG_DIR)/$(@F).log 2>&1; echo "- $(@F)")
 
 
-test_base: $(UNIT_TESTER_LIB:.a=.dummy)
+test_base: $(UNIT_TESTER_LIB:.a=.dummy) $(subst .test,.dummy,$(TEST_SANDBOXES))
 
 clean_cov:
 	find . \( -name "*.gcda" -o -name "*.gcov" -o -name "*.cov" \) -exec rm {} \;
