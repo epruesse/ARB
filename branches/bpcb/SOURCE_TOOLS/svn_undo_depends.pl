@@ -104,6 +104,8 @@ sub read_chunk(\@\@) {
 sub extract_depends(\@\@) {
   my ($in_r,$out_r) = @_;
 
+  while (not $$in_r[0] =~ $reg_is_header_start) { shift @$in_r; } # drop lines before first header (e.g. mergeinfo)
+
   my @header = ();
   read_header(@$in_r, @header);
 
