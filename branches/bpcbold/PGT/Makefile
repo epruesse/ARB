@@ -64,11 +64,15 @@ arb_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+arb_interface.o: $(ARBHOME)/INCLUDE/cb.h
+arb_interface.o: $(ARBHOME)/INCLUDE/cbtypes.h
 arb_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_interface.o: $(ARBHOME)/INCLUDE/EXP.hxx
 arb_interface.o: $(ARBHOME)/INCLUDE/items.h
 arb_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_interface.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_interface.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_interface.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 config_dialog.o: arb_interface.hxx
 config_dialog.o: config_dialog.hxx
