@@ -10,6 +10,9 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef AW_BASE_HXX
+#include "aw_base.hxx" // @@@ remove later
+#endif
 #include "aw_gtk_forward_declarations.hxx"
 #include "aw_assert.hxx"
 #include "aw_area_management.hxx"
