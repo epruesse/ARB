@@ -1298,7 +1298,7 @@ static AW_window *ED4_create_gc_window(AW_root *aw_root, AW_gc_manager id) {
     return gc_win;
 }
 
-static void refresh_on_gc_change_cb(AW_window *, AW_CL, AW_CL) {
+static void refresh_on_gc_change_cb() {
     ED4_expose_recalculations();
     ED4_request_full_instant_refresh();
 }
@@ -1356,7 +1356,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
                               ED4_G_STANDARD,                // GC_Standard configuration
                               ED4_G_DRAG,
                               AW_GCM_DATA_AREA,
-                              refresh_on_gc_change_cb, 0, 0, // callback triggering refresh on gc-change
+                              makeWindowCallback(refresh_on_gc_change_cb), // callback triggering refresh on gc-change
                               true,                          // use color groups
 
                               "#f8f8f8",
@@ -1583,7 +1583,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->sep______________();
 
     static AW_cb *refresh_all_cb = 0;
-    if (!refresh_all_cb) refresh_all_cb = new AW_cb(awmm, (AW_CB)ED4_request_relayout);
+    if (!refresh_all_cb) refresh_all_cb = new AW_cb(awmm, makeWindowCallback(ED4_request_relayout));
 
     if (alignment_type == GB_AT_AA) awmm->insert_menu_topic("props_pfold",     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_pfold_create_props_window, (AW_CL)refresh_all_cb);
     else                            awmm->insert_menu_topic("props_helix_sym", "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window,     (AW_CL)refresh_all_cb);

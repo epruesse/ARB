@@ -515,10 +515,6 @@ void AW_root::main_loop() {
     XtAppMainLoop(p_r->context);
 }
 
-void AW_root::set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::add(focus_callback_list, AW_root_callback(fcb, cd1, cd2));
-}
-
 static long AW_unlink_awar_from_DB(const char */*key*/, long cl_awar, void *cl_gb_main) {
     AW_awar *awar    = (AW_awar*)cl_awar;
     GBDATA  *gb_main = (GBDATA*)cl_gb_main;

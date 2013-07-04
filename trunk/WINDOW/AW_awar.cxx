@@ -220,6 +220,10 @@ AW_awar *AW_awar::add_callback(void (*f)(AW_root*)) {
     return add_callback((AW_RCB)f, 0, 0);
 }
 
+AW_awar *AW_awar::add_callback(const RootCallback& cb) {
+    return add_callback(AW_RCB(cb.callee()), cb.inspect_CD1(), cb.inspect_CD2());
+} 
+
 AW_awar *AW_awar::add_target_var(char **ppchr) {
     assert_var_type(AW_STRING);
     target_list = new AW_var_target((void *)ppchr, target_list);
