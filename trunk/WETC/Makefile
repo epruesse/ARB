@@ -46,8 +46,11 @@ WETC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/cb.h
+WETC_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 WETC_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 WETC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 WETC_main.o: $(ARBHOME)/INCLUDE/gccver.h
 WETC_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+WETC_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 WETC_main.o: $(ARBHOME)/INCLUDE/test_global.h
+WETC_main.o: $(ARBHOME)/INCLUDE/ttypes.h

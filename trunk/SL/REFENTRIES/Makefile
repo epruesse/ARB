@@ -53,10 +53,13 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 refentries.o: $(ARBHOME)/INCLUDE/cb.h
+refentries.o: $(ARBHOME)/INCLUDE/cbtypes.h
 refentries.o: $(ARBHOME)/INCLUDE/cxxforward.h
 refentries.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 refentries.o: $(ARBHOME)/INCLUDE/dupstr.h
 refentries.o: $(ARBHOME)/INCLUDE/gccver.h
 refentries.o: $(ARBHOME)/INCLUDE/items.h
 refentries.o: $(ARBHOME)/INCLUDE/smartptr.h
+refentries.o: $(ARBHOME)/INCLUDE/static_assert.h
 refentries.o: $(ARBHOME)/INCLUDE/test_global.h
+refentries.o: $(ARBHOME)/INCLUDE/ttypes.h

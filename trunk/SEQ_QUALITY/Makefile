@@ -74,11 +74,15 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/cb.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/static_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/test_global.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 SQ_GroupData.o: SQ_GroupData.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -116,8 +120,11 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/cb.h
+SQ_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SQ_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SQ_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_main.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+SQ_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/test_global.h
+SQ_main.o: $(ARBHOME)/INCLUDE/ttypes.h
