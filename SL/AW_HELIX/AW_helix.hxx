@@ -20,7 +20,7 @@
 #include <aw_base.hxx>
 #endif
 
-class AW_cb_struct;
+class AW_cb;
 
 class AW_helix : public BI_helix {
     long enabled; // draw or not
@@ -34,7 +34,7 @@ public:
     bool is_enabled() const { return (enabled != 0) && (size()>0); }
 };
 
-AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /* owner */ awcbs);
+AW_window *create_helix_props_window(AW_root *awr, AW_cb * /* owner */ awcbs);
 
 #else
 #error AW_helix.hxx included twice

@@ -149,10 +149,10 @@ void AW_openURL(AW_root *aw_root, const char *url);
 
 typedef void (*AW_cb_struct_guard)();
 
-class AW_cb_struct {
+class AW_cb {
     AW_CL         cd1;
     AW_CL         cd2;
-    AW_cb_struct *next;
+    AW_cb *next;
 
     static AW_cb_struct_guard guard_before;
     static AW_cb_struct_guard guard_after;
@@ -167,16 +167,16 @@ public:
     char       *id;
 
     // real public section:
-    AW_cb_struct(AW_window    *awi,
+    AW_cb(AW_window    *awi,
                  AW_CB         g,
                  AW_CL         cd1i       = 0,
                  AW_CL         cd2i       = 0,
                  const char   *help_texti = 0,
-                 AW_cb_struct *next       = 0);
+                 AW_cb *next       = 0);
 
-    void run_callback();                            // runs the whole list
+    void run_callbacks();                           // runs the whole list
     bool contains(AW_CB g);                         // test if contained in list
-    bool is_equal(const AW_cb_struct& other) const;
+    bool is_equal(const AW_cb& other) const;
 
 #if defined(ASSERTION_USED)
     AW_CL get_cd1() const { return cd1; }
@@ -245,7 +245,7 @@ class AW_window : virtual Noncopyable {
 
     bool expose_callback_added;
 
-    AW_cb_struct *focus_cb;
+    AW_cb *focus_cb;
     
     int left_indent_of_horizontal_scrollbar;
     int top_indent_of_vertical_scrollbar;
@@ -267,8 +267,8 @@ public:
 
     AW_window_Motif *p_w;       // Do not use !!!
     AW_at           *_at;
-    AW_cb_struct    *_callback;
-    AW_cb_struct    *_d_callback;
+    AW_cb    *_callback;
+    AW_cb    *_d_callback;
 
     AW_window();
     virtual ~AW_window();
@@ -514,12 +514,12 @@ public:
     void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // normal callbacks
     void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1);
     void callback(void (*f)(AW_window*));
-    void callback(AW_cb_struct * /* owner */ awcbs); // Calls f with
+    void callback(AW_cb * /* owner */ awcbs); // Calls f with
     // aww in awcbs
     void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // double click callbacks
     void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1); // selection lists only !!
     void d_callback(void (*f)(AW_window*));
-    void d_callback(AW_cb_struct * /* owner */ awcbs); // Calls f with
+    void d_callback(AW_cb * /* owner */ awcbs); // Calls f with
     // *** create the buttons ********
 
     void   create_button(const char *macro_name, AW_label label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback

@@ -117,7 +117,7 @@ struct AW_toggle_field_struct {
 
 class AW_common_Xm;
 class AW_device_Xm;
-class AW_cb_struct;
+class AW_cb;
 
 class AW_area_management {
     Widget form; // for resizing
@@ -130,9 +130,9 @@ class AW_area_management {
     AW_device_print *print_device;
     AW_device_click *click_device;
 
-    AW_cb_struct *expose_cb;
-    AW_cb_struct *resize_cb;
-    AW_cb_struct *double_click_cb;
+    AW_cb *expose_cb;
+    AW_cb *resize_cb;
+    AW_cb *double_click_cb;
 
     long click_time;
 
@@ -166,7 +166,7 @@ public:
     void run_expose_callback();
     void run_resize_callback();
 
-    AW_cb_struct *get_double_click_cb() { return double_click_cb; }
+    AW_cb *get_double_click_cb() { return double_click_cb; }
     long get_click_time() const { return click_time; }
     void set_click_time(long click_time_) { click_time = click_time_; }
 };
@@ -238,10 +238,10 @@ public:
 
     // ********** local modifiers **********
 
-    AW_cb_struct **modes_f_callbacks;
+    AW_cb **modes_f_callbacks;
     Widget        *modes_widgets;
     int            selected_mode;
-    AW_cb_struct  *popup_cb;
+    AW_cb  *popup_cb;
     Widget         frame;
 
     Widget            toggle_field;

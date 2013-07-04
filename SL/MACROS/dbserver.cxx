@@ -170,11 +170,11 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
             GB_pop_transaction(gb_main); // @@@ end required/possible here?
 
             if (action[0]) {
-                AW_cb_struct *cbs = aw_root->search_remote_command(action);
+                AW_cb *cbs = aw_root->search_remote_command(action);
 
                 if (cbs) {
                     IF_DUMP_ACTION(printf("remote command (%s) found, running callback\n", action));
-                    cbs->run_callback();
+                    cbs->run_callbacks();
                     GBT_write_string(gb_main, remote.result(), "");
                 }
                 else {
