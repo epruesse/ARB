@@ -137,7 +137,7 @@ enum AW_PosRecalc {
 typedef AW_CB0 aw_hide_cb;
 
 class AW_window : virtual Noncopyable {
-    friend class AW_cb_struct;//the cb struct needs access to prvt for strange reasons
+    friend class AW_cb;//the cb struct needs access to prvt for strange reasons
     AW_SizeRecalc recalc_size_at_show;
     AW_PosRecalc  recalc_pos_at_show;
 //    enum AW_PosRecalc  recalc_pos_at_show;
@@ -145,7 +145,7 @@ class AW_window : virtual Noncopyable {
 //
 //    bool expose_callback_added;
 //
-//    AW_cb_struct *focus_cb;
+//    AW_cb *focus_cb;
 //
     int left_indent_of_horizontal_scrollbar;
     int top_indent_of_vertical_scrollbar;
@@ -452,12 +452,12 @@ public:
     void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // normal callbacks
     void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1);
     void callback(void (*f)(AW_window*));
-    void callback(AW_cb_struct * /* owner */ awcbs); // Calls f with
+    void callback(AW_cb * /* owner */ awcbs); // Calls f with
     // aww in awcbs
     void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // double click callbacks
     void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1); // selection lists only !!
     void d_callback(void (*f)(AW_window*));
-    void d_callback(AW_cb_struct * /* owner */ awcbs); // Calls f with
+    void d_callback(AW_cb * /* owner */ awcbs); // Calls f with
     // *** create the buttons ********
 
     void   create_button(const char *macro_name, const char *label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback

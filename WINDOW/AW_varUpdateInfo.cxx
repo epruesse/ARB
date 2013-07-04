@@ -51,7 +51,7 @@ static void track_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE IF_ASSERTION_USE
 */
 
 void AW_varUpdateInfo::change_from_widget(gpointer) {
-    AW_cb_struct::useraction_init();
+    AW_cb::useraction_init();
 
     GB_ERROR  error = NULL;
     AW_root  *root  = AW_root::SINGLETON;
@@ -97,13 +97,13 @@ void AW_varUpdateInfo::change_from_widget(gpointer) {
         aw_message(error);
     }
     else {
-        if (cbs && run_cb) cbs->run_callback();
+        if (cbs && run_cb) cbs->run_callbacks();
         root->value_changed = false;
 
         if (GB_have_error()) aw_message(GB_await_error()); // show error exported by awar-change-callback
     }
 
-    AW_cb_struct::useraction_done(aw_parent);
+    AW_cb::useraction_done(aw_parent);
 }
 
 void AW_varUpdateInfo::set_widget(GtkWidget* w) {

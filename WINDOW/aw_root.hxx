@@ -39,7 +39,7 @@ void aw_set_local_message(); // no message window, AWAR_ERROR_MESSAGES instead (
 class  AW_awar;
 class  AW_root_cblist;
 class  GB_HASH;
-class AW_cb_struct;
+class  AW_cb;
 
 
 enum AW_Cursor {
@@ -247,8 +247,8 @@ public:
     bool is_tracking() const { return tracker->is_tracking(); }
     UserActionTracker *get_tracker() { return tracker; }
 
-    void define_remote_command(AW_cb_struct *cbs);
-    AW_cb_struct *search_remote_command(const char *action);
+    void define_remote_command(class AW_cb *cbs);
+    AW_cb *search_remote_command(const char *action);
 
 #if defined(DEBUG)
     size_t callallcallbacks(int mode);

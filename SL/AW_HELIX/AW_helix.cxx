@@ -142,7 +142,7 @@ static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cl_cb_st
     static bool recursion = false;
 
     if (!recursion) {
-        AW_cb_struct *awcbs     = reinterpret_cast<AW_cb_struct*>(cl_cb_struct);
+        AW_cb *awcbs     = reinterpret_cast<AW_cb*>(cl_cb_struct);
         AW_root      *aw_root   = aww->get_root();
         AW_awar      *awar_pair = aw_root->awar(helix_pair_awar(changed));
         char         *pairdef   = awar_pair->read_string();
@@ -193,13 +193,13 @@ static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cl_cb_st
             }
             awar_pair->write_string(pairdef); // write back uppercase version
         }
-        awcbs->run_callback();
+        awcbs->run_callbacks();
 
         free(pairdef);
     }
 }
 
-AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct *awcbs) {
+AW_window *create_helix_props_window(AW_root *awr, AW_cb *awcbs) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;

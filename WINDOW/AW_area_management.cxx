@@ -65,10 +65,10 @@ public:
     AW_device_click *click_device;
     long click_time;
 
-    AW_cb_struct *resize_cb; /** < A list of callback functions that are called whenever this area is resized. */
-    AW_cb_struct *expose_cb;
-    AW_cb_struct *input_cb;
-    AW_cb_struct *motion_cb;
+    AW_cb *resize_cb; /** < A list of callback functions that are called whenever this area is resized. */
+    AW_cb *expose_cb;
+    AW_cb *input_cb;
+    AW_cb *motion_cb;
     
     /**used to simulate resize events*/
     int old_width;
@@ -129,7 +129,7 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventExpose* event) {
     aww->event.height      = event->area.height;
 
     DUMP_EVENT("expose");
-    expose_cb->run_callback();
+    expose_cb->run_callbacks();
     return false;
 }
 
@@ -142,7 +142,7 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventConfigure* event) {
     aww->event.height = event->height;
 
     DUMP_EVENT("resize");
-    resize_cb->run_callback();
+    resize_cb->run_callbacks();
 
     return true; // event handled
 }
@@ -156,7 +156,7 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventButton *event) {
     aww->event.keymodifier = (AW_key_mod) event->state;
 
     DUMP_EVENT("input/button");
-    input_cb->run_callback();
+    input_cb->run_callbacks();
     return false;
 }
 
@@ -173,7 +173,7 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventKey *event) {
     }
  
     DUMP_EVENT("input/key");
-    input_cb->run_callback();
+    input_cb->run_callbacks();
     return true;
 }
 
@@ -195,8 +195,8 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventMotion *event) {
     }
   
     DUMP_EVENT("motion");
-    expose_cb->run_callback(); // work around for XOR drawing
-    motion_cb->run_callback();
+    expose_cb->run_callbacks(); // work around for XOR drawing
+    motion_cb->run_callbacks();
     gdk_event_request_motions(event);
     return true;
 }
@@ -211,7 +211,7 @@ void AW_area_management::set_expose_callback(AW_window *aww,
                           G_CALLBACK (expose_event_cbproxy), (gpointer) prvt);
 
     }
-    prvt->expose_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, prvt->expose_cb);
+    prvt->expose_cb = new AW_cb(aww, f, cd1, cd2, 0, prvt->expose_cb);
 }
 
 void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
@@ -231,7 +231,7 @@ void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*
         g_signal_connect (prvt->area, "button-release-event",
                           G_CALLBACK (button_event_cbproxy), (gpointer) prvt);
     }
-    prvt->input_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, prvt->input_cb);
+    prvt->input_cb = new AW_cb(aww, f, cd1, cd2, 0, prvt->input_cb);
 }
 
 void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
@@ -242,7 +242,7 @@ void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window
         g_signal_connect(prvt->area, "motion-notify-event", 
                          G_CALLBACK (motion_event_cbproxy), (gpointer) prvt);
     }
-    prvt->motion_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, prvt->motion_cb);
+    prvt->motion_cb = new AW_cb(aww, f, cd1, cd2, 0, prvt->motion_cb);
 }
 
 void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
@@ -253,7 +253,7 @@ void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window
                           G_CALLBACK (configure_event_cbproxy), (gpointer) prvt);
 
     }
-    prvt->resize_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, prvt->resize_cb);
+    prvt->resize_cb = new AW_cb(aww, f, cd1, cd2, 0, prvt->resize_cb);
 }
 
 

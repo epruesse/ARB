@@ -147,11 +147,11 @@ GdkColor AW_root::getColor(unsigned int pixel) {
     //note: a copy is returned to avoid memory leaks. GdkColor is small and this should not be a problem.
 }
 
-void AW_root::define_remote_command(AW_cb_struct *cbs) {
+void AW_root::define_remote_command(AW_cb *cbs) {
     // popdown takes no parameters:
     aw_return_if_fail(cbs->f != (AW_CB)AW_POPDOWN || !(cbs->get_cd1() || cbs->get_cd2()));
 
-    AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(action_hash, cbs->id, (long)cbs);
+    AW_cb *old_cbs = (AW_cb*)GBS_write_hash(action_hash, cbs->id, (long)cbs);
     // do not free old_cbs, cause it's still reachable from first widget that defined this remote command    
 
     if (!old_cbs || old_cbs->is_equal(*cbs)) return;
@@ -164,8 +164,8 @@ void AW_root::define_remote_command(AW_cb_struct *cbs) {
 #endif // DEBUG
 }
 
-AW_cb_struct *AW_root::search_remote_command(const char *action) {
-    return (AW_cb_struct *)GBS_read_hash(action_hash, action);
+AW_cb *AW_root::search_remote_command(const char *action) {
+    return (AW_cb *)GBS_read_hash(action_hash, action);
 }
 
 /**

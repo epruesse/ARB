@@ -90,19 +90,19 @@ public:
     /**
      * Callback struct for the currently open popup
      */
-    AW_cb_struct  *popup_cb;
+    AW_cb  *popup_cb;
     
     /**
      TODO comment
-     */
-    AW_cb_struct *focus_cb;
-    
-    /** Contains the last callback struct created by AW_window::callback(). */
-    AW_cb_struct *callback; 
+    */
+    AW_cb *focus_cb;
 
     /** Contains the last callback struct created by AW_window::callback(). */
-    AW_cb_struct *d_callback; 
-    
+    AW_cb *callback;
+
+    /** Contains the last callback struct created by AW_window::callback(). */
+    AW_cb *d_callback;
+
     /**The drawing area of this window. Might be NULL. */
     AwDrawingArea *drawing_area;
 
