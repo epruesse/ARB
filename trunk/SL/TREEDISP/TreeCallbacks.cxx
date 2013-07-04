@@ -562,7 +562,7 @@ void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
     }
 }
 
-void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
+void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
     AW_window        *aww   = ntw->aww;
     AWT_graphic_tree *gtree = AWT_TREE(ntw);
     
@@ -678,14 +678,14 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
     free(name);
 }
 
-void NT_jump_cb_auto(AW_window *dummy, AWT_canvas *ntw) {   // jump only if auto jump is set
+void TREE_auto_jump_cb(AW_root *, AWT_canvas *ntw) {   // jump only if auto jump is set
     AP_tree_sort tree_sort = AWT_TREE(ntw)->tree_sort;
     if (tree_sort == AP_TREE_NORMAL ||
         tree_sort == AP_LIST_NDS ||
         tree_sort == AP_TREE_IRS)
     {
         if (ntw->aww->get_root()->awar(AWAR_DTREE_AUTO_JUMP)->read_int()) {
-            NT_jump_cb(dummy, ntw, 0);
+            NT_jump_cb(NULL, ntw, false);
             return;
         }
     }
@@ -728,12 +728,12 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose) {
     GB_pop_transaction(ntw->gb_main);
 }
 
-void NT_recompute_cb(AW_window *, AWT_canvas *ntw, AW_CL cl2) {
+void TREE_recompute_cb(AW_root *, AWT_canvas *ntw) {
     AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->gfx);
     td_assert(gt);
 
     gt->get_root_node()->compute_tree(ntw->gb_main);
-    AWT_expose_cb (ntw->aww, ntw, cl2);
+    AWT_expose_cb(ntw->aww, ntw, 0);
 }
 
 void NT_reinit_treetype(AW_window *, AWT_canvas *ntw, AW_CL ) {

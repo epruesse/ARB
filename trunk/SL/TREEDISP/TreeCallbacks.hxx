@@ -29,10 +29,10 @@ void NT_remove_bootstrap(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
 void NT_reset_branchlengths(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
 void NT_move_boot_branch(AW_window *, AW_CL cl_ntw, AW_CL cl_direction);
 void NT_scale_tree(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
-void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups);
-void NT_jump_cb_auto(AW_window *dummy, AWT_canvas *ntw);
+void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups);
+void TREE_auto_jump_cb(AW_root *, AWT_canvas *ntw);
 void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose);
-void NT_recompute_cb(AW_window *, AWT_canvas *ntw, AW_CL cl2);
+void TREE_recompute_cb(AW_root *, AWT_canvas *ntw);
 void NT_reinit_treetype(AW_window *, AWT_canvas *ntw, AW_CL dummy_1x);
 void NT_remove_species_in_tree_from_hash(AP_tree *tree, GB_HASH *hash);
 
