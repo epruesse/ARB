@@ -503,8 +503,7 @@ AW_awar *AW_awar::map(const char *awarn) {
 }
 
 AW_awar *AW_awar::remove_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::remove(callback_list, makeRootCallback(value_changed_cb, cd1, cd2));
-    return this;
+    return remove_callback(makeRootCallback(value_changed_cb, cd1, cd2));
 }
 
 AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
@@ -512,6 +511,11 @@ AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
 }
 AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) {
     return remove_callback((AW_RCB) f, 0, 0);
+}
+
+AW_awar *AW_awar::remove_callback(const RootCallback& rcb) {
+    AW_root_cblist::remove(callback_list, rcb);
+    return this;
 }
 
 AW_awar *AW_awar::set_minmax(float min, float max) {
