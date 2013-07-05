@@ -53,7 +53,7 @@ public:
 };
 
 
-class AW_selection_list {
+class AW_selection_list : virtual Noncopyable {
     AW_awar      *awar;
     GtkTreeModel *model;
     GtkWidget    *widget;
