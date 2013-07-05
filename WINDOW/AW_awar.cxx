@@ -131,28 +131,9 @@ void AW_awar_impl::run_callbacks() {
     if (allowed_to_run_callbacks) AW_root_cblist::call(callback_list, AW_root::SINGLETON);
 }
 
-AW_awar *AW_awar_impl::add_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    return add_callback(makeRootCallback(value_changed_cb, cd1, cd2));
-}
-AW_awar *AW_awar_impl::add_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
-    return add_callback((AW_RCB)f, cd1, 0);
-}
-AW_awar *AW_awar_impl::add_callback(void (*f)(AW_root*)) {
-    return add_callback((AW_RCB)f, 0, 0);
-}
 AW_awar *AW_awar_impl::add_callback(const RootCallback& rcb) {
     AW_root_cblist::add(callback_list, rcb);
     return this;
-}
-
-AW_awar *AW_awar_impl::remove_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    return remove_callback(makeRootCallback(value_changed_cb, cd1, cd2));
-}
-AW_awar *AW_awar_impl::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
-    return remove_callback((AW_RCB) f, cd1, 0);
-}
-AW_awar *AW_awar_impl::remove_callback(void (*f)(AW_root*)) {
-    return remove_callback((AW_RCB) f, 0, 0);
 }
 AW_awar *AW_awar_impl::remove_callback(const RootCallback& rcb) {
     AW_root_cblist::remove(callback_list, rcb);
@@ -780,7 +761,7 @@ void AW_awar_impl::unbind(GObject* obj) {
 
 static void _aw_awar_on_notify(GObject* obj, GParamSpec *pspec, awar_gparam_binding* binding);
 static void _aw_awar_on_destroy(void* binding, GObject* obj);
-static void _aw_awar_notify_gparam(AW_root*, AW_CL data);
+static void _aw_awar_notify_gparam(AW_root*, awar_gparam_binding *data);
 
 /**
  * Connects a binding to callbacks:
@@ -802,16 +783,16 @@ bool awar_gparam_binding::connect(const char* propname_, AW_awar_gvalue_mapper* 
 
     handler_id = g_signal_connect(obj, "notify", G_CALLBACK(_aw_awar_on_notify), this);
 
-    awar->add_callback(_aw_awar_notify_gparam, (AW_CL)this);
+    awar->add_callback(makeRootCallback(_aw_awar_notify_gparam, this));
     
     // update property from awar now:
-    _aw_awar_notify_gparam(NULL, (AW_CL)this);
+    _aw_awar_notify_gparam(NULL, this);
 
     return true;
 }
 
 awar_gparam_binding::~awar_gparam_binding() {
-    awar->remove_callback(_aw_awar_notify_gparam, (AW_CL) this);
+    awar->remove_callback(makeRootCallback(_aw_awar_notify_gparam, this));
 
     if (handler_id) {
         g_signal_handler_disconnect(obj, handler_id);
@@ -870,9 +851,7 @@ static void _aw_awar_on_notify(GObject* obj, GParamSpec *pspec, awar_gparam_bind
     g_value_unset(&gval);
 }
 
-static void _aw_awar_notify_gparam(AW_root*, AW_CL data) {
-    awar_gparam_binding* binding = (awar_gparam_binding*) data;
-
+static void _aw_awar_notify_gparam(AW_root*, awar_gparam_binding* binding) {
     // don't loop
     if (binding->frozen) return;
     binding->frozen = true;
