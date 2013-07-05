@@ -338,7 +338,7 @@ static int get_max_slider_ypos() {
     return int(max_ypos+0.5);
 }
 
-static void ed4_scroll(AW_window *aww, int xdiff, int ydiff, AW_CL cd1, AW_CL cd2) {
+static void ed4_scroll(AW_window *aww, int xdiff, int ydiff) {
     int new_xpos = aww->slider_pos_horizontal + (xdiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_X)->read_int())/10;
     int new_ypos = aww->slider_pos_vertical   + (ydiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_Y)->read_int())/10;
 
@@ -362,12 +362,12 @@ static void ed4_scroll(AW_window *aww, int xdiff, int ydiff, AW_CL cd1, AW_CL cd
 
     if (new_xpos!=aww->slider_pos_horizontal) {
         aww->set_horizontal_scrollbar_position(new_xpos);
-        ED4_horizontal_change_cb(aww, cd1, cd2);
+        ED4_horizontal_change_cb(aww);
     }
 
     if (new_ypos!=aww->slider_pos_vertical) {
         aww->set_vertical_scrollbar_position(new_ypos);
-        ED4_vertical_change_cb(aww, cd1, cd2);
+        ED4_vertical_change_cb(aww);
     }
 }
 
@@ -440,7 +440,7 @@ void ED4_input_cb(AW_window *aww) {
                     int dx = horizontal ? direction*ED4_ROOT->font_group.get_max_width() : 0;
                     int dy = horizontal ? 0 : direction*ED4_ROOT->font_group.get_max_height();
                 
-                    ed4_scroll(aww, dx, dy, 0, 0);
+                    ed4_scroll(aww, dx, dy);
                 }
                 return;
             }
@@ -485,7 +485,7 @@ void ED4_input_cb(AW_window *aww) {
     ED4_trigger_instant_refresh();
 }
 
-void ED4_vertical_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void ED4_vertical_change_cb(AW_window *aww) {
     ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
@@ -512,7 +512,7 @@ void ED4_vertical_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     win->update_window_coords();
 }
 
-void ED4_horizontal_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void ED4_horizontal_change_cb(AW_window *aww) {
     ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
@@ -579,7 +579,7 @@ void ED4_scrollbar_change_cb(AW_window *aww) {
     win->update_window_coords();
 }
 
-void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
+void ED4_motion_cb(AW_window *aww) {
     AW_event event;
 
     ED4_LocalWinContext uses(aww);
@@ -591,7 +591,7 @@ void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
             int xdiff = ED4_ROOT->scroll_picture.old_x - event.x;
             int ydiff = ED4_ROOT->scroll_picture.old_y - event.y;
 
-            ed4_scroll(aww, xdiff, ydiff, cd1, cd2);
+            ed4_scroll(aww, xdiff, ydiff);
 
             ED4_ROOT->scroll_picture.old_x = event.x;
             ED4_ROOT->scroll_picture.old_y = event.y;

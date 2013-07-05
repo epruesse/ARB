@@ -913,7 +913,7 @@ void ED4_cursor::set_screen_relative_pos(int scroll_to_relpos) {
 #if defined(TRACE_JUMPS)
         printf("set_screen_relative_pos(%i) auto-scrolls %i\n", scroll_to_relpos, scroll_amount);
 #endif
-        ED4_horizontal_change_cb(aww, 0, 0);
+        ED4_horizontal_change_cb(aww);
     }
 }
 
@@ -1002,7 +1002,7 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
             printf("jump_screen_pos auto-scrolls %i\n", scroll_amount);
 #endif
             LocallyModify<bool> flag(allowed_to_draw, false);
-            ED4_horizontal_change_cb(aww, 0, 0);
+            ED4_horizontal_change_cb(aww);
         }
     }
 

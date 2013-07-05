@@ -16,11 +16,11 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 
-static void vertical_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/) {
+static void vertical_change_cb(AW_window *aww) {
     PH_display::ph_display->monitor_vertical_scroll_cb(aww);
 }
 
-static void horizontal_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/) {
+static void horizontal_change_cb(AW_window *aww) {
     PH_display::ph_display->monitor_horizontal_scroll_cb(aww);
 }
 
@@ -29,8 +29,8 @@ void ph_view_species_cb() {
 
     PH_display::ph_display->initialize(species_dpy);
     PH_display::ph_display->display();
-    main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb, 0, 0);
-    main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, 0, 0);
+    main_win->set_vertical_change_callback(makeWindowCallback(vertical_change_cb));
+    main_win->set_horizontal_change_callback(makeWindowCallback(horizontal_change_cb));
 }
 
 GB_ERROR ph_check_initialized() {
@@ -51,8 +51,8 @@ void ph_view_filter_cb() {
         PHDATA::ROOT->markerline=ph_filter->calculate_column_homology();
         PH_display::ph_display->initialize(filter_dpy);
         PH_display::ph_display->display();
-        main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb, 0, 0);
-        main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, 0, 0);
+        main_win->set_vertical_change_callback(makeWindowCallback(vertical_change_cb));
+        main_win->set_horizontal_change_callback(makeWindowCallback(horizontal_change_cb));
     }
 }
 
