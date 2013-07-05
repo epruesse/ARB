@@ -1097,10 +1097,10 @@ void AW_window::set_input_callback(AW_area area, const WindowCallback& wcb) {
     aram->set_input_callback(this, wcb);
 }
 
-void AW_window::set_motion_callback(AW_area area, AW_CB f, AW_CL cd1, AW_CL cd2) {
+void AW_window::set_motion_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = prvt->areas[area];
     aw_return_if_fail(aram != NULL);
-    aram->set_motion_callback(this, f, cd1, cd2);
+    aram->set_motion_callback(this, wcb);
 }
 
 void AW_window::set_resize_callback(AW_area area, AW_CB f, AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
@@ -1244,9 +1244,6 @@ void AW_window::set_vertical_change_callback(const WindowCallback& wcb) {
                      (gpointer)new AW_cb(this, wcb, ""));
 
 }
-void AW_window::set_vertical_change_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
-    set_vertical_change_callback(makeWindowCallback(f, cd1, cd2));
-}
 
 void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
     aw_return_if_fail(prvt->drawing_area != NULL);
@@ -1255,9 +1252,6 @@ void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
                      G_CALLBACK(value_changed_scroll_bar_horizontal),
                      (gpointer)new AW_cb(this, wcb, ""));
 
-}
-void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    set_horizontal_change_callback(makeWindowCallback(f, cd1, cd2));
 }
 
 void AW_window::set_vertical_scrollbar_top_indent(int indent) {
