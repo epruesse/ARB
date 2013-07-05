@@ -13,6 +13,10 @@
 #ifndef AW_BASE_HXX
 #include "aw_base.hxx" // @@@ remove later
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
+
 #include "aw_gtk_forward_declarations.hxx"
 #include "aw_assert.hxx"
 #include "aw_area_management.hxx"
@@ -22,15 +26,9 @@
 class AW_selection_list;
 class AW_button;
 
-typedef void (*AW_RCB)(AW_root*, AW_CL, AW_CL);
-typedef void (*AW_RCB0)(AW_root*);
-typedef void (*AW_RCB1)(AW_root*, AW_CL);
-typedef AW_RCB AW_RCB2;
-
-typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL);
+typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL); // @@@ [CB] similar to AW_Window_Creator
 
 typedef char *AW_error;
-typedef void (*AW_RCB)(AW_root*, AW_CL, AW_CL);
 // asynchronous messages:
 extern char AW_ERROR_BUFFER[1024];
 
