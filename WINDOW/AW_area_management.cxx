@@ -232,15 +232,13 @@ void AW_area_management::set_input_callback(AW_window *aww, const WindowCallback
     prvt->input_cb = new AW_cb(aww, wcb, 0, prvt->input_cb);
 }
 
-void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
-                                             AW_CL cd1, AW_CL cd2) 
-{
+void AW_area_management::set_motion_callback(AW_window *aww, const WindowCallback& wcb) {
     if (!prvt->motion_cb) {
         gtk_widget_add_events(prvt->area, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
         g_signal_connect(prvt->area, "motion-notify-event", 
                          G_CALLBACK (motion_event_cbproxy), (gpointer) prvt);
     }
-    prvt->motion_cb = new AW_cb(aww, f, cd1, cd2, 0, prvt->motion_cb);
+    prvt->motion_cb = new AW_cb(aww, wcb, 0, prvt->motion_cb);
 }
 
 void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
