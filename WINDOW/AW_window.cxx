@@ -283,17 +283,14 @@ static void drag_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_struct, X
     (cbs->aw)->slider_pos_horizontal = sbcbs->value; // setzt Scrollwerte im AW_window
     cbs->run_callbacks();
 }
-void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    XtAddCallback(p_w->scroll_bar_horizontal, XmNvalueChangedCallback,
-            (XtCallbackProc) value_changed_scroll_bar_horizontal,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
-    XtAddCallback(p_w->scroll_bar_horizontal, XmNdragCallback,
-            (XtCallbackProc) drag_scroll_bar_horizontal,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
-}
 
 void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
-    set_horizontal_change_callback(AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
+    XtAddCallback(p_w->scroll_bar_horizontal, XmNvalueChangedCallback,
+                  (XtCallbackProc) value_changed_scroll_bar_horizontal,
+                  (XtPointer) new AW_cb(this, wcb, ""));
+    XtAddCallback(p_w->scroll_bar_horizontal, XmNdragCallback,
+            (XtCallbackProc) drag_scroll_bar_horizontal,
+            (XtPointer) new AW_cb(this, wcb, ""));
 }
 
 static void value_changed_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
@@ -309,26 +306,21 @@ static void drag_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtP
     cbs->run_callbacks();
 }
 
-void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_vertical_change_callback(const WindowCallback& wcb) {
     XtAddCallback(p_w->scroll_bar_vertical, XmNvalueChangedCallback,
             (XtCallbackProc) value_changed_scroll_bar_vertical,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
+            (XtPointer) new AW_cb(this, wcb, ""));
     XtAddCallback(p_w->scroll_bar_vertical, XmNdragCallback,
             (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
+            (XtPointer) new AW_cb(this, wcb, ""));
 
     XtAddCallback(p_w->scroll_bar_vertical, XmNpageIncrementCallback,
             (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
+            (XtPointer) new AW_cb(this, wcb, ""));
     XtAddCallback(p_w->scroll_bar_vertical, XmNpageDecrementCallback,
             (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb(this, f, cd1, cd2, ""));
+            (XtPointer) new AW_cb(this, wcb, ""));
 }
-
-void AW_window::set_vertical_change_callback(const WindowCallback& wcb) {
-    set_vertical_change_callback(AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
-}
-
 
 void AW_window::tell_scrolled_picture_size(AW_screen_area rectangle) {
     picture->l = rectangle.l;
@@ -1123,15 +1115,13 @@ static void AW_motionCB(Widget /*w*/, XtPointer aw_cb_struct, XEvent *ev, Boolea
 
     cbs->run_callbacks();
 }
-void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window *, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_motion_callback(AW_window *aww, const WindowCallback& wcb) {
     XtAddEventHandler(area, ButtonMotionMask, False,
-                      AW_motionCB, (XtPointer) new AW_cb(aww, f, cd1, cd2, ""));
+                      AW_motionCB, (XtPointer) new AW_cb(aww, wcb, ""));
 }
-void AW_window::set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_motion_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = MAP_ARAM(area);
-    if (!aram)
-        return;
-    aram->set_motion_callback(this, f, cd1, cd2);
+    if (aram) aram->set_motion_callback(this, wcb);
 }
 
 static long destroy_awar(const char *, long val, void *) {

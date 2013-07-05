@@ -388,8 +388,8 @@ public:
     void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
 
     void set_input_callback(AW_area area, const WindowCallback& wcb);
+    void set_motion_callback(AW_area area, const WindowCallback& wcb);
 
-    void set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
 
     bool is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
@@ -439,8 +439,6 @@ public:
 
     void set_vertical_change_callback(const WindowCallback& wcb);
     void set_horizontal_change_callback(const WindowCallback& wcb);
-    void set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
 
     void set_horizontal_scrollbar_left_indent(int indent);
     void set_vertical_scrollbar_top_indent(int indent);

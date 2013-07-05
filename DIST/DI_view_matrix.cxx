@@ -212,11 +212,10 @@ void DI_dmatrix::handle_move(AW_event& event) {
     }
 }
 
-static void motion_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
+static void motion_cb(AW_window *aww, DI_dmatrix *dmatrix) {
     AW_event event;
     aww->get_event(&event);
 
-    DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
     if (event.button == AW_BUTTON_MIDDLE) {
         dmatrix->handle_move(event);
     }
@@ -709,13 +708,13 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     AW_awar *awar_sel = awr->awar(AWAR_SPECIES_NAME);
     awar_sel->add_callback(selected_species_changed_cb, (AW_CL)awm, (AW_CL)dmatrix);
     
-    awm->set_vertical_change_callback  ((AW_CB2)vertical_change_cb,   (AW_CL)dmatrix, 0);
-    awm->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, (AW_CL)dmatrix, 0);
+    awm->set_vertical_change_callback  (makeWindowCallback(vertical_change_cb,  dmatrix));
+    awm->set_horizontal_change_callback(makeWindowCallback(horizontal_change_cb, dmatrix));
 
     awm->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(resize_needed, dmatrix));
     awm->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(redisplay_needed, dmatrix));
     awm->set_input_callback (AW_MIDDLE_AREA, makeWindowCallback(input_cb, dmatrix));
-    awm->set_motion_callback(AW_MIDDLE_AREA, (AW_CB) motion_cb,        (AW_CL)dmatrix, 0);
+    awm->set_motion_callback(AW_MIDDLE_AREA, makeWindowCallback(motion_cb, dmatrix));
 
     AW_gc_manager gc_manager =
         AW_manage_GC(awm,

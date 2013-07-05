@@ -538,7 +538,7 @@ void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
     }
 }
 
-static void motion_event(AW_window *aww, AWT_canvas *scr, AW_CL /*cd2*/) {
+static void motion_event(AW_window *aww, AWT_canvas *scr) {
     AW_device *device = aww->get_device(AW_MIDDLE_AREA);
     device->reset();
     device->set_filter(AW_SCREEN);
@@ -729,7 +729,7 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
     aww->set_input_callback(AW_MIDDLE_AREA, makeWindowCallback(input_event, this));
     aww->set_focus_callback((AW_CB)canvas_focus_cb, (AW_CL)this, 0);
 
-    aww->set_motion_callback(AW_MIDDLE_AREA, (AW_CB)motion_event, (AW_CL)this, 0);
+    aww->set_motion_callback(AW_MIDDLE_AREA, makeWindowCallback(motion_event, this));
     aww->set_horizontal_change_callback(makeWindowCallback(scroll_hor_cb, this));
     aww->set_vertical_change_callback(makeWindowCallback(scroll_vert_cb, this));
 }
