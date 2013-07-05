@@ -76,6 +76,8 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+refentries.o: $(ARBHOME)/INCLUDE/cb.h
+refentries.o: $(ARBHOME)/INCLUDE/cbtypes.h
 refentries.o: $(ARBHOME)/INCLUDE/cxxforward.h
 refentries.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 refentries.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -85,3 +87,4 @@ refentries.o: $(ARBHOME)/INCLUDE/items.h
 refentries.o: $(ARBHOME)/INCLUDE/smartptr.h
 refentries.o: $(ARBHOME)/INCLUDE/static_assert.h
 refentries.o: $(ARBHOME)/INCLUDE/test_global.h
+refentries.o: $(ARBHOME)/INCLUDE/ttypes.h

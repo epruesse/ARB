@@ -78,6 +78,8 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+AW_helix.o: $(ARBHOME)/INCLUDE/cb.h
+AW_helix.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_helix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_helix.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -85,3 +87,4 @@ AW_helix.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_helix.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_helix.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_helix.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_helix.o: $(ARBHOME)/INCLUDE/ttypes.h
