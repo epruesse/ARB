@@ -1056,20 +1056,20 @@ void AW_window::set_expose_callback(AW_area area, const WindowCallback& wcb) {
  * They used to be called as soon as the mouse entered the main drawing area. 
  * For now, they are not called at all.
  */
-void AW_window::set_focus_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
+void AW_window::set_focus_callback(const WindowCallback& wcb) {
     // this is only ever called by AWT_canvas and triggers a re-render of the
     // middle area. the API was designed for "focus-follows-mouse" mode,
     // and makes little sense for GTK
     // (we might need other means to trigger an update of the tree at the right time)
-    prvt->focus_cb = new AW_cb(this, f, cd1, cd2, 0, prvt->focus_cb);
+    prvt->focus_cb = new AW_cb(this, wcb, 0, prvt->focus_cb);
 }
 
 /**
  * Registers callback to be executed after the window is shown.
  * Called multiple times if a show() follows a hide().
  */
-void AW_window::set_popup_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
-    prvt->popup_cb = new AW_cb(this, f, cd1, cd2, 0, prvt->popup_cb);
+void AW_window::set_popup_callback(const WindowCallback& wcb) {
+    prvt->popup_cb = new AW_cb(this, wcb, 0, prvt->popup_cb);
 }
 
 void AW_window::set_info_area_height(int h) {
