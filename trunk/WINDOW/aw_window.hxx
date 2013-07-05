@@ -378,8 +378,8 @@ public:
 
     // ******************* Input and Motion Events **********************
 
-    void set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_popup_callback(const WindowCallback& wcb);
+    void set_focus_callback(const WindowCallback& wcb);
     bool is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL));
 
     void set_expose_callback(AW_area area, const WindowCallback& wcb);
@@ -390,7 +390,7 @@ public:
     void set_input_callback(AW_area area, const WindowCallback& wcb);
     void set_motion_callback(AW_area area, const WindowCallback& wcb);
 
-    void set_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+    void set_double_click_callback(AW_area area, const WindowCallback& wcb);
 
     bool is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));

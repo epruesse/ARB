@@ -727,7 +727,7 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
     aww->set_expose_callback(AW_MIDDLE_AREA, (AW_CB)AWT_expose_cb, (AW_CL)this, 0);
     aww->set_resize_callback(AW_MIDDLE_AREA, (AW_CB)AWT_resize_cb, (AW_CL)this, 0);
     aww->set_input_callback(AW_MIDDLE_AREA, makeWindowCallback(input_event, this));
-    aww->set_focus_callback((AW_CB)canvas_focus_cb, (AW_CL)this, 0);
+    aww->set_focus_callback(makeWindowCallback(canvas_focus_cb, this));
 
     aww->set_motion_callback(AW_MIDDLE_AREA, makeWindowCallback(motion_event, this));
     aww->set_horizontal_change_callback(makeWindowCallback(scroll_hor_cb, this));
