@@ -765,8 +765,8 @@ void AW_normal_cursor(AW_root *root) {
 // ---------------
 //      popup
 
-void AW_window::set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    p_w->popup_cb = new AW_cb(this, f, cd1, cd2, 0, p_w->popup_cb);
+void AW_window::set_popup_callback(const WindowCallback& wcb) {
+    p_w->popup_cb = new AW_cb(this, wcb, 0, p_w->popup_cb);
 }
 
 // --------------
@@ -786,12 +786,12 @@ void AW_window::run_focus_callback() {
     if (focus_cb) focus_cb->run_callbacks();
 }
 
-void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_focus_callback(const WindowCallback& wcb) {
     if (!focus_cb) {
         XtAddEventHandler(MIDDLE_WIDGET, EnterWindowMask, FALSE, AW_focusCB, (XtPointer) this);
     }
-    if (!focus_cb || !focus_cb->contains(f)) {
-        focus_cb = new AW_cb(this, f, cd1, cd2, 0, focus_cb);
+    if (!focus_cb || !focus_cb->contains((AW_CB)wcb.callee())) {
+        focus_cb = new AW_cb(this, wcb, 0, focus_cb);
     }
 }
 bool AW_window::is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL)) {
@@ -1087,15 +1087,15 @@ void AW_window::set_input_callback(AW_area area, const WindowCallback& wcb) {
     if (aram) aram->set_input_callback(this, wcb);
 }
 
-void AW_area_management::set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    double_click_cb = new AW_cb(aww, f, cd1, cd2, (char*)0, double_click_cb);
+void AW_area_management::set_double_click_callback(AW_window *aww, const WindowCallback& wcb) {
+    double_click_cb = new AW_cb(aww, wcb, (char*)0, double_click_cb);
 }
 
-void AW_window::set_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_double_click_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return;
-    aram->set_double_click_callback(this, f, cd1, cd2);
+    aram->set_double_click_callback(this, wcb);
 }
 
 void AW_window::get_event(AW_event *eventi) const {

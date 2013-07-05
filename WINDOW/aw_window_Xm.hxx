@@ -154,7 +154,7 @@ public:
     void set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_input_callback(AW_window *aww, const WindowCallback& wcb);
-    void set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_double_click_callback(AW_window *aww, const WindowCallback& wcb);
     void set_motion_callback(AW_window *aww, const WindowCallback& wcb);
 
     bool is_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
