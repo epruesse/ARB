@@ -85,8 +85,8 @@ static void destroy_AW_root() {
 }
 
 
-bool AW_root::is_focus_callback(AW_RCB fcb) const {
-    return focus_callback_list && focus_callback_list->contains(AW_root_callback(fcb, 0, 0));
+bool AW_root::is_focus_callback(AW_RCB fcb) const { // eliminated in gtk-branch
+    return focus_callback_list && focus_callback_list->contains(makeRootCallback(fcb, AW_CL(0), AW_CL(0)));
 }
 
 AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int */*argc*/, char ***/*argv*/) {

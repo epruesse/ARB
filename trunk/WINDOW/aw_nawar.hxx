@@ -21,34 +21,14 @@
 #include <arbtools.h>
 #endif
 
-class AW_root_callback {
-    AW_RCB cb;
-    AW_CL  cd1;
-    AW_CL  cd2;
-public:
-    AW_root_callback(RootCallback rcb)
-        : cb(AW_RCB(rcb.callee())),
-          cd1(rcb.inspect_CD1()),
-          cd2(rcb.inspect_CD2())
-    {}
-    AW_root_callback(AW_RCB cb_, AW_CL cd1_, AW_CL cd2_) : cb(cb_), cd1(cd1_), cd2(cd2_) {}
-
-    void call(AW_root *root) const { cb(root, cd1, cd2); }
-    bool equals(const AW_root_callback& other) const {
-        return cb == other.cb && cd1 == other.cd1 && cd2 == other.cd2;
-    }
-};
-
-inline bool operator == (const AW_root_callback& cb1, const AW_root_callback& cb2) { return cb1.equals(cb2); }
-
 class AW_root_cblist : virtual Noncopyable {
-    AW_root_callback  callback;
-    AW_root_cblist   *next;
+    RootCallback    callback;
+    AW_root_cblist *next;
 
-    AW_root_cblist(AW_root_cblist *next_, const AW_root_callback& cb) : callback(cb), next(next_) {}
+    AW_root_cblist(AW_root_cblist *next_, const RootCallback& cb) : callback(cb), next(next_) {}
     ~AW_root_cblist() { delete next; }
 
-    AW_root_cblist *unlink(const AW_root_callback& cb, AW_root_cblist*& found) {
+    AW_root_cblist *unlink(const RootCallback& cb, AW_root_cblist*& found) {
         if (callback == cb) {
             AW_root_cblist *rest = next;
             
@@ -64,16 +44,16 @@ class AW_root_cblist : virtual Noncopyable {
 
     void call(AW_root *root) {          // runs the whole list in FIFO order
         if (next) next->call(root);
-        callback.call(root);
+        callback(root);
     }
     
 public:
 
-    static void add(AW_root_cblist*& listhead, const AW_root_callback& cb) {
+    static void add(AW_root_cblist*& listhead, const RootCallback& cb) {
         remove(listhead, cb); // first remove duplicated callbacks
         listhead = new AW_root_cblist(listhead, cb);
     }
-    static void remove(AW_root_cblist*& listhead, const AW_root_callback& cb) {
+    static void remove(AW_root_cblist*& listhead, const RootCallback& cb) {
         AW_root_cblist *found = NULL;
         if (listhead) listhead = listhead->unlink(cb, found);
         delete found;
@@ -88,10 +68,10 @@ public:
         if (listhead) listhead->call(root);
     }
 
-    bool contains(const AW_root_callback& cb) const {
+    bool contains(const RootCallback& cb) const {
         return (cb == callback) || (next && next->contains(cb));
     }
-    static bool contains(const AW_root_cblist*& listhead, const AW_root_callback& cb) {
+    static bool contains(const AW_root_cblist*& listhead, const RootCallback& cb) {
         return listhead && listhead->contains(cb);
     }
 };
