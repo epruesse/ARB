@@ -23,17 +23,18 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 
 #define st_assert(cond) arb_assert(cond)
-
 
 class ColumnStat;
 class MostLikelySeq;
 
-class   AW_root;
-class   AW_awar;
-class   AW_window;
-typedef void (*AW_CB0)(AW_window*);
+class AW_root;
+class AW_awar;
+class AW_window;
 
 class AP_tree;
 class AP_tree_root;
