@@ -181,14 +181,9 @@ static int sortedByCallbackLocation(const char *k0, long v0, const char *k1, lon
     AW_cb *cbs0 = reinterpret_cast<AW_cb*>(v0);
     AW_cb *cbs1 = reinterpret_cast<AW_cb*>(v1);
 
-    int cmp = (AW_CL)(cbs1->f) - (AW_CL)cbs0->f; // compare address of function
-    if (!cmp) {
-        cmp = cbs1->get_cd1() - cbs0->get_cd1();
-        if (!cmp) {
-            cmp = cbs1->get_cd2() - cbs0->get_cd2();
-            if (!cmp) cmp = strcmp(k0, k1);
-        }
-    }
+    int cmp       = cbs0->compare(*cbs1);
+    if (!cmp) cmp = strcmp(k0, k1);
+
     return cmp;
 }
 
@@ -275,7 +270,7 @@ size_t AW_root::callallcallbacks(int mode) {
                         AW_cb *cbs = (AW_cb *)GBS_read_hash(prvt->action_hash, remote_command);
                         bool skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
                         if (!skipcb) {
-                            if (cbs->f == (AW_CB)AW_help_entry_pressed) skipcb = true;
+                            if (cbs->contains(AW_CB(AW_help_entry_pressed))) skipcb = true;
                         }
                         if (skipcb) {
                             fprintf(stderr, "Skipped callback %zu/%zu (%s)\n", curr, count, remote_command);
@@ -293,7 +288,7 @@ size_t AW_root::callallcallbacks(int mode) {
                                 fprintf(stderr, "Unhandled error in '%s': %s\n", remote_command, GB_await_error());
                             }
 
-                            if (cbs->f == AW_POPUP) {
+                            if (cbs->contains(AW_POPUP)) {
                                 AW_window *awp = cbs->pop_up_window;
                                 if (awp) {
                                     awp->force_expose();

@@ -42,11 +42,10 @@
 #include <cctype>
 #include "aw_question.hxx"
 
-AW_cb::AW_cb(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb *nexti) {
+AW_cb::AW_cb(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb *nexti)
+    : cb(makeWindowCallback(g, cd1i, cd2i))
+{
     aw            = awi;
-    f             = g;
-    cd1           = cd1i;
-    cd2           = cd2i;
     help_text     = help_texti;
     pop_up_window = NULL;
     this->next    = nexti;
@@ -54,11 +53,10 @@ AW_cb::AW_cb(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW
     id = NULL;
 }
 
-AW_cb::AW_cb(AW_window *awi, const WindowCallback& cb, const char *help_texti, class AW_cb *nexti) {
+AW_cb::AW_cb(AW_window *awi, const WindowCallback& wcb, const char *help_texti, class AW_cb *nexti)
+    : cb(wcb)
+{
     aw            = awi;
-    f             = AW_CB(cb.callee());
-    cd1           = cb.inspect_CD1();
-    cd2           = cb.inspect_CD2();
     help_text     = help_texti;
     pop_up_window = NULL;
     this->next    = nexti;
@@ -537,25 +535,22 @@ static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
 }
 
 bool AW_cb::is_equal(const AW_cb& other) const {
-    bool equal = false;
-    if (f == other.f) {                             // same callback function
-        equal = (cd1 == other.cd1) && (cd2 == other.cd2);
-        if (equal) {
-            if (f == AW_POPUP) {
+    bool equal = cb == other.cb;
+    if (equal) {
+        if (AW_CB(cb.callee()) == AW_POPUP) {
+            equal = aw->get_root() == other.aw->get_root();
+        }
+        else {
+            equal = aw == other.aw;
+            if (!equal) {
                 equal = aw->get_root() == other.aw->get_root();
-            }
-            else {
-                equal = aw == other.aw;
-                if (!equal) {
-                    equal = aw->get_root() == other.aw->get_root();
 #if defined(DEBUG) && 0
-                    if (equal) {
-                        fprintf(stderr,
-                                "callback '%s' instantiated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
-                                id, aw->get_window_id(), other.aw->get_window_id());
-                    }
-#endif // DEBUG
+                if (equal) {
+                    fprintf(stderr,
+                            "callback '%s' instantiated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
+                            id, aw->get_window_id(), other.aw->get_window_id());
                 }
+#endif // DEBUG
             }
         }
     }
@@ -573,7 +568,9 @@ AW_postcb_cb       AW_cb::postcb       = NULL;
 
 void AW_cb::run_callbacks() {
     if (next) next->run_callbacks();                // callback the whole list
-    if (!f) return;                                 // run no callback
+
+    AW_CB f = AW_CB(cb.callee());
+    aw_assert(f);
 
     AW_root *root = aw->get_root();
     if (root->disable_callbacks) {
@@ -586,7 +583,7 @@ void AW_cb::run_callbacks() {
 
         bool isModalCallback = (f == AW_CB(message_cb) ||
                                 f == AW_CB(input_history_cb) ||
-                                f == AW_CB(input_cb) ||
+                                f == AW_CB(input_cb)         ||
                                 f == AW_CB(file_selection_cb));
 
         bool isPopdown = (f == AW_CB(AW_POPDOWN));
@@ -649,9 +646,9 @@ void AW_cb::run_callbacks() {
             pop_up_window->activate();
         }
         else {
-            AW_PPP g = (AW_PPP)cd1;
+            AW_PPP g = AW_PPP(cb.inspect_CD1());
             if (g) {
-                pop_up_window = g(aw->get_root(), cd2, 0);
+                pop_up_window = g(aw->get_root(), cb.inspect_CD2(), 0);
                 pop_up_window->activate();
             }
             else {
@@ -662,14 +659,14 @@ void AW_cb::run_callbacks() {
             p_aww(pop_up_window)->popup_cb->run_callbacks();
     }
     else {
-        f(aw, cd1, cd2);
+        cb(aw);
     }
 
     useraction_done(aw);
 }
 
-bool AW_cb::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
-    return (f == g) || (next && next->contains(g));
+bool AW_cb::contains(AW_CB g) {
+    return (AW_CB(cb.callee()) == g) || (next && next->contains(g));
 }
 
 AW_root_Motif::AW_root_Motif() {
@@ -725,7 +722,7 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
 
     if (root->is_tracking()) root->track_action(cbs->id);
 
-    if (cbs->f == AW_POPUP) {
+    if (cbs->contains(AW_POPUP)) {
         cbs->run_callbacks();
     }
     else {

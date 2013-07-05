@@ -152,9 +152,9 @@ void AW_openURL(AW_root *aw_root, const char *url);
 
 typedef void (*AW_cb_struct_guard)();
 
-class AW_cb {
-    AW_CL         cd1;
-    AW_CL         cd2;
+class AW_cb : virtual Noncopyable {
+    WindowCallback cb;
+
     AW_cb *next;
 
     static AW_cb_struct_guard guard_before;
@@ -164,7 +164,6 @@ class AW_cb {
 public:
     // private (read-only):
     AW_window  *pop_up_window;
-    AW_CB       f;
     AW_window  *aw;
     const char *help_text;
     char       *id;
@@ -178,7 +177,7 @@ public:
           AW_cb      *next       = 0);
 
     AW_cb(AW_window             *awi,
-          const WindowCallback&  cb,
+          const WindowCallback&  wcb,
           const char            *help_texti = 0,
           AW_cb                 *next       = 0);
 
@@ -186,9 +185,11 @@ public:
     bool contains(AW_CB g);                         // test if contained in list
     bool is_equal(const AW_cb& other) const;
 
+    int compare(const AW_cb& other) const { return cb<other.cb ? -1 : (other.cb<cb ? 1 : 0); }
+
 #if defined(ASSERTION_USED)
-    AW_CL get_cd1() const { return cd1; }
-    AW_CL get_cd2() const { return cd2; }
+    AW_CL get_cd1() const { return cb.inspect_CD1(); }
+    AW_CL get_cd2() const { return cb.inspect_CD2(); }
 #endif // ASSERTION_USED
 
     static void set_AW_cb_guards(AW_cb_struct_guard before, AW_cb_struct_guard after) {
