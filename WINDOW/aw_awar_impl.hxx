@@ -78,6 +78,7 @@ public:
     AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) OVERRIDE;   // remove a callback
     AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1) OVERRIDE;
     AW_awar *remove_callback(Awar_CB0 f) OVERRIDE;
+    AW_awar *remove_callback(const RootCallback& cb) OVERRIDE;
 
     virtual AW_awar *add_target_var(char **ppchr) OVERRIDE;
     virtual AW_awar *add_target_var(long *pint) OVERRIDE;

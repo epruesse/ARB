@@ -134,31 +134,29 @@ void AW_awar_impl::run_callbacks() {
 AW_awar *AW_awar_impl::add_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
     return add_callback(makeRootCallback(value_changed_cb, cd1, cd2));
 }
-
 AW_awar *AW_awar_impl::add_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
     return add_callback((AW_RCB)f, cd1, 0);
 }
-
 AW_awar *AW_awar_impl::add_callback(void (*f)(AW_root*)) {
     return add_callback((AW_RCB)f, 0, 0);
 }
-
 AW_awar *AW_awar_impl::add_callback(const RootCallback& rcb) {
     AW_root_cblist::add(callback_list, rcb);
     return this;
 }
 
 AW_awar *AW_awar_impl::remove_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::remove(callback_list, makeRootCallback(value_changed_cb, cd1, cd2));
-    return this;
+    return remove_callback(makeRootCallback(value_changed_cb, cd1, cd2));
 }
-
 AW_awar *AW_awar_impl::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
     return remove_callback((AW_RCB) f, cd1, 0);
 }
-
 AW_awar *AW_awar_impl::remove_callback(void (*f)(AW_root*)) {
     return remove_callback((AW_RCB) f, 0, 0);
+}
+AW_awar *AW_awar_impl::remove_callback(const RootCallback& rcb) {
+    AW_root_cblist::remove(callback_list, rcb);
+    return this;
 }
 
 void AW_awar_impl::remove_all_callbacks() {
