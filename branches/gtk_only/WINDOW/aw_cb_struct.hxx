@@ -22,11 +22,16 @@ public:
 
     // real public section:
     AW_cb(AW_window    *awi,
-                 AW_CB         g,
-                 AW_CL         cd1i       = 0,
-                 AW_CL         cd2i       = 0,
-                 const char   *help_texti = 0,
-                 AW_cb *next       = 0);
+          AW_CB         g,
+          AW_CL         cd1i       = 0,
+          AW_CL         cd2i       = 0,
+          const char   *help_texti = 0,
+          AW_cb *next       = 0);
+
+    AW_cb(AW_window             *awi,
+          const WindowCallback&  cb,
+          const char            *help_texti = 0,
+          AW_cb                 *next       = 0);
 
     void run_callbacks();                           // runs the whole list
     bool contains(AW_CB g);                         // test if contained in list

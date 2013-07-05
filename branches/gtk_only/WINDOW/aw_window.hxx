@@ -9,6 +9,9 @@
 #ifndef ARB_ASSERT_H 
 #include <arb_assert.h>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 
 #include "aw_gtk_forward_declarations.hxx"
 #include "aw_root.hxx"
@@ -282,8 +285,11 @@ public:
     void set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     bool is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL));
 
+    void set_expose_callback(AW_area area, const WindowCallback& wcb);
+    void set_resize_callback(AW_area area, const WindowCallback& wcb);
     void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+
     void set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
@@ -344,6 +350,7 @@ public:
      * Closes the currently open sub menu.
      * If no menu is open this method will crash.
      */
+    void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb);
     void close_sub_menu();
 
     void insert_help_topic(const char *name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
@@ -361,6 +368,9 @@ public:
     void calculate_scrollbars();
     void set_vertical_scrollbar_position(int position);
     void set_horizontal_scrollbar_position(int position);
+
+    void set_vertical_change_callback(const WindowCallback& wcb);
+    void set_horizontal_change_callback(const WindowCallback& wcb);
     void set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_vertical_scrollbar_top_indent(int indent);
@@ -453,11 +463,13 @@ public:
     void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1);
     void callback(void (*f)(AW_window*));
     void callback(AW_cb * /* owner */ awcbs); // Calls f with
+    void callback(const WindowCallback& cb);
     // aww in awcbs
     void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // double click callbacks
     void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1); // selection lists only !!
     void d_callback(void (*f)(AW_window*));
     void d_callback(AW_cb * /* owner */ awcbs); // Calls f with
+    void d_callback(const WindowCallback& cb);
     // *** create the buttons ********
 
     void   create_button(const char *macro_name, const char *label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback

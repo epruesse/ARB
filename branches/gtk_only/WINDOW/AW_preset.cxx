@@ -48,6 +48,8 @@ static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
     0
 };
 
+typedef void (*AW_GC_change_cb)(AW_window*, AW_CL, AW_CL);
+
 struct AW_MGC_cb_struct {   // one for each canvas
     AW_window *aw;
 
@@ -346,12 +348,12 @@ void AW_init_color_group_defaults(const char *for_program) {
 }
 
 
-AW_gc_manager AW_manage_GC(AW_window       *aww,
-                           const char      *gc_base_name,
-                           AW_device       *device, int base_gc, int base_drag, AW_GCM_AREA area,
-                           AW_GC_change_cb  changecb, AW_CL  cd1, AW_CL cd2,
-                           bool             define_color_groups,
-                           const char      *default_background_color,
+AW_gc_manager AW_manage_GC(AW_window             *aww,
+                           const char            *gc_base_name,
+                           AW_device             *device, int base_gc, int base_drag, AW_GCM_AREA area,
+                           const WindowCallback&  changecb,
+                           bool                   define_color_groups,
+                           const char            *default_background_color,
                            ...) {
     /*  Parameter:
      *          aww:                    base window
@@ -389,7 +391,7 @@ AW_gc_manager AW_manage_GC(AW_window       *aww,
     const char           *def_font;
     struct aw_gc_manager *gcmgrlast = 0, *gcmgr2=0, *gcmgrfirst=0;
 
-    AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, gc_base_name, changecb, cd1, cd2);
+    AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, gc_base_name, AW_CB(changecb.callee()), changecb.inspect_CD1(), changecb.inspect_CD2());
     mcbs->device = device;
 
     int col = AW_WINDOW_BG;

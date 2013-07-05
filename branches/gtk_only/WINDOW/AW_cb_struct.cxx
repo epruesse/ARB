@@ -21,6 +21,22 @@ AW_cb::AW_cb(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW
     id = NULL;
 }
 
+AW_cb::AW_cb(AW_window *awi, const WindowCallback& cb, const char *help_texti, class AW_cb *nexti) {
+    aw = awi;
+
+    // @@@ instead of the following section, AW_cb shall store a copy of 'cb'
+    // (if callback data is allocated it will otherwise be freed when this call returns)
+    f   = AW_CB(cb.callee());
+    cd1 = cb.inspect_CD1();
+    cd2 = cb.inspect_CD2();
+
+    help_text     = help_texti;
+    pop_up_window = NULL;
+    this->next    = nexti;
+
+    id = NULL;
+}
+
 
 bool AW_cb::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
     return (f == g) || (next && next->contains(g));

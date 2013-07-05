@@ -110,6 +110,9 @@ void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL c
 void AW_window::callback(AW_cb * /* owner */ awcbs) {
     prvt->callback = awcbs;
 }
+void AW_window::callback(const WindowCallback& wcb){
+    prvt->callback = new AW_cb(this, wcb);
+}
 
 void AW_window::d_callback(void (*f)(AW_window*)) {
     prvt->d_callback = new AW_cb(this, (AW_CB)f);
@@ -119,6 +122,9 @@ void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
 }
 void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
     prvt->d_callback = new AW_cb(this, (AW_CB)f, cd1, cd2);
+}
+void AW_window::d_callback(const WindowCallback& wcb){
+    prvt->d_callback = new AW_cb(this, wcb);
 }
 
 /**
@@ -321,7 +327,6 @@ void AW_window::put_with_label(GtkWidget *widget) {
     unset_at_commands();
     prvt->last_widget = hbox;
 }
-
 
 /** Creates a progress bar that is bound to the specified awar.*/
 void AW_window::create_progressBar(const char *var_name) {
@@ -906,29 +911,34 @@ void AW_window::insert_help_topic(const char *labeli,
 }
 
 
-void AW_window::insert_menu_topic(const char *cmd, const char *labeli, 
-                                  const char *mnemonic, const char *helpText, 
-                                  AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2){
+void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
+                                  const char *mnemonic, const char *helpText,
+                                  AW_active mask, const WindowCallback& wcb) {
     aw_return_if_fail(legal_mask(mask));
     aw_return_if_fail(prvt->menus.size() > 0); //closed too many menus
     aw_return_if_fail(cmd != NULL);
-  
+
     GtkWidget *wlabel    = make_label(labeli, 0, mnemonic);
     GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
     GtkWidget *item      = gtk_menu_item_new();
     gtk_container_add(GTK_CONTAINER(alignment), wlabel);
     gtk_container_add(GTK_CONTAINER(item),      alignment);
 
-    gtk_menu_shell_append(prvt->menus.top(), item);  
-   
-    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, helpText);
-    
+    gtk_menu_shell_append(prvt->menus.top(), item);
+
+    AW_cb *cbs = new AW_cb(this, wcb, helpText);
+
     g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
 
     cbs->id = strdup(cmd);
     get_root()->define_remote_command(cbs);
     get_root()->register_widget(item, mask);
 }
+
+void AW_window::insert_menu_topic(const char *cmd, const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2) {
+    insert_menu_topic(cmd, labeli, mnemonic, helpText, mask, makeWindowCallback(f, cd1, cd2));
+}
+
 
 void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
     aw_return_if_fail(legal_mask(mask));
@@ -1036,6 +1046,10 @@ void AW_window::set_expose_callback(AW_area area, AW_CB f, AW_CL cd1 /*= 0*/, AW
     AW_area_management *aram = prvt->areas[area];
     if (aram) aram->set_expose_callback(this, f, cd1, cd2);
 }
+void AW_window::set_expose_callback(AW_area area, const WindowCallback& wcb) {
+    AW_area_management *aram = prvt->areas[area];
+    if (aram) aram->set_expose_callback(this, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
+}
 
 /**
  * Registers a focus callback.
@@ -1093,6 +1107,11 @@ void AW_window::set_resize_callback(AW_area area, AW_CB f, AW_CL cd1 /*= 0*/, AW
     AW_area_management *aram = prvt->areas[area];
     aw_return_if_fail(aram != NULL);
     aram->set_resize_callback(this, f, cd1, cd2);
+}
+void AW_window::set_resize_callback(AW_area area, const WindowCallback& wcb) {
+    AW_area_management *aram = prvt->areas[area];
+    aw_return_if_fail(aram != NULL);
+    aram->set_resize_callback(this, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
 }
 
 // SCROLL BAR STUFF
@@ -1215,24 +1234,30 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
     aw_drawing_area_set_horizontal_slider(prvt->drawing_area, position);
 }
 
-void AW_window::set_vertical_change_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
+void AW_window::set_vertical_change_callback(const WindowCallback& wcb) {
     aw_return_if_fail(prvt->drawing_area != NULL);
-    
+
     GtkAdjustment *hAdj = aw_drawing_area_get_vertical_adjustment(prvt->drawing_area);
-    
+
     g_signal_connect((gpointer)hAdj, "value_changed",
                      G_CALLBACK(value_changed_scroll_bar_vertical),
-                     (gpointer)new AW_cb(this, f, cd1, cd2, ""));
+                     (gpointer)new AW_cb(this, wcb, ""));
 
 }
+void AW_window::set_vertical_change_callback(AW_CB f, AW_CL cd1, AW_CL cd2) {
+    set_vertical_change_callback(makeWindowCallback(f, cd1, cd2));
+}
 
-void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
     aw_return_if_fail(prvt->drawing_area != NULL);
     GtkAdjustment *hAdj = aw_drawing_area_get_horizontal_adjustment(prvt->drawing_area);
     g_signal_connect((gpointer)hAdj, "value_changed",
                      G_CALLBACK(value_changed_scroll_bar_horizontal),
-                     (gpointer)new AW_cb(this, f, cd1, cd2, ""));
+                     (gpointer)new AW_cb(this, wcb, ""));
 
+}
+void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    set_horizontal_change_callback(makeWindowCallback(f, cd1, cd2));
 }
 
 void AW_window::set_vertical_scrollbar_top_indent(int indent) {
