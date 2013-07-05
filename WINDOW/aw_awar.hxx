@@ -24,6 +24,9 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 
 #include "aw_gtk_forward_declarations.hxx"
 
@@ -82,11 +85,13 @@ public:
 
     // callbacks
     virtual AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) = 0;
-    virtual AW_awar *add_callback(Awar_CB1 f, AW_CL cd1) = 0;
-    virtual AW_awar *add_callback(Awar_CB0 f) = 0;
+    virtual AW_awar *add_callback(Awar_CB1 f, AW_CL cd1)            = 0;
+    virtual AW_awar *add_callback(Awar_CB0 f)                       = 0;
+    virtual AW_awar *add_callback(const RootCallback& cb)           = 0;
+
     virtual AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) = 0;   // remove a callback
-    virtual AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1) = 0;
-    virtual AW_awar *remove_callback(Awar_CB0 f) = 0;
+    virtual AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1)            = 0;
+    virtual AW_awar *remove_callback(Awar_CB0 f)                       = 0;
 
     // target vars
     virtual AW_awar *add_target_var(char **ppchr) = 0;

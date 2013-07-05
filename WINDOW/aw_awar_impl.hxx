@@ -73,6 +73,8 @@ public:
     AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) OVERRIDE;
     AW_awar *add_callback(Awar_CB1 f, AW_CL cd1) OVERRIDE;
     AW_awar *add_callback(Awar_CB0 f) OVERRIDE;
+    AW_awar *add_callback(const RootCallback& cb) OVERRIDE;
+
     AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) OVERRIDE;   // remove a callback
     AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1) OVERRIDE;
     AW_awar *remove_callback(Awar_CB0 f) OVERRIDE;

@@ -144,6 +144,10 @@ AW_awar *AW_awar_impl::add_callback(void (*f)(AW_root*)) {
     return add_callback((AW_RCB)f, 0, 0);
 }
 
+AW_awar *AW_awar_impl::add_callback(const RootCallback& cb) {
+    return add_callback(AW_RCB(cb.callee()), cb.inspect_CD1(), cb.inspect_CD2());
+}
+
 AW_awar *AW_awar_impl::remove_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
     AW_root_cblist::remove(callback_list, AW_root_callback(value_changed_cb, cd1, cd2));
     return this;
