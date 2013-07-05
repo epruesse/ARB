@@ -356,12 +356,16 @@ AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/test_unit.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_hotkeys.o: awt_hotkeys.hxx
 
