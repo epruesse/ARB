@@ -55,6 +55,8 @@ ST_ml.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_ml.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ST_ml.o: $(ARBHOME)/INCLUDE/cb.h
+ST_ml.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ST_ml.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -64,6 +66,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/smartptr.h
 ST_ml.o: $(ARBHOME)/INCLUDE/static_assert.h
 ST_ml.o: $(ARBHOME)/INCLUDE/test_global.h
+ST_ml.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ST_quality.o: MostLikelySeq.hxx
 ST_quality.o: st_ml.hxx
