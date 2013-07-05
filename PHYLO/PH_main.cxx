@@ -68,7 +68,7 @@ static void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww) {
     aw_root->awar("phyl/filter/stopcol")->set_minmax(0, len);
 
     ((AW_window*)cl_aww)->activate(); // pop up main window
-    ph_view_species_cb(0, 0, 0);
+    ph_view_species_cb();
 }
 
 __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
@@ -86,7 +86,7 @@ __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
 }
 
 
-void expose_callb(AW_window */*aw*/, AW_CL /*cd1*/, AW_CL /*cd2*/) { // @@@ remove params
+void expose_callb() {
     if (PH_display::ph_display->displayed()!=NONE) {
         PH_display::ph_display->clear_window();
         PH_display::ph_display->display();
@@ -452,7 +452,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 
     // Calculate menu
     awm->create_menu("Calculate", "C");
-    awm->insert_menu_topic("calc_column_filter", "Column Filter", "F", "no help", AWM_ALL, (AW_CB2)ph_view_filter_cb, (AW_CL)0, (AW_CL)0);
+    awm->insert_menu_topic("calc_column_filter", "Column Filter", "F", "no help", AWM_ALL, makeWindowCallback(ph_view_filter_cb));
 
     // Config menu
     awm->create_menu("Config", "o");
@@ -485,7 +485,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 
     awm->set_bottom_area_height(120);
 
-    awm->set_expose_callback(AW_MIDDLE_AREA, expose_callb,   (AW_CL)awm,     0);
+    awm->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(expose_callb));
     awm->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(resize_callb));
     awm->set_expose_callback(AW_BOTTOM_AREA, display_status, (AW_CL)aw_root, 0);
     awm->set_resize_callback(AW_BOTTOM_AREA, display_status, (AW_CL)aw_root, 0);

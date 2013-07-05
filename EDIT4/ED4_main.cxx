@@ -320,7 +320,7 @@ static void ed4_bind_mainDB_awar_callbacks(AW_root *root) {
     // callbacks to main DB awars are bound later
     // (otherwise its easy to crash the editor by clicking around in ARB_NTREE during editor startup)
 
-    root->awar(AWAR_SET_CURSOR_POSITION)->add_callback(ED4_remote_set_cursor_cb, 0, 0);
+    root->awar(AWAR_SET_CURSOR_POSITION)->add_callback(ED4_remote_set_cursor_cb);
     root->awar(AWAR_SPECIES_NAME)->add_callback(ED4_selected_species_changed_cb);
     root->awar(AWAR_SAI_NAME)->add_callback(ED4_selected_SAI_changed_cb);
 }

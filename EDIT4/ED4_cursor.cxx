@@ -1360,7 +1360,7 @@ void ED4_terminal::scroll_into_view(ED4_window *ed4w) { // scroll y-position onl
         if (slider_pos_y<0) slider_pos_y                 = 0;
 
         aww->set_vertical_scrollbar_position(slider_pos_y);
-        ED4_scrollbar_change_cb(aww, 0, 0);
+        ED4_scrollbar_change_cb(aww);
     }
 }
 
@@ -1575,7 +1575,7 @@ public:
 
 CursorPos *CursorPos::head = 0;
 
-void ED4_store_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+void ED4_store_curpos(AW_window *aww) {
     GB_transaction       dummy(GLOBAL_gb_main);
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
@@ -1588,7 +1588,7 @@ void ED4_store_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     }
 }
 
-void ED4_restore_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+void ED4_restore_curpos(AW_window *aww) {
     GB_transaction       dummy(GLOBAL_gb_main);
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
@@ -1603,8 +1603,7 @@ void ED4_restore_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     pos->moveToEnd();
 }
 
-void ED4_clear_stored_curpos(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */)
-{
+void ED4_clear_stored_curpos() {
     CursorPos::clear();
 }
 
@@ -1612,7 +1611,7 @@ void ED4_clear_stored_curpos(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd
    Other stuff
    -------------------------------------------------------------------------------- */
 
-void ED4_helix_jump_opposite(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+void ED4_helix_jump_opposite(AW_window *aww) {
     GB_transaction       dummy(GLOBAL_gb_main);
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
@@ -1635,7 +1634,7 @@ void ED4_helix_jump_opposite(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     }
 }
 
-void ED4_change_cursor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+void ED4_change_cursor(AW_window *aww) {
     ED4_LocalWinContext uses(aww);
     ED4_cursor     *cursor = &current_cursor();
     ED4_CursorType  typ    = cursor->getType();

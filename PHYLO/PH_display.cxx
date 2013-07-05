@@ -24,7 +24,7 @@ static void horizontal_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/) {
     PH_display::ph_display->monitor_horizontal_scroll_cb(aww);
 }
 
-void ph_view_species_cb(AW_window */*aww*/, AW_CL /*cb1*/, AW_CL /*cb2*/) {
+void ph_view_species_cb() {
     AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
 
     PH_display::ph_display->initialize(species_dpy);
@@ -38,7 +38,7 @@ GB_ERROR ph_check_initialized() {
     return 0;
 }
 
-void ph_view_filter_cb(AW_window */*aww*/, AW_CL, AW_CL) {
+void ph_view_filter_cb() {
     GB_ERROR err = ph_check_initialized();
     if (err) {
         aw_message(err);
