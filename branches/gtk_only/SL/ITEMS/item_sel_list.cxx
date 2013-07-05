@@ -15,9 +15,11 @@
 
 #include <arbdbt.h>
 
+#if !defined(ARB_GTK)
 static AW_window *existing_window_creator(AW_window *, AW_CL cl1, AW_CL) {
     return (AW_window*)cl1;
 }
+#endif
 
 Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
                                          GBDATA            *gb_key_data,
@@ -111,16 +113,16 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
         gb_key_data = GB_search(gb_main, selector.change_key_path, GB_CREATE_CONTAINER);
     }
 
-    AW_selection_list *sellist         = 0;
-    AW_window         *win_for_sellist = aws;
+    AW_selection_list *sellist = 0;
 
     if (scan_xfig_label) aws->at(scan_xfig_label);
-    
+
     if (popup_button_id) {
 #ifdef ARB_GTK
         aws->button_length(columns);
         sellist = aws->create_option_menu(varname, NULL, NULL);
 #else
+        AW_window *win_for_sellist = aws;
         // create HIDDEN popup window containing the selection list
         {
             AW_window_simple *aw_popup = new AW_window_simple;

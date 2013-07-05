@@ -235,6 +235,7 @@ void awt_edit_arbtcpdat_cb(AW_window *aww, AW_CL cl_gb_main) {
     free(filename);
 }
 
+#if !defined(ARB_GTK)
 static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);
     if (!fullname) {
@@ -290,6 +291,7 @@ static AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const
 
     return aw_popup;
 }
+#endif
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
     if (popup) {
