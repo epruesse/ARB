@@ -115,6 +115,8 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/cb.h
+ST_quality.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ST_quality.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ST_quality.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -123,6 +125,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/static_assert.h
 ST_quality.o: $(ARBHOME)/INCLUDE/test_global.h
+ST_quality.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ST_window.o: st_ml.hxx
 ST_window.o: st_quality.hxx
@@ -172,6 +175,8 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/cb.h
+ST_window.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ST_window.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ST_window.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -183,3 +188,4 @@ ST_window.o: $(ARBHOME)/INCLUDE/items.h
 ST_window.o: $(ARBHOME)/INCLUDE/smartptr.h
 ST_window.o: $(ARBHOME)/INCLUDE/static_assert.h
 ST_window.o: $(ARBHOME)/INCLUDE/test_global.h
+ST_window.o: $(ARBHOME)/INCLUDE/ttypes.h

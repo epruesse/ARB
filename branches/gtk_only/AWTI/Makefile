@@ -82,6 +82,8 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/cb.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/downcast.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -90,6 +92,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/seqio.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/test_global.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWTI_import.o: awti_imp_local.hxx
 AWTI_import.o: awti_import.hxx
@@ -147,6 +150,8 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/cb.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/downcast.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -160,3 +165,4 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/seqio.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/test_global.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/ttypes.h

@@ -77,6 +77,8 @@ dbserver.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+dbserver.o: $(ARBHOME)/INCLUDE/cb.h
+dbserver.o: $(ARBHOME)/INCLUDE/cbtypes.h
 dbserver.o: $(ARBHOME)/INCLUDE/cxxforward.h
 dbserver.o: $(ARBHOME)/INCLUDE/downcast.h
 dbserver.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -84,6 +86,7 @@ dbserver.o: $(ARBHOME)/INCLUDE/gccver.h
 dbserver.o: $(ARBHOME)/INCLUDE/smartptr.h
 dbserver.o: $(ARBHOME)/INCLUDE/static_assert.h
 dbserver.o: $(ARBHOME)/INCLUDE/test_global.h
+dbserver.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 macro_gui.o: macros.hxx
 macro_gui.o: trackers.hxx
@@ -132,6 +135,8 @@ macro_gui.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+macro_gui.o: $(ARBHOME)/INCLUDE/cb.h
+macro_gui.o: $(ARBHOME)/INCLUDE/cbtypes.h
 macro_gui.o: $(ARBHOME)/INCLUDE/cxxforward.h
 macro_gui.o: $(ARBHOME)/INCLUDE/downcast.h
 macro_gui.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -139,6 +144,7 @@ macro_gui.o: $(ARBHOME)/INCLUDE/gccver.h
 macro_gui.o: $(ARBHOME)/INCLUDE/smartptr.h
 macro_gui.o: $(ARBHOME)/INCLUDE/static_assert.h
 macro_gui.o: $(ARBHOME)/INCLUDE/test_global.h
+macro_gui.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 recmac.o: recmac.hxx
 recmac.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -164,13 +170,17 @@ recmac.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+recmac.o: $(ARBHOME)/INCLUDE/cb.h
+recmac.o: $(ARBHOME)/INCLUDE/cbtypes.h
 recmac.o: $(ARBHOME)/INCLUDE/cxxforward.h
 recmac.o: $(ARBHOME)/INCLUDE/dupstr.h
 recmac.o: $(ARBHOME)/INCLUDE/FileContent.h
 recmac.o: $(ARBHOME)/INCLUDE/gccver.h
 recmac.o: $(ARBHOME)/INCLUDE/smartptr.h
+recmac.o: $(ARBHOME)/INCLUDE/static_assert.h
 recmac.o: $(ARBHOME)/INCLUDE/test_global.h
 recmac.o: $(ARBHOME)/INCLUDE/test_unit.h
+recmac.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 trackers.o: dbserver.hxx
 trackers.o: macros.hxx
@@ -199,8 +209,12 @@ trackers.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 trackers.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 trackers.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 trackers.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+trackers.o: $(ARBHOME)/INCLUDE/cb.h
+trackers.o: $(ARBHOME)/INCLUDE/cbtypes.h
 trackers.o: $(ARBHOME)/INCLUDE/cxxforward.h
 trackers.o: $(ARBHOME)/INCLUDE/dupstr.h
 trackers.o: $(ARBHOME)/INCLUDE/gccver.h
 trackers.o: $(ARBHOME)/INCLUDE/smartptr.h
+trackers.o: $(ARBHOME)/INCLUDE/static_assert.h
 trackers.o: $(ARBHOME)/INCLUDE/test_global.h
+trackers.o: $(ARBHOME)/INCLUDE/ttypes.h
