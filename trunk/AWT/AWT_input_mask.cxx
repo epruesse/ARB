@@ -111,10 +111,9 @@ static void field_changed_cb(GBDATA * /* gb_item */, int *cl_awt_input_handler, 
     }
 }
 
-static void awar_changed_cb(AW_root * /* awr */, AW_CL cl_awt_mask_awar_item) {
+static void awar_changed_cb(AW_root*, awt_mask_awar_item *item) {
     if (!in_awar_changed_callback) { // avoid deadlock
         LocallyModify<bool> flag(in_awar_changed_callback, true);
-        awt_mask_awar_item *item = (awt_mask_awar_item*)cl_awt_mask_awar_item;
         awt_assert(item);
         if (item) item->awar_changed();
     }
@@ -212,12 +211,12 @@ awt_mask_awar_item::awt_mask_awar_item(awt_input_mask_global& global_, const str
 void awt_mask_awar_item::add_awar_callbacks() {
     AW_awar *var = awar();
     awt_assert(var);
-    if (var) var->add_callback(awar_changed_cb, AW_CL(this));
+    if (var) var->add_callback(makeRootCallback(awar_changed_cb, this));
 }
 void awt_mask_awar_item::remove_awar_callbacks() {
     AW_awar *var = awar();
     awt_assert(var);
-    if (var) var->remove_callback((AW_RCB)awar_changed_cb, AW_CL(this), AW_CL(0));
+    if (var) var->remove_callback(makeRootCallback(awar_changed_cb, this));
 }
 
 awt_variable::awt_variable(awt_input_mask_global& global_, const string& id, bool is_global_, const string& default_value, GB_ERROR& error)
