@@ -208,8 +208,7 @@ void AW_awar::untie_all_widgets() {
 
 
 AW_awar *AW_awar::add_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::add(callback_list, AW_root_callback(value_changed_cb, cd1, cd2));
-    return this;
+    return add_callback(makeRootCallback(value_changed_cb, cd1, cd2));
 }
 
 AW_awar *AW_awar::add_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
@@ -220,8 +219,9 @@ AW_awar *AW_awar::add_callback(void (*f)(AW_root*)) {
     return add_callback((AW_RCB)f, 0, 0);
 }
 
-AW_awar *AW_awar::add_callback(const RootCallback& cb) {
-    return add_callback(AW_RCB(cb.callee()), cb.inspect_CD1(), cb.inspect_CD2());
+AW_awar *AW_awar::add_callback(const RootCallback& rcb) {
+    AW_root_cblist::add(callback_list, rcb);
+    return this;
 } 
 
 AW_awar *AW_awar::add_target_var(char **ppchr) {
@@ -503,7 +503,7 @@ AW_awar *AW_awar::map(const char *awarn) {
 }
 
 AW_awar *AW_awar::remove_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::remove(callback_list, AW_root_callback(value_changed_cb, cd1, cd2));
+    AW_root_cblist::remove(callback_list, makeRootCallback(value_changed_cb, cd1, cd2));
     return this;
 }
 
@@ -780,9 +780,9 @@ static void test_cb2(AW_root *, AW_CL cd1, AW_CL cd2) { test_cb2_called += (cd1+
 void TEST_AW_root_cblist() {
     AW_root_cblist *cb_list = NULL;
 
-    AW_root_callback tcb1(test_cb1, 1, 0);
-    AW_root_callback tcb2(test_cb2, 0, 1);
-    AW_root_callback wrong_tcb2(test_cb2, 1, 0);
+    RootCallback tcb1(test_cb1, 1, 0);
+    RootCallback tcb2(test_cb2, 0, 1);
+    RootCallback wrong_tcb2(test_cb2, 1, 0);
 
     AW_root_cblist::add(cb_list, tcb1); TEST_EXPECT_CBS_CALLED(cb_list, 1, 0);
     AW_root_cblist::add(cb_list, tcb2); TEST_EXPECT_CBS_CALLED(cb_list, 1, 1);
