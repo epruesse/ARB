@@ -1091,10 +1091,10 @@ void AW_window::set_bottom_area_height(int h) {
     gtk_widget_set_size_request(GTK_WIDGET(prvt->bottom_area), -1, h);
 }
 
-void AW_window::set_input_callback(AW_area area, AW_CB f, AW_CL cd1, AW_CL cd2) {
+void AW_window::set_input_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = prvt->areas[area];
     aw_return_if_fail(aram != NULL);
-    aram->set_input_callback(this, f, cd1, cd2);
+    aram->set_input_callback(this, wcb);
 }
 
 void AW_window::set_motion_callback(AW_area area, AW_CB f, AW_CL cd1, AW_CL cd2) {

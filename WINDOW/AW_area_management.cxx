@@ -214,9 +214,7 @@ void AW_area_management::set_expose_callback(AW_window *aww,
     prvt->expose_cb = new AW_cb(aww, f, cd1, cd2, 0, prvt->expose_cb);
 }
 
-void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
-                                            AW_CL cd1, AW_CL cd2) 
-{
+void AW_area_management::set_input_callback(AW_window *aww, const WindowCallback& wcb) {
     if(!prvt->input_cb) {
         // enable button press and release events
         gtk_widget_add_events(prvt->area, GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | 
@@ -231,7 +229,7 @@ void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*
         g_signal_connect (prvt->area, "button-release-event",
                           G_CALLBACK (button_event_cbproxy), (gpointer) prvt);
     }
-    prvt->input_cb = new AW_cb(aww, f, cd1, cd2, 0, prvt->input_cb);
+    prvt->input_cb = new AW_cb(aww, wcb, 0, prvt->input_cb);
 }
 
 void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
