@@ -142,10 +142,10 @@ static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cl_cb_st
     static bool recursion = false;
 
     if (!recursion) {
-        AW_cb *awcbs     = reinterpret_cast<AW_cb*>(cl_cb_struct);
-        AW_root      *aw_root   = aww->get_root();
-        AW_awar      *awar_pair = aw_root->awar(helix_pair_awar(changed));
-        char         *pairdef   = awar_pair->read_string();
+        AW_cb   *awcbs     = reinterpret_cast<AW_cb*>(cl_cb_struct);
+        AW_root *aw_root   = aww->get_root();
+        AW_awar *awar_pair = aw_root->awar(helix_pair_awar(changed));
+        char    *pairdef   = awar_pair->read_string();
 
         {
             LocallyModify<bool> flag(recursion, true);

@@ -103,8 +103,6 @@ enum GB_UNDO_TYPE {
 // -----------------------
 //      callback types
 
-typedef void (*GB_CB)(GBDATA *, int *clientdata, GB_CB_TYPE gbtype);
-
 struct gb_cb_spec {
     GB_CB       func;
     GB_CB_TYPE  type;
