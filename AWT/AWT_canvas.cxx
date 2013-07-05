@@ -417,7 +417,7 @@ bool AWT_canvas::handleWheelEvent(AW_device *device, const AW_event& event) {
     return true;
 }
 
-static void input_event(AW_window *aww, AWT_canvas *scr, AW_CL /*cd2*/) {
+static void input_event(AW_window *aww, AWT_canvas *scr) {
     awt_assert(aww = scr->aww);
 
     AW_event event;
@@ -726,7 +726,7 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
 
     aww->set_expose_callback(AW_MIDDLE_AREA, (AW_CB)AWT_expose_cb, (AW_CL)this, 0);
     aww->set_resize_callback(AW_MIDDLE_AREA, (AW_CB)AWT_resize_cb, (AW_CL)this, 0);
-    aww->set_input_callback(AW_MIDDLE_AREA, (AW_CB)input_event, (AW_CL)this, 0);
+    aww->set_input_callback(AW_MIDDLE_AREA, makeWindowCallback(input_event, this));
     aww->set_focus_callback((AW_CB)canvas_focus_cb, (AW_CL)this, 0);
 
     aww->set_motion_callback(AW_MIDDLE_AREA, (AW_CB)motion_event, (AW_CL)this, 0);

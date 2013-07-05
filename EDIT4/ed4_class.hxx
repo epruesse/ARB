@@ -2301,7 +2301,7 @@ void ED4_with_all_edit_windows(void (*cb)(ED4_window *));
 void ED4_expose_recalculations();
 void ED4_calc_terminal_extentions();
 
-void        ED4_input_cb            (AW_window *aww, AW_CL cd1, AW_CL cd2);
+void        ED4_input_cb            (AW_window *aww);
 
 void ED4_remote_event(AW_event *faked_event);
 

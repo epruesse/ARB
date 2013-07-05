@@ -371,8 +371,7 @@ static void ed4_scroll(AW_window *aww, int xdiff, int ydiff, AW_CL cd1, AW_CL cd
     }
 }
 
-void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
-{
+void ED4_input_cb(AW_window *aww) {
     AW_event event;
     static AW_event lastEvent;
     static int repeatCount;

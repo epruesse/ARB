@@ -1084,17 +1084,15 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
     }
 }
 
-void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_input_callback(AW_window *aww, const WindowCallback& wcb) {
     XtAddCallback(area, XmNinputCallback,
-            (XtCallbackProc) AW_inputCB_draw_area,
-            (XtPointer) new AW_cb(aww, f, cd1, cd2, (char*)0));
+            (XtCallbackProc)AW_inputCB_draw_area,
+            (XtPointer)new AW_cb(aww, wcb));
 }
 
-void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_input_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = MAP_ARAM(area);
-    if (!aram)
-        return;
-    aram->set_input_callback(this, f, cd1, cd2);
+    if (aram) aram->set_input_callback(this, wcb);
 }
 
 void AW_area_management::set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
