@@ -222,11 +222,9 @@ static void motion_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
     }
 }
 
-static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
+static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
     AW_event event;
     aww->get_event(&event);
-
-    DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
 
     if (event.button == AW_WHEEL_UP || event.button == AW_WHEEL_DOWN) {
         if (event.type == AW_Mouse_Press) {
@@ -716,7 +714,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
 
     awm->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(resize_needed, dmatrix));
     awm->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(redisplay_needed, dmatrix));
-    awm->set_input_callback (AW_MIDDLE_AREA, (AW_CB) input_cb,         (AW_CL)dmatrix, 0);
+    awm->set_input_callback (AW_MIDDLE_AREA, makeWindowCallback(input_cb, dmatrix));
     awm->set_motion_callback(AW_MIDDLE_AREA, (AW_CB) motion_cb,        (AW_CL)dmatrix, 0);
 
     AW_gc_manager gc_manager =
