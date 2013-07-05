@@ -540,7 +540,7 @@ void ED4_horizontal_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     win->update_window_coords();
 }
 
-void ED4_scrollbar_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void ED4_scrollbar_change_cb(AW_window *aww) {
     ED4_LocalWinContext uses(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
@@ -623,7 +623,7 @@ void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
     }
 }
 
-void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+void ED4_remote_set_cursor_cb(AW_root *awr) {
     AW_awar *awar = awr->awar(AWAR_SET_CURSOR_POSITION);
     long     pos  = awar->read_int();
 
@@ -797,7 +797,7 @@ void ED4_exit() {
     ::exit(0);
 }
 
-void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+void ED4_quit_editor(AW_window *aww) {
     ED4_LocalWinContext uses(aww); // @@@ dont use context here
 
     if (ED4_ROOT->first_window == current_ed4w()) { // quit button has been pressed in first window
@@ -1255,7 +1255,7 @@ ARB_ERROR rebuild_consensus(ED4_base *object) {
     return NULL;
 }
 
-void ED4_new_editor_window(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+void ED4_new_editor_window(AW_window *aww) {
     ED4_LocalWinContext uses(aww);
 
     AW_device  *device;

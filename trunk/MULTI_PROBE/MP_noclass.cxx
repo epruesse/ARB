@@ -84,7 +84,7 @@ static char *MP_get_probes(const char *str) {
     return strdup(result);
 }
 
-void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void MP_gen_quality(AW_root *awr) {
     bool firsttime = true; // @@@ was this static in the past?
 
     if (firsttime)
@@ -120,7 +120,7 @@ void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     delete ecol_pos;
 }
 
-void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void MP_modify_selected(AW_root *awr) {
     // setzt den 2.Parameter in selected_list
     char       *com1, *com2, *com3, *probes, temp[120];
     List<char> *l   = new List<char>;
@@ -169,7 +169,7 @@ void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     delete l;
 }
 
-void MP_gen_singleprobe(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void MP_gen_singleprobe(AW_root *awr) {
     char *probe, *new_sing;
     char *selected = awr->awar(MP_AWAR_SELECTEDPROBES)->read_string();
 

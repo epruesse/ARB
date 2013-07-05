@@ -37,9 +37,9 @@ MP_Main::MP_Main(AW_root *awr, AWT_canvas *canvas) {
 
 MP_Main::~MP_Main()
 {
-    aw_root->awar_int(MP_AWAR_QUALITY)->remove_callback(MP_gen_quality, (AW_CL)0, (AW_CL)0);
-    aw_root->awar_int(MP_AWAR_SINGLEMISMATCHES)->remove_callback(MP_gen_singleprobe, (AW_CL)0, (AW_CL)0);
-    aw_root->awar_int(MP_AWAR_MISMATCHES)->remove_callback(MP_modify_selected, (AW_CL)0, (AW_CL)0);
+    aw_root->awar_int(MP_AWAR_QUALITY)->remove_callback(MP_gen_quality);
+    aw_root->awar_int(MP_AWAR_SINGLEMISMATCHES)->remove_callback(MP_gen_singleprobe);
+    aw_root->awar_int(MP_AWAR_MISMATCHES)->remove_callback(MP_modify_selected);
 
     delete p_eval;
     delete stc;
@@ -68,14 +68,14 @@ void MP_Main::create_awars()
     aw_root->awar_string(MP_AWAR_PROBELIST)->add_target_var(& mp_gl_awars.probelist);
     aw_root->awar_int(MP_AWAR_WEIGHTEDMISMATCHES)->add_target_var(& mp_gl_awars.weightedmismatches)->write_int(2);
     aw_root->awar_int(MP_AWAR_COMPLEMENT, 1)->add_target_var(& mp_gl_awars.complement);
-    aw_root->awar_int(MP_AWAR_MISMATCHES)->add_target_var(& mp_gl_awars.no_of_mismatches)->add_callback(MP_modify_selected, (AW_CL)0, (AW_CL)0);
+    aw_root->awar_int(MP_AWAR_MISMATCHES)->add_target_var(& mp_gl_awars.no_of_mismatches)->add_callback(MP_modify_selected);
     remembered_mismatches = 0;      // derselbe initiale Wert wie mp_gl_awars.no_of_mismatches
     aw_root->awar_int(MP_AWAR_PTSERVER)->add_target_var(& mp_gl_awars.ptserver);
     aw_root->awar_string(MP_AWAR_RESULTPROBES)->add_target_var(& mp_gl_awars.result_probes);
     aw_root->awar_string(MP_AWAR_RESULTPROBESCOMMENT)->add_target_var(& mp_gl_awars.result_probes_comment);
     aw_root->awar_int(MP_AWAR_NOOFPROBES)->add_target_var(& mp_gl_awars.no_of_probes)->write_int(3);
-    aw_root->awar_int(MP_AWAR_QUALITY)->add_target_var(& mp_gl_awars.probe_quality)->add_callback(MP_gen_quality, (AW_CL)0, (AW_CL)0)->write_int(QUALITYDEFAULT);
-    aw_root->awar_int(MP_AWAR_SINGLEMISMATCHES)->add_target_var(& mp_gl_awars.singlemismatches)->add_callback(MP_gen_singleprobe, (AW_CL)0, (AW_CL)0);
+    aw_root->awar_int(MP_AWAR_QUALITY)->add_target_var(& mp_gl_awars.probe_quality)->add_callback(MP_gen_quality)->write_int(QUALITYDEFAULT);
+    aw_root->awar_int(MP_AWAR_SINGLEMISMATCHES)->add_target_var(& mp_gl_awars.singlemismatches)->add_callback(MP_gen_singleprobe);
     aw_root->awar_float(MP_AWAR_OUTSIDEMISMATCHES)->add_target_var(& mp_gl_awars.outside_mismatches_difference)->write_float(1.0);
     aw_root->awar_int(MP_AWAR_QUALITYBORDER1)->add_target_var(& mp_gl_awars.qualityborder_best)->write_int(5);
 
