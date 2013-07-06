@@ -154,7 +154,7 @@ void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
 
     if (root->is_tracking()) root->track_action(cbs->id);
 
-    if (cbs->f == AW_POPUP) {
+    if (cbs->contains(AW_POPUP)) {
         cbs->run_callbacks();
     }
     else {
