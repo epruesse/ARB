@@ -1,6 +1,6 @@
 // ================================================================ //
 //                                                                  //
-//   File      : AW_file_selection.cxx                              //
+//   File      : AW_file.cxx                                        //
 //   Purpose   :                                                    //
 //                                                                  //
 //   Institute of Microbiology (Technical University Munich)        //
@@ -8,54 +8,26 @@
 //                                                                  //
 // ================================================================ //
 
-#include <aw_awar.hxx>
-#include <aw_window.hxx>
-#include <aw_file.hxx>
-#include "aw_msg.hxx"
+#include "aw_file.hxx"
+#include "aw_awar.hxx"
 #include "aw_root.hxx"
-#include "aw_select.hxx"
-
 #include <arbdbt.h>
-#include <arb_strbuf.h>
 #include <arb_file.h>
-
+#include "aw_select.hxx"
+#include <arb_strbuf.h>
+#include "aw_msg.hxx"
+#include "aw_question.hxx"
 #include <dirent.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/param.h>
-
-#include <string>
 #include <set>
+#include <string>
 
-#include <unistd.h>
-#include <ctime>
+using std::set;
+using std::string;
 
 #if defined(DEBUG)
 // #define TRACE_FILEBOX
 #endif // DEBUG
-
-using namespace std;
-
-#if defined(WARN_TODO)
-#warning derive File_selection from AW_selection
-#endif
-
-struct File_selection {                            // for fileselection
-    AW_root           *awr;
-    AW_selection_list *filelist;
-
-    char *def_name;
-    char *def_dir;
-    char *def_filter;
-
-    char *pwd;
-    char *pwdx;                                     // additional directories
-
-    char *previous_filename;
-    
-    bool show_dir;
-    bool leave_wildcards;
-};
 
 static GB_CSTR expand_symbolic_directories(const char *pwd_envar) { 
     GB_CSTR res;
@@ -73,6 +45,7 @@ static GB_CSTR expand_symbolic_directories(const char *pwd_envar) {
     return res;
 }
 
+
 char *AW_unfold_path(const char *pwd_envar, const char *path) {
     //! create a full path
     gb_getenv_hook  oldHook = GB_install_getenv_hook(expand_symbolic_directories);
@@ -80,6 +53,108 @@ char *AW_unfold_path(const char *pwd_envar, const char *path) {
     GB_install_getenv_hook(oldHook);
     return result;
 }
+
+char *AW_extract_directory(const char *path) {
+    const char *lslash = strrchr(path, '/');
+    if (!lslash) return 0;
+
+    char *result        = strdup(path);
+    result[lslash-path] = 0;
+
+    return result;
+}
+
+// -----------------------------
+//      file selection boxes
+
+void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
+                                   const char *directory, const char *filter, const char *file_name,
+                                   AW_default default_file, bool resetValues)
+{
+    int   base_len  = strlen(awar_base);
+    bool  has_slash = awar_base[base_len-1] == '/';
+    char *awar_name = new char[base_len+30]; // use private buffer, because caller will most likely use GBS_global_string for arguments
+
+    sprintf(awar_name, "%s%s", awar_base, "/directory"+int(has_slash));
+    AW_awar *awar_dir = awr->awar_string(awar_name, directory, default_file);
+
+    sprintf(awar_name, "%s%s", awar_base, "/filter"   + int(has_slash));
+    AW_awar *awar_filter = awr->awar_string(awar_name, filter, default_file);
+
+    sprintf(awar_name, "%s%s", awar_base, "/file_name"+int(has_slash));
+    AW_awar *awar_filename = awr->awar_string(awar_name, file_name, default_file);
+
+    if (resetValues) {
+        awar_dir->write_string(directory);
+        awar_filter->write_string(filter);
+        awar_filename->write_string(file_name);
+    }
+    else {
+        char *stored_directory = awar_dir->read_string();
+#if defined(DEBUG)
+        if (strncmp(awar_base, "tmp/", 4) == 0) { // non-saved awar
+            if (directory[0] != 0) { // accept empty dir (means : use current ? )
+                aw_assert(GB_is_directory(directory)); // default directory does not exist
+            }
+        }
+#endif // DEBUG
+
+        if (strcmp(stored_directory, directory) != 0) { // does not have default value
+#if defined(DEBUG)
+            const char *arbhome    = GB_getenvARBHOME();
+            int         arbhomelen = strlen(arbhome);
+
+            if (strncmp(directory, arbhome, arbhomelen) == 0) { // default points into $ARBHOME
+                aw_assert(resetValues); // should be called with resetValues == true
+                // otherwise it's possible, that locations from previously installed ARB versions are used
+            }
+#endif // DEBUG
+
+            if (!GB_is_directory(stored_directory)) {
+                awar_dir->write_string(directory);
+                fprintf(stderr,
+                        "Warning: Replaced reference to non-existing directory '%s'\n"
+                        "         by '%s'\n"
+                        "         (Save properties to make this change permanent)\n",
+                        stored_directory, directory);
+            }
+        }
+
+        free(stored_directory);
+    }
+
+    char *dir = awar_dir->read_string();
+    if (dir[0] && !GB_is_directory(dir)) {
+        if (aw_ask_sure("create_directory", GBS_global_string("Directory '%s' does not exist. Create?", dir))) {
+            GB_ERROR error = GB_create_directory(dir);
+            if (error) aw_message(GBS_global_string("Failed to create directory '%s' (Reason: %s)", dir, error));
+        }
+    }
+    free(dir);
+
+    delete [] awar_name;
+}
+
+#if defined(WARN_TODO)
+#warning derive File_selection from AW_selection
+#endif
+
+struct File_selection {                            // for fileselection
+    AW_root           *awr;
+    AW_selection_list *filelist;
+
+    char *def_name;
+    char *def_dir;
+    char *def_filter;
+
+    char *pwd;
+    char *pwdx;                                     // additional directories
+
+    char *previous_filename;
+
+    bool show_dir;
+    bool leave_wildcards;
+};
 
 static GB_CSTR get_suffix(GB_CSTR fullpath) { // returns pointer behind '.' of suffix (or NULL if no suffix found)
     GB_CSTR dot = strrchr(fullpath, '.');
@@ -135,15 +210,6 @@ inline bool AW_is_dir(const char *path) { return GB_is_directory(valid_path(path
 inline bool AW_is_file(const char *path) { return GB_is_regularfile(valid_path(path)); }
 inline bool AW_is_link(const char *path) { return GB_is_link(valid_path(path)); }
 
-char *AW_extract_directory(const char *path) {
-    const char *lslash = strrchr(path, '/');
-    if (!lslash) return 0;
-
-    char *result        = strdup(path);
-    result[lslash-path] = 0;
-
-    return result;
-}
 
 #define DIR_SORT_ORDERS 3
 static const char *DIR_sort_order_name[DIR_SORT_ORDERS] = { "alpha", "date", "size" };

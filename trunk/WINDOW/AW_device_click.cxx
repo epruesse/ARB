@@ -32,7 +32,6 @@ AW_DEVICE_TYPE AW_device_click::type() {
     return AW_DEVICE_CLICK;
 }
 
-
 bool AW_device_click::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filteri) {
     if (!(filteri & filter)) return false;
 
@@ -72,7 +71,8 @@ bool AW_device_click::line_impl(int /*gc*/, const LineVector& Line, AW_bitset fi
 }
 
 
-bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
+bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
+                                AW_pos alignment, AW_bitset filteri, long opt_strlen) {
     bool drawflag = false;
     if (filteri & filter) {
         AW_pos X0, Y0;          // Transformed pos
@@ -181,12 +181,12 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
 }
 
 
-void AW_device_click::get_clicked_line(class AW_clicked_line *ptr) const {
+void AW_device_click::get_clicked_line(AW_clicked_line *ptr) const {
     *ptr = opt_line;
 }
 
 
-void AW_device_click::get_clicked_text(class AW_clicked_text *ptr) const {
+void AW_device_click::get_clicked_text(AW_clicked_text *ptr) const {
     *ptr = opt_text;
 }
 
@@ -225,4 +225,3 @@ bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL
 
     return bestClick;
 }
-
