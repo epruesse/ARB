@@ -1,15 +1,12 @@
 //  ==================================================================== //
 //                                                                       //
-//    File      : aw_question.cpp                                        //
+//    File      : AW_question.cxx                                        //
 //    Purpose   :                                                        //
-//                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
-//                                                                       //
-//                                                                       //
 //  ==================================================================== //
 
 #include <arbdb.h>
@@ -220,6 +217,4 @@ int AW_repeated_question::get_answer(const char *uniqueID, const char *question,
 
     return answer;
 }
-
-// -end- of implementation of class AW_repeated_question.
 

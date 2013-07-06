@@ -155,7 +155,7 @@ void AW_selection_list::update_from_widget() {
     }
 }
 
-void AW_selection_list::update() {      
+void AW_selection_list::update() {
     // Warning:
     // update() will not set the connected awar to the default value
     // if it contains a value which is not associated with a list entry!
@@ -293,7 +293,7 @@ char *AW_selection_list::get_content_as_string(long number_of_lines) {
 }
 
 const char *AW_selection_list::get_default_display() const {
-        return default_select ? default_select->get_displayed() : NULL;
+    return default_select ? default_select->get_displayed() : NULL;
 }
 
 const char *AW_selection_list::get_default_value() const {
@@ -436,7 +436,7 @@ void AW_selection_list::move_selection(int offset) {
      *  offset == 1  -> select next element
      *  offset == -1 -> select previous element
      */
-    
+
     int index = get_index_of_selected();
     select_element_at(index+offset);
 }
@@ -525,7 +525,7 @@ void AW_selection_list::to_array(StrArray& array, bool values) {
      */
 
     array.reserve(size());
-    
+
     for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
         array.put(strdup(values ? lt->value.get_string() : lt->get_displayed()));
     }
