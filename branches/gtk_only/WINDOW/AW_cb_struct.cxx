@@ -3,6 +3,10 @@
 #include "aw_root.hxx"
 #include "aw_msg.hxx"
 
+#if defined(DEBUG)
+// #define TRACE_CALLBACKS
+#endif // DEBUG
+
 //TODO comment
 AW_cb_struct_guard AW_cb::guard_before = NULL;
 AW_cb_struct_guard AW_cb::guard_after  = NULL;

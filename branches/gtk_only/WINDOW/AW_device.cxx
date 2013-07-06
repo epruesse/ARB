@@ -40,7 +40,7 @@ static const char *clipstatestr(AW_device *device) {
 
     const AW_screen_area&  clip_rect = device->get_cliprect();
     const AW_font_overlap& fo        = device->get_font_overlap();
-    const AW::Vector&          offset    = device->get_offset();
+    const AW::Vector&      offset    = device->get_offset();
 
     sprintf(buffer,
             "clip_rect={t=%i, b=%i, l=%i, r=%i} "
@@ -106,7 +106,6 @@ void AW_device::push_clip_scale() {
 #endif // SHOW_CLIP_STACK_CHANGES
 }
 
-
 bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // either string or strlen != 0
                              const AW::Position& pos, AW_pos alignment, AW_bitset filteri, AW_CL cduser,
                              AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
@@ -126,14 +125,10 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
     bool inside_clipping_right = true;
 
     // es gibt 4 clipping Moeglichkeiten:
-    // 1. man will fuer den Fall clippen, dass man vom linken display-Rand aus druckt   
-    //    => clipping rechts vom 1. Buchstaben
-    // 2. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             
-    //    => clipping links vom 1. Buchstaben
-    // 3. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             
-    //    => clipping links vom letzten Buchstaben
-    // 4. man will fuer den Fall clippen, dass man bis zum rechten display-Rand druckt  
-    //    => clipping rechts vom letzten Buchstaben
+    // 1. man will fuer den Fall clippen, dass man vom linken display-Rand aus druckt   => clipping rechts vom 1. Buchstaben
+    // 2. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             => clipping links vom 1. Buchstaben
+    // 3. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             => clipping links vom letzten Buchstaben
+    // 4. man will fuer den Fall clippen, dass man bis zum rechten display-Rand druckt  => clipping rechts vom letzten Buchstaben
 
     if (!(filter & filteri)) return 0;
 
@@ -261,8 +256,6 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
     return toc(this, gc, opt_str, opt_len, start, (size_t)textlen, corrx, corry, opt_ascent, opt_descent, cduser);
 }
 
-
-
 bool AW_device::generic_filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri) {
     bool drawflag = false;
     if (filteri & filter) {
@@ -274,8 +267,9 @@ bool AW_device::generic_filled_area(int gc, int npos, const AW::Position *pos, A
     }
     return drawflag;
 }
-void AW_device::move_region(AW_pos /*src_x*/, AW_pos /*src_y*/, AW_pos /*width*/, AW_pos /*height*/
-                          , AW_pos /*dest_x*/, AW_pos /*dest_y*/) {
+
+void AW_device::move_region(AW_pos /*src_x*/, AW_pos /*src_y*/, AW_pos /*width*/, AW_pos /*height*/,
+                            AW_pos /*dest_x*/, AW_pos /*dest_y*/) {
     // empty default
 }
 
@@ -313,7 +307,7 @@ bool AW_device::generic_invisible(const AW::Position& pos, AW_bitset filteri) {
     return (filter & filteri) ? !is_outside_clip(transform(pos)) : false;
 }
 
-const AW_screen_area&  AW_device::get_common_screen(const AW_common *common_) {
+const AW_screen_area& AW_device::get_common_screen(const AW_common *common_) {
     return common_->get_screen();
 }
 
@@ -342,6 +336,7 @@ void AW_device::set_filter(AW_bitset filteri) {
 }
 
 
+#if 0
 //aw_clipable
 
 inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
@@ -349,6 +344,7 @@ inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
     if (val >= high) return high;
     return val;
 }
+#endif
 
 void AW_zoomable::reset() {
     unscale = scale   = 1.0;

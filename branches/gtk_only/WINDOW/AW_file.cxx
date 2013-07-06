@@ -30,6 +30,10 @@
 using std::set;
 using std::string;
 
+#if defined(DEBUG)
+// #define TRACE_FILEBOX
+#endif // DEBUG
+
 static GB_CSTR expand_symbolic_directories(const char *pwd_envar) { 
     GB_CSTR res;
 
@@ -149,13 +153,10 @@ struct File_selection {                            // for fileselection
     char *pwdx;                                     // additional directories
 
     char *previous_filename;
-    
+
     bool show_dir;
     bool leave_wildcards;
 };
-
-
-
 
 static GB_CSTR get_suffix(GB_CSTR fullpath) { // returns pointer behind '.' of suffix (or NULL if no suffix found)
     GB_CSTR dot = strrchr(fullpath, '.');
@@ -773,7 +774,6 @@ void AW_refresh_fileselection(AW_root *awr, const char *awar_prefix) {
 
     awr->awar(GBS_global_string("%s/directory", awar_prefix))->touch();
 }
-
 
 // --------------------------------------------------------------------------------
 
