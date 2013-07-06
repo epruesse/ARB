@@ -149,7 +149,7 @@ GdkColor AW_root::getColor(unsigned int pixel) {
 
 void AW_root::define_remote_command(AW_cb *cbs) {
     // popdown takes no parameters:
-    aw_return_if_fail(cbs->f != (AW_CB)AW_POPDOWN || !(cbs->get_cd1() || cbs->get_cd2()));
+    aw_return_if_fail(!cbs->contains(AW_CB(AW_POPDOWN)) || !(cbs->get_cd1() || cbs->get_cd2()));
 
     AW_cb *old_cbs = (AW_cb*)GBS_write_hash(action_hash, cbs->id, (long)cbs);
     // do not free old_cbs, cause it's still reachable from first widget that defined this remote command    
