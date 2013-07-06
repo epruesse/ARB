@@ -16,6 +16,9 @@
 #ifndef AW_SCALAR_HXX
 #include "aw_scalar.hxx"
 #endif
+#ifndef ARB_MSG_H
+#include <arb_msg.h>
+#endif
 
 // macro definitions
 #define  p_r        prvt
@@ -268,16 +271,23 @@ void        AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str
 void        AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data);
 
 // ------------------------------------------------------------
-// do not use the following functions
+// do not use the following
+extern int aw_message_cb_result;
+#define AW_MESSAGE_LISTEN_DELAY 500 // look in ms whether a father died
 void message_cb(AW_window *aw, AW_CL cd1);
 void input_cb(AW_window *aw, AW_CL cd1);
 void input_history_cb(AW_window *aw, AW_CL cl_mode);
 void file_selection_cb(AW_window *aw, AW_CL cd1);
+void aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2);
 // ------------------------------------------------------------
 
 Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy);
 void   aw_realize_widget(AW_window *aww);
 void   aw_insert_default_help_entries(AW_window *aww);
+
+__ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *intoWhat) {
+    GBK_terminatef("Cannot insert %s into %s which uses a non-%s AWAR", triedType, intoWhat, triedType);
+}
 
 #else
 #error aw_window_Xm.hxx included twice
