@@ -34,7 +34,7 @@ void       bc_create_bc_variables(AW_root *awr, AW_default awd);
 GBDATA *GLOBAL_gb_main; // global gb_main for arb_dist
 
 
-static unsigned DI_timer(AW_root *aw_root, GBDATA *gb_main) {
+static unsigned DI_timer(AW_root*, GBDATA *gb_main) {
     {
         GB_transaction ta(gb_main);
         GB_tell_server_dont_wait(gb_main); // trigger database callbacks
