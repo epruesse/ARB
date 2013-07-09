@@ -31,6 +31,18 @@ void AW_system(AW_window *aww, const char *command, const char *auto_help_file) 
     aw_message_if(GBK_system(command));
 }
 
+void AW_clock_cursor(AW_root *awr) {
+    awr->prvt->set_cursor(0, 0, awr->prvt->clock_cursor);
+}
+
+void AW_normal_cursor(AW_root *awr) {
+    awr->prvt->set_cursor(0, 0, 0);
+}
+
+void AW_help_entry_pressed(AW_window *aww) {
+    AW_root *root = aww->get_root();
+    p_global->help_active = 1;
+}
 
 void AW_root::process_events() {
     XtAppProcessEvent(p_r->context, XtIMAll);
@@ -43,7 +55,8 @@ void AW_root::process_pending_events() {
     }
 }
 
-AW_ProcessEventType AW_root::peek_key_event(AW_window * /* aww */) {
+
+AW_ProcessEventType AW_root::peek_key_event(AW_window *) {
     //! Returns type if key event follows, else 0
 
     XEvent xevent;
@@ -324,6 +337,23 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
 }
 
+AW_root::~AW_root() {
+    delete tracker; tracker = NULL;
+
+    AW_root_cblist::clear(focus_callback_list);
+    delete button_sens_list;    button_sens_list = NULL;
+
+    exit_root();
+    exit_variables();
+    aw_assert(this == AW_root::SINGLETON);
+
+    delete prvt;
+
+    free(program_name);
+
+    AW_root::SINGLETON = NULL;
+}
+
 /**
  * A list of awar names that contain color names
  */
@@ -425,13 +455,19 @@ void AW_root::add_timed_callback(int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2) {
                     (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
 }
 
-void AW_root::add_timed_callback_never_disabled(int ms, AW_RCB f, AW_CL cd1, AW_CL cd2) {
+void AW_root::add_timed_callback_never_disabled(int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2) {
     XtAppAddTimeOut(p_r->context,
                     (unsigned long)ms,
                     (XtTimerCallbackProc)AW_timer_callback_never_disabled,
                     (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
 }
 /// end timer stuff
+
+/// begin awar stuff
+
+AW_awar *AW_root::awar_no_error(const char *var_name) {
+    return hash_table_for_variables ? (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name) : NULL;
+}
 
 
 AW_awar *AW_root::awar(const char *var_name) {
@@ -469,11 +505,6 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
     }
     return vs;
 }
-
-AW_awar *AW_root::awar_no_error(const char *var_name) {
-    return hash_table_for_variables ? (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name) : NULL;
-}
-
 
 AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
     AW_awar *vs = awar_no_error(var_name);
@@ -531,23 +562,6 @@ void AW_root::unlink_awars_from_DB(AW_default database) {
     GBS_hash_do_loop(hash_table_for_variables, AW_unlink_awar_from_DB, gb_main);
 }
 
-AW_root::~AW_root() {
-    delete tracker;
-
-    AW_root_cblist::clear(focus_callback_list);
-    delete button_sens_list;    button_sens_list = NULL;
-
-    exit_root();
-    exit_variables();
-    aw_assert(this == AW_root::SINGLETON);
-
-    delete prvt;
-
-    free(program_name);
-
-    AW_root::SINGLETON = NULL;
-}
-
 typedef std::list<GBDATA*> DataPointers;
 
 static GB_ERROR set_parents_with_only_temp_childs_temp(GBDATA *gbd, DataPointers& made_temp) {
@@ -572,6 +586,7 @@ static GB_ERROR set_parents_with_only_temp_childs_temp(GBDATA *gbd, DataPointers
 
     return error;
 }
+
 static GB_ERROR clear_temp_flags(DataPointers& made_temp) {
     GB_ERROR error = NULL;
     for (DataPointers::iterator mt = made_temp.begin(); mt != made_temp.end() && !error; ++mt) {
@@ -605,4 +620,3 @@ GB_ERROR AW_root::save_properties(const char *filename) {
 
     return error;
 }
-

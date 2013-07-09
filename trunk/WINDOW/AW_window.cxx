@@ -569,14 +569,6 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
 
 }
 
-void AW_clock_cursor(AW_root *root) {
-    p_global->set_cursor(0, 0, p_global->clock_cursor);
-}
-
-void AW_normal_cursor(AW_root *root) {
-    p_global->set_cursor(0, 0, 0);
-}
-
 // ---------------
 //      popup
 
@@ -1116,11 +1108,6 @@ void AW_window::create_devices() {
     if (p_w->areas[AW_BOTTOM_AREA]) {
         p_w->areas[AW_BOTTOM_AREA]->create_devices(this, AW_BOTTOM_AREA);
     }
-}
-
-void AW_help_entry_pressed(AW_window *aww) {
-    AW_root *root = aww->get_root();
-    p_global->help_active = 1;
 }
 
 void aw_insert_default_help_entries(AW_window *aww) {
