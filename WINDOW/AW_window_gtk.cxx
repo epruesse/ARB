@@ -11,7 +11,7 @@ AW_window::AW_window_gtk::AW_window_gtk()
       accel_group(gtk_accel_group_new()),
       areas(AW_MAX_AREA, NULL),
       popup_cb(NULL), focus_cb(NULL), callback(NULL), d_callback(NULL),
-      drawing_area(NULL), delete_event_handler_id(-1)
+      drawing_area(NULL), hide_on_close(true), close_callback(NULL)
 {
     gtk_window_add_accel_group(window, accel_group);
     aw_assert(areas.size() == AW_MAX_AREA);

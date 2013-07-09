@@ -264,6 +264,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
     aws->load_xfig("arb_intro.fig");
 
     aws->callback(nt_exit, EXIT_SUCCESS);
+    aws->set_close_callback();
     aws->at("close");
     aws->create_button("EXIT", "Exit", "x");
 

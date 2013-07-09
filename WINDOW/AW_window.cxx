@@ -340,6 +340,32 @@ void AW_window::create_progressBar(const char *var_name) {
     awar->bind_value(G_OBJECT(bar), "fraction");
 }
 
+bool AW_window::close_window_handler(GtkWidget*, GdkEvent*, gpointer data) {
+    aw_return_val_if_fail(data, false);
+    AW_window *w = (AW_window*)data;
+    
+    if(w->prvt->close_callback) {
+        w->prvt->close_callback->run_callbacks();
+    }
+    
+    /* If you return FALSE in the "delete-event" signal handler,
+     * GTK will emit the "destroy" signal. Returning TRUE means
+     * you don't want the window to be destroyed.
+     * This is useful for popping up 'are you sure you want to quit?'
+     * type dialogs. */
+    
+    if(w->prvt->hide_on_close) {
+        w->hide();
+        return true;
+    }
+    return false;
+}
+
+void AW_window::set_close_callback()
+{
+    prvt->close_callback = prvt->callback;
+}
+
 /**
  * Create a button or text display.
  * If a callback was given via at->callback(), creates a button;
@@ -1409,6 +1435,8 @@ void AW_window::init_window(const char *window_name_, const char* window_title,
     // we want this to have its own GdkWindow
     gtk_widget_set_has_window(GTK_WIDGET(prvt->fixed_size_area),true);
     prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), this);
+    
+    g_signal_connect (prvt->window, "delete_event", G_CALLBACK (close_window_handler), this);
 }
 
 void AW_window::recalc_pos_atShow(AW_PosRecalc pr){
@@ -1574,16 +1602,5 @@ void AW_window::on_hide(AW_CB0 f) {
 }
 
 void AW_window::set_hide_on_close(bool value) {
-    if(value) {
-        if(-1 == prvt->delete_event_handler_id) { //if no signal handler is connected
-            prvt->delete_event_handler_id = g_signal_connect (prvt->window, "delete-event", G_CALLBACK (gtk_widget_hide_on_delete), NULL);
-        }
-    }
-    else
-    {
-        if(-1 != prvt->delete_event_handler_id) {
-            g_signal_handler_disconnect(prvt->window, prvt->delete_event_handler_id);
-            prvt->delete_event_handler_id = -1;
-        }
-    }
+    prvt->hide_on_close = value;
 }

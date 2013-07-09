@@ -109,10 +109,11 @@ public:
     /**The bottom area of this window. Might be NULL. */
     AwDrawingArea *bottom_area;
 
-
-    /**ID of the delete event handler for this window. -1 if no handler present.*/
-    int delete_event_handler_id;
+    /**true if this window should be hidden instead of destroyed on close*/
+    bool hide_on_close;
     
+    /** Will be called when the window is closed */
+    AW_cb *close_callback;    
        
     /**
      * default constructor
