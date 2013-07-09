@@ -278,7 +278,7 @@ void message_cb(AW_window *aw, AW_CL cd1);
 void input_cb(AW_window *aw, AW_CL cd1);
 void input_history_cb(AW_window *aw, AW_CL cl_mode);
 void file_selection_cb(AW_window *aw, AW_CL cd1);
-void aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2);
+unsigned aw_message_timer_listen_event(AW_root *awr, AW_window *aww);
 // ------------------------------------------------------------
 
 Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy);

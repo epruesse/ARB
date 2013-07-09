@@ -372,11 +372,12 @@ static void aw_status_wait_for_open(int fd)
 }
 
 
-static void aw_status_timer_hide_event(AW_root *, AW_CL, AW_CL) {
+static unsigned aw_status_timer_hide_event(AW_root *) {
     if (aw_stg.hide) {
         aw_stg.aws->show();
         aw_stg.hide = 0;
     }
+    return 0; // do not recall
 }
 
 static void aw_status_hide(AW_window *aws)
@@ -385,7 +386,7 @@ static void aw_status_hide(AW_window *aws)
     aws->hide();
 
     // install timer event
-    aws->get_root()->add_timed_callback(aw_stg.hide_delay*1000, aw_status_timer_hide_event, 0, 0);
+    aws->get_root()->add_timed_callback(aw_stg.hide_delay*1000, makeTimedCallback(aw_status_timer_hide_event));
 
     // increase hide delay for next press of hide button
     if (aw_stg.hide_delay < (60*60)) { // max hide delay is 1 hour
@@ -397,7 +398,7 @@ static void aw_status_hide(AW_window *aws)
 }
 
 
-static void aw_status_timer_event(AW_root *awr, AW_CL, AW_CL)
+static unsigned aw_status_timer_event(AW_root *awr)
 {
 #if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "in aw_status_timer_event\n"); fflush(stdout);
@@ -413,7 +414,7 @@ static void aw_status_timer_event(AW_root *awr, AW_CL, AW_CL)
 
         switch (action) {
             case 0:
-                return;
+                break;
             case 1: {
                 char buf[255];
                 sprintf(buf, "kill -9 %i", aw_stg.pid);
@@ -439,12 +440,13 @@ static void aw_status_timer_event(AW_root *awr, AW_CL, AW_CL)
             }
         }
     }
+    return 0; // do not recall
 }
 
 static void aw_status_kill(AW_window *aws)
 {
     if (aw_stg.mode == AW_STATUS_ABORT) {
-        aw_status_timer_event(aws->get_root(), 0, 0);
+        aw_status_timer_event(aws->get_root());
         if (aw_stg.mode == AW_STATUS_OK) { // continue
             return;
         }
@@ -461,7 +463,7 @@ static void aw_status_kill(AW_window *aws)
 #if defined(TRACE_STATUS_MORE)
         fprintf(stderr, "add aw_status_timer_event with delay = %i\n", AW_STATUS_KILL_DELAY); fflush(stdout);
 #endif // TRACE_STATUS_MORE
-        aws->get_root()->add_timed_callback(AW_STATUS_KILL_DELAY, aw_status_timer_event, 0, 0); // install timer event
+        aws->get_root()->add_timed_callback(AW_STATUS_KILL_DELAY, makeTimedCallback(aw_status_timer_event)); // install timer event
     }
 }
 
@@ -577,7 +579,7 @@ static void aw_status_append_to_log(const char* str)
 #endif
 
 
-static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
+static unsigned aw_status_timer_listen_event(AW_root *awr)
 {
     static int  delay      = AW_STATUS_LISTEN_DELAY;
     int         cmd;
@@ -747,7 +749,8 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 #if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "add aw_status_timer_listen_event with delay = %i\n", delay); fflush(stdout);
 #endif // TRACE_STATUS_MORE
-    awr->add_timed_callback_never_disabled(delay, aw_status_timer_listen_event, 0, 0);
+    aw_assert(delay>0);
+    return delay;
 }
 
 void aw_clear_message_cb(AW_window *aww) {
@@ -867,7 +870,7 @@ void aw_initstatus() {
         aw_status_wait_for_open(aw_stg.fd_to[0]);
 
         // install callback
-        aws->get_root()->add_timed_callback_never_disabled(30, aw_status_timer_listen_event, 0, 0); // use short delay for first callback
+        aws->get_root()->add_timed_callback_never_disabled(30, makeTimedCallback(aw_status_timer_listen_event)); // use short delay for first callback
 
         // do NOT AWT_install_cb_guards here!
         aw_root->main_loop();                       // never returns

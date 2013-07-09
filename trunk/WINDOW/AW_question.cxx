@@ -195,7 +195,7 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
 #if defined(TRACE_STATUS_MORE)
         fprintf(stderr, "add aw_message_timer_listen_event with delay = %i\n", AW_MESSAGE_LISTEN_DELAY); fflush(stdout);
 #endif // TRACE_STATUS_MORE
-        root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
+        root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, makeTimedCallback(aw_message_timer_listen_event, static_cast<AW_window*>(aw_msg)));
 
         {
             LocallyModify<bool> flag(root->disable_callbacks, true);

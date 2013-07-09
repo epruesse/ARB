@@ -39,15 +39,15 @@ void message_cb(AW_window *, AW_CL cd1) {
     return;
 }
 
-void aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2) {
+unsigned aw_message_timer_listen_event(AW_root *, AW_window *aww) {
 #if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "in aw_message_timer_listen_event\n"); fflush(stdout);
 #endif // TRACE_STATUS_MORE
 
-    AW_window *aww = ((AW_window *)cl1);
     if (aww->is_shown()) {
-        awr->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, cl1, cl2);
+        return AW_MESSAGE_LISTEN_DELAY;
     }
+    return 0;
 }
 
 // -----------------
@@ -292,7 +292,7 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
     char dummy[]       = "";
     aw_input_cb_result = dummy;
 
-    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
+    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, makeTimedCallback(aw_message_timer_listen_event, static_cast<AW_window*>(aw_msg)));
     {
         LocallyModify<bool> flag(root->disable_callbacks, true);
         while (aw_input_cb_result == dummy) {
@@ -412,7 +412,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     char dummy[] = "";
     aw_input_cb_result = dummy;
 
-    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
+    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, makeTimedCallback(aw_message_timer_listen_event, static_cast<AW_window*>(aw_msg)));
     {
         LocallyModify<bool> flag(root->disable_callbacks, true);
 
@@ -515,7 +515,7 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
     char dummy[] = "";
     aw_input_cb_result = dummy;
 
-    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
+    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, makeTimedCallback(aw_message_timer_listen_event, static_cast<AW_window*>(aw_msg)));
     {
         LocallyModify<bool> flag(root->disable_callbacks, true);
         while (aw_input_cb_result == dummy) {
