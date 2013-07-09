@@ -51,25 +51,20 @@ static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
     0
 };
 
-typedef void (*AW_GC_change_cb)(AW_window*, AW_CL, AW_CL);
+struct AW_MGC_cb_struct : virtual Noncopyable { // one for each canvas
+    AW_window      *aw;
+    WindowCallback  cb;
 
-struct AW_MGC_cb_struct {   // one for each canvas
-    AW_window *aw;
-
-    AW_GC_change_cb f;
-    AW_CL           cd1;
-    AW_CL           cd2;
+    void call() { cb(aw); }
 
     char      *window_awar_name;
     AW_device *device;
 
     struct AW_MGC_awar_cb_struct *next_drag;
 
-    AW_MGC_cb_struct(AW_window *aw_, const char *gc_base_name, AW_GC_change_cb g, AW_CL cd1_, AW_CL cd2_)
+    AW_MGC_cb_struct(AW_window *aw_, const char *gc_base_name, const WindowCallback& wcb)
         : aw(aw_),
-          f(g),
-          cd1(cd1_),
-          cd2(cd2_),
+          cb(wcb),
           window_awar_name(strdup(gc_base_name)),
           device(NULL),
           next_drag(NULL)
@@ -199,7 +194,7 @@ static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode
         }
 
         if (mode != -1) {
-            cbs->cbs->f(cbs->cbs->aw, cbs->cbs->cd1, cbs->cbs->cd2);
+            cbs->cbs->call();
         }
         --dont_recurse;
     }
@@ -245,7 +240,7 @@ static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, lo
         }
     }
     if (mode != -1) {
-        cbs->cbs->f(cbs->cbs->aw, cbs->cbs->cd1, cbs->cbs->cd2);
+        cbs->cbs->call();
     }
     free(colorname);
 }
@@ -638,7 +633,7 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
     AW_font               def_font;
     struct aw_gc_manager *gcmgrlast = 0, *gcmgr2=0, *gcmgrfirst=0;
 
-    AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, gc_base_name, AW_CB(changecb.callee()), changecb.inspect_CD1(), changecb.inspect_CD2());
+    AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, gc_base_name, changecb);
     mcbs->device = device;
 
     int col = AW_WINDOW_BG;
@@ -1092,7 +1087,6 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, con
 
     aws->window_fit();
     return (AW_window *) aws;
-
 }
 
 #if defined(UNIT_TESTS)
