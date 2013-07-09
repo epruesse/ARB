@@ -618,7 +618,7 @@ static GB_ULONG get_dir_modtime(File_selection *acbs) {
     return mtime;
 }
 
-static void autorefresh_selboxes(AW_root *) {
+static unsigned autorefresh_selboxes(AW_root *) {
     selbox_autorefresh_info *check = autorefresh_info;
 
     while (check) {
@@ -631,12 +631,12 @@ static void autorefresh_selboxes(AW_root *) {
     }
 
     // refresh again and again and again..
-    autorefresh_info->acbs->awr->add_timed_callback(SELBOX_AUTOREFRESH_FREQUENCY, autorefresh_selboxes);
+    return SELBOX_AUTOREFRESH_FREQUENCY;
 }
 
 static void selbox_install_autorefresh(File_selection *acbs) {
     if (!autorefresh_info) {    // when installing first selbox
-        acbs->awr->add_timed_callback(SELBOX_AUTOREFRESH_FREQUENCY, autorefresh_selboxes);
+        acbs->awr->add_timed_callback(SELBOX_AUTOREFRESH_FREQUENCY, makeTimedCallback(autorefresh_selboxes));
     }
 
     selbox_autorefresh_info *install = new selbox_autorefresh_info;

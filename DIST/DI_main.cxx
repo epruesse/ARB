@@ -34,13 +34,12 @@ void       bc_create_bc_variables(AW_root *awr, AW_default awd);
 GBDATA *GLOBAL_gb_main; // global gb_main for arb_dist
 
 
-static void DI_timer(AW_root *aw_root, AW_CL cl_gbmain, AW_CL cd2) {
-    GBDATA *gb_main = reinterpret_cast<GBDATA*>(cl_gbmain);
+static unsigned DI_timer(AW_root *aw_root, GBDATA *gb_main) {
     {
         GB_transaction ta(gb_main);
         GB_tell_server_dont_wait(gb_main); // trigger database callbacks
     }
-    aw_root->add_timed_callback(500, DI_timer, cl_gbmain, cd2);
+    return 500; // recall after 500 ms
 }
 
 int ARB_main(int argc, char *argv[]) {
@@ -89,7 +88,7 @@ int ARB_main(int argc, char *argv[]) {
 
         AWT_install_cb_guards();
 
-        aw_root->add_timed_callback(2000, DI_timer, AW_CL(GLOBAL_gb_main), 0);
+        aw_root->add_timed_callback(2000, makeTimedCallback(DI_timer, GLOBAL_gb_main));
         aw_root->main_loop();
     }
 

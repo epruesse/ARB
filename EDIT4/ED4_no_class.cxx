@@ -810,14 +810,7 @@ void ED4_quit_editor(AW_window *aww) {
 static int timer_calls           = 0;
 static int timer_calls_triggered = 0;
 
-static void ED4_timer(AW_root *, AW_CL, AW_CL);
-
-inline void trigger_refresh(bool instant) {
-    ED4_ROOT->aw_root->add_timed_callback(instant ? 1 : 2000, ED4_timer, 0, 0);
-    timer_calls_triggered++;
-}
-
-static void ED4_timer(AW_root *, AW_CL, AW_CL) {
+static unsigned ED4_timer(AW_root *) {
     timer_calls++;
 
 #if defined(TRACE_REFRESH)
@@ -831,15 +824,18 @@ static void ED4_timer(AW_root *, AW_CL, AW_CL) {
     ED4_ROOT->refresh_all_windows(0);
 
     if (timer_calls == timer_calls_triggered) {
-        trigger_refresh(false);
+        timer_calls_triggered++;
+        return 2000; // trigger callback after 2s
     }
+    return 0; // do not trigger callback
 }
 
 void ED4_trigger_instant_refresh() {
 #if defined(TRACE_REFRESH)
     fprintf(stderr, "ED4_trigger_instant_refresh\n"); fflush(stderr);
 #endif
-    trigger_refresh(true);
+    timer_calls_triggered++;
+    ED4_ROOT->aw_root->add_timed_callback(1, makeTimedCallback(ED4_timer)); // trigger instant callback
 }
 void ED4_request_full_refresh() {
     ED4_ROOT->main_manager->request_refresh();

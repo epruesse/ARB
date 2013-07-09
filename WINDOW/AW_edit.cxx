@@ -63,9 +63,8 @@ static void editor_terminated_cb(const char *IF_DEBUG(message), void *cb_data) {
 
 #define AWT_CHECK_FILE_TIMER 700 // in ms
 
-static void check_file_changed_cb(AW_root *aw_root, AW_CL cl_cbdata) {
-    fileChanged_cb_data *data = (fileChanged_cb_data*)cl_cbdata;
-
+static unsigned check_file_changed_cb(AW_root *, fileChanged_cb_data *data) {
+    unsigned restart = 0;
     if (data->editorTerminated) {
         delete data;
     }
@@ -73,8 +72,9 @@ static void check_file_changed_cb(AW_root *aw_root, AW_CL cl_cbdata) {
         bool changed = data->fileWasChanged();
 
         if (changed) data->callback(data->fpath, true, false);
-        aw_root->add_timed_callback(AWT_CHECK_FILE_TIMER, check_file_changed_cb, cl_cbdata);
+        restart = AWT_CHECK_FILE_TIMER;
     }
+    return restart;
 }
 
 void AW_edit(const char *path, aw_fileChanged_cb callback, AW_window *aww, GBDATA *gb_main) {
@@ -121,7 +121,7 @@ void AW_edit(const char *path, aw_fileChanged_cb callback, AW_window *aww, GBDAT
             if (callback) {
                 // add timed callback tracking file change
                 AW_root *aw_root = aww->get_root();
-                aw_root->add_timed_callback(AWT_CHECK_FILE_TIMER, check_file_changed_cb, (AW_CL)cb_data);
+                aw_root->add_timed_callback(AWT_CHECK_FILE_TIMER, makeTimedCallback(check_file_changed_cb, cb_data));
                 cb_data          = 0; // now belongs to check_file_changed_cb
             }
         }

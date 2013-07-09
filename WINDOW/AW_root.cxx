@@ -409,58 +409,59 @@ void AW_root::window_show() {
 
 /// begin timer stuff 
 
-// internal struct to pass data to handler
-struct AW_timer_cb_struct : virtual Noncopyable {
-    AW_root *ar;
-    AW_RCB   f;
-    AW_CL    cd1;
-    AW_CL    cd2;
+class AW_timer_cb_struct : virtual Noncopyable {
+    AW_root       *awr;
+    TimedCallback  cb;
 
-    AW_timer_cb_struct(AW_root *ari, AW_RCB cb, AW_CL cd1i, AW_CL cd2i)
-        : ar(ari), f(cb), cd1(cd1i), cd2(cd2i) {}
+    AW_timer_cb_struct(AW_root *aw_root, const TimedCallback& tcb) : awr(aw_root), cb(tcb) {} // use install!
+public:
+
+    typedef XtTimerCallbackProc timer_callback;
+
+    static void install(AW_root *aw_root, const TimedCallback& tcb, unsigned ms, timer_callback tc) {
+        AW_timer_cb_struct *tcbs = new AW_timer_cb_struct(aw_root, tcb);
+        tcbs->callAfter(ms, tc);
+    }
+
+    unsigned call() {
+        return cb(awr);
+    }
+    unsigned callOrDelayIfDisabled() {
+        return awr->disable_callbacks
+            ? 25 // delay by 25 ms
+            : cb(awr);
+    }
+    void callAfter(unsigned ms, timer_callback tc) {
+        XtAppAddTimeOut(awr->prvt->context, ms, tc, this);
+    }
+    void recallOrUninstall(unsigned restart, timer_callback tc) {
+        if (restart) callAfter(restart, tc);
+        else delete this;
+    }
 };
 
-static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId */*id*/) {
-    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
-    if (!tcbs)
-        return;
-
-    AW_root *root = tcbs->ar;
-    if (root->disable_callbacks) {
-        // delay the timer callback for 25ms
-        XtAppAddTimeOut(p_global->context,
-        (unsigned long)25, // wait 25 msec = 1/40 sec
-        (XtTimerCallbackProc)AW_timer_callback,
-        aw_timer_cb_struct);
+static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId*) {
+    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *)aw_timer_cb_struct;
+    if (tcbs) {
+        unsigned restart = tcbs->callOrDelayIfDisabled();
+        tcbs->recallOrUninstall(restart, AW_timer_callback);
     }
-    else {
-        tcbs->f(root, tcbs->cd1, tcbs->cd2);
-        delete tcbs; // timer only once
+}
+static void AW_timer_callback_never_disabled(XtPointer aw_timer_cb_struct, XtIntervalId*) {
+    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *)aw_timer_cb_struct;
+    if (tcbs) {
+        unsigned restart = tcbs->call();
+        tcbs->recallOrUninstall(restart, AW_timer_callback_never_disabled);
     }
 }
 
-static void AW_timer_callback_never_disabled(XtPointer aw_timer_cb_struct, XtIntervalId */*id*/) {
-    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
-    if (!tcbs)
-        return;
-
-    tcbs->f(tcbs->ar, tcbs->cd1, tcbs->cd2);
-    delete tcbs; // timer only once
+void AW_root::add_timed_callback(int ms, const TimedCallback& tcb) {
+    AW_timer_cb_struct::install(this, tcb, ms, AW_timer_callback);
+}
+void AW_root::add_timed_callback_never_disabled(int ms, const TimedCallback& tcb) {
+    AW_timer_cb_struct::install(this, tcb, ms, AW_timer_callback_never_disabled);
 }
 
-void AW_root::add_timed_callback(int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2) {
-    XtAppAddTimeOut(p_r->context,
-                    (unsigned long)ms,
-                    (XtTimerCallbackProc)AW_timer_callback,
-                    (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
-}
-
-void AW_root::add_timed_callback_never_disabled(int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2) {
-    XtAppAddTimeOut(p_r->context,
-                    (unsigned long)ms,
-                    (XtTimerCallbackProc)AW_timer_callback_never_disabled,
-                    (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
-}
 /// end timer stuff
 
 /// begin awar stuff

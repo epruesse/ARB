@@ -459,7 +459,7 @@ void AW_window::get_pos_from_awars(int& posx, int& posy) {
 #undef aw_awar_name_height
 
 static void aw_onExpose_calc_WM_offsets(AW_window *aww);
-static void aw_calc_WM_offsets_delayed(AW_root *, AW_CL cl_aww, AW_CL) { aw_onExpose_calc_WM_offsets((AW_window*)cl_aww); }
+static unsigned aw_calc_WM_offsets_delayed(AW_root *, AW_window*aww) { aw_onExpose_calc_WM_offsets(aww); }
 
 static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
     AW_window_Motif *motif = p_aww(aww);
@@ -476,7 +476,7 @@ static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
         aww->set_window_frame_pos(oposx, oposy);
 
         if (!motif->knows_WM_offset()) {
-            aww->get_root()->add_timed_callback(100, aw_calc_WM_offsets_delayed, (AW_CL)aww, 0);
+            aww->get_root()->add_timed_callback(100, makeTimedCallback(aw_calc_WM_offsets_delayed, aww));
         }
     }
     else if (!motif->knows_WM_offset()) {
@@ -2696,16 +2696,14 @@ void AW_window::hide_or_notify(const char *error) {
     else hide();
 }
 
-static void timed_window_title_cb(AW_root* /*aw_root*/, AW_CL cd1, AW_CL cd2) {
-    char *title = (char *)cd1;
-    AW_window *aw = (AW_window *)cd2;
-
+static unsigned timed_window_title_cb(AW_root*, char *title, AW_window *aw) {
     aw->number_of_timed_title_changes--;
     if (!aw->number_of_timed_title_changes) {
         aw->set_window_title_intern(title);
     }
 
     delete title;
+    return 0; // do not recall
 }
 void AW_window::message(char *title, int ms) {
     char *old_title = NULL;
@@ -2716,9 +2714,7 @@ void AW_window::message(char *title, int ms) {
 
     XtVaSetValues(p_w->shell, XmNtitle, title, NULL);
 
-    get_root()->add_timed_callback(ms, timed_window_title_cb, (AW_CL)old_title,
-            (AW_CL)this);
-
+    get_root()->add_timed_callback(ms, makeTimedCallback(timed_window_title_cb, old_title, this));
 }
 
 void AW_window::set_window_title_intern(char *title) {
