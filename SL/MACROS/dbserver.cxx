@@ -205,21 +205,17 @@ inline bool remote_command_handler(AW_root *awr, const db_interrupt_data& dib) {
     return true;
 }
 
-static void serve_db_interrupt(AW_root *awr, AW_CL cl_db_interrupt_data) { // server
-    db_interrupt_data *dib = (db_interrupt_data*)cl_db_interrupt_data;
-
+static unsigned serve_db_interrupt(AW_root *awr, db_interrupt_data *dib) { // server
     bool success = GBCMS_accept_calls(dib->gb_main, false);
     while (success) { // @@@ maybe abort this loop after some time? (otherwise: if a client polls to fast, the GUI of the server locks)
         success = remote_command_handler(awr, *dib) && GBCMS_accept_calls(dib->gb_main, true);
     }
-
-    awr->add_timed_callback(ARB_SERVE_DB_TIMER, serve_db_interrupt, cl_db_interrupt_data);
+    return ARB_SERVE_DB_TIMER;
 }
 
-static void check_db_interrupt(AW_root *awr, AW_CL cl_db_interrupt_data) { // client
-    db_interrupt_data *dib = (db_interrupt_data*)cl_db_interrupt_data;
+static unsigned check_db_interrupt(AW_root *awr, db_interrupt_data *dib) { // client
     remote_command_handler(awr, *dib);
-    awr->add_timed_callback(ARB_CHECK_DB_TIMER, check_db_interrupt, cl_db_interrupt_data);
+    return ARB_CHECK_DB_TIMER;
 }
 
 GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *gb_main) {
@@ -247,12 +243,12 @@ GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *
         }
         else {
             idle_interrupt = new db_interrupt_data(gb_main, application_id);
-            aw_root->add_timed_callback(ARB_SERVE_DB_TIMER, serve_db_interrupt, AW_CL(idle_interrupt));
+            aw_root->add_timed_callback(ARB_SERVE_DB_TIMER, makeTimedCallback(serve_db_interrupt, idle_interrupt));
         }
     }
     else { // client
         idle_interrupt = new db_interrupt_data(gb_main, application_id);
-        aw_root->add_timed_callback(ARB_CHECK_DB_TIMER, check_db_interrupt, AW_CL(idle_interrupt));
+        aw_root->add_timed_callback(ARB_CHECK_DB_TIMER, makeTimedCallback(check_db_interrupt, idle_interrupt));
     }
 
     if (!error) {

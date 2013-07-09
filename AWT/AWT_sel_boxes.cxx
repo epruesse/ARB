@@ -194,7 +194,7 @@ void AWT_ptserver_selection::refresh_all() {
 static void awt_refresh_all_pt_server_selection_lists() {
     AWT_ptserver_selection::refresh_all();
 }
-static void track_log_cb(AW_root *awr) {
+static unsigned track_log_cb(AW_root *) {
     static long  last_ptserverlog_mod = 0;
     const char  *ptserverlog          = GBS_ptserver_logname();
     long         ptserverlog_mod      = GB_time_of_file(ptserverlog);
@@ -207,7 +207,7 @@ static void track_log_cb(AW_root *awr) {
         last_ptserverlog_mod = ptserverlog_mod;
     }
 
-    awr->add_timed_callback(PT_SERVER_TRACKLOG_TIMER, track_log_cb);
+    return PT_SERVER_TRACKLOG_TIMER;
 }
 
 AWT_ptserver_selection::AWT_ptserver_selection(AW_selection_list *sellist_)
@@ -215,7 +215,7 @@ AWT_ptserver_selection::AWT_ptserver_selection(AW_selection_list *sellist_)
 {
     if (ptserver_selections.empty()) {
         // first pt server selection list -> install log tracker
-        AW_root::SINGLETON->add_timed_callback(PT_SERVER_TRACKLOG_TIMER, track_log_cb);
+        AW_root::SINGLETON->add_timed_callback(PT_SERVER_TRACKLOG_TIMER, makeTimedCallback(track_log_cb));
     }
     ptserver_selections.push_back(this);
 }
