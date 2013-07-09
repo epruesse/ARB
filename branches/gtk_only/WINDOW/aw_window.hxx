@@ -513,6 +513,10 @@ public:
     /**If set to true the window is not destroyed on close. instead it is hidden.*/
     void set_hide_on_close(bool value);
     
+    /** Call the current callback on close*/
+    void set_close_callback();
+    
+    
 private:
     
     template <class T>
@@ -521,6 +525,8 @@ private:
     template <class T>
     void insert_toggle_internal(const char *toggle_label, const char *mnemonic, T var_value, bool default_toggle);
 
+    /**Is called if the window is closed*/
+    static bool close_window_handler(GtkWidget*, GdkEvent*, gpointer data);
     
 public:
 

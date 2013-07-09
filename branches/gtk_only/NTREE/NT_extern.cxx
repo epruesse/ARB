@@ -1539,6 +1539,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     }
     else {
         awm->callback(nt_exit, EXIT_SUCCESS);
+        awm->set_close_callback();
+        awm->set_hide_on_close(false); //the main window should really close when closed
         awm->help_text("quit.hlp");
         awm->create_button("QUIT", "#quit.xpm");
     }
