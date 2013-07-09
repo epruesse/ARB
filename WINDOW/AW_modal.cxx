@@ -326,7 +326,8 @@ char *aw_input2awar(const char *prompt, const char *awar_name) {
 }
 
 
-char *aw_string_selection(const char *title, const char *prompt, const char *default_input, const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
+char *aw_string_selection(const char *title, const char *prompt, const char *default_input,
+                          const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
     // A modal input window. A String may be entered by hand or selected from value_list
     //
     //      title           window title
