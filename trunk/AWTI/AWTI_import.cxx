@@ -34,8 +34,10 @@
 
 using namespace std;
 
-static awtcig_struct awtcig;
 #define MAX_COMMENT_LINES 2000
+
+static void dummy_cb(AW_root*) {}                   // @@@ elim (allocate awtcig dynamically -> no longer need dummy)
+static Importer awtcig(makeRootCallback(dummy_cb)); // @@@ rename awtcig; allocate dynamically
 
 inline const char *name_only(const char *fullpath) {
     const char *lslash = strrchr(fullpath, '/');
@@ -1144,7 +1146,7 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
 
     GB_change_my_security(awtcig.gb_import_main, 0);
 
-    if (call_func) awtcig.func(awr, awtcig.cd1, awtcig.cd2);
+    if (call_func) awtcig.after_import_cb(awr);
 }
 
 class AliNameAndType {
@@ -1220,7 +1222,7 @@ static void import_window_close_cb(AW_window *aww) {
     AW_POPDOWN(aww);
 }
 
-GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit, GBDATA *gb_main, AWTC_RCB(func), AW_CL cd1, AW_CL cd2) {
+GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit, GBDATA *gb_main, const RootCallback& after_import_cb) {
     static AW_window_simple *aws = 0;
 
 #if defined(WARN_TODO)
@@ -1228,13 +1230,11 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
     // it is either (currently not) closed by merge tool
     // or used as main db and closed when ARB_NTREE exits.
 #endif
-    awtcig.gb_import_main = GB_open("noname.arb", "wc"); // @@@ this DB remains open, if import is used from inside ARB
-    awtcig.func           = func;
-    awtcig.cd1            = cd1;
-    awtcig.cd2            = cd2;
+    awtcig.gb_import_main  = GB_open("noname.arb", "wc"); // @@@ this DB remains open, if import is used from inside ARB
+    awtcig.after_import_cb = after_import_cb;
 
 #if defined(DEBUG)
-    AWT_announce_db_to_browser(awtcig.gb_import_main, "New database (import)"); // @@@ remove when called from inside ARB ? 
+    AWT_announce_db_to_browser(awtcig.gb_import_main, "New database (import)"); // @@@ remove when called from inside ARB ?
 #endif // DEBUG
 
     awtcig.gb_other_main = gb_main;

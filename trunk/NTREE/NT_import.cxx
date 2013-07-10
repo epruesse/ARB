@@ -21,7 +21,7 @@
 #include <arbdbt.h>
 #include <macros.hxx>
 
-static void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {
+static void nt_seq_load_cb(AW_root *awr) {
     GLOBAL_gb_dst     = GLOBAL.gb_main;
     AW_window *aww    = DBUI::create_species_query_window(awr, (AW_CL)GLOBAL.gb_main);
     DBUI::unquery_all();
@@ -47,7 +47,7 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
 
     awr->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // value is overwritten below
 
-    GLOBAL_gb_src = open_AWTC_import_window(aww->get_root(), "", false, GLOBAL.gb_main, (AW_RCB)nt_seq_load_cb, 0, 0);
+    GLOBAL_gb_src = open_AWTC_import_window(aww->get_root(), "", false, GLOBAL.gb_main, makeRootCallback(nt_seq_load_cb));
     nt_assert(got_macro_ability(awr));
 
     // change awar values (import window just opened!)
