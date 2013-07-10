@@ -34,7 +34,6 @@
 #define AWAR_ALI_TYPE       "tmp/import/alignment_type"
 #define AWAR_ALI_PROTECTION "tmp/import/alignment_protection"
 
-#define GB_MAIN awtcig.gb_main
 #define AWTC_IMPORT_CHECK_BUFFER_SIZE 10000
 
 
@@ -120,17 +119,17 @@ struct input_format_struct : virtual Noncopyable {
 struct awtcig_struct {
     struct input_format_struct *ifo;      // main input format
     struct input_format_struct *ifo2;     // symlink to input format
+
+    GBDATA *gb_import_main;               // import database
     
-    GBDATA *gb_main;                      // import database
-    AW_CL   cd1, cd2;
-    AWTC_RCB(func);
+    AW_CL cd1, cd2; AWTC_RCB(func); // @@@ use RootCallback
 
     StrArray filenames;
     int      current_file_idx;
 
     FILE   *in;
-    bool    doExit;                             // whether import window 'close' does exit
-    GBDATA *gb_other_main;                      // main DB
+    bool    doExit;                       // whether import window 'close' does exit
+    GBDATA *gb_other_main;                // main DB
 };
 
 
