@@ -59,6 +59,7 @@ class AW_selection_list : virtual Noncopyable {
     GtkWidget    *widget;
     unsigned long handler_id;
     int           selected_index;
+    bool select_default_on_unknown_awar_value; /**< If true the default value is selected if no entry that matches the awars value can be found*/
     
     /**
      * @return NULL if there is no entry at this index 
@@ -116,6 +117,13 @@ public:
     void refresh(); 
 
     void sort(bool backward, bool case_sensitive); // uses displayed value!
+    
+       
+    /**If the awar value changes a corresponding entry is selected.
+       If no entry matches the awar value the default entry is selected.
+       In that case the awar is changed to the default value as well. However in rare cases
+       this behavior causes bugs. This flag can be used disable the default selection in case of an awar mismatch*/
+    void select_default_on_awar_mismatch(bool value);
     
     // ---------------------------------------------------
     // the following functions work for string awars only:

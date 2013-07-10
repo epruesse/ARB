@@ -11,8 +11,11 @@ struct AW_dialog::Pimpl {
     AW_selection_list *slist;
     int result;
     int exit_button;
+    AW_awar* selection_awar;
+    AW_awar* input_awar;
     Pimpl() 
-        : dialog(NULL), label(NULL), slist(NULL), result(0), exit_button(-1)
+        : dialog(NULL), label(NULL), slist(NULL), result(0), exit_button(-1),
+          selection_awar(NULL), input_awar(NULL)
     {}
 };
     
@@ -79,12 +82,31 @@ void AW_dialog::create_buttons(const char* buttons_) {
     free(buttons);
 }
 
+void AW_dialog::disable_default_selection_if_same_awars() {
+    /* If both the selection list and the input field point to the same awar
+       we have to disable the default selection of the selection list.
+       Otherwise the list will overwrite all changes made by the input field
+       immediately */
+    
+    if(prvt->slist && prvt->selection_awar && prvt->input_awar &&
+       strcmp(prvt->selection_awar->awar_name, prvt->input_awar->awar_name) == 0) {
+        //if input field and selection list point to the same awar we have to
+        //disable the default selection feature of the selection list to avoid
+        //a bug
+        prvt->slist->select_default_on_awar_mismatch(false);
+    } 
+}
+
 void AW_dialog::create_input_field(AW_awar* awar) {
+    aw_return_if_fail(awar);
+    
     GtkWidget *entry = gtk_entry_new();
     awar->bind_value(G_OBJECT(entry), "text");
 
     GtkWidget* content = gtk_dialog_get_content_area(prvt->dialog);
     gtk_container_add(GTK_CONTAINER(content), entry);
+    prvt->input_awar = awar;
+    disable_default_selection_if_same_awars();    
 }
 
 void AW_dialog::create_toggle(AW_awar* awar, const char *label) {
@@ -107,6 +129,8 @@ AW_selection_list* AW_dialog::create_selection_list(AW_awar* awar) {
 
     prvt->slist = new AW_selection_list(awar);
     prvt->slist->bind_widget(tree);
+    prvt->selection_awar = awar;
+    disable_default_selection_if_same_awars();    
     return prvt->slist;
 }
 
