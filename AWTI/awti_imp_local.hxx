@@ -116,20 +116,25 @@ struct input_format_struct : virtual Noncopyable {
     ~input_format_struct();
 };
 
-struct awtcig_struct {
+struct Importer : virtual Noncopyable {
     struct input_format_struct *ifo;      // main input format
     struct input_format_struct *ifo2;     // symlink to input format
 
     GBDATA *gb_import_main;               // import database
-    
-    AW_CL cd1, cd2; AWTC_RCB(func); // @@@ use RootCallback
+
+    RootCallback after_import_cb;
 
     StrArray filenames;
     int      current_file_idx;
 
     FILE   *in;
-    bool    doExit;                       // whether import window 'close' does exit
+    bool    doExit;                       // whether import window 'close' does exit // @@@ rename (meaning is: import from inside ARB or not)
     GBDATA *gb_other_main;                // main DB
+
+    Importer(const RootCallback& after_import_cb_)
+        : after_import_cb(after_import_cb_)
+    {
+    }
 };
 
 
