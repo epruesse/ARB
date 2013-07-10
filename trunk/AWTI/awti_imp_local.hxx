@@ -116,7 +116,9 @@ struct input_format_struct : virtual Noncopyable {
     ~input_format_struct();
 };
 
-struct Importer : virtual Noncopyable {
+struct ArbImporter : virtual Noncopyable {
+    void awtcig(); // helper (can't use global inside class) // @@@ remove later
+
     struct input_format_struct *ifo;      // main input format
     struct input_format_struct *ifo2;     // symlink to input format
 
@@ -131,10 +133,19 @@ struct Importer : virtual Noncopyable {
     bool    doExit;                       // whether import window 'close' does exit // @@@ rename (meaning is: import from inside ARB or not)
     GBDATA *gb_other_main;                // main DB
 
-    Importer(const RootCallback& after_import_cb_)
+    ArbImporter(const RootCallback& after_import_cb_)
         : after_import_cb(after_import_cb_)
     {
     }
+
+    GB_ERROR read_format(const char *file);
+    void detect_format(AW_root *root);
+
+    int       next_file();
+    char     *read_line(int tab, char *sequencestart, char *sequenceend);
+    GB_ERROR  read_data(char *ali_name, int security_write);
+
+    void go(AW_window *aww);
 };
 
 
