@@ -618,7 +618,7 @@ static void awtc_write_entry(GBDATA *gbd, const char *key, const char *str, cons
         }
         else {
             if (strcmp(key, "name") == 0) {
-                char *nstr = GBT_create_unique_species_name(awtcig.gb_main, str);
+                char *nstr = GBT_create_unique_species_name(awtcig.gb_import_main, str);
                 GB_write_string(gbk, nstr);
                 free(nstr);
             }
@@ -703,7 +703,7 @@ static GB_ERROR awtc_read_data(char *ali_name, int security_write)
     char        num[6];
     char        text[100];
     static int  counter         = 0;
-    GBDATA     *gb_species_data = GBT_get_species_data(GB_MAIN);
+    GBDATA     *gb_species_data = GBT_get_species_data(awtcig.gb_import_main);
     GBDATA     *gb_species;
     char       *p;
 
@@ -791,7 +791,7 @@ static GB_ERROR awtc_read_data(char *ali_name, int security_write)
                             if (err_flag) error = GB_await_error();
                             else {
                                 dup           = dele;
-                                dele          = s = GB_command_interpreter(GB_MAIN, s, expanded.c_str(), gb_species, 0);
+                                dele          = s = GB_command_interpreter(awtcig.gb_import_main, s, expanded.c_str(), gb_species, 0);
                                 if (!s) error = GB_await_error();
                                 free(dup);
                             }
@@ -871,7 +871,7 @@ static GB_ERROR awtc_read_data(char *ali_name, int security_write)
             }
 
             if (ifo->sequenceaci) {
-                char *h = GB_command_interpreter(GB_MAIN, sequence, ifo->sequenceaci, gb_species, 0);
+                char *h = GB_command_interpreter(awtcig.gb_import_main, sequence, ifo->sequenceaci, gb_species, 0);
                 free(sequence);
                 if (!h) return GB_await_error();
                 sequence = h;
@@ -904,10 +904,10 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
     bool     delete_db_type_if_error = false; // delete db type (genome/normal) in case of error ?
     {
         bool           read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() != IMP_PLAIN_SEQUENCE);
-        GB_transaction ta(GB_MAIN);
+        GB_transaction ta(awtcig.gb_import_main);
 
-        delete_db_type_if_error = (GB_entry(GB_MAIN, GENOM_DB_TYPE) == 0);
-        is_genom_db             = GEN_is_genome_db(GB_MAIN, read_genom_db);
+        delete_db_type_if_error = (GB_entry(awtcig.gb_import_main, GENOM_DB_TYPE) == 0);
+        is_genom_db             = GEN_is_genome_db(awtcig.gb_import_main, read_genom_db);
 
         if (read_genom_db!=is_genom_db) {
             if (is_genom_db) {
@@ -922,9 +922,9 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
 
     GB_ERROR error = 0;
 
-    GB_change_my_security(GB_MAIN, 6);
+    GB_change_my_security(awtcig.gb_import_main, 6);
 
-    GB_begin_transaction(GB_MAIN); // first transaction start
+    GB_begin_transaction(awtcig.gb_import_main); // first transaction start
     char *ali_name;
     {
         char *ali = awr->awar(AWAR_ALI)->read_string();
@@ -943,7 +943,7 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
             error = "You must set the alignment type to dna when importing genom sequences.";
         }
         else {
-            GBT_create_alignment(GB_MAIN, ali_name, 2000, 0, ali_protection, ali_type);
+            GBT_create_alignment(awtcig.gb_import_main, ali_name, 2000, 0, ali_protection, ali_type);
         }
         free(ali_type);
     }
@@ -968,19 +968,19 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
 
                 for (count = 0; fnames[count]; ++count) ; // count filenames
 
-                GBDATA *gb_species_data = GBT_get_species_data(GB_MAIN);
+                GBDATA *gb_species_data = GBT_get_species_data(awtcig.gb_import_main);
                 ImportSession import_session(gb_species_data, count*10);
 
                 // close the above transaction and do each importfile in separate transaction
                 // to avoid that all imports are undone by transaction abort happening in case of error
-                GB_commit_transaction(GB_MAIN);
+                GB_commit_transaction(awtcig.gb_import_main);
 
                 arb_progress progress("Reading input files", count);
 
                 for (int curr = 0; !error && fnames[curr]; ++curr) {
                     GB_ERROR error_this_file =  0;
 
-                    GB_begin_transaction(GB_MAIN);
+                    GB_begin_transaction(awtcig.gb_import_main);
                     {
                         const char *lslash = strrchr(fnames[curr], '/');
                         progress.subtitle(GBS_global_string("%i/%i: %s", curr+1, count, lslash ? lslash+1 : fnames[curr]));
@@ -992,14 +992,14 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
                     error_this_file = GI_importGenomeFile(import_session, fnames[curr], ali_name);
 
                     if (!error_this_file) {
-                        GB_commit_transaction(GB_MAIN);
+                        GB_commit_transaction(awtcig.gb_import_main);
                         successfull_imports++;
                         delete_db_type_if_error = false;
                     }
                     else { // error occurred during import
                         error_this_file = GBS_global_string("'%s' not imported\nReason: %s", fnames[curr], error_this_file);
                         GB_warningf("Import error: %s", error_this_file);
-                        GB_abort_transaction(GB_MAIN);
+                        GB_abort_transaction(awtcig.gb_import_main);
                         failed_imports++;
                     }
 
@@ -1014,7 +1014,7 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
                 }
 
                 // now open another transaction to "undo" the transaction close above
-                GB_begin_transaction(GB_MAIN);
+                GB_begin_transaction(awtcig.gb_import_main);
             }
 
             free(mask);
@@ -1095,13 +1095,13 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
 
     bool call_func = true; // shall awtcig.func be called ?
     if (error) {
-        GB_abort_transaction(GB_MAIN);
+        GB_abort_transaction(awtcig.gb_import_main);
 
         if (delete_db_type_if_error) {
             // delete db type, if it was initialized above
             // (avoids 'can't import'-error, if file-type (genome-file/species-file) is changed after a failed try)
-            GB_transaction  ta(GB_MAIN);
-            GBDATA         *db_type = GB_entry(GB_MAIN, GENOM_DB_TYPE);
+            GB_transaction  ta(awtcig.gb_import_main);
+            GBDATA         *db_type = GB_entry(awtcig.gb_import_main, GENOM_DB_TYPE);
             if (db_type) GB_delete(db_type);
         }
 
@@ -1114,15 +1114,15 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
         progress.subtitle("Pass 1: Check entries");
 
         // scan for hidden/unknown fields :
-        species_field_selection_list_rescan(GB_MAIN, FIELD_FILTER_NDS, RESCAN_REFRESH);
-        if (is_genom_db) gene_field_selection_list_rescan(GB_MAIN, FIELD_FILTER_NDS, RESCAN_REFRESH);
+        species_field_selection_list_rescan(awtcig.gb_import_main, FIELD_FILTER_NDS, RESCAN_REFRESH);
+        if (is_genom_db) gene_field_selection_list_rescan(awtcig.gb_import_main, FIELD_FILTER_NDS, RESCAN_REFRESH);
 
-        GBT_mark_all(GB_MAIN, 1);
+        GBT_mark_all(awtcig.gb_import_main, 1);
         progress.inc();
         progress.subtitle("Pass 2: Check sequence lengths");
-        GBT_check_data(GB_MAIN, 0);
+        GBT_check_data(awtcig.gb_import_main, 0);
 
-        GB_commit_transaction(GB_MAIN);
+        GB_commit_transaction(awtcig.gb_import_main);
         progress.inc();
 
         if (ask_generate_names) {
@@ -1131,9 +1131,9 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
                             "Generate unique species IDs,Use found IDs") == 0)
             {
                 progress.subtitle("Pass 3: Generate unique species IDs");
-                error = AW_select_nameserver(GB_MAIN, awtcig.gb_other_main);
+                error = AW_select_nameserver(awtcig.gb_import_main, awtcig.gb_other_main);
                 if (!error) {
-                    error = AWTC_pars_names(GB_MAIN);
+                    error = AWTC_pars_names(awtcig.gb_import_main);
                 }
             }
             progress.inc();
@@ -1142,7 +1142,7 @@ static void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or ex
 
     if (error) aw_message(error);
 
-    GB_change_my_security(GB_MAIN, 0);
+    GB_change_my_security(awtcig.gb_import_main, 0);
 
     if (call_func) awtcig.func(awr, awtcig.cd1, awtcig.cd2);
 }
@@ -1214,7 +1214,7 @@ static void genom_flag_changed(AW_root *awr) {
 
 static void import_window_close_cb(AW_window *aww) {
     if (awtcig.doExit) {
-        GB_close(awtcig.gb_main);
+        GB_close(awtcig.gb_import_main);
         exit(EXIT_SUCCESS);
     }
     AW_POPDOWN(aww);
@@ -1226,22 +1226,22 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
 #if defined(WARN_TODO)
 #warning where is awtcig.gb_main closed
     // it is either (currently not) closed by merge tool
-    // or closed as main db in ARB_NTREE
+    // or used as main db and closed when ARB_NTREE exits.
 #endif
-    awtcig.gb_main = GB_open("noname.arb", "wc");
-    awtcig.func    = func;
-    awtcig.cd1     = cd1;
-    awtcig.cd2     = cd2;
+    awtcig.gb_import_main = GB_open("noname.arb", "wc"); // @@@ this DB remains open, if import is used from inside ARB
+    awtcig.func           = func;
+    awtcig.cd1            = cd1;
+    awtcig.cd2            = cd2;
 
 #if defined(DEBUG)
-    AWT_announce_db_to_browser(awtcig.gb_main, "New database (import)");
+    AWT_announce_db_to_browser(awtcig.gb_import_main, "New database (import)"); // @@@ remove when called from inside ARB ? 
 #endif // DEBUG
 
     awtcig.gb_other_main = gb_main;
 
     if (!gb_main) {
         // control macros via temporary import DB (if no main DB available)
-        configure_macro_recording(awr, "ARB_IMPORT", awtcig.gb_main); // @@@ use result
+        configure_macro_recording(awr, "ARB_IMPORT", awtcig.gb_import_main); // @@@ use result
     }
     else {
         awti_assert(got_macro_ability(awr));
@@ -1315,5 +1315,5 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
         aws->create_button("GO", "GO", "G");
     }
     aws->activate();
-    return GB_MAIN;
+    return awtcig.gb_import_main;
 }
