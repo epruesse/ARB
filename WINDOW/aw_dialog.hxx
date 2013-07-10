@@ -7,6 +7,11 @@ class AW_dialog : virtual Noncopyable {
 private:
     struct Pimpl;
     Pimpl *prvt;
+    
+    /**Disables the default selection of the selection list of both the selection list
+       and the input field use the same awar.*/
+    void disable_default_selection_if_same_awars();
+    
 public:
     AW_dialog();
     ~AW_dialog();

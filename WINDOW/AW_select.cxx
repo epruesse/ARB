@@ -74,7 +74,8 @@ AW_selection_list::AW_selection_list(AW_awar* awar_)
       model(GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING))),
       list_table(NULL),
       last_of_list_table(NULL),
-      default_select(NULL)
+      default_select(NULL),
+      select_default_on_unknown_awar_value(true)
 {
     aw_assert(NULL != awar);
     awar->add_callback(aw_selection_list_awar_changed, (AW_CL)this);
@@ -91,6 +92,10 @@ AW_selection_list::~AW_selection_list() {
         }
         g_signal_handler_disconnect(obj, handler_id);
     }
+}
+
+void AW_selection_list::select_default_on_awar_mismatch(bool value) {
+    select_default_on_unknown_awar_value = value;
 }
 
 void AW_selection_list::bind_widget(GtkWidget *widget_) {
@@ -192,8 +197,10 @@ void AW_selection_list::refresh() {
             gtk_tree_selection_select_iter(selection, &iter);
         }
     }
-    else if(NULL != default_select) {//the awar value does not match any entrie, not even the default entry, we set the default entry anyway
-        select_default();
+    else if(NULL != default_select) {//the awar value does not match any entry, not even the default entry, we set the default entry anyway
+        if(select_default_on_unknown_awar_value) {
+            select_default();
+        }
     }
     else {
         GBK_terminatef("Selection list '%s' has no default selection", awar->get_name());
