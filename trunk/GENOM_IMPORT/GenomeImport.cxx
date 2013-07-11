@@ -68,3 +68,46 @@ ImportSession::~ImportSession() {
     delete und_species;
     DBwriter::deleteStaticData();
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+// #define TEST_AUTO_UPDATE // uncomment to auto-update expected result-database
+
+void NOTEST_SLOW_import_genome_flatfile() { // succeeded in [7813], crashes from [7814] to [10268]
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("nosuch.arb", "wc");
+
+    // import flatfile
+    {
+        GB_transaction  ta(gb_main);
+        GBDATA *gb_species_data = GBT_find_or_create(gb_main, "species_data", 7);
+
+        ImportSession isess(gb_species_data, 1);
+        TEST_EXPECT_NO_ERROR(GI_importGenomeFile(isess, "AB735678.txt", "ali_genom"));
+    }
+
+    // save database and compare with expectation
+    {
+        const char *savename = "AB735678.arb";
+        const char *expected = "AB735678_expected.arb";
+
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, savename, "a"));
+#if defined(TEST_AUTO_UPDATE)
+        TEST_COPY_FILE(savename, expected);
+#else
+        TEST_EXPECT_TEXTFILES_EQUAL(savename, expected);
+#endif // TEST_AUTO_UPDATE
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(savename));
+    }
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

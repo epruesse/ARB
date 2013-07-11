@@ -1898,7 +1898,6 @@ UNITS_WORKING = \
 	DIST/DIST.test \
 	EISPACK/EISPACK.test \
 	GENOM/GENOM.test \
-	GENOM_IMPORT/GENOM_IMPORT.test \
 	GL/glAW/libglAW.test \
 	GL/glpng/libglpng_arb.test \
 	ISLAND_HOPPING/ISLAND_HOPPING.test \
@@ -1947,6 +1946,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	GENOM_IMPORT/GENOM_IMPORT.test \
 	SL/MACROS/MACROS.test \
 	SL/REGEXPR/REGEXPR.test \
 	SL/FILTER/FILTER.test \
