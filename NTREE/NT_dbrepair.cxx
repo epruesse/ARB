@@ -414,7 +414,7 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
                         skipped_genes++;
                     }
                     else if (!error) {
-                        error = GEN_write_position(gb_gene, pos);
+                        error = GEN_write_position(gb_gene, pos, 0);
 
                         if (!error) {
                             // delete old-format entries

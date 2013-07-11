@@ -39,7 +39,7 @@ GEN_position *GEN_new_position(int parts, bool joinable);
 void GEN_use_uncertainties(GEN_position *pos);
 void GEN_free_position(GEN_position *pos);
 GEN_position *GEN_read_position(GBDATA *gb_gene);
-GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos);
+GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos, long seqLength);
 void GEN_sortAndMergeLocationParts(GEN_position *location);
 const char *GEN_origin_organism(GBDATA *gb_pseudo);
 const char *GEN_origin_gene(GBDATA *gb_pseudo);

@@ -317,7 +317,10 @@ GEN_position *GEN_read_position(GBDATA *gb_gene) {
     return pos;
 }
 
-GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos) {
+GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos, long seqLength) {
+    // if 'seqLength' is != 0, it is used to check the correctness of 'pos'
+    // (otherwise this function reads the genome-sequence to detect its length)
+
     GB_ERROR  error          = 0;
     GBDATA   *gb_pos_joined  = GB_entry(gb_gene, "pos_joined");
     GBDATA   *gb_pos_certain = GB_entry(gb_gene, "pos_certain");
@@ -358,10 +361,14 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos) {
     // test data
     if (!error) {
         size_t length;
-        {
+
+        if (seqLength) {
+            length = seqLength;
+        }
+        else { // unknown -> autodetect
             GBDATA *gb_organism = GB_get_grandfather(gb_gene);
             GBDATA *gb_genome   = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
-            
+
             length = GB_read_count(gb_genome);
         }
 
@@ -816,7 +823,7 @@ static struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
 
 #define TEST_WRITE_READ_GEN_POSITION(pos)                               \
     do {                                                                \
-        error = GEN_write_position(gb_gene, (pos));                     \
+        error = GEN_write_position(gb_gene, (pos), 0);                  \
         if (!error) {                                                   \
             GEN_position *rpos = GEN_read_position(gb_gene);            \
             if (!rpos) {                                                \
@@ -831,7 +838,7 @@ static struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
     } while(0)
 
 #define TEST_WRITE_GEN_POSITION_ERROR(pos,exp_error) do {               \
-        error = GEN_write_position(gb_gene, &*(pos));                   \
+        error = GEN_write_position(gb_gene, &*(pos), 0);                \
         TEST_EXPECT_EQUAL(error.deliver(), exp_error);                  \
     } while(0)
     

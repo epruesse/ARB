@@ -77,7 +77,7 @@ public:
 
     void createOrganism(const string& flatfile, const char *importerTag);
 
-    void writeFeature(const Feature& feature);
+    void writeFeature(const Feature& feature, long seqLength);
     void writeSequence(const SequenceBuffer& seqData);
 
     void renumberDuplicateGenes();
