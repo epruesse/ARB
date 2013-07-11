@@ -79,7 +79,7 @@ ImportSession::~ImportSession() {
 
 // #define TEST_AUTO_UPDATE // uncomment to auto-update expected result-database
 
-void NOTEST_SLOW_import_genome_flatfile() { // succeeded in [7813], crashes from [7814] to [10268]
+void TEST_SLOW_import_genome_flatfile() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("nosuch.arb", "wc");
 

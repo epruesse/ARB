@@ -794,7 +794,7 @@ static void boundloc_changed_cb(AW_root *aw_root, LocationEditor *loced) {
     GBDATA   *gb_gene = GEN_get_current_gene(gb_main, aw_root);
     GB_ERROR  error;
     if (gb_gene) {
-        error = GEN_write_position(gb_gene, pos);
+        error = GEN_write_position(gb_gene, pos, 0);
     }
     else {
         error = "That had no effect (no gene is selected)";
@@ -828,7 +828,7 @@ static void gene_create_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_loced) {
                 else  {
                     gb_dest             = GEN_find_or_create_gene_rel_gene_data(gb_gene_data, dest);
                     if (!gb_dest) error = GB_await_error();
-                    else error          = GEN_write_position(gb_dest, pos);
+                    else error          = GEN_write_position(gb_dest, pos, 0);
 
                     if (!error) {
                         aw_root->awar(AWAR_GENE_NAME)->write_string(dest);

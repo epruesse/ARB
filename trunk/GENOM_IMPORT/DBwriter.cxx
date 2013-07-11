@@ -168,7 +168,7 @@ const string& DBwriter::getUnreservedQualifier(const string& qualifier) {
     return qualifier;
 }
 
-void DBwriter::writeFeature(const Feature& feature)
+void DBwriter::writeFeature(const Feature& feature, long seqLength)
 {
     gi_assert(gb_organism);
     if (!gb_gene_data) {
@@ -202,7 +202,7 @@ void DBwriter::writeFeature(const Feature& feature)
     // store location
     {
         GEN_positionPtr pos = feature.getLocation().create_GEN_position();
-        GB_ERROR        err = GEN_write_position(gb_gene, &*pos);
+        GB_ERROR        err = GEN_write_position(gb_gene, &*pos, seqLength);
         if (err) throw DBerror("Failed to write location", err);
     }
 
