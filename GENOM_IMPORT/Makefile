@@ -128,6 +128,7 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/gccver.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/Location.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/smartptr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/test_global.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 Importer.o: DBwriter.h
 Importer.o: defs.h
