@@ -26,6 +26,7 @@
 #include "aw_varUpdateInfo.hxx" 
 #include "aw_type_checking.hxx"
 #include "aw_select.hxx"
+#include "aw_gtk_forward_declarations.hxx"
 #include <gtk/gtk.h>
 
 #include <string>
@@ -281,27 +282,31 @@ void AW_window::update_label(GtkWidget* widget, const char* newlabel) {
 }
 
 
-/**
- * Places @param *widget according to _at in prvt->fixedArea
- * - creates label if defined in _at (using hbox)
- **/
-void AW_window::put_with_label(GtkWidget *widget) {
+void AW_window::put_with_label(GtkWidget* widget) {
+
+    //label will not absorb any free space and will be centered
+    GtkAlignment *align = GTK_ALIGNMENT(gtk_alignment_new(0.5f, 0.5f, 0.0f, 0.0f));
+    put_with_label(widget, align);
+}
+
+void AW_window::put_with_label(GtkWidget *widget, GtkAlignment* label_alignment) {
+    aw_return_if_fail(widget);
+    aw_return_if_fail(label_alignment);
+    
     #define SPACE_BEHIND 5
     #define SPACE_BELOW 5
     GtkWidget *hbox = 0, *wlabel = 0;
-
     // create label from label text
     if (_at.label_for_inputfield) {
         wlabel = make_label(_at.label_for_inputfield, _at.length_of_label_for_inputfield);
     }
     
-    // pack widget and label into hbox
     // (having/not having the hbox changes appearance!)
     hbox = gtk_hbox_new(false,0);
     if (wlabel) {
-        // label does not expand (hence "false,false")
-        gtk_box_pack_start(GTK_BOX(hbox), wlabel, false, false, 0);
-        gtk_misc_set_alignment(GTK_MISC(wlabel),1.0f, 1.0f); //center label in hbox
+        // pack label into alignment and alignment into hbox
+        gtk_container_add(GTK_CONTAINER(label_alignment), wlabel);
+        gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label_alignment), true, true, 0);
     }
     gtk_box_pack_start(GTK_BOX(hbox), widget, true, true, 0);
 
@@ -864,8 +869,8 @@ void AW_window::insert_default_toggle(const char *toggle_label, const char *mnem
 
 void AW_window::update_toggle_field() { 
     gtk_widget_show_all(prvt->toggle_field);
-    put_with_label(prvt->toggle_field);
-
+    GtkAlignment* align = GTK_ALIGNMENT(gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f));
+    put_with_label(prvt->toggle_field, align);
     prvt->radio_last = NULL; // end of radio group
     prvt->toggle_field = NULL;
 }
