@@ -47,7 +47,7 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
 
     awr->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // value is overwritten below
 
-    GLOBAL_gb_src = open_AWTC_import_window(aww->get_root(), "", false, GLOBAL.gb_main, makeRootCallback(nt_seq_load_cb));
+    GLOBAL_gb_src = AWTI_open_import_window(aww->get_root(), "", false, GLOBAL.gb_main, makeRootCallback(nt_seq_load_cb));
     nt_assert(got_macro_ability(awr));
 
     // change awar values (import window just opened!)
@@ -71,7 +71,7 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
         char *ali_name = GBT_get_default_alignment(GLOBAL.gb_main);
         char *ali_type = GBT_get_alignment_type_string(GLOBAL.gb_main, ali_name);
 
-        AWTC_import_set_ali_and_type(awr, ali_name, ali_type, GLOBAL.gb_main);
+        AWTI_import_set_ali_and_type(awr, ali_name, ali_type, GLOBAL.gb_main);
 
         free(ali_type);
         free(ali_name);

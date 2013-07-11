@@ -270,7 +270,7 @@ void ArbImporter::detect_format(AW_root *root) {
     StrArray files;
     GBS_read_dir(files, GB_path_in_ARBLIB("import"), "*.ift");
 
-    char     buffer[AWTC_IMPORT_CHECK_BUFFER_SIZE+10];
+    char     buffer[AWTI_IMPORT_CHECK_BUFFER_SIZE+10];
     GB_ERROR error = 0;
 
     int matched       = -1;
@@ -305,7 +305,7 @@ void ArbImporter::detect_format(AW_root *root) {
                     if (!test) error = "Cannot open any input file";
                 }
                 if (test) {
-                    int size = fread(buffer, 1, AWTC_IMPORT_CHECK_BUFFER_SIZE, test);
+                    int size = fread(buffer, 1, AWTI_IMPORT_CHECK_BUFFER_SIZE, test);
                     pclose(test);
 
                     if (size>=0) {
@@ -1155,7 +1155,7 @@ public:
 static AliNameAndType last_ali("ali_new", "rna"); // last selected ali for plain import (aka non-flatfile import)
 
 
-void AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char *ali_type, GBDATA *gbmain) {
+void AWTI_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char *ali_type, GBDATA *gbmain) {
     bool           switching_to_GENOM_ALIGNMENT = strcmp(ali_name, GENOM_ALIGNMENT) == 0;
     static GBDATA *last_valid_gbmain            = 0;
 
@@ -1198,11 +1198,11 @@ void AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char
 
 static void genom_flag_changed(AW_root *awr) {
     if (awr->awar(AWAR_READ_GENOM_DB)->read_int() == IMP_PLAIN_SEQUENCE) {
-        AWTC_import_set_ali_and_type(awr, last_ali.name(), last_ali.type(), 0);
+        AWTI_import_set_ali_and_type(awr, last_ali.name(), last_ali.type(), 0);
         awr->awar_string(AWAR_FORM"/filter", ".ift");
     }
     else {
-        AWTC_import_set_ali_and_type(awr, GENOM_ALIGNMENT, "dna", 0);
+        AWTI_import_set_ali_and_type(awr, GENOM_ALIGNMENT, "dna", 0);
         awr->awar_string(AWAR_FORM"/filter", ".fit"); // *hack* to hide normal import filters
     }
 }
@@ -1225,7 +1225,7 @@ static void import_window_close_cb(AW_window *aww) {
 static void import_go_cb(AW_window *aww) { awtcig.go(aww); }
 static void detect_input_format_cb(AW_window *aww) { awtcig.detect_format(aww->get_root()); }
 
-GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit, GBDATA *gb_main, const RootCallback& after_import_cb) {
+GBDATA *AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GBDATA *gb_main, const RootCallback& after_import_cb) {
     static AW_window_simple *aws = 0;
 
 #if defined(WARN_TODO)
@@ -1256,7 +1256,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
     AW_create_fileselection_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import"), ".ift", "*");
 
     awr->awar_string(AWAR_ALI, "dummy"); // these defaults are never used
-    awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTC_import_set_ali_and_type
+    awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTI_import_set_ali_and_type
     awr->awar_int(AWAR_ALI_PROTECTION, 0); // which is called via genom_flag_changed() below
 
     awr->awar(AWAR_READ_GENOM_DB)->add_callback(genom_flag_changed);
