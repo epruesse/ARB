@@ -126,6 +126,7 @@ AW_selection_list* AW_dialog::create_selection_list(AW_awar* awar) {
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
     
     GtkWidget *scrolled_win = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_win), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_container_add(GTK_CONTAINER(scrolled_win), tree);
 
     GtkWidget* content = gtk_dialog_get_content_area(prvt->dialog);
