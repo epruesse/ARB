@@ -4,6 +4,7 @@
 #include "aw_select.hxx"
 #include "aw_assert.hxx"
 #include "gtk/gtk.h"
+#include "aw_gtk_forward_declarations.hxx"
 
 struct AW_dialog::Pimpl {
     GtkDialog *dialog;
@@ -57,7 +58,9 @@ void AW_dialog::set_message(const char* text) {
     if (!prvt->label) {
         prvt->label = GTK_LABEL(gtk_label_new(text));
         GtkWidget* content = gtk_dialog_get_content_area(prvt->dialog);
-        gtk_container_add(GTK_CONTAINER(content), GTK_WIDGET(prvt->label));
+        GtkWidget* align = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);//align left
+        gtk_container_add(GTK_CONTAINER(align), GTK_WIDGET(prvt->label));
+        gtk_box_pack_start(GTK_BOX(content), align, false, false, 1);
     } else {
         gtk_label_set_text(prvt->label, text);
     }
@@ -105,7 +108,7 @@ void AW_dialog::create_input_field(AW_awar* awar) {
     awar->bind_value(G_OBJECT(entry), "text");
 
     GtkWidget* content = gtk_dialog_get_content_area(prvt->dialog);
-    gtk_container_add(GTK_CONTAINER(content), entry);
+    gtk_box_pack_start(GTK_BOX(content), GTK_WIDGET(entry), false, false, 7);
     prvt->input_awar = awar;
     disable_default_selection_if_same_awars();    
 }
