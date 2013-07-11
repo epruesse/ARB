@@ -25,10 +25,15 @@ static void nt_seq_load_cb(AW_root *awr) {
     GLOBAL_gb_dst     = GLOBAL.gb_main;
     AW_window *aww    = DBUI::create_species_query_window(awr, (AW_CL)GLOBAL.gb_main);
     DBUI::unquery_all();
-    GB_ERROR    error = MERGE_sequences_simple(awr);
+    GB_ERROR   error  = MERGE_sequences_simple(awr);
     if (!error) error = NT_format_all_alignments(GLOBAL.gb_main);
     DBUI::query_update_list();
     if (!error) aww->activate();
+
+    AWTI_cleanup_importer(); // closes import DB
+
+    GLOBAL_gb_src = NULL;
+    GLOBAL_gb_dst = NULL;
 }
 
 
@@ -36,18 +41,14 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
     /*! Opens the "Import Sequences" dialog from the ARB main window (ARB_NTREE)
      */
 
-    if (GLOBAL_gb_src) {
-#if defined(DEBUG)
-        AWT_browser_forget_db(GLOBAL_gb_src);
-#endif // DEBUG
-        GB_close(GLOBAL_gb_src);
-    }
-
     AW_root *awr = aww->get_root();
 
     awr->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // value is overwritten below
 
-    GLOBAL_gb_src = AWTI_open_import_window(aww->get_root(), "", false, GLOBAL.gb_main, makeRootCallback(nt_seq_load_cb));
+    nt_assert(!GLOBAL_gb_src);
+    AWTI_open_import_window(aww->get_root(), "", false, GLOBAL.gb_main, makeRootCallback(nt_seq_load_cb));
+    GLOBAL_gb_src = AWTI_peek_imported_DB();
+
     nt_assert(got_macro_ability(awr));
 
     // change awar values (import window just opened!)

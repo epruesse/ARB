@@ -222,7 +222,12 @@ static void nt_delete_database(AW_window *aww) {
 }
 
 static void start_main_window_after_import(AW_root *aw_root) {
-    GLOBAL.aw_root  = aw_root;
+    GLOBAL.aw_root = aw_root;
+
+    GBDATA *gb_imported = AWTI_take_imported_DB_and_cleanup_importer();
+    nt_assert(gb_imported == GLOBAL.gb_main); // import-DB should already be used as main-DB
+    GLOBAL.gb_main      = gb_imported;
+
     aw_message_if(startup_mainwindow_and_dbserver(aw_root, NULL));
 }
 
@@ -254,7 +259,10 @@ static void nt_intro_start_import(AW_window *aw_intro) {
     aw_root->awar_string(AWAR_DB_PATH)->write_string("noname.arb");
     aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // Default toggle  in window  "Create&import" is Non-Genom
 
-    GLOBAL.gb_main = AWTI_open_import_window(aw_root, "", true, 0, makeRootCallback(start_main_window_after_import));
+    nt_assert(!GLOBAL.gb_main);
+    AWTI_open_import_window(aw_root, "", true, 0, makeRootCallback(start_main_window_after_import));
+    GLOBAL.gb_main = AWTI_peek_imported_DB();
+
     nt_assert(got_macro_ability(aw_root));
 }
 
@@ -866,7 +874,11 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
             if (!error) {
                 if (mode == IMPORT) {
                     aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
-                    GLOBAL.gb_main = AWTI_open_import_window(aw_root, database, true, 0, makeRootCallback(start_main_window_after_import));
+
+                    AWTI_open_import_window(aw_root, database, true, 0, makeRootCallback(start_main_window_after_import));
+                    nt_assert(!GLOBAL.gb_main);
+                    GLOBAL.gb_main = AWTI_peek_imported_DB();
+
                     nt_assert(got_macro_ability(aw_root));
                     aw_root->main_loop();
                 }

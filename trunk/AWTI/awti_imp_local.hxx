@@ -118,25 +118,39 @@ struct import_format : virtual Noncopyable {
 };
 
 struct ArbImporter : virtual Noncopyable {
-    void awtcig(); // helper (can't use global inside class) // @@@ remove later
+    import_format *ifo;  // main input format
+    import_format *ifo2; // symlink to input format
 
-    struct import_format *ifo;      // main input format
-    struct import_format *ifo2;     // symlink to input format
-
-    GBDATA *gb_import_main;               // import database
+    GBDATA *gb_import_main; // import database
 
     RootCallback after_import_cb;
 
     StrArray filenames;
     int      current_file_idx;
 
-    FILE   *in;
-    bool    doExit;                       // whether import window 'close' does exit // @@@ rename (meaning is: import from inside ARB or not)
-    GBDATA *gb_other_main;                // main DB
+    FILE *in;
+    bool  doExit; // whether import window 'close' does exit // @@@ rename (meaning is: import from inside ARB or not)
+
+    GBDATA *gb_main_4_nameserver; // main DB (needed to select nameserver-settings)
 
     ArbImporter(const RootCallback& after_import_cb_)
-        : after_import_cb(after_import_cb_)
+        : ifo(NULL),
+          ifo2(NULL),
+          gb_import_main(NULL),
+          after_import_cb(after_import_cb_),
+          current_file_idx(0),
+          in(NULL),
+          doExit(false),
+          gb_main_4_nameserver(NULL)
     {
+    }
+
+    ~ArbImporter() {
+        if (gb_import_main) GB_close(gb_import_main);
+        delete ifo;
+        delete ifo2;
+
+        awti_assert(!in);
     }
 
     GB_ERROR read_format(const char *file);
@@ -147,6 +161,15 @@ struct ArbImporter : virtual Noncopyable {
     GB_ERROR  read_data(char *ali_name, int security_write);
 
     void go(AW_window *aww);
+
+    GBDATA *peekImportDB() {
+        return gb_import_main;
+    }
+    GBDATA *takeImportDB() {
+        GBDATA *gbm    = gb_import_main;
+        gb_import_main = NULL;
+        return gbm;
+    }
 };
 
 
