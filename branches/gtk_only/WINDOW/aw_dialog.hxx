@@ -1,4 +1,5 @@
 #pragma once
+#include "aw_gtk_forward_declarations.hxx"
 
 class AW_awar;
 class AW_selection_list;

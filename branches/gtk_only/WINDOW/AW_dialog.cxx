@@ -25,6 +25,8 @@ AW_dialog::AW_dialog()
     prvt->dialog = GTK_DIALOG(gtk_dialog_new());
     gtk_window_set_position(GTK_WINDOW(prvt->dialog), GTK_WIN_POS_MOUSE);
     gtk_window_set_modal(GTK_WINDOW(prvt->dialog), true);
+    gtk_window_set_deletable(GTK_WINDOW(prvt->dialog), false); //hide the close button if possible (most window managers do not allow this)
+
 }
 
 AW_dialog::~AW_dialog() {
@@ -42,6 +44,7 @@ void AW_dialog::run() {
         exit(EXIT_FAILURE);
     }
 }
+
 
 void AW_dialog::set_title(const char* title) {
     aw_return_if_fail(title != NULL);
@@ -68,7 +71,6 @@ void AW_dialog::create_buttons(const char* buttons_) {
     int   num_buttons = 0;
     char *buttons = strdup(buttons_);
     char *saveptr, *button = strtok_r(buttons, ",", &saveptr);
-    int   exit_button = -1;
     do {
         if (button[0] == '^' || button[0] == '\n') {
             // not sure how to do this
