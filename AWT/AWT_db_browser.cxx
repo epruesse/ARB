@@ -399,9 +399,11 @@ static void AWT_announce_properties_to_browser(GBDATA *gb_defaults, const char *
 }
 
 void AWT_browser_forget_db(GBDATA *gb_main) {
-    DB_browser *browser = get_the_browser(false);
-    awt_assert(browser);
-    if (browser) browser->del_db(gb_main);
+    if (gb_main) {
+        DB_browser *browser = get_the_browser(false);
+        awt_assert(browser);
+        if (browser) browser->del_db(gb_main);
+    }
 }
 
 // ---------------------------------------

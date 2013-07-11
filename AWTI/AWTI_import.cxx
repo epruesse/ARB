@@ -1126,7 +1126,7 @@ void ArbImporter::go(AW_window *aww) {
                             "Generate unique species IDs,Use found IDs") == 0)
             {
                 progress.subtitle("Pass 3: Generate unique species IDs");
-                error = AW_select_nameserver(gb_import_main, gb_other_main);
+                error = AW_select_nameserver(gb_import_main, gb_main_4_nameserver);
                 if (!error) {
                     error = AWTC_pars_names(gb_import_main);
                 }
@@ -1139,6 +1139,7 @@ void ArbImporter::go(AW_window *aww) {
 
     GB_change_my_security(gb_import_main, 0);
 
+    gb_main_4_nameserver = NULL;
     if (call_back) after_import_cb(awr);
 }
 
@@ -1209,48 +1210,64 @@ static void genom_flag_changed(AW_root *awr) {
 
 // --------------------------------------------------------------------------------
 
-static void dummy_cb(AW_root*) {}                   // @@@ elim (allocate awtcig dynamically -> no longer need dummy)
-// __ATTR__DEPRECATED
-__ATTR__DEPRECATED_TODO("eliminate access to global")
-    static ArbImporter awtcig(makeRootCallback(dummy_cb)); // @@@ rename awtcig; allocate dynamically
+static ArbImporter *importer = NULL;
 
-static void import_window_close_cb(AW_window *aww) {
-    if (awtcig.doExit) {
-        GB_close(awtcig.gb_import_main);
-        exit(EXIT_SUCCESS);
-    }
-    AW_POPDOWN(aww);
+void AWTI_cleanup_importer() {
+    awti_assert(importer);
+#if defined(DEBUG)
+    AWT_browser_forget_db(importer->peekImportDB());
+#endif
+    delete importer; // closes the import DB if it still is owned by the 'importer'
+    importer = NULL;
 }
 
-static void import_go_cb(AW_window *aww) { awtcig.go(aww); }
-static void detect_input_format_cb(AW_window *aww) { awtcig.detect_format(aww->get_root()); }
+static void import_window_close_cb(AW_window *aww) {
+    bool doExit = importer->doExit;
+    AWTI_cleanup_importer();
 
-GBDATA *AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GBDATA *gb_main, const RootCallback& after_import_cb) {
+    if (doExit) exit(EXIT_SUCCESS);
+    else AW_POPDOWN(aww);
+}
+
+static void import_go_cb(AW_window *aww) { importer->go(aww); }
+static void detect_input_format_cb(AW_window *aww) { importer->detect_format(aww->get_root()); }
+
+GBDATA *AWTI_peek_imported_DB() {
+    awti_assert(importer);
+    awti_assert(importer->gb_import_main);
+    return importer->peekImportDB();
+}
+GBDATA *AWTI_take_imported_DB_and_cleanup_importer() {
+    awti_assert(importer);
+    awti_assert(importer->gb_import_main);
+    GBDATA *gb_imported_main = importer->takeImportDB();
+    AWTI_cleanup_importer();
+    return gb_imported_main;
+}
+
+void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GBDATA *gb_main, const RootCallback& after_import_cb) {
     static AW_window_simple *aws = 0;
 
-#if defined(WARN_TODO)
-#warning where is awtcig.gb_main closed
-    // it is either (currently not) closed by merge tool
-    // or used as main db and closed when ARB_NTREE exits.
-#endif
-    awtcig.gb_import_main  = GB_open("noname.arb", "wc"); // @@@ this DB remains open, if import is used from inside ARB
-    awtcig.after_import_cb = after_import_cb;
+    awti_assert(!importer);
+    importer = new ArbImporter(after_import_cb);
+
+    importer->gb_import_main = GB_open("noname.arb", "wc");  // @@@ move -> ArbImporter-ctor
 
 #if defined(DEBUG)
-    AWT_announce_db_to_browser(awtcig.gb_import_main, "New database (import)"); // @@@ remove when called from inside ARB ?
+    AWT_announce_db_to_browser(importer->gb_import_main, "New database (import)");
 #endif // DEBUG
 
-    awtcig.gb_other_main = gb_main;
+    importer->gb_main_4_nameserver = gb_main;
 
     if (!gb_main) {
         // control macros via temporary import DB (if no main DB available)
-        configure_macro_recording(awr, "ARB_IMPORT", awtcig.gb_import_main); // @@@ use result
+        configure_macro_recording(awr, "ARB_IMPORT", importer->gb_import_main); // @@@ use result
     }
     else {
         awti_assert(got_macro_ability(awr));
     }
 
-    awtcig.doExit = do_exit; // change/set behavior of CLOSE button
+    importer->doExit = do_exit; // change/set behavior of CLOSE button
 
     AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".", "", defname);
     AW_create_fileselection_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import"), ".ift", "*");
@@ -1318,5 +1335,4 @@ GBDATA *AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit,
         aws->create_button("GO", "GO", "G");
     }
     aws->activate();
-    return awtcig.gb_import_main;
 }
