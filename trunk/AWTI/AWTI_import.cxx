@@ -47,11 +47,11 @@ static GB_ERROR not_in_match_error(const char *cmd) {
     return GBS_global_string("Command '%s' may only appear after 'MATCH'", cmd);
 }
 
-static GB_ERROR read_import_format(const char *fullfile, input_format_struct *ifo, bool *var_set, bool included) {
+static GB_ERROR read_import_format(const char *fullfile, import_format *ifo, bool *var_set, bool included) {
     GB_ERROR  error = 0;
     FILE     *in    = fopen(fullfile, "rt");
 
-    input_format_per_line *pl = ifo->pl;
+    import_match *m = ifo->match;
 
     if (!in) {
         const char *name = name_only(fullfile);
@@ -73,36 +73,36 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
         while (!error && SEQIO_read_string_pair(in, s1, s2, lineNumber)) {
 
 #define GLOBAL_COMMAND(cmd) (!error && strcmp(s1, cmd) == 0)
-#define MATCH_COMMAND(cmd)  (!error && strcmp(s1, cmd) == 0 && (pl || !(error = not_in_match_error(cmd))))
+#define MATCH_COMMAND(cmd)  (!error && strcmp(s1, cmd) == 0 && (m || !(error = not_in_match_error(cmd))))
 
             if (GLOBAL_COMMAND("MATCH")) {
-                pl = new input_format_per_line;
+                m = new import_match;
 
-                pl->defined_at = GBS_global_string_copy("%zi,%s", lineNumber, name_only(fullfile));
-                pl->next       = ifo->pl;           // this concatenates the filters to the front -> the list is reversed below
-                ifo->pl        = pl;
-                pl->match      = GBS_remove_escape(s2);
-                pl->type       = GB_STRING;
+                m->defined_at = GBS_global_string_copy("%zi,%s", lineNumber, name_only(fullfile));
+                m->next       = ifo->match; // this concatenates the filters to the front -> the list is reversed below
+                ifo->match    = m;
+                m->match      = GBS_remove_escape(s2);
+                m->type       = GB_STRING;
 
-                if (ifo->autotag) pl->mtag = strdup(ifo->autotag); // will be overwritten by TAG command
+                if (ifo->autotag) m->mtag = strdup(ifo->autotag); // will be overwritten by TAG command
             }
-            else if (MATCH_COMMAND("SRT"))         { reassign(pl->srt, s2); }
-            else if (MATCH_COMMAND("ACI"))         { reassign(pl->aci, s2); }
-            else if (MATCH_COMMAND("WRITE"))       { reassign(pl->write, s2); }
-            else if (MATCH_COMMAND("WRITE_INT"))   { reassign(pl->write, s2); pl->type = GB_INT; }
-            else if (MATCH_COMMAND("WRITE_FLOAT")) { reassign(pl->write, s2); pl->type = GB_FLOAT; }
-            else if (MATCH_COMMAND("APPEND"))      { reassign(pl->append, s2); }
+            else if (MATCH_COMMAND("SRT"))         { reassign(m->srt, s2); }
+            else if (MATCH_COMMAND("ACI"))         { reassign(m->aci, s2); }
+            else if (MATCH_COMMAND("WRITE"))       { reassign(m->write, s2); }
+            else if (MATCH_COMMAND("WRITE_INT"))   { reassign(m->write, s2); m->type = GB_INT; }
+            else if (MATCH_COMMAND("WRITE_FLOAT")) { reassign(m->write, s2); m->type = GB_FLOAT; }
+            else if (MATCH_COMMAND("APPEND"))      { reassign(m->append, s2); }
             else if (MATCH_COMMAND("SETVAR")) {
                 if (strlen(s2) != 1 || s2[0]<'a' || s2[0]>'z') {
                     error = "Allowed variable names are a-z";
                 }
                 else {
                     var_set[s2[0]-'a'] = true;
-                    reassign(pl->setvar, s2);
+                    reassign(m->setvar, s2);
                 }
             }
             else if (MATCH_COMMAND("TAG")) {
-                if (s2[0]) reassign(pl->mtag, s2);
+                if (s2[0]) reassign(m->mtag, s2);
                 else error = "Empty TAG is not allowed";
             }
             else if (GLOBAL_COMMAND("AUTODETECT"))               { reassign(ifo->autodetect,    s2); }
@@ -194,7 +194,7 @@ GB_ERROR ArbImporter::read_format(const char *file) {
     char *fullfile = strdup(GB_path_in_ARBHOME(file));
 
     delete ifo;
-    ifo = new input_format_struct;
+    ifo = new import_format;
 
     bool var_set[IFS_VARIABLES];
     for (int i = 0; i<IFS_VARIABLES; i++) var_set[i] = false;
@@ -218,18 +218,18 @@ GB_ERROR ArbImporter::read_format(const char *file) {
     }
 
     // reverse order of match list (was appended backwards during creation)
-    if (ifo->pl) ifo->pl = ifo->pl->reverse(0);
+    if (ifo->match) ifo->match = ifo->match->reverse(0);
 
     free(fullfile);
 
     return error;
 }
 
-input_format_per_line::input_format_per_line() {
+import_match::import_match() {
     memset((char *)this, 0, sizeof(*this));
 }
 
-input_format_per_line::~input_format_per_line() {
+import_match::~import_match() {
     free(match);
     free(aci);
     free(srt);
@@ -242,11 +242,11 @@ input_format_per_line::~input_format_per_line() {
     delete next;
 }
 
-input_format_struct::input_format_struct() {
+import_format::import_format() {
     memset((char *)this, 0, sizeof(*this));
 }
 
-input_format_struct::~input_format_struct() {
+import_format::~import_format() {
     free(autodetect);
     free(system);
     free(new_format);
@@ -261,7 +261,7 @@ input_format_struct::~input_format_struct() {
     free(b1);
     free(b2);
 
-    delete pl;
+    delete match;
 }
 
 
@@ -654,7 +654,7 @@ static void write_entry(GBDATA *gb_main, GBDATA *gbd, const char *key, const cha
     return;
 }
 
-static string expandSetVariables(const SetVariables& variables, const string& source, bool& error_occurred, const input_format_struct *ifo) {
+static string expandSetVariables(const SetVariables& variables, const string& source, bool& error_occurred, const import_format *ifo) {
     string                 dest;
     string::const_iterator norm_start = source.begin();
     string::const_iterator p          = norm_start;
@@ -706,7 +706,7 @@ GB_ERROR ArbImporter::read_data(char *ali_name, int security_write) {
     GBDATA     *gb_species;
     char       *p;
 
-    input_format_per_line *pl  = 0;
+    import_match *match = 0;
 
     while (1) {             // go to the start
         p = read_line(0, ifo->sequencestart, ifo->sequenceend);
@@ -760,18 +760,18 @@ GB_ERROR ArbImporter::read_data(char *ali_name, int security_write) {
             }
             GB_ERROR    error      = 0;
             if (strlen(p) > ifo->tab) {
-                for (pl = ifo->pl; !error && pl; pl=pl->next) {
+                for (match = ifo->match; !error && match; match=match->next) {
                     const char *what_error = 0;
-                    if (GBS_string_matches(p, pl->match, GB_MIND_CASE)) {
+                    if (GBS_string_matches(p, match->match, GB_MIND_CASE)) {
                         char *dup = p+ifo->tab;
                         while (*dup == ' ' || *dup == '\t') dup++;
 
                         char *s              = 0;
                         char *dele           = 0;
 
-                        if (pl->srt) {
+                        if (match->srt) {
                             bool   err_flag;
-                            string expanded = expandSetVariables(variables, pl->srt, err_flag, ifo);
+                            string expanded = expandSetVariables(variables, match->srt, err_flag, ifo);
                             if (err_flag) error = GB_await_error();
                             else {
                                 dele           = s = GBS_string_eval(dup, expanded.c_str(), gb_species);
@@ -783,9 +783,9 @@ GB_ERROR ArbImporter::read_data(char *ali_name, int security_write) {
                             s = dup;
                         }
 
-                        if (!error && pl->aci) {
+                        if (!error && match->aci) {
                             bool   err_flag;
-                            string expanded     = expandSetVariables(variables, pl->aci, err_flag, ifo);
+                            string expanded     = expandSetVariables(variables, match->aci, err_flag, ifo);
                             if (err_flag) error = GB_await_error();
                             else {
                                 dup           = dele;
@@ -796,39 +796,39 @@ GB_ERROR ArbImporter::read_data(char *ali_name, int security_write) {
                             if (error) what_error = "ACI";
                         }
 
-                        if (!error && (pl->append || pl->write)) {
+                        if (!error && (match->append || match->write)) {
                             char *field = 0;
                             char *tag   = 0;
 
                             {
                                 bool   err_flag;
-                                string expanded_field = expandSetVariables(variables, string(pl->append ? pl->append : pl->write), err_flag, ifo);
+                                string expanded_field = expandSetVariables(variables, string(match->append ? match->append : match->write), err_flag, ifo);
                                 if (err_flag) error   = GB_await_error();
                                 else   field          = GBS_string_2_key(expanded_field.c_str());
                                 if (error) what_error = "APPEND or WRITE";
                             }
 
-                            if (!error && pl->mtag) {
+                            if (!error && match->mtag) {
                                 bool   err_flag;
-                                string expanded_tag = expandSetVariables(variables, string(pl->mtag), err_flag, ifo);
+                                string expanded_tag = expandSetVariables(variables, string(match->mtag), err_flag, ifo);
                                 if (err_flag) error = GB_await_error();
                                 else   tag          = GBS_string_2_key(expanded_tag.c_str());
                                 if (error) what_error = "TAG";
                             }
 
                             if (!error) {
-                                write_entry(gb_import_main, gb_species, field, s, tag, pl->append != 0, pl->type);
+                                write_entry(gb_import_main, gb_species, field, s, tag, match->append != 0, match->type);
                             }
                             free(tag);
                             free(field);
                         }
 
-                        if (!error && pl->setvar) variables.set(pl->setvar[0], s);
+                        if (!error && match->setvar) variables.set(match->setvar[0], s);
                         free(dele);
                     }
 
                     if (error) {
-                        error = GBS_global_string("'%s'\nin %s of MATCH (defined at #%s)", error, what_error, pl->defined_at);
+                        error = GBS_global_string("'%s'\nin %s of MATCH (defined at #%s)", error, what_error, match->defined_at);
                     }
                 }
             }
