@@ -17,6 +17,7 @@
 #include <AW_rename.hxx>
 #include <aw_question.hxx>
 #include <arb_str.h>
+#include <arb_file.h>
 
 using namespace std;
 
@@ -102,7 +103,7 @@ void NOTEST_SLOW_import_genome_flatfile() { // succeeded in [7813], crashes from
 #else
         TEST_EXPECT_TEXTFILES_EQUAL(savename, expected);
 #endif // TEST_AUTO_UPDATE
-        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(savename));
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename));
     }
 
     GB_close(gb_main);
