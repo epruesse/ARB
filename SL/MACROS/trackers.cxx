@@ -462,8 +462,7 @@ GB_ERROR configure_macro_recording(AW_root *aw_root, const char *client_id, GBDA
     BoundActionTracker *existing = get_active_macro_recording_tracker(aw_root);
     GB_ERROR            error    = NULL;
     if (existing && existing->reconfigure(client_id, gb_main)) {
-        error = "Need to reconfigure dbserver as well";
-        ma_assert(0); // @@@ happens e.g. when running importer from arb-intro
+        error = reconfigure_dbserver(client_id, gb_main);
     }
     else {
         aw_root->setUserActionTracker(make_macro_recording_tracker(client_id, gb_main));
