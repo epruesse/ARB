@@ -20,3 +20,4 @@ typedef struct _GdkEventConfigure GdkEventConfigure;
 typedef struct _GdkEventExpose    GdkEventExpose;
 typedef struct _GdkEventKey       GdkEventKey;
 typedef struct _GdkEventMotion    GdkEventMotion;
+typedef struct _GtkWindow         GtkWindow;
