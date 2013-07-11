@@ -1346,6 +1346,30 @@ AW_select.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_select.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_select.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AW_signal.o: aw_area_management.hxx
+AW_signal.o: aw_assert.hxx
+AW_signal.o: aw_base.hxx
+AW_signal.o: aw_gtk_forward_declarations.hxx
+AW_signal.o: aw_keysym.hxx
+AW_signal.o: aw_root.hxx
+AW_signal.o: aw_signal.hxx
+AW_signal.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_signal.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_signal.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_signal.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_signal.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_signal.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_signal.o: $(ARBHOME)/INCLUDE/cb.h
+AW_signal.o: $(ARBHOME)/INCLUDE/cbtypes.h
+AW_signal.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_signal.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_signal.o: $(ARBHOME)/INCLUDE/gccver.h
+AW_signal.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_signal.o: $(ARBHOME)/INCLUDE/static_assert.h
+AW_signal.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_signal.o: $(ARBHOME)/INCLUDE/test_unit.h
+AW_signal.o: $(ARBHOME)/INCLUDE/ttypes.h
+
 AW_status.o: aw_area_management.hxx
 AW_status.o: aw_assert.hxx
 AW_status.o: aw_at.hxx
