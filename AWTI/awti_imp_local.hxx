@@ -34,7 +34,7 @@
 #define AWAR_ALI_TYPE       "tmp/import/alignment_type"
 #define AWAR_ALI_PROTECTION "tmp/import/alignment_protection"
 
-#define AWTC_IMPORT_CHECK_BUFFER_SIZE 10000
+#define AWTI_IMPORT_CHECK_BUFFER_SIZE 10000
 
 
 struct input_format_per_line : virtual Noncopyable {
