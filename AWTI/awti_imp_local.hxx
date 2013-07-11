@@ -37,28 +37,29 @@
 #define AWTI_IMPORT_CHECK_BUFFER_SIZE 10000
 
 
-struct input_format_per_line : virtual Noncopyable {
-    char *match;
-    char *aci;
-    char *srt;
-    char *mtag;
-    char *append;
-    char *write;
-    char *setvar;
-    GB_TYPES type;
+struct import_match : virtual Noncopyable {
+    // one for each "MATCH" section of the import format
 
-    char *defined_at; // where was match defined
+    char     *match;
+    char     *aci;
+    char     *srt;
+    char     *mtag;
+    char     *append;
+    char     *write;
+    char     *setvar;
+    GB_TYPES  type;
+    char     *defined_at;     // where was match defined
 
-    input_format_per_line *next;
+    import_match *next;
 
-    input_format_per_line *reverse(input_format_per_line *to_append) {
-        input_format_per_line *rest = next;
+    import_match *reverse(import_match *to_append) {
+        import_match *rest = next;
         next = to_append;
         return rest ? rest->reverse(this) : this;
     }
 
-    input_format_per_line();
-    ~input_format_per_line();
+    import_match();
+    ~import_match();
 };
 
 #define IFS_VARIABLES 26                            // 'a'-'z'
@@ -82,7 +83,7 @@ public:
 };
 
 
-struct input_format_struct : virtual Noncopyable {
+struct import_format : virtual Noncopyable {
     char   *autodetect;
     char   *system;
     char   *new_format;
@@ -110,17 +111,17 @@ struct input_format_struct : virtual Noncopyable {
     char *b1;
     char *b2;
 
-    input_format_per_line *pl;
+    import_match *match;
 
-    input_format_struct();
-    ~input_format_struct();
+    import_format();
+    ~import_format();
 };
 
 struct ArbImporter : virtual Noncopyable {
     void awtcig(); // helper (can't use global inside class) // @@@ remove later
 
-    struct input_format_struct *ifo;      // main input format
-    struct input_format_struct *ifo2;     // symlink to input format
+    struct import_format *ifo;      // main input format
+    struct import_format *ifo2;     // symlink to input format
 
     GBDATA *gb_import_main;               // import database
 
