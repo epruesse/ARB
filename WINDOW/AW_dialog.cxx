@@ -45,7 +45,6 @@ void AW_dialog::run() {
     }
 }
 
-
 void AW_dialog::set_title(const char* title) {
     aw_return_if_fail(title != NULL);
 
