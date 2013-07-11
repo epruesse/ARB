@@ -26,7 +26,6 @@
 #include "aw_varUpdateInfo.hxx" 
 #include "aw_type_checking.hxx"
 #include "aw_select.hxx"
-#include "aw_gtk_forward_declarations.hxx"
 #include <gtk/gtk.h>
 
 #include <string>
