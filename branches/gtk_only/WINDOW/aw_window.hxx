@@ -166,8 +166,16 @@ protected:
 
     void create_devices();
 
-    /* put a widget into prvt->fixedArea according to _at */
-    void put_with_label(GtkWidget* widget);
+    /* put a widget into prvt->fixedArea according to _at.
+     * @param label_alignment the alignment for the label.
+     *        Do NOT delete label_alignment after this call. Gtk will take care of it when the window is closed.*/
+    void put_with_label(GtkWidget *widget, GtkAlignment *label_alignment);
+    
+    /* put a widget into prvt->fixedArea according to _at.
+     * Label will be centered 
+     **/
+    void put_with_label(GtkWidget *widget);
+    
     GtkWidget *make_label(const char* label_text, short label_length=0, const char* mnemonic=NULL);
 
     /** 
