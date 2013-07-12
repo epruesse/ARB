@@ -877,6 +877,7 @@ adstring.o: gb_tune.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_core.h
+adstring.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_error.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_sort.h

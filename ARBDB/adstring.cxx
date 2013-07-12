@@ -11,6 +11,7 @@
 #include <arb_backtrace.h>
 #include <arb_strbuf.h>
 #include <arb_sort.h>
+#include <arb_defs.h>
 
 #include "gb_key.h"
 
@@ -1098,7 +1099,87 @@ void TEST_GBS_shorten_repeated_data() {
     TEST_SHORTENED_EQUALS("aaabc", "aaabc"); 
     TEST_SHORTENED_EQUALS("aabc", "aabc"); 
     TEST_SHORTENED_EQUALS("", "");
-    
 }
+
+static const char *hkey_format[] = {
+    "/%s/bbb/ccc",
+    "/aaa/%s/ccc",
+    "/aaa/bbb/%s",
+};
+
+inline const char *useInHkey(const char *fragment, size_t pos) {
+    return GBS_global_string(hkey_format[pos], fragment);
+}
+
+#define TEST_IN_HKEYS_USING_EXPECT_NO_ERROR(use) do {                   \
+        for (size_t i = 0; i<ARRAY_ELEMS(hkey_format); ++i) {           \
+            TEST_EXPECT_NO_ERROR(GB_check_hkey(useInHkey(use, i)));     \
+        }                                                               \
+    } while(0)
+
+#define TEST_IN_HKEYS_USING_EXPECT_ERROR_CONTAINS(use,contains) do {                    \
+        for (size_t i = 0; i<ARRAY_ELEMS(hkey_format); ++i) {                           \
+            TEST_EXPECT_ERROR_CONTAINS(GB_check_hkey(useInHkey(use, i)), contains);     \
+        }                                                                               \
+    } while(0)
+
+
+void TEST_DB_key_checks() {
+    // plain keys
+    const char *shortest  = "ab";
+    const char *too_long  = "ab345678901234567890123456789012345678901234567890123456789012345";
+    const char *too_short = shortest+1;
+    const char *longest   = too_long+1;
+
+    const char *empty = "";
+    const char *slash = "sub/key";
+    const char *comma = "no,key";
+    const char *minus = "no-key";
+
+    TEST_EXPECT_NO_ERROR(GB_check_key(shortest));
+    TEST_EXPECT_NO_ERROR(GB_check_key(longest));
+
+    TEST_EXPECT_ERROR_CONTAINS(GB_check_key(too_short), "too short");
+    TEST_EXPECT_ERROR_CONTAINS(GB_check_key(too_long),  "too long");
+    TEST_EXPECT_ERROR_CONTAINS(GB_check_key(empty),     "not allowed");
+
+    TEST_EXPECT_ERROR_CONTAINS(GB_check_key(slash), "Invalid character");
+    TEST_EXPECT_ERROR_CONTAINS(GB_check_key(comma), "Invalid character");
+    TEST_EXPECT_ERROR_CONTAINS(GB_check_key(minus), "Invalid character");
+
+    // hierarchical keys
+    TEST_IN_HKEYS_USING_EXPECT_NO_ERROR(shortest);
+    TEST_IN_HKEYS_USING_EXPECT_NO_ERROR(longest);
+
+    TEST_IN_HKEYS_USING_EXPECT_ERROR_CONTAINS(too_short, "too short");
+    TEST_IN_HKEYS_USING_EXPECT_ERROR_CONTAINS(too_long,  "too long");
+    TEST_IN_HKEYS_USING_EXPECT_ERROR_CONTAINS(empty,     "not allowed");
+
+    TEST_IN_HKEYS_USING_EXPECT_NO_ERROR(slash);
+    TEST_IN_HKEYS_USING_EXPECT_ERROR_CONTAINS(comma, "Invalid character ','");
+    TEST_IN_HKEYS_USING_EXPECT_ERROR_CONTAINS(minus, "'>' expected after '-'");
+}
+
+#define TEST_STRING2KEY(str,expected) do {              \
+        char *as_key = GBS_string_2_key(str);           \
+        TEST_EXPECT_EQUAL(as_key, expected);            \
+        TEST_EXPECT_NO_ERROR(GB_check_key(as_key));     \
+        free(as_key);                                   \
+    } while(0)
+
+void TEST_DB_key_generation() {
+    TEST_STRING2KEY("abc", "abc");
+    TEST_STRING2KEY("a b c", "a_b_c");
+
+    // invalid chars
+    TEST_STRING2KEY("string containing \"double-quotes\", 'quotes' and other:shit!*&^@!%@(",
+                    "string_containing_doublequotes_quotes_and_othershit");
+
+    // length tests
+    TEST_STRING2KEY("a", "a_");                                                          // too short
+    TEST_STRING2KEY("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // too long
+                    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+}
+
 #endif
 
