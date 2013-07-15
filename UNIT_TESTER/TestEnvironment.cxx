@@ -453,6 +453,12 @@ class FunInfo {
 
                 case TEST_INVALID:
                     error = strdup("is invalid");
+                    break;
+
+                case TEST_FAILED_POSTCONDITION:
+                case TEST_UNKNOWN_RESULT:
+                    env_assert(0); // should not happen here
+                    break;
             }
             if (error.isSet()) {
                 error = GBS_global_string_copy("%s(%s) %s", name.c_str(), upcase(mode_command[mode]), &*error);
@@ -567,7 +573,7 @@ public:
 
 #define FUNINFO(fun) FunInfo(fun,#fun)
 
-static FunInfo modules[] = {
+static FunInfo modules[] = { // ExistingEnvironments
     FUNINFO(ptserver),
     FUNINFO(ptserver_gene),
 };
