@@ -1124,7 +1124,7 @@ inline const char *useInHkey(const char *fragment, size_t pos) {
     } while(0)
 
 
-void NOTEST_DB_key_checks() { // @@@ has side effects - reactivate when fixed
+void TEST_DB_key_checks() {
     // plain keys
     const char *shortest  = "ab";
     const char *too_long  = "ab345678901234567890123456789012345678901234567890123456789012345";
