@@ -107,7 +107,7 @@ GB_ERROR GB_check_hkey(const char *key) { // goes to header: __ATTR__USERESULT
     GB_ERROR err = 0;
 
     if (!key || key[0] == 0) {
-        err = GB_export_error("Empty key is not allowed");
+        err = "Empty key is not allowed";
     }
     else if (!strpbrk(key, "/-")) {
         err = GB_check_key(key);
@@ -129,7 +129,7 @@ GB_ERROR GB_check_hkey(const char *key) { // goes to header: __ATTR__USERESULT
 
                 if (c == '-') {
                     if (key_end[1] != '>') {
-                        err = GB_export_errorf("'>' expected after '-' in '%s'", key);
+                        err = GBS_global_string("'>' expected after '-' in '%s'", key);
                     }
                     start = key_end+2;
                 }
