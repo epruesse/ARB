@@ -26,6 +26,7 @@
 #include <arb_backtrace.h>
 #include <ut_valgrinded.h>
 #include <valgrind.h>
+#include <SuppressOutput.h>
 #define ut_assert(cond) arb_assert(cond)
 
 #include <SigHandler.h>
@@ -89,7 +90,12 @@ __ATTR__FORMAT(1) static void trace(const char *format, ...) {
 
 static const char *readable_result[] = {
     "OK",
-    "TRAPPED", 
+    "TRAPPED",
+    "VIOLATED",
+    "INTERRUPTED",
+    "THREW",
+    "INVALID",
+    "{unknown}",
 };
 
 // --------------------------------------------------------------------------------
@@ -373,17 +379,22 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
 
 class SimpleTester {
     const UnitTest_simple *tests;
+    const UnitTest_simple *postcond;
     size_t                 count;
+    size_t                 postcount;
     double                 duration_ms;
 
     bool perform(size_t which);
+    UnitTestResult run_postcond(long *duration_usec, long max_allowed_duration_ms, bool print_errors);
 
 public:
-    SimpleTester(const UnitTest_simple *tests_)
+    SimpleTester(const UnitTest_simple *tests_, const UnitTest_simple *postcond_)
         : tests(tests_),
+          postcond(postcond_),
           duration_ms(0.0)
     {
         for (count = 0; tests[count].fun; ++count) {}
+        for (postcount = 0; postcond[postcount].fun; ++postcount) {}
     }
 
     size_t perform_all();
@@ -407,6 +418,52 @@ size_t SimpleTester::perform_all() {
 }
 
 
+UnitTestResult SimpleTester::run_postcond(long *duration_usec_sum, long abort_after_ms, bool print_errors) {
+    UnitTestResult result = TEST_OK;
+    *duration_usec_sum    = 0;
+    for (size_t pc = 0; pc<postcount && result == TEST_OK; ++pc) {
+        long duration_usec;
+        result              = execute_guarded(postcond[pc].fun, &duration_usec, abort_after_ms, true);
+        *duration_usec_sum += duration_usec;
+
+        if (result != TEST_OK && print_errors) {
+            postcond[pc].print_error(stderr, result);
+        }
+    }
+    return result;
+}
+
+void UnitTest_simple::print_error(FILE *out, UnitTestResult result) const {
+    switch (result) {
+        case TEST_OK:
+            break;
+
+        case TEST_TRAPPED:
+            fprintf(out, "%s: Error: %s failed (details above)\n", location, name);
+            break;
+
+        case TEST_FAILED_POSTCONDITION:
+            fprintf(out, "%s: Error: %s succeeded, but violates general postconditions (see above)\n", location, name);
+            break;
+
+        case TEST_INTERRUPTED:
+            fprintf(out, "%s: Error: %s has been interrupted (details above)\n", location, name);
+            break;
+
+        case TEST_THREW:
+            fprintf(out, "%s: Error: %s has thrown an exception\n", location, name);
+            break;
+
+        case TEST_INVALID:
+            fprintf(out, "%s: Error: %s is invalid (see above)\n", location, name);
+            break;
+
+        case TEST_UNKNOWN_RESULT:
+            ut_assert(0);
+            break;
+    }
+}
+
 bool SimpleTester::perform(size_t which) {
     ut_assert(which<count);
 
@@ -414,45 +471,52 @@ bool SimpleTester::perform(size_t which) {
     UnitTest_function      fun  = test.fun;
 
     reset_test_local_flags();
-    
-    bool           marked_as_slow   = strlen(test.name) >= 10 && memcmp(test.name, "TEST_SLOW_", 10) == 0;
+
+    bool       marked_as_slow = strlen(test.name) >= 10 && memcmp(test.name, "TEST_SLOW_", 10) == 0;
+    const long abort_after_ms = marked_as_slow ? MAX_EXEC_MS_SLOW : MAX_EXEC_MS_NORMAL;
+
     long           duration_usec;
-    const long     abort_after_ms   = marked_as_slow ? MAX_EXEC_MS_SLOW : MAX_EXEC_MS_NORMAL;
     UnitTestResult result           = execute_guarded(fun, &duration_usec, abort_after_ms, true); // <--- call test
     double         duration_ms_this = duration_usec/1000.0;
 
     duration_ms += duration_ms_this;
+
+    long           duration_usec_post = 0;
+    UnitTestResult postcond_result    = TEST_UNKNOWN_RESULT;
+
+    if (result == TEST_OK) {
+        // if test is ok -> check postconditions
+        postcond_result = run_postcond(&duration_usec_post, MAX_EXEC_MS_NORMAL, true);
+        if (postcond_result != TEST_OK) {
+            result = TEST_FAILED_POSTCONDITION; // fail test, if any postcondition fails
+        }
+    }
+
     trace("* %s = %s (%.1f ms)", test.name, readable_result[result], duration_ms_this);
 
-    switch (result) {
-        case TEST_OK:
-            if (duration_ms_this >= WARN_SLOW_ABOVE_MS) {                    // long test duration
-                if (!marked_as_slow) {
-                    bool accept_slow = GLOBAL.running_on_valgrind || did_valgrinded_syscall();
-                    if (!accept_slow) {
-                        fprintf(stderr, "%s: Warning: Name of slow tests shall start with TEST_SLOW_ (it'll be run after other tests)\n",
-                                test.location);
-                    }
+    if (result == TEST_OK) {
+        if (duration_ms_this >= WARN_SLOW_ABOVE_MS) {                    // long test duration
+            if (!marked_as_slow) {
+                bool accept_slow = GLOBAL.running_on_valgrind || did_valgrinded_syscall();
+                if (!accept_slow) {
+                    fprintf(stderr, "%s: Warning: Name of slow tests shall start with TEST_SLOW_ (it'll be run after other tests)\n",
+                            test.location);
                 }
             }
-            break;
-
-        case TEST_TRAPPED:
-            fprintf(stderr, "%s: Error: %s failed (details above)\n", test.location, test.name);
-            break;
-
-        case TEST_INTERRUPTED:
-            fprintf(stderr, "%s: Error: %s has been interrupted (details above)\n", test.location, test.name);
-            break;
-
-        case TEST_THREW:
-            fprintf(stderr, "%s: Error: %s has thrown an exception\n", test.location, test.name);
-            break;
-
-        case TEST_INVALID:
-            fprintf(stderr, "%s: Error: %s is invalid (see above)\n", test.location, test.name);
-            break;
+        }
     }
+
+    test.print_error(stderr, result);
+
+    if (result != TEST_OK && result != TEST_FAILED_POSTCONDITION) { // postconditions not checked yet
+        // also check postconditions when test failed
+        // (because they are used to clean up side effects of failing tests)
+        SuppressOutput here;
+        postcond_result = run_postcond(&duration_usec_post, MAX_EXEC_MS_NORMAL, false); // but do not print anything
+    }
+
+    double duration_ms_postcond  = duration_usec_post/1000.0;
+    duration_ms                 += duration_ms_postcond;
 
     return result == TEST_OK;
 }
@@ -493,7 +557,7 @@ static const char *generateReport(const char *libname, size_t tests, size_t skip
     return report.c_str()+1; // skip leading space
 }
 
-UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level, size_t skippedTests) {
+UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level, size_t skippedTests, const UnitTest_simple *postcond) {
     // this is the "main()" of the unit test
     // it is invoked from code generated by sym2testcode.pl@InvokeUnitTester
 
@@ -512,7 +576,7 @@ UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests,
 
         double duration_ms = 0;
         {
-            SimpleTester simple_tester(simple_tests);
+            SimpleTester simple_tester(simple_tests, postcond);
 
             tests = simple_tester.get_test_count();
             if (tests) {
@@ -529,4 +593,5 @@ UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests,
     arb_test::GlobalTestData::erase_instance();
     exit(tests == passed ? EXIT_SUCCESS : EXIT_FAILURE);
 }
+
 

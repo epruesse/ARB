@@ -42,6 +42,22 @@ How to use ARB unit testing
       (Any other test function in the same unit will nevertheless get called.)
 
 
+   Post conditions:
+
+      If a unit defines one or more tests called
+         void TEST_POSTCOND_xxx()
+      each of these post condition tests will be run after EACH single unit test.
+
+      These post condition tests are intended to check for unwanted global side-effects of
+      test-functions. Such side effects often let other (unrelated) test-functions fail
+      unexpectedly. Use them to undo these side-effects.
+
+      If the post-condition fails, the test itself will be reported as failure.
+
+      If the test itself has failed for other reasons, post condition tests will nevertheless
+      be executed (and may do their cleanups), but their failures will not be shown in the log.
+
+
    Failing tests:
 
       If you have some broken behavior that you cannot fix now, please do NOT leave
@@ -88,7 +104,7 @@ How to use ARB unit testing
    Order of test units:
 
       Tests from each unit (aka library) run consecutive.
-      The order of the units is defined in ARB Makefile.
+      Tests of different units are executed asynchronously.
 
 
 3. Valgrinding test code
@@ -149,9 +165,19 @@ How to use ARB unit testing
    Slow tests ('TEST_SLOW_...'; see above) will only run every 15 minutes.
 
 
-6. Global test environment
+6. Global test environments
 
-   @@@ Not in SVN yet
+   Environments provide a test situation which takes some reasonable time
+   for startup.
+
+   Multiple tests will be permitted to use one environment, but they will
+   be serialized (even if tests are running in multiple processes).
+
+   These environments have to be coded directly in TestEnvironment.cxx
+   (for existing environments see TestEnvironment.cxx@ExistingEnvironments)
+
+   If you write a test that wishes to use one of the environments simply write
+      TEST_SETUP_GLOBAL_ENVIRONMENT("name"); // starts environment 'name'
 
 
 7. Auto-patch generation

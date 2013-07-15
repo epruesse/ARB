@@ -100,5 +100,6 @@ UnitTester.o: $(ARBHOME)/INCLUDE/cxxforward.h
 UnitTester.o: $(ARBHOME)/INCLUDE/dupstr.h
 UnitTester.o: $(ARBHOME)/INCLUDE/gccver.h
 UnitTester.o: $(ARBHOME)/INCLUDE/SigHandler.h
+UnitTester.o: $(ARBHOME)/INCLUDE/SuppressOutput.h
 UnitTester.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
 UnitTester.o: $(ARBHOME)/INCLUDE/valgrind.h

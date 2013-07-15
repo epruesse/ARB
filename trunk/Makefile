@@ -2011,6 +2011,7 @@ endif
 %.test:
 	-@( export ID=$$$$; mkdir -p $(TEST_LOG_DIR); \
 	( \
+	    echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"; \
 	    $(MAKE) -C UNIT_TESTER -f Makefile.test -r \
 		"UNITDIR=$(@D)" \
 		"UNITLIBNAME=$(@F:.test=)" \
@@ -2018,6 +2019,7 @@ endif
 		"cflags=$(cflags)" \
 		"ARB_PID=$(ARB_PID)_$(@F)" \
 		runtest; \
+	    echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"; \
 	    $(TEST_POST_CLEAN) \
 	) >$(TEST_LOG_DIR)/$(@F).log 2>&1; echo "- $(@F)")
 
@@ -2035,9 +2037,9 @@ run_tests: test_base clean_cov
 
 run_tests_faked_arbpid:
 	+@$(TEST_RUN_SUITE) init
-	@echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
+	@echo "fake[2]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
 	$(MAKE) $(TEST_MAKE_FLAGS) $(NODIR) $(TESTED_UNITS)
-	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
+	@echo "fake[2]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	+@$(TEST_RUN_SUITE) cleanup
 	@$(MAKE) clean_cov >/dev/null
 
