@@ -723,7 +723,11 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
     sprintf(buffer, "%sbox", at_prefix);
     aws->at(buffer);
     acbs->filelist = aws->create_selection_list(acbs->def_name, 2, 2);
-
+    //the selection list is bound to the same awar as the input field
+    //therefore the file list should not select the default entry if it cannot find a match
+    //for the content of the awar (otherwise it would reset the awar every time the user types)
+    acbs->filelist->select_default_on_awar_mismatch(false);
+    
     fill_fileselection_cb(0, acbs);
     fileselection_filename_changed_cb(0, acbs);    // this fixes the path name
 
