@@ -520,14 +520,16 @@ static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_mai
 
         {
             Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_EXPERIMENT_NAME, EXP_map_experiment, (AW_CL)scanner, (AW_CL)gb_main); // do not delete!
-            AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
+            char                  awar_label_base_name[strlen(AWAR_EXPERIMENT_NAME) + strlen("_label")];
+            sprintf(awar_label_base_name, "%s_label", AWAR_EXPERIMENT_NAME);
+            AW_detach_information *detach_info = new AW_detach_information(cb_info, awar_label_base_name); // do not delete!
+            AW_awar *label_awar = detach_info->get_label_awar();
             cb_info->add_callback();
 
             aws->at("detach");
             aws->callback(DBUI::detach_info_window, (AW_CL)&aws, (AW_CL)cb_info);
-            aws->create_button("DETACH", "DETACH", "D");
-
-            detach_info->set_detach_button(aws->get_last_widget());
+            aws->create_button("DETACH", label_awar->awar_name, "D");
+            label_awar->write_string("DETACH");
         }
 
         aws->show();

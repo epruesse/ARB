@@ -1392,7 +1392,8 @@ void DBUI::detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_
     Awar_Callback_Info    *cb_info      = di->get_cb_info();
     AW_root               *awr          = cb_info->get_root();
     char                  *curr_species = awr->awar(cb_info->get_org_awar_name())->read_string();
-
+    AW_awar               *label_awar   = di->get_label_awar();
+    
     if (*aww_pointer == aww) {  // first click on detach-button
         // create unique awar :
         static int detach_counter = 0;
@@ -1401,7 +1402,7 @@ void DBUI::detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_
         awr->awar_string(new_awar, "", AW_ROOT_DEFAULT);
 
         cb_info->remap(new_awar); // remap the callback from old awar to new unique awar
-        aww->update_label(di->get_detach_button(), "GET");
+        label_awar->write_string("GET"); //change the button text
 
         *aww_pointer = 0;       // caller window will be recreated on next open after clearing this pointer
         // [Note : the aww_pointer points to the static window pointer]
@@ -1456,17 +1457,19 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
 
         {
             const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
+            char               awar_label_base_name[strlen(awar_name) + strlen("_label")];
+            sprintf(awar_label_base_name, "%s_label", awar_name);
             AW_root            *awr       = aws->get_root();
             Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, map_species, (AW_CL)scannerid, (AW_CL)organismWindow); // do not delete!
             cb_info->add_callback();
-
-            AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
-
+            
+            AW_detach_information *detach_info = new AW_detach_information(cb_info, awar_label_base_name); // do not delete!
+            AW_awar *label_awar = detach_info->get_label_awar(); 
+            
             aws->at("detach");
             aws->callback(detach_info_window, (AW_CL)&aws, (AW_CL)detach_info);
-            aws->create_button("DETACH", "DETACH", "D");
-
-            detach_info->set_detach_button(aws->get_last_widget());
+            aws->create_button("DETACH", label_awar->awar_name, "D");
+            label_awar->write_string("DETACH");
         }
 
         aws->show();
