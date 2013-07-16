@@ -19,6 +19,8 @@
 #include "aw_root.hxx"
 #endif
 
+#include <sstream>
+
 class Awar_Callback_Info : virtual Noncopyable {
     // this structure is used to store all information on an awar callback
     // and can be used to remove or remap awar callback w/o knowing anything else
@@ -52,17 +54,37 @@ public:
     AW_root *get_root() { return awr; }
 };
 
+
+/**
+ * Holds information needed to detach a window.
+ */
 class AW_detach_information {
     Awar_Callback_Info *cb_info;
-    Widget              detach_button;
+    AW_awar* label_awar;
 public:
-    AW_detach_information(Awar_Callback_Info *cb_info_)
-        : cb_info(cb_info_),  detach_button(0) {}
+    
+    /**
+     * @param cb_info_ The callback that will be remaped upon detach
+     * @param awar_base_name A unique awar identifier is created from this name. It is used for the label
+     */
+    AW_detach_information(Awar_Callback_Info *cb_info_, const char* awar_base_name)
+        : cb_info(cb_info_), label_awar(NULL) {
+        static unsigned counter = 0;
+        std::stringstream ss;
+        ss << awar_base_name << counter;
+        ++counter;
+        aw_assert(AW_root::SINGLETON);
+        label_awar = AW_root::SINGLETON->awar_string(ss.str().c_str());
+        aw_assert(label_awar);
+        }
 
-    Awar_Callback_Info *get_cb_info() { return cb_info; }
-    Widget get_detach_button() { aw_assert(detach_button); return detach_button; }
-    void set_detach_button(Widget w) { detach_button = w; }
+    Awar_Callback_Info *get_cb_info() const { return cb_info; }
+    
+    AW_awar *get_label_awar() const {
+        return label_awar;
+    }
 };
+
 
 #else
 #error aw_detach.hxx included twice
