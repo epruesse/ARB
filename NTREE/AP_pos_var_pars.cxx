@@ -341,7 +341,7 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
         free(ali_name);
     }
 
-    if (tree) GBT_delete_tree(tree);
+    GBT_delete_tree(tree);
     free(tree_name);
 
     if (error) aw_message(error);

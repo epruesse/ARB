@@ -87,8 +87,10 @@ static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, GB_DbScanner *s
         for (GBDATA *gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {  // find everything
             if (deep) {
                 const char *key = GB_read_key_pntr(gb2);
-                sprintf(&prefix[len_of_prefix], "/%s", key);
-                gbt_scan_db_rek(gb2, prefix, 1, scanner);
+                if (key[0] != '@') { // skip internal containers
+                    sprintf(&prefix[len_of_prefix], "/%s", key);
+                    gbt_scan_db_rek(gb2, prefix, 1, scanner);
+                }
             }
             else {
                 prefix[len_of_prefix] = 0;
@@ -98,13 +100,9 @@ static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, GB_DbScanner *s
         prefix[len_of_prefix] = 0;
     }
     else {
-        if (GB_check_hkey(prefix+1)) {
-            GB_clear_error(); // occurs with internal keys (e.g. '@name'). @@@ should be handled in advance
-        }
-        else {
-            prefix[0] = (char)type;
-            GBS_incr_hash(scanner->hash_table, prefix);
-        }
+        gb_assert(!prefix[0] || GB_check_hkey(prefix) == NULL);
+        LocallyModify<char> firstCharWithType(prefix[0], char(type)); // first char always is '/' -> use to store type in hash
+        GBS_incr_hash(scanner->hash_table, prefix);
     }
 }
 

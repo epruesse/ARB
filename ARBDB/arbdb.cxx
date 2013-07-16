@@ -456,6 +456,17 @@ struct GB_test_shell_closed {
 };
 static GB_test_shell_closed test;
 
+#if defined(UNIT_TESTS)
+static bool closed_open_shell_for_unit_tests() {
+    bool was_open = inside_shell;
+    if (was_open) {
+        if (gb_local) gb_local->fake_closed_DBs();
+        inside_shell->~GB_shell(); // just call dtor (not delete)
+    }
+    return was_open;
+}
+#endif
+
 void GB_init_gb() {
     GB_shell::ensure_inside();
 
@@ -2865,6 +2876,8 @@ void TEST_GB_number_of_subentries() {
         TEST_EXPECT_EQUAL(GB_number_of_subentries(gb_cont), 2);
     }
 
+    // TEST_REJECT(true); // @@@ fail while GB_shell open
+
     GB_close(gb_main);
 }
 
@@ -3354,6 +3367,18 @@ void TEST_db_callbacks() {
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     GB_close(gb_main);
+}
+
+void TEST_POSTCOND_arbdb() {
+    GB_ERROR error = NULL;
+    if (GB_have_error()) {
+        error = GB_await_error(); // clears the error (to make further tests succeed)
+    }
+
+    bool unclosed_GB_shell = closed_open_shell_for_unit_tests();
+
+    TEST_REJECT(error);             // your test finished with an exported error
+    TEST_REJECT(unclosed_GB_shell); // your test finished w/o destroying GB_shell
 }
 
 #endif

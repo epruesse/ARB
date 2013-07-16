@@ -1197,7 +1197,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
 
         if (bootstrap_flag) {
             ctree->insert(tree, 1);
-            GBT_delete_tree(tree); tree = 0;
+            GBT_delete_tree(tree);
             loop_count++;
             progress->inc();
             if (!bootstrap_count) { // when waiting for kill
@@ -1237,7 +1237,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         free(tree_name);
     }
 
-    if (tree) GBT_delete_tree(tree);
+    GBT_delete_tree(tree);
 
     // aw_status(); // remove 'abort' flag (@@@ got no equiv for arb_progress yet. really needed?)
 

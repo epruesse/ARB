@@ -34,7 +34,7 @@ struct MacroTalkSleep : public ARB_inc_sleep {
 
 // --------------------------------------------------------------------------------
 
-class remote_awars : virtual Noncopyable {
+class remote_awars {
     mutable char  name[MAX_REMOTE_PATH_LEN+1];
     int           length; // of awar-path inclusive last '/'
     char         *app_id;
@@ -44,10 +44,8 @@ class remote_awars : virtual Noncopyable {
         strcpy(name+length, itemname);
         return name;
     }
-public:
-    remote_awars(const char *application)
-        : app_id(strdup(application))
-    {
+
+    void init() {
 #if defined(ASSERTION_USED)
         size_t alen = strlen(app_id);
         arb_assert(alen>0 && alen <= MAX_REMOTE_APP_LEN);
@@ -55,6 +53,11 @@ public:
         length = sprintf(name, REMOTE_BASE "%s/", app_id);
         arb_assert((length+MAX_REMOTE_ITEM_LEN) <= MAX_REMOTE_PATH_LEN);
     }
+
+public:
+    remote_awars(const char *application)   : app_id(strdup(application))  { init(); }
+    remote_awars(const remote_awars& other) : app_id(strdup(other.app_id)) { init(); }
+    DECLARE_ASSIGNMENT_OPERATOR(remote_awars);
     ~remote_awars() {
         free(app_id);
     }

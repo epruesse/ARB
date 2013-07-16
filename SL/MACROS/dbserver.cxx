@@ -52,6 +52,18 @@ struct db_interrupt_data : virtual Noncopyable {
         : remote(application_id),
           gb_main(gb_main_)
     {}
+
+
+    GB_ERROR reconfigure(GBDATA *gb_main_, const char *application_id) {
+        GB_ERROR error = 0;
+        if (gb_main_ != gb_main) {
+            error = "Attempt to reconfigure database interrupt with changed database";
+        }
+        else {
+            remote = remote_awars(application_id);
+        }
+        return error;
+    }
 };
 
 __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, const db_interrupt_data& dib) { // @@@ split into several functions
@@ -218,6 +230,10 @@ static unsigned check_db_interrupt(AW_root *awr, db_interrupt_data *dib) { // cl
     return ARB_CHECK_DB_TIMER;
 }
 
+// --------------------------------------------------------------------------------
+
+static db_interrupt_data *idle_interrupt = NULL;
+
 GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *gb_main) {
 #if defined(DEBUG)
     static bool initialized = false;
@@ -226,8 +242,6 @@ GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *
 #endif
 
     arb_assert(got_macro_ability(aw_root));
-
-    static db_interrupt_data *idle_interrupt = NULL;
 
     GB_ERROR error = NULL;
     if (GB_read_clients(gb_main) == 0) { // server
@@ -258,5 +272,11 @@ GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *
     }
 
     return error;
+}
+
+GB_ERROR reconfigure_dbserver(const char *application_id, GBDATA *gb_main) {
+    // reconfigures a running dbserver (started with startup_dbserver)
+    arb_assert(idle_interrupt); // not started yet
+    return idle_interrupt->reconfigure(gb_main, application_id);
 }
 

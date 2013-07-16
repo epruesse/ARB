@@ -1910,7 +1910,6 @@ UNITS_WORKING = \
 	DIST/DIST.test \
 	EISPACK/EISPACK.test \
 	GENOM/GENOM.test \
-	GENOM_IMPORT/GENOM_IMPORT.test \
 	GL/glAW/libglAW.test \
 	GL/glpng/libglpng_arb.test \
 	ISLAND_HOPPING/ISLAND_HOPPING.test \
@@ -1940,7 +1939,6 @@ UNITS_WORKING = \
 	SL/SEQUENCE/SEQUENCE.test \
 	SL/TRANSLATE/TRANSLATE.test \
 	SL/TREE_ADMIN/TREE_ADMIN.test \
-	SL/TREE_READ/TREE_READ.test \
 	SL/TREE_WRITE/TREE_WRITE.test \
 	STAT/STAT.test \
 	TREEGEN/TREEGEN.test \
@@ -1959,6 +1957,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	GENOM_IMPORT/GENOM_IMPORT.test \
 	SL/MACROS/MACROS.test \
 	SL/REGEXPR/REGEXPR.test \
 	SL/FILTER/FILTER.test \
@@ -1975,6 +1974,7 @@ TEST_SANDBOXES = \
 	SL/CB/CB.test \
 
 UNITS_TESTED = \
+	SL/TREE_READ/TREE_READ.test \
 	DBSERVER/DBSERVER.test \
 	AWT/libAWT.test \
 	CORE/libCORE.test \
@@ -2023,6 +2023,7 @@ endif
 %.test:
 	-@( export ID=$$$$; mkdir -p $(TEST_LOG_DIR); \
 	( \
+	    echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"; \
 	    $(MAKE) -C UNIT_TESTER -f Makefile.test -r \
 		"UNITDIR=$(@D)" \
 		"UNITLIBNAME=$(@F:.test=)" \
@@ -2030,6 +2031,7 @@ endif
 		"cflags=$(cflags)" \
 		"ARB_PID=$(ARB_PID)_$(@F)" \
 		runtest; \
+	    echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"; \
 	    $(TEST_POST_CLEAN) \
 	) >$(TEST_LOG_DIR)/$(@F).log 2>&1; echo "- $(@F)")
 
@@ -2047,9 +2049,9 @@ run_tests: test_base clean_cov
 
 run_tests_faked_arbpid:
 	+@$(TEST_RUN_SUITE) init
-	@echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
+	@echo "fake[2]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
 	$(MAKE) $(TEST_MAKE_FLAGS) $(NODIR) $(TESTED_UNITS)
-	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
+	@echo "fake[2]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	+@$(TEST_RUN_SUITE) cleanup
 	@$(MAKE) clean_cov >/dev/null
 
