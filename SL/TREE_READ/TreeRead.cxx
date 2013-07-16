@@ -424,10 +424,7 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
         fclose(input);
 
         if (reader->error) {
-            if (tree) {
-                GBT_delete_tree(tree);
-                tree  = 0;
-            }
+            GBT_delete_tree(tree);
             error = reader->error;
         }
 

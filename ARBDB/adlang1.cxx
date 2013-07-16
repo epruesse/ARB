@@ -1733,7 +1733,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
             }
         }
 
-        if (tree) GBT_delete_tree(tree);
+        GBT_delete_tree(tree);
     }
 
     if (!*error) {
