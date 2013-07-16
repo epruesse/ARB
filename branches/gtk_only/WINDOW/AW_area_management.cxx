@@ -162,9 +162,10 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventButton *event) {
 
 gboolean AW_area_management::Pimpl::handle_event(GdkEventKey *event) {
     aw_event_clear(aww);
+    unsigned modifiers = gtk_accelerator_get_default_mod_mask (); //see https://developer.gnome.org/gtk2/2.24/checklist-modifiers.html
     aww->event.type        = (AW_event_type) event->type;    
     aww->event.keycode     = (AW_key_code) event->keyval;
-    aww->event.keymodifier = (AW_key_mod) event->state;
+    aww->event.keymodifier = (AW_key_mod) (event->state & modifiers); // &modifiers filters NumLock and CapsLock
 
     gchar* str = gdk_keyval_name(event->keyval);
     if (strlen(str) == 1) {
