@@ -485,3 +485,21 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
     return tree;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_load_tree() {
+    // check that loading a corrupted tree fails with an error
+    GBT_TREE *tree = TREE_load("corrupted.tree", sizeof(GBT_TREE), NULL, 0, NULL);
+    TEST_REJECT(tree);
+    TEST_EXPECT(GB_have_error());
+    TEST_EXPECT_ERROR_CONTAINS(GB_await_error(), "Error reading");
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
