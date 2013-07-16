@@ -882,7 +882,9 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const c
                     else {
                         error             = GBT_link_tree((GBT_TREE *)ctree, gb_main, false, 0, 0);
                         if (!error) error = compress_sequence_tree(gb_main, ctree, ali_name);
-                        GBT_delete_tree((GBT_TREE *)ctree);
+
+                        GBT_TREE *freetree = (GBT_TREE*)ctree;
+                        GBT_delete_tree(freetree);
                     }
                 }
                 if (!error) GB_disable_quicksave(gb_main, "Database optimized");
