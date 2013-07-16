@@ -54,6 +54,7 @@ TreeRead.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeRead.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeRead.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeRead.o: $(ARBHOME)/INCLUDE/test_global.h
+TreeRead.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 TreeTools.o: TreeRead.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_prot.h

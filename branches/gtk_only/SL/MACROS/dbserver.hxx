@@ -23,6 +23,7 @@ class AW_root;
 struct GBDATA;
 
 __ATTR__USERESULT GB_ERROR startup_dbserver(AW_root *aw_root, const char *application_id, GBDATA *gb_main);
+__ATTR__USERESULT GB_ERROR reconfigure_dbserver(const char *application_id, GBDATA *gb_main);
 
 #else
 #error dbserver.hxx included twice

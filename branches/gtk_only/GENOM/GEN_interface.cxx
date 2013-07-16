@@ -794,7 +794,7 @@ static void boundloc_changed_cb(AW_root *aw_root, LocationEditor *loced) {
     GBDATA   *gb_gene = GEN_get_current_gene(gb_main, aw_root);
     GB_ERROR  error;
     if (gb_gene) {
-        error = GEN_write_position(gb_gene, pos);
+        error = GEN_write_position(gb_gene, pos, 0);
     }
     else {
         error = "That had no effect (no gene is selected)";
@@ -828,7 +828,7 @@ static void gene_create_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_loced) {
                 else  {
                     gb_dest             = GEN_find_or_create_gene_rel_gene_data(gb_gene_data, dest);
                     if (!gb_dest) error = GB_await_error();
-                    else error          = GEN_write_position(gb_dest, pos);
+                    else error          = GEN_write_position(gb_dest, pos, 0);
 
                     if (!error) {
                         aw_root->awar(AWAR_GENE_NAME)->write_string(dest);
@@ -988,15 +988,16 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
 
         {
             Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_GENE_NAME, GEN_map_gene, (AW_CL)scanner, (AW_CL)gb_main); // do not delete!
-            AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
-
+            char                  awar_label_base_name[strlen(AWAR_GENE_NAME) + strlen("_label")];
+            sprintf(awar_label_base_name, "%s_label", AWAR_GENE_NAME);
+            AW_detach_information *detach_info = new AW_detach_information(cb_info, awar_label_base_name); // do not delete!
+            AW_awar *label_awar = detach_info->get_label_awar();        
             cb_info->add_callback();
 
             aws->at("detach");
             aws->callback(DBUI::detach_info_window, (AW_CL)&aws, (AW_CL)detach_info);
-            aws->create_button("DETACH", "DETACH", "D");
-
-            detach_info->set_detach_button(aws->get_last_widget());
+            aws->create_button("DETACH", label_awar->awar_name, "D");
+            label_awar->write_string("DETACH");
         }
 
         aws->show();

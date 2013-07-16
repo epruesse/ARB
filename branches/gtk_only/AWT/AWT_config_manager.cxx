@@ -172,10 +172,13 @@ void remove_from_configs(const string& config, string& existing_configs) {
     printf("result: '%s'\n", existing_configs.c_str());
 #endif // DEBUG
 }
-static char *correct_key_name(const char *name) {
-    char *corrected = GBS_string_2_key(name);
 
-    if (strcmp(corrected, "__") == 0) freedup(corrected, "");
+static string config_prefix = "cfg_";
+
+static char *correct_key_name(const char *name) {
+    string  with_prefix = config_prefix+name;
+    char   *corrected   = GBS_string_2_key(with_prefix.c_str());
+    freedup(corrected, strdup(corrected+config_prefix.length())); // remove prefix
     return corrected;
 }
 
@@ -206,9 +209,11 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
     }
 
     if (!error) {
-        string  awar_name = string("cfg_")+cfgName;
+        string  awar_name = config_prefix+cfgName;
         char   *filename  = 0;
         bool    loading   = false;
+
+        awt_assert(GB_check_key(awar_name.c_str()) == NULL);
 
         reopen = true;
 

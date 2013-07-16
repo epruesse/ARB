@@ -214,7 +214,7 @@ void Importer::parseFeatureTable() {
     while (!feature.isNull()) {
         feature->expectLocationInSequence(expectedSeqLength);
         feature->fixEmptyQualifiers();
-        db_writer.writeFeature(*feature);
+        db_writer.writeFeature(*feature, expectedSeqLength);
         feature = parseFeature();
     }
 }

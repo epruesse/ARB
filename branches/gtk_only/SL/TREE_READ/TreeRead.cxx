@@ -348,17 +348,19 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                             if (right) gbt_readNameAndLength(reader, right, &rightLen);
                         }
 
-                        if (reader->last_character == ')') {
-                            node     = gbt_linkedTreeNode(left, leftLen, right, rightLen, structuresize);
-                            *nodeLen = TREE_DEFLEN_MARKER;
+                        if (!reader->error) {
+                            if (reader->last_character == ')') {
+                                node     = gbt_linkedTreeNode(left, leftLen, right, rightLen, structuresize);
+                                *nodeLen = TREE_DEFLEN_MARKER;
 
-                            left = 0;
-                            right  = 0;
+                                left = 0;
+                                right  = 0;
 
-                            gbt_read_char(reader); // drop ')'
-                        }
-                        else {
-                            setReaderError(reader, "Expected one of ',)'");
+                                gbt_read_char(reader); // drop ')'
+                            }
+                            else {
+                                setReaderError(reader, "Expected one of ',)'");
+                            }
                         }
 
                         free(right);
@@ -423,7 +425,6 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
 
         if (reader->error) {
             GBT_delete_tree(tree);
-            tree  = 0;
             error = reader->error;
         }
 
@@ -484,3 +485,21 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
     return tree;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_load_tree() {
+    // check that loading a corrupted tree fails with an error
+    GBT_TREE *tree = TREE_load("corrupted.tree", sizeof(GBT_TREE), NULL, 0, NULL);
+    TEST_REJECT(tree);
+    TEST_EXPECT(GB_have_error());
+    TEST_EXPECT_ERROR_CONTAINS(GB_await_error(), "Error reading");
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

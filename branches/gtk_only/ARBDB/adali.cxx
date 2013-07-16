@@ -555,28 +555,41 @@ NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char 
      * the same as GB_search(species, 'ali_name/key', GB_CREATE)
      *
      * Note: The behavior is weird, cause it does sth special for GB_STRING (write default content "...")
+     *
+     * returns create database entry (or NULL; exports an error in this case)
      */
 
-    GBDATA *gb_gb;
-    GBDATA *gb_data;
-    if (GB_check_key(ali_name)) {
-        return NULL;
-    }
-    if (GB_check_hkey(key)) {
-        return NULL;
-    }
-    gb_gb = GB_entry(species, ali_name);
-    if (!gb_gb) gb_gb = GB_create_container(species, ali_name);
-
-    if (type == GB_STRING) {
-        gb_data = GB_search(gb_gb, key, GB_FIND);
-        if (!gb_data) {
-            gb_data = GB_search(gb_gb, key, GB_STRING);
-            GB_write_string(gb_data, "...");
-        }
+    GB_ERROR error = GB_check_key(ali_name);
+    if (error) {
+        error = GBS_global_string("Invalid alignment name '%s' (Reason: %s)", ali_name, error);
     }
     else {
-        gb_data = GB_search(gb_gb, key, type);
+        error = GB_check_hkey(key);
+        if (error) {
+            error = GBS_global_string("Invalid field name '%s' (Reason: %s)", key, error);
+        }
+    }
+
+    GBDATA *gb_data = NULL;
+    if (error) {
+        GB_export_error(error);
+    }
+    else {
+        GBDATA *gb_gb     = GB_entry(species, ali_name);
+        if (!gb_gb) gb_gb = GB_create_container(species, ali_name);
+
+        if (gb_gb) {
+            if (type == GB_STRING) {
+                gb_data = GB_search(gb_gb, key, GB_FIND);
+                if (!gb_data) {
+                    gb_data = GB_search(gb_gb, key, GB_STRING);
+                    GB_write_string(gb_data, "...");
+                }
+            }
+            else {
+                gb_data = GB_search(gb_gb, key, type);
+            }
+        }
     }
     return gb_data;
 }

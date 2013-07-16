@@ -15,24 +15,32 @@
 #ifndef _GLIBCXX_CSTDLIB
 #include <cstdlib>
 #endif
+#ifndef _GLIBCXX_CSTDIO
+#include <cstdio>
+#endif
 
 typedef void (*UnitTest_function)();
+
+enum UnitTestResult {
+    TEST_OK,
+    TEST_TRAPPED,
+    TEST_FAILED_POSTCONDITION,
+    TEST_INTERRUPTED, 
+    TEST_THREW,
+    TEST_INVALID,
+    TEST_UNKNOWN_RESULT,
+};
 
 struct UnitTest_simple {
     UnitTest_function  fun;
     const char        *name;
     const char        *location;
-};
-enum UnitTestResult {
-    TEST_OK,
-    TEST_TRAPPED,
-    TEST_INTERRUPTED, 
-    TEST_THREW,
-    TEST_INVALID,
+
+    void print_error(FILE *out, UnitTestResult result) const;
 };
 
 struct UnitTester {
-    UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level, size_t skippedTests) __attribute__((noreturn));
+    UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level, size_t skippedTests, const UnitTest_simple *postcond) __attribute__((noreturn));
 };
 
 UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long max_allowed_duration_ms, bool detect_environment_calls);
