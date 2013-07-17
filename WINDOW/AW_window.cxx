@@ -51,8 +51,7 @@ void AW_window::at_set_to(bool attach_x, bool attach_y, int xoff, int yoff) {
 void AW_window::at_unset_to() { _at.at_unset_to(); }
 void AW_window::unset_at_commands() { 
     _at.unset_at_commands();     
-   prvt->callback = NULL;
-    //  prvt->d_callback = NULL;
+    // FIXME: unset registered callbacks?!
 }
 
 void AW_window::at_set_min_size(int xmin, int ymin) { _at.at_set_min_size(xmin, ymin); }
@@ -65,7 +64,6 @@ void AW_window::get_at_position(int *x, int *y) const { _at.get_at_position(x,y)
 int AW_window::get_at_xposition() const { return _at.get_at_xposition(); }
 int AW_window::get_at_yposition() const { return _at.get_at_yposition(); }
 void AW_window::at(const char *at_id) { _at.at(at_id); }
-void AW_window::sens_mask(AW_active mask){  _at.set_mask(mask); }
 void AW_window::auto_increment(int dx, int dy) { _at.auto_increment(dx, dy); }
 void AW_window::restore_at_size_and_attach(const AW_at_size *at_size){
     at_size->restore(_at);
@@ -82,11 +80,7 @@ void AW_window::get_window_size(int& width, int& height){
  * set help text for next created button
  */
 void AW_window::help_text(const char *id){
-    if(NULL != _at.helptext_for_next_button)
-    {
-        delete _at.helptext_for_next_button;
-    }
-    _at.helptext_for_next_button   = strdup(id);
+    prvt->action_template.set_help(id);
 }
 
 /**
@@ -96,95 +90,88 @@ void AW_window::highlight(){
     _at.highlight = true;
 }
 
-
-// FIXME: callback ownership not handled, possible memory leaks
-void AW_window::callback(void (*f)(AW_window*)){
-    prvt->callback = new AW_cb(this, (AW_CB)f);
-}
-void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
-    prvt->callback = new AW_cb(this, (AW_CB)f, cd1);
-}
-void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    prvt->callback = new AW_cb(this, (AW_CB)f, cd1, cd2);
-}
-void AW_window::callback(AW_cb * /* owner */ awcbs) {
-    prvt->callback = awcbs;
-}
-void AW_window::callback(const WindowCallback& wcb){
-    prvt->callback = new AW_cb(this, wcb);
-}
-
-void AW_window::d_callback(void (*f)(AW_window*)) {
-    prvt->d_callback = new AW_cb(this, (AW_CB)f);
-}
-void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
-    prvt->d_callback = new AW_cb(this, (AW_CB)f, cd1);
-}
-void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    prvt->d_callback = new AW_cb(this, (AW_CB)f, cd1, cd2);
-}
-void AW_window::d_callback(const WindowCallback& wcb){
-    prvt->d_callback = new AW_cb(this, wcb);
+/** 
+ * Set up sensitivity mask for next widget (action)
+ */
+void AW_window::sens_mask(AW_active mask){
+    prvt->action_template.set_active_mask(mask);
 }
 
 /**
- * handler for click-callbacks
- * takes care of recording actions and displaying help on ?-cursor
+ * Register callback for the next action implicitly created 
+ * when making a widget.
  */
-void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
-    AW_cb *cbs = (AW_cb *) aw_cb_struct;
-    
-    AW_root *root = AW_root::SINGLETON;
-     
-    if (root->is_help_active()) {
-        root->set_help_active(false);
-        root->set_cursor(NORMAL_CURSOR);
-
-        if (cbs->help_text && ((GBS_string_matches(cbs->help_text, "*.ps", GB_IGNORE_CASE)) ||
-                               (GBS_string_matches(cbs->help_text, "*.hlp", GB_IGNORE_CASE)) ||
-                               (GBS_string_matches(cbs->help_text, "*.help", GB_IGNORE_CASE))))
-        {
-            AW_POPUP_HELP(cbs->aw, (AW_CL)cbs->help_text);
-        }
-        else {
-            aw_message("Sorry no help available");
-        }
-        return;
-    }
-
-    if (root->is_tracking()) root->track_action(cbs->id);
-
-    if (cbs->contains(AW_POPUP)) {
-        cbs->run_callbacks();
-    }
-    else {
-        root->set_cursor(WAIT_CURSOR);
-        
-        cbs->run_callbacks();
-        
-        if (root->is_help_active()) {
-            root->set_cursor(HELP_CURSOR);
-        }
-        else {
-            root->set_cursor(NORMAL_CURSOR);
-        }
-    }      
+void AW_window::callback(void (*f)(AW_window*)){
+    prvt->action_template.connect(makeWindowCallback(f), this);
 }
 
-void AW_window::_set_activate_callback(GtkWidget *widget) {
-    if (prvt->callback && (long)prvt->callback != 1) {
-        if (!prvt->callback->help_text && _at.helptext_for_next_button) {
-            prvt->callback->help_text = _at.helptext_for_next_button;
-            _at.helptext_for_next_button = 0;
-        }
-        
-        g_signal_connect((gpointer)widget, "clicked", G_CALLBACK(AW_window::click_handler),
-                         (gpointer)prvt->callback);
-    }
-    prvt->callback = NULL;
+/**
+ * Register callback for the next action implicitly created 
+ * when making a widget.
+ */
+void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
+    prvt->action_template.connect(makeWindowCallback(f, cd1), this);
 }
 
-AW_area_management* AW_window::get_area(int index) {   
+/**
+ * Register callback for the next action implicitly created 
+ * when making a widget.
+ */
+void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
+    prvt->action_template.connect(makeWindowCallback(f, cd1, cd2), this);
+}
+
+/**
+ * Register callback for the next action implicitly created 
+ * when making a widget.
+ */
+void AW_window::callback(AW_cb * /* owner */ awcbs) {
+    // FIXME NOT IMPLEMENTED
+}
+
+/**
+ * Register callback for the next action implicitly created 
+ * when making a widget.
+ */
+void AW_window::callback(const WindowCallback& wcb){
+    prvt->action_template.connect(wcb, this);
+}
+
+/**
+ * Register double click callback for the next action implicitly created 
+ * when making a widget.
+ */
+void AW_window::d_callback(void (*f)(AW_window*)) {
+    prvt->action_template.dclick.connect(makeWindowCallback(f), this);
+}
+
+/**
+ * Register double click callback for the next action implicitly created 
+ * when making a widget.
+ */
+void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
+    prvt->action_template.dclick.connect(makeWindowCallback(f, cd1), this);
+}
+
+/**
+ * Register double click callback for the next action implicitly created 
+ * when making a widget.
+ */
+void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
+    prvt->action_template.dclick.connect(makeWindowCallback(f, cd1, cd2), this);
+}
+
+/**
+ * Register double click callback for the next action implicitly created 
+ * when making a widget.
+ */
+void AW_window::d_callback(const WindowCallback& wcb){
+    prvt->action_template.dclick.connect(wcb, this);
+}
+
+
+AW_area_management* AW_window::get_area(int index) {
+    // FIXME: is index > AW_MAX_AREA a fault condition?
     if(index < AW_MAX_AREA) {
         return prvt->areas[index];
     }   
@@ -387,23 +374,19 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
 
     gtk_widget_show(button_label);
 
-
     // make 'button' a real button if we've got a callback to run on click
-    if (prvt->callback) {
-        // register macro
-        if (((long)prvt->callback != 1)) {
-            if (macro_name) {
-              prvt->callback->id = GBS_global_string_copy("%s/%s", this->window_defaults_name, macro_name);
-              get_root()->define_remote_command(prvt->callback);
-            }
-            else {
-              prvt->callback->id = 0;
-            }
+    if (prvt->action_template.size() > 0) { 
+        const char* action_name = GBS_global_string("%s/%s", this->window_defaults_name, macro_name);
+        AW_action *act = action_register(action_name, prvt->action_template);
+        prvt->action_template = AW_action();
+        if (button_text) {
+            act->set_label(button_text); // FIXME Mnemonic
         }
 
         button = gtk_button_new();
         gtk_container_add(GTK_CONTAINER(button), button_label);
        
+        act->bind(button, "clicked");
         this->_set_activate_callback(button);
         
         get_root()->register_widget(button, _at.widget_mask);
@@ -666,7 +649,7 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
                          G_CALLBACK(AW_window::click_handler),
                          (gpointer) prvt->d_callback);
         prvt->d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
-        get_root()->define_remote_command(prvt->d_callback);
+        // FIXME get_root()->define_remote_command(prvt->d_callback);
     }
     put_with_label(scrolled_entry);
     get_root()->register_widget(entry, _at.widget_mask);
@@ -961,7 +944,7 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
     g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
 
     cbs->id = strdup(cmd);
-    get_root()->define_remote_command(cbs);
+    // FIXME get_root()->define_remote_command(cbs);
     get_root()->register_widget(item, mask);
 }
 
@@ -1608,3 +1591,30 @@ void AW_window::on_hide(AW_CB0 f) {
 void AW_window::set_hide_on_close(bool value) {
     prvt->hide_on_close = value;
 }
+
+
+/********* awar / action helpers ***********/
+
+/** Calls AW_root::action_try with the ID of this window prefixed to action_id */
+AW_action* AW_window::action_try(const char* action_id) {
+    return get_root()->action_try(local_id(action_id));
+}
+
+/** Calls AW_root::action with the ID of this window prefixed to action_id */
+AW_action* AW_window::action(const char* action_id) {
+    return get_root()->action(local_id(action_id));
+}
+
+/** Calls AW_root::action_register with the ID of this window prefixed to action_id */
+AW_action* AW_window::action_register(const char* action_id, const AW_action& act) {
+    return get_root()->action_register(local_id(action_id), act);
+}
+
+/** Calls AW_root::action_register with the ID of this window prefixed to action_id */
+AW_action* AW_window::action_register(const char* action_id,
+                             const char* labeli, const char* icon,
+                             const char* tooltip, const char* help_entry, 
+                             AW_active mask) {
+    return get_root()->action_register(local_id(action_id), labeli, icon, tooltip, help_entry, mask);
+}
+

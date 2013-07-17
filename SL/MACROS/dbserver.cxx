@@ -19,6 +19,7 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_window.hxx>
+#include <aw_action.hxx>
 
 #include <unistd.h>
 
@@ -182,11 +183,11 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
             GB_pop_transaction(gb_main); // @@@ end required/possible here?
 
             if (action[0]) {
-                AW_cb *cbs = aw_root->search_remote_command(action);
+                AW_action* act = aw_root->action_try(action);
 
-                if (cbs) {
+                if (act) {
                     IF_DUMP_ACTION(printf("remote command (%s) found, running callback\n", action));
-                    cbs->run_callbacks();
+                    act->emit();
                     GBT_write_string(gb_main, remote.result(), "");
                 }
                 else {
