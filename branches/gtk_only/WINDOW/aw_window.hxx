@@ -55,8 +55,6 @@ struct GB_HASH;
 
 // --------------------------------------------------------------------------------
 
-#define AW_POPUP  ((AW_CB)(-1))
-// AW_POPDOWN is defined later in this section
 
 #define AW_MESSAGE_TIME 2000
 #define AW_HEADER_MAIN
@@ -86,7 +84,7 @@ const char *AW_get_pixmapPath(const char *pixmapName);
 
 
 void AW_POPDOWN(AW_window *);
-
+void AW_POPUP(AW_window*, AW_CL, AW_CL);
 
 /**
  * Switches the window into help mode.
@@ -577,7 +575,7 @@ public:
     // *** awar/action access helpers 
     AW_action* action(const char* action_id);
     AW_action* action_try(const char* action_id);
-    AW_action* action_register(const char* action_id, const AW_action& act);
+    AW_action* action_register(const char* action_id);
     AW_action* action_register(const char* action_id, const char* label, const char* icon,
                       const char* tooltip, const char* help_entry, AW_active mask);
 };
