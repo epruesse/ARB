@@ -133,7 +133,7 @@ int TreeReader::read_tree_char() {
     bool done = false;
     int  c    = ' ';
 
-    while (!done) {
+    while (!done && !error) {
         c = get_char();
         if (c == ' ' || c == '\t' || c == '\n') ; // skip
         else if (c == '[') {    // collect tree comment(s)
@@ -446,9 +446,9 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
        if warningPtr != NULL -> set it to a malloc copy auto-scale-warning (if autoscaling happens)
     */
 
-    GBT_TREE *tree  = 0;
+    GBT_TREE *tree  = NULL;
     FILE     *input = fopen(path, "rt");
-    GB_ERROR  error = 0;
+    GB_ERROR  error = NULL;
 
     if (!input) {
         error = GBS_global_string("No such file: %s", path);
@@ -459,8 +459,10 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
         else        name_only = path;
 
         TreeReader reader(input, name_only);
-        GBT_LEN    rootNodeLen = TREE_DEFLEN_MARKER;  // root node has no length. only used as input to gbt_load_tree_rek
-        tree                   = reader.load_tree(structuresize, &rootNodeLen);
+        if (!reader.error) {
+            GBT_LEN rootNodeLen = TREE_DEFLEN_MARKER;     // root node has no length. only used as input to gbt_load_tree_rek
+            tree                = reader.load_tree(structuresize, &rootNodeLen);
+        }
         fclose(input);
 
         if (reader.error) {
@@ -707,15 +709,16 @@ void TEST_load_tree() {
 
     // test invalid trees
     TEST_EXPECT_TREESTRING_FAILS_WITH("(;);", "Expected one of ',)'");
-    TEST_EXPECT_TREESTRING_FAILS_WITH("(17", "Unexpected end of file");
-    TEST_EXPECT_TREESTRING_FAILS_WITH("((((", "Unexpected end of file");
 
-    // TEST_EXPECT_TREESTRING_FAILS_WITH("[unclosed\ncomment", "while reading comment"); // @@@ fails an assertion
-    // TEST_EXPECT_TREESTRING_FAILS_WITH("[unclosed\ncomment [ bla ]", "while reading comment"); // @@@ fails an assertion
-
-    TEST_EXPECT_TREESTRING_FAILS_WITH("(a, 'b", "Unexpected end of file");
+    TEST_EXPECT_TREESTRING_FAILS_WITH("(17",         "Unexpected end of file");
+    TEST_EXPECT_TREESTRING_FAILS_WITH("((((",        "Unexpected end of file");
+    TEST_EXPECT_TREESTRING_FAILS_WITH("(a, 'b",      "Unexpected end of file");
     TEST_EXPECT_TREESTRING_FAILS_WITH("(a, b:5::::", "Unexpected end of file");
     TEST_EXPECT_TREESTRING_FAILS_WITH("(a, b:5:c:d", "Unexpected end of file");
+
+    TEST_EXPECT_TREESTRING_FAILS_WITH("[unclosed\ncomment",         "while reading comment");
+    TEST_EXPECT_TREESTRING_FAILS_WITH("[unclosed\ncomment [ bla ]", "while reading comment");
+
     TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("(a, b:5:c:d)", "akjhsd", "a,d", 2);
 
     // questionable accepted trees
