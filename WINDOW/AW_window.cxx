@@ -38,6 +38,26 @@ void AW_POPDOWN(AW_window *window){
     window->hide();
 }
 
+/** 
+ * CB wrapper for create_*_window calls to ensure that a window
+ * is only created once.
+ */
+void AW_POPUP(AW_window *window, AW_CL callback, AW_CL callback_data) {
+    typedef AW_window* (*popup_cb_t)(AW_root*, AW_CL);
+    typedef std::map<std::pair<popup_cb_t,AW_CL>, AW_window*> window_map;
+
+    static window_map windows; // previously popped up windows
+
+    std::pair<popup_cb_t, AW_CL> popup((popup_cb_t)callback, callback_data);
+
+    if (windows.find(popup) == windows.end()) {
+        windows[popup] = popup.first(AW_root::SINGLETON, popup.second);
+    }
+    
+    windows[popup]->activate();
+}
+
+
 // proxy functions handing down stuff to AW_at
 void AW_window::at(int x, int y){ _at.at(x,y); }
 void AW_window::at_x(int x) { _at.at_x(x); }
@@ -376,9 +396,8 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
 
     // make 'button' a real button if we've got a callback to run on click
     if (prvt->action_template.size() > 0) { 
-        const char* action_name = GBS_global_string("%s/%s", this->window_defaults_name, macro_name);
-        AW_action *act = action_register(action_name, prvt->action_template);
-        prvt->action_template = AW_action();
+        AW_action *act = action_register(macro_name);
+
         if (button_text) {
             act->set_label(button_text); // FIXME Mnemonic
         }
@@ -1606,8 +1625,19 @@ AW_action* AW_window::action(const char* action_id) {
 }
 
 /** Calls AW_root::action_register with the ID of this window prefixed to action_id */
-AW_action* AW_window::action_register(const char* action_id, const AW_action& act) {
-    return get_root()->action_register(local_id(action_id), act);
+AW_action* AW_window::action_register(const char* action_id) {
+    if (!action_id) {
+        // create unname action id if none supplied
+        // FIXME: remove this, client code should always supply macro_name aka action_id
+        int i = 1;
+        while (action_try(action_id = GBS_global_string("unnamed_%i", i)) != NULL) i++;
+    }
+
+    // create action using template action from pimpl
+    AW_action* act = get_root()->action_register(local_id(action_id), prvt->action_template);
+    // clear action template
+    prvt->action_template = AW_action(); 
+    return act;
 }
 
 /** Calls AW_root::action_register with the ID of this window prefixed to action_id */
