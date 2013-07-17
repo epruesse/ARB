@@ -12,6 +12,7 @@
 
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <arb_file.h>
 
 #define tree_assert(cond) arb_assert(cond)
 
@@ -287,6 +288,7 @@ static bool gbt_readNameAndLength(TreeReader *reader, GBT_TREE *node, GBT_LEN *l
                     setBranchName(reader, node, branchName);
                 }
                 else {
+                    UNCOVERED();
                     setReaderError(reader, "Expected branch-name or one of ':;,)'");
                 }
                 break;
@@ -374,6 +376,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                 }
             }
             else {
+                UNCOVERED();
                 tree_assert(reader->error);
             }
 
@@ -389,6 +392,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
             node->name    = name;
         }
         else {
+            UNCOVERED();
             setReaderError(reader, "Expected quoted string");
         }
     }
@@ -492,12 +496,195 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
 #include <test_unit.h>
 #endif
 
+static char *leafNames(GBT_TREE *tree, size_t& count) {
+    GB_CSTR       *name_array = GBT_get_names_of_species_in_tree(tree, &count);
+    GBS_strstruct  names(1024);
+
+    for (size_t n = 0; n<count; ++n) {
+        names.cat(name_array[n]);
+        names.put(',');
+    }
+    names.cut_tail(1);
+    free(name_array);
+
+    return names.release();
+}
+
+static GBT_TREE *loadFromFileContaining(const char *treeString) {
+    const char *filename = "trees/tmp.tree";
+    FILE       *out      = fopen(filename, "wt");
+    GBT_TREE   *tree     = NULL;
+
+    if (out) {
+        fputs(treeString, out);
+        fclose(out);
+        tree = TREE_load(filename, sizeof(GBT_TREE), NULL, 0, NULL);
+    }
+    else {
+        GB_export_IO_error("save tree", filename);
+    }
+
+    return tree;
+}
+
+static arb_test::match_expectation loading_tree_failed_with(GBT_TREE *tree, const char *errpart) {
+    using namespace   arb_test;
+    expectation_group expected;
+
+    expected.add(that(tree).is_equal_to_NULL());
+    expected.add(that(GB_have_error()).is_equal_to(true));
+    if (GB_have_error()) {
+        expected.add(that(GB_await_error()).does_contain(errpart));
+    }
+    return all().ofgroup(expected);
+}
+
+static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const char *names_expected, size_t count_expected) {
+    using namespace   arb_test;
+    expectation_group expected;
+
+    expected.add(that(tree).does_differ_from_NULL());
+    expected.add(that(GB_have_error()).is_equal_to(false));
+    if (!GB_have_error()) {
+        size_t  leafcount;
+        char   *names = leafNames(tree, leafcount);
+        expected.add(that(names).is_equal_to(names_expected));
+        expected.add(that(leafcount).is_equal_to(count_expected));
+        free(names);
+    }
+    return all().ofgroup(expected);
+}
+
+#define TEST_EXPECT_TREELOAD_FAILED_WITH(tree,errpart)         TEST_EXPECTATION(loading_tree_failed_with(tree, errpart))
+#define TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree,errpart) TEST_EXPECTATION__BROKEN(loading_tree_failed_with(tree, errpart))
+
+#define TEST_EXPECT_TREELOAD(tree,names,count)         TEST_EXPECTATION(loading_tree_succeeds(tree,names,count))
+#define TEST_EXPECT_TREELOAD__BROKEN(tree,names,count) TEST_EXPECTATION__BROKEN(loading_tree_succeeds(tree,names,count))
+
+#define TEST_EXPECT_TREEFILE_FAILS_WITH(name,errpart) do {                      \
+        GBT_TREE *tree = TREE_load(name, sizeof(GBT_TREE), NULL, 0, NULL);      \
+        TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                        \
+    } while(0)
+
+#define TEST_EXPECT_TREESTRING_FAILS_WITH(treeString,errpart) do {      \
+        GBT_TREE *tree = loadFromFileContaining(treeString);            \
+        TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                \
+    } while(0)
+
+// arguments 'names,count' are vs regression only!
+#define TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN(treeString,errpart,names,count) do {  \
+        GBT_TREE *tree = loadFromFileContaining(treeString);                            \
+        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, errpart);                        \
+        TEST_EXPECT_TREELOAD(tree, names, count);                                       \
+    } while(0)
+
 void TEST_load_tree() {
-    // check that loading a corrupted tree fails with an error
-    GBT_TREE *tree = TREE_load("corrupted.tree", sizeof(GBT_TREE), NULL, 0, NULL);
-    TEST_REJECT(tree);
-    TEST_EXPECT(GB_have_error());
-    TEST_EXPECT_ERROR_CONTAINS(GB_await_error(), "Error reading");
+    // just are few tests covering most of this module.
+    // more load tests are in ../../TOOLS/arb_test.cxx@TEST_SLOW_arb_read_tree
+
+    // simple succeeding tree load
+    {
+        char     *comment = NULL;
+        GBT_TREE *tree    = TREE_load("trees/test.tree", sizeof(GBT_TREE), &comment, 0, NULL);
+        // -> ../../UNIT_TESTER/run/trees/test.tree
+
+        TEST_EXPECT_TREELOAD(tree, "s1,s2,s3,s 4,s5,\"s-6\"", 6); // @@@ remove double-quotes from name?
+        TEST_EXPECT_CONTAINS(comment,
+                             // comment part from treefile:
+                             "tree covering most of tree reader code\n"
+                             "comment contains [extra brackets] inside comment\n");
+        TEST_EXPECT_CONTAINS(comment,
+                             // comment as appended by load:
+                             ": Loaded from trees/test.tree\n");
+
+        free(comment);
+        GBT_delete_tree(tree);
+    }
+
+    // test valid trees with strange or wrong behavior
+    {
+        GBT_TREE *tree = loadFromFileContaining("(,);");
+        TEST_EXPECT_TREELOAD(tree, ",", 2); // tree with 2 unamed species (weird, but ok)
+        GBT_delete_tree(tree);
+    }
+    {
+        GBT_TREE *tree = loadFromFileContaining("( a, (b,(c),d), (e,(f)) );");
+        TEST_EXPECT_TREELOAD__BROKEN(tree, "a,b,c,d,e,f", 6); // @@@ superfluous parenthesis confuse reader
+        TEST_EXPECT_TREELOAD(tree, "a,b,c,d", 4); // unwanted - just protect vs regression
+        GBT_delete_tree(tree);
+    }
+    {
+        GBT_TREE *tree = loadFromFileContaining("( (a), ((b),(c),(d)), ((e),(f)) );");
+        TEST_EXPECT_TREELOAD__BROKEN(tree, "a,b,c,d,e,f", 6); // @@@ superfluous parenthesis confuse reader
+        TEST_EXPECT_TREELOAD(tree, "a", 1); // unwanted - just protect vs regression
+        GBT_delete_tree(tree);
+    }
+    {
+        GBT_TREE *tree = loadFromFileContaining("(((((a)))), ((b, c)));");
+        TEST_EXPECT_TREELOAD__BROKEN(tree, "a,b,c", 3); // @@@ superfluous parenthesis confuse reader
+        TEST_EXPECT_TREELOAD(tree, "a", 1); // unwanted - just protect vs regression
+        GBT_delete_tree(tree);
+    }
+
+    // test forbidden trees
+    {
+        GBT_TREE *tree = loadFromFileContaining("();");
+        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
+        TEST_EXPECT_TREELOAD(tree, "", 1); // unwanted - just protect vs regression
+        GBT_delete_tree(tree);
+    }
+    {
+        GBT_TREE *tree = loadFromFileContaining(";");
+        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
+        TEST_EXPECT_TREELOAD(tree, "", 1); // unwanted - just protect vs regression
+        GBT_delete_tree(tree);
+    }
+    {
+        GBT_TREE *tree = loadFromFileContaining("");
+        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
+        TEST_EXPECT_TREELOAD(tree, "", 1); // unwanted - just protect vs regression
+        GBT_delete_tree(tree);
+    }
+    {
+        GBT_TREE *tree = loadFromFileContaining("(one);");
+        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "???"); // @@@ tree with 1 leaf should not load
+        TEST_EXPECT_TREELOAD(tree, "one", 1); // unwanted - just protect vs regression
+        GBT_delete_tree(tree);
+    }
+    {
+        GBT_TREE *tree = loadFromFileContaining("((((()))));");
+        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
+        TEST_EXPECT_TREELOAD(tree, "", 1); // unwanted - just protect vs regression
+        GBT_delete_tree(tree);
+    }
+    {
+        GBT_TREE *tree = loadFromFileContaining("(((((one)))));");
+        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "???");
+        TEST_EXPECT_TREELOAD(tree, "one", 1); // unwanted - just protect vs regression
+        GBT_delete_tree(tree);
+    }
+
+    // test invalid trees
+    TEST_EXPECT_TREESTRING_FAILS_WITH("(;);", "Expected one of ',)'");
+    // TEST_EXPECT_TREESTRING_FAILS_WITH("(17", "xxx"); // @@@ deadlocks
+    // TEST_EXPECT_TREESTRING_FAILS_WITH("((((", "xxx"); // @@@ deadlocks
+    // TEST_EXPECT_TREESTRING_FAILS_WITH("[unclosed\ncomment", "while reading comment"); // @@@ fails an assertion
+    // TEST_EXPECT_TREESTRING_FAILS_WITH("[unclosed\ncomment [ bla ]", "while reading comment"); // @@@ fails an assertion
+
+    // TEST_EXPECT_TREESTRING_FAILS_WITH("(a, 'b", "akjhsd"); // @@@ deadlocks
+    // TEST_EXPECT_TREESTRING_FAILS_WITH("(a, b:5::::", "akjhsd"); // @@@ deadlocks
+    // TEST_EXPECT_TREESTRING_FAILS_WITH("(a, b:5:c:d", "akjhsd"); // @@@ deadlocks
+    TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("(a, b:5:c:d)", "akjhsd", "a,d", 2);
+
+    // questionable accepted trees
+    TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("())", "xxx", "", 1); // @@@ at least warn!
+    TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("(a*,b%);", "xxx", "a*,b%", 2); // @@@ really accept such names?
+
+    // check errors
+    TEST_EXPECT_TREEFILE_FAILS_WITH("trees/nosuch.tree",    "No such file");
+    TEST_EXPECT_TREEFILE_FAILS_WITH("trees/corrupted.tree", "Error reading");
+
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink("trees/tmp.tree")); // cleanup
 }
 
 #endif // UNIT_TESTS
