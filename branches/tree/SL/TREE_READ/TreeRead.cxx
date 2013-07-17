@@ -69,6 +69,25 @@ public:
     char *takeComment();
 };
 
+TreeReader::TreeReader(FILE *input, const char *file_name)
+    : tree_file_name(strdup(file_name)),
+      in(input),
+      last_character(0),
+      line_cnt(1),
+      tree_comment(GBS_stropen(2048)),
+      max_found_branchlen(-1),
+      max_found_bootstrap(-1),
+      error(NULL),
+      lfmode(LF_UNKNOWN)
+{
+    read_tree_char();
+}
+
+TreeReader::~TreeReader() {
+    free(tree_file_name);
+    if (tree_comment) GBS_strforget(tree_comment);
+}
+
 void TreeReader::setError(const char *message) {
     tree_assert(!error);
     error = GBS_global_string("Error reading %s:%i: %s",
@@ -154,25 +173,6 @@ char TreeReader::read_char() {
     int c = get_char();
     last_character = c;
     return c;
-}
-
-TreeReader::TreeReader(FILE *input, const char *file_name)
-    : tree_file_name(strdup(file_name)),
-      in(input),
-      last_character(0),
-      line_cnt(1),
-      tree_comment(GBS_stropen(2048)),
-      max_found_branchlen(-1),
-      max_found_bootstrap(-1),
-      error(NULL),
-      lfmode(LF_UNKNOWN)
-{
-    read_tree_char();
-}
-
-TreeReader::~TreeReader() {
-    free(tree_file_name);
-    if (tree_comment) GBS_strforget(tree_comment);
 }
 
 char *TreeReader::takeComment() {
