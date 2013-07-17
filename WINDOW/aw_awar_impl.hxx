@@ -35,7 +35,6 @@ struct awar_gparam_binding {
 
 class AW_awar_impl : public AW_awar, virtual Noncopyable {
     AW_root_cblist       *callback_list;
-    AW_widget_refresh_cb *refresh_list;
     bool in_tmp_branch;
     std::list<awar_gparam_binding> gparam_bindings;
 

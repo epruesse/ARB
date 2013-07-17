@@ -570,7 +570,6 @@ GBDATA *AW_awar_pointer::read_pointer() {
 
 AW_awar_impl::AW_awar_impl(const char *var_name) 
   : callback_list(NULL),
-    refresh_list(NULL),
     in_tmp_branch(var_name && strncmp(var_name, "tmp/", 4) == 0),
     gb_origin(NULL),
     gb_var(NULL)
@@ -579,7 +578,6 @@ AW_awar_impl::AW_awar_impl(const char *var_name)
 }
 
 AW_awar_impl::~AW_awar_impl() {
-    delete refresh_list;
     free(awar_name);
 }
 
@@ -885,12 +883,12 @@ static void _aw_awar_notify_gparam(AW_root*, awar_gparam_binding* binding) {
             break;
         }
         case G_TYPE_BOOLEAN: {
-            long temp;
-            binding->awar->get(&temp);
-            g_value_set_boolean(&gval, temp != 0);
+            // workaround doesn't work because get(long&) doesn't work on awar_strings
+            // long temp;
+            // binding->awar->get(&temp);
+            // g_value_set_boolean(&gval, temp != 0);
             
-            //old code:
-            //g_value_set_boolean(&gval, binding->awar->read_as_bool());
+            g_value_set_boolean(&gval, binding->awar->read_as_bool());
             
             break;
         }
