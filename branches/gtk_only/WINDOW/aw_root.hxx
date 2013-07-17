@@ -25,6 +25,7 @@
 #include <vector>
 class AW_selection_list;
 class AW_button;
+class AW_action;
 
 typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL); // @@@ [CB] similar to AW_Window_Creator
 
@@ -84,6 +85,7 @@ class AW_root : virtual Noncopyable {
     // gtk dependent attributes are defined in a different header to keep this header portable
     pimpl             *prvt; /** < Contains all gtk dependent attributes. */
     GB_HASH           *action_hash; /** < Is used to buffer and replay remote actions. */
+    GB_HASH           *awar_hash;
     AW_default         application_database; /** < FIXME */
     std::vector<AW_button> button_list;
     int                active_windows;  // number of open windows
@@ -122,7 +124,6 @@ public:
     bool           value_changed;
     GtkWidget     *changer_of_variable;
     AW_active      active_mask;
-    GB_HASH       *awar_hash;
 
     bool           disable_callbacks;
     AW_window     *current_modal_window;
@@ -217,6 +218,13 @@ public:
 
     GB_ERROR save_properties(const char *filename = NULL) __ATTR__USERESULT;
 
+    AW_action* action(const char* action_id);
+    AW_action* action_try(const char* action_id);
+    AW_action* action_register(const char* action_id, const AW_action& act);
+    AW_action* action_register(const char* action_id, const char* label, const char* icon,
+                      const char* tooltip, const char* help_entry, AW_active mask);
+
+
     // Control sensitivity of buttons etc.:
     /**
      * Enable or disable the sensitivity of buttons defined in button_sense_list.  
@@ -231,6 +239,8 @@ public:
      * GTK does not have this type of focus.
      **/ 
     void apply_focus_policy(bool follow_mouse);
+
+
     void register_widget(GtkWidget* w, AW_active mask);
 
     void track_action(const char *action_id) { tracker->track_action(action_id); }
@@ -238,9 +248,6 @@ public:
 
     bool is_tracking() const { return tracker->is_tracking(); }
     UserActionTracker *get_tracker() { return tracker; }
-
-    void define_remote_command(class AW_cb *cbs);
-    AW_cb *search_remote_command(const char *action);
 
 #if defined(DEBUG)
     size_t callallcallbacks(int mode);

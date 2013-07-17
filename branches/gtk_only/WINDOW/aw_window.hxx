@@ -160,6 +160,7 @@ class AW_window : virtual Noncopyable {
 protected:
     class AW_window_gtk;
     AW_window_gtk* prvt; /*< Contains all gtk dependent attributes */
+  
 
     static void click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct);
 
@@ -188,6 +189,7 @@ protected:
     void init_window(const char *window_id, const char* window_name, 
                      int width, int height, bool resizable);
     
+
 public:
 
     // ************ This is not the public section *************
@@ -571,6 +573,13 @@ public:
     // gtk ready made buttons
     void create_font_button(const char *awar_name, const char *label);
     void create_color_button(const char *awar_name, const char *label);
+
+    // *** awar/action access helpers 
+    AW_action* action(const char* action_id);
+    AW_action* action_try(const char* action_id);
+    AW_action* action_register(const char* action_id, const AW_action& act);
+    AW_action* action_register(const char* action_id, const char* label, const char* icon,
+                      const char* tooltip, const char* help_entry, AW_active mask);
 };
 
 

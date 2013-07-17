@@ -29,6 +29,7 @@
 #include "aw_msg.hxx"
 #include "aw_select.hxx"
 #include "aw_status.hxx"
+#include "aw_action.hxx"
 
 // for gdb detection; should go into CORE, actually
 #include <sys/ptrace.h>
@@ -82,6 +83,13 @@ void AW_help_entry_pressed(AW_window */*window*/) {
 void AW_root::process_events() {
     gtk_main_iteration();
 }
+
+static bool AW_IS_VALID_HKEY(const char* key) {
+    GB_ERROR err = GB_check_hkey(key);
+    if (err) g_warning("%s",err);
+    return err == NULL;
+}
+
 
 
 AW_ProcessEventType AW_root::peek_key_event(AW_window*) {
@@ -147,28 +155,48 @@ GdkColor AW_root::getColor(unsigned int pixel) {
     //note: a copy is returned to avoid memory leaks. GdkColor is small and this should not be a problem.
 }
 
-void AW_root::define_remote_command(AW_cb *cbs) {
-    // popdown takes no parameters:
-#if defined(ASSERTION_USED)
-    aw_assert(!cbs->contains(AW_CB(AW_POPDOWN)) || !(cbs->get_cd1() || cbs->get_cd2()));
-#endif
-
-    AW_cb *old_cbs = (AW_cb*)GBS_write_hash(action_hash, cbs->id, (long)cbs);
-    // do not free old_cbs, cause it's still reachable from first widget that defined this remote command    
-
-    if (!old_cbs || old_cbs->is_equal(*cbs)) return;
-
-#if defined(DEBUG)
-    fprintf(stderr, "Warning: reused callback id '%s' for different callback\n", old_cbs->id);
-#if defined(DEVEL_RALF) && 1
-    aw_assert(0);
-#endif // DEVEL_RALF
-#endif // DEBUG
+/** Fetch action from hash, return NULL on failure */
+AW_action* AW_root::action_try(const char* action_id) {
+    if (action_id == NULL) return NULL;
+    return (AW_action*) GBS_read_hash(action_hash, action_id);
 }
 
-AW_cb *AW_root::search_remote_command(const char *action) {
-    return (AW_cb *)GBS_read_hash(action_hash, action);
+/** Fetch action from hash, terminate on failure */
+AW_action* AW_root::action(const char* action_id) { 
+    AW_action *res = action_try(action_id);
+    if (res == NULL) {
+        GBK_terminatef("Invalid action name '%s'!", action_id);
+    }
+    return res;
 }
+
+/** Register action */
+AW_action* AW_root::action_register(const char* action_id, const AW_action& _act) {
+    aw_return_val_if_fail(action_id != NULL, NULL);
+    aw_return_val_if_fail(GBS_read_hash(action_hash, action_id) == 0, NULL);
+
+    AW_action* act = new AW_action(_act);
+    act->set_id(action_id);
+    GBS_write_hash(action_hash, action_id, (long) act);
+
+    return act;
+}
+
+/** Register action */
+AW_action* AW_root::action_register(const char* action_id, 
+                           const char* label, const char *icon,
+                           const char* tooltip, const char* help_entry,
+                           AW_active mask) {
+    AW_action act;
+    act.set_label(label);
+    act.set_icon(icon);
+    act.set_tooltip(tooltip);
+    act.set_help(help_entry);
+    act.set_active_mask(mask);
+    
+    return action_register(action_id, act);
+}
+
 
 /**
  * This function used to set "focus follows mouse" for motif.
@@ -265,6 +293,7 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
                  int *argc, char **argv[]) 
     : prvt(new pimpl),
       action_hash(GBS_create_hash(1000, GB_MIND_CASE)),
+      awar_hash(GBS_create_hash(1000, GB_MIND_CASE)),
       application_database(load_properties(properties)),
       button_list(),
       no_exit(NoExit),
@@ -275,7 +304,6 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
       value_changed(false),
       changer_of_variable(NULL),
       active_mask(AWM_ALL),
-      awar_hash(GBS_create_hash(1000, GB_MIND_CASE)),
       disable_callbacks(false),
       current_modal_window(NULL),
       root_window(NULL)
@@ -317,6 +345,7 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
 AW_root::AW_root(const char *propertyFile) 
     : prvt(new pimpl),
       action_hash(GBS_create_hash(1000, GB_MIND_CASE)),
+      awar_hash(GBS_create_hash(1000, GB_MIND_CASE)),
       application_database(load_properties(propertyFile)),
       button_list(),
       no_exit(false),
@@ -326,7 +355,6 @@ AW_root::AW_root(const char *propertyFile)
       value_changed(false),
       changer_of_variable(NULL),
       active_mask(AWM_ALL),
-      awar_hash(GBS_create_hash(1000, GB_MIND_CASE)),
       disable_callbacks(false),
       current_modal_window(NULL),
       root_window(NULL)
@@ -490,14 +518,8 @@ void AW_root::add_timed_callback_never_disabled(int ms, const TimedCallback& tcb
 
 
 /// begin awar stuff
-static bool AW_IS_VALID_AWAR_NAME(const char* key) {
-    GB_ERROR err = GB_check_hkey(key);
-    if (err) g_warning("%s",err);
-    return err == NULL;
-}
-
 AW_awar *AW_root::awar_no_error(const char *var_name) {
-    aw_return_val_if_fail(AW_IS_VALID_AWAR_NAME(var_name), NULL);
+    aw_return_val_if_fail(AW_IS_VALID_HKEY(var_name), NULL);
 
     return (AW_awar*)GBS_read_hash(awar_hash, var_name);
 }
@@ -518,7 +540,7 @@ AW_awar *AW_root::awar(const char *var_name) {
 }
 
 AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_default default_file) {
-    aw_return_val_if_fail(AW_IS_VALID_AWAR_NAME(var_name), NULL);
+    aw_return_val_if_fail(AW_IS_VALID_HKEY(var_name), NULL);
 
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
@@ -530,7 +552,7 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_defau
 }
 
 AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, AW_default default_file) {
-    aw_return_val_if_fail(AW_IS_VALID_AWAR_NAME(var_name), NULL);
+    aw_return_val_if_fail(AW_IS_VALID_HKEY(var_name), NULL);
 
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
@@ -542,7 +564,7 @@ AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, A
 }
 
 AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default default_file) {
-    aw_return_val_if_fail(AW_IS_VALID_AWAR_NAME(var_name), NULL);
+    aw_return_val_if_fail(AW_IS_VALID_HKEY(var_name), NULL);
 
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
@@ -554,7 +576,7 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
 }
 
 AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
-    aw_return_val_if_fail(AW_IS_VALID_AWAR_NAME(var_name), NULL);
+    aw_return_val_if_fail(AW_IS_VALID_HKEY(var_name), NULL);
 
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {

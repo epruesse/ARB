@@ -3,6 +3,7 @@
 
 #include "aw_drawing_area.hxx"
 #include "aw_at_layout.hxx"
+#include "aw_action.hxx"
 
 
 /**
@@ -102,6 +103,9 @@ public:
 
     /** Contains the last callback struct created by AW_window::callback(). */
     AW_cb *d_callback;
+
+    /** Template for action to be created next (for setting help, cbs, etc prior to making button) */
+    AW_action action_template;
 
     /**The drawing area of this window. Might be NULL. */
     AwDrawingArea *drawing_area;
