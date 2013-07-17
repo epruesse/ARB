@@ -38,7 +38,6 @@
 //      AWARS
 
 class  AW_root_cblist;
-struct AW_widget_refresh_cb;
 
 // @@@ [CB] eliminate decls below? just use AW_RCB instead
 typedef AW_RCB  Awar_CB;
