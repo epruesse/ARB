@@ -28,9 +28,9 @@ enum tr_lfmode { LF_UNKNOWN, LF_N, LF_R, LF_NR, LF_RN, };
 
 class TreeReader : virtual Noncopyable {
 
-    char get_char();       // @@@ shall return int (needed for EOF); may cause deadlock
-    char read_tree_char(); // @@@ shall return int (needed for EOF); may cause deadlock
-    char read_char();      // @@@ shall return int (needed for EOF); may cause deadlock
+    int get_char();
+    int read_tree_char();
+    int read_char();
 
 
     void setError(const char *message);
@@ -94,13 +94,13 @@ void TreeReader::setError(const char *message) {
                               tree_file_name, line_cnt, message);
 }
 
-char TreeReader::get_char() {
+int TreeReader::get_char() {
     // reads character from stream
     // - converts linefeeds for DOS- and MAC-textfiles
     // - increments line_cnt
 
-    char c   = getc(in);
-    int  inc = 0;
+    int c   = getc(in);
+    int inc = 0;
 
     if (c == '\n') {
         switch (lfmode) {
@@ -126,7 +126,7 @@ char TreeReader::get_char() {
     return c;
 }
 
-char TreeReader::read_tree_char() {
+int TreeReader::read_tree_char() {
     // reads over tree comment(s) and whitespace.
     // tree comments are stored inside TreeReader
 
@@ -169,7 +169,7 @@ char TreeReader::read_tree_char() {
     return c;
 }
 
-char TreeReader::read_char() {
+int TreeReader::read_char() {
     int c = get_char();
     last_character = c;
     return c;
@@ -210,8 +210,13 @@ double TreeReader::eat_number() {
 }
 
 char *TreeReader::eat_quoted_string() {
-    /* Read in a quoted or unquoted string.
+    /*! Read in a quoted or unquoted string.
      * in quoted strings double quotes ('') are replaced by (')
+     *
+     * @return
+     *     NULL in case of error,
+     *     "" if no string present,
+     *     otherwise the found string.
      */
 
     char  buffer[1024];
@@ -283,10 +288,15 @@ void TreeReader::setBranchName(GBT_TREE *node, char *name) {
     }
 }
 
+static char *unnamedNodeName() {
+    static int i = 0;
+    return GBS_global_string_copy("unnamed%i", ++i);
+}
+
 bool TreeReader::eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN *len) {
     /* reads the branch-length and -name
        '*len' should normally be initialized with TREE_DEFLEN_MARKER
-     * returns the branch-length in 'len' and sets the branch-name of 'node'
+       * returns the branch-length in 'len' and sets the branch-name of 'node'
      * returns true if successful, otherwise reader->error gets set
      */
 
@@ -305,9 +315,14 @@ bool TreeReader::eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN *len) {
                     max_found_branchlen = *len;
                 }
                 break;
+            case EOF:
+                setError("Unexpected end of file");
+                break;
+
             default: {
                 char *branchName = eat_quoted_string();
                 if (branchName) {
+                    // if (branchName[0] == 0) freeset(branchName, unnamedNodeName());
                     setBranchName(node, branchName);
                 }
                 else {
@@ -399,7 +414,6 @@ GBT_TREE *TreeReader::load_tree(int structuresize, GBT_LEN *nodeLen) {
                 }
             }
             else {
-                UNCOVERED();
                 tree_assert(error);
             }
 
@@ -655,6 +669,12 @@ void TEST_load_tree() {
         GBT_delete_tree(tree);
     }
     {
+        GBT_TREE *tree = loadFromFileContaining("()");
+        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
+        TEST_EXPECT_TREELOAD(tree, "", 1); // unwanted - just protect vs regression
+        GBT_delete_tree(tree);
+    }
+    {
         GBT_TREE *tree = loadFromFileContaining(";");
         TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
         TEST_EXPECT_TREELOAD(tree, "", 1); // unwanted - just protect vs regression
@@ -687,14 +707,15 @@ void TEST_load_tree() {
 
     // test invalid trees
     TEST_EXPECT_TREESTRING_FAILS_WITH("(;);", "Expected one of ',)'");
-    // TEST_EXPECT_TREESTRING_FAILS_WITH("(17", "xxx"); // @@@ deadlocks
-    // TEST_EXPECT_TREESTRING_FAILS_WITH("((((", "xxx"); // @@@ deadlocks
+    TEST_EXPECT_TREESTRING_FAILS_WITH("(17", "Unexpected end of file");
+    TEST_EXPECT_TREESTRING_FAILS_WITH("((((", "Unexpected end of file");
+
     // TEST_EXPECT_TREESTRING_FAILS_WITH("[unclosed\ncomment", "while reading comment"); // @@@ fails an assertion
     // TEST_EXPECT_TREESTRING_FAILS_WITH("[unclosed\ncomment [ bla ]", "while reading comment"); // @@@ fails an assertion
 
-    // TEST_EXPECT_TREESTRING_FAILS_WITH("(a, 'b", "akjhsd"); // @@@ deadlocks
-    // TEST_EXPECT_TREESTRING_FAILS_WITH("(a, b:5::::", "akjhsd"); // @@@ deadlocks
-    // TEST_EXPECT_TREESTRING_FAILS_WITH("(a, b:5:c:d", "akjhsd"); // @@@ deadlocks
+    TEST_EXPECT_TREESTRING_FAILS_WITH("(a, 'b", "Unexpected end of file");
+    TEST_EXPECT_TREESTRING_FAILS_WITH("(a, b:5::::", "Unexpected end of file");
+    TEST_EXPECT_TREESTRING_FAILS_WITH("(a, b:5:c:d", "Unexpected end of file");
     TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("(a, b:5:c:d)", "akjhsd", "a,d", 2);
 
     // questionable accepted trees
