@@ -35,11 +35,10 @@ class TreeReader : virtual Noncopyable {
 
     void setError(const char *message);
     void drop_tree_char(char expected) {
-        int c = read_tree_char();
-        if (c != expected) {
-            // @@@ reactivate later (fails an assertion)
-            // setError(GBS_global_string("Expected '%c', got '%c'", expected, c));
+        if (last_character != expected) {
+            setError(GBS_global_string("Expected '%c', got '%c'", expected, last_character));
         }
+        read_tree_char();
     }
 
     void setBranchName(GBT_TREE *node, char *name);
@@ -310,9 +309,11 @@ bool TreeReader::eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN *len) {
                 break;
             case ':':
                 drop_tree_char(':');
-                *len = eat_number();
-                if (*len>max_found_branchlen) {
-                    max_found_branchlen = *len;
+                if (!error) {
+                    *len = eat_number();
+                    if (*len>max_found_branchlen) {
+                        max_found_branchlen = *len;
+                    }
                 }
                 break;
             case EOF:
@@ -357,67 +358,72 @@ GBT_TREE *TreeReader::load_tree(int structuresize, GBT_LEN *nodeLen) {
     if (last_character == '(') {
         drop_tree_char('(');
 
-        GBT_LEN   leftLen = TREE_DEFLEN_MARKER;
-        GBT_TREE *left    = load_tree(structuresize, &leftLen);
+        if (!error) {
+            GBT_LEN   leftLen = TREE_DEFLEN_MARKER;
+            GBT_TREE *left    = load_tree(structuresize, &leftLen);
 
-        tree_assert(contradicted(left, error));
+            tree_assert(contradicted(left, error));
 
-        if (left) {
-            if (eat_and_set_name_and_length(left, &leftLen)) {
-                switch (last_character) {
-                    case ')':               // single node
-                        *nodeLen = leftLen;
-                        node     = left;
-                        left     = 0;
-                        break;
+            if (left) {
+                if (eat_and_set_name_and_length(left, &leftLen)) {
+                    switch (last_character) {
+                        case ')':               // single node
+                            *nodeLen = leftLen;
+                            node     = left;
+                            left     = 0;
+                            break;
 
-                    case ',': {
-                        GBT_LEN   rightLen = TREE_DEFLEN_MARKER;
-                        GBT_TREE *right    = 0;
+                        case ',': {
+                            GBT_LEN   rightLen = TREE_DEFLEN_MARKER;
+                            GBT_TREE *right    = 0;
 
-                        while (last_character == ',' && !error) {
-                            if (right) { // multi-branch
-                                GBT_TREE *pair = createLinkedTreeNode(left, leftLen, right, rightLen, structuresize);
+                            while (last_character == ',' && !error) {
+                                if (right) { // multi-branch
+                                    GBT_TREE *pair = createLinkedTreeNode(left, leftLen, right, rightLen, structuresize);
 
-                                left  = pair; leftLen = 0;
-                                right = 0; rightLen = TREE_DEFLEN_MARKER;
+                                    left  = pair; leftLen = 0;
+                                    right = 0; rightLen = TREE_DEFLEN_MARKER;
+                                }
+
+                                drop_tree_char(',');
+                                if (!error) {
+                                    right = load_tree(structuresize, &rightLen);
+                                    if (right) eat_and_set_name_and_length(right, &rightLen);
+                                }
                             }
 
-                            drop_tree_char(',');
-                            right = load_tree(structuresize, &rightLen);
-                            if (right) eat_and_set_name_and_length(right, &rightLen);
+                            if (!error) {
+                                if (last_character == ')') {
+                                    node     = createLinkedTreeNode(left, leftLen, right, rightLen, structuresize);
+                                    *nodeLen = TREE_DEFLEN_MARKER;
+
+                                    left = 0;
+                                    right  = 0;
+
+                                    drop_tree_char(')');
+                                    if (error) GBT_delete_tree(node);
+                                }
+                                else {
+                                    setError("Expected one of ',)'");
+                                }
+                            }
+
+                            GBT_delete_tree(right);
+
+                            break;
                         }
 
-                        if (!error) {
-                            if (last_character == ')') {
-                                node     = createLinkedTreeNode(left, leftLen, right, rightLen, structuresize);
-                                *nodeLen = TREE_DEFLEN_MARKER;
-
-                                left = 0;
-                                right  = 0;
-
-                                drop_tree_char(')');
-                            }
-                            else {
-                                setError("Expected one of ',)'");
-                            }
-                        }
-
-                        GBT_delete_tree(right);
-
-                        break;
+                        default:
+                            setError("Expected one of ',)'");
+                            break;
                     }
-
-                    default:
-                        setError("Expected one of ',)'");
-                        break;
                 }
-            }
-            else {
-                tree_assert(error);
-            }
+                else {
+                    tree_assert(error);
+                }
 
-            GBT_delete_tree(left);
+                GBT_delete_tree(left);
+            }
         }
     }
     else {                      // single node
