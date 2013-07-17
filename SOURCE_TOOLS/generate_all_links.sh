@@ -309,6 +309,7 @@ symlink_file ../STAT/st_window.hxx INCLUDE/st_window.hxx &&
 symlink_file ../UNIT_TESTER/test_unit.h INCLUDE/test_unit.h &&
 symlink_file ../UNIT_TESTER/test_global.h INCLUDE/test_global.h &&
 symlink_file ../UNIT_TESTER/test_helpers.h INCLUDE/test_helpers.h &&
+symlink_file ../WINDOW/aw_action.hxx INCLUDE/aw_action.hxx &&
 symlink_file ../WINDOW/aw_advice.hxx INCLUDE/aw_advice.hxx &&
 symlink_file ../WINDOW/aw_area_management.hxx INCLUDE/aw_area_management.hxx &&
 symlink_file ../WINDOW/aw_assert.hxx INCLUDE/aw_assert.hxx &&
@@ -348,6 +349,7 @@ symlink_file ../WINDOW/aw_question.hxx INCLUDE/aw_question.hxx &&
 symlink_file ../WINDOW/aw_root.hxx INCLUDE/aw_root.hxx &&
 symlink_file ../WINDOW/aw_scalar.hxx INCLUDE/aw_scalar.hxx &&
 symlink_file ../WINDOW/aw_select.hxx INCLUDE/aw_select.hxx &&
+symlink_file ../WINDOW/aw_signal.hxx INCLUDE/aw_signal.hxx &&
 symlink_file ../WINDOW/aw_simple_device.hxx INCLUDE/aw_simple_device.hxx &&
 symlink_file ../WINDOW/aw_stylable.hxx INCLUDE/aw_stylable.hxx &&
 symlink_file ../WINDOW/aw_window.hxx INCLUDE/aw_window.hxx &&
