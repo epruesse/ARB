@@ -1627,10 +1627,15 @@ AW_action* AW_window::action(const char* action_id) {
 /** Calls AW_root::action_register with the ID of this window prefixed to action_id */
 AW_action* AW_window::action_register(const char* action_id) {
     if (!action_id) {
-        // create unname action id if none supplied
-        // FIXME: remove this, client code should always supply macro_name aka action_id
+        // WORKAROUND for empty action_id (no macro_name supploed)
         int i = 1;
         while (action_try(action_id = GBS_global_string("unnamed_%i", i)) != NULL) i++;
+    } 
+    else if (action_try(action_id)) {
+        // WORKAROUND for dupilicate action_id (e.g. CLOSE on SPECIES_INFO DETACH)
+        int i = 1;
+        while (action_try(GBS_global_string("%s_%i", action_id, i)) != NULL) i++;
+        action_id = GBS_global_string("%s_%i", action_id, i);
     }
 
     // create action using template action from pimpl
