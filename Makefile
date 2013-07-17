@@ -461,13 +461,7 @@ LINK_SHARED_LIB := $(GPP) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link sh
 endif
 
 # other used tools
-
-
-ifdef DARWIN
-	XMKMF := $(PREFIX)/bin/xmkmf
-else
-	XMKMF := xmkmf
-endif
+XMKMF := xmkmf
 
 MAKEDEPEND_PLAIN = makedepend
 
