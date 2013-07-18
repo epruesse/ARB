@@ -71,55 +71,70 @@ GB_ERROR AW_awar_impl::write_pointer(GBDATA *, bool) {
     GBK_terminatef("AWAR read access failure. Called %s on awar %s of type %s", \
                 __PRETTY_FUNCTION__, get_name(), get_type_name())
 
-__ATTR__NORETURN const char *AW_awar_impl::read_char_pntr() {
+const char *AW_awar_impl::read_char_pntr() {
     AWAR_READ_ACCESS_FAILED;
+    return NULL; //is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN double  AW_awar_impl::read_float() {
+double AW_awar_impl::read_float() {
     AWAR_READ_ACCESS_FAILED;
+    return 0.0f;//is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN double  AW_awar_impl::read_as_float() {
+double AW_awar_impl::read_as_float() {
     AWAR_READ_ACCESS_FAILED;
+    return 0.0f; //is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN bool    AW_awar_impl::read_as_bool() {
+ bool AW_awar_impl::read_as_bool() {
     AWAR_READ_ACCESS_FAILED;
+    return false; //is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN long    AW_awar_impl::read_int() {
+long AW_awar_impl::read_int() {
     AWAR_READ_ACCESS_FAILED;
+    return 0;//is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN GBDATA *AW_awar_impl::read_pointer() {
+GBDATA *AW_awar_impl::read_pointer() {
     AWAR_READ_ACCESS_FAILED;
+    return NULL; //is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN char   *AW_awar_impl::read_string() {
+char *AW_awar_impl::read_string() {
     AWAR_READ_ACCESS_FAILED;
+    return NULL; //is never reached, only exists to avoid compiler warning
 }
 
 #define AWAR_TARGET_FAILURE \
     GBK_terminatef("AWAR target access failure. Called %s on awar of type %s", \
                    __PRETTY_FUNCTION__, get_type_name())
 
-__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(char **) {
+AW_awar *AW_awar_impl::add_target_var(char **) {
     AWAR_TARGET_FAILURE;
+    return NULL;//is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(float *) {
+AW_awar *AW_awar_impl::add_target_var(float *) {
     AWAR_TARGET_FAILURE;
+    return NULL;//is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN AW_awar *AW_awar_impl::add_target_var(long *) {
+AW_awar *AW_awar_impl::add_target_var(long *) {
     AWAR_TARGET_FAILURE;
+    return NULL; //is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN GB_ERROR AW_awar_impl::toggle_toggle() {
+GB_ERROR AW_awar_impl::toggle_toggle() {
     AWAR_TARGET_FAILURE;
+    return 0;
 }
-__ATTR__NORETURN AW_awar *AW_awar_impl::set_minmax(float, float) {
+AW_awar *AW_awar_impl::set_minmax(float, float) {
     AWAR_TARGET_FAILURE;
+    return NULL; //is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN float    AW_awar_impl::get_min() const {
+float AW_awar_impl::get_min() const {
     AWAR_TARGET_FAILURE;
+    return 0.0f;//is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN float    AW_awar_impl::get_max() const {
+float AW_awar_impl::get_max() const {
     AWAR_TARGET_FAILURE;
+    return 0.0f; //is never reached, only exists to avoid compiler warning
 }
-__ATTR__NORETURN AW_awar *AW_awar_impl::set_srt(const char *) {
+AW_awar *AW_awar_impl::set_srt(const char *) {
     AWAR_TARGET_FAILURE;
+    return NULL; //is never reached, only exists to avoid compiler warning
 }
 
 
@@ -862,7 +877,6 @@ static void _aw_awar_notify_gparam(AW_root*, awar_gparam_binding* binding) {
             g_object_set_property(binding->obj, binding->pspec->name, &gval);
         }
     } else {
-        FIXME("Replace OSX workaround with a real solution");
         switch(G_VALUE_TYPE(&gval)) {
         case G_TYPE_STRING: {
             char* str = binding->awar->read_as_string();
@@ -871,25 +885,15 @@ static void _aw_awar_notify_gparam(AW_root*, awar_gparam_binding* binding) {
             break;
         } 
         case G_TYPE_DOUBLE: {
-            double temp;
-            binding->awar->get(&temp);
-            g_value_set_double(&gval, temp);
+            g_value_set_double(&gval, binding->awar->read_float());
             break;
         }
         case G_TYPE_INT: {
-            long temp;
-            binding->awar->get(&temp);
-            g_value_set_int(&gval, temp);
+            g_value_set_int(&gval, binding->awar->read_int());
             break;
         }
         case G_TYPE_BOOLEAN: {
-            // workaround doesn't work because get(long&) doesn't work on awar_strings
-            // long temp;
-            // binding->awar->get(&temp);
-            // g_value_set_boolean(&gval, temp != 0);
-            
-            g_value_set_boolean(&gval, binding->awar->read_as_bool());
-            
+            g_value_set_boolean(&gval, binding->awar->read_as_bool()); 
             break;
         }
         default:
