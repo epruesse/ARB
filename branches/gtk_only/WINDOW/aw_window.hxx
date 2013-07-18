@@ -233,7 +233,6 @@ public:
 
     void  create_invisible(int columns);
     void *_create_option_entry(GB_TYPES type, const char *name, const char *mnemonic, const char *name_of_color);
-    void  _set_activate_callback(GtkWidget *widget);
     void  unset_at_commands();
 
     AW_color_idx alloc_named_data_color(int colnum, char *colorname);

@@ -230,22 +230,6 @@ void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
 }
 
 
-void AW_window::_set_activate_callback(GtkWidget *widget) {
-    if (prvt->callback && (long)prvt->callback != 1) {
-        if (!prvt->callback->help_text && _at.helptext_for_next_button) {
-            prvt->callback->help_text = _at.helptext_for_next_button;
-            _at.helptext_for_next_button = 0;
-        }
-        
-        g_signal_connect((gpointer)widget, "clicked", G_CALLBACK(AW_window::click_handler),
-                         (gpointer)prvt->callback);
-    }
-    prvt->callback = NULL;
-}
-
-
-
-
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
