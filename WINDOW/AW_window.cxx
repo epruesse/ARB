@@ -406,7 +406,6 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
         gtk_container_add(GTK_CONTAINER(button), button_label);
        
         act->bind(button, "clicked");
-        this->_set_activate_callback(button);
         
         get_root()->register_widget(button, _at.widget_mask);
     } 
@@ -558,9 +557,8 @@ void AW_window::create_toggle(const char *var_name, bool inverse,
     awar->bind_value(G_OBJECT(checkButton), "active",
                      inverse ? new _awar_inverse_bool_mapper() : NULL);
 
-    if (prvt->callback) {
-      _set_activate_callback(checkButton);
-    }
+
+    // fixme handle action?
     
     put_with_label(checkButton);   
 }
