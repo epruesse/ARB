@@ -159,10 +159,6 @@ protected:
     class AW_window_gtk;
     AW_window_gtk* prvt; /*< Contains all gtk dependent attributes */
   
-
-    static void click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct);
-
-
     void create_devices();
 
     /* put a widget into prvt->fixedArea according to _at.

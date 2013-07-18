@@ -75,11 +75,6 @@ void AW_normal_cursor(AW_root *awr) {
   awr->set_cursor(NORMAL_CURSOR);
 }
 
-void AW_help_entry_pressed(AW_window */*window*/) {
-    AW_root::SINGLETON->set_help_active(true);
-    AW_root::SINGLETON->set_cursor(HELP_CURSOR);
-}
-
 void AW_root::process_events() {
     gtk_main_iteration();
 }
@@ -89,8 +84,6 @@ static bool AW_IS_VALID_HKEY(const char* key) {
     if (err) g_warning("%s",err);
     return err == NULL;
 }
-
-
 
 AW_ProcessEventType AW_root::peek_key_event(AW_window*) {
     GdkEvent *ev = gdk_event_peek();
