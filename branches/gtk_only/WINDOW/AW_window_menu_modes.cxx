@@ -119,7 +119,8 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     // register clicked callback
     AW_cb *cbs = new AW_cb(this, f, cd1, cd2, 0);
     cbs->help_text = helpText;
-    g_signal_connect((gpointer)button, "toggled", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
+    // FIXME
+    // g_signal_connect((gpointer)button, "toggled", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
 
     // register F1 - Fn accelerators
     // jumping through some hoops here. the "toggled" signal doesn't work, so we create

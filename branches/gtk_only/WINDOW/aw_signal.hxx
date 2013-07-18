@@ -17,12 +17,17 @@ typedef struct _GtkWidget GtkWidget;
  * first registered, last executed. 
  */
 class AW_signal {
+private:
     struct Pimpl;
     Pimpl *prvt;
 
+protected:
+    virtual bool pre_emit() { return true; }
+    virtual void post_emit() {}
+
 public:
     AW_signal();
-    ~AW_signal();
+    virtual ~AW_signal();
     AW_signal(const AW_signal&);
     AW_signal& operator=(const AW_signal&);
 

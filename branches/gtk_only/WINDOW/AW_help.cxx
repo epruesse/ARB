@@ -29,6 +29,16 @@
 #define AWAR_HELPSEARCH AWAR_HELP "search"
 
 
+void AW_help_entry_pressed(AW_window */*window*/) {
+    AW_root *root = AW_root::SINGLETON;
+    if (root->is_help_active()) {
+        root->set_help_active(false);
+    } else {
+        root->set_help_active(true);
+        root->set_cursor(HELP_CURSOR);
+    }
+}
+
 void AW_openURL(AW_root *aw_root, const char *url) {
     GB_CSTR  ka;
     char    *browser = aw_root->awar(AWAR_WWW_BROWSER)->read_string();
@@ -473,10 +483,10 @@ static void aw_help_search(AW_window *aww) {
     free(searchtext);
 }
 
-void AW_POPUP_HELP(AW_window *aw, AW_CL /* char */ helpcd) {
+void AW_POPUP_HELP(AW_window *, AW_CL /* char */ helpcd) {
     static AW_window_simple *aws = 0;
 
-    AW_root *awr       = aw->get_root();
+    AW_root *awr       = AW_root::SINGLETON;
     char    *help_file = (char*)helpcd;
 
     if (!aws) {

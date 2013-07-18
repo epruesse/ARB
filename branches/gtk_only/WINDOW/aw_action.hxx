@@ -24,6 +24,9 @@ private:
     AW_action& operator=(const AW_action&);
 
     void set_id(const char*);
+protected:
+    virtual bool pre_emit();
+    virtual void post_emit();
 
 public:
     AW_signal  dclick;  // triggered on double click

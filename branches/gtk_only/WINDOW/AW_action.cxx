@@ -185,50 +185,39 @@ AW_action::~AW_action() {
     if (help_entry) free(help_entry);
 }
 
+
 /**
- * handler for click-callbacks
- * takes care of recording actions and displaying help on ?-cursor
+ * Pre-emission hook for things that have to be done before each action cb
+ * - help
+ * - macro recording
  */
-void AW_window::click_handler(GtkWidget* /*wgt*/, gpointer aw_cb_struct) {
-    AW_cb *cbs = (AW_cb *) aw_cb_struct;
-    
+bool AW_action::pre_emit() {
     AW_root *root = AW_root::SINGLETON;
-     
+
     if (root->is_help_active()) {
         root->set_help_active(false);
         root->set_cursor(NORMAL_CURSOR);
 
-        if (cbs->help_text && ((GBS_string_matches(cbs->help_text, "*.ps", GB_IGNORE_CASE)) ||
-                               (GBS_string_matches(cbs->help_text, "*.hlp", GB_IGNORE_CASE)) ||
-                               (GBS_string_matches(cbs->help_text, "*.help", GB_IGNORE_CASE))))
-        {
-            AW_POPUP_HELP(cbs->aw, (AW_CL)cbs->help_text);
+        if (help_entry) {
+            AW_POPUP_HELP(NULL, (AW_CL)help_entry);
         }
-        else {
-            aw_message("Sorry no help available");
-        }
-        return;
+        return false; // action is done, showing the help
     }
 
-    if (root->is_tracking()) root->track_action(cbs->id);
-
-    if (cbs->contains(AW_POPUP)) {
-        cbs->run_callbacks();
+    if (root->is_tracking()) { 
+        root->track_action(id);
     }
-    else {
-        root->set_cursor(WAIT_CURSOR);
-        
-        cbs->run_callbacks();
-        
-        if (root->is_help_active()) {
-            root->set_cursor(HELP_CURSOR);
-        }
-        else {
-            root->set_cursor(NORMAL_CURSOR);
-        }
-    }      
+
+    root->set_cursor(WAIT_CURSOR);
+    return true;
 }
 
+void AW_action::post_emit() {
+    AW_root *root = AW_root::SINGLETON;
+    if (! root->is_help_active()) {
+        AW_root::SINGLETON->set_cursor(NORMAL_CURSOR);
+    }
+}
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>

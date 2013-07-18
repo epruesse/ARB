@@ -66,12 +66,11 @@ void AW_window::at_shift(int x, int y){ _at.at_shift(x,y); }
 void AW_window::at_newline(){ _at.at_newline(); }
 bool AW_window::at_ifdef(const  char *id){  return _at.at_ifdef(id); }
 void AW_window::at_set_to(bool attach_x, bool attach_y, int xoff, int yoff) {
-  _at.at_set_to(attach_x, attach_y, xoff, yoff);
+    _at.at_set_to(attach_x, attach_y, xoff, yoff);
 }
 void AW_window::at_unset_to() { _at.at_unset_to(); }
 void AW_window::unset_at_commands() { 
     _at.unset_at_commands();     
-    // FIXME: unset registered callbacks?!
 }
 
 void AW_window::at_set_min_size(int xmin, int ymin) { _at.at_set_min_size(xmin, ymin); }
@@ -662,10 +661,12 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
     //END HACK
     
     if (prvt->d_callback) {
+        /*
         g_signal_connect(G_OBJECT(entry), "activate",
                          G_CALLBACK(AW_window::click_handler),
                          (gpointer) prvt->d_callback);
         prvt->d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
+        */
         // FIXME get_root()->define_remote_command(prvt->d_callback);
     }
     put_with_label(scrolled_entry);
@@ -958,7 +959,7 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
 
     AW_cb *cbs = new AW_cb(this, wcb, helpText);
 
-    g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
+    // g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
 
     cbs->id = strdup(cmd);
     // FIXME get_root()->define_remote_command(cbs);

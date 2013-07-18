@@ -133,10 +133,14 @@ void AW_signal::connect(const RootCallback& rcb) {
 
 /** Emits the signal (i.e. runs all connected callbacks) */
 void AW_signal::emit() {
+    if (!pre_emit()) return;
+
     for (std::list<Slot*>::iterator it = prvt->slots.begin();
          it != prvt->slots.end(); ++it) {
         (*it)->emit();
     }
+
+    post_emit();
 }
 
 /** Disconnects all callbacks from signal */
