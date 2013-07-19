@@ -5,17 +5,28 @@ PROG  = PHYML_20130708
 
 
 # ARBs standard target
-$(MAIN) : phy
+$(MAIN) : phyml.stamp
 
 
 clean :
-	rm -rf build && \
+	rm -rf build
+	rm -f phyml.stamp
 	rm -f $(ARBHOME)/bin/phyml_20130708
 
-phy : 
+
+
+build/config.status:
 	mkdir -p build && \
 	cd build && \
-	../phyml/configure CPP='' --prefix=$(ARBHOME) --program-suffix=_20130708 && \
-	make && make install
+        ../phyml/configure CPP='' --prefix=$(ARBHOME) --program-suffix=_20130708
 
-.PHONY : clean phy
+phyml.stamp : build/config.status
+	cd build && make && make install
+	touch phyml.stamp
+
+	
+
+.PHONY : clean
+
+
+	
