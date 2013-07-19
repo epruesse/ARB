@@ -68,6 +68,8 @@ struct AW_signal_g_signal_binding {
 struct AW_signal::Pimpl {
     std::list<Slot*> slots;
     std::list<AW_signal_g_signal_binding> gsignals;
+    bool enabled;
+    Pimpl() : enabled(true) {}
 };
 
 
@@ -133,6 +135,7 @@ void AW_signal::connect(const RootCallback& rcb) {
 
 /** Emits the signal (i.e. runs all connected callbacks) */
 void AW_signal::emit() {
+    if (!prvt->enabled) return;
     if (!pre_emit()) return;
 
     for (std::list<Slot*>::iterator it = prvt->slots.begin();
@@ -154,6 +157,24 @@ void AW_signal::clear() {
 
 
 /////////////////////// binding to GTK / GLIB Signals ////////////////////////
+
+
+/**
+ * Enables/disables this signal. Connected gtk widgets will have
+ * their sensitivity changed accordingly.
+ */
+void AW_signal::set_enabled(bool enable) {
+    prvt->enabled = enable;
+    
+    // change status of connected widgets
+    for (std::list<AW_signal_g_signal_binding>::iterator it = prvt->gsignals.begin();
+         it != prvt->gsignals.end(); ++it) {
+        if (GTK_IS_WIDGET(it->object)) {
+            gtk_widget_set_sensitive(GTK_WIDGET(it->object), enable);
+        }
+    }
+
+}
 
 /**
  * Connects a signal of a GTK widget to this signal.
@@ -244,11 +265,6 @@ void AW_signal_g_signal_binding::connect(AW_signal* s) {
     handler_id = g_signal_connect(object, sig_name, 
                                   G_CALLBACK(_aw_signal_received_from_widget), s);
 }
-
-
-
-
-
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>

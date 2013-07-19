@@ -37,6 +37,8 @@ public:
     void bind(GtkWidget*, const char* signal);
     void unbind(GtkWidget*, const char* signal);
    
+    void set_enabled(bool);
+
     void emit();
     void clear();
 };

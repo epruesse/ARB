@@ -36,11 +36,12 @@ public:
     void set_tooltip(const char*);
     void set_help(const char*);
     void set_active_mask(AW_active);
-
     const char* get_id() const;
     const char* get_label() const;
     const char* get_icon() const;
     const char* get_tooltip() const;
     const char* get_help() const;
     AW_active   get_active_mask() const;
+
+    void enable_by_mask(AW_active);
 };
