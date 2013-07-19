@@ -1,0 +1,165 @@
+/*ARBDB ASCII*/
+window	%% (%
+	font		"8x13bold"
+	background		"#fb0"
+	foreground		"black"
+	color_1		"red"
+	color_2		"green"
+	color_3		"blue"
+	windows	%% (%
+		MERGE_SELECT_TWO_DATABASES	%% (%
+			width	%i 720
+			height	%i 575
+			posx	%i 196
+			posy	%i 74
+			%) /*MERGE_SELECT_TWO_DATABASES*/
+
+		ARB_MERGE	%% (%
+			width	%i 360
+			height	%i 385
+			posx	%i 379
+			posy	%i 0
+			%) /*ARB_MERGE*/
+
+		MERGE_ALIGNMENTS	%% (%
+			width	%i 560
+			height	%i 345
+			posx	%i 282
+			posy	%i 386
+			%) /*MERGE_ALIGNMENTS*/
+
+		TRANSFER_SPECIES	%% (%
+			width	%i 1000
+			height	%i 720
+			posx	%i 65
+			posy	%i 57
+			%) /*TRANSFER_SPECIES*/
+
+		HELP_WINDOW	%% (%
+			width	%i 720
+			height	%i 600
+			posx	%i 240
+			posy	%i 192
+			%) /*HELP_WINDOW*/
+
+		ALIGNMENT_CONTROL_1	%% (%
+			width	%i 400
+			height	%i 350
+			posx	%i 82
+			posy	%i 388
+			%) /*ALIGNMENT_CONTROL_1*/
+
+		ALIGNMENT_CONTROL_2	%% (%
+			width	%i 400
+			height	%i 350
+			posx	%i 648
+			posy	%i 387
+			%) /*ALIGNMENT_CONTROL_2*/
+
+		SYNCRONIZE_NAMES	%% (%
+			width	%i 480
+			height	%i 240
+			posx	%i 295
+			posy	%i 356
+			%) /*SYNCRONIZE_NAMES*/
+
+		AUTORENAME_SPECIES	%% (%
+			width	%i 320
+			height	%i 240
+			posx	%i 110
+			posy	%i 431
+			%) /*AUTORENAME_SPECIES*/
+
+		TRANSFER_FIELD	%% (%
+			width	%i 240
+			height	%i 320
+			posx	%i 445
+			posy	%i 489
+			%) /*TRANSFER_FIELD*/
+
+		MERGE_EXTENDEDS	%% (%
+			width	%i 560
+			height	%i 640
+			posx	%i 284
+			posy	%i 168
+			%) /*MERGE_EXTENDEDS*/
+
+		EXTENDED_RENAME_1	%% (%
+			width	%i 280
+			height	%i 130
+			posx	%i 230
+			posy	%i 435
+			%) /*EXTENDED_RENAME_1*/
+
+		EXTENDED_RENAME_2	%% (%
+			width	%i 280
+			height	%i 130
+			posx	%i 597
+			posy	%i 462
+			%) /*EXTENDED_RENAME_2*/
+
+		MERGE_TREES	%% (%
+			width	%i 560
+			height	%i 440
+			posx	%i 295
+			posy	%i 374
+			%) /*MERGE_TREES*/
+
+		TREE_RENAME_1	%% (%
+			width	%i 280
+			height	%i 130
+			posx	%i 243
+			posy	%i 639
+			%) /*TREE_RENAME_1*/
+
+		TREE_RENAME_2	%% (%
+			width	%i 280
+			height	%i 130
+			posx	%i 610
+			posy	%i 644
+			%) /*TREE_RENAME_2*/
+
+		WINDOW_PROPERTIES	%% (%
+			width	%i 596
+			height	%i 332
+			posx	%i 240
+			posy	%i 432
+			%) /*WINDOW_PROPERTIES*/
+
+		MERGE_SAI	%% (%
+			width	%i 560
+			height	%i 640
+			posx	%i 323
+			posy	%i 172
+			%) /*MERGE_SAI*/
+
+		SAI_RENAME_1	%% (%
+			width	%i 280
+			height	%i 130
+			posx	%i 77
+			posy	%i 532
+			%) /*SAI_RENAME_1*/
+
+		SAI_RENAME_2	%% (%
+			width	%i 280
+			height	%i 130
+			posx	%i 805
+			posy	%i 540
+			%) /*SAI_RENAME_2*/
+
+		SAVE_ARB_DB	%% (%
+			width	%i 360
+			height	%i 355
+			posx	%i 373
+			posy	%i 410
+			%) /*SAVE_ARB_DB*/
+
+		%) /*windows*/
+
+	%) /*window*/
+
+awt_rename	%% (%
+	use_advice	%i 1
+	save_data	%i 1
+	%) /*awt_rename*/
+
