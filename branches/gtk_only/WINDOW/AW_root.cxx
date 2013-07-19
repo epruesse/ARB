@@ -22,6 +22,7 @@
 #include "aw_awar_impl.hxx"
 #include <gdk/gdkx.h>
 #include <vector>
+#include <unordered_map>
 #include "aw_awar_defs.hxx"
 #include "aw_window.hxx"
 #include "aw_global_awars.hxx"
@@ -40,22 +41,20 @@
 
 AW_root *AW_root::SINGLETON = NULL;
 
-class AW_root::pimpl {
-private:
-    friend class AW_root;
+typedef std::unordered_map<std::string, AW_action*> action_hash_t;
+typedef std::unordered_map<std::string, AW_awar*> awar_hash_t;
 
+struct AW_root::pimpl : public Noncopyable {
     GdkColormap* colormap; /** < Contains a color for each value in AW_base::AW_color_idx */
     AW_rgb  *color_table; /** < Contains pixel values that can be used to retrieve a color from the colormap  */
     AW_rgb foreground; /** <Pixel value of the foreground color */
-    GtkWidget* last_widget; /** < TODO, no idea what it does */
     GdkCursor* cursors[3]; /** < The available cursors. Use AW_root::AW_Cursor as index when accessing */    
-    
-    pimpl() : colormap(NULL), color_table(NULL), foreground(0), last_widget(NULL)  {}
-    
-    
-    GtkWidget* get_last_widget() const { return last_widget; }
-    void set_last_widget(GtkWidget* w) { last_widget = w; }
-    
+    AW_active  active_mask;
+
+    action_hash_t action_hash;
+    awar_hash_t   awar_hash;
+
+    pimpl() : colormap(NULL), color_table(NULL), foreground(0) {}
 };
 
 /// functions
@@ -68,11 +67,11 @@ void AW_system(AW_window *aww, const char *command, const char *auto_help_file) 
 }
 
 void AW_clock_cursor(AW_root *awr) {
-  awr->set_cursor(WAIT_CURSOR);
+    awr->set_cursor(WAIT_CURSOR);
 }
 
 void AW_normal_cursor(AW_root *awr) {
-  awr->set_cursor(NORMAL_CURSOR);
+    awr->set_cursor(NORMAL_CURSOR);
 }
 
 void AW_root::process_events() {
@@ -151,7 +150,9 @@ GdkColor AW_root::getColor(unsigned int pixel) {
 /** Fetch action from hash, return NULL on failure */
 AW_action* AW_root::action_try(const char* action_id) {
     if (action_id == NULL) return NULL;
-    return (AW_action*) GBS_read_hash(action_hash, action_id);
+    std::string id(action_id);
+    if (prvt->action_hash.find(id) == prvt->action_hash.end()) return NULL;
+    return prvt->action_hash[id];
 }
 
 /** Fetch action from hash, terminate on failure */
@@ -165,12 +166,23 @@ AW_action* AW_root::action(const char* action_id) {
 
 /** Register action */
 AW_action* AW_root::action_register(const char* action_id, const AW_action& _act) {
-    aw_return_val_if_fail(action_id != NULL, NULL);
-    aw_return_val_if_fail(GBS_read_hash(action_hash, action_id) == 0, NULL);
-
+    if (!action_id) {
+        // WORKAROUND for empty action_id (no macro_name supploed)
+        int i = 1;
+        while (action_try(action_id = GBS_global_string("unnamed_%i", i)) != NULL) i++;
+        aw_warning("replaced missing action name with '%s'", action_id);
+    } 
+    else if (action_try(action_id)) {
+        // WORKAROUND for duplicate action_id (e.g. CLOSE on SPECIES_INFO DETACH)
+        int i = 1;
+        while (action_try(GBS_global_string("%s_%i", action_id, i)) != NULL) i++;
+        action_id = GBS_global_string("%s_%i", action_id, i);
+        aw_warning("replaced duplicate action name with '%s'", action_id);
+    }
+    
     AW_action* act = new AW_action(_act);
     act->set_id(action_id);
-    GBS_write_hash(action_hash, action_id, (long) act);
+    prvt->action_hash[std::string(action_id)] = act;
 
     return act;
 }
@@ -204,32 +216,12 @@ void AW_root::apply_focus_policy(bool /*follow_mouse*/) {
 void AW_root::apply_sensitivity(AW_active mask) {
     aw_return_if_fail(legal_mask(mask));
 
-    active_mask = mask;
-    for (std::vector<AW_button>::iterator btn = button_list.begin();
-         btn != button_list.end(); ++btn) {
-        btn->apply_sensitivity(active_mask);
+    for (action_hash_t::iterator it = prvt->action_hash.begin();
+         it != prvt->action_hash.end(); ++it) {
+        it->second->enable_by_mask(mask);
     }
+    prvt->active_mask = mask;
 }
-
-void AW_root::register_widget(GtkWidget* w, AW_active mask) {
-    aw_return_if_fail(w);
-    aw_return_if_fail(legal_mask(mask));
-
-    // Don't call register_widget directly!
-    //
-    // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets,
-    // set it back using sens_mask(AWM_ALL)
-
-  
-    prvt->set_last_widget(w);
-
-    if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
-        AW_button btn(mask, w);
-        button_list.push_back(btn);
-        btn.apply_sensitivity(active_mask);
-    }
-}
-
 
 struct fallbacks {
     const char *fb;
@@ -285,18 +277,13 @@ static void aw_log_handler(const char* /*domain*/,
 AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker,
                  int *argc, char **argv[]) 
     : prvt(new pimpl),
-      action_hash(GBS_create_hash(1000, GB_MIND_CASE)),
-      awar_hash(GBS_create_hash(1000, GB_MIND_CASE)),
       application_database(load_properties(properties)),
-      button_list(),
       no_exit(NoExit),
-      help_active(false),
-      tracker(user_tracker),
+      help_active(false),      tracker(user_tracker),
       
       program_name(strdup(program)),
       value_changed(false),
       changer_of_variable(NULL),
-      active_mask(AWM_ALL),
       disable_callbacks(false),
       current_modal_window(NULL),
       root_window(NULL)
@@ -337,17 +324,13 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
 #if defined(UNIT_TESTS)
 AW_root::AW_root(const char *propertyFile) 
     : prvt(new pimpl),
-      action_hash(GBS_create_hash(1000, GB_MIND_CASE)),
-      awar_hash(GBS_create_hash(1000, GB_MIND_CASE)),
       application_database(load_properties(propertyFile)),
-      button_list(),
       no_exit(false),
       help_active(false),
       tracker(NULL),
       program_name(strdup("dummy")),
       value_changed(false),
       changer_of_variable(NULL),
-      active_mask(AWM_ALL),
       disable_callbacks(false),
       current_modal_window(NULL),
       root_window(NULL)
@@ -359,22 +342,22 @@ AW_root::AW_root(const char *propertyFile)
 }
 #endif
 
-
-    static long delete_awar(const char*, long val, void*) {
-    AW_awar* awar = (AW_awar*) val;
-    delete awar;
-    return 0; // remove from hash
-}
-
 AW_root::~AW_root() {
     delete tracker; tracker = NULL;
 
-    GBS_hash_do_loop(awar_hash, delete_awar, NULL);
-    GBS_free_hash(awar_hash);
-    awar_hash = NULL;
-    
-    // FIXME: clear action hash
+    // delete awars
+    for (awar_hash_t::iterator it = prvt->awar_hash.begin();
+         it != prvt->awar_hash.end(); ++it) {
+        delete it->second;
+    }
 
+    // delete actions
+    for (action_hash_t::iterator it = prvt->action_hash.begin();
+         it != prvt->action_hash.end(); ++it) {
+        delete it->second;
+    }
+
+    // close config database
     if (application_database) {
         GB_close(application_database);
         application_database = NULL;
@@ -514,7 +497,11 @@ void AW_root::add_timed_callback_never_disabled(int ms, const TimedCallback& tcb
 AW_awar *AW_root::awar_no_error(const char *var_name) {
     aw_return_val_if_fail(AW_IS_VALID_HKEY(var_name), NULL);
 
-    return (AW_awar*)GBS_read_hash(awar_hash, var_name);
+    if (prvt->awar_hash.find(var_name) != prvt->awar_hash.end()) {
+        return prvt->awar_hash[var_name];
+    } else {
+        return NULL;
+    }
 }
 
 AW_awar *AW_root::label_is_awar(const char *label) {
@@ -539,7 +526,7 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_defau
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar_float(var_name, (double)default_value, default_file, this);
-        GBS_write_hash(awar_hash, var_name, (long)vs);
+        prvt->awar_hash[var_name] = vs;
     }
     return vs;
 }
@@ -551,7 +538,7 @@ AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, A
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar_string(var_name, default_value, default_file, this);
-        GBS_write_hash(awar_hash, var_name, (long)vs);
+        prvt->awar_hash[var_name] = vs;
     }
     return vs;
 }
@@ -563,7 +550,7 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar_int(var_name, default_value, default_file, this);
-        GBS_write_hash(awar_hash, var_name, (long)vs);
+        prvt->awar_hash[var_name] = vs;
     }
     return vs;
 }
@@ -575,15 +562,9 @@ AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_def
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar_pointer(var_name, default_value, default_file, this);
-        GBS_write_hash(awar_hash, var_name, (long)vs);
+        prvt->awar_hash[var_name] = vs;
     }
     return vs;
-}
-
-static long _aw_root_awar_set_temp_if_is_default(const char *, long val, void *cl_gb_db) {
-    AW_awar_impl *awar = (AW_awar_impl*)val;
-    awar->set_temp_if_is_default((GBDATA*)cl_gb_db);
-    return val;
 }
 
 void AW_root::dont_save_awars_with_default_value(GBDATA *gb_db) {
@@ -603,25 +584,25 @@ void AW_root::dont_save_awars_with_default_value(GBDATA *gb_db) {
     // or with different default values (regardless whether in properties or main-DB).
     // But this has already been problematic before.
 
-    GBS_hash_do_loop(awar_hash, _aw_root_awar_set_temp_if_is_default, (void*)gb_db);
+    for (awar_hash_t::iterator it = prvt->awar_hash.begin();
+         it != prvt->awar_hash.end(); ++it) {
+        ((AW_awar_impl*)it->second)->set_temp_if_is_default(gb_db);
+    }
 }
 
 void AW_root::main_loop() {
     gtk_main();
 }
 
-static long _aw_root_unlink_awar_from_db(const char*/*key*/, long cl_awar, void *cl_gb_main) {
-    AW_awar_impl *awar   = (AW_awar_impl*)cl_awar;
-    GBDATA       *gbmain = (GBDATA*)cl_gb_main;
-    awar->unlink_from_DB(gbmain);
-    return cl_awar;
-}
-
 void AW_root::unlink_awars_from_DB(GBDATA* gb_main) {
     g_return_if_fail(GB_get_root(gb_main) == gb_main);
 
     GB_transaction ta(gb_main);
-    GBS_hash_do_loop(awar_hash, _aw_root_unlink_awar_from_db, gb_main);
+
+    for (awar_hash_t::iterator it = prvt->awar_hash.begin();
+         it != prvt->awar_hash.end(); ++it) {
+        ((AW_awar_impl*)it->second)->unlink_from_DB(gb_main);
+    }
 }
 
 AW_default AW_root::check_properties(AW_default aw_props) {

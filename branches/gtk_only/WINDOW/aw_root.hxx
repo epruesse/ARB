@@ -80,14 +80,11 @@ public:
 //      AW_root
 
 class AW_root : virtual Noncopyable {
-    class pimpl;
+    struct pimpl;
 
     // gtk dependent attributes are defined in a different header to keep this header portable
     pimpl             *prvt; /** < Contains all gtk dependent attributes. */
-    GB_HASH           *action_hash; /** < Is used to buffer and replay remote actions. */
-    GB_HASH           *awar_hash;
     AW_default         application_database; /** < FIXME */
-    std::vector<AW_button> button_list;
     int                active_windows;  // number of open windows
     bool               no_exit; /** < FIXME; (was/should be) used to protect status window from being closed */
     bool               help_active; /** < true if the help mode is active, false otherwise */
@@ -108,14 +105,6 @@ class AW_root : virtual Noncopyable {
      * FIXME
      */
     AW_default load_properties(const char *default_name);
-    
-    
-//    void exit_variables();
-
-
-
-//    void exit_root();
-
 
 public:
     static AW_root *SINGLETON;
@@ -123,7 +112,6 @@ public:
     char          *program_name;
     bool           value_changed;
     GtkWidget     *changer_of_variable;
-    AW_active      active_mask;
 
     bool           disable_callbacks;
     AW_window     *current_modal_window;
@@ -190,8 +178,9 @@ public:
     
     /**
      * Retrieves a color from the global colormap.
-     * @param pixel The pixel value is used as index of the colormap. This should be a value returned by alloc_named_data_color()
-     * @return The color or NULL in case of error.
+     * @param pixel The pixel value is used as index of the colormap. This should be
+     *              a value returned by alloc_named_data_color()
+     * @return      The color or NULL in case of error.
      */
     GdkColor getColor(unsigned int pixel);
     
@@ -239,9 +228,6 @@ public:
      * GTK does not have this type of focus.
      **/ 
     void apply_focus_policy(bool follow_mouse);
-
-
-    void register_widget(GtkWidget* w, AW_active mask);
 
     void track_action(const char *action_id) { tracker->track_action(action_id); }
     void track_awar_change(AW_awar *changed_awar) { tracker->track_awar_change(changed_awar); }

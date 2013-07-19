@@ -136,5 +136,5 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     // put the accelerator name into the tooltip
     gtk_widget_set_tooltip_text(GTK_WIDGET(button), gtk_accelerator_name(accel_key, (GdkModifierType)0));
 
-    get_root()->register_widget(GTK_WIDGET(button), mask);
+    //    get_root()->register_widget(GTK_WIDGET(button), mask);
 }
