@@ -135,7 +135,7 @@ AW_action::AW_action()
       icon(NULL),
       tooltip(NULL),
       help_entry(NULL),
-      active_mask(0L)
+      active_mask(AWM_ALL)
 {
 }
 
@@ -151,7 +151,7 @@ AW_action::AW_action(const AW_action& o)
       icon(NULL),
       tooltip(NULL),
       help_entry(NULL),
-      active_mask(0L)
+      active_mask(AWM_ALL)
 {
     *this = o;
 }
@@ -217,6 +217,10 @@ void AW_action::post_emit() {
     if (! root->is_help_active()) {
         AW_root::SINGLETON->set_cursor(NORMAL_CURSOR);
     }
+}
+
+void AW_action::enable_by_mask(AW_active mask) {
+    set_enabled( (mask & active_mask) != 0);
 }
 
 #ifdef UNIT_TESTS
