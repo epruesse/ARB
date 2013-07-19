@@ -5,6 +5,7 @@ ARCHS_ALL = \
 	AxML/AxML.dummy \
 	RAxML/RAxML.dummy \
 	PHYML/PHYML.dummy \
+	PHYML20130708/PHYML20130708.dummy \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
