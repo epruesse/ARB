@@ -1,10 +1,12 @@
 
-ARCHS_ALL = \
+ARCHS_COMMON = \
 	CLUSTAL/CLUSTAL.dummy  \
 	SUPPORT/SUPPORT.dummy \
 	AxML/AxML.dummy \
 	RAxML/RAxML.dummy \
 	PHYML/PHYML.dummy \
+
+ARCHS_NO_DEPENDS = \
 	PHYML20130708/PHYML20130708.dummy \
 
 # --------------------------------------------------------------------------------
@@ -22,10 +24,12 @@ ARCHS_NON_DEBIAN = \
 # --------------------------------------------------------------------------------
 
 ifdef DEBIAN
-ARCHS = $(ARCHS_ALL)
+ARCHS_DEPENDS = $(ARCHS_COMMON)
 else
-ARCHS = $(ARCHS_ALL) $(ARCHS_NON_DEBIAN)
+ARCHS_DEPENDS = $(ARCHS_COMMON) $(ARCHS_NON_DEBIAN)
 endif
+
+ARCHS=$(ARCHS_DEPENDS) $(ARCHS_NO_DEPENDS)
 
 # --------------------------------------------------------------------------------
 # modify cflags for submakefiles 
@@ -53,17 +57,16 @@ ifeq ('$(RAISE_WARNINGS)','0')
 	@echo ----------------- warnings enabled again
 endif
 
-depends: $(ARCHS:.dummy=.depend)
+depends: $(ARCHS_DEPENDS:.dummy=.depend)
 
 clean: $(ARCHS:.dummy=.clean)
 
 %.depend:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
 	@$(MAKE) -C $(@D) -r depends
-	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null # check whether sub Makefile has dependencies
-	@cat $(@D)/Makefile \
-		| ../SOURCE_TOOLS/fix_depends.pl "(from GDE)" \
-		>$(@D)/Makefile.2
+	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null || \
+		(echo "$(@D)/Makefile:666: Error: No dependencies in $(@D)/Makefile"; false) # check whether sub Makefile has dependencies
+	@../SOURCE_TOOLS/fix_depends.pl "(from GDE)" < $(@D)/Makefile > $(@D)/Makefile.2
 	@mv $(@D)/Makefile.old $(@D)/Makefile # restore old Makefile
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
