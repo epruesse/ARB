@@ -1440,7 +1440,7 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
         aws->create_button("HELP", "HELP", "H");
 
         DbScanner *scannerid = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS,
-                                                       organismWindow ? ORGANISM_get_selector() : ORGANISM_get_selector());
+                                                       organismWindow ? ORGANISM_get_selector() : SPECIES_get_selector());
 
         if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
         else                aws->create_menu("SPECIES",     "S", AWM_ALL);
