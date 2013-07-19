@@ -1407,10 +1407,7 @@ void DBUI::detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_
 // --------------------
 //      InfoWindow
 
-const int DETACHABLE = 0;
-const int INVALID    = -1;
-
-class InfoWindow {
+class InfoWindow : virtual Noncopyable {
     AW_window *aww;
     DbScanner *scanner;
     int        detach_id;
@@ -1441,21 +1438,21 @@ class InfoWindow {
 
 public:
 
-    InfoWindow() // @@@ eliminate?
-        : aww(NULL),
-          scanner(NULL),
-          detach_id(INVALID),
-          used(false)
-    {}
+    static const int MAIN_WINDOW = 0;
+    typedef SmartPtr<InfoWindow> Ptr;
+
     InfoWindow(AW_window *aww_, DbScanner *scanner_, int detach_id_)
         : aww(aww_),
           scanner(scanner_),
           detach_id(detach_id_),
           used(true)
     {}
+    ~InfoWindow() {
+        // @@@ should free 'scanner'
+    }
 
-    bool is_detached() const { return detach_id>DETACHABLE; }
-    bool is_maininfo() const { return detach_id == DETACHABLE; }
+    bool is_detached() const { return detach_id>MAIN_WINDOW; }
+    bool is_maininfo() const { return detach_id == MAIN_WINDOW; }
 
     GBDATA *get_gbmain() const { return get_db_scanner_main(scanner); }
     AW_window *get_aww() const { return aww; }
@@ -1508,8 +1505,7 @@ public:
 };
 
 class InfoWindowRegistry {
-    typedef std::map<AW_window*, InfoWindow> WinMap;
-
+    typedef std::map<AW_window*, InfoWindow::Ptr> WinMap;
     WinMap win;
 
 public:
@@ -1517,41 +1513,36 @@ public:
         // registers a new instance of an InfoWindow
         // returned reference is persistent
         arb_assert(aww && scanner);
-        arb_assert(detach_id >= DETACHABLE);
+        arb_assert(detach_id >= InfoWindow::MAIN_WINDOW);
 
         arb_assert(!find(aww));
 
-        win[aww] = InfoWindow(aww, scanner, detach_id);
-        return win[aww];
+        win[aww] = new InfoWindow(aww, scanner, detach_id);
+        return *win[aww];
     }
 
     const InfoWindow* find(AW_window *aww) {
         // returns InfoWindow for 'aww' (or NULL if no such InfoWindow)
-        WinMap::iterator  found  = win.find(aww);
-        InfoWindow       *result = NULL;
-
-        if (found != win.end()) {
-            result = &found->second;
-        }
-        return result;
+        WinMap::iterator found = win.find(aww);
+        return found == win.end() ? NULL : &*found->second;
     }
 
     int allocate_detach_id(const InfoWindow& other) {
         arb_assert(other.is_maininfo());
 
-        int maxUsedID = DETACHABLE;
+        int maxUsedID = InfoWindow::MAIN_WINDOW;
         for (WinMap::iterator i = win.begin(); i != win.end(); ++i) {
-            const InfoWindow& info = i->second;
-            if (info.mapsSameItemsAs(other)) {
-                maxUsedID = std::max(maxUsedID, info.getDetachID());
+            const InfoWindow::Ptr& info = i->second;
+            if (info->mapsSameItemsAs(other)) {
+                maxUsedID = std::max(maxUsedID, info->getDetachID());
             }
         }
         return maxUsedID+1;
     }
     const InfoWindow *find_reusable_of_same_type_as(const InfoWindow& other) {
         for (WinMap::iterator i = win.begin(); i != win.end(); ++i) {
-            const InfoWindow& info = i->second;
-            if (info.mapsSameItemsAs(other) && !info.is_used()) return &info;
+            const InfoWindow::Ptr& info = i->second;
+            if (info->mapsSameItemsAs(other) && !info->is_used()) return &*info;
         }
         return NULL;
     }
@@ -1586,7 +1577,7 @@ void DBUI::init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const 
         const char *itemname = itemType.item_name;
         char       *ITEMNAME = ARB_strupper(strdup(itemname));
 
-        if (detach_id == DETACHABLE) { // main window
+        if (detach_id == InfoWindow::MAIN_WINDOW) { // main window
             char *Itemname = strdup(itemname); Itemname[0] = ITEMNAME[0];
             window_id      = GBS_global_string_copy("%s_INFORMATION", ITEMNAME);
             window_title   = GBS_global_string_copy("%s information", Itemname);
@@ -1622,10 +1613,10 @@ static void popup_detached_speciesOrganismWindow(AW_window *aw_parent, const Inf
 }
 
 static AW_window *create_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id) { // INFO_WINDOW_CREATOR
-    // if detach_id is DETACHABLE -> create main window (not detached)
+    // if detach_id is MAIN_WINDOW -> create main window (not detached)
 
     AW_window_simple_menu *aws        = new AW_window_simple_menu;
-    bool                   detachable = detach_id == DETACHABLE;
+    bool                   detachable = detach_id == InfoWindow::MAIN_WINDOW;
     const ItemSelector&    itemType   = organismWindow ? ORGANISM_get_selector() : SPECIES_get_selector();
 
     init_info_window(aw_root, aws, itemType, detach_id);
@@ -1689,7 +1680,7 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
     int windowIdx = (int)organismWindow;
 
     static AW_window *AWS[2] = { 0, 0 };
-    if (!AWS[windowIdx]) AWS[windowIdx] = create_misc_speciesOrganismWindow(aw_root, gb_main, organismWindow, DETACHABLE);
+    if (!AWS[windowIdx]) AWS[windowIdx] = create_misc_speciesOrganismWindow(aw_root, gb_main, organismWindow, InfoWindow::MAIN_WINDOW);
     return AWS[windowIdx]; // already created (and not detached)
 }
 
