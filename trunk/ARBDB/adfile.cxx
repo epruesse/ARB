@@ -700,8 +700,10 @@ static void GBT_transform_names(StrArray& dest, const StrArray& source, char *tr
 void TEST_GBS_read_dir() {
     TEST_JOINED_DIR_CONTENT_EQUALS("GDE/CLUSTAL", "*.c",       "/amenu.c!/clustalv.c!/gcgcheck.c!/myers.c!/sequence.c!/showpair.c!/trees.c!/upgma.c!/util.c");
     TEST_JOINED_DIR_CONTENT_EQUALS("GDE/CLUSTAL", "/s.*\\.c/", "/clustalv.c!/myers.c!/sequence.c!/showpair.c!/trees.c");
-    TEST_JOINED_DIR_CONTENT_EQUALS("GDE",         NULL,        "/Makefile!/README");
-    TEST_JOINED_DIR_CONTENT_EQUALS("GDE",         "*",         "/Makefile!/README");
+
+    // test a dir containing subdirectories
+    TEST_JOINED_DIR_CONTENT_EQUALS("SL", NULL, "/Makefile!/README");
+    TEST_JOINED_DIR_CONTENT_EQUALS("SL", "*",  "/Makefile!/README");
 
     TEST_JOINED_FULLDIR_CONTENT_EQUALS("", "", ""); // allow GBS_read_dir to be called with "" -> returns empty filelist
 }
