@@ -26,6 +26,7 @@
 #define aw_return_val_if_reached(val) g_return_val_if_reached(val)
 #define aw_warn_if_fail(cond) g_warn_if_fail(cond)
 #define aw_warn_if_reached() g_warn_if_reached()
+#define aw_warning g_warning
 #define aw_debug g_debug
 #define AW_BREAKPOINT G_BREAKPOINT
 
