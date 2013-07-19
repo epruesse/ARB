@@ -396,17 +396,13 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
     // make 'button' a real button if we've got a callback to run on click
     if (prvt->action_template.size() > 0) { 
         AW_action *act = action_register(macro_name);
-
-        if (button_text) {
-            act->set_label(button_text); // FIXME Mnemonic
-        }
+        
+        if (button_text) act->set_label(button_text); // FIXME Mnemonic
 
         button = gtk_button_new();
         gtk_container_add(GTK_CONTAINER(button), button_label);
        
         act->bind(button, "clicked");
-        
-        get_root()->register_widget(button, _at.widget_mask);
     } 
     else {
         button = button_label;
@@ -616,7 +612,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 
     gtk_entry_set_activates_default(GTK_ENTRY(entry), true);
     put_with_label(entry);
-    get_root()->register_widget(entry, _at.widget_mask);
+    // get_root()->register_widget(entry, _at.widget_mask);
 }
 
 
@@ -670,7 +666,7 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
         // FIXME get_root()->define_remote_command(prvt->d_callback);
     }
     put_with_label(scrolled_entry);
-    get_root()->register_widget(entry, _at.widget_mask);
+    // get_root()->register_widget(entry, _at.widget_mask);
     
 }
 
@@ -704,7 +700,7 @@ AW_selection_list *AW_window::create_option_menu(const char *var_name,
     slist->bind_widget(combo_box);
 
 
-    get_root()->register_widget(combo_box, _at.widget_mask);
+    // get_root()->register_widget(combo_box, _at.widget_mask);
 
     prvt->combo_box = combo_box;
     prvt->selection_list = slist;
@@ -794,7 +790,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
                          (gpointer) prvt->d_callback);
     }
 
-    get_root()->register_widget(tree, _at.widget_mask);
+    // get_root()->register_widget(tree, _at.widget_mask);
     put_with_label(scrolled_win);
     return slist;
 }
@@ -815,7 +811,7 @@ void AW_window::create_toggle_field(const char *var_name, int orientation /*= 0*
 
     FIXME("bind awar  to widget");
     
-    get_root()->register_widget(prvt->toggle_field, _at.widget_mask);
+    // get_root()->register_widget(prvt->toggle_field, _at.widget_mask);
 }
 
 void AW_window::create_toggle_field(const char *var_name, const char *labeli, const char *mnemonic) {
@@ -949,6 +945,12 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
     aw_return_if_fail(prvt->menus.size() > 0); //closed too many menus
     aw_return_if_fail(cmd != NULL);
 
+    AW_action *act = action_register(cmd);
+    act->set_label(labeli);
+    act->set_help(helpText);
+    act->set_active_mask(mask);
+    act->connect(wcb, this);
+
     GtkWidget *wlabel    = make_label(labeli, 0, mnemonic);
     GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
     GtkWidget *item      = gtk_menu_item_new();
@@ -956,14 +958,8 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
     gtk_container_add(GTK_CONTAINER(item),      alignment);
 
     gtk_menu_shell_append(prvt->menus.top(), item);
-
-    AW_cb *cbs = new AW_cb(this, wcb, helpText);
-
-    // g_signal_connect((gpointer)item, "activate", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
-
-    cbs->id = strdup(cmd);
-    // FIXME get_root()->define_remote_command(cbs);
-    get_root()->register_widget(item, mask);
+    
+    act->bind(item, "activate");
 }
 
 void AW_window::insert_menu_topic(const char *cmd, const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2) {
@@ -987,16 +983,16 @@ void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_act
     gtk_menu_item_set_submenu(item, submenu);
 
     if (prvt->menus.size() == 1) { // Insert new menu second-to-last (last is HELP)
-      // Count entries in menu
-      GList *menu_items =  gtk_container_get_children(GTK_CONTAINER(prvt->menus.top()));
-      int menu_item_cnt = g_list_length(menu_items); 
-      g_list_free(menu_items);
-      // Insert at n-1
-      gtk_menu_shell_insert(prvt->menus.top(), GTK_WIDGET(item), menu_item_cnt-1);
+        // Count entries in menu
+        GList *menu_items =  gtk_container_get_children(GTK_CONTAINER(prvt->menus.top()));
+        int menu_item_cnt = g_list_length(menu_items); 
+        g_list_free(menu_items);
+        // Insert at n-1
+        gtk_menu_shell_insert(prvt->menus.top(), GTK_WIDGET(item), menu_item_cnt-1);
     } 
     else {
-      // Append the new submenu to the current menu shell
-      gtk_menu_shell_append(prvt->menus.top(), GTK_WIDGET(item));
+        // Append the new submenu to the current menu shell
+        gtk_menu_shell_append(prvt->menus.top(), GTK_WIDGET(item));
     }
     
     // use the new submenu as current menu shell.
@@ -1009,7 +1005,7 @@ void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_act
         dumpOpenSubMenu(name);
     #endif // DUMP_MENU_LIST
 
-    get_root()->register_widget(GTK_WIDGET(item), mask);
+    // get_root()->register_widget(GTK_WIDGET(item), mask);
 }
 
 static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
@@ -1629,12 +1625,14 @@ AW_action* AW_window::action_register(const char* action_id) {
         // WORKAROUND for empty action_id (no macro_name supploed)
         int i = 1;
         while (action_try(action_id = GBS_global_string("unnamed_%i", i)) != NULL) i++;
+        aw_warning("replaced missing action name with '%s'", action_id);
     } 
     else if (action_try(action_id)) {
         // WORKAROUND for dupilicate action_id (e.g. CLOSE on SPECIES_INFO DETACH)
         int i = 1;
         while (action_try(GBS_global_string("%s_%i", action_id, i)) != NULL) i++;
         action_id = GBS_global_string("%s_%i", action_id, i);
+        aw_warning("replaced duplicate action name with '%s'", action_id);
     }
 
     // create action using template action from pimpl
