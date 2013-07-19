@@ -39,6 +39,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_error.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_progress.h
+ui_species.o: $(ARBHOME)/INCLUDE/arb_str.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_string.h
 ui_species.o: $(ARBHOME)/INCLUDE/arbdb.h

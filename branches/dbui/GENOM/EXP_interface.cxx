@@ -481,7 +481,7 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
 #endif
 
 
-static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
+static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) { // potential INFO_WINDOW_CREATOR
     static AW_window_simple_menu *aws = 0;
 
     if (!aws) {

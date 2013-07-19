@@ -20,12 +20,14 @@
 #include <db_query.h>
 #include <AW_rename.hxx>
 #include <aw_awar_defs.hxx>
-#include <aw_detach.hxx>
+#include <aw_detach.hxx> // @@@ elim
 #include <aw_msg.hxx>
 #include <aw_question.hxx>
 #include <algorithm>
 #include <arb_progress.h>
 #include <item_sel_list.h>
+#include <map>
+#include <arb_str.h>
 
 using namespace DBUI;
 using namespace QUERY;
@@ -277,17 +279,6 @@ static void species_delete_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
 
     if (error) aw_message(error);
     free(name);
-}
-
-static void map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism) {
-    DbScanner *scanner = (DbScanner*)scannerid;
-    GBDATA    *gb_main = get_db_scanner_main(scanner);
-    GB_push_transaction(gb_main);
-
-    const char *name       = aw_root->awar((bool)mapOrganism ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME)->read_char_pntr();
-    GBDATA     *gb_species = GBT_find_species(gb_main, name);
-    if (gb_species) map_db_scanner(scanner, gb_species, CHANGE_KEY_PATH);
-    GB_pop_transaction(gb_main);
 }
 
 static long count_field_occurrance(BoundItemSel *bsel, const char *field_name) {
@@ -1385,7 +1376,7 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
 }
 
 
-void DBUI::detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information) {
+void DBUI::detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information) { // @@@ elim
     AW_window **aww_pointer = (AW_window**)cl_pointer_to_aww;
 
     AW_detach_information *di           = (AW_detach_information*)cl_AW_detach_information;
@@ -1413,68 +1404,292 @@ void DBUI::detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_
     free(curr_species);
 }
 
+// --------------------
+//      InfoWindow
+
+const int DETACHABLE = 0;
+const int INVALID    = -1;
+
+class InfoWindow {
+    AW_window *aww;
+    DbScanner *scanner;
+    int        detach_id;
+
+    mutable bool used; // window in use (i.e. not yet popped down)
+
+    const ItemSelector& getSelector() const { return get_itemSelector_of(scanner); }
+    QUERY_ITEM_TYPE itemtype() const { return getSelector().type; }
+    const char *itemname() const { return getSelector().item_name; }
+
+    void update_window_title() const {
+        if (is_detached()) { // only change window titles of detached windows
+            char *title         = NULL;
+            char *mapped_item = get_id_of_item_mapped_in(scanner);
+            if (mapped_item) {
+                title = GBS_global_string_copy("%s information (%s)", mapped_item, itemname());
+                free(mapped_item);
+            }
+            else {
+                title = GBS_global_string_copy("Press GET to attach selected %s", itemname());
+            }
+
+            arb_assert(title);
+            aww->set_window_title(title);
+            free(title);
+        }
+    }
+
+public:
+
+    InfoWindow() // @@@ eliminate?
+        : aww(NULL),
+          scanner(NULL),
+          detach_id(INVALID),
+          used(false)
+    {}
+    InfoWindow(AW_window *aww_, DbScanner *scanner_, int detach_id_)
+        : aww(aww_),
+          scanner(scanner_),
+          detach_id(detach_id_),
+          used(true)
+    {}
+
+    bool is_detached() const { return detach_id>DETACHABLE; }
+    bool is_maininfo() const { return detach_id == DETACHABLE; }
+
+    GBDATA *get_gbmain() const { return get_db_scanner_main(scanner); }
+    AW_window *get_aww() const { return aww; }
+    AW_root *get_root() const { return get_aww()->get_root(); }
+
+    bool is_used() const { return used; }
+    void set_used(bool used_) const {
+        arb_assert(!is_maininfo()); // cannot change for maininfo window (it is never reused!)
+        used = used_;
+    }
+
+    bool mapsOrganism() const {
+        const ItemSelector& sel = getSelector();
+
+        return
+            (sel.type == QUERY_ITEM_SPECIES) &&
+            (strcmp(sel.item_name, "organism") == 0);
+    }
+
+    int getDetachID() const { return detach_id; }
+    bool mapsSameItemsAs(const InfoWindow& other) const {
+        QUERY_ITEM_TYPE type = itemtype();
+        if (type == other.itemtype()) {
+            return type != QUERY_ITEM_SPECIES || mapsOrganism() == other.mapsOrganism();
+        }
+        return false;
+    }
+
+    void map_current_item() const {
+        GBDATA         *gb_main = get_gbmain();
+        GB_transaction  ta(gb_main);
+        ItemSelector&   itemT   = getSelector();
+        GBDATA         *gb_item = itemT.get_selected_item(gb_main, get_root());
+
+        if (gb_item) {
+            map_db_scanner(scanner, gb_item, itemT.change_key_path);
+        }
+    }
+
+    void attach_currently_selected_item() const {
+        map_current_item();
+        update_window_title();
+    }
+
+    void reuse() const {
+        set_used(true);
+        attach_currently_selected_item();
+        get_aww()->show();
+    }
+};
+
+class InfoWindowRegistry {
+    typedef std::map<AW_window*, InfoWindow> WinMap;
+
+    WinMap win;
+
+public:
+    const InfoWindow& registerInfoWindow(AW_window *aww, DbScanner *scanner, int detach_id) {
+        // registers a new instance of an InfoWindow
+        // returned reference is persistent
+        arb_assert(aww && scanner);
+        arb_assert(detach_id >= DETACHABLE);
+
+        arb_assert(!find(aww));
+
+        win[aww] = InfoWindow(aww, scanner, detach_id);
+        return win[aww];
+    }
+
+    const InfoWindow* find(AW_window *aww) {
+        // returns InfoWindow for 'aww' (or NULL if no such InfoWindow)
+        WinMap::iterator  found  = win.find(aww);
+        InfoWindow       *result = NULL;
+
+        if (found != win.end()) {
+            result = &found->second;
+        }
+        return result;
+    }
+
+    int allocate_detach_id(const InfoWindow& other) {
+        arb_assert(other.is_maininfo());
+
+        int maxUsedID = DETACHABLE;
+        for (WinMap::iterator i = win.begin(); i != win.end(); ++i) {
+            const InfoWindow& info = i->second;
+            if (info.mapsSameItemsAs(other)) {
+                maxUsedID = std::max(maxUsedID, info.getDetachID());
+            }
+        }
+        return maxUsedID+1;
+    }
+    const InfoWindow *find_reusable_of_same_type_as(const InfoWindow& other) {
+        for (WinMap::iterator i = win.begin(); i != win.end(); ++i) {
+            const InfoWindow& info = i->second;
+            if (info.mapsSameItemsAs(other) && !info.is_used()) return &info;
+        }
+        return NULL;
+    }
+};
+
+static InfoWindowRegistry winreg;
+
+// ------------------------------------------------
+//      item-independent info window callbacks
+
+static void map_item_cb(AW_root *, const InfoWindow *infoWin) {
+    infoWin->map_current_item();
+}
+
+static void store_unused_detached_info_window_cb(AW_window *aw_detached) {
+    const InfoWindow *infoWin = winreg.find(aw_detached);
+    arb_assert(infoWin); // forgot to registerInfoWindow?
+    if (infoWin) {
+        arb_assert(infoWin->is_used());
+        infoWin->set_used(false);
+    }
+}
+
+static void sync_detached_window_cb(AW_window *, const InfoWindow *infoWin) {
+    infoWin->attach_currently_selected_item();
+}
+
+void DBUI::init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const ItemSelector& itemType, int detach_id) {
+    char *window_id;
+    char *window_title;
+    {
+        const char *itemname = itemType.item_name;
+        char       *ITEMNAME = ARB_strupper(strdup(itemname));
+
+        if (detach_id == DETACHABLE) { // main window
+            char *Itemname = strdup(itemname); Itemname[0] = ITEMNAME[0];
+            window_id      = GBS_global_string_copy("%s_INFORMATION", ITEMNAME);
+            window_title   = GBS_global_string_copy("%s information", Itemname);
+            free(Itemname);
+        }
+        else {
+            window_id    = GBS_global_string_copy("%s_INFODETACH_%i", ITEMNAME, detach_id);
+            window_title = strdup("<detaching>");
+        }
+        free(ITEMNAME);
+    }
+
+    aws->init(aw_root, window_id, window_title);
+
+    free(window_title);
+    free(window_id);
+}
+
+// ---------------------------------------------
+//      species/organism specific callbacks
+
+static AW_window *create_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id);
+
+static void popup_detached_speciesOrganismWindow(AW_window *aw_parent, const InfoWindow *infoWin) {
+    const InfoWindow *reusable = winreg.find_reusable_of_same_type_as(*infoWin);
+    if (reusable) reusable->reuse();
+    else { // create a new window if none is reusable
+        create_misc_speciesOrganismWindow(aw_parent->get_root(),
+                                          infoWin->get_gbmain(),
+                                          infoWin->mapsOrganism(),
+                                          winreg.allocate_detach_id(*infoWin));
+    }
+}
+
+static AW_window *create_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id) { // INFO_WINDOW_CREATOR
+    // if detach_id is DETACHABLE -> create main window (not detached)
+
+    AW_window_simple_menu *aws        = new AW_window_simple_menu;
+    bool                   detachable = detach_id == DETACHABLE;
+    const ItemSelector&    itemType   = organismWindow ? ORGANISM_get_selector() : SPECIES_get_selector();
+
+    init_info_window(aw_root, aws, itemType, detach_id);
+
+    aws->load_xfig("ad_spec.fig");
+
+    aws->button_length(8);
+
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    if (!detachable) aws->on_hide(store_unused_detached_info_window_cb);
+
+    aws->at("search");
+    aws->callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main);
+    aws->create_button("SEARCH", "SEARCH", "S");
+
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
+    aws->create_button("HELP", "HELP", "H");
+
+    DbScanner *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
+
+    const InfoWindow& infoWin = winreg.registerInfoWindow(aws, scanner, detach_id);
+
+    if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
+    else                aws->create_menu("SPECIES",     "S", AWM_ALL);
+
+    aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, species_delete_cb,        (AW_CL)gb_main,                      0);
+    aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, species_rename_cb,        (AW_CL)gb_main,                      0);
+    aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, species_copy_cb,          (AW_CL)gb_main,                      0);
+    aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, AW_POPUP,                 (AW_CL)create_species_create_window, (AW_CL)gb_main);
+    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, move_species_to_extended, (AW_CL)gb_main,                      0);
+    aws->sep______________();
+
+    aws->create_menu("FIELDS", "F", AWM_ALL);
+    insert_field_admin_menuitems(aws, gb_main);
+
+    aws->at("detach");
+    if (detachable) {
+        const char *awar_name = organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
+        AW_root    *awr       = aws->get_root();
+        awr->awar(awar_name)->add_callback(makeRootCallback(map_item_cb, &infoWin));
+
+        aws->callback(makeWindowCallback(popup_detached_speciesOrganismWindow, &infoWin));
+        aws->create_button("DETACH", "DETACH", "D");
+    }
+    else {
+        aws->callback(makeWindowCallback(sync_detached_window_cb, &infoWin));
+        aws->create_button("GET", "GET", "G");
+    }
+
+    aws->show();
+    infoWin.attach_currently_selected_item();
+
+    return aws;
+}
+
 static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow) {
     int windowIdx = (int)organismWindow;
 
-    static AW_window_simple_menu *AWS[2] = { 0, 0 };
-    if (!AWS[windowIdx]) {
-        AW_window_simple_menu *& aws = AWS[windowIdx];
-
-        aws = new AW_window_simple_menu;
-        if (organismWindow) aws->init(aw_root, "ORGANISM_INFORMATION", "ORGANISM INFORMATION");
-        else                aws->init(aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION");
-        aws->load_xfig("ad_spec.fig");
-
-        aws->button_length(8);
-
-        aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("search");
-        aws->callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main);
-        aws->create_button("SEARCH", "SEARCH", "S");
-
-        aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
-        aws->create_button("HELP", "HELP", "H");
-
-        DbScanner *scannerid = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS,
-                                                       organismWindow ? ORGANISM_get_selector() : SPECIES_get_selector());
-
-        if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
-        else                aws->create_menu("SPECIES",     "S", AWM_ALL);
-
-        aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, species_delete_cb,     (AW_CL)gb_main,                      0);
-        aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, species_rename_cb,     (AW_CL)gb_main,                      0);
-        aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, species_copy_cb,       (AW_CL)gb_main,                      0);
-        aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, AW_POPUP,                 (AW_CL)create_species_create_window, (AW_CL)gb_main);
-        aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, move_species_to_extended, (AW_CL)gb_main,                      0);
-        aws->sep______________();
-
-        aws->create_menu("FIELDS", "F", AWM_ALL);
-        insert_field_admin_menuitems(aws, gb_main);
-
-        {
-            const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
-            char               awar_label_base_name[strlen(awar_name) + strlen("_label")];
-            sprintf(awar_label_base_name, "%s_label", awar_name);
-            AW_root            *awr       = aws->get_root();
-            Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, map_species, (AW_CL)scannerid, (AW_CL)organismWindow); // do not delete!
-            cb_info->add_callback();
-            
-            AW_detach_information *detach_info = new AW_detach_information(cb_info, awar_label_base_name); // do not delete!
-            AW_awar *label_awar = detach_info->get_label_awar(); 
-            
-            aws->at("detach");
-            aws->callback(detach_info_window, (AW_CL)&aws, (AW_CL)detach_info);
-            aws->create_button("DETACH", label_awar->awar_name, "D");
-            label_awar->write_string("DETACH");
-        }
-
-        aws->show();
-        map_species(aws->get_root(), (AW_CL)scannerid, (AW_CL)organismWindow);
-    }
+    static AW_window *AWS[2] = { 0, 0 };
+    if (!AWS[windowIdx]) AWS[windowIdx] = create_misc_speciesOrganismWindow(aw_root, gb_main, organismWindow, DETACHABLE);
     return AWS[windowIdx]; // already created (and not detached)
 }
 
@@ -1550,4 +1765,5 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main)
     }
     return aws;
 }
+
 

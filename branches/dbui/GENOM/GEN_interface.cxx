@@ -951,7 +951,7 @@ static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
 #warning move GEN_create_gene_window to SL/DB_UI
 #endif
 
-AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
+AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) { // potential INFO_WINDOW_CREATOR
     static AW_window_simple_menu *aws = 0;
     if (!aws) {
         GBDATA *gb_main = (GBDATA*)cl_gb_main;
