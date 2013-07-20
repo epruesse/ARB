@@ -35,8 +35,8 @@ namespace DBUI {
 
     AW_window *create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main);
 
-    AW_window *popup_species_info_window(AW_root *aw_root, AW_CL cl_gb_main); // @@@ ensure typesafe callbacks at callers
-    AW_window *popup_organism_info_window(AW_root *aw_root, AW_CL cl_gb_main); // @@@ ensure typesafe callbacks at callers
+    void popup_species_info_window(AW_root *aw_root, GBDATA *gb_main);
+    void popup_organism_info_window(AW_root *aw_root, GBDATA *gb_main);
 
     __ATTR__DEPRECATED("use InfoWindow") void detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information);
 
@@ -48,7 +48,6 @@ namespace DBUI {
 
     void unquery_all();
     void query_update_list();
-
 };
 
 #else

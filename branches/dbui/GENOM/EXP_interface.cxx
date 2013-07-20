@@ -211,8 +211,6 @@ ItemSelector& EXP_get_selector() { return EXP_item_selector; }
 
 static QUERY::DbQuery *GLOBAL_experiment_query = 0;
 
-static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main);
-
 #if defined(WARN_TODO)
 #warning move EXP_create_experiment_query_window to SL/DB_UI
 #endif
@@ -251,7 +249,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
         awtqs.do_set_pos_fig      = "doset";
         awtqs.do_refresh_pos_fig  = "dorefresh";
         awtqs.open_parser_pos_fig = "openparser";
-        awtqs.create_view_window  = EXP_create_experiment_window;
+        awtqs.popup_info_window   = EXP_popup_experiment_window;
 
         QUERY::DbQuery *query   = create_query_box(aws, &awtqs, "exp");
         GLOBAL_experiment_query = query;
@@ -481,13 +479,10 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
 #endif
 
 
-static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) { // @@@ rename -> EXP_popup_experiment_window
-    // potential INFO_WINDOW_CREATOR
+void EXP_popup_experiment_window(AW_root *aw_root, GBDATA *gb_main) { // potential INFO_WINDOW_CREATOR
     static AW_window_simple_menu *aws = 0;
 
     if (!aws) {
-        GBDATA *gb_main = (GBDATA*)cl_gb_main;
-
         aws = new AW_window_simple_menu;
         aws->init(aw_root, "EXPERIMENT_INFORMATION", "EXPERIMENT INFORMATION");
         aws->load_xfig("ad_spec.fig");
@@ -539,11 +534,4 @@ static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_mai
     else {
         aws->activate();
     }
-    return aws;
 }
-
-void EXP_popup_experiment_window(AW_window *aww, GBDATA *gb_main) { // @@@ eliminate
-    AW_window *aws = EXP_create_experiment_window(aww->get_root(), AW_CL(gb_main));
-    aws->activate();
-}
-

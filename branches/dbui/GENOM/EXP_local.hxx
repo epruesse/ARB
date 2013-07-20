@@ -28,7 +28,7 @@
 // to create new experiments:
 #define AWAR_EXPERIMENT_DEST "tmp/experiment/dest"
 
-void EXP_popup_experiment_window(AW_window *aww, GBDATA *gb_main);
+void EXP_popup_experiment_window(AW_root *aw_root, GBDATA *gb_main);
 
 #else
 #error EXP_local.hxx included twice

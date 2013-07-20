@@ -115,6 +115,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/db_query.h
 EXP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 EXP_main.o: $(ARBHOME)/INCLUDE/items.h
+EXP_main.o: $(ARBHOME)/INCLUDE/rootAsWin.h
 EXP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 EXP_main.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -283,6 +284,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/dbui.h
 GEN_map.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_map.o: $(ARBHOME)/INCLUDE/items.h
+GEN_map.o: $(ARBHOME)/INCLUDE/rootAsWin.h
 GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/static_assert.h
 GEN_map.o: $(ARBHOME)/INCLUDE/test_global.h
