@@ -268,6 +268,7 @@ symlink_file ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink_file ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
 symlink_file ../SL/CB/cb.h INCLUDE/cb.h &&
 symlink_file ../SL/CB/cbtypes.h INCLUDE/cbtypes.h &&
+symlink_file ../SL/CB/rootAsWin.h INCLUDE/rootAsWin.h &&
 symlink_file ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&
 symlink_file ../SL/DB_UI/dbui.h INCLUDE/dbui.h &&
