@@ -1500,7 +1500,7 @@ public:
     void reuse() const {
         set_used(true);
         attach_currently_selected_item();
-        get_aww()->show();
+        get_aww()->activate();
     }
 };
 
@@ -1577,7 +1577,7 @@ void DBUI::init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const 
         const char *itemname = itemType.item_name;
         char       *ITEMNAME = ARB_strupper(strdup(itemname));
 
-        if (detach_id == InfoWindow::MAIN_WINDOW) { // main window
+        if (detach_id == InfoWindow::MAIN_WINDOW) {
             char *Itemname = strdup(itemname); Itemname[0] = ITEMNAME[0];
             window_id      = GBS_global_string_copy("%s_INFORMATION", ITEMNAME);
             window_title   = GBS_global_string_copy("%s information", Itemname);
@@ -1599,20 +1599,20 @@ void DBUI::init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const 
 // ---------------------------------------------
 //      species/organism specific callbacks
 
-static AW_window *create_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id);
+static AW_window *popup_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id);
 
 static void popup_detached_speciesOrganismWindow(AW_window *aw_parent, const InfoWindow *infoWin) {
     const InfoWindow *reusable = winreg.find_reusable_of_same_type_as(*infoWin);
     if (reusable) reusable->reuse();
     else { // create a new window if none is reusable
-        create_misc_speciesOrganismWindow(aw_parent->get_root(),
-                                          infoWin->get_gbmain(),
-                                          infoWin->mapsOrganism(),
-                                          winreg.allocate_detach_id(*infoWin));
+        popup_misc_speciesOrganismWindow(aw_parent->get_root(),
+                                         infoWin->get_gbmain(),
+                                         infoWin->mapsOrganism(),
+                                         winreg.allocate_detach_id(*infoWin));
     }
 }
 
-static AW_window *create_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id) { // INFO_WINDOW_CREATOR
+static AW_window *popup_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id) { // INFO_WINDOW_CREATOR
     // if detach_id is MAIN_WINDOW -> create main window (not detached)
 
     AW_window_simple_menu *aws        = new AW_window_simple_menu;
@@ -1672,22 +1672,26 @@ static AW_window *create_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb
 
     aws->show();
     infoWin.attach_currently_selected_item();
-
     return aws;
 }
 
-static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow) {
+static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow) { // @@@ make popup
     int windowIdx = (int)organismWindow;
 
     static AW_window *AWS[2] = { 0, 0 };
-    if (!AWS[windowIdx]) AWS[windowIdx] = create_misc_speciesOrganismWindow(aw_root, gb_main, organismWindow, InfoWindow::MAIN_WINDOW);
+    if (!AWS[windowIdx]) {
+        AWS[windowIdx] = popup_misc_speciesOrganismWindow(aw_root, gb_main, organismWindow, InfoWindow::MAIN_WINDOW);
+    }
+    else {
+        AWS[windowIdx]->activate();
+    }
     return AWS[windowIdx]; // already created (and not detached)
 }
 
-AW_window *DBUI::create_species_info_window(AW_root *aw_root, AW_CL cl_gb_main) {
+AW_window *DBUI::create_species_info_window(AW_root *aw_root, AW_CL cl_gb_main) { // @@@ make popup
     return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, false);
 }
-AW_window *DBUI::create_organism_info_window(AW_root *aw_root, AW_CL cl_gb_main) {
+AW_window *DBUI::create_organism_info_window(AW_root *aw_root, AW_CL cl_gb_main) { // @@@ make popup
     return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, true);
 }
 
