@@ -118,8 +118,8 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, 
     else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
-        awm->insert_menu_topic("experiment_info",   "Experiment information", "i", "experiment_info.hlp",   AWM_ALL, EXP_popup_experiment_window, (AW_CL)gb_main,                            0);
-        awm->insert_menu_topic("experiment_search", "Search and query",       "q", "experiment_search.hlp", AWM_ALL, AW_POPUP,                    (AW_CL)EXP_create_experiment_query_window, (AW_CL)gb_main);
+        awm->insert_menu_topic("experiment_info",   "Experiment information", "i", "experiment_info.hlp",   AWM_ALL, makeWindowCallback(EXP_popup_experiment_window, gb_main));
+        awm->insert_menu_topic("experiment_search", "Search and query",       "q", "experiment_search.hlp", AWM_ALL, AW_POPUP, (AW_CL)EXP_create_experiment_query_window, (AW_CL)gb_main);
 
         EXP_create_mask_submenu(awm, gb_main);
 

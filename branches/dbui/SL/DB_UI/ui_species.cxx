@@ -1675,7 +1675,7 @@ static AW_window *popup_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_
     return aws;
 }
 
-static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow) { // @@@ make popup
+static AW_window *popup_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow) { // @@@ make popup
     int windowIdx = (int)organismWindow;
 
     static AW_window *AWS[2] = { 0, 0 };
@@ -1688,11 +1688,11 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
     return AWS[windowIdx]; // already created (and not detached)
 }
 
-AW_window *DBUI::create_species_info_window(AW_root *aw_root, AW_CL cl_gb_main) { // @@@ make popup
-    return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, false);
+AW_window *DBUI::popup_species_info_window(AW_root *aw_root, AW_CL cl_gb_main) { // @@@ make popup
+    return popup_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, false);
 }
-AW_window *DBUI::create_organism_info_window(AW_root *aw_root, AW_CL cl_gb_main) { // @@@ make popup
-    return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, true);
+AW_window *DBUI::popup_organism_info_window(AW_root *aw_root, AW_CL cl_gb_main) { // @@@ make popup
+    return popup_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, true);
 }
 
 static DbQuery *GLOBAL_species_query = NULL; // @@@ fix design
@@ -1737,7 +1737,7 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main)
         awtqs.do_set_pos_fig      = "doset";
         awtqs.do_refresh_pos_fig  = "dorefresh";
         awtqs.open_parser_pos_fig = "openparser";
-        awtqs.create_view_window  = create_species_info_window;
+        awtqs.create_view_window  = popup_species_info_window;
 
         DbQuery *query           = create_query_box(aws, &awtqs, "spec");
         GLOBAL_species_query = query;

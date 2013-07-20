@@ -23,7 +23,7 @@ struct AW_selection_list;
 
 namespace QUERY {
 
-    typedef AW_window *(*create_info_window_cb)(AW_root *aw_root, AW_CL cl_gb_main);
+    typedef AW_window *(*create_info_window_cb)(AW_root *aw_root, AW_CL cl_gb_main); // @@@ make popup
 
     struct DbQuery;
 

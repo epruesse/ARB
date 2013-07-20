@@ -1437,7 +1437,7 @@ static AW_window *create_colorize_organisms_window(AW_root *aw_root, AW_CL cl_gb
 
 static void GEN_popup_organism_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
     // used to avoid that the organisms info window is stored in a menu (or with a button)
-    AW_window *aws = DBUI::create_organism_info_window(aww->get_root(), cl_gb_main);
+    AW_window *aws = DBUI::popup_organism_info_window(aww->get_root(), cl_gb_main);
     aws->activate();
 }
 
@@ -1508,7 +1508,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
             awm->sep______________();
         }
 
-        awm->insert_menu_topic("gene_info",   "Gene information", "i", "gene_info.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_window,       (AW_CL)gb_main);
+        awm->insert_menu_topic("gene_info",   "Gene information", "i", "gene_info.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_popup_gene_window,       (AW_CL)gb_main);
         awm->insert_menu_topic("gene_search", "Search and Query", "Q", "gene_search.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_query_window, (AW_CL)gb_main);
 
         GEN_create_mask_submenu(awm, gb_main);

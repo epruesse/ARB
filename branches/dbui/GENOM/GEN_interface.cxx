@@ -948,10 +948,11 @@ static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
 }
 
 #if defined(WARN_TODO)
-#warning move GEN_create_gene_window to SL/DB_UI
+#warning move GEN_popup_gene_window to SL/DB_UI
 #endif
 
-AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) { // potential INFO_WINDOW_CREATOR
+AW_window *GEN_popup_gene_window(AW_root *aw_root, AW_CL cl_gb_main) { // @@@ make popup
+    // potential INFO_WINDOW_CREATOR
     static AW_window_simple_menu *aws = 0;
     if (!aws) {
         GBDATA *gb_main = (GBDATA*)cl_gb_main;
@@ -1004,7 +1005,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) { // poten
         GEN_map_gene(aws->get_root(), (AW_CL)scanner, (AW_CL)gb_main);
     }
     else {
-        aws->show();
+        aws->activate();
     }
 
     return aws;
@@ -1047,7 +1048,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
         awtqs.do_set_pos_fig      = "doset";
         awtqs.do_refresh_pos_fig  = "dorefresh";
         awtqs.open_parser_pos_fig = "openparser";
-        awtqs.create_view_window  = GEN_create_gene_window;
+        awtqs.create_view_window  = GEN_popup_gene_window;
 
         QUERY::DbQuery *query = create_query_box(aws, &awtqs, "gen");
         GLOBAL_gene_query     = query;

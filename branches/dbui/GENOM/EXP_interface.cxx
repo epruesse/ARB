@@ -481,7 +481,8 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
 #endif
 
 
-static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) { // potential INFO_WINDOW_CREATOR
+static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) { // @@@ rename -> EXP_popup_experiment_window
+    // potential INFO_WINDOW_CREATOR
     static AW_window_simple_menu *aws = 0;
 
     if (!aws) {
@@ -535,11 +536,14 @@ static AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_mai
         aws->show();
         EXP_map_experiment(aws->get_root(), (AW_CL)scanner, (AW_CL)gb_main);
     }
+    else {
+        aws->activate();
+    }
     return aws;
 }
 
-void EXP_popup_experiment_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
-    AW_window *aws = EXP_create_experiment_window(aww->get_root(), cl_gb_main);
+void EXP_popup_experiment_window(AW_window *aww, GBDATA *gb_main) { // @@@ eliminate
+    AW_window *aws = EXP_create_experiment_window(aww->get_root(), AW_CL(gb_main));
     aws->activate();
 }
 

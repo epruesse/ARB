@@ -683,7 +683,7 @@ inline void append_command_output(GBS_strstruct *out, const char *prefix, const 
 static void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     AWT_canvas *canvas = (AWT_canvas*)cd1;
-    AW_window  *aws    = DBUI::create_species_info_window(aww->get_root(), (AW_CL)canvas->gb_main);
+    AW_window  *aws    = DBUI::popup_species_info_window(aww->get_root(), (AW_CL)canvas->gb_main);
     aws->activate();
     nt_mode_event(aww, canvas, (AWT_COMMAND_MODE)cd2);
 }
@@ -836,7 +836,7 @@ static void NT_update_marked_counter(GBDATA* /*species_info*/, int* cl_aww, GB_C
 
 static void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
     // used to avoid that the species info window is stored in a menu (or with a button)
-    DBUI::create_species_info_window(aww->get_root(), cl_gb_main)->activate();
+    DBUI::popup_species_info_window(aww->get_root(), cl_gb_main)->activate();
 }
 
 // --------------------------------------------------------------------------------------------------
