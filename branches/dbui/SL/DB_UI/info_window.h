@@ -106,15 +106,13 @@ public:
         return false;
     }
 
+    void map_item(GBDATA *gb_item) const {
+        map_db_scanner(scanner, gb_item, getSelector().change_key_path);
+    }
     void map_current_item() const {
         GBDATA         *gb_main = get_gbmain();
         GB_transaction  ta(gb_main);
-        ItemSelector&   itemT   = getSelector();
-        GBDATA         *gb_item = itemT.get_selected_item(gb_main, get_root());
-
-        if (gb_item) {
-            map_db_scanner(scanner, gb_item, itemT.change_key_path);
-        }
+        map_item(getSelector().get_selected_item(gb_main, get_root()));
     }
 
     void attach_currently_selected_item() const {
@@ -124,8 +122,8 @@ public:
 
     void reuse() const {
         set_used(true);
-        attach_currently_selected_item();
         get_aww()->activate();
+        attach_currently_selected_item();
     }
 
     void bind_to_selected_item() const;

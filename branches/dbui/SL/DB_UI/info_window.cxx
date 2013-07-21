@@ -28,6 +28,7 @@ static void store_unused_detached_info_window_cb(AW_window *aw_detached) {
     if (infoWin) {
         arb_assert(infoWin->is_used());
         infoWin->set_used(false);
+        infoWin->map_item(NULL);
     }
 }
 
