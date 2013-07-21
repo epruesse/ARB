@@ -126,6 +126,8 @@ public:
         attach_currently_selected_item();
         get_aww()->activate();
     }
+
+    void bind_to_selected_item() const;
 };
 
 class InfoWindowRegistry {
@@ -177,7 +179,6 @@ public:
 };
 
 // callbacks needed while creating item-infowindows:
-void map_item_cb(AW_root *, const InfoWindow *infoWin);
 void store_unused_detached_info_window_cb(AW_window *aw_detached);
 void sync_detached_window_cb(AW_window *, const InfoWindow *infoWin);
 

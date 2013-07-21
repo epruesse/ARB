@@ -1406,20 +1406,20 @@ void DBUI::detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_
 // ---------------------------------------------
 //      species/organism specific callbacks
 
-static AW_window *popup_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id);
+static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id);
 
 static void popup_detached_speciesOrganismWindow(AW_window *aw_parent, const InfoWindow *infoWin) {
     const InfoWindow *reusable = InfoWindowRegistry::infowin.find_reusable_of_same_type_as(*infoWin);
     if (reusable) reusable->reuse();
     else { // create a new window if none is reusable
-        popup_misc_speciesOrganismWindow(aw_parent->get_root(),
-                                         infoWin->get_gbmain(),
-                                         infoWin->mapsOrganism(),
-                                         InfoWindowRegistry::infowin.allocate_detach_id(*infoWin));
+        popup_new_speciesOrganismWindow(aw_parent->get_root(),
+                                        infoWin->get_gbmain(),
+                                        infoWin->mapsOrganism(),
+                                        InfoWindowRegistry::infowin.allocate_detach_id(*infoWin));
     }
 }
 
-static AW_window *popup_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id) { // INFO_WINDOW_CREATOR
+static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id) { // INFO_WINDOW_CREATOR
     // if detach_id is MAIN_WINDOW -> create main window (not detached)
 
     AW_window_simple_menu *aws        = new AW_window_simple_menu;
@@ -1465,9 +1465,7 @@ static AW_window *popup_misc_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_
 
     aws->at("detach");
     if (detachable) {
-        const char *awar_name = organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
-        AW_root    *awr       = aws->get_root();
-        awr->awar(awar_name)->add_callback(makeRootCallback(map_item_cb, &infoWin));
+        infoWin.bind_to_selected_item();
 
         aws->callback(makeWindowCallback(popup_detached_speciesOrganismWindow, &infoWin));
         aws->create_button("DETACH", "DETACH", "D");
@@ -1487,7 +1485,7 @@ static void popup_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool 
 
     static AW_window *AWS[2] = { 0, 0 };
     if (!AWS[windowIdx]) {
-        AWS[windowIdx] = popup_misc_speciesOrganismWindow(aw_root, gb_main, organismWindow, InfoWindow::MAIN_WINDOW);
+        AWS[windowIdx] = popup_new_speciesOrganismWindow(aw_root, gb_main, organismWindow, InfoWindow::MAIN_WINDOW);
     }
     else {
         AWS[windowIdx]->activate();

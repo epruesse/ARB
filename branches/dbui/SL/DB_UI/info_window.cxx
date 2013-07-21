@@ -13,12 +13,12 @@
 #include <dbui.h>
 #include <arb_str.h>
 
-InfoWindowRegistry InfoWindowRegistry::infowin; // @@@ rename
+InfoWindowRegistry InfoWindowRegistry::infowin;
 
 // ------------------------------------------------
 //      item-independent info window callbacks
 
-void map_item_cb(AW_root *, const InfoWindow *infoWin) {
+static void map_item_cb(AW_root *, const InfoWindow *infoWin) {
     infoWin->map_current_item();
 }
 
@@ -61,3 +61,7 @@ void DBUI::init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const 
     free(window_id);
 }
 
+void InfoWindow::bind_to_selected_item() const {
+    arb_assert(is_maininfo());
+    getSelector().add_selection_changed_cb(get_root(), makeRootCallback(map_item_cb, this));
+}
