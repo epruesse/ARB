@@ -78,6 +78,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/dbui.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/gccver.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/info_window.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/items.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -230,6 +231,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/dbui.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/gccver.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/info_window.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/items.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/Location.h

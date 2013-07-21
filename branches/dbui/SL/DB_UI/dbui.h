@@ -38,8 +38,6 @@ namespace DBUI {
     void popup_species_info_window(AW_root *aw_root, GBDATA *gb_main);
     void popup_organism_info_window(AW_root *aw_root, GBDATA *gb_main);
 
-    __ATTR__DEPRECATED("use InfoWindow") void detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information);
-
     void insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main);
 
     void create_dbui_awars(AW_root *aw_root, AW_default aw_def);

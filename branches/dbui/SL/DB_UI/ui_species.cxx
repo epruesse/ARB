@@ -20,7 +20,8 @@
 #include <db_query.h>
 #include <AW_rename.hxx>
 #include <aw_awar_defs.hxx>
-#include <aw_detach.hxx> // @@@ elim
+#include <aw_awar.hxx>
+#include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <aw_question.hxx>
 #include <algorithm>
@@ -1375,34 +1376,6 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
     return aws;
 }
 
-void DBUI::detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information) { // @@@ elim
-    AW_window **aww_pointer = (AW_window**)cl_pointer_to_aww;
-
-    AW_detach_information *di           = (AW_detach_information*)cl_AW_detach_information;
-    Awar_Callback_Info    *cb_info      = di->get_cb_info();
-    AW_root               *awr          = cb_info->get_root();
-    char                  *curr_species = awr->awar(cb_info->get_org_awar_name())->read_string();
-    AW_awar               *label_awar   = di->get_label_awar();
-    
-    if (*aww_pointer == aww) {  // first click on detach-button
-        // create unique awar :
-        static int detach_counter = 0;
-        char       new_awar[100];
-        sprintf(new_awar, "tmp/DETACHED_INFO_%i", detach_counter++);
-        awr->awar_string(new_awar, "", AW_ROOT_DEFAULT);
-
-        cb_info->remap(new_awar); // remap the callback from old awar to new unique awar
-        label_awar->write_string("GET"); //change the button text
-
-        *aww_pointer = 0;       // caller window will be recreated on next open after clearing this pointer
-        // [Note : the aww_pointer points to the static window pointer]
-    }
-
-    awr->awar(cb_info->get_awar_name())->write_string(curr_species);
-    aww->set_window_title(GBS_global_string("%s INFORMATION", curr_species));
-    free(curr_species);
-}
-
 // ---------------------------------------------
 //      species/organism specific callbacks
 
@@ -1443,9 +1416,8 @@ static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_m
     aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    DbScanner *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
-
-    const InfoWindow& infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
+    DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
+    const InfoWindow&  infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
 
     if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
     else                aws->create_menu("SPECIES",     "S", AWM_ALL);

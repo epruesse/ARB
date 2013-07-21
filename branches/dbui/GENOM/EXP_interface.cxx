@@ -25,6 +25,7 @@
 #include <aw_msg.hxx>
 #include <aw_question.hxx>
 #include <arbdbt.h>
+#include <info_window.h>
 
 using namespace std;
 
@@ -457,14 +458,6 @@ static AW_window *create_experiment_create_window(AW_root *root, AW_CL cl_gb_mai
     return aws;
 }
 
-static void EXP_map_experiment(AW_root *aw_root, AW_CL cl_scanner, AW_CL cl_gb_main) {
-    GBDATA         *gb_main       = (GBDATA*)cl_gb_main;
-    GB_transaction  ta(gb_main);
-    GBDATA         *gb_experiment = EXP_get_current_experiment(gb_main, aw_root);
-
-    if (gb_experiment) map_db_scanner((DbScanner*)cl_scanner, gb_experiment, CHANGE_KEY_PATH_EXPERIMENTS);
-}
-
 static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
     static BoundItemSel *bis = new BoundItemSel(gb_main, EXP_get_selector());
     exp_assert(bis->gb_main == gb_main);
@@ -484,58 +477,65 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
 #warning move EXP_create_experiment_window to SL/DB_UI
 #endif
 
+static AW_window *popup_new_experiment_window(AW_root *aw_root, GBDATA *gb_main, int detach_id);
 
-void EXP_popup_experiment_window(AW_root *aw_root, GBDATA *gb_main) { // potential INFO_WINDOW_CREATOR
-    static AW_window_simple_menu *aws = 0;
+static void popup_detached_experiment_window(AW_window *aw_parent, const InfoWindow *infoWin) {
+    const InfoWindow *reusable = InfoWindowRegistry::infowin.find_reusable_of_same_type_as(*infoWin);
+    if (reusable) reusable->reuse();
+    else { // create a new window if none is reusable
+        popup_new_experiment_window(aw_parent->get_root(),
+                                    infoWin->get_gbmain(),
+                                    InfoWindowRegistry::infowin.allocate_detach_id(*infoWin));
+    }
+}
 
+static AW_window *popup_new_experiment_window(AW_root *aw_root, GBDATA *gb_main, int detach_id) { // INFO_WINDOW_CREATOR
+    AW_window_simple_menu *aws      = new AW_window_simple_menu;
+    const ItemSelector&    itemType = EXP_get_selector();
+
+    DBUI::init_info_window(aw_root, aws, itemType, detach_id);
+    aws->load_xfig("ad_spec.fig");
+
+    aws->button_length(8);
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->at("search");
+    aws->callback(AW_POPUP, (AW_CL)EXP_create_experiment_query_window, (AW_CL)gb_main);
+    aws->create_button("SEARCH", "SEARCH", "S");
+
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"experiment_info.hlp");
+    aws->create_button("HELP", "HELP", "H");
+
+    DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
+    const InfoWindow&  infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
+
+    aws->create_menu("EXPERIMENT", "E", AD_F_ALL);
+    aws->insert_menu_topic("experiment_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, (AW_CB)experiment_delete_cb, (AW_CL)gb_main,                         0);
+    aws->insert_menu_topic("experiment_rename", "Rename ...", "R", "spa_rename.hlp", AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_rename_window, (AW_CL)gb_main);
+    aws->insert_menu_topic("experiment_copy",   "Copy ...",   "y", "spa_copy.hlp",   AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_copy_window,   (AW_CL)gb_main);
+    aws->insert_menu_topic("experiment_create", "Create ...", "C", "spa_create.hlp", AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_create_window, (AW_CL)gb_main);
+    aws->sep______________();
+
+    aws->create_menu("FIELDS", "F", AD_F_ALL);
+    EXP_create_field_items(aws, gb_main);
+
+    aws->at("detach");
+    infoWin.add_detachOrGet_button(popup_detached_experiment_window);
+
+    aws->show();
+    infoWin.attach_currently_selected_item();
+
+    return aws;
+}
+
+void EXP_popup_experiment_window(AW_root *aw_root, GBDATA *gb_main) {
+    static AW_window *aws = 0;
     if (!aws) {
-        aws = new AW_window_simple_menu;
-        aws->init(aw_root, "EXPERIMENT_INFORMATION", "EXPERIMENT INFORMATION");
-        aws->load_xfig("ad_spec.fig");
-
-        aws->button_length(8);
-
-        aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("search");
-        aws->callback(AW_POPUP, (AW_CL)EXP_create_experiment_query_window, (AW_CL)gb_main);
-        aws->create_button("SEARCH", "SEARCH", "S");
-
-        aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"experiment_info.hlp");
-        aws->create_button("HELP", "HELP", "H");
-
-
-        DbScanner *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, EXP_get_selector());
-
-        aws->create_menu("EXPERIMENT", "E", AD_F_ALL);
-        aws->insert_menu_topic("experiment_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, (AW_CB)experiment_delete_cb, (AW_CL)gb_main,                         0);
-        aws->insert_menu_topic("experiment_rename", "Rename ...", "R", "spa_rename.hlp", AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_rename_window, (AW_CL)gb_main);
-        aws->insert_menu_topic("experiment_copy",   "Copy ...",   "y", "spa_copy.hlp",   AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_copy_window,   (AW_CL)gb_main);
-        aws->insert_menu_topic("experiment_create", "Create ...", "C", "spa_create.hlp", AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_create_window, (AW_CL)gb_main);
-        aws->sep______________();
-
-        aws->create_menu("FIELDS", "F", AD_F_ALL);
-        EXP_create_field_items(aws, gb_main);
-
-        {
-            Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_EXPERIMENT_NAME, EXP_map_experiment, (AW_CL)scanner, (AW_CL)gb_main); // do not delete!
-            char                  awar_label_base_name[strlen(AWAR_EXPERIMENT_NAME) + strlen("_label")];
-            sprintf(awar_label_base_name, "%s_label", AWAR_EXPERIMENT_NAME);
-            AW_detach_information *detach_info = new AW_detach_information(cb_info, awar_label_base_name); // do not delete!
-            AW_awar *label_awar = detach_info->get_label_awar();
-            cb_info->add_callback();
-
-            aws->at("detach");
-            aws->callback(DBUI::detach_info_window, (AW_CL)&aws, (AW_CL)cb_info);
-            aws->create_button("DETACH", label_awar->awar_name, "D");
-            label_awar->write_string("DETACH");
-        }
-
-        aws->show();
-        EXP_map_experiment(aws->get_root(), (AW_CL)scanner, (AW_CL)gb_main);
+        aws = popup_new_experiment_window(aw_root, gb_main, InfoWindow::MAIN_WINDOW);
     }
     else {
         aws->activate();

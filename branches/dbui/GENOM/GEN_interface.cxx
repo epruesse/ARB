@@ -25,6 +25,7 @@
 #include <Location.h>
 #include <arb_strarray.h>
 #include <arb_strbuf.h>
+#include <info_window.h>
 
 using namespace std;
 
@@ -928,14 +929,6 @@ static void gene_delete_cb(AW_window *aww, AW_CL cl_gb_main) {
     }
 }
 
-static void GEN_map_gene(AW_root *aw_root, AW_CL cl_scanner, AW_CL cl_gb_main) {
-    GBDATA         *gb_main = (GBDATA*)cl_gb_main;
-    GB_transaction  dummy(gb_main);
-    GBDATA         *gb_gene = GEN_get_current_gene(gb_main, aw_root);
-
-    if (gb_gene) map_db_scanner((DbScanner*)cl_scanner, gb_gene, CHANGE_KEY_PATH_GENES);
-}
-
 static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
     static BoundItemSel *bis = new BoundItemSel(gb_main, GEN_get_selector());
     gen_assert(bis->gb_main == gb_main);
@@ -957,56 +950,65 @@ static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
 #warning move GEN_popup_gene_infowindow to SL/DB_UI
 #endif
 
+static AW_window *popup_new_gene_window(AW_root *aw_root, GBDATA *gb_main, int detach_id);
+
+static void popup_detached_gene_window(AW_window *aw_parent, const InfoWindow *infoWin) {
+    const InfoWindow *reusable = InfoWindowRegistry::infowin.find_reusable_of_same_type_as(*infoWin);
+    if (reusable) reusable->reuse();
+    else { // create a new window if none is reusable
+        popup_new_gene_window(aw_parent->get_root(),
+                              infoWin->get_gbmain(),
+                              InfoWindowRegistry::infowin.allocate_detach_id(*infoWin));
+    }
+}
+
+static AW_window *popup_new_gene_window(AW_root *aw_root, GBDATA *gb_main, int detach_id) { // INFO_WINDOW_CREATOR
+    AW_window_simple_menu *aws      = new AW_window_simple_menu;
+    const ItemSelector&    itemType = GEN_get_selector();
+
+    DBUI::init_info_window(aw_root, aws, itemType, detach_id);
+    aws->load_xfig("ad_spec.fig");
+
+    aws->button_length(8);
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->at("search");
+    aws->callback(AW_POPUP, (AW_CL)GEN_create_gene_query_window, (AW_CL)gb_main);
+    aws->create_button("SEARCH", "SEARCH", "S");
+
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"gene_info.hlp");
+    aws->create_button("HELP", "HELP", "H");
+
+    DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
+    const InfoWindow&  infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
+
+    aws->create_menu("GENE", "G", AD_F_ALL);
+    aws->insert_menu_topic("gene_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, (AW_CB)gene_delete_cb, (AW_CL)gb_main, 0);
+    aws->insert_menu_topic("gene_rename", "Rename ...", "R", "spa_rename.hlp", AD_F_ALL, AW_POPUP, (AW_CL)create_gene_rename_window, (AW_CL)gb_main);
+    aws->insert_menu_topic("gene_copy",   "Copy ...",   "y", "spa_copy.hlp",   AD_F_ALL, AW_POPUP, (AW_CL)create_gene_copy_window,   (AW_CL)gb_main);
+    aws->insert_menu_topic("gene_create", "Create ...", "C", "gen_create.hlp", AD_F_ALL, AW_POPUP, (AW_CL)create_gene_create_window, (AW_CL)gb_main);
+    aws->sep______________();
+
+    aws->create_menu("FIELDS", "F", AD_F_ALL);
+    GEN_create_field_items(aws, gb_main);
+
+    aws->at("detach");
+    infoWin.add_detachOrGet_button(popup_detached_gene_window);
+
+    aws->show();
+    infoWin.attach_currently_selected_item();
+
+    return aws;
+}
+
 void GEN_popup_gene_infowindow(AW_root *aw_root, GBDATA *gb_main) {
-    // potential INFO_WINDOW_CREATOR
-    static AW_window_simple_menu *aws = 0;
+    static AW_window *aws = 0;
     if (!aws) {
-        aws = new AW_window_simple_menu;
-        aws->init(aw_root, "GENE_INFORMATION", "GENE INFORMATION");
-        aws->load_xfig("ad_spec.fig");
-
-        aws->button_length(8);
-
-        aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("search");
-        aws->callback(AW_POPUP, (AW_CL)GEN_create_gene_query_window, (AW_CL)gb_main);
-        aws->create_button("SEARCH", "SEARCH", "S");
-
-        aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"gene_info.hlp");
-        aws->create_button("HELP", "HELP", "H");
-
-        DbScanner *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, GEN_get_selector());
-
-        aws->create_menu("GENE", "G", AD_F_ALL);
-        aws->insert_menu_topic("gene_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, (AW_CB)gene_delete_cb, (AW_CL)gb_main, 0);
-        aws->insert_menu_topic("gene_rename", "Rename ...", "R", "spa_rename.hlp", AD_F_ALL, AW_POPUP, (AW_CL)create_gene_rename_window, (AW_CL)gb_main);
-        aws->insert_menu_topic("gene_copy",   "Copy ...",   "y", "spa_copy.hlp",   AD_F_ALL, AW_POPUP, (AW_CL)create_gene_copy_window,   (AW_CL)gb_main);
-        aws->insert_menu_topic("gene_create", "Create ...", "C", "gen_create.hlp", AD_F_ALL, AW_POPUP, (AW_CL)create_gene_create_window, (AW_CL)gb_main);
-        aws->sep______________();
-
-        aws->create_menu("FIELDS", "F", AD_F_ALL);
-        GEN_create_field_items(aws, gb_main);
-
-        {
-            Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_GENE_NAME, GEN_map_gene, (AW_CL)scanner, (AW_CL)gb_main); // do not delete!
-            char                  awar_label_base_name[strlen(AWAR_GENE_NAME) + strlen("_label")];
-            sprintf(awar_label_base_name, "%s_label", AWAR_GENE_NAME);
-            AW_detach_information *detach_info = new AW_detach_information(cb_info, awar_label_base_name); // do not delete!
-            AW_awar *label_awar = detach_info->get_label_awar();        
-            cb_info->add_callback();
-
-            aws->at("detach");
-            aws->callback(DBUI::detach_info_window, (AW_CL)&aws, (AW_CL)detach_info);
-            aws->create_button("DETACH", label_awar->awar_name, "D");
-            label_awar->write_string("DETACH");
-        }
-
-        aws->show();
-        GEN_map_gene(aws->get_root(), (AW_CL)scanner, (AW_CL)gb_main);
+        aws = popup_new_gene_window(aw_root, gb_main, InfoWindow::MAIN_WINDOW);
     }
     else {
         aws->activate();

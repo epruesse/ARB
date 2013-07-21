@@ -272,6 +272,7 @@ symlink_file ../SL/CB/rootAsWin.h INCLUDE/rootAsWin.h &&
 symlink_file ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&
 symlink_file ../SL/DB_UI/dbui.h INCLUDE/dbui.h &&
+symlink_file ../SL/DB_UI/info_window.h INCLUDE/info_window.h &&
 symlink_file ../SL/SEQIO/seqio.hxx INCLUDE/seqio.hxx &&
 symlink_file ../SL/FAST_ALIGNER/fast_aligner.hxx INCLUDE/fast_aligner.hxx &&
 symlink_file ../SL/FILTER/AP_filter.hxx INCLUDE/AP_filter.hxx &&
