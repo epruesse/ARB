@@ -11,6 +11,7 @@ my $ignore_unknown = 0;
 
 my @skipped_directories = (
                            qr/\/.+\/bin$/o,
+                           qr/\/.+\/build$/o,
                            qr/\/HELP_SOURCE\/Xml$/o,
                            qr/\/ignore\./o,
                            qr/\/PERL2ARB\/blib$/o,
@@ -67,7 +68,8 @@ my %skipped_files = map { $_ => 1; } (
                                       'nt_date.h',
                                       'postcompile.sav',
                                       'TAGS',
-                                      '.DS_Store',);
+                                      '.DS_Store',
+                                      );
 
 my %used_extensions = map { $_ => 1; } (
                                         'c', 'cpp', 'cxx',
@@ -192,7 +194,8 @@ my @used_when_matchesFull = (
                              qr/^\.\/lib\/submit\//o,
                              qr/^\.\/util\/arb_.*$/o,
                              qr/^\.\/util\/config\..*$/o,
-                             qr/GDE\/.*\/Makefile\.[^\/]+$/io,
+                             qr/\/GDE\/.*\/Makefile\.[^\/]+$/io,
+                             qr/\/GDE\/PHYML[^\/]+\/phyml\//o,
                             );
 
 # skipped_when_matchesFull and forced_when_matchesFull are always tested! (@3)
@@ -226,6 +229,7 @@ my @skipped_when_matchesFull = (
 
 my @forced_when_matchesFull = (
                                qr/\/PROBE_WEB\/SERVER\/.*\.jar$/o,
+                               qr/\/GDE\/PHYML[^\/]+\/phyml\/.*\.log$/o,
                               );
 
 # files that are even packed when generated and not in VC
