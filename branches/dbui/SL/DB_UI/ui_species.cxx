@@ -1422,9 +1422,8 @@ static void popup_detached_speciesOrganismWindow(AW_window *aw_parent, const Inf
 static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id) { // INFO_WINDOW_CREATOR
     // if detach_id is MAIN_WINDOW -> create main window (not detached)
 
-    AW_window_simple_menu *aws        = new AW_window_simple_menu;
-    bool                   detachable = detach_id == InfoWindow::MAIN_WINDOW;
-    const ItemSelector&    itemType   = organismWindow ? ORGANISM_get_selector() : SPECIES_get_selector();
+    AW_window_simple_menu *aws      = new AW_window_simple_menu;
+    const ItemSelector&    itemType = organismWindow ? ORGANISM_get_selector() : SPECIES_get_selector();
 
     init_info_window(aw_root, aws, itemType, detach_id);
 
@@ -1435,8 +1434,6 @@ static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_m
     aws->at("close");
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
-
-    if (!detachable) aws->on_hide(store_unused_detached_info_window_cb);
 
     aws->at("search");
     aws->callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main);

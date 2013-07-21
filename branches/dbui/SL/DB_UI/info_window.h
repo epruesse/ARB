@@ -180,9 +180,6 @@ public:
     static InfoWindowRegistry infowin;
 };
 
-// callbacks needed while creating item-infowindows:
-void store_unused_detached_info_window_cb(AW_window *aw_detached);
-
 #else
 #error info_window.h included twice
 #endif // INFO_WINDOW_H

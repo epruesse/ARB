@@ -22,7 +22,7 @@ static void map_item_cb(AW_root *, const InfoWindow *infoWin) {
     infoWin->map_current_item();
 }
 
-void store_unused_detached_info_window_cb(AW_window *aw_detached) {
+static void store_unused_detached_info_window_cb(AW_window *aw_detached) {
     const InfoWindow *infoWin = InfoWindowRegistry::infowin.find(aw_detached);
     arb_assert(infoWin); // forgot to registerInfoWindow?
     if (infoWin) {
@@ -55,6 +55,10 @@ void DBUI::init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const 
 
     free(window_title);
     free(window_id);
+
+    if (!detach_id == InfoWindow::MAIN_WINDOW) {
+        aws->on_hide(store_unused_detached_info_window_cb);
+    }
 }
 
 void InfoWindow::bind_to_selected_item() const {
