@@ -320,7 +320,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
         GBT_LEN   leftLen = TREE_DEFLEN_MARKER;
         GBT_TREE *left    = gbt_load_tree_rek(reader, structuresize, &leftLen);
 
-        tree_assert(left || reader->error);
+        tree_assert(contradicted(left, reader->error));
 
         if (left) {
             if (gbt_readNameAndLength(reader, left, &leftLen)) {
@@ -363,7 +363,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                             }
                         }
 
-                        free(right);
+                        GBT_delete_tree(right);
 
                         break;
                     }
@@ -377,7 +377,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                 tree_assert(reader->error);
             }
 
-            free(left);
+            GBT_delete_tree(left);
         }
     }
     else {                      // single node
@@ -393,7 +393,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
         }
     }
 
-    tree_assert(node || reader->error);
+    tree_assert(contradicted(node, reader->error));
     return node;
 }
 
