@@ -21,7 +21,12 @@
 #include <algorithm>
 
 // do includes above (otherwise depends depend on DEBUG)
-#if defined(DEBUG) && false
+#if defined(DEBUG) 
+size_t AW_root::callallcallbacks(int /*mode*/) {
+    return 0;
+}
+#endif
+#if 0
 // --------------------------------------------------------------------------------
 
 using namespace std;
@@ -316,8 +321,6 @@ size_t AW_root::callallcallbacks(int mode) {
     return callCount;
 }
 
-#else 
-size_t AW_root::callallcallbacks(int mode) {}
 
 // --------------------------------------------------------------------------------
 #endif // DEBUG
