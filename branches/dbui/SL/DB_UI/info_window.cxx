@@ -31,10 +31,6 @@ void store_unused_detached_info_window_cb(AW_window *aw_detached) {
     }
 }
 
-void sync_detached_window_cb(AW_window *, const InfoWindow *infoWin) {
-    infoWin->attach_currently_selected_item();
-}
-
 void DBUI::init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const ItemSelector& itemType, int detach_id) {
     char *window_id;
     char *window_title;
@@ -64,4 +60,21 @@ void DBUI::init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const 
 void InfoWindow::bind_to_selected_item() const {
     arb_assert(is_maininfo());
     getSelector().add_selection_changed_cb(get_root(), makeRootCallback(map_item_cb, this));
+}
+
+static void sync_detached_window_cb(AW_window *, const InfoWindow *infoWin) {
+    infoWin->attach_currently_selected_item();
+}
+
+void InfoWindow::add_detachOrGet_button(detached_uppopper popup_detached_cb) const {
+    if (is_maininfo()) {
+        bind_to_selected_item();
+
+        aww->callback(makeWindowCallback(popup_detached_cb, this));
+        aww->create_button("DETACH", "DETACH", "D");
+    }
+    else {
+        aww->callback(makeWindowCallback(sync_detached_window_cb, this));
+        aww->create_button("GET", "GET", "G");
+    }
 }

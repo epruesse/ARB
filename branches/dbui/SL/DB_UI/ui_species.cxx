@@ -1464,16 +1464,7 @@ static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_m
     insert_field_admin_menuitems(aws, gb_main);
 
     aws->at("detach");
-    if (detachable) {
-        infoWin.bind_to_selected_item();
-
-        aws->callback(makeWindowCallback(popup_detached_speciesOrganismWindow, &infoWin));
-        aws->create_button("DETACH", "DETACH", "D");
-    }
-    else {
-        aws->callback(makeWindowCallback(sync_detached_window_cb, &infoWin));
-        aws->create_button("GET", "GET", "G");
-    }
+    infoWin.add_detachOrGet_button(popup_detached_speciesOrganismWindow);
 
     aws->show();
     infoWin.attach_currently_selected_item();

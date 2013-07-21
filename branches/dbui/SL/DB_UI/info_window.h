@@ -64,6 +64,7 @@ public:
 
     static const int MAIN_WINDOW = 0;
     typedef SmartPtr<InfoWindow> Ptr;
+    typedef void (*detached_uppopper)(AW_window*, const InfoWindow*);
 
     InfoWindow(AW_window *aww_, DbScanner *scanner_, int detach_id_)
         : aww(aww_),
@@ -128,6 +129,7 @@ public:
     }
 
     void bind_to_selected_item() const;
+    void add_detachOrGet_button(detached_uppopper popup_detached_cb) const;
 };
 
 class InfoWindowRegistry {
@@ -180,7 +182,6 @@ public:
 
 // callbacks needed while creating item-infowindows:
 void store_unused_detached_info_window_cb(AW_window *aw_detached);
-void sync_detached_window_cb(AW_window *, const InfoWindow *infoWin);
 
 #else
 #error info_window.h included twice
