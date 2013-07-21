@@ -22,7 +22,11 @@
 #include "aw_awar_impl.hxx"
 #include <gdk/gdkx.h>
 #include <vector>
+#ifdef Cxx11
 #include <unordered_map>
+#else 
+#include <tr1/unordered_map>
+#endif
 #include "aw_awar_defs.hxx"
 #include "aw_window.hxx"
 #include "aw_global_awars.hxx"
@@ -41,8 +45,13 @@
 
 AW_root *AW_root::SINGLETON = NULL;
 
+#ifdef Cxx11
 typedef std::unordered_map<std::string, AW_action*> action_hash_t;
 typedef std::unordered_map<std::string, AW_awar*> awar_hash_t;
+#else
+typedef std::tr1::unordered_map<std::string, AW_action*> action_hash_t;
+typedef std::tr1::unordered_map<std::string, AW_awar*> awar_hash_t;
+#endif
 
 struct AW_root::pimpl : public Noncopyable {
     GdkColormap* colormap; /** < Contains a color for each value in AW_base::AW_color_idx */
