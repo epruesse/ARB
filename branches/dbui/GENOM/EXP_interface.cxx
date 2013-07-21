@@ -165,6 +165,11 @@ static GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
     return gb_experiment;
 }
 
+void add_selected_experiment_changed_cb(AW_root *aw_root, const RootCallback& cb) {
+    aw_root->awar(AWAR_EXPERIMENT_NAME)->add_callback(cb);
+    ORGANISM_get_selector().add_selection_changed_cb(aw_root, cb);
+}
+
 static GBDATA *first_experiment_in_range(GBDATA *gb_experiment_data, QUERY_RANGE range) {
     GBDATA *gb_first = NULL;
     switch (range) {
@@ -204,6 +209,7 @@ static struct MutableItemSelector EXP_item_selector = {
     first_experiment_in_range,
     next_experiment_in_range,
     EXP_get_current_experiment,
+    add_selected_experiment_changed_cb,
     &ORGANISM_get_selector(), GB_get_grandfather,
 };
 
