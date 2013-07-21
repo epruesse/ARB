@@ -316,7 +316,6 @@ symlink_file ../WINDOW/aw_awar_defs.hxx INCLUDE/aw_awar_defs.hxx &&
 symlink_file ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink_file ../WINDOW/aw_base.hxx INCLUDE/aw_base.hxx &&
 symlink_file ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
-symlink_file ../WINDOW/aw_detach.hxx INCLUDE/aw_detach.hxx &&
 symlink_file ../WINDOW/aw_device.hxx INCLUDE/aw_device.hxx &&
 symlink_file ../WINDOW/aw_edit.hxx INCLUDE/aw_edit.hxx &&
 symlink_file ../WINDOW/aw_file.hxx INCLUDE/aw_file.hxx &&

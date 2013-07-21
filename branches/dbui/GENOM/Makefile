@@ -61,7 +61,6 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-EXP_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_question.hxx
@@ -214,7 +213,6 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_question.hxx
