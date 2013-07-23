@@ -67,6 +67,7 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
     GBDATA *(*get_next_item)(GBDATA *, QUERY_RANGE);
 
     GBDATA *(*get_selected_item)(GBDATA *gb_main, AW_root *aw_root); // searches the currently selected item
+    void (*add_selection_changed_cb)(AW_root *aw_root, const RootCallback& cb); // gets called when selected item changes
 
     ItemSelector *parent_selector;              // selector of parent item (or NULL if item has no parents)
     GBDATA *(*get_parent)(GBDATA *gb_item);     // if 'parent_selector' is defined, this function returns the parent of the item

@@ -30,7 +30,39 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
+info_window.o: dbui.h
+info_window.o: info_window.h
+info_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
+info_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+info_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
+info_window.o: $(ARBHOME)/INCLUDE/arb_core.h
+info_window.o: $(ARBHOME)/INCLUDE/arb_error.h
+info_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
+info_window.o: $(ARBHOME)/INCLUDE/arb_str.h
+info_window.o: $(ARBHOME)/INCLUDE/arb_string.h
+info_window.o: $(ARBHOME)/INCLUDE/arbdb.h
+info_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+info_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
+info_window.o: $(ARBHOME)/INCLUDE/arbtools.h
+info_window.o: $(ARBHOME)/INCLUDE/attributes.h
+info_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+info_window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+info_window.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+info_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+info_window.o: $(ARBHOME)/INCLUDE/cb.h
+info_window.o: $(ARBHOME)/INCLUDE/cbtypes.h
+info_window.o: $(ARBHOME)/INCLUDE/cxxforward.h
+info_window.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
+info_window.o: $(ARBHOME)/INCLUDE/dupstr.h
+info_window.o: $(ARBHOME)/INCLUDE/gccver.h
+info_window.o: $(ARBHOME)/INCLUDE/items.h
+info_window.o: $(ARBHOME)/INCLUDE/smartptr.h
+info_window.o: $(ARBHOME)/INCLUDE/static_assert.h
+info_window.o: $(ARBHOME)/INCLUDE/test_global.h
+info_window.o: $(ARBHOME)/INCLUDE/ttypes.h
+
 ui_species.o: dbui.h
+ui_species.o: info_window.h
 ui_species.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ui_species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -49,7 +81,6 @@ ui_species.o: $(ARBHOME)/INCLUDE/attributes.h
 ui_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ui_species.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_question.hxx

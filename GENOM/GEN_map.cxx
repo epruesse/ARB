@@ -27,6 +27,7 @@
 #include <aw_root.hxx>
 #include <adGene.h>
 #include <db_query.h>
+#include <rootAsWin.h>
 
 #include <map>
 
@@ -1435,12 +1436,6 @@ static AW_window *create_colorize_organisms_window(AW_root *aw_root, AW_CL cl_gb
     return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, ORGANISM_get_selector());
 }
 
-static void GEN_popup_organism_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
-    // used to avoid that the organisms info window is stored in a menu (or with a button)
-    AW_window *aws = DBUI::create_organism_info_window(aww->get_root(), cl_gb_main);
-    aws->activate();
-}
-
 static void GEN_create_organism_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool submenu) {
     const char *title  = "Organisms";
     const char *hotkey = "O";
@@ -1449,7 +1444,7 @@ static void GEN_create_organism_submenu(AW_window_menu_modes *awm, GBDATA *gb_ma
     else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
-        awm->insert_menu_topic("organism_info", "Organism information", "i", "organism_info.hlp", AWM_ALL, GEN_popup_organism_window,  (AW_CL)gb_main, 0);
+        awm->insert_menu_topic("organism_info", "Organism information", "i", "organism_info.hlp", AWM_ALL, RootAsWindowCallback::simple(DBUI::popup_organism_info_window, gb_main));
 
         awm->sep______________();
 
@@ -1508,7 +1503,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
             awm->sep______________();
         }
 
-        awm->insert_menu_topic("gene_info",   "Gene information", "i", "gene_info.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_window,       (AW_CL)gb_main);
+        awm->insert_menu_topic("gene_info",   "Gene information", "i", "gene_info.hlp",   AWM_ALL, RootAsWindowCallback::simple(GEN_popup_gene_infowindow, gb_main));
         awm->insert_menu_topic("gene_search", "Search and Query", "Q", "gene_search.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_query_window, (AW_CL)gb_main);
 
         GEN_create_mask_submenu(awm, gb_main);
