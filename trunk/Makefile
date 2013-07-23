@@ -2115,7 +2115,10 @@ endif
 
 # --------------------------------------------------------------------------------
 
+CHECKOUT_MODIFIED=0# set to 1 to temporarily skip test for modifications (do not check in if set to 1)
+
 check_svn_does_not_contain_generated:
+ifeq ($(CHECKOUT_MODIFIED),0) 
 	@echo "Testing that build does not modify files in SVN"
 	@/usr/bin/test 0 = `svn status | wc -l` || ( \
 		echo "The checkout is not/no longer clean:"; \
@@ -2124,6 +2127,9 @@ check_svn_does_not_contain_generated:
 		echo "- if this fails after other targets, these targets modify checked in data"; \
 		echo "  (a common cause may be that depends are not up to date)"; \
 		false)
+else
+	grep -Hn 'CHECKOUT_MODIFIED' Makefile
+endif
 
 check_svn_ignores_generated:
 	@/usr/bin/test 0 = `svn status | grep '^\?' | wc -l` || ( \
