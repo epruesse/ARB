@@ -12,6 +12,7 @@
 #include "info_window.h"
 #include <dbui.h>
 #include <arb_str.h>
+#include <aw_msg.hxx>
 
 InfoWindowRegistry InfoWindowRegistry::infowin;
 
@@ -67,19 +68,39 @@ void InfoWindow::bind_to_selected_item() const {
     getSelector().add_selection_changed_cb(get_root(), makeRootCallback(map_item_cb, this));
 }
 
-static void sync_detached_window_cb(AW_window *, const InfoWindow *infoWin) {
-    infoWin->attach_selected_item();
+void InfoWindow::display_selected_item() const {
+    arb_assert(is_detached());
+    attach_selected_item();
+    if (!get_selected_item()) {
+        aw_message(GBS_global_string("Please select a %s, afterwards retry to attach it here", itemname()));
+    }
+}
+
+void InfoWindow::detach_selected_item(detached_uppopper popup_detached_cb) const {
+    if (get_selected_item()) {
+        popup_detached_cb(aww, this);
+    }
+    else {
+        aw_message(GBS_global_string("Please select a %s, afterwards retry to detach it", itemname()));
+    }
+}
+
+static void detach_selected_item_cb(AW_window *, InfoWindow::detached_uppopper popup_detached_cb, const InfoWindow *infoWin) {
+    infoWin->detach_selected_item(popup_detached_cb);
+}
+static void display_selected_item_cb(AW_window *, const InfoWindow *infoWin) {
+    infoWin->display_selected_item();
 }
 
 void InfoWindow::add_detachOrGet_button(detached_uppopper popup_detached_cb) const {
     if (is_maininfo()) {
         bind_to_selected_item();
 
-        aww->callback(makeWindowCallback(popup_detached_cb, this));
+        aww->callback(makeWindowCallback(detach_selected_item_cb, popup_detached_cb, this));
         aww->create_button("DETACH", "DETACH", "D");
     }
     else {
-        aww->callback(makeWindowCallback(sync_detached_window_cb, this));
+        aww->callback(makeWindowCallback(display_selected_item_cb, this));
         aww->create_button("GET", "GET", "G");
     }
 }

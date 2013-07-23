@@ -105,14 +105,16 @@ public:
         return false;
     }
 
+    GBDATA *get_selected_item() const {
+        GBDATA         *gb_main = get_gbmain();
+        GB_transaction  ta(gb_main);
+        return getSelector().get_selected_item(gb_main, get_root());
+    }
+
     void map_item(GBDATA *gb_item) const {
         map_db_scanner(scanner, gb_item, getSelector().change_key_path);
     }
-    void map_selected_item() const {
-        GBDATA         *gb_main     = get_gbmain();
-        GB_transaction  ta(gb_main);
-        map_item(getSelector().get_selected_item(gb_main, get_root()));
-    }
+    void map_selected_item() const { map_item(get_selected_item()); }
     void attach_selected_item() const {
         map_selected_item();
         update_window_title();
@@ -125,6 +127,9 @@ public:
 
     void bind_to_selected_item() const;
     void add_detachOrGet_button(detached_uppopper popup_detached_cb) const;
+
+    void display_selected_item() const;
+    void detach_selected_item(detached_uppopper popup_detached_cb) const;
 };
 
 class InfoWindowRegistry {

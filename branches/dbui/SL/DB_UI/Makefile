@@ -47,6 +47,7 @@ info_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 info_window.o: $(ARBHOME)/INCLUDE/attributes.h
 info_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+info_window.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 info_window.o: $(ARBHOME)/INCLUDE/cb.h
 info_window.o: $(ARBHOME)/INCLUDE/cbtypes.h
