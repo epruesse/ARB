@@ -5,10 +5,10 @@ ARCHS_COMMON = \
 	AxML/AxML.dummy \
 	RAxML/RAxML.dummy \
 	PHYML/PHYML.dummy \
-	MAFFT/MAFFT.dummy \
 
 ARCHS_NO_DEPENDS = \
 	PHYML20130708/PHYML20130708.dummy \
+	MAFFT/MAFFT.dummy \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
