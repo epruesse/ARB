@@ -97,7 +97,6 @@ AW_at.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_awar.o: aw_awar.hxx
 AW_awar.o: aw_base.hxx
-AW_awar.o: aw_detach.hxx
 AW_awar.o: aw_keysym.hxx
 AW_awar.o: aw_msg.hxx
 AW_awar.o: aw_nawar.hxx
