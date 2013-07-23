@@ -1436,7 +1436,7 @@ static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_m
     infoWin.add_detachOrGet_button(popup_detached_speciesOrganismWindow);
 
     aws->show();
-    infoWin.attach_currently_selected_item();
+    infoWin.attach_selected_item();
     return aws;
 }
 

@@ -19,7 +19,7 @@ InfoWindowRegistry InfoWindowRegistry::infowin;
 //      item-independent info window callbacks
 
 static void map_item_cb(AW_root *, const InfoWindow *infoWin) {
-    infoWin->map_current_item();
+    infoWin->map_selected_item();
 }
 
 static void store_unused_detached_info_window_cb(AW_window *aw_detached) {
@@ -68,7 +68,7 @@ void InfoWindow::bind_to_selected_item() const {
 }
 
 static void sync_detached_window_cb(AW_window *, const InfoWindow *infoWin) {
-    infoWin->attach_currently_selected_item();
+    infoWin->attach_selected_item();
 }
 
 void InfoWindow::add_detachOrGet_button(detached_uppopper popup_detached_cb) const {

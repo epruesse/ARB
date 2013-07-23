@@ -42,6 +42,8 @@ class InfoWindow : virtual Noncopyable {
     QUERY_ITEM_TYPE itemtype() const { return getSelector().type; }
     const char *itemname() const { return getSelector().item_name; }
 
+    AW_root *get_root() const { return aww->get_root(); }
+
     void update_window_title() const {
         if (is_detached()) { // only change window titles of detached windows
             char *title         = NULL;
@@ -78,10 +80,9 @@ public:
 
     bool is_detached() const { return detach_id>MAIN_WINDOW; }
     bool is_maininfo() const { return detach_id == MAIN_WINDOW; }
+    int getDetachID() const { return detach_id; }
 
     GBDATA *get_gbmain() const { return get_db_scanner_main(scanner); }
-    AW_window *get_aww() const { return aww; }
-    AW_root *get_root() const { return get_aww()->get_root(); }
 
     bool is_used() const { return used; }
     void set_used(bool used_) const {
@@ -96,9 +97,7 @@ public:
             (sel.type == QUERY_ITEM_SPECIES) &&
             (strcmp(sel.item_name, "organism") == 0);
     }
-
-    int getDetachID() const { return detach_id; }
-    bool mapsSameItemsAs(const InfoWindow& other) const {
+    bool handlesSameItemtypeAs(const InfoWindow& other) const {
         QUERY_ITEM_TYPE type = itemtype();
         if (type == other.itemtype()) {
             return type != QUERY_ITEM_SPECIES || mapsOrganism() == other.mapsOrganism();
@@ -109,21 +108,19 @@ public:
     void map_item(GBDATA *gb_item) const {
         map_db_scanner(scanner, gb_item, getSelector().change_key_path);
     }
-    void map_current_item() const {
-        GBDATA         *gb_main = get_gbmain();
+    void map_selected_item() const {
+        GBDATA         *gb_main     = get_gbmain();
         GB_transaction  ta(gb_main);
         map_item(getSelector().get_selected_item(gb_main, get_root()));
     }
-
-    void attach_currently_selected_item() const {
-        map_current_item();
+    void attach_selected_item() const {
+        map_selected_item();
         update_window_title();
     }
-
     void reuse() const {
         set_used(true);
-        get_aww()->activate();
-        attach_currently_selected_item();
+        aww->activate();
+        attach_selected_item();
     }
 
     void bind_to_selected_item() const;
@@ -161,7 +158,7 @@ public:
         int maxUsedID = InfoWindow::MAIN_WINDOW;
         for (WinMap::iterator i = win.begin(); i != win.end(); ++i) {
             const InfoWindow::Ptr& info = i->second;
-            if (info->mapsSameItemsAs(other)) {
+            if (info->handlesSameItemtypeAs(other)) {
                 maxUsedID = std::max(maxUsedID, info->getDetachID());
             }
         }
@@ -170,7 +167,7 @@ public:
     const InfoWindow *find_reusable_of_same_type_as(const InfoWindow& other) {
         for (WinMap::iterator i = win.begin(); i != win.end(); ++i) {
             const InfoWindow::Ptr& info = i->second;
-            if (info->mapsSameItemsAs(other) && !info->is_used()) return &*info;
+            if (info->handlesSameItemtypeAs(other) && !info->is_used()) return &*info;
         }
         return NULL;
     }

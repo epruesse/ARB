@@ -1001,7 +1001,7 @@ static AW_window *popup_new_gene_window(AW_root *aw_root, GBDATA *gb_main, int d
     infoWin.add_detachOrGet_button(popup_detached_gene_window);
 
     aws->show();
-    infoWin.attach_currently_selected_item();
+    infoWin.attach_selected_item();
 
     return aws;
 }
