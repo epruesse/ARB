@@ -30,6 +30,7 @@
 #include <list>
 #include <string>
 #include <awt_sel_boxes.hxx>
+#include <rootAsWin.h>
 
 using namespace std;
 using namespace QUERY;
@@ -126,7 +127,7 @@ query_spec::query_spec(ItemSelector& selector_)
       do_set_pos_fig(0),
       open_parser_pos_fig(0),
       do_refresh_pos_fig(0),
-      create_view_window(0),
+      popup_info_window(0),
       info_box_pos_fig(0)
 {
     dbq_assert(&selector);
@@ -2564,13 +2565,6 @@ static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL c
     cdef.write(stored);
 }
 
-
-static void query_box_popup_view_window(AW_window *aww, AW_CL cl_create_window, AW_CL cl_gb_main) {
-    create_info_window_cb  create_window = (create_info_window_cb)cl_create_window;
-    AW_window                   *aw_viewer     = create_window(aww->get_root(), cl_gb_main);
-    aw_viewer->show();
-}
-
 static void query_rel_menu_entry(AW_window *aws, const char *id, const char *query_id, AW_label label, const char *mnemonic, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     char *rel_id = GBS_global_string_copy("%s_%s", query_id, id);
     aws->insert_menu_topic(rel_id, label, mnemonic, helpText, Mask, f, cd1, cd2);
@@ -2742,8 +2736,8 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
 
     if (awtqs->result_pos_fig) {
         aws->at(awtqs->result_pos_fig);
-        if (awtqs->create_view_window) {
-            aws->callback(query_box_popup_view_window, (AW_CL)awtqs->create_view_window, (AW_CL)query->gb_main);
+        if (awtqs->popup_info_window) {
+            aws->callback(RootAsWindowCallback::simple(awtqs->popup_info_window, query->gb_main));
         }
         aws->d_callback(makeWindowCallback(toggle_flag_cb, query));
 

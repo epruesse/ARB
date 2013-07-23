@@ -58,8 +58,8 @@ inline int ARB_strNULLcmp(const char *s1, const char *s2) {
 }
 
 
-inline void ARB_strupper(char *s) { for (int i = 0; s[i]; ++i) s[i] = toupper(s[i]); } // strupr
-inline void ARB_strlower(char *s) { for (int i = 0; s[i]; ++i) s[i] = tolower(s[i]); } // strlwr
+inline char *ARB_strupper(char *s) { for (int i = 0; s[i]; ++i) s[i] = toupper(s[i]); return s; } // strupr
+inline char *ARB_strlower(char *s) { for (int i = 0; s[i]; ++i) s[i] = tolower(s[i]); return s; } // strlwr
 
 // ----------------------------------------
 // define the following inlines only if we have string 
