@@ -38,8 +38,10 @@ my $reg_is_required = qr/^\s\s+required\sfrom\s/;
 my $reg_shadow_warning = qr/^declaration\sof\s.*\sshadows\s/;
 my $reg_shadow_location = qr/^shadowed\s/;
 
+# filter unwanted -Weffc++ warnings
 my $filter_Weffpp = 1;
 my @reg_Weffpp = (
+                  qr/only\sdefines\sprivate\sconstructors\sand\shas\sno\sfriends/, # unwanted warning about singleton-class where the only instance exists as a static member of itself
                   qr/^base\sclass\s.*has\sa\snon-virtual\sdestructor/,
                   qr/\sshould\sbe\sinitialized\sin\sthe\smember\sinitialization\slist/,
                   qr/boost::icl::(insert|add)_iterator<ContainerT>.*should\sreturn/, # filter boost-iterator postfix operators warnings

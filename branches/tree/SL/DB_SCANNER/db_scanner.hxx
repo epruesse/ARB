@@ -51,7 +51,7 @@ enum DB_SCANNERMODE {
     DB_VIEWER
 };
 
-struct DbScanner;
+struct DbScanner; // @@@ should publish class DbScanner here. functions below shall become member functions
 
 DbScanner *create_db_scanner(GBDATA         *gb_main,
                              AW_window      *aws,
@@ -68,7 +68,9 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
 void map_db_scanner(DbScanner *scanner, GBDATA *gb_pntr, const char *key_path);
 
 
-GBDATA *get_db_scanner_main(DbScanner *scanner);
+GBDATA *get_db_scanner_main(const DbScanner *scanner);
+char *get_id_of_item_mapped_in(const DbScanner *scanner);
+const ItemSelector& get_itemSelector_of(const DbScanner *scanner);
 
 #else
 #error db_scanner.hxx included twice

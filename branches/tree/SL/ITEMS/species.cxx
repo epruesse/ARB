@@ -36,6 +36,10 @@ static GBDATA* get_selected_species(GBDATA *gb_main, AW_root *aw_root) {
     return gb_species;
 }
 
+static void add_selected_species_changed_cb(AW_root *aw_root, const RootCallback& cb) {
+    aw_root->awar(AWAR_SPECIES_NAME)->add_callback(cb);
+}
+
 static char* get_species_id(GBDATA *, GBDATA *gb_species) {
     GBDATA *gb_name = GB_entry(gb_species, "name");
     if (!gb_name) return 0;     // species w/o name -> skip
@@ -81,6 +85,7 @@ static struct MutableItemSelector ITEM_species = {
     get_first_species,
     get_next_species,
     get_selected_species,
+    add_selected_species_changed_cb,
     0, 0,
 };
 
@@ -100,6 +105,7 @@ static struct MutableItemSelector ITEM_organism = {
     get_first_species,
     get_next_species,
     get_selected_species,
+    add_selected_species_changed_cb,
     0, 0,
 };
 

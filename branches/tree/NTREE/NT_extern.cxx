@@ -54,6 +54,7 @@
 
 #include <arb_version.h>
 #include <refentries.h>
+#include <rootAsWin.h>
 
 #define AWAR_EXPORT_NDS             "tmp/export_nds"
 #define AWAR_EXPORT_NDS_SEPARATOR   AWAR_EXPORT_NDS "/separator"
@@ -680,11 +681,9 @@ inline void append_command_output(GBS_strstruct *out, const char *prefix, const 
     }
 }
 
-static void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
-{
+static void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
     AWT_canvas *canvas = (AWT_canvas*)cd1;
-    AW_window  *aws    = DBUI::create_species_info_window(aww->get_root(), (AW_CL)canvas->gb_main);
-    aws->activate();
+    DBUI::popup_species_info_window(aww->get_root(), canvas->gb_main);
     nt_mode_event(aww, canvas, (AWT_COMMAND_MODE)cd2);
 }
 
@@ -832,11 +831,6 @@ static void NT_update_marked_counter(GBDATA* /*species_info*/, int* cl_aww, GB_C
         aww->get_root()->awar(AWAR_TREE_REFRESH)->touch();
     }
     free(oldval);
-}
-
-static void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
-    // used to avoid that the species info window is stored in a menu (or with a button)
-    DBUI::create_species_info_window(aww->get_root(), cl_gb_main)->activate();
 }
 
 // --------------------------------------------------------------------------------------------------
@@ -1075,6 +1069,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     bool is_genome_db = GEN_is_genome_db(GLOBAL.gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
 
+    WindowCallback popupinfo_wcb = RootAsWindowCallback::simple(DBUI::popup_species_info_window, GLOBAL.gb_main);
+
     // --------------
     //      File
 
@@ -1161,8 +1157,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->create_menu("Species", "c", AWM_ALL);
         {
-            awm->insert_menu_topic("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP,                (AW_CL)DBUI::create_species_query_window, (AW_CL)GLOBAL.gb_main);
-            awm->insert_menu_topic("species_info",   "Species information", "i", "sp_info.hlp",   AWM_ALL, NT_popup_species_window, (AW_CL)GLOBAL.gb_main,         0);
+            awm->insert_menu_topic("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("species_info",   "Species information", "i", "sp_info.hlp",   AWM_ALL, popupinfo_wcb);
 
             awm->sep______________();
 
@@ -1704,7 +1700,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     awm->at(db_infox, first_liney);
     awm->button_length(13);
-    awm->callback(NT_popup_species_window, (AW_CL)GLOBAL.gb_main, 0);
+    awm->callback(popupinfo_wcb);
     awm->help_text("sp_search.hlp");
     awm->create_button("INFO",  AWAR_INFO_BUTTON_TEXT);
 
