@@ -2120,7 +2120,7 @@ CHECKOUT_MODIFIED=0# set to 1 to temporarily skip test for modifications (do not
 check_svn_does_not_contain_generated:
 ifeq ($(CHECKOUT_MODIFIED),0) 
 	@echo "Testing that build does not modify files in SVN"
-	@/usr/bin/test 0 = `svn status | wc -l` || ( \
+	@test 0 = `svn status | wc -l` || ( \
 		echo "The checkout is not/no longer clean:"; \
 		svn status; \
 		echo "- if this fails instantly, your checkout is not clean"; \
@@ -2132,7 +2132,7 @@ else
 endif
 
 check_svn_ignores_generated:
-	@/usr/bin/test 0 = `svn status | grep '^\?' | wc -l` || ( \
+	@test 0 = `svn status | grep '^\?' | wc -l` || ( \
 		echo "There are svn-unignored files:"; \
 		svn status | grep '^\?'; \
 		echo "(all generated files should be svn-ignored)"; \
