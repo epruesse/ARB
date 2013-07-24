@@ -27,6 +27,7 @@
 enum tr_lfmode { LF_UNKNOWN, LF_N, LF_R, LF_NR, LF_RN, };
 
 class TreeReader : virtual Noncopyable {
+    int unnamed_counter;
 
     int get_char();
     int read_tree_char();
@@ -50,6 +51,10 @@ class TreeReader : virtual Noncopyable {
     char   *eat_quoted_string();
     bool    eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN *len);
 
+    char *unnamedNodeName() {
+        return GBS_global_string_copy("unnamed%i", ++unnamed_counter);
+    }
+
 public:
     char          *tree_file_name;
     FILE          *in;
@@ -69,7 +74,8 @@ public:
 };
 
 TreeReader::TreeReader(FILE *input, const char *file_name)
-    : tree_file_name(strdup(file_name)),
+    : unnamed_counter(0),
+      tree_file_name(strdup(file_name)),
       in(input),
       last_character(0),
       line_cnt(1),
@@ -287,11 +293,6 @@ void TreeReader::setBranchName(GBT_TREE *node, char *name) {
     }
 }
 
-static char *unnamedNodeName() {
-    static int i = 0;
-    return GBS_global_string_copy("unnamed%i", ++i);
-}
-
 bool TreeReader::eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN *len) {
     /* reads the branch-length and -name
        '*len' should normally be initialized with TREE_DEFLEN_MARKER
@@ -323,7 +324,7 @@ bool TreeReader::eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN *len) {
             default: {
                 char *branchName = eat_quoted_string();
                 if (branchName) {
-                    // if (branchName[0] == 0) freeset(branchName, unnamedNodeName());
+                    if (branchName[0] == 0) freeset(branchName, unnamedNodeName());
                     setBranchName(node, branchName);
                 }
                 else {
@@ -430,6 +431,8 @@ GBT_TREE *TreeReader::load_tree(int structuresize, GBT_LEN *nodeLen) {
         eat_white();
         char *name = eat_quoted_string();
         if (name) {
+            if (!name[0]) freeset(name, unnamedNodeName());
+
             node          = (GBT_TREE*)GB_calloc(1, structuresize);
             node->is_leaf = true;
             node->name    = name;
@@ -647,7 +650,7 @@ void TEST_load_tree() {
     // test valid trees with strange or wrong behavior
     {
         GBT_TREE *tree = loadFromFileContaining("(,);");
-        TEST_EXPECT_TREELOAD(tree, ",", 2); // tree with 2 unamed species (weird, but ok)
+        TEST_EXPECT_TREELOAD(tree, "unnamed1,unnamed2", 2); // tree with 2 unamed species (weird, but ok)
         GBT_delete_tree(tree);
     }
     {
@@ -673,25 +676,25 @@ void TEST_load_tree() {
     {
         GBT_TREE *tree = loadFromFileContaining("();");
         TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
-        TEST_EXPECT_TREELOAD(tree, "", 1); // unwanted - just protect vs regression
+        TEST_EXPECT_TREELOAD(tree, "unnamed1", 1); // unwanted - just protect vs regression
         GBT_delete_tree(tree);
     }
     {
         GBT_TREE *tree = loadFromFileContaining("()");
         TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
-        TEST_EXPECT_TREELOAD(tree, "", 1); // unwanted - just protect vs regression
+        TEST_EXPECT_TREELOAD(tree, "unnamed1", 1); // unwanted - just protect vs regression
         GBT_delete_tree(tree);
     }
     {
         GBT_TREE *tree = loadFromFileContaining(";");
         TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
-        TEST_EXPECT_TREELOAD(tree, "", 1); // unwanted - just protect vs regression
+        TEST_EXPECT_TREELOAD(tree, "unnamed1", 1); // unwanted - just protect vs regression
         GBT_delete_tree(tree);
     }
     {
         GBT_TREE *tree = loadFromFileContaining("");
         TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
-        TEST_EXPECT_TREELOAD(tree, "", 1); // unwanted - just protect vs regression
+        TEST_EXPECT_TREELOAD(tree, "unnamed1", 1); // unwanted - just protect vs regression
         GBT_delete_tree(tree);
     }
     {
@@ -703,7 +706,7 @@ void TEST_load_tree() {
     {
         GBT_TREE *tree = loadFromFileContaining("((((()))));");
         TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
-        TEST_EXPECT_TREELOAD(tree, "", 1); // unwanted - just protect vs regression
+        TEST_EXPECT_TREELOAD(tree, "unnamed1", 1); // unwanted - just protect vs regression
         GBT_delete_tree(tree);
     }
     {
@@ -728,7 +731,7 @@ void TEST_load_tree() {
     TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("(a, b:5:c:d)", "akjhsd", "a,d", 2);
 
     // questionable accepted trees
-    TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("())", "xxx", "", 1); // @@@ at least warn!
+    TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("())", "xxx", "unnamed1", 1); // @@@ at least warn!
     TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("(a*,b%);", "xxx", "a*,b%", 2); // @@@ really accept such names?
 
     // check errors
