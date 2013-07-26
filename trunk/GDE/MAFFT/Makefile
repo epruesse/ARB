@@ -3,10 +3,11 @@
 
 PROG  = MAFFT
 
+# force gcc (hack to fix cent5 build)
+CC = gcc
 
 # ARBs standard target
 $(MAIN) : mafft.stamp
-
 
 clean :
 	rm -rf $(ARBHOME)/lib/mafft
@@ -14,15 +15,8 @@ clean :
 	rm -f $(ARBHOME)/bin/mafft
 	cd mafft-7.053-without-extensions/core && make clean
 
-
-
-mafft.stamp : 
+mafft.stamp :
 	cd mafft-7.053-without-extensions/core && make && make install
 	touch mafft.stamp
 
-	
-
 .PHONY : clean
-
-
-	
