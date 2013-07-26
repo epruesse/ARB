@@ -1,5 +1,6 @@
 #!/bin/bash
 set -x
+set -o errexit
 
 # set stamdard variables
 export ARBHOME=`pwd`
