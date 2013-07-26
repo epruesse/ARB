@@ -4,7 +4,7 @@
 PROG  = MAFFT
 
 # force gcc (hack to fix cent5 build)
-CC = gcc
+export CC = gcc
 
 # ARBs standard target
 $(MAIN) : mafft.stamp
