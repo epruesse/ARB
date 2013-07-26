@@ -29,7 +29,7 @@ rm -f config.makefile
 
 # prepare config.makefile
 CFG=config.makefile
-UNIT_TESTS=1# default is to run unit tests
+UNIT_TESTS=1
 case $MODE in
 DEBUG)
  echo "DEBUG := 1" >> $CFG
