@@ -43,6 +43,7 @@ case $MODE in
     ;;
   RELEASE)
     DEBUG=0
+    TARSUF="-user"
     UNIT_TESTS=0
     ;;
   *)
@@ -91,9 +92,9 @@ if [ $BUILD == 1 ]; then
     make build
     make tarfile_quick
 
-    # @@@ only save in mode RELEASE?
-    mv arb.tgz     arb-r${SVN_REVISION}${TARSUF}.${TGTNAME}.tgz
-    # @@@ save in extra subdirectory?
+    if [ "$MODE" == "RELEASE" ]; then
+        mv arb.tgz     arb-r${SVN_REVISION}${TARSUF}.${TGTNAME}.tgz
+    fi
     mv arb-dev.tgz arb-r${SVN_REVISION}${TARSUF}-dev.${TGTNAME}.tgz
 
     make ut
