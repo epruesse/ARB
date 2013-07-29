@@ -653,6 +653,16 @@ void TEST_load_tree() {
         GBT_delete_tree(tree);
     }
 
+    // test tree lengths (esp. length zero)
+    {
+        GBT_TREE *tree = loadFromFileContaining("(node1:0.00,(node2, node3:0.57)):0;");
+        TEST_EXPECT_TREELOAD(tree, "node1,node2,node3", 3);
+        TEST_EXPECT_EQUAL(tree->leftlen, 0);
+        TEST_EXPECT_EQUAL(tree->rightlen, TREE_DEFLEN);
+        TEST_EXPECT_EQUAL(tree->rightson->rightlen, 0.57);
+        GBT_delete_tree(tree);
+    }
+
     // test valid trees with strange or wrong behavior
     {
         GBT_TREE *tree = loadFromFileContaining("(,);");
