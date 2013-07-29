@@ -185,7 +185,7 @@ void TEST_SLOW_arb_read_tree() {
     }
 
     TEST_EXPECT_NO_ERROR(removeVaryingDateFromTreeRemarks(dbout));
-    TEST_EXPECT_TEXTFILES_EQUAL(dbout, dbexpected);
+    TEST_EXPECT_TEXTFILES_EQUAL(dbexpected, dbout);
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(dbout));
 }
 

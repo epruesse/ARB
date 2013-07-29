@@ -10,5 +10,5 @@ comment contains [extra brackets] inside comment
                 ,
                 's 4':0.1):0.1,
         (s5:0.02, "s-6":0.04):0.06
-):0:2;
+):0.2;
 
