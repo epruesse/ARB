@@ -701,6 +701,7 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
 #define TEST_EXPECT_TREESTRING_OK(treeString,names,count) do {  \
         GBT_TREE *tree = loadFromFileContaining(treeString);    \
         TEST_EXPECT_TREELOAD(tree, names, count);               \
+        GBT_delete_tree(tree);                                  \
     } while(0)
 
 #define TEST_EXPECT_TREESTRING_OK__BROKEN(treeString,names,count) do {  \
