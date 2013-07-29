@@ -646,6 +646,12 @@ void TEST_load_tree() {
         free(comment);
         GBT_delete_tree(tree);
     }
+    {
+        GBT_TREE *tree = loadFromFileContaining("(node1,node2)rootgroup;");
+        TEST_EXPECT_TREELOAD(tree, "node1,node2", 2);
+        TEST_EXPECT_EQUAL__BROKEN(tree->name, "rootgroup");
+        GBT_delete_tree(tree);
+    }
 
     // test valid trees with strange or wrong behavior
     {
