@@ -49,7 +49,7 @@ class TreeReader : virtual Noncopyable {
     void  eat_white();
     __ATTR__USERESULT bool eat_number(GBT_LEN& result);
     char *eat_quoted_string();
-    bool  eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN *len);
+    bool  eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN& len);
 
     char *unnamedNodeName() {
         return GBS_global_string_copy("unnamed%i", ++unnamed_counter);
@@ -69,8 +69,8 @@ public:
     TreeReader(FILE *input, const char *file_name);
     ~TreeReader();
 
-    GBT_TREE *load_subtree(int structuresize, GBT_LEN *nodeLen);
-    GBT_TREE *load_named_node(int structuresize, GBT_LEN *nodeLen);
+    GBT_TREE *load_subtree(int structuresize, GBT_LEN& nodeLen);
+    GBT_TREE *load_named_node(int structuresize, GBT_LEN& nodeLen);
     char *takeComment();
 };
 
@@ -334,11 +334,11 @@ void TreeReader::drop_tree_char(char expected) {
     read_tree_char();
 }
 
-bool TreeReader::eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN *len) { // @@@ use ref for 'len'
+bool TreeReader::eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN& nodeLen) {
     // reads optional branch-length and -name
     //
-    // if 'len' contains TREE_DEFLEN_MARKER, it gets overwritten with any found length-specification
-    //          otherwise found length is added to 'len'
+    // if 'nodeLen' contains TREE_DEFLEN_MARKER, it gets overwritten with any found length-specification
+    // otherwise found length is added to 'nodeLen'
     //
     // sets the branch-name of 'node', if a name is found (e.g. sth like "(...)'name':0.5")
     //
@@ -360,14 +360,14 @@ bool TreeReader::eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN *len) { // 
                 if (!error) {
                     GBT_LEN foundlen;
                     if (eat_number(foundlen)) {
-                        if (is_marked_as_default_len(*len)) {
-                            *len = foundlen;
+                        if (is_marked_as_default_len(nodeLen)) {
+                            nodeLen = foundlen;
                         }
                         else {
                             tree_assert(node->is_leaf); // should only happen when a single leaf in parenthesis was read
-                            *len += foundlen;           // sum leaf and node lengths
+                            nodeLen += foundlen;        // sum leaf and node lengths
                         }
-                        max_found_branchlen = std::max(max_found_branchlen, *len);
+                        max_found_branchlen = std::max(max_found_branchlen, nodeLen);
                     }
                     else {
                         setExpectedError("valid length");
@@ -411,7 +411,7 @@ static GBT_TREE *createLinkedTreeNode(GBT_TREE *left, GBT_LEN leftlen, GBT_TREE 
     return node;
 }
 
-GBT_TREE *TreeReader::load_named_node(int structuresize, GBT_LEN *nodeLen) {
+GBT_TREE *TreeReader::load_named_node(int structuresize, GBT_LEN& nodeLen) {
     // reads a node or subtree.
     // a single node is expected to have a name (or will be auto-named)
     // subtrees may have a name (groupname)
@@ -446,7 +446,7 @@ GBT_TREE *TreeReader::load_named_node(int structuresize, GBT_LEN *nodeLen) {
 }
 
 
-GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN *nodeLen) { // @@@ use reference for nodeLen ?
+GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
     // loads a subtree (i.e. expects parenthesis around one or several nodes)
     //
     // 'nodeLen' normally is set to TREE_DEFLEN_MARKER
@@ -460,19 +460,19 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN *nodeLen) { // @@@
     drop_tree_char('(');
 
     GBT_LEN   leftLen = TREE_DEFLEN_MARKER;
-    GBT_TREE *left    = load_named_node(structuresize, &leftLen);
+    GBT_TREE *left    = load_named_node(structuresize, leftLen);
 
     if (left) {
         switch (last_character) {
             case ')':               // single node
-                *nodeLen = leftLen;
-                node     = left;
-                left     = 0;
+                nodeLen = leftLen;
+                node    = left;
+                left    = 0;
                 break;
 
             case ',': {
                 GBT_LEN   rightLen = TREE_DEFLEN_MARKER;
-                GBT_TREE *right    = 0;
+                GBT_TREE *right    = NULL;
 
                 while (last_character == ',' && !error) {
                     if (right) { // multi-branch
@@ -484,17 +484,17 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN *nodeLen) { // @@@
 
                     drop_tree_char(',');
                     if (!error) {
-                        right = load_named_node(structuresize, &rightLen);
+                        right = load_named_node(structuresize, rightLen);
                     }
                 }
 
                 if (!error) {
                     if (last_character == ')') {
-                        node     = createLinkedTreeNode(left, leftLen, right, rightLen, structuresize);
-                        *nodeLen = TREE_DEFLEN_MARKER;
+                        node    = createLinkedTreeNode(left, leftLen, right, rightLen, structuresize);
+                        nodeLen = TREE_DEFLEN_MARKER;
 
-                        left = 0;
-                        right  = 0;
+                        left  = NULL;
+                        right = NULL;
 
                         drop_tree_char(')');
                     }
@@ -544,7 +544,7 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
         TreeReader reader(input, name_only);
         if (!reader.error) {
             GBT_LEN rootNodeLen = TREE_DEFLEN_MARKER;     // root node has no length. only used as input to gbt_load_tree_rek
-            tree                = reader.load_named_node(structuresize, &rootNodeLen);
+            tree                = reader.load_named_node(structuresize, rootNodeLen);
         }
         fclose(input);
 
