@@ -13,6 +13,7 @@
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
+#include <arb_defs.h>
 #include <algorithm>
 
 #define tree_assert(cond) arb_assert(cond)
@@ -579,10 +580,10 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
         }
         fclose(input);
 
-        if (reader.error) {
-            GBT_delete_tree(tree);
-            error = reader.error;
-        }
+        if      (reader.error)          error = reader.error;
+        else if (tree && tree->is_leaf) error = "tree is too small (need at least 2 species)";
+
+        if (error) GBT_delete_tree(tree);
 
         if (tree) {
             double bootstrap_scale = 1.0;
@@ -816,46 +817,21 @@ void TEST_load_tree() {
 
     // test unacceptable trees
     {
-        GBT_TREE *tree = loadFromFileContaining("();");
-        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
-        TEST_EXPECT_TREELOAD(tree, "unnamed1", 1); // unwanted - just protect vs regression
-        GBT_delete_tree(tree);
-    }
-    {
-        GBT_TREE *tree = loadFromFileContaining("()");
-        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
-        TEST_EXPECT_TREELOAD(tree, "unnamed1", 1); // unwanted - just protect vs regression
-        GBT_delete_tree(tree);
-    }
-    {
-        GBT_TREE *tree = loadFromFileContaining(";");
-        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
-        TEST_EXPECT_TREELOAD(tree, "unnamed1", 1); // unwanted - just protect vs regression
-        GBT_delete_tree(tree);
-    }
-    {
-        GBT_TREE *tree = loadFromFileContaining("");
-        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
-        TEST_EXPECT_TREELOAD(tree, "unnamed1", 1); // unwanted - just protect vs regression
-        GBT_delete_tree(tree);
-    }
-    {
-        GBT_TREE *tree = loadFromFileContaining("(one);");
-        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "???"); // @@@ tree with 1 leaf should not load
-        TEST_EXPECT_TREELOAD(tree, "one", 1); // unwanted - just protect vs regression
-        GBT_delete_tree(tree);
-    }
-    {
-        GBT_TREE *tree = loadFromFileContaining("((((()))));");
-        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "empty");
-        TEST_EXPECT_TREELOAD(tree, "unnamed1", 1); // unwanted - just protect vs regression
-        GBT_delete_tree(tree);
-    }
-    {
-        GBT_TREE *tree = loadFromFileContaining("(((((one)))));");
-        TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "???");
-        TEST_EXPECT_TREELOAD(tree, "one", 1); // unwanted - just protect vs regression
-        GBT_delete_tree(tree);
+        const char *tooSmallTree[] = {
+            "();",
+            "()",
+            ";",
+            "",
+            "(one)",
+            "((((()))));",
+            "(((((one)))));",
+        };
+
+        for (size_t i = 0; i<ARRAY_ELEMS(tooSmallTree); ++i) {
+            TEST_ANNOTATE_ASSERT(GBS_global_string("tree #%zu ('%s')", i, tooSmallTree[i]));
+            GBT_TREE *tree = loadFromFileContaining(tooSmallTree[i]);
+            TEST_EXPECT_TREELOAD_FAILED_WITH(tree, "tree is too small");
+        }
     }
     {
         GBT_TREE *tree = loadFromFileContaining("((a, b)25%)20%;");
@@ -880,7 +856,7 @@ void TEST_load_tree() {
     TEST_EXPECT_TREESTRING_OK("(a, b:5)", "a,b", 2);
 
     // questionable accepted trees
-    TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("())", "xxx", "unnamed1", 1); // @@@ at least warn!
+    TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("(a, b))", "xxx", "a,b", 2); // @@@ at least warn!
     TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN("(a*,b%);", "xxx", "a*,b%", 2); // @@@ really accept such names?
 
     // check errors
