@@ -1,6 +1,8 @@
 Provided by: Matt Cottrell
 revised Sept 30, 2009
 
+removed unused xmkmf (ralf; Jul 2013)
+
 If you are looking for an easy way to install ARB on OS X, then see the instructions in the file
 ARB_OS_X_MacPorts.txt.  There you will find instructions for installing ARB, including all of the
 necesary dependencies using MacPorts the easy way.
@@ -31,9 +33,7 @@ Downloads are placed on the Desktop and final installation will be in /usr/local
 
 - Install sed, lynx and dos2unix using Fink
 
-        %fink install sed lynx dos2unix xmkmf libsablot
-
-        %sudo ln -s /sw/lib/xmkmf/bin/xmkmf /usr/X11/bin/xmkmf
+        %fink install sed lynx dos2unix libsablot
 
 Note: The BSD flavor of sed provided with OS X will not work with ARB.  You need the GNU sed provided by Fink.
       There are other ways to install GNU sed, lynx and dos2unix, but using Fink is probably the easiest.
