@@ -42,7 +42,7 @@ class TreeReader : virtual Noncopyable {
 
     void drop_tree_char(char expected);
 
-    void setBranchName_or_acceptBootstrap(GBT_TREE *node, char*& name);
+    void setBranchName_acceptingBootstrap(GBT_TREE *node, char*& name);
 
     // The eat-functions below assume that the "current" character
     // has already been read into 'last_character':
@@ -295,35 +295,66 @@ char *TreeReader::eat_quoted_string() {
     return strdup(buffer);
 }
 
-void TreeReader::setBranchName_or_acceptBootstrap(GBT_TREE *node, char*& name) {
-    // detect bootstrap values
-    // (name will be stored in node or will be freed)
+void TreeReader::setBranchName_acceptingBootstrap(GBT_TREE *node, char*& name) {
+    // store groupname and/or bootstrap value.
+    //
+    // ARBs extended newick format allows 3 kinds of node-names:
+    //     'groupname'
+    //     'bootstrap'
+    //     'bootstrap:groupname' (even w/o the ':')
+    //
+    // where
+    //     'bootstrap' is sth interpretable as double
+    //     'groupname' is anything not interpretable as double
+    //
+    // If a groupname is detected, it is stored in node->name
+    // If a bootstrap is detected, it is stored in node->remark_branch
+    //
+    // Bootstrap values will be scaled up by factor 100.
+    // Wrong scale-ups (to 10000) will be corrected by calling TREE_scale() after the whole tree has been loaded.
 
     char   *end       = 0;
     double  bootstrap = strtod(name, &end);
 
-    tree_assert(!node->name); // name has already been set before (logical bug)
-    // @@@ drop name if already set (and warn)
-
+    char *new_name = NULL;
     if (end == name) {          // no digits -> no bootstrap
-        node->name = name;
+        new_name = name;
     }
     else {
-        bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0 */
-        // downscaling in done later!
+        bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0 (downscaling is done later)
+        if (bootstrap > max_found_bootstrap) { max_found_bootstrap = bootstrap; }
 
-        if (bootstrap > max_found_bootstrap) {
-            max_found_bootstrap = bootstrap;
+        if (node->remark_branch) {
+            error = "Invalid duplicated bootstrap specification detected";
         }
-
-        tree_assert(node->remark_branch == 0);
-        node->remark_branch  = GBS_global_string_copy("%i%%", (int)bootstrap);
+        else {
+            node->remark_branch = GBS_global_string_copy("%i%%", int(bootstrap));
+        }
 
         if (end[0] != 0) {      // sth behind bootstrap value
             if (end[0] == ':') ++end; // ARB format for nodes with bootstraps AND node name is 'bootstrap:nodename'
-            node->name = strdup(end);
+            new_name = strdup(end);
         }
         free(name);
+    }
+    name = NULL;
+
+    if (new_name) {
+        if (node->name) {
+            if (node->is_leaf) {
+                fprintf(stderr, "Warning: Dropped group name specified for a single-node-subtree ('%s')\n", new_name);
+                freenull(new_name);
+            }
+            else {
+                fprintf(stderr,
+                        "Warning: Duplicated group name specification detected. Dropped inner ('%s'), kept outer group name ('%s')\n",
+                        node->name, new_name);
+                freeset(node->name, new_name);
+            }
+        }
+        else {
+            node->name = new_name;
+        }
     }
 }
 
@@ -383,7 +414,7 @@ bool TreeReader::eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN& nodeLen) {
             default: {
                 char *branchName = eat_quoted_string();
                 if (branchName) {
-                    if (branchName[0]) setBranchName_or_acceptBootstrap(node, branchName);
+                    if (branchName[0]) setBranchName_acceptingBootstrap(node, branchName);
                 }
                 else {
                     UNCOVERED();
@@ -452,8 +483,10 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
     // 'nodeLen' normally is set to TREE_DEFLEN_MARKER
     //           or to length of single node (if parenthesis contain only one node)
     //
-    // length and/or name are not parsed.
-    // So the name of the returned subtree is NULL (despite one special case: a single node in parenthesis)
+    // length and/or name behind '(...)' are not parsed (has to be done by caller).
+    //
+    // if subtree contains a single node (or a single other subtree), 'name'+'remark_branch' are
+    // already set, when load_subtree() returns - otherwise they are NULL.
 
     GBT_TREE *node = NULL;
 
@@ -517,8 +550,6 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
     if (!error) drop_tree_char(')');
 
     tree_assert(contradicted(node, error));
-    tree_assert(!node || node->is_leaf || !node->name); // node name may only exist for leafs (i.e. for a single node in parenthesis)
-
     return node;
 }
 
@@ -764,7 +795,7 @@ void TEST_load_tree() {
         GBT_delete_tree(tree);
     }
     {
-        GBT_TREE *tree = loadFromFileContaining("( (a), ((b),(c),(d)), ((e),(f)) );");
+        GBT_TREE *tree = loadFromFileContaining("( (a), (((b),(c),(d))group)dupgroup, ((e),(f)) );");
         TEST_EXPECT_TREELOAD(tree, "a,b,c,d,e,f", 6);
         GBT_delete_tree(tree);
     }
@@ -774,15 +805,14 @@ void TEST_load_tree() {
         GBT_delete_tree(tree);
     }
 
-#if 0
-    // test single-node-subtree name-conflict (@@@ now fails assertion; fix and reactivate)
+    // test single-node-subtree name-conflict
     {
-        GBT_TREE *tree = loadFromFileContaining("(((((a))single)), ((b, c)));"); // @@@ should warn about dropped node-name
-        TEST_EXPECT_TREELOAD__BROKEN(tree, "a,b,c", 3); // @@@ superfluous parenthesis confuse reader
-        TEST_EXPECT_TREELOAD(tree, "a", 1); // unwanted - just protect vs regression
+        GBT_TREE *tree = loadFromFileContaining("(((((a))single)), ((b, c)17%:0.2));");
+        TEST_EXPECT_TREELOAD(tree, "a,b,c", 3);
+        TEST_EXPECT_EQUAL(tree->rightson->remark_branch, "17%");
+        TEST_EXPECT_EQUAL(tree->rightlen, 0.2);
         GBT_delete_tree(tree);
     }
-#endif
 
     // test unacceptable trees
     {
@@ -826,6 +856,10 @@ void TEST_load_tree() {
         TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, "???");
         TEST_EXPECT_TREELOAD(tree, "one", 1); // unwanted - just protect vs regression
         GBT_delete_tree(tree);
+    }
+    {
+        GBT_TREE *tree = loadFromFileContaining("((a, b)25%)20%;");
+        TEST_EXPECT_TREELOAD_FAILED_WITH(tree, "Invalid duplicated bootstrap specification detected");
     }
 
     // test invalid trees
