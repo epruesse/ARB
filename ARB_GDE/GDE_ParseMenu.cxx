@@ -32,23 +32,27 @@ static int getline(FILE *file, char *string)
 */
 
 void ParseMenu() {
-    int           j, curmenu  = -1, curitem = 0;
-    int           curchoice  = 0, curarg = 0, curinput = 0, curoutput = 0;
-    char          in_line[GBUFSIZ], temp[GBUFSIZ], head[GBUFSIZ];
-    char          tail[GBUFSIZ];
-    const char   *home;
+    int curarg    = 0;
+    int curinput  = 0;
+    int curoutput = 0;
+
     Gmenu        *thismenu   = NULL;
     GmenuItem    *thisitem   = NULL;
     GmenuItemArg *thisarg    = NULL;
     GfileFormat  *thisinput  = NULL;
     GfileFormat  *thisoutput = NULL;
-    char         *resize;
+
+    int   j;
+    char  in_line[GBUFSIZ], temp[GBUFSIZ], head[GBUFSIZ];
+    char  tail[GBUFSIZ];
+    char *resize;
 
     /*  Open the menu configuration file "$ARBHOME/GDEHELP/ARB_GDEmenus"
      *  First search the local directory, then the home directory.
      */
     memset((char*)&menu[0], 0, sizeof(Gmenu)*GDEMAXMENU);
-    home = GB_getenvARBHOME();
+
+    const char *home = GB_getenvARBHOME();
 
     strcpy(temp, home);
     strcat(temp, "/GDEHELP/ARB_GDEmenus");
@@ -60,22 +64,19 @@ void ParseMenu() {
      *  of the menu/menu-item hierarchy.
      */
 
-    for (; getline(file, in_line) != EOF;)
-    {
-        // menu: chooses menu to use
+    for (; getline(file, in_line) != EOF;) {
         if (in_line[0] == '#' || (in_line[0] && in_line[1] == '#')) {
             ; // skip line
         }
-        else if (Find(in_line, "menu:"))
-        {
+        // menu: chooses menu to use
+        else if (Find(in_line, "menu:")) {
             crop(in_line, head, temp);
-            curmenu = -1;
+            int curmenu = -1;
             for (j=0; j<num_menus; j++) {
                 if (Find(temp, menu[j].label)) curmenu=j;
             }
             // If menu not found, make a new one
-            if (curmenu == -1)
-            {
+            if (curmenu == -1) {
                 curmenu         = num_menus++;
                 thismenu        = &menu[curmenu];
                 thismenu->label = (char*)calloc(strlen(temp)+1, sizeof(char));
@@ -91,8 +92,10 @@ void ParseMenu() {
             curarg    = -1;
             curinput  = -1;
             curoutput = -1;
+
             crop(in_line, head, temp);
-            curitem   = thismenu->numitems++;
+
+            int curitem = thismenu->numitems++;
 
             // Resize the item list for this menu (add one item);
             if (curitem == 0) {
@@ -276,12 +279,13 @@ void ParseMenu() {
         {
             crop(in_line, head, temp);
             crop(temp, head, tail);
-            curchoice = thisarg->numchoices++;
 
+            int curchoice = thisarg->numchoices++;
             if (curchoice == 0) resize = (char*)calloc(1, sizeof(GargChoice));
-            else resize               = (char *)realloc((char *)thisarg->choice, thisarg->numchoices*sizeof(GargChoice));
+            else                resize = (char*)realloc((char *)thisarg->choice, thisarg->numchoices*sizeof(GargChoice));
             if (resize == NULL) Error("argchoice: Realloc");
-            thisarg->choice           = (GargChoice*)resize;
+
+            thisarg->choice = (GargChoice*)resize;
 
             (thisarg->choice[curchoice].label)  = NULL;
             (thisarg->choice[curchoice].method) = NULL;
@@ -446,7 +450,7 @@ void Error(const char *msg) {
     (void)fprintf(stderr, "Error in ARB_GDE: %s\n", msg);
     fflush(stderr);
     gde_assert(0);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 
