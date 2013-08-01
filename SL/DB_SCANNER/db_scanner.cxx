@@ -70,6 +70,15 @@ struct DbScanner {
     {
         arb_assert(&selector);
     }
+
+    char *get_mapped_item_id() const {
+        char *id = NULL;
+        if (gb_user) {
+            GB_transaction ta(gb_main);
+            id = selector.generate_item_id(gb_main, gb_user);
+        }
+        return id;
+    }
 };
 
 /* return the selected GBDATA pntr the should be no !!! running transaction and
@@ -601,7 +610,14 @@ void map_db_scanner(DbScanner *scanner, GBDATA *gb_pntr, const char *key_path) {
     scanner_changed_cb(scanner, GB_CB_CHANGED);
 }
 
-GBDATA *get_db_scanner_main(DbScanner *scanner) {
+GBDATA *get_db_scanner_main(const DbScanner *scanner) {
     return scanner->gb_main;
 }
 
+char *get_id_of_item_mapped_in(const DbScanner *scanner) {
+    return scanner->get_mapped_item_id();
+}
+
+const ItemSelector& get_itemSelector_of(const DbScanner *scanner) {
+    return scanner->selector;
+}

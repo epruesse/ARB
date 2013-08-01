@@ -269,9 +269,11 @@ symlink_file ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink_file ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
 symlink_file ../SL/CB/cb.h INCLUDE/cb.h &&
 symlink_file ../SL/CB/cbtypes.h INCLUDE/cbtypes.h &&
+symlink_file ../SL/CB/rootAsWin.h INCLUDE/rootAsWin.h &&
 symlink_file ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&
 symlink_file ../SL/DB_UI/dbui.h INCLUDE/dbui.h &&
+symlink_file ../SL/DB_UI/info_window.h INCLUDE/info_window.h &&
 symlink_file ../SL/SEQIO/seqio.hxx INCLUDE/seqio.hxx &&
 symlink_file ../SL/FAST_ALIGNER/fast_aligner.hxx INCLUDE/fast_aligner.hxx &&
 symlink_file ../SL/FILTER/AP_filter.hxx INCLUDE/AP_filter.hxx &&
@@ -324,7 +326,6 @@ symlink_file ../WINDOW/aw_clipable.hxx INCLUDE/aw_clipable.hxx  &&
 symlink_file ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
 symlink_file ../WINDOW/aw_common.hxx INCLUDE/aw_common.hxx &&
 symlink_file ../WINDOW/aw_common_gtk.hxx INCLUDE/aw_common_gtk.hxx &&
-symlink_file ../WINDOW/aw_detach.hxx INCLUDE/aw_detach.hxx &&
 symlink_file ../WINDOW/aw_device.hxx INCLUDE/aw_device.hxx &&
 symlink_file ../WINDOW/aw_device_click.hxx INCLUDE/aw_device_click.hxx &&
 symlink_file ../WINDOW/aw_device_cairo.hxx INCLUDE/aw_device_cairo.hxx &&

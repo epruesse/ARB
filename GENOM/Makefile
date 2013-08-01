@@ -70,7 +70,6 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
-EXP_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -103,6 +102,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/dbui.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/downcast.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/gccver.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/info_window.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/items.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -165,6 +165,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/downcast.h
 EXP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 EXP_main.o: $(ARBHOME)/INCLUDE/items.h
+EXP_main.o: $(ARBHOME)/INCLUDE/rootAsWin.h
 EXP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 EXP_main.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -299,7 +300,6 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/aw_detach.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -332,6 +332,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/dbui.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/downcast.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/gccver.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/info_window.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/items.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/Location.h
@@ -409,6 +410,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/downcast.h
 GEN_map.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_map.o: $(ARBHOME)/INCLUDE/items.h
+GEN_map.o: $(ARBHOME)/INCLUDE/rootAsWin.h
 GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/static_assert.h
 GEN_map.o: $(ARBHOME)/INCLUDE/test_global.h

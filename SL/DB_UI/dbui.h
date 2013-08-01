@@ -16,8 +16,16 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+#ifndef ITEMS_H
+#include <items.h>
+#endif
 
 // @@@ rename the functions below
+
+class AW_window_simple_menu;
 
 namespace DBUI {
 
@@ -27,17 +35,17 @@ namespace DBUI {
 
     AW_window *create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main);
 
-    AW_window *create_species_info_window(AW_root *aw_root, AW_CL cl_gb_main);
-    AW_window *create_organism_info_window(AW_root *aw_root, AW_CL cl_gb_main);
-    void       detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information);
+    void popup_species_info_window(AW_root *aw_root, GBDATA *gb_main);
+    void popup_organism_info_window(AW_root *aw_root, GBDATA *gb_main);
 
     void insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main);
 
     void create_dbui_awars(AW_root *aw_root, AW_default aw_def);
 
+    void init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const ItemSelector& itemType, int detach_id);
+
     void unquery_all();
     void query_update_list();
-
 };
 
 #else

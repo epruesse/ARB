@@ -23,7 +23,7 @@ struct AW_selection_list;
 
 namespace QUERY {
 
-    typedef AW_window *(*create_info_window_cb)(AW_root *aw_root, AW_CL cl_gb_main);
+    typedef void (*popup_info_window_cb)(AW_root *aw_root, GBDATA *gb_main);
 
     struct DbQuery;
 
@@ -66,7 +66,7 @@ namespace QUERY {
         const char *open_parser_pos_fig;
         const char *do_refresh_pos_fig;
 
-        create_info_window_cb create_view_window;
+        popup_info_window_cb popup_info_window;
 
         const char *info_box_pos_fig;
 
