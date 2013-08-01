@@ -15,6 +15,10 @@ static int getline(FILE *file, char *string)
     else return (0);
 }
 
+inline bool only_whitespace(const char *line) {
+    size_t white = strspn(line, " \t");
+    return line[white] == 0; // only 0 after leading whitespace
+}
 
 /*
   ParseMenus(): Read in the menu config file, and generate the internal
@@ -71,6 +75,9 @@ void ParseMenu() {
         if (in_line[0] == '#' || (in_line[0] && in_line[1] == '#')) {
             ; // skip line
         }
+        else if (only_whitespace(in_line)) {
+            ; // skip line
+        }
         // menu: chooses menu to use
         else if (Find(in_line, "menu:")) {
             crop(in_line, head, temp);
@@ -88,9 +95,14 @@ void ParseMenu() {
                 (void)strcpy(thismenu->label, temp);
                 thismenu->numitems = 0;
             }
+            else {
+                thismenu = &menu[curmenu];
+            }
         }
         // item: chooses menu item to use
         else if (Find(in_line, "item:")) {
+            if (thismenu == NULL) ParseError("'item' used w/o 'menu'", menufile, linenr);
+
             curarg    = -1;
             curinput  = -1;
             curoutput = -1;
@@ -164,6 +176,7 @@ void ParseMenu() {
             thisitem->meta = temp[0];
         }
         else if (Find(in_line, "menumeta:")) {
+            if (thismenu == NULL) ParseError("'menumeta' used w/o 'menu' or 'lmenu'", menufile, linenr);
             crop(in_line, head, temp);
             thismenu->meta = temp[0];
         }
@@ -408,6 +421,9 @@ void ParseMenu() {
             if (thisoutput == NULL) ParseError("'outoverwrite' used w/o 'out'", menufile, linenr);
             thisoutput->overwrite = TRUE;
         }
+        else {
+            ParseError(GBS_global_string("No known GDE-menu-command found (line='%s')", in_line), menufile, linenr);
+        }
     }
 
     free(menufile);
@@ -435,7 +451,7 @@ int Find2(const char *target, const char *key) {
 
 void Error(const char *msg) {
     // goes to header: __ATTR__NORETURN
-    (void)fprintf(stderr, "Error in ARB_GDE: %s\n", msg);
+    fprintf(stderr, "Error in ARB_GDE: %s\n", msg);
     fflush(stderr);
     gde_assert(0);
     exit(EXIT_FAILURE);
@@ -443,7 +459,8 @@ void Error(const char *msg) {
 
 void ParseError(const char *msg, const char *filename, int linenr) {
     // goes to header: __ATTR__NORETURN
-    Error(GBS_global_string("%s (at %s:%i)", msg, filename, linenr));
+    fprintf(stderr, "\n%s:%i: ", filename, linenr);
+    Error(msg);
 }
 
 /*
