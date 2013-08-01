@@ -366,16 +366,17 @@ static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelem
                             long        new_checksum = GBS_checksum(new_seq, 1, "-.");
 
                             if (old_checksum != new_checksum) {
-                                const char *question = GBS_global_string("Warning: Sequence checksum of '%s' has changed\n", savename);
+                                char *question = GBS_global_string_copy("Warning: Sequence checksum of '%s' has changed\n", savename);
                                 enum ChangeMode {
                                     ACCEPT_CHANGE = 0,
                                     REJECT_CHANGE = 1,
                                 } change_mode = (ChangeMode)checksum_change_question.get_answer("GDE_accept", question, "Accept change,Reject", "all", false);
-                                
+
                                 if (change_mode == REJECT_CHANGE) writeSequence = false;
 
                                 aw_message(GBS_global_string("Warning: Sequence checksum for '%s' has changed (%s)",
                                                              savename, writeSequence ? "accepted" : "rejected"));
+                                free(question);
                             }
                         }
                         if (writeSequence) {
