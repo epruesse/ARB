@@ -8,6 +8,15 @@ help:
 
 all: cleanlinks
 	ln -s -f `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
+	ln -s mafft mafft-linsi
+	ln -s mafft mafft-ginsi
+	ln -s mafft mafft-fftns
+	ln -s mafft mafft-fftnsi
+	ln -s mafft mafft-nwns
+	ln -s mafft mafft-nwnsi
+	ln -s mafft mafft-einsi
+	ln -s mafft mafft-xinsi
+	ln -s mafft mafft-qinsi
 
 develall: all
 	ln -s -f `find ../SOURCE_TOOLS -name "arb_*" -perm -100 ! -type d -print` .
