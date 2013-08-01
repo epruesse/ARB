@@ -65,8 +65,8 @@ void crop(char *input, char *head, char *tail);
 #endif
 
 void ReadArbdb_plain(char *, NA_Alignment *dataset, int dummy_1x);
-int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon);
-int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon);
+int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo);
+int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo);
 int getelem(NA_Sequence *a, int b);
 void putelem(NA_Sequence *a, int b, NA_Base c);
 
