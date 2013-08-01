@@ -56,15 +56,18 @@ void ParseMenu() {
 
     strcpy(temp, home);
     strcat(temp, "/GDEHELP/ARB_GDEmenus");
-    
-    FILE *file = fopen(temp, "r");
+
+    char *menufile = strdup(temp);
+    int   linenr   = 1;
+
+    FILE *file = fopen(menufile, "r");
     if (file == NULL) Error("ARB_GDEmenus file not in the home, local, or $ARBHOME/GDEHELP directory");
 
     /*  Read the ARB_GDEmenus file, and assemble an internal representation
      *  of the menu/menu-item hierarchy.
      */
 
-    for (; getline(file, in_line) != EOF;) {
+    for (; getline(file, in_line) != EOF; ++linenr) {
         if (in_line[0] == '#' || (in_line[0] && in_line[1] == '#')) {
             ; // skip line
         }
@@ -218,12 +221,12 @@ void ParseMenu() {
                 else {
                     if (temp[arglen] != '(' || temp[strlen(temp)-1] != ')') {
                         sprintf(head, "Unknown argtype '%s' -- syntax: text(width) e.g. text(20)", temp);
-                        Error(head);
+                        ParseError(head, menufile, linenr);
                     }
                     thisarg->textwidth = atoi(temp+arglen+1);
                     if (thisarg->textwidth<1) {
                         sprintf(head, "Illegal textwidth specified in '%s'", temp);
-                        Error(head);
+                        ParseError(head, menufile, linenr);
                     }
                 }
             }
@@ -240,7 +243,7 @@ void ParseMenu() {
             else if (strcmp(temp, "weights")     == 0) thisarg->type = CHOICE_WEIGHTS;
             else {
                 sprintf(head, "Unknown argtype '%s'", temp);
-                Error(head);
+                ParseError(head, menufile, linenr);
             }
         }
         /* argtext: The default text value of the symbol.
@@ -358,7 +361,7 @@ void ParseMenu() {
             thisoutput->name      = NULL;
         }
         else if (Find(in_line, "informat:")) {
-            if (thisinput == NULL) Error("Problem with $ARBHOME/GDEHELP/ARB_GDEmenus");
+            if (thisinput == NULL) ParseError("'informat' used w/o 'in'", menufile, linenr);
             crop(in_line, head, tail);
 
             if (Find(tail, "genbank")) thisinput->format        = GENBANK;
@@ -370,11 +373,11 @@ void ParseMenu() {
             else fprintf(stderr, "Warning, unknown file format %s\n", tail);
         }
         else if (Find(in_line, "insave:")) {
-            if (thisinput == NULL) Error("Problem with $ARBHOME/GDEHELP/ARB_GDEmenus");
+            if (thisinput == NULL) ParseError("'insave' used w/o 'in'", menufile, linenr);
             thisinput->save = TRUE;
         }
         else if (Find(in_line, "inselect:")) {
-            if (thisinput == NULL) Error("Problem with $ARBHOME/GDEHELP/ARB_GDEmenus");
+            if (thisinput == NULL) ParseError("'inselect' used w/o 'in'", menufile, linenr);
             crop(in_line, head, tail);
 
             if (Find(tail, "one")) thisinput->select         = SELECT_ONE;
@@ -382,11 +385,11 @@ void ParseMenu() {
             else if (Find(tail, "all")) thisinput->select    = ALL;
         }
         else if (Find(in_line, "inmask:")) {
-            if (thisinput == NULL) Error("Problem with $ARBHOME/GDEHELP/ARB_GDEmenus");
+            if (thisinput == NULL) ParseError("'inmask' used w/o 'in'", menufile, linenr);
             thisinput->maskable = TRUE;
         }
         else if (Find(in_line, "outformat:")) {
-            if (thisoutput == NULL) Error("Problem with $ARBHOME/GDEHELP/ARB_GDEmenus");
+            if (thisoutput == NULL) ParseError("'outformat' used w/o 'out'", menufile, linenr);
             crop(in_line, head, tail);
 
             if (Find(tail, "genbank")) thisoutput->format        = GENBANK;
@@ -398,14 +401,16 @@ void ParseMenu() {
             else fprintf(stderr, "Warning, unknown file format %s\n", tail);
         }
         else if (Find(in_line, "outsave:")) {
-            if (thisoutput == NULL) Error("Problem with $ARBHOME/GDEHELP/ARB_GDEmenus");
+            if (thisoutput == NULL) ParseError("'outsave' used w/o 'out'", menufile, linenr);
             thisoutput->save = TRUE;
         }
         else if (Find(in_line, "outoverwrite:")) {
-            if (thisoutput == NULL) Error("Problem with $ARBHOME/GDEHELP/ARB_GDEmenus");
+            if (thisoutput == NULL) ParseError("'outoverwrite' used w/o 'out'", menufile, linenr);
             thisoutput->overwrite = TRUE;
         }
     }
+
+    free(menufile);
 
     fclose(file);
     gde_assert(num_menus>0); // if this fails, the file ARB_GDEmenus contained no menus (maybe file has zero size)
@@ -436,6 +441,10 @@ void Error(const char *msg) {
     exit(EXIT_FAILURE);
 }
 
+void ParseError(const char *msg, const char *filename, int linenr) {
+    // goes to header: __ATTR__NORETURN
+    Error(GBS_global_string("%s (at %s:%i)", msg, filename, linenr));
+}
 
 /*
   Crop():
