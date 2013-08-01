@@ -476,3 +476,21 @@ void crop(char *input, char *head, char *tail)
     tail[j] = '\0';
     return;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_load_menu() {
+    // very basic test: just detects failing assertions, crashes and errors
+    ParseMenu();
+    // @@@ need to check loaded data
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
+

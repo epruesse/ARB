@@ -1889,7 +1889,6 @@ TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 
 UNITS_WORKING = \
 	$(RNA3D_TEST) \
-	ARB_GDE/ARB_GDE.test \
 	AWTI/AWTI.test \
 	DIST/DIST.test \
 	EISPACK/EISPACK.test \
@@ -1941,6 +1940,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	ARB_GDE/ARB_GDE.test \
 	GENOM_IMPORT/GENOM_IMPORT.test \
 	SL/MACROS/MACROS.test \
 	SL/REGEXPR/REGEXPR.test \
