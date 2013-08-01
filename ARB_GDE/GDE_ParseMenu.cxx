@@ -354,6 +354,43 @@ void ParseMenu() {
             thisinput->symbol    = strdup(temp);
             thisinput->name      = NULL;
             thisinput->select    = SELECTED;
+            thisinput->typeinfo  = BASIC_TYPEINFO;
+        }
+        else if (Find(in_line, "informat:")) {
+            if (thisinput == NULL) ParseError("'informat' used w/o 'in'", menufile, linenr);
+            crop(in_line, head, tail);
+
+            if (Find(tail, "genbank")) thisinput->format        = GENBANK;
+            else if (Find(tail, "gde")) thisinput->format       = GDE;
+            else if (Find(tail, "na_flat")) thisinput->format   = NA_FLAT;
+            else if (Find(tail, "colormask")) thisinput->format = COLORMASK;
+            else if (Find(tail, "flat")) thisinput->format      = NA_FLAT;
+            else if (Find(tail, "status")) thisinput->format    = STATUS_FILE;
+            else fprintf(stderr, "Warning, unknown file format %s\n", tail);
+        }
+        else if (Find(in_line, "insave:")) {
+            if (thisinput == NULL) ParseError("'insave' used w/o 'in'", menufile, linenr);
+            thisinput->save = TRUE;
+        }
+        else if (Find(in_line, "intyped:")) {
+            if (thisinput == NULL) ParseError("'intyped' used w/o 'in'", menufile, linenr);
+            crop(in_line, head, tail);
+
+            if (Find(tail, "detailed")) thisinput->typeinfo   = DETAILED_TYPEINFO;
+            else if (Find(tail, "basic")) thisinput->typeinfo = BASIC_TYPEINFO;
+            else ParseError("Unknown value for 'intyped' (known: 'detailed', 'basic')", menufile, linenr);
+        }
+        else if (Find(in_line, "inselect:")) {
+            if (thisinput == NULL) ParseError("'inselect' used w/o 'in'", menufile, linenr);
+            crop(in_line, head, tail);
+
+            if (Find(tail, "one")) thisinput->select         = SELECT_ONE;
+            else if (Find(tail, "region")) thisinput->select = SELECT_REGION;
+            else if (Find(tail, "all")) thisinput->select    = ALL;
+        }
+        else if (Find(in_line, "inmask:")) {
+            if (thisinput == NULL) ParseError("'inmask' used w/o 'in'", menufile, linenr);
+            thisinput->maskable = TRUE;
         }
         // out: Output file description
         else if (Find(in_line, "out:")) {
@@ -372,34 +409,6 @@ void ParseMenu() {
             thisoutput->format    = 0;
             thisoutput->symbol    = strdup(temp);
             thisoutput->name      = NULL;
-        }
-        else if (Find(in_line, "informat:")) {
-            if (thisinput == NULL) ParseError("'informat' used w/o 'in'", menufile, linenr);
-            crop(in_line, head, tail);
-
-            if (Find(tail, "genbank")) thisinput->format        = GENBANK;
-            else if (Find(tail, "gde")) thisinput->format       = GDE;
-            else if (Find(tail, "na_flat")) thisinput->format   = NA_FLAT;
-            else if (Find(tail, "colormask")) thisinput->format = COLORMASK;
-            else if (Find(tail, "flat")) thisinput->format      = NA_FLAT;
-            else if (Find(tail, "status")) thisinput->format    = STATUS_FILE;
-            else fprintf(stderr, "Warning, unknown file format %s\n", tail);
-        }
-        else if (Find(in_line, "insave:")) {
-            if (thisinput == NULL) ParseError("'insave' used w/o 'in'", menufile, linenr);
-            thisinput->save = TRUE;
-        }
-        else if (Find(in_line, "inselect:")) {
-            if (thisinput == NULL) ParseError("'inselect' used w/o 'in'", menufile, linenr);
-            crop(in_line, head, tail);
-
-            if (Find(tail, "one")) thisinput->select         = SELECT_ONE;
-            else if (Find(tail, "region")) thisinput->select = SELECT_REGION;
-            else if (Find(tail, "all")) thisinput->select    = ALL;
-        }
-        else if (Find(in_line, "inmask:")) {
-            if (thisinput == NULL) ParseError("'inmask' used w/o 'in'", menufile, linenr);
-            thisinput->maskable = TRUE;
         }
         else if (Find(in_line, "outformat:")) {
             if (thisoutput == NULL) ParseError("'outformat' used w/o 'out'", menufile, linenr);

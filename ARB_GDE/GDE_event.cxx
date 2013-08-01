@@ -465,19 +465,33 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     arb_progress   progress(current_item->label);
 
     if (current_item->numinputs>0) {
-        DataSet->gb_main = db_access.gb_main;
-        GB_begin_transaction(DataSet->gb_main);
-        freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
-        freedup(alignment_name, DataSet->alignment_name);
+        TypeInfo typeinfo = UNKNOWN_TYPEINFO;
+        {
+            for (int j=0; j<current_item->numinputs; j++) {
+                if (j == 0) { typeinfo = current_item->input[j].typeinfo; }
+                else if (current_item->input[j].typeinfo != typeinfo) {
+                    aw_message("'intyped' must be same for all inputs (config error in GDE menu file)");
+                    stop = 1;
+                }
+            }
+        }
+        gde_assert(typeinfo != UNKNOWN_TYPEINFO);
 
-        progress.subtitle("reading database");
-        if (db_access.get_sequences) {
-            stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon);
+        if (!stop) {
+            DataSet->gb_main = db_access.gb_main;
+            GB_begin_transaction(DataSet->gb_main);
+            freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
+            freedup(alignment_name, DataSet->alignment_name);
+
+            progress.subtitle("reading database");
+            if (db_access.get_sequences) {
+                stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon, typeinfo);
+            }
+            else {
+                stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon, typeinfo);
+            }
+            GB_commit_transaction(DataSet->gb_main);
         }
-        else {
-            stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon);
-        }
-        GB_commit_transaction(DataSet->gb_main);
 
         if (!stop && DataSet->numelements==0) {
             aw_message("no sequences selected");
