@@ -37,14 +37,21 @@ struct GmenuItemArg {
     // ARB BEGIN
 };
 
+enum TypeInfo {
+    BASIC_TYPEINFO    = 0, // has to be zero (default value; initialized with calloc)
+    DETAILED_TYPEINFO = 1,
+    UNKNOWN_TYPEINFO  = 2,
+};
+
 struct GfileFormat {
-    int   save;                 // how should file be saved
-    int   overwrite;            // how should file be loaded
-    int   format;               // what format is each field
-    int   maskable;             // Can a write through mask be used?
-    int   select;               // what type of selection
-    char *symbol;               // internal symbol table mapping
-    char *name;                 // file name
+    int       save;             // how should file be saved
+    int       overwrite;        // how should file be loaded
+    int       format;           // what format is each field
+    int       maskable;         // Can a write through mask be used?
+    int       select;           // what type of selection
+    char     *symbol;           // internal symbol table mapping
+    char     *name;             // file name
+    TypeInfo  typeinfo;
 };
 
 class AW_window;

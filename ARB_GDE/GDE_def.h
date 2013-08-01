@@ -220,7 +220,6 @@ struct NA_Alignment {
 
     GBDATA *gb_main;
     char   *alignment_name;
-
 };
 
 extern NA_Alignment *DataSet;
