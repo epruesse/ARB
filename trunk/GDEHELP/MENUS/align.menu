@@ -10,11 +10,9 @@ itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/>HASH_/#/' <mafft_out | \
             arb_sed 's/>PERCENT_/%/' | \
             arb_sed 's/>QUOTE_/"/' | \
-            arb_sed 's/>AT_/@/' > out1; cat out1 > keks )
+            arb_sed 's/>AT_/@/' > out1; RM_LOCAL_FILES(mafft_in* in1 mafft_out*))
 
-//RM_LOCAL_FILES(mafft_in* in1)
 
- 
 
 arg:COMMAND
 argtype:choice_menu
@@ -38,7 +36,7 @@ argtext:0.0
 
 arg:SCORING_MATRIX
 argtype:choice_menu
-arglabel:Scoring matrix for amino acid sequences
+arglabel:Scoring matrix
 argchoice:BLOSUM62:--bl 62
 argchoice:BLOSUM30:--bl 30
 argchoice:BLOSUM45:--bl 45
@@ -52,6 +50,7 @@ argchoice:200PAM / K=2:--kimura 200
 
 in:in1
 informat:flat
+intyped:detailed
 insave:
 
 out:out1
