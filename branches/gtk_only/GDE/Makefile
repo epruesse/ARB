@@ -9,6 +9,7 @@ ARCHS_COMMON = \
 ARCHS_NO_DEPENDS = \
 	PHYML20130708/PHYML20130708.dummy \
 	MAFFT/MAFFT.dummy \
+	MUSCLE/MUSCLE.dummy \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
