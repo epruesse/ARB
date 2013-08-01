@@ -48,6 +48,7 @@ dbserver.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 dbserver.o: $(ARBHOME)/INCLUDE/arbdbt.h
 dbserver.o: $(ARBHOME)/INCLUDE/arbtools.h
 dbserver.o: $(ARBHOME)/INCLUDE/attributes.h
+dbserver.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -73,6 +74,7 @@ dbserver.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+dbserver.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_window.hxx

@@ -44,6 +44,62 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
+AW_action.o: aw_action.hxx
+AW_action.o: aw_area_management.hxx
+AW_action.o: aw_assert.hxx
+AW_action.o: aw_at.hxx
+AW_action.o: aw_at_layout.hxx
+AW_action.o: aw_base.hxx
+AW_action.o: aw_button.hxx
+AW_action.o: aw_cb_struct.hxx
+AW_action.o: aw_clipable.hxx
+AW_action.o: aw_common.hxx
+AW_action.o: aw_common_gtk.hxx
+AW_action.o: aw_device.hxx
+AW_action.o: aw_device_cairo.hxx
+AW_action.o: aw_device_click.hxx
+AW_action.o: aw_device_gtk.hxx
+AW_action.o: aw_device_impl.hxx
+AW_action.o: aw_device_print.hxx
+AW_action.o: aw_device_size.hxx
+AW_action.o: aw_drawing_area.hxx
+AW_action.o: aw_font_limits.hxx
+AW_action.o: aw_gtk_forward_declarations.hxx
+AW_action.o: aw_gtk_migration_helpers.hxx
+AW_action.o: aw_help.hxx
+AW_action.o: aw_keysym.hxx
+AW_action.o: aw_msg.hxx
+AW_action.o: aw_position.hxx
+AW_action.o: aw_root.hxx
+AW_action.o: aw_signal.hxx
+AW_action.o: aw_simple_device.hxx
+AW_action.o: aw_stylable.hxx
+AW_action.o: aw_window.hxx
+AW_action.o: aw_window_gtk.hxx
+AW_action.o: aw_zoomable.hxx
+AW_action.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_action.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_action.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_action.o: $(ARBHOME)/INCLUDE/arb_defs.h
+AW_action.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_action.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_action.o: $(ARBHOME)/INCLUDE/arb_string.h
+AW_action.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_action.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_action.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_action.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_action.o: $(ARBHOME)/INCLUDE/cb.h
+AW_action.o: $(ARBHOME)/INCLUDE/cbtypes.h
+AW_action.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_action.o: $(ARBHOME)/INCLUDE/downcast.h
+AW_action.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_action.o: $(ARBHOME)/INCLUDE/gccver.h
+AW_action.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_action.o: $(ARBHOME)/INCLUDE/static_assert.h
+AW_action.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_action.o: $(ARBHOME)/INCLUDE/test_unit.h
+AW_action.o: $(ARBHOME)/INCLUDE/ttypes.h
+
 AW_advice.o: aw_advice.hxx
 AW_advice.o: aw_area_management.hxx
 AW_advice.o: aw_assert.hxx
@@ -311,6 +367,7 @@ AW_button.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_button.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_button.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AW_cb_struct.o: aw_action.hxx
 AW_cb_struct.o: aw_area_management.hxx
 AW_cb_struct.o: aw_assert.hxx
 AW_cb_struct.o: aw_at.hxx
@@ -337,6 +394,7 @@ AW_cb_struct.o: aw_keysym.hxx
 AW_cb_struct.o: aw_msg.hxx
 AW_cb_struct.o: aw_position.hxx
 AW_cb_struct.o: aw_root.hxx
+AW_cb_struct.o: aw_signal.hxx
 AW_cb_struct.o: aw_simple_device.hxx
 AW_cb_struct.o: aw_stylable.hxx
 AW_cb_struct.o: aw_window.hxx
@@ -476,34 +534,7 @@ AW_common_gtk.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_common_gtk.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_common_gtk.o: $(ARBHOME)/INCLUDE/ttypes.h
 
-AW_detach.o: aw_area_management.hxx
-AW_detach.o: aw_assert.hxx
-AW_detach.o: aw_awar.hxx
-AW_detach.o: aw_base.hxx
-AW_detach.o: aw_detach.hxx
-AW_detach.o: aw_gtk_forward_declarations.hxx
 AW_detach.o: aw_gtk_migration_helpers.hxx
-AW_detach.o: aw_keysym.hxx
-AW_detach.o: aw_root.hxx
-AW_detach.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AW_detach.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AW_detach.o: $(ARBHOME)/INCLUDE/arb_core.h
-AW_detach.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_detach.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_detach.o: $(ARBHOME)/INCLUDE/arb_string.h
-AW_detach.o: $(ARBHOME)/INCLUDE/arbdb.h
-AW_detach.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AW_detach.o: $(ARBHOME)/INCLUDE/arbtools.h
-AW_detach.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_detach.o: $(ARBHOME)/INCLUDE/cb.h
-AW_detach.o: $(ARBHOME)/INCLUDE/cbtypes.h
-AW_detach.o: $(ARBHOME)/INCLUDE/cxxforward.h
-AW_detach.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_detach.o: $(ARBHOME)/INCLUDE/gccver.h
-AW_detach.o: $(ARBHOME)/INCLUDE/smartptr.h
-AW_detach.o: $(ARBHOME)/INCLUDE/static_assert.h
-AW_detach.o: $(ARBHOME)/INCLUDE/test_global.h
-AW_detach.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_device.o: aw_assert.hxx
 AW_device.o: aw_base.hxx
@@ -1148,6 +1179,7 @@ AW_question.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_question.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_question.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AW_root.o: aw_action.hxx
 AW_root.o: aw_area_management.hxx
 AW_root.o: aw_assert.hxx
 AW_root.o: aw_at.hxx
@@ -1179,6 +1211,7 @@ AW_root.o: aw_position.hxx
 AW_root.o: aw_root.hxx
 AW_root.o: aw_scalar.hxx
 AW_root.o: aw_select.hxx
+AW_root.o: aw_signal.hxx
 AW_root.o: aw_simple_device.hxx
 AW_root.o: aw_status.hxx
 AW_root.o: aw_stylable.hxx
@@ -1505,6 +1538,7 @@ AW_varUpdateInfo.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_varUpdateInfo.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_varUpdateInfo.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AW_window.o: aw_action.hxx
 AW_window.o: aw_area_management.hxx
 AW_window.o: aw_assert.hxx
 AW_window.o: aw_at.hxx
@@ -1534,6 +1568,7 @@ AW_window.o: aw_position.hxx
 AW_window.o: aw_root.hxx
 AW_window.o: aw_scalar.hxx
 AW_window.o: aw_select.hxx
+AW_window.o: aw_signal.hxx
 AW_window.o: aw_simple_device.hxx
 AW_window.o: aw_stylable.hxx
 AW_window.o: aw_type_checking.hxx
@@ -1564,6 +1599,7 @@ AW_window.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_window.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AW_window_gtk.o: aw_action.hxx
 AW_window_gtk.o: aw_area_management.hxx
 AW_window_gtk.o: aw_assert.hxx
 AW_window_gtk.o: aw_at.hxx
@@ -1589,6 +1625,7 @@ AW_window_gtk.o: aw_help.hxx
 AW_window_gtk.o: aw_keysym.hxx
 AW_window_gtk.o: aw_position.hxx
 AW_window_gtk.o: aw_root.hxx
+AW_window_gtk.o: aw_signal.hxx
 AW_window_gtk.o: aw_simple_device.hxx
 AW_window_gtk.o: aw_stylable.hxx
 AW_window_gtk.o: aw_window.hxx
@@ -1616,6 +1653,7 @@ AW_window_gtk.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_window_gtk.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window_gtk.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AW_window_menu_modes.o: aw_action.hxx
 AW_window_menu_modes.o: aw_area_management.hxx
 AW_window_menu_modes.o: aw_assert.hxx
 AW_window_menu_modes.o: aw_at.hxx
@@ -1641,6 +1679,7 @@ AW_window_menu_modes.o: aw_help.hxx
 AW_window_menu_modes.o: aw_keysym.hxx
 AW_window_menu_modes.o: aw_position.hxx
 AW_window_menu_modes.o: aw_root.hxx
+AW_window_menu_modes.o: aw_signal.hxx
 AW_window_menu_modes.o: aw_simple_device.hxx
 AW_window_menu_modes.o: aw_stylable.hxx
 AW_window_menu_modes.o: aw_window.hxx
@@ -1668,6 +1707,7 @@ AW_window_menu_modes.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_window_menu_modes.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window_menu_modes.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AW_window_message.o: aw_action.hxx
 AW_window_message.o: aw_area_management.hxx
 AW_window_message.o: aw_assert.hxx
 AW_window_message.o: aw_at.hxx
@@ -1693,6 +1733,7 @@ AW_window_message.o: aw_help.hxx
 AW_window_message.o: aw_keysym.hxx
 AW_window_message.o: aw_position.hxx
 AW_window_message.o: aw_root.hxx
+AW_window_message.o: aw_signal.hxx
 AW_window_message.o: aw_simple_device.hxx
 AW_window_message.o: aw_stylable.hxx
 AW_window_message.o: aw_window.hxx
@@ -1720,6 +1761,7 @@ AW_window_message.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_window_message.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window_message.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AW_window_simple.o: aw_action.hxx
 AW_window_simple.o: aw_area_management.hxx
 AW_window_simple.o: aw_assert.hxx
 AW_window_simple.o: aw_at.hxx
@@ -1745,6 +1787,7 @@ AW_window_simple.o: aw_help.hxx
 AW_window_simple.o: aw_keysym.hxx
 AW_window_simple.o: aw_position.hxx
 AW_window_simple.o: aw_root.hxx
+AW_window_simple.o: aw_signal.hxx
 AW_window_simple.o: aw_simple_device.hxx
 AW_window_simple.o: aw_stylable.hxx
 AW_window_simple.o: aw_window.hxx
@@ -1772,6 +1815,7 @@ AW_window_simple.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_window_simple.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window_simple.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AW_window_simple_menu.o: aw_action.hxx
 AW_window_simple_menu.o: aw_area_management.hxx
 AW_window_simple_menu.o: aw_assert.hxx
 AW_window_simple_menu.o: aw_at.hxx
@@ -1797,6 +1841,7 @@ AW_window_simple_menu.o: aw_help.hxx
 AW_window_simple_menu.o: aw_keysym.hxx
 AW_window_simple_menu.o: aw_position.hxx
 AW_window_simple_menu.o: aw_root.hxx
+AW_window_simple_menu.o: aw_signal.hxx
 AW_window_simple_menu.o: aw_simple_device.hxx
 AW_window_simple_menu.o: aw_stylable.hxx
 AW_window_simple_menu.o: aw_window.hxx

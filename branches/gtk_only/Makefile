@@ -461,10 +461,7 @@ LINK_SHARED_LIB := $(GPP) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link sh
 endif
 
 # other used tools
-XMKMF := xmkmf
-
 MAKEDEPEND_PLAIN = makedepend
-
 MAKEDEPEND = $(FORCEMASK);$(MAKEDEPEND_PLAIN)
 
 #SEP:=--------------------------------------------------------------------------------
@@ -528,6 +525,12 @@ endif
 		@echo ' dep_graph   - Build dependency graphs'
 		@echo ' clean_cov   - Clean coverage results'
 		@echo ''
+		@echo ' post_commit_check - Checks whether'
+		@echo '                     * main make targets work,'
+		@echo '                     * dependencies and prototypes are up to date,'
+		@echo '                     * SVN-controlled files remain unaffected by called targets and'
+		@echo '                     * all generated files are ignored.'
+		@echo '                     (has to be called in a clean SVN checkout)'
 		@echo $(SEP)
 		@echo ''
 
@@ -651,7 +654,6 @@ check_TOOLS:
 		"$(GCC)" \
 		"$(ACCLIB)" \
 		"$(CPPLIB)" \
-		"$(XMKMF)" \
 		"$(MAKEDEPEND_PLAIN)" \
 		"$(LINK_SHARED_LIB)" \
 		"$(LINK_SHARED_LIB)" \
@@ -1899,7 +1901,6 @@ TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 
 UNITS_WORKING = \
 	$(RNA3D_TEST) \
-	ARB_GDE/ARB_GDE.test \
 	AWTI/AWTI.test \
 	DIST/DIST.test \
 	EISPACK/EISPACK.test \
@@ -1951,6 +1952,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	ARB_GDE/ARB_GDE.test \
 	GENOM_IMPORT/GENOM_IMPORT.test \
 	SL/MACROS/MACROS.test \
 	SL/REGEXPR/REGEXPR.test \
@@ -2115,6 +2117,57 @@ endif
 
 # --------------------------------------------------------------------------------
 
+CHECKOUT_MODIFIED=0# set to 1 to temporarily skip test for modifications (do not check in if set to 1)
+
+check_svn_does_not_contain_generated:
+ifeq ($(CHECKOUT_MODIFIED),0) 
+	@echo "Testing that build does not modify files in SVN"
+	@test 0 = `svn status | wc -l` || ( \
+		echo "The checkout is not/no longer clean:"; \
+		svn status; \
+		echo "- if this fails instantly, your checkout is not clean"; \
+		echo "- if this fails after other targets, these targets modify checked in data"; \
+		echo "  (a common cause may be that depends are not up to date)"; \
+		false)
+else
+	grep -Hn 'CHECKOUT_MODIFIED' Makefile
+endif
+
+check_svn_ignores_generated:
+	@test 0 = `svn status | grep '^\?' | wc -l` || ( \
+		echo "There are svn-unignored files:"; \
+		svn status | grep '^\?'; \
+		echo "(all generated files should be svn-ignored)"; \
+		false)
+
+check_svn_state: check_svn_does_not_contain_generated
+	$(MAKE) check_svn_ignores_generated
+	$(MAKE) savetest
+
+things_that_always_should_work: depends proto
+
+post_commit_check:
+	@echo "---------------------------------------- [Initial]"
+	$(MAKE) check_svn_state
+
+	$(MAKE) clean
+	@echo "---------------------------------------- [After 'make clean']"
+	$(MAKE) check_svn_state
+
+	$(MAKE) things_that_always_should_work
+	@echo "---------------------------------------- [After 'make things_that_always_should_work']"
+	$(MAKE) check_svn_state
+
+	$(MAKE) all
+	@echo "---------------------------------------- [After 'make all']"
+	$(MAKE) check_svn_state
+
+	$(MAKE) things_that_always_should_work
+	@echo "---------------------------------------- [Final]"
+	$(MAKE) check_svn_state
+
+# --------------------------------------------------------------------------------
+
 build: arb
 	$(MAKE) binlink preplib
 
@@ -2133,5 +2186,4 @@ endif
 	@$(MAKE) save_test_no_error >/dev/null # just show hints
 	@cat $(TIMELOG)
 	@rm $(TIMELOG)
-
 
