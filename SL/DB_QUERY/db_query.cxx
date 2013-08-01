@@ -2586,25 +2586,6 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     query->tree_name              = awtqs->tree_name ? aw_root->awar(awtqs->tree_name)->read_string() : 0;
     query->hit_description        = GBS_create_hash(query_count_items(query, QUERY_ALL_ITEMS, QUERY_GENERATE), GB_IGNORE_CASE);
 
-    if (awtqs->result_pos_fig) {
-    aws->at(awtqs->result_pos_fig);
-    if (awtqs->create_view_window) {
-        aws->callback(query_box_popup_view_window, (AW_CL)awtqs->create_view_window, (AW_CL)query->gb_main);
-    }
-    aws->d_callback(makeWindowCallback(toggle_flag_cb, query));
-
-    {
-        char    *this_awar_name = GBS_global_string_copy("tmp/dbquery_%s/select", query_id); // do not free this, cause it's passed to new_selection_made_cb
-        AW_awar *awar           = aw_root->awar_string(this_awar_name, "", AW_ROOT_DEFAULT);
-
-        query->hitlist = aws->create_selection_list(this_awar_name, 5, 5);
-        awar->add_callback(new_selection_made_cb, (AW_CL)this_awar_name, (AW_CL)query);
-    }
-    query->hitlist->insert_default("end of list", "");
-    query->hitlist->update();
-    }
-    
-    
     GB_push_transaction(gb_main);
 
     // Create query box AWARS
