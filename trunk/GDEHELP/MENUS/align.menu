@@ -1,3 +1,66 @@
+item:Mafft
+itemmeta: P
+itemmethod:(GOTO_LOCAL_DIR; \
+            arb_sed 's/#/>HASH_/' <in1 | \
+            arb_sed 's/%/>PERCENT_/' | \
+            arb_sed 's/"/>QUOTE_/'| \
+            arb_sed 's/@/>AT_/' | \
+            arb_sed '/^[^>]/ y/./-/' > mafft_in; \
+            RUN_IN_WINDOW(($ARBHOME/bin/$COMMAND $METHOD --ep $OFFSET $SCORING_MATRIX mafft_in > mafft_out;)); \
+            arb_sed 's/>HASH_/#/' <mafft_out | \
+            arb_sed 's/>PERCENT_/%/' | \
+            arb_sed 's/>QUOTE_/"/' | \
+            arb_sed 's/>AT_/@/' > out1; cat out1 > keks )
+
+//RM_LOCAL_FILES(mafft_in* in1)
+
+ 
+
+arg:COMMAND
+argtype:choice_menu
+arglabel:Method
+argchoice:Auto:mafft --auto 
+argchoice:L-INS-i:mafft-linsi
+argchoice:G-INS-i:mafft-ginsi
+argchoice:E-INS-i:mafft-einsi
+argchoice:Q-INS-i:mafft-qinsi
+argchoice:X-INS-i:mafft-xinsi
+argchoice:FFT-NS-i:mafft-fftnsi
+argchoice:FFT-NS-2:mafft-fftns
+argchoice:NW-NS-i:mafft-nwnsi
+argchoice:NW-NS-2:mafft-nwns
+
+
+arg:OFFSET
+argtype:text
+arglabel:Offset value (0.0 - 1.0)
+argtext:0.0
+
+arg:SCORING_MATRIX
+argtype:choice_menu
+arglabel:Scoring matrix for amino acid sequences
+argchoice:BLOSUM62:--bl 62
+argchoice:BLOSUM30:--bl 30
+argchoice:BLOSUM45:--bl 45
+argchoice:BLOSUM80:--bl 80
+argchoice:JTT100:--jtt 100
+argchoice:JTT200:--jtt 200
+argchoice:JTT200:--jtt 200
+argchoice:1PAM / K=2:--kimura 1
+argchoice:20PAM / K=2:--kimura 20
+argchoice:200PAM / K=2:--kimura 200
+
+in:in1
+informat:flat
+insave:
+
+out:out1
+outformat:flat
+
+
+
+//--------------------------------------------------------
+
 
 item:ClustalW automatic
 itemmeta: W
@@ -64,7 +127,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
                                     -type=DNA -transweight=$TRANSWEIGHT \
                                     -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
                                     -dnamatrix=$DNAMATRIX; \
-                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )) ; \
+                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | arb_sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )) ; \
            RM_LOCAL_FILES(clus_in* in1))
 
 itemhelp:clustalw.help
