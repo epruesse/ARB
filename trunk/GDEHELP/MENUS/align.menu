@@ -1,3 +1,50 @@
+item:ProbCons
+itemmeta: P
+itemmethod:(GOTO_LOCAL_DIR; \
+            arb_sed 's/#/>HASH_/' <in1 | \
+            arb_sed 's/%/>PERCENT_/' | \
+            arb_sed 's/"/>QUOTE_/'| \
+            arb_sed 's/@/>AT_/' | \
+            arb_sed '/^[^>]/ y/./-/' > probcons_in; \
+            RUN_IN_WINDOW(($ARBHOME/bin/probcons -pre $PRE_TRAINING_REPS -ir $PASSES -c $REPS probcons_in > probcons_out;)); \
+            arb_sed 's/>HASH_/#/' <probcons_out | \
+            arb_sed 's/>PERCENT_/%/' | \
+            arb_sed 's/>QUOTE_/"/' | \
+            arb_sed 's/>AT_/@/' > out1; RM_LOCAL_FILES(probcons_in* probcons_out* in1) )
+
+arg:REPS
+argtype:choice_menu
+arglabel:Passes of consistency transformation
+argtype:slider
+argmin:0
+argmax:5
+argvalue:2
+
+
+arg:PASSES
+arglabel:Passes of iterative refinement
+argtype:slider
+argmin:0
+argmax:1000
+argvalue:100
+
+arg:PRE_TRAINING_REPS
+arglabel:Rounds of pre-training before aligning the sequences
+argtype:slider
+argmin:0
+argmax:20
+argvalue:0
+
+in:in1
+informat:flat
+intyped:detailed
+insave:
+
+out:out1
+outformat:flat
+
+//----------------------------------------------------
+
 item:Muscle
 itemmeta: M
 itemmethod:(GOTO_LOCAL_DIR; \
