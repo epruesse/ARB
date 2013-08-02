@@ -73,6 +73,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/>QUOTE_/"/' | \
             arb_sed 's/>AT_/@/' > out1; RM_LOCAL_FILES(mafft_in* in1 mafft_out*))
 
+itemhelp:mafft.help
 
 
 arg:COMMAND
