@@ -3,13 +3,12 @@
 
 .SUFFIXES: .o .c .h .depend
 
-RAXML_OBJECTS    = axml.o raxmlParsimony.o rev_functions.o optimizeModel.o multiple.o searchAlgo.o topologies.o parsePartitions.o treeIO.o models.o bipartitionList.o rapidBootstrap.o evaluatePartialGeneric.o evaluateGeneric.o newviewGeneric.o makenewzGeneric.o  evaluateGenericVector.o categorizeGeneric.o 
+RAXML_OBJECTS    = axml.o  optimizeModel.o multiple.o searchAlgo.o topologies.o parsePartitions.o treeIO.o models.o bipartitionList.o rapidBootstrap.o evaluatePartialGenericSpecial.o evaluateGenericSpecial.o newviewGenericSpecial.o makenewzGenericSpecial.o   classify.o fastDNAparsimony.o fastSearch.o leaveDropping.o rogueEPA.o ancestralStates.o mem_alloc.o
 OBJECTS = $(RAXML_OBJECTS)
 RM = rm -f
 
-GLOBAL_DEPS = axml.h globalVariables.h
-CFLAGS_RAXML =  -fomit-frame-pointer -funroll-loops  
-#-Wall -pedantic -Wunused-parameter -Wredundant-decls  -Wreturn-type  -Wswitch-default -Wunused-value -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int -Wimport -pedantic-errors -Wunused  -Wunused-function  -Wunused-label -Wno-int-to-pointer-cast -Wbad-function-cast  -Wmissing-declarations -Wmissing-prototypes  -Wnested-externs  -Wold-style-definition -Wstrict-prototypes  -Wdeclaration-after-statement -Wpointer-sign -Wextra -Wmissing-noreturn -Wredundant-decls -Wunused -Wunused-function -Wunused-parameter -Wunused-value  -Wunused-variable
+GLOBAL_DEPS = axml.h globalVariables.h #mem_alloc.h
+CFLAGS_RAXML =  -fomit-frame-pointer -funroll-loops -O2 -msse #-Wall -Wunused-parameter -Wredundant-decls  -Wreturn-type  -Wswitch-default -Wunused-value -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int -Wimport  -Wunused  -Wunused-function  -Wunused-label -Wno-int-to-pointer-cast -Wbad-function-cast  -Wmissing-declarations -Wmissing-prototypes  -Wnested-externs  -Wold-style-definition -Wstrict-prototypes -Wpointer-sign -Wextra -Wredundant-decls -Wunused -Wunused-function -Wunused-parameter -Wunused-value  -Wunused-variable -Wformat  -Wformat-nonliteral -Wparentheses -Wsequence-point -Wuninitialized -Wundef -Wbad-function-cast
 
 # ----------------------------------------
 # normal compilation:
@@ -65,26 +64,34 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from GDE)
 
+ancestralStates.o: axml.h
+
 axml.o: axml.h
 axml.o: globalVariables.h
 
 bipartitionList.o: axml.h
 
-categorizeGeneric.o: axml.h
+classify.o: axml.h
 
-evaluateGeneric.o: axml.h
+evaluateGenericSpecial.o: axml.h
 
-evaluateGenericVector.o: axml.h
+evaluatePartialGenericSpecial.o: axml.h
 
-evaluatePartialGeneric.o: axml.h
+fastDNAparsimony.o: axml.h
 
-makenewzGeneric.o: axml.h
+fastSearch.o: axml.h
+
+leaveDropping.o: axml.h
+
+makenewzGenericSpecial.o: axml.h
+
+mem_alloc.o: axml.h
 
 models.o: axml.h
 
 multiple.o: axml.h
 
-newviewGeneric.o: axml.h
+newviewGenericSpecial.o: axml.h
 
 optimizeModel.o: axml.h
 
@@ -92,9 +99,7 @@ parsePartitions.o: axml.h
 
 rapidBootstrap.o: axml.h
 
-raxmlParsimony.o: axml.h
-
-rev_functions.o: axml.h
+rogueEPA.o: axml.h
 
 searchAlgo.o: axml.h
 

@@ -42,13 +42,10 @@
 #include <ctype.h>
 #include <string.h>
 
-
-
 #include "axml.h"
 
 extern int Thorough;
 extern infoList iList;
-extern char inverseMeaningDNA[16];
 extern char seq_file[1024];
 
 
@@ -68,12 +65,12 @@ void computeBOOTRAPID (tree *tr, analdef *adef, long *radiusSeed)
   bestlist *bestT, *bt;  
   int countIT;
   
-  bestT = (bestlist *) malloc(sizeof(bestlist));
+  bestT = (bestlist *) rax_malloc(sizeof(bestlist));
   bestT->ninit = 0;
   initBestTree(bestT, 1, tr->mxtips);
   saveBestTree(bestT, tr);
 
-  bt = (bestlist *) malloc(sizeof(bestlist));      
+  bt = (bestlist *) rax_malloc(sizeof(bestlist));      
   bt->ninit = 0;  
   initBestTree(bt, 5, tr->mxtips);
 
@@ -95,9 +92,10 @@ void computeBOOTRAPID (tree *tr, analdef *adef, long *radiusSeed)
   
   for(countIT = 0; countIT < 2 && impr; countIT++) 
     {              
-      recallBestTree(bestT, 1, tr);          
+      recallBestTree(bestT, 1, tr);       
       treeEvaluate(tr, 1);	 	                    
-      saveBestTree(bestT, tr);          
+      saveBestTree(bestT, tr); 
+           
       lh = previousLh = tr->likelihood;
          
       treeOptimizeRapid(tr, 1, bestTrav, adef, bt);       
@@ -107,6 +105,7 @@ void computeBOOTRAPID (tree *tr, analdef *adef, long *radiusSeed)
       for(i = 1; i <= bt->nvalid; i++)
 	{	    		  	   
 	  recallBestTree(bt, i, tr);	    	  	  
+	 
 
 	  treeEvaluate(tr, 0.25);	  	  
 	      
@@ -119,16 +118,17 @@ void computeBOOTRAPID (tree *tr, analdef *adef, long *radiusSeed)
 	      lh = tr->likelihood;	       	     
 	      saveBestTree(bestT, tr);
 	    }	   	   
-	}     	    
+	}
+
     } 
   
   tr->bigCutoff = FALSE;
 
   recallBestTree(bestT, 1, tr);   
   freeBestTree(bestT);
-  free(bestT);
+  rax_free(bestT);
   freeBestTree(bt);
-  free(bt);
+  rax_free(bt);
   freeInfoList(); 
 }
 
@@ -145,11 +145,11 @@ void optimizeRAPID(tree *tr, analdef *adef)
   double lh, previousLh, difference, epsilon;              
   bestlist *bestT, *bt;   
   
-  bestT = (bestlist *) malloc(sizeof(bestlist));
+  bestT = (bestlist *) rax_malloc(sizeof(bestlist));
   bestT->ninit = 0;
   initBestTree(bestT, 1, tr->mxtips);
       
-  bt = (bestlist *) malloc(sizeof(bestlist));      
+  bt = (bestlist *) rax_malloc(sizeof(bestlist));      
   bt->ninit = 0;
   initBestTree(bt, 20, tr->mxtips); 
 
@@ -160,7 +160,7 @@ void optimizeRAPID(tree *tr, analdef *adef)
     
   Thorough = 0; 
 
-  /*drawBipartitionsOnTree(tr, adef, rl, n);*/
+ 
          
   saveBestTree(bestT, tr);  
   bestTrav = adef->bestTrav = determineRearrangementSetting(tr, adef, bestT, bt);                   
@@ -175,12 +175,7 @@ void optimizeRAPID(tree *tr, analdef *adef)
       recallBestTree(bestT, 1, tr);     
       treeEvaluate(tr, 1);
 
-#ifdef _DEBUG_AA
-      printf("TreeEVAL optRAPID %f\n", tr->likelihood);
-      assert(!isnan(tr->likelihood));
-#endif
-	 	                    
-      /*drawBipartitionsOnTree(tr, adef, rl, n);*/
+
       saveBestTree(bestT, tr);     
          
       lh = previousLh = tr->likelihood;
@@ -194,11 +189,6 @@ void optimizeRAPID(tree *tr, analdef *adef)
 	  recallBestTree(bt, i, tr);	    
 	  treeEvaluate(tr, 0.25);	    	 	
 
-#ifdef _DEBUG_AA	      
-	  printf("%d %f\n", i, tr->likelihood);
-	  assert(!isnan(tr->likelihood));
-#endif
-
 	  difference = ((tr->likelihood > previousLh)? 
 			tr->likelihood - previousLh: 
 			previousLh - tr->likelihood); 	    
@@ -208,14 +198,14 @@ void optimizeRAPID(tree *tr, analdef *adef)
 	      lh = tr->likelihood;	       	     
 	      saveBestTree(bestT, tr);
 	    }	   	   
-	}	
+	}          
     }
 
   recallBestTree(bestT, 1, tr);
   freeBestTree(bestT);
-  free(bestT);
+  rax_free(bestT);
   freeBestTree(bt);
-  free(bt);
+  rax_free(bt);
   freeInfoList(); 
 }
 
@@ -228,11 +218,11 @@ void thoroughOptimization(tree *tr, analdef *adef, topolRELL_LIST *rl, int index
   double lh, previousLh, difference, epsilon;              
   bestlist *bestT, *bt;  
     
-  bestT = (bestlist *) malloc(sizeof(bestlist));
+  bestT = (bestlist *) rax_malloc(sizeof(bestlist));
   bestT->ninit = 0;
   initBestTree(bestT, 1, tr->mxtips);
       
-  bt = (bestlist *) malloc(sizeof(bestlist));      
+  bt = (bestlist *) rax_malloc(sizeof(bestlist));      
   bt->ninit = 0;   
   initBestTree(bt, 20, tr->mxtips);
 
@@ -241,7 +231,7 @@ void thoroughOptimization(tree *tr, analdef *adef, topolRELL_LIST *rl, int index
   difference = 10.0;
   epsilon = 0.01;       
  
-  /*drawBipartitionsOnTree(tr, adef, rl, n);*/
+  
   saveBestTree(bestT, tr);  
  
   impr = 1;
@@ -257,8 +247,7 @@ void thoroughOptimization(tree *tr, analdef *adef, topolRELL_LIST *rl, int index
       if(impr)
 	{	    	
 	  rearrangementsMin = 1;
-	  rearrangementsMax = adef->stepwidth;	    
-	  /*drawBipartitionsOnTree(tr, adef, rl, n);*/
+	  rearrangementsMax = adef->stepwidth;	    	  
 	}			  			
       else
 	{		       	   
@@ -291,15 +280,17 @@ void thoroughOptimization(tree *tr, analdef *adef, topolRELL_LIST *rl, int index
 	      lh = tr->likelihood;	  	     
 	      saveBestTree(bestT, tr);
 	    }	   	   
-	}	
+	}
+
+	
     }
 
  cleanup:  
   saveTL(rl, tr, index);  
   freeBestTree(bestT);
-  free(bestT);
+  rax_free(bestT);
   freeBestTree(bt);
-  free(bt);
+  rax_free(bt);
   freeInfoList();
 }
 
@@ -327,7 +318,7 @@ static boolean qupdate (tree *tr, nodeptr p)
   for(i = 0; i < tr->numBranches; i++)
     z0[i] = q->z[i];
       
-  makenewzGeneric(tr, p, q, z0, 1, z); 	 
+  makenewzGeneric(tr, p, q, z0, 1, z, FALSE); 	 
       
   for(i = 0; i < tr->numBranches; i++)
     p->z[i] = q->z[i] = z[i]; 
@@ -348,7 +339,7 @@ static boolean qsmoothLocal(tree *tr, nodeptr p, int n)
   else
     {
       if (! qupdate(tr, p))               return FALSE; /*  Adjust branch */
-      if (/*! p->tip*/ !isTip(p->number, tr->rdta->numsp)) 
+      if (!isTip(p->number, tr->rdta->numsp)) 
 	{                                  /*  Adjust descendants */
 	  q = p->next;
 	  while (q != p) 
@@ -376,7 +367,7 @@ static void quickSmoothLocal(tree *tr, int n)
   else
     {
       qsmoothLocal(tr, p->back, n - 1);
-      if(/*! p->tip*/ !isTip(p->number, tr->rdta->numsp))
+      if(!isTip(p->number, tr->rdta->numsp))
 	{
 	  q = p->next;
 	  while(q != p)
@@ -399,7 +390,7 @@ int treeOptimizeThorough(tree *tr, int mintrav, int maxtrav)
 
   nodeRectifier(tr);
 
-  bestT = (bestlist *) malloc(sizeof(bestlist));
+  bestT = (bestlist *) rax_malloc(sizeof(bestlist));
   bestT->ninit = 0;
   initBestTree(bestT, 1, tr->mxtips);
   
@@ -407,12 +398,15 @@ int treeOptimizeThorough(tree *tr, int mintrav, int maxtrav)
     maxtrav = tr->ntips - 3;      
  
   tr->startLH = tr->endLH = tr->likelihood;  
-  
+
   for(i = 1; i <= tr->mxtips + tr->mxtips - 2; i++)
-    {           
+    {     
+
+      
       tr->bestOfNode = unlikely;     
       if(rearrangeBIG(tr, tr->nodep[i], mintrav, maxtrav))
-	{           	
+	{          
+	 
 	  if((tr->endLH > tr->startLH) && (tr->bestOfNode != unlikely))
 	    {			    
 	      restoreTreeFast(tr);	     
@@ -438,10 +432,12 @@ int treeOptimizeThorough(tree *tr, int mintrav, int maxtrav)
 		}
 	    }
 	}
+
+    	
     }    
 
   freeBestTree(bestT);
-  free(bestT);
+  rax_free(bestT);
 
   return 1;     
 }
