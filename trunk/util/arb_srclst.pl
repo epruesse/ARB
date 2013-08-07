@@ -20,6 +20,8 @@ my @skipped_directories = (
                            qr/\/.+\/bin$/o,
                            qr/\/.+\/build$/o,
                            qr/\/HELP_SOURCE\/Xml$/o,
+                           qr/\/GDE\/MUSCLE\/obj$/o,
+                           qr/\/GDE\/PHYML20130708\/phyml\/autom4te.cache$/o,
                            qr/\/ignore\./o,
                            qr/\/PERL2ARB\/blib$/o,
                            qr/\/HEADERLIBS\/[^\/]+/o,
