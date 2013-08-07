@@ -256,7 +256,7 @@ bool nt_disconnect_from_db(AW_root *aw_root, GBDATA*& gb_main_ref) {
                 secs = GB_last_saved_time(gb_main_ref);
 
 #if defined(DEBUG)
-                secs =  GB_time_of_day(); // simulate "just saved"
+//                secs =  GB_time_of_day(); // simulate "just saved"
 #endif // DEBUG
 
                 const char *quit_buttons = "Quit ARB,Do NOT quit";
@@ -1535,10 +1535,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     }
     else {
         awm->callback(nt_exit, EXIT_SUCCESS);
-        awm->set_close_callback();
         awm->set_hide_on_close(false); //the main window should really close when closed
         awm->help_text("quit.hlp");
         awm->create_button("QUIT", "#quit.xpm");
+        awm->set_close_action("QUIT");
     }
 
     int db_pathx = awm->get_at_xposition();

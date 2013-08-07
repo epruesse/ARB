@@ -516,9 +516,8 @@ public:
     /**If set to true the window is not destroyed on close. instead it is hidden.*/
     void set_hide_on_close(bool value);
     
-    /** Call the current callback on close*/
-    void set_close_callback();
-    
+    void set_close_action(AW_action*  action);
+    void set_close_action(const char* action); 
     
 private:
     
