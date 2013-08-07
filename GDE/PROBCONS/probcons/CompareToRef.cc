@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <iomanip>
+#include <cstring>
 
 const char CORE_BLOCK = 'h';
 typedef pair<int,int> PII;
