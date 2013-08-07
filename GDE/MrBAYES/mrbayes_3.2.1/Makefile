@@ -4,6 +4,14 @@ CC        ?= gcc
 CFLAGS    = -O3 -ffast-math -Wall -DNDEBUG -DUSECONFIG_H
 LDLIBS   =  -lreadline -lm
 
+# work around bug in centos5 -- ep 8/7/2013
+# (linking readline causes missing symbols unless also linking ncurses)
+# see https://bugzilla.redhat.com/show_bug.cgi?id=499837
+HAVE_CENTOS5 = $(shell test -f /etc/redhat-release && grep -q "release 5" /etc/redhat-release && echo true)
+ifeq ($(HAVE_CENTOS5),true)
+    LDLIBS += -lncurses
+endif
+
 
 mb: bayes.o command.o mbmath.o mcmc.o model.o plot.o sump.o sumt.o tree.o utils.o mbbeagle.o best.o
 
