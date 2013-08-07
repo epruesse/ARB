@@ -2,7 +2,7 @@
 
 CC        ?= gcc
 CFLAGS    = -O3 -ffast-math -Wall -DNDEBUG -DUSECONFIG_H
-LDFLAGS   =  -lreadline -lm
+LDLIBS   =  -lreadline -lm
 
 
 mb: bayes.o command.o mbmath.o mcmc.o model.o plot.o sump.o sumt.o tree.o utils.o mbbeagle.o best.o
