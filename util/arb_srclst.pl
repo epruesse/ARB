@@ -82,7 +82,7 @@ my %skipped_files = map { $_ => 1; } (
                                       );
 
 my %used_extensions = map { $_ => 1; } (
-                                        'c', 'cpp', 'cxx',
+                                        'c', 'cpp', 'cxx', 'cc',
                                         'h', 'hpp', 'hxx',
 
                                         'aisc', 'pa',
