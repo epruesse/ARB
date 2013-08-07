@@ -42,10 +42,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
-
-
-
-
+#include <strings.h>
 
 #include "axml.h"
 
@@ -54,12 +51,12 @@
 
 extern char modelFileName[1024];
 extern char excludeFileName[1024];
-extern char proteinModelFileName[1024];
+extern char secondaryStructureFileName[1024];
 
 
-extern char inverseMeaningDNA[16];
-extern char inverseMeaningPROT[23];
 extern char seq_file[1024];
+
+extern char *protModels[NUM_PROT_MODELS];
 
 static boolean lineContainsOnlyWhiteChars(char *line)
 {
@@ -93,13 +90,16 @@ static void skipWhites(char **ch)
 
 static void analyzeIdentifier(char **ch, int modelNumber, tree *tr)
 {
-  char ident[2048] = "";
-  char model[128] = "";
-  char *protModels[10] = {"DAYHOFF", "DCMUT", "JTT", "MTREV", "WAG", "RTREV", "CPREV", "VT", "BLOSUM62", "MTMAM"};
-  char *dnaModels[1]   = {"DNA"};
-  char thisModel[1024];
-  int i = 0, n, j;
-  int containsComma = 0;
+  char 
+    ident[2048] = "",
+    model[2048] = "",
+    thisModel[2048] = "";
+  
+  int 
+    i = 0, 
+    n, 
+    j,
+    containsComma = 0;
 
   while(**ch != '=')
     {
@@ -125,89 +125,187 @@ static void analyzeIdentifier(char **ch, int modelNumber, tree *tr)
     }
   else
     {
-      boolean found = FALSE;
+      boolean 
+	useProteinSubstitutionFile = FALSE,
+	found = FALSE;
+      
+      int 
+	openBracket = 0,
+	closeBracket = 0,
+	openPos = 0,
+	closePos = 0;
+            
       i = 0;
+      
       while(ident[i] != ',')
-	{
+	{	 
+	  if(ident[i] == '[')
+	    {
+	      openPos = i;
+	      openBracket++;
+	    }
+	  if(ident[i] == ']')
+	    {
+	      closePos = i;
+	      closeBracket++;
+	    }
 	  model[i] = ident[i];
 	  i++;
-	}      
-      
-      /* AA */
+	}     
 
-      for(i = 0; i < 10 && !found; i++)
-	{	
-	  strcpy(thisModel, protModels[i]);
-	  
-	  if(strcmp(model, thisModel) == 0)
-	    {
-	      /*
-		adef->protModels[modelNumber] = i;
-		adef->protFreqs[modelNumber]  = 0;
-		tr->dataType[modelNumber]     = AA_DATA;
-	      */
-	      
-	      tr->partitionData[modelNumber].protModels = i;		  
-	      tr->partitionData[modelNumber].protFreqs  = 0;
-	      tr->partitionData[modelNumber].dataType   = AA_DATA;
-	      found = TRUE;
-	    }
-	  	  
-	  strcpy(thisModel, protModels[i]);
-	  strcat(thisModel, "F");
-	  
-	  if(strcmp(model, thisModel) == 0)
-	    {
-	      /*
-		adef->protModels[modelNumber] = i;
-		adef->protFreqs[modelNumber]  = 1;
-		tr->dataType[modelNumber]     = AA_DATA;
-	      */
-
-	      tr->partitionData[modelNumber].protModels = i;		  
-	      tr->partitionData[modelNumber].protFreqs  = 1;
-	      tr->partitionData[modelNumber].dataType   = AA_DATA;
-	      found = TRUE;
-	    }	  	 	  
-	}
-      
-      if(!found)
-	{	
-	  strcpy(thisModel, dnaModels[0]);
-	  
-	  if(strcmp(model, thisModel) == 0)
-	    {
-	      /* 
-		 adef->protModels[modelNumber] = -1;
-		 adef->protFreqs[modelNumber]  = -1;
-		 tr->dataType[modelNumber]     = DNA_DATA;
-	      */
-	      
-	      tr->partitionData[modelNumber].protModels = -1;		  
-	      tr->partitionData[modelNumber].protFreqs  = -1;
-	      tr->partitionData[modelNumber].dataType   = DNA_DATA;
-	      
-	      found = TRUE;
-	    }	  	  	  	 	  
-	}
-
-      if(!found)
+      if(closeBracket > 0 || openBracket > 0)
 	{
-	  printf("ERROR: you specified the unknown protein or DNA model %s for partition %d\n", model, modelNumber);
-	  exit(-1);
+	  if((closeBracket == 1) && (openBracket == 1) && (openPos < closePos))
+	    useProteinSubstitutionFile = TRUE;
+	  else
+	    {
+	      printf("\nError: Apparently you want to specify a user-defined protein substitution model that shall be read from file\n");
+	      printf("It must be enclosed in opening and closing bracktes like this: [fileName]\n\n");
+	      printf("you specified: %s\n\n", model);
+	      exit(-1);
+	    }
 	}
-           
+      
+      if(useProteinSubstitutionFile)
+	{
+	  char 
+	    protFileName[2048] = "";
 
+	  int 
+	    pos,
+	    k,
+	    lower = 0,
+	    upper = i - 1;
+
+	  while(model[lower] == '[' || model[lower] == ' ')
+	    lower++;
+
+	  while(model[upper] == ']' || model[upper] == ' ')
+	    upper--;
+	  
+	  assert(lower < upper);
+
+	  for(k = lower, pos = 0; k <= upper; k++, pos++)
+	    protFileName[pos] = model[k];
+	  
+	  protFileName[pos] = '\0';
+
+	  
+
+	  if(!filexists(protFileName))
+	    {
+	      printf("\n\ncustom protein substitution file [%s] you want to use does not exist!\n", protFileName);
+	      printf("you need to specify the full path\n");
+	      printf("the file name shall not contain blanks!\n\n");
+	      exit(0);
+	    }
+	  
+
+	  strcpy(tr->initialPartitionData[modelNumber].proteinSubstitutionFileName, protFileName);
+	  /*printf("%s \n", tr->initialPartitionData[modelNumber].proteinSubstitutionFileName);*/
+	  
+	  tr->initialPartitionData[modelNumber].protModels = PROT_FILE;		  
+	  tr->initialPartitionData[modelNumber].usePredefinedProtFreqs  = TRUE;
+	  tr->initialPartitionData[modelNumber].dataType   = AA_DATA;
+	}
+      else
+	{
+	  /* AA */
+	  
+	  for(i = 0; i < NUM_PROT_MODELS && !found; i++)
+	    {	
+	      strcpy(thisModel, protModels[i]);
+	      
+	      if(strcasecmp(model, thisModel) == 0)
+		{	      	      
+		  tr->initialPartitionData[modelNumber].protModels = i;		  
+		  tr->initialPartitionData[modelNumber].usePredefinedProtFreqs = TRUE;
+		  tr->initialPartitionData[modelNumber].dataType   = AA_DATA;		  
+		  found = TRUE;
+		}
+	      
+
+	      if(i != GTR && i != GTR_UNLINKED)
+		{
+		  strcpy(thisModel, protModels[i]);
+		  strcat(thisModel, "F");
+		  
+		  if(strcasecmp(model, thisModel) == 0)
+		    {	      
+		      tr->initialPartitionData[modelNumber].protModels = i;		  
+		      tr->initialPartitionData[modelNumber].usePredefinedProtFreqs  = FALSE;
+		      tr->initialPartitionData[modelNumber].dataType   = AA_DATA;		     
+		      found = TRUE;
+		    }
+		}
+	      
+	      if(found && (tr->initialPartitionData[modelNumber].protModels == GTR || tr->initialPartitionData[modelNumber].protModels == GTR_UNLINKED))
+		tr->initialPartitionData[modelNumber].usePredefinedProtFreqs  = FALSE;		    		
+	    }
+	  
+	  if(!found)
+	    {		  	  
+	      if(strcasecmp(model, "DNA") == 0)
+		{	     	      
+		  tr->initialPartitionData[modelNumber].protModels = -1;		  
+		  tr->initialPartitionData[modelNumber].usePredefinedProtFreqs  = FALSE;
+		  tr->initialPartitionData[modelNumber].dataType   = DNA_DATA;
+		  
+		  found = TRUE;
+		}	  
+	      else
+		{	    	  
+		  if(strcasecmp(model, "BIN") == 0)
+		    {	     	      
+		      tr->initialPartitionData[modelNumber].protModels = -1;		  
+		      tr->initialPartitionData[modelNumber].usePredefinedProtFreqs  = FALSE;
+		      tr->initialPartitionData[modelNumber].dataType   = BINARY_DATA;
+		      
+		      found = TRUE;
+		    }
+		  else
+		    {
+		      if(strcasecmp(model, "MULTI") == 0)
+			{	     	      
+			  tr->initialPartitionData[modelNumber].protModels = -1;		  
+			  tr->initialPartitionData[modelNumber].usePredefinedProtFreqs  = FALSE;
+			  tr->initialPartitionData[modelNumber].dataType   = GENERIC_32;
+			  
+			  found = TRUE;
+			}
+		      else
+			{
+			  if(strcasecmp(model, "CODON") == 0)
+			    {	     	      
+			      tr->initialPartitionData[modelNumber].protModels = -1;		  
+			      tr->initialPartitionData[modelNumber].usePredefinedProtFreqs  = FALSE;
+			      tr->initialPartitionData[modelNumber].dataType   = GENERIC_64;
+			      
+			      found = TRUE;
+			    }
+			}
+		    }
+		  
+		}
+	    }
+
+	  if(!found)
+	    {
+	      printf("ERROR: you specified the unknown model %s for partition %d\n", model, modelNumber);
+	      exit(-1);
+	    }
+	}
+	  
       i = 0;
       while(ident[i++] != ',');      
-
-      tr->partitionData[modelNumber].partitionName = (char*)malloc((n - i + 1) * sizeof(char));          
-
+	  
+      tr->initialPartitionData[modelNumber].partitionName = (char*)rax_malloc((n - i + 1) * sizeof(char));          
+	  
       j = 0;
       while(i < n)	
-	tr->partitionData[modelNumber].partitionName[j++] =  ident[i++];
-
-      tr->partitionData[modelNumber].partitionName[j] = '\0';                      
+	tr->initialPartitionData[modelNumber].partitionName[j++] =  ident[i++];
+      
+      tr->initialPartitionData[modelNumber].partitionName[j] = '\0';                      
     }
 }
 
@@ -234,7 +332,7 @@ static int myGetline(char **lineptr, int *n, FILE *stream)
 
    if (*lineptr == NULL || *n < 2) 
     {
-      line = (char *)realloc(*lineptr, chunkSize);
+      line = (char *)rax_realloc(*lineptr, chunkSize, FALSE);
       if (line == NULL)
 	return -1;
       *lineptr = line;
@@ -265,7 +363,7 @@ static int myGetline(char **lineptr, int *n, FILE *stream)
        /* Need to enlarge the line buffer.  */
        len = p - line;
        size *= 2;
-       line = realloc (line, size);
+       line = rax_realloc (line, size, FALSE);
        if (line == NULL)
 	 goto lose;
        *lineptr = line;
@@ -301,13 +399,7 @@ void parsePartitions(analdef *adef, rawdata *rdta, tree *tr)
   int as, j;
   int k; 
 
-  f = fopen(modelFileName, "r");
-  
-  if (!f)
-    {
-      printf( "Could not open multiple model file: %s\n", modelFileName);
-      exit(-1);
-    }
+  f = myfopen(modelFileName, "rb");   
 
  
   while(myGetline(&cc, &nbytes, f) > -1)
@@ -317,36 +409,25 @@ void parsePartitions(analdef *adef, rawdata *rdta, tree *tr)
 	  numberOfModels++;
 	}
       if(cc)
-	free(cc);
+	rax_free(cc);
       cc = (char *)NULL;
     }     
   
   rewind(f);
       
-  p_names = (char **)malloc(sizeof(char *) * numberOfModels);
-  partitions = (int **)malloc(sizeof(int *) * numberOfModels);
+  p_names = (char **)rax_malloc(sizeof(char *) * numberOfModels);
+  partitions = (int **)rax_malloc(sizeof(int *) * numberOfModels);
       
-  /*if(adef->protModels == (int *)NULL)
-    adef->protModels = (int *)malloc(sizeof(int) * numberOfModels);
-    if(adef->protFreqs == (int *)NULL)
-    adef->protFreqs = (int *)malloc(sizeof(int) * numberOfModels);
-
-    tr->dataType = (int *)malloc(sizeof(int) * numberOfModels);*/
+ 
   
-  tr->partitionData = (pInfo*)malloc(sizeof(pInfo) * numberOfModels);
+  tr->initialPartitionData = (pInfo*)rax_malloc(sizeof(pInfo) * numberOfModels);
 
       
   for(i = 0; i < numberOfModels; i++) 
-    {
-      /*
-	adef->protModels[i] = adef->proteinMatrix;
-	adef->protFreqs[i]  = adef->protEmpiricalFreqs;
-	tr->dataType[i]     = -1;
-      */
-
-      tr->partitionData[i].protModels = adef->proteinMatrix;
-      tr->partitionData[i].protFreqs  = adef->protEmpiricalFreqs;
-      tr->partitionData[i].dataType   = -1;
+    {     
+      tr->initialPartitionData[i].protModels = adef->proteinMatrix;
+      tr->initialPartitionData[i].usePredefinedProtFreqs  = adef->protEmpiricalFreqs;
+      tr->initialPartitionData[i].dataType   = -1;
     }
 
   for(i = 0; i < numberOfModels; i++)    
@@ -358,17 +439,20 @@ void parsePartitions(analdef *adef, rawdata *rdta, tree *tr)
       if(!lineContainsOnlyWhiteChars(cc))
 	{
 	  n = strlen(cc);	 
-	  p_names[i] = (char *)malloc(sizeof(char) * (n + 1));
-	  strcpy(&(p_names[i][0]), cc);
+	  p_names[i] = (char *)rax_malloc(sizeof(char) * (n + 1));
+	  strcpy(&(p_names[i][0]), cc);	 
 	  i++;
 	}
       if(cc)
-	free(cc);
+	rax_free(cc);
       cc = (char *)NULL;
     }         
 
+  
+
   for(i = 0; i < numberOfModels; i++)
-    {           
+    {         
+     
       ch = p_names[i];     
       pairsCount = 0;
       skipWhites(&ch);
@@ -384,7 +468,7 @@ void parsePartitions(analdef *adef, rawdata *rdta, tree *tr)
             
     numberPairs:
       pairsCount++;
-      partitions[i] = (int *)realloc((void *)partitions[i], (1 + 3 * pairsCount) * sizeof(int));
+      partitions[i] = (int *)rax_realloc((void *)partitions[i], (1 + 3 * pairsCount) * sizeof(int), FALSE);
       partitions[i][0] = pairsCount;
       partitions[i][3 + 3 * (pairsCount - 1)] = -1; 	
       
@@ -509,6 +593,13 @@ void parsePartitions(analdef *adef, rawdata *rdta, tree *tr)
 	    }
 	}  
       
+      if(*ch == '/')
+	{
+	  printf("\nRAxML detected the character \"/\" in your partition file.\n");
+	  printf("Did you mean to write something similar to this: \"DNA, p1=1-100\\3\" ?\n");
+	  printf("It's actually a backslash, not a slash, the program will exit now with an error!\n\n");
+	}    
+      
       assert(0);
        
     parsed:
@@ -561,12 +652,12 @@ void parsePartitions(analdef *adef, rawdata *rdta, tree *tr)
 
   for(i = 0; i < numberOfModels; i++)
     {
-      free(partitions[i]);
-      free(p_names[i]);
+      rax_free(partitions[i]);
+      rax_free(p_names[i]);
     }
   
-  free(partitions);
-  free(p_names);    
+  rax_free(partitions);
+  rax_free(p_names);    
     
   tr->NumberOfModels = numberOfModels;     
   
@@ -594,8 +685,9 @@ void parsePartitions(analdef *adef, rawdata *rdta, tree *tr)
 void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
 {
   FILE *f;  
-  char ch, buf[256];
-  int        
+  char buf[256];
+  int
+    ch,
     j, value, i,
     state = 0,
     numberOfModels = 0,
@@ -610,13 +702,7 @@ void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
 
   printf("\n\n");
 
-  f = fopen(excludeFileName, "r");
-  
-  if (!f)
-    {
-      printf( "Could not open multiple model file: %s\n", excludeFileName);
-      exit(-1);
-    }
+  f = myfopen(excludeFileName, "rb");    
 
   while((ch = getc(f)) != EOF)
     {
@@ -624,13 +710,13 @@ void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
 	numberOfModels++;
     } 
 
-  excludeArray = (int*)malloc(sizeof(int) * (rdta->sites + 1));
-  countArray   = (int*)malloc(sizeof(int) * (rdta->sites + 1));
-  modelList    = (int *)malloc((rdta->sites + 1)* sizeof(int));
+  excludeArray = (int*)rax_malloc(sizeof(int) * (rdta->sites + 1));
+  countArray   = (int*)rax_malloc(sizeof(int) * (rdta->sites + 1));
+  modelList    = (int *)rax_malloc((rdta->sites + 1)* sizeof(int));
 
-  partitions = (int **)malloc(sizeof(int *) * numberOfModels);  
+  partitions = (int **)rax_malloc(sizeof(int *) * numberOfModels);  
   for(i = 0; i < numberOfModels; i++)
-    partitions[i] = (int *)malloc(sizeof(int) * 2);
+    partitions[i] = (int *)rax_malloc(sizeof(int) * 2);
 
   rewind(f);
   
@@ -776,6 +862,38 @@ void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
       exit(-1);
     }
 
+  if(adef->useSecondaryStructure && (excludedColumns > 0))
+    {
+      char mfn[2048];
+      int countColumns;
+      FILE *newFile;
+
+      assert(adef->useMultipleModel);
+
+      strcpy(mfn, secondaryStructureFileName);
+      strcat(mfn, ".");
+      strcat(mfn, excludeFileName);
+
+      newFile = myfopen(mfn, "wb");
+
+      printBothOpen("\nA secondary structure file with analogous structure assignments for non-excluded columns is printed to file %s\n", mfn);        	     	    
+		  
+      for(i = 1, countColumns = 0; i <= rdta->sites; i++)
+	{		  
+	  if(excludeArray[i] == -1)
+	    fprintf(newFile, "%c", tr->secondaryStructureInput[i - 1]);
+	  else
+	    countColumns++;
+	}
+		  
+      assert(countColumns == excludedColumns);
+		  
+      fprintf(newFile,"\n");
+		  
+      fclose(newFile);
+    }
+
+
   if(adef->useMultipleModel && (excludedColumns > 0))
     {      
       char mfn[2048];
@@ -785,7 +903,7 @@ void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
       strcat(mfn, ".");
       strcat(mfn, excludeFileName);
 
-      newFile = fopen(mfn, "w");
+      newFile = myfopen(mfn, "wb");
 
       printf("\nA partition file with analogous model assignments for non-excluded columns is printed to file %s\n", mfn);     
 	      
@@ -800,8 +918,7 @@ void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
 	    }
 
 	  if(modelStillExists)
-	    {	  
-	      char *protModels[10] = {"DAYHOFF", "DCMUT", "JTT", "MTREV", "WAG", "RTREV", "CPREV", "VT", "BLOSUM62", "MTMAM"};
+	    {	  	      
 	      int k = 1;
 	      int lower, upper;
 	      int parts = 0;
@@ -813,7 +930,7 @@ void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
 		    char AAmodel[1024];
 		    
 		    strcpy(AAmodel, protModels[tr->partitionData[i].protModels]);
-		    if(tr->partitionData[i].protFreqs)
+		    if(tr->partitionData[i].usePredefinedProtFreqs == FALSE)
 		      strcat(AAmodel, "F");		  
 		    
 		    fprintf(newFile, "%s, ", AAmodel);
@@ -821,6 +938,15 @@ void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
 		  break;
 		case DNA_DATA:
 		  fprintf(newFile, "DNA, ");
+		  break;
+		case BINARY_DATA:
+		  fprintf(newFile, "BIN, ");
+		  break;
+		case GENERIC_32:
+		  fprintf(newFile, "MULTI, ");
+		  break;
+		case GENERIC_64:
+		  fprintf(newFile, "CODON, ");
 		  break;
 		default:
 		  assert(0);
@@ -871,7 +997,7 @@ void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
     strcat(mfn, ".");
     strcat(mfn, excludeFileName);
     
-    newFile = fopen(mfn, "w");
+    newFile = myfopen(mfn, "wb");
     
     printf("\nAn alignment file with excluded columns is printed to file %s\n\n\n", mfn);
     
@@ -879,25 +1005,13 @@ void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
     
     for(i = 1; i <= tr->mxtips; i++)
       {   
-	char *tipI =  &(rdta->y[i][1]);
+	unsigned char *tipI =  &(rdta->y[i][1]);
 	fprintf(newFile, "%s ", tr->nameList[i]);
 	
 	for(j = 0; j < rdta->sites; j++)
 	  {
-	    if(excludeArray[j + 1] == -1)
-	      {
-		switch(tr->dataVector[j + 1])
-		  {
-		  case AA_DATA:
-		    fprintf(newFile, "%c", inverseMeaningPROT[tipI[j]]);
-		    break;
-		  case DNA_DATA:
-		    fprintf(newFile, "%c", inverseMeaningDNA[tipI[j]]);
-		    break;
-		  default:
-		    assert(0);
-		  }
-	      }
+	    if(excludeArray[j + 1] == -1)	      
+	      fprintf(newFile, "%c", getInverseMeaning(tr->dataVector[j + 1], tipI[j]));	       	  
 	  }
 	
 	fprintf(newFile, "\n");
@@ -909,38 +1023,33 @@ void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
   
   fclose(f);
   for(i = 0; i < numberOfModels; i++)
-    free(partitions[i]);
-  free(partitions);  
-  free(excludeArray);
-  free(countArray);
-  free(modelList);
+    rax_free(partitions[i]);
+  rax_free(partitions);  
+  rax_free(excludeArray);
+  rax_free(countArray);
+  rax_free(modelList);
 }
 
 
-void parseProteinModel(analdef *adef)
+void parseProteinModel(double *externalAAMatrix, char *fileName)
 {
-  FILE *f; 
-  int doublesRead = 0;
-  int result = 0;
-  int i, j;
-  double acc = 0.0;
-
-  assert(adef->userProteinModel);
-  printf("User-defined prot mod %s\n", proteinModelFileName);
-
-  adef->externalAAMatrix = (double*)malloc(420 * sizeof(double));
-
-  f = fopen(proteinModelFileName, "r");
+  FILE 
+    *f = myfopen(fileName, "rb"); 
   
-  if (!f)
-    {
-      printf( "Could not open external AA substitution model file: %s\n", proteinModelFileName);
-      exit(-1);
-    }
+  int 
+    doublesRead = 0,
+    result = 0,
+    i, 
+    j;
+  
+  double 
+    acc = 0.0;
+
+  printf("\nParsing user-defined protein model from file %s\n", fileName);  
 
   while(doublesRead < 420)
     {     
-      result = fscanf(f, "%lf", &(adef->externalAAMatrix[doublesRead++]));           
+      result = fscanf(f, "%lf", &(externalAAMatrix[doublesRead++]));           
 
       if(result == EOF)
 	{
@@ -960,12 +1069,12 @@ void parseProteinModel(analdef *adef)
       {
 	if(i != j)
 	  {
-	    if(adef->externalAAMatrix[i * 20 + j] != adef->externalAAMatrix[j * 20 + i])
+	    if(externalAAMatrix[i * 20 + j] != externalAAMatrix[j * 20 + i])
 	      {
 		printf("Error user-defined Protein model matrix must be symmetric\n");
 		printf("Entry P[%d][%d]=%f at position %d is not equal to P[%d][%d]=%f at position %d\n", 
-		       i, j,  adef->externalAAMatrix[i * 20 + j], (i * 20 + j),
-		       j, i,  adef->externalAAMatrix[j * 20 + i], (j * 20 + i));
+		       i, j,  externalAAMatrix[i * 20 + j], (i * 20 + j),
+		       j, i,  externalAAMatrix[j * 20 + i], (j * 20 + i));
 		exit(-1);
 	      }
 	  }
@@ -974,7 +1083,7 @@ void parseProteinModel(analdef *adef)
   acc = 0.0;
 
   for(i = 400; i < 420; i++)    
-    acc += adef->externalAAMatrix[i];         
+    acc += externalAAMatrix[i];         
 
   if((acc > 1.0 + 1.0E-6) || (acc <  1.0 - 1.0E-6))
     {
@@ -982,5 +1091,380 @@ void parseProteinModel(analdef *adef)
       printf("the sum is %1.80f\n", acc);
       exit(-1);
     }
+}
 
+
+
+
+void parseSecondaryStructure(tree *tr, analdef *adef, int sites)
+{
+  if(adef->useSecondaryStructure)
+    {
+      FILE *f = myfopen(secondaryStructureFileName, "rb");
+
+      int
+	i,
+	k,
+	countCharacters = 0,
+	ch,
+	*characters,
+	**brackets,
+	opening,
+	closing,
+	depth,
+	numberOfSymbols,
+	numSecondaryColumns;      
+
+      unsigned char bracketTypes[4][2] = {{'(', ')'}, {'<', '>'},  {'[', ']'},  {'{', '}'}};          
+
+      numberOfSymbols = 4;     
+
+      tr->secondaryStructureInput = (char*)rax_malloc(sizeof(char) * sites);
+
+      while((ch = fgetc(f)) != EOF)
+	{
+	  if(ch == '(' || ch == ')' || ch == '<' || ch == '>' || ch == '[' || ch == ']' || ch == '{' || ch == '}' || ch == '.')
+	    countCharacters++;
+	  else
+	    {
+	      if(!whitechar(ch))
+		{
+		  printf("Secondary Structure file %s contains character %c at position %d\n", secondaryStructureFileName, ch, countCharacters + 1);
+		  printf("Allowed Characters are \"( ) < > [ ] { } \" and \".\" \n");
+		  errorExit(-1);
+		}
+	    }
+	}
+      
+      if(countCharacters != sites)
+	{
+	  printf("Error: Alignment length is: %d, secondary structure file has length %d\n", sites, countCharacters);
+	  errorExit(-1);
+	}
+    
+      characters = (int*)rax_malloc(sizeof(int) * countCharacters); 
+
+      brackets = (int **)rax_malloc(sizeof(int*) * numberOfSymbols);
+      
+      for(k = 0; k < numberOfSymbols; k++)	  
+	brackets[k]   = (int*)rax_calloc(countCharacters, sizeof(int));
+
+      rewind(f);
+
+      countCharacters = 0;
+      while((ch = fgetc(f)) != EOF)
+	{
+	  if(!whitechar(ch)) 
+	    {
+	      tr->secondaryStructureInput[countCharacters] = ch;
+	      characters[countCharacters++] = ch;
+	    }
+	}
+      
+      assert(countCharacters == sites);
+
+      for(k = 0; k < numberOfSymbols; k++)
+	{
+	  for(i = 0, opening = 0, closing = 0, depth = 0; i < countCharacters; i++)
+	    {
+	      if((characters[i] == bracketTypes[k][0] || characters[i] == bracketTypes[k][1]) && 
+		 (tr->extendedDataVector[i+1] == AA_DATA || tr->extendedDataVector[i+1] == BINARY_DATA ||
+		  tr->extendedDataVector[i+1] == GENERIC_32 || tr->extendedDataVector[i+1] == GENERIC_64))
+		{
+		  printf("Secondary Structure only for DNA character positions \n");
+		  printf("I am at position %d of the secondary structure file and this is not part of a DNA partition\n", i+1);
+		  errorExit(-1);
+		}
+	      
+	      if(characters[i] == bracketTypes[k][0])
+		{	      
+		  depth++;
+		  /*printf("%d %d\n", depth, i);*/
+		  brackets[k][i] = depth;
+		  opening++;
+		}
+	      if(characters[i] == bracketTypes[k][1])
+		{	  
+		  brackets[k][i] = depth; 
+		  /*printf("%d %d\n", depth, i);  */
+		  depth--;	
+		  
+		  closing++;
+		}	  	  	  
+	      
+	      if(closing > opening)
+		{
+		  printf("at position %d there is a closing bracket too much\n", i+1);
+		  errorExit(-1);
+		}
+	    }	
+
+	  if(depth != 0)
+	    {
+	      printf("Problem: Depth: %d\n", depth);
+	      printf("Your secondary structure file may be missing a closing or opening paraenthesis!\n");
+	    }
+	  assert(depth == 0);
+	  
+	  if(countCharacters != sites)
+	    {
+	      printf("Problem: sec chars: %d sites: %d\n",countCharacters, sites);
+	      printf("The number of sites in the alignment does not match the length of the secondary structure file\n");
+	    }
+	  assert(countCharacters == sites);
+	
+      
+	  if(closing != opening)
+	    {
+	      printf("Number of opening brackets %d should be equal to number of closing brackets %d\n", opening, closing);
+	      errorExit(-1);
+	    }
+	}
+      
+      for(i = 0, numSecondaryColumns = 0; i < countCharacters; i++)
+	{
+	  int checkSum = 0;
+
+	  for(k = 0; k < numberOfSymbols; k++)
+	    {
+	      if(brackets[k][i] > 0)
+		{
+		  checkSum++;
+		  
+		  switch(tr->secondaryStructureModel)
+		    {
+		    case SEC_16:
+		    case SEC_16_A:
+		    case SEC_16_B:
+		    case SEC_16_C:
+		    case SEC_16_D:
+		    case SEC_16_E:
+		    case SEC_16_F:
+		    case SEC_16_I:
+		    case SEC_16_J:
+		    case SEC_16_K:
+		      tr->extendedDataVector[i+1] = SECONDARY_DATA;
+		      break;
+		    case SEC_6_A:
+		    case SEC_6_B:
+		    case SEC_6_C:
+		    case SEC_6_D:
+		    case SEC_6_E:
+		      tr->extendedDataVector[i+1] = SECONDARY_DATA_6;
+		      break;
+		    case SEC_7_A:
+		    case SEC_7_B:
+		    case SEC_7_C:
+		    case SEC_7_D:
+		    case SEC_7_E:
+		    case SEC_7_F:
+		      tr->extendedDataVector[i+1] = SECONDARY_DATA_7;
+		      break;
+		    default:
+		      assert(0);
+		    }
+		 
+		  numSecondaryColumns++;
+		}
+	    }
+	  assert(checkSum <= 1);
+	}
+      
+      assert(numSecondaryColumns % 2 == 0);
+      
+      /*printf("Number of secondary columns: %d merged columns: %d\n", numSecondaryColumns, numSecondaryColumns / 2);*/
+
+      tr->numberOfSecondaryColumns = numSecondaryColumns;
+      if(numSecondaryColumns > 0)
+	{
+	  int model = tr->NumberOfModels;
+	  int countPairs;
+	  pInfo *partBuffer = (pInfo*)rax_malloc(sizeof(pInfo) * tr->NumberOfModels);
+
+	  for(i = 1; i <= sites; i++)
+	    {
+	      for(k = 0; k < numberOfSymbols; k++)
+		{
+		  if(brackets[k][i-1] > 0)
+		    tr->model[i] = model;
+		}
+
+	    }
+
+	  /* now make a copy of partition data */
+
+	 
+	  for(i = 0; i < tr->NumberOfModels; i++)
+	    {
+	      partBuffer[i].partitionName = (char*)rax_malloc((strlen(tr->extendedPartitionData[i].partitionName) + 1) * sizeof(char));
+	      strcpy(partBuffer[i].partitionName, tr->extendedPartitionData[i].partitionName);
+	      strcpy(partBuffer[i].proteinSubstitutionFileName, tr->extendedPartitionData[i].proteinSubstitutionFileName);
+	      partBuffer[i].dataType =  tr->extendedPartitionData[i].dataType;
+	      partBuffer[i].protModels=  tr->extendedPartitionData[i].protModels;
+	      partBuffer[i].usePredefinedProtFreqs=  tr->extendedPartitionData[i].usePredefinedProtFreqs;	      
+	    }
+
+	  for(i = 0; i < tr->NumberOfModels; i++)
+	    rax_free(tr->extendedPartitionData[i].partitionName);
+	  rax_free(tr->extendedPartitionData);
+	 
+	  tr->extendedPartitionData = (pInfo*)rax_malloc(sizeof(pInfo) * (tr->NumberOfModels + 1));
+	  
+	  for(i = 0; i < tr->NumberOfModels; i++)
+	    {
+	      tr->extendedPartitionData[i].partitionName = (char*)rax_malloc((strlen(partBuffer[i].partitionName) + 1) * sizeof(char));
+	      strcpy(tr->extendedPartitionData[i].partitionName, partBuffer[i].partitionName);
+	      strcpy(tr->extendedPartitionData[i].proteinSubstitutionFileName, partBuffer[i].proteinSubstitutionFileName);
+	      tr->extendedPartitionData[i].dataType =  partBuffer[i].dataType;
+	      tr->extendedPartitionData[i].protModels= partBuffer[i].protModels;
+	      tr->extendedPartitionData[i].usePredefinedProtFreqs=  partBuffer[i].usePredefinedProtFreqs;	      
+	      rax_free(partBuffer[i].partitionName);
+	    }
+	  rax_free(partBuffer);
+
+	  tr->extendedPartitionData[i].partitionName = (char*)rax_malloc(64 * sizeof(char));
+
+	  switch(tr->secondaryStructureModel)
+	    {
+	    case SEC_16:
+	    case SEC_16_A:
+	    case SEC_16_B:
+	    case SEC_16_C:
+	    case SEC_16_D:
+	    case SEC_16_E:
+	    case SEC_16_F:
+	    case SEC_16_I:
+	    case SEC_16_J:
+	    case SEC_16_K:
+	      strcpy(tr->extendedPartitionData[i].partitionName, "SECONDARY STRUCTURE 16 STATE MODEL");
+	      tr->extendedPartitionData[i].dataType = SECONDARY_DATA;
+	      break;
+	    case SEC_6_A:
+	    case SEC_6_B:
+	    case SEC_6_C:
+	    case SEC_6_D:
+	    case SEC_6_E:
+	      strcpy(tr->extendedPartitionData[i].partitionName, "SECONDARY STRUCTURE 6 STATE MODEL");
+	      tr->extendedPartitionData[i].dataType = SECONDARY_DATA_6;
+	      break;
+	    case SEC_7_A:
+	    case SEC_7_B:
+	    case SEC_7_C:
+	    case SEC_7_D:
+	    case SEC_7_E:
+	    case SEC_7_F:
+	      strcpy(tr->extendedPartitionData[i].partitionName, "SECONDARY STRUCTURE 7 STATE MODEL");
+	      tr->extendedPartitionData[i].dataType = SECONDARY_DATA_7;
+	      break;
+	    default:
+	      assert(0);
+	    }
+
+	  tr->extendedPartitionData[i].protModels= -1;
+	  tr->extendedPartitionData[i].usePredefinedProtFreqs=  FALSE;	 
+
+	  tr->NumberOfModels++;	 
+	  
+	  if(adef->perGeneBranchLengths)
+	    {
+	      if(tr->NumberOfModels > NUM_BRANCHES)
+		{
+		  printf("You are trying to use %d partitioned models for an individual per-gene branch length estimate.\n", tr->NumberOfModels);
+		  printf("Currently only %d are allowed to improve efficiency.\n", NUM_BRANCHES);
+		  printf("Note that the number of partitions has automatically been incremented by one to accomodate secondary structure models\n");
+		  printf("\n");
+		  printf("In order to change this please replace the line \"#define NUM_BRANCHES   %d\" in file \"axml.h\" \n", NUM_BRANCHES);
+		  printf("by \"#define NUM_BRANCHES   %d\" and then re-compile RAxML.\n", tr->NumberOfModels);
+		  exit(-1);
+		}
+	      else
+		{
+		  tr->multiBranch = 1;
+		  tr->numBranches = tr->NumberOfModels;
+		}
+	    }
+	  
+	  assert(countCharacters == sites);
+
+	  tr->secondaryStructurePairs = (int*)rax_malloc(sizeof(int) * countCharacters);
+	  for(i = 0; i < countCharacters; i++)
+	    tr->secondaryStructurePairs[i] = -1;
+	  /*
+	    for(i = 0; i < countCharacters; i++)
+	    printf("%d", brackets[i]);
+	    printf("\n");
+	  */
+	  countPairs = 0;
+
+	  for(k = 0; k < numberOfSymbols; k++)
+	    {
+	      i = 0;
+	      
+	  
+	      while(i < countCharacters)
+		{
+		  int 
+		    j = i,
+		    bracket = -1,
+		    openBracket,
+		    closeBracket;
+		  
+		  while(j < countCharacters && ((bracket = brackets[k][j]) == 0))
+		    {
+		      i++;
+		      j++;
+		    }
+
+		  assert(bracket >= 0);
+
+		  if(j == countCharacters)
+		    {
+		      assert(bracket == 0);
+		      break;
+		    }
+	    
+		  openBracket = j;
+		  j++;
+		  
+		  while(bracket != brackets[k][j] && j < countCharacters)
+		    j++;
+		  assert(j < countCharacters);
+		  closeBracket = j;
+		  
+		  assert(closeBracket < countCharacters && openBracket < countCharacters);
+
+		  assert(brackets[k][closeBracket] > 0 && brackets[k][openBracket] > 0);
+		  
+		  /*printf("%d %d %d\n", openBracket, closeBracket, bracket);*/
+		  brackets[k][closeBracket] = 0;
+		  brackets[k][openBracket]  = 0;	      	      
+		  countPairs++;
+		  
+		  tr->secondaryStructurePairs[closeBracket] = openBracket;
+		  tr->secondaryStructurePairs[openBracket] = closeBracket;
+		}
+
+	      assert(i == countCharacters);
+	    }
+	     
+	  assert(countPairs == numSecondaryColumns / 2);
+
+	  
+	  /*for(i = 0; i < countCharacters; i++)
+	    printf("%d ", tr->secondaryStructurePairs[i]);
+	    printf("\n");*/
+	  
+
+	  adef->useMultipleModel = TRUE;
+
+	}
+
+      
+      for(k = 0; k < numberOfSymbols; k++)	  
+	rax_free(brackets[k]);
+      rax_free(brackets);
+      rax_free(characters);
+
+      fclose(f);
+    }
 }

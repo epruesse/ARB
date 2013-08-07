@@ -55,12 +55,10 @@ argchoice:Yes:1
         arg:RATEMODELNUC
         argtype:choice_menu
         arglabel: Rate Distribution Model
-        argchoice:GTRMIX:GTRMIX
         argchoice:GTRGAMMA:GTRGAMMA
         argchoice:GTRCAT:GTRCAT
         argchoice:GTRCAT_GAMMA:GTRCAT_GAMMA
         argchoice:GTRGAMMAI:GTRGAMMAI
-        argchoice:GTRMIXI:GTRMIXI
         argchoice:GTRCAT_GAMMAI:GTRCAT_GAMMAI
         
         arg:NUMCATEGORIES
@@ -73,12 +71,10 @@ argchoice:Yes:1
         arg:RATEMODELPROT
         argtype:choice_menu
         arglabel:Rate Distribution Model
-        argchoice:PROTMIX:PROTMIX
         argchoice:PROTGAMMA:PROTGAMMA
         argchoice:PROTCAT:PROTCAT
         argchoice:PROTCAT_GAMMA:PROTCAT_GAMMA
         argchoice:PROTGAMMAI:PROTGAMMAI
-        argchoice:PROTMIXI:PROTMIXI
         argchoice:PROTCAT_GAMMAI:PROTCAT_GAMMAI
         
         arg:MATRIXNAME
@@ -107,9 +103,9 @@ argchoice:Yes:1
 arg:OPTIMIZEPARAMETERS
 argtype:choice_menu
 #ifdef RAXML_DNA
-        arglabel:Optimize branches/parameters\n(GTRMIX / GTRGAMMA only)
+        arglabel:Optimize branches/parameters\n(GTRGAMMA only)
 #else
-        arglabel:Optimize branches/parameters\n(PROTMIX / PROTGAMMA only)
+        arglabel:Optimize branches/parameters\n(PROTGAMMA only)
 #endif
 argchoice:No:0
 argchoice:Yes:1

@@ -97,20 +97,20 @@ else
     if [ "$OPTIMIZEPARAMETERS" == "1" ]; then
         if [ "$DATA" == "DNA" ]; then
             case "$RATEMODELNUC" in
-                GTRMIX | GTRGAMMA )
+                GTRGAMMA )
                     DEPENDENT_PARAMS="$DEPENDENT_PARAMS -k"
                     ;;
                 * )
-                    arb_message "Ignored 'Optimize branches/parameters'\n(only usable with GTRMIX or GTRGAMMA)"
+                    arb_message "Ignored 'Optimize branches/parameters'\n(only usable with GTRGAMMA)"
                     ;;
             esac
         else
             case "$RATEMODELPROT" in
-                "PROTMIX" | "PROTGAMMA" )
+                  "PROTGAMMA" )
                     DEPENDENT_PARAMS="$DEPENDENT_PARAMS -k"
                     ;;
                 * )
-                    arb_message "Ignored 'Optimize branches/parameters'\n(only usable with PROTMIX or PROTGAMMA)"
+                    arb_message "Ignored 'Optimize branches/parameters'\n(only usable with PROTGAMMA)"
                     ;;
             esac
         fi
@@ -210,7 +210,7 @@ else
     if [ "$NUMBEROFRUNS" != "1" ]; then
         RAXMLPARAMS="$RAXMLPARAMS -# $NUMBEROFRUNS"
     fi
-    RAXMLPARAMS="$RAXMLPARAMS -s $SEQFILE -a $WEIGHTS $TREEPARAMS $DEPENDENT_PARAMS -n ThisRun"
+    RAXMLPARAMS="$RAXMLPARAMS -p $SEED -s $SEQFILE -a $WEIGHTS $TREEPARAMS $DEPENDENT_PARAMS -n ThisRun"
 
     echo "------------------------------------------"
     echo "Calling raxmlHPC $RAXMLPARAMS"
