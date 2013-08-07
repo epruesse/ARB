@@ -116,8 +116,8 @@ public:
     /**true if this window should be hidden instead of destroyed on close*/
     bool hide_on_close;
     
-    /** Will be called when the window is closed */
-    AW_cb *close_callback;    
+    /** Will be triggered when the window close button is clicked */
+    AW_action *close_action;
        
     /**
      * default constructor

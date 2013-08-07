@@ -353,11 +353,11 @@ void AW_window::create_progressBar(const char *var_name) {
 bool AW_window::close_window_handler(GtkWidget*, GdkEvent*, gpointer data) {
     aw_return_val_if_fail(data, false);
     AW_window *w = (AW_window*)data;
-    
-    if(w->prvt->close_callback) {
-        w->prvt->close_callback->run_callbacks();
+
+    if (w->prvt->close_action) {
+        w->prvt->close_action->emit();
     }
-    
+ 
     /* If you return FALSE in the "delete-event" signal handler,
      * GTK will emit the "destroy" signal. Returning TRUE means
      * you don't want the window to be destroyed.
@@ -366,14 +366,8 @@ bool AW_window::close_window_handler(GtkWidget*, GdkEvent*, gpointer data) {
     
     if(w->prvt->hide_on_close) {
         w->hide();
-        return true;
     }
-    return false;
-}
-
-void AW_window::set_close_callback()
-{
-    prvt->close_callback = prvt->callback;
+    return true;
 }
 
 /**
@@ -1436,9 +1430,27 @@ void AW_window::init_window(const char *window_name_, const char* window_title,
     // we want this to have its own GdkWindow
     gtk_widget_set_has_window(GTK_WIDGET(prvt->fixed_size_area),true);
     prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), this);
-    
     g_signal_connect (prvt->window, "delete_event", G_CALLBACK (close_window_handler), this);
+    
 }
+
+/** 
+ * Connects an action to the close button of this window.
+ * The action will be triggered /before/ the window is actually hidden.
+ * Whether or not it will be hidden can be set with set_hide_on_close().
+ */
+void AW_window::set_close_action(AW_action *act) {
+    prvt->close_action = act;
+}
+
+/**
+ * Connects an action to the close button of this window.
+ * See set_close_action(AW_action *act)
+ */
+void AW_window::set_close_action(const char* act_name) {
+    set_close_action(action(act_name));
+}
+
 
 void AW_window::recalc_pos_atShow(AW_PosRecalc pr){
     recalc_pos_at_show = pr;
