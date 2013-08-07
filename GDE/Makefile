@@ -11,6 +11,7 @@ ARCHS_NO_DEPENDS = \
 	MAFFT/MAFFT.dummy \
 	MUSCLE/MUSCLE.dummy \
 	PROBCONS/PROBCONS.dummy \
+	MrBAYES/MrBAYES.dummy \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
