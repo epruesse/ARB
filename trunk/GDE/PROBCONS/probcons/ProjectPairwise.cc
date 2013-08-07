@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <iomanip>
+#include <cstring>
 
 bool compressGaps = true;
 

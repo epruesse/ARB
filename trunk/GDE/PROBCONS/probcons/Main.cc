@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <iomanip>
+#include <cstring>
 
 string parametersInputFilename = "";
 string parametersOutputFilename = "no training";
