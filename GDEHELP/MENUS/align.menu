@@ -1,5 +1,113 @@
-item:Mafft
+item:ProbCons
 itemmeta: P
+itemmethod:(GOTO_LOCAL_DIR; \
+            arb_sed 's/#/>HASH_/' <in1 | \
+            arb_sed 's/%/>PERCENT_/' | \
+            arb_sed 's/"/>QUOTE_/'| \
+            arb_sed 's/@/>AT_/' | \
+            arb_sed '/^[^>]/ y/./-/' > probcons_in; \
+            RUN_IN_WINDOW(($ARBHOME/bin/probcons -pre $PRE_TRAINING_REPS -ir $PASSES -c $REPS probcons_in > probcons_out;)); \
+            arb_sed 's/>HASH_/#/' <probcons_out | \
+            arb_sed 's/>PERCENT_/%/' | \
+            arb_sed 's/>QUOTE_/"/' | \
+            arb_sed 's/>AT_/@/' > out1; RM_LOCAL_FILES(probcons_in* probcons_out* in1) )
+
+arg:REPS
+argtype:choice_menu
+arglabel:Passes of consistency transformation
+argtype:slider
+argmin:0
+argmax:5
+argvalue:2
+
+
+arg:PASSES
+arglabel:Passes of iterative refinement
+argtype:slider
+argmin:0
+argmax:1000
+argvalue:100
+
+arg:PRE_TRAINING_REPS
+arglabel:Rounds of pre-training before aligning the sequences
+argtype:slider
+argmin:0
+argmax:20
+argvalue:0
+
+in:in1
+informat:flat
+intyped:detailed
+insave:
+
+out:out1
+outformat:flat
+
+//----------------------------------------------------
+
+item:Muscle
+itemmeta: M
+itemmethod:(GOTO_LOCAL_DIR; \
+            arb_sed 's/#/>HASH_/' <in1 | \
+            arb_sed 's/%/>PERCENT_/' | \
+            arb_sed 's/"/>QUOTE_/'| \
+            arb_sed 's/@/>AT_/' | \
+            arb_sed '/^[^>]/ y/./-/' > muscle_in; \
+            RUN_IN_WINDOW(($ARBHOME/bin/muscle $SCORE $DIAGS $ANCHORS $DIMER $BRENNER -in muscle_in -out muscle_out -maxiters $MAXITERS;)); \
+            arb_sed 's/>HASH_/#/' <muscle_out | \
+            arb_sed 's/>PERCENT_/%/' | \
+            arb_sed 's/>QUOTE_/"/' | \
+            arb_sed 's/>AT_/@/' > out1; RM_LOCAL_FILES(muscle_in* muscle_out* in1))
+
+arg:MAXITERS
+argtype:text
+arglabel:Maximum number of iterations to run(Use 2 for large datasets)
+argtext:16
+
+//arg:ANCHORS
+//argtype:choice_menu
+//arglabel:Use anchor optimization in tree dependent refinement iterations
+//argchoice:Yes(default):-anchors
+//argchoice:No:-noanchors
+
+//arg:BRENNER
+//argtype:choice_menu
+//arglabel:Use Steven Brenner's method for computing the root alignment
+//argchoice:No(default):
+//argchoice:Yes:-brenner
+
+//arg:DIMER
+//argtype:choice_menu
+//arglabel:Use dimer approximation for the SP score\n(faster, slightly less accurate)
+//argchoice:No(default):
+//argchoice:Yes:-dimer
+
+//arg:DIAGS
+//argtype:choice_menu
+//arglabel:Use diagonal optimizations\n(faster, especially for closely related sequences,\nbut may be less accurate)
+//argchoice:No(default):
+//argchoice:Yes:-diags
+
+//arg:SCORE
+//argtype:choice_menu
+//arglabel:Scoring
+//argchoice:Log-expectation profile score (VTML240)(default):-le
+//argchoice:Sum-of-pairs protein profile score (PAM200):-sp
+//argchoice:Sum-of-pairs profile score (VTML240):-sv
+
+
+in:in1
+informat:flat
+intyped:detailed
+insave:
+
+out:out1
+outformat:flat
+
+//-------------------------------------------------------------------
+
+item:Mafft
+itemmeta: F
 itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/#/>HASH_/' <in1 | \
             arb_sed 's/%/>PERCENT_/' | \
@@ -12,6 +120,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/>QUOTE_/"/' | \
             arb_sed 's/>AT_/@/' > out1; RM_LOCAL_FILES(mafft_in* in1 mafft_out*))
 
+itemhelp:mafft.help
 
 
 arg:COMMAND
@@ -56,10 +165,7 @@ insave:
 out:out1
 outformat:flat
 
-
-
 //--------------------------------------------------------
-
 
 item:ClustalW automatic
 itemmeta: W
