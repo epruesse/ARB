@@ -1,8 +1,5 @@
 #!/bin/bash
 
-nargs=$#
-args="$*"
-
 # error message function
 err () {
 	echo "`basename $0`: $@" 1>&2
@@ -45,21 +42,17 @@ prepend () {
     addpath "$1" "$2" prepend
 }
 
-ARB_SCRIPT=`readlink -f $0`
-export ARB_SCRIPT ; ARB_SH=`dirname $ARB_SCRIPT`
-export ARB_SH ; ARBHOME_OF_SCRIPT=`dirname $ARB_SH`
+# get absolute path to directory where this script resides
+# (avoid use of readlink as it is missing on OSX)
+ARB_SH="$(cd "$(dirname "$0")" && pwd -P)"
+ARB_SCRIPT="$ARB_SH/arb"
+ARBHOME_OF_SCRIPT="$(dirname $ARB_SH)"
 
-# echo "ARBHOME_OF_SCRIPT='$ARBHOME_OF_SCRIPT'"
+export ARB_SH ARB_SCRIPT ARBHOME_OF_SCRIPT
 
-case "X${ARBHOME}" in
-    X)
-    # ARBHOME is not set (as expected)
-    ;;
-    *)
-    if [ "$ARBHOME_OF_SCRIPT" != "$ARBHOME" ]; then
-        echo "Ignoring set ARBHOME '$ARBHOME' (overridden by explicit call of '$0')"
-    fi
-esac
+if [ -n "$ARBHOME" -a "$ARBHOME" != "$ARBHOME_OF_SCRIPT" ]; then
+    echo "Ignoring set ARBHOME '$ARBHOME' (overridden by explicit call of '$0')"
+fi
 
 # use ARBHOME defined by location of script (comment out for old behavior)
 ARBHOME=$ARBHOME_OF_SCRIPT
@@ -136,7 +129,8 @@ export ARB_XCMD
 ARB_LIBRARY_PATH="${LD_LIBRARY_PATH}"
 export ARB_LIBRARY_PATH
 
-if [ "$args" = "help" -o "$args" = "-h" -o "$args" = "--help" ]; then
+case "$1" in
+  help|-h|--help)
     echo ""
     echo "arb - script to start arb"
     echo "Usage:"
@@ -150,19 +144,22 @@ if [ "$args" = "help" -o "$args" = "-h" -o "$args" = "--help" ]; then
     echo ""
     echo ""
     arb_ntree --help
-else
-    if [ "$args" = "shell" ]; then
-        echo "Opening an ARB shell"
-        sh
-    else    
-        if [ "$1" = "trace" ]; then
-            shift
-            $ARBHOME/SH/arb_trace $*
-        else
-            echo "Please wait while the program ARB is starting ....."
-            # (arb_ntree $args;arb_clean >/dev/null 2>&1;echo ARB done) &
-            arb_ntree $args &
-        fi
+  ;;
+  shell)
+    echo "Opening an ARB shell"
+    if [ -n "$SHELL" ]; then
+        exec $SHELL
+    else
+        exec sh
     fi
-fi
+  ;;
+  trace)
+    shift
+    exec $ARBHOME/SH/arb_trace "$@"
+  ;;
+  *)
+    echo "Please wait while the program ARB is starting ....."
+    # (arb_ntree $args;arb_clean >/dev/null 2>&1;echo ARB done) &
+    exec arb_ntree "$@" 
+esac
 
