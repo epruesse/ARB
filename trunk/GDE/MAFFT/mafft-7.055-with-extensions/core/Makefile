@@ -135,11 +135,11 @@ univscript: univscript.tmpl Makefile
 	sed "s:_PROGS:$(PROGS):" univscript.tmpl  > univscript
 
 mafft: mafft.tmpl mltaln.h
-	sed "s:_LIBDIR:$(LIBDIR):" mafft.tmpl  > mafft
+	sed 's:_LIBDIR:$$ARBHOME/lib/mafft:' mafft.tmpl  > mafft
 
 mafft-homologs.rb: mafft-homologs.tmpl
 #	cp mafft-homologs.tmpl mafft-homologs.rb
-	sed "s:_BINDIR:$(BINDIR):" mafft-homologs.tmpl  > mafft-homologs.rb
+	sed 's:_BINDIR:\$$ARBHOME/bin:' mafft-homologs.tmpl  > mafft-homologs.rb
 
 mltaln.h : functions.h
 	touch mltaln.h
@@ -526,7 +526,6 @@ install : all
 	$(INSTALL) $(SCRIPTS)  $(BINDIR)
 	chmod 755 $(PROGS)
 	$(INSTALL) -s $(PROGS) $(LIBDIR)
-	$(INSTALL) -m 644 $(MANPAGES) $(LIBDIR)
 
 	( cd $(BINDIR); \
 rm -f linsi ginsi einsi fftns fftnsi nwns nwnsi xinsi qinsi; \
