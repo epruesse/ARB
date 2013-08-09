@@ -6,6 +6,9 @@ PROG  = MAFFT
 # force gcc (hack to fix cent5 build)
 export CC = gcc
 
+#disable makeflags
+MAKEFLAGS=
+
 # ARBs standard target
 $(MAIN) : mafft.stamp
 
