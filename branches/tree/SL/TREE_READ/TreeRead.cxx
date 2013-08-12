@@ -26,10 +26,19 @@
 // --------------------
 //      TreeReader
 
-enum tr_lfmode { LF_UNKNOWN, LF_N, LF_R, LF_NR, LF_RN, };
-
 class TreeReader : virtual Noncopyable {
-    int unnamed_counter;
+    enum tr_lfmode { LF_UNKNOWN, LF_N, LF_R, LF_NR, LF_RN, };
+
+    int   unnamed_counter;
+    char *tree_file_name;
+    FILE *in;
+    int   last_character;          // may be EOF
+    int   line_cnt;
+
+    GBS_strstruct tree_comment;
+    GBT_LEN       max_found_branchlen;
+    double        max_found_bootstrap;
+    tr_lfmode     lfmode;
 
     void setError(const char *message);
     void setErrorAt(const char *message);
@@ -52,27 +61,25 @@ class TreeReader : virtual Noncopyable {
     char *eat_quoted_string();
     bool  eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN& len);
 
-    char *unnamedNodeName() {
-        return GBS_global_string_copy("unnamed%i", ++unnamed_counter);
-    }
+    char *unnamedNodeName() { return GBS_global_string_copy("unnamed%i", ++unnamed_counter); }
+    GBT_TREE *load_subtree(int structuresize, GBT_LEN& nodeLen);
 
 public:
-    char          *tree_file_name;
-    FILE          *in;
-    int            last_character;                  // may be EOF
-    int            line_cnt;
-    GBS_strstruct *tree_comment;
-    GBT_LEN        max_found_branchlen;
-    double         max_found_bootstrap;
-    GB_ERROR       error;
-    tr_lfmode      lfmode;
 
     TreeReader(FILE *input, const char *file_name);
     ~TreeReader();
 
-    GBT_TREE *load_subtree(int structuresize, GBT_LEN& nodeLen);
     GBT_TREE *load_named_node(int structuresize, GBT_LEN& nodeLen);
-    char *takeComment();
+
+    GB_ERROR error;
+
+    char *takeComment() {
+        // can only be called once (further calls will return NULL)
+        return tree_comment.release();
+    }
+
+    double get_max_found_bootstrap() const { return max_found_bootstrap; }
+    GBT_LEN get_max_found_branchlen() const { return max_found_branchlen; }
 };
 
 TreeReader::TreeReader(FILE *input, const char *file_name)
@@ -81,18 +88,17 @@ TreeReader::TreeReader(FILE *input, const char *file_name)
       in(input),
       last_character(0),
       line_cnt(1),
-      tree_comment(GBS_stropen(2048)),
+      tree_comment(2048),
       max_found_branchlen(-1),
       max_found_bootstrap(-1),
-      error(NULL),
-      lfmode(LF_UNKNOWN)
+      lfmode(LF_UNKNOWN),
+      error(NULL)
 {
     read_tree_char();
 }
 
 TreeReader::~TreeReader() {
     free(tree_file_name);
-    if (tree_comment) GBS_strforget(tree_comment);
 }
 
 void TreeReader::setError(const char *message) {
@@ -175,9 +181,8 @@ int TreeReader::read_tree_char() {
         if (c == ' ' || c == '\t' || c == '\n') ; // skip
         else if (c == '[') {    // collect tree comment(s)
             int openBrackets = 1;
-            if (GBS_memoffset(tree_comment)) {
-                // not first comment -> do new line
-                GBS_chrcat(tree_comment, '\n');
+            if (tree_comment.get_position()) {
+                tree_comment.put('\n'); // not first comment -> add new line
             }
 
             while (openBrackets && !error) {
@@ -188,13 +193,13 @@ int TreeReader::read_tree_char() {
                         break;
                     case ']':
                         openBrackets--;
-                        if (openBrackets) GBS_chrcat(tree_comment, c); // write all but last closing brackets
+                        if (openBrackets) tree_comment.put(c); // write all but last closing brackets
                         break;
                     case '[':
                         openBrackets++;
                         // fall-through
                     default:
-                        GBS_chrcat(tree_comment, c);
+                        tree_comment.put(c);
                         break;
                 }
             }
@@ -210,16 +215,6 @@ int TreeReader::read_char() {
     int c = get_char();
     last_character = c;
     return c;
-}
-
-char *TreeReader::takeComment() {
-    // can only be called once. Deletes the comment from TreeReader!
-    char *comment = 0;
-    if (tree_comment) {
-        comment = GBS_strclose(tree_comment);
-        tree_comment = 0;
-    }
-    return comment;
 }
 
 void TreeReader::eat_white() {
@@ -589,20 +584,20 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
             double bootstrap_scale = 1.0;
             double branchlen_scale = 1.0;
 
-            if (reader.max_found_bootstrap >= 101.0) { // bootstrap values were given in percent
+            if (reader.get_max_found_bootstrap() >= 101.0) { // bootstrap values were given in percent
                 bootstrap_scale = 0.01;
                 if (warningPtr) {
                     *warningPtr = GBS_global_string_copy("Auto-scaling bootstrap values by factor %.2f (max. found bootstrap was %5.2f)",
-                                                         bootstrap_scale, reader.max_found_bootstrap);
+                                                         bootstrap_scale, reader.get_max_found_bootstrap());
                 }
             }
-            if (reader.max_found_branchlen >= 1.1) { // assume branchlengths have range [0;100]
+            if (reader.get_max_found_branchlen() >= 1.1) { // assume branchlengths have range [0;100]
                 if (allow_length_scaling) {
                     branchlen_scale = 0.01;
                     if (warningPtr) {
                         char *w = GBS_global_string_copy("Auto-scaling branchlengths by factor %.2f (max. found branchlength = %.2f)\n"
                                                          "(use ARB_NT/Tree/Modify branches/Scale branchlengths with factor %.2f to undo auto-scaling)",
-                                                         branchlen_scale, reader.max_found_branchlen, 1.0/branchlen_scale);
+                                                         branchlen_scale, reader.get_max_found_branchlen(), 1.0/branchlen_scale);
                         if (*warningPtr) {
                             char *w2 = GBS_global_string_copy("%s\n%s", *warningPtr, w);
 
