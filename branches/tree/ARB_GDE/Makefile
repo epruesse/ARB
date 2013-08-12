@@ -270,3 +270,4 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/test_global.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/test_unit.h

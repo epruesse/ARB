@@ -62,6 +62,7 @@ else
                 libxml2-utils \
                 libxpm-dev \
                 libxt-dev \
+                libreadline-dev \
                 lynx \
                 x11proto-print-dev \
                 xsltproc \

@@ -32,6 +32,7 @@ You may use the provided install script, e.g.
      - packets mentioned under 1a)
      - g++
      - libmotif-dev
+     - libreadline-dev
      - libtiff4-dev
      - libx11-dev
      - libxaw7-dev

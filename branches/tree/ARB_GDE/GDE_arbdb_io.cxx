@@ -37,7 +37,6 @@ static void set_constant_fields(NA_Sequence *this_elem) {
     this_elem->attr            = DEFAULT_X_ATTR;
     this_elem->comments        = strdup("no comments");
     this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
-    this_elem->elementtype     = TEXT;
     this_elem->rmatrix         = NULL;
     this_elem->tmatrix         = NULL;
     this_elem->col_lut         = Default_PROColor_LKUP;
@@ -51,7 +50,7 @@ static void AppendNA_and_free(NA_Sequence *this_elem, uchar *& sequfilt) {
 static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned char **the_names,
                            unsigned char **the_sequences, unsigned long numberspecies,
                            unsigned long maxalignlen, const AP_filter *filter, GapCompression compress,
-                           bool cutoff_stop_codon)
+                           bool cutoff_stop_codon, TypeInfo typeinfo)
 {
     GBDATA      *gb_species;
     NA_Sequence *this_elem;
@@ -95,7 +94,8 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
     }
 
     // store (compressed) sequence data in array:
-    uchar **sequfilt = (uchar**)calloc((unsigned int)numberspecies+1, sizeof(uchar*));
+    uchar             **sequfilt = (uchar**)calloc((unsigned int)numberspecies+1, sizeof(uchar*));
+    GB_alignment_type   alitype  = GBT_get_alignment_type(dataset->gb_main, dataset->alignment_name);
 
     if (compress==COMPRESS_ALL) { // compress all gaps and filter positions
         long          len = filter->get_filtered_length();
@@ -124,8 +124,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
             isInfo[UINT('-')] = false;
             isInfo[UINT('.')] = false;
             if (compress == COMPRESS_NONINFO_COLUMNS) {
-                GB_alignment_type type = GBT_get_alignment_type(dataset->gb_main, dataset->alignment_name);
-                switch (type) {
+                switch (alitype) {
                     case GB_AT_RNA:
                     case GB_AT_DNA:
                         isInfo[UINT('N')] = false;
@@ -208,6 +207,25 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
     int  curelem;
     int  bad_names = 0;
 
+    int elementtype      = TEXT;
+    int elementtype_init = RNA;
+    switch (typeinfo) {
+        case UNKNOWN_TYPEINFO: gde_assert(0);
+        case BASIC_TYPEINFO: break;
+
+        case DETAILED_TYPEINFO:
+            switch (alitype) {
+                case GB_AT_RNA: elementtype = RNA; break;
+                case GB_AT_DNA: elementtype = DNA; break;
+                case GB_AT_AA:  elementtype = PROTEIN; break;
+                default : gde_assert(0); break;
+            }
+
+            gde_assert(elementtype != TEXT);
+            elementtype_init = elementtype;
+            break;
+    }
+
     arb_progress progress("Read data from DB", numberspecies);
     GB_ERROR     error = 0;
     if (the_species) {
@@ -215,7 +233,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
             curelem   = Arbdb_get_curelem(dataset);
             this_elem = &(dataset->element[curelem]);
 
-            InitNASeq(this_elem, RNA);
+            InitNASeq(this_elem, elementtype_init);
             this_elem->gb_species = gb_species;
 
 #define GET_FIELD_CONTENT(fieldname,buffer,bufsize) do {                \
@@ -233,6 +251,8 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
             GET_FIELD_CONTENT("full_name", this_elem->seq_name,   SIZE_SEQ_NAME);
             GET_FIELD_CONTENT("acc",       this_elem->id,         SIZE_ID);
 
+            this_elem->elementtype = elementtype;
+
             if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
             AppendNA_and_free(this_elem, sequfilt[number]);
             set_constant_fields(this_elem);
@@ -246,13 +266,14 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
             curelem   = Arbdb_get_curelem(dataset);
             this_elem = &(dataset->element[curelem]);
 
-            InitNASeq(this_elem, RNA);
+            InitNASeq(this_elem, elementtype_init);
             this_elem->gb_species = 0;
 
             strncpy(this_elem->short_name, (char*)species_name, SIZE_SHORT_NAME);
             this_elem->authority[0] = 0;
             this_elem->seq_name[0]  = 0;
             this_elem->id[0]        = 0;
+            this_elem->elementtype  = elementtype;
 
             if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
             AppendNA_and_free(this_elem, sequfilt[number]);
@@ -293,10 +314,10 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
 }
 
 void ReadArbdb_plain(char */*filename*/, NA_Alignment *dataset, int /*type*/) {
-    ReadArbdb(dataset, true, NULL, COMPRESS_NONE, false);
+    ReadArbdb(dataset, true, NULL, COMPRESS_NONE, false, BASIC_TYPEINFO);
 }
 
-int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon) {
+int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) {
     dataset->gb_main = db_access.gb_main;
 
     GBDATA **the_species;
@@ -315,7 +336,7 @@ int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress
         return 1;
     }
 
-    InsertDatainGDE(dataset, 0, the_names, (unsigned char **)the_sequences, numberspecies, maxalignlen, filter, compress, cutoff_stop_codon);
+    InsertDatainGDE(dataset, 0, the_names, (unsigned char **)the_sequences, numberspecies, maxalignlen, filter, compress, cutoff_stop_codon, typeinfo);
     long i;
     for (i=0; i<numberspecies; i++) {
         delete the_sequences[i];
@@ -329,7 +350,7 @@ int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress
 
 
 
-int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon) {
+int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) {
     dataset->gb_main = db_access.gb_main;
 
     // Alignment choosen ?
@@ -385,7 +406,7 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
         if (size > maxalignlen) size = (int)maxalignlen;
         strncpy_terminate(the_sequences[i], data, size+1);
     }
-    InsertDatainGDE(dataset, the_species, 0, (unsigned char **)the_sequences, numberspecies, maxalignlen, filter, compress, cutoff_stop_codon);
+    InsertDatainGDE(dataset, the_species, 0, (unsigned char **)the_sequences, numberspecies, maxalignlen, filter, compress, cutoff_stop_codon, typeinfo);
     for (i=0; i<numberspecies; i++) {
         free(the_sequences[i]);
     }

@@ -366,16 +366,17 @@ static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelem
                             long        new_checksum = GBS_checksum(new_seq, 1, "-.");
 
                             if (old_checksum != new_checksum) {
-                                const char *question = GBS_global_string("Warning: Sequence checksum of '%s' has changed\n", savename);
+                                char *question = GBS_global_string_copy("Warning: Sequence checksum of '%s' has changed\n", savename);
                                 enum ChangeMode {
                                     ACCEPT_CHANGE = 0,
                                     REJECT_CHANGE = 1,
                                 } change_mode = (ChangeMode)checksum_change_question.get_answer("GDE_accept", question, "Accept change,Reject", "all", false);
-                                
+
                                 if (change_mode == REJECT_CHANGE) writeSequence = false;
 
                                 aw_message(GBS_global_string("Warning: Sequence checksum for '%s' has changed (%s)",
                                                              savename, writeSequence ? "accepted" : "rejected"));
+                                free(question);
                             }
                         }
                         if (writeSequence) {
@@ -464,19 +465,33 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     arb_progress   progress(current_item->label);
 
     if (current_item->numinputs>0) {
-        DataSet->gb_main = db_access.gb_main;
-        GB_begin_transaction(DataSet->gb_main);
-        freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
-        freedup(alignment_name, DataSet->alignment_name);
+        TypeInfo typeinfo = UNKNOWN_TYPEINFO;
+        {
+            for (int j=0; j<current_item->numinputs; j++) {
+                if (j == 0) { typeinfo = current_item->input[j].typeinfo; }
+                else if (current_item->input[j].typeinfo != typeinfo) {
+                    aw_message("'intyped' must be same for all inputs (config error in GDE menu file)");
+                    stop = 1;
+                }
+            }
+        }
+        gde_assert(typeinfo != UNKNOWN_TYPEINFO);
 
-        progress.subtitle("reading database");
-        if (db_access.get_sequences) {
-            stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon);
+        if (!stop) {
+            DataSet->gb_main = db_access.gb_main;
+            GB_begin_transaction(DataSet->gb_main);
+            freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
+            freedup(alignment_name, DataSet->alignment_name);
+
+            progress.subtitle("reading database");
+            if (db_access.get_sequences) {
+                stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon, typeinfo);
+            }
+            else {
+                stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon, typeinfo);
+            }
+            GB_commit_transaction(DataSet->gb_main);
         }
-        else {
-            stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon);
-        }
-        GB_commit_transaction(DataSet->gb_main);
 
         if (!stop && DataSet->numelements==0) {
             aw_message("no sequences selected");

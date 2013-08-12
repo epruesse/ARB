@@ -46,20 +46,10 @@
 #include "axml.h"
 
 
-topolRELL *initTopolRELL(tree *tr)
-{
-  topolRELL *tpl;
-  
-  tpl = (topolRELL *)malloc(sizeof(topolRELL));
-
-  tpl->connect = (connectRELL *)malloc((2 * tr->mxtips - 3) * sizeof(connectRELL));
-  tpl->likelihood = unlikely;
-  return tpl;				       
-}
 
 
 
-static void saveTopolRELLRec(nodeptr p, topolRELL *tpl, int *i, int numsp, int numBranches)
+static void saveTopolRELLRec(tree *tr, nodeptr p, topolRELL *tpl, int *i, int numsp, int numBranches)
 {
   int k;
   if(isTip(p->number, numsp))
@@ -70,18 +60,25 @@ static void saveTopolRELLRec(nodeptr p, topolRELL *tpl, int *i, int numsp, int n
       while(q != p)
 	{	  
 	  tpl->connect[*i].p = q;
-	  tpl->connect[*i].q = q->back;       
+	  tpl->connect[*i].q = q->back; 
+	  
+	  if(tr->grouped ||  tr->constrained)
+	    {
+	      tpl->connect[*i].cp = tr->constraintVector[q->number];
+	      tpl->connect[*i].cq = tr->constraintVector[q->back->number]; 
+	    }
+	  
 	  for(k = 0; k < numBranches; k++)
 	    tpl->connect[*i].z[k] = q->z[k];
 	  *i = *i + 1;
 	  
-	  saveTopolRELLRec(q->back, tpl, i, numsp, numBranches);
+	  saveTopolRELLRec(tr, q->back, tpl, i, numsp, numBranches);
 	  q = q->next;
 	}
     }
 }
 
-void saveTopolRELL(tree *tr, topolRELL *tpl)
+static void saveTopolRELL(tree *tr, topolRELL *tpl)
 {
   nodeptr p = tr->start;
   int k, i = 0;
@@ -92,71 +89,54 @@ void saveTopolRELL(tree *tr, topolRELL *tpl)
   tpl->connect[i].p = p;
   tpl->connect[i].q = p->back;
   
+  if(tr->grouped ||  tr->constrained)
+    {
+      tpl->connect[i].cp = tr->constraintVector[p->number];
+      tpl->connect[i].cq = tr->constraintVector[p->back->number]; 
+    }
+
   for(k = 0; k < tr->numBranches; k++)
     tpl->connect[i].z[k] = p->z[k];
   i++;
       
-  saveTopolRELLRec(p->back, tpl, &i, tr->rdta->numsp, tr->numBranches);      
+  saveTopolRELLRec(tr, p->back, tpl, &i, tr->rdta->numsp, tr->numBranches);   
+
+  assert(i == 2 * tr->ntips - 3);
 }
 
 
-void restoreTopolRELL(tree *tr, topolRELL *tpl)
+static void restoreTopolRELL(tree *tr, topolRELL *tpl)
 {
   int i;
-  nodeptr p, p0;
-
-  for (i = 1; i <= 2*(tr->mxtips) - 2; i++) {
-    p0 = p = tr->nodep[i];
-    do {
-      p->back = (nodeptr) NULL;
-      p = p->next;
-    } while (p != p0);
-  }
-
-  for (i = 0; i < 2 * tr->mxtips - 3; i++)        
-    hookup(tpl->connect[i].p, tpl->connect[i].q, tpl->connect[i].z,  tr->numBranches);    
+  
+  for (i = 0; i < 2 * tr->mxtips - 3; i++) 
+    {
+      hookup(tpl->connect[i].p, tpl->connect[i].q, tpl->connect[i].z,  tr->numBranches);    
+      tr->constraintVector[tpl->connect[i].p->number] = tpl->connect[i].cp;
+      tr->constraintVector[tpl->connect[i].q->number] = tpl->connect[i].cq;
+    }
   
 
   tr->likelihood = tpl->likelihood;
   tr->start      = tr->nodep[tpl->start];
+  /* TODO */
 }
 
-static void restoreTopolRELL_Light(tree *tr, topolRELL *tpl)
-{
-  int i;
-  nodeptr p, p0;
 
-  for (i = 1; i <= 2*(tr->mxtips) - 2; i++) {
-    p0 = p = tr->nodep[i];
-    do {
-      p->back = (nodeptr) NULL;
-      p = p->next;
-    } while (p != p0);
-  }
-
-  for (i = 0; i < 2 * tr->mxtips - 3; i++)  
-    {
-      tpl->connect[i].p->back = tpl->connect[i].q;
-      tpl->connect[i].q->back = tpl->connect[i].p;
-    }
-
-  tr->start      = tr->nodep[tpl->start];
-}
 
 
 void initTL(topolRELL_LIST *rl, tree *tr, int n)
 {
   int i;
 
-  rl->max = n;
-  rl->members = n;
-  rl->t = (topolRELL **)malloc(sizeof(topolRELL *) * n);
+  rl->max = n; 
+  rl->t = (topolRELL **)rax_malloc(sizeof(topolRELL *) * n);
 
   for(i = 0; i < n; i++)
     {
-      rl->t[i] = (topolRELL *)malloc(sizeof(topolRELL));
-      rl->t[i]->connect = (connectRELL *)malloc((2 * tr->mxtips - 3) * sizeof(connectRELL));
-      rl->t[i]->likelihood = unlikely;
+      rl->t[i] = (topolRELL *)rax_malloc(sizeof(topolRELL));
+      rl->t[i]->connect = (connectRELL *)rax_malloc((2 * tr->mxtips - 3) * sizeof(connectRELL));
+      rl->t[i]->likelihood = unlikely;     
     }
 }
 
@@ -166,10 +146,10 @@ void freeTL(topolRELL_LIST *rl)
   int i;
   for(i = 0; i < rl->max; i++)    
     {
-      free(rl->t[i]->connect);
-      free(rl->t[i]);
+      rax_free(rl->t[i]->connect);          
+      rax_free(rl->t[i]);
     }
-  free(rl->t);
+  rax_free(rl->t);
 }
 
 
@@ -177,15 +157,9 @@ void restoreTL(topolRELL_LIST *rl, tree *tr, int n)
 {
   assert(n >= 0 && n < rl->max);    
 
-  restoreTopolRELL(tr, rl->t[n]); 
+  restoreTopolRELL(tr, rl->t[n]);  
 }
 
-void restoreTL_Light(topolRELL_LIST *rl, tree *tr, int n)
-{
-  assert(n >= 0 && n < rl->max);
-  
-  restoreTopolRELL_Light(tr, rl->t[n]); 
-}
 
 
 
@@ -193,95 +167,70 @@ void resetTL(topolRELL_LIST *rl)
 {
   int i;
 
-  for(i = 0; i < rl->max; i++)
-    rl->t[i]->likelihood = unlikely;     
+  for(i = 0; i < rl->max; i++)    
+    rl->t[i]->likelihood = unlikely;          
 }
 
 
-/*void saveTL(topolRELL_LIST *rl, tree *tr)
-{
-  if(rl->members < rl->max)
-    {
-      saveTopolRELL(tr, rl->t[rl->members]);
-      rl->members++;      
-    }
-  else
-    {
-      int i, found = 0;
-      for(i = 0; i < rl->max && !found; i++)
-	{
-	  if(tr->likelihood > rl->t[i]->likelihood)
-	    {
-	      saveTopolRELL(tr, rl->t[i]);
-	      found = 1;
-	    }
-	}      
-    }
-    }*/
+
 
 void saveTL(topolRELL_LIST *rl, tree *tr, int index)
-{
- 
+{ 
   assert(index >= 0 && index < rl->max);    
     
-  if(tr->likelihood > rl->t[index]->likelihood)    
-    saveTopolRELL(tr, rl->t[index]);     
+  if(tr->likelihood > rl->t[index]->likelihood)        
+    saveTopolRELL(tr, rl->t[index]); 
 }
 
 
-void  *tipValPtr (nodeptr p)
+static void  *tipValPtr (nodeptr p)
 { 
   return  (void *) & p->number;
 }
 
 
-int  cmpTipVal (void *v1, void *v2)
-  { /* cmpTipVal */
-    int  i1, i2;
-
-    i1 = *((int *) v1);
-    i2 = *((int *) v2);
-    return  (i1 < i2) ? -1 : ((i1 == i2) ? 0 : 1);
-  } /* cmpTipVal */
-
-
-
+static int  cmpTipVal (void *v1, void *v2)
+{
+  int  i1, i2;
+  
+  i1 = *((int *) v1);
+  i2 = *((int *) v2);
+  return  (i1 < i2) ? -1 : ((i1 == i2) ? 0 : 1);
+}
 
 
 /*  These are the only routines that need to UNDERSTAND topologies */
 
-topol  *setupTopol (int maxtips)
-  { /* setupTopol */
-    topol   *tpl;
+static topol  *setupTopol (int maxtips)
+{
+  topol   *tpl;
 
-    if (! (tpl = (topol *) malloc(sizeof(topol))) || 
-        ! (tpl->links = (connptr) malloc((2*maxtips-3) * sizeof(connect))))
-      {
-	printf("ERROR: Unable to get topology memory");
-	tpl = (topol *) NULL;
-      }
-    else 
-      {
-	tpl->likelihood  = unlikely;
-	tpl->start       = (node *) NULL;
-	tpl->nextlink    = 0;
-	tpl->ntips       = 0;
-	tpl->nextnode    = 0;    
-	tpl->scrNum      = 0;     /* position in sorted list of scores */
-	tpl->tplNum      = 0;     /* position in sorted list of trees */
-	tpl->prelabeled  = TRUE;
-	tpl->smoothed    = FALSE; /* branch optimization converged? */
-      }
-
-    return  tpl;
-  } /* setupTopol */
+  if (! (tpl = (topol *) rax_malloc(sizeof(topol))) || 
+      ! (tpl->links = (connptr) rax_malloc((2*maxtips-3) * sizeof(connect))))
+    {
+      printf("ERROR: Unable to get topology memory");
+      tpl = (topol *) NULL;
+    }
+  else 
+    {
+      tpl->likelihood  = unlikely;
+      tpl->start       = (node *) NULL;
+      tpl->nextlink    = 0;
+      tpl->ntips       = 0;
+      tpl->nextnode    = 0;    
+      tpl->scrNum      = 0;     /* position in sorted list of scores */
+      tpl->tplNum      = 0;     /* position in sorted list of trees */	      
+    }
+  
+  return  tpl;
+} 
 
 
-void  freeTopol (topol *tpl)
-  { /* freeTopol */
-    free(tpl->links);
-    free(tpl);
-  } /* freeTopol */
+static void  freeTopol (topol *tpl)
+{
+  rax_free(tpl->links);
+  rax_free(tpl);
+} 
 
 
 static int saveSubtree (nodeptr p, topol *tpl, int numsp, int numBranches)  
@@ -300,7 +249,7 @@ static int saveSubtree (nodeptr p, topol *tpl, int numsp, int numBranches)
 
   r->descend = 0;                     /* No children (yet) */
 
-  if (/*q->tip*/ isTip(q->number, numsp)) 
+  if (isTip(q->number, numsp)) 
     {
       r->valptr = tipValPtr(q);         /* Assign value */
     }
@@ -334,7 +283,7 @@ static nodeptr minSubtreeTip (nodeptr  p0, int numsp)
 { 
   nodeptr  minTip, p, testTip;
 
-  if (/*p0->tip*/ isTip(p0->number, numsp)) 
+  if (isTip(p0->number, numsp)) 
     return p0;
 
   p = p0->next;
@@ -361,35 +310,27 @@ static nodeptr  minTreeTip (nodeptr  p, int numsp)
 }
 
 
-void saveTree (tree *tr, topol *tpl)
-    /*  Save a tree topology in a standard order so that first branches
-     *  from a node contain lower value tips than do second branches from
-     *  the node.  The root tip should have the lowest value of all.
-     */
-  { /* saveTree */
-    connptr  r;  
-
-    tpl->nextlink = 0;                             /* Reset link pointer */
-    r = tpl->links + saveSubtree(minTreeTip(tr->start, tr->rdta->numsp), tpl, tr->rdta->numsp, tr->numBranches);  /* Save tree */
-    r->sibling = 0;
-
-    tpl->likelihood = tr->likelihood;
-    tpl->start      = tr->start;
-    tpl->ntips      = tr->ntips;
-    tpl->nextnode   = tr->nextnode; 
-    tpl->prelabeled = tr->prelabeled;
-    tpl->smoothed   = tr->smoothed;   
-   
-  } /* saveTree */
+static void saveTree (tree *tr, topol *tpl)
+/*  Save a tree topology in a standard order so that first branches
+ *  from a node contain lower value tips than do second branches from
+ *  the node.  The root tip should have the lowest value of all.
+ */
+{
+  connptr  r;  
+  
+  tpl->nextlink = 0;                             /* Reset link pointer */
+  r = tpl->links + saveSubtree(minTreeTip(tr->start, tr->rdta->numsp), tpl, tr->rdta->numsp, tr->numBranches);  /* Save tree */
+  r->sibling = 0;
+  
+  tpl->likelihood = tr->likelihood;
+  tpl->start      = tr->start;
+  tpl->ntips      = tr->ntips;
+  tpl->nextnode   = tr->nextnode;    
+  
+} /* saveTree */
 
 
-
-
-
-
-
-
-boolean restoreTree (topol *tpl, tree *tr)
+static boolean restoreTree (topol *tpl, tree *tr)
 { 
   connptr  r;
   nodeptr  p, p0;    
@@ -416,117 +357,92 @@ boolean restoreTree (topol *tpl, tree *tr)
   tr->start      = tpl->start;
   tr->ntips      = tpl->ntips;
   
-  tr->nextnode   = tpl->nextnode;   
-  tr->prelabeled = tpl->prelabeled;
-  tr->smoothed   = tpl->smoothed;  
-
+  tr->nextnode   = tpl->nextnode;    
 
   onlyInitrav(tr, tr->start);
   return TRUE;
 }
 
 
-boolean restoreTopology (topol *tpl, tree *tr)
-  { 
-    connptr  r;   
-    int  i;    
-
-    for (r = tpl->links, i = 0; i < tpl->nextlink; r++, i++) 
-      {
-	hookup(r->p, r->q, r->z, tr->numBranches);
-      }
-
-    tr->likelihood = tpl->likelihood;
-    tr->start      = tpl->start;
-    tr->ntips      = tpl->ntips;
-    
-    tr->nextnode   = tpl->nextnode;
-    tr->prelabeled = tpl->prelabeled;
-    tr->smoothed   = tpl->smoothed;
-    
-
-    onlyInitrav(tr, tr->start);
-    return TRUE;  
-  } /* restoreTree */
 
 
 int initBestTree (bestlist *bt, int newkeep, int numsp)
-  { /* initBestTree */
-    int  i;
+{ /* initBestTree */
+  int  i;
 
+  bt->nkeep = 0;
 
-    bt->nkeep = 0;
-
-    if (bt->ninit <= 0) {
+  if (bt->ninit <= 0) 
+    {
       if (! (bt->start = setupTopol(numsp)))  return  0;
       bt->ninit = -1;
       bt->nvalid = 0;
       bt->numtrees = 0;
       bt->best = unlikely;
       bt->improved = FALSE;
-      bt->byScore = (topol **) malloc((newkeep+1) * sizeof(topol *));
-      bt->byTopol = (topol **) malloc((newkeep+1) * sizeof(topol *));
+      bt->byScore = (topol **) rax_malloc((newkeep+1) * sizeof(topol *));
+      bt->byTopol = (topol **) rax_malloc((newkeep+1) * sizeof(topol *));
       if (! bt->byScore || ! bt->byTopol) {
-        printf( "initBestTree: malloc failure\n");
+        printf( "initBestTree: rax_malloc failure\n");
         return 0;
-        }
       }
-    else if (ABS(newkeep) > bt->ninit) {
-      if (newkeep <  0) newkeep = -(bt->ninit);
-      else newkeep = bt->ninit;
-      }
+    }
+  else if (ABS(newkeep) > bt->ninit) {
+    if (newkeep <  0) newkeep = -(bt->ninit);
+    else newkeep = bt->ninit;
+  }
 
-    if (newkeep < 1) {    /*  Use negative newkeep to clear list  */
-      newkeep = -newkeep;
-      if (newkeep < 1) newkeep = 1;
-      bt->nvalid = 0;
-      bt->best = unlikely;
-      }
-
-    if (bt->nvalid >= newkeep) {
-      bt->nvalid = newkeep;
-      bt->worst = bt->byScore[newkeep]->likelihood;
-      }
-    else 
-      {
-	bt->worst = unlikely;
-      }
-
-    for (i = bt->ninit + 1; i <= newkeep; i++) 
-      {    
-	if (! (bt->byScore[i] = setupTopol(numsp)))  break;
-	bt->byTopol[i] = bt->byScore[i];
-	bt->ninit = i;
-      }
-
-    return  (bt->nkeep = MIN(newkeep, bt->ninit));
-  } /* initBestTree */
+  if (newkeep < 1) {    /*  Use negative newkeep to clear list  */
+    newkeep = -newkeep;
+    if (newkeep < 1) newkeep = 1;
+    bt->nvalid = 0;
+    bt->best = unlikely;
+  }
+  
+  if (bt->nvalid >= newkeep) {
+    bt->nvalid = newkeep;
+    bt->worst = bt->byScore[newkeep]->likelihood;
+  }
+  else 
+    {
+      bt->worst = unlikely;
+    }
+  
+  for (i = bt->ninit + 1; i <= newkeep; i++) 
+    {    
+      if (! (bt->byScore[i] = setupTopol(numsp)))  break;
+      bt->byTopol[i] = bt->byScore[i];
+      bt->ninit = i;
+    }
+  
+  return  (bt->nkeep = MIN(newkeep, bt->ninit));
+} /* initBestTree */
 
 
 
 void resetBestTree (bestlist *bt)
-  { /* resetBestTree */
-    bt->best     = unlikely;
-    bt->worst    = unlikely;
-    bt->nvalid   = 0;
-    bt->improved = FALSE;
-  } /* resetBestTree */
+{ /* resetBestTree */
+  bt->best     = unlikely;
+  bt->worst    = unlikely;
+  bt->nvalid   = 0;
+  bt->improved = FALSE;
+} /* resetBestTree */
 
 
 boolean  freeBestTree(bestlist *bt)
-  { /* freeBestTree */
-    while (bt->ninit >= 0)  freeTopol(bt->byScore[(bt->ninit)--]);
+{ /* freeBestTree */
+  while (bt->ninit >= 0)  freeTopol(bt->byScore[(bt->ninit)--]);
     
-    /* VALGRIND */
+  /* VALGRIND */
 
-    free(bt->byScore);
-    free(bt->byTopol);
+  rax_free(bt->byScore);
+  rax_free(bt->byTopol);
 
-    /* VALGRIND END */
+  /* VALGRIND END */
 
-    freeTopol(bt->start);
-    return TRUE;
-  } /* freeBestTree */
+  freeTopol(bt->start);
+  return TRUE;
+} /* freeBestTree */
 
 
 /*  Compare two trees, assuming that each is in standard order.  Return
@@ -536,53 +452,54 @@ boolean  freeBestTree(bestlist *bt)
  *  nodes are ranked by their lowest number tip.
  */
 
-int  cmpSubtopol (connptr p10, connptr p1, connptr p20, connptr p2)
-  { /* cmpSubtopol */
-    connptr  p1d, p2d;
-    int  cmp;
-
-    if (! p1->descend && ! p2->descend)          /* Two tips */
-      return cmpTipVal(p1->valptr, p2->valptr);
-
-    if (! p1->descend) return -1;                /* p1 = tip, p2 = node */
-    if (! p2->descend) return  1;                /* p2 = tip, p1 = node */
-
-    p1d = p10 + p1->descend;
-    p2d = p20 + p2->descend;
-    while (1) {                                  /* Two nodes */
-      if ((cmp = cmpSubtopol(p10, p1d, p20, p2d)))  return cmp; /* Subtrees */
-      if (! p1d->sibling && ! p2d->sibling)  return  0; /* Lists done */
-      if (! p1d->sibling) return -1;             /* One done, other not */
-      if (! p2d->sibling) return  1;             /* One done, other not */
-      p1d = p10 + p1d->sibling;                  /* Neither done */
-      p2d = p20 + p2d->sibling;
-      }
-  } /* cmpSubtopol */
-
-
-
-int  cmpTopol (void *tpl1, void *tpl2)
-  { /* cmpTopol */
-    connptr  r1, r2;
-    int      cmp;
-
-    r1 = ((topol *) tpl1)->links;
-    r2 = ((topol *) tpl2)->links;
-    cmp = cmpTipVal(tipValPtr(r1->p), tipValPtr(r2->p));
-    if (cmp) return cmp;
-    return  cmpSubtopol(r1, r1, r2, r2);
-  } /* cmpTopol */
+static int  cmpSubtopol (connptr p10, connptr p1, connptr p20, connptr p2)
+{
+  connptr  p1d, p2d;
+  int  cmp;
+  
+  if (! p1->descend && ! p2->descend)          /* Two tips */
+    return cmpTipVal(p1->valptr, p2->valptr);
+  
+  if (! p1->descend) return -1;                /* p1 = tip, p2 = node */
+  if (! p2->descend) return  1;                /* p2 = tip, p1 = node */
+  
+  p1d = p10 + p1->descend;
+  p2d = p20 + p2->descend;
+  while (1) {                                  /* Two nodes */
+    if ((cmp = cmpSubtopol(p10, p1d, p20, p2d)))  return cmp; /* Subtrees */
+    if (! p1d->sibling && ! p2d->sibling)  return  0; /* Lists done */
+    if (! p1d->sibling) return -1;             /* One done, other not */
+    if (! p2d->sibling) return  1;             /* One done, other not */
+    p1d = p10 + p1d->sibling;                  /* Neither done */
+    p2d = p20 + p2d->sibling;
+  }
+}
 
 
 
-int  cmpTplScore (void *tpl1, void *tpl2)
-  { /* cmpTplScore */
-    double  l1, l2;
+static int  cmpTopol (void *tpl1, void *tpl2)
+{ 
+  connptr  r1, r2;
+  int      cmp;    
+  
+  r1 = ((topol *) tpl1)->links;
+  r2 = ((topol *) tpl2)->links;
+  cmp = cmpTipVal(tipValPtr(r1->p), tipValPtr(r2->p));
+  if (cmp)      	
+    return cmp;     
+  return  cmpSubtopol(r1, r1, r2, r2);
+} 
 
-    l1 = ((topol *) tpl1)->likelihood;
-    l2 = ((topol *) tpl2)->likelihood;
-    return  (l1 > l2) ? -1 : ((l1 == l2) ? 0 : 1);
-  } /* cmpTplScore */
+
+
+static int  cmpTplScore (void *tpl1, void *tpl2)
+{ 
+  double  l1, l2;
+  
+  l1 = ((topol *) tpl1)->likelihood;
+  l2 = ((topol *) tpl2)->likelihood;
+  return  (l1 > l2) ? -1 : ((l1 == l2) ? 0 : 1);
+}
 
 
 
@@ -591,115 +508,108 @@ int  cmpTplScore (void *tpl1, void *tpl2)
  *  position into which it should be inserted.
  */
 
-int  findInList (void *item, void *list[], int n, int (* cmpFunc)(void *, void *))
-  { /* findInList */
-    int  mid, hi, lo, cmp = 0;
+static int  findInList (void *item, void *list[], int n, int (* cmpFunc)(void *, void *))
+{
+  int  mid, hi, lo, cmp = 0;
+  
+  if (n < 1) return  -1;                    /*  No match; first index  */
+  
+  lo = 1;
+  mid = 0;
+  hi = n;
+  while (lo < hi) {
+    mid = (lo + hi) >> 1;
+    cmp = (* cmpFunc)(item, list[mid-1]);
+    if (cmp) {
+      if (cmp < 0) hi = mid;
+      else lo = mid + 1;
+    }
+    else  return  mid;                        /*  Exact match  */
+  }
+  
+  if (lo != mid) {
+    cmp = (* cmpFunc)(item, list[lo-1]);
+    if (cmp == 0) return lo;
+  }
+  if (cmp > 0) lo++;                         /*  Result of step = 0 test  */
+  return  -lo;
+} 
 
-    if (n < 1) return  -1;                    /*  No match; first index  */
-
-    lo = 1;
-    mid = 0;
-    hi = n;
-    while (lo < hi) {
-      mid = (lo + hi) >> 1;
-      cmp = (* cmpFunc)(item, list[mid-1]);
-      if (cmp) {
-        if (cmp < 0) hi = mid;
-        else lo = mid + 1;
-        }
-      else  return  mid;                        /*  Exact match  */
-      }
-
-    if (lo != mid) {
-       cmp = (* cmpFunc)(item, list[lo-1]);
-       if (cmp == 0) return lo;
-       }
-    if (cmp > 0) lo++;                         /*  Result of step = 0 test  */
-    return  -lo;
-  } /* findInList */
 
 
-
-int  findTreeInList (bestlist *bt, tree *tr)
-  { /* findTreeInList */
-    topol  *tpl;
-
-    tpl = bt->byScore[0];
-    saveTree(tr, tpl);
-    return  findInList((void *) tpl, (void **) (& (bt->byTopol[1])),
-                       bt->nvalid, cmpTopol);
-  } /* findTreeInList */
+static int  findTreeInList (bestlist *bt, tree *tr)
+{
+  topol  *tpl;
+  
+  tpl = bt->byScore[0];
+  saveTree(tr, tpl);
+  return  findInList((void *) tpl, (void **) (& (bt->byTopol[1])),
+		     bt->nvalid, cmpTopol);
+} 
 
 
 int  saveBestTree (bestlist *bt, tree *tr)
-  { /* saveBestTree */
-   
-    topol  *tpl, *reuse;
-    int  tplNum, scrNum, reuseScrNum, reuseTplNum, i, oldValid, newValid;
-
-    tplNum = findTreeInList(bt, tr);
-    tpl = bt->byScore[0];
-    oldValid = newValid = bt->nvalid;
-
-    if (tplNum > 0) {                      /* Topology is in list  */
-      reuse = bt->byTopol[tplNum];         /* Matching topol  */
-      reuseScrNum = reuse->scrNum;
-      reuseTplNum = reuse->tplNum;
-      }
-                                           /* Good enough to keep? */
-    else if (tr->likelihood < bt->worst)  return 0;
-
-    else {                                 /* Topology is not in list */
-      tplNum = -tplNum;                    /* Add to list (not replace) */
-      if (newValid < bt->nkeep) bt->nvalid = ++newValid;
-      reuseScrNum = newValid;              /* Take worst tree */
-      reuse = bt->byScore[reuseScrNum];
-      reuseTplNum = (newValid > oldValid) ? newValid : reuse->tplNum;
-      if (tr->likelihood > bt->start->likelihood) bt->improved = TRUE;
-      }
-
-    scrNum = findInList((void *) tpl, (void **) (& (bt->byScore[1])),
-                         oldValid, cmpTplScore);
-    scrNum = ABS(scrNum);
-
-    if (scrNum < reuseScrNum)
-      for (i = reuseScrNum; i > scrNum; i--)
-        (bt->byScore[i] = bt->byScore[i-1])->scrNum = i;
-
-    else if (scrNum > reuseScrNum) {
-      scrNum--;
-      for (i = reuseScrNum; i < scrNum; i++)
-        (bt->byScore[i] = bt->byScore[i+1])->scrNum = i;
-      }
-
-    if (tplNum < reuseTplNum)
-      for (i = reuseTplNum; i > tplNum; i--)
-        (bt->byTopol[i] = bt->byTopol[i-1])->tplNum = i;
-
-    else if (tplNum > reuseTplNum) {
-      tplNum--;
-      for (i = reuseTplNum; i < tplNum; i++)
-        (bt->byTopol[i] = bt->byTopol[i+1])->tplNum = i;
-      }
-
-   
-
-    tpl->scrNum = scrNum;
-    tpl->tplNum = tplNum;
-    bt->byTopol[tplNum] = bt->byScore[scrNum] = tpl;
-    bt->byScore[0] = reuse;
-
-    if (scrNum == 1)  bt->best = tr->likelihood;
-    if (newValid == bt->nkeep) bt->worst = bt->byScore[newValid]->likelihood;
-
-    return  scrNum;
-  } /* saveBestTree */
-
-
-
-
-
-
+{    
+  topol  *tpl, *reuse;
+  int  tplNum, scrNum, reuseScrNum, reuseTplNum, i, oldValid, newValid;
+  
+  tplNum = findTreeInList(bt, tr);
+  tpl = bt->byScore[0];
+  oldValid = newValid = bt->nvalid;
+  
+  if (tplNum > 0) {                      /* Topology is in list  */
+    reuse = bt->byTopol[tplNum];         /* Matching topol  */
+    reuseScrNum = reuse->scrNum;
+    reuseTplNum = reuse->tplNum;
+  }
+  /* Good enough to keep? */
+  else if (tr->likelihood < bt->worst)  return 0;
+  
+  else {                                 /* Topology is not in list */
+    tplNum = -tplNum;                    /* Add to list (not replace) */
+    if (newValid < bt->nkeep) bt->nvalid = ++newValid;
+    reuseScrNum = newValid;              /* Take worst tree */
+    reuse = bt->byScore[reuseScrNum];
+    reuseTplNum = (newValid > oldValid) ? newValid : reuse->tplNum;
+    if (tr->likelihood > bt->start->likelihood) bt->improved = TRUE;
+  }
+  
+  scrNum = findInList((void *) tpl, (void **) (& (bt->byScore[1])),
+		      oldValid, cmpTplScore);
+  scrNum = ABS(scrNum);
+  
+  if (scrNum < reuseScrNum)
+    for (i = reuseScrNum; i > scrNum; i--)
+      (bt->byScore[i] = bt->byScore[i-1])->scrNum = i;
+  
+  else if (scrNum > reuseScrNum) {
+    scrNum--;
+    for (i = reuseScrNum; i < scrNum; i++)
+      (bt->byScore[i] = bt->byScore[i+1])->scrNum = i;
+  }
+  
+  if (tplNum < reuseTplNum)
+    for (i = reuseTplNum; i > tplNum; i--)
+      (bt->byTopol[i] = bt->byTopol[i-1])->tplNum = i;
+  
+  else if (tplNum > reuseTplNum) {
+    tplNum--;
+    for (i = reuseTplNum; i < tplNum; i++)
+      (bt->byTopol[i] = bt->byTopol[i+1])->tplNum = i;
+  }
+  
+  
+  
+  tpl->scrNum = scrNum;
+  tpl->tplNum = tplNum;
+  bt->byTopol[tplNum] = bt->byScore[scrNum] = tpl;
+  bt->byScore[0] = reuse;
+  
+  if (scrNum == 1)  bt->best = tr->likelihood;
+  if (newValid == bt->nkeep) bt->worst = bt->byScore[newValid]->likelihood;
+  
+  return  scrNum;
+} 
 
 
 int  recallBestTree (bestlist *bt, int rank, tree *tr)
@@ -712,6 +622,4 @@ int  recallBestTree (bestlist *bt, int rank, tree *tr)
 
 
 
-/*=======================================================================*/
-/*                       End of best tree routines                       */
-/*=======================================================================*/
+
