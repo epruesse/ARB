@@ -118,6 +118,7 @@ itemmethod:(GEN_INFILE(in1); \
                           --datatype=nt \
                           --model=$MODEL \
                           -f$BASEFREQEST \
+                          --alpha e \
                           --bootstrap=$BOOTSTRAP \
                           --search=$SEARCH \
                           -o$PARAM_OPTIMIZATION \
