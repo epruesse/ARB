@@ -234,6 +234,7 @@ symlink_file ../CORE/arb_core.h INCLUDE/arb_core.h &&
 symlink_file ../CORE/arb_cs.h INCLUDE/arb_cs.h &&
 symlink_file ../CORE/arb_file.h INCLUDE/arb_file.h &&
 symlink_file ../CORE/arb_msg.h INCLUDE/arb_msg.h &&
+symlink_file ../CORE/arb_msg_fwd.h INCLUDE/arb_msg_fwd.h &&
 symlink_file ../CORE/arb_misc.h INCLUDE/arb_misc.h &&
 symlink_file ../CORE/arb_signal.h INCLUDE/arb_signal.h &&
 symlink_file ../CORE/arb_sort.h INCLUDE/arb_sort.h &&
