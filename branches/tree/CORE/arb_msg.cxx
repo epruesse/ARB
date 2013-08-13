@@ -132,7 +132,13 @@ __ATTR__VFORMAT(1) static const char *gbs_vglobal_string(const char *templat, va
     return buffer[my_idx];
 }
 
-__ATTR__VFORMAT(1) static char *gbs_vglobal_string_copy(const char *templat, va_list parg) {
+const char *GBS_vglobal_string(const char *templat, va_list parg) {
+    // goes to header: __ATTR__VFORMAT(1)
+    return gbs_vglobal_string(templat, parg, 0);
+}
+
+char *GBS_vglobal_string_copy(const char *templat, va_list parg) {
+    // goes to header: __ATTR__VFORMAT(1)
     const char *gstr = gbs_vglobal_string(templat, parg, 1);
     return GB_strduplen(gstr, last_global_string_size);
 }
@@ -162,7 +168,7 @@ char *GBS_global_string_copy(const char *templat, ...) {
     char *result;
 
     va_start(parg, templat);
-    result = gbs_vglobal_string_copy(templat, parg);
+    result = GBS_vglobal_string_copy(templat, parg);
     va_end(parg);
 
     return result;
@@ -457,7 +463,7 @@ void GB_warningf(const char *templat, ...) {
     va_list parg;
 
     va_start(parg, templat);
-    char *message = gbs_vglobal_string_copy(templat, parg);
+    char *message = GBS_vglobal_string_copy(templat, parg);
     va_end(parg);
 
     GB_warning(message);
@@ -478,7 +484,7 @@ void GB_informationf(const char *templat, ...) {
     va_list parg;
 
     va_start(parg, templat);
-    char *message = gbs_vglobal_string_copy(templat, parg);
+    char *message = GBS_vglobal_string_copy(templat, parg);
     va_end(parg);
 
     GB_information(message);
