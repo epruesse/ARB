@@ -13,6 +13,8 @@ itemmethod:(GEN_INFILE(in1); \
                           --search=$SEARCH \
                           -o$PARAM_OPTIMIZATION \
                           --r_seed=$RAND_SEED \
+                          --pinv=$PROPINVAR \
+                          --alpha=$ALPHA \
                           $INPUT_TREE_PARAM \
                           $CUSTOM_PARAMS \
                           ;$DISPLAY_FUNC))&
@@ -46,6 +48,30 @@ argchoice:MtArt:MtArt
 argchoice:HIVw:HIVw
 argchoice:HIVb:HIVb
 
+arg:PARAM_OPTIMIZATION
+argtype:choice_menu
+arglabel:Specific parameter optimization
+argchoice:Optimize tree topology, branch len, rate params:tlr
+argchoice:Optimize tree topology and branch length:tl
+argchoice:Optimize branch length and rate parameters:lr
+argchoice:Optimize branch length:l
+argchoice:Optimize rate parameters:r
+argchoice:Do not optimize any parameters:n
+
+arg:PROPINVAR
+argtype:text
+arglabel:Proportion of invariable sites\n(Range [0..1] or e to get the maximum likelihood estimate)
+argtext:e
+
+arg:ALPHA
+argtype:text
+arglabel:Distribution of the gamma distribution shape parameter\n(Positive value or e to get the maximum likelihood estimate)
+argtext:e
+
+arg:RAND_SEED
+argtype:text
+arglabel:Pseudo random number generator seed
+argtext:424242
 
 
 arg:BASEFREQEST
@@ -82,21 +108,6 @@ argtype:tree
 arglabel:Starting tree
 argchoice:?????
 
-arg:PARAM_OPTIMIZATION
-argtype:choice_menu
-arglabel:Specific parameter optimization
-argchoice:Optimize tree topology (t), branch length (l) and rate parameters (r):tlr
-argchoice:Optimize tree topology and branch length:tl
-argchoice:Optimize branch length and rate parameters:lr
-argchoice:Optimize branch length:l
-argchoice:Optimize rate parameters:r
-argchoice:Do not optimize any parameters:n
-
-arg:RAND_SEED
-argtype:text
-arglabel:Pseudo random number generator seed
-argtext:424242
-
 arg:CUSTOM_PARAMS
 argtype:text
 arglabel: Custom parameters
@@ -107,6 +118,7 @@ informat:genbank
 inmask:
 insave:
 
+//---------------------------------------------------------
 
 item: PHYML-20130708 (DNA)
 seqtype: N
@@ -118,11 +130,12 @@ itemmethod:(GEN_INFILE(in1); \
                           --datatype=nt \
                           --model=$MODEL \
                           -f$BASEFREQEST \
-                          --alpha e \
                           --bootstrap=$BOOTSTRAP \
                           --search=$SEARCH \
                           -o$PARAM_OPTIMIZATION \
                           --r_seed=$RAND_SEED \
+                          --pinv=$PROPINVAR \
+                          --alpha=$ALPHA \
                           $INPUT_TREE_PARAM \
                           $CUSTOM_PARAMS \
                           ;$DISPLAY_FUNC))&
@@ -149,6 +162,31 @@ argchoice:K80:K80
 argchoice:F81:F81
 argchoice:F84:F84
 argchoice:TN93:TN93
+
+arg:PARAM_OPTIMIZATION
+argtype:choice_menu
+arglabel:Specific parameter optimization
+argchoice:Optimize tree topology, branch len, rate params:tlr
+argchoice:Optimize tree topology and branch length:tl
+argchoice:Optimize branch length and rate parameters:lr
+argchoice:Optimize branch length:l
+argchoice:Optimize rate parameters:r
+argchoice:Do not optimize any parameters:n
+
+arg:PROPINVAR
+argtype:text
+arglabel:Proportion of invariable sites\n(Range [0..1] or e to get the maximum likelihood estimate)
+argtext:e
+
+arg:ALPHA
+argtype:text
+arglabel:Distribution of the gamma distribution shape parameter\n(Positive value or e to get the maximum likelihood estimate)
+argtext:e
+
+arg:RAND_SEED
+argtype:text
+arglabel:Pseudo random number generator seed
+argtext:424242
 
 arg:BASEFREQEST
 argtype:choice_menu
@@ -183,21 +221,6 @@ arg:TREE
 argtype:tree
 arglabel:Starting tree
 argchoice:?????
-
-arg:PARAM_OPTIMIZATION
-argtype:choice_menu
-arglabel:Specific parameter optimization
-argchoice:Optimize tree topology (t), branch length (l) and rate parameters (r):tlr
-argchoice:Optimize tree topology and branch length:tl
-argchoice:Optimize branch length and rate parameters:lr
-argchoice:Optimize branch length:l
-argchoice:Optimize rate parameters:r
-argchoice:Do not optimize any parameters:n
-
-arg:RAND_SEED
-argtype:text
-arglabel:Pseudo random number generator seed
-argtext:424242
 
 arg:CUSTOM_PARAMS
 argtype:text
