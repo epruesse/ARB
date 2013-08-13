@@ -61,20 +61,8 @@ my %ignore_extension = map { $_ => 1; } (
                                         );
 
 my %ignored_subdirs = map { $_ => 1; } (
-                                        'GDE/CLUSTAL',
-                                        'GDE/CLUSTALW',
-                                        'GDE/FASTDNAML',
-                                        'GDE/AxML',
-                                        'GDE/TREEPUZZLE',
-                                        'GDE/PHYML',
-                                        'GDE/PHYML20130708',
-                                        'GDE/RAxML',
-                                        'GDE/SUPPORT',
-                                        'GDE/PHYLIP',
-                                        'GDE/MUSCLE',
-                                        'GDE/MAFFT',
-                                        'GDE/PROBCONS',
-                                        'GDE/FASTTREE',
+                                        'GDE',
+                                        'READSEQ',
                                         'HEADERLIBS',
                                         'patches',
                                         'UNIT_TESTER/flags',
