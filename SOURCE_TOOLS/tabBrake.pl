@@ -74,6 +74,7 @@ my %ignored_subdirs = map { $_ => 1; } (
                                         'GDE/MUSCLE',
                                         'GDE/MAFFT',
                                         'GDE/PROBCONS',
+                                        'GDE/FASTTREE',
                                         'HEADERLIBS',
                                         'patches',
                                         'UNIT_TESTER/flags',
