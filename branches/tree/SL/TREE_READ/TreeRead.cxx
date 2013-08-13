@@ -16,6 +16,7 @@
 #include <arb_defs.h>
 #include <arbdbt.h>
 #include <algorithm>
+#include <static_assert.h>
 
 #define tree_assert(cond) arb_assert(cond)
 
@@ -754,6 +755,14 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
         TEST_EXPECT_TREELOAD__BROKEN(tree, names, count);               \
     } while(0)
 
+inline size_t countCommas(const char *str) {
+    size_t commas = 0;
+    for (size_t i = 0; str[i]; ++i) {
+        commas += (str[i] == ',');
+    }
+    return commas;
+}
+
 void TEST_load_tree() {
     // just are few tests covering most of this module.
     // more load tests are in ../../TOOLS/arb_test.cxx@TEST_SLOW_arb_read_tree
@@ -779,26 +788,51 @@ void TEST_load_tree() {
         GBT_delete_tree(tree);
     }
 
-    // tree with a named root
+    // detailed load tests (checking branchlengths and nodenames)
     {
-        char     *warnings = NULL;
-        GBT_TREE *tree     = loadFromFileContaining("(node1,node2)rootgroup;", &warnings);
-        TEST_EXPECT_TREELOAD(tree, "node1,node2", 2);
-        TEST_EXPECT_EQUAL(tree->name, "rootgroup");
-        TEST_EXPECT_NULL(warnings);
-        GBT_delete_tree(tree);
-    }
+        const char *treestring[] = {
+            "(node1,node2)rootgroup;",             // tree with a named root
+            "(node1:0.00,(node2, node3:0.57)):0;", // test tree lengths (esp. length zero)
+            "(((((a))single)), ((b, c)17%:0.2));", // test single-node-subtree name-conflict
+        };
+        const char *expected_nodes[] = {
+            "node1,node2",
+            "node1,node2,node3",
+            "a,b,c",
+        };
+        const char *expected_warnings[] = {
+            NULL,
+            NULL,
+            "Dropped group name specified for a single-node-subtree",
+        };
 
-    // test tree lengths (esp. length zero)
-    {
-        char     *warnings = NULL;
-        GBT_TREE *tree     = loadFromFileContaining("(node1:0.00,(node2, node3:0.57)):0;", &warnings);
-        TEST_EXPECT_TREELOAD(tree, "node1,node2,node3", 3);
-        TEST_EXPECT_EQUAL(tree->leftlen, 0);
-        TEST_EXPECT_EQUAL(tree->rightlen, TREE_DEFLEN);
-        TEST_EXPECT_EQUAL(tree->rightson->rightlen, 0.57);
-        TEST_EXPECT_NULL(warnings);
-        GBT_delete_tree(tree);
+        STATIC_ASSERT(ARRAY_ELEMS(expected_nodes) == ARRAY_ELEMS(treestring));
+        STATIC_ASSERT(ARRAY_ELEMS(expected_warnings) == ARRAY_ELEMS(treestring));
+
+        for (size_t i = 0; i<ARRAY_ELEMS(treestring); ++i) {
+            TEST_ANNOTATE_ASSERT(GBS_global_string("while loading tree #%zu", i));
+            char     *warnings = NULL;
+            GBT_TREE *tree     = loadFromFileContaining(treestring[i], &warnings);
+            TEST_EXPECT_TREELOAD(tree, expected_nodes[i], countCommas(expected_nodes[i])+1);
+            switch (i) {
+                case 0:
+                    TEST_EXPECT_EQUAL(tree->name, "rootgroup");
+                    break;
+                case 1:
+                    TEST_EXPECT_EQUAL(tree->leftlen, 0);
+                    TEST_EXPECT_EQUAL(tree->rightlen, TREE_DEFLEN);
+                    TEST_EXPECT_EQUAL(tree->rightson->rightlen, 0.57);
+                    break;
+                case 2:
+                    TEST_EXPECT_EQUAL(tree->rightson->remark_branch, "17%");
+                    TEST_EXPECT_EQUAL(tree->rightlen, 0.2);
+                    break;
+            }
+            if (expected_warnings[i]) TEST_EXPECT_CONTAINS(warnings, expected_warnings[i]);
+            else                      TEST_EXPECT_NULL(warnings);
+            free(warnings);
+            GBT_delete_tree(tree);
+        }
     }
 
     // test valid trees with strange or wrong behavior
@@ -808,18 +842,6 @@ void TEST_load_tree() {
 
     TEST_EXPECT_TREESTRING_OK_WITH_WARNING("( (a), (((b),(c),(d))group)dupgroup, ((e),(f)) );", "a,b,c,d,e,f", 6,
                                            "Duplicated group name specification detected");
-
-    // test single-node-subtree name-conflict
-    {
-        char     *warnings = NULL;
-        GBT_TREE *tree     = loadFromFileContaining("(((((a))single)), ((b, c)17%:0.2));", &warnings);
-        TEST_EXPECT_TREELOAD(tree, "a,b,c", 3);
-        TEST_EXPECT_EQUAL(tree->rightson->remark_branch, "17%");
-        TEST_EXPECT_EQUAL(tree->rightlen, 0.2);
-        TEST_EXPECT_CONTAINS(warnings, "Dropped group name specified for a single-node-subtree");
-        free(warnings);
-        GBT_delete_tree(tree);
-    }
 
     // test unacceptable trees
     {
