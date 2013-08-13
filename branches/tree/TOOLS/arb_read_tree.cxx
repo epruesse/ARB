@@ -213,15 +213,15 @@ int main(int argc, char **argv) {
 
             show_message(gb_msg_main, GBS_global_string("Reading tree from '%s' ..", param.treefilename));
             {
-                char *scaleWarning = 0;
+                char *warnings = 0;
 
-                tree = TREE_load(param.treefilename, sizeof(GBT_TREE), &comment_from_treefile, (param.consense||param.scale) ? 0 : 1, &scaleWarning);
-                if (!tree) error = GB_await_error();
-                else {
-                    if (scaleWarning) {
-                        show_message(gb_msg_main, scaleWarning);
-                        free(scaleWarning);
-                    }
+                tree = TREE_load(param.treefilename, sizeof(GBT_TREE), &comment_from_treefile, (param.consense||param.scale) ? 0 : 1, &warnings);
+                if (!tree) {
+                    error = GB_await_error();
+                }
+                else if (warnings) {
+                    show_message(gb_msg_main, warnings);
+                    free(warnings);
                 }
             }
         }

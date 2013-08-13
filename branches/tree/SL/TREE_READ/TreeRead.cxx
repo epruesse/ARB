@@ -10,10 +10,11 @@
 
 #include "TreeRead.h"
 
-#include <arbdbt.h>
+#include <arb_msg_fwd.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
 #include <arb_defs.h>
+#include <arbdbt.h>
 #include <algorithm>
 
 #define tree_assert(cond) arb_assert(cond)
@@ -39,6 +40,8 @@ class TreeReader : virtual Noncopyable {
     GBT_LEN       max_found_branchlen;
     double        max_found_bootstrap;
     tr_lfmode     lfmode;
+
+    char *warnings;
 
     void setError(const char *message);
     void setErrorAt(const char *message);
@@ -73,6 +76,14 @@ public:
 
     GB_ERROR error;
 
+    void add_warning(const char *msg) {
+        if (warnings) freeset(warnings, GBS_global_string_copy("%s\n%s", warnings, msg));
+        else warnings = GBS_global_string_copy("Warning(s): %s", msg);
+    }
+    __ATTR__FORMAT(2) void add_warningf(const char *format, ...) { FORWARD_FORMATTED(add_warning, format); }
+
+    GB_ERROR get_warnings() const { return warnings; } // valid until TreeReader is destroyed
+
     char *takeComment() {
         // can only be called once (further calls will return NULL)
         return tree_comment.release();
@@ -92,12 +103,14 @@ TreeReader::TreeReader(FILE *input, const char *file_name)
       max_found_branchlen(-1),
       max_found_bootstrap(-1),
       lfmode(LF_UNKNOWN),
+      warnings(NULL),
       error(NULL)
 {
     read_tree_char();
 }
 
 TreeReader::~TreeReader() {
+    free(warnings);
     free(tree_file_name);
 }
 
@@ -338,13 +351,12 @@ void TreeReader::setBranchName_acceptingBootstrap(GBT_TREE *node, char*& name) {
     if (new_name) {
         if (node->name) {
             if (node->is_leaf) {
-                fprintf(stderr, "Warning: Dropped group name specified for a single-node-subtree ('%s')\n", new_name);
+                add_warningf("Dropped group name specified for a single-node-subtree ('%s')\n", new_name);
                 freenull(new_name);
             }
             else {
-                fprintf(stderr,
-                        "Warning: Duplicated group name specification detected. Dropped inner ('%s'), kept outer group name ('%s')\n",
-                        node->name, new_name);
+                add_warningf("Duplicated group name specification detected: dropped inner ('%s'), kept outer group name ('%s')\n",
+                             node->name, new_name);
                 freeset(node->name, new_name);
             }
         }
@@ -553,7 +565,7 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
     /* Load a newick compatible tree from file 'path',
        structure size should be >0, see GBT_read_tree for more information
        if commentPtr != NULL -> set it to a malloc copy of all concatenated comments found in tree file
-       if warningPtr != NULL -> set it to a malloc copy auto-scale-warning (if autoscaling happens)
+       if warningPtr != NULL -> set it to a malloc copy of any warnings occurring during tree-load (e.g. autoscale- or informational warnings)
     */
 
     GBT_TREE *tree  = NULL;
@@ -586,33 +598,24 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
 
             if (reader.get_max_found_bootstrap() >= 101.0) { // bootstrap values were given in percent
                 bootstrap_scale = 0.01;
-                if (warningPtr) {
-                    *warningPtr = GBS_global_string_copy("Auto-scaling bootstrap values by factor %.2f (max. found bootstrap was %5.2f)",
-                                                         bootstrap_scale, reader.get_max_found_bootstrap());
-                }
+                reader.add_warningf("Auto-scaling bootstrap values by factor %.2f (max. found bootstrap was %5.2f)",
+                                    bootstrap_scale, reader.get_max_found_bootstrap());
             }
             if (reader.get_max_found_branchlen() >= 1.1) { // assume branchlengths have range [0;100]
                 if (allow_length_scaling) {
                     branchlen_scale = 0.01;
-                    if (warningPtr) {
-                        char *w = GBS_global_string_copy("Auto-scaling branchlengths by factor %.2f (max. found branchlength = %.2f)\n"
-                                                         "(use ARB_NT/Tree/Modify branches/Scale branchlengths with factor %.2f to undo auto-scaling)",
-                                                         branchlen_scale, reader.get_max_found_branchlen(), 1.0/branchlen_scale);
-                        if (*warningPtr) {
-                            char *w2 = GBS_global_string_copy("%s\n%s", *warningPtr, w);
-
-                            free(*warningPtr);
-                            free(w);
-                            *warningPtr = w2;
-                        }
-                        else {
-                            *warningPtr = w;
-                        }
-                    }
+                    reader.add_warningf("Auto-scaling branchlengths by factor %.2f (max. found branchlength = %.2f)\n"
+                                        "(use ARB_NT/Tree/Modify branches/Scale branchlengths with factor %.2f to undo auto-scaling)",
+                                        branchlen_scale, reader.get_max_found_branchlen(), 1.0/branchlen_scale);
                 }
             }
 
             TREE_scale(tree, branchlen_scale, bootstrap_scale); // scale bootstraps and branchlengths
+
+            if (warningPtr) {
+                const char *wmsg      = reader.get_warnings();
+                if (wmsg) *warningPtr = strdup(wmsg);
+            }
 
             if (commentPtr) {
                 char *comment = reader.takeComment();
@@ -656,7 +659,7 @@ static char *leafNames(GBT_TREE *tree, size_t& count) {
     return names.release();
 }
 
-static GBT_TREE *loadFromFileContaining(const char *treeString) {
+static GBT_TREE *loadFromFileContaining(const char *treeString, char **warningsPtr) {
     const char *filename = "trees/tmp.tree";
     FILE       *out      = fopen(filename, "wt");
     GBT_TREE   *tree     = NULL;
@@ -664,7 +667,7 @@ static GBT_TREE *loadFromFileContaining(const char *treeString) {
     if (out) {
         fputs(treeString, out);
         fclose(out);
-        tree = TREE_load(filename, sizeof(GBT_TREE), NULL, 0, NULL);
+        tree = TREE_load(filename, sizeof(GBT_TREE), NULL, 0, warningsPtr);
     }
     else {
         GB_export_IO_error("save tree", filename);
@@ -713,26 +716,41 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
     } while(0)
 
 #define TEST_EXPECT_TREESTRING_FAILS_WITH(treeString,errpart) do {      \
-        GBT_TREE *tree = loadFromFileContaining(treeString);            \
+        GBT_TREE *tree = loadFromFileContaining(treeString, NULL);      \
         TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                \
     } while(0)
 
 // arguments 'names,count' are vs regression only!
 #define TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN(treeString,errpart,names,count) do {  \
-        GBT_TREE *tree = loadFromFileContaining(treeString);                            \
+        char     *warnings = NULL;                                                      \
+        GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);             \
         TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, errpart);                        \
         TEST_EXPECT_TREELOAD(tree, names, count);                                       \
+        TEST_EXPECT_NULL(warnings);                                                     \
         GBT_delete_tree(tree);                                                          \
+        free(warnings);                                                                 \
     } while(0)
 
-#define TEST_EXPECT_TREESTRING_OK(treeString,names,count) do {  \
-        GBT_TREE *tree = loadFromFileContaining(treeString);    \
-        TEST_EXPECT_TREELOAD(tree, names, count);               \
-        GBT_delete_tree(tree);                                  \
+#define TEST_EXPECT_TREESTRING_OK(treeString,names,count) do {                  \
+        char     *warnings = NULL;                                              \
+        GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);     \
+        TEST_EXPECT_TREELOAD(tree, names, count);                               \
+        TEST_EXPECT_NULL(warnings);                                             \
+        GBT_delete_tree(tree);                                                  \
+        free(warnings);                                                         \
+    } while(0)
+
+#define TEST_EXPECT_TREESTRING_OK_WITH_WARNING(treeString,names,count,warnPart) do {    \
+        char     *warnings = NULL;                                                      \
+        GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);             \
+        TEST_EXPECT_TREELOAD(tree, names, count);                                       \
+        TEST_EXPECT_CONTAINS(warnings, warnPart);                                       \
+        GBT_delete_tree(tree);                                                          \
+        free(warnings);                                                                 \
     } while(0)
 
 #define TEST_EXPECT_TREESTRING_OK__BROKEN(treeString,names,count) do {  \
-        GBT_TREE *tree = loadFromFileContaining(treeString);            \
+        GBT_TREE *tree = loadFromFileContaining(treeString, NULL);      \
         TEST_EXPECT_TREELOAD__BROKEN(tree, names, count);               \
     } while(0)
 
@@ -763,50 +781,43 @@ void TEST_load_tree() {
 
     // tree with a named root
     {
-        GBT_TREE *tree = loadFromFileContaining("(node1,node2)rootgroup;");
+        char     *warnings = NULL;
+        GBT_TREE *tree     = loadFromFileContaining("(node1,node2)rootgroup;", &warnings);
         TEST_EXPECT_TREELOAD(tree, "node1,node2", 2);
         TEST_EXPECT_EQUAL(tree->name, "rootgroup");
+        TEST_EXPECT_NULL(warnings);
         GBT_delete_tree(tree);
     }
 
     // test tree lengths (esp. length zero)
     {
-        GBT_TREE *tree = loadFromFileContaining("(node1:0.00,(node2, node3:0.57)):0;");
+        char     *warnings = NULL;
+        GBT_TREE *tree     = loadFromFileContaining("(node1:0.00,(node2, node3:0.57)):0;", &warnings);
         TEST_EXPECT_TREELOAD(tree, "node1,node2,node3", 3);
         TEST_EXPECT_EQUAL(tree->leftlen, 0);
         TEST_EXPECT_EQUAL(tree->rightlen, TREE_DEFLEN);
         TEST_EXPECT_EQUAL(tree->rightson->rightlen, 0.57);
+        TEST_EXPECT_NULL(warnings);
         GBT_delete_tree(tree);
     }
 
     // test valid trees with strange or wrong behavior
-    {
-        GBT_TREE *tree = loadFromFileContaining("(,);");
-        TEST_EXPECT_TREELOAD(tree, "unnamed1,unnamed2", 2); // tree with 2 unamed species (weird, but ok)
-        GBT_delete_tree(tree);
-    }
-    {
-        GBT_TREE *tree = loadFromFileContaining("( a, (b,(c),d), (e,(f)) );");
-        TEST_EXPECT_TREELOAD(tree, "a,b,c,d,e,f", 6);
-        GBT_delete_tree(tree);
-    }
-    {
-        GBT_TREE *tree = loadFromFileContaining("( (a), (((b),(c),(d))group)dupgroup, ((e),(f)) );");
-        TEST_EXPECT_TREELOAD(tree, "a,b,c,d,e,f", 6);
-        GBT_delete_tree(tree);
-    }
-    {
-        GBT_TREE *tree = loadFromFileContaining("(((((a)))), ((b, c)));");
-        TEST_EXPECT_TREELOAD(tree, "a,b,c", 3);
-        GBT_delete_tree(tree);
-    }
+    TEST_EXPECT_TREESTRING_OK("(,);", "unnamed1,unnamed2", 2); // tree with 2 unamed species (weird, but ok)
+    TEST_EXPECT_TREESTRING_OK("( a, (b,(c),d), (e,(f)) );", "a,b,c,d,e,f", 6);
+    TEST_EXPECT_TREESTRING_OK("(((((a)))), ((b, c)));", "a,b,c", 3);
+
+    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("( (a), (((b),(c),(d))group)dupgroup, ((e),(f)) );", "a,b,c,d,e,f", 6,
+                                           "Duplicated group name specification detected");
 
     // test single-node-subtree name-conflict
     {
-        GBT_TREE *tree = loadFromFileContaining("(((((a))single)), ((b, c)17%:0.2));");
+        char     *warnings = NULL;
+        GBT_TREE *tree     = loadFromFileContaining("(((((a))single)), ((b, c)17%:0.2));", &warnings);
         TEST_EXPECT_TREELOAD(tree, "a,b,c", 3);
         TEST_EXPECT_EQUAL(tree->rightson->remark_branch, "17%");
         TEST_EXPECT_EQUAL(tree->rightlen, 0.2);
+        TEST_EXPECT_CONTAINS(warnings, "Dropped group name specified for a single-node-subtree");
+        free(warnings);
         GBT_delete_tree(tree);
     }
 
@@ -824,12 +835,12 @@ void TEST_load_tree() {
 
         for (size_t i = 0; i<ARRAY_ELEMS(tooSmallTree); ++i) {
             TEST_ANNOTATE_ASSERT(GBS_global_string("tree #%zu ('%s')", i, tooSmallTree[i]));
-            GBT_TREE *tree = loadFromFileContaining(tooSmallTree[i]);
+            GBT_TREE *tree = loadFromFileContaining(tooSmallTree[i], NULL);
             TEST_EXPECT_TREELOAD_FAILED_WITH(tree, "tree is too small");
         }
     }
     {
-        GBT_TREE *tree = loadFromFileContaining("((a, b)25%)20%;");
+        GBT_TREE *tree = loadFromFileContaining("((a, b)25%)20%;", NULL);
         TEST_EXPECT_TREELOAD_FAILED_WITH(tree, "Invalid duplicated bootstrap specification detected");
     }
 

@@ -32,13 +32,17 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
         ConsensusTreeBuilder tree_builder;
 
         for (size_t i = 0; !error && i<input_trees.size(); ++i) {
-            char *warning = NULL;
+            char *warnings = NULL;
 
-            GBT_TREE *tree = TREE_load(input_trees[i], sizeof(*tree), NULL, 1, &warning);
+            GBT_TREE *tree = TREE_load(input_trees[i], sizeof(*tree), NULL, 1, &warnings);
             if (!tree) {
-                error = GBS_global_string("Failed to load tree '%s'", input_trees[i]);
+                error = GBS_global_string("Failed to load tree '%s' (Reason: %s)", input_trees[i], GB_await_error());
             }
             else {
+                if (warnings) {
+                    GB_warningf("while loading tree '%s':\n%s", input_trees[i], warnings);
+                    free(warnings);
+                }
                 tree_builder.add(tree, weight);
             }
         }
