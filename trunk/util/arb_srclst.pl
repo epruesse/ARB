@@ -40,6 +40,7 @@ my @skipped_directories = (
                            qr/_COM\/GEN[CH]$/o,
                            qr/_COM\/O$/o,
                            qr/_GEN$/o,
+                           qr/nbproject/o,
                            # needed by ralf:
                            qr/^\.\/test_arb_make_targets_logs/o,
                            qr/\.dSYM$/o,
