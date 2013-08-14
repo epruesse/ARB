@@ -9,13 +9,13 @@
 //                                                                  //
 // ================================================================ //
 
-#include <arb_msg.h>
+#include <arb_msg_fwd.h>
 #include <arb_assert.h>
 #include <arb_string.h>
 #include <arb_backtrace.h>
 #include <smartptr.h>
 #include <arb_handlers.h>
- 
+
 // AISC_MKPT_PROMOTE:#ifndef _GLIBCXX_CSTDLIB
 // AISC_MKPT_PROMOTE:#include <cstdlib>
 // AISC_MKPT_PROMOTE:#endif
@@ -25,7 +25,7 @@
 // AISC_MKPT_PROMOTE:
 // AISC_MKPT_PROMOTE:// return error and ensure none is exported 
 // AISC_MKPT_PROMOTE:#define RETURN_ERROR(err)  arb_assert(!GB_have_error()); return (err)
-
+// AISC_MKPT_PROMOTE:
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
@@ -132,7 +132,13 @@ __ATTR__VFORMAT(1) static const char *gbs_vglobal_string(const char *templat, va
     return buffer[my_idx];
 }
 
-__ATTR__VFORMAT(1) static char *gbs_vglobal_string_copy(const char *templat, va_list parg) {
+const char *GBS_vglobal_string(const char *templat, va_list parg) {
+    // goes to header: __ATTR__VFORMAT(1)
+    return gbs_vglobal_string(templat, parg, 0);
+}
+
+char *GBS_vglobal_string_copy(const char *templat, va_list parg) {
+    // goes to header: __ATTR__VFORMAT(1)
     const char *gstr = gbs_vglobal_string(templat, parg, 1);
     return GB_strduplen(gstr, last_global_string_size);
 }
@@ -157,30 +163,21 @@ const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char
 
 char *GBS_global_string_copy(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
-
     va_list parg;
-    char *result;
-
     va_start(parg, templat);
-    result = gbs_vglobal_string_copy(templat, parg);
+    char *result = GBS_vglobal_string_copy(templat, parg);
     va_end(parg);
-
     return result;
 }
 
 const char *GBS_global_string(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
-
     va_list parg;
-    const char *result;
-
     va_start(parg, templat);
-    result = gbs_vglobal_string(templat, parg, 0);
+    const char *result = gbs_vglobal_string(templat, parg, 0);
     va_end(parg);
-
     return result;
 }
-
 
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
 #define BUFSIZE 1000
@@ -409,13 +406,7 @@ void GB_internal_error(const char *message) {
 
 void GB_internal_errorf(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
-    va_list parg;
-
-    va_start(parg, templat);
-    const char *message = gbs_vglobal_string(templat, parg, 0);
-    va_end(parg);
-
-    GB_internal_error(message);
+    FORWARD_FORMATTED_NORETURN(GB_internal_error, templat);
 }
 
 void GBK_terminate(const char *error) { // goes to header __ATTR__NORETURN
@@ -434,16 +425,10 @@ void GBK_terminate(const char *error) { // goes to header __ATTR__NORETURN
 
 void GBK_terminatef(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1) __ATTR__NORETURN
-    va_list parg;
-
-    va_start(parg, templat);
-    const char *error = gbs_vglobal_string(templat, parg, 0);
-    va_end(parg);
-
-    GBK_terminate(error);
+    FORWARD_FORMATTED_NORETURN(GBK_terminate, templat);
 }
 
-// AISC_MKPT_PROMOTE: inline void GBK_terminate_on_error(const char *error) { if (error) GBK_terminatef("Fatal error: %s", error); }
+// AISC_MKPT_PROMOTE:inline void GBK_terminate_on_error(const char *error) { if (error) GBK_terminatef("Fatal error: %s", error); }
 
 void GB_warning(const char *message) {
     /* If program uses GUI, the message is printed via aw_message, otherwise it goes to stdout
@@ -453,36 +438,19 @@ void GB_warning(const char *message) {
 }
 void GB_warningf(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
-
-    va_list parg;
-
-    va_start(parg, templat);
-    char *message = gbs_vglobal_string_copy(templat, parg);
-    va_end(parg);
-
-    GB_warning(message);
-    free(message);
+    FORWARD_FORMATTED(GB_warning, templat);
 }
 
 void GB_information(const char *message) {
-    active_arb_handlers->show_message(message);
-}
-void GB_informationf(const char *templat, ...) {
-    // goes to header: __ATTR__FORMAT(1)
-
     /* this message is always printed to stdout (regardless whether program uses GUI or not)
      * (if it is not redirected using ARB_redirect_handlers_to)
      * see also : GB_warning
      */
-
-    va_list parg;
-
-    va_start(parg, templat);
-    char *message = gbs_vglobal_string_copy(templat, parg);
-    va_end(parg);
-
-    GB_information(message);
-    free(message);
+    active_arb_handlers->show_message(message);
+}
+void GB_informationf(const char *templat, ...) {
+    // goes to header: __ATTR__FORMAT(1)
+    FORWARD_FORMATTED(GB_information, templat);
 }
 
 

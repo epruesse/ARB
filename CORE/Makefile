@@ -105,6 +105,7 @@ arb_msg.o: arb_assert.h
 arb_msg.o: arb_core.h
 arb_msg.o: arb_handlers.h
 arb_msg.o: arb_msg.h
+arb_msg.o: arb_msg_fwd.h
 arb_msg.o: arb_string.h
 arb_msg.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 arb_msg.o: $(ARBHOME)/INCLUDE/arbtools.h

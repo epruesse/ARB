@@ -9,7 +9,7 @@ SOURCES=aligngivenpath.cpp aligngivenpathsw.cpp aligntwomsas.cpp aligntwoprofs.c
 OBJECTS=$(addprefix obj/,$(notdir $(SOURCES:.cpp=.o)))
 
 
-all: muscle install
+all: install
 
 muscle: prepare $(OBJECTS)
 	$(CXX) $(LDFLAGS) $(OBJECTS) -o muscle
@@ -21,7 +21,7 @@ prepare:
 obj/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
-install:
+install: muscle
 	cp -f muscle $(ARBHOME)/bin
 
 clean:

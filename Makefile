@@ -1700,7 +1700,7 @@ rmbak:
 	@find . \(	-name '*%' \
 			-o -name '*.bak' \
 			-o -name '*~' \) \
-			-o -name 'core' \
+			-o \( -name 'core' -a \! -type d \) \
 	        -exec rm -v {} \;
 
 bin_reinit:

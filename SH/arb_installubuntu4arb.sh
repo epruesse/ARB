@@ -58,6 +58,7 @@ else
                 libx11-dev \
                 libxext-dev \
                 libxml2-utils \
+                libreadline-dev \
                 lynx \
                 xsltproc \
                 xutils-dev \
