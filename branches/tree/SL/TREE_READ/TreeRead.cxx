@@ -840,6 +840,9 @@ void TEST_load_tree() {
                     TEST_EXPECT_EQUAL(tree->rightson->rightlen, 0.57);
                     break;
                 case 2:
+                    TEST_EXPECT_NULL__BROKEN(tree->rightson->name);
+                    TEST_EXPECT_EQUAL(tree->rightson->name, "%"); // @@@ bootstrap with percent-specification causes unwanted groupname
+
                     TEST_EXPECT_EQUAL(tree->rightson->remark_branch, "17%");
                     TEST_EXPECT_EQUAL(tree->rightlen, 0.2);
                     break;
