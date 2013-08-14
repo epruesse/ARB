@@ -270,7 +270,7 @@ int main(int argc, char **argv) {
 
                 char *cmt = GBS_strclose(buf);
 
-                error = GBT_write_tree_rem(gb_main, param.tree_name, cmt);
+                error = GBT_write_tree_remark(gb_main, param.tree_name, cmt);
 
                 free(cmt);
             }

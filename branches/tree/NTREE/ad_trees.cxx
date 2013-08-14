@@ -389,15 +389,13 @@ static void tree_load_cb(AW_window *aww) {
         else {
             if (warnings) GBT_message(GLOBAL.gb_main, warnings);
 
-            GB_transaction ta(GLOBAL.gb_main);
-            error = GBT_write_tree(GLOBAL.gb_main, 0, tree_name, tree);
-
-            if (!error && tree_comment) {
-                error = GBT_write_tree_rem(GLOBAL.gb_main, tree_name, tree_comment);
+            {
+                GB_transaction ta(GLOBAL.gb_main);
+                error = GBT_write_tree_with_remark(GLOBAL.gb_main, tree_name, tree, tree_comment);
+                error = ta.close(error);
             }
 
-            if (error) error = ta.close(error);
-            else aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
+            if (!error) aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
 
             GBT_delete_tree(tree);
         }
