@@ -243,7 +243,7 @@ bool TreeReader::eat_number(GBT_LEN& result) {
     char   *s = strng;
     int     c = last_character;
 
-    while (((c<='9') && (c>='0')) || (c=='.') || (c=='-') || (c=='e') || (c=='E')) {
+    while (((c<='9') && (c>='0')) || (c=='.') || (c=='-') ||  (c=='+') || (c=='e') || (c=='E')) {
         *(s++) = c;
         c = read_char();
     }
