@@ -114,7 +114,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/"/>QUOTE_/'| \
             arb_sed 's/@/>AT_/' | \
             arb_sed '/^[^>]/ y/./-/' > mafft_in; \
-            RUN_IN_WINDOW(($ARBHOME/bin/$COMMAND $METHOD --ep $OFFSET $SCORING_MATRIX mafft_in > mafft_out;)); \
+            RUN_IN_WINDOW(($ARBHOME/bin/$COMMAND $METHOD --preservecase --ep $OFFSET $SCORING_MATRIX mafft_in > mafft_out;)); \
             arb_sed 's/>HASH_/#/' <mafft_out | \
             arb_sed 's/>PERCENT_/%/' | \
             arb_sed 's/>QUOTE_/"/' | \
