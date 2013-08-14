@@ -173,7 +173,7 @@ static double gbt_read_number(TreeReader *reader) {
     int     c = reader->last_character;
     double  fl;
 
-    while (((c<='9') && (c>='0')) || (c=='.') || (c=='-') || (c=='e') || (c=='E')) {
+    while (((c<='9') && (c>='0')) || (c=='.') || (c=='-') ||  (c=='+') || (c=='e') || (c=='E')) {
         *(s++) = c;
         c = gbt_get_char(reader);
     }
