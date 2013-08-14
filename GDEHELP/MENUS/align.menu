@@ -137,12 +137,6 @@ argchoice:FFT-NS-2:mafft-fftns
 argchoice:NW-NS-i:mafft-nwnsi
 argchoice:NW-NS-2:mafft-nwns
 
-
-arg:OFFSET
-argtype:text
-arglabel:Offset value (0.0 - 1.0)
-argtext:0.0
-
 arg:SCORING_MATRIX
 argtype:choice_menu
 arglabel:Scoring matrix
@@ -156,6 +150,13 @@ argchoice:JTT200:--jtt 200
 argchoice:1PAM / K=2:--kimura 1
 argchoice:20PAM / K=2:--kimura 20
 argchoice:200PAM / K=2:--kimura 200
+
+
+arg:OFFSET
+argtype:text
+arglabel:Offset value [0..1]\n(Use Values >0.1 for closely related sequences)
+argtext:0.5
+
 
 in:in1
 informat:flat
