@@ -377,12 +377,12 @@ static void tree_load_cb(AW_window *aww) {
         GBT_TREE *tree;
         if (strcmp(pcTreeFormat, "xml") == 0) {
             char *tempFname = readXmlTree(fname);
-            tree = TREE_load(tempFname, sizeof(GBT_TREE), &tree_comment, 1, &warnings);
+            tree = TREE_load(tempFname, sizeof(GBT_TREE), &tree_comment, true, &warnings);
             GB_unlink_or_warn(tempFname, NULL);
             free(tempFname);
         }
         else {
-            tree = TREE_load(fname, sizeof(GBT_TREE), &tree_comment, 1, &warnings);
+            tree = TREE_load(fname, sizeof(GBT_TREE), &tree_comment, true, &warnings);
         }
 
         if (!tree) error = GB_await_error();

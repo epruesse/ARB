@@ -34,7 +34,7 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
         for (size_t i = 0; !error && i<input_trees.size(); ++i) {
             char *warnings = NULL;
 
-            GBT_TREE *tree = TREE_load(input_trees[i], sizeof(*tree), NULL, 1, &warnings);
+            GBT_TREE *tree = TREE_load(input_trees[i], sizeof(*tree), NULL, true, &warnings);
             if (!tree) {
                 error = GBS_global_string("Failed to load tree '%s' (Reason: %s)", input_trees[i], GB_await_error());
             }

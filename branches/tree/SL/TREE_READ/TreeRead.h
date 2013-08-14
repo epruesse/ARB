@@ -21,7 +21,7 @@
 
 inline bool is_marked_as_default_len(GBT_LEN len) { return len <= TREE_DEFLEN_MARKER; }
 
-GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int allow_length_scaling, char **warningPtr);
+GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, bool allow_length_scaling, char **warningPtr);
 void TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale);
 
 #else

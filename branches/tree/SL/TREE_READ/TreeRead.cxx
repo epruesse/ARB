@@ -562,7 +562,7 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
     return node;
 }
 
-GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int allow_length_scaling, char **warningPtr) {
+GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, bool allow_length_scaling, char **warningPtr) {
     /* Load a newick compatible tree from file 'path',
        structure size should be >0, see GBT_read_tree for more information
        if commentPtr != NULL -> set it to a malloc copy of all concatenated comments found in tree file
@@ -668,7 +668,7 @@ static GBT_TREE *loadFromFileContaining(const char *treeString, char **warningsP
     if (out) {
         fputs(treeString, out);
         fclose(out);
-        tree = TREE_load(filename, sizeof(GBT_TREE), NULL, 0, warningsPtr);
+        tree = TREE_load(filename, sizeof(GBT_TREE), NULL, false, warningsPtr);
     }
     else {
         GB_export_IO_error("save tree", filename);
@@ -711,9 +711,9 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
 #define TEST_EXPECT_TREELOAD(tree,names,count)         TEST_EXPECTATION(loading_tree_succeeds(tree,names,count))
 #define TEST_EXPECT_TREELOAD__BROKEN(tree,names,count) TEST_EXPECTATION__BROKEN(loading_tree_succeeds(tree,names,count))
 
-#define TEST_EXPECT_TREEFILE_FAILS_WITH(name,errpart) do {                      \
-        GBT_TREE *tree = TREE_load(name, sizeof(GBT_TREE), NULL, 0, NULL);      \
-        TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                        \
+#define TEST_EXPECT_TREEFILE_FAILS_WITH(name,errpart) do {                          \
+        GBT_TREE *tree = TREE_load(name, sizeof(GBT_TREE), NULL, false, NULL);      \
+        TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                            \
     } while(0)
 
 #define TEST_EXPECT_TREESTRING_FAILS_WITH(treeString,errpart) do {      \
@@ -770,7 +770,7 @@ void TEST_load_tree() {
     // simple succeeding tree load
     {
         char     *comment = NULL;
-        GBT_TREE *tree    = TREE_load("trees/test.tree", sizeof(GBT_TREE), &comment, 0, NULL);
+        GBT_TREE *tree    = TREE_load("trees/test.tree", sizeof(GBT_TREE), &comment, false, NULL);
         // -> ../../UNIT_TESTER/run/trees/test.tree
 
         TEST_EXPECT_TREELOAD(tree, "s1,s2,s3,s 4,s5,\"s-6\"", 6); // @@@ remove double-quotes from name?

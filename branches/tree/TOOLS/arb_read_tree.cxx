@@ -213,9 +213,10 @@ int main(int argc, char **argv) {
 
             show_message(gb_msg_main, GBS_global_string("Reading tree from '%s' ..", param.treefilename));
             {
-                char *warnings = 0;
+                char *warnings             = 0;
+                bool  allow_length_scaling = !param.consense && !param.scale;
 
-                tree = TREE_load(param.treefilename, sizeof(GBT_TREE), &comment_from_treefile, (param.consense||param.scale) ? 0 : 1, &warnings);
+                tree = TREE_load(param.treefilename, sizeof(GBT_TREE), &comment_from_treefile, allow_length_scaling, &warnings);
                 if (!tree) {
                     error = GB_await_error();
                 }
