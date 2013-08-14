@@ -159,7 +159,7 @@ static AW_window *create_species_create_window(AW_root *root, AW_CL cl_gb_main) 
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "Close", "C");
 
     aws->at("label");
     aws->create_autosize_button(0, "Please enter the name\nof the new species");
@@ -169,7 +169,7 @@ static AW_window *create_species_create_window(AW_root *root, AW_CL cl_gb_main) 
 
     aws->at("ok");
     aws->callback(species_create_cb, cl_gb_main);
-    aws->create_button("GO", "GO", "G");
+    aws->create_button("GO", "Go", "G");
 
     return (AW_window *)aws;
 }
@@ -600,12 +600,12 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item
 
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE", "Close", "C");
 
         const char *HELPFILE = "spaf_reorder.hlp";
         aws->callback(AW_POPUP_HELP, (AW_CL)HELPFILE);
         aws->at("help");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "Help", "H");
 
         Itemfield_Selection *sel1 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_SOURCE, FIELD_FILTER_NDS, "source", 0, selector, 20, 10);
         Itemfield_Selection *sel2 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_DEST,   FIELD_FILTER_NDS, "dest",   0, selector, 20, 10);
@@ -734,10 +734,10 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_s
         aws->button_length(6);
 
         aws->at("close"); aws->callback(AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"spaf_delete.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "Help", "H");
 
         Itemfield_Selection *item_sel =
             create_selection_list_on_itemfields(bound_selector->gb_main,
@@ -760,7 +760,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_s
         aws->at("delf");
         aws->callback(field_delete_cb, (AW_CL)item_sel);
         aws->help_text("rm_field_cmpt.hlp");
-        aws->create_button("DELETE_FIELD", "DELETE FIELD\n(DATA DELETED)", "C");
+        aws->create_button("DELETE_FIELD", "Delete field\n(data deleted)", "C");
     }
     
     return awsa[selector.type];
@@ -803,7 +803,7 @@ AW_window *DBUI::create_field_create_window(AW_root *root, AW_CL cl_bound_item_s
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "Close", "C");
 
     aws->at("input");
     aws->label("FIELD NAME");
@@ -820,7 +820,7 @@ AW_window *DBUI::create_field_create_window(AW_root *root, AW_CL cl_bound_item_s
 
     aws->at("ok");
     aws->callback(field_create_cb, cl_bound_item_selector);
-    aws->create_button("CREATE", "CREATE", "C");
+    aws->create_button("CREATE", "Create", "C");
 
     return (AW_window *)aws;
 }
@@ -874,11 +874,11 @@ static AW_window *create_field_convert_window(AW_root *root, AW_CL cl_bound_item
 
     aws->at("close");
     aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "Close", "C");
 
     aws->at("help");
     aws->callback(AW_POPUP_HELP, (AW_CL)"spaf_convert.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->create_button("HELP", "Help", "H");
 
     aws->callback(field_convert_update_typesel_cb, cl_bound_item_selector);
     create_selection_list_on_itemfields(bound_selector->gb_main,
@@ -902,7 +902,7 @@ static AW_window *create_field_convert_window(AW_root *root, AW_CL cl_bound_item
 
     aws->at("convert");
     aws->callback(field_convert_commit_cb, cl_bound_item_selector);
-    aws->create_button("CONVERT", "CONVERT", "T");
+    aws->create_button("CONVERT", "Convert", "T");
 
     return (AW_window*)aws;
 }
@@ -1299,11 +1299,11 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL c
 
         aws->at("close");
         aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours_listed.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "Help", "H");
 
         create_common_next_neighbour_fields(aws);
 
@@ -1335,11 +1335,11 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
 
         aws->at("close");
         aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "Help", "H");
 
         create_common_next_neighbour_fields(aws);
 
@@ -1354,7 +1354,7 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
 
         aws->at("go");
         aws->callback(awtc_nn_search);
-        aws->create_button("SEARCH", "SEARCH");
+        aws->create_button("SEARCH", "Search");
 
         aws->at("auto_go");
         aws->label("Auto on selection change");
@@ -1406,15 +1406,15 @@ static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_m
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "Close", "C");
 
     aws->at("search");
     aws->callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main);
-    aws->create_button("SEARCH", "SEARCH", "S");
+    aws->create_autosize_button("SEARCH", "Search...", "S");
 
     aws->at("help");
     aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->create_button("HELP", "Help", "H");
 
     DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
     const InfoWindow&  infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
@@ -1512,11 +1512,11 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main)
 
         aws->at("close");
         aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"sp_search.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "Help", "H");
     }
     return aws;
 }
