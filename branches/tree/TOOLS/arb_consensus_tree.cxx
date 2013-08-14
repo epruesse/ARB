@@ -408,7 +408,91 @@ void TEST_arb_consensus_tree() {
         free(saveas);
     }
 }
+
+#endif // REPEATED_TESTS
+
+// #define TREEIO_AUTO_UPDATE // uncomment to auto-update expected test-results
+
+void TEST_coherent_treeIO() {
+    const char *dbname   = "trees/bootstrap_groups.arb";
+    const char *treename = "tree_bootstrap_and_groups";
+    const char *savename = "bg";
+
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open(dbname, "rw");
+
+    TEST_REJECT_NULL(gb_main);
+
+    char *outfile  = GBS_global_string_copy("trees/%s.tree", savename);
+
+    bool save_branchlengths = true; // @@@ test all combinations
+    bool save_bootstraps    = true;
+    bool save_groupnames    = true;
+    bool pretty             = true;
+
+    TREE_node_quoting quoteMode = TREE_SINGLE_QUOTES; // @@@ test all quote modes
+
+    {
+        GB_ERROR export_error = TREE_write_Newick(gb_main, treename, NULL, save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode, outfile);
+        TEST_EXPECT_NULL(export_error);
+
+        char *expectedfile = GBS_global_string_copy("trees/%s_expected_%i%i%i%i%i.tree", // @@@ create suffix separate
+                                                    savename,
+                                                    save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode);
+#if defined(TREEIO_AUTO_UPDATE)
+        system(GBS_global_string("cp %s %s", outfile, expectedfile));
+#else // !defined(TREEIO_AUTO_UPDATE)
+        bool exported_as_expected = arb_test::test_textfile_difflines_ignoreDates(expectedfile, outfile, 0);
+        TEST_EXPECT(exported_as_expected);
+
+        // reimport exported tree
+        const char *reloaded_treename = "tree_reloaded";
+        {
+            char     *comment    = NULL;
+            GBT_TREE *tree       = TREE_load(expectedfile, sizeof(*tree), &comment, true, NULL);
+            GB_ERROR  load_error = tree ? NULL : GB_await_error();
+
+            TEST_EXPECTATION(all().of(that(tree).does_differ_from_NULL(),
+                                      that(load_error).is_equal_to_NULL()));
+            // store tree in DB
+            {
+                GB_transaction ta(gb_main);
+                GB_ERROR       store_error = GBT_write_tree_with_remark(gb_main, reloaded_treename, tree, comment);
+                TEST_EXPECT_NULL(store_error);
+            }
+            free(comment);
+            GBT_delete_tree(tree);
+        }
+
+        // export again
+        GB_ERROR reexport_error = TREE_write_Newick(gb_main, reloaded_treename, NULL, save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode, outfile);
+        TEST_EXPECT_NULL(reexport_error);
+
+        // eliminate comments added by loading/saving
+        char *outfile2 = GBS_global_string_copy("trees/%s2.tree", savename);
+        {
+            char *cmd = GBS_global_string_copy("cat %s"
+                                               " | grep -v 'Loaded from trees/.*expected'"
+                                               " | grep -v 'tree_reloaded saved to'"
+                                               " > %s", outfile, outfile2);
+            TEST_EXPECT_NO_ERROR(GBK_system(cmd));
+            free(cmd);
+        }
+
+        bool reexported_as_expected = arb_test::test_textfile_difflines(expectedfile, outfile2, 0);
+        TEST_EXPECT__BROKEN(reexported_as_expected);
+
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile2));
+        free(outfile2);
 #endif
+        free(expectedfile);
+    }
+
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile));
+    free(outfile);
+
+    GB_close(gb_main);
+}
 
 #endif // UNIT_TESTS
 

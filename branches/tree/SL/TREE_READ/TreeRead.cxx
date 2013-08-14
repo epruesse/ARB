@@ -694,7 +694,7 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
     expectation_group expected;
 
     expected.add(that(tree).does_differ_from_NULL());
-    expected.add(that(GB_have_error()).is_equal_to(false));
+    expected.add(that(GB_get_error()).is_equal_to_NULL());
     if (!GB_have_error() && tree) {
         size_t  leafcount;
         char   *names = leafNames(tree, leafcount);
@@ -791,26 +791,42 @@ void TEST_load_tree() {
     // detailed load tests (checking branchlengths and nodenames)
     {
         const char *treestring[] = {
-            "(node1,node2)rootgroup;",             // tree with a named root
-            "(node1:0.00,(node2, node3:0.57)):0;", // test tree lengths (esp. length zero)
-            "(((((a))single)), ((b, c)17%:0.2));", // test single-node-subtree name-conflict
+            "(node1,node2)rootgroup;",             // [0] tree with a named root
+            "(node1:0.00,(node2, node3:0.57)):0;", // [1] test tree lengths (esp. length zero)
+            "(((((a))single)), ((b, c)17%:0.2));", // [2] test single-node-subtree name-conflict
+
+            "((a,b)17,(c,d)33.3,(e,f)12.5:0.2);",             // [3] test bootstraps
+            "((a,b)G,(c,d)H,(e,f)I:0.2);",                    // [4] test groupnames w/o bootstraps
+            "((a,b)'17:G',(c,d)'33.3:H',(e,f)'12.5:I':0.2);", // [5] test groupnames with bootstraps
+            "((a,b)17G,(c,d)33.3H,(e,f)12.5I:0.2);",          // [6] test groupnames + bootstraps w/o separator (@@@should be treated as strange names)
         };
+
         const char *expected_nodes[] = {
             "node1,node2",
             "node1,node2,node3",
             "a,b,c",
+
+            "a,b,c,d,e,f",
+            "a,b,c,d,e,f",
+            "a,b,c,d,e,f",
+            "a,b,c,d,e,f",
         };
         const char *expected_warnings[] = {
             NULL,
             NULL,
             "Dropped group name specified for a single-node-subtree",
+
+            "Auto-scaling bootstrap values by factor 0.01",
+            NULL,
+            "Auto-scaling bootstrap values by factor 0.01",
+            "Auto-scaling bootstrap values by factor 0.01", // @@@ unwanted
         };
 
         STATIC_ASSERT(ARRAY_ELEMS(expected_nodes) == ARRAY_ELEMS(treestring));
         STATIC_ASSERT(ARRAY_ELEMS(expected_warnings) == ARRAY_ELEMS(treestring));
 
         for (size_t i = 0; i<ARRAY_ELEMS(treestring); ++i) {
-            TEST_ANNOTATE_ASSERT(GBS_global_string("while loading tree #%zu", i));
+            TEST_ANNOTATE_ASSERT(GBS_global_string("for tree #%zu = '%s'", i, treestring[i]));
             char     *warnings = NULL;
             GBT_TREE *tree     = loadFromFileContaining(treestring[i], &warnings);
             TEST_EXPECT_TREELOAD(tree, expected_nodes[i], countCommas(expected_nodes[i])+1);
@@ -826,6 +842,60 @@ void TEST_load_tree() {
                 case 2:
                     TEST_EXPECT_EQUAL(tree->rightson->remark_branch, "17%");
                     TEST_EXPECT_EQUAL(tree->rightlen, 0.2);
+                    break;
+
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                    // check bootstraps
+                    TEST_EXPECT_NULL(tree->leftson->remark_branch);
+                    switch (i) {
+                        case 6:
+                            TEST_EXPECT_NULL__BROKEN(tree->leftson->leftson->remark_branch);
+                            TEST_EXPECT_NULL__BROKEN(tree->leftson->rightson->remark_branch);
+                            TEST_EXPECT_NULL__BROKEN(tree->rightson->remark_branch);
+                            // fall-through tests unwanted, but existing behavior (to avoid regression)
+                        case 3:
+                        case 5:
+                            TEST_EXPECT_EQUAL(tree->leftson->leftson->remark_branch,  "17%");
+                            TEST_EXPECT_EQUAL(tree->leftson->rightson->remark_branch, "33%");
+                            TEST_EXPECT_EQUAL(tree->rightson->remark_branch,          "13%");
+                            break;
+                        default:
+                            TEST_EXPECT_NULL(tree->leftson->leftson->remark_branch);
+                            TEST_EXPECT_NULL(tree->leftson->rightson->remark_branch);
+                            TEST_EXPECT_NULL(tree->rightson->remark_branch);
+                            break;
+                    }
+
+                    // check node-names
+                    TEST_EXPECT_NULL(tree->name);
+                    TEST_EXPECT_NULL(tree->leftson->name);
+                    switch (i) {
+                        case 6:
+                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->leftson->name,  "17G");
+                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->rightson->name, "33.3H");
+                            TEST_EXPECT_EQUAL__BROKEN(tree->rightson->name,          "12.5I");
+                            // fall-through tests unwanted, but existing behavior (to avoid regression)
+                        case 4:
+                        case 5:
+                            TEST_EXPECT_EQUAL(tree->leftson->leftson->name,  "G");
+                            TEST_EXPECT_EQUAL(tree->leftson->rightson->name, "H");
+                            TEST_EXPECT_EQUAL(tree->rightson->name,          "I");
+                            break;
+                        default:
+                            TEST_EXPECT_NULL(tree->leftson->leftson->name);
+                            TEST_EXPECT_NULL(tree->leftson->rightson->name);
+                            TEST_EXPECT_NULL(tree->rightson->name);
+                            break;
+                    }
+
+                    // expect_no_lengths:
+                    TEST_EXPECT_EQUAL(tree->leftlen,           0); // multifurcation
+                    TEST_EXPECT_EQUAL(tree->leftson->leftlen,  TREE_DEFLEN);
+                    TEST_EXPECT_EQUAL(tree->leftson->rightlen, TREE_DEFLEN);
+                    TEST_EXPECT_EQUAL(tree->rightlen,          0.2);
                     break;
             }
             if (expected_warnings[i]) TEST_EXPECT_CONTAINS(warnings, expected_warnings[i]);
@@ -856,7 +926,7 @@ void TEST_load_tree() {
         };
 
         for (size_t i = 0; i<ARRAY_ELEMS(tooSmallTree); ++i) {
-            TEST_ANNOTATE_ASSERT(GBS_global_string("tree #%zu ('%s')", i, tooSmallTree[i]));
+            TEST_ANNOTATE_ASSERT(GBS_global_string("for tree #%zu = '%s'", i, tooSmallTree[i]));
             GBT_TREE *tree = loadFromFileContaining(tooSmallTree[i], NULL);
             TEST_EXPECT_TREELOAD_FAILED_WITH(tree, "tree is too small");
         }
