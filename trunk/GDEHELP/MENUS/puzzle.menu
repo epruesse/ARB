@@ -80,6 +80,37 @@ insave:
 
 //------------------------------------------------------------------------------------------
 
+
+item:MrBayes (custom)
+itemmeta:B
+itemmethod:(GOTO_LOCAL_DIR; \
+            arb_convert_aln -GenBank in1 -NEXUS mrbayes_in; \
+            arb_sed -i '/LABELPOS/d' mrbayes_in                `#MrBayes does not understand the LABELPOS command, therefore it is removed.`; \
+            arb_sed -i '/EQUATE/d' mrbayes_in                  `#MrBayes does not support EQUATE macros, remove them.`; \
+            arb_sed -i '/OPTIONS/,/;/d' mrbayes_in             `#MrBayes does not support the OPTIONS block, remove it. (delete everything between OPTIONS and ';')`; \
+            `#Now we write the mrbayes command block to the nexus file`; \
+             cat $COMMAD_FILE >> mrbayes_in; \
+            RUN_IN_WINDOW(($ARBHOME/bin/mb mrbayes_in; \
+                           $ARBHOME/bin/arb_nexus2newick.awk mrbayes_out.con.tre >> mr_bayes_out.newick;  $DISPLAY_FUNC));)&
+
+itemhelp:MrBayesCustom.help
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree?
+argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick
+argchoice:Treetool:treetool mr_bayes_out.newick
+
+arg:COMMAD_FILE
+argtype:filename
+arglabel:MrBayes command file
+
+in:in1
+informat:genbank
+insave:
+
+//------------------------------------------------------------------------------------------
+
 item:TREEPUZZLE ...
 itemmeta: T
 itemmethod:(GOTO_LOCAL_DIR; \
