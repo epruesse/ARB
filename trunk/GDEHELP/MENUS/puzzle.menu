@@ -1,3 +1,43 @@
+item:FastTree2 (nucleotide)
+itemmeta:F
+itemmethod:(GOTO_LOCAL_DIR; \
+            arb_sed 's/#/>/' <in1 | \
+            arb_sed 's/%/>/' | \
+            arb_sed 's/"/>/'| \
+            arb_sed 's/@/>/' | \
+            arb_sed '/^[^>]/ y/./-/' > fasttree_in; \
+            RUN_IN_WINDOW(($ARBHOME/bin/FastTree $FAST $MODEL -nt fasttree_in > fasttree_out; \
+                           $DISPLAY_FUNC));)&
+
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree?
+argchoice:Load into ARB ('tree_fasttree_//'):$ARBHOME/bin/arb_read_tree tree_fasttree_$$ fasttree_out "PRG=FastTree"
+argchoice:Treetool:treetool mr_bayes_out.newick
+
+
+arg:FAST
+argtype:choice_menu
+arglabel:speed up the neighbor joining phase\n(recommended for >50,000 sequences)
+argchoice:No:
+argchoice:Yes:-fastest
+
+arg:MODEL
+argtype:choice_menu
+arglabel:ML Model
+argchoice:Jukes-Cantor:
+argchoice:GTR:-gtr
+
+
+in:in1
+informat:flat
+insave:
+
+//----------------------
+
+
+
 item:MrBayes
 itemmeta:B
 itemmethod:(GOTO_LOCAL_DIR; \
