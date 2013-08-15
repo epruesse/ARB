@@ -17,6 +17,8 @@ itemmethod:(GOTO_LOCAL_DIR; \
             RUN_IN_WINDOW(($ARBHOME/bin/mb mrbayes_in; \
                            $ARBHOME/bin/arb_nexus2newick.awk mrbayes_out.con.tre >> mr_bayes_out.newick;  $DISPLAY_FUNC));)&
 
+itemhelp:MrBayes.help
+
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
