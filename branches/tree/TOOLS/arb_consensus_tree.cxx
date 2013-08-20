@@ -425,67 +425,100 @@ void TEST_coherent_treeIO() {
 
     char *outfile  = GBS_global_string_copy("trees/%s.tree", savename);
 
-    bool save_branchlengths = true; // @@@ test all combinations
-    bool save_bootstraps    = true;
-    bool save_groupnames    = true;
-    bool pretty             = true;
+    for (int save_branchlengths = 0; save_branchlengths <= 1; ++save_branchlengths) {
+        for (int save_bootstraps = 0; save_bootstraps <= 1; ++save_bootstraps) {
+            for (int save_groupnames = 0; save_groupnames <= 1; ++save_groupnames) {
+                bool pretty = true; // @@@ test all combinations
 
-    TREE_node_quoting quoteMode = TREE_SINGLE_QUOTES; // @@@ test all quote modes
+                bool quoting_occurs = save_bootstraps && save_groupnames;
 
-    {
-        GB_ERROR export_error = TREE_write_Newick(gb_main, treename, NULL, save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode, outfile);
-        TEST_EXPECT_NULL(export_error);
+                for (int quoting = TREE_DISALLOW_QUOTES; quoting <= (quoting_occurs ? TREE_DOUBLE_QUOTES : TREE_DISALLOW_QUOTES); ++quoting) {
+                    TREE_node_quoting quoteMode = TREE_node_quoting(quoting);
 
-        char *expectedfile = GBS_global_string_copy("trees/%s_expected_%i%i%i%i%i.tree", // @@@ create suffix separate
-                                                    savename,
-                                                    save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode);
+                    char *paramID = GBS_global_string_copy("%s_%s%s%s_%i",
+                                                           pretty ? "p" : "s",
+                                                           save_bootstraps ? "Bs" : "",
+                                                           save_groupnames ? "Grp" : "",
+                                                           save_branchlengths ? "Len" : "",
+                                                           quoteMode);
+
+                    TEST_ANNOTATE_ASSERT(GBS_global_string("for paramID='%s'", paramID));
+
+                    GB_ERROR export_error = TREE_write_Newick(gb_main, treename, NULL, save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode, outfile);
+                    TEST_EXPECT_NULL(export_error);
+
+                    char *expectedfile = GBS_global_string_copy("trees/%s_exp_%s.tree", savename, paramID);
+
 #if defined(TREEIO_AUTO_UPDATE)
-        system(GBS_global_string("cp %s %s", outfile, expectedfile));
+                    system(GBS_global_string("cp %s %s", outfile, expectedfile));
 #else // !defined(TREEIO_AUTO_UPDATE)
-        bool exported_as_expected = arb_test::test_textfile_difflines_ignoreDates(expectedfile, outfile, 0);
-        TEST_EXPECT(exported_as_expected);
+                    bool exported_as_expected = arb_test::test_textfile_difflines_ignoreDates(expectedfile, outfile, 0);
+                    TEST_EXPECT(exported_as_expected);
 
-        // reimport exported tree
-        const char *reloaded_treename = "tree_reloaded";
-        {
-            char     *comment    = NULL;
-            GBT_TREE *tree       = TREE_load(expectedfile, sizeof(*tree), &comment, true, NULL);
-            GB_ERROR  load_error = tree ? NULL : GB_await_error();
+                    // reimport exported tree
+                    const char *reloaded_treename = "tree_reloaded";
+                    bool        load_broken       = false;
+                    {
+                        char     *comment    = NULL;
+                        GBT_TREE *tree       = TREE_load(expectedfile, sizeof(*tree), &comment, true, NULL);
+                        GB_ERROR  load_error = tree ? NULL : GB_await_error();
 
-            TEST_EXPECTATION(all().of(that(tree).does_differ_from_NULL(),
-                                      that(load_error).is_equal_to_NULL()));
-            // store tree in DB
-            {
-                GB_transaction ta(gb_main);
-                GB_ERROR       store_error = GBT_write_tree_with_remark(gb_main, reloaded_treename, tree, comment);
-                TEST_EXPECT_NULL(store_error);
-            }
-            free(comment);
-            GBT_delete_tree(tree);
-        }
+                        if (strcmp(paramID, "p_BsGrp_2") == 0 ||
+                            strcmp(paramID, "p_BsGrpLen_2") == 0) {
+                            load_broken = true;
+                        }
 
-        // export again
-        GB_ERROR reexport_error = TREE_write_Newick(gb_main, reloaded_treename, NULL, save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode, outfile);
-        TEST_EXPECT_NULL(reexport_error);
+                        if (load_broken) {
+                            TEST_EXPECTATION__BROKEN(all().of(that(tree).does_differ_from_NULL(),
+                                                              that(load_error).is_equal_to_NULL()));
+                        }
+                        else {
+                            TEST_EXPECTATION(all().of(that(tree).does_differ_from_NULL(),
+                                                      that(load_error).is_equal_to_NULL()));
+                            // store tree in DB
+                            {
+                                GB_transaction ta(gb_main);
+                                GB_ERROR       store_error = GBT_write_tree_with_remark(gb_main, reloaded_treename, tree, comment);
+                                TEST_EXPECT_NULL(store_error);
+                            }
+                        }
+                        free(comment);
+                        GBT_delete_tree(tree);
+                    }
 
-        // eliminate comments added by loading/saving
-        char *outfile2 = GBS_global_string_copy("trees/%s2.tree", savename);
-        {
-            char *cmd = GBS_global_string_copy("cat %s"
-                                               " | grep -v 'Loaded from trees/.*expected'"
-                                               " | grep -v 'tree_reloaded saved to'"
-                                               " > %s", outfile, outfile2);
-            TEST_EXPECT_NO_ERROR(GBK_system(cmd));
-            free(cmd);
-        }
+                    if (!load_broken) {
+                        // export again
+                        GB_ERROR reexport_error = TREE_write_Newick(gb_main, reloaded_treename, NULL, save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode, outfile);
+                        TEST_EXPECT_NULL(reexport_error);
 
-        bool reexported_as_expected = arb_test::test_textfile_difflines(expectedfile, outfile2, 0);
-        TEST_EXPECT__BROKEN(reexported_as_expected);
+                        // eliminate comments added by loading/saving
+                        char *outfile2 = GBS_global_string_copy("trees/%s2.tree", savename);
+                        {
+                            char *cmd = GBS_global_string_copy("cat %s"
+                                                               " | grep -v 'Loaded from trees/.*_exp_'"
+                                                               " | grep -v 'tree_reloaded saved to'"
+                                                               " > %s", outfile, outfile2);
+                            TEST_EXPECT_NO_ERROR(GBK_system(cmd));
+                            free(cmd);
+                        }
 
-        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile2));
-        free(outfile2);
+                        bool reexported_as_expected = arb_test::test_textfile_difflines(expectedfile, outfile2, 0);
+                        if (save_groupnames) {
+                            TEST_EXPECT__BROKEN(reexported_as_expected); // @@@ loading groupnames starting with digits is broken (adds digit prefix as bootstrap)
+                        }
+                        else {
+                            TEST_EXPECT(reexported_as_expected);
+                        }
+
+                        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile2));
+                        free(outfile2);
+                    }
 #endif
-        free(expectedfile);
+                    free(expectedfile);
+                    free(paramID);
+                }
+            }
+        }
     }
 
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile));
