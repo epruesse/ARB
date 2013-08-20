@@ -11,15 +11,15 @@ OBJECTS=$(addprefix obj/,$(notdir $(SOURCES:.cpp=.o)))
 
 all: install
 
-muscle: prepare $(OBJECTS)
-	$(CXX) $(LDFLAGS) $(OBJECTS) -o muscle
-
-
-prepare:
+objdir:
 	mkdir -p obj
 
+$(OBJECTS) : objdir
 obj/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
+
+muscle: $(OBJECTS)
+	$(CXX) $(LDFLAGS) $(OBJECTS) -o muscle
 
 install: muscle
 	cp -f muscle $(ARBHOME)/bin
