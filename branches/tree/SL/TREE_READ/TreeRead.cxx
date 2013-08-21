@@ -259,56 +259,45 @@ char *TreeReader::eat_quoted_string() {
     /*! Read in a quoted or unquoted string.
      * in quoted strings double quotes ('') are replaced by (').
      *
-     * @@@ really perform fancy scanning of ('')? ARB no longers saves trees using such an "escape-seq"
-     * @@@ when/if elim, DRY code for ' vs " below
-     *
      * @return
      *     NULL in case of error,
      *     "" if no string present,
      *     otherwise the found string.
      */
 
-    char  buffer[1024];
+    const int MAX_NAME_LEN = 1000;
+
+    char  buffer[MAX_NAME_LEN+2];
     char *s = buffer;
     int   c = last_character;
 
-    if (c == '\'') {
+#define NAME_TOO_LONG ((s-buffer)>MAX_NAME_LEN)
+
+    if (c == '\'' || c == '"') {
+        char found_quote = c;
+
         c = read_char();
-        while ((c != EOF) && (c!='\'')) {
-          gbt_lt_double_quot :
+        while (c!=EOF && c!=found_quote) {
             *(s++) = c;
-            if ((s-buffer) > 1000) {
-              name_too_long_error:
-                *s = 0;
-                setError(GBS_global_string("Name '%s' is longer than 1000 bytes", buffer));
-                return NULL;
-            }
+            if (NAME_TOO_LONG) { c = 0; break; }
             c = read_char();
         }
-        if (c == '\'') {
-            c = read_tree_char();
-            if (c == '\'') goto gbt_lt_double_quot;
-        }
-    }
-    else if (c == '"') {
-        c = read_char();
-        while ((c != EOF) && (c!='"')) {
-            *(s++) = c;
-            if ((s-buffer) > 1000) goto name_too_long_error;
-            c = read_char();
-        }
-        if (c == '"') c = read_tree_char();
+        if (c == found_quote) c = read_tree_char();
     }
     else {
         while (c == '_') c = read_tree_char(); // @@@ why?
         while (c == ' ') c = read_tree_char();
-        while ((c != ':') && (c != EOF) && (c!=',') && (c!=';') && (c != ')')) {
+        while (c!=':' && c!=EOF && c!=',' && c!=';' && c != ')') {
             *(s++) = c;
-            if ((s-buffer) > 1000) goto name_too_long_error;
+            if (NAME_TOO_LONG) break;
             c = read_tree_char();
         }
     }
     *s = 0;
+    if (NAME_TOO_LONG) {
+        setError(GBS_global_string("Name '%s' is longer than %i bytes", buffer, MAX_NAME_LEN));
+        return NULL;
+    }
     return strdup(buffer);
 }
 
