@@ -17,6 +17,14 @@ using namespace std;
 
 #define tree_assert(cond) arb_assert(cond)
 
+inline void replace_by_underscore(char *str, const char *toReplace) {
+    char *unwanted = strpbrk(str, toReplace);
+    while (unwanted) {
+        unwanted[0] = '_';
+        unwanted    = strpbrk(unwanted+1, toReplace);
+    }
+}
+
 static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qmode) {
     // writes a label into the Newick file
     // label is quoted if necessary
@@ -27,35 +35,40 @@ static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qm
     const char *problem_chars    = disallowed_chars+4;
     tree_assert(problem_chars[0] == '(');
 
-    bool need_quotes = strpbrk(label, disallowed_chars) != NULL;
-    char used_quote  = 0;
+    bool need_quotes  = strpbrk(label, disallowed_chars) != NULL;
+    char used_quote   = 0;
+    bool force_quotes = (qmode & TREE_FORCE_QUOTES);
 
-    if ((qmode & TREE_FORCE_QUOTES) || need_quotes) {
+    if (force_quotes || need_quotes) {
         if      (qmode&TREE_SINGLE_QUOTES) used_quote = '\'';
         else if (qmode&TREE_DOUBLE_QUOTES) used_quote = '\"';
     }
 
+    char *fixed_label = strdup(label);
     if (used_quote) {
+        // replace all problematic characters if requested
         bool force_replace = (qmode & TREE_FORCE_REPLACE);
+        if (force_replace) replace_by_underscore(fixed_label, problem_chars);
 
-        fputc(used_quote, out);
-        while (*label) {
-            char c = *label++;
-            if (c == used_quote || // replace used quote by an '_' if it appears inside label
-                (force_replace && strchr(problem_chars, c))) // replace all problematic characters if requested
-            {
-                c = '_';
-            }
-            fputc(c, out);
+        // replace used quote by an '_' if it appears inside label
+        char used_quote_as_string[] = { used_quote, 0 };
+        replace_by_underscore(fixed_label, used_quote_as_string);
+
+        if (!force_quotes) {
+            need_quotes = strpbrk(fixed_label, disallowed_chars) != NULL;
+            if (!need_quotes) used_quote = 0; // @@@ fails if both quote-types are used in one name
         }
-        fputc(used_quote, out);
     }
     else {
         // unquoted label - always replace all problematic characters by '_'
-        for (int i = 0; label[i]; ++i) {
-            fputc(strchr(disallowed_chars, label[i]) ? '_' : label[i], out);
-        }
+        replace_by_underscore(fixed_label, disallowed_chars);
     }
+
+    if (used_quote) fputc(used_quote, out);
+    fputs(fixed_label, out);
+    if (used_quote) fputc(used_quote, out);
+
+    free(fixed_label);
 }
 
 

@@ -503,13 +503,7 @@ void TEST_coherent_treeIO() {
                             system(GBS_global_string("cp %s %s", outfile2, expectedfile));
                         }
 #else // !defined(TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS)
-                        if (strstr(paramID, "_BsGrp_2") != NULL ||
-                            strstr(paramID, "_BsGrpLen_2") != NULL) {
-                            TEST_EXPECT__BROKEN(reexported_as_expected);
-                        }
-                        else {
-                            TEST_EXPECT(reexported_as_expected);
-                        }
+                        TEST_EXPECT(reexported_as_expected);
 #endif
 
                         TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile2));
