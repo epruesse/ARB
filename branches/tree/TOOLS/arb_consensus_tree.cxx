@@ -502,12 +502,7 @@ void TEST_coherent_treeIO() {
                             }
 
                             bool reexported_as_expected = arb_test::test_textfile_difflines(expectedfile, outfile2, 0);
-                            if (save_groupnames) {
-                                TEST_EXPECT__BROKEN(reexported_as_expected); // @@@ loading groupnames starting with digits is broken (adds digit prefix as bootstrap)
-                            }
-                            else {
-                                TEST_EXPECT(reexported_as_expected);
-                            }
+                            TEST_EXPECT(reexported_as_expected);
 
                             TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile2));
                             free(outfile2);

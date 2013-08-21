@@ -311,11 +311,11 @@ void TreeReader::setBranchName_acceptingBootstrap(GBT_TREE *node, char*& name) {
     // ARBs extended newick format allows 3 kinds of node-names:
     //     'groupname'
     //     'bootstrap'
-    //     'bootstrap:groupname' (even w/o the ':')
+    //     'bootstrap:groupname' (needs to be quoted)
     //
     // where
     //     'bootstrap' is sth interpretable as double
-    //     'groupname' is anything not interpretable as double
+    //     'groupname' is sth not interpretable as double
     //
     // If a groupname is detected, it is stored in node->name
     // If a bootstrap is detected, it is stored in node->remark_branch
@@ -323,32 +323,34 @@ void TreeReader::setBranchName_acceptingBootstrap(GBT_TREE *node, char*& name) {
     // Bootstrap values will be scaled up by factor 100.
     // Wrong scale-ups (to 10000) will be corrected by calling TREE_scale() after the whole tree has been loaded.
 
-    char   *end       = 0;
-    double  bootstrap = strtod(name, &end);
-
     char *new_name = NULL;
-    if (end == name) {          // no digits -> no bootstrap
-        new_name = name;
-    }
-    else {
-        bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0 (downscaling is done later)
-        if (bootstrap > max_found_bootstrap) { max_found_bootstrap = bootstrap; }
+    {
+        char   *end          = 0;
+        double  bootstrap    = strtod(name, &end);
+        bool    is_bootstrap = (end != name) && (end[0] == ':' || !end[0]);
 
-        if (node->remark_branch) {
-            error = "Invalid duplicated bootstrap specification detected";
+        if (is_bootstrap) {
+            bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0 (downscaling is done later)
+            if (bootstrap > max_found_bootstrap) { max_found_bootstrap = bootstrap; }
+
+            if (node->remark_branch) {
+                error = "Invalid duplicated bootstrap specification detected";
+            }
+            else {
+                node->remark_branch = GBS_global_string_copy("%i%%", int(bootstrap));
+            }
+
+            if (end[0] != 0) {      // sth behind bootstrap value
+                arb_assert(end[0] == ':');
+                new_name = strdup(end+1);
+            }
+            free(name);
         }
         else {
-            node->remark_branch = GBS_global_string_copy("%i%%", int(bootstrap));
+            new_name = name; // use whole input as groupname
         }
-
-        if (end[0] != 0) {      // sth behind bootstrap value
-            if (end[0] == ':') ++end; // ARB format for nodes with bootstraps AND node name is 'bootstrap:nodename'
-            new_name = strdup(end);
-        }
-        free(name);
+        name = NULL;
     }
-    name = NULL;
-
     if (new_name) {
         if (node->name) {
             if (node->is_leaf) {
@@ -800,7 +802,7 @@ void TEST_load_tree() {
             "((a,b)'17:G',(c,d)'33.3:H',(e,f)'12.5:I':0.2);", // [5] test groupnames with bootstraps
             "((a,b)17G,(c,d)33.3H,(e,f)12.5I:0.2);",          // [6] test groupnames + bootstraps w/o separator (@@@should be treated as strange names)
 
-            "((a,b)'17%:G',(c,d)'33.3%:H',(e,f)'12.5%:I':0.2);",  // [7] test bootstraps with percent spec (@@@ currently broken)
+            "((a,b)'17%:G',(c,d)'33.3%:H',(e,f)'12.5%:I':0.2);",  // [7] test bootstraps with percent spec (@@@ currently unsupported)
             "((a,b)'0.17:G',(c,d)'0.333:H',(e,f)'0.125:I':0.2);", // [8] test bootstraps in range [0..1]
         };
 
@@ -825,9 +827,8 @@ void TEST_load_tree() {
             "Auto-scaling bootstrap values by factor 0.01",
             NULL,
             "Auto-scaling bootstrap values by factor 0.01",
-            "Auto-scaling bootstrap values by factor 0.01", // @@@ unwanted
-
-            "Auto-scaling bootstrap values by factor 0.01", // @@@ no auto-scaling shall occur here (bootstraps are already specified as percent)
+            NULL,
+            NULL, // no auto-scaling shall occur here (bootstraps are already specified as percent)
             NULL, // no auto-scaling shall occur here (bootstraps are in [0..1])
         };
 
@@ -849,10 +850,13 @@ void TEST_load_tree() {
                     TEST_EXPECT_EQUAL(tree->rightson->rightlen, 0.57);
                     break;
                 case 2:
+                    // @@@ bootstrap with percent-specification not accepted -> used as nodename
                     TEST_EXPECT_NULL__BROKEN(tree->rightson->name);
-                    TEST_EXPECT_EQUAL(tree->rightson->name, "%"); // @@@ bootstrap with percent-specification causes unwanted groupname
+                    TEST_EXPECT_EQUAL(tree->rightson->name, "17%"); // @@@ unwanted (just avoid regression)
 
-                    TEST_EXPECT_EQUAL(tree->rightson->remark_branch, "17%");
+                    TEST_EXPECT_EQUAL__BROKEN(tree->rightson->remark_branch, "17%");
+                    TEST_EXPECT_NULL(tree->rightson->remark_branch); // @@@ unwanted (just avoid regression)
+
                     TEST_EXPECT_EQUAL(tree->rightlen, 0.2);
                     break;
 
@@ -866,18 +870,22 @@ void TEST_load_tree() {
                     TEST_EXPECT_NULL(tree->leftson->remark_branch);
                     switch (i) {
                         case 6:
-                            TEST_EXPECT_NULL__BROKEN(tree->leftson->leftson->remark_branch);
-                            TEST_EXPECT_NULL__BROKEN(tree->leftson->rightson->remark_branch);
-                            TEST_EXPECT_NULL__BROKEN(tree->rightson->remark_branch);
-                            // fall-through tests unwanted, but existing behavior (to avoid regression)
+                            TEST_EXPECT_NULL(tree->leftson->leftson->remark_branch);
+                            TEST_EXPECT_NULL(tree->leftson->rightson->remark_branch);
+                            TEST_EXPECT_NULL(tree->rightson->remark_branch);
+                            break;
                         case 3:
                         case 5:
-                        case 7:
                         case 8:
                             TEST_EXPECT_EQUAL(tree->leftson->leftson->remark_branch,  "17%");
                             TEST_EXPECT_EQUAL(tree->leftson->rightson->remark_branch, "33%");
                             TEST_EXPECT_EQUAL(tree->rightson->remark_branch,          "13%");
                             break;
+                        case 7:
+                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->leftson->remark_branch,  "17%");
+                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->rightson->remark_branch, "33%");
+                            TEST_EXPECT_EQUAL__BROKEN(tree->rightson->remark_branch,          "13%");
+                            // fall-through (tests unwanted, but existing behavior; to avoid regression)
                         default:
                             TEST_EXPECT_NULL(tree->leftson->leftson->remark_branch);
                             TEST_EXPECT_NULL(tree->leftson->rightson->remark_branch);
@@ -890,10 +898,10 @@ void TEST_load_tree() {
                     TEST_EXPECT_NULL(tree->leftson->name);
                     switch (i) {
                         case 6:
-                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->leftson->name,  "17G");
-                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->rightson->name, "33.3H");
-                            TEST_EXPECT_EQUAL__BROKEN(tree->rightson->name,          "12.5I");
-                            // fall-through tests unwanted, but existing behavior (to avoid regression)
+                            TEST_EXPECT_EQUAL(tree->leftson->leftson->name,  "17G");
+                            TEST_EXPECT_EQUAL(tree->leftson->rightson->name, "33.3H");
+                            TEST_EXPECT_EQUAL(tree->rightson->name,          "12.5I");
+                            break;
                         case 4:
                         case 5:
                         case 8:
@@ -906,9 +914,9 @@ void TEST_load_tree() {
                             TEST_EXPECT_EQUAL__BROKEN(tree->leftson->rightson->name, "H");
                             TEST_EXPECT_EQUAL__BROKEN(tree->rightson->name,          "I");
                             // @@@ existing, but unwanted behavior:
-                            TEST_EXPECT_EQUAL(tree->leftson->leftson->name,  "%:G");
-                            TEST_EXPECT_EQUAL(tree->leftson->rightson->name, "%:H");
-                            TEST_EXPECT_EQUAL(tree->rightson->name,          "%:I");
+                            TEST_EXPECT_EQUAL(tree->leftson->leftson->name,  "17%:G");
+                            TEST_EXPECT_EQUAL(tree->leftson->rightson->name, "33.3%:H");
+                            TEST_EXPECT_EQUAL(tree->rightson->name,          "12.5%:I");
                             break;
                         default:
                             TEST_EXPECT_NULL(tree->leftson->leftson->name);
@@ -928,8 +936,13 @@ void TEST_load_tree() {
                     TEST_REJECT(true); // unhandled tree
                     break;
             }
-            if (expected_warnings[i]) TEST_EXPECT_CONTAINS(warnings, expected_warnings[i]);
-            else                      TEST_EXPECT_NULL(warnings);
+            if (expected_warnings[i]) {
+                TEST_REJECT_NULL(warnings);
+                TEST_EXPECT_CONTAINS(warnings, expected_warnings[i]);
+            }
+            else                      {
+                TEST_EXPECT_NULL(warnings);
+            }
             free(warnings);
             GBT_delete_tree(tree);
         }
@@ -962,7 +975,7 @@ void TEST_load_tree() {
         }
     }
     {
-        GBT_TREE *tree = loadFromFileContaining("((a, b)25%)20%;", NULL);
+        GBT_TREE *tree = loadFromFileContaining("((a, b)25)20;", NULL);
         TEST_EXPECT_TREELOAD_FAILED_WITH(tree, "Invalid duplicated bootstrap specification detected");
     }
 
