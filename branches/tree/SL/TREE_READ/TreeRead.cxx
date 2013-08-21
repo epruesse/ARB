@@ -808,9 +808,9 @@ void TEST_load_tree() {
             "((a,b)17,(c,d)33.3,(e,f)12.5:0.2);",             // [3] test bootstraps
             "((a,b)G,(c,d)H,(e,f)I:0.2);",                    // [4] test groupnames w/o bootstraps
             "((a,b)'17:G',(c,d)'33.3:H',(e,f)'12.5:I':0.2);", // [5] test groupnames with bootstraps
-            "((a,b)17G,(c,d)33.3H,(e,f)12.5I:0.2);",          // [6] test groupnames + bootstraps w/o separator (@@@should be treated as strange names)
+            "((a,b)17G,(c,d)33.3H,(e,f)12.5I:0.2);",          // [6] test groupnames + bootstraps w/o separator
 
-            "((a,b)'17%:G',(c,d)'33.3%:H',(e,f)'12.5%:I':0.2);",  // [7] test bootstraps with percent spec (@@@ currently unsupported)
+            "((a,b)'17%:G',(c,d)'33.3%:H',(e,f)'12.5%:I':0.2);",  // [7] test bootstraps with percent spec
             "((a,b)'0.17:G',(c,d)'0.333:H',(e,f)'0.125:I':0.2);", // [8] test bootstraps in range [0..1]
         };
 
@@ -897,6 +897,8 @@ void TEST_load_tree() {
                     TEST_EXPECT_NULL(tree->leftson->name);
                     switch (i) {
                         case 6:
+                            // check un-separated digits are treated as strange names
+                            // (previously these were accepted as bootstraps)
                             TEST_EXPECT_EQUAL(tree->leftson->leftson->name,  "17G");
                             TEST_EXPECT_EQUAL(tree->leftson->rightson->name, "33.3H");
                             TEST_EXPECT_EQUAL(tree->rightson->name,          "12.5I");
