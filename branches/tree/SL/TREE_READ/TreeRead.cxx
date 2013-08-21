@@ -314,7 +314,7 @@ void TreeReader::setBranchName_acceptingBootstrap(GBT_TREE *node, char*& name) {
     //     'bootstrap:groupname' (needs to be quoted)
     //
     // where
-    //     'bootstrap' is sth interpretable as double
+    //     'bootstrap' is sth interpretable as double (optionally followed by '%')
     //     'groupname' is sth not interpretable as double
     //
     // If a groupname is detected, it is stored in node->name
@@ -325,9 +325,17 @@ void TreeReader::setBranchName_acceptingBootstrap(GBT_TREE *node, char*& name) {
 
     char *new_name = NULL;
     {
-        char   *end          = 0;
-        double  bootstrap    = strtod(name, &end);
-        bool    is_bootstrap = (end != name) && (end[0] == ':' || !end[0]);
+        char   *end       = 0;
+        double  bootstrap = strtod(name, &end);
+
+        bool is_bootstrap = (end != name);
+        if (is_bootstrap) {
+            if (end[0] == '%') {
+                ++end;
+                bootstrap = bootstrap/100.0; // percent -> [0..1]
+            }
+            is_bootstrap = end[0] == ':' || !end[0]; // followed by ':' or at EOS
+        }
 
         if (is_bootstrap) {
             bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0 (downscaling is done later)
@@ -850,13 +858,9 @@ void TEST_load_tree() {
                     TEST_EXPECT_EQUAL(tree->rightson->rightlen, 0.57);
                     break;
                 case 2:
-                    // @@@ bootstrap with percent-specification not accepted -> used as nodename
-                    TEST_EXPECT_NULL__BROKEN(tree->rightson->name);
-                    TEST_EXPECT_EQUAL(tree->rightson->name, "17%"); // @@@ unwanted (just avoid regression)
-
-                    TEST_EXPECT_EQUAL__BROKEN(tree->rightson->remark_branch, "17%");
-                    TEST_EXPECT_NULL(tree->rightson->remark_branch); // @@@ unwanted (just avoid regression)
-
+                    // test bootstrap with percent-specification is parsed correctly
+                    TEST_EXPECT_NULL(tree->rightson->name);
+                    TEST_EXPECT_EQUAL(tree->rightson->remark_branch, "17%");
                     TEST_EXPECT_EQUAL(tree->rightlen, 0.2);
                     break;
 
@@ -869,6 +873,7 @@ void TEST_load_tree() {
                     // check bootstraps
                     TEST_EXPECT_NULL(tree->leftson->remark_branch);
                     switch (i) {
+                        case 4:
                         case 6:
                             TEST_EXPECT_NULL(tree->leftson->leftson->remark_branch);
                             TEST_EXPECT_NULL(tree->leftson->rightson->remark_branch);
@@ -876,20 +881,14 @@ void TEST_load_tree() {
                             break;
                         case 3:
                         case 5:
+                        case 7:
                         case 8:
                             TEST_EXPECT_EQUAL(tree->leftson->leftson->remark_branch,  "17%");
                             TEST_EXPECT_EQUAL(tree->leftson->rightson->remark_branch, "33%");
                             TEST_EXPECT_EQUAL(tree->rightson->remark_branch,          "13%");
                             break;
-                        case 7:
-                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->leftson->remark_branch,  "17%");
-                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->rightson->remark_branch, "33%");
-                            TEST_EXPECT_EQUAL__BROKEN(tree->rightson->remark_branch,          "13%");
-                            // fall-through (tests unwanted, but existing behavior; to avoid regression)
                         default:
-                            TEST_EXPECT_NULL(tree->leftson->leftson->remark_branch);
-                            TEST_EXPECT_NULL(tree->leftson->rightson->remark_branch);
-                            TEST_EXPECT_NULL(tree->rightson->remark_branch);
+                            TEST_REJECT(true); // unhandled tree
                             break;
                     }
 
@@ -905,23 +904,18 @@ void TEST_load_tree() {
                         case 4:
                         case 5:
                         case 8:
+                        case 7:
                             TEST_EXPECT_EQUAL(tree->leftson->leftson->name,  "G");
                             TEST_EXPECT_EQUAL(tree->leftson->rightson->name, "H");
                             TEST_EXPECT_EQUAL(tree->rightson->name,          "I");
                             break;
-                        case 7:
-                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->leftson->name,  "G");
-                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->rightson->name, "H");
-                            TEST_EXPECT_EQUAL__BROKEN(tree->rightson->name,          "I");
-                            // @@@ existing, but unwanted behavior:
-                            TEST_EXPECT_EQUAL(tree->leftson->leftson->name,  "17%:G");
-                            TEST_EXPECT_EQUAL(tree->leftson->rightson->name, "33.3%:H");
-                            TEST_EXPECT_EQUAL(tree->rightson->name,          "12.5%:I");
-                            break;
-                        default:
+                        case 3:
                             TEST_EXPECT_NULL(tree->leftson->leftson->name);
                             TEST_EXPECT_NULL(tree->leftson->rightson->name);
                             TEST_EXPECT_NULL(tree->rightson->name);
+                            break;
+                        default:
+                            TEST_REJECT(true); // unhandled tree
                             break;
                     }
 
