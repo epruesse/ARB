@@ -799,6 +799,9 @@ void TEST_load_tree() {
             "((a,b)G,(c,d)H,(e,f)I:0.2);",                    // [4] test groupnames w/o bootstraps
             "((a,b)'17:G',(c,d)'33.3:H',(e,f)'12.5:I':0.2);", // [5] test groupnames with bootstraps
             "((a,b)17G,(c,d)33.3H,(e,f)12.5I:0.2);",          // [6] test groupnames + bootstraps w/o separator (@@@should be treated as strange names)
+
+            "((a,b)'17%:G',(c,d)'33.3%:H',(e,f)'12.5%:I':0.2);",  // [7] test bootstraps with percent spec (@@@ currently broken)
+            "((a,b)'0.17:G',(c,d)'0.333:H',(e,f)'0.125:I':0.2);", // [8] test bootstraps in range [0..1]
         };
 
         const char *expected_nodes[] = {
@@ -808,6 +811,9 @@ void TEST_load_tree() {
 
             "a,b,c,d,e,f",
             "a,b,c,d,e,f",
+            "a,b,c,d,e,f",
+            "a,b,c,d,e,f",
+
             "a,b,c,d,e,f",
             "a,b,c,d,e,f",
         };
@@ -820,6 +826,9 @@ void TEST_load_tree() {
             NULL,
             "Auto-scaling bootstrap values by factor 0.01",
             "Auto-scaling bootstrap values by factor 0.01", // @@@ unwanted
+
+            "Auto-scaling bootstrap values by factor 0.01", // @@@ no auto-scaling shall occur here (bootstraps are already specified as percent)
+            NULL, // no auto-scaling shall occur here (bootstraps are in [0..1])
         };
 
         STATIC_ASSERT(ARRAY_ELEMS(expected_nodes) == ARRAY_ELEMS(treestring));
@@ -851,6 +860,8 @@ void TEST_load_tree() {
                 case 4:
                 case 5:
                 case 6:
+                case 7:
+                case 8:
                     // check bootstraps
                     TEST_EXPECT_NULL(tree->leftson->remark_branch);
                     switch (i) {
@@ -861,6 +872,8 @@ void TEST_load_tree() {
                             // fall-through tests unwanted, but existing behavior (to avoid regression)
                         case 3:
                         case 5:
+                        case 7:
+                        case 8:
                             TEST_EXPECT_EQUAL(tree->leftson->leftson->remark_branch,  "17%");
                             TEST_EXPECT_EQUAL(tree->leftson->rightson->remark_branch, "33%");
                             TEST_EXPECT_EQUAL(tree->rightson->remark_branch,          "13%");
@@ -883,9 +896,19 @@ void TEST_load_tree() {
                             // fall-through tests unwanted, but existing behavior (to avoid regression)
                         case 4:
                         case 5:
+                        case 8:
                             TEST_EXPECT_EQUAL(tree->leftson->leftson->name,  "G");
                             TEST_EXPECT_EQUAL(tree->leftson->rightson->name, "H");
                             TEST_EXPECT_EQUAL(tree->rightson->name,          "I");
+                            break;
+                        case 7:
+                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->leftson->name,  "G");
+                            TEST_EXPECT_EQUAL__BROKEN(tree->leftson->rightson->name, "H");
+                            TEST_EXPECT_EQUAL__BROKEN(tree->rightson->name,          "I");
+                            // @@@ existing, but unwanted behavior:
+                            TEST_EXPECT_EQUAL(tree->leftson->leftson->name,  "%:G");
+                            TEST_EXPECT_EQUAL(tree->leftson->rightson->name, "%:H");
+                            TEST_EXPECT_EQUAL(tree->rightson->name,          "%:I");
                             break;
                         default:
                             TEST_EXPECT_NULL(tree->leftson->leftson->name);
@@ -899,6 +922,10 @@ void TEST_load_tree() {
                     TEST_EXPECT_EQUAL(tree->leftson->leftlen,  TREE_DEFLEN);
                     TEST_EXPECT_EQUAL(tree->leftson->rightlen, TREE_DEFLEN);
                     TEST_EXPECT_EQUAL(tree->rightlen,          0.2);
+                    break;
+
+                default:
+                    TEST_REJECT(true); // unhandled tree
                     break;
             }
             if (expected_warnings[i]) TEST_EXPECT_CONTAINS(warnings, expected_warnings[i]);
