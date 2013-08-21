@@ -257,7 +257,10 @@ bool TreeReader::eat_number(GBT_LEN& result) {
 
 char *TreeReader::eat_quoted_string() {
     /*! Read in a quoted or unquoted string.
-     * in quoted strings double quotes ('') are replaced by (')
+     * in quoted strings double quotes ('') are replaced by (').
+     *
+     * @@@ really perform fancy scanning of ('')? ARB no longers saves trees using such an "escape-seq"
+     * @@@ when/if elim, DRY code for ' vs " below
      *
      * @return
      *     NULL in case of error,
@@ -275,8 +278,9 @@ char *TreeReader::eat_quoted_string() {
           gbt_lt_double_quot :
             *(s++) = c;
             if ((s-buffer) > 1000) {
+              name_too_long_error:
                 *s = 0;
-                setError(GBS_global_string("Name '%s' longer than 1000 bytes", buffer));
+                setError(GBS_global_string("Name '%s' is longer than 1000 bytes", buffer));
                 return NULL;
             }
             c = read_char();
@@ -286,18 +290,21 @@ char *TreeReader::eat_quoted_string() {
             if (c == '\'') goto gbt_lt_double_quot;
         }
     }
-    else {
-        while (c == '_') c = read_tree_char();
-        while (c == ' ') c = read_tree_char();
-        while ((c != ':') && (c != EOF) && (c!=',') &&
-                (c!=';') && (c != ')'))
-        {
+    else if (c == '"') {
+        c = read_char();
+        while ((c != EOF) && (c!='"')) {
             *(s++) = c;
-            if ((s-buffer) > 1000) {
-                *s = 0;
-                setError(GBS_global_string("Name '%s' longer than 1000 bytes", buffer));
-                return NULL;
-            }
+            if ((s-buffer) > 1000) goto name_too_long_error;
+            c = read_char();
+        }
+        if (c == '"') c = read_tree_char();
+    }
+    else {
+        while (c == '_') c = read_tree_char(); // @@@ why?
+        while (c == ' ') c = read_tree_char();
+        while ((c != ':') && (c != EOF) && (c!=',') && (c!=';') && (c != ')')) {
+            *(s++) = c;
+            if ((s-buffer) > 1000) goto name_too_long_error;
             c = read_tree_char();
         }
     }
@@ -783,7 +790,7 @@ void TEST_load_tree() {
         GBT_TREE *tree    = TREE_load("trees/test.tree", sizeof(GBT_TREE), &comment, false, NULL);
         // -> ../../UNIT_TESTER/run/trees/test.tree
 
-        TEST_EXPECT_TREELOAD(tree, "s1,s2,s3,s 4,s5,\"s-6\"", 6); // @@@ remove double-quotes from name?
+        TEST_EXPECT_TREELOAD(tree, "s1,s2,s3,s 4,s5,s-6", 6);
         if (tree) {
             TEST_REJECT_NULL(comment);
             TEST_EXPECT_CONTAINS(comment,
