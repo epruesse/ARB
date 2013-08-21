@@ -1,6 +1,6 @@
 [PRG=dnadist CORR=jukes_cantor FILTER=POS_VAR_BY_PARSIMONY PKG=ARB
 [created as copy of 'tree_bootstrap_1000_fixed']
-Tue Aug 20 16:37:26 2013: tree_bootstrap_and_groups saved to trees/bg.tree
+Wed Aug 21 12:34:05 2013: tree_bootstrap_and_groups saved to trees/bg.tree
 ]
 (((((AticSea6,
 (RblAerol,
@@ -17,7 +17,7 @@ MabSalin
 ),
 PaoMaris
 )62
-)'18:group18'
+)'18:group_18_'
 )19,
 (OnlGran2,
 RsnAnta2
@@ -25,7 +25,7 @@ RsnAnta2
 ),
 (MhuCaps3,
 ThtNivea
-)noboot
+)'no"boot"'
 ),
 ((LbnMarin,
 LbnzAlb4

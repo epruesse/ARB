@@ -69,13 +69,13 @@ tree_data	:7000	%% (%
 		order			%i 2
 		node			%% (%
 			id			%i 6
-			group_name		"group18"
+			group_name		"group'18'"
 			grouped			%y 1
 			%) /*node*/
 
 		node			%% (%
 			id			%i 12
-			group_name		"noboot"
+			group_name		"no\"boot\""
 			grouped			%y 1
 			%) /*node*/
 
