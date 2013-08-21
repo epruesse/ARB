@@ -24,7 +24,7 @@ tree_data	:7000	%% (%
 		%) /*tree_newick_sq*/
 
 	tree_newick_dq		%% (%
-		tree			"N0.05,0.05;L\"HelPylor\"\AN0.05,0.05;N0.05,0.05;N0.05,0.05;L\"AnaMargi\"\AL\"EhrEhrli\"\AL\"CowRumin\"\AN0.05,0.05;L\"RhdSphae\"\AN0.05,0.05;L\"AzoCauli\"\AL\"BraJapon\"\A"
+		tree			"N0.05,0.05;LHelPylor\AN0.05,0.05;N0.05,0.05;N0.05,0.05;LAnaMargi\ALEhrEhrli\ALCowRumin\AN0.05,0.05;LRhdSphae\AN0.05,0.05;LAzoCauli\ALBraJapon\A"
 		nnodes			%i 6
 		order			%i 3
 		remark			"test newick_dq\nunittest-tree\n<date removed for testing>"
