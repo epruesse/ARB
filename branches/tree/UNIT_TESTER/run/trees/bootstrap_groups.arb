@@ -3,7 +3,7 @@ genom_db		%i 0
 presets			%% (%
 	alignment	:6000	%% (%
 		alignment_name	:7600	"ali_new"
-		alignment_len	:7000	%i 50000
+		alignment_len	:7000	%i -1
 		aligned		:7000	%i 1
 		alignment_write_security	:7600	%i 0
 		alignment_type	:7000	"rna"
@@ -41,10 +41,9 @@ presets			%% (%
 	use			"ali_new"
 	%) /*presets*/
 
-
 tree_data	:7000	%% (%
 	tree_bootstrap_and_groups		%% (%
-		tree			"R0%\AN0.0608265,0.0608265;N0.152167,0.427084;N0.0360123,0.0210334;R19%\AN0.0179282,0.0298038;R5%\AN0.111214,0.23783;LAticSea6\AR99%\AN0.0848461,0.0420741;LRblAerol\ALRblMesop\AR18%\AN0.0156331,0.0356543;R37%\AN0.0344527,0.0685896;R71%\AN0.0759521,0.0534489;LDnrShiba\ALRsbElon4\ALMmbAlkal\AR62%\AN0.0951137,0.0916022;N0.00149119,0.00881101;LMabPelag\ALMabSalin\ALPaoMaris\AR65%\AN0.0565338,0.0601883;LOnlGran2\ALRsnAnta2\AN0.193864,0.229896;LMhuCaps3\ALThtNivea\AN0.0159966,0.0323678;R80%\AN0.0190015,0.00278518;LLbnMarin\ALLbnzAlb4\ALLbnAlexa\A"
+		tree			"R0%\AN0.0608265,0.0608265;N0.152167,0.427084;N0.0360123,0.0210334;R19%\AN0.0179282,0.0298038;R5%\AN0.111214,0.23783;LAticSea6\AR99%\AN0.0848461,0.0420741;LRblAerol\ALRblMesop\AR18%\AN0.0156331,0.0356543;R37%\AN0.0344527,0.0685896;R71%\AN0.0759521,0.0534489;LDnrShiba\ALRsbElon4\ALMmbAlkal\AR62%\AN0.0951137,0.0916022;N0.00149119,0.00881101;LMabPelag\ALMabSalin\ALPaoMaris\AR65%\AN0.0565338,0.0601883;LOnlGran2\ALRsnAnta2\AN0.193864,0.229896;L_MhuCaps\ALThtNivea\AN0.0159966,0.0323678;R80%\AN0.0190015,0.00278518;LLbnMarin\ALLbnzAlb4\ALLbnAlexa\A"
 		nnodes			%i 15
 		remark			"PRG=dnadist CORR=jukes_cantor FILTER=POS_VAR_BY_PARSIMONY PKG=ARB\n[created as copy of 'tree_bootstrap_1000_fixed']"
 		security		%i 0
@@ -89,6 +88,16 @@ tree_data	:7000	%% (%
 			id			%i 13
 			group_name		"666numbered_noboot"
 			grouped			%y 1
+			%) /*node*/
+
+		node			%% (%
+			id			%i 2
+			group_name		"\"quoted\""
+			%) /*node*/
+
+		node			%% (%
+			id			%i 1
+			group_name		"__bs100"
 			%) /*node*/
 
 		%) /*tree_bootstrap_and_groups*/

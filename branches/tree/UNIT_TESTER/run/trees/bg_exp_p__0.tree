@@ -1,6 +1,6 @@
 [PRG=dnadist CORR=jukes_cantor FILTER=POS_VAR_BY_PARSIMONY PKG=ARB
 [created as copy of 'tree_bootstrap_1000_fixed']
-Tue Aug 20 15:52:34 2013: tree_bootstrap_and_groups saved to trees/bg.tree
+Thu Aug 22 11:41:27 2013: tree_bootstrap_and_groups saved to trees/bg.tree
 ]
 (
   (
@@ -36,7 +36,7 @@ Tue Aug 20 15:52:34 2013: tree_bootstrap_and_groups saved to trees/bg.tree
       )
     ),
     (
-      MhuCaps3,
+      _MhuCaps,
       ThtNivea
     )
   ),

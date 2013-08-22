@@ -408,12 +408,23 @@ void TEST_arb_consensus_tree() {
         free(saveas);
     }
 }
-
 #endif // REPEATED_TESTS
 
 // #define TREEIO_AUTO_UPDATE // uncomment to auto-update expected test-results
 // #define TREEIO_AUTO_UPDATE_IF_EXPORT_DIFFERS // uncomment to auto-update expected test-results
 // #define TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS // uncomment to auto-update expected test-results
+
+static const char *findFirstNameContaining(GBT_TREE *tree, const char *part) {
+    const char *found = NULL;
+    if (tree->name && strstr(tree->name, part)) {
+        found = tree->name;
+    }
+    else if (!tree->is_leaf) {
+        found             = findFirstNameContaining(tree->leftson, part);
+        if (!found) found = findFirstNameContaining(tree->rightson, part);
+    }
+    return found;
+}
 
 void TEST_coherent_treeIO() {
     const char *dbname   = "trees/bootstrap_groups.arb";
@@ -478,6 +489,27 @@ void TEST_coherent_treeIO() {
                                 TEST_EXPECT_NULL(store_error);
                             }
                             free(comment);
+
+                            if (save_groupnames) {
+                                const char *quotedGroup     = findFirstNameContaining(tree, "quoted");
+                                const char *underscoreGroup = findFirstNameContaining(tree, "bs100");
+                                const char *capsLeaf        = findFirstNameContaining(tree, "Caps");
+
+                                if (quoteMode == TREE_SINGLE_QUOTES) {
+                                    TEST_EXPECT_EQUAL(quotedGroup, "\"quoted\"");
+                                }
+                                else {
+                                    TEST_EXPECT_EQUAL__BROKEN(quotedGroup, "_quoted_");
+                                    TEST_EXPECT_EQUAL(quotedGroup, "quoted_"); // @@@ unwanted removal of leading '_'
+                                }
+
+                                TEST_EXPECT_EQUAL__BROKEN(underscoreGroup, "__bs100");
+                                TEST_EXPECT_EQUAL(underscoreGroup, "bs100"); // @@@ unwanted removal of multiple leading '_'
+
+                                TEST_EXPECT_EQUAL__BROKEN(capsLeaf, "_MhuCaps");
+                                TEST_EXPECT_EQUAL(capsLeaf, "MhuCaps"); // @@@ unwanted removal of leading '_'
+                            }
+
                             GBT_delete_tree(tree);
                         }
 
@@ -496,13 +528,23 @@ void TEST_coherent_treeIO() {
                             free(cmd);
                         }
 
-                        bool reexported_as_expected = arb_test::test_textfile_difflines(expectedfile, outfile2, 0);
+                        int expected_difflines = 1; // the '_' removed from leaf-name '_MhuCaps'
+                        if (save_groupnames) {
+                            // two groups are affected by treeio
+                            // - the group '__bs100' is always affected
+                            // - the group '"quoted"' is only affected if not using single-quotes to quote groupnames
+                            expected_difflines += quoteMode == TREE_SINGLE_QUOTES ? 1 : 2;
+                        }
+                        bool reexported_as_expected = arb_test::test_textfile_difflines(expectedfile, outfile2, expected_difflines);
 
 #if defined(TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS)
                         if (!reexported_as_expected) {
                             system(GBS_global_string("cp %s %s", outfile2, expectedfile));
                         }
 #else // !defined(TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS)
+                        if (expected_difflines) {
+                            TEST_EXPECT__BROKEN(!expected_difflines); // @@@ nodes get modified 
+                        }
                         TEST_EXPECT(reexported_as_expected);
 #endif
 
@@ -526,6 +568,3 @@ void TEST_coherent_treeIO() {
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
-
-
-
