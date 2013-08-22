@@ -25,6 +25,9 @@ inline void replace_by_underscore(char *str, const char *toReplace) {
     }
 }
 
+inline bool isQuoteChar(char c) { return c == '"' || c == '\''; }
+inline bool whole_label_quoted(const char *label, size_t length) { return isQuoteChar(label[0]) && label[0] == label[length-1]; }
+
 static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qmode) {
     // writes a label into the Newick file
     // label is quoted if necessary
@@ -44,7 +47,18 @@ static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qm
         else if (qmode&TREE_DOUBLE_QUOTES) used_quote = '\"';
     }
 
-    char *fixed_label = strdup(label);
+    char *fixed_label;
+    {
+        size_t label_length = strlen(label);
+        fixed_label         = GB_strduplen(label, label_length);
+
+        if (whole_label_quoted(fixed_label, label_length)) {
+            // if whole label is quoted -> remove quotes
+            fixed_label[label_length-1] = 0;
+            strcpy(fixed_label, fixed_label+1);
+        }
+    }
+
     if (used_quote) {
         // replace all problematic characters if requested
         bool force_replace = (qmode & TREE_FORCE_REPLACE);

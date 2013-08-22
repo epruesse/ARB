@@ -493,18 +493,11 @@ void TEST_treeIO_stable() {
                             if (save_groupnames) {
                                 const char *quotedGroup     = findFirstNameContaining(tree, "quoted");
                                 const char *underscoreGroup = findFirstNameContaining(tree, "bs100");
-                                const char *capsLeaf        = findFirstNameContaining(tree, "Caps");
-
-                                if (quoteMode == TREE_SINGLE_QUOTES) {
-                                    TEST_EXPECT_EQUAL(quotedGroup, "\"quoted\"");
-                                }
-                                else {
-                                    TEST_EXPECT_EQUAL(quotedGroup, "_quoted_");
-                                }
-
+                                TEST_EXPECT_EQUAL(quotedGroup, "quoted");
                                 TEST_EXPECT_EQUAL(underscoreGroup, "__bs100");
-                                TEST_EXPECT_EQUAL(capsLeaf, "_MhuCaps");
                             }
+                            const char *capsLeaf = findFirstNameContaining(tree, "Caps");
+                            TEST_EXPECT_EQUAL(capsLeaf, "_MhuCaps");
 
                             GBT_delete_tree(tree);
                         }
