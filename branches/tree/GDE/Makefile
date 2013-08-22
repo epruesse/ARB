@@ -12,6 +12,7 @@ ARCHS_NO_DEPENDS = \
 	MUSCLE/MUSCLE.dummy \
 	PROBCONS/PROBCONS.dummy \
 	MrBAYES/MrBAYES.dummy \
+	FASTTREE/FASTTREE.dummy
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
