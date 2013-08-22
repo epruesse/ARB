@@ -285,8 +285,14 @@ char *TreeReader::eat_quoted_string() {
         if (c == found_quote) c = read_tree_char();
     }
     else {
-        while (c == '_') c = read_tree_char(); // @@@ why?
+#if 0
+        // previous behavior: skip prefixes matching PRE '_* *'
+        // (reason unknown; behavior exists since [2])
+        // conflicts with replacement of problematic character done in ../TREE_WRITE/TreeWrite.cxx@replace_by_underscore
+        // -> disabled
+        while (c == '_') c = read_tree_char();
         while (c == ' ') c = read_tree_char();
+#endif
         while (c!=':' && c!=EOF && c!=',' && c!=';' && c != ')') {
             *(s++) = c;
             if (NAME_TOO_LONG) break;

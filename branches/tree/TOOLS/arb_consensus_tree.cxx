@@ -426,7 +426,7 @@ static const char *findFirstNameContaining(GBT_TREE *tree, const char *part) {
     return found;
 }
 
-void TEST_coherent_treeIO() {
+void TEST_treeIO_stable() {
     const char *dbname   = "trees/bootstrap_groups.arb";
     const char *treename = "tree_bootstrap_and_groups";
     const char *savename = "bg";
@@ -499,15 +499,11 @@ void TEST_coherent_treeIO() {
                                     TEST_EXPECT_EQUAL(quotedGroup, "\"quoted\"");
                                 }
                                 else {
-                                    TEST_EXPECT_EQUAL__BROKEN(quotedGroup, "_quoted_");
-                                    TEST_EXPECT_EQUAL(quotedGroup, "quoted_"); // @@@ unwanted removal of leading '_'
+                                    TEST_EXPECT_EQUAL(quotedGroup, "_quoted_");
                                 }
 
-                                TEST_EXPECT_EQUAL__BROKEN(underscoreGroup, "__bs100");
-                                TEST_EXPECT_EQUAL(underscoreGroup, "bs100"); // @@@ unwanted removal of multiple leading '_'
-
-                                TEST_EXPECT_EQUAL__BROKEN(capsLeaf, "_MhuCaps");
-                                TEST_EXPECT_EQUAL(capsLeaf, "MhuCaps"); // @@@ unwanted removal of leading '_'
+                                TEST_EXPECT_EQUAL(underscoreGroup, "__bs100");
+                                TEST_EXPECT_EQUAL(capsLeaf, "_MhuCaps");
                             }
 
                             GBT_delete_tree(tree);
@@ -528,23 +524,13 @@ void TEST_coherent_treeIO() {
                             free(cmd);
                         }
 
-                        int expected_difflines = 1; // the '_' removed from leaf-name '_MhuCaps'
-                        if (save_groupnames) {
-                            // two groups are affected by treeio
-                            // - the group '__bs100' is always affected
-                            // - the group '"quoted"' is only affected if not using single-quotes to quote groupnames
-                            expected_difflines += quoteMode == TREE_SINGLE_QUOTES ? 1 : 2;
-                        }
-                        bool reexported_as_expected = arb_test::test_textfile_difflines(expectedfile, outfile2, expected_difflines);
+                        bool reexported_as_expected = arb_test::test_textfile_difflines(expectedfile, outfile2, 0);
 
 #if defined(TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS)
                         if (!reexported_as_expected) {
                             system(GBS_global_string("cp %s %s", outfile2, expectedfile));
                         }
 #else // !defined(TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS)
-                        if (expected_difflines) {
-                            TEST_EXPECT__BROKEN(!expected_difflines); // @@@ nodes get modified 
-                        }
                         TEST_EXPECT(reexported_as_expected);
 #endif
 
