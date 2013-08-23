@@ -537,6 +537,7 @@ void TEST_treeIO_stable() {
             }
         }
     }
+    TEST_ANNOTATE_ASSERT(NULL);
 
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile));
     free(outfile);
