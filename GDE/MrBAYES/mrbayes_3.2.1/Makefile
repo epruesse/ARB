@@ -1,8 +1,8 @@
 #MrBayes Makefile modified for use in ARB by Arne Boeckmann (August 2013)
 
-CC        ?= gcc
-CFLAGS    = -O3 -ffast-math -Wall -DNDEBUG -DUSECONFIG_H
-LDLIBS   =  -lreadline -lm
+CC     ?= gcc
+CFLAGS  = -O3 -ffast-math -Wall -DNDEBUG -DUSECONFIG_H
+LDLIBS  = -lreadline -lm
 
 # work around bug in centos5 -- ep 8/7/2013
 # (linking readline causes missing symbols unless also linking ncurses)
@@ -12,13 +12,17 @@ ifeq ($(HAVE_CENTOS5),true)
     LDLIBS += -lncurses
 endif
 
+OBJECTS:= mb.o bayes.o command.o mbmath.o mcmc.o model.o plot.o sump.o sumt.o tree.o utils.o mbbeagle.o best.o
 
-mb: bayes.o command.o mbmath.o mcmc.o model.o plot.o sump.o sumt.o tree.o utils.o mbbeagle.o best.o
+mb: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) $(LDLIBS) -o $@
+
+%.o: %.c
+	$(CC) $< $(CFLAGS) -c -o $@
 
 clean:
 	rm -f *.o *~ mb
 
-	
 bayes.o: bayes.c mb.h globals.h bayes.h command.h mcmc.h model.h utils.h
 command.o: command.c mb.h globals.h command.h bayes.h model.h mcmc.h \
   plot.h sump.h sumt.h tree.h utils.h
