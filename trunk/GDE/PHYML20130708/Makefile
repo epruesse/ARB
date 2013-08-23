@@ -17,16 +17,12 @@ clean :
 
 build/config.status:
 	mkdir -p build && \
-	cd build && \
-        ../phyml/configure CPP='' --prefix=$(ARBHOME) --program-suffix=_20130708
+		cd build && \
+		../phyml/configure CPP='' --prefix=$(ARBHOME) --program-suffix=_20130708
 
 phyml.stamp : build/config.status
-	cd build && make && make install
+	+cd build && make && make install
 	touch phyml.stamp
-
-	
 
 .PHONY : clean
 
-
-	
