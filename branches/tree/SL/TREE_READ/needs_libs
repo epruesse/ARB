@@ -1,4 +1,0 @@
-# libraries needed to link against SL/TREE_READ/TREE_READ.a
-
-lib/libARBDB.so
-

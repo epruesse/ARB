@@ -1,9 +1,0 @@
-
-place for sockets used by unit-tests
-
-
-list of used sockets
-
-        dbserver.socket
-        pt.socket
-        ptgene.socket
