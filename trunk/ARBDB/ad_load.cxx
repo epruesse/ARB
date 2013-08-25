@@ -1677,6 +1677,7 @@ void TEST_io_number() {
 
             lastPos = pos;
         }
+        TEST_ANNOTATE_ASSERT(NULL);
 
         fclose(out);
     }
@@ -1702,6 +1703,7 @@ void TEST_io_number() {
 
             lastPos = pos;
         }
+        TEST_ANNOTATE_ASSERT(NULL);
 
         fclose(in);
     }

@@ -371,38 +371,36 @@ static void tree_load_cb(AW_window *aww) {
     {
         char *pcTreeFormat = aw_root->awar(AWAR_TREE_IMPORT "/filter")->read_string();
         char *fname        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
-        char *scaleWarning = 0;
+        char *warnings     = 0;
         char *tree_comment = 0;
 
         GBT_TREE *tree;
         if (strcmp(pcTreeFormat, "xml") == 0) {
             char *tempFname = readXmlTree(fname);
-            tree = TREE_load(tempFname, sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
+            tree = TREE_load(tempFname, sizeof(GBT_TREE), &tree_comment, true, &warnings);
             GB_unlink_or_warn(tempFname, NULL);
             free(tempFname);
         }
         else {
-            tree = TREE_load(fname, sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
+            tree = TREE_load(fname, sizeof(GBT_TREE), &tree_comment, true, &warnings);
         }
 
         if (!tree) error = GB_await_error();
         else {
-            if (scaleWarning) GBT_message(GLOBAL.gb_main, scaleWarning);
+            if (warnings) GBT_message(GLOBAL.gb_main, warnings);
 
-            GB_transaction ta(GLOBAL.gb_main);
-            error = GBT_write_tree(GLOBAL.gb_main, 0, tree_name, tree);
-
-            if (!error && tree_comment) {
-                error = GBT_write_tree_rem(GLOBAL.gb_main, tree_name, tree_comment);
+            {
+                GB_transaction ta(GLOBAL.gb_main);
+                error = GBT_write_tree_with_remark(GLOBAL.gb_main, tree_name, tree, tree_comment);
+                error = ta.close(error);
             }
 
-            if (error) error = ta.close(error);
-            else aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
+            if (!error) aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
 
             GBT_delete_tree(tree);
         }
 
-        free(scaleWarning);
+        free(warnings);
         free(tree_comment);
         free(fname);
         free(pcTreeFormat);

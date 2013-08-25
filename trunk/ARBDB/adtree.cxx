@@ -368,8 +368,14 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
 GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree) {
     return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 0);
 }
-GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *remark) {
+GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const char *remark) {
     return GBT_write_string(GBT_find_tree(gb_main, tree_name), "remark", remark);
+}
+
+GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree, const char *remark) {
+    GB_ERROR error              = GBT_write_tree(gb_main, NULL, tree_name, tree);
+    if (!error && remark) error = GBT_write_tree_remark(gb_main, tree_name, remark);
+    return error;
 }
 
 // ----------------------------
