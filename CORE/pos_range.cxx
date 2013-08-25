@@ -102,6 +102,8 @@ void TEST_PosRange() {
         TEST_EXPECT(correlated(till9.contains(pos),      pos >= 0 && pos <= 9));
         TEST_EXPECT(correlated(seven2nine.contains(pos), pos >= 7 && pos <= 9));
     }
+    TEST_ANNOTATE_ASSERT(NULL);
+
     TEST_EXPECT(whole.contains(INT_MAX));
     TEST_EXPECT(from7.contains(INT_MAX));
     TEST_REJECT(empty.contains(INT_MAX));

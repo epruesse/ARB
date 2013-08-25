@@ -151,6 +151,8 @@ static GB_ERROR removeVaryingDateFromTreeRemarks(const char *dbname) {
     return error;
 }
 
+// #define TEST_AUTO_UPDATE_TREE // uncomment to auto-update expected tree
+
 void TEST_SLOW_arb_read_tree() {
     struct {
         const char *basename;
@@ -185,7 +187,11 @@ void TEST_SLOW_arb_read_tree() {
     }
 
     TEST_EXPECT_NO_ERROR(removeVaryingDateFromTreeRemarks(dbout));
-    TEST_EXPECT_TEXTFILES_EQUAL(dbout, dbexpected);
+#if defined(TEST_AUTO_UPDATE_TREE)
+    system(GBS_global_string("cp %s %s", dbout, dbexpected));
+#else // !defined(TEST_AUTO_UPDATE_TREE)
+    TEST_EXPECT_TEXTFILES_EQUAL(dbexpected, dbout);
+#endif
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(dbout));
 }
 

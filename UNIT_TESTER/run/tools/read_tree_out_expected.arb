@@ -24,7 +24,7 @@ tree_data	:7000	%% (%
 		%) /*tree_newick_sq*/
 
 	tree_newick_dq		%% (%
-		tree			"N0.05,0.05;L\"HelPylor\"\AN0.05,0.05;N0.05,0.05;N0.05,0.05;L\"AnaMargi\"\AL\"EhrEhrli\"\AL\"CowRumin\"\AN0.05,0.05;L\"RhdSphae\"\AN0.05,0.05;L\"AzoCauli\"\AL\"BraJapon\"\A"
+		tree			"N0.05,0.05;LHelPylor\AN0.05,0.05;N0.05,0.05;N0.05,0.05;LAnaMargi\ALEhrEhrli\ALCowRumin\AN0.05,0.05;LRhdSphae\AN0.05,0.05;LAzoCauli\ALBraJapon\A"
 		nnodes			%i 6
 		order			%i 3
 		remark			"test newick_dq\nunittest-tree\n<date removed for testing>"
@@ -32,6 +32,11 @@ tree_data	:7000	%% (%
 
 	tree_newick_group		%% (%
 		tree			"N0.1,0.1;LHelPylor\AR11%\AN0.1,0.1;R11%\AN0.1,0.1;R11%\AN0.1,0.1;LAnaMargi\ALEhrEhrli\ALCowRumin\AR11%\AN0.1,0.1;LRhdSphae\AR11%\AN0.1,0.1;LAzoCauli\ALBraJapon\A"
+		node			%% (%
+			group_name		"inner"
+			id			%i 0
+			%) /*node*/
+
 		node			%% (%
 			group_name		"group2"
 			id			%i 1
@@ -51,6 +56,11 @@ tree_data	:7000	%% (%
 
 	tree_newick_len_group		%% (%
 		tree			"N0.21343,0.02023;LHelPylor\AN0.09626,0.05478;N0.02299,0.08864;N0.05387,0.0572;LAnaMargi\ALEhrEhrli\ALCowRumin\AN0.11648,0.02901;LRhdSphae\AN0.07795,0.09907;LAzoCauli\ALBraJapon\A"
+		node			%% (%
+			group_name		"inner"
+			id			%i 0
+			%) /*node*/
+
 		node			%% (%
 			group_name		"group2"
 			id			%i 1
