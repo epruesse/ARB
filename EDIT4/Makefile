@@ -576,6 +576,7 @@ ED4_nds.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/gccver.h
+ED4_nds.o: $(ARBHOME)/INCLUDE/nds.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/static_assert.h
