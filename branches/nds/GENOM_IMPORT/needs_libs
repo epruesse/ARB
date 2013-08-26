@@ -1,0 +1,4 @@
+# libraries needed to link against GENOM_IMPORT/GENOM_IMPORT.a
+
+GENOM/GENOM.a
+SL/REGEXPR/REGEXPR.a
