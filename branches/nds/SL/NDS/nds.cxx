@@ -672,6 +672,8 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
                 }
             }
 
+            NDS_mask_nonprintable_chars(str);
+
             // quote string, if it contains separator
             {
                 char *quoted = NULL;
@@ -752,7 +754,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
         }
     }
 
-    return NDS_mask_nonprintable_chars(awt_nds_ms->get_buffer());
+    return awt_nds_ms->get_buffer();
 }
 
 static const char *createReplaceTable() {
@@ -835,23 +837,20 @@ void TEST_nds() {
         GB_transaction ta(gb_main);
         make_node_text_init(gb_main);
 
-        TEST_EXPECT_NDS_EQUALS        ("MycChlor", NDS_OUTPUT_LEAFTEXT,        "'MycChlor', Mycobacterium #phenolicus, acc=X79094");
-        TEST_EXPECT_NDS_EQUALS        ("MycChlor", NDS_OUTPUT_SPACE_PADDED,    " 'MycChlor'   Mycobacterium #phenolicus      acc=X79094          ");
-        TEST_EXPECT_NDS_EQUALS__BROKEN("MycChlor", NDS_OUTPUT_TAB_SEPARATED,   "'MycChlor'\tMycobacterium #phenolicus\tacc=X79094");
-        TEST_EXPECT_NDS_EQUALS        ("MycChlor", NDS_OUTPUT_TAB_SEPARATED,   "'MycChlor' Mycobacterium #phenolicus acc=X79094"); // @@@ unwanted (TABS have been replaced by spaces, but TAB is separator here)
-        TEST_EXPECT_NDS_EQUALS        ("MycChlor", NDS_OUTPUT_COMMA_SEPARATED, "'MycChlor',Mycobacterium #phenolicus,acc=X79094");
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_LEAFTEXT,        "'MycChlor', Mycobacterium #phenolicus, acc=X79094");
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_SPACE_PADDED,    " 'MycChlor'   Mycobacterium #phenolicus      acc=X79094          ");
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_TAB_SEPARATED,   "'MycChlor'\tMycobacterium #phenolicus\tacc=X79094");
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_COMMA_SEPARATED, "'MycChlor',Mycobacterium #phenolicus,acc=X79094");
 
-        TEST_EXPECT_NDS_EQUALS        ("ActUtahe", NDS_OUTPUT_LEAFTEXT,        "'ActUtahe', Act;ino planes uta,hen.sis#, acc=X80823");
-        TEST_EXPECT_NDS_EQUALS        ("ActUtahe", NDS_OUTPUT_SPACE_PADDED,    " 'ActUtahe'   Act;ino planes uta,hen.sis#    acc=X80823          ");
-        TEST_EXPECT_NDS_EQUALS__BROKEN("ActUtahe", NDS_OUTPUT_TAB_SEPARATED,   "'ActUtahe'\tAct;ino planes uta,hen.sis#\tacc=X80823");
-        TEST_EXPECT_NDS_EQUALS        ("ActUtahe", NDS_OUTPUT_TAB_SEPARATED,   "'ActUtahe' \"Act;ino planes uta,hen.sis#\" acc=X80823");   // @@@ unwanted (unnecessary quoting; TAB separation gets lost)
-        TEST_EXPECT_NDS_EQUALS        ("ActUtahe", NDS_OUTPUT_COMMA_SEPARATED, "'ActUtahe',\"Act;ino planes uta,hen.sis#\",acc=X80823");   // quote 2nd value (cause it contains a comma)
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_LEAFTEXT,        "'ActUtahe', Act;ino planes uta,hen.sis#, acc=X80823");
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_SPACE_PADDED,    " 'ActUtahe'   Act;ino planes uta,hen.sis#    acc=X80823          ");
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_TAB_SEPARATED,   "'ActUtahe'\tAct;ino planes uta,hen.sis#\tacc=X80823");
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_COMMA_SEPARATED, "'ActUtahe',\"Act;ino planes uta,hen.sis#\",acc=X80823");     // quote 2nd value (cause it contains a comma)
 
-        TEST_EXPECT_NDS_EQUALS        ("StpGrise", NDS_OUTPUT_LEAFTEXT,        "'StpGrise', Strepto s griseus, acc=M76388 X55435 X6");       // acc truncated!
-        TEST_EXPECT_NDS_EQUALS        ("StpGrise", NDS_OUTPUT_SPACE_PADDED,    " 'StpGrise'   Strepto s griseus              acc=M76388 X55435 X6");
-        TEST_EXPECT_NDS_EQUALS__BROKEN("StpGrise", NDS_OUTPUT_TAB_SEPARATED,   "'StpGrise'\tStrepto s griseus\tacc=M76388 X55435 X61478");   // acc not truncated here
-        TEST_EXPECT_NDS_EQUALS        ("StpGrise", NDS_OUTPUT_TAB_SEPARATED,   "'StpGrise' \"Strepto s griseus\" acc=M76388 X55435 X61478"); // @@@ unwanted (unnecessary quoting; TAB separation gets lost)
-        TEST_EXPECT_NDS_EQUALS        ("StpGrise", NDS_OUTPUT_COMMA_SEPARATED, "'StpGrise',Strepto s griseus,acc=M76388 X55435 X61478");
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_LEAFTEXT,        "'StpGrise', Strepto s griseus, acc=M76388 X55435 X6");       // acc truncated!
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_SPACE_PADDED,    " 'StpGrise'   Strepto s griseus              acc=M76388 X55435 X6");
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_TAB_SEPARATED,   "'StpGrise'\tStrepto s griseus\tacc=M76388 X55435 X61478");   // acc not truncated here
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_COMMA_SEPARATED, "'StpGrise',Strepto s griseus,acc=M76388 X55435 X61478");
     }
 
     GB_close(gb_main);
