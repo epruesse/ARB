@@ -26,7 +26,8 @@ struct GBT_TREE;
 enum NDS_Type {
     NDS_OUTPUT_LEAFTEXT        = 0,   // compress info (no tabbing, separate single fields by comma, completely skip empty fields)
     NDS_OUTPUT_SPACE_PADDED    = 1,   // format info (using spaces)
-    NDS_OUTPUT_TAB_SEPARATED   = 2,   // format info (using 1 tab per column - for easy import into star-calc, excel, etc. )
+    NDS_OUTPUT_TAB_SEPARATED   = 2,   // format info (using 1 tab per column - for easy import into star-calc, excel, etc. ).
+                                      // (also used by AWT_graphic_tree::show_nds_list for non-tree-display of species in ARB_NTREE)
     NDS_OUTPUT_COMMA_SEPARATED = 3,   // like NDS_OUTPUT_TAB_SEPARATED, but using commas
 };
 
