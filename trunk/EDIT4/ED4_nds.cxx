@@ -15,7 +15,6 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-#include <nds.h>
 
 #define NDS_COUNT 10
 
@@ -27,10 +26,11 @@ char *ED4_get_NDS_text(ED4_species_manager *species_man) {
     e4_assert(gbd);
 
     e4_assert(NDS_command);
-    char *result        = GB_command_interpreter(GLOBAL_gb_main, "", NDS_command, gbd, 0);
-    if (!result) result = GBS_global_string_copy("<error: %s>", GB_await_error());
-
-    return NDS_mask_nonprintable_chars(result);
+    char *result = GB_command_interpreter(GLOBAL_gb_main, "", NDS_command, gbd, 0);
+    if (!result) {
+        result = strdup("<error>");
+    }
+    return result;
 }
 
 void ED4_get_NDS_sizes(int *width, int *brackets) {

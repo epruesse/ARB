@@ -176,8 +176,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode) {
         }
     }
     *bp = 0;
-
-    return NDS_mask_nonprintable_chars(gen_nds_ms->buf);
+    return gen_nds_ms->buf;
 }
 
 
