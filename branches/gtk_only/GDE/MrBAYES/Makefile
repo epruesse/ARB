@@ -14,11 +14,10 @@ clean :
 
 
 mrbayes.stamp: 
-	cd $(FOLDER) && MAKEFLAGS= $(MAKE) mb
+	+cd $(FOLDER) && $(MAKE) mb
 	cp $(FOLDER)/mb $(ARBHOME)/bin/mb
 	touch mrbayes.stamp
 
-	
 
 .PHONY : clean
 

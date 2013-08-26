@@ -97,10 +97,10 @@ void InfoWindow::add_detachOrGet_button(detached_uppopper popup_detached_cb) con
         bind_to_selected_item();
 
         aww->callback(makeWindowCallback(detach_selected_item_cb, popup_detached_cb, this));
-        aww->create_button("DETACH", "DETACH", "D");
+        aww->create_autosize_button("DETACH", "New window...", "S");
     }
     else {
         aww->callback(makeWindowCallback(display_selected_item_cb, this));
-        aww->create_button("GET", "GET", "G");
+        aww->create_autosize_button("GET", "Update", "U");
     }
 }

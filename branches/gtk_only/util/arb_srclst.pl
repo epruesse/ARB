@@ -97,6 +97,7 @@ my %used_extensions = map { $_ => 1; } (
                                         'java', 'manifest',
                                         'makefile',
                                         'pl', 'pm', 'PL', 'cgi', 'xs',
+                                        'awk',
                                         'py',
                                         'script',
                                         'sh',
