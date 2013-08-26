@@ -176,7 +176,8 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode) {
         }
     }
     *bp = 0;
-    return gen_nds_ms->buf;
+
+    return NDS_mask_nonprintable_chars(gen_nds_ms->buf);
 }
 
 
@@ -346,22 +347,26 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main)
             aws->button_length(0);
             aws->callback((AW_CB)GEN_create_select_nds_window, (AW_CL)strdup(buf), cgb_main);
             aws->get_at_position(&fieldselectx, &dummy);
-            aws->create_button("SELECT_NDS", "S");
+            sprintf(buf, "SELECT_NDS_%i", i);
+            aws->create_button(buf, "S");
 
             sprintf(buf, "tmp/gene_viewkey_%i/len1", i);
             aws->get_at_position(&columnx, &dummy);
             aws->create_input_field(buf, 4);
 
             sprintf(buf, "tmp/gene_viewkey_%i/pars", i);
+            const char *inputFieldAwarName = strdup(buf);
+
             aws->get_at_position(&srtx, &dummy);
 
             aws->button_length(0);
 
-            aws->callback(AWT_create_select_srtaci_window, (AW_CL)strdup(buf), 0);
-            aws->create_button("SELECT_SRTACI", "S", "S");
+            aws->callback(AWT_create_select_srtaci_window, AW_CL(inputFieldAwarName), 0);
+            sprintf(buf, "SELECT_SRTACI_%i", i);
+            aws->create_button(buf, "S", "S");
 
             aws->get_at_position(&srtux, &dummy);
-            aws->create_input_field(buf, 40);
+            aws->create_input_field(inputFieldAwarName, 40);
             aws->at_newline();
         }
         aws->at(showx, closey);
