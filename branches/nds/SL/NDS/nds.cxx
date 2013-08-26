@@ -757,3 +757,51 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
     return awt_nds_ms->get_buffer();
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+#define TEST_EXPECT_NDS_EQUALS(specName,format,expected_NDS) do {                           \
+        GBDATA *gb_species  = GBT_find_species(gb_main, specName);                          \
+        TEST_REJECT_NULL(gb_species);                                                       \
+                                                                                            \
+        const char *nds = make_node_text_nds(gb_main, gb_species, format, NULL, NULL);      \
+        TEST_EXPECT_EQUAL(nds, expected_NDS);                                               \
+    } while(0)
+
+void TEST_nds() {
+    GB_shell    shell;
+    const char *testDB  = "display/nds.arb"; // NDS definitions are in ../../UNIT_TESTER/run/display/nds.arb@arb_presets
+    GBDATA     *gb_main = GB_open(testDB, "r");
+
+    TEST_REJECT_NULL(gb_main);
+
+    {
+        GB_transaction ta(gb_main);
+        make_node_text_init(gb_main);
+
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_LEAFTEXT,        "'MycChlor', Mycobacterium \nphenolicus, acc=X79094");
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_SPACE_PADDED,    " 'MycChlor'   Mycobacterium \nphenolicus      acc=X79094          ");
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_TAB_SEPARATED,   "'MycChlor'\tMycobacterium \nphenolicus\tacc=X79094");
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_COMMA_SEPARATED, "'MycChlor',Mycobacterium \nphenolicus,acc=X79094");
+
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_LEAFTEXT,        "'ActUtahe', Act;ino\tplanes uta,hen.sis\n, acc=X80823");
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_SPACE_PADDED,    " 'ActUtahe'   Act;ino\tplanes uta,hen.sis\n    acc=X80823          ");
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_TAB_SEPARATED,   "'ActUtahe'\t\"Act;ino\tplanes uta,hen.sis\n\"\tacc=X80823"); // quote 2nd value (cause it contains a TAB)
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_COMMA_SEPARATED, "'ActUtahe',\"Act;ino\tplanes uta,hen.sis\n\",acc=X80823");   // quote 2nd value (cause it contains a comma)
+
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_LEAFTEXT,        "'StpGrise', Strepto\ts griseus, acc=M76388 X55435 X6");         // acc truncated!
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_SPACE_PADDED,    " 'StpGrise'   Strepto\ts griseus              acc=M76388 X55435 X6");
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_TAB_SEPARATED,   "'StpGrise'\t\"Strepto\ts griseus\"\tacc=M76388 X55435 X61478"); // acc not truncated here; 2nd value quote due to TAB inserted by ACI defined in NDS-setup
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_COMMA_SEPARATED, "'StpGrise',Strepto\ts griseus,acc=M76388 X55435 X61478");
+    }
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

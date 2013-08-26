@@ -30,8 +30,8 @@ enum NDS_Type {
     NDS_OUTPUT_COMMA_SEPARATED = 3,   // like NDS_OUTPUT_TAB_SEPARATED, but using commas
 };
 
-const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type format, GBT_TREE *species, const char *tree_name);
 void        make_node_text_init(GBDATA *gb_main);
+const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type format, GBT_TREE *species, const char *tree_name);
 
 AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main);
 void       create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main);
