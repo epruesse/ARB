@@ -534,8 +534,6 @@ AW_common_gtk.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_common_gtk.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_common_gtk.o: $(ARBHOME)/INCLUDE/ttypes.h
 
-AW_detach.o: aw_gtk_migration_helpers.hxx
-
 AW_device.o: aw_assert.hxx
 AW_device.o: aw_base.hxx
 AW_device.o: aw_clipable.hxx
