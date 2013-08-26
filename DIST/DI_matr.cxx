@@ -1229,7 +1229,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
             int         transr      = aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
             const char *comment     = GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB", enum_trans_to_string[transr], filter_name);
 
-            error = GBT_write_tree_rem(GLOBAL_gb_main, tree_name, comment);
+            error = GBT_write_tree_remark(GLOBAL_gb_main, tree_name, comment);
             free(filter_name);
         }
 

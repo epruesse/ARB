@@ -8,13 +8,13 @@ PROG  = PROBCONS
 $(MAIN) : probcons.stamp
 
 clean :
-	cd probcons && make clean
+	+cd probcons && make clean
 	rm -f $(ARBHOME)/bin/probcons
 	rm -f probcons.stamp
 
 
 probcons.stamp :
-	cd probcons && make
+	+cd probcons && make
 	cp -f probcons/probcons $(ARBHOME)/bin/probcons
 	touch probcons.stamp
 

@@ -301,6 +301,7 @@ void TEST_converter() {
             neverReturns += me.neverReturns;
         }
     }
+    TEST_ANNOTATE_ASSERT(NULL);
 
     fprintf(stderr,
             "Conversion test summary:\n"

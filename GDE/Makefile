@@ -12,6 +12,7 @@ ARCHS_NO_DEPENDS = \
 	MUSCLE/MUSCLE.dummy \
 	PROBCONS/PROBCONS.dummy \
 	MrBAYES/MrBAYES.dummy \
+	FASTTREE/FASTTREE.dummy
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
@@ -75,15 +76,18 @@ clean: $(ARCHS:.dummy=.clean)
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
 %.dummy:
-	@(( \
+	+@( \
+	(( \
+	    echo "$(SEP) Make $(@D)"; \
 	    $(MAKE) -C $(@D) -r \
 		"ARB  = yes" \
 		"MAIN = $(@F:.dummy=.a)" \
-		"cflags = $(sub_cflags) -DIN_ARB_$(@D:/=)" \
-		>$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
+		"cflags = $(sub_cflags) -DIN_ARB_$(@D:/=)" && \
+	    echo "$(SEP) Make $(@D) [done]"; \
+	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
 
 %.clean:
-	@$(MAKE) -C $(@D) \
+	+@$(MAKE) -C $(@D) \
 		"ARB  = yes" \
 		clean
 
