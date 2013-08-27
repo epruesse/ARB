@@ -20,6 +20,9 @@ Major changes for next release:
    - improved support for using multiple edit-windows
    - smoother refreshes
    - tweaked ORF display
+ - tree importer/exporter
+   - ARBs extended newick format (with bootstrap values) handled more restrictive now
+   - fixed several bugs; improved errors/warnings
  - consensus trees
    - calculate from multiple existing trees
    - fixed NJ-bootstrapping (no longer drops species)
