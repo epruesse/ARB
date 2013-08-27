@@ -197,7 +197,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
 
     aw_root->awar_int(AWAR_NODE_INFO_ONLY_MARKED, 0,    aw_def);
 
-    aw_root->awar_string(AWAR_TREE_CONSENSE_TREE, "tree_consense", aw_def)->set_srt(GBT_TREE_AWAR_SRT);
+    aw_root->awar_string(AWAR_TREE_CONSENSE_TREE, "tree_consensus", aw_def)->set_srt(GBT_TREE_AWAR_SRT);
     aw_root->awar_string(AWAR_TREE_CONSENSE_SELECTED, "", aw_def);
     
     update_filter_cb(aw_root);
@@ -723,11 +723,11 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                     ++progress;
                 }
 
-                progress.subtitle("consense construction");
+                progress.subtitle("consensus tree construction");
                 size_t species_count;
                 GBT_TREE *cons_tree = tree_builder.get(species_count);
                 nt_assert(cons_tree);
-                error               = GBT_write_tree(gb_main, 0, cons_tree_name, cons_tree);
+                error = GBT_write_tree(gb_main, 0, cons_tree_name, cons_tree);
                 ++progress;
 
                 if (error) progress.done();
@@ -748,7 +748,7 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(aw_root, "CONSENSE_TREE", "Consense Tree");
+        aws->init(aw_root, "CONSENSE_TREE", "Consensus Tree");
         aws->load_xfig("ad_cons_tree.fig");
         
         aws->callback(AW_POPDOWN);
@@ -768,7 +768,7 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
 
         aws->at("build");
         aws->callback(create_consense_tree_cb, AW_CL(selected_trees));
-        aws->create_autosize_button("BUILD", "Build consense tree", "B");
+        aws->create_autosize_button("BUILD", "Build consensus tree", "B");
     }
     return aws;
 }
