@@ -66,7 +66,7 @@ static char *create_tree_name(const char *savename) {
         const char *ldot = strrchr(savename, '.');
 
         tree_name = ldot ? GB_strpartdup(savename, ldot-1) : strdup(savename);
-        if (tree_name[0] == 0) freedup(tree_name, "tree_consense");
+        if (tree_name[0] == 0) freedup(tree_name, "tree_consensus");
     }
 
     // make sure tree name starts with 'tree_'
@@ -152,7 +152,7 @@ int ARB_main(int argc, char *argv[]) {
             GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, species_count, 1.0);
 
             if (!cons_tree) {
-                error = GBS_global_string("Failed to build consense tree (Reason: %s)", error);
+                error = GBS_global_string("Failed to build consensus tree (Reason: %s)", error);
             }
             else {
                 size_t leafs   = GBT_count_leafs(cons_tree);
@@ -165,7 +165,7 @@ int ARB_main(int argc, char *argv[]) {
                     error = save_tree_as_newick(cons_tree, savename);
                 }
                 else {
-                    printf("sucessfully created consense tree\n"
+                    printf("sucessfully created consensus tree\n"
                            "(no savename specified -> tree not saved)\n");
                 }
                 GBT_delete_tree(cons_tree);

@@ -20,7 +20,7 @@ Major changes for next release:
    - improved support for using multiple edit-windows
    - smoother refreshes
    - tweaked ORF display
- - consense trees
+ - consensus trees
    - calculate from multiple existing trees
    - fixed NJ-bootstrapping (no longer drops species)
  - trees sortable now
