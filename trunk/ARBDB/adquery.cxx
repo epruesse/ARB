@@ -445,7 +445,7 @@ GBDATA *gb_search(GBCONTAINER *gbc, const char *key, GB_TYPES create, int intern
      * force types if ! internflag
      */
 
-    // gb_assert(!GB_have_error()); // @@@ enable later
+    gb_assert(!GB_have_error()); // illegal to enter this function when an error is exported!
 
     GB_test_transaction(gbc);
 
@@ -564,8 +564,11 @@ static GBDATA *gb_expect_type(GBDATA *gbd, GB_TYPES expected_type, const char *f
 }
 
 GBDATA *GB_searchOrCreate_string(GBDATA *gb_container, const char *fieldpath, const char *default_value) {
+    gb_assert(!GB_have_error()); // illegal to enter this function when an error is exported!
+
     GBDATA *gb_str = GB_search(gb_container, fieldpath, GB_FIND);
     if (!gb_str) {
+        GB_clear_error();
         gb_str = GB_search(gb_container, fieldpath, GB_STRING);
         GB_ERROR error;
 
