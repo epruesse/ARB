@@ -199,7 +199,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
 
     aw_root->awar_string(AWAR_TREE_CONSENSE_TREE, "tree_consensus", aw_def)->set_srt(GBT_TREE_AWAR_SRT);
     aw_root->awar_string(AWAR_TREE_CONSENSE_SELECTED, "", aw_def);
-    
+
     update_filter_cb(aw_root);
     tree_vars_callback(aw_root);
 }
@@ -621,7 +621,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->button_length(40);
-        
+
         aws->at("sel");
         aws->create_button(0, AWAR_TREE_NAME, 0, "+");
 
@@ -639,11 +639,11 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->at("rem");
         aws->create_text_field(AWAR_TREE_REM);
 
-        
+
         aws->button_length(20);
 
         static TreeAdmin::Spec spec(GLOBAL.gb_main, AWAR_TREE_NAME);
-        
+
         aws->at("delete");
         aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&spec);
         aws->create_button("DELETE", "Delete", "D");
@@ -678,7 +678,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
 
         aws->at("list");
         awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_NAME);
-        
+
         aws->at("sort");
         awt_create_order_buttons(aws, reorder_trees_cb, 0);
     }
@@ -715,9 +715,15 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
             {
                 arb_progress         progress("Building consensus tree", tree_names.size()+1);
                 ConsensusTreeBuilder tree_builder;
+                GBS_strstruct        remark(1000);
+
+                remark.nprintf(100, "ARB consensus tree build from %i trees:\n", tree_names.size());
 
                 for (size_t t = 0; t<tree_names.size(); ++t) {
                     progress.subtitle(GBS_global_string("Adding %s", tree_names[t]));
+                    remark.put(' ');
+                    remark.cat(tree_names[t]);
+                    remark.put('\n');
                     GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], sizeof(*tree));
                     tree_builder.add(tree, 1.0);
                     ++progress;
@@ -727,7 +733,7 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                 size_t species_count;
                 GBT_TREE *cons_tree = tree_builder.get(species_count);
                 nt_assert(cons_tree);
-                error = GBT_write_tree(gb_main, cons_tree_name, cons_tree);
+                error = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, remark.get_data());
                 ++progress;
 
                 if (error) progress.done();
@@ -750,7 +756,7 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
         aws = new AW_window_simple;
         aws->init(aw_root, "CONSENSE_TREE", "Consensus Tree");
         aws->load_xfig("ad_cons_tree.fig");
-        
+
         aws->callback(AW_POPDOWN);
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");

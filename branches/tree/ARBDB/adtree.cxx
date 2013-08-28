@@ -293,7 +293,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
 
     GB_ERROR error = 0;
 
-    gb_assert(implicated(plain_only, tree_name == 0)); 
+    gb_assert(implicated(plain_only, tree_name == 0));
 
     if (tree) {
         if (tree_name) {
