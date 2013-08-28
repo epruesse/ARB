@@ -1178,19 +1178,19 @@ static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
 {
     awm->create_menu("Test[debug]", "T", AWM_ALL);
 
-    awm->insert_menu_topic(0, "Mix tree",           "M", "", AWM_ALL, (AW_CB)TESTMENU_mixTree,           (AW_CL)ntw, 0);
-    awm->insert_menu_topic(0, "Tree statistics",    "s", "", AWM_ALL, (AW_CB)TESTMENU_treeStats,         (AW_CL)ntw, 0);
-    awm->insert_menu_topic(0, "Set branchlens",     "b", "", AWM_ALL, (AW_CB)TESTMENU_setBranchlen,      (AW_CL)ntw, 0);
-    awm->insert_menu_topic(0, "Sort tree by name",  "o", "", AWM_ALL, (AW_CB)TESTMENU_sortTreeByName,    (AW_CL)ntw, 0);
-    awm->insert_menu_topic(0, "Build & dump chain", "c", "", AWM_ALL, (AW_CB)TESTMENU_buildAndDumpChain, (AW_CL)ntw, 0);
+    awm->insert_menu_topic("mix_tree",             "Mix tree",           "M", "", AWM_ALL, (AW_CB)TESTMENU_mixTree,           (AW_CL)ntw, 0);
+    awm->insert_menu_topic("tree_stat",            "Tree statistics",    "s", "", AWM_ALL, (AW_CB)TESTMENU_treeStats,         (AW_CL)ntw, 0);
+    awm->insert_menu_topic("set_branchlens",       "Set branchlens",     "b", "", AWM_ALL, (AW_CB)TESTMENU_setBranchlen,      (AW_CL)ntw, 0);
+    awm->insert_menu_topic("sort_tree_by_name",    "Sort tree by name",  "o", "", AWM_ALL, (AW_CB)TESTMENU_sortTreeByName,    (AW_CL)ntw, 0);
+    awm->insert_menu_topic("build_and_dump_chain", "Build & dump chain", "c", "", AWM_ALL, (AW_CB)TESTMENU_buildAndDumpChain, (AW_CL)ntw, 0);
     awm->sep______________();
-    awm->insert_menu_topic(0, "Add marked species",          "A", "pa_quick.hlp", AWM_ALL, (AW_CB)TESTMENU_quick_add,       (AW_CL)ntw, NT_ADD_MARKED);
-    awm->insert_menu_topic(0, "Add marked species + NNI",    "N", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_add,             (AW_CL)ntw, NT_ADD_MARKED);
-    awm->insert_menu_topic(0, "Remove & add marked species", "o", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_rquick_add_test, (AW_CL)ntw, NT_ADD_MARKED);
-    awm->insert_menu_topic(0, "Remove & add marked + NNI",   "v", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_radd,            (AW_CL)ntw, NT_ADD_MARKED);
+    awm->insert_menu_topic("add_marked_species",                    "Add marked species",          "A", "pa_quick.hlp", AWM_ALL, (AW_CB)TESTMENU_quick_add,       (AW_CL)ntw, NT_ADD_MARKED);
+    awm->insert_menu_topic("add_marked_species_and_NNI",            "Add marked species + NNI",    "N", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_add,             (AW_CL)ntw, NT_ADD_MARKED);
+    awm->insert_menu_topic("remove_and_add_marked_species",         "Remove & add marked species", "o", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_rquick_add_test, (AW_CL)ntw, NT_ADD_MARKED);
+    awm->insert_menu_topic("remove_and_add_marked_species_and_NNI", "Remove & add marked + NNI",   "v", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_radd,            (AW_CL)ntw, NT_ADD_MARKED);
     awm->sep______________();
-    awm->insert_menu_topic(0, "Add selected species",       "l", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)TESTMENU_quick_add, (AW_CL)ntw, NT_ADD_SELECTED);
-    awm->insert_menu_topic(0, "Add selected species + NNI", "I", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)TESTMENU_add,       (AW_CL)ntw, NT_ADD_SELECTED);
+    awm->insert_menu_topic("add_selected_species",         "Add selected species",       "l", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)TESTMENU_quick_add, (AW_CL)ntw, NT_ADD_SELECTED);
+    awm->insert_menu_topic("add_selected_species_and_NNI", "Add selected species + NNI", "I", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)TESTMENU_add,       (AW_CL)ntw, NT_ADD_SELECTED);
 }
 #endif // TESTMENU
 
