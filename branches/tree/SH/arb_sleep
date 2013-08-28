@@ -1,0 +1,3 @@
+#!/bin/sh
+echo 'Press control-c to close window, or wait 60 seconds'
+sleep 60

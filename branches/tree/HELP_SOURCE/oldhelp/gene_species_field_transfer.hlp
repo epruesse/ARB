@@ -1,0 +1,48 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	aci.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Define fields exported with gene species
+
+OCCURRENCE	ARB_NT/Export/Export .. to new ARB database/Transfer Species/Source->Target/Define field transfer for gene species
+
+DESCRIPTION     Here you can define which fields (of the origin organism or of the origin gene of
+                a gene species) should be transferred to the new database and how they should be
+                modified.
+
+                To define a new transfer rule, do the following steps:
+
+                - Enter name of created field
+
+                - Choose a creation method
+
+                         If you choose 'Copy from organism/gene' you have to provide a 'Source field'
+                         and you MAY provide an ACI expression.
+
+                         If you choose 'Only use ACI' you have to provide an ACI expression, but
+                         no 'Source field'.
+
+                - Check if the example shows your intended result.
+
+NOTES		The example will be calculated for the gene-species which is selected
+                in the left Hitlist of the 'TRANSFER SPECIES' window.
+
+                The ACI expression applies to the Organism or the Gene if 'Copy from organism/gene'
+                is selected. If 'Only use ACI' is selected it applies to the gene-species.
+
+                Note that it is possible to create hierarchical keys. Simply enter something like
+                'organism/full_name' into the destination field.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		When you export gene-species to a new database this database is marked as 'Arb-Genome-Database'.
+                We need to implement some kind of Database-Admin-Tool to change the database type.
+

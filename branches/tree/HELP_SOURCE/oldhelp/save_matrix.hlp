@@ -1,0 +1,32 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Save matrix to file
+
+OCCURRENCE      ARB_DIST
+
+DESCRIPTION     None
+
+SECTION         FORMATS
+
+                Phylip Format:          Format to be reused in Phylip Programs
+
+                Readable (using NDS):   Use NDS to replace the species IDs (shortnames)
+                                        by a user defined selection of fields
+                                        and generate a pretty view of the
+                                        matrix
+
+                Tabbed (using NDS):     same as 'Readable', but using TABs instead of
+                                        Spaces and ',' instead of '.'.
+                                        Import this into star-calc/excel/etc..
+
+WARNING         None
+
+BUGS            You cannot select the number of digits after '.'.
