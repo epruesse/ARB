@@ -1255,7 +1255,7 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_EXPECT_EQUAL__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).is_equal_to(t2))
 
 #define TEST_EXPECT_SIMILAR(e1,t2,epsilon)         TEST_EXPECTATION(that(e1).fulfills(epsilon_similar(epsilon), t2))
-#define TEST_EXPECT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECTATION__BROKEN(that(e1).is(epsilon_similar(epsilon), t2))
+#define TEST_EXPECT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECTATION__BROKEN(that(e1).fulfills(epsilon_similar(epsilon), t2))
 
 #define TEST_EXPECT_DIFFERENT(e1,t2)         TEST_EXPECTATION(that(e1).does_differ_from(t2));
 #define TEST_EXPECT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).does_differ_from(t2));
