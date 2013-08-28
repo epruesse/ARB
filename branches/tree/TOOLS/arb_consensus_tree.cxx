@@ -213,6 +213,24 @@ static double calc_intree_distance(GBT_TREE *tree) {
 
 #define LENSUM_EPSILON .000001
 
+static arb_test::match_expectation consense_tree_generated(GBT_TREE *tree, GB_ERROR error, size_t species_count, size_t expected_species_count, double expected_intree_distance) {
+    using namespace   arb_test;
+    expectation_group expected;
+
+    expected.add(that(error).is_equal_to_NULL());
+    expected.add(that(tree).does_differ_from_NULL());
+
+    if (tree) {
+        expected.add(that(species_count).is_equal_to(expected_species_count));
+        expected.add(that(GBT_count_leafs(tree)).is_equal_to(expected_species_count));
+        expected.add(that(calc_intree_distance(tree)).fulfills(epsilon_similar(LENSUM_EPSILON), expected_intree_distance));
+    }
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_EXPECT_CONSTREE(tree,err,sc,esc,eid) TEST_EXPECTATION(consense_tree_generated(tree, err, sc, esc, eid))
+
 // #define TEST_AUTO_UPDATE // uncomment to update expected trees
 
 void TEST_consensus_tree_1() {
@@ -223,15 +241,8 @@ void TEST_consensus_tree_1() {
 
     size_t    species_count;
     GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.7);
+    TEST_EXPECT_CONSTREE(tree, error, species_count, 22, 0.925779);
 
-    TEST_REJECT(error);
-    TEST_REJECT_NULL(tree);
-
-    TEST_EXPECT_EQUAL(species_count, 22);
-    TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
-
-    TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 0.925779, LENSUM_EPSILON);
-        
     char *saveas   = savename(treedir);
     char *expected = expected_name(treedir);
 
@@ -258,14 +269,9 @@ void TEST_consensus_tree_1_single() {
     add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 1);
 
     {
-        size_t species_count;
+        size_t    species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.01);
-        TEST_REJECT(error);
-        TEST_REJECT_NULL(tree);
-
-        TEST_EXPECT_EQUAL(species_count, 22);
-        TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 0.924610, LENSUM_EPSILON);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 22, 0.924610);
 
         char       *saveas   = savename(treedir);
         const char *expected = "consense/1/consense_expected_single.tree";
@@ -294,18 +300,13 @@ void TEST_consensus_tree_2() {
     add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 4);
 
     {
-        size_t species_count;
+        size_t    species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.5);
-        TEST_REJECT(error);
-        TEST_REJECT_NULL(tree);
-
-        TEST_EXPECT_EQUAL(species_count, 59);
-        TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 2.789272, LENSUM_EPSILON);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 59, 2.789272);
 
         char *saveas   = savename(treedir);
         char *expected = expected_name(treedir);
-        
+
         TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
         // ../UNIT_TESTER/run/consense/2/consense.tree
@@ -331,14 +332,9 @@ void TEST_consensus_tree_3() {
     add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 3);
 
     {
-        size_t species_count;
+        size_t    species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
-        TEST_REJECT(error);
-        TEST_REJECT_NULL(tree);
-
-        TEST_EXPECT_EQUAL(species_count, 128);
-        TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 2.171485, LENSUM_EPSILON);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 128, 2.171485);
 
         char *saveas   = savename(treedir);
         char *expected = expected_name(treedir);
