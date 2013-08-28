@@ -55,7 +55,7 @@ public:
 
     size_t get_buffer_size() const { return buffer_size; }
     size_t get_position() const { return pos; }
-    
+
     const char *get_data() const { return data; }
 
     char *release_mem(size_t& size) {
@@ -117,7 +117,7 @@ public:
     void cut_tail(size_t byte_count) {
         set_pos(pos<byte_count ? 0 : pos-byte_count);
     }
-    
+
     void put(char c) {
         ensure_mem(1);
         data[pos] = c;
