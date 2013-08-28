@@ -727,7 +727,7 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                 size_t species_count;
                 GBT_TREE *cons_tree = tree_builder.get(species_count);
                 nt_assert(cons_tree);
-                error = GBT_write_tree(gb_main, 0, cons_tree_name, cons_tree);
+                error = GBT_write_tree(gb_main, cons_tree_name, cons_tree);
                 ++progress;
 
                 if (error) progress.done();

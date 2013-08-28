@@ -97,7 +97,7 @@ static GB_ERROR save_tree_as_newick(GBT_TREE *tree, const char *savename) {
 
         {
             GB_transaction ta(gb_main);
-            error = GBT_write_tree(gb_main, 0, db_tree_name, tree);
+            error = GBT_write_tree(gb_main, db_tree_name, tree);
         }
         if (!error) error = TREE_write_Newick(gb_main, db_tree_name, NULL, true, true, true, true, TREE_SINGLE_QUOTES, savename);
 

@@ -869,7 +869,7 @@ static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main
                 }
                 else {
                     if (removed>0) {
-                        error = GBT_write_tree(gb_main, 0, tree_names[t], tree);
+                        error = GBT_write_tree(gb_main, tree_names[t], tree);
                         if (groups_removed>0) {
                             aw_message(GBS_global_string("Removed %i species and %i groups from '%s'", removed, groups_removed, tree_names[t]));
                         }

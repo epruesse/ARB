@@ -1222,7 +1222,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
 
         char *tree_name = aw_root->awar(AWAR_DIST_TREE_STD_NAME)->read_string();
         GB_begin_transaction(GLOBAL_gb_main);
-        error = GBT_write_tree(GLOBAL_gb_main, 0, tree_name, tree);
+        error = GBT_write_tree(GLOBAL_gb_main, tree_name, tree);
 
         if (!error) {
             char       *filter_name = AWT_get_combined_filter_name(aw_root, "dist");

@@ -127,7 +127,7 @@ GB_ERROR ARB_tree_root::saveToDB() {
         GBDATA *gb_main   = get_gb_main();
         error             = GB_push_transaction(gb_main);
         at_assert(rootNode);
-        if (!error) error = GBT_write_tree(gb_main, gb_tree, 0, rootNode->get_gbt_tree());
+        if (!error) error = GBT_overwrite_tree(gb_main, gb_tree, rootNode->get_gbt_tree());
         error             = GB_end_transaction(gb_main, error);
     }
     return error;
