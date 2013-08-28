@@ -14,7 +14,18 @@ GENMENUS=$(SUBMENUS:.menu=.genmenu)
 PPP:=./pp.pl
 CLEAN:=./cleanmenu.pl
 
-all: $(MENUS) help
+# ---------------------------------------- help for refactoring
+MENUS_EXPECTED = ARB_GDEmenus.expected
+
+# check expected result (to avoid unwanted changes)
+# call 'make update_expected' to expect the current result
+
+#CHECK_AS_EXPECTED = check_as_expected
+CHECK_AS_EXPECTED = 
+
+# ----------------------------------------
+
+all: $(MENUS) help $(CHECK_AS_EXPECTED)
 
 MENUS/%.genmenu : genmenu.header
 
@@ -31,6 +42,14 @@ $(MENUS) : $(MENUS_DIRTY) $(CLEAN)
 	$(CLEAN) <$(MENUS_DIRTY) >$@
 	rm $(MENUS_DIRTY)
 	chmod a-w $@
+
+# ------------------------------------------------------------
+
+update_expected: $(MENUS)
+	cp $(MENUS) $(MENUS_EXPECTED)
+
+check_as_expected: $(MENUS) $(MENUS_EXPECTED)
+	diff --unified --ignore-space-change --ignore-blank-lines  $(MENUS_EXPECTED) $(MENUS) 
 
 # ------------------------------------------------------------
 
