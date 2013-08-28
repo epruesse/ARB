@@ -190,13 +190,15 @@ int ARB_main(int argc, char *argv[]) {
 
 #include "command_output.h"
 
-static char *savename(int dir) { return GBS_global_string_copy("consense/%i/consense.tree", dir); }
-static char *expected_name(int dir) { return GBS_global_string_copy("consense/%i/consense_expected.tree", dir); }
-static char *inputname(int dir, int tree) { return GBS_global_string_copy("consense/%i/bootstrapped_%i.tree", dir, tree); }
+static char *custom_tree_name(int dir, const char *name) { return GBS_global_string_copy("consense/%i/%s.tree", dir, name); }
+static char *custom_numbered_tree_name(int dir, const char *name, int treeNr) { return GBS_global_string_copy("consense/%i/%s_%i.tree", dir, name, treeNr); }
 
-static void add_inputnames(StrArray& to, int dir, int first_tree, int last_tree) {
+static char *savename(int dir) { return custom_tree_name(dir, "consense"); }
+static char *expected_name(int dir) { return custom_tree_name(dir, "consense_expected"); }
+
+static void add_inputnames(StrArray& to, int dir, const char *basename, int first_tree, int last_tree) {
     for (int t = first_tree; t <= last_tree; ++t) {
-        to.put(inputname(dir, t));
+        to.put(custom_numbered_tree_name(dir, basename, t));
     }
 }
 
@@ -214,9 +216,10 @@ static double calc_intree_distance(GBT_TREE *tree) {
 // #define TEST_AUTO_UPDATE // uncomment to update expected trees
 
 void TEST_consensus_tree_1() {
-    GB_ERROR error = NULL;
-    StrArray input_tree_names;
-    add_inputnames(input_tree_names, 1, 1, 5);
+    GB_ERROR  error   = NULL;
+    StrArray  input_tree_names;
+    const int treedir = 1;
+    add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 5);
 
     size_t    species_count;
     GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.7);
@@ -229,8 +232,8 @@ void TEST_consensus_tree_1() {
 
     TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 0.925779, LENSUM_EPSILON);
         
-    char *saveas   = savename(1);
-    char *expected = expected_name(1);
+    char *saveas   = savename(treedir);
+    char *expected = expected_name(treedir);
 
     TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
@@ -251,7 +254,8 @@ void TEST_consensus_tree_1() {
 void TEST_consensus_tree_1_single() {
     GB_ERROR error = NULL;
     StrArray input_tree_names;
-    add_inputnames(input_tree_names, 1, 1, 1);
+    const int treedir = 1;
+    add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 1);
 
     {
         size_t species_count;
@@ -263,7 +267,7 @@ void TEST_consensus_tree_1_single() {
         TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
         TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 0.924610, LENSUM_EPSILON);
 
-        char       *saveas   = savename(1);
+        char       *saveas   = savename(treedir);
         const char *expected = "consense/1/consense_expected_single.tree";
 
         TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
@@ -284,9 +288,10 @@ void TEST_consensus_tree_1_single() {
 }
 
 void TEST_consensus_tree_2() {
-    GB_ERROR      error = NULL;
-    StrArray input_tree_names;
-    add_inputnames(input_tree_names, 2, 1, 4);
+    GB_ERROR  error   = NULL;
+    StrArray  input_tree_names;
+    const int treedir = 2;
+    add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 4);
 
     {
         size_t species_count;
@@ -298,8 +303,8 @@ void TEST_consensus_tree_2() {
         TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
         TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 2.789272, LENSUM_EPSILON);
 
-        char *saveas   = savename(2);
-        char *expected = expected_name(2);
+        char *saveas   = savename(treedir);
+        char *expected = expected_name(treedir);
         
         TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
@@ -320,9 +325,10 @@ void TEST_consensus_tree_2() {
 }
 
 void TEST_consensus_tree_3() {
-    GB_ERROR      error = NULL;
-    StrArray input_tree_names;
-    add_inputnames(input_tree_names, 3, 1, 3);
+    GB_ERROR  error   = NULL;
+    StrArray  input_tree_names;
+    const int treedir = 3;
+    add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 3);
 
     {
         size_t species_count;
@@ -334,9 +340,9 @@ void TEST_consensus_tree_3() {
         TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
         TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 2.171485, LENSUM_EPSILON);
 
-        char *saveas   = savename(3);
-        char *expected = expected_name(3);
-        
+        char *saveas   = savename(treedir);
+        char *expected = expected_name(treedir);
+
         TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
 
 #if defined(TEST_AUTO_UPDATE)
