@@ -1,0 +1,26 @@
+[[created as copy of 'tree_disjunct_source']
+Kept upper subtree
+Thu Aug 29 10:03:41 2013: tree_disjunct1 saved to /home/ralf/ARB-bilbo/ARB.tree.disjunct/UNIT_TESTER/run/consense/4/disjunct_1.tree
+]
+(
+  (
+    (
+      (
+        (
+          DewBact3:0.02732,
+          DewBact4:0.01332
+        ):0.02367,
+        DewBact5:0.02497
+      ):0.03519,
+      (
+        EbiProk4:0.08063,
+        EbiProk5:0.05481
+      ):0.01546
+    ):0.05375,
+    EbiProk3:0.07157
+  ):0.02016,
+  (
+    DewBact2:0.02784,
+    DewBacte:0.02655
+  ):0.02551
+);

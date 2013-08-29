@@ -1,0 +1,23 @@
+[[created as copy of 'tree_disjunct_source']
+Kept lower subtree
+Thu Aug 29 10:03:48 2013: tree_disjunct2 saved to /home/ralf/ARB-bilbo/ARB.tree.disjunct/UNIT_TESTER/run/consense/4/disjunct_2.tree
+]
+(
+  (
+    (
+      (
+        (
+          (
+            DewArch4:0.01016,
+            NoName00:0.01261
+          ):0.04936,
+          DewArch3:0.07761
+        ):0.02020,
+        DewArch2:0.06831
+      ):0.01245,
+      DewArcha:0.05453
+    ):0.01663,
+    EbiProk2:0.06546
+  ):0.01951,
+  EbiProka:0.05276
+);

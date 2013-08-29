@@ -323,6 +323,79 @@ void TEST_consensus_tree_3() {
     }
 }
 
+void TEST_consensus_tree_from_disjunct_trees() {
+    GB_ERROR  error   = NULL;
+    StrArray  input_tree_names;
+    const int treedir = 4;
+    add_inputnames(input_tree_names, treedir, "disjunct", 1, 2);
+
+    {
+        size_t    species_count;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 0.96034);
+
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+                                       custom_tree_name(treedir, "disjunct_merged"),
+                                       custom_tree_name(treedir, "disjunct_merged_expected"));
+        // ../UNIT_TESTER/run/consense/4/disjunct_merged.tree
+
+        // @@@ tree generated here looks broken
+        // (expected it to connect the 2 disjunct trees by one branch with bootstrap == 0)
+
+        GBT_delete_tree(tree);
+    }
+}
+
+void TEST_consensus_tree_from_partly_overlapping_trees() {
+    GB_ERROR  error   = NULL;
+    StrArray  input_tree_names;
+    const int treedir = 4;
+    add_inputnames(input_tree_names, treedir, "disjunct", 1, 3);
+
+    // tree_disjunct_3 contains 7 species
+    // (3 from upper subtree (tree_disjunct_1) and 4 from lower subtree (tree_disjunct_2))
+    // The generated consensus-tree has a quite good topology (compared with tree_disjunct_source)
+
+    {
+        size_t    species_count;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.25562);
+
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+                                       custom_tree_name(treedir, "overlap_merged"),
+                                       custom_tree_name(treedir, "overlap_merged_expected"));
+        // ../UNIT_TESTER/run/consense/4/overlap_merged.tree
+
+        // tree produced here l
+
+        GBT_delete_tree(tree);
+    }
+}
+
+void TEST_consensus_tree_from_minimal_overlapping_trees() {
+    GB_ERROR  error   = NULL;
+    StrArray  input_tree_names;
+    const int treedir = 4;
+    add_inputnames(input_tree_names, treedir, "disjunct", 1, 2);
+    add_inputnames(input_tree_names, treedir, "disjunct", 4, 4);
+
+    // tree_disjunct_4 only contains 2 species (1 from upper and 1 from lower subtree).
+    // topology is poor (compared to tree_disjunct_source), but far better as if merging only disjunct trees.
+
+    {
+        size_t    species_count;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.322665);
+
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+                                       custom_tree_name(treedir, "overlap_mini_merged"),
+                                       custom_tree_name(treedir, "overlap_mini_merged_expected"));
+        // ../UNIT_TESTER/run/consense/4/overlap_mini_merged.tree
+
+        GBT_delete_tree(tree);
+    }
+}
+
 #define REPEATED_TESTS
 
 #if defined(REPEATED_TESTS)
