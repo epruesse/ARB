@@ -717,7 +717,7 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                 ConsensusTreeBuilder tree_builder;
                 GBS_strstruct        remark(1000);
 
-                remark.nprintf(100, "ARB consensus tree build from %i trees:\n", tree_names.size());
+                remark.nprintf(100, "ARB consensus tree build from %zu trees:\n", tree_names.size());
 
                 for (size_t t = 0; t<tree_names.size(); ++t) {
                     progress.subtitle(GBS_global_string("Adding %s", tree_names[t]));
