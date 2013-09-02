@@ -102,36 +102,6 @@ PART *PartitionSize::create_root() const {
     return p;
 }
 
-
-bool PART::completely_contained_in(const PART *father) const {
-    /*! tests if this PART is a real son of or identical to 'father'.
-     *
-     * @return true, if father has all son bits set (otherwise false).
-     */
-
-    arb_assert(is_valid());
-    arb_assert(father->is_valid());
-    
-#if defined(ASSERTION_USED)
-    bool is_equal = true;
-#endif
-    int longs = get_longs();
-    for (int i=0; i<longs; i++) {
-        PELEM s = p[i];
-        PELEM f = father->p[i];
-
-        if ((s&f) != s) return false; // father has not all son bits set
-#if defined(ASSERTION_USED)
-        if (s != f) is_equal = false;
-#endif
-    }
-
-    arb_assert(!is_equal); // if is_equal, father and son are identical (which is wrong);
-                           // e.g. happens when PartRegistry stores multiple instances of the same part
-    return true;
-}
-
-
 bool PART::overlaps_with(const PART *other) const {
     /*! test if two parts overlap (i.e. share common bits)
      */

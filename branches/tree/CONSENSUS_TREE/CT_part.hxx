@@ -172,7 +172,15 @@ public:
 
     void add_members_from(const PART *source);
 
-    bool completely_contained_in(const PART *father) const;
+    bool is_subset_of(const PART *other) const {
+        int longs = get_longs();
+        for (int i=0; i<longs; i++) {
+            if ((p[i] & other->p[i]) != p[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     bool overlaps_with(const PART *other) const;
     bool disjunct_from(const PART *other) const { return !overlaps_with(other); }

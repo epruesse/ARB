@@ -132,7 +132,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
     // test if part fits under one son of tree. if so, recurse.
     for (NSONS *nsonp = tree->son_list; nsonp; nsonp=nsonp->next) {
         const PART *sonpart = nsonp->node->part;
-        if (newpart->completely_contained_in(sonpart)) {
+        if (newpart->is_subset_of(sonpart)) {
             int res = ins_ntree(nsonp->node, newpart);
             arb_assert(contradicted(newpart, res));
             return res;
@@ -145,7 +145,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
     for (NSONS *nsonp = tree->son_list; nsonp; nsonp=nsonp->next) {
         const PART *sonpart = nsonp->node->part;
         if (sonpart->overlaps_with(newpart)) {
-            if (!sonpart->completely_contained_in(newpart)) {
+            if (!sonpart->is_subset_of(newpart)) {
                 arb_assert(newpart);
                 return 0;
             }
@@ -166,7 +166,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
         while (nsonp) {
             NSONS      *nsonp_next = nsonp->next;
             const PART *sonpart    = nsonp->node->part;
-            if (sonpart->completely_contained_in(newntnode->part)) {
+            if (sonpart->is_subset_of(newntnode->part)) {
                 move_son(tree, newntnode, nsonp);
             }
             nsonp = nsonp_next;
@@ -296,7 +296,7 @@ bool is_well_formed(const NT_NODE *tree) {
         for (NSONS *nson = tree->son_list; nson; nson = nson->next) {
             PART *pson = nson->node->part;
 
-            if (!pson->completely_contained_in(tree->part)) {
+            if (!pson->is_subset_of(tree->part)) {
                 well_formed = false;
                 SHOW_FAILURE(); // son is not a subset of father
             }
