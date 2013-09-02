@@ -20,6 +20,7 @@
 #include <aw_select.hxx>
 #include <arbdbt.h>
 #include <items.h>
+#include <arb_msg_fwd.h>
 
 
 #define nds_assert(cond) arb_assert(cond)
@@ -107,6 +108,7 @@ struct NodeTextBuilder {
         }
     }
 
+    __ATTR__FORMAT(2) void appendf(const char *format, ...) { FORWARD_FORMATTED(append, format); }
 };
 static NodeTextBuilder *awt_nds_ms = 0;
 
@@ -593,8 +595,8 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
 
     if (!gbd) {
         if (!species) return "<internal error: no tree-node, no db-entry>";
-        if (!species->name) return "<internal error: node w/o name>";
-        sprintf(awt_nds_ms->buf, "<%s>", species->name); // zombie
+        if (!species->name) return "<internal error: species w/o name>";
+        awt_nds_ms->appendf("<%s>", species->name); // zombie
     }
     else {
         bool field_was_printed = false;
@@ -604,9 +606,9 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
             if (is_leaf) { if (!awt_nds_ms->at_leaf[i]) continue; }
             else         { if (!awt_nds_ms->at_group[i]) continue; }
 
-            char *str        = 0;   // the generated string
+            char *str        = 0;     // the generated string
             bool  apply_aci  = false; // whether aci shall be applied
-            bool  align_left = true; // otherwise align right
+            bool  align_left = true;  // otherwise align right
 
             {
                 const char *field_output = "";
