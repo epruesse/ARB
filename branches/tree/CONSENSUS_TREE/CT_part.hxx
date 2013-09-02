@@ -84,6 +84,9 @@ class PART {
         len             *= lenScale;
     }
 
+    static int byte_pos(int pos) { return pos / sizeof(PELEM) / 8; }
+    static PELEM bit_mask(int pos) { return 1 << (pos % (sizeof(PELEM)*8)); }
+
 public:
 
     PART(const PartitionSize* size_info, double weight_)
@@ -117,12 +120,12 @@ public:
     }
 
     void setbit(int pos) {
-        /*! set the bit of the part 'p' at the position 'pos'
+        /*! set the bit at position 'pos'
          */
         arb_assert(is_valid());
 
-        int   idx = pos / sizeof(PELEM) / 8;
-        PELEM bit = 1 << (pos % (sizeof(PELEM)*8));
+        int   idx = byte_pos(pos);
+        PELEM bit = bit_mask(pos);
 
         if (!(p[idx]&bit)) {
             p[idx] |= bit;
@@ -131,6 +134,17 @@ public:
 
         arb_assert(is_valid());
     }
+    bool bit_is_set(int pos) const {
+        /*! return true if the bit at the position 'pos' is set
+         */
+        arb_assert(is_valid());
+
+        int   idx = byte_pos(pos);
+        PELEM bit = bit_mask(pos);
+
+        return p[idx] & bit;
+    }
+
     void set_len(GBT_LEN length) {
         arb_assert(is_valid());
         len = length*weight;

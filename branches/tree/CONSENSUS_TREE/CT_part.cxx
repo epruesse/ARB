@@ -233,7 +233,16 @@ int PART::count_members() const {
 }
 
 bool PART::is_standardized() const { // @@@ inline
-    return p[0] & 1;
+    /*! true if PART is in standard representation.
+     * @see standardize()
+     */
+
+    // may be any criteria which differs between PART and its inverse
+    // if you change the criteria, generated trees will change
+    // (because branch-insertion-order is affected)
+
+    int std_bit = 0;
+    return bit_is_set(std_bit);
 }
 
 void PART::standardize() { // @@@ inline or elim
