@@ -265,6 +265,14 @@ void print_ntree(NT_NODE *tree, int indent) {
     fputs(")\n", stdout);
 }
 
+#define FAIL_IF_NOT_WELLFORMED
+
+#if defined(FAIL_IF_NOT_WELLFORMED)
+#define SHOW_FAILURE() arb_assert(0)
+#else
+#define SHOW_FAILURE() 
+#endif
+
 bool is_well_formed(const NT_NODE *tree) {
     // checks whether
     // - tree has sons
@@ -278,6 +286,7 @@ bool is_well_formed(const NT_NODE *tree) {
     if (!sons) {
         if (tree->part->get_members() != 1) { // leafs should contain single species
             well_formed = false;
+            SHOW_FAILURE();
         }
     }
     else {
@@ -289,10 +298,12 @@ bool is_well_formed(const NT_NODE *tree) {
 
             if (!pson->completely_contained_in(tree->part)) {
                 well_formed = false;
+                SHOW_FAILURE(); // son is not a subset of father
             }
             if (pmerge) {
                 if (pson->overlaps_with(pmerge)) {
                     well_formed  = false;
+                    SHOW_FAILURE(); // sons are not distinct
                 }
                 pmerge->add_members_from(pson);
             }
@@ -301,12 +312,25 @@ bool is_well_formed(const NT_NODE *tree) {
             }
             if (!is_well_formed(nson->node)) {
                 well_formed = false;
-                is_well_formed(nson->node);
+                SHOW_FAILURE(); // son is not well formed
             }
         }
         arb_assert(pmerge);
         if (tree->part->differs(pmerge)) {
             well_formed = false;
+
+#if defined(FAIL_IF_NOT_WELLFORMED)
+            printf("tree with %i sons {\n", sons);
+            for (NSONS *nson = tree->son_list; nson; nson = nson->next) {
+                PART *pson = nson->node->part;
+                fputs("  pson   =", stdout); pson->print();
+            }
+            printf("} end of tree with %i sons\n", sons);
+
+            fputs("tree part=", stdout); tree->part->print();
+            fputs("pmerge   =", stdout); pmerge->print();
+#endif
+            SHOW_FAILURE(); // means: father is not same as sum of sons
         }
         delete pmerge;
     }
