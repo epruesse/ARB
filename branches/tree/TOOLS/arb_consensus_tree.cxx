@@ -396,6 +396,30 @@ void TEST_consensus_tree_from_minimal_overlapping_trees() {
     }
 }
 
+void TEST_consensus_tree_described_in_arbhelp() {
+    // see ../HELP_SOURCE/oldhelp/consense_algo.hlp
+
+    GB_ERROR  error   = NULL;
+    StrArray  input_tree_names;
+    const int treedir = 5;
+    add_inputnames(input_tree_names, treedir, "help", 1, 2);
+
+    {
+        size_t    species_count;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.0);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 6, 1.000000);
+
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+                                       custom_tree_name(treedir, "help_merged"),
+                                       custom_tree_name(treedir, "help_merged_expected"));
+        // ../UNIT_TESTER/run/consense/5/help_merged.tree
+        // @@@ constructed tree is not same as stated in helpfile
+
+        GBT_delete_tree(tree);
+    }
+}
+
+
 #define REPEATED_TESTS
 
 #if defined(REPEATED_TESTS)
