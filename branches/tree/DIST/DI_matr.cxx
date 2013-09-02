@@ -1196,7 +1196,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         tree = neighbourjoining(names, matr->matrix->m, matr->nentries, sizeof(GBT_TREE));
 
         if (bootstrap_flag) {
-            ctree->insert(tree, 1);
+            ctree->insert_tree_weighted(tree, 1);
             GBT_delete_tree(tree);
             loop_count++;
             progress->inc();

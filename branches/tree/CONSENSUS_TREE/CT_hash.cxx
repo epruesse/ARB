@@ -37,7 +37,7 @@ void PartRegistry::put_part(PART*& part) {
     PartSet::iterator found = parts.find(part);
 
     if (found != parts.end()) {
-        (*found)->add(part);
+        (*found)->addWeightAndLength(part);
         delete part;
     }
     else {

@@ -141,7 +141,7 @@ public:
 
     double get_weight() const { return weight; }
 
-    void add(const PART* other) {
+    void addWeightAndLength(const PART* other) {
         weight += other->weight;
         len    += other->len;
     }
@@ -156,9 +156,9 @@ public:
     bool is_standardized() const;
     void standardize();
 
-    void add_from(const PART *source);
+    void add_members_from(const PART *source);
 
-    bool is_son_of(const PART *father) const;
+    bool completely_contained_in(const PART *father) const;
 
     bool overlaps_with(const PART *other) const;
     bool disjunct_from(const PART *other) const { return !overlaps_with(other); }
@@ -176,7 +176,7 @@ public:
 
     int insertionOrder_cmp(const PART *other) const;
     int topological_cmp(const PART *other) const;
-    
+
 #if defined(NTREE_DEBUG_FUNCTIONS)
     void print() const;
 #endif

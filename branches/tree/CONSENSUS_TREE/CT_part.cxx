@@ -103,10 +103,10 @@ PART *PartitionSize::create_root() const {
 }
 
 
-bool PART::is_son_of(const PART *father) const {
-    /*! test if the part 'son' is possibly a son of the part 'father'.
+bool PART::completely_contained_in(const PART *father) const {
+    /*! tests if this PART is a real son of or identical to 'father'.
      *
-     * A father defined in this context as a part covers every bit of his son. needed in CT_ntree
+     * @return true, if father has all son bits set (otherwise false).
      */
 
     arb_assert(is_valid());
@@ -165,7 +165,7 @@ void PART::invert() {
     arb_assert(is_valid());
 }
 
-void PART::add_from(const PART *source) {
+void PART::add_members_from(const PART *source) {
     //! destination = source or destination
     arb_assert(source->is_valid());
     arb_assert(is_valid());
@@ -239,8 +239,8 @@ bool PART::is_standardized() const { // @@@ inline
 void PART::standardize() { // @@@ inline or elim
     /*! standardize the partition
      *
-     * two parts are equal if one is just the inverted version of the other.
-     * so the standard is defined that the version is the representant, whose first bit is equal 1
+     * Generally two PARTs are equivalent, if one is the inverted version of the other.
+     * A standardized PART is equal for equivalent PARTs, i.e. may be used as key (as done in PartRegistry)
      */
     arb_assert(is_valid());
     if (!is_standardized()) invert();
@@ -324,7 +324,6 @@ int PART::topological_cmp(const PART *other) const {
 
     return cmp;
 }
-
 
 // --------------------------------------------------------------------------------
 

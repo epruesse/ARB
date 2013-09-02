@@ -34,6 +34,7 @@ class PART;
 class NT_NODE;
 class PartitionSize;
 class PartRegistry;
+class RB_INFO;
 
 class ConsensusTree : virtual Noncopyable {
     double   overall_weight;
@@ -57,15 +58,15 @@ class ConsensusTree : virtual Noncopyable {
         return names[idx];
     }
 
-    class RB_INFO *rbtree(const NT_NODE *tree, GBT_TREE *father);
-    GBT_TREE      *rb_gettree(const NT_NODE *tree);
+    RB_INFO  *rbtree(const NT_NODE *tree, GBT_TREE *father);
+    GBT_TREE *rb_gettree(const NT_NODE *tree);
 
 
 public:
     ConsensusTree(const CharPtrArray& names_);
     ~ConsensusTree();
 
-    void insert(GBT_TREE *tree, double weight);
+    void insert_tree_weighted(GBT_TREE *tree, double weight);
 
     GBT_TREE *get_consensus_tree();
 
@@ -125,7 +126,7 @@ public:
         different_species = species_occurred.size();
         ConsensusTree ctree(species_names);
         for (size_t i = 0; i<trees.size(); ++i) {
-            ctree.insert(trees[i], weights[i]);
+            ctree.insert_tree_weighted(trees[i], weights[i]);
         }
 
 #if defined(DEBUG) 

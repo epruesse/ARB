@@ -129,20 +129,23 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
         return 1;
     }
 
-    // test if part fit under one son of tree -> recursion
+    // test if part fits under one son of tree. if so, recurse.
     for (NSONS *nsonp = tree->son_list; nsonp; nsonp=nsonp->next) {
-        if (newpart->is_son_of(nsonp->node->part)) {
+        const PART *sonpart = nsonp->node->part;
+        if (newpart->completely_contained_in(sonpart)) {
             int res = ins_ntree(nsonp->node, newpart);
             arb_assert(contradicted(newpart, res));
             return res;
         }
     }
 
-    // If partition is not a son maybe it is a brother
+    // Now we are sure 'newpart' is not a son (of any of my sons)!
+    // -> Test whether it is a brother of a son
     // If it is neither brother nor son -> don't fit here
     for (NSONS *nsonp = tree->son_list; nsonp; nsonp=nsonp->next) {
-        if (nsonp->node->part->overlaps_with(newpart)) {
-            if (!nsonp->node->part->is_son_of(newpart)) {
+        const PART *sonpart = nsonp->node->part;
+        if (sonpart->overlaps_with(newpart)) {
+            if (!sonpart->completely_contained_in(newpart)) {
                 arb_assert(newpart);
                 return 0;
             }
@@ -161,8 +164,9 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
     {
         NSONS *nsonp = tree->son_list;
         while (nsonp) {
-            NSONS *nsonp_next = nsonp->next;
-            if (nsonp->node->part->is_son_of(newntnode->part)) {
+            NSONS      *nsonp_next = nsonp->next;
+            const PART *sonpart    = nsonp->node->part;
+            if (sonpart->completely_contained_in(newntnode->part)) {
                 move_son(tree, newntnode, nsonp);
             }
             nsonp = nsonp_next;
@@ -269,40 +273,43 @@ bool is_well_formed(const NT_NODE *tree) {
     // - father is sum of sons
 
     int sons = ntree_count_sons(tree);
-
-    if (!sons) return tree->part->get_members() == 1; // leafs should contain single species
-
     bool well_formed = true;
 
-    arb_assert(tree->son_list);
-    
-    PART *pmerge = 0;
-    for (NSONS *nson = tree->son_list; nson; nson = nson->next) {
-        PART *pson = nson->node->part;
-
-        if (!pson->is_son_of(tree->part)) {
+    if (!sons) {
+        if (tree->part->get_members() != 1) { // leafs should contain single species
             well_formed = false;
         }
-        if (pmerge) {
-            if (pson->overlaps_with(pmerge)) {
-                well_formed  = false;
+    }
+    else {
+        arb_assert(tree->son_list);
+
+        PART *pmerge = 0;
+        for (NSONS *nson = tree->son_list; nson; nson = nson->next) {
+            PART *pson = nson->node->part;
+
+            if (!pson->completely_contained_in(tree->part)) {
+                well_formed = false;
             }
-            pmerge->add_from(pson);
+            if (pmerge) {
+                if (pson->overlaps_with(pmerge)) {
+                    well_formed  = false;
+                }
+                pmerge->add_members_from(pson);
+            }
+            else {
+                pmerge = pson->clone();
+            }
+            if (!is_well_formed(nson->node)) {
+                well_formed = false;
+                is_well_formed(nson->node);
+            }
         }
-        else {
-            pmerge = pson->clone();
-        }
-        if (!is_well_formed(nson->node)) {
+        arb_assert(pmerge);
+        if (tree->part->differs(pmerge)) {
             well_formed = false;
-            is_well_formed(nson->node);
         }
+        delete pmerge;
     }
-    arb_assert(pmerge);
-    if (tree->part->differs(pmerge)) {
-        well_formed = false;
-    }
-    delete pmerge;
-
     return well_formed;
 }
 
