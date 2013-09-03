@@ -431,7 +431,7 @@ void TEST_consensus_tree_from_trees_overlapping_by_twothirds() {
     {
         size_t    species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 19.2);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.557880);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.812630);
 
         TEST_SAVE_AND_COMPARE_CONSTREE(tree,
                                        custom_tree_name(treedir, "overlap_twothirds_merged"),
