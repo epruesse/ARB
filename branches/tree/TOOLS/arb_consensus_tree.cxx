@@ -419,6 +419,29 @@ void TEST_consensus_tree_described_in_arbhelp() {
     }
 }
 
+void TEST_consensus_tree_from_trees_overlapping_by_twothirds() {
+    GB_ERROR  error   = NULL;
+    StrArray  input_tree_names;
+    const int treedir = 6;
+    add_inputnames(input_tree_names, treedir, "overlap_two_thirds", 1, 3);
+    // These 3 trees where copied from an existing tree.
+    // From each copy one third of all species has been removed
+    // (removed sets were disjunct)
+
+    {
+        size_t    species_count;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 19.2);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.557880);
+
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+                                       custom_tree_name(treedir, "overlap_twothirds_merged"),
+                                       custom_tree_name(treedir, "overlap_twothirds_merged_expected"));
+        // ../UNIT_TESTER/run/consense/6/overlap_twothirds_merged.tree
+
+        GBT_delete_tree(tree);
+    }
+}
+
 
 #define REPEATED_TESTS
 
