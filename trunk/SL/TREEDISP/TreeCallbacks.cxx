@@ -14,6 +14,7 @@
 #include <aw_advice.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <mode_text.h>
 
 #include <cctype>
 
@@ -27,64 +28,28 @@ void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
     const char *text;
 
     switch (mode) {
-        case AWT_MODE_SELECT:
-            text = "SELECT MODE    LEFT: select species and open/close group";
-            break;
-        case AWT_MODE_MARK:
-            text = "MARK MODE    LEFT: mark subtree   RIGHT: unmark subtree";
-            break;
-        case AWT_MODE_GROUP:
-            text = "GROUP MODE   LEFT: fold/unfold group  RIGHT: create/rename/destroy group";
-            break;
-        case AWT_MODE_ZOOM:
-            text = "ZOOM MODE    LEFT: press and drag to zoom   RIGHT: zoom out one step";
-            break;
-        case AWT_MODE_LZOOM:
-            text = "LOGICAL ZOOM MODE   LEFT: show subtree  RIGHT: go up one step";
-            break;
-        case AWT_MODE_EDIT:
-            text = "INFO MODE    LEFT: click for info";
-            break;
-        case AWT_MODE_WWW:
-            text = "CLICK NODE TO SEARCH WEB (See <PROPS/WWW...> also";
-            break;
-        case AWT_MODE_LINE:
-            text = "LINE MODE    LEFT: reduce linewidth  RIGHT: increase linewidth";
-            break;
-        case AWT_MODE_ROT:
-            text = "ROTATE MODE   LEFT: Select branch and drag to rotate";
-            break;
-        case AWT_MODE_SPREAD:
-            text = "SPREAD MODE   LEFT: decrease angles  RIGHT: increase angles";
-            break;
-        case AWT_MODE_SWAP:
-            text = "SWAP MODE    LEFT: swap branches";
-            break;
-        case AWT_MODE_LENGTH:
-            text = "BRANCH LENGTH MODE   LEFT: Drag branch/ruler to change length  RIGHT: use discrete lengths";
-            break;
-        case AWT_MODE_MOVE:
-            text = "MOVE MODE   LEFT: move subtree/ruler to new destination RIGHT: move group info only";
-            break;
-        case AWT_MODE_NNI:
-            text = "NEAREST NEIGHBOUR INTERCHANGE OPTIMIZER  L: select subtree R: whole tree";
-            break;
-        case AWT_MODE_KERNINGHAN:
-            text = "KERNIGHAN LIN OPTIMIZER   L: select subtree R: whole tree";
-            break;
-        case AWT_MODE_OPTIMIZE:
-            text = "NNI & KL OPTIMIZER   L: select subtree R: whole tree";
-            break;
-        case AWT_MODE_SETROOT:
-            text = "SET ROOT MODE   LEFT: set root  RIGHT: search optimal root";
-            break;
-        case AWT_MODE_RESET:
-            text = "RESET MODE   LEFT: reset rotation  MIDDLE: reset angles  RIGHT: reset linewidth";
-            break;
+        case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "select species or open/close group");                  break;
+        case AWT_MODE_EDIT:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");                                      break;
+        case AWT_MODE_WWW:    text = MODE_TEXT_1BUTTON("WEB",    "Launch node dependent URL (see <Properties/WWW...>)"); break;
+        case AWT_MODE_ROT:    text = MODE_TEXT_1BUTTON("ROTATE", "click and drag branch to rotate (radial tree only)");  break;
+        case AWT_MODE_SWAP:   text = MODE_TEXT_1BUTTON("SWAP",   "swap branches");                                       break;
 
-        default:
-            text="No help for this mode available";
-            break;
+        case AWT_MODE_MARK:       text = MODE_TEXT_2BUTTONS("MARK",         "mark subtree",                          "unmark subtree");              break;
+        case AWT_MODE_GROUP:      text = MODE_TEXT_2BUTTONS("GROUP",        "fold/unfold group",                     "create/rename/destroy group"); break;
+        case AWT_MODE_ZOOM:       text = MODE_TEXT_2BUTTONS("ZOOM",         "press and drag to zoom",                "zoom out one step");           break;
+        case AWT_MODE_LZOOM:      text = MODE_TEXT_2BUTTONS("LOGICAL ZOOM", "show only subtree",                     "go up one step");              break;
+        case AWT_MODE_LINE:       text = MODE_TEXT_2BUTTONS("LINE",         "reduce linewidth",                      "increase linewidth");          break;
+        case AWT_MODE_SPREAD:     text = MODE_TEXT_2BUTTONS("SPREAD",       "decrease angles",                       "increase angles");             break;
+        case AWT_MODE_LENGTH:     text = MODE_TEXT_2BUTTONS("LENGTH",       "Drag branch/ruler to change length",    "use discrete lengths");        break;
+        case AWT_MODE_MOVE:       text = MODE_TEXT_2BUTTONS("MOVE",         "move subtree/ruler to new destination", "move group info only");        break;
+        case AWT_MODE_NNI:        text = MODE_TEXT_2BUTTONS("OPTI(NNI)",    "subtree",                               "whole tree");                  break;
+        case AWT_MODE_KERNINGHAN: text = MODE_TEXT_2BUTTONS("OPTI(KL)",     "subtree",                               "whole tree");                  break;
+        case AWT_MODE_OPTIMIZE:   text = MODE_TEXT_2BUTTONS("OPTI(NNI&KL)", "subtree",                               "whole tree");                  break;
+        case AWT_MODE_SETROOT:    text = MODE_TEXT_2BUTTONS("REROOT",       "set root to clicked branch",            "search optimal root");         break;
+
+        case AWT_MODE_RESET: text = MODE_TEXT_3BUTTONS("RESET", "reset rotation", "reset angles", "reset linewidth"); break;
+
+        default: text = no_mode_text_defined(); break;
     }
 
     td_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!
