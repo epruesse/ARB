@@ -416,12 +416,12 @@ int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
 
     if ((mode &1) == 0) {   // to top
         if (rightsize >leftsize) {
-            at->swap_sons();
+            at->swap_featured_sons();
         }
     }
     else {
         if (rightsize < leftsize) {
-            at->swap_sons();
+            at->swap_featured_sons();
         }
     }
 
@@ -450,7 +450,7 @@ int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
         else { // (name_cmp>=0) aka: rightleafname <= leftleafname
             leafname = rightleafname;
             if (rightsize==leftsize && name_cmp>0) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
-                at->swap_sons();
+                at->swap_featured_sons();
             }
         }
     }
@@ -1213,8 +1213,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         GB_ERROR error;
                         switch (button) {
                             case AW_BUTTON_LEFT:
-                                error = source->cantMoveTo(dest);
-                                if (!error) source->moveTo(dest, cl->nearest_rel_pos);
+                                error = source->cantMoveNextTo(dest);
+                                if (!error) source->moveNextTo(dest, cl->nearest_rel_pos);
                                 break;
 
                             case AW_BUTTON_RIGHT:
@@ -1426,7 +1426,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
-                                at->reset_child_linewidths();
+                                at->reset_linewidths();
                                 at->set_linewidth(1);
                                 exports.save    = 1;
                                 exports.refresh = 1;
@@ -1564,19 +1564,22 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
         case AWT_MODE_SWAP:
             if (type==AW_Mouse_Press) {
-                switch (button) {
-                    case AW_BUTTON_LEFT:
-                        if (cl->exists) {
-                            at = (AP_tree *)cl->client_data1;
-                            if (!at) break;
-                            at->swap_sons();
-
-                            this->exports.refresh = 1;
-                            this->exports.save = 1;
+                if (cl->exists) {
+                    at = (AP_tree *)cl->client_data1;
+                    if (at) {
+                        switch (button) {
+                            case AW_BUTTON_LEFT:
+                                at->swap_featured_sons();
+                                exports.refresh = 1;
+                                exports.save = 1;
+                                break;
+                            case AW_BUTTON_RIGHT:
+                                at->rotate_subtree();
+                                exports.refresh = 1;
+                                exports.save = 1;
+                                break;
                         }
-                        break;
-                    case AW_BUTTON_RIGHT:
-                        break;
+                    }
                 }
             }
             break;
