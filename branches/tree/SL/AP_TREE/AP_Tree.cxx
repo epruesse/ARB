@@ -166,20 +166,20 @@ AP_tree *AP_tree::dup() const {
 #warning move to ARB_tree ?
 #endif
 void AP_tree::replace_self(AP_tree *new_son) {
-    ap_assert(father);
+    ap_assert(!is_root_node());
     if (father) {
-        if (is_leftson(father)) father->leftson  = new_son;
-        else                    father->rightson = new_son;
+        if (is_leftson()) father->leftson  = new_son;
+        else              father->rightson = new_son;
     }
 }
 #if defined(WARN_TODO)
 #warning move to ARB_tree ?
 #endif
 void AP_tree::set_brother(AP_tree *new_son) {
-    ap_assert(father);
+    ap_assert(!is_root_node());
     if (father) {
-        if (is_leftson(father)) father->rightson = new_son;
-        else                    father->leftson  = new_son;
+        if (is_leftson()) father->rightson = new_son;
+        else              father->leftson  = new_son;
     }
 }
 
@@ -296,10 +296,10 @@ void AP_tree::remove() {
         if (grandfather) {
             brother->unlink_from_father();
 
-            bool isLeftSon = fath->is_leftson(grandfather);
+            bool wasLeftSon = fath->is_leftson();
             fath->unlink_from_father();
 
-            if (isLeftSon) {
+            if (wasLeftSon) {
                 ap_assert(!grandfather->leftson);
                 grandfather->leftlen += brothersLen;
                 grandfather->leftson  = brother;

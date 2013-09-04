@@ -128,8 +128,8 @@ private:
 
 private:
     void unlink_son(ARB_tree *son) {
-        if (son->is_leftson(this)) leftson = NULL;
-        else rightson                      = NULL;
+        if (son->is_leftson()) leftson  = NULL; // @@@ create function returning ARB_tree*&
+        else                   rightson = NULL;
     }
 
     void unloadSequences();
@@ -173,22 +173,22 @@ public:
         return !is_leaf && descendant != this && descendant->is_inside(this);
     }
 
-    bool is_son(const ARB_tree *of_father) const {
-        return father == of_father &&
+    bool is_son_of(const ARB_tree *Father) const {
+        return father == Father &&
             (father->leftson == this || father->rightson == this);
     }
-    bool is_leftson(const ARB_tree *of_father) const {
-        at_assert(is_son(of_father)); // do only call is_leftson() with sons!
-        return of_father->leftson == this;
+    bool is_leftson() const {
+        at_assert(is_son_of(father)); // do only call with sons!
+        return father->leftson == this;
     }
-    bool is_rightson(const ARB_tree *of_father) const {
-        at_assert(is_son(of_father)); // do only call is_rightson() with sons!
-        return of_father->rightson == this;
+    bool is_rightson() const {
+        at_assert(is_son_of(father)); // do only call with sons!
+        return father->rightson == this;
     }
 
     // order in dendogram:
-    bool is_upper_son(const ARB_tree *of_father) const { return is_leftson(of_father); }
-    bool is_lower_son(const ARB_tree *of_father) const { return is_rightson(of_father); }
+    bool is_upper_son() const { return is_leftson(); }
+    bool is_lower_son() const { return is_rightson(); }
 
     const ARB_tree *get_root_node() const {
         const ARB_tree *root = get_tree_root()->get_root_node();
@@ -200,19 +200,20 @@ public:
     bool is_root_node() const { return get_root_node() == this; }
 
     ARB_tree *get_brother() {
-        at_assert(father);
-        return is_leftson(father) ? father->rightson : father->leftson;
+        at_assert(!is_root_node()); // root node has no brother
+        return is_leftson() ? father->rightson : father->leftson;
     }
     const ARB_tree *get_brother() const {
         return const_cast<const ARB_tree*>(const_cast<ARB_tree*>(this)->get_brother());
     }
 
     GBT_LEN get_branchlength() const {
-        at_assert(father); // no father -> no branchlen
-        return is_leftson(father) ? father->leftlen : father->rightlen;
+        at_assert(!is_root_node()); // root-branch is virtual and has no branchlen
+        return is_leftson() ? father->leftlen : father->rightlen; // @@@ create function returning GBT_LEN&
     }
     void set_branchlength(GBT_LEN newlen) {
-        if (is_leftson(father)) father->leftlen = newlen;
+        at_assert(!is_root_node()); // root-branch is virtual and has no branchlen
+        if (is_leftson()) father->leftlen = newlen;
         else father->rightlen                   = newlen;
     }
 
@@ -353,7 +354,8 @@ public:
     // iterator functions: endlessly iterate over all edges of tree
     ARB_edge next() const { // descends rightson first
         if (type == EDGE_TO_ROOT) {
-            if (from->is_rightson(to)) return ARB_edge(to, to->leftson, EDGE_TO_LEAF);
+            at_assert(from->is_son_of(to));
+            if (from->is_rightson()) return ARB_edge(to, to->leftson, EDGE_TO_LEAF);
             ARB_tree *father = to->father;
             if (father->is_root_node()) return ARB_edge(to, to->get_brother(), ROOT_EDGE);
             return ARB_edge(to, father, EDGE_TO_ROOT);

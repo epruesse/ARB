@@ -281,15 +281,15 @@ public:
 
     void update();
 
-    int get_linewidth() const {
-        if (!father) return 0;
-        return is_leftson(father) ? gr.left_linewidth : gr.right_linewidth;
+    int get_linewidth() const { // @@@ does the wrong thing (gets the linewidth of son, instead of my own)
+        if (is_root_node()) return 0;
+        return is_leftson() ? gr.left_linewidth : gr.right_linewidth; // @@@ create function returning float&
     }
     // cppcheck-suppress functionConst
-    void set_linewidth(int width) {
+    void set_linewidth(int width) { // @@@ does the wrong thing (sets the linewidth of son, instead of my own)
         ap_assert(width >= 1 && width < 128);
         if (father) {
-            char& lw = is_leftson(father) ? gr.left_linewidth : gr.right_linewidth;
+            char& lw = is_leftson() ? gr.left_linewidth : gr.right_linewidth;
             lw       = width;
         }
     }
