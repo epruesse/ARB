@@ -34,8 +34,8 @@ void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
         case AWT_MODE_EDIT:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");                                      break;
         case AWT_MODE_WWW:    text = MODE_TEXT_1BUTTON("WEB",    "Launch node dependent URL (see <Properties/WWW...>)"); break;
         case AWT_MODE_ROT:    text = MODE_TEXT_1BUTTON("ROTATE", "click and drag branch to rotate (radial tree only)");  break;
-        case AWT_MODE_SWAP:   text = MODE_TEXT_1BUTTON("SWAP",   "swap branches");                                       break;
 
+        case AWT_MODE_SWAP:       text = MODE_TEXT_2BUTTONS("SWAP",         "swap child branches",                   "swap whole subtree");          break;
         case AWT_MODE_MARK:       text = MODE_TEXT_2BUTTONS("MARK",         "mark subtree",                          "unmark subtree");              break;
         case AWT_MODE_GROUP:      text = MODE_TEXT_2BUTTONS("GROUP",        "fold/unfold group",                     "create/rename/destroy group"); break;
         case AWT_MODE_LZOOM:      text = MODE_TEXT_2BUTTONS("LOGICAL ZOOM", "show only subtree",                     "go up one step");              break;
