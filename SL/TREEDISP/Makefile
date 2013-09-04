@@ -116,6 +116,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/gccver.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/mode_text.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/test_global.h
