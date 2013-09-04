@@ -416,12 +416,12 @@ int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
 
     if ((mode &1) == 0) {   // to top
         if (rightsize >leftsize) {
-            at->swap_sons();
+            at->swap_featured_sons();
         }
     }
     else {
         if (rightsize < leftsize) {
-            at->swap_sons();
+            at->swap_featured_sons();
         }
     }
 
@@ -450,7 +450,7 @@ int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
         else { // (name_cmp>=0) aka: rightleafname <= leftleafname
             leafname = rightleafname;
             if (rightsize==leftsize && name_cmp>0) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
-                at->swap_sons();
+                at->swap_featured_sons();
             }
         }
     }
@@ -1569,7 +1569,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     if (at) {
                         switch (button) {
                             case AW_BUTTON_LEFT:
-                                at->swap_sons();
+                                at->swap_featured_sons();
                                 exports.refresh = 1;
                                 exports.save = 1;
                                 break;

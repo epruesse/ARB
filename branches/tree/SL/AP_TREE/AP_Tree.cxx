@@ -353,7 +353,7 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     ap_assert(new_brother->father != father);       // already there
     ap_assert(!new_brother->is_inside(this));       // can't move tree into itself
 
-    if (father->leftson != this) get_father()->swap_sons();
+    if (father->leftson != this) get_father()->swap_featured_sons();
 
     if (father->father == 0) {
         get_brother()->father = 0;
@@ -410,7 +410,7 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     new_tree->father    = brother_father;
 }
 
-void AP_tree_members::swap_sons() {
+void AP_tree_members::swap_son_layout() {
     std::swap(left_linewidth, right_linewidth);
 
     // angles need to change orientation when swapped
@@ -421,17 +421,17 @@ void AP_tree_members::swap_sons() {
 
 }
 
-void AP_tree::swap_sons() {
+void AP_tree::swap_featured_sons() {
     if (!is_leaf) {
         std::swap(leftson, rightson);
         std::swap(leftlen, rightlen);
-        gr.swap_sons();
+        gr.swap_son_layout();
     }
 }
 
 void AP_tree::rotate_subtree() {
     if (!is_leaf) {
-        swap_sons();
+        swap_featured_sons();
         get_leftson()->rotate_subtree();
         get_rightson()->rotate_subtree();
     }

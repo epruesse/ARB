@@ -193,7 +193,7 @@ public:
         right_angle         = 0;
     }
 
-    void swap_sons();
+    void swap_son_layout();
 };
 
 struct AP_branch_members {
@@ -243,7 +243,7 @@ public:
     virtual void remove();                          // remove this+father (but do not delete)
     virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
 
-    void swap_sons();
+    void swap_featured_sons();
     void rotate_subtree();
 
     GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves

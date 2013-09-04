@@ -911,7 +911,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
 
                     // ensure full-sequence is always on top
                     if (father->rightson == target) {
-                        father->swap_sons();
+                        father->swap_featured_sons();
                     }
 
                     if (!error) {
