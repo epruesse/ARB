@@ -176,21 +176,35 @@ public:
     float   left_angle;
     float   right_angle;
 
+    void reset_spread() {
+        spread = 0;
+    }
+    void reset_rotation() {
+        left_angle  = 0;
+        right_angle = 0;
+    }
+    void reset_linewidths() {
+        left_linewidth  = 0;
+        right_linewidth = 0;
+    }
+    void reset_layout() {
+        reset_spread();
+        reset_rotation();
+        reset_linewidths();
+    }
+
     void clear() {
+        reset_layout();
+
         grouped             = 0;
         hidden              = 0;
         has_marked_children = 0;
         callback_exists     = 0;
         gc                  = 0;
-        left_linewidth      = 0;
-        right_linewidth     = 0;
         leaf_sum            = 0;
         view_sum            = 0;
         tree_depth          = 0;
         min_tree_depth      = 0;
-        spread              = 0;
-        left_angle          = 0;
-        right_angle         = 0;
     }
 
     void swap_son_layout();
@@ -314,7 +328,8 @@ public:
 
     void reset_spread();
     void reset_rotation();
-    void reset_child_linewidths();
+    void reset_linewidths();
+    void reset_layout();
 
     bool hasName(const char *Name) const {
         return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0;

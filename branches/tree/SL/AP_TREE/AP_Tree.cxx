@@ -1839,8 +1839,8 @@ void AP_tree::relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node
 }
 
 void AP_tree::reset_spread() {
-    gr.spread = 1.0;
     if (!is_leaf) {
+        gr.reset_spread();
         get_leftson()->reset_spread();
         get_rightson()->reset_spread();
     }
@@ -1848,20 +1848,25 @@ void AP_tree::reset_spread() {
 
 void AP_tree::reset_rotation() {
     if (!is_leaf) {
-        gr.left_angle  = 0.0;
-        gr.right_angle = 0.0;
+        gr.reset_rotation();
         get_leftson()->reset_rotation();
         get_rightson()->reset_rotation();
     }
 }
 
-void AP_tree::reset_child_linewidths() {
+void AP_tree::reset_linewidths() {
     if (!is_leaf) {
-        gr.left_linewidth  = 0;
-        gr.right_linewidth = 0;
+        gr.reset_linewidths();
+        get_leftson()->reset_linewidths();
+        get_rightson()->reset_linewidths();
+    }
+}
 
-        get_leftson()->reset_child_linewidths();
-        get_rightson()->reset_child_linewidths();
+void AP_tree::reset_layout() {
+    if (!is_leaf) {
+        gr.reset_layout();
+        get_leftson()->reset_rotation();
+        get_rightson()->reset_rotation();
     }
 }
 
