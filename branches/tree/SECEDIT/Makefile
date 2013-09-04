@@ -303,6 +303,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_main.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 SEC_main.o: $(ARBHOME)/INCLUDE/gccver.h
+SEC_main.o: $(ARBHOME)/INCLUDE/mode_text.h
 SEC_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_main.o: $(ARBHOME)/INCLUDE/test_global.h
