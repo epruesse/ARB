@@ -332,7 +332,7 @@ void AP_tree::remove() {
     }
 }
 
-GB_ERROR AP_tree::cantMoveTo(AP_tree *new_brother) {
+GB_ERROR AP_tree::cantMoveNextTo(AP_tree *new_brother) {
     GB_ERROR error = 0;
 
     if (!father)                                error = "Can't move the root of the tree";
@@ -344,7 +344,7 @@ GB_ERROR AP_tree::cantMoveTo(AP_tree *new_brother) {
     return error;
 }
 
-void AP_tree::moveTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
+void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     // rel_pos == 0.0 -> at father
     //         == 1.0 -> at brother
 

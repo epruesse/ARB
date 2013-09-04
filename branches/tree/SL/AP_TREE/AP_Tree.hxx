@@ -246,8 +246,8 @@ public:
     void swap_sons();
     void rotate_subtree();
 
-    GB_ERROR cantMoveTo(AP_tree *new_brother);  // use this to detect impossible moves
-    virtual void moveTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
+    GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves
+    virtual void moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
 
     virtual void set_root();
 

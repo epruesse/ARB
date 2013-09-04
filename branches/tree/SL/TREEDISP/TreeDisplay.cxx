@@ -1213,8 +1213,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         GB_ERROR error;
                         switch (button) {
                             case AW_BUTTON_LEFT:
-                                error = source->cantMoveTo(dest);
-                                if (!error) source->moveTo(dest, cl->nearest_rel_pos);
+                                error = source->cantMoveNextTo(dest);
+                                if (!error) source->moveNextTo(dest, cl->nearest_rel_pos);
                                 break;
 
                             case AW_BUTTON_RIGHT:

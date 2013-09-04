@@ -231,7 +231,7 @@ static long insert_species_in_tree_test(const char *key, long val, void *cd_isit
 
         if (bl->father) bl->set_root();
 
-        leaf->moveTo(bl, 0.5);
+        leaf->moveNextTo(bl, 0.5);
         akt_parsimony = rootNode()->costs();
 
         if (akt_parsimony<best_parsimony)
@@ -244,7 +244,7 @@ static long insert_species_in_tree_test(const char *key, long val, void *cd_isit
     delete blist;
     blist = 0;
     if (bestposl->father != bestposr) bestposl = bestposr;
-    leaf->moveTo(bestposl, 0.5);
+    leaf->moveNextTo(bestposl, 0.5);
 
     // calculate difference in father-sequence
 
@@ -412,7 +412,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
 
                 ASSERT_VALID_TREE(rootNode());
 
-                leaf->moveTo(bl, 0.5);
+                leaf->moveNextTo(bl, 0.5);
                 ASSERT_VALID_TREE(rootNode());
 
                 curr_parsimony = rootNode()->costs();
@@ -433,7 +433,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
 
         ASSERT_VALID_TREE(rootNode());
 
-        leaf->moveTo(bestposl, 0.5);
+        leaf->moveNextTo(bestposl, 0.5);
 
         ASSERT_VALID_TREE(rootNode());
 
