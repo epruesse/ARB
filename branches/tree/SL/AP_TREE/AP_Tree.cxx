@@ -410,10 +410,22 @@ void AP_tree::moveTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     new_tree->father    = brother_father;
 }
 
+void AP_tree_members::swap_sons() {
+    std::swap(left_linewidth, right_linewidth);
+
+    // angles need to change orientation when swapped
+    // (they are relative angles, i.e. represent the difference to the default-angle)
+    float org_left = left_angle;
+    left_angle     = -right_angle;
+    right_angle    = -org_left;
+
+}
+
 void AP_tree::swap_sons() {
     if (!is_leaf) {
         std::swap(leftson, rightson);
         std::swap(leftlen, rightlen);
+        gr.swap_sons();
     }
 }
 
@@ -1852,5 +1864,4 @@ void AP_tree::reset_child_linewidths() {
         get_rightson()->reset_child_linewidths();
     }
 }
-
 

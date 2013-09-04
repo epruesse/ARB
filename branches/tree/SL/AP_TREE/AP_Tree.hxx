@@ -192,6 +192,8 @@ public:
         left_angle          = 0;
         right_angle         = 0;
     }
+
+    void swap_sons();
 };
 
 struct AP_branch_members {
