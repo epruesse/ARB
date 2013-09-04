@@ -1427,7 +1427,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
                                 at->reset_linewidths();
-                                at->set_linewidth(1);
+                                at->set_linewidth(0);
                                 exports.save    = 1;
                                 exports.refresh = 1;
                             }

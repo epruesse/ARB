@@ -281,16 +281,18 @@ public:
 
     void update();
 
-    int get_linewidth() const { // @@@ does the wrong thing (gets the linewidth of son, instead of my own)
+    int get_linewidth() const {
         if (is_root_node()) return 0;
-        return is_leftson() ? gr.left_linewidth : gr.right_linewidth; // @@@ create function returning float&
+        const AP_tree_members& tm = get_father()->gr;
+        return is_leftson() ? tm.left_linewidth : tm.right_linewidth;
     }
     // cppcheck-suppress functionConst
-    void set_linewidth(int width) { // @@@ does the wrong thing (sets the linewidth of son, instead of my own)
-        ap_assert(width >= 1 && width < 128);
+    void set_linewidth(int width) {
         if (father) {
-            char& lw = is_leftson() ? gr.left_linewidth : gr.right_linewidth;
-            lw       = width;
+            AP_tree_members& tm = get_father()->gr;
+            char&            lw = is_leftson() ? tm.left_linewidth : tm.right_linewidth;
+
+            lw = width<0 ? 0 : (width>128 ? 128 : width);
         }
     }
 
