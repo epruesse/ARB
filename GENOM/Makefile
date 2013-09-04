@@ -284,6 +284,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/dbui.h
 GEN_map.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_map.o: $(ARBHOME)/INCLUDE/items.h
+GEN_map.o: $(ARBHOME)/INCLUDE/mode_text.h
 GEN_map.o: $(ARBHOME)/INCLUDE/rootAsWin.h
 GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/static_assert.h
