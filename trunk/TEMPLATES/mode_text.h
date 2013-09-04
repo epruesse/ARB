@@ -23,6 +23,8 @@
 #define MODE_TEXT_2BUTTONS(modeName,leftInfo,rightInfo)            MT_MODE(modeName) MT_LEFT(leftInfo) MT_RIGHT(rightInfo)
 #define MODE_TEXT_3BUTTONS(modeName,leftInfo,middleInfo,rightInfo) MT_MODE(modeName) MT_LEFT(leftInfo) MT_MIDDLE(middleInfo) MT_RIGHT(rightInfo)
 
+#define MODE_TEXT_STANDARD_ZOOMMODE() MODE_TEXT_2BUTTONS("ZOOM", "zoom in", "zoom out (click or drag)")
+
 inline const char *no_mode_text_defined() {
     arb_assert(0); // pleae define an infotext for current mode in caller
     return "No help for this mode available";

@@ -28,6 +28,8 @@ void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
     const char *text;
 
     switch (mode) {
+        case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE();
+
         case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "select species or open/close group");                  break;
         case AWT_MODE_EDIT:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");                                      break;
         case AWT_MODE_WWW:    text = MODE_TEXT_1BUTTON("WEB",    "Launch node dependent URL (see <Properties/WWW...>)"); break;
@@ -36,7 +38,6 @@ void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
 
         case AWT_MODE_MARK:       text = MODE_TEXT_2BUTTONS("MARK",         "mark subtree",                          "unmark subtree");              break;
         case AWT_MODE_GROUP:      text = MODE_TEXT_2BUTTONS("GROUP",        "fold/unfold group",                     "create/rename/destroy group"); break;
-        case AWT_MODE_ZOOM:       text = MODE_TEXT_2BUTTONS("ZOOM",         "press and drag to zoom",                "zoom out one step");           break;
         case AWT_MODE_LZOOM:      text = MODE_TEXT_2BUTTONS("LOGICAL ZOOM", "show only subtree",                     "go up one step");              break;
         case AWT_MODE_LINE:       text = MODE_TEXT_2BUTTONS("LINE",         "reduce linewidth",                      "increase linewidth");          break;
         case AWT_MODE_SPREAD:     text = MODE_TEXT_2BUTTONS("SPREAD",       "decrease angles",                       "increase angles");             break;
