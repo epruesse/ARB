@@ -1,4 +1,4 @@
-#Makefile modified for use in ARB by Arne Böckmann (aboeckma@mpi-bremen.de)
+#Makefile modified for use in ARB by Arne Boeckmann (aboeckma@mpi-bremen.de)
 LIBDIR = $(ARBHOME)/lib/mafft
 BINDIR = $(ARBHOME)/bin
 
