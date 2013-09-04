@@ -1,5 +1,5 @@
 # PHYML 20130708 Makefile for ARB
-# by Arne Böckmann (2013)
+# by Arne Boeckmann (2013)
 
 SUFFIX   = _20130708
 PROG     = PHYML$(SUFFIX)
