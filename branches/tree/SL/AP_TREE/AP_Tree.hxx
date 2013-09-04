@@ -240,9 +240,11 @@ public:
     virtual void insert(AP_tree *new_brother);
     virtual void remove();                          // remove this+father (but do not delete)
     virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
-    void         swap_sons();                       // exchange sons
 
-    GB_ERROR     cantMoveTo(AP_tree *new_brother);  // use this to detect impossible moves
+    void swap_sons();
+    void rotate_subtree();
+
+    GB_ERROR cantMoveTo(AP_tree *new_brother);  // use this to detect impossible moves
     virtual void moveTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
 
     virtual void set_root();

@@ -1564,19 +1564,22 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
         case AWT_MODE_SWAP:
             if (type==AW_Mouse_Press) {
-                switch (button) {
-                    case AW_BUTTON_LEFT:
-                        if (cl->exists) {
-                            at = (AP_tree *)cl->client_data1;
-                            if (!at) break;
-                            at->swap_sons();
-
-                            this->exports.refresh = 1;
-                            this->exports.save = 1;
+                if (cl->exists) {
+                    at = (AP_tree *)cl->client_data1;
+                    if (at) {
+                        switch (button) {
+                            case AW_BUTTON_LEFT:
+                                at->swap_sons();
+                                exports.refresh = 1;
+                                exports.save = 1;
+                                break;
+                            case AW_BUTTON_RIGHT:
+                                at->rotate_subtree();
+                                exports.refresh = 1;
+                                exports.save = 1;
+                                break;
                         }
-                        break;
-                    case AW_BUTTON_RIGHT:
-                        break;
+                    }
                 }
             }
             break;

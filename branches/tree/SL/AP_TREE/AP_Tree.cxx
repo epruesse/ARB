@@ -411,13 +411,18 @@ void AP_tree::moveTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
 }
 
 void AP_tree::swap_sons() {
-    ARB_tree *h_at = this->leftson;
-    this->leftson = this->rightson;
-    this->rightson = h_at;
+    if (!is_leaf) {
+        std::swap(leftson, rightson);
+        std::swap(leftlen, rightlen);
+    }
+}
 
-    double h = this->leftlen;
-    this->leftlen = this->rightlen;
-    this->rightlen = h;
+void AP_tree::rotate_subtree() {
+    if (!is_leaf) {
+        swap_sons();
+        get_leftson()->rotate_subtree();
+        get_rightson()->rotate_subtree();
+    }
 }
 
 void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
@@ -1847,4 +1852,5 @@ void AP_tree::reset_child_linewidths() {
         get_rightson()->reset_child_linewidths();
     }
 }
+
 
