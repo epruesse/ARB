@@ -177,7 +177,7 @@ public:
     float   right_angle;
 
     void reset_spread() {
-        spread = 0;
+        spread = 1.0;
     }
     void reset_rotation() {
         left_angle  = 0;

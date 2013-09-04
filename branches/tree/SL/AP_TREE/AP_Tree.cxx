@@ -145,7 +145,6 @@ AP_tree::AP_tree(AP_tree_root *tree_rooti)
     , stack_level(0)
 {
     gr.clear();
-    gr.spread = 1.0;
     br.clear();
 }
 
