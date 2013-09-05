@@ -236,6 +236,30 @@ public: // @@@ fix public member
 private:
     void load_node_info();                          // load linewidth etc from DB
 
+    char& linewidth_ref() {
+        AP_tree_members& tm = get_father()->gr;
+        return is_leftson() ? tm.left_linewidth : tm.right_linewidth;
+    }
+    const char& linewidth_ref() const { return const_cast<AP_tree*>(this)->linewidth_ref(); }
+
+    float& angle_ref() {
+        AP_tree_members& tm = get_father()->gr;
+        return is_leftson() ? tm.left_angle : tm.right_angle;
+    }
+    const float& angle_ref() const { return const_cast<AP_tree*>(this)->angle_ref(); }
+
+    static inline int force_legal_width(int width) { return width<0 ? 0 : (width>128 ? 128 : width); }
+
+    void buildLeafList_rek(AP_tree **list, long& num);
+    void buildNodeList_rek(AP_tree **list, long& num);
+    void buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep);
+
+    const AP_tree *flag_branch() const { return get_father()->get_father() ? this : get_father()->get_leftson(); }
+
+    void reset_child_angles();
+    void reset_child_linewidths();
+    void reset_child_layout();
+
 public:
 
     explicit AP_tree(AP_tree_root *tree_root);
@@ -286,23 +310,6 @@ public:
 
     void update();
 
-private:
-    char& linewidth_ref() {
-        AP_tree_members& tm = get_father()->gr;
-        return is_leftson() ? tm.left_linewidth : tm.right_linewidth;
-    }
-    const char& linewidth_ref() const { return const_cast<AP_tree*>(this)->linewidth_ref(); }
-
-    float& angle_ref() {
-        AP_tree_members& tm = get_father()->gr;
-        return is_leftson() ? tm.left_angle : tm.right_angle;
-    }
-    const float& angle_ref() const { return const_cast<AP_tree*>(this)->angle_ref(); }
-
-    static inline int force_legal_width(int width) { return width<0 ? 0 : (width>128 ? 128 : width); }
-
-public:
-
     int get_linewidth() const { return is_root_node() ? 0 : linewidth_ref(); }
     void set_linewidth(int width) { if (father) linewidth_ref() = force_legal_width(width); }
     void reset_linewidth() { set_linewidth(tree_defaults::LINEWIDTH); }
@@ -311,14 +318,6 @@ public:
     void set_angle(float angle) { if (father) angle_ref() = angle; }
     void reset_angle() { set_angle(tree_defaults::ANGLE); }
 
-private:
-    void buildLeafList_rek(AP_tree **list, long& num);
-    void buildNodeList_rek(AP_tree **list, long& num);
-    void buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep);
-
-    const AP_tree *flag_branch() const { return get_father()->get_father() ? this : get_father()->get_leftson(); }
-
-public:
     void buildLeafList(AP_tree **&list, long &num); // returns a list of leafs
     void buildNodeList(AP_tree **&list, long &num); // returns a list of inner nodes (w/o root)
     void buildBranchList(AP_tree **&list, long &num, bool create_terminal_branches, int deep);
@@ -340,12 +339,6 @@ public:
 
     void justify_branch_lenghs(GBDATA *gb_main);
     void relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash), GB_HASH *organism_hash);
-
-private:
-    void reset_child_angles();
-    void reset_child_linewidths();
-    void reset_child_layout();
-public:
 
     // reset-functions below affect 'this' and childs:
     void reset_subtree_spreads();
