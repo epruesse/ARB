@@ -438,7 +438,7 @@ void AWT_graphic_tree::reorder_tree(TreeOrder mode) {
     GB_transaction dummy(gb_main);
     AP_tree *at = get_root_node();
     if (at) {
-        at->arb_tree_set_leafsum_viewsum();
+        at->update_leafsum_viewsum();
         reorder_subtree(mode, at);
         at->compute_tree(gb_main);
     }

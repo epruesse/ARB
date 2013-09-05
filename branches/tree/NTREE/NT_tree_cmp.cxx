@@ -298,8 +298,8 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
             AP_tree *source = rsource.get_root_node();
             AP_tree *dest   = rdest.get_root_node();
 
-            long nspecies     = dest->arb_tree_leafsum2();
-            long source_leafs = source->arb_tree_leafsum2();
+            long nspecies     = dest->count_leafs();
+            long source_leafs = source->count_leafs();
             long source_nodes = source_leafs*2-1;
 
             arb_progress compare_progress(source_nodes);

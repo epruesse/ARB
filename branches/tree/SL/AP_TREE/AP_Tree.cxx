@@ -792,28 +792,30 @@ GBT_LEN AP_tree::arb_tree_min_deep()
     return l;
 }
 
-int AP_tree::arb_tree_set_leafsum_viewsum() // count all visible leafs
-{
-    int l, r;
+int AP_tree::update_leafsum_viewsum() {
+    // count all visible leafs -> gr.viewsum + gr.leafsum
     if (is_leaf) {
         gr.view_sum = 1;
         gr.leaf_sum = 1;
-        return 1;
     }
-    l =  get_leftson()->arb_tree_set_leafsum_viewsum();
-    r =  get_rightson()->arb_tree_set_leafsum_viewsum();
-    gr.leaf_sum = r+l;
-    gr.view_sum = get_leftson()->gr.view_sum + get_rightson()->gr.view_sum;
-    if (gr.grouped) {
-        gr.view_sum = (int)pow((double)(gr.leaf_sum - GROUPED_SUM + 9), .33);
+    else {
+        int l = get_leftson()->update_leafsum_viewsum();
+        int r = get_rightson()->update_leafsum_viewsum();
+
+        gr.leaf_sum = r+l;
+        gr.view_sum = get_leftson()->gr.view_sum + get_rightson()->gr.view_sum;
+
+        if (gr.grouped) {
+            gr.view_sum = (int)pow((double)(gr.leaf_sum - GROUPED_SUM + 9), .33);
+        }
     }
     return gr.leaf_sum;
 }
 
-int AP_tree::arb_tree_leafsum2()    // count all leafs
-{
-    if (is_leaf) return 1;
-    return get_leftson()->arb_tree_leafsum2() + get_rightson()->arb_tree_leafsum2();
+int AP_tree::count_leafs() {
+    return is_leaf
+        ? 1
+        : get_leftson()->count_leafs() + get_rightson()->count_leafs();
 }
 
 void AP_tree::calc_hidden_flag(int father_is_hidden) {
@@ -913,7 +915,7 @@ int AP_tree::compute_tree(GBDATA *gb_main)
     GB_transaction dummy(gb_main);
     arb_tree_deep();
     arb_tree_min_deep();
-    arb_tree_set_leafsum_viewsum();
+    update_leafsum_viewsum();
     calc_color();
     calc_hidden_flag(0);
     return 0;
@@ -965,7 +967,7 @@ void AP_tree::buildLeafList_rek(AP_tree **list, long& num) {
 }
 
 void AP_tree::buildLeafList(AP_tree **&list, long &num) {
-    num        = arb_tree_leafsum2();
+    num        = count_leafs();
     list       = new AP_tree *[num+1];
     list[num]  = 0;
     long count = 0;
@@ -985,7 +987,7 @@ void AP_tree::buildNodeList_rek(AP_tree **list, long& num) {
 }
 
 void AP_tree::buildNodeList(AP_tree **&list, long &num) {
-    num = this->arb_tree_leafsum2()-1;
+    num = this->count_leafs()-1;
     list = new AP_tree *[num+1];
     list[num] = 0;
     num  = 0;
@@ -1022,7 +1024,7 @@ void AP_tree::buildBranchList(AP_tree **&list, long &num, bool create_terminal_b
         for (int i=0; i<deep; i++) num *= 2;
     }
     else {
-        num = arb_tree_leafsum2() * (create_terminal_branches ? 2 : 1);
+        num = count_leafs() * (create_terminal_branches ? 2 : 1);
     }
 
     ap_assert(num >= 0);
@@ -1667,7 +1669,7 @@ class EdgeDistances {
 public:
 
     EdgeDistances(AP_tree *root)
-        : progress("Analysing distances", root->arb_tree_leafsum2()*3)
+        : progress("Analysing distances", root->count_leafs()*3)
     {
         calc_downdist(root->get_leftson(),  root->leftlen);
         calc_downdist(root->get_rightson(), root->rightlen);

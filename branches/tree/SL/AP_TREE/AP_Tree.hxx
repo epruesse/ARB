@@ -248,8 +248,8 @@ public:
 
     int compute_tree(GBDATA *gb_main);
 
-    int arb_tree_set_leafsum_viewsum();             // count all visible leafs -> gr.viewsum + gr.leafsum
-    int arb_tree_leafsum2();                        // count all leafs
+    int update_leafsum_viewsum(); // count all visible leafs -> gr.viewsum + gr.leafsum
+    int count_leafs();
 
     void calc_hidden_flag(int father_is_hidden);
     int  calc_color();                        // start a transaction first

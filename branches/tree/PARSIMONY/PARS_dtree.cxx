@@ -129,7 +129,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
     rek_breite[4] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth4");
     int rek_breite_anz = 5;
 
-    int       anzahl = (int)(*GBT_read_float(GLOBAL_gb_main, "genetic/kh/nodes")*at->arb_tree_leafsum2());
+    int       anzahl = (int)(*GBT_read_float(GLOBAL_gb_main, "genetic/kh/nodes")*at->count_leafs());
     AP_tree **list   = at->getRandomNodes(anzahl);
     
     arb_progress progress(anzahl);
