@@ -264,8 +264,10 @@ void TEST_consensus_tree_1() {
     GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.7);
     TEST_EXPECT_CONSTREE(tree, error, species_count, 22, 0.925779);
 
-    TEST_SAVE_AND_COMPARE_CONSTREE(tree, savename(treedir), expected_name(treedir));
-    // ../UNIT_TESTER/run/consense/1/consense.tree
+    TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+                                   custom_tree_name(treedir, "consense1"),
+                                   custom_tree_name(treedir, "consense1_expected"));
+    // ../UNIT_TESTER/run/consense/1/consense1.tree
 
     GBT_delete_tree(tree);
 }
@@ -280,8 +282,10 @@ void TEST_consensus_tree_1_single() {
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.01);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 22, 0.924610);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, savename(treedir), strdup("consense/1/consense_expected_single.tree"));
-        // ../UNIT_TESTER/run/consense/1/consense.tree
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+                                       custom_tree_name(treedir, "consense1_single"),
+                                       custom_tree_name(treedir, "consense1_single_expected"));
+        // ../UNIT_TESTER/run/consense/1/consense1_single.tree
 
         GBT_delete_tree(tree);
     }
@@ -298,8 +302,10 @@ void TEST_consensus_tree_2() {
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.5);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 59, 2.789272);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, savename(treedir), expected_name(treedir));
-        // ../UNIT_TESTER/run/consense/2/consense.tree
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+                                       custom_tree_name(treedir, "consense2"),
+                                       custom_tree_name(treedir, "consense2_expected"));
+        // ../UNIT_TESTER/run/consense/2/consense2.tree
 
         GBT_delete_tree(tree);
     }
@@ -316,8 +322,10 @@ void TEST_consensus_tree_3() {
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 128, 2.171485);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, savename(treedir), expected_name(treedir));
-        // ../UNIT_TESTER/run/consense/3/consense.tree
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+                                       custom_tree_name(treedir, "consense3"),
+                                       custom_tree_name(treedir, "consense3_expected"));
+        // ../UNIT_TESTER/run/consense/3/consense3.tree
 
         GBT_delete_tree(tree);
     }
@@ -480,11 +488,11 @@ void TEST_arb_consensus_tree() {
     TEST_STDOUT_CONTAINS("(arb_consensus_tree -w sth || true)", "no input trees specified");
 
     {
-        char *saveas   = savename(1);
-        char *expected = expected_name(1);
+        char *saveas   = custom_tree_name(1, "consense1");
+        char *expected = custom_tree_name(1, "consense1_expected");
     
         TEST_STDOUT_CONTAINS("arb_consensus_tree"
-                             " -w consense/1/consense.tree"
+                             " -w consense/1/consense1.tree"
                              " consense/1/bootstrapped_1.tree"
                              " consense/1/bootstrapped_2.tree"
                              " consense/1/bootstrapped_3.tree"
@@ -501,11 +509,11 @@ void TEST_arb_consensus_tree() {
     }
 
     {
-        char *saveas   = savename(2);
-        char *expected = expected_name(2);
+        char *saveas   = custom_tree_name(2, "consense2");
+        char *expected = custom_tree_name(2, "consense2_expected");
     
         TEST_STDOUT_CONTAINS("arb_consensus_tree"
-                             " -w consense/2/consense.tree"
+                             " -w consense/2/consense2.tree"
                              " consense/2/bootstrapped_1.tree"
                              " consense/2/bootstrapped_2.tree"
                              " consense/2/bootstrapped_3.tree"
