@@ -380,86 +380,68 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // r
     return flag;
 }
 
+void AWT_graphic_tree::reorder_subtree(TreeOrder mode, AP_tree *const at) {
+    static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
 
-
-int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
-{
-    /* mode
-
-       0    to top
-       1    to bottom
-       2    center (to top)
-       3    center (to bottom; don't use this - it's used internal)
-
-       post-condition: leafname contains alphabetically "smallest" name of subtree
-
-    */
-    static const char *leafname;
-
-    if (!at) {
-        GB_transaction dummy(this->gb_main);
-        at = get_root_node();
-        if (!at) return 0;
-        at->arb_tree_set_leafsum_viewsum();
-
-        this->resort_tree(mode, at);
-        at->compute_tree(this->gb_main);
-        return 0;
-    }
-
+    td_assert(at);
     if (at->is_leaf) {
-        leafname = at->name;
-        return 1;
-    }
-    int leftsize  = at->get_leftson() ->gr.leaf_sum;
-    int rightsize = at->get_rightson()->gr.leaf_sum;
-
-    if ((mode &1) == 0) {   // to top
-        if (rightsize >leftsize) {
-            at->swap_featured_sons();
-        }
+        smallest_leafname = at->name;
     }
     else {
-        if (rightsize < leftsize) {
-            at->swap_featured_sons();
+        int leftsize  = at->get_leftson() ->gr.leaf_sum;
+        int rightsize = at->get_rightson()->gr.leaf_sum;
+
+        bool swap_branches;
+        {
+            bool big_at_top    = leftsize>rightsize;
+            bool big_at_bottom = leftsize<rightsize;
+
+            swap_branches = (mode&BIG_BRANCHES_TO_BOTTOM) ? big_at_top : big_at_bottom;
         }
-    }
 
-    int lmode = mode;
-    int rmode = mode;
-    if ((mode & 2) == 2) {
-        lmode = 2;
-        rmode = 3;
-    }
+        if (swap_branches) at->swap_featured_sons();
 
-    resort_tree(lmode, at->get_leftson());
-    td_assert(leafname);
-    const char *leftleafname = leafname;
+        TreeOrder lmode = mode;
+        TreeOrder rmode = mode;
 
-    resort_tree(rmode, at->get_rightson());
-    td_assert(leafname);
-    const char *rightleafname = leafname;
-
-    td_assert(leftleafname && rightleafname);
-
-    if (leftleafname && rightleafname) {
-        int name_cmp = strcmp(leftleafname, rightleafname);
-        if (name_cmp<0) { // leftleafname < rightleafname
-            leafname = leftleafname;
+        if (mode & BIG_BRANCHES_TO_CENTER) {
+            lmode = BIG_BRANCHES_TO_CENTER;
+            rmode = TreeOrder(BIG_BRANCHES_TO_CENTER | BIG_BRANCHES_TO_BOTTOM);
         }
-        else { // (name_cmp>=0) aka: rightleafname <= leftleafname
-            leafname = rightleafname;
-            if (rightsize==leftsize && name_cmp>0) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
-                at->swap_featured_sons();
+
+        reorder_subtree(lmode, at->get_leftson());
+        const char *leftleafname = smallest_leafname;
+
+        reorder_subtree(rmode, at->get_rightson());
+        const char *rightleafname = smallest_leafname;
+
+        if (leftleafname && rightleafname) {
+            int name_cmp = strcmp(leftleafname, rightleafname);
+            if (name_cmp <= 0) {
+                smallest_leafname = leftleafname;
+            }
+            else {
+                smallest_leafname = rightleafname;
+                if (leftsize == rightsize) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
+                    at->swap_featured_sons();
+                }
             }
         }
     }
-    else {
-        if (leftleafname) leafname = leftleafname;
-        else leafname = rightleafname;
-    }
+    td_assert(smallest_leafname);
+}
 
-    return 0;
+void AWT_graphic_tree::reorder_tree(TreeOrder mode) {
+    /* beautify tree (does not change topology, only swaps branches)
+     */
+
+    GB_transaction dummy(gb_main);
+    AP_tree *at = get_root_node();
+    if (at) {
+        at->arb_tree_set_leafsum_viewsum();
+        reorder_subtree(mode, at);
+        at->compute_tree(gb_main);
+    }
 }
 
 

@@ -408,16 +408,10 @@ void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntr
 // ------------------------
 //      tree sorting :
 
-void NT_resort_tree_cb(void *, AWT_canvas *ntw, int type) {
+void NT_resort_tree_cb(void *, AWT_canvas *ntw, TreeOrder order) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    int stype;
-    switch (type) {
-        case 0: stype = 0; break;
-        case 1: stype = 2; break;
-        default: stype = 1; break;
-    }
-    AWT_TREE(ntw)->resort_tree(stype);
+    AWT_TREE(ntw)->reorder_tree(order);
     save_changed_tree(ntw);
 }
 

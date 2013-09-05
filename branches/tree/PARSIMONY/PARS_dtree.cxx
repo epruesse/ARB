@@ -474,7 +474,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
     }
 
     if (beautify_tree) {
-        this->resort_tree(0);
+        this->reorder_tree(BIG_BRANCHES_TO_TOP);
         this->exports.save = 1;
 
         compute_tree = true; // compute_tree after beautify_tree

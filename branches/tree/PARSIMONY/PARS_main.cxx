@@ -410,7 +410,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
     if (hash) GBS_free_hash(hash);
     if (error) aw_message(error);
 
-    AWT_TREE(ntw)->resort_tree(0);
+    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -832,7 +832,7 @@ static void NT_partial_add(AW_window *aww, AW_CL cl_ntw, AW_CL) {
 static void NT_branch_lengths(AW_window *, AWT_canvas *ntw) {
     arb_progress progress("Calculating Branch Lengths");
     rootEdge()->calc_branchlengths();
-    AWT_TREE(ntw)->resort_tree(0);
+    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -840,7 +840,7 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, AW_CL limit_only) {
     arb_progress progress("Calculating Bootstrap Limit");
     AP_BL_MODE mode       = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
     rootEdge()->nni_rek(-1, false, mode, NULL);
-    AWT_TREE(ntw)->resort_tree(0);
+    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
     AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->get_root_node();
     pars_saveNrefresh_changed_tree(ntw);
 }
@@ -850,7 +850,7 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw) {
     GLOBAL_PARS->optimize_tree(rootNode(), progress);
     ASSERT_VALID_TREE(rootNode());
     rootEdge()->calc_branchlengths();
-    AWT_TREE(ntw)->resort_tree(0);
+    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
     rootNode()->compute_tree(GLOBAL_gb_main);
     pars_saveNrefresh_changed_tree(ntw);
 }
@@ -867,7 +867,7 @@ static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
         prevPars = currPars;
     }
     rootEdge()->calc_branchlengths();
-    AWT_TREE(ntw)->resort_tree(0);
+    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
     rootNode()->compute_tree(GLOBAL_gb_main);
     pars_saveNrefresh_changed_tree(ntw);
 }

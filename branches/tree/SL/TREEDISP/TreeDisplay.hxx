@@ -96,6 +96,12 @@ struct DendroSubtreeLimits {
     }
 };
 
+enum TreeOrder { // contains bit values!
+    BIG_BRANCHES_TO_TOP    = 0, // bit 0 = top or bottom
+    BIG_BRANCHES_TO_BOTTOM = 1,
+    BIG_BRANCHES_TO_CENTER = 2, // bit 1 = center or edge
+};
+
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
@@ -225,7 +231,10 @@ public:
 
     int      group_tree(AP_tree *at, int mode, int color_group);
     void     group_rest_tree(AP_tree *at, int mode, int color_group);
-    int      resort_tree(int mode, AP_tree *at = 0);
+private:
+    void     reorder_subtree(TreeOrder mode, AP_tree *const at);
+public:
+    void     reorder_tree(TreeOrder mode);
     GB_ERROR create_group(AP_tree * at) __ATTR__USERESULT;
     void     toggle_group(AP_tree * at);
     void     jump(AP_tree *at, const char *name);
