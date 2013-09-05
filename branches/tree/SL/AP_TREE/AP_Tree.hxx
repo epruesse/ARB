@@ -310,9 +310,6 @@ public:
 
     AP_tree **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)
 
-    void replace_self(AP_tree *new_son);
-    void set_brother(AP_tree *new_son);
-
     void clear_branch_flags();
 
     void touch_branch() { const_cast<AP_tree*>(flag_branch())->br.touched = 1; }

@@ -127,10 +127,10 @@ private:
     //      functions
 
 private:
-    void unlink_son(ARB_tree *son) {
-        if (son->is_leftson()) leftson  = NULL; // @@@ create function returning ARB_tree*&
-        else                   rightson = NULL;
-    }
+    ARB_tree*& self_ref() { return is_leftson() ? father->leftson : father->rightson; }
+
+    GBT_LEN& length_ref() { return is_leftson() ? father->leftlen : father->rightlen; }
+    const GBT_LEN& length_ref() const { return const_cast<ARB_tree*>(this)->length_ref(); }
 
     void unloadSequences();
     void preloadLeafSequences();
@@ -141,8 +141,8 @@ private:
 protected:
     void unlink_from_father() {
         if (father) {
-            father->unlink_son(this);
-            father = NULL;
+            self_ref() = NULL;
+            father     = NULL;
         }
     }
 
@@ -207,15 +207,8 @@ public:
         return const_cast<const ARB_tree*>(const_cast<ARB_tree*>(this)->get_brother());
     }
 
-    GBT_LEN get_branchlength() const {
-        at_assert(!is_root_node()); // root-branch is virtual and has no branchlen
-        return is_leftson() ? father->leftlen : father->rightlen; // @@@ create function returning GBT_LEN&
-    }
-    void set_branchlength(GBT_LEN newlen) {
-        at_assert(!is_root_node()); // root-branch is virtual and has no branchlen
-        if (is_leftson()) father->leftlen = newlen;
-        else father->rightlen                   = newlen;
-    }
+    GBT_LEN get_branchlength() const { return length_ref(); }
+    void set_branchlength(GBT_LEN newlen) { length_ref() = newlen; }
 
     const GBT_TREE *get_gbt_tree() const { return (const GBT_TREE*)this; }
     GBT_TREE *get_gbt_tree() { return (GBT_TREE*)this; }
