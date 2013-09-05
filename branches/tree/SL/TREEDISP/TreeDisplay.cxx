@@ -380,70 +380,13 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // r
     return flag;
 }
 
-void AWT_graphic_tree::reorder_subtree(TreeOrder mode, AP_tree *const at) {
-    static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
-
-    td_assert(at);
-    if (at->is_leaf) {
-        smallest_leafname = at->name;
-    }
-    else {
-        int leftsize  = at->get_leftson() ->gr.leaf_sum;
-        int rightsize = at->get_rightson()->gr.leaf_sum;
-
-        bool swap_branches;
-        {
-            bool big_at_top    = leftsize>rightsize;
-            bool big_at_bottom = leftsize<rightsize;
-
-            swap_branches = (mode&BIG_BRANCHES_TO_BOTTOM) ? big_at_top : big_at_bottom;
-        }
-
-        if (swap_branches) at->swap_featured_sons();
-
-        TreeOrder lmode = mode;
-        TreeOrder rmode = mode;
-
-        if (mode & BIG_BRANCHES_TO_CENTER) {
-            lmode = BIG_BRANCHES_TO_CENTER;
-            rmode = TreeOrder(BIG_BRANCHES_TO_CENTER | BIG_BRANCHES_TO_BOTTOM);
-        }
-
-        reorder_subtree(lmode, at->get_leftson());
-        const char *leftleafname = smallest_leafname;
-
-        reorder_subtree(rmode, at->get_rightson());
-        const char *rightleafname = smallest_leafname;
-
-        if (leftleafname && rightleafname) {
-            int name_cmp = strcmp(leftleafname, rightleafname);
-            if (name_cmp <= 0) {
-                smallest_leafname = leftleafname;
-            }
-            else {
-                smallest_leafname = rightleafname;
-                if (leftsize == rightsize) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
-                    at->swap_featured_sons();
-                }
-            }
-        }
-    }
-    td_assert(smallest_leafname);
-}
-
 void AWT_graphic_tree::reorder_tree(TreeOrder mode) {
-    /* beautify tree (does not change topology, only swaps branches)
-     */
-
-    GB_transaction dummy(gb_main);
     AP_tree *at = get_root_node();
     if (at) {
-        at->update_leafsum_viewsum();
-        reorder_subtree(mode, at);
+        at->reorder_tree(mode);
         at->compute_tree(gb_main);
     }
 }
-
 
 void AWT_graphic_tree::rot_show_line(AW_device *device) {
     double sx = (old_rot_cl.x0+old_rot_cl.x1)*.5;

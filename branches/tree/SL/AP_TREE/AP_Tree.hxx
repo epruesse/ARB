@@ -224,6 +224,11 @@ public:
     }
 };
 
+enum TreeOrder { // contains bit values!
+    BIG_BRANCHES_TO_TOP    = 0, // bit 0 = top or bottom
+    BIG_BRANCHES_TO_BOTTOM = 1,
+    BIG_BRANCHES_TO_CENTER = 2, // bit 1 = center or edge
+};
 
 class AP_tree : public ARB_tree {
 public: // @@@ fix public member
@@ -260,8 +265,9 @@ private:
     void reset_child_linewidths();
     void reset_child_layout();
 
-public:
+    void reorder_subtree(TreeOrder mode);
 
+public:
     explicit AP_tree(AP_tree_root *tree_root);
     virtual ~AP_tree() OVERRIDE; // leave this here to force creation of virtual table
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
@@ -346,9 +352,9 @@ public:
     void reset_subtree_linewidths();
     void reset_subtree_layout();
 
-    bool hasName(const char *Name) const {
-        return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0;
-    }
+    bool hasName(const char *Name) const { return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0; }
+
+    void reorder_tree(TreeOrder mode);
 };
 
 #else

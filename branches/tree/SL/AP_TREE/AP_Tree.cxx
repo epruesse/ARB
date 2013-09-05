@@ -793,7 +793,7 @@ GBT_LEN AP_tree::arb_tree_min_deep()
 }
 
 int AP_tree::update_leafsum_viewsum() {
-    // count all visible leafs -> gr.viewsum + gr.leafsum
+    // update information in AP_tree_members::leaf_sum and view_sum
     if (is_leaf) {
         gr.view_sum = 1;
         gr.leaf_sum = 1;
@@ -1869,3 +1869,59 @@ void AP_tree::reset_subtree_layout() {
     if (!is_leaf) reset_child_layout();
 }
 
+void AP_tree::reorder_subtree(TreeOrder mode) {
+    static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
+
+    if (is_leaf) {
+        smallest_leafname = name;
+    }
+    else {
+        int leftsize  = get_leftson() ->gr.leaf_sum;
+        int rightsize = get_rightson()->gr.leaf_sum;
+
+        bool swap_branches;
+        {
+            bool big_at_top    = leftsize>rightsize;
+            bool big_at_bottom = leftsize<rightsize;
+
+            swap_branches = (mode&BIG_BRANCHES_TO_BOTTOM) ? big_at_top : big_at_bottom;
+        }
+
+        if (swap_branches) swap_featured_sons();
+
+        TreeOrder lmode = mode;
+        TreeOrder rmode = mode;
+
+        if (mode & BIG_BRANCHES_TO_CENTER) {
+            lmode = BIG_BRANCHES_TO_CENTER;
+            rmode = TreeOrder(BIG_BRANCHES_TO_CENTER | BIG_BRANCHES_TO_BOTTOM);
+        }
+
+        get_leftson()->reorder_subtree(lmode);
+        const char *leftleafname = smallest_leafname;
+
+        get_rightson()->reorder_subtree(rmode);
+        const char *rightleafname = smallest_leafname;
+
+        if (leftleafname && rightleafname) {
+            int name_cmp = strcmp(leftleafname, rightleafname);
+            if (name_cmp <= 0) {
+                smallest_leafname = leftleafname;
+            }
+            else {
+                smallest_leafname = rightleafname;
+                if (leftsize == rightsize) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
+                    swap_featured_sons();
+                }
+            }
+        }
+    }
+    ap_assert(smallest_leafname);
+}
+
+void AP_tree::reorder_tree(TreeOrder mode) {
+    /*! beautify tree (does not change topology, only swaps branches)
+     */
+    update_leafsum_viewsum();
+    reorder_subtree(mode);
+}
