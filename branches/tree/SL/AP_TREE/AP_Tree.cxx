@@ -1822,35 +1822,50 @@ void AP_tree::relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node
     relink_tree_rek(this, relinker, organism_hash);
 }
 
-void AP_tree::reset_spread() {
+
+void AP_tree::reset_child_angles() {
     if (!is_leaf) {
-        gr.reset_spread();
-        get_leftson()->reset_spread();
-        get_rightson()->reset_spread();
+        gr.reset_both_child_angles();
+        get_leftson()->reset_child_angles();
+        get_rightson()->reset_child_angles();
     }
 }
 
-void AP_tree::reset_rotation() {
+void AP_tree::reset_child_linewidths() {
     if (!is_leaf) {
-        gr.reset_rotation();
-        get_leftson()->reset_rotation();
-        get_rightson()->reset_rotation();
+        gr.reset_both_child_linewidths();
+        get_leftson()->reset_child_linewidths();
+        get_rightson()->reset_child_linewidths();
+    }
+}
+void AP_tree::reset_child_layout() {
+    if (!is_leaf) {
+        gr.reset_child_spread();
+        gr.reset_both_child_angles();
+        gr.reset_both_child_linewidths();
+        get_leftson()->reset_child_layout();
+        get_rightson()->reset_child_layout();
     }
 }
 
-void AP_tree::reset_linewidths() {
+void AP_tree::reset_subtree_spreads() {
+    gr.reset_child_spread();
     if (!is_leaf) {
-        gr.reset_linewidths();
-        get_leftson()->reset_linewidths();
-        get_rightson()->reset_linewidths();
+        get_leftson()->reset_subtree_spreads();
+        get_rightson()->reset_subtree_spreads();
     }
 }
-
-void AP_tree::reset_layout() {
-    if (!is_leaf) {
-        gr.reset_layout();
-        get_leftson()->reset_rotation();
-        get_rightson()->reset_rotation();
-    }
+void AP_tree::reset_subtree_angles() {
+    reset_angle();
+    if (!is_leaf) reset_child_angles();
+}
+void AP_tree::reset_subtree_linewidths() {
+    reset_linewidth();
+    if (!is_leaf) reset_child_linewidths();
+}
+void AP_tree::reset_subtree_layout() {
+    reset_linewidth();
+    reset_angle();
+    if (!is_leaf) reset_child_layout();
 }
 

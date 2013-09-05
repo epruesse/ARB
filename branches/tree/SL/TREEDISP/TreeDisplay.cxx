@@ -1398,41 +1398,17 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
         case AWT_MODE_RESET:
             if (type==AW_Mouse_Press) {
-                switch (button) {
-                    case AW_BUTTON_LEFT:
-                        //! reset rotation *
-                        if (cl->exists) {
-                            at = (AP_tree *)cl->client_data1;
-                            if (at) {
-                                at->reset_rotation();
-                                exports.save    = 1;
-                                exports.refresh = 1;
-                            }
+                if (cl->exists) {
+                    at = (AP_tree *)cl->client_data1;
+                    if (at) {
+                        switch (button) {
+                            case AW_BUTTON_LEFT:   at->reset_subtree_angles();     break;
+                            case AW_BUTTON_MIDDLE: at->reset_subtree_spreads();    break;
+                            case AW_BUTTON_RIGHT:  at->reset_subtree_linewidths(); break;
                         }
-                        break;
-                    case AW_BUTTON_MIDDLE:
-                        //! reset spread *
-                        if (cl->exists) {
-                            at = (AP_tree *)cl->client_data1;
-                            if (at) {
-                                at->reset_spread();
-                                exports.save    = 1;
-                                exports.refresh = 1;
-                            }
-                        }
-                        break;
-                    case AW_BUTTON_RIGHT:
-                        //! reset linewidth *
-                        if (cl->exists) {
-                            at = (AP_tree *)cl->client_data1;
-                            if (at) {
-                                at->reset_linewidths();
-                                at->set_linewidth(0);
-                                exports.save    = 1;
-                                exports.refresh = 1;
-                            }
-                        }
-                        break;
+                        exports.save    = 1;
+                        exports.refresh = 1;
+                    }
                 }
                 get_root_node()->compute_tree(gb_main);
             }

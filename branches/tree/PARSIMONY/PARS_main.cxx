@@ -336,7 +336,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
     {
         AP_tree *root = rootNode();
         if (root) {
-            root->reset_layout();
+            root->reset_subtree_layout();
             oldrootleft  = root->get_leftson();
             oldrootright = root->get_rightson();
         }
@@ -665,7 +665,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
         }
 
         if (!error) {
-            rootNode()->reset_layout();
+            rootNode()->reset_subtree_layout();
 
             // find best matching full sequence for each partial sequence
             error = nt_best_partial_match_rek(partial, rootNode());

@@ -151,6 +151,11 @@ public:
     ARB_edge find_innermost_edge();
 };
 
+namespace tree_defaults {
+    const float SPREAD    = 1.0;
+    const float ANGLE     = 0.0;
+    const char  LINEWIDTH = 0;
+};
 
 struct AP_tree_members {
 public:
@@ -176,25 +181,25 @@ public:
     float   left_angle;
     float   right_angle;
 
-    void reset_spread() {
-        spread = 1.0;
+    void reset_child_spread() {
+        spread = tree_defaults::SPREAD;
     }
-    void reset_rotation() {
-        left_angle  = 0;
-        right_angle = 0;
+    void reset_both_child_angles() {
+        left_angle  = tree_defaults::ANGLE;
+        right_angle = tree_defaults::ANGLE;
     }
-    void reset_linewidths() {
-        left_linewidth  = 0;
-        right_linewidth = 0;
+    void reset_both_child_linewidths() {
+        left_linewidth  = tree_defaults::LINEWIDTH;
+        right_linewidth = tree_defaults::LINEWIDTH;
     }
-    void reset_layout() {
-        reset_spread();
-        reset_rotation();
-        reset_linewidths();
+    void reset_child_layout() {
+        reset_child_spread();
+        reset_both_child_angles();
+        reset_both_child_linewidths();
     }
 
     void clear() {
-        reset_layout();
+        reset_child_layout();
 
         grouped             = 0;
         hidden              = 0;
@@ -281,20 +286,30 @@ public:
 
     void update();
 
-    int get_linewidth() const {
-        if (is_root_node()) return 0;
-        const AP_tree_members& tm = get_father()->gr;
+private:
+    char& linewidth_ref() {
+        AP_tree_members& tm = get_father()->gr;
         return is_leftson() ? tm.left_linewidth : tm.right_linewidth;
     }
-    // cppcheck-suppress functionConst
-    void set_linewidth(int width) {
-        if (father) {
-            AP_tree_members& tm = get_father()->gr;
-            char&            lw = is_leftson() ? tm.left_linewidth : tm.right_linewidth;
+    const char& linewidth_ref() const { return const_cast<AP_tree*>(this)->linewidth_ref(); }
 
-            lw = width<0 ? 0 : (width>128 ? 128 : width);
-        }
+    float& angle_ref() {
+        AP_tree_members& tm = get_father()->gr;
+        return is_leftson() ? tm.left_angle : tm.right_angle;
     }
+    const float& angle_ref() const { return const_cast<AP_tree*>(this)->angle_ref(); }
+
+    static inline int force_legal_width(int width) { return width<0 ? 0 : (width>128 ? 128 : width); }
+
+public:
+
+    int get_linewidth() const { return is_root_node() ? 0 : linewidth_ref(); }
+    void set_linewidth(int width) { if (father) linewidth_ref() = force_legal_width(width); }
+    void reset_linewidth() { set_linewidth(tree_defaults::LINEWIDTH); }
+
+    float get_angle() const { return is_root_node() ? 0.0 : angle_ref(); }
+    void set_angle(float angle) { if (father) angle_ref() = angle; }
+    void reset_angle() { set_angle(tree_defaults::ANGLE); }
 
 private:
     void buildLeafList_rek(AP_tree **list, long& num);
@@ -326,10 +341,17 @@ public:
     void justify_branch_lenghs(GBDATA *gb_main);
     void relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash), GB_HASH *organism_hash);
 
-    void reset_spread();
-    void reset_rotation();
-    void reset_linewidths();
-    void reset_layout();
+private:
+    void reset_child_angles();
+    void reset_child_linewidths();
+    void reset_child_layout();
+public:
+
+    // reset-functions below affect 'this' and childs:
+    void reset_subtree_spreads();
+    void reset_subtree_angles();
+    void reset_subtree_linewidths();
+    void reset_subtree_layout();
 
     bool hasName(const char *Name) const {
         return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0;
