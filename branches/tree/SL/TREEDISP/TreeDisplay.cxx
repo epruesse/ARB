@@ -1614,7 +1614,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
     }
 }
 
-void AWT_graphic_tree::set_tree_type(AP_tree_sort type, AWT_canvas *ntw) {
+void AWT_graphic_tree::set_tree_type(AP_tree_display_type type, AWT_canvas *ntw) {
     if (sort_is_list_style(type)) {
         if (tree_sort == type) { // we are already in wanted view
             nds_show_all = !nds_show_all; // -> toggle between 'marked' and 'all'
@@ -2792,7 +2792,7 @@ public:
     void set_var_mode(int mode) { var_mode = mode; }
     void test_show_tree(AW_device *device) { show(device); }
 
-    void test_print_tree(AW_device_print *print_device, AP_tree_sort type, bool show_handles) {
+    void test_print_tree(AW_device_print *print_device, AP_tree_display_type type, bool show_handles) {
         const int      SCREENSIZE = 541; // use a prime as screensize to reduce rounding errors
         AW_device_size size_device(print_device->get_common());
 
@@ -2901,8 +2901,8 @@ void TEST_treeDisplay() {
     for (int show_handles = 0; show_handles <= 1; ++show_handles) {
         for (int color = 0; color <= 1; ++color) {
             print_dev.set_color_mode(color);
-            // for (AP_tree_sort type = AP_TREE_NORMAL; type <= AP_LIST_SIMPLE; type = AP_tree_sort(type+1)) {
-            for (AP_tree_sort type = AP_LIST_SIMPLE; type >= AP_TREE_NORMAL; type = AP_tree_sort(type-1)) { // now passes
+            // for (AP_tree_display_type type = AP_TREE_NORMAL; type <= AP_LIST_SIMPLE; type = AP_tree_display_type(type+1)) {
+            for (AP_tree_display_type type = AP_LIST_SIMPLE; type >= AP_TREE_NORMAL; type = AP_tree_display_type(type-1)) { // now passes
                 if (spoolnameof[type]) {
                     char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[type], "MC"[color], "NH"[show_handles]);
                     char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name);

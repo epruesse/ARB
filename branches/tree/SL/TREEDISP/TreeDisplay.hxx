@@ -47,7 +47,7 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def);
 #define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree*, (ntw)->gfx)
 
 
-enum AP_tree_sort {
+enum AP_tree_display_type {
     AP_TREE_NORMAL, // normal tree display (dendrogram)
     AP_TREE_RADIAL, // radial tree display
     AP_TREE_IRS, // like AP_TREE_NORMAL, with folding line
@@ -55,8 +55,8 @@ enum AP_tree_sort {
     AP_LIST_SIMPLE // simple display only showing name (used at startup to avoid NDS error messages)
 };
 
-inline bool sort_is_list_style(AP_tree_sort sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
-inline bool sort_is_tree_style(AP_tree_sort sort) { return !sort_is_list_style(sort); }
+inline bool sort_is_list_style(AP_tree_display_type sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
+inline bool sort_is_tree_style(AP_tree_display_type sort) { return !sort_is_list_style(sort); }
 
 
 class AWT_graphic_tree_group_state;
@@ -184,7 +184,7 @@ public:
     // *********** read only variables !!!
 
     AW_root      *aw_root;
-    AP_tree_sort  tree_sort;
+    AP_tree_display_type  tree_sort;
     AP_tree      *tree_root_display;                // @@@ what is this used for ?
     AP_tree_root *tree_static;
     GBDATA       *gb_main;
@@ -234,7 +234,7 @@ public:
     GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
     int      check_update(GBDATA *gb_main) OVERRIDE;         // reload tree if needed
     void     update(GBDATA *gb_main) OVERRIDE;
-    void     set_tree_type(AP_tree_sort type, AWT_canvas *ntw);
+    void     set_tree_type(AP_tree_display_type type, AWT_canvas *ntw);
 
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }

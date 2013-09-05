@@ -434,7 +434,7 @@ void NT_reset_pzoom_cb(void *, AWT_canvas *ntw) {
     ntw->zoom_reset_and_refresh();
 }
 
-void NT_set_tree_style(void *, AWT_canvas *ntw, AP_tree_sort type) {
+void NT_set_tree_style(void *, AWT_canvas *ntw, AP_tree_display_type type) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->set_tree_type(type, ntw);
@@ -645,7 +645,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
 }
 
 void TREE_auto_jump_cb(AW_root *, AWT_canvas *ntw) {   // jump only if auto jump is set
-    AP_tree_sort tree_sort = AWT_TREE(ntw)->tree_sort;
+    AP_tree_display_type tree_sort = AWT_TREE(ntw)->tree_sort;
     if (tree_sort == AP_TREE_NORMAL ||
         tree_sort == AP_LIST_NDS ||
         tree_sort == AP_TREE_IRS)
