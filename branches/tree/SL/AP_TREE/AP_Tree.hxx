@@ -270,7 +270,7 @@ public:
     virtual AP_tree *dup() const OVERRIDE;
     // ARB_tree interface (end)
 
-    int compute_tree(GBDATA *gb_main);
+    void compute_tree(GBDATA *gb_main);
 
     int update_leafsum_viewsum(); // count all visible leafs -> gr.viewsum + gr.leafsum
     int count_leafs();

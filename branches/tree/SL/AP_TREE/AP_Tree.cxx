@@ -910,15 +910,13 @@ int AP_tree::calc_color_probes(GB_HASH *hashptr) {
     return res;
 }
 
-int AP_tree::compute_tree(GBDATA *gb_main)
-{
+void AP_tree::compute_tree(GBDATA *gb_main) {
     GB_transaction dummy(gb_main);
     arb_tree_deep();
     arb_tree_min_deep();
     update_leafsum_viewsum();
     calc_color();
     calc_hidden_flag(0);
-    return 0;
 }
 
 GB_ERROR AP_tree_root::loadFromDB(const char *name) {
