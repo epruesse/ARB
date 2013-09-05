@@ -195,8 +195,8 @@ static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode) {
     switch (mode) {
         case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
 
-        case AWT_MODE_EDIT: text = MODE_TEXT_1BUTTON("CONSTRAINT", "modify constraint");       break;
-        case AWT_MODE_LINE: text = MODE_TEXT_1BUTTON("SET CURSOR", "set cursor in ARB_EDIT4"); break;
+        case AWT_MODE_EDIT:       text = MODE_TEXT_1BUTTON("CONSTRAINT", "modify constraint");       break;
+        case AWT_MODE_SET_CURSOR: text = MODE_TEXT_1BUTTON("SET CURSOR", "set cursor in ARB_EDIT4"); break;
 
         case AWT_MODE_MOVE:    text = MODE_TEXT_2BUTTONS("HELIX",      "build helix",                             "remove helix");                  break;
         case AWT_MODE_SETROOT: text = MODE_TEXT_2BUTTONS("SET ROOT",   "set logical center of structure",         "reset angles on sub-structure"); break;
@@ -738,7 +738,7 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->create_mode("rot.xpm",         "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ROT);
     awm->create_mode("stretch.xpm",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_STRETCH);
     awm->create_mode("info.xpm",        "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_EDIT);
-    awm->create_mode("sec_setcurs.xpm", "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_LINE);
+    awm->create_mode("sec_setcurs.xpm", "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_SET_CURSOR);
     awm->create_mode("probeInfo.xpm",   "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_PROINFO);
 
     awm->set_info_area_height(250);

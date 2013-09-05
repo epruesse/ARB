@@ -433,7 +433,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                 }
                 break;
             }
-            case AWT_MODE_LINE:
+            case AWT_MODE_SET_CURSOR:
             case AWT_MODE_PROINFO:
                 elem = 0; // handle element-independent
                 break;
@@ -446,7 +446,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
 
     if (!elem) {
         switch (cmd) {
-            case AWT_MODE_LINE: // set cursor in ARB_EDIT4
+            case AWT_MODE_SET_CURSOR: // set cursor in ARB_EDIT4
                 if (event == AW_Mouse_Press) {
                     if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
                         // sequence position in AWAR_SET_CURSOR_POSITION is starting with 0!
