@@ -689,6 +689,7 @@ adname.o: gb_prot.h
 adname.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adname.o: $(ARBHOME)/INCLUDE/arb_core.h
 adname.o: $(ARBHOME)/INCLUDE/arb_error.h
+adname.o: $(ARBHOME)/INCLUDE/arb_file.h
 adname.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adname.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adname.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -701,6 +702,7 @@ adname.o: $(ARBHOME)/INCLUDE/dupstr.h
 adname.o: $(ARBHOME)/INCLUDE/gccver.h
 adname.o: $(ARBHOME)/INCLUDE/smartptr.h
 adname.o: $(ARBHOME)/INCLUDE/test_global.h
+adname.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adoptimize.o: ad_prot.h
 adoptimize.o: ad_t_prot.h
