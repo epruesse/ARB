@@ -304,7 +304,7 @@ void TEST_rename_session() {
         TEST_EXPECT_RESULT__NOERROREXPORTED(gb_main = GB_open(inputname, "rw"));
 
         for (int session = 1; session <= 2; ++session) {
-            TEST_ANNOTATE_ASSERT(GBS_global_string("session=%i", session));
+            TEST_ANNOTATE(GBS_global_string("session=%i", session));
 
             TEST_EXPECT_NO_ERROR(GBT_begin_rename_session(gb_main, 0));
             if (session == 2) { // session 1 tests renaming nothing
