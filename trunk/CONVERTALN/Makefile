@@ -122,6 +122,7 @@ fconv.o: $(ARBHOME)/INCLUDE/arbdbt.h
 fconv.o: $(ARBHOME)/INCLUDE/arbtools.h
 fconv.o: $(ARBHOME)/INCLUDE/attributes.h
 fconv.o: $(ARBHOME)/INCLUDE/cxxforward.h
+fconv.o: $(ARBHOME)/INCLUDE/downcast.h
 fconv.o: $(ARBHOME)/INCLUDE/dupstr.h
 fconv.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 fconv.o: $(ARBHOME)/INCLUDE/gccver.h

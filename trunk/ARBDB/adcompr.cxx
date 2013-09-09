@@ -17,8 +17,6 @@
 #include "gb_compress.h"
 #include "gb_localdata.h"
 
-#include <static_assert.h>
-
 #if defined(DEBUG)
 // #define TEST_HUFFMAN_CODE
 #endif // DEBUG

@@ -536,6 +536,7 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/gccver.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -1217,6 +1218,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/cbtypes.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client_types.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/cxxforward.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/downcast.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/dupstr.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/gccver.h

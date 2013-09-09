@@ -301,6 +301,7 @@ AW_edit.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_edit.o: $(ARBHOME)/INCLUDE/cb.h
 AW_edit.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_edit.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_edit.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_edit.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_edit.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_edit.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -335,6 +336,7 @@ AW_file.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_file.o: $(ARBHOME)/INCLUDE/cb.h
 AW_file.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_file.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_file.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_file.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_file.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_file.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -450,6 +452,7 @@ AW_modal.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_modal.o: $(ARBHOME)/INCLUDE/cb.h
 AW_modal.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_modal.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_modal.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_modal.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_modal.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_modal.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -492,6 +495,7 @@ AW_preset.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_preset.o: $(ARBHOME)/INCLUDE/cb.h
 AW_preset.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_preset.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_preset.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_preset.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_preset.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_preset.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -585,6 +589,7 @@ AW_root.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_root.o: $(ARBHOME)/INCLUDE/cb.h
 AW_root.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_root.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_root.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_root.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_root.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_root.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -707,6 +712,7 @@ AW_status.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_status.o: $(ARBHOME)/INCLUDE/cb.h
 AW_status.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_status.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_status.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_status.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_status.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_status.o: $(ARBHOME)/INCLUDE/SigHandler.h
@@ -858,9 +864,11 @@ AW_xkey.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_xkey.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_xkey.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_Xm.o: aw_base.hxx

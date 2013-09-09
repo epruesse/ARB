@@ -16,7 +16,6 @@
 #include <arb_defs.h>
 #include <arbdbt.h>
 #include <algorithm>
-#include <static_assert.h>
 
 #define tree_assert(cond) arb_assert(cond)
 

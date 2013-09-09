@@ -64,6 +64,7 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_asciiprint.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -119,6 +120,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_canio.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -150,6 +152,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_canvas.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -275,6 +278,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -359,6 +363,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -392,6 +397,7 @@ AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_seq_colors.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -424,6 +430,7 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_tables.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -459,6 +466,7 @@ AWT_www.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_www.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_www.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_www.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_www.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_www.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_www.o: $(ARBHOME)/INCLUDE/smartptr.h

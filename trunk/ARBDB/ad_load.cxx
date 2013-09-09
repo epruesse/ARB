@@ -16,7 +16,6 @@
 #include <arbdbt.h>
 #include <arb_str.h>
 #include <arb_file.h>
-#include <static_assert.h>
 #include <arb_defs.h>
 
 #include "gb_key.h"

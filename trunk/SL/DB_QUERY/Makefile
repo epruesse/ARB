@@ -65,6 +65,7 @@ db_query.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 db_query.o: $(ARBHOME)/INCLUDE/cb.h
 db_query.o: $(ARBHOME)/INCLUDE/cbtypes.h
 db_query.o: $(ARBHOME)/INCLUDE/cxxforward.h
+db_query.o: $(ARBHOME)/INCLUDE/downcast.h
 db_query.o: $(ARBHOME)/INCLUDE/dupstr.h
 db_query.o: $(ARBHOME)/INCLUDE/gccver.h
 db_query.o: $(ARBHOME)/INCLUDE/item_sel_list.h

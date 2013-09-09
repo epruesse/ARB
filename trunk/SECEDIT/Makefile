@@ -71,9 +71,11 @@ SEC_bonddef.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SEC_bonddef.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/smartptr.h
+SEC_bonddef.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_db.o: SEC_abspos.hxx
@@ -117,6 +119,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/cb.h
 SEC_db.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_db.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SEC_db.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_db.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_db.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
@@ -168,6 +171,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/cb.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SEC_graphic.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
@@ -204,10 +208,12 @@ SEC_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SEC_helix.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/smartptr.h
+SEC_helix.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_io.o: SEC_abspos.hxx
@@ -454,6 +460,7 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/cb.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SEC_toggle.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/smartptr.h

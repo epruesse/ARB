@@ -75,6 +75,7 @@ GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GDE.o: $(ARBHOME)/INCLUDE/cb.h
 GDE.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GDE.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -106,9 +107,11 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_event.o: gde.hxx
@@ -143,6 +146,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/cb.h
 GDE_event.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE_event.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GDE_event.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_event.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_event.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_event.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -170,9 +174,11 @@ GDE_FileIO.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GDE_FileIO.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_FileIO.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_Genbank.o: gde.hxx
@@ -194,9 +200,11 @@ GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_global.o: gde.hxx
@@ -218,9 +226,11 @@ GDE_global.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_global.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_global.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_global.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GDE_global.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_global.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_global.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_global.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_global.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_global.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_HGLfile.o: gde.hxx
@@ -242,9 +252,11 @@ GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_ParseMenu.o: gde.hxx
@@ -266,8 +278,10 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/test_global.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/test_unit.h
