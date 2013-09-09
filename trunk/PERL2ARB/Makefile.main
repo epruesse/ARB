@@ -3,6 +3,7 @@
 # To rebuild PERL2ARB from $ARBHOME call
 # make perl_clean perl
 
+ARB_MAINMAKEFILE=../Makefile
 THIS=Makefile.main
 MAKETHIS=$(MAKE) -f $(THIS)
 #MAKETHIS=$(MAKE) -d -f $(THIS)
@@ -80,7 +81,7 @@ ARB.c : $(XS_DEPENDS)
 	@echo "-------- end of MakeMaker-Makefile"
 
 # buildMakefile
-Makefile : $(MACH).PL typemap Makefile.main arb_common.pm
+Makefile : $(MACH).PL typemap Makefile.main arb_common.pm $(ARB_MAINMAKEFILE)
 	( PATH=/usr/arb/bin:${PATH}; \
 	  export PATH; \
 	  echo calling perl ${MACH}.PL "$(cross_cflags)" "$(cross_lflags)"; \
