@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
                 { 
                     GB_transaction dummy(gb_main);
 
-                    GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, - sizeof(GBT_TREE));
+                    GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, sizeof(GBT_TREE));
                     if (tree) {
                         error = TREE_export_tree(gb_main, stdout, tree, trifurcated, branchlens, doublequotes);
                         GBT_delete_tree(tree);

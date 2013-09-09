@@ -92,7 +92,7 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
             freenull(tree_name);
         }
 
-        GBT_TREE *gbt_tree   = GBT_read_tree(gb_main, name, -sizeof(GBT_TREE));
+        GBT_TREE *gbt_tree   = GBT_read_tree(gb_main, name, sizeof(GBT_TREE));
         if (!gbt_tree) error = GB_await_error();
         else {
             gb_tree             = GBT_find_tree(gb_main, name);
@@ -225,7 +225,6 @@ ARB_tree::~ARB_tree() {
     free(name);
     free(remark_branch);
 
-    at_assert(!tree_is_one_piece_of_memory);
     unlink_from_father();
 
     if (tree_root && tree_root->get_root_node() == this) {

@@ -66,14 +66,7 @@ static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
         GBT_delete_tree(delNode);
     }
     else { // root node
-        if (delNode->tree_is_one_piece_of_memory) {
-            // don't change root -> copy instead
-            memcpy(delNode, tree, sizeof(GBT_TREE));
-            tree = delNode;
-        }
-        else {
-            GBT_delete_tree(delNode);
-        }
+        GBT_delete_tree(delNode);
     }
     return tree;
 }
@@ -154,7 +147,7 @@ void GBT_delete_tree(GBT_TREE*& tree)
             GBT_delete_tree(tree->leftson);
             GBT_delete_tree(tree->rightson);
         }
-        if (!tree->tree_is_one_piece_of_memory || !tree->father) {
+        if (!tree->father) {
             free(tree);
         }
         tree = NULL;
@@ -389,18 +382,9 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
     if (*error) return NULL;
 
     GBT_TREE *node;
-    if (structure_size>0) {
-        node = (GBT_TREE *)GB_calloc(1, (size_t)structure_size);
-    }
-    else {
-        static char *membase;
-        if (!startid[0]) {
-            membase = (char *)GB_calloc(size_of_tree+1, (size_t)(-2*structure_size)); // because of inner nodes
-        }
-        node = (GBT_TREE *)membase;
-        node->tree_is_one_piece_of_memory = 1;
-        membase -= structure_size;
-    }
+
+    gb_assert(structure_size >= sizeof(GBT_TREE));
+    node = (GBT_TREE *)GB_calloc(1, (size_t)structure_size);
 
     char  c = *((*data)++);
     char *p1;
@@ -432,12 +416,12 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
         (*startid)++;
         node->leftson = gbt_read_tree_rek(data, startid, gb_tree_nodes, structure_size, size_of_tree, error);
         if (!node->leftson) {
-            if (!node->tree_is_one_piece_of_memory) free(node);
+            free(node);
             return NULL;
         }
         node->rightson = gbt_read_tree_rek(data, startid, gb_tree_nodes, structure_size, size_of_tree, error);
         if (!node->rightson) {
-            if (!node->tree_is_one_piece_of_memory) free(node);
+            free(node);
             return NULL;
         }
         node->leftson->father = node;

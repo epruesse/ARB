@@ -12,7 +12,6 @@
 
 #define GBT_TREE_ELEMENTS(type)                 \
     bool     is_leaf;                           \
-    bool     tree_is_one_piece_of_memory;       \
     type    *father, *leftson, *rightson;       \
     GBT_LEN  leftlen, rightlen;                 \
     GBDATA  *gb_node;                           \
@@ -27,7 +26,6 @@
 
 #define CLEAR_GBT_TREE_ELEMENTS(tree_obj_ptr)                   \
     (tree_obj_ptr)->is_leaf = false;                            \
-    (tree_obj_ptr)->tree_is_one_piece_of_memory = false;        \
     (tree_obj_ptr)->father = 0;                                 \
     (tree_obj_ptr)->leftson = 0;                                \
     (tree_obj_ptr)->rightson = 0;                               \
