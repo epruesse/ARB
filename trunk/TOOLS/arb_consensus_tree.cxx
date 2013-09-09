@@ -454,7 +454,7 @@ void TEST_treeIO_stable() {
                                                                save_branchlengths ? "Len" : "",
                                                                quoteMode);
 
-                        TEST_ANNOTATE_ASSERT(GBS_global_string("for paramID='%s'", paramID));
+                        TEST_ANNOTATE(GBS_global_string("for paramID='%s'", paramID));
 
                         GB_ERROR export_error = TREE_write_Newick(gb_main, treename, NULL, save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode, outfile);
                         TEST_EXPECT_NULL(export_error);
@@ -537,7 +537,7 @@ void TEST_treeIO_stable() {
             }
         }
     }
-    TEST_ANNOTATE_ASSERT(NULL);
+    TEST_ANNOTATE(NULL);
 
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile));
     free(outfile);

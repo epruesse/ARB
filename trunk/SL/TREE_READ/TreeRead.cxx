@@ -866,7 +866,7 @@ void TEST_load_tree() {
         STATIC_ASSERT(ARRAY_ELEMS(expected_warnings) == ARRAY_ELEMS(treestring));
 
         for (size_t i = 0; i<ARRAY_ELEMS(treestring); ++i) {
-            TEST_ANNOTATE_ASSERT(GBS_global_string("for tree #%zu = '%s'", i, treestring[i]));
+            TEST_ANNOTATE(GBS_global_string("for tree #%zu = '%s'", i, treestring[i]));
             char     *warnings = NULL;
             GBT_TREE *tree     = loadFromFileContaining(treestring[i], &warnings);
             TEST_EXPECT_TREELOAD(tree, expected_nodes[i], countCommas(expected_nodes[i])+1);
@@ -965,7 +965,7 @@ void TEST_load_tree() {
             GBT_delete_tree(tree);
         }
 
-        TEST_ANNOTATE_ASSERT(NULL);
+        TEST_ANNOTATE(NULL);
     }
 
     // test valid trees with strange or wrong behavior
@@ -989,11 +989,11 @@ void TEST_load_tree() {
         };
 
         for (size_t i = 0; i<ARRAY_ELEMS(tooSmallTree); ++i) {
-            TEST_ANNOTATE_ASSERT(GBS_global_string("for tree #%zu = '%s'", i, tooSmallTree[i]));
+            TEST_ANNOTATE(GBS_global_string("for tree #%zu = '%s'", i, tooSmallTree[i]));
             GBT_TREE *tree = loadFromFileContaining(tooSmallTree[i], NULL);
             TEST_EXPECT_TREELOAD_FAILED_WITH(tree, "tree is too small");
         }
-        TEST_ANNOTATE_ASSERT(NULL);
+        TEST_ANNOTATE(NULL);
     }
     {
         GBT_TREE *tree = loadFromFileContaining("((a, b)25)20;", NULL);
