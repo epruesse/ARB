@@ -65,6 +65,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/cb.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -102,6 +103,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client_types.h
 AW_rename.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_rename.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_rename.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_rename.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_rename.o: $(ARBHOME)/INCLUDE/names_client.h

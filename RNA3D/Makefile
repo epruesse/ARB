@@ -281,6 +281,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/cb.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/cbtypes.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/cxxforward.h
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/downcast.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/dupstr.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx

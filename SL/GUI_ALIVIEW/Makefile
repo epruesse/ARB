@@ -68,6 +68,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -102,6 +103,7 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/cb.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/downcast.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/dupstr.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/gccver.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/smartptr.h

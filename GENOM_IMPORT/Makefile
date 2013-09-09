@@ -70,6 +70,7 @@ DBwriter.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/cb.h
 DBwriter.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DBwriter.o: $(ARBHOME)/INCLUDE/cxxforward.h
+DBwriter.o: $(ARBHOME)/INCLUDE/downcast.h
 DBwriter.o: $(ARBHOME)/INCLUDE/dupstr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 DBwriter.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -123,11 +124,13 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/downcast.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/dupstr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/gccver.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/Location.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/smartptr.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/static_assert.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/test_global.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/test_unit.h
 
