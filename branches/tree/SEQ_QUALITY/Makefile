@@ -77,6 +77,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/cb.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -122,6 +123,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/cb.h
 SQ_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SQ_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SQ_main.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_main.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_main.o: $(ARBHOME)/INCLUDE/smartptr.h

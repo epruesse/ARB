@@ -75,6 +75,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/cxxforward.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/db_query.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/dbui.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/downcast.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/gccver.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/info_window.h
@@ -112,6 +113,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/cb.h
 EXP_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 EXP_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 EXP_main.o: $(ARBHOME)/INCLUDE/db_query.h
+EXP_main.o: $(ARBHOME)/INCLUDE/downcast.h
 EXP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 EXP_main.o: $(ARBHOME)/INCLUDE/items.h
@@ -146,6 +148,7 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GEN_gene.o: $(ARBHOME)/INCLUDE/downcast.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/items.h
@@ -185,6 +188,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GEN_graphic.o: $(ARBHOME)/INCLUDE/downcast.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/items.h
@@ -227,6 +231,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/db_query.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/dbui.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/downcast.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/info_window.h
@@ -281,6 +286,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GEN_map.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GEN_map.o: $(ARBHOME)/INCLUDE/db_query.h
 GEN_map.o: $(ARBHOME)/INCLUDE/dbui.h
+GEN_map.o: $(ARBHOME)/INCLUDE/downcast.h
 GEN_map.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_map.o: $(ARBHOME)/INCLUDE/items.h
@@ -344,6 +350,7 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/downcast.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/items.h

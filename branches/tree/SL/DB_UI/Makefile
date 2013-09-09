@@ -53,6 +53,7 @@ info_window.o: $(ARBHOME)/INCLUDE/cb.h
 info_window.o: $(ARBHOME)/INCLUDE/cbtypes.h
 info_window.o: $(ARBHOME)/INCLUDE/cxxforward.h
 info_window.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
+info_window.o: $(ARBHOME)/INCLUDE/downcast.h
 info_window.o: $(ARBHOME)/INCLUDE/dupstr.h
 info_window.o: $(ARBHOME)/INCLUDE/gccver.h
 info_window.o: $(ARBHOME)/INCLUDE/items.h
@@ -96,6 +97,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ui_species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_query.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/downcast.h
 ui_species.o: $(ARBHOME)/INCLUDE/dupstr.h
 ui_species.o: $(ARBHOME)/INCLUDE/gccver.h
 ui_species.o: $(ARBHOME)/INCLUDE/item_sel_list.h

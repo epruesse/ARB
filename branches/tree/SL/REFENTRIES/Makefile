@@ -56,6 +56,7 @@ refentries.o: $(ARBHOME)/INCLUDE/cb.h
 refentries.o: $(ARBHOME)/INCLUDE/cbtypes.h
 refentries.o: $(ARBHOME)/INCLUDE/cxxforward.h
 refentries.o: $(ARBHOME)/INCLUDE/dbitem_set.h
+refentries.o: $(ARBHOME)/INCLUDE/downcast.h
 refentries.o: $(ARBHOME)/INCLUDE/dupstr.h
 refentries.o: $(ARBHOME)/INCLUDE/gccver.h
 refentries.o: $(ARBHOME)/INCLUDE/items.h

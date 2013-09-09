@@ -86,6 +86,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/cb.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/cbtypes.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/cxxforward.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/downcast.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/dupstr.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/gccver.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
@@ -116,9 +117,11 @@ seq_search.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/cxxforward.h
+seq_search.o: $(ARBHOME)/INCLUDE/downcast.h
 seq_search.o: $(ARBHOME)/INCLUDE/dupstr.h
 seq_search.o: $(ARBHOME)/INCLUDE/gccver.h
 seq_search.o: $(ARBHOME)/INCLUDE/smartptr.h
+seq_search.o: $(ARBHOME)/INCLUDE/static_assert.h
 seq_search.o: $(ARBHOME)/INCLUDE/test_global.h
 seq_search.o: $(ARBHOME)/INCLUDE/test_helpers.h
 seq_search.o: $(ARBHOME)/INCLUDE/test_unit.h

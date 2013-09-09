@@ -56,6 +56,7 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/cb.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h

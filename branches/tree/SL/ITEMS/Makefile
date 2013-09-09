@@ -53,6 +53,7 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 changekey.o: $(ARBHOME)/INCLUDE/cb.h
 changekey.o: $(ARBHOME)/INCLUDE/cbtypes.h
 changekey.o: $(ARBHOME)/INCLUDE/cxxforward.h
+changekey.o: $(ARBHOME)/INCLUDE/downcast.h
 changekey.o: $(ARBHOME)/INCLUDE/dupstr.h
 changekey.o: $(ARBHOME)/INCLUDE/gccver.h
 changekey.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -82,6 +83,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/cb.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cbtypes.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cxxforward.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/downcast.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/dupstr.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/gccver.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -115,6 +117,7 @@ species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 species.o: $(ARBHOME)/INCLUDE/cb.h
 species.o: $(ARBHOME)/INCLUDE/cbtypes.h
 species.o: $(ARBHOME)/INCLUDE/cxxforward.h
+species.o: $(ARBHOME)/INCLUDE/downcast.h
 species.o: $(ARBHOME)/INCLUDE/dupstr.h
 species.o: $(ARBHOME)/INCLUDE/gccver.h
 species.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -97,6 +97,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/cb.h
 ST_quality.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ST_quality.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ST_quality.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_quality.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h

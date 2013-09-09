@@ -58,6 +58,7 @@ nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 nds.o: $(ARBHOME)/INCLUDE/cb.h
 nds.o: $(ARBHOME)/INCLUDE/cbtypes.h
 nds.o: $(ARBHOME)/INCLUDE/cxxforward.h
+nds.o: $(ARBHOME)/INCLUDE/downcast.h
 nds.o: $(ARBHOME)/INCLUDE/dupstr.h
 nds.o: $(ARBHOME)/INCLUDE/gccver.h
 nds.o: $(ARBHOME)/INCLUDE/items.h

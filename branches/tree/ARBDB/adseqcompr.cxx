@@ -14,7 +14,6 @@
 #include <arb_misc.h>
 
 #include "gb_key.h"
-#include <static_assert.h>
 #include <climits>
 
 // --------------------------------------------------------------------------------

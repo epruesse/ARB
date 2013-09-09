@@ -171,6 +171,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/cb.h
 primer_design.o: $(ARBHOME)/INCLUDE/cbtypes.h
 primer_design.o: $(ARBHOME)/INCLUDE/cxxforward.h
+primer_design.o: $(ARBHOME)/INCLUDE/downcast.h
 primer_design.o: $(ARBHOME)/INCLUDE/dupstr.h
 primer_design.o: $(ARBHOME)/INCLUDE/gccver.h
 primer_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
