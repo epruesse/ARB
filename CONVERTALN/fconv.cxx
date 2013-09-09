@@ -281,7 +281,7 @@ void TEST_converter() {
     int neverReturns = 0;
 
     for (int from = 0; from<fcount; from++) {
-        TEST_ANNOTATE_ASSERT(GBS_global_string("while converting from '%s'", NAME(from)));
+        TEST_ANNOTATE(GBS_global_string("while converting from '%s'", NAME(from)));
         if (isInputFormat(from)) {
             if (will_convert(from)<1) {
                 TEST_ERROR("Conversion from %s seems unsupported", NAME(from));
@@ -292,7 +292,7 @@ void TEST_converter() {
             Capabilities& me = cap[from][to];
 
             if (me.shall_be_tested()) {
-                TEST_ANNOTATE_ASSERT(GBS_global_string("while converting %s -> %s", NAME(from), NAME(to)));
+                TEST_ANNOTATE(GBS_global_string("while converting %s -> %s", NAME(from), NAME(to)));
                 test_convert_by_format_num(from, to);
                 tested++;
             }
@@ -301,7 +301,7 @@ void TEST_converter() {
             neverReturns += me.neverReturns;
         }
     }
-    TEST_ANNOTATE_ASSERT(NULL);
+    TEST_ANNOTATE(NULL);
 
     fprintf(stderr,
             "Conversion test summary:\n"

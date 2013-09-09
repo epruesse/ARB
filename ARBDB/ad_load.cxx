@@ -1666,7 +1666,7 @@ void TEST_io_number() {
         long lastPos = 0;
         for (size_t i = 0; i<ARRAY_ELEMS(DATA); ++i) {
             data& d = DATA[i];
-            TEST_ANNOTATE_ASSERT(GBS_global_string("val=0x%lx", d.val));
+            TEST_ANNOTATE(GBS_global_string("val=0x%lx", d.val));
             gb_put_number(d.val, out);
 
             long pos           = ftell(out);
@@ -1677,7 +1677,7 @@ void TEST_io_number() {
 
             lastPos = pos;
         }
-        TEST_ANNOTATE_ASSERT(NULL);
+        TEST_ANNOTATE(NULL);
 
         fclose(out);
     }
@@ -1690,7 +1690,7 @@ void TEST_io_number() {
 
         for (size_t i = 0; i<ARRAY_ELEMS(DATA); ++i) {
             data& d = DATA[i];
-            TEST_ANNOTATE_ASSERT(GBS_global_string("val=0x%lx", d.val));
+            TEST_ANNOTATE(GBS_global_string("val=0x%lx", d.val));
 
             long val = gb_get_number(in);
             TEST_EXPECT_EQUAL(val, d.val);
@@ -1703,7 +1703,7 @@ void TEST_io_number() {
 
             lastPos = pos;
         }
-        TEST_ANNOTATE_ASSERT(NULL);
+        TEST_ANNOTATE(NULL);
 
         fclose(in);
     }

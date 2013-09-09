@@ -2906,7 +2906,7 @@ void TEST_db_callbacks_ta_nota() {
         GBDATA   *gb_main = GB_open("no.arb", "c");
         GB_ERROR  error;
 
-        TEST_ANNOTATE_ASSERT(ta_mode == NO_TA ? "NO_TA" : "WITH_TA");
+        TEST_ANNOTATE(ta_mode == NO_TA ? "NO_TA" : "WITH_TA");
         if (ta_mode == NO_TA) {
             error = GB_no_transaction(gb_main); TEST_EXPECT_NO_ERROR(error);
         }
