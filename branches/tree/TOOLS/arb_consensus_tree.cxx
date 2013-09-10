@@ -195,9 +195,6 @@ int ARB_main(int argc, char *argv[]) {
 static char *custom_tree_name(int dir, const char *name) { return GBS_global_string_copy("consense/%i/%s.tree", dir, name); }
 static char *custom_numbered_tree_name(int dir, const char *name, int treeNr) { return GBS_global_string_copy("consense/%i/%s_%i.tree", dir, name, treeNr); }
 
-static char *savename(int dir) { return custom_tree_name(dir, "consense"); }
-static char *expected_name(int dir) { return custom_tree_name(dir, "consense_expected"); }
-
 static void add_inputnames(StrArray& to, int dir, const char *basename, int first_tree, int last_tree) {
     for (int t = first_tree; t <= last_tree; ++t) {
         to.put(custom_numbered_tree_name(dir, basename, t));
