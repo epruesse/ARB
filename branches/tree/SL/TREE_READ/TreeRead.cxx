@@ -676,20 +676,6 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, bool
 #include <test_unit.h>
 #endif
 
-static char *leafNames(GBT_TREE *tree, size_t& count) {
-    GB_CSTR       *name_array = GBT_get_names_of_species_in_tree(tree, &count);
-    GBS_strstruct  names(1024);
-
-    for (size_t n = 0; n<count; ++n) {
-        names.cat(name_array[n]);
-        names.put(',');
-    }
-    names.cut_tail(1);
-    free(name_array);
-
-    return names.release();
-}
-
 static GBT_TREE *loadFromFileContaining(const char *treeString, char **warningsPtr) {
     const char *filename = "trees/tmp.tree";
     FILE       *out      = fopen(filename, "wt");
@@ -719,18 +705,16 @@ static arb_test::match_expectation loading_tree_failed_with(GBT_TREE *tree, cons
     return all().ofgroup(expected);
 }
 
-static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const char *names_expected, size_t count_expected) {
+static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const char *newick_expected) {
     using namespace   arb_test;
     expectation_group expected;
 
     expected.add(that(tree).does_differ_from_NULL());
     expected.add(that(GB_get_error()).is_equal_to_NULL());
     if (!GB_have_error() && tree) {
-        size_t  leafcount;
-        char   *names = leafNames(tree, leafcount);
-        expected.add(that(names).is_equal_to(names_expected));
-        expected.add(that(leafcount).is_equal_to(count_expected));
-        free(names);
+        char *newick = GBT_tree_2_newick(tree);
+        expected.add(that(newick).is_equal_to(newick_expected));
+        free(newick);
     }
     return all().ofgroup(expected);
 }
@@ -738,12 +722,12 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
 #define TEST_EXPECT_TREELOAD_FAILED_WITH(tree,errpart)         TEST_EXPECTATION(loading_tree_failed_with(tree, errpart))
 #define TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree,errpart) TEST_EXPECTATION__BROKEN(loading_tree_failed_with(tree, errpart))
 
-#define TEST_EXPECT_TREELOAD(tree,names,count)         TEST_EXPECTATION(loading_tree_succeeds(tree,names,count))
-#define TEST_EXPECT_TREELOAD__BROKEN(tree,names,count) TEST_EXPECTATION__BROKEN(loading_tree_succeeds(tree,names,count))
+#define TEST_EXPECT_TREELOAD(tree,newick)         TEST_EXPECTATION(loading_tree_succeeds(tree,newick))
+#define TEST_EXPECT_TREELOAD__BROKEN(tree,newick) TEST_EXPECTATION__BROKEN(loading_tree_succeeds(tree,newick))
 
-#define TEST_EXPECT_TREEFILE_FAILS_WITH(name,errpart) do {                          \
-        GBT_TREE *tree = TREE_load(name, sizeof(GBT_TREE), NULL, false, NULL);      \
-        TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                            \
+#define TEST_EXPECT_TREEFILE_FAILS_WITH(name,errpart) do {                      \
+        GBT_TREE *tree = TREE_load(name, sizeof(GBT_TREE), NULL, false, NULL);  \
+        TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                        \
     } while(0)
 
 #define TEST_EXPECT_TREESTRING_FAILS_WITH(treeString,errpart) do {      \
@@ -751,48 +735,40 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
         TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                \
     } while(0)
 
-// arguments 'names,count' are vs regression only!
-#define TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN(treeString,errpart,names,count) do {  \
+// argument 'newick' is vs regression only!
+#define TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN(treeString,errpart,newick) do {       \
         char     *warnings = NULL;                                                      \
         GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);             \
         TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, errpart);                        \
-        TEST_EXPECT_TREELOAD(tree, names, count);                                       \
+        TEST_EXPECT_TREELOAD(tree, newick);                                             \
         TEST_EXPECT_NULL(warnings);                                                     \
         GBT_delete_tree(tree);                                                          \
         free(warnings);                                                                 \
     } while(0)
 
-#define TEST_EXPECT_TREESTRING_OK(treeString,names,count) do {                  \
+#define TEST_EXPECT_TREESTRING_OK(treeString,newick) do {                       \
         char     *warnings = NULL;                                              \
         GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);     \
-        TEST_EXPECT_TREELOAD(tree, names, count);                               \
+        TEST_EXPECT_TREELOAD(tree, newick);                                     \
         TEST_EXPECT_NULL(warnings);                                             \
         GBT_delete_tree(tree);                                                  \
         free(warnings);                                                         \
     } while(0)
 
-#define TEST_EXPECT_TREESTRING_OK_WITH_WARNING(treeString,names,count,warnPart) do {    \
-        char     *warnings = NULL;                                                      \
-        GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);             \
-        TEST_EXPECT_TREELOAD(tree, names, count);                                       \
-        TEST_REJECT_NULL(warnings);                                                     \
-        TEST_EXPECT_CONTAINS(warnings, warnPart);                                       \
-        GBT_delete_tree(tree);                                                          \
-        free(warnings);                                                                 \
+#define TEST_EXPECT_TREESTRING_OK_WITH_WARNING(treeString,newick,warnPart) do { \
+        char     *warnings = NULL;                                              \
+        GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);     \
+        TEST_EXPECT_TREELOAD(tree, newick);                                     \
+        TEST_REJECT_NULL(warnings);                                             \
+        TEST_EXPECT_CONTAINS(warnings, warnPart);                               \
+        GBT_delete_tree(tree);                                                  \
+        free(warnings);                                                         \
     } while(0)
 
-#define TEST_EXPECT_TREESTRING_OK__BROKEN(treeString,names,count) do {  \
+#define TEST_EXPECT_TREESTRING_OK__BROKEN(treeString,newick) do {       \
         GBT_TREE *tree = loadFromFileContaining(treeString, NULL);      \
-        TEST_EXPECT_TREELOAD__BROKEN(tree, names, count);               \
+        TEST_EXPECT_TREELOAD__BROKEN(tree, newick);                     \
     } while(0)
-
-inline size_t countCommas(const char *str) {
-    size_t commas = 0;
-    for (size_t i = 0; str[i]; ++i) {
-        commas += (str[i] == ',');
-    }
-    return commas;
-}
 
 void TEST_load_tree() {
     // just are few tests covering most of this module.
@@ -804,7 +780,7 @@ void TEST_load_tree() {
         GBT_TREE *tree    = TREE_load("trees/test.tree", sizeof(GBT_TREE), &comment, false, NULL);
         // -> ../../UNIT_TESTER/run/trees/test.tree
 
-        TEST_EXPECT_TREELOAD(tree, "s1,s2,s3,s 4,s5,s-6", 6);
+        TEST_EXPECT_TREELOAD(tree, "(((s1,s2),(s3,s 4)),(s5,s-6));");
         if (tree) {
             TEST_REJECT_NULL(comment);
             TEST_EXPECT_CONTAINS(comment,
@@ -835,18 +811,18 @@ void TEST_load_tree() {
             "((a,b)'0.17:G',(c,d)'0.333:H',(e,f)'0.125:I':0.2);", // [8] test bootstraps in range [0..1]
         };
 
-        const char *expected_nodes[] = {
-            "node1,node2",
-            "node1,node2,node3",
-            "a,b,c",
+        const char *expected_newick[] = {
+            "(node1,node2);",
+            "(node1,(node2,node3));",
+            "(a,(b,c));",
 
-            "a,b,c,d,e,f",
-            "a,b,c,d,e,f",
-            "a,b,c,d,e,f",
-            "a,b,c,d,e,f",
+            "(((a,b),(c,d)),(e,f));",
+            "(((a,b),(c,d)),(e,f));",
+            "(((a,b),(c,d)),(e,f));",
+            "(((a,b),(c,d)),(e,f));",
 
-            "a,b,c,d,e,f",
-            "a,b,c,d,e,f",
+            "(((a,b),(c,d)),(e,f));",
+            "(((a,b),(c,d)),(e,f));",
         };
         const char *expected_warnings[] = {
             NULL,
@@ -861,14 +837,14 @@ void TEST_load_tree() {
             NULL, // no auto-scaling shall occur here (bootstraps are in [0..1])
         };
 
-        STATIC_ASSERT(ARRAY_ELEMS(expected_nodes) == ARRAY_ELEMS(treestring));
+        STATIC_ASSERT(ARRAY_ELEMS(expected_newick) == ARRAY_ELEMS(treestring));
         STATIC_ASSERT(ARRAY_ELEMS(expected_warnings) == ARRAY_ELEMS(treestring));
 
         for (size_t i = 0; i<ARRAY_ELEMS(treestring); ++i) {
             TEST_ANNOTATE(GBS_global_string("for tree #%zu = '%s'", i, treestring[i]));
             char     *warnings = NULL;
             GBT_TREE *tree     = loadFromFileContaining(treestring[i], &warnings);
-            TEST_EXPECT_TREELOAD(tree, expected_nodes[i], countCommas(expected_nodes[i])+1);
+            TEST_EXPECT_TREELOAD(tree, expected_newick[i]);
             switch (i) {
                 case 0:
                     TEST_EXPECT_EQUAL(tree->name, "rootgroup");
@@ -968,11 +944,12 @@ void TEST_load_tree() {
     }
 
     // test valid trees with strange or wrong behavior
-    TEST_EXPECT_TREESTRING_OK("(,);", "unnamed1,unnamed2", 2); // tree with 2 unamed species (weird, but ok)
-    TEST_EXPECT_TREESTRING_OK("( a, (b,(c),d), (e,(f)) );", "a,b,c,d,e,f", 6);
-    TEST_EXPECT_TREESTRING_OK("(((((a)))), ((b, c)));", "a,b,c", 3);
+    TEST_EXPECT_TREESTRING_OK("(,);",                       "(unnamed1,unnamed2);");   // tree with 2 unamed species (weird, but ok)
+    TEST_EXPECT_TREESTRING_OK("( a, (b,(c),d), (e,(f)) );", "((a,((b,c),d)),(e,f));");
+    TEST_EXPECT_TREESTRING_OK("(((((a)))), ((b, c)));",     "(a,(b,c));");
 
-    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("( (a), (((b),(c),(d))group)dupgroup, ((e),(f)) );", "a,b,c,d,e,f", 6,
+    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("( (a), (((b),(c),(d))group)dupgroup, ((e),(f)) );",
+                                           "((a,((b,c),d)),(e,f));",
                                            "Duplicated group name specification detected");
 
     // test unacceptable trees
@@ -1014,14 +991,13 @@ void TEST_load_tree() {
     TEST_EXPECT_TREESTRING_FAILS_WITH("[unclosed\ncomment [ bla ]", "while reading comment");
 
     TEST_EXPECT_TREESTRING_FAILS_WITH("(a, b:d)", "Expected valid length while looking at 'd)<EOF>'");
-    TEST_EXPECT_TREESTRING_OK("(a, b:5)", "a,b", 2);
 
     // questionable accepted trees / check warnings
+    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("(a,b):0.5", "(a,b);", "Length specified for root-node has been ignored");
+    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("(a, b))",   "(a,b);", "Unexpected input-data after tree: ')'");
 
-    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("(a,b):0.5", "a,b", 2, "Length specified for root-node has been ignored");
-    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("(a, b))", "a,b", 2, "Unexpected input-data after tree: ')'");
-
-    TEST_EXPECT_TREESTRING_OK("(a*,b%);", "a*,b%", 2); // @@@ really accept such names?
+    TEST_EXPECT_TREESTRING_OK("(a*,b%);", "(a*,b%);"); // @@@ really accept such names?
+    TEST_EXPECT_TREESTRING_OK("(a, b:5)", "(a,b);");
 
     // check errors
     TEST_EXPECT_TREEFILE_FAILS_WITH("trees/nosuch.tree",    "No such file");

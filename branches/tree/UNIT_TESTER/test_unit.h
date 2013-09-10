@@ -1323,8 +1323,14 @@ namespace arb_test {
 #define TEST_EXPECT_TEXTFILES_EQUAL(f1,f2)         TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,0)
 #define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2) TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,0)
 
-#define TEST_EXPECT_MEM_EQUAL(m1,m2,size)         TEST_EXPECT(arb_test::test_mem_equal(m1,m2,size)) 
-#define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_EXPECT__BROKEN(arb_test::test_mem_equal(m1,m2,size)) 
+#define TEST_EXPECT_MEM_EQUAL(m1,m2,size)         TEST_EXPECT(arb_test::test_mem_equal(m1,m2,size))
+#define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_EXPECT__BROKEN(arb_test::test_mem_equal(m1,m2,size))
+
+#define TEST_EXPECT_NEWICK_EQUAL(tree,expected_newick) do{      \
+        char *newick = GBT_tree_2_newick(tree);                 \
+        TEST_EXPECT_EQUAL(newick,expected_newick);              \
+        free(newick);                                           \
+    }while(0)
 
 #else
 
@@ -1340,6 +1346,7 @@ namespace arb_test {
 #define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2)                      WARN_MISS_ADPROT()
 #define TEST_EXPECT_MEM_EQUAL(m1,m2,size)                               WARN_MISS_ADPROT()
 #define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size)                       WARN_MISS_ADPROT()
+#define TEST_EXPECT_NEWICK_EQUAL(tree,expected_newick)                  WARN_MISS_ADPROT()
 
 #endif // AD_PROT_H
 

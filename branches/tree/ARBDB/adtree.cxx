@@ -1273,11 +1273,7 @@ void TEST_tree() {
 
                 free(species);
 
-                {
-                    char *newick = GBT_tree_2_newick(tree);
-                    TEST_EXPECT_EQUAL(newick, "(CloButyr,(CloButy2,((CorGluta,(CorAquat,CurCitre)),CytAquat)));");
-                    free(newick);
-                }
+                TEST_EXPECT_NEWICK_EQUAL(tree, "(CloButyr,(CloButy2,((CorGluta,(CorAquat,CurCitre)),CytAquat)));");
 
                 GBT_delete_tree(tree);
             }
