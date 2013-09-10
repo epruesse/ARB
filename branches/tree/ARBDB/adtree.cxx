@@ -15,6 +15,7 @@
 #include <set>
 #include <limits.h>
 #include <arb_global_defs.h>
+#include <arb_strbuf.h>
 
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0
@@ -1182,6 +1183,26 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count) {
 
     return result;
 }
+static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out) {
+    if (tree->is_leaf) {
+        out.cat(tree->name);
+    }
+    else {
+        out.put('(');
+        tree2newick(tree->leftson, out);
+        out.put(',');
+        tree2newick(tree->rightson, out);
+        out.put(')');
+    }
+}
+
+char *GBT_tree_2_newick(const GBT_TREE *tree) {
+    GBS_strstruct out(1000);
+    tree2newick(tree, out);
+    out.put(';');
+    return out.release();
+}
+
 
 // --------------------------------------------------------------------------------
 
@@ -1229,7 +1250,7 @@ void TEST_tree() {
             TEST_EXPECT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
 
             {
-                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", sizeof(GBT_TREE));
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", sizeof(GBT_TREE)); // @@@ leaks
 
                 TEST_REJECT_NULL(tree);
 
@@ -1238,15 +1259,25 @@ void TEST_tree() {
                 size_t   species_count;
                 GB_CSTR *species = GBT_get_names_of_species_in_tree(tree, &species_count);
 
-                StrArray  species2;
+                StrArray species2;
                 for (int i = 0; species[i]; ++i) species2.put(strdup(species[i]));
 
                 TEST_EXPECT_EQUAL(species_count, leaf_count);
                 TEST_EXPECT_EQUAL(long(species_count), inner_nodes+1);
-                char *joined = GBT_join_names(species2, '*');
-                TEST_EXPECT_EQUAL(joined, "CloButyr*CloButy2*CorGluta*CorAquat*CurCitre*CytAquat");
-                free(joined);
+
+                {
+                    char *joined = GBT_join_names(species2, '*');
+                    TEST_EXPECT_EQUAL(joined, "CloButyr*CloButy2*CorGluta*CorAquat*CurCitre*CytAquat");
+                    free(joined);
+                }
+
                 free(species);
+
+                {
+                    char *newick = GBT_tree_2_newick(tree);
+                    TEST_EXPECT_EQUAL(newick, "(CloButyr,(CloButy2,((CorGluta,(CorAquat,CurCitre)),CytAquat)));");
+                    free(newick);
+                }
 
                 GBT_delete_tree(tree);
             }

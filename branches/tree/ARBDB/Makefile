@@ -1067,6 +1067,7 @@ adtree.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
+adtree.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_string.h
 adtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtree.o: $(ARBHOME)/INCLUDE/attributes.h
