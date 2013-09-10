@@ -81,15 +81,19 @@ ARB.c : $(XS_DEPENDS)
 	@echo "-------- end of MakeMaker-Makefile"
 
 # buildMakefile
+
+used_cflags:=$(subst -Weffc++,,$(cross_cflags))
+used_lflags:=$(cross_lflags)
+
 Makefile : $(MACH).PL typemap Makefile.main arb_common.pm $(ARB_MAINMAKEFILE)
 	( PATH=/usr/arb/bin:${PATH}; \
 	  export PATH; \
-	  echo calling perl ${MACH}.PL "$(cross_cflags)" "$(cross_lflags)"; \
-	  perl ${MACH}.PL "$(cross_cflags)" "$(cross_lflags)" )
+	  echo calling perl ${MACH}.PL "$(used_cflags)" "$(used_lflags)"; \
+	  perl ${MACH}.PL "$(used_cflags)" "$(used_lflags)" )
 
 Makefile.PL : $(MACH).PL
 	( \
-		echo "system('perl $< \"$(cross_cflags)\" \"$(cross_lflags)\"');" \
+		echo "system('perl $< \"$(used_cflags)\" \"$(used_lflags)\"');" \
 	) > $@
 
 ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs perlmain_source.c typemap
