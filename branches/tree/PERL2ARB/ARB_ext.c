@@ -16,7 +16,7 @@ static GB_HASH *gbp_cp_hash_table = 0;
 // defined in ../ARBDB/adperl.c@GBP_croak_function
 extern void (*GBP_croak_function)(const char *message);
 
-void GBP_croak(const char *message) {
+__ATTR__NORETURN static void GBP_croak(const char *message) {
     Perl_croak(aTHX_ "ARBDB croaks %s", message);
 }
 
