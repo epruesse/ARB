@@ -881,6 +881,7 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/cb.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/cxxforward.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/EXP.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -1555,7 +1556,9 @@ NT_validNames.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/cxxforward.h
+NT_validNames.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_validNames.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/test_global.h

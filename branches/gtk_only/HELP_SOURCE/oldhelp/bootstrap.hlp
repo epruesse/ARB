@@ -4,12 +4,12 @@ UP	glossary.hlp
 UP	dist.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
+SUB	consense_algo.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		IMPORTANT bootstrap notes
+TITLE		NJ bootstrap
 
 OCCURRENCE	ARB_DIST
 

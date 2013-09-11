@@ -62,7 +62,7 @@ struct Globals : virtual Noncopyable {
         TEST_EXPECT_ZERO_OR_SHOW_ERRNO(chdir(runDir));
     }
     inline void setup_test_postcondition() {
-        TEST_ANNOTATE_ASSERT(NULL);
+        TEST_ANNOTATE(NULL);
     }
 };
 

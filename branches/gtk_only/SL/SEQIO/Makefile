@@ -56,9 +56,11 @@ seq_export.o: $(ARBHOME)/INCLUDE/arbdbt.h
 seq_export.o: $(ARBHOME)/INCLUDE/arbtools.h
 seq_export.o: $(ARBHOME)/INCLUDE/attributes.h
 seq_export.o: $(ARBHOME)/INCLUDE/cxxforward.h
+seq_export.o: $(ARBHOME)/INCLUDE/downcast.h
 seq_export.o: $(ARBHOME)/INCLUDE/dupstr.h
 seq_export.o: $(ARBHOME)/INCLUDE/gccver.h
 seq_export.o: $(ARBHOME)/INCLUDE/smartptr.h
+seq_export.o: $(ARBHOME)/INCLUDE/static_assert.h
 seq_export.o: $(ARBHOME)/INCLUDE/test_global.h
 seq_export.o: $(ARBHOME)/INCLUDE/test_unit.h
 seq_export.o: $(ARBHOME)/INCLUDE/xml.hxx

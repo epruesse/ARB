@@ -2647,7 +2647,7 @@ void TEST_SLOW_optimize() {
         long nonopti_size   = GB_size_of_file(nonopti);
         long optimized_size = GB_size_of_file(optimized);
         TEST_EXPECT_LESS(optimized_size, nonopti_size);         // did file shrink?
-        TEST_EXPECT_EQUAL(optimized_size*100/nonopti_size, 73); // document compression ratio (in percent)
+        TEST_EXPECT_EQUAL(optimized_size*100/nonopti_size, 74); // document compression ratio (in percent)
 
         GB_close(gb_main);
     }

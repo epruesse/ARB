@@ -338,7 +338,9 @@ PH_root.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_root.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_root.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/cxxforward.h
+PH_root.o: $(ARBHOME)/INCLUDE/downcast.h
 PH_root.o: $(ARBHOME)/INCLUDE/dupstr.h
 PH_root.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_root.o: $(ARBHOME)/INCLUDE/smartptr.h
+PH_root.o: $(ARBHOME)/INCLUDE/static_assert.h
 PH_root.o: $(ARBHOME)/INCLUDE/test_global.h

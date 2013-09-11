@@ -3,14 +3,14 @@ UP	arb.hlp
 UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
+SUB	consense_algo.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Consense Tree
+TITLE		Consensus Tree
 
-OCCURRENCE	ARB_NT/Tree/Build consense tree
+OCCURRENCE	ARB_NT/Tree/Build consensus tree
 
 DESCRIPTION     The upper part of the window shows two tree-lists
                 - the left shows all selected trees

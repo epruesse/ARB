@@ -209,6 +209,7 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/cxxforward.h
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -488,6 +489,7 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/client.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/cxxforward.h
+MP_sonde.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/PT_com.h

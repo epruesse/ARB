@@ -149,7 +149,7 @@ arg:CONSENSE
 argtype:choice_menu
 arglabel:What to do with selected trees?
 argchoice:Import into ARB:import
-argchoice:Create consense tree:consense
+argchoice:Create consensus tree:consense
 
 in:in1
 informat:genbank

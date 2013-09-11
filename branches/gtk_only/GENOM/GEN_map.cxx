@@ -28,6 +28,7 @@
 #include <adGene.h>
 #include <db_query.h>
 #include <rootAsWin.h>
+#include <mode_text.h>
 
 #include <map>
 
@@ -489,24 +490,15 @@ static void GEN_add_global_awar_callbacks(AW_root *awr) {
 static void GEN_mode_event(AW_window *aws, AW_CL cl_win, AW_CL cl_mode) {
     GEN_map_window   *win  = (GEN_map_window*)cl_win;
     AWT_COMMAND_MODE  mode = (AWT_COMMAND_MODE)cl_mode;
-    const char       *text = 0;
+
+    const char *text = 0;
     switch (mode) {
-        case AWT_MODE_SELECT: {
-            text="SELECT MODE  LEFT: click to select";
-            break;
-        }
-        case AWT_MODE_ZOOM: {
-            text="ZOOM MODE    LEFT: drag to zoom   RIGHT: zoom out";
-            break;
-        }
-        case AWT_MODE_EDIT: {
-            text="INFO MODE    LEFT: click for info";
-            break;
-        }
-        default: {
-            gen_assert(0);
-            break;
-        }
+        case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "click to select a gene"); break;
+        case AWT_MODE_EDIT:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");         break;
+
+        case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE();
+
+        default: text = no_mode_text_defined(); break;
     }
 
     gen_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!

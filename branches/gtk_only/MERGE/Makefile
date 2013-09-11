@@ -54,9 +54,11 @@ MG_adapt_ali.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/cxxforward.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/downcast.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/dupstr.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/gccver.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/smartptr.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/static_assert.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_global.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_unit.h
 

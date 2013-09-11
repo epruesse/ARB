@@ -456,6 +456,7 @@ AW_color_groups.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_color_groups.o: $(ARBHOME)/INCLUDE/cb.h
 AW_color_groups.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_color_groups.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_color_groups.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_color_groups.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_color_groups.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_color_groups.o: $(ARBHOME)/INCLUDE/smartptr.h

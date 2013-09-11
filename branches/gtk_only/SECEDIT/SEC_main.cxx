@@ -22,6 +22,7 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
+#include <mode_text.h>
 
 #include <arb_file.h>
 
@@ -186,56 +187,29 @@ static void SEC_fit_window_cb(AW_window * /* aw */, AW_CL cl_secroot, AW_CL) {
     db->canvas()->refresh();
 }
 
-static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode)
-{
+static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode) {
     SEC_root         *sec_root = (SEC_root*)cl_secroot;
     AWT_COMMAND_MODE  mode     = (AWT_COMMAND_MODE)cl_mode;
-    const char       *text     = 0;
 
-    sec_root->set_show_constraints(SEC_NO_TYPE);
-
+    const char *text = 0;
     switch (mode) {
-        case AWT_MODE_ZOOM: {
-            text="ZOOM MODE : CLICK or SELECT an area to ZOOM IN (LEFT) or ZOOM OUT (RIGHT) ";
-            break;
-        }
-        case AWT_MODE_MOVE: {
-            text="HELIX MODE    LEFT: build helix   RIGHT: remove helix";
-            break;
-        }
-        case AWT_MODE_SETROOT: {
-            text="SET ROOT MODE    LEFT: Set logical center of structure   RIGHT: Reset angles on sub-structure";
-            break;
-        }
-        case AWT_MODE_ROT: {
-            text="ROTATE MODE    LEFT: Rotate helix/loop RIGHT: w/o substructure";
-            break;
-        }
-        case AWT_MODE_STRETCH: {
-            text="STRETCH MODE  : LEFT-CLICK & DRAG: stretch HELICES and LOOPS   RIGHT: Reset";
-            sec_root->set_show_constraints(SEC_ANY_TYPE);
-            break;
-        }
-        case AWT_MODE_EDIT: {
-            text="CONSTRAINT MODE    LEFT: modify constraint";
-            sec_root->set_show_constraints(SEC_ANY_TYPE);
-            break;
-        }
-        case AWT_MODE_LINE: {
-            text="SET CURSOR MODE    LEFT: Set Cursor in ARB_EDIT4";
-            break;
-        }
-        case AWT_MODE_PROINFO: {
-            text="PROBE INFO MODE    LEFT: Displays PROBE information   RIGHT: Clears the Display";
-            break;
-        }
-        default: {
-#if defined(DEBUG)
-            sec_assert(0);
-#endif // DEBUG
-            break;
-        }
+        case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
+
+        case AWT_MODE_EDIT: text = MODE_TEXT_1BUTTON("CONSTRAINT", "modify constraint");       break;
+        case AWT_MODE_LINE: text = MODE_TEXT_1BUTTON("SET CURSOR", "set cursor in ARB_EDIT4"); break;
+
+        case AWT_MODE_MOVE:    text = MODE_TEXT_2BUTTONS("HELIX",      "build helix",                             "remove helix");                  break;
+        case AWT_MODE_SETROOT: text = MODE_TEXT_2BUTTONS("SET ROOT",   "set logical center of structure",         "reset angles on sub-structure"); break;
+        case AWT_MODE_ROT:     text = MODE_TEXT_2BUTTONS("ROTATE",     "rotate helix/loop",                       "same w/o substructure");         break;
+        case AWT_MODE_STRETCH: text = MODE_TEXT_2BUTTONS("STRETCH",    "click and drag to stretch helices/loops", "reset");                         break;
+        case AWT_MODE_PROINFO: text = MODE_TEXT_2BUTTONS("PROBE INFO", "display PROBE information",               "undisplay");                     break;
+
+        default: text = no_mode_text_defined(); break;
     }
+
+    sec_root->set_show_constraints((mode == AWT_MODE_STRETCH || mode == AWT_MODE_EDIT)
+                                   ? SEC_ANY_TYPE
+                                   : SEC_NO_TYPE);
 
     sec_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!
 

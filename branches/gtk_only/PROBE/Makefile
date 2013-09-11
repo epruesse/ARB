@@ -148,6 +148,7 @@ PT_family.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_family.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_family.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_family.o: $(ARBHOME)/INCLUDE/cxxforward.h
+PT_family.o: $(ARBHOME)/INCLUDE/downcast.h
 PT_family.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_family.o: $(ARBHOME)/INCLUDE/gccver.h
 PT_family.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -203,11 +204,13 @@ PT_io.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_io.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 PT_io.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_io.o: $(ARBHOME)/INCLUDE/cxxforward.h
+PT_io.o: $(ARBHOME)/INCLUDE/downcast.h
 PT_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_io.o: $(ARBHOME)/INCLUDE/gccver.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_io.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_io.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_io.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_main.o: probe.h
@@ -235,6 +238,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_main.o: $(ARBHOME)/INCLUDE/client.h
 PT_main.o: $(ARBHOME)/INCLUDE/client_types.h
 PT_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
+PT_main.o: $(ARBHOME)/INCLUDE/downcast.h
 PT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_main.o: $(ARBHOME)/INCLUDE/gccver.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -244,6 +248,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/ptclean.h
 PT_main.o: $(ARBHOME)/INCLUDE/server.h
 PT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 PT_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_main.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_main.o: $(ARBHOME)/INCLUDE/test_global.h
 PT_main.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h

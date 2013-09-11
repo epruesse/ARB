@@ -332,7 +332,7 @@ void AP_tree::remove() {
     }
 }
 
-GB_ERROR AP_tree::cantMoveTo(AP_tree *new_brother) {
+GB_ERROR AP_tree::cantMoveNextTo(AP_tree *new_brother) {
     GB_ERROR error = 0;
 
     if (!father)                                error = "Can't move the root of the tree";
@@ -344,7 +344,7 @@ GB_ERROR AP_tree::cantMoveTo(AP_tree *new_brother) {
     return error;
 }
 
-void AP_tree::moveTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
+void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     // rel_pos == 0.0 -> at father
     //         == 1.0 -> at brother
 
@@ -353,7 +353,7 @@ void AP_tree::moveTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     ap_assert(new_brother->father != father);       // already there
     ap_assert(!new_brother->is_inside(this));       // can't move tree into itself
 
-    if (father->leftson != this) get_father()->swap_sons();
+    if (father->leftson != this) get_father()->swap_sons(); // @@@ move from graphical tree will ignore layout!
 
     if (father->father == 0) {
         get_brother()->father = 0;
@@ -410,14 +410,37 @@ void AP_tree::moveTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     new_tree->father    = brother_father;
 }
 
-void AP_tree::swap_sons() {
-    ARB_tree *h_at = this->leftson;
-    this->leftson = this->rightson;
-    this->rightson = h_at;
+void AP_tree_members::swap_son_layout() {
+    std::swap(left_linewidth, right_linewidth);
 
-    double h = this->leftlen;
-    this->leftlen = this->rightlen;
-    this->rightlen = h;
+    // angles need to change orientation when swapped
+    // (they are relative angles, i.e. represent the difference to the default-angle)
+    float org_left = left_angle;
+    left_angle     = -right_angle;
+    right_angle    = -org_left;
+
+}
+
+void AP_tree::swap_sons() {
+    if (!is_leaf) {
+        std::swap(leftson, rightson);
+        std::swap(leftlen, rightlen);
+    }
+}
+
+void AP_tree::swap_featured_sons() {
+    if (!is_leaf) {
+        swap_sons();
+        gr.swap_son_layout();
+    }
+}
+
+void AP_tree::rotate_subtree() {
+    if (!is_leaf) {
+        swap_featured_sons();
+        get_leftson()->rotate_subtree();
+        get_rightson()->rotate_subtree();
+    }
 }
 
 void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
@@ -1822,8 +1845,8 @@ void AP_tree::relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node
 }
 
 void AP_tree::reset_spread() {
-    gr.spread = 1.0;
     if (!is_leaf) {
+        gr.reset_spread();
         get_leftson()->reset_spread();
         get_rightson()->reset_spread();
     }
@@ -1831,20 +1854,25 @@ void AP_tree::reset_spread() {
 
 void AP_tree::reset_rotation() {
     if (!is_leaf) {
-        gr.left_angle  = 0.0;
-        gr.right_angle = 0.0;
+        gr.reset_rotation();
         get_leftson()->reset_rotation();
         get_rightson()->reset_rotation();
     }
 }
 
-void AP_tree::reset_child_linewidths() {
+void AP_tree::reset_linewidths() {
     if (!is_leaf) {
-        gr.left_linewidth  = 0;
-        gr.right_linewidth = 0;
+        gr.reset_linewidths();
+        get_leftson()->reset_linewidths();
+        get_rightson()->reset_linewidths();
+    }
+}
 
-        get_leftson()->reset_child_linewidths();
-        get_rightson()->reset_child_linewidths();
+void AP_tree::reset_layout() {
+    if (!is_leaf) {
+        gr.reset_layout();
+        get_leftson()->reset_rotation();
+        get_rightson()->reset_rotation();
     }
 }
 
