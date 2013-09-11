@@ -336,9 +336,9 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
 
                         switch (button) {
                             case AW_BUTTON_LEFT:
-                                error = source->cantMoveTo(dest);
+                                error = source->cantMoveNextTo(dest);
                                 if (!error) {
-                                    source->moveTo(dest, cl->nearest_rel_pos);
+                                    source->moveNextTo(dest, cl->nearest_rel_pos);
                                     recalc_branch_lengths = true;
                                 }
                                 break;

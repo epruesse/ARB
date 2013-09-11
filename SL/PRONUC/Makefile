@@ -73,9 +73,11 @@ AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/test_global.h
 
 iupac.o: iupac.h

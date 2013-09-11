@@ -1519,7 +1519,6 @@ TAGFILE_TMP=TAGS.tmp
 
 TAG_SOURCE_HEADERS=TAGS.headers
 TAG_SOURCE_CODE=TAGS.codefiles
-
 TAG_SOURCE_LISTS=$(TAG_SOURCE_HEADERS) $(TAG_SOURCE_CODE)
 
 ETAGS=ctags -e -f $(TAGFILE_TMP) --sort=no --if0=no --extra=q
@@ -1527,15 +1526,15 @@ ETAGS_TYPES=--C-kinds=cgnsut --C++-kinds=cgnsut
 ETAGS_FUN  =--C-kinds=fm     --C++-kinds=fm
 ETAGS_REST =--C-kinds=dev    --C++-kinds=dev
 
+FILTER_TAGS_SOURCES= \
+	$(SED) -e 's/^.\///g' | \
+	grep -P -v -i '^HEADERLIBS|^GDE/|/GEN[CH]/'
+
 $(TAG_SOURCE_HEADERS): links
-#	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
-#	workaround a bug in ctags 5.8:
-	find . \( -name '*.hxx' -o -name "*.h" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
+	find . \( -name '*.hxx' -o -name "*.h" \) -type f | $(FILTER_TAGS_SOURCES) > $@
 
 $(TAG_SOURCE_CODE): links
-#	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
-#	workaround a bug in ctags 5.8:
-	find . \( -name '*.cxx' -o -name "*.c" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
+	find . \( -name '*.cxx' -o -name "*.c" \) -type f | $(FILTER_TAGS_SOURCES) > $@
 
 tags: $(TAG_SOURCE_LISTS)
 	$(ETAGS)    $(ETAGS_TYPES) -L $(TAG_SOURCE_HEADERS)
@@ -1646,7 +1645,7 @@ realperl: perltools
 		$(TIME) $(MAKE) -C PERL2ARB -r -f Makefile.main \
 			"AUTODEPENDS=1" \
 			"dflags=$(dflags)" \
-			"cross_cflags=$(cross_cflags) $(dflags)" \
+			"cross_cflags=$(cross_cflags) $(cppflags) $(dflags)" \
 			"cross_lflags=$(cross_lflags)" \
 			all && \
 		$(TEST_PERL_SCRIPTS) && \

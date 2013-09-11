@@ -175,6 +175,7 @@ recmac.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 recmac.o: $(ARBHOME)/INCLUDE/cb.h
 recmac.o: $(ARBHOME)/INCLUDE/cbtypes.h
 recmac.o: $(ARBHOME)/INCLUDE/cxxforward.h
+recmac.o: $(ARBHOME)/INCLUDE/downcast.h
 recmac.o: $(ARBHOME)/INCLUDE/dupstr.h
 recmac.o: $(ARBHOME)/INCLUDE/FileContent.h
 recmac.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -214,6 +215,7 @@ trackers.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 trackers.o: $(ARBHOME)/INCLUDE/cb.h
 trackers.o: $(ARBHOME)/INCLUDE/cbtypes.h
 trackers.o: $(ARBHOME)/INCLUDE/cxxforward.h
+trackers.o: $(ARBHOME)/INCLUDE/downcast.h
 trackers.o: $(ARBHOME)/INCLUDE/dupstr.h
 trackers.o: $(ARBHOME)/INCLUDE/gccver.h
 trackers.o: $(ARBHOME)/INCLUDE/smartptr.h

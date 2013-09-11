@@ -1,5 +1,5 @@
 #Simple makefile to build muscle inside ARB
-#The super long SOURCES list could be avoided if all .cpp files of muscle would compile…
+#The super long SOURCES list could be avoided if all .cpp files of muscle would compile...
 #By Arne Boeckmann (aboeckma@mpi-bremen.de)
 
 CXX ?= g++

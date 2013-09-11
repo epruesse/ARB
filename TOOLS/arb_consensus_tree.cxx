@@ -66,7 +66,7 @@ static char *create_tree_name(const char *savename) {
         const char *ldot = strrchr(savename, '.');
 
         tree_name = ldot ? GB_strpartdup(savename, ldot-1) : strdup(savename);
-        if (tree_name[0] == 0) freedup(tree_name, "tree_consense");
+        if (tree_name[0] == 0) freedup(tree_name, "tree_consensus");
     }
 
     // make sure tree name starts with 'tree_'
@@ -152,7 +152,7 @@ int ARB_main(int argc, char *argv[]) {
             GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, species_count, 1.0);
 
             if (!cons_tree) {
-                error = GBS_global_string("Failed to build consense tree (Reason: %s)", error);
+                error = GBS_global_string("Failed to build consensus tree (Reason: %s)", error);
             }
             else {
                 size_t leafs   = GBT_count_leafs(cons_tree);
@@ -165,7 +165,7 @@ int ARB_main(int argc, char *argv[]) {
                     error = save_tree_as_newick(cons_tree, savename);
                 }
                 else {
-                    printf("sucessfully created consense tree\n"
+                    printf("sucessfully created consensus tree\n"
                            "(no savename specified -> tree not saved)\n");
                 }
                 GBT_delete_tree(cons_tree);
@@ -454,7 +454,7 @@ void TEST_treeIO_stable() {
                                                                save_branchlengths ? "Len" : "",
                                                                quoteMode);
 
-                        TEST_ANNOTATE_ASSERT(GBS_global_string("for paramID='%s'", paramID));
+                        TEST_ANNOTATE(GBS_global_string("for paramID='%s'", paramID));
 
                         GB_ERROR export_error = TREE_write_Newick(gb_main, treename, NULL, save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode, outfile);
                         TEST_EXPECT_NULL(export_error);
@@ -537,7 +537,7 @@ void TEST_treeIO_stable() {
             }
         }
     }
-    TEST_ANNOTATE_ASSERT(NULL);
+    TEST_ANNOTATE(NULL);
 
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile));
     free(outfile);

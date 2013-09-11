@@ -126,9 +126,11 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/attributes.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/cxxforward.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/downcast.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/dupstr.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/gccver.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/smartptr.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/static_assert.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SaiProbeVisualization.o: probe_match_parser.hxx

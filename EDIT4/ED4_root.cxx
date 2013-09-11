@@ -265,7 +265,7 @@ void TEST_win_2_world() {
     TEST_EXPECT_WIN_UNFOLDED(x23, y23);
 
     for (int FACTOR = 1; FACTOR <= 100; FACTOR += 7) {
-        TEST_ANNOTATE_ASSERT(GBS_global_string("FACTOR=%i", FACTOR));
+        TEST_ANNOTATE(GBS_global_string("FACTOR=%i", FACTOR));
         int H1 = FACTOR* 10;
         int H2 = FACTOR* 40;
         int V1 = FACTOR* 20;

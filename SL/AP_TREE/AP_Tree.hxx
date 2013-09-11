@@ -176,22 +176,38 @@ public:
     float   left_angle;
     float   right_angle;
 
+    void reset_spread() {
+        spread = 0;
+    }
+    void reset_rotation() {
+        left_angle  = 0;
+        right_angle = 0;
+    }
+    void reset_linewidths() {
+        left_linewidth  = 0;
+        right_linewidth = 0;
+    }
+    void reset_layout() {
+        reset_spread();
+        reset_rotation();
+        reset_linewidths();
+    }
+
     void clear() {
+        reset_layout();
+
         grouped             = 0;
         hidden              = 0;
         has_marked_children = 0;
         callback_exists     = 0;
         gc                  = 0;
-        left_linewidth      = 0;
-        right_linewidth     = 0;
         leaf_sum            = 0;
         view_sum            = 0;
         tree_depth          = 0;
         min_tree_depth      = 0;
-        spread              = 0;
-        left_angle          = 0;
-        right_angle         = 0;
     }
+
+    void swap_son_layout();
 };
 
 struct AP_branch_members {
@@ -240,10 +256,13 @@ public:
     virtual void insert(AP_tree *new_brother);
     virtual void remove();                          // remove this+father (but do not delete)
     virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
-    void         swap_sons();                       // exchange sons
 
-    GB_ERROR     cantMoveTo(AP_tree *new_brother);  // use this to detect impossible moves
-    virtual void moveTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
+    void swap_sons();
+    void swap_featured_sons();
+    void rotate_subtree();
+
+    GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves
+    virtual void moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
 
     virtual void set_root();
 
@@ -310,7 +329,8 @@ public:
 
     void reset_spread();
     void reset_rotation();
-    void reset_child_linewidths();
+    void reset_linewidths();
+    void reset_layout();
 
     bool hasName(const char *Name) const {
         return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0;

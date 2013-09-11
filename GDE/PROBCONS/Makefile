@@ -1,5 +1,5 @@
 # Probcons for ARB
-# by Arne Böckmann (2013)
+# by Arne Boeckmann (2013)
 
 PROG  = PROBCONS
 

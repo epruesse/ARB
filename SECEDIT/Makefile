@@ -73,9 +73,11 @@ SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SEC_bonddef.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/smartptr.h
+SEC_bonddef.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SEC_db.o: SEC_abspos.hxx
@@ -427,6 +429,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_main.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 SEC_main.o: $(ARBHOME)/INCLUDE/gccver.h
+SEC_main.o: $(ARBHOME)/INCLUDE/mode_text.h
 SEC_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 SEC_main.o: $(ARBHOME)/INCLUDE/test_global.h

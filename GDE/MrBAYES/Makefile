@@ -1,5 +1,5 @@
 # MrBayes Makefile for ARB
-# by Arne Böckmann (2013)
+# by Arne Boeckmann (2013)
 
 PROG  = MrBAYES
 FOLDER =$(ARBHOME)/GDE/MrBAYES/mrbayes_3.2.1

@@ -201,6 +201,7 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GEN_gene.o: $(ARBHOME)/INCLUDE/downcast.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/items.h
@@ -410,6 +411,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/downcast.h
 GEN_map.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_map.o: $(ARBHOME)/INCLUDE/items.h
+GEN_map.o: $(ARBHOME)/INCLUDE/mode_text.h
 GEN_map.o: $(ARBHOME)/INCLUDE/rootAsWin.h
 GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/static_assert.h
@@ -494,6 +496,7 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/downcast.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/gccver.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/items.h
