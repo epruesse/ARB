@@ -148,10 +148,7 @@ void GBT_delete_tree(GBT_TREE*& tree)
             GBT_delete_tree(tree->leftson);
             GBT_delete_tree(tree->rightson);
         }
-        if (!tree->father) {
-            free(tree);
-        }
-        tree = NULL;
+        freenull(tree);
     }
 }
 
@@ -379,74 +376,76 @@ GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_
 //      tree read functions
 
 static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, size_t structure_size, int size_of_tree, GB_ERROR& error) {
-    if (error) return NULL;
+    GBT_TREE *node = NULL;
+    if (!error) {
+        gb_assert(structure_size >= sizeof(GBT_TREE));
 
-    GBT_TREE *node;
+        node = (GBT_TREE *)GB_calloc(1, (size_t)structure_size);
 
-    gb_assert(structure_size >= sizeof(GBT_TREE));
-    node = (GBT_TREE *)GB_calloc(1, (size_t)structure_size);
+        char  c = *((*data)++);
+        char *p1;
 
-    char  c = *((*data)++);
-    char *p1;
-
-    if (c=='R') {
-        p1 = strchr(*data, 1);
-        *(p1++) = 0;
-        node->remark_branch = strdup(*data);
-        c = *(p1++);
-        *data = p1;
-    }
+        if (c=='R') {
+            p1 = strchr(*data, 1);
+            *(p1++) = 0;
+            node->remark_branch = strdup(*data);
+            c = *(p1++);
+            *data = p1;
+        }
 
 
-    if (c=='N') {
-        p1 = (char *)strchr(*data, ',');
-        *(p1++) = 0;
-        node->leftlen = GB_atof(*data);
-        *data = p1;
-        p1 = (char *)strchr(*data, ';');
-        *(p1++) = 0;
-        node->rightlen = GB_atof(*data);
-        *data = p1;
-        if ((*startid < size_of_tree) && (node->gb_node = gb_tree_nodes[*startid])) {
-            GBDATA *gb_group_name = GB_entry(node->gb_node, "group_name");
-            if (gb_group_name) {
-                node->name = GB_read_string(gb_group_name);
+        if (c=='N') {
+            p1 = (char *)strchr(*data, ',');
+            *(p1++) = 0;
+            node->leftlen = GB_atof(*data);
+            *data = p1;
+            p1 = (char *)strchr(*data, ';');
+            *(p1++) = 0;
+            node->rightlen = GB_atof(*data);
+            *data = p1;
+            if ((*startid < size_of_tree) && (node->gb_node = gb_tree_nodes[*startid])) {
+                GBDATA *gb_group_name = GB_entry(node->gb_node, "group_name");
+                if (gb_group_name) {
+                    node->name = GB_read_string(gb_group_name);
+                }
+            }
+            (*startid)++;
+            node->leftson = gbt_read_tree_rek(data, startid, gb_tree_nodes, structure_size, size_of_tree, error);
+            if (!node->leftson) freenull(node);
+            else {
+                node->rightson = gbt_read_tree_rek(data, startid, gb_tree_nodes, structure_size, size_of_tree, error);
+                if (!node->rightson) {
+                    freenull(node->leftson);
+                    freenull(node);
+                }
+                else {
+                    node->leftson->father  = node;
+                    node->rightson->father = node;
+                }
             }
         }
-        (*startid)++;
-        node->leftson = gbt_read_tree_rek(data, startid, gb_tree_nodes, structure_size, size_of_tree, error);
-        if (!node->leftson) {
-            free(node);
-            return NULL;
-        }
-        node->rightson = gbt_read_tree_rek(data, startid, gb_tree_nodes, structure_size, size_of_tree, error);
-        if (!node->rightson) {
-            free(node);
-            return NULL;
-        }
-        node->leftson->father = node;
-        node->rightson->father = node;
-    }
-    else if (c=='L') {
-        node->is_leaf = true;
-        p1            = (char *)strchr(*data, 1);
+        else if (c=='L') {
+            node->is_leaf = true;
+            p1            = (char *)strchr(*data, 1);
 
-        gb_assert(p1);
-        gb_assert(p1[0] == 1);
+            gb_assert(p1);
+            gb_assert(p1[0] == 1);
 
-        *p1        = 0;
-        node->name = strdup(*data);
-        *data      = p1+1;
-    }
-    else {
-        if (!c) {
-            error = "Unexpected end of tree definition.";
+            *p1        = 0;
+            node->name = strdup(*data);
+            *data      = p1+1;
         }
         else {
-            error = GBS_global_string("Can't interpret tree definition (expected 'N' or 'L' - not '%c')", c);
+            if (!c) {
+                error = "Unexpected end of tree definition.";
+            }
+            else {
+                error = GBS_global_string("Can't interpret tree definition (expected 'N' or 'L' - not '%c')", c);
+            }
+            freenull(node);
         }
-        return NULL;
     }
+    gb_assert(contradicted(node, error));
     return node;
 }
 
@@ -480,12 +479,14 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
 
         startid[0] = 0;
         fbuf       = cptr[0] = GB_read_string(gb_ctree);
-        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, structure_size, (int)node_count, error);
+        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, structure_size, node_count, error);
+
         free (fbuf);
     }
 
     free(gb_tree_nodes);
 
+    gb_assert(contradicted(node, error));
     return node;
 }
 
@@ -1249,7 +1250,7 @@ void TEST_tree() {
             TEST_EXPECT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
 
             {
-                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", sizeof(GBT_TREE)); // @@@ leaks
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", sizeof(GBT_TREE));
 
                 TEST_REJECT_NULL(tree);
 
