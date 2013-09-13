@@ -145,7 +145,7 @@ void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL c
  * when making a widget.
  */
 void AW_window::callback(AW_cb * /* owner */ awcbs) {
-    // FIXME NOT IMPLEMENTED
+    FIXME("not implemented (AW_cb callback)")
 }
 
 /**
@@ -190,11 +190,8 @@ void AW_window::d_callback(const WindowCallback& wcb){
 
 
 AW_area_management* AW_window::get_area(int index) {
-    // FIXME: is index > AW_MAX_AREA a fault condition?
-    if(index < AW_MAX_AREA) {
-        return prvt->areas[index];
-    }   
-    return NULL;
+    aw_return_val_if_fail(index >= AW_MAX_AREA, NULL);
+    return prvt->areas[index];
 }
 
 /** 
