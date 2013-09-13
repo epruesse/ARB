@@ -145,7 +145,7 @@ void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL c
  * when making a widget.
  */
 void AW_window::callback(AW_cb * /* owner */ awcbs) {
-    FIXME("not implemented (AW_cb callback)")
+    FIXME("not implemented (AW_cb callback)");
 }
 
 /**
