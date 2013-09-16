@@ -510,43 +510,66 @@ struct _awar_float_to_int_mapper : public AW_awar_gvalue_mapper {
     }
 };
 
-
-void AW_window::create_toggle(const char *var_name, bool inverse, 
-                              const char *yes, const char *no, int width) {
-    AW_awar* awar = get_root()->awar_no_error(var_name);
+/**
+ * Creates a toggle button.
+ * 
+ * @param var_name The name of the awar that should be connected to this button
+ * @param yes Text/Icon for active toggle button
+ * @param no Text/Icon for inactive toggle button
+ * @param width
+ */
+void AW_window::create_toggle(const char *awar_name, const char *yes, const char *no, int width) {
+    AW_awar* awar = get_root()->awar_no_error(awar_name);
     aw_return_if_fail(awar != NULL);
-    aw_return_if_fail((yes==NULL) == (no==NULL)); // either both or none
+    aw_return_if_fail(yes != NULL);
+    aw_return_if_fail(no != NULL);
 
     GtkWidget* checkButton;
-    if (yes) {
-        // create our own switching labels toggle
-        
-        checkButton = gtk_toggle_button_new();
-        GtkWidget* no_label = make_label(no, width);
-        gtk_container_add(GTK_CONTAINER(checkButton), no_label);
-        
-        GtkWidget* bin = gtk_toggle_button_new();
-        GtkWidget* other_label = make_label(yes, width);
-        gtk_container_add(GTK_CONTAINER(bin), other_label);
 
-        gtk_widget_show_all(bin);
-
-        g_signal_connect(G_OBJECT(checkButton), "released", 
-                         G_CALLBACK(AW_switch_widget_child),
-                         (gpointer) bin);
-    }
-    else {
-        // just use a normal check button
-        checkButton = gtk_check_button_new();
-    }
+    // create our own switching labels toggle
+        
+    checkButton = gtk_toggle_button_new();
+    GtkWidget* no_label = make_label(no, width);
+    gtk_container_add(GTK_CONTAINER(checkButton), no_label);
     
-    awar->bind_value(G_OBJECT(checkButton), "active",
-                     inverse ? new _awar_inverse_bool_mapper() : NULL);
+    GtkWidget* bin = gtk_toggle_button_new();
+    GtkWidget* other_label = make_label(yes, width);
+    gtk_container_add(GTK_CONTAINER(bin), other_label);
+        
+    gtk_widget_show_all(bin);
 
+    g_signal_connect(G_OBJECT(checkButton), "released", 
+                     G_CALLBACK(AW_switch_widget_child),
+                     (gpointer) bin);
+   
+    awar->bind_value(G_OBJECT(checkButton), "active");
 
     // fixme handle action?
     
     put_with_label(checkButton);   
+}
+
+/**
+ * Creates a checkbox
+ * @param awar_name Name of AWAR to be connected to button
+ * @param inverse   Invert AWAR (checked box -> false)
+ */
+void AW_window::create_checkbox(const char* awar_name, bool inverse) {
+    AW_awar* awar = get_root()->awar_no_error(awar_name);
+    aw_return_if_fail(awar != NULL);
+
+    GtkWidget *checkBox = gtk_check_button_new();
+    awar->bind_value(G_OBJECT(checkBox), "active",
+                     inverse ? new _awar_inverse_bool_mapper() : NULL);
+    put_with_label(checkBox);
+}
+
+/**
+ * Creates checkbox with inverted truth value
+ * @param awar_name Name of AWAR to be connected to button
+ */
+void AW_window::create_checkbox_inverse(const char* var_name) {
+    create_checkbox(var_name, true); 
 }
 
 static gboolean noop_signal_handler(GtkWidget* /*wgt*/, gpointer /*user_data*/) {
