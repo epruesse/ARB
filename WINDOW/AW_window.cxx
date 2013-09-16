@@ -190,7 +190,7 @@ void AW_window::d_callback(const WindowCallback& wcb){
 
 
 AW_area_management* AW_window::get_area(int index) {
-    aw_return_val_if_fail(index >= AW_MAX_AREA, NULL);
+    aw_return_val_if_fail(index < AW_MAX_AREA, NULL);
     return prvt->areas[index];
 }
 
