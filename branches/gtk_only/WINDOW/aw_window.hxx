@@ -152,7 +152,6 @@ class AW_window : virtual Noncopyable {
     int top_indent_of_vertical_scrollbar;
 
 //    void all_menus_created() const;
-//    void create_toggle(const char *var_name, aw_toggle_data *tdata);
 
     AW_awar *awar_posx, *awar_posy, *awar_width, *awar_height;
 protected:
@@ -478,31 +477,10 @@ public:
     void   create_autosize_button(const char *macro_name, const char *label, const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
     GtkWidget* get_last_widget() const;
 
-    void create_progressBar(const char *awar); //creates a progress bar bound to the awar
-    
-    /**
-     * Creates a check box or toggle button.
-     * If yes and no are set a toggle button is created. When the button is
-     * activated the yes text is shown, otherwise the no text is shown.
-     * 
-     * If neither yes nor no is set a check box is created. The check box can
-     * be combined with a label using the at() commands.
-     * 
-     * @param var_name The name of the awar that should be connected to this button
-     * @param inverse If true the check box/toggle button behavior is inverted. (True becomes false and vice versa...)
-     * @param yes Text for active toggle button
-     * @param no Text for inactive toggle button
-     * @param width
-     */
-    void create_toggle(const char *var_name, bool inverse=false, const char* yes = NULL, 
-                       const char* no = NULL, int width = 0);  
-    void create_inverse_toggle(const char *var_name) { create_toggle(var_name, true); }
-    void create_toggle(const char *var_name, const char *nobitmap, const char *yesbitmap, int buttonWidth = 0) {
-        create_toggle(var_name, false, yesbitmap, nobitmap, buttonWidth);
-    }
-    void create_text_toggle(const char *var_name, const char *noText, const char *yesText, int buttonWidth = 0) {
-        create_toggle(var_name, false, yesText, noText, buttonWidth);
-    }
+    void create_progressBar(const char *awar); 
+    void create_checkbox(const char* var_name, bool inverse=false);
+    void create_checkbox_inverse(const char* var_name);
+    void create_toggle(const char *var_name, const char *yes, const char *no, int width = 0);  
 
     void create_input_field(const char *awar_name, int columns = 0);   // One line textfield
     void create_text_field(const char *awar_name, int columns = 20, int rows = 4);   // Multi line textfield
@@ -518,6 +496,16 @@ public:
     
     void set_close_action(AW_action*  action);
     void set_close_action(const char* action); 
+
+
+    // refactoring wrappers -- remove calls after @@@MERGE
+    void create_toggle(const char *var_name) { create_checkbox(var_name); }
+    void create_inverse_toggle(const char *var_name) { create_checkbox_inverse(var_name); }
+    void create_text_toggle(const char *var_name, const char *no, const char *yes, int width = 0) {
+        // yes and no are reversed!
+        create_toggle(var_name, yes, no, width);
+    }
+    
     
 private:
     
