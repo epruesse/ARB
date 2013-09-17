@@ -389,7 +389,8 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
             }
             else {
                 const char *first = firstChar(line);
-                if (first[0] == '-') {
+                if (first[0] == '-' || first[0] == '*') {
+                    h2x_assert(first != line);
 
                     pushParagraph(sec, paragraph); lines_in_paragraph = 0;
                     Line[first-line] = ' ';
@@ -450,6 +451,9 @@ void Helpfile::readHelp(istream& in, const string& filename) {
             if (!line) break;
 
             if (isEmptyOrComment(line)) {
+#if defined(WARN_MISSING_HELP)
+                check_TODO(line, read);
+#endif // WARN_MISSING_HELP
                 continue;
             }
 
@@ -560,14 +564,17 @@ static bool shouldReflow(const string& s, int& foundIndentation) {
                 if (lastIndent == -1) lastIndent                = thisIndent;
                 else if (lastIndent != thisIndent) equal_indent = false;
             }
-            if (*c == '.' || *c == ',')  state = DOT;
-            else state                      = CHAR;
+            state = (*c == '.' || *c == ',') ? DOT : CHAR;
         }
+    }
+
+    if (lastIndent<0) {
+        equal_indent = false;
     }
 
     if (equal_indent) {
         foundIndentation = lastIndent-1;
-        h2x_assert(lastIndent >= 0);
+        h2x_assert(foundIndentation >= 0);
     }
     return equal_indent;
 }
@@ -1381,17 +1388,24 @@ int ARB_main(int argc, char *argv[]) {
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
-static arb_test::match_expectation help_file_compiles(const char *helpname, const char *expected_title, const char *expected_error_part) {
+static arb_test::match_expectation help_file_compiles(const char *helpfile, const char *expected_title, const char *expected_error_part) {
     using namespace   arb_test;
     expectation_group expected;
 
-    string   helpfile = string("../../HELP_SOURCE/oldhelp/") + helpname;
-    ifstream in(helpfile.c_str());
+    ifstream in(helpfile);
 
     LineAttachedMessage *error = NULL;
 
     Helpfile help;
-    try { help.readHelp(in, helpfile); }
+    try {
+        help.readHelp(in, helpfile);
+        help.extractInternalLinks();
+
+        FILE *devnul = fopen("/dev/null", "wt");
+        if (!devnul) throw unattached_message("can't write to null device");
+        help.writeXML(devnul, "dummy");
+        fclose(devnul);
+    }
     catch (LineAttachedMessage& err) { error = new LineAttachedMessage(err); }
     catch (...)                      { error = new LineAttachedMessage(unattached_message("unknown exception")); }
 
@@ -1422,9 +1436,13 @@ static arb_test::match_expectation help_file_compiles(const char *helpname, cons
 #define HELP_FILE_COMPILE_ERROR(name,expError) TEST_EXPECTATION(help_file_compiles(name,NULL,expError))
 
 void TEST_hlp2xml_conversion() {
+    chdir("../../HELP_SOURCE");
+
     HELP_FILE_COMPILE_ERROR("akjsdlkad.hlp", "Can't read from"); // no such file
 
-    HELP_FILE_COMPILES("ad_align.hlp", "Alignment Administration"); // oldhelp/ad_align.hlp
+    HELP_FILE_COMPILES("oldhelp/ad_align.hlp", "Alignment Administration"); // oldhelp/ad_align.hlp
+
+    HELP_FILE_COMPILES("genhelp/copyright.hlp", "Copyrights"); // genhelp/copyright.hlp
 }
 
 #endif // UNIT_TESTS
