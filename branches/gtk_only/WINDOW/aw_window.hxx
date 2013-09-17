@@ -607,15 +607,6 @@ public:
     void init(AW_root *root, const char *wid, const char *windowname);
 };
 
-
-class AW_window_message : public AW_window {
-private:
-public:
-    AW_window_message();
-    ~AW_window_message() OVERRIDE;
-    void init(AW_root *root, const char *windowname, bool allow_close);
-};
-
 typedef struct aw_gc_manager *AW_gc_manager;
 
 
