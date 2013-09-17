@@ -355,6 +355,13 @@ inline const char *firstChar(const char *s) {
     return s;
 }
 
+inline bool is_startof_itemlist_element(const char *contentStart) { // @@@ rename param
+    return
+        (contentStart[0] == '-' ||
+         contentStart[0] == '*') &&
+        isspace(contentStart[1]);
+}
+
 static void parseSection(Section& sec, const char *line, int indentation, Reader& reader) {
     string paragraph          = line;
     int    lines_in_paragraph = 1;
@@ -388,12 +395,12 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
                 pushParagraph(sec, paragraph); lines_in_paragraph = 0;
             }
             else {
-                const char *first = firstChar(line);
-                if ((first[0] == '-' || first[0] == '*') && isspace(first[1])) {
-                    h2x_assert(first != line);
+                const char *firstNonWhite = firstChar(line);
+                if (is_startof_itemlist_element(firstNonWhite)) {
+                    h2x_assert(firstNonWhite != line);
 
                     pushParagraph(sec, paragraph); lines_in_paragraph = 0;
-                    Line[first-line] = ' ';
+                    Line[firstNonWhite-line] = ' ';
                 }
             }
 
