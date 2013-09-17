@@ -65,7 +65,6 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-EXP_interface.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -132,7 +131,6 @@ EXP_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-EXP_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -232,7 +230,6 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -296,7 +293,6 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -371,7 +367,6 @@ GEN_map.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-GEN_map.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -435,7 +430,6 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-GEN_nds.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_common.hxx

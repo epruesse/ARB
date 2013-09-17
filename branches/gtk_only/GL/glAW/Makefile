@@ -56,7 +56,6 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_common.hxx

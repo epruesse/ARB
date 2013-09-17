@@ -70,7 +70,6 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-DI_clusters.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -184,7 +183,6 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -237,7 +235,6 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-DI_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -317,7 +314,6 @@ DI_matr.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-DI_matr.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -457,7 +453,6 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx

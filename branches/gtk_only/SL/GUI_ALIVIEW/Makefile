@@ -63,7 +63,6 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -122,7 +121,6 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ColumnStat.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_common.hxx

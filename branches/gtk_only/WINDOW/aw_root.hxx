@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 class AW_selection_list;
-class AW_button;
 class AW_action;
 
 typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL); // @@@ [CB] similar to AW_Window_Creator

@@ -322,7 +322,6 @@ symlink_file ../WINDOW/aw_awar.hxx INCLUDE/aw_awar.hxx &&
 symlink_file ../WINDOW/aw_awar_defs.hxx INCLUDE/aw_awar_defs.hxx &&
 symlink_file ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink_file ../WINDOW/aw_base.hxx INCLUDE/aw_base.hxx &&
-symlink_file ../WINDOW/aw_button.hxx INCLUDE/aw_button.hxx &&
 symlink_file ../WINDOW/aw_cb_struct.hxx INCLUDE/aw_cb_struct.hxx &&
 symlink_file ../WINDOW/aw_clipable.hxx INCLUDE/aw_clipable.hxx  &&
 symlink_file ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&

@@ -18,7 +18,6 @@
 #include "aw_at.hxx"
 
 #include "aw_help.hxx"
-#include "aw_button.hxx"
 #include "aw_cb_struct.hxx"
 
 

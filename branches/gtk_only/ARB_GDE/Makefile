@@ -69,7 +69,6 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-GDE.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -164,7 +163,6 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_common.hxx

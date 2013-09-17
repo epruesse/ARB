@@ -52,7 +52,6 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-refentries.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_common.hxx

@@ -94,7 +94,6 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ST_quality.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -151,7 +150,6 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ST_window.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_common.hxx

@@ -81,7 +81,6 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AP_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -144,7 +143,6 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -207,7 +205,6 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -260,7 +257,6 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-PARS_debug.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -326,7 +322,6 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -386,7 +381,6 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -452,7 +446,6 @@ PARS_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-PARS_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx

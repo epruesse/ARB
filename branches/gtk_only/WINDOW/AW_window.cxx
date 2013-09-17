@@ -631,7 +631,6 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 
     gtk_entry_set_activates_default(GTK_ENTRY(entry), true);
     put_with_label(entry);
-    // get_root()->register_widget(entry, _at.widget_mask);
 }
 
 
@@ -684,9 +683,8 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
         */
         // FIXME get_root()->define_remote_command(prvt->d_callback);
     }
-    put_with_label(scrolled_entry);
-    // get_root()->register_widget(entry, _at.widget_mask);
-    
+
+    put_with_label(scrolled_entry);  
 }
 
 void AW_window::create_menu(const char *name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
@@ -707,8 +705,8 @@ void AW_window::close_sub_menu(){
 }
 
 AW_selection_list *AW_window::create_option_menu(const char *var_name, 
-                                                     const char *tmp_label, 
-                                                     const char *){
+                                                 const char *tmp_label, 
+                                                 const char *){
     AW_awar* awar = get_root()->awar_no_error(var_name);
     aw_return_val_if_fail(awar, NULL);
 
@@ -717,9 +715,6 @@ AW_selection_list *AW_window::create_option_menu(const char *var_name,
     GtkWidget *combo_box = gtk_combo_box_new();
     AW_selection_list *slist = new AW_selection_list(awar);
     slist->bind_widget(combo_box);
-
-
-    // get_root()->register_widget(combo_box, _at.widget_mask);
 
     prvt->combo_box = combo_box;
     prvt->selection_list = slist;
@@ -807,7 +802,6 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
                          (gpointer) prvt->d_callback);
     }
 
-    // get_root()->register_widget(tree, _at.widget_mask);
     put_with_label(scrolled_win);
     return slist;
 }
@@ -827,8 +821,6 @@ void AW_window::create_toggle_field(const char *var_name, int orientation /*= 0*
     prvt->toggle_field_awar_name = var_name;
 
     FIXME("bind awar  to widget");
-    
-    // get_root()->register_widget(prvt->toggle_field, _at.widget_mask);
 }
 
 void AW_window::create_toggle_field(const char *var_name, const char *labeli, const char *mnemonic) {
@@ -1021,8 +1013,6 @@ void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_act
     #if defined(DUMP_MENU_LIST)
         dumpOpenSubMenu(name);
     #endif // DUMP_MENU_LIST
-
-    // get_root()->register_widget(GTK_WIDGET(item), mask);
 }
 
 static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
