@@ -2,10 +2,10 @@
 #include "aw_assert.hxx"
 #include "aw_root.hxx"
 
-#include "gtk/gtk.h"
 
-
-/*
+/**
+ * Slot carrying the data for the individual callbacks.
+ *
  * We have to use a class hierarchy because the callbacks have a
  * non trivial destructor (making the use of union impossible) and
  * no default constructor (making the use of struct impossible).
@@ -17,6 +17,7 @@ struct Slot {
     virtual ~Slot() {}
 };
 
+/** Slot carrying a WindowCallback */
 struct WindowCallbackSlot : public Slot {
     WindowCallback cb;
     AW_window* aww;
@@ -33,6 +34,7 @@ struct WindowCallbackSlot : public Slot {
     }
 };
 
+/** Slot carrying a RootCallback */
 struct RootCallbackSlot : public Slot {
     RootCallback cb;
 
@@ -47,33 +49,13 @@ struct RootCallbackSlot : public Slot {
     }
 };
 
-struct AW_signal_g_signal_binding {
-    GObject    *object;
-    const char *sig_name;
-    gulong      handler_id;
-    AW_signal  *signal;
-
-    AW_signal_g_signal_binding(GtkWidget*, const char*);
-    AW_signal_g_signal_binding(const AW_signal_g_signal_binding&);
-    ~AW_signal_g_signal_binding();
-
-    AW_signal_g_signal_binding& operator=(const AW_signal_g_signal_binding&);
-    bool operator==(const AW_signal_g_signal_binding&) const;
-
-    void connect(AW_signal*);
-    void disconnect();
-    
-};
-
 struct AW_signal::Pimpl {
     std::list<Slot*> slots;
-    std::list<AW_signal_g_signal_binding> gsignals;
-    bool enabled;
+    bool enabled;            // false -> no signal propagation
     Pimpl() : enabled(true) {}
 };
 
-
-        
+     
 /** Default Constructor */
 AW_signal::AW_signal() 
     : prvt(new Pimpl)
@@ -94,15 +76,6 @@ AW_signal& AW_signal::operator=(const AW_signal& o) {
     for (std::list<Slot*>::iterator it = o.prvt->slots.begin();
          it != o.prvt->slots.end(); ++it) {
         prvt->slots.push_front((*it)->clone());
-    }
-    
-    // copy the upstream g_signals we are connected to
-    prvt->gsignals = o.prvt->gsignals;
-
-    // connect to g_signals
-    for (std::list<AW_signal_g_signal_binding>::iterator it = prvt->gsignals.begin();
-         it != prvt->gsignals.end(); ++it) {
-        it->connect(this);
     }
 
     return *this;
@@ -155,116 +128,6 @@ void AW_signal::clear() {
     prvt->slots.clear();
 }
 
-
-/////////////////////// binding to GTK / GLIB Signals ////////////////////////
-
-
-/**
- * Enables/disables this signal. Connected gtk widgets will have
- * their sensitivity changed accordingly.
- */
-void AW_signal::set_enabled(bool enable) {
-    prvt->enabled = enable;
-    
-    // change status of connected widgets
-    for (std::list<AW_signal_g_signal_binding>::iterator it = prvt->gsignals.begin();
-         it != prvt->gsignals.end(); ++it) {
-        if (GTK_IS_WIDGET(it->object)) {
-            gtk_widget_set_sensitive(GTK_WIDGET(it->object), enable);
-        }
-    }
-
-}
-
-/**
- * Connects a signal of a GTK widget to this signal.
- * (i.e. triggering of that signal triggers this signal
- */
-void AW_signal::bind(GtkWidget* widget, const char* sig) {
-    aw_return_if_fail(widget != NULL);
-    aw_return_if_fail(sig != NULL);
-    
-    prvt->gsignals.push_back(AW_signal_g_signal_binding(widget, sig));
-    prvt->gsignals.back().connect(this);
-}
-
-/**
- * Disconnect all signals coming from GtkWidget w
- */
-void AW_signal::unbind(GtkWidget* widget, const char *sig) {
-    aw_return_if_fail(widget != NULL);
-    aw_return_if_fail(sig != NULL);
-
-    prvt->gsignals.remove(AW_signal_g_signal_binding(widget, sig));
-}
-
-AW_signal_g_signal_binding::AW_signal_g_signal_binding(GtkWidget *w, const char* s) 
-    : object(G_OBJECT(w)),
-      sig_name(strdup(s)),
-      handler_id(0),
-      signal(NULL)
-{
-}
-
-AW_signal_g_signal_binding::AW_signal_g_signal_binding(const AW_signal_g_signal_binding& o) 
-    : object(o.object),
-      sig_name(strdup(o.sig_name)),
-      handler_id(0),
-      signal(NULL)
-{
-}
-
-AW_signal_g_signal_binding& 
-AW_signal_g_signal_binding::operator=(const AW_signal_g_signal_binding& o) {
-    disconnect();
-    object = o.object;
-    free((void*)sig_name);
-    sig_name = strdup(o.sig_name);
-    if (o.signal && o.handler_id) {
-        connect(o.signal);
-    }
-    return *this;
-}    
-
-static bool _aw_signal_received_from_widget(GtkWidget*, gpointer data) {
-    AW_signal* sig = (AW_signal*) data;
-    sig->emit();
-    return true; // hope this is right
-}
-
-static void _aw_signal_unref_widget(void* data, GObject* obj) {
-    AW_signal_g_signal_binding* binding = (AW_signal_g_signal_binding*) data;
-    binding->handler_id = 0;
-    binding->signal->unbind(GTK_WIDGET(obj), binding->sig_name);
-}
-
-
-AW_signal_g_signal_binding::~AW_signal_g_signal_binding() {
-    disconnect();
-    free((void*)sig_name);
-}
-
-bool AW_signal_g_signal_binding::operator==(const AW_signal_g_signal_binding& o) const {
-    return object == o.object && strcmp(sig_name, o.sig_name);
-}
-
-void AW_signal_g_signal_binding::disconnect() {
-    if (!signal || !handler_id) return;
-    g_signal_handler_disconnect(object, handler_id);
-    g_object_weak_unref(object, _aw_signal_unref_widget, this);
-    signal = NULL;
-    handler_id = 0L;
-}
-
-void AW_signal_g_signal_binding::connect(AW_signal* s) {
-    if (signal) disconnect();
-    signal = s;
-
-    g_object_weak_ref(object, _aw_signal_unref_widget, this);
-
-    handler_id = g_signal_connect(object, sig_name, 
-                                  G_CALLBACK(_aw_signal_received_from_widget), s);
-}
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
