@@ -42,7 +42,7 @@ void AW_POPDOWN(AW_window *window){
  * CB wrapper for create_*_window calls to ensure that a window
  * is only created once.
  */
-void AW_POPUP(AW_window *window, AW_CL callback, AW_CL callback_data) {
+void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) {
     typedef AW_window* (*popup_cb_t)(AW_root*, AW_CL);
     typedef std::map<std::pair<popup_cb_t,AW_CL>, AW_window*> window_map;
 
@@ -368,39 +368,39 @@ bool AW_window::close_window_handler(GtkWidget*, GdkEvent*, gpointer data) {
 }
 
 /**
+ * Create a label
+ */
+void AW_window::create_label(const char* button_text) {
+    aw_return_if_fail(button_text != NULL);
+    
+    GtkWidget *labelw = make_label(button_text, _at.length_of_buttons);
+    put_with_label(labelw);
+}
+
+/**
  * Create a button or text display.
  * If a callback was given via at->callback(), creates a button;
  * otherwise creates a label.
  */ 
 void AW_window::create_button(const char *macro_name, const char *button_text, 
                               const char *mnemonic, const char */*color*/) {
-#if defined(DUMP_BUTTON_CREATION)
-    printf("------------------------------ Button '%s'\n", button_text);
-    printf("x_for_next_button=%i y_for_next_button=%i\n", _at.x_for_next_button, _at.y_for_next_button);
-#endif // DUMP_BUTTON_CREATION
+    if (prvt->action_template.size() == 0) {
+        FIXME("use create_label instead of create_button");
+        create_label(button_text);
+        return;
+    }
 
     GtkWidget *button_label, *button;
     button_label = make_label(button_text, _at.length_of_buttons, mnemonic);
 
-    gtk_widget_show(button_label);
-
-    // make 'button' a real button if we've got a callback to run on click
-    if (prvt->action_template.size() > 0) { 
-        AW_action *act = action_register(macro_name);
+    AW_action *act = action_register(macro_name);
         
-        if (button_text) act->set_label(button_text); // FIXME Mnemonic
+    if (button_text) act->set_label(button_text); // FIXME Mnemonic
 
-        button = gtk_button_new();
-        gtk_container_add(GTK_CONTAINER(button), button_label);
+    button = gtk_button_new();
+    gtk_container_add(GTK_CONTAINER(button), button_label);
        
-        act->bind(button, "clicked");
-    } 
-    else {
-        button = button_label;
-#if defined(DEVEL_RALF) && 1
-        aw_assert(!macro_name); // please pass NULL for buttons w/o callback
-#endif
-    }
+    act->bind(button, "clicked");
 
     bool do_highlight = _at.highlight;
     put_with_label(button);
