@@ -372,8 +372,16 @@ bool AW_window::close_window_handler(GtkWidget*, GdkEvent*, gpointer data) {
  */
 void AW_window::create_label(const char* button_text) {
     aw_return_if_fail(button_text != NULL);
-    
+
     GtkWidget *labelw = make_label(button_text, _at.length_of_buttons);
+
+    if (get_root()->label_is_awar(button_text)) {
+        GtkWidget *frame = gtk_frame_new(NULL);
+        gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_ETCHED_IN);
+        gtk_container_add(GTK_CONTAINER(frame), labelw);
+        labelw = frame;
+    }
+
     put_with_label(labelw);
 }
 
