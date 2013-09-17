@@ -26,6 +26,10 @@ TOOLS += arb_test
 endif
 endif
 
+# ------------------------------------------------------------
+# if you change lib-dependencies here,
+# please update corresponding definitions in ../BINDEP/
+
 LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB)
 LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a
 LIBS_ARB_READ_TREE      := ../SL/TREE_READ/TREE_READ.a
