@@ -121,7 +121,7 @@ void AW_window::sens_mask(AW_active mask){
  * when making a widget.
  */
 void AW_window::callback(void (*f)(AW_window*)){
-    prvt->action_template.connect(makeWindowCallback(f), this);
+    prvt->action_template.clicked.connect(makeWindowCallback(f), this);
 }
 
 /**
@@ -129,7 +129,7 @@ void AW_window::callback(void (*f)(AW_window*)){
  * when making a widget.
  */
 void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
-    prvt->action_template.connect(makeWindowCallback(f, cd1), this);
+    prvt->action_template.clicked.connect(makeWindowCallback(f, cd1), this);
 }
 
 /**
@@ -137,7 +137,7 @@ void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
  * when making a widget.
  */
 void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    prvt->action_template.connect(makeWindowCallback(f, cd1, cd2), this);
+    prvt->action_template.clicked.connect(makeWindowCallback(f, cd1, cd2), this);
 }
 
 /**
@@ -153,7 +153,7 @@ void AW_window::callback(AW_cb * /* owner */ awcbs) {
  * when making a widget.
  */
 void AW_window::callback(const WindowCallback& wcb){
-    prvt->action_template.connect(wcb, this);
+    prvt->action_template.clicked.connect(wcb, this);
 }
 
 /**
@@ -161,7 +161,7 @@ void AW_window::callback(const WindowCallback& wcb){
  * when making a widget.
  */
 void AW_window::d_callback(void (*f)(AW_window*)) {
-    prvt->action_template.dclick.connect(makeWindowCallback(f), this);
+    prvt->action_template.dclicked.connect(makeWindowCallback(f), this);
 }
 
 /**
@@ -169,7 +169,7 @@ void AW_window::d_callback(void (*f)(AW_window*)) {
  * when making a widget.
  */
 void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
-    prvt->action_template.dclick.connect(makeWindowCallback(f, cd1), this);
+    prvt->action_template.dclicked.connect(makeWindowCallback(f, cd1), this);
 }
 
 /**
@@ -177,7 +177,7 @@ void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
  * when making a widget.
  */
 void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    prvt->action_template.dclick.connect(makeWindowCallback(f, cd1, cd2), this);
+    prvt->action_template.dclicked.connect(makeWindowCallback(f, cd1, cd2), this);
 }
 
 /**
@@ -185,7 +185,7 @@ void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL
  * when making a widget.
  */
 void AW_window::d_callback(const WindowCallback& wcb){
-    prvt->action_template.dclick.connect(wcb, this);
+    prvt->action_template.dclicked.connect(wcb, this);
 }
 
 
@@ -352,7 +352,7 @@ bool AW_window::close_window_handler(GtkWidget*, GdkEvent*, gpointer data) {
     AW_window *w = (AW_window*)data;
 
     if (w->prvt->close_action) {
-        w->prvt->close_action->emit();
+        w->prvt->close_action->user_clicked();
     }
  
     /* If you return FALSE in the "delete-event" signal handler,
@@ -384,7 +384,7 @@ void AW_window::create_label(const char* button_text) {
  */ 
 void AW_window::create_button(const char *macro_name, const char *button_text, 
                               const char *mnemonic, const char */*color*/) {
-    if (prvt->action_template.size() == 0) {
+    if (prvt->action_template.clicked.size() == 0) {
         FIXME("use create_label instead of create_button");
         create_label(button_text);
         return;
@@ -576,6 +576,11 @@ static gboolean noop_signal_handler(GtkWidget* /*wgt*/, gpointer /*user_data*/) 
     return true; // stop signal
 }
 
+/**
+ * Creates a data entry field. 
+ * If the AWAR is numeric, creates a spinner, if text creates a 
+ * single line text field.
+ */
 void AW_window::create_input_field(const char *var_name,   int columns) {
     AW_awar* awar = get_root()->awar_no_error(var_name);
     aw_return_if_fail(awar != NULL);
@@ -961,7 +966,7 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
     act->set_label(labeli);
     act->set_help(helpText);
     act->set_active_mask(mask);
-    act->connect(wcb, this);
+    act->clicked.connect(wcb, this);
 
     GtkWidget *wlabel    = make_label(labeli, 0, mnemonic);
     GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);

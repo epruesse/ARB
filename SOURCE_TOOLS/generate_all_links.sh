@@ -335,6 +335,7 @@ symlink_file ../WINDOW/aw_device_gtk.hxx INCLUDE/aw_device_gtk.hxx &&
 symlink_file ../WINDOW/aw_device_impl.hxx INCLUDE/aw_device_impl.hxx &&
 symlink_file ../WINDOW/aw_device_print.hxx INCLUDE/aw_device_print.hxx &&
 symlink_file ../WINDOW/aw_device_size.hxx INCLUDE/aw_device_size.hxx &&
+symlink_file ../WINDOW/aw_element.hxx INCLUDE/aw_element.hxx &&
 symlink_file ../WINDOW/aw_edit.hxx INCLUDE/aw_edit.hxx &&
 symlink_file ../WINDOW/aw_file.hxx INCLUDE/aw_file.hxx &&
 symlink_file ../WINDOW/aw_font_group.hxx INCLUDE/aw_font_group.hxx &&
