@@ -473,8 +473,9 @@ public:
     void d_callback(const WindowCallback& cb);
     // *** create the buttons ********
 
-    void   create_button(const char *macro_name, const char *label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
-    void   create_autosize_button(const char *macro_name, const char *label, const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
+    void create_label(const char* label);
+    void create_button(const char *macro_name, const char *label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
+    void create_autosize_button(const char *macro_name, const char *label, const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
     GtkWidget* get_last_widget() const;
 
     void create_progressBar(const char *awar); 
