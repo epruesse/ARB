@@ -26,8 +26,8 @@ AW_dialog::AW_dialog()
     prvt->dialog = GTK_DIALOG(gtk_dialog_new());
     gtk_window_set_position(GTK_WINDOW(prvt->dialog), GTK_WIN_POS_MOUSE);
     gtk_window_set_modal(GTK_WINDOW(prvt->dialog), true);
-    gtk_window_set_deletable(GTK_WINDOW(prvt->dialog), false); //hide the close button if possible (most window managers do not allow this)
-
+    gtk_window_set_deletable(GTK_WINDOW(prvt->dialog), false); 
+    gtk_container_set_border_width(GTK_CONTAINER(prvt->dialog), 5); // @@@STYLE
 }
 
 AW_dialog::~AW_dialog() {
