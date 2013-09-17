@@ -58,7 +58,6 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -119,7 +118,6 @@ ad_ext.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ad_ext.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -186,7 +184,6 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ad_spec.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -253,7 +250,6 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ad_transpro.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -319,7 +315,6 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ad_trees.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -387,7 +382,6 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AP_consensus.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -444,7 +438,6 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -503,7 +496,6 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -565,7 +557,6 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -625,7 +616,6 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -689,7 +679,6 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -752,7 +741,6 @@ NT_cb.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_cb.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -813,7 +801,6 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -917,7 +904,6 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_edconf.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -989,7 +975,6 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -1077,7 +1062,6 @@ NT_import.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_import.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1141,7 +1125,6 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1201,7 +1184,6 @@ NT_join.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_join.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1270,7 +1252,6 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1338,7 +1319,6 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_sort.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1399,7 +1379,6 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -1488,7 +1467,6 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_validManual.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_common.hxx

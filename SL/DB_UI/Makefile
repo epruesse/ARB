@@ -50,7 +50,6 @@ info_window.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-info_window.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -110,7 +109,6 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ui_species.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_common.hxx

@@ -54,7 +54,6 @@ dbserver.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-dbserver.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -66,6 +65,7 @@ dbserver.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+dbserver.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -111,7 +111,6 @@ macro_gui.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-macro_gui.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_common.hxx

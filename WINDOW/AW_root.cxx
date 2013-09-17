@@ -217,6 +217,7 @@ AW_action* AW_root::action_register(const char* action_id,
  * GTK does not have this type of focus.
  **/ 
 void AW_root::apply_focus_policy(bool /*follow_mouse*/) {
+    // @@@MERGE remove
 }
 
 /**

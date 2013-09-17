@@ -78,7 +78,6 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_common.hxx

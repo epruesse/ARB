@@ -109,7 +109,6 @@ SEC_db.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-SEC_db.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -181,7 +180,6 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -390,7 +388,6 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-SEC_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -461,7 +458,6 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-SEC_paint.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -653,7 +649,6 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_common.hxx

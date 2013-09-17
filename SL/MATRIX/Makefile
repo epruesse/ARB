@@ -54,7 +54,6 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AP_matrix.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_common.hxx

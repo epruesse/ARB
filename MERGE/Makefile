@@ -83,7 +83,6 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_alignment.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -142,7 +141,6 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -201,7 +199,6 @@ MG_configs.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_configs.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -257,7 +254,6 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -317,7 +313,6 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -379,7 +374,6 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -441,7 +435,6 @@ MG_names.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_names.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -501,7 +494,6 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_preserves.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -565,7 +557,6 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_species.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
@@ -629,7 +620,6 @@ MG_trees.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_trees.o: $(ARBHOME)/INCLUDE/aw_button.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_common.hxx
