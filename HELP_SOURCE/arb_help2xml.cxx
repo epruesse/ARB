@@ -107,6 +107,9 @@ public:
     size_t Lineno() const { return lineno; }
 };
 
+const size_t NO_LINENUMBER_INFO = -1U;
+
+LineAttachedMessage unattached_message(const string& message) { return LineAttachedMessage(message, NO_LINENUMBER_INFO); }
 
 static list<LineAttachedMessage> warnings;
 
@@ -279,7 +282,7 @@ private:
     string        inputfile;
 
 public:
-    Helpfile() : title(SEC_FAKE, -1U) {}
+    Helpfile() : title(SEC_FAKE, NO_LINENUMBER_INFO) {}
     virtual ~Helpfile() {}
 
     void readHelp(istream& in, const string& filename);
@@ -356,7 +359,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
     string paragraph          = line;
     int    lines_in_paragraph = 1;
 
-    if (sec.StartLineno() == -1U) {
+    if (sec.StartLineno() == NO_LINENUMBER_INFO) {
         sec.set_StartLineno(reader.getLineNo());
     }
 
@@ -387,6 +390,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
             else {
                 const char *first = firstChar(line);
                 if (first[0] == '-') {
+
                     pushParagraph(sec, paragraph); lines_in_paragraph = 0;
                     Line[first-line] = ' ';
                 }
@@ -428,6 +432,8 @@ inline void check_duplicates(const string& link, const Links& uplinks, const Lin
 }
 
 void Helpfile::readHelp(istream& in, const string& filename) {
+    if (!in.good()) throw unattached_message(strf("Can't read from '%s'", filename.c_str()));
+
     Reader read(in);
 
     inputfile = filename; // remember file read (for comment)
@@ -1287,7 +1293,7 @@ static void show_err(const string& err, size_t lineno, const string& helpfile) {
     if (err.find(helpfile+':') != string::npos) {
         cerr << err;
     }
-    else if (lineno == -1U) {
+    else if (lineno == NO_LINENUMBER_INFO) {
         cerr << helpfile << ":1: [in unknown line] " << err;
     }
     else {
@@ -1310,62 +1316,61 @@ static void show_warnings_and_error(const LineAttachedMessage& error, const stri
     show_err(error, helpfile);
 }
 
-static void show_warnings_and_error(const string& error, const string& helpfile) {
-    show_warnings_and_error(LineAttachedMessage(error, -1U), helpfile);
-}
-
 int ARB_main(int argc, char *argv[]) {
+    if (argc != 3) {
+        cerr << "Usage: arb_help2xml <ARB helpfile> <XML output>\n";
+        return EXIT_FAILURE;
+    }
+
     Helpfile help;
     string   arb_help;
 
     try {
-        if (argc != 3) {
-            cerr << "Usage: arb_help2xml <ARB helpfile> <XML output>\n";
-            return EXIT_FAILURE;
-        }
+        try {
+            arb_help          = argv[1];
+            string xml_output = argv[2];
 
-        arb_help          = argv[1];
-        string xml_output = argv[2];
+            {
+                ifstream in(arb_help.c_str());
+                help.readHelp(in, arb_help);
+            }
 
-        {
-            ifstream in(arb_help.c_str());
-            help.readHelp(in, arb_help);
-        }
+            help.extractInternalLinks();
 
-        help.extractInternalLinks();
+            {
+                FILE *out = std::fopen(xml_output.c_str(), "wt");
+                if (!out) throw string("Can't open '")+xml_output+'\'';
 
-        {
-            FILE *out = std::fopen(xml_output.c_str(), "wt");
-            if (!out) throw string("Can't open '")+xml_output+'\'';
+                try {
+                    // arb_help contains 'oldhelp/name.hlp'
+                    size_t slash = arb_help.find('/');
+                    size_t dot   = arb_help.find_last_of('.');
 
-            try {
-                // arb_help contains 'oldhelp/name.hlp'
-                size_t slash = arb_help.find('/');
-                size_t dot   = arb_help.find_last_of('.');
+                    if (slash == string::npos || dot == string::npos) {
+                        throw string("parameter <ARB helpfile> has to be in format 'oldhelp/name.hlp' (not '"+arb_help+"')");
+                    }
 
-                if (slash == string::npos || dot == string::npos) {
-                    throw string("parameter <ARB helpfile> has to be in format 'oldhelp/name.hlp' (not '"+arb_help+"')");
+                    string page_name(arb_help, slash+1, dot-slash-1);
+                    help.writeXML(out, page_name);
+                    fclose(out);
                 }
+                catch (...) {
+                    fclose(out);
+                    remove(xml_output.c_str());
+                    throw;
+                }
+            }
 
-                string page_name(arb_help, slash+1, dot-slash-1);
-                help.writeXML(out, page_name);
-                fclose(out);
-            }
-            catch (...) {
-                fclose(out);
-                remove(xml_output.c_str());
-                throw;
-            }
+            show_warnings(arb_help);
+
+            return EXIT_SUCCESS;
         }
-
-        show_warnings(arb_help);
-
-        return EXIT_SUCCESS;
+        catch (string& err)      { throw unattached_message(err); }
+        catch (const char * err) { throw unattached_message(err); }
+        catch (...)              { throw unattached_message("unknown exception in arb_help2xml"); }
     }
     catch (LineAttachedMessage& err) { show_warnings_and_error(err, arb_help); }
-    catch (string& err)              { show_warnings_and_error(err, arb_help); }
-    catch (const char * err)         { show_warnings_and_error(err, arb_help); }
-    catch (...)                      { show_warnings_and_error("unknown exception in arb_help2xml", arb_help); }
+    catch (...) { h2x_assert(0); }
 
     return EXIT_FAILURE;
 }
@@ -1376,19 +1381,50 @@ int ARB_main(int argc, char *argv[]) {
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
-void TEST_hlp2xml_conversion() {
-    // oldhelp/ad_align.hlp
-    string   arb_help = "../../HELP_SOURCE/oldhelp/ad_align.hlp";
-    ifstream in(arb_help.c_str());
+static arb_test::match_expectation help_file_compiles(const char *helpname, const char *expected_title, const char *expected_error_part) {
+    using namespace   arb_test;
+    expectation_group expected;
+
+    string   helpfile = string("../../HELP_SOURCE/oldhelp/") + helpname;
+    ifstream in(helpfile.c_str());
+
+    LineAttachedMessage *error = NULL;
 
     Helpfile help;
-    help.readHelp(in, arb_help);
+    try { help.readHelp(in, helpfile); }
+    catch (LineAttachedMessage& err) { error = new LineAttachedMessage(err); }
+    catch (...)                      { error = new LineAttachedMessage(unattached_message("unknown exception")); }
 
-    Section        title   = help.get_title();
-    const Strings& strings = title.Content();
+    if (expected_error_part) {
+        expected.add(that(error).does_differ_from_NULL());
+        if (error) expected.add(that(error->Message()).does_contain(expected_error_part));
+    }
+    else {
+        expected.add(that(error).is_equal_to_NULL());
+        if (!error) {
+            Section        title         = help.get_title();
+            const Strings& title_strings = title.Content();
 
-    TEST_EXPECT_EQUAL(strings.front().c_str(), "Alignment Administration");
-    TEST_EXPECT_EQUAL(strings.size(), 1);
+            expected.add(that(title_strings.front()).is_equal_to(expected_title));
+            expected.add(that(title_strings.size()).is_equal_to(1));
+        }
+        else {
+            show_warnings_and_error(*error, helpfile);
+        }
+    }
+
+    delete error;
+
+    return all().ofgroup(expected);
+}
+
+#define HELP_FILE_COMPILES(name,expTitle)      TEST_EXPECTATION(help_file_compiles(name,expTitle,NULL))
+#define HELP_FILE_COMPILE_ERROR(name,expError) TEST_EXPECTATION(help_file_compiles(name,NULL,expError))
+
+void TEST_hlp2xml_conversion() {
+    HELP_FILE_COMPILE_ERROR("akjsdlkad.hlp", "Can't read from"); // no such file
+
+    HELP_FILE_COMPILES("ad_align.hlp", "Alignment Administration"); // oldhelp/ad_align.hlp
 }
 
 #endif // UNIT_TESTS
