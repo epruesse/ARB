@@ -22,6 +22,7 @@
 #include <cstring>
 #include <climits>
 
+#include <unistd.h>
 #include <sys/stat.h>
 
 using namespace std;
