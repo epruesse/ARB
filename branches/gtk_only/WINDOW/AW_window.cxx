@@ -721,34 +721,32 @@ AW_selection_list *AW_window::create_option_menu(const char *var_name,
     return slist;
 }
 
-void AW_window::insert_option(const char *on, const char *mn, const char *vv, const char *noc) {
-    insert_option_internal(on, mn, vv, noc, false); 
+void AW_window::insert_option(const char *on, const char *mn, const char *vv) {
+    insert_option_internal(on, mn, vv, false); 
 }
-void AW_window::insert_default_option(const char *on, const char *mn, const char *vv, const char *noc) { 
-    insert_option_internal(on, mn, vv, noc, true); 
+void AW_window::insert_default_option(const char *on, const char *mn, const char *vv) { 
+    insert_option_internal(on, mn, vv, true); 
 }
-void AW_window::insert_option(const char *on, const char *mn, int vv, const char *noc) { 
-    insert_option_internal(on, mn, vv, noc, false);
+void AW_window::insert_option(const char *on, const char *mn, int vv) { 
+    insert_option_internal(on, mn, vv, false);
 }
-void AW_window::insert_default_option(const char *on, const char *mn, int vv, const char *noc) { 
-    insert_option_internal(on, mn, vv, noc, true); 
+void AW_window::insert_default_option(const char *on, const char *mn, int vv) { 
+    insert_option_internal(on, mn, vv, true); 
 }
-void AW_window::insert_option(const char *on, const char *mn, float vv, const char *noc) { 
-    insert_option_internal(on, mn, vv, noc, false); 
+void AW_window::insert_option(const char *on, const char *mn, float vv) { 
+    insert_option_internal(on, mn, vv, false); 
 }
-void AW_window::insert_default_option(const char *on, const char *mn, float vv, const char *noc) { 
-    insert_option_internal(on, mn, vv, noc, true); 
+void AW_window::insert_default_option(const char *on, const char *mn, float vv) { 
+    insert_option_internal(on, mn, vv, true); 
 }
 
 
 template <class T>
 void AW_window::insert_option_internal(const char *option_name, const char */*mnemonic*/, 
-                                       T var_value, const char */*name_of_color*/, 
+                                       T var_value, 
                                        bool default_option) {
     aw_return_if_fail(prvt->selection_list != NULL); //current option menu has to be set
     //aw_return_if_fail(prvt->selection_list->variable_type == AW_TypeCheck::getVarType(var_value)); //type missmatch
-    
-    FIXME("background color not implemented");
     FIXME("check for distinct per-option callbacks");
     FIXME("setting sensitivity of option menu entries not implemented");
     

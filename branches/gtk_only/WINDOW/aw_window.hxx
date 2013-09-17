@@ -510,7 +510,7 @@ public:
 private:
     
     template <class T>
-    void insert_option_internal(const char *choice_label, const char *mnemonic, T var_value,  const char *name_of_color, bool default_option);
+    void insert_option_internal(const char *choice_label, const char *mnemonic, T var_value, bool default_option);
 
     template <class T>
     void insert_toggle_internal(const char *toggle_label, const char *mnemonic, T var_value, bool default_toggle);
@@ -521,14 +521,14 @@ private:
 public:
 
     // for string
-    void insert_option         (const char *choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0);  // for string
-    void insert_default_option (const char *choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0);
+    void insert_option         (const char *choice_label, const char *mnemonic, const char *var_value);  // for string
+    void insert_default_option (const char *choice_label, const char *mnemonic, const char *var_value);
     // for int
-    void insert_option         (const char *choice_label, const char *mnemonic, int var_value,          const char *name_of_color = 0);  // for int
-    void insert_default_option (const char *choice_label, const char *mnemonic, int var_value,          const char *name_of_color = 0);
+    void insert_option         (const char *choice_label, const char *mnemonic, int var_value);  // for int
+    void insert_default_option (const char *choice_label, const char *mnemonic, int var_value);
     // for float
-    void insert_option         (const char *choice_label, const char *mnemonic, float var_value,        const char *name_of_color = 0);  // for float
-    void insert_default_option (const char *choice_label, const char *mnemonic, float var_value,        const char *name_of_color = 0);
+    void insert_option         (const char *choice_label, const char *mnemonic, float var_value);  // for float
+    void insert_default_option (const char *choice_label, const char *mnemonic, float var_value);
 
     void update_option_menu();
 
