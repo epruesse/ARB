@@ -359,7 +359,7 @@ inline bool is_startof_itemlist_element(const char *contentStart) { // @@@ renam
     return
         (contentStart[0] == '-' ||
          contentStart[0] == '*') &&
-        isspace(contentStart[1]);
+        isspace(contentStart[1] && !isspace(contentStart[2]));
 }
 
 static void parseSection(Section& sec, const char *line, int indentation, Reader& reader) {
