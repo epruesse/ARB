@@ -389,7 +389,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
             }
             else {
                 const char *first = firstChar(line);
-                if (first[0] == '-' || first[0] == '*') {
+                if ((first[0] == '-' || first[0] == '*') && isspace(first[1])) {
                     h2x_assert(first != line);
 
                     pushParagraph(sec, paragraph); lines_in_paragraph = 0;
