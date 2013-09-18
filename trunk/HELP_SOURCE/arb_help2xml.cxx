@@ -903,66 +903,66 @@ size_t ParagraphTree::embeddedCounter = 0;
 
 ParagraphTree* ParagraphTree::format_enums() {
     // reformats tree such that all enums are brothers
-    ParagraphTree *enum_this = firstEnumerated();
+    ParagraphTree *curr_enum = firstEnumerated();
 
-    if (enum_this) {        // we have enumeration
-        ParagraphTree *before_enum = predeccessor(enum_this);
+    if (curr_enum) {        // we have enumeration
+        ParagraphTree * const prev_enum = predeccessor(curr_enum);
 
-        if (before_enum) {
-            h2x_assert(before_enum->son == 0);
-            before_enum->son     = before_enum->brother;
-            before_enum->brother = 0;
+        if (prev_enum) {
+            h2x_assert(prev_enum->son == 0);
+            prev_enum->son     = prev_enum->brother;
+            prev_enum->brother = 0;
         }
 
-        for (ParagraphTree *enum_next = enum_this->nextEnumerated();
+        for (ParagraphTree *enum_next = curr_enum->nextEnumerated();
              enum_next;
-             enum_this = enum_next, enum_next = enum_this->nextEnumerated())
+             curr_enum = enum_next, enum_next = curr_enum->nextEnumerated())
         {
-            if (enum_next != enum_this->brother) {
-                h2x_assert(enum_this->son == 0);
-                enum_this->son     = enum_this->brother->removeTill(enum_next);
-                enum_this->brother = enum_next;
+            if (enum_next != curr_enum->brother) {
+                h2x_assert(curr_enum->son == 0);
+                curr_enum->son     = curr_enum->brother->removeTill(enum_next);
+                curr_enum->brother = enum_next;
             }
         }
 
-        // enum_this is the last enumeration
-        h2x_assert(!enum_this->son);
+        // curr_enum is the last enumeration
+        h2x_assert(!curr_enum->son);
 
-        if (enum_this->brother) { // there are more sections behind enum
-            ParagraphTree *after_enum = enum_this->firstWithSameOrLowerIndent(enum_this->indentation-1);
+        if (curr_enum->brother) { // there are more sections behind the current enum
+            ParagraphTree * const next_enum = curr_enum->firstWithSameOrLowerIndent(curr_enum->indentation-1);
 
-            if (after_enum) { // indent should go back after enum
-                h2x_assert(!enum_this->son);
+            if (next_enum) { // indent should go back after enum
+                h2x_assert(!curr_enum->son);
 
-                if (after_enum != enum_this->brother) {
-                    enum_this->son = enum_this->brother->removeTill(after_enum);
+                if (next_enum != curr_enum->brother) {
+                    curr_enum->son = curr_enum->brother->removeTill(next_enum);
                 }
-                enum_this->brother = 0;
+                curr_enum->brother = 0;
 
-                h2x_assert(before_enum);
-                h2x_assert(before_enum->brother == 0);
-                before_enum->brother = after_enum->format_enums();
+                h2x_assert(prev_enum);
+                h2x_assert(prev_enum->brother == 0);
+                prev_enum->brother = next_enum->format_enums();
             }
             else { // nothing after enum -> take all as children
-                h2x_assert(enum_this->son == 0);
-                enum_this->son     = enum_this->brother;
-                enum_this->brother = 0;
+                h2x_assert(curr_enum->son == 0);
+                curr_enum->son     = curr_enum->brother;
+                curr_enum->brother = 0;
             }
-            if (enum_this->son) enum_this->son = enum_this->son->format_enums();
+            if (curr_enum->son) curr_enum->son = curr_enum->son->format_enums();
         }
         else {
-            if (before_enum) {
-                if (before_enum->son) before_enum->son->append(before_enum->brother);
-                before_enum->brother = 0;
+            if (prev_enum) {
+                if (prev_enum->son) prev_enum->son->append(prev_enum->brother);
+                prev_enum->brother = 0;
             }
         }
 
-        if (enum_this->enumeration == 1) { // oops - only '1.' search for enum inside block
-            ParagraphTree *lookin = enum_this;
+        if (curr_enum->enumeration == 1) { // oops - only '1.' search for enum inside block
+            ParagraphTree *lookin = curr_enum;
             int            lookfor;
 
             for (lookfor = 2; ; ++lookfor) {
-                ParagraphTree *next_enum = lookin->extractEmbeddedEnum(lookfor);
+                ParagraphTree * const next_enum = lookin->extractEmbeddedEnum(lookfor);
                 if (!next_enum) break;
 
                 embeddedCounter++;
