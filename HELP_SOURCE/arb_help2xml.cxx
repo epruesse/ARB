@@ -112,25 +112,15 @@ const size_t NO_LINENUMBER_INFO = -1U;
 
 LineAttachedMessage unattached_message(const string& message) { return LineAttachedMessage(message, NO_LINENUMBER_INFO); }
 
-static list<LineAttachedMessage> warnings;
+// ------------------
+//      warnings
 
-inline LineAttachedMessage make_warning(const string& warning, size_t lineno) {
-    return LineAttachedMessage(string("Warning: ")+warning, lineno);
+static list<LineAttachedMessage> warnings;
+inline void add_warning(const LineAttachedMessage& laMsg) {
+    warnings.push_back(laMsg);
 }
 inline void add_warning(const string& warning, size_t lineno) {
-    warnings.push_back(make_warning(warning, lineno));
-}
-inline void preadd_warning(const string& warning, size_t lineno) {
-    LineAttachedMessage line_message = make_warning(warning, lineno);
-    if (warnings.size() < 2) {
-        warnings.push_front(line_message);
-    }
-    else {
-        LineAttachedMessage prev_message = warnings.back();
-        warnings.pop_back();
-        warnings.push_back(line_message);
-        warnings.push_back(prev_message);
-    }
+    add_warning(LineAttachedMessage(warning, lineno));
 }
 
 // ----------------------
@@ -356,7 +346,7 @@ inline const char *firstChar(const char *s) {
     return s;
 }
 
-inline bool is_startof_itemlist_element(const char *contentStart) { // @@@ rename param
+inline bool is_startof_itemlist_element(const char *contentStart) {
     return
         (contentStart[0] == '-' ||
          contentStart[0] == '*') &&
@@ -712,7 +702,7 @@ class ParagraphTree : virtual Noncopyable {
     long long enumeration;      // the value of the enumeration (undefined if !is_enumerated)
 
     bool reflow;                // should the paragraph be reflown ? (true if indentation is equal for all lines of text)
-    int  indentation;           // the real indentation of the black (after enumeration was removed)
+    int  indentation;           // the real indentation of the blank (behind removed enumeration)
 
     string text;                // text of the Section (containing linefeeds)
     size_t lineNo;              // line number where Paragraph starts
@@ -770,7 +760,7 @@ class ParagraphTree : virtual Noncopyable {
         }
 
         text    = correctIndentation(text, -indentation);
-        brother = buildParagraphTree(++begin, end, beginLineNo);
+        brother = buildParagraphTree(++begin, end, beginLineNo+1);
     }
 
 public:
@@ -877,14 +867,17 @@ private:
     }
     ParagraphTree *extractEmbeddedEnum(int lookfor) {
         size_t this_lineend = text.find('\n');
+        size_t line_offset  = 0;
 
         while (this_lineend != string::npos) {
+            ++line_offset;
+
             long long number;
-            string embedded = text.substr(this_lineend);
+            string    embedded = text.substr(this_lineend);
             if (startsWithNumber(embedded, number, false)) {
                 if (number == lookfor) {
                     text.erase(this_lineend);
-                    return buildNewParagraph(embedded, lineNo);
+                    return buildNewParagraph(embedded, lineNo+line_offset);
                 }
                 break;
             }
@@ -1220,7 +1213,7 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
     create_top_links(uplinks, "UP");
     create_top_links(references, "SUB");
     create_top_links(auto_references, "SUB");
-    
+
     {
         XML_Tag title_tag("TITLE");
         Strings& T = title.Content();
@@ -1321,16 +1314,17 @@ static void show_err(const string& err, size_t lineno, const string& helpfile) {
     }
     cerr << '\n';
 }
-static void show_err(const LineAttachedMessage& line_err, const string& helpfile) {
+inline void show_err(const LineAttachedMessage& line_err, const string& helpfile) {
     show_err(line_err.Message(), line_err.Lineno(), helpfile);
 }
-
-static void show_warnings(const string& helpfile) {
+inline void show_warning(const LineAttachedMessage& line_err, const string& helpfile) {
+    show_err(string("Warning: ")+line_err.Message(), line_err.Lineno(), helpfile);
+}
+inline void show_warnings(const string& helpfile) {
     for (list<LineAttachedMessage>::const_iterator wi = warnings.begin(); wi != warnings.end(); ++wi) {
-        show_err(*wi, helpfile);
+        show_warning(*wi, helpfile);
     }
 }
-
 static void show_warnings_and_error(const LineAttachedMessage& error, const string& helpfile) {
     show_warnings(helpfile);
     show_err(error, helpfile);
@@ -1396,7 +1390,6 @@ int ARB_main(int argc, char *argv[]) {
     return EXIT_FAILURE;
 }
 
-
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
@@ -1452,10 +1445,13 @@ static arb_test::match_expectation help_file_compiles(const char *helpfile, cons
 void TEST_hlp2xml_conversion() {
     chdir("../../HELP_SOURCE");
 
-    HELP_FILE_COMPILE_ERROR("akjsdlkad.hlp", "Can't read from"); // no such file
+    HELP_FILE_COMPILES("genhelp/agde_treepuzzle.hlp", "treepuzzle");        // genhelp/agde_treepuzzle.hlp
 
+    HELP_FILE_COMPILES("oldhelp/markbyref.hlp", "Mark by reference");        // oldhelp/markbyref.hlp
     HELP_FILE_COMPILES("oldhelp/ad_align.hlp",  "Alignment Administration"); // oldhelp/ad_align.hlp
     HELP_FILE_COMPILES("genhelp/copyright.hlp", "Copyrights");               // genhelp/copyright.hlp
+
+    HELP_FILE_COMPILE_ERROR("akjsdlkad.hlp", "Can't read from"); // no such file
 }
 
 #endif // UNIT_TESTS
