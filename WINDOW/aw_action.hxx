@@ -12,18 +12,19 @@ private:
     struct Pimpl;
     Pimpl *prvt;
    
+    friend class AW_root;
+    friend class AW_window;
+protected:
     AW_action();
     ~AW_action();
     AW_action(const AW_action&);
     AW_action& operator=(const AW_action&);
 
-    friend class AW_root;
-    friend class AW_window;
 public:
     AW_signal clicked;
     AW_signal dclicked;
 
-    void user_clicked();
+    virtual void user_clicked();
     void set_enabled(bool) OVERRIDE;
   
     void bind(GtkWidget*, const char*);

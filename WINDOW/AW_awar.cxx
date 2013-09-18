@@ -17,6 +17,7 @@
 #include "aw_root.hxx"
 #include "aw_window.hxx"
 #include "aw_select.hxx"
+#include "aw_choice.hxx"
 #include "glib-object.h"
 
 #ifndef ARBDB_H
@@ -137,6 +138,22 @@ AW_awar *AW_awar_impl::set_srt(const char *) {
     return NULL; //is never reached, only exists to avoid compiler warning
 }
 
+#define AWAR_CHOICE_FAILURE \
+    GBK_terminatef("AWAR choice definition. Called %s on awar of type %s", \
+                   __PRETTY_FUNCTION__, get_type_name())
+
+AW_choice* AW_awar_impl::add_choice(AW_action&, const char*, bool) {
+    AWAR_CHOICE_FAILURE;
+    return NULL;
+}
+AW_choice* AW_awar_impl::add_choice(AW_action&, int, bool) {
+    AWAR_CHOICE_FAILURE;
+    return NULL;
+}
+AW_choice* AW_awar_impl::add_choice(AW_action&, double, bool) {
+    AWAR_CHOICE_FAILURE;
+    return NULL;
+}
 
 
 // --------------------------------------------------------------------------------
@@ -232,6 +249,10 @@ void AW_awar_int::do_update() {
     for (unsigned int i=0; i<target_variables.size(); ++i) {
         *target_variables[i] = lo;
     }
+}
+
+AW_choice* AW_awar_int::add_choice(AW_action& act, int val, bool def) {
+    return choices.add_choice(this, act, (int32_t)val, def);
 }
 
 AW_awar* AW_awar_int::set_minmax(float min, float max) {
@@ -349,6 +370,10 @@ void AW_awar_float::do_update() {
     for (unsigned int i=0; i<target_variables.size(); i++) {
         *target_variables[i] = fl;
     }
+}
+
+AW_choice* AW_awar_float::add_choice(AW_action& act, double val, bool def) {
+    return choices.add_choice(this, act, val, def);
 }
 
 AW_awar *AW_awar_float::set_minmax(float min, float max) {
@@ -471,6 +496,10 @@ void AW_awar_string::do_update() {
     free(str);
 }
 
+AW_choice* AW_awar_string::add_choice(AW_action& act, const char* val, bool def) {
+    return choices.add_choice(this, act, val, def);
+}
+
 AW_awar *AW_awar_string::set_srt(const char *srt) {
     freedup(srt_program, srt);
     return this;
@@ -586,6 +615,7 @@ GBDATA *AW_awar_pointer::read_pointer() {
 AW_awar_impl::AW_awar_impl(const char *var_name) 
   : callback_list(NULL),
     in_tmp_branch(var_name && strncmp(var_name, "tmp/", 4) == 0),
+    choices(),
     gb_origin(NULL),
     gb_var(NULL)
 {

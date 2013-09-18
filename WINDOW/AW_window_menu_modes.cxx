@@ -2,7 +2,10 @@
 #include "aw_window.hxx"
 #include "aw_window_gtk.hxx"
 #include "aw_drawing_area.hxx"
+#include "aw_awar.hxx"
+#include "aw_choice.hxx"
 #include "gdk/gdkkeysyms.h"
+
 
 void aw_insert_default_help_entries(AW_window *aww) {
     aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0, AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
@@ -87,11 +90,13 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name_, 
     create_devices();
     aw_insert_default_help_entries(this);
     create_window_variables();
+
+    // create awar for mode setting
+    get_root()->awar_int(GBS_global_string("%s/%s", window_name_, "mode"), 0);
 }
 
 void AW_window_menu_modes::select_mode(int mode) {
-    GtkToolItem* button = gtk_toolbar_get_nth_item(prvt->mode_menu, mode);
-    gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(button), true);
+    get_root()->awar(GBS_global_string("%s/%s", window_defaults_name, "mode"))->write_int(mode);
 }
 
 void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText, AW_active mask, 
@@ -116,9 +121,7 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     GtkWidget *icon = gtk_image_new_from_file(path);
     gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(button), icon);
        
-    // register clicked callback
-    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, 0);
-    cbs->help_text = helpText;
+    
     // FIXME
     // g_signal_connect((gpointer)button, "toggled", G_CALLBACK(AW_window::click_handler), (gpointer)cbs);
 
@@ -136,5 +139,13 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     // put the accelerator name into the tooltip
     gtk_widget_set_tooltip_text(GTK_WIDGET(button), gtk_accelerator_name(accel_key, (GdkModifierType)0));
 
-    //    get_root()->register_widget(GTK_WIDGET(button), mask);
+    // register clicked callback
+    help_text(helpText);
+    sens_mask(mask);
+    callback(f, cd1, cd2);
+    prvt->action_template.set_icon(pixmap);
+    prvt->action_template.set_accel(accel_key);
+    AW_awar *awar = get_root()->awar(GBS_global_string("%s/%s", window_defaults_name, "mode"));
+    awar->add_choice(prvt->action_template, gtk_toolbar_get_n_items(prvt->mode_menu) - 1, false)
+        ->bind(GTK_WIDGET(button), "toggled");
 }
