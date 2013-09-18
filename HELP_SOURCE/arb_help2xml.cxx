@@ -34,7 +34,6 @@ using namespace std;
 #endif // DEBUG
 
 
-// #define DUMP_DATA // use this to see internal data (class Helpfile)
 #define MAX_LINE_LENGTH 200     // maximum length of lines in input stream
 #define TABSIZE         8
 
@@ -194,8 +193,6 @@ public:
 };
 
 
-typedef list<string> Strings;
-
 class Ostring {
     string content;
     size_t lineNo; // where string came from
@@ -306,21 +303,6 @@ public:
 };
 
 inline bool isWhite(char c) { return c == ' '; }
-
-#if defined(DUMP_DATA)
-static void display(const Strings& strings, const string& title, FILE *out) {
-    fprintf(out, "  %s:\n", title.c_str());
-    for (Strings::const_iterator s = strings.begin(); s != strings.end(); ++s) {
-        fprintf(out, "    '%s'\n", s->c_str());
-    }
-}
-static void display(const Sections& sections, const string& title, FILE *out) {
-    fprintf(out, "%s:\n", title.c_str());
-    for (Sections::const_iterator s = sections.begin(); s != sections.end(); ++s) {
-        display(s->second, s->first, out);
-    }
-}
-#endif // DUMP_DATA
 
 inline bool isEmptyOrComment(const char *s) {
     if (s[0] == '#') return true;
@@ -1210,14 +1192,6 @@ static void create_top_links(const Links& links, const char *tag) {
 }
 
 void Helpfile::writeXML(FILE *out, const string& page_name) {
-#if defined(DUMP_DATA)
-    display(uplinks,         "Uplinks",         stdout);
-    display(references,      "References",      stdout);
-    display(auto_references, "Auto-References", stdout);
-    display(title,           "Title",           stdout);
-    display(sections,        "Sections",        stdout);
-#endif // DUMP_DATA
-
     XML_Document xml("PAGE", "arb_help.dtd", out);
 
     xml.skip_empty_tags       = true;
