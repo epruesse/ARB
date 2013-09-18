@@ -180,6 +180,20 @@ AW_active AW_element::get_active_mask() const {
     return active_mask;
 }
 
+/**
+ * Set the accellerator key (e.g. ctrl-x)
+ */
+void AW_element::set_accel(guint a) {
+    accel_key = a;
+}
+
+/** 
+ * Get the accellerator key
+ */
+guint AW_element::get_accel() const {
+    return accel_key;
+}
+
 
 void AW_element::set_enabled(bool enabled) {
     active = enabled;

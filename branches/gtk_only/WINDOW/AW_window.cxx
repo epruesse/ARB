@@ -26,6 +26,7 @@
 #include "aw_varUpdateInfo.hxx" 
 #include "aw_type_checking.hxx"
 #include "aw_select.hxx"
+#include "aw_choice.hxx"
 #include <gtk/gtk.h>
 
 #include <string>
@@ -816,21 +817,28 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 
 // BEGIN TOGGLE FIELD STUFF
 
+/**
+ * Begins a radio button group
+ * @param var_name    name of awar
+ * @param orientation 0 -> vertical, != 0 horizontal layout
+ */
 void AW_window::create_toggle_field(const char *var_name, int orientation /*= 0*/){
-    // orientation = 0 -> vertical else horizontal layout
-
+    AW_awar* awar = get_root()->awar_no_error(var_name);
+    aw_return_if_fail(awar != NULL);
+    
     if (orientation == 0) {
-      prvt->toggle_field = gtk_vbox_new(true, 2);
+        prvt->toggle_field = gtk_vbox_new(true, 2);
     } 
     else {
-      prvt->toggle_field = gtk_hbox_new(true, 2);
+        prvt->toggle_field = gtk_hbox_new(true, 2);
     }
-    
-    prvt->toggle_field_awar_name = var_name;
 
-    FIXME("bind awar  to widget");
+    prvt->toggle_field_awar_name = var_name;
 }
 
+/**
+ * Begins a radio button group with a label
+ */
 void AW_window::create_toggle_field(const char *var_name, const char *labeli, const char *mnemonic) {
     if(labeli){
         char *lab = aw_convert_mnemonic(labeli, mnemonic);
@@ -853,8 +861,12 @@ void AW_window::insert_toggle_internal(const char *toggle_label, const char *mne
     
     gtk_box_pack_start(GTK_BOX(prvt->toggle_field), 
                        GTK_WIDGET(prvt->radio_last), true, true, 2);
-    
 
+    prvt->action_template.set_label(toggle_label); // fixme mnemonic
+
+    AW_choice *choice = awar->add_choice(prvt->action_template, var_value, default_toggle);
+    choice->bind(GTK_WIDGET(prvt->radio_last), "clicked");
+    /*
     AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, NULL, AW_WIDGET_TOGGLE_FIELD,
                                                  awar, var_value, prvt->callback);
     g_signal_connect((gpointer)prvt->radio_last, "clicked", 
@@ -864,6 +876,7 @@ void AW_window::insert_toggle_internal(const char *toggle_label, const char *mne
     if(default_toggle){
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prvt->radio_last), true);
     }
+    */
 }
 
 void AW_window::insert_toggle        (const char *toggle_label, const char *mnemonic, const char *var_value)

@@ -1,5 +1,7 @@
 #include <list>
 
+#include "aw_choice.hxx"
+
 class AW_awar_impl;
 
 /**
@@ -34,8 +36,8 @@ struct awar_gparam_binding {
 };
 
 class AW_awar_impl : public AW_awar, virtual Noncopyable {
-    AW_root_cblist       *callback_list;
-    bool in_tmp_branch;
+    AW_root_cblist *callback_list;
+    bool            in_tmp_branch;
     std::list<awar_gparam_binding> gparam_bindings;
 
     static bool allowed_to_run_callbacks;
@@ -47,6 +49,8 @@ class AW_awar_impl : public AW_awar, virtual Noncopyable {
     virtual void remove_all_target_vars() = 0;
     virtual void do_update() = 0;
 protected:
+    AW_choice_list  choices;
+
     void update_tmp_state(bool has_default_value);
     AW_awar_impl(const char *var_name);
     virtual ~AW_awar_impl();
@@ -68,6 +72,10 @@ public:
     void set_temp_if_is_default(GBDATA *);
 
     void     update() OVERRIDE;
+
+    virtual AW_choice *add_choice(AW_action&, int,         bool) OVERRIDE;
+    virtual AW_choice *add_choice(AW_action&, double,      bool) OVERRIDE;
+    virtual AW_choice *add_choice(AW_action&, const char*, bool) OVERRIDE;
     
     AW_awar *add_callback(const RootCallback& cb) OVERRIDE;
     AW_awar *remove_callback(const RootCallback& cb) OVERRIDE;
@@ -119,10 +127,11 @@ public:
     ~AW_awar_int();
     GB_TYPES get_type() const OVERRIDE { return GB_INT; } 
     const char* get_type_name() const { return "AW_awar_int"; }
-    void      do_update() OVERRIDE;
-    AW_awar*  set_minmax(float min, float max) OVERRIDE;
-    float     get_min() const OVERRIDE;
-    float     get_max() const OVERRIDE;
+    void       do_update() OVERRIDE;
+    AW_awar*   set_minmax(float min, float max) OVERRIDE;
+    float      get_min() const OVERRIDE;
+    float      get_max() const OVERRIDE;
+    AW_choice *add_choice(AW_action&, int, bool) OVERRIDE;
     
     GB_ERROR  write_as_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR  write_int(long para, bool touch=false) OVERRIDE;
@@ -155,6 +164,8 @@ public:
     AW_awar*    set_minmax(float min, float max) OVERRIDE;
     float       get_min() const OVERRIDE;
     float       get_max() const OVERRIDE;
+    AW_choice  *add_choice(AW_action&, double, bool) OVERRIDE;
+
     GB_ERROR    write_as_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR    write_float(double para, bool touch=false) OVERRIDE;
     GB_ERROR    write_as_bool(bool b, bool touch=false) OVERRIDE;
@@ -180,6 +191,7 @@ public:
     const char* get_type_name() const { return "AW_awar_string"; }
     void        do_update() OVERRIDE;
     AW_awar*    set_srt(const char *srt) OVERRIDE;
+    AW_choice  *add_choice(AW_action&, const char*, bool) OVERRIDE;
     GB_ERROR    write_as_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR    write_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR    write_as_bool(bool b, bool touch=false) OVERRIDE;
