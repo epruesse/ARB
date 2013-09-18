@@ -817,13 +817,13 @@ public:
         else brother->append(new_brother);
     }
 
-    ParagraphTree* removeTill(ParagraphTree *after) {
+    ParagraphTree* takeAllInFrontOf(ParagraphTree *after) {
         ParagraphTree *removed    = this;
         ParagraphTree *after_pred = this;
 
         while (1) {
             h2x_assert(after_pred);
-            h2x_assert(after_pred->brother); // removeTill called with non-existing 'after'
+            h2x_assert(after_pred->brother); // takeAllInFrontOf called with non-existing 'after'
 
             if (after_pred->brother == after) { // found after
                 after_pred->brother = 0; // unlink
@@ -851,10 +851,10 @@ public:
         return 0;
     }
 
-    ParagraphTree* firstWithSameOrLowerIndent(int wanted_indentation) {
-        if (indentation <= wanted_indentation) return this;
+    ParagraphTree* firstWithLessIndentThan(int wanted_indentation) {
+        if (indentation < wanted_indentation) return this;
         if (!brother) return 0;
-        return brother->firstWithSameOrLowerIndent(wanted_indentation);
+        return brother->firstWithLessIndentThan(wanted_indentation);
     }
 
     ParagraphTree* format_indentations();
@@ -907,14 +907,16 @@ ParagraphTree* ParagraphTree::format_enums() {
             prev_enum->brother = 0;
         }
 
-        for (ParagraphTree *enum_next = curr_enum->nextEnumerated();
-             enum_next;
-             curr_enum = enum_next, enum_next = curr_enum->nextEnumerated())
         {
-            if (enum_next != curr_enum->brother) {
-                h2x_assert(curr_enum->son == 0);
-                curr_enum->son     = curr_enum->brother->removeTill(enum_next);
-                curr_enum->brother = enum_next;
+            for (ParagraphTree *enum_next = curr_enum->nextEnumerated();
+                 enum_next;
+                 curr_enum = enum_next, enum_next = curr_enum->nextEnumerated())
+            {
+                if (enum_next != curr_enum->brother) {
+                    h2x_assert(curr_enum->son == 0);
+                    curr_enum->son     = curr_enum->brother->takeAllInFrontOf(enum_next);
+                    curr_enum->brother = enum_next;
+                }
             }
         }
 
@@ -922,13 +924,13 @@ ParagraphTree* ParagraphTree::format_enums() {
         h2x_assert(!curr_enum->son);
 
         if (curr_enum->brother) { // there are more sections behind the current enum
-            ParagraphTree * const next_enum = curr_enum->firstWithSameOrLowerIndent(curr_enum->indentation-1);
+            ParagraphTree * const next_enum = curr_enum->firstWithLessIndentThan(curr_enum->indentation);
 
             if (next_enum) { // indent should go back after enum
                 h2x_assert(!curr_enum->son);
 
                 if (next_enum != curr_enum->brother) {
-                    curr_enum->son = curr_enum->brother->removeTill(next_enum);
+                    curr_enum->son = curr_enum->brother->takeAllInFrontOf(next_enum);
                 }
                 curr_enum->brother = 0;
 
@@ -979,14 +981,14 @@ ParagraphTree* ParagraphTree::format_indentations() {
             if (son) son = son->format_indentations();
         }
         else {
-            ParagraphTree *same_indent = brother->firstWithSameOrLowerIndent(indentation);
+            ParagraphTree *same_indent = brother->firstWithLessIndentThan(indentation+1);
             if (same_indent) {
                 if (same_indent == brother) {
                     brother     = brother->format_indentations();
                     if (son) son = son->format_indentations();
                 }
                 else {
-                    ParagraphTree *children = brother->removeTill(same_indent);
+                    ParagraphTree *children = brother->takeAllInFrontOf(same_indent);
                     brother                 = same_indent->format_indentations();
                     h2x_assert(!son);
                     son                     = children->format_indentations();
