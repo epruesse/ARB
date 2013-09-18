@@ -196,21 +196,43 @@ public:
 
 typedef list<string> Strings;
 
+class Ostring {
+    string content;
+    size_t lineNo; // where string came from
+public:
+
+    Ostring(const string& s, size_t line_no)
+        : content(s),
+          lineNo(line_no)
+    {}
+
+    operator const string&() const { return content; }
+    operator string&() { return content; }
+
+    const string& as_string() const { return content; }
+    string& as_string() { return content; }
+
+    size_t get_lineno() const { return lineNo; }
+
+    // some wrapper to make Ostring act like string
+    const char *c_str() const { return content.c_str(); }
+};
+
+typedef list<Ostring> Ostrings;
+
 class Section {
     SectionType type;
-    Strings     content;
-    size_t      start_lineno;
+    Ostrings    content;
 
 public:
-    Section(SectionType type_, size_t start_lineno_) : type(type_), start_lineno(start_lineno_) {}
+    Section(SectionType type_) : type(type_) {}
 
-    const Strings& Content() const { return content; }
-    Strings& Content() { return content; }
+    const Ostrings& Content() const { return content; }
+    Ostrings& Content() { return content; }
 
     SectionType get_type() const { return type; }
 
-    size_t StartLineno() const { return start_lineno; }
-    void set_StartLineno(size_t start_lineno_) { start_lineno = start_lineno_; }
+    size_t StartLineno() const { return content.front().get_lineno(); }
 };
 
 
@@ -273,7 +295,7 @@ private:
     string        inputfile;
 
 public:
-    Helpfile() : title(SEC_FAKE, NO_LINENUMBER_INFO) {}
+    Helpfile() : title(SEC_FAKE) {}
     virtual ~Helpfile() {}
 
     void readHelp(istream& in, const string& filename);
@@ -334,9 +356,9 @@ inline const char *eatWhite(const char *line) {
     return line;
 }
 
-inline void pushParagraph(Section& sec, string& paragraph) {
+inline void pushParagraph(Section& sec, string& paragraph, size_t lineNo) {
     if (paragraph.length()) {
-        sec.Content().push_back(paragraph);
+        sec.Content().push_back(Ostring(paragraph, lineNo));
         paragraph = "";
     }
 }
@@ -354,18 +376,17 @@ inline bool is_startof_itemlist_element(const char *contentStart) {
 }
 
 static void parseSection(Section& sec, const char *line, int indentation, Reader& reader) {
-    string paragraph          = line;
-    int    lines_in_paragraph = 1;
+    string paragraph         = line;
+    size_t para_start_lineno = reader.getLineNo();
 
-    if (sec.StartLineno() == NO_LINENUMBER_INFO) {
-        sec.set_StartLineno(reader.getLineNo());
-    }
+    h2x_assert(sec.StartLineno() != NO_LINENUMBER_INFO);
 
     while (1) {
         line = reader.getNext();
         if (!line) break;
+
         if (isEmptyOrComment(line)) {
-            pushParagraph(sec, paragraph); lines_in_paragraph = 0;
+            pushParagraph(sec, paragraph, para_start_lineno);
 #if defined(WARN_MISSING_HELP)
             check_TODO(line, reader);
 #endif // WARN_MISSING_HELP
@@ -386,14 +407,14 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
             string Line = line;
 
             if (sec.get_type() == SEC_OCCURRENCE) {
-                pushParagraph(sec, paragraph); lines_in_paragraph = 0;
+                pushParagraph(sec, paragraph, para_start_lineno);
             }
             else {
                 const char *firstNonWhite = firstChar(line);
                 if (is_startof_itemlist_element(firstNonWhite)) {
                     h2x_assert(firstNonWhite != line);
 
-                    pushParagraph(sec, paragraph); lines_in_paragraph = 0;
+                    pushParagraph(sec, paragraph, para_start_lineno);
                     Line[firstNonWhite-line] = ' ';
                 }
             }
@@ -402,22 +423,21 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
                 paragraph = paragraph+"\n"+Line;
             }
             else {
-                paragraph = string("\n")+Line;
+                paragraph         = string("\n")+Line;
+                para_start_lineno = reader.getLineNo();
             }
-            lines_in_paragraph++;
         }
     }
 
-    pushParagraph(sec, paragraph);
+    pushParagraph(sec, paragraph, para_start_lineno);
 
     if (sec.Content().size()>0 && indentation>0) {
         string spaces;
         spaces.reserve(indentation);
         spaces.append(indentation, ' ');
 
-        Strings::iterator p = sec.Content().begin();
-
-        *p = string("\n")+spaces+*p;
+        string& ostr = sec.Content().front();
+        ostr         = string("\n") + spaces + ostr;
     }
 }
 inline void check_specific_duplicates(const string& link, const Links& existing, bool add_warnings) {
@@ -514,13 +534,13 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                     if (knownSections[idx]) {
                         if (stype == SEC_SECTION) {
                             string  section_name = eatWhite(rest);
-                            Section sec(stype, read.getLineNo());
+                            Section sec(stype);
 
                             parseSection(sec, "", 0, read);
                             sections.push_back(NamedSection(section_name, sec));
                         }
                         else {
-                            Section sec(stype, read.getLineNo());
+                            Section sec(stype);
 
                             rest = eatWhite(rest);
                             parseSection(sec, rest, rest-line, read);
@@ -580,7 +600,7 @@ static bool shouldReflow(const string& s, int& foundIndentation) {
     return equal_indent;
 }
 
-static bool startsWithNumber(string& s, long long &number, bool do_erase = true) {
+static bool startsWithNumber(string& s, unsigned& number, bool do_erase = true) {
     // tests if first line starts with 'number.'
     // if true then the number is removed
 
@@ -698,25 +718,25 @@ class ParagraphTree : virtual Noncopyable {
     ParagraphTree *brother;     // has same indentation as this
     ParagraphTree *son;         // indentation + 1
 
-    bool      is_enumerated;    // 1., 2.,  usw.
-    long long enumeration;      // the value of the enumeration (undefined if !is_enumerated)
+    bool     is_enumerated;     // 1., 2.,  usw.
+    unsigned enumeration;       // the value of the enumeration (undefined if !is_enumerated)
 
     bool reflow;                // should the paragraph be reflown ? (true if indentation is equal for all lines of text)
     int  indentation;           // the real indentation of the blank (behind removed enumeration)
 
-    string text;                // text of the Section (containing linefeeds)
-    size_t lineNo;              // line number where Paragraph starts
+    Ostring otext;              // text of the Section (containing linefeeds)
 
-    ParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end, size_t beginLineNo)
+    ParagraphTree(Ostrings::const_iterator begin, const Ostrings::const_iterator end)
         : son(NULL),
           enumeration(0),
           indentation(0),
-          text(*begin),
-          lineNo(beginLineNo)
+          otext(*begin)
     {
         h2x_assert(begin != end);
 
+        string& text  = otext;
         is_enumerated = startsWithNumber(text, enumeration);
+
         if (is_enumerated) {
             size_t text_start     = text.find_first_not_of(" \n");
             size_t next_linestart = text.find('\n', text_start);
@@ -759,8 +779,9 @@ class ParagraphTree : virtual Noncopyable {
             indentation = scanMinIndentation(text);
         }
 
-        text    = correctIndentation(text, -indentation);
-        brother = buildParagraphTree(++begin, end, beginLineNo+1);
+        text = correctIndentation(text, -indentation);
+
+        brother = buildParagraphTree(++begin, end);
     }
 
 public:
@@ -777,7 +798,7 @@ public:
     }
 
     void dump(ostream& out) {
-        out << "text='" << text << "'\n";
+        out << "text='" << otext.as_string() << "'\n";
         out << "is_enumerated='" << is_enumerated << "'";
         out << "enumeration='" << enumeration << "'";
         out << "reflow='" << reflow << "'";
@@ -787,15 +808,15 @@ public:
         if (son) { cout << "\nson:\n"; son->dump(out); cout << "\n"; }
     }
 
-    static ParagraphTree* buildParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end, size_t beginLineNo) {
+    static ParagraphTree* buildParagraphTree(Ostrings::const_iterator begin, const Ostrings::const_iterator end) {
         if (begin == end) return 0;
-        return new ParagraphTree(begin, end, beginLineNo);
+        return new ParagraphTree(begin, end);
     }
     static ParagraphTree* buildParagraphTree(const NamedSection& N) {
-        ParagraphTree  *ptree = 0;
-        const Strings&  S     = N.getSection().Content();
+        ParagraphTree *ptree = 0;
+        const Ostrings& S = N.getSection().Content();
         if (S.empty()) throw string("Tried to build an empty ParagraphTree (Section=")+N.getName()+")";
-        else ptree = buildParagraphTree(S.begin(), S.end(), N.getSection().StartLineno());
+        else ptree = buildParagraphTree(S.begin(), S.end());
         return ptree;
     }
 
@@ -861,27 +882,28 @@ public:
     ParagraphTree* format_enums();
 private:
     static ParagraphTree* buildNewParagraph(const string& Text, size_t beginLineNo) {
-        Strings S;
-        S.push_back(Text);
-        return new ParagraphTree(S.begin(), S.end(), beginLineNo);
+        Ostrings S;
+        S.push_back(Ostring(Text, beginLineNo));
+        return new ParagraphTree(S.begin(), S.end());
     }
-    ParagraphTree *extractEmbeddedEnum(int lookfor) {
+    ParagraphTree *extractEmbeddedEnum(unsigned lookfor) {
+        string& text = otext;
+
         size_t this_lineend = text.find('\n');
         size_t line_offset  = 0;
 
         while (this_lineend != string::npos) {
-            ++line_offset;
-
-            long long number;
-            string    embedded = text.substr(this_lineend);
+            unsigned number;
+            string   embedded = text.substr(this_lineend);
             if (startsWithNumber(embedded, number, false)) {
                 if (number == lookfor) {
                     text.erase(this_lineend);
-                    return buildNewParagraph(embedded, lineNo+line_offset);
+                    return buildNewParagraph(embedded, otext.get_lineno()+line_offset);
                 }
                 break;
             }
             this_lineend = text.find('\n', this_lineend+1);
+            ++line_offset;
         }
 
         return 0;
@@ -1155,14 +1177,15 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
                 XML_Tag textblock("T");
                 textblock.add_attribute("reflow", reflow ? "1" : "0");
                 {
-                    string usedText;
+                    string        usedText;
+                    const string& text = otext;
                     if (reflow) {
                         usedText = correctIndentation(text, (textblock.Indent()+1) * the_XML_Document->indentation_per_level);
                     }
                     else {
                         usedText = text;
                     }
-                    print_XML_Text_expanding_links(usedText, lineNo);
+                    print_XML_Text_expanding_links(usedText, otext.get_lineno());
                 }
             }
             if (son) {
@@ -1218,8 +1241,8 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
 
     {
         XML_Tag title_tag("TITLE");
-        Strings& T = title.Content();
-        for (Strings::const_iterator s = T.begin(); s != T.end(); ++s) {
+        const Ostrings& T = title.Content();
+        for (Ostrings::const_iterator s = T.begin(); s != T.end(); ++s) {
             if (s != T.begin()) { XML_Text text("\n"); }
             XML_Text text(*s);
         }
@@ -1261,9 +1284,9 @@ void Helpfile::extractInternalLinks() {
     for (NamedSections::const_iterator named_sec = sections.begin(); named_sec != sections.end(); ++named_sec) {
         const Section& sec = named_sec->getSection();
         try {
-            const Strings& s   = sec.Content();
+            const Ostrings& s = sec.Content();
 
-            for (Strings::const_iterator li = s.begin(); li != s.end(); ++li) {
+            for (Ostrings::const_iterator li = s.begin(); li != s.end(); ++li) {
                 const string& line = *li;
                 size_t        start = 0;
 
@@ -1425,10 +1448,10 @@ static arb_test::match_expectation help_file_compiles(const char *helpfile, cons
     else {
         expected.add(that(error).is_equal_to_NULL());
         if (!error) {
-            Section        title         = help.get_title();
-            const Strings& title_strings = title.Content();
+            Section title = help.get_title();
+            const Ostrings& title_strings = title.Content();
 
-            expected.add(that(title_strings.front()).is_equal_to(expected_title));
+            expected.add(that(title_strings.front().as_string()).is_equal_to(expected_title));
             expected.add(that(title_strings.size()).is_equal_to(1));
         }
         else {
