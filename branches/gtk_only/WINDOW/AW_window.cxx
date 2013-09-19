@@ -371,12 +371,12 @@ bool AW_window::close_window_handler(GtkWidget*, GdkEvent*, gpointer data) {
 /**
  * Create a label
  */
-void AW_window::create_label(const char* button_text) {
+void AW_window::create_label(const char* button_text, bool highlight) {
     aw_return_if_fail(button_text != NULL);
 
     GtkWidget *labelw = make_label(button_text, _at.length_of_buttons);
 
-    if (get_root()->label_is_awar(button_text)) {
+    if (highlight) {
         GtkWidget *frame = gtk_frame_new(NULL);
         gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_ETCHED_IN);
         gtk_container_add(GTK_CONTAINER(frame), labelw);
@@ -392,10 +392,10 @@ void AW_window::create_label(const char* button_text) {
  * otherwise creates a label.
  */ 
 void AW_window::create_button(const char *macro_name, const char *button_text, 
-                              const char *mnemonic, const char */*color*/) {
+                              const char *mnemonic, const char *color) {
     if (prvt->action_template.clicked.size() == 0) {
-        FIXME("use create_label instead of create_button");
-        create_label(button_text);
+        // @@@MERGE: Refactor to use create_label directly
+        create_label(button_text, color && color[0]=='+');
         return;
     }
 
@@ -462,21 +462,6 @@ GtkWidget* AW_window::get_last_widget() const{
     return prvt->last_widget;
 }
 
-extern "C" gboolean AW_switch_widget_child(GtkWidget *bin, gpointer other_bin) {
-    GtkWidget *child = gtk_bin_get_child(GTK_BIN(bin));
-    GtkWidget *other_child = gtk_bin_get_child(GTK_BIN(other_bin));
-    g_object_ref(child);
-    g_object_ref(other_child);
-    gtk_container_remove(GTK_CONTAINER(bin), child);
-    gtk_container_remove(GTK_CONTAINER(other_bin), other_child);
-    gtk_container_add(GTK_CONTAINER(bin), GTK_WIDGET(other_child));
-    gtk_container_add(GTK_CONTAINER(other_bin), GTK_WIDGET(child));
-
-    g_object_unref(child);
-    g_object_unref(other_child);
-    return false; // event not consumed
-}
-
 struct _awar_inverse_bool_mapper : public AW_awar_gvalue_mapper {
     bool operator()(GValue* gval, AW_awar* awar) OVERRIDE {
         awar->write_as_bool(!g_value_get_boolean(gval), true);
@@ -518,6 +503,22 @@ struct _awar_float_to_int_mapper : public AW_awar_gvalue_mapper {
         return true;
     }
 };
+
+extern "C" gboolean AW_switch_widget_child(GtkWidget *bin, gpointer other_bin) {
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(bin));
+    GtkWidget *other_child = gtk_bin_get_child(GTK_BIN(other_bin));
+    g_object_ref(child);
+    g_object_ref(other_child);
+    gtk_container_remove(GTK_CONTAINER(bin), child);
+    gtk_container_remove(GTK_CONTAINER(other_bin), other_child);
+    gtk_container_add(GTK_CONTAINER(bin), GTK_WIDGET(other_child));
+    gtk_container_add(GTK_CONTAINER(other_bin), GTK_WIDGET(child));
+
+    g_object_unref(child);
+    g_object_unref(other_child);
+    return false; // event not consumed
+}
+
 
 /**
  * Creates a toggle button.
