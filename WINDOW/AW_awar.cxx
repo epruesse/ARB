@@ -234,15 +234,17 @@ AW_awar_int::~AW_awar_int() {
 }
 
 void AW_awar_int::do_update() {
-    if (min_value == max_value) return;
-  
     long lo = read_int();
-    if (lo < min_value) lo = min_value;
-    if (lo > max_value) lo = max_value;
-    if (lo != value) {
-        value = lo;
-        if (AW_root::SINGLETON) AW_root::SINGLETON->changer_of_variable = 0;
-        write_int(lo);
+
+    // fix min/max
+    if (min_value != max_value) {
+        if (lo < min_value) lo = min_value;
+        if (lo > max_value) lo = max_value;
+        if (lo != value) {
+            value = lo;
+            if (AW_root::SINGLETON) AW_root::SINGLETON->changer_of_variable = 0;
+            write_int(lo);
+        }
     }
 
     // update targets
@@ -356,14 +358,16 @@ AW_awar_float::~AW_awar_float() {
 }
 
 void AW_awar_float::do_update() {
-    if (min_value == max_value) return;
     float fl = read_float();
-    if (fl < min_value) fl = min_value + AWAR_EPS;
-    if (fl > max_value) fl = max_value - AWAR_EPS;
-    if (fl != value) {
-        value = fl;
-        if (AW_root::SINGLETON) AW_root::SINGLETON->changer_of_variable = 0;
-        write_float(fl);
+
+    if (min_value != max_value) {
+        if (fl < min_value) fl = min_value + AWAR_EPS;
+        if (fl > max_value) fl = max_value - AWAR_EPS;
+        if (fl != value) {
+            value = fl;
+            if (AW_root::SINGLETON) AW_root::SINGLETON->changer_of_variable = 0;
+            write_float(fl);
+        }
     }
 
     // update targets
@@ -475,24 +479,25 @@ AW_awar_string::~AW_awar_string() {
 }
 
 void AW_awar_string::do_update() {
-    if (!srt_program) return;
-
     char *str = read_string();
-    char *n   = GBS_string_eval(str, srt_program, 0);
+
+    if (srt_program) {
+        char *n   = GBS_string_eval(str, srt_program, 0);
     
-    if (!n) GBK_terminatef("SRT ERROR %s %s", srt_program, GB_await_error());
-    
-    if (strcmp(n, str) != 0) {
-        if (AW_root::SINGLETON) AW_root::SINGLETON->changer_of_variable = 0;
-        write_string(n);
+        if (!n) GBK_terminatef("SRT ERROR %s %s", srt_program, GB_await_error());
+        
+        if (strcmp(n, str) != 0) {
+            if (AW_root::SINGLETON) AW_root::SINGLETON->changer_of_variable = 0;
+            write_string(n);
+        }
+        free(str);
+        str = n;
     }
 
     // update targets
     for (unsigned int i=0; i<target_variables.size(); i++) {
-        freeset(*target_variables[i], n);
+        freeset(*target_variables[i], str);
     }
-
-    free(n);
     free(str);
 }
 
