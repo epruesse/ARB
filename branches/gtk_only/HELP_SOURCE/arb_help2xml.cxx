@@ -22,6 +22,7 @@
 #include <cstring>
 #include <climits>
 
+#include <unistd.h>
 #include <sys/stat.h>
 
 using namespace std;
@@ -33,7 +34,6 @@ using namespace std;
 #endif // DEBUG
 
 
-// #define DUMP_DATA // use this to see internal data (class Helpfile)
 #define MAX_LINE_LENGTH 200     // maximum length of lines in input stream
 #define TABSIZE         8
 
@@ -111,25 +111,15 @@ const size_t NO_LINENUMBER_INFO = -1U;
 
 LineAttachedMessage unattached_message(const string& message) { return LineAttachedMessage(message, NO_LINENUMBER_INFO); }
 
-static list<LineAttachedMessage> warnings;
+// ------------------
+//      warnings
 
-inline LineAttachedMessage make_warning(const string& warning, size_t lineno) {
-    return LineAttachedMessage(string("Warning: ")+warning, lineno);
+static list<LineAttachedMessage> warnings;
+inline void add_warning(const LineAttachedMessage& laMsg) {
+    warnings.push_back(laMsg);
 }
 inline void add_warning(const string& warning, size_t lineno) {
-    warnings.push_back(make_warning(warning, lineno));
-}
-inline void preadd_warning(const string& warning, size_t lineno) {
-    LineAttachedMessage line_message = make_warning(warning, lineno);
-    if (warnings.size() < 2) {
-        warnings.push_front(line_message);
-    }
-    else {
-        LineAttachedMessage prev_message = warnings.back();
-        warnings.pop_back();
-        warnings.push_back(line_message);
-        warnings.push_back(prev_message);
-    }
+    add_warning(LineAttachedMessage(warning, lineno));
 }
 
 // ----------------------
@@ -203,23 +193,43 @@ public:
 };
 
 
-typedef list<string> Strings;
+class Ostring {
+    string content;
+    size_t lineNo; // where string came from
+public:
+
+    Ostring(const string& s, size_t line_no)
+        : content(s),
+          lineNo(line_no)
+    {}
+
+    operator const string&() const { return content; }
+    operator string&() { return content; }
+
+    const string& as_string() const { return content; }
+    string& as_string() { return content; }
+
+    size_t get_lineno() const { return lineNo; }
+
+    // some wrapper to make Ostring act like string
+    const char *c_str() const { return content.c_str(); }
+};
+
+typedef list<Ostring> Ostrings;
 
 class Section {
     SectionType type;
-    Strings     content;
-    size_t      start_lineno;
+    Ostrings    content;
 
 public:
-    Section(SectionType type_, size_t start_lineno_) : type(type_), start_lineno(start_lineno_) {}
+    Section(SectionType type_) : type(type_) {}
 
-    const Strings& Content() const { return content; }
-    Strings& Content() { return content; }
+    const Ostrings& Content() const { return content; }
+    Ostrings& Content() { return content; }
 
     SectionType get_type() const { return type; }
 
-    size_t StartLineno() const { return start_lineno; }
-    void set_StartLineno(size_t start_lineno_) { start_lineno = start_lineno_; }
+    size_t StartLineno() const { return content.front().get_lineno(); }
 };
 
 
@@ -282,7 +292,7 @@ private:
     string        inputfile;
 
 public:
-    Helpfile() : title(SEC_FAKE, NO_LINENUMBER_INFO) {}
+    Helpfile() : title(SEC_FAKE) {}
     virtual ~Helpfile() {}
 
     void readHelp(istream& in, const string& filename);
@@ -293,21 +303,6 @@ public:
 };
 
 inline bool isWhite(char c) { return c == ' '; }
-
-#if defined(DUMP_DATA)
-static void display(const Strings& strings, const string& title, FILE *out) {
-    fprintf(out, "  %s:\n", title.c_str());
-    for (Strings::const_iterator s = strings.begin(); s != strings.end(); ++s) {
-        fprintf(out, "    '%s'\n", s->c_str());
-    }
-}
-static void display(const Sections& sections, const string& title, FILE *out) {
-    fprintf(out, "%s:\n", title.c_str());
-    for (Sections::const_iterator s = sections.begin(); s != sections.end(); ++s) {
-        display(s->second, s->first, out);
-    }
-}
-#endif // DUMP_DATA
 
 inline bool isEmptyOrComment(const char *s) {
     if (s[0] == '#') return true;
@@ -343,9 +338,9 @@ inline const char *eatWhite(const char *line) {
     return line;
 }
 
-inline void pushParagraph(Section& sec, string& paragraph) {
+inline void pushParagraph(Section& sec, string& paragraph, size_t lineNo) {
     if (paragraph.length()) {
-        sec.Content().push_back(paragraph);
+        sec.Content().push_back(Ostring(paragraph, lineNo));
         paragraph = "";
     }
 }
@@ -355,19 +350,28 @@ inline const char *firstChar(const char *s) {
     return s;
 }
 
-static void parseSection(Section& sec, const char *line, int indentation, Reader& reader) {
-    string paragraph          = line;
-    int    lines_in_paragraph = 1;
+inline bool is_startof_itemlist_element(const char *contentStart) {
+    return
+        (contentStart[0] == '-' ||
+         contentStart[0] == '*') &&
+        isspace(contentStart[1] && !isspace(contentStart[2]));
+}
 
-    if (sec.StartLineno() == NO_LINENUMBER_INFO) {
-        sec.set_StartLineno(reader.getLineNo());
-    }
+static void parseSection(Section& sec, const char *line, int indentation, Reader& reader) {
+    string paragraph         = line;
+    size_t para_start_lineno = reader.getLineNo();
+
+    h2x_assert(sec.StartLineno() != NO_LINENUMBER_INFO);
 
     while (1) {
         line = reader.getNext();
         if (!line) break;
+
         if (isEmptyOrComment(line)) {
-            pushParagraph(sec, paragraph); lines_in_paragraph = 0;
+            pushParagraph(sec, paragraph, para_start_lineno);
+#if defined(WARN_MISSING_HELP)
+            check_TODO(line, reader);
+#endif // WARN_MISSING_HELP
         }
         else {
             string      keyword;
@@ -385,14 +389,15 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
             string Line = line;
 
             if (sec.get_type() == SEC_OCCURRENCE) {
-                pushParagraph(sec, paragraph); lines_in_paragraph = 0;
+                pushParagraph(sec, paragraph, para_start_lineno);
             }
             else {
-                const char *first = firstChar(line);
-                if (first[0] == '-') {
+                const char *firstNonWhite = firstChar(line);
+                if (is_startof_itemlist_element(firstNonWhite)) {
+                    h2x_assert(firstNonWhite != line);
 
-                    pushParagraph(sec, paragraph); lines_in_paragraph = 0;
-                    Line[first-line] = ' ';
+                    pushParagraph(sec, paragraph, para_start_lineno);
+                    Line[firstNonWhite-line] = ' ';
                 }
             }
 
@@ -400,25 +405,24 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
                 paragraph = paragraph+"\n"+Line;
             }
             else {
-                paragraph = string("\n")+Line;
+                paragraph         = string("\n")+Line;
+                para_start_lineno = reader.getLineNo();
             }
-            lines_in_paragraph++;
         }
     }
 
-    pushParagraph(sec, paragraph);
+    pushParagraph(sec, paragraph, para_start_lineno);
 
     if (sec.Content().size()>0 && indentation>0) {
         string spaces;
         spaces.reserve(indentation);
         spaces.append(indentation, ' ');
 
-        Strings::iterator p = sec.Content().begin();
-
-        *p = string("\n")+spaces+*p;
+        string& ostr = sec.Content().front();
+        ostr         = string("\n") + spaces + ostr;
     }
 }
-inline void check_duplicates(const string& link, const char * /* where */, const Links& existing, bool add_warnings) {
+inline void check_specific_duplicates(const string& link, const Links& existing, bool add_warnings) {
     for (Links::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {
         if (ex->Target() == link) {
             if (add_warnings) add_warning(strf("First Link to '%s' was found here.", ex->Target().c_str()), ex->SourceLineno());
@@ -427,8 +431,8 @@ inline void check_duplicates(const string& link, const char * /* where */, const
     }
 }
 inline void check_duplicates(const string& link, const Links& uplinks, const Links& references, bool add_warnings) {
-    check_duplicates(link, "UP", uplinks, add_warnings);
-    check_duplicates(link, "SUB", references, add_warnings);
+    check_specific_duplicates(link, uplinks, add_warnings);
+    check_specific_duplicates(link, references, add_warnings);
 }
 
 void Helpfile::readHelp(istream& in, const string& filename) {
@@ -450,6 +454,9 @@ void Helpfile::readHelp(istream& in, const string& filename) {
             if (!line) break;
 
             if (isEmptyOrComment(line)) {
+#if defined(WARN_MISSING_HELP)
+                check_TODO(line, read);
+#endif // WARN_MISSING_HELP
                 continue;
             }
 
@@ -509,13 +516,13 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                     if (knownSections[idx]) {
                         if (stype == SEC_SECTION) {
                             string  section_name = eatWhite(rest);
-                            Section sec(stype, read.getLineNo());
+                            Section sec(stype);
 
                             parseSection(sec, "", 0, read);
                             sections.push_back(NamedSection(section_name, sec));
                         }
                         else {
-                            Section sec(stype, read.getLineNo());
+                            Section sec(stype);
 
                             rest = eatWhite(rest);
                             parseSection(sec, rest, rest-line, read);
@@ -560,19 +567,22 @@ static bool shouldReflow(const string& s, int& foundIndentation) {
                 if (lastIndent == -1) lastIndent                = thisIndent;
                 else if (lastIndent != thisIndent) equal_indent = false;
             }
-            if (*c == '.' || *c == ',')  state = DOT;
-            else state                      = CHAR;
+            state = (*c == '.' || *c == ',') ? DOT : CHAR;
         }
+    }
+
+    if (lastIndent<0) {
+        equal_indent = false;
     }
 
     if (equal_indent) {
         foundIndentation = lastIndent-1;
-        h2x_assert(lastIndent >= 0);
+        h2x_assert(foundIndentation >= 0);
     }
     return equal_indent;
 }
 
-static bool startsWithNumber(string& s, long long &number, bool do_erase = true) {
+static bool startsWithNumber(string& s, unsigned& number, bool do_erase = true) {
     // tests if first line starts with 'number.'
     // if true then the number is removed
 
@@ -690,25 +700,25 @@ class ParagraphTree : virtual Noncopyable {
     ParagraphTree *brother;     // has same indentation as this
     ParagraphTree *son;         // indentation + 1
 
-    bool      is_enumerated;    // 1., 2.,  usw.
-    long long enumeration;      // the value of the enumeration (undefined if !is_enumerated)
+    bool     is_enumerated;     // 1., 2.,  usw.
+    unsigned enumeration;       // the value of the enumeration (undefined if !is_enumerated)
 
     bool reflow;                // should the paragraph be reflown ? (true if indentation is equal for all lines of text)
-    int  indentation;           // the real indentation of the black (after enumeration was removed)
+    int  indentation;           // the real indentation of the blank (behind removed enumeration)
 
-    string text;                // text of the Section (containing linefeeds)
-    size_t lineNo;              // line number where Paragraph starts
+    Ostring otext;              // text of the Section (containing linefeeds)
 
-    ParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end, size_t beginLineNo)
+    ParagraphTree(Ostrings::const_iterator begin, const Ostrings::const_iterator end)
         : son(NULL),
           enumeration(0),
           indentation(0),
-          text(*begin),
-          lineNo(beginLineNo)
+          otext(*begin)
     {
         h2x_assert(begin != end);
 
+        string& text  = otext;
         is_enumerated = startsWithNumber(text, enumeration);
+
         if (is_enumerated) {
             size_t text_start     = text.find_first_not_of(" \n");
             size_t next_linestart = text.find('\n', text_start);
@@ -751,8 +761,9 @@ class ParagraphTree : virtual Noncopyable {
             indentation = scanMinIndentation(text);
         }
 
-        text    = correctIndentation(text, -indentation);
-        brother = buildParagraphTree(++begin, end, beginLineNo);
+        text = correctIndentation(text, -indentation);
+
+        brother = buildParagraphTree(++begin, end);
     }
 
 public:
@@ -769,7 +780,7 @@ public:
     }
 
     void dump(ostream& out) {
-        out << "text='" << text << "'\n";
+        out << "text='" << otext.as_string() << "'\n";
         out << "is_enumerated='" << is_enumerated << "'";
         out << "enumeration='" << enumeration << "'";
         out << "reflow='" << reflow << "'";
@@ -779,15 +790,15 @@ public:
         if (son) { cout << "\nson:\n"; son->dump(out); cout << "\n"; }
     }
 
-    static ParagraphTree* buildParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end, size_t beginLineNo) {
+    static ParagraphTree* buildParagraphTree(Ostrings::const_iterator begin, const Ostrings::const_iterator end) {
         if (begin == end) return 0;
-        return new ParagraphTree(begin, end, beginLineNo);
+        return new ParagraphTree(begin, end);
     }
     static ParagraphTree* buildParagraphTree(const NamedSection& N) {
-        ParagraphTree  *ptree = 0;
-        const Strings&  S     = N.getSection().Content();
+        ParagraphTree *ptree = 0;
+        const Ostrings& S = N.getSection().Content();
         if (S.empty()) throw string("Tried to build an empty ParagraphTree (Section=")+N.getName()+")";
-        else ptree = buildParagraphTree(S.begin(), S.end(), N.getSection().StartLineno());
+        else ptree = buildParagraphTree(S.begin(), S.end());
         return ptree;
     }
 
@@ -809,13 +820,13 @@ public:
         else brother->append(new_brother);
     }
 
-    ParagraphTree* removeTill(ParagraphTree *after) {
+    ParagraphTree* takeAllInFrontOf(ParagraphTree *after) {
         ParagraphTree *removed    = this;
         ParagraphTree *after_pred = this;
 
         while (1) {
             h2x_assert(after_pred);
-            h2x_assert(after_pred->brother); // removeTill called with non-existing 'after'
+            h2x_assert(after_pred->brother); // takeAllInFrontOf called with non-existing 'after'
 
             if (after_pred->brother == after) { // found after
                 after_pred->brother = 0; // unlink
@@ -843,34 +854,38 @@ public:
         return 0;
     }
 
-    ParagraphTree* firstWithSameOrLowerIndent(int wanted_indentation) {
-        if (indentation <= wanted_indentation) return this;
+    ParagraphTree* firstWithLessIndentThan(int wanted_indentation) {
+        if (indentation < wanted_indentation) return this;
         if (!brother) return 0;
-        return brother->firstWithSameOrLowerIndent(wanted_indentation);
+        return brother->firstWithLessIndentThan(wanted_indentation);
     }
 
     ParagraphTree* format_indentations();
     ParagraphTree* format_enums();
 private:
     static ParagraphTree* buildNewParagraph(const string& Text, size_t beginLineNo) {
-        Strings S;
-        S.push_back(Text);
-        return new ParagraphTree(S.begin(), S.end(), beginLineNo);
+        Ostrings S;
+        S.push_back(Ostring(Text, beginLineNo));
+        return new ParagraphTree(S.begin(), S.end());
     }
-    ParagraphTree *extractEmbeddedEnum(int lookfor) {
+    ParagraphTree *extractEmbeddedEnum(unsigned lookfor) {
+        string& text = otext;
+
         size_t this_lineend = text.find('\n');
+        size_t line_offset  = 0;
 
         while (this_lineend != string::npos) {
-            long long number;
-            string embedded = text.substr(this_lineend);
+            unsigned number;
+            string   embedded = text.substr(this_lineend);
             if (startsWithNumber(embedded, number, false)) {
                 if (number == lookfor) {
                     text.erase(this_lineend);
-                    return buildNewParagraph(embedded, lineNo);
+                    return buildNewParagraph(embedded, otext.get_lineno()+line_offset);
                 }
                 break;
             }
             this_lineend = text.find('\n', this_lineend+1);
+            ++line_offset;
         }
 
         return 0;
@@ -885,66 +900,68 @@ size_t ParagraphTree::embeddedCounter = 0;
 
 ParagraphTree* ParagraphTree::format_enums() {
     // reformats tree such that all enums are brothers
-    ParagraphTree *enum_this = firstEnumerated();
+    ParagraphTree *curr_enum = firstEnumerated();
 
-    if (enum_this) {        // we have enumeration
-        ParagraphTree *before_enum = predeccessor(enum_this);
+    if (curr_enum) {        // we have enumeration
+        ParagraphTree * const prev_enum = predeccessor(curr_enum);
 
-        if (before_enum) {
-            h2x_assert(before_enum->son == 0);
-            before_enum->son     = before_enum->brother;
-            before_enum->brother = 0;
+        if (prev_enum) {
+            h2x_assert(prev_enum->son == 0);
+            prev_enum->son     = prev_enum->brother;
+            prev_enum->brother = 0;
         }
 
-        for (ParagraphTree *enum_next = enum_this->nextEnumerated();
-             enum_next;
-             enum_this = enum_next, enum_next = enum_this->nextEnumerated())
         {
-            if (enum_next != enum_this->brother) {
-                h2x_assert(enum_this->son == 0);
-                enum_this->son     = enum_this->brother->removeTill(enum_next);
-                enum_this->brother = enum_next;
+            for (ParagraphTree *enum_next = curr_enum->nextEnumerated();
+                 enum_next;
+                 curr_enum = enum_next, enum_next = curr_enum->nextEnumerated())
+            {
+                if (enum_next != curr_enum->brother) {
+                    h2x_assert(curr_enum->son == 0);
+                    curr_enum->son     = curr_enum->brother->takeAllInFrontOf(enum_next);
+                    curr_enum->brother = enum_next;
+                }
             }
         }
 
-        // enum_this is the last enumeration
-        h2x_assert(!enum_this->son);
+        // curr_enum is the last enumeration
+        h2x_assert(!curr_enum->son);
 
-        if (enum_this->brother) { // there are more sections behind enum
-            ParagraphTree *after_enum = enum_this->firstWithSameOrLowerIndent(enum_this->indentation-1);
+        if (curr_enum->brother) { // there are more sections behind the current enum
+            ParagraphTree * const next_enum = curr_enum->firstWithLessIndentThan(curr_enum->indentation);
 
-            if (after_enum) { // indent should go back after enum
-                h2x_assert(!enum_this->son);
+            if (next_enum) { // indent should go back after enum
+                h2x_assert(!curr_enum->son);
 
-                if (after_enum != enum_this->brother) {
-                    enum_this->son = enum_this->brother->removeTill(after_enum);
+                if (next_enum != curr_enum->brother) {
+                    curr_enum->son = curr_enum->brother->takeAllInFrontOf(next_enum);
                 }
-                enum_this->brother = 0;
+                curr_enum->brother = 0;
 
-                h2x_assert(before_enum);
-                h2x_assert(before_enum->brother == 0);
-                before_enum->brother = after_enum->format_enums();
+                h2x_assert(prev_enum);
+                h2x_assert(prev_enum->brother == 0);
+                prev_enum->brother = next_enum->format_enums();
             }
             else { // nothing after enum -> take all as children
-                h2x_assert(enum_this->son == 0);
-                enum_this->son     = enum_this->brother;
-                enum_this->brother = 0;
+                h2x_assert(curr_enum->son == 0);
+                curr_enum->son     = curr_enum->brother;
+                curr_enum->brother = 0;
             }
-            if (enum_this->son) enum_this->son = enum_this->son->format_enums();
+            if (curr_enum->son) curr_enum->son = curr_enum->son->format_enums();
         }
         else {
-            if (before_enum) {
-                if (before_enum->son) before_enum->son->append(before_enum->brother);
-                before_enum->brother = 0;
+            if (prev_enum) {
+                if (prev_enum->son) prev_enum->son->append(prev_enum->brother);
+                prev_enum->brother = 0;
             }
         }
 
-        if (enum_this->enumeration == 1) { // oops - only '1.' search for enum inside block
-            ParagraphTree *lookin = enum_this;
+        if (curr_enum->enumeration == 1) { // oops - only '1.' search for enum inside block
+            ParagraphTree *lookin = curr_enum;
             int            lookfor;
 
             for (lookfor = 2; ; ++lookfor) {
-                ParagraphTree *next_enum = lookin->extractEmbeddedEnum(lookfor);
+                ParagraphTree * const next_enum = lookin->extractEmbeddedEnum(lookfor);
                 if (!next_enum) break;
 
                 embeddedCounter++;
@@ -968,14 +985,14 @@ ParagraphTree* ParagraphTree::format_indentations() {
             if (son) son = son->format_indentations();
         }
         else {
-            ParagraphTree *same_indent = brother->firstWithSameOrLowerIndent(indentation);
+            ParagraphTree *same_indent = brother->firstWithLessIndentThan(indentation+1);
             if (same_indent) {
                 if (same_indent == brother) {
                     brother     = brother->format_indentations();
                     if (son) son = son->format_indentations();
                 }
                 else {
-                    ParagraphTree *children = brother->removeTill(same_indent);
+                    ParagraphTree *children = brother->takeAllInFrontOf(same_indent);
                     brother                 = same_indent->format_indentations();
                     h2x_assert(!son);
                     son                     = children->format_indentations();
@@ -1142,14 +1159,15 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
                 XML_Tag textblock("T");
                 textblock.add_attribute("reflow", reflow ? "1" : "0");
                 {
-                    string usedText;
+                    string        usedText;
+                    const string& text = otext;
                     if (reflow) {
                         usedText = correctIndentation(text, (textblock.Indent()+1) * the_XML_Document->indentation_per_level);
                     }
                     else {
                         usedText = text;
                     }
-                    print_XML_Text_expanding_links(usedText, lineNo);
+                    print_XML_Text_expanding_links(usedText, otext.get_lineno());
                 }
             }
             if (son) {
@@ -1174,14 +1192,6 @@ static void create_top_links(const Links& links, const char *tag) {
 }
 
 void Helpfile::writeXML(FILE *out, const string& page_name) {
-#if defined(DUMP_DATA)
-    display(uplinks,         "Uplinks",         stdout);
-    display(references,      "References",      stdout);
-    display(auto_references, "Auto-References", stdout);
-    display(title,           "Title",           stdout);
-    display(sections,        "Sections",        stdout);
-#endif // DUMP_DATA
-
     XML_Document xml("PAGE", "arb_help.dtd", out);
 
     xml.skip_empty_tags       = true;
@@ -1202,11 +1212,11 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
     create_top_links(uplinks, "UP");
     create_top_links(references, "SUB");
     create_top_links(auto_references, "SUB");
-    
+
     {
         XML_Tag title_tag("TITLE");
-        Strings& T = title.Content();
-        for (Strings::const_iterator s = T.begin(); s != T.end(); ++s) {
+        const Ostrings& T = title.Content();
+        for (Ostrings::const_iterator s = T.begin(); s != T.end(); ++s) {
             if (s != T.begin()) { XML_Text text("\n"); }
             XML_Text text(*s);
         }
@@ -1248,9 +1258,9 @@ void Helpfile::extractInternalLinks() {
     for (NamedSections::const_iterator named_sec = sections.begin(); named_sec != sections.end(); ++named_sec) {
         const Section& sec = named_sec->getSection();
         try {
-            const Strings& s   = sec.Content();
+            const Ostrings& s = sec.Content();
 
-            for (Strings::const_iterator li = s.begin(); li != s.end(); ++li) {
+            for (Ostrings::const_iterator li = s.begin(); li != s.end(); ++li) {
                 const string& line = *li;
                 size_t        start = 0;
 
@@ -1269,13 +1279,15 @@ void Helpfile::extractInternalLinks() {
                         link_target.find('@')       == string::npos)
                     {
                         try {
-                            check_duplicates(link_target, "SUB", references, true); // check only sublinks here
-                            check_duplicates(link_target, "UP", uplinks, false); // check only sublinks here
-                            check_duplicates(link_target, "AUTO-SUB", auto_references, false); // check only sublinks here
+                            check_specific_duplicates(link_target, references,      false); // check only sublinks here
+                            check_specific_duplicates(link_target, uplinks,         false); // check only uplinks here
+                            check_specific_duplicates(link_target, auto_references, false); // check only sublinks here
+
+                            // only auto-add inline reference if none of the above checks has thrown
                             auto_references.push_back(Link(link_target, sec.StartLineno()));
                         }
                         catch (string& err) {
-                            ; // silently ignore inlined 
+                            ; // silently ignore inlined
                         }
                     }
                     start = close+1;
@@ -1301,16 +1313,17 @@ static void show_err(const string& err, size_t lineno, const string& helpfile) {
     }
     cerr << '\n';
 }
-static void show_err(const LineAttachedMessage& line_err, const string& helpfile) {
+inline void show_err(const LineAttachedMessage& line_err, const string& helpfile) {
     show_err(line_err.Message(), line_err.Lineno(), helpfile);
 }
-
-static void show_warnings(const string& helpfile) {
+inline void show_warning(const LineAttachedMessage& line_err, const string& helpfile) {
+    show_err(string("Warning: ")+line_err.Message(), line_err.Lineno(), helpfile);
+}
+inline void show_warnings(const string& helpfile) {
     for (list<LineAttachedMessage>::const_iterator wi = warnings.begin(); wi != warnings.end(); ++wi) {
-        show_err(*wi, helpfile);
+        show_warning(*wi, helpfile);
     }
 }
-
 static void show_warnings_and_error(const LineAttachedMessage& error, const string& helpfile) {
     show_warnings(helpfile);
     show_err(error, helpfile);
@@ -1365,9 +1378,10 @@ int ARB_main(int argc, char *argv[]) {
 
             return EXIT_SUCCESS;
         }
-        catch (string& err)      { throw unattached_message(err); }
-        catch (const char * err) { throw unattached_message(err); }
-        catch (...)              { throw unattached_message("unknown exception in arb_help2xml"); }
+        catch (string& err)              { throw unattached_message(err); }
+        catch (const char * err)         { throw unattached_message(err); }
+        catch (LineAttachedMessage& err) { throw; }
+        catch (...)                      { throw unattached_message("unknown exception in arb_help2xml"); }
     }
     catch (LineAttachedMessage& err) { show_warnings_and_error(err, arb_help); }
     catch (...) { h2x_assert(0); }
@@ -1375,23 +1389,29 @@ int ARB_main(int argc, char *argv[]) {
     return EXIT_FAILURE;
 }
 
-
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
-static arb_test::match_expectation help_file_compiles(const char *helpname, const char *expected_title, const char *expected_error_part) {
+static arb_test::match_expectation help_file_compiles(const char *helpfile, const char *expected_title, const char *expected_error_part) {
     using namespace   arb_test;
     expectation_group expected;
 
-    string   helpfile = string("../../HELP_SOURCE/oldhelp/") + helpname;
-    ifstream in(helpfile.c_str());
+    ifstream in(helpfile);
 
     LineAttachedMessage *error = NULL;
 
     Helpfile help;
-    try { help.readHelp(in, helpfile); }
+    try {
+        help.readHelp(in, helpfile);
+        help.extractInternalLinks();
+
+        FILE *devnul = fopen("/dev/null", "wt");
+        if (!devnul) throw unattached_message("can't write to null device");
+        help.writeXML(devnul, "dummy");
+        fclose(devnul);
+    }
     catch (LineAttachedMessage& err) { error = new LineAttachedMessage(err); }
     catch (...)                      { error = new LineAttachedMessage(unattached_message("unknown exception")); }
 
@@ -1402,10 +1422,10 @@ static arb_test::match_expectation help_file_compiles(const char *helpname, cons
     else {
         expected.add(that(error).is_equal_to_NULL());
         if (!error) {
-            Section        title         = help.get_title();
-            const Strings& title_strings = title.Content();
+            Section title = help.get_title();
+            const Ostrings& title_strings = title.Content();
 
-            expected.add(that(title_strings.front()).is_equal_to(expected_title));
+            expected.add(that(title_strings.front().as_string()).is_equal_to(expected_title));
             expected.add(that(title_strings.size()).is_equal_to(1));
         }
         else {
@@ -1422,9 +1442,15 @@ static arb_test::match_expectation help_file_compiles(const char *helpname, cons
 #define HELP_FILE_COMPILE_ERROR(name,expError) TEST_EXPECTATION(help_file_compiles(name,NULL,expError))
 
 void TEST_hlp2xml_conversion() {
-    HELP_FILE_COMPILE_ERROR("akjsdlkad.hlp", "Can't read from"); // no such file
+    chdir("../../HELP_SOURCE");
 
-    HELP_FILE_COMPILES("ad_align.hlp", "Alignment Administration"); // oldhelp/ad_align.hlp
+    HELP_FILE_COMPILES("genhelp/agde_treepuzzle.hlp", "treepuzzle");        // genhelp/agde_treepuzzle.hlp
+
+    HELP_FILE_COMPILES("oldhelp/markbyref.hlp", "Mark by reference");        // oldhelp/markbyref.hlp
+    HELP_FILE_COMPILES("oldhelp/ad_align.hlp",  "Alignment Administration"); // oldhelp/ad_align.hlp
+    HELP_FILE_COMPILES("genhelp/copyright.hlp", "Copyrights");               // genhelp/copyright.hlp
+
+    HELP_FILE_COMPILE_ERROR("akjsdlkad.hlp", "Can't read from"); // no such file
 }
 
 #endif // UNIT_TESTS
