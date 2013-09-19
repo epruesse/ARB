@@ -504,56 +504,57 @@ struct _awar_float_to_int_mapper : public AW_awar_gvalue_mapper {
     }
 };
 
-extern "C" gboolean AW_switch_widget_child(GtkWidget *bin, gpointer other_bin) {
-    GtkWidget *child = gtk_bin_get_child(GTK_BIN(bin));
-    GtkWidget *other_child = gtk_bin_get_child(GTK_BIN(other_bin));
-    g_object_ref(child);
-    g_object_ref(other_child);
-    gtk_container_remove(GTK_CONTAINER(bin), child);
-    gtk_container_remove(GTK_CONTAINER(other_bin), other_child);
-    gtk_container_add(GTK_CONTAINER(bin), GTK_WIDGET(other_child));
-    gtk_container_add(GTK_CONTAINER(other_bin), GTK_WIDGET(child));
+struct toggle_button_data {
+    AW_awar* awar;
+    GtkWidget *yes, *no, *toggle;
+};
 
-    g_object_unref(child);
-    g_object_unref(other_child);
-    return false; // event not consumed
+static void _aw_update_toggle_icon(AW_root*, AW_CL data) {
+    toggle_button_data *tbd = (toggle_button_data*)data;
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(tbd->toggle));
+    if (tbd->awar->read_int()) {
+        if (child == tbd->yes) return; // nothing to do
+        g_object_ref(tbd->no);
+        gtk_container_remove(GTK_CONTAINER(tbd->toggle), tbd->no);
+        gtk_container_add(GTK_CONTAINER(tbd->toggle), tbd->yes);
+    } 
+    else {
+        if (child == tbd->no) return; // nothing to do
+        g_object_ref(tbd->yes);
+        gtk_container_remove(GTK_CONTAINER(tbd->toggle), tbd->yes);
+        gtk_container_add(GTK_CONTAINER(tbd->toggle), tbd->no);
+    }
+    gtk_widget_show_all(tbd->toggle);    
 }
-
 
 /**
  * Creates a toggle button.
  * 
- * @param var_name The name of the awar that should be connected to this button
- * @param yes Text/Icon for active toggle button
- * @param no Text/Icon for inactive toggle button
+ * @param var_name  must be integer awar. 0=no, 1=yes
+ * @param yes       Text/Icon for active toggle button
+ * @param no        Text/Icon for inactive toggle button
  * @param width
  */
-void AW_window::create_toggle(const char *awar_name, const char *yes, const char *no, int width) {
+void AW_window::create_toggle(const char *awar_name, const char *no, const char *yes, int width) {
     AW_awar* awar = get_root()->awar_no_error(awar_name);
     aw_return_if_fail(awar != NULL);
     aw_return_if_fail(yes != NULL);
     aw_return_if_fail(no != NULL);
 
-    GtkWidget* checkButton;
-
-    // create our own switching labels toggle
-        
-    checkButton = gtk_toggle_button_new();
-    GtkWidget* no_label = make_label(no, width);
+    GtkWidget* checkButton = gtk_toggle_button_new();
+    GtkWidget* no_label    = make_label(no, width);
+    GtkWidget* yes_label   = make_label(yes, width);
     gtk_container_add(GTK_CONTAINER(checkButton), no_label);
-    
-    GtkWidget* bin = gtk_toggle_button_new();
-    GtkWidget* other_label = make_label(yes, width);
-    gtk_container_add(GTK_CONTAINER(bin), other_label);
-        
-    gtk_widget_show_all(bin);
 
-    g_signal_connect(G_OBJECT(checkButton), "released", 
-                     G_CALLBACK(AW_switch_widget_child),
-                     (gpointer) bin);
-   
+    toggle_button_data *data = new toggle_button_data; //@@@LEAK 
+    data->awar = awar;
+    data->yes  = yes_label;
+    data->no   = no_label;
+    data->toggle = checkButton;
+    awar->add_callback(_aw_update_toggle_icon, (AW_CL)data);
     awar->bind_value(G_OBJECT(checkButton), "active");
-
+    _aw_update_toggle_icon(NULL,(AW_CL)data);
+   
     // fixme handle action?
     
     put_with_label(checkButton);   
