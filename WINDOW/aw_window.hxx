@@ -480,7 +480,7 @@ public:
     void create_progressBar(const char *awar); 
     void create_checkbox(const char* var_name, bool inverse=false);
     void create_checkbox_inverse(const char* var_name);
-    void create_toggle(const char *var_name, const char *yes, const char *no, int width = 0);  
+    void create_toggle(const char *var_name, const char *no, const char *yes, int width = 0);  
 
     void create_input_field(const char *awar_name, int columns = 0);   // One line textfield
     void create_text_field(const char *awar_name, int columns = 20, int rows = 4);   // Multi line textfield
@@ -502,8 +502,7 @@ public:
     void create_toggle(const char *var_name) { create_checkbox(var_name); }
     void create_inverse_toggle(const char *var_name) { create_checkbox_inverse(var_name); }
     void create_text_toggle(const char *var_name, const char *no, const char *yes, int width = 0) {
-        // yes and no are reversed!
-        create_toggle(var_name, yes, no, width);
+        create_toggle(var_name, no, yes, width);
     }
     
     
