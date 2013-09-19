@@ -12,16 +12,16 @@ private:
     AW_awar   *awar;
     AW_scalar  value;
     
-    AW_choice& operator=(const AW_choice&);
-
     explicit AW_choice(AW_awar*, AW_action&, int32_t);
     explicit AW_choice(AW_awar*, AW_action&, double);
     explicit AW_choice(AW_awar*, AW_action&, const char*);
 
     friend class AW_choice_list;
 public:
+    // cpy ctors need to be public for vector to access them
     AW_choice(const AW_choice&);
-    // (can't put the AW_choice into a vector if copy-ctor private)
+    AW_choice& operator=(const AW_choice&);
+
     virtual ~AW_choice() OVERRIDE;
     
     virtual void user_clicked() OVERRIDE;
