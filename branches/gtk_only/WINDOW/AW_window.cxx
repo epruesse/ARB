@@ -23,7 +23,6 @@
 #include "aw_awar.hxx"
 #include "aw_common.hxx"
 #include "aw_help.hxx"
-#include "aw_varUpdateInfo.hxx" 
 #include "aw_type_checking.hxx"
 #include "aw_select.hxx"
 #include "aw_choice.hxx"
