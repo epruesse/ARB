@@ -18,7 +18,6 @@
 #include "aw_msg.hxx"
 #include "aw_select.hxx"
 #include "aw_help.hxx"
-#include "aw_varUpdateInfo.hxx"
 #include "aw_dialog.hxx"
 
 #include <arbdbt.h>
