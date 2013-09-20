@@ -254,7 +254,7 @@ void AW_awar_int::do_update() {
 }
 
 AW_choice* AW_awar_int::add_choice(AW_action& act, int val, bool def) {
-    return choices.add_choice(this, act, (int32_t)val, def);
+    return choices.add_choice(act, (int32_t)val, def);
 }
 
 AW_awar* AW_awar_int::set_minmax(float min, float max) {
@@ -377,7 +377,7 @@ void AW_awar_float::do_update() {
 }
 
 AW_choice* AW_awar_float::add_choice(AW_action& act, double val, bool def) {
-    return choices.add_choice(this, act, val, def);
+    return choices.add_choice(act, val, def);
 }
 
 AW_awar *AW_awar_float::set_minmax(float min, float max) {
@@ -481,6 +481,7 @@ AW_awar_string::~AW_awar_string() {
 void AW_awar_string::do_update() {
     char *str = read_string();
 
+    // apply srt
     if (srt_program) {
         char *n   = GBS_string_eval(str, srt_program, 0);
     
@@ -502,7 +503,7 @@ void AW_awar_string::do_update() {
 }
 
 AW_choice* AW_awar_string::add_choice(AW_action& act, const char* val, bool def) {
-    return choices.add_choice(this, act, val, def);
+    return choices.add_choice(act, val, def);
 }
 
 AW_awar *AW_awar_string::set_srt(const char *srt) {
@@ -620,7 +621,7 @@ GBDATA *AW_awar_pointer::read_pointer() {
 AW_awar_impl::AW_awar_impl(const char *var_name) 
   : callback_list(NULL),
     in_tmp_branch(var_name && strncmp(var_name, "tmp/", 4) == 0),
-    choices(),
+    choices(this),
     gb_origin(NULL),
     gb_var(NULL)
 {
@@ -642,6 +643,7 @@ void AW_awar_impl::update() {
     
     do_update();
     run_callbacks();
+    choices.update();
 
     aw_assert(is_valid());
 }

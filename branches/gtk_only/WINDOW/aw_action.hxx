@@ -29,5 +29,6 @@ public:
   
     void bind(GtkWidget*, const char*);
     void unbind(GtkWidget*, const char*);
+    void bound_set(const char*, ...) __ATTR__SENTINEL;
   
 };
