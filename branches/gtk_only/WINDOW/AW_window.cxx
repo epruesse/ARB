@@ -1427,18 +1427,23 @@ void AW_window::init_window(const char *window_name_, const char* window_title,
     // manage transience:
     // the first created window is considered the main application
     // window. should it be closed, the next created window supersedes it.
-    // all other windows are "transient", i.e. dialogs relative to it.
-    // (relevant for window placement by window manager)
     if (!get_root()->root_window || !get_root()->root_window->is_shown()) {
         // no root window yet, or root window not visible => I'm root
         get_root()->root_window = this;
     }
+
+#if 0
+    // transient windows are always in front of main window
+    // we don't want this, at least not in all cases. 
+    // disabled for now
     else {
-        // there is a root, we're a transient to it
+        // all other windows are "transient", i.e. dialogs relative to it.
+        // (relevant for window placement by window manager)
         gtk_window_set_transient_for(prvt->window, 
                                      get_root()->root_window->prvt->window);
 
     }
+#endif
 
     
     // try setting a window icon 
