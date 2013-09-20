@@ -258,6 +258,7 @@ AW_at_layout.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_at_layout.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_at_layout.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AW_awar.o: aw_action.hxx
 AW_awar.o: aw_area_management.hxx
 AW_awar.o: aw_assert.hxx
 AW_awar.o: aw_at.hxx
@@ -265,6 +266,7 @@ AW_awar.o: aw_awar.hxx
 AW_awar.o: aw_awar_impl.hxx
 AW_awar.o: aw_base.hxx
 AW_awar.o: aw_cb_struct.hxx
+AW_awar.o: aw_choice.hxx
 AW_awar.o: aw_clipable.hxx
 AW_awar.o: aw_common.hxx
 AW_awar.o: aw_common_gtk.hxx
@@ -275,6 +277,7 @@ AW_awar.o: aw_device_gtk.hxx
 AW_awar.o: aw_device_impl.hxx
 AW_awar.o: aw_device_print.hxx
 AW_awar.o: aw_device_size.hxx
+AW_awar.o: aw_element.hxx
 AW_awar.o: aw_font_limits.hxx
 AW_awar.o: aw_gtk_forward_declarations.hxx
 AW_awar.o: aw_gtk_migration_helpers.hxx
@@ -286,6 +289,7 @@ AW_awar.o: aw_position.hxx
 AW_awar.o: aw_root.hxx
 AW_awar.o: aw_scalar.hxx
 AW_awar.o: aw_select.hxx
+AW_awar.o: aw_signal.hxx
 AW_awar.o: aw_simple_device.hxx
 AW_awar.o: aw_stylable.hxx
 AW_awar.o: aw_window.hxx
@@ -368,6 +372,38 @@ AW_cb_struct.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/ttypes.h
+
+AW_choice.o: aw_action.hxx
+AW_choice.o: aw_area_management.hxx
+AW_choice.o: aw_assert.hxx
+AW_choice.o: aw_awar.hxx
+AW_choice.o: aw_base.hxx
+AW_choice.o: aw_choice.hxx
+AW_choice.o: aw_element.hxx
+AW_choice.o: aw_gtk_forward_declarations.hxx
+AW_choice.o: aw_keysym.hxx
+AW_choice.o: aw_root.hxx
+AW_choice.o: aw_scalar.hxx
+AW_choice.o: aw_signal.hxx
+AW_choice.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_choice.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_choice.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_choice.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_choice.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_choice.o: $(ARBHOME)/INCLUDE/arb_string.h
+AW_choice.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_choice.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_choice.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_choice.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_choice.o: $(ARBHOME)/INCLUDE/cb.h
+AW_choice.o: $(ARBHOME)/INCLUDE/cbtypes.h
+AW_choice.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_choice.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_choice.o: $(ARBHOME)/INCLUDE/gccver.h
+AW_choice.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_choice.o: $(ARBHOME)/INCLUDE/static_assert.h
+AW_choice.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_choice.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_clipable.o: aw_assert.hxx
 AW_clipable.o: aw_base.hxx
@@ -1175,6 +1211,7 @@ AW_root.o: aw_awar_defs.hxx
 AW_root.o: aw_awar_impl.hxx
 AW_root.o: aw_base.hxx
 AW_root.o: aw_cb_struct.hxx
+AW_root.o: aw_choice.hxx
 AW_root.o: aw_clipable.hxx
 AW_root.o: aw_common.hxx
 AW_root.o: aw_common_gtk.hxx
@@ -1529,6 +1566,7 @@ AW_window.o: aw_at_layout.hxx
 AW_window.o: aw_awar.hxx
 AW_window.o: aw_base.hxx
 AW_window.o: aw_cb_struct.hxx
+AW_window.o: aw_choice.hxx
 AW_window.o: aw_clipable.hxx
 AW_window.o: aw_common.hxx
 AW_window.o: aw_common_gtk.hxx
@@ -1641,8 +1679,10 @@ AW_window_menu_modes.o: aw_area_management.hxx
 AW_window_menu_modes.o: aw_assert.hxx
 AW_window_menu_modes.o: aw_at.hxx
 AW_window_menu_modes.o: aw_at_layout.hxx
+AW_window_menu_modes.o: aw_awar.hxx
 AW_window_menu_modes.o: aw_base.hxx
 AW_window_menu_modes.o: aw_cb_struct.hxx
+AW_window_menu_modes.o: aw_choice.hxx
 AW_window_menu_modes.o: aw_clipable.hxx
 AW_window_menu_modes.o: aw_common.hxx
 AW_window_menu_modes.o: aw_common_gtk.hxx
@@ -1662,6 +1702,7 @@ AW_window_menu_modes.o: aw_help.hxx
 AW_window_menu_modes.o: aw_keysym.hxx
 AW_window_menu_modes.o: aw_position.hxx
 AW_window_menu_modes.o: aw_root.hxx
+AW_window_menu_modes.o: aw_scalar.hxx
 AW_window_menu_modes.o: aw_signal.hxx
 AW_window_menu_modes.o: aw_simple_device.hxx
 AW_window_menu_modes.o: aw_stylable.hxx
