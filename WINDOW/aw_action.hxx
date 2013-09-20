@@ -24,7 +24,7 @@ public:
     AW_signal clicked;
     AW_signal dclicked;
 
-    virtual void user_clicked();
+    virtual void user_clicked(GtkWidget*);
     void set_enabled(bool) OVERRIDE;
   
     void bind(GtkWidget*, const char*);

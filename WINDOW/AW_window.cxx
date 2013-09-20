@@ -348,12 +348,12 @@ void AW_window::create_progressBar(const char *var_name) {
     awar->bind_value(G_OBJECT(bar), "fraction");
 }
 
-bool AW_window::close_window_handler(GtkWidget*, GdkEvent*, gpointer data) {
+bool AW_window::close_window_handler(GtkWidget* wgt, GdkEvent*, gpointer data) {
     aw_return_val_if_fail(data, false);
     AW_window *w = (AW_window*)data;
 
     if (w->prvt->close_action) {
-        w->prvt->close_action->user_clicked();
+        w->prvt->close_action->user_clicked(wgt);
     }
  
     /* If you return FALSE in the "delete-event" signal handler,
@@ -868,6 +868,7 @@ void AW_window::insert_toggle_internal(const char *toggle_label, const char *mne
 
     AW_choice *choice = awar->add_choice(prvt->action_template, var_value, default_toggle);
     choice->bind(GTK_WIDGET(prvt->radio_last), "clicked");
+    choice->set_label(toggle_label);
     /*
     AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, NULL, AW_WIDGET_TOGGLE_FIELD,
                                                  awar, var_value, prvt->callback);
