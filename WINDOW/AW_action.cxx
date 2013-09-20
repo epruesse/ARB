@@ -101,14 +101,23 @@ void AW_action::user_clicked() {
  */
 void AW_action::set_enabled(bool enable) {
     // change status of connected widgets
+    bound_set("sensitive", enable, NULL);
+
+    AW_element::set_enabled(enable);
+}
+
+void AW_action::bound_set(const char* first_prop, ...) {
+    va_list arg_list;
+    va_start(arg_list, first_prop);
+
     for (std::list<AW_action_g_signal_binding>::iterator it = prvt->gsignals.begin();
          it != prvt->gsignals.end(); ++it) {
-        if (GTK_IS_WIDGET(it->object)) {
-            gtk_widget_set_sensitive(GTK_WIDGET(it->object), enable);
+        if (G_IS_OBJECT(it->object)) {
+            g_object_set_valist(G_OBJECT(it->object), first_prop, arg_list);
         }
     }
 
-    AW_element::set_enabled(enable);
+    va_end(arg_list);
 }
 
 /**
