@@ -143,7 +143,7 @@ static void map_viewkey(AW_root *aw_root, AW_default awdef, int i, GBDATA *gb_vi
     AW_awar *Awar;
     Awar = viewkeyAwar(aw_root, awdef, i, "key_text", true); Awar->map(gb_key_text);
     Awar = viewkeyAwar(aw_root, awdef, i, "pars",     true); Awar->map(gb_pars);
-    Awar = viewkeyAwar(aw_root, awdef, i, "len1",     false); Awar->map(gb_len1);
+    Awar = viewkeyAwar(aw_root, awdef, i, "len1",     false); Awar->map(gb_len1); Awar->set_minmax(0, 1000000);
     Awar = viewkeyAwar(aw_root, awdef, i, "group",    false); Awar->map(gb_group);
     Awar = viewkeyAwar(aw_root, awdef, i, "leaf",     false); Awar->map(gb_leaf);
 }
