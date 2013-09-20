@@ -42,10 +42,14 @@ void AW_choice::user_clicked(GtkWidget* w) {
     
     // check if the widget was "disabled"
     // there is no "enable" event for radio buttons :-(
-    if (GTK_IS_TOGGLE_BUTTON(w) || GTK_IS_CHECK_MENU_ITEM(w)) {
-        int active;
-        g_object_get(G_OBJECT(w), "active", &active, NULL);
-        if (!active) return;
+    if (GTK_IS_TOGGLE_BUTTON(w) || 
+        GTK_IS_CHECK_MENU_ITEM(w) ||
+        GTK_IS_TOGGLE_TOOL_BUTTON(w)) {
+        int is_active;
+        g_object_get(G_OBJECT(w), "active", &is_active, NULL);
+        if (!is_active) return;
+    } else {
+        printf("here\n");
     }
 
     // fixme: help?
@@ -68,6 +72,7 @@ void AW_choice_list::update() {
     for (choices_t::iterator it = choices.begin(); it != choices.end(); ++it) {
         if (it->value == awar) {
             it->bound_set("active", 1, NULL);
+            return;
         }
     }
 }

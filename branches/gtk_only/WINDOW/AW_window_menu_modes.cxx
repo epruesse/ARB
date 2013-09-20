@@ -148,4 +148,5 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     AW_awar *awar = get_root()->awar(GBS_global_string("%s/%s", window_defaults_name, "mode"));
     awar->add_choice(prvt->action_template, gtk_toolbar_get_n_items(prvt->mode_menu) - 1, false)
         ->bind(GTK_WIDGET(button), "toggled");
+    prvt->action_template = AW_action();
 }
