@@ -6,6 +6,7 @@
 #include <vector>
 
 typedef struct _GtkRadioButton GtkRadioButton;
+typedef struct _GtkWidget      GtkWidget;
 
 class AW_choice_list;
 
@@ -25,7 +26,7 @@ public:
     AW_choice& operator=(const AW_choice&);
 
     virtual ~AW_choice() OVERRIDE;
-    virtual void user_clicked() OVERRIDE;
+    virtual void user_clicked(GtkWidget*) OVERRIDE;
 };
 
 class AW_choice_list : virtual Noncopyable { 

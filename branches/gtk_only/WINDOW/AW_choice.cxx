@@ -1,4 +1,5 @@
 #include "aw_choice.hxx"
+#include "gtk/gtk.h"
 
 AW_choice::AW_choice(AW_choice_list* li, AW_action& act, int32_t val) 
     : AW_action(act),
@@ -35,8 +36,18 @@ AW_choice& AW_choice::operator=(const AW_choice& o) {
 AW_choice::~AW_choice() {
 }
 
-void AW_choice::user_clicked() {
-    if (value == list->awar) return; // no event if nothing changed
+void AW_choice::user_clicked(GtkWidget* w) {
+    // check if this would change anything
+    if (value == list->awar) return; 
+    
+    // check if the widget was "disabled"
+    // there is no "enable" event for radio buttons :-(
+    if (GTK_IS_TOGGLE_BUTTON(w) || GTK_IS_CHECK_MENU_ITEM(w)) {
+        int active;
+        g_object_get(G_OBJECT(w), "active", &active, NULL);
+        if (!active) return;
+    }
+
     // fixme: help?
     // fixme: tracking?
     value.write_to(list->awar);

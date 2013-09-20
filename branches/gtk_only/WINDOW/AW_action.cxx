@@ -67,7 +67,7 @@ AW_action& AW_action::operator=(const AW_action& o) {
  * Triggers the action
  * This is called when the user clicks on a connected widget.
  */
-void AW_action::user_clicked() {
+void AW_action::user_clicked(GtkWidget*) {
     AW_root *root = AW_root::SINGLETON;
 
     if (root->is_help_active()) {
@@ -170,9 +170,9 @@ AW_action_g_signal_binding::operator=(const AW_action_g_signal_binding& o) {
     return *this;
 }    
 
-static bool _aw_signal_received_from_widget(GtkWidget*, gpointer data) {
+static bool _aw_signal_received_from_widget(GtkWidget* w, gpointer data) {
     AW_action* action = (AW_action*) data;
-    action->user_clicked();
+    action->user_clicked(w);
     return true; // hope this is right
 }
 
