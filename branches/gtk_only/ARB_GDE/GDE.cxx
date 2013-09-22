@@ -303,6 +303,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 }
                 aw_root->awar(newawar)->set_minmax(itemarg.min, itemarg.max);
                 aws->label(itemarg.label);
+                aws->sens_mask(itemarg.active_mask);
                 GDE_create_infieldwithpm(aws, newawar, SLIDERWIDTH);
                 // maybe bound checking //
                 free(newawar);
@@ -315,6 +316,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 bool     curr_value_legal = false;
 
                 aws->label(itemarg.label);
+                aws->sens_mask(itemarg.active_mask);
                 if ((strcasecmp(itemarg.choice[0].label, "no") == 0) ||
                     (strcasecmp(itemarg.choice[0].label, "yes") == 0))
                 {
@@ -347,6 +349,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 bool     curr_value_legal = false;
 
                 if (itemarg.label[0]) aws->label(itemarg.label);
+                aws->sens_mask(itemarg.active_mask);
                 aws->create_option_menu(newawar);
 
                 for (long j=0; j<itemarg.numchoices; j++) {
@@ -363,6 +366,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *newawar = GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->label(itemarg.label);
+                aws->sens_mask(itemarg.active_mask);
                 aws->create_input_field(newawar, itemarg.textwidth);  // TEXTFIELDWIDTH
                 free(newawar);
             }
@@ -373,6 +377,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 AW_create_fileselection_awars(aw_root, base_awar, "", itemarg.textvalue, "");
 
                 aws->label(itemarg.label);
+                aws->sens_mask(itemarg.active_mask);
                 aws->create_input_field(name_awar, 40);
                 aws->callback(GDE_popup_filename_browser, (AW_CL)new gde_iteminfo(gmenuitem, i), (AW_CL)strdup(itemarg.label));
                 aws->create_button("", "Browse");
@@ -384,6 +389,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *defopt=itemarg.textvalue;
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
+                aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
                 awt_create_selection_list_on_trees(db_access.gb_main, aws, newawar);
                 free(newawar);
@@ -392,6 +398,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *defopt=itemarg.textvalue;
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
+                aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
                 awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar);
                 free(newawar);
@@ -400,6 +407,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *defopt=itemarg.textvalue;
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
+                aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
                 void *id = awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar, gde_filter_weights);
                 free(newawar);
@@ -449,7 +457,7 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const 
             }
             else {
                 hotkey[0]     = menu[nmenu].meta;
-                awm->insert_sub_menu(menuname, hotkey);
+                awm->insert_sub_menu(menuname, hotkey, menu[nmenu].active_mask);
             }
         }
 
@@ -469,7 +477,7 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const 
                 }
                 hotkey[0]     = menuitem->meta;
                 awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,
-                                       help, mask,
+                                       help, menuitem->active_mask,
                                        AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
             }
         }
