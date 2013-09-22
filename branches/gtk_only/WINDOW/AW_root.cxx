@@ -30,7 +30,6 @@
 #include "aw_awar_defs.hxx"
 #include "aw_window.hxx"
 #include "aw_global_awars.hxx"
-#include "aw_nawar.hxx"
 #include "aw_msg.hxx"
 #include "aw_select.hxx"
 #include "aw_status.hxx"
