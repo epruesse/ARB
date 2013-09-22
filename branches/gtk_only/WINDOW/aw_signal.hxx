@@ -30,6 +30,7 @@ public:
     virtual ~AW_signal();
     AW_signal(const AW_signal&);
     AW_signal& operator=(const AW_signal&);
+    AW_signal& operator+=(const AW_signal&);
 
     bool operator==(const AW_signal&) const;
     bool unordered_equal(const AW_signal&) const;
