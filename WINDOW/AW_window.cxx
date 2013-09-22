@@ -687,6 +687,9 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
     g_signal_connect(G_OBJECT(textbuffer), "changed", G_CALLBACK(text_field_changed_callback), NULL);
     //END HACK
     
+    awar->changed_by_user += prvt->action_template.clicked;
+    prvt->action_template = AW_action();
+
     if (prvt->d_callback) {
         /*
         g_signal_connect(G_OBJECT(entry), "activate",
