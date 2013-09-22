@@ -117,13 +117,19 @@ AW_signal::AW_signal(const AW_signal& o)
 AW_signal& AW_signal::operator=(const AW_signal& o) {
     // copy the slots containing downstream callbacks
     prvt->slots.clear();
+    return operator+=(o);
+}
+
+/** Add-to Operator */
+AW_signal& AW_signal::operator+=(const AW_signal& o) {
     for (std::list<Slot*>::iterator it = o.prvt->slots.begin();
          it != o.prvt->slots.end(); ++it) {
         prvt->slots.push_back((*it)->clone());
     }
-
+    
     return *this;
 }
+
 
 /** Destructor */
 AW_signal::~AW_signal() {
@@ -152,6 +158,7 @@ bool AW_signal::operator==(const AW_signal& o) const {
     return std::equal(prvt->slots.begin(), prvt->slots.end(), o.prvt->slots.begin(),
                       dereference<std::equal_to<Slot> >());
 }
+
 
 /** Compare Signals ignoring signal order */
 bool AW_signal::unordered_equal(const AW_signal& o) const {
@@ -358,5 +365,39 @@ void TEST_AW_signal_equal() {
     sig2.connect(makeWindowCallback(wcb1, (const char*)456), (AW_window*)123);
     TEST_EXPECT_EQUAL(sig1 == sig2, false);
     TEST_EXPECT_EQUAL(sig1.unordered_equal(sig2), true);
+}
+
+void TEST_AW_signal_assign() {
+    wcb1_count = 0;
+    rcb1_count = 0;
+    AW_signal sig1, sig2;
+
+    // test simple assign
+    sig1.connect(makeWindowCallback(wcb1, (const char*)456), (AW_window*)123);
+    sig2 = sig1;
+    sig2.emit();
+    TEST_EXPECT_EQUAL(wcb1_count, 1);
+    TEST_EXPECT_EQUAL(rcb1_count, 0);
+
+    // test assign removes old cb 
+    sig1.clear();
+    sig1.connect(makeRootCallback(rcb1, (const char*)135));
+    sig2 = sig1;
+    sig2.emit();
+    TEST_EXPECT_EQUAL(wcb1_count, 1);
+    TEST_EXPECT_EQUAL(rcb1_count, 1);
+
+    // test add-to assign
+    sig1.clear();
+    sig1.connect(makeWindowCallback(wcb1, (const char*)456), (AW_window*)123);
+    sig2 += sig1;
+    sig2.emit();
+    TEST_EXPECT_EQUAL(wcb1_count, 2);
+    TEST_EXPECT_EQUAL(rcb1_count, 2);
+
+    // test duplicate assign?
+
+    
+
 }
 #endif
