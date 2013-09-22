@@ -284,7 +284,6 @@ AW_awar.o: aw_gtk_migration_helpers.hxx
 AW_awar.o: aw_help.hxx
 AW_awar.o: aw_keysym.hxx
 AW_awar.o: aw_msg.hxx
-AW_awar.o: aw_nawar.hxx
 AW_awar.o: aw_position.hxx
 AW_awar.o: aw_root.hxx
 AW_awar.o: aw_scalar.hxx
@@ -1229,7 +1228,6 @@ AW_root.o: aw_gtk_migration_helpers.hxx
 AW_root.o: aw_help.hxx
 AW_root.o: aw_keysym.hxx
 AW_root.o: aw_msg.hxx
-AW_root.o: aw_nawar.hxx
 AW_root.o: aw_position.hxx
 AW_root.o: aw_root.hxx
 AW_root.o: aw_scalar.hxx
