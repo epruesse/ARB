@@ -35,8 +35,12 @@ public:
     bool unordered_equal(const AW_signal&) const;
     
     size_t size() const;
+
     void connect(const WindowCallback& wcb, AW_window* aww);
     void connect(const RootCallback& rcb);
+    void disconnect(const WindowCallback& wcb, AW_window* aww);
+    void disconnect(const RootCallback& rcb);
+
     void bind(GtkWidget*, const char* signal);
     void unbind(GtkWidget*, const char* signal);
    

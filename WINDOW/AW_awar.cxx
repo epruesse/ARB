@@ -160,21 +160,20 @@ AW_choice* AW_awar_impl::add_choice(AW_action&, double, bool) {
 // callback handling
 
 void AW_awar_impl::run_callbacks() {
-    if (allowed_to_run_callbacks) AW_root_cblist::call(callback_list, AW_root::SINGLETON);
+    if (allowed_to_run_callbacks) changed.emit();
 }
 
 AW_awar *AW_awar_impl::add_callback(const RootCallback& rcb) {
-    AW_root_cblist::add(callback_list, rcb);
+    changed.connect(rcb);
     return this;
 }
 AW_awar *AW_awar_impl::remove_callback(const RootCallback& rcb) {
-    AW_root_cblist::remove(callback_list, rcb);
+    changed.disconnect(rcb);
     return this;
 }
 
 void AW_awar_impl::remove_all_callbacks() {
-    if (callback_list) 
-        AW_root_cblist::clear(callback_list);
+    changed.clear();
 }
 
 // --------------------------------------------------------------------------------
