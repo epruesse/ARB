@@ -28,6 +28,8 @@
 #include <cb.h>
 #endif
 
+#include "aw_signal.hxx"
+
 #include "aw_gtk_forward_declarations.hxx"
 
 #include <vector>
@@ -72,6 +74,8 @@ struct AW_awar_gvalue_mapper {
 class AW_awar : virtual Noncopyable {
 public:
     char      *awar_name; // deprecated -- use get_name();
+    AW_signal changed;
+    AW_signal changed_by_user;
 
     virtual ~AW_awar() {};
 

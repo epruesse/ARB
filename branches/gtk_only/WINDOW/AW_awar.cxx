@@ -619,7 +619,6 @@ GBDATA *AW_awar_pointer::read_pointer() {
 AW_awar_impl::AW_awar_impl(const char *var_name) 
   : in_tmp_branch(var_name && strncmp(var_name, "tmp/", 4) == 0),
     choices(this),
-    changed(),
     gb_origin(NULL),
     gb_var(NULL)
 {
@@ -888,6 +887,8 @@ static void _aw_awar_on_notify(GObject* obj, GParamSpec *pspec, awar_gparam_bind
             aw_assert(false);
         }
     }
+
+    binding->awar->changed_by_user.emit();
 
     binding->frozen = false;
     
