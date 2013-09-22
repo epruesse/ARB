@@ -635,6 +635,9 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
         width--; // make room for the spinner
     }
 
+    awar->changed_by_user += prvt->action_template.clicked;
+    prvt->action_template = AW_action();
+
     if (width > 0) {
         gtk_entry_set_width_chars(GTK_ENTRY(entry), width);
     }
