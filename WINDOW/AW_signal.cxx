@@ -2,6 +2,7 @@
 #include "aw_assert.hxx"
 #include "aw_root.hxx"
 
+#include <algorithm>
 
 /**
  * Slot carrying the data for the individual callbacks.
@@ -173,11 +174,27 @@ size_t AW_signal::size() const {
 /** Connects the Signal to the supplied WindowCallback and Window */
 void AW_signal::connect(const WindowCallback& wcb, AW_window* aww) {
     aw_return_if_fail(aww != NULL);
+#ifdef DEBUG
+    WindowCallbackSlot wcbs(wcb, aww);
+    if (std::find_if(prvt->slots.begin(), prvt->slots.end(), 
+                     bind1st(dereference<std::equal_to<Slot> >(), &wcbs)) 
+        != prvt->slots.end()) {
+        aw_warning("duplicate signal!");
+    }
+#endif
     prvt->slots.push_front(new WindowCallbackSlot(wcb, aww));
 }
 
 /** Connects the Signal to the supplied RootCallback */
 void AW_signal::connect(const RootCallback& rcb) {
+#ifdef DEBUG
+    RootCallbackSlot rcbs(rcb);
+    if (std::find_if(prvt->slots.begin(), prvt->slots.end(), 
+                     bind1st(dereference<std::equal_to<Slot> >(), &rcbs)) 
+        != prvt->slots.end()) {
+        aw_warning("duplicate signal!");
+    }
+#endif
     prvt->slots.push_front(new RootCallbackSlot(rcb));
 }
 
