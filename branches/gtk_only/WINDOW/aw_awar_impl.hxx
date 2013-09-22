@@ -36,7 +36,6 @@ struct awar_gparam_binding {
 };
 
 class AW_awar_impl : public AW_awar, virtual Noncopyable {
-    AW_root_cblist *callback_list;
     bool            in_tmp_branch;
     std::list<awar_gparam_binding> gparam_bindings;
 
@@ -57,6 +56,8 @@ protected:
     void run_callbacks();
 
 public:
+    AW_signal changed;
+
     const char *get_name() const { return awar_name; }
 
     GBDATA    *gb_origin;                    // this is set ONCE on creation of awar

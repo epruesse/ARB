@@ -181,6 +181,20 @@ void AW_signal::connect(const RootCallback& rcb) {
     prvt->slots.push_front(new RootCallbackSlot(rcb));
 }
 
+/** Disconnects the Signal from the supplied RCB */
+void AW_signal::disconnect(const RootCallback& rcb) {
+    RootCallbackSlot r(rcb);
+    prvt->slots.remove_if(bind1st(dereference<std::equal_to<Slot> >(), &r));
+}
+
+/** Disconnects the Signal from the supplied RCB */
+void AW_signal::disconnect(const WindowCallback& wcb, AW_window* aww) {
+    WindowCallbackSlot w(wcb, aww);
+    prvt->slots.remove_if(bind1st(dereference<std::equal_to<Slot> >(), &w));
+}
+
+
+
 /** Emits the signal (i.e. runs all connected callbacks) */
 void AW_signal::emit() {
     if (!prvt->enabled) return;
@@ -259,6 +273,17 @@ void TEST_AW_signal_emit() {
     sig.emit();
     TEST_EXPECT_EQUAL(wcb1_count, 2);
     TEST_EXPECT_EQUAL(rcb1_count, 1);
+    
+    // Add some cbs, remove and emit
+    sig.connect(makeRootCallback(rcb1, (const char*)135));
+    sig.connect(makeRootCallback(rcb2, (const char*)135));
+    sig.connect(makeWindowCallback(wcb1, (const char*)456), (AW_window*)123);
+    sig.connect(makeWindowCallback(wcb1, (const char*)456), (AW_window*)456);
+    sig.disconnect(makeRootCallback(rcb2, (const char*)135));
+    sig.disconnect(makeWindowCallback(wcb1, (const char*)456), (AW_window*)456);
+    sig.emit();
+    TEST_EXPECT_EQUAL(wcb1_count, 3);
+    TEST_EXPECT_EQUAL(rcb1_count, 2);
 }
 
 void TEST_AW_signal_equal() {
