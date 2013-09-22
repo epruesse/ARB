@@ -108,16 +108,16 @@ void AW_action::set_enabled(bool enable) {
 
 void AW_action::bound_set(const char* first_prop, ...) {
     va_list arg_list;
-    va_start(arg_list, first_prop);
 
     for (std::list<AW_action_g_signal_binding>::iterator it = prvt->gsignals.begin();
          it != prvt->gsignals.end(); ++it) {
         if (G_IS_OBJECT(it->object)) {
+            va_start(arg_list, first_prop);
             g_object_set_valist(G_OBJECT(it->object), first_prop, arg_list);
+            va_end(arg_list);
         }
     }
 
-    va_end(arg_list);
 }
 
 /**
