@@ -28,7 +28,7 @@ public:
     AW_element(const AW_element&);
     AW_element& operator=(const AW_element&);
     virtual ~AW_element();
-
+    bool operator==(const AW_element& o) const;
 
     void set_label(const char*);
     void set_icon(const char*);

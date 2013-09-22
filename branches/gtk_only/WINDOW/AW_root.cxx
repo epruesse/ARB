@@ -175,25 +175,40 @@ AW_action* AW_root::action(const char* action_id) {
 
 /** Register action */
 AW_action* AW_root::action_register(const char* action_id, const AW_action& _act) {
-    if (!action_id) {
-        // WORKAROUND for empty action_id (no macro_name supploed)
-        int i = 1;
-        while (action_try(action_id = GBS_global_string("unnamed_%i", i)) != NULL) i++;
-        aw_warning("replaced missing action name with '%s'", action_id);
-    } 
-    else if (action_try(action_id)) {
-        // WORKAROUND for duplicate action_id (e.g. CLOSE on SPECIES_INFO DETACH)
-        int i = 1;
-        while (action_try(GBS_global_string("%s_%i", action_id, i)) != NULL) i++;
-        action_id = GBS_global_string("%s_%i", action_id, i);
-        aw_warning("replaced duplicate action name with '%s'", action_id);
-    }
-    
-    AW_action* act = new AW_action(_act);
-    act->set_id(action_id);
-    prvt->action_hash[std::string(action_id)] = act;
+    AW_action *act = new AW_action(_act);
 
-    return act;
+    if (!action_id) {
+        // WORKAROUND for empty action_id (no macro_name supplied)
+        action_id = "unnamed";
+    } 
+    act->set_id(action_id);
+
+    AW_action *found_act;
+    int i = 1;
+    while( (found_act = action_try(act->get_id())) ) {
+        if (found_act->equal_nobound(*act)) {
+            return found_act;
+        }
+        else {
+            printf("%s %s %s %i\n",
+                   act->get_id(), 
+                   act->get_label(),
+                   act->get_help(),
+                   act->clicked.size());
+            printf("%s %s %s %i\n",
+                   found_act->get_id(), 
+                   found_act->get_label(),
+                   found_act->get_help(),
+                   found_act->clicked.size());
+
+        }
+        act->set_id(GBS_global_string("%s_%i", action_id, i++));
+    }
+    if (i > 1) {
+        aw_warning("replaced duplicate action name with '%s'", act->get_id());
+    }
+
+    return prvt->action_hash[std::string(act->get_id())] = act;
 }
 
 /** Register action */

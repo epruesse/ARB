@@ -25,6 +25,8 @@ public:
     AW_signal clicked;
     AW_signal dclicked;
 
+    bool equal_nobound(const AW_action&) const;
+
     virtual void user_clicked(GtkWidget*);
     void set_enabled(bool) OVERRIDE;
   

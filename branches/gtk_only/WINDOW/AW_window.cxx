@@ -977,11 +977,11 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
     aw_return_if_fail(prvt->menus.size() > 0); //closed too many menus
     aw_return_if_fail(cmd != NULL);
 
+    prvt->action_template.set_label(labeli); // fixme mnemonic
+    if (helpText) help_text(helpText);
+    sens_mask(mask);
+    callback(wcb);
     AW_action *act = action_register(cmd);
-    act->set_label(labeli);
-    act->set_help(helpText);
-    act->set_active_mask(mask);
-    act->clicked.connect(wcb, this);
 
     GtkWidget *wlabel    = make_label(labeli, 0, mnemonic);
     GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
@@ -1674,20 +1674,6 @@ AW_action* AW_window::action(const char* action_id) {
 
 /** Calls AW_root::action_register with the ID of this window prefixed to action_id */
 AW_action* AW_window::action_register(const char* action_id) {
-    if (!action_id) {
-        // WORKAROUND for empty action_id (no macro_name supploed)
-        int i = 1;
-        while (action_try(action_id = GBS_global_string("unnamed_%i", i)) != NULL) i++;
-        aw_warning("replaced missing action name with '%s'", action_id);
-    } 
-    else if (action_try(action_id)) {
-        // WORKAROUND for dupilicate action_id (e.g. CLOSE on SPECIES_INFO DETACH)
-        int i = 1;
-        while (action_try(GBS_global_string("%s_%i", action_id, i)) != NULL) i++;
-        action_id = GBS_global_string("%s_%i", action_id, i);
-        aw_warning("replaced duplicate action name with '%s'", action_id);
-    }
-
     // create action using template action from pimpl
     AW_action* act = get_root()->action_register(local_id(action_id), prvt->action_template);
     // clear action template
