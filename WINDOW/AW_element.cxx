@@ -9,7 +9,9 @@ AW_element::AW_element()
       icon(NULL),
       tooltip(NULL),
       help_entry(NULL),
-      active_mask(AWM_ALL)
+      active_mask(AWM_ALL),
+      active(false),
+      accel_key(0)
 {
 }
 
@@ -25,7 +27,9 @@ AW_element::AW_element(const AW_element& o)
       icon(NULL),
       tooltip(NULL),
       help_entry(NULL),
-      active_mask(AWM_ALL)
+      active_mask(AWM_ALL),
+      active(false),
+      accel_key(0)
 {
     *this = o;
 }
@@ -41,6 +45,8 @@ AW_element& AW_element::operator=(const AW_element& o) {
     set_tooltip(o.tooltip);
     set_help(o.help_entry);
     set_active_mask(o.active_mask);
+    active=o.active;
+    set_accel(o.get_accel());
 
     return *this;
 }
@@ -56,7 +62,39 @@ AW_element::~AW_element() {
     if (help_entry) free(help_entry);
 }
 
+static bool equal(const char* a, const char* b) {
+    return a == b || (a != NULL && b != NULL && strcmp(a,b) == 0);
+}
 
+static void show_equal(const char* n, const char* a, const char* b) {
+    if (!equal(a,b)) printf(" %s %s != %s\n", n, a, b);
+}
+
+bool AW_element::operator==(const AW_element& o) const {
+    bool res = 
+           equal(id,o.id)
+        && equal(label,o.label)
+        && equal(icon,o.icon)
+        && equal(tooltip,o.tooltip)
+        && equal(help_entry,o.help_entry)
+        && active_mask == o.active_mask
+        && active      == o.active
+        && accel_key   == o.accel_key;
+#ifdef DEBUG
+    if (!res) {
+        printf("element %s == %s?\n", id, o.id);
+        show_equal("label", label, o.label);
+        show_equal("icon", icon, o.icon);
+        show_equal("tooltip", tooltip, o.tooltip);
+        show_equal("help_entry", help_entry, o.help_entry);
+        if (active_mask != o.active_mask) printf(" active_mask %i != %i\n", active_mask, o.active_mask);
+        if (active != o.active) printf(" active %i != %i\n", active, o.active);
+        if (accel_key != o.accel_key) printf(" accel_key %i != %i\n", accel_key, o.accel_key);
+    }
+#endif
+
+    return res;
+}
 
 //////////    property getter/setters   ////////////
 

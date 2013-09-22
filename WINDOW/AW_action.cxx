@@ -63,6 +63,13 @@ AW_action& AW_action::operator=(const AW_action& o) {
     return *this;
 }
 
+/** Tests whether two actions are equal ignoring bound widgets */
+bool AW_action::equal_nobound(const AW_action& o) const {
+    return AW_element::operator==(o)
+        && clicked == o.clicked
+        && dclicked == o.dclicked;
+}
+
 /** 
  * Triggers the action
  * This is called when the user clicks on a connected widget.
@@ -117,7 +124,6 @@ void AW_action::bound_set(const char* first_prop, ...) {
             va_end(arg_list);
         }
     }
-
 }
 
 /**
