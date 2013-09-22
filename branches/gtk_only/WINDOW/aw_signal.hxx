@@ -31,6 +31,9 @@ public:
     AW_signal(const AW_signal&);
     AW_signal& operator=(const AW_signal&);
 
+    bool operator==(const AW_signal&) const;
+    bool unordered_equal(const AW_signal&) const;
+    
     size_t size() const;
     void connect(const WindowCallback& wcb, AW_window* aww);
     void connect(const RootCallback& rcb);

@@ -15,6 +15,9 @@ struct Slot {
     virtual void emit() = 0 ;
     virtual Slot* clone() const = 0;
     virtual ~Slot() {}
+    virtual bool operator==(const Slot&) const = 0;
+    virtual bool operator<(const Slot&) const = 0;
+    virtual int slot_type() const = 0;
 };
 
 /** Slot carrying a WindowCallback */
@@ -25,12 +28,33 @@ struct WindowCallbackSlot : public Slot {
     WindowCallbackSlot(const WindowCallback& wcb, AW_window* w)
         : cb(wcb), aww(w) {}
     ~WindowCallbackSlot() {}
-    void emit() {
-        cb(aww);
+
+    int slot_type() const OVERRIDE {
+        return 1;
     }
 
-    Slot* clone() const { 
+    bool operator<(const Slot& o) const OVERRIDE {
+        if (slot_type() != o.slot_type()) {
+            return slot_type() < o.slot_type();
+        }
+        else {
+            return aww < ((WindowCallbackSlot&)o).aww 
+                && cb  < ((WindowCallbackSlot&)o).cb;
+        }
+    }
+
+    bool operator==(const Slot& o) const OVERRIDE {
+        return slot_type() == o.slot_type() 
+            && aww == ((WindowCallbackSlot&)o).aww
+            && cb  == ((WindowCallbackSlot&)o).cb;
+    }
+
+    Slot* clone() const OVERRIDE { 
         return new WindowCallbackSlot(*this); 
+    }
+
+    void emit() OVERRIDE {
+        cb(aww);
     }
 };
 
@@ -40,12 +64,31 @@ struct RootCallbackSlot : public Slot {
 
     RootCallbackSlot(const RootCallback& rcb) : cb(rcb) {}
     ~RootCallbackSlot() {}
-    void emit() {
-        cb(AW_root::SINGLETON);
+
+    int slot_type() const OVERRIDE {
+        return 2;
+    }
+
+    bool operator<(const Slot& o) const OVERRIDE {
+        if (slot_type() != o.slot_type()) {
+            return slot_type() < o.slot_type();
+        }
+        else {
+            return cb  < ((RootCallbackSlot&)o).cb;
+        }
+    }
+
+    bool operator==(const Slot& o) const OVERRIDE {
+        return slot_type() == o.slot_type() 
+            && cb == ((RootCallbackSlot&)o).cb;
     }
     
-    Slot* clone() const { 
+    Slot* clone() const OVERRIDE { 
         return new RootCallbackSlot(*this); 
+    }
+
+    void emit() OVERRIDE {
+        cb(AW_root::SINGLETON);
     }
 };
 
@@ -75,7 +118,7 @@ AW_signal& AW_signal::operator=(const AW_signal& o) {
     prvt->slots.clear();
     for (std::list<Slot*>::iterator it = o.prvt->slots.begin();
          it != o.prvt->slots.end(); ++it) {
-        prvt->slots.push_front((*it)->clone());
+        prvt->slots.push_back((*it)->clone());
     }
 
     return *this;
@@ -88,6 +131,38 @@ AW_signal::~AW_signal() {
 
     // remove list (upstream is handled by destructors)
     delete prvt;
+}
+
+template<class T> 
+struct dereference : public T {
+    typedef typename T::first_argument_type* first_argument_type;
+    typedef typename T::second_argument_type* second_argument_type;
+    typedef typename T::result_type result_type;
+
+    result_type operator()(const first_argument_type& f, 
+                           const second_argument_type& s) const {
+        return T::operator()(*f, *s);
+    }
+};
+
+/** Equality Comparator */
+bool AW_signal::operator==(const AW_signal& o) const {
+    if (size() != o.size()) return false;
+    return std::equal(prvt->slots.begin(), prvt->slots.end(), o.prvt->slots.begin(),
+                      dereference<std::equal_to<Slot> >());
+}
+
+/** Compare Signals ignoring signal order */
+bool AW_signal::unordered_equal(const AW_signal& o) const {
+    if (size() != o.size()) return false;
+
+    // order signals
+    std::list<Slot*> l(prvt->slots), r(o.prvt->slots);
+    l.sort(dereference<std::less<Slot> >());
+    r.sort(dereference<std::less<Slot> >());
+
+    return std::equal(l.begin(), l.end(), r.begin(),
+                      dereference<std::equal_to<Slot> >());
 }
 
 /** Returns the number of connected callbacks */
@@ -132,23 +207,36 @@ void AW_signal::clear() {
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
-AW_signal sig;
-
 int wcb1_count = 0;
+int wcb2_count = 0;
 int rcb1_count = 0;
+int rcb2_count = 0;
 
 static void wcb1(AW_window* w, const char *test) {
-    printf("in wcb1\n");
     TEST_EXPECT(w == (AW_window*)123);
     TEST_EXPECT(test == (const char*)456);
     wcb1_count ++;
+}
+
+static void wcb2(AW_window* w, const char *test) {
+    TEST_EXPECT(w == (AW_window*)123);
+    TEST_EXPECT(test == (const char*)456);
+    wcb2_count ++;
 }
 
 static void rcb1(AW_root*, const char *) {
     rcb1_count ++;
 }
 
-void TEST_AW_signal() {
+static void rcb2(AW_root*, const char *) {
+    rcb2_count ++;
+}
+
+void TEST_AW_signal_emit() {
+    wcb1_count = 0;
+    rcb1_count = 0;
+    AW_signal sig;
+
     // Empty signal should not call anything
     sig.emit();
     TEST_EXPECT_EQUAL(wcb1_count, 0);
@@ -173,4 +261,60 @@ void TEST_AW_signal() {
     TEST_EXPECT_EQUAL(rcb1_count, 1);
 }
 
+void TEST_AW_signal_equal() {
+    wcb1_count = 0;
+    rcb1_count = 0;
+    AW_signal sig1, sig2;
+
+    // Empty signals should be equal
+    TEST_EXPECT_EQUAL(sig1 == sig2, true);
+
+    // Add WCB to one, should be unequal
+    sig1.connect(makeWindowCallback(wcb1, (const char*)456), (AW_window*)123);
+    TEST_EXPECT_EQUAL(sig1 == sig2, false);
+
+    // Add same WCB to other, should be equal
+    sig2.connect(makeWindowCallback(wcb1, (const char*)456), (AW_window*)123);
+    TEST_EXPECT_EQUAL(sig1 == sig2, true);
+
+    // different window, different signal
+    sig2.clear();
+    sig2.connect(makeWindowCallback(wcb1, (const char*)456), (AW_window*)234);
+    TEST_EXPECT_EQUAL(sig1 == sig2, false);
+    
+    // different data, different signal
+    sig2.clear();
+    sig2.connect(makeWindowCallback(wcb1, (const char*)654), (AW_window*)123);
+    TEST_EXPECT_EQUAL(sig1 == sig2, false);
+
+    // different cb, different signal
+    sig2.clear();
+    sig2.connect(makeWindowCallback(wcb2, (const char*)456), (AW_window*)123);
+    TEST_EXPECT_EQUAL(sig1 == sig2, false);
+
+    // Try same with RCB
+    sig1.clear();
+    sig2.clear();
+    sig1.connect(makeRootCallback(rcb1, (const char*)456));
+    TEST_EXPECT_EQUAL(sig1 == sig2, false);
+    sig2.connect(makeRootCallback(rcb1, (const char*)456));
+    TEST_EXPECT_EQUAL(sig1 == sig2, true);
+    sig2.clear();
+    sig2.connect(makeRootCallback(rcb1, (const char*)654));
+    TEST_EXPECT_EQUAL(sig1 == sig2, false);
+    sig2.clear();
+    sig2.connect(makeRootCallback(rcb2, (const char*)456));
+    TEST_EXPECT_EQUAL(sig1 == sig2, false);
+
+    // RCB != WCB
+    sig1.clear();
+    sig1.connect(makeWindowCallback(wcb1, (const char*)456), (AW_window*)123);
+    TEST_EXPECT_EQUAL(sig1 == sig2, false);
+
+    // Order dependence
+    sig1.connect(makeRootCallback(rcb2, (const char*)456));
+    sig2.connect(makeWindowCallback(wcb1, (const char*)456), (AW_window*)123);
+    TEST_EXPECT_EQUAL(sig1 == sig2, false);
+    TEST_EXPECT_EQUAL(sig1.unordered_equal(sig2), true);
+}
 #endif
