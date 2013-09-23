@@ -48,8 +48,6 @@ void AW_choice::user_clicked(GtkWidget* w) {
         int is_active;
         g_object_get(G_OBJECT(w), "active", &is_active, NULL);
         if (!is_active) return;
-    } else {
-        printf("here\n");
     }
 
     // fixme: help?
