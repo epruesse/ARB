@@ -76,6 +76,7 @@ public:
     char      *awar_name; // deprecated -- use get_name();
     AW_signal changed;
     AW_signal changed_by_user;
+    AW_signal dclicked;
 
     virtual ~AW_awar() {};
 
