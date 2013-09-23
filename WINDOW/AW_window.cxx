@@ -647,16 +647,6 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 }
 
 
-
-/** HACK!!!
- * 
- *  This method causes a "text" notification every time a text buffer throws a changed event.
- *  Workaround for a bug in gtk2. Remove if gtk2 is removed.
- */
-void text_field_changed_callback(GtkTextBuffer* buffer, gpointer) {
-    g_object_notify (G_OBJECT (buffer), "text");
-}
-
 void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, int rows /*= 4*/){
     AW_awar* awar = get_root()->awar_no_error(var_name);
     aw_return_if_fail(awar != NULL);
@@ -664,6 +654,8 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
     GtkWidget *entry = gtk_text_view_new();
     GtkTextBuffer *textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(entry));
     awar->bind_value(G_OBJECT(textbuffer), "text");
+    // text property doesn't seem to notify on its own
+    g_signal_connect(G_OBJECT(textbuffer), "changed", G_CALLBACK(g_object_notify), (gpointer)"text");
 
     GtkWidget *scrolled_entry = gtk_scrolled_window_new(NULL,NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_entry), 
@@ -674,18 +666,7 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
     prvt->get_font_size(char_width, char_height);
     gtk_widget_set_size_request(scrolled_entry, char_width * columns, char_height * rows);
 
-    FIXME("callback for enter is missing");
-    FIXME("callback for losing focus is missing");
-    
-    // callback for enter
-    //g_signal_connect(G_OBJECT(entry), "activate",
-    //                 G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
-    //                 (gpointer) vui);
-    
-    //HACK to fix a bug in gtk
-    FIXME("Remove this hack if gtk2 is no longer supported");
-    g_signal_connect(G_OBJECT(textbuffer), "changed", G_CALLBACK(text_field_changed_callback), NULL);
-    //END HACK
+
     
     awar->changed_by_user += prvt->action_template.clicked;
     prvt->action_template = AW_action();
