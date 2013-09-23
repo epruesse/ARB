@@ -764,15 +764,6 @@ void AW_window::clear_option_menu(AW_selection_list *sel) {
     sel->clear();
 }
 
-
-static void row_activated_cb(GtkTreeView       * /*tree_view*/,
-                             GtkTreePath       * /*path*/,
-                             GtkTreeViewColumn * /*column*/,
-                             gpointer           user_data) {
-    AW_cb *cbs = (AW_cb *) user_data;
-    cbs->run_callbacks();
-}
-
 AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows) {
     AW_awar* awar = get_root()->awar_no_error(var_name);
     aw_return_val_if_fail(awar, NULL);
@@ -793,11 +784,8 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     AW_selection_list *slist = new AW_selection_list(awar);
     slist->bind_widget(tree);
 
-    if (prvt->d_callback) {
-        g_signal_connect(G_OBJECT(tree), "row-activated", 
-                         G_CALLBACK(row_activated_cb),
-                         (gpointer) prvt->d_callback);
-    }
+    awar->dclicked += prvt->action_template.dclicked;
+    prvt->action_template = AW_action();
 
     put_with_label(scrolled_win);
     return slist;

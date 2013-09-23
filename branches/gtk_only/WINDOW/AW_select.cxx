@@ -66,12 +66,25 @@ static void aw_selection_list_awar_changed(AW_root*, AW_CL cd) {
 static bool aw_selection_list_widget_changed(GtkWidget *widget, gpointer data) {
     AW_selection_list* slist = (AW_selection_list*) data;
     slist->update_from_widget();
+    return true; // correct?
 }
 
+static bool aw_selection_list_row_activated(GtkTreeView       *tree_view,
+                                            GtkTreePath       *path,
+                                            GtkTreeViewColumn *column,
+                                            gpointer           data) {
+    AW_selection_list* slist = (AW_selection_list*) data;
+    slist->double_clicked();
+    return true; // correct?
+}
 
 AW_selection_list::AW_selection_list(AW_awar* awar_) 
     : awar(awar_),
       model(GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING))),
+      widget(NULL),
+      change_cb_id(0),
+      activate_cb_id(0),
+      selected_index(0),
       list_table(NULL),
       last_of_list_table(NULL),
       default_select(NULL),
@@ -82,15 +95,19 @@ AW_selection_list::AW_selection_list(AW_awar* awar_)
 }
 
 AW_selection_list::~AW_selection_list() {
+    printf("destroying sellist\n");
     awar->remove_callback(aw_selection_list_awar_changed, (AW_CL)this);
-    if (handler_id) {
+    if (change_cb_id) {
         GObject *obj;
         if (GTK_IS_TREE_VIEW(widget)) {
             obj = G_OBJECT(gtk_tree_view_get_selection(GTK_TREE_VIEW(widget)));
         } else {
             obj = G_OBJECT(widget);
         }
-        g_signal_handler_disconnect(obj, handler_id);
+        g_signal_handler_disconnect(obj, change_cb_id);
+    }
+    if (activate_cb_id) {
+        g_signal_handler_disconnect(G_OBJECT(widget), activate_cb_id);
     }
 }
 
@@ -113,15 +130,20 @@ void AW_selection_list::bind_widget(GtkWidget *widget_) {
         GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
         gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
         //connect changed signal
-        handler_id = g_signal_connect(G_OBJECT(selection), "changed", 
-                                      G_CALLBACK(aw_selection_list_widget_changed), 
-                                      (gpointer) this);
+        change_cb_id = g_signal_connect(G_OBJECT(selection), "changed", 
+                                        G_CALLBACK(aw_selection_list_widget_changed), 
+                                        (gpointer) this);
+
+        // connect double-click signal (row activated)
+        activate_cb_id = g_signal_connect(G_OBJECT(widget), "row-activated", 
+                                          G_CALLBACK(aw_selection_list_row_activated), 
+                                          (gpointer) this);
         
     } else if (GTK_IS_COMBO_BOX(widget)) {
         gtk_combo_box_set_model(GTK_COMBO_BOX(widget), model);
         cell_layout = GTK_CELL_LAYOUT(widget);
         //connect changed signal
-        handler_id = g_signal_connect(G_OBJECT(widget), "changed", 
+        change_cb_id = g_signal_connect(G_OBJECT(widget), "changed", 
                                       G_CALLBACK(aw_selection_list_widget_changed), 
                                       (gpointer) this);
         
@@ -129,8 +151,8 @@ void AW_selection_list::bind_widget(GtkWidget *widget_) {
     gtk_cell_layout_pack_start(cell_layout, renderer, true);
     // map column 0 to attribute "text" of the renderer
     gtk_cell_layout_add_attribute(cell_layout, renderer, "text", 0);
-}
 
+}
 
 void AW_selection_list::update_from_widget() {
     aw_return_if_fail(GTK_IS_COMBO_BOX(widget) || GTK_IS_TREE_VIEW(widget));
@@ -158,6 +180,10 @@ void AW_selection_list::update_from_widget() {
     else {
         get_entry_at(selected_index)->value.write_to(awar);
     }
+}
+
+void AW_selection_list::double_clicked() {
+    awar->dclicked.emit();
 }
 
 void AW_selection_list::update() {

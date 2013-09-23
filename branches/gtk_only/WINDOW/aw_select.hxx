@@ -57,7 +57,8 @@ class AW_selection_list : virtual Noncopyable {
     AW_awar      *awar;
     GtkTreeModel *model;
     GtkWidget    *widget;
-    unsigned long handler_id;
+    unsigned long change_cb_id;
+    unsigned long activate_cb_id;
     int           selected_index;
     bool select_default_on_unknown_awar_value; /**< If true the default value is selected if no entry that matches the awars value can be found*/
     
@@ -83,6 +84,7 @@ class AW_selection_list : virtual Noncopyable {
     
 public:
     void update_from_widget();  // called from internal callback
+    void double_clicked();
 
     /**the value of the selected item will be written to the awar*/
     AW_selection_list(AW_awar*);
