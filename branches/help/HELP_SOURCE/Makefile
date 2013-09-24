@@ -110,7 +110,7 @@ $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp $(DTD)
 				( echo $<:1: exists twice -- only one existence allowed; \
 				  echo $(HLP_GENERATED)/$(<F):1: other occurrence \
 				  && false )
-		@$(HELP2XML) $< $@
+		@$(HELP2XML) $< $@ || (rm -f $@ && echo "Error: generation of $@ failed" && false)
 		@$(VALIDATE) $@
 
 $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
@@ -118,7 +118,7 @@ $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
 				( echo $<:1: exists twice -- only one existence allowed; \
 				  echo $(HLP_SOURCE)/$(<F):1: other occurrence \
 				  && false )
-		@$(HELP2XML) $< $@
+		@$(HELP2XML) $< $@ || (rm -f $@ && echo "Error: generation of $@ failed" && false)
 		@$(VALIDATE) $@
 
 $(HTML_LOCATION)/help_index.html : $(HELP_INDEX_XML)
