@@ -277,6 +277,10 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cb.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -285,3 +289,4 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/test_global.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/test_unit.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/ttypes.h
