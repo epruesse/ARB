@@ -344,6 +344,9 @@ static void nt_start_2nd_arb(AW_window *aww, AW_CL cl_quit) {
     AW_root *aw_root = aww->get_root();
     char    *dir4intro;
     GB_split_full_path(aw_root->awar(AWAR_DB_PATH)->read_char_pntr(), &dir4intro, NULL, NULL, NULL);
+    if (!dir4intro) {
+        dir4intro = strdup(".");
+    }
 
     if (cl_quit) {
         nt_restart(aw_root, dir4intro, true);
