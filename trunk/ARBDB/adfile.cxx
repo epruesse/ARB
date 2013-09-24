@@ -177,11 +177,11 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
                 if (GBS_string_matches_regexp(dp->d_name, matcher)) {
                     char buffer[FILE_PATH_MAX];
                     sprintf(buffer, "%s/%s", dir, dp->d_name);
-                    if (stat(buffer, &st) == 0) {
-                        if ((GB_ULONG)st.st_mtime > newest) {
+                    if (stat(buffer, &st) == 0 &&
+                        S_ISREG(st.st_mode) &&
+                        (GB_ULONG)st.st_mtime > newest) {
                             newest = st.st_mtime;
                             freedup(result, dp->d_name);
-                        }
                     }
                 }
             }
