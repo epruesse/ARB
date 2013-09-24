@@ -30,4 +30,6 @@ write_help() {
     $SED -e 's/^/    /' < $INPUTTEXT
 }
 
+test -f $OUTPUTFILE && chmod u+w $OUTPUTFILE
 write_help > $OUTPUTFILE
+test -f $OUTPUTFILE && chmod a-w $OUTPUTFILE
