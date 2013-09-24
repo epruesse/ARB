@@ -1,0 +1,70 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Export Column statistics to GnuPlot
+
+OCCURRENCE	ARB_NT/SAI/Etc/Export Column statistics to GnuPlot
+
+DESCRIPTION
+
+        - Select a valid column statistic
+
+        - Select what kind of information should be extracted
+
+             Information         Formula
+             -------------------------------------
+             G+C ratio           (G+C) / N
+             G+A ratio           (G+A) / N
+             Rate                mutation_sum / frequency_sum
+             TT ratio            (min.mutations + transversions) / transversions
+             Most freq. base     F1 / N
+             2nd freq. base      F2 / N
+             3rd freq. base      F3 / N
+             Least freq. base    F4 / N
+             A ratio             A / N
+             C ratio             C / N
+             G ratio             G / N
+             TU ratio            (T+U) / N
+             Helix               boolean (helix or not helix)
+
+             Legend:
+             -------
+             A/C/G/T/U = amount of A/C/G/T/U's in each column
+             N         = total amount of bases in each column
+             Fx        = F1 = count of most freq. base, ..., F4 of least freq. base
+
+
+        - Select if you like smoothing of the values (before they are written to file)
+          '1' means no smoothing, '2' means each value is smoothed with its neighbor, etc.
+	  If you e.g. smooth by '21', then the statistic will contain 20 columns less than
+	  the unsmoothed stat (for each 21-tupel only one value is written, i.e. 10 values are
+	  missing on the left and 10 are missing on the right side).
+
+        - Select a filter
+
+        - Select a filename (specify without extension, which will be appended by ARB)
+
+        - Press 'Save' to save to a file or
+          Press 'Save & View' to save and start gnuplot
+
+          In the last case you have some more options:
+
+             - Select gnuplot-internal smoothing function
+
+             - Select if to overlay other statistics (which were saved before)
+
+NOTES           Pressing 'Delete all overlayed files' will delete all the files, which would be
+                overlayed, if you press 'Save & View'.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

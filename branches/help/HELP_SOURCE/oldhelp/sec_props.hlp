@@ -1,0 +1,26 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	e4.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	savedef.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		How to save properties
+
+OCCURRENCE	ARB_SECEDIT/Properties/How to save Properties
+
+DESCRIPTION     ARB_SECEDIT is part of ARB_EDIT4.
+
+                To save properties for ARB_SECEDIT save those for ARB_EDIT4
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

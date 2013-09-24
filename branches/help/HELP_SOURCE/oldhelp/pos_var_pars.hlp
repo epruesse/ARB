@@ -1,0 +1,42 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Column statistic 
+
+OCCURRENCE      ARB_NT/SAI/Create SAI from Sequences/Positional Variability ...
+
+DESCRIPTION     Calculates the base and frequencies positional variability for
+                each column independently.
+                It uses the parsimony method to find the minimum number of
+                mutations for each site.
+
+                The result can be used by:
+
+                - Parsimony to weight the characters properly
+                - Neighbour joining to estimate the distances more accurately.
+                - Filter
+
+                Result:
+
+                        '.'                          Less than 10% valid characters
+
+                        '0123456789ABCDE...'         The higher the number the more conserved the site is.
+                                                     Stepping 2 position rightwards in the list of given char,
+                                                     means half number of mutations (eg .'7' means "half number
+                                                     of mutations compared to '5'")
+
+NOTES           Use the biggest tree you have.
+
+NOTE            @@@ Compare it to consensus and max frequency.
+
+WARNINGS        if you have only small trees (<100 species), forget this 
+                function.
+
+BUGS            No bugs known
