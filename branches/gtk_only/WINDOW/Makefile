@@ -125,6 +125,7 @@ AW_advice.o: aw_keysym.hxx
 AW_advice.o: aw_msg.hxx
 AW_advice.o: aw_position.hxx
 AW_advice.o: aw_root.hxx
+AW_advice.o: aw_signal.hxx
 AW_advice.o: aw_simple_device.hxx
 AW_advice.o: aw_stylable.hxx
 AW_advice.o: aw_window.hxx
@@ -423,6 +424,7 @@ AW_color_groups.o: aw_gtk_forward_declarations.hxx
 AW_color_groups.o: aw_gtk_migration_helpers.hxx
 AW_color_groups.o: aw_keysym.hxx
 AW_color_groups.o: aw_root.hxx
+AW_color_groups.o: aw_signal.hxx
 AW_color_groups.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_color_groups.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_color_groups.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -711,6 +713,7 @@ AW_dialog.o: aw_position.hxx
 AW_dialog.o: aw_root.hxx
 AW_dialog.o: aw_scalar.hxx
 AW_dialog.o: aw_select.hxx
+AW_dialog.o: aw_signal.hxx
 AW_dialog.o: aw_simple_device.hxx
 AW_dialog.o: aw_stylable.hxx
 AW_dialog.o: aw_window.hxx
@@ -875,6 +878,7 @@ AW_file.o: aw_question.hxx
 AW_file.o: aw_root.hxx
 AW_file.o: aw_scalar.hxx
 AW_file.o: aw_select.hxx
+AW_file.o: aw_signal.hxx
 AW_file.o: aw_simple_device.hxx
 AW_file.o: aw_stylable.hxx
 AW_file.o: aw_window.hxx
@@ -961,6 +965,7 @@ AW_global_awars.o: aw_help.hxx
 AW_global_awars.o: aw_keysym.hxx
 AW_global_awars.o: aw_position.hxx
 AW_global_awars.o: aw_root.hxx
+AW_global_awars.o: aw_signal.hxx
 AW_global_awars.o: aw_simple_device.hxx
 AW_global_awars.o: aw_stylable.hxx
 AW_global_awars.o: aw_window.hxx
@@ -1017,6 +1022,7 @@ AW_help.o: aw_position.hxx
 AW_help.o: aw_root.hxx
 AW_help.o: aw_scalar.hxx
 AW_help.o: aw_select.hxx
+AW_help.o: aw_signal.hxx
 AW_help.o: aw_simple_device.hxx
 AW_help.o: aw_stylable.hxx
 AW_help.o: aw_window.hxx
@@ -1075,6 +1081,7 @@ AW_modal.o: aw_question.hxx
 AW_modal.o: aw_root.hxx
 AW_modal.o: aw_scalar.hxx
 AW_modal.o: aw_select.hxx
+AW_modal.o: aw_signal.hxx
 AW_modal.o: aw_simple_device.hxx
 AW_modal.o: aw_stylable.hxx
 AW_modal.o: aw_window.hxx
@@ -1141,6 +1148,7 @@ AW_preset.o: aw_position.hxx
 AW_preset.o: aw_preset.hxx
 AW_preset.o: aw_question.hxx
 AW_preset.o: aw_root.hxx
+AW_preset.o: aw_signal.hxx
 AW_preset.o: aw_simple_device.hxx
 AW_preset.o: aw_stylable.hxx
 AW_preset.o: aw_window.hxx
@@ -1180,6 +1188,7 @@ AW_question.o: aw_keysym.hxx
 AW_question.o: aw_msg.hxx
 AW_question.o: aw_question.hxx
 AW_question.o: aw_root.hxx
+AW_question.o: aw_signal.hxx
 AW_question.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_question.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_question.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -1322,6 +1331,7 @@ AW_scalar.o: aw_gtk_forward_declarations.hxx
 AW_scalar.o: aw_keysym.hxx
 AW_scalar.o: aw_root.hxx
 AW_scalar.o: aw_scalar.hxx
+AW_scalar.o: aw_signal.hxx
 AW_scalar.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_scalar.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_scalar.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -1367,6 +1377,7 @@ AW_select.o: aw_position.hxx
 AW_select.o: aw_root.hxx
 AW_select.o: aw_scalar.hxx
 AW_select.o: aw_select.hxx
+AW_select.o: aw_signal.hxx
 AW_select.o: aw_simple_device.hxx
 AW_select.o: aw_stylable.hxx
 AW_select.o: aw_type_checking.hxx
@@ -1449,6 +1460,7 @@ AW_status.o: aw_msg.hxx
 AW_status.o: aw_position.hxx
 AW_status.o: aw_question.hxx
 AW_status.o: aw_root.hxx
+AW_status.o: aw_signal.hxx
 AW_status.o: aw_simple_device.hxx
 AW_status.o: aw_status.hxx
 AW_status.o: aw_stylable.hxx
