@@ -992,6 +992,16 @@ int NT_get_canvas_id(AWT_canvas *ntw) {
     return id;
 }
 
+static void update_main_window_title(AW_root* awr, AW_window_menu_modes* aww, AW_CL clone) {
+    const char* filename = awr->awar(AWAR_DB_NAME)->read_char_pntr();
+    if (clone) {
+        aww->set_window_title(GBS_global_string("%s - ARB (%li)",  filename, clone));
+    }
+    else {
+        aww->set_window_title(GBS_global_string("%s - ARB", filename));
+    }
+}
+
 // ##########################################
 // ##########################################
 // ###                                    ###
@@ -1016,6 +1026,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     }
     AW_window_menu_modes *awm = new AW_window_menu_modes;
     awm->init(awr, window_title, window_title, 0, 0);
+
+    awr->awar(AWAR_DB_NAME)
+       ->add_callback(makeRootCallback(update_main_window_title, awm, clone))
+       ->update();
 
     awm->button_length(5);
 
