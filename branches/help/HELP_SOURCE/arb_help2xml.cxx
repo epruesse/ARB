@@ -772,6 +772,10 @@ public:
         delete son;
     }
 
+    LineAttachedMessage make_paragraph_message(const string& msg) const {
+        return LineAttachedMessage(string("[in paragraph starting here] ")+msg, otext.get_lineno());
+    }
+
     size_t countTextNodes() {
         size_t nodes        = 1; // this
         if (son) nodes     += son->countTextNodes();
@@ -937,6 +941,11 @@ ParagraphTree* ParagraphTree::format_enums() {
                     curr_enum->son = curr_enum->brother->takeAllInFrontOf(next_enum);
                 }
                 curr_enum->brother = 0;
+
+                if (!prev_enum) {
+                    add_warning(next_enum->make_paragraph_message("trying to raise indentation of this enumeration"));
+                    throw curr_enum->make_paragraph_message("found enumeration without predecessor");
+                }
 
                 h2x_assert(prev_enum);
                 h2x_assert(prev_enum->brother == 0);
