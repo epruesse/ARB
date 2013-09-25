@@ -58,8 +58,7 @@ static void aw_drawing_area_init(AwDrawingArea *area) {
 
 
 GtkWidget *aw_drawing_area_new() {
-    AwDrawingArea *area = AW_DRAWING_AREA(g_object_new(AW_DRAWING_AREA_TYPE, NULL));
-    return GTK_WIDGET(area);
+    return GTK_WIDGET(g_object_new(AW_DRAWING_AREA_TYPE, NULL));
 }
 
 //see https://developer.gnome.org/gobject/stable/howto-gobject-destruction.html to 
