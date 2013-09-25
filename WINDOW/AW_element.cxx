@@ -87,7 +87,7 @@ bool AW_element::operator==(const AW_element& o) const {
         show_equal("icon", icon, o.icon);
         show_equal("tooltip", tooltip, o.tooltip);
         show_equal("help_entry", help_entry, o.help_entry);
-        if (active_mask != o.active_mask) printf(" active_mask %i != %i\n", active_mask, o.active_mask);
+        if (active_mask != o.active_mask) printf(" active_mask %li != %li\n", active_mask, o.active_mask);
         if (active != o.active) printf(" active %i != %i\n", active, o.active);
         if (accel_key != o.accel_key) printf(" accel_key %i != %i\n", accel_key, o.accel_key);
     }
