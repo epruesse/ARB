@@ -367,7 +367,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
     size_t para_start_lineno       = reader.getLineNo();
     bool   para_is_itemlist_member = false;
 
-    h2x_assert(sec.StartLineno() != NO_LINENUMBER_INFO);
+    h2x_assert(sec.Content().empty());
 
     while (1) {
         line = reader.getNext();
