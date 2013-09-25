@@ -41,7 +41,7 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name_, 
     // create vertical toolbar ('mode menu')
     prvt->mode_menu = GTK_TOOLBAR(gtk_toolbar_new());
     gtk_toolbar_set_orientation(prvt->mode_menu, GTK_ORIENTATION_VERTICAL);
-    gtk_toolbar_set_show_arrow(prvt->mode_menu, false);
+    gtk_toolbar_set_show_arrow(prvt->mode_menu, true);
     
     GtkWidget *scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
     // Scrollbars must be shown alwyas because dynamic display will cause 
@@ -112,7 +112,6 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     } else {
       GtkToolItem *first = gtk_toolbar_get_nth_item(prvt->mode_menu,0);
       button = gtk_radio_tool_button_new_from_widget(GTK_RADIO_TOOL_BUTTON(first));
-      
     }
     gtk_toolbar_insert(prvt->mode_menu, button, -1); //-1 = append
 
