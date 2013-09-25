@@ -63,23 +63,16 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name_, 
     aw_assert(NULL != prvt->drawing_area);
     gtk_container_add(GTK_CONTAINER(scrolledWindow), GTK_WIDGET(prvt->drawing_area));
 
-   
-
-
     // Layout:
-    // fixed_size_area ('info') goes above scrollArea ('middle')
-    GtkWidget *vbox2 = gtk_vbox_new(false, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), scrolledWindow, true, true, 0);   
-    gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(prvt->bottom_area), false, false, 0);
-    // Both go right of the mode_menu / vert. toolbar
-    GtkWidget *hbox = gtk_hbox_new(false, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prvt->mode_menu), false, false, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), vbox2, true, true, 0);
-    // And above those goes the menu          
     GtkWidget *vbox = gtk_vbox_new(false, 0);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->menu_bar), false, false, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->fixed_size_area), false, false, 0);
+    GtkWidget *hbox = gtk_hbox_new(false, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prvt->mode_menu), false, false, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), scrolledWindow, true, true, 0);   
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), true, true, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->bottom_area), false, false, 0);
+
     gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
 
     // make-it-so:
