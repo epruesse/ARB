@@ -150,15 +150,15 @@ Wanted fixes
 
     Check some "illegal" itemlists:
 
-        ---------------------
+        ----------------------
 
-        noitem
+        -noitem
 
           - eithernoitem
 
-        *********************
+        **********************
 
-        noitem
+        *noitem
 
           - eithernoitem
 

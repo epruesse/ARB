@@ -271,11 +271,11 @@ row2    -           3</T>
       <LIST>
         <ENTRY>
           <T reflow="1">
-            ---------------------</T>
+            ----------------------</T>
         </ENTRY>
         <ENTRY>
           <T reflow="1">
-            noitem</T>
+            -noitem</T>
           <P>
             <T reflow="1">
               eithernoitem</T>
@@ -283,11 +283,11 @@ row2    -           3</T>
         </ENTRY>
         <ENTRY>
           <T reflow="1">
-            *********************</T>
+            **********************</T>
         </ENTRY>
         <ENTRY>
           <T reflow="1">
-            noitem</T>
+            *noitem</T>
           <P>
             <T reflow="1">
               eithernoitem</T>
