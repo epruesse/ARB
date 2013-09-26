@@ -2038,6 +2038,7 @@ run_tests_faked_arbpid:
 	@echo "fake[2]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	+@$(TEST_RUN_SUITE) cleanup
 	@$(MAKE) clean_cov >/dev/null
+	@rm /tmp/arb_pids_${USER}_${ARB_PID}_*
 
 ut:
 ifeq ($(UNIT_TESTS),1)
