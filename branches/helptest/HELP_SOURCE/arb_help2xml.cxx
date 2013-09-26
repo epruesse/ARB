@@ -11,6 +11,8 @@
 //  ==================================================================== //
 
 #include <xml.hxx>
+#include <arb_defs.h>
+#include <arb_diff.h>
 
 #include <list>
 #include <set>
@@ -1389,6 +1391,40 @@ void TEST_hlp2xml_conversion() {
 
     TEST_EXPECT_EQUAL(strings.front().c_str(), "Alignment Administration");
     TEST_EXPECT_EQUAL(strings.size(), 1);
+}
+
+// #define TEST_AUTO_UPDATE // uncomment to update expected xml // @@@ comment-out!
+
+void TEST_hlp2xml_output() {
+    string tested_helpfile[] = {
+        "unittest"
+    };
+
+    string HELP_SOURCE = "../../HELP_SOURCE/";
+    string LIB         = "../../lib/";
+    string EXPECTED    = "help/";
+
+    for (int i = 0; i<ARRAY_ELEMS(tested_helpfile); ++i) {
+        string xml  = HELP_SOURCE + "Xml/" + tested_helpfile[i] + ".xml";
+        string html = LIB + "help_html/" + tested_helpfile[i] + ".html";
+        string hlp  = LIB + "help/" + tested_helpfile[i] + ".hlp";
+
+        string xml_expected  = EXPECTED + tested_helpfile[i] + ".xml";
+        string html_expected = EXPECTED + tested_helpfile[i] + ".html";
+        string hlp_expected  = EXPECTED + tested_helpfile[i] + ".hlp";
+
+        string cmd;
+
+#if defined(TEST_AUTO_UPDATE)
+        cmd = string("cp ") + xml  + ' ' + xml_expected;  system(cmd.c_str());
+        cmd = string("cp ") + html + ' ' + html_expected; system(cmd.c_str());
+        cmd = string("cp ") + hlp  + ' ' + hlp_expected;  system(cmd.c_str());
+#else // !defined(TEST_AUTO_UPDATE)
+        TEST_EXPECT_TEXTFILE_DIFFLINES(xml.c_str(),  xml_expected.c_str(),  0);
+        TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(html.c_str(), html_expected.c_str(), 0); // html contains the update-date 
+        TEST_EXPECT_TEXTFILE_DIFFLINES(hlp.c_str(),  hlp_expected.c_str(),  0);
+#endif
+    }
 }
 
 #endif // UNIT_TESTS
