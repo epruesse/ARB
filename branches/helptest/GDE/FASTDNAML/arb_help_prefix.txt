@@ -1,0 +1,22 @@
+TITLE		AxML / fastdnaML
+
+OCCURRENCE	ARB_NT/Tree/Build Tree from sequence data/AxML + fastdnaML
+                ARB_NT/Tree/Add species to existing tree/AxML + fastdnaML
+
+DESCRIPTION     AxML is an accelerated version of fastdnaML.
+
+                - AxML produces the same results as fastdnaML does.
+
+                - AxML is about 35%-47% faster than fastdnaML
+
+                More information in AxML can be found at the homepage
+                of Alexandros Stamatakis:
+
+                     http://wwwbode.cs.tum.edu/~stamatak/index.html
+
+NOTES           When adding species make sure to mark all species in tree
+                before calling ML.
+
+
+SECTION         Original fastdnaML Helpfile:
+
