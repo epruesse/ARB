@@ -110,6 +110,7 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_core.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/arb_diff.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_error.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_file.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_msg.h

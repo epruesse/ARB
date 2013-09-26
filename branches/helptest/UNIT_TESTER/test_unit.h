@@ -1287,7 +1287,7 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 //
 // @@@ ARBDB->ARBCORE later
 
-#ifdef AD_PROT_H
+#ifdef ARB_DIFF_H
 
 namespace arb_test {
     inline bool test_mem_equal(const void *mem1, const void *mem2, size_t size) {
@@ -1328,20 +1328,25 @@ namespace arb_test {
 
 #else
 
-#define WARN_MISS_ADPROT() need_include__ad_prot_h__BEFORE__test_unit_h
+#define WARN_MISS_ARBDIFF() need_include__arb_diff_h__BEFORE__test_unit_h
 
-#define TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,diff)                      WARN_MISS_ADPROT()
-#define TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff)              WARN_MISS_ADPROT()
-#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         WARN_MISS_ADPROT()
-#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) WARN_MISS_ADPROT()
-#define TEST_EXPECT_FILES_EQUAL(f1,f2)                                  WARN_MISS_ADPROT()
-#define TEST_EXPECT_FILES_EQUAL__BROKEN(f1,f2)                          WARN_MISS_ADPROT()
-#define TEST_EXPECT_TEXTFILES_EQUAL(f1,f2)                              WARN_MISS_ADPROT()
-#define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2)                      WARN_MISS_ADPROT()
-#define TEST_EXPECT_MEM_EQUAL(m1,m2,size)                               WARN_MISS_ADPROT()
-#define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size)                       WARN_MISS_ADPROT()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,diff)                      WARN_MISS_ARBDIFF()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff)              WARN_MISS_ARBDIFF()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         WARN_MISS_ARBDIFF()
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) WARN_MISS_ARBDIFF()
+#define TEST_EXPECT_FILES_EQUAL(f1,f2)                                  WARN_MISS_ARBDIFF()
+#define TEST_EXPECT_FILES_EQUAL__BROKEN(f1,f2)                          WARN_MISS_ARBDIFF()
+#define TEST_EXPECT_TEXTFILES_EQUAL(f1,f2)                              WARN_MISS_ARBDIFF()
+#define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2)                      WARN_MISS_ARBDIFF()
+#define TEST_EXPECT_MEM_EQUAL(m1,m2,size)                               WARN_MISS_ARBDIFF()
+#define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size)                       WARN_MISS_ARBDIFF()
 
-#endif // AD_PROT_H
+#define test_mem_equal(m1,m2,size)                    WARN_MISS_ARBDIFF()
+#define test_files_equal(f1,f2)                       WARN_MISS_ARBDIFF()
+#define test_textfile_difflines(f1,f2,ed)             WARN_MISS_ARBDIFF()
+#define test_textfile_difflines_ignoreDates(f1,f2,ed) WARN_MISS_ARBDIFF()
+
+#endif // ARB_DIFF_H
 
 // --------------------------------------------------------------------------------
 

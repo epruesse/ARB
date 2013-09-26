@@ -57,6 +57,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_defs.h
+PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_file.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_misc.h
