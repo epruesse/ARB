@@ -12,7 +12,7 @@
   <UP dest="arb.hlp" type="hlp" source_line="2"/>
   <UP dest="glossary.hlp" type="hlp" source_line="3"/>
   <SUB dest="aci.hlp" type="hlp" source_line="6"/>
-  <SUB dest="srt.hlp" type="hlp" source_line="145"/>
+  <SUB dest="srt.hlp" type="hlp" source_line="159"/>
   <TITLE>Unittest example helpfile</TITLE>
   <SECTION name="OCCURRENCE">
     <P>
@@ -265,6 +265,36 @@ row2    -           3</T>
       <T reflow="1">
         should work.</T>
     </P>
+    <P>
+      <T reflow="1">
+        Check some "illegal" itemlists:</T>
+      <LIST>
+        <ENTRY>
+          <T reflow="1">
+            ---------------------</T>
+        </ENTRY>
+        <ENTRY>
+          <T reflow="1">
+            noitem</T>
+          <P>
+            <T reflow="1">
+              eithernoitem</T>
+          </P>
+        </ENTRY>
+        <ENTRY>
+          <T reflow="1">
+            *********************</T>
+        </ENTRY>
+        <ENTRY>
+          <T reflow="1">
+            noitem</T>
+          <P>
+            <T reflow="1">
+              eithernoitem</T>
+          </P>
+        </ENTRY>
+      </LIST>
+    </P>
   </SECTION>
   <SECTION name="FEATURE TESTS">
     <P>
@@ -274,19 +304,19 @@ row2    -           3</T>
         <ENTRY>
           <T reflow="1">
             first testing an inlined
-            link to another help file: <LINK dest="srt.hlp" type="hlp" source_line="145"/>
+            link to another help file: <LINK dest="srt.hlp" type="hlp" source_line="159"/>
           </T>
         </ENTRY>
         <ENTRY>
           <T reflow="1">
             and a link to the arb homepage
-            <LINK dest="http://www.arb-home.de/" type="www" source_line="145"/>
+            <LINK dest="http://www.arb-home.de/" type="www" source_line="159"/>
             followed by text.
           </T>
         </ENTRY>
         <ENTRY>
           <T reflow="1">
-            arb help also supports mail-links (like <LINK dest="devel@arb-home.de" type="email" source_line="145"/>).
+            arb help also supports mail-links (like <LINK dest="devel@arb-home.de" type="email" source_line="159"/>).
             All 3 sorts of links should be clickable in the html version.
           </T>
         </ENTRY>

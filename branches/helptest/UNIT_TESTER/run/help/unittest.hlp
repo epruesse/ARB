@@ -148,6 +148,20 @@ Wanted fixes
 
     should work.
 
+    Check some "illegal" itemlists:
+
+        ---------------------
+
+        noitem
+
+          - eithernoitem
+
+        *********************
+
+        noitem
+
+          - eithernoitem
+
 
 
 FEATURE TESTS

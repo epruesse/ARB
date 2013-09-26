@@ -142,6 +142,20 @@ SECTION Wanted fixes
 
                   should work.
 
+                  Check some "illegal" itemlists:
+
+                        ----------------------
+
+                        -noitem
+
+                        -  eithernoitem
+
+                        **********************
+
+                        *noitem
+
+                        *  eithernoitem
+
 SECTION FEATURE TESTS
 
                 Here all existing helpfile features should be tested:
