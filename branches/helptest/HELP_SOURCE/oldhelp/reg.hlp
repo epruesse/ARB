@@ -34,7 +34,7 @@ SECTION		Ways to use regular expressions
                 * At some places only [2] is available (e.g. in Search&Query).
                 * Normally regular expressions work case sensitive. To make them
                   work case insensitive, simply append an 'i' to the
-                  expression (i.e. '/expr/i'  or '/expr/repl/i')
+                  expression (i.e. '/expr/i' or '/expr/repl/i')
 
 SECTION         Syntax of POSIX extended regular expressions as used in ARB
 
@@ -103,7 +103,7 @@ SECTION         Syntax of POSIX extended regular expressions as used in ARB
 
                 Notes:
 
-                * if a expression matches one string multiple times, the longest leftmost
+                * if an expression matches one string multiple times, the longest leftmost
                   match is used (e.g: '/a*e*/' matches 'aaeee' at position 3 of the
                   string 'bbaaeeeffaegg', not 'ae' at position 10). 
 
@@ -112,9 +112,10 @@ SECTION         Special syntax for search and replace
 
                 Syntax: '/regexp/replace/'
 
-                The part of the input string matched by 'regexp' gets replaced by 'replace'.
+                       The part of the input string matched by 'regexp' gets replaced by 'replace'.
 
                 Simple example:
+
                        Input string:    'The quick brown fox jumps over the lazy dog'
                        Search&replace:  '/fox|dog/cat/'
                        Result:          'The quick brown cat jumps over the lazy cat'
@@ -128,6 +129,7 @@ SECTION         Special syntax for search and replace
                              \9        refers to the ninth subexpression
 
                 Example using refs:
+
                        Input string:    'The quick brown fox jumps over the lazy dog'
                        Search&replace:  '/(brown|lazy)\s+(fox|dog)/\2 \1/'
                        Result:          'The quick fox brown jumps over the dog lazy'

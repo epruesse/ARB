@@ -181,13 +181,21 @@ row2    -           3</T>
     <P>
       <T reflow="1">
         Here is some unsupported itemlist:</T>
-      <P>
-        <T reflow="0">
-* item1
-  continued on next line
-* item2
-* item3</T>
-      </P>
+      <LIST>
+        <ENTRY>
+          <T reflow="1">
+            item1
+            continued on next line</T>
+        </ENTRY>
+        <ENTRY>
+          <T reflow="1">
+            item2</T>
+        </ENTRY>
+        <ENTRY>
+          <T reflow="1">
+            item3</T>
+        </ENTRY>
+      </LIST>
     </P>
     <P>
       <T reflow="1">

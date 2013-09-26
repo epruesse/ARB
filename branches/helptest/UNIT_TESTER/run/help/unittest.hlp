@@ -112,10 +112,11 @@ Wanted fixes
 
     Here is some unsupported itemlist:
 
-        * item1
-          continued on next line
-        * item2
-        * item3
+        item1 continued on next line
+
+        item2
+
+        item3
 
     Itemlist containing paragraphs under some items
 
