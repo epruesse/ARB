@@ -24,6 +24,7 @@
 #include <cstring>
 #include <climits>
 
+#include <unistd.h>
 #include <sys/stat.h>
 
 using namespace std;
@@ -377,6 +378,9 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         if (!line) break;
         if (isEmptyOrComment(line)) {
             pushParagraph(sec, paragraph); lines_in_paragraph = 0;
+#if defined(WARN_MISSING_HELP)
+            check_TODO(line, reader);
+#endif // WARN_MISSING_HELP
         }
         else {
             string      keyword;
@@ -428,7 +432,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         *p = string("\n")+spaces+*p;
     }
 }
-inline void check_duplicates(const string& link, const char * /* where */, const Links& existing, bool add_warnings) {
+inline void check_specific_duplicates(const string& link, const Links& existing, bool add_warnings) {
     for (Links::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {
         if (ex->Target() == link) {
             if (add_warnings) add_warning(strf("First Link to '%s' was found here.", ex->Target().c_str()), ex->SourceLineno());
@@ -437,8 +441,8 @@ inline void check_duplicates(const string& link, const char * /* where */, const
     }
 }
 inline void check_duplicates(const string& link, const Links& uplinks, const Links& references, bool add_warnings) {
-    check_duplicates(link, "UP", uplinks, add_warnings);
-    check_duplicates(link, "SUB", references, add_warnings);
+    check_specific_duplicates(link, uplinks, add_warnings);
+    check_specific_duplicates(link, references, add_warnings);
 }
 
 void Helpfile::readHelp(istream& in, const string& filename) {
@@ -901,66 +905,66 @@ size_t ParagraphTree::embeddedCounter = 0;
 
 ParagraphTree* ParagraphTree::format_enums() {
     // reformats tree such that all enums are brothers
-    ParagraphTree *enum_this = firstEnumerated();
+    ParagraphTree *curr_enum = firstEnumerated();
 
-    if (enum_this) {        // we have enumeration
-        ParagraphTree *before_enum = predeccessor(enum_this);
+    if (curr_enum) {        // we have enumeration
+        ParagraphTree * const prev_enum = predeccessor(curr_enum);
 
-        if (before_enum) {
-            h2x_assert(before_enum->son == 0);
-            before_enum->son     = before_enum->brother;
-            before_enum->brother = 0;
+        if (prev_enum) {
+            h2x_assert(prev_enum->son == 0);
+            prev_enum->son     = prev_enum->brother;
+            prev_enum->brother = 0;
         }
 
-        for (ParagraphTree *enum_next = enum_this->nextEnumerated();
+        for (ParagraphTree *enum_next = curr_enum->nextEnumerated();
              enum_next;
-             enum_this = enum_next, enum_next = enum_this->nextEnumerated())
+             curr_enum = enum_next, enum_next = curr_enum->nextEnumerated())
         {
-            if (enum_next != enum_this->brother) {
-                h2x_assert(enum_this->son == 0);
-                enum_this->son     = enum_this->brother->removeTill(enum_next);
-                enum_this->brother = enum_next;
+            if (enum_next != curr_enum->brother) {
+                h2x_assert(curr_enum->son == 0);
+                curr_enum->son     = curr_enum->brother->removeTill(enum_next);
+                curr_enum->brother = enum_next;
             }
         }
 
-        // enum_this is the last enumeration
-        h2x_assert(!enum_this->son);
+        // curr_enum is the last enumeration
+        h2x_assert(!curr_enum->son);
 
-        if (enum_this->brother) { // there are more sections behind enum
-            ParagraphTree *after_enum = enum_this->firstWithSameOrLowerIndent(enum_this->indentation-1);
+        if (curr_enum->brother) { // there are more sections behind the current enum
+            ParagraphTree * const next_enum = curr_enum->firstWithSameOrLowerIndent(curr_enum->indentation-1);
 
-            if (after_enum) { // indent should go back after enum
-                h2x_assert(!enum_this->son);
+            if (next_enum) { // indent should go back after enum
+                h2x_assert(!curr_enum->son);
 
-                if (after_enum != enum_this->brother) {
-                    enum_this->son = enum_this->brother->removeTill(after_enum);
+                if (next_enum != curr_enum->brother) {
+                    curr_enum->son = curr_enum->brother->removeTill(next_enum);
                 }
-                enum_this->brother = 0;
+                curr_enum->brother = 0;
 
-                h2x_assert(before_enum);
-                h2x_assert(before_enum->brother == 0);
-                before_enum->brother = after_enum->format_enums();
+                h2x_assert(prev_enum);
+                h2x_assert(prev_enum->brother == 0);
+                prev_enum->brother = next_enum->format_enums();
             }
             else { // nothing after enum -> take all as children
-                h2x_assert(enum_this->son == 0);
-                enum_this->son     = enum_this->brother;
-                enum_this->brother = 0;
+                h2x_assert(curr_enum->son == 0);
+                curr_enum->son     = curr_enum->brother;
+                curr_enum->brother = 0;
             }
-            if (enum_this->son) enum_this->son = enum_this->son->format_enums();
+            if (curr_enum->son) curr_enum->son = curr_enum->son->format_enums();
         }
         else {
-            if (before_enum) {
-                if (before_enum->son) before_enum->son->append(before_enum->brother);
-                before_enum->brother = 0;
+            if (prev_enum) {
+                if (prev_enum->son) prev_enum->son->append(prev_enum->brother);
+                prev_enum->brother = 0;
             }
         }
 
-        if (enum_this->enumeration == 1) { // oops - only '1.' search for enum inside block
-            ParagraphTree *lookin = enum_this;
+        if (curr_enum->enumeration == 1) { // oops - only '1.' search for enum inside block
+            ParagraphTree *lookin = curr_enum;
             int            lookfor;
 
             for (lookfor = 2; ; ++lookfor) {
-                ParagraphTree *next_enum = lookin->extractEmbeddedEnum(lookfor);
+                ParagraphTree * const next_enum = lookin->extractEmbeddedEnum(lookfor);
                 if (!next_enum) break;
 
                 embeddedCounter++;
@@ -1285,13 +1289,15 @@ void Helpfile::extractInternalLinks() {
                         link_target.find('@')       == string::npos)
                     {
                         try {
-                            check_duplicates(link_target, "SUB", references, true); // check only sublinks here
-                            check_duplicates(link_target, "UP", uplinks, false); // check only sublinks here
-                            check_duplicates(link_target, "AUTO-SUB", auto_references, false); // check only sublinks here
+                            check_specific_duplicates(link_target, references,      false); // check only sublinks here
+                            check_specific_duplicates(link_target, uplinks,         false); // check only uplinks here
+                            check_specific_duplicates(link_target, auto_references, false); // check only sublinks here
+
+                            // only auto-add inline reference if none of the above checks has thrown
                             auto_references.push_back(Link(link_target, sec.StartLineno()));
                         }
                         catch (string& err) {
-                            ; // silently ignore inlined 
+                            ; // silently ignore inlined
                         }
                     }
                     start = close+1;
@@ -1381,9 +1387,10 @@ int ARB_main(int argc, char *argv[]) {
 
             return EXIT_SUCCESS;
         }
-        catch (string& err)      { throw unattached_message(err); }
-        catch (const char * err) { throw unattached_message(err); }
-        catch (...)              { throw unattached_message("unknown exception in arb_help2xml"); }
+        catch (string& err)              { throw unattached_message(err); }
+        catch (const char * err)         { throw unattached_message(err); }
+        catch (LineAttachedMessage& err) { throw; }
+        catch (...)                      { throw unattached_message("unknown exception in arb_help2xml"); }
     }
     catch (LineAttachedMessage& err) { show_warnings_and_error(err, arb_help); }
     catch (...) { h2x_assert(0); }
@@ -1449,9 +1456,8 @@ void TEST_hlp2xml_conversion() {
 
     HELP_FILE_COMPILE_ERROR("akjsdlkad.hlp", "Can't read from"); // no such file
 
-    HELP_FILE_COMPILES("oldhelp/ad_align.hlp", "Alignment Administration"); // oldhelp/ad_align.hlp
-
-    HELP_FILE_COMPILES("genhelp/copyright.hlp", "Copyrights"); // genhelp/copyright.hlp
+    HELP_FILE_COMPILES("oldhelp/ad_align.hlp",  "Alignment Administration"); // oldhelp/ad_align.hlp
+    HELP_FILE_COMPILES("genhelp/copyright.hlp", "Copyrights");               // genhelp/copyright.hlp
 }
 
 

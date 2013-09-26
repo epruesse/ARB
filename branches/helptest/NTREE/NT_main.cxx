@@ -715,10 +715,10 @@ static void merge_startup_abort_cb(AW_window *, AW_CL) {
 }
 
 static AW_window *merge_startup_error_window(AW_root *aw_root, AW_CL cl_error) {
-    AW_window_message *aw_msg = new AW_window_message;
-    GB_ERROR           error  = GB_ERROR(cl_error);
+    AW_window_simple *aw_msg = new AW_window_simple;
+    GB_ERROR          error  = GB_ERROR(cl_error);
 
-    aw_msg->init(aw_root, "ARB merge error", false);
+    aw_msg->init(aw_root, "arb_merge_error", "ARB merge error");
     aw_msg->recalc_size_atShow(AW_RESIZE_DEFAULT); // force size recalc (ignores user size)
 
     aw_msg->at(10, 10);

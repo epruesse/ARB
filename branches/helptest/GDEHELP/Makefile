@@ -58,8 +58,8 @@ help: $(HELPFILELIST)
 	@test -d $(GENDOCDEST) || mkdir $(GENDOCDEST)
 	@$(MAKE) -f Makefile.helpfiles "GENHELPDEST=$(GENHELPDEST)" "GENDOCDEST=$(GENDOCDEST)" "HELPFILELIST=$(HELPFILELIST)"
 
-$(HELPFILELIST): $(SUBMENUS)
-	grep -i '^itemhelp:' < $< | $(SED) -e 's/^itemhelp://' | sort | uniq > $@
+$(HELPFILELIST): $(SUBMENUS) Makefile
+	grep -ih '^itemhelp:' $(SUBMENUS) | $(SED) -e 's/^itemhelp://' | sort | uniq > $@
 
 # ------------------------------------------------------------
 
