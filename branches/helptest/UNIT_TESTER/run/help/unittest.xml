@@ -36,25 +36,19 @@
         <ENTRY>
           <T reflow="0">
 first enum</T>
-          <P>
-            <T reflow="1">
-              Again a paragraph - a one liner followed by an item list. It is completely misplaced at the moment!</T>
-            <LIST>
-              <ENTRY>
-                <T reflow="1">
-                  item 1</T>
-              </ENTRY>
-              <ENTRY>
-                <T reflow="1">
-                  item 2</T>
-              </ENTRY>
-              <ENTRY>
-                <T reflow="1">
-                  item 3
-                  contains 2 lines</T>
-              </ENTRY>
-            </LIST>
-          </P>
+          <LIST>
+            <ENTRY>
+              <T reflow="1">
+                Again a paragraph - a one liner followed by an item list. It is completely misplaced at the moment!</T>
+            </ENTRY>
+            <ENTRY>
+              <T reflow="0">
+- item 1
+- item 2
+- item 3
+  contains 2 lines</T>
+            </ENTRY>
+          </LIST>
         </ENTRY>
         <ENTRY>
           <T reflow="0">
@@ -181,21 +175,13 @@ row2    -           3</T>
     <P>
       <T reflow="1">
         Here is some unsupported itemlist:</T>
-      <LIST>
-        <ENTRY>
-          <T reflow="1">
-            item1
-            continued on next line</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="1">
-            item2</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="1">
-            item3</T>
-        </ENTRY>
-      </LIST>
+      <P>
+        <T reflow="0">
+* item1
+  continued on next line
+* item2
+* item3</T>
+      </P>
     </P>
     <P>
       <T reflow="1">
@@ -203,26 +189,23 @@ row2    -           3</T>
       <LIST>
         <ENTRY>
           <T reflow="1">
-            item 1</T>
+            - item 1
+            - item 2</T>
+          <P>
+            <T reflow="1">
+              This is a short
+              description of item 2.
+              Currently it does not differ from the items, but it should.</T>
+          </P>
         </ENTRY>
         <ENTRY>
           <T reflow="1">
-            item 2</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="1">
-            This is a short
-            description of item 2.
-            Currently it does not differ from the items, but it should.</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="1">
-            item 3</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="1">
-            This is a not much longer
-            description of item 3.</T>
+            - item 3</T>
+          <P>
+            <T reflow="1">
+              This is a not much longer
+              description of item 3.</T>
+          </P>
         </ENTRY>
         <ENTRY>
           <T reflow="1">
@@ -276,10 +259,10 @@ row2    -           3</T>
         <ENTRY>
           <T reflow="1">
             -noitem</T>
-          <P>
-            <T reflow="1">
-              eithernoitem</T>
-          </P>
+        </ENTRY>
+        <ENTRY>
+          <T reflow="0">
+-  eithernoitem</T>
         </ENTRY>
         <ENTRY>
           <T reflow="1">
@@ -288,10 +271,10 @@ row2    -           3</T>
         <ENTRY>
           <T reflow="1">
             *noitem</T>
-          <P>
-            <T reflow="1">
-              eithernoitem</T>
-          </P>
+        </ENTRY>
+        <ENTRY>
+          <T reflow="0">
+*  eithernoitem</T>
         </ENTRY>
       </LIST>
     </P>
@@ -302,22 +285,22 @@ row2    -           3</T>
         Here all existing helpfile features should be tested:</T>
       <LIST>
         <ENTRY>
-          <T reflow="1">
-            first testing an inlined
-            link to another help file: <LINK dest="srt.hlp" type="hlp" source_line="159"/>
+          <T reflow="0">
+- first testing an inlined
+  link to another help file: <LINK dest="srt.hlp" type="hlp" source_line="159"/>
           </T>
         </ENTRY>
         <ENTRY>
-          <T reflow="1">
-            and a link to the arb homepage
-            <LINK dest="http://www.arb-home.de/" type="www" source_line="159"/>
-            followed by text.
+          <T reflow="0">
+- and a link to the arb homepage
+  <LINK dest="http://www.arb-home.de/" type="www" source_line="159"/>
+  followed by text.
           </T>
         </ENTRY>
         <ENTRY>
-          <T reflow="1">
-            arb help also supports mail-links (like <LINK dest="devel@arb-home.de" type="email" source_line="159"/>).
-            All 3 sorts of links should be clickable in the html version.
+          <T reflow="0">
+- arb help also supports mail-links (like <LINK dest="devel@arb-home.de" type="email" source_line="159"/>).
+  All 3 sorts of links should be clickable in the html version.
           </T>
         </ENTRY>
       </LIST>
