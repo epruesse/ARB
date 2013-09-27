@@ -34,10 +34,6 @@
 # error Wrong compiler version (need at least gcc 4.3 or clang 4.2)
 #endif
 
-#if (GCC_PATCHLEVEL_CODE == 40703) // gcc 4.7.3 is too broken
-# error Broken compiler detected (arb does not like gcc 4.7.3)
-#endif
-
 #else
 #error gccver.h included twice
 #endif // GCCVER_H
