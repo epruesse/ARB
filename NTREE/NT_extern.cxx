@@ -318,7 +318,7 @@ void nt_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
 
 __ATTR__NORETURN static void really_exit(int exitcode, bool kill_my_clients) {
     if (kill_my_clients) {
-        nt_run("(arb_clean >/dev/null 2>&1;echo ARB done) &"); // kills all clients
+        nt_run("(arb_clean session; echo ARB done) &"); // kills all clients
     }
     exit(exitcode);
 }
