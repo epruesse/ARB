@@ -62,7 +62,7 @@ ALLOWED_GCC_4xx_VERSIONS=\
 	4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
 	      4.5.2 \
 	4.6.1 4.6.2 4.6.3 \
-	4.7.1 4.7.2 \
+	4.7.1 4.7.2 4.7.3 \
 	4.8.0 4.8.1
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
@@ -175,7 +175,9 @@ ifeq ($(DEBUG),1)
 
 # ------- above only warnings available in 3.0
 
+ ifneq ('$(GCC_VERSION_FOUND)','4.7.3') # g++ crashes on GenomeImport.cxx when -Weffc++ is active (bug reported)
 	extended_cpp_warnings += -Weffc++# gcc 3.0.1
+ endif
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
 #	extended_cpp_warnings += -Wold-style-cast# gcc 3.0.4 (warn about 28405 old-style casts)
 	extended_cpp_warnings += -Winit-self# gcc 3.4.0
