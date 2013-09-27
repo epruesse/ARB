@@ -65,6 +65,7 @@ $(TARGET_SO) : $(ARB_SO)
 
 $(ARB_SO) : $(XS_DEPENDS) depends.stamp
 	-rm $(ARB_SO)
+	@echo "Used perl version: `perl -v | grep 'This is perl'`"
 	@echo "-------- calling MakeMaker-Makefile"
 	( $(MAKE) "dflags=${dflags} " $@ || \
 		(echo "------ failed.. retry once"; \
