@@ -52,7 +52,6 @@ public:
     void   set_bg_color(AW_rgb& rgb);
     AW_rgb get_bg_color() const;
 
-    AW_rgb       get_XOR_color() const;
     void         new_gc(int gc);
     bool         gc_mapable(int gc) const;
     const AW_GC *map_gc(int gc) const;

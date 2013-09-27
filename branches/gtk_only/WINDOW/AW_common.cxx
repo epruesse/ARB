@@ -64,7 +64,6 @@ AW_rgb AW_common::get_color(AW_color_idx color) const {
         : prvt->frame_colors[color];
 }
 
-//fixme: duplication with get_XOR_color
 void AW_common::set_bg_color(AW_rgb& rgb) {
     prvt->background_color = rgb; 
 }
@@ -133,15 +132,6 @@ const AW_font_limits& AW_common::get_font_limits(int gc, char c) const {
 }
 
 /**
- * Returns the background color
- */
-AW_rgb AW_common::get_XOR_color() const {
-    return prvt->data_colors 
-        ? prvt->data_colors[AW_DATA_BG] 
-        : prvt->frame_colors[AW_WINDOW_BG];
-}
-
-/**
  * Returns a data color
  */
 AW_rgb AW_common::get_data_color(int i) const {
@@ -189,7 +179,7 @@ struct AW_GC::Pimpl {
     Pimpl() {
         memset(width_of_chars, 0, 
                ARRAY_ELEMS(width_of_chars)*sizeof(*width_of_chars));
-        memset(ascent_of_chars, 0, 
+		memset(ascent_of_chars, 0, 
                ARRAY_ELEMS(ascent_of_chars)*sizeof(*ascent_of_chars));
         memset(descent_of_chars, 0, 
                ARRAY_ELEMS(descent_of_chars)*sizeof(*descent_of_chars));
