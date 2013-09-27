@@ -1629,6 +1629,7 @@ realperl: perltools
 			"dflags=$(dflags)" \
 			"cross_cflags=$(cross_cflags) $(cppflags) $(dflags)" \
 			"cross_lflags=$(cross_lflags)" \
+			"GCC_VERSION_FOUND=$(GCC_VERSION_FOUND)" \
 			all && \
 		$(TEST_PERL_SCRIPTS) && \
 		echo "$(SEP) Make PERL2ARB [done]" ; \
