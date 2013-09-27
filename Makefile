@@ -2031,10 +2031,10 @@ clean_cov_all: clean_cov
 run_tests: test_base clean_cov
 	$(MAKE) "ARB_PID=UT_$$$$" run_tests_faked_arbpid
 
-cleanup_faked_arbpids_and_fail:
-	@echo "Cleaning up leftover test-arb_pids files in /tmp:"
-	@-ls -al /tmp/arb_pids_${USER}_${ARB_PID}_*
+cleanup_faked_arbpids:
 	@-rm /tmp/arb_pids_${USER}_${ARB_PID}_*
+
+cleanup_faked_arbpids_and_fail: cleanup_faked_arbpids
 	@false
 
 run_tests_faked_arbpid:
@@ -2044,6 +2044,7 @@ run_tests_faked_arbpid:
 	@echo "fake[2]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	+@$(TEST_RUN_SUITE) cleanup || $(MAKE) cleanup_faked_arbpids_and_fail
 	@$(MAKE) clean_cov >/dev/null
+	@$(MAKE) cleanup_faked_arbpids
 
 ut:
 ifeq ($(UNIT_TESTS),1)
