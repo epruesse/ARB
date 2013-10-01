@@ -311,7 +311,7 @@ static void nt_run(const char *command) {
 }
 
 void nt_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
-    char *command = GBS_global_string_copy("arb_launcher %s %s", restart_with_new_ARB_PID ? "arb" : "arb_ntree", arb_ntree_args);
+    char *command = GBS_global_string_copy("arb_launcher --async %s %s", restart_with_new_ARB_PID ? "arb" : "arb_ntree", arb_ntree_args);
     nt_run(command);
     free(command);
 }
@@ -331,11 +331,12 @@ void nt_exit(AW_window *aws, AW_CL exitcode) {
         really_exit(exitcode, is_server_and_has_clients);
     }
 }
-void nt_restart(AW_root *aw_root, const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
+void nt_restart(AW_root *aw_root, const char *arb_ntree_args) {
+    // restarts arb_ntree (with new ARB_PID)
     bool is_server_and_has_clients = GLOBAL.gb_main && GB_read_clients(GLOBAL.gb_main)>0;
     if (nt_disconnect_from_db(aw_root, GLOBAL.gb_main))  {
-        nt_start(arb_ntree_args, restart_with_new_ARB_PID);
-        really_exit(EXIT_SUCCESS, restart_with_new_ARB_PID && is_server_and_has_clients);
+        nt_start(arb_ntree_args, true);
+        really_exit(EXIT_SUCCESS, is_server_and_has_clients);
     }
 }
 
@@ -349,7 +350,7 @@ static void nt_start_2nd_arb(AW_window *aww, AW_CL cl_quit) {
     }
 
     if (cl_quit) {
-        nt_restart(aw_root, dir4intro, true);
+        nt_restart(aw_root, dir4intro);
     }
     else {
         nt_start(dir4intro, true);

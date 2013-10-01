@@ -183,7 +183,12 @@ get_pipe_name() {
 }
 
 launcher() {
-    local CMD=$1
+    local ASYNC=0
+    if [ "$1" = "--async" ]; then
+        ASYNC=1
+        shift
+    fi
+    local CMD="$*"
 
     if [ -z "$ARB_PID" ]; then
         echo "Error: environment variable ARB_PID is unset. terminating.."
@@ -210,7 +215,11 @@ launcher() {
 
             if [[ ! -p $NAMED_PIPE ]]; then
                 ( wait_for_pipe $NAMED_PIPE ; initial_send_to_launcher $NAMED_PIPE "$CMD" ) &
-                create_pipe_reader $NAMED_PIPE $$
+                if (( $ASYNC==1 )); then
+                    create_pipe_reader $NAMED_PIPE $$ &
+                else
+                    create_pipe_reader $NAMED_PIPE $$
+                fi
             else
                 debug "pipe already was open"
                 send_to_launcher $NAMED_PIPE "$CMD"
@@ -218,10 +227,12 @@ launcher() {
 
             # if pipe-reader was started from current process
             # -> blocks until all launched processes have terminated
-            wait
+            if (( $ASYNC==0 )); then
+                wait
+            fi
         fi
     fi
 }
 
-launcher "$*"
+launcher "$@"
 debug "arb_launcher exits!"

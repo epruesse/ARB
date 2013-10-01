@@ -249,7 +249,7 @@ static void nt_intro_start_merge(AW_window *aw_intro) {
     const char *dir        = aw_root->awar("tmp/nt/arbdb/directory")->read_char_pntr();
     char       *merge_args = GBS_global_string_copy("'%s' '%s'", dir, dir);
 
-    nt_restart(aw_root, merge_args, false); //  call arb_ntree as merge-tool on exit
+    nt_restart(aw_root, merge_args); //  call arb_ntree as merge-tool on exit
 }
 
 static void nt_intro_start_import(AW_window *aw_intro) {
@@ -704,7 +704,7 @@ static void exit_from_merge(const char *restart_args) {
         exit(EXIT_SUCCESS); // exit w/o killing clients (as nt_exit() does)
     }
     else {
-        nt_restart(AW_root::SINGLETON, restart_args ? restart_args : "", false);
+        nt_restart(AW_root::SINGLETON, restart_args ? restart_args : "");
         nt_assert(0);
     }
 }
