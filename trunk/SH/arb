@@ -153,6 +153,8 @@ export ARB_LIBRARY_PATH
 
 case "$1" in
   help|-h|--help)
+    arb_ntree --help
+    echo ""
     echo ""
     echo "arb - script to start arb"
     echo "Usage:"
@@ -162,25 +164,25 @@ case "$1" in
     echo "       arb help             # show help"
     echo "       arb trace [ntargs]   # trace arb (to detect errors)"
     echo ""
-    echo "ntargs are any argument allowed to arb_ntree (see below)"
+    echo "ntargs are any argument allowed to arb_ntree (see above)"
     echo ""
     echo ""
-    arb_ntree --help
   ;;
   shell)
     echo "Opening an ARB shell"
     if [ -n "$SHELL" ]; then
-        exec $SHELL
+        $SHELL
     else
-        exec sh
+        bash -i
     fi
+    echo "ARB shell terminates"
   ;;
   trace)
     shift
-    exec $ARBHOME/SH/arb_trace "$@"
+    arb_launcher $ARBHOME/SH/arb_trace "$@"
   ;;
   *)
     echo "Please wait while the program ARB is starting ....."
-    exec arb_ntree "$@" 
+    arb_launcher arb_ntree "$@"
 esac
 
