@@ -311,7 +311,7 @@ static void nt_run(const char *command) {
 }
 
 void nt_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
-    char *command = GBS_global_string_copy("(%s %s) &", restart_with_new_ARB_PID ? "arb" : "arb_ntree", arb_ntree_args);
+    char *command = GBS_global_string_copy("arb_launcher %s %s", restart_with_new_ARB_PID ? "arb" : "arb_ntree", arb_ntree_args);
     nt_run(command);
     free(command);
 }
