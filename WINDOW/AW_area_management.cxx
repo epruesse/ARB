@@ -282,14 +282,9 @@ bool AW_area_management::is_resize_callback(AW_window * /* aww */, void (*f)(AW_
     return prvt->resize_cb && prvt->resize_cb->contains(f);
 }
 
-void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
-    AW_root *root = aww->get_root();
-    GdkScreen* screen = gtk_widget_get_screen (prvt->area);
-    GdkDisplay* pDisplay = gdk_screen_get_display(screen);
-    FIXME("parameter global colortable is wrong.");
-    prvt->common = new AW_common_gtk(pDisplay, prvt->area, root->getColorTable(), aww->color_table, aww->color_table_size, aww, ar);
+void AW_area_management::create_devices(AW_window *aww, AW_area area) {
+    prvt->common = new AW_common_gtk(prvt->area, aww, area);
     prvt->screen_device = new AW_device_gtk(prvt->common, prvt->area);
-
 }
 
 AW_device_gtk *AW_area_management::get_screen_device() {

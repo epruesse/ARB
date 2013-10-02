@@ -1483,35 +1483,6 @@ void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
     recalc_size_at_show = sr;
 }
 
-AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
-    if (!color_table_size) {
-        color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
-        color_table      = (AW_rgb*)malloc(sizeof(AW_rgb) *color_table_size);
-        for (int i = 0; i<color_table_size; ++i) color_table[i] = AW_NO_COLOR;
-    }
-    else {
-        if (colnum>=color_table_size) {
-            long new_size = colnum+8;
-            color_table   = (AW_rgb*)realloc(color_table, new_size*sizeof(AW_rgb)); // valgrinders : never freed because AW_window never is freed
-            for (int i = color_table_size; i<new_size; ++i) color_table[i] = AW_NO_COLOR;
-            color_table_size = new_size;
-        }
-    }
-
-    color_table[colnum] = get_root()->alloc_named_data_color(colorname);
-    
-    if (colnum == AW_DATA_BG) {
-        AW_area_management* pMiddleArea = prvt->areas[AW_MIDDLE_AREA];
-        if(pMiddleArea) {
-            // GdkColor color = get_root()->getColor(color_table[colnum]);
-            // gtk_widget_modify_bg(pMiddleArea->get_area(),GTK_STATE_NORMAL, &color);
-            pMiddleArea->get_common()->set_bg_color(color_table[colnum]);
-        }
-    }
-    return (AW_color_idx)colnum;
-}
-
-
 void AW_window::create_devices() {
     if (prvt->areas[AW_INFO_AREA]) {
         prvt->areas[AW_INFO_AREA]->create_devices(this, AW_INFO_AREA);

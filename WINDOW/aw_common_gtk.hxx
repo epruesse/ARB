@@ -21,11 +21,7 @@ class AW_common_gtk: public AW_common { // derived from Noncopyable
     struct Pimpl;
     Pimpl *prvt;
 public:
-    AW_common_gtk(GdkDisplay *display_in,
-                  GtkWidget  *window_in,
-                  AW_rgb*&    fcolors,
-                  AW_rgb*&    dcolors,
-                  long&       dcolors_count,
+    AW_common_gtk(GtkWidget  *window_in,
                   AW_window  *aww,
                   AW_area     area);
     ~AW_common_gtk();
@@ -35,7 +31,6 @@ public:
     const AW_GC_gtk *map_gc(int gc) const { return DOWNCAST(const AW_GC_gtk*, AW_common::map_gc(gc)); }
     AW_GC_gtk       *map_mod_gc(int gc) { return DOWNCAST(AW_GC_gtk*, AW_common::map_mod_gc(gc)); }
 
-    GdkDisplay *get_display() const;
     GtkWidget  *get_window() const;
     GtkWidget  *get_drawing_target(); 
 
@@ -55,21 +50,10 @@ class AW_GC_gtk : public AW_GC { // derived from Noncopyable
     cairo_t *cr;
     PangoFontDescription *font_desc;
 
-    virtual void wm_set_foreground_color(AW_rgb col) OVERRIDE;
-    virtual void wm_set_function(AW_function mode) OVERRIDE;
-    virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle) OVERRIDE;
     virtual void wm_set_font(const char* fontname) OVERRIDE;
-    virtual void wm_set_grey_level(AW_grey_level) OVERRIDE;
- 
     virtual int get_actual_string_size(const char *str) const OVERRIDE;
 
-    /**
-     * Searches for the first occurrence of 'what' in 'text' and replaces it with 'with'.
-     */
-    void replaceInString(const std::string& what,const std::string& with, std::string& text);
-    
 public:
-
     AW_rgb col_fg;
     AW_function mode;
     AW_linestyle lstyle;

@@ -18,6 +18,8 @@
 #include <arb_defs.h>
 #endif
 
+#include "aw_rgb.hxx"
+
 #include "aw_device_impl.hxx"
 #include <map>
 
@@ -29,6 +31,8 @@
 
 class AW_GC;
 
+#define AW_NO_COLOR AW_rgb()
+
 class AW_common : virtual Noncopyable {
     struct Pimpl;
     Pimpl *prvt;
@@ -36,7 +40,7 @@ class AW_common : virtual Noncopyable {
     virtual AW_GC *create_gc() = 0;
 
 public:
-    AW_common(AW_rgb*& fcolors, AW_rgb*& dcolors, long& dcolors_count);
+    AW_common();
     virtual ~AW_common();
 
     void reset_style();
@@ -45,11 +49,7 @@ public:
     void set_screen_size(unsigned int width, unsigned int height);
     void set_screen(const AW_screen_area& screen);
 
-    AW_rgb get_color(AW_color_idx color) const;
-    AW_rgb get_data_color(int i) const;
-    int    find_data_color_idx(AW_rgb color) const;
-    int    get_data_color_size() const;
-    void   set_bg_color(AW_rgb& rgb);
+    void   set_bg_color(const AW_rgb& rgb);
     AW_rgb get_bg_color() const;
 
     void         new_gc(int gc);
@@ -73,11 +73,7 @@ private:
     struct Pimpl;
     Pimpl *prvt;
 
-    virtual void wm_set_foreground_color(AW_rgb col)                      = 0;
-    virtual void wm_set_function(AW_function mode)                        = 0;
-    virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle) = 0;
     virtual void wm_set_font(const char* font_name)                       = 0;
-    virtual void wm_set_grey_level(AW_grey_level)                         = 0;
     virtual int get_actual_string_size(const char */*str*/) const {return 0;};
 
 protected:

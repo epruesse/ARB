@@ -45,27 +45,12 @@ typedef float     AW_grey_level; // <0 don't fill  0.0 white 1.0 black
 
 typedef const char *AWAR;
 
-#define AW_NO_COLOR (-1U)
-typedef guint32 AW_rgb;
-
 enum AW_area {
     AW_INFO_AREA,
     AW_MIDDLE_AREA,
     AW_BOTTOM_AREA,
     AW_MAX_AREA
 };
-
-enum AW_color_idx {
-    AW_WINDOW_BG,
-    AW_WINDOW_FG,
-    AW_WINDOW_C1,
-    AW_WINDOW_C2,
-    AW_WINDOW_C3,
-    AW_WINDOW_DRAG, // unused
-    AW_DATA_BG,
-    AW_STD_COLOR_IDX_MAX
-};
-
 
 AW_default get_AW_ROOT_DEFAULT();
 #define AW_ROOT_DEFAULT get_AW_ROOT_DEFAULT()

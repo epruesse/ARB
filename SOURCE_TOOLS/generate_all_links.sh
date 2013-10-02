@@ -349,6 +349,7 @@ symlink_file ../WINDOW/aw_msg.hxx INCLUDE/aw_msg.hxx &&
 symlink_file ../WINDOW/aw_position.hxx INCLUDE/aw_position.hxx &&
 symlink_file ../WINDOW/aw_preset.hxx INCLUDE/aw_preset.hxx &&
 symlink_file ../WINDOW/aw_question.hxx INCLUDE/aw_question.hxx &&
+symlink_file ../WINDOW/aw_rgb.hxx INCLUDE/aw_rgb.hxx &&
 symlink_file ../WINDOW/aw_root.hxx INCLUDE/aw_root.hxx &&
 symlink_file ../WINDOW/aw_scalar.hxx INCLUDE/aw_scalar.hxx &&
 symlink_file ../WINDOW/aw_select.hxx INCLUDE/aw_select.hxx &&

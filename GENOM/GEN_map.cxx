@@ -1627,8 +1627,6 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     // Properties Menu
     create_menu("Properties", "r", AWM_ALL);
-    insert_menu_topic("gene_props_menu",   "Menu: Colors and Fonts ...",   "M", "props_frame.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
-    // @@@ FIXME: replace AW_preset_window by local function returning same window for all mapped views
     insert_menu_topic("gene_props",        "GENEMAP: Colors and Fonts ...", "C", "gene_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)gen_canvas->gc_manager);
     // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
     insert_menu_topic("gene_layout",       "Layout",   "L", "gene_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_layout_window, 0);

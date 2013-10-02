@@ -36,8 +36,8 @@ void AW_stylable::set_font(int gc, const char* fontname) {
     get_common()->map_mod_gc(gc)->set_font(fontname);
 }
 
-void AW_stylable::set_foreground_color(int gc, AW_color_idx color) {
-    get_common()->map_mod_gc(gc)->set_fg_color(get_common()->get_color(color));
+void AW_stylable::set_foreground_color(int gc, AW_rgb col) {
+    get_common()->map_mod_gc(gc)->set_fg_color(col);
 }
 
 void AW_stylable::set_grey_level(int gc, AW_grey_level grey_level) {

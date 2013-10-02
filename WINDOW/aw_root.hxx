@@ -90,11 +90,6 @@ class AW_root : virtual Noncopyable {
     UserActionTracker *tracker;
 
     /**
-     * Initializes prvt.colormap
-     */
-    void create_colormap();
-
-    /**
      * Initializes the database and loads some default awars.
      * @param database FIXME
      */
@@ -120,12 +115,8 @@ public:
     void window_show();
     void window_hide(AW_window *aww);
 
-    // the read only public section:
-
 
     // the real public section:
-
-    AW_rgb*& getColorTable(); 
 
     /**
      * FIXME
@@ -139,10 +130,6 @@ public:
 
     void setUserActionTracker(UserActionTracker *user_tracker);
     UserActionTracker *getTracker() { return tracker; }
-
-    enum { AW_MONO_COLOR, //DO NOT USE!!!
-           AW_RGB_COLOR
-    } color_mode;
 
     void main_loop();
 
@@ -166,22 +153,6 @@ public:
     
     
     void set_cursor(AW_Cursor cursor);
-    
-    /**
-     * Allocates a named color in the global colormap.
-     * @param colorname
-     * @return The pixel value of the color. This value can be used to retrieve the color from the
-     *         global colormap (@see getColor()).
-     */
-    unsigned int alloc_named_data_color(char *colorname);
-    
-    /**
-     * Retrieves a color from the global colormap.
-     * @param pixel The pixel value is used as index of the colormap. This should be
-     *              a value returned by alloc_named_data_color()
-     * @return      The color or NULL in case of error.
-     */
-    GdkColor getColor(unsigned int pixel);
     
     /**
      * Returns the awar specified by <code>awar</code>

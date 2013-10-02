@@ -30,25 +30,17 @@ static void AW_window_resize_cb(AW_window *, AW_CL cl_common_gtk, AW_CL) {
 }
 
 struct AW_common_gtk::Pimpl {
-    GdkDisplay *display;
     GtkWidget  *window;
     AW_window  *aww;
     AW_area    area;
-
     Pimpl() {}
 };
 
-AW_common_gtk::AW_common_gtk(GdkDisplay *display,
-             GtkWidget *window,
-             AW_rgb*&   fcolors,
-             AW_rgb*&   dcolors,
-             long&      dcolors_count,
-             AW_window *aw_window,
-             AW_area    area)
-    : AW_common(fcolors, dcolors, dcolors_count),
-      prvt(new Pimpl) 
+AW_common_gtk::AW_common_gtk(GtkWidget *window,
+                             AW_window *aw_window,
+                             AW_area    area)
+    : prvt(new Pimpl) 
 {
-    prvt->display = display;
     prvt->window  = window;
     prvt->aww     = aw_window;
     prvt->area    = area;
@@ -58,10 +50,6 @@ AW_common_gtk::AW_common_gtk(GdkDisplay *display,
 
 AW_common_gtk::~AW_common_gtk() {
     delete prvt;
-}
-
-GdkDisplay *AW_common_gtk::get_display() const { 
-    return prvt->display; 
 }
 
 GtkWidget  *AW_common_gtk::get_window() const { 
@@ -82,15 +70,12 @@ void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
 
     // set color
     AW_rgb col = awgc->get_fg_color();
-    double r = (double)((col & 0xff0000)>>16) / 255;
-    double g = (double)((col & 0xff00)>>8) / 255;
-    double b = (double)(col & 0xff) / 255;
     if (use_grey) {
         double a = awgc->get_grey_level();
-        cairo_set_source_rgba(cr, r, g, b, a);
+        cairo_set_source_rgba(cr, col.r(), col.g(), col.b(), a);
     } 
     else {
-        cairo_set_source_rgb(cr, r, g, b);
+        cairo_set_source_rgb(cr, col.r(), col.g(), col.b());
     } 
 
     // set line width
@@ -121,31 +106,13 @@ PangoFontDescription* AW_common_gtk::get_font(int gc) {
 }
 
 AW_GC_gtk::AW_GC_gtk(AW_common *aw_common) 
-    : AW_GC(aw_common) 
+    : AW_GC(aw_common),
+      cr(NULL),
+      font_desc(NULL)
 {
 }
 
 AW_GC_gtk::~AW_GC_gtk(){};
-
-
-void AW_GC_gtk::wm_set_foreground_color(AW_rgb /*col*/){
-}
-
-void AW_GC_gtk::wm_set_function(AW_function /*mode_in*/){
-}
-
-void AW_GC_gtk::wm_set_lineattributes(short /*lwidth_in*/, AW_linestyle /*lstyle_in*/){
-}
-
-void AW_GC_gtk::wm_set_grey_level(AW_grey_level /*l*/) {
-}
-
-void AW_GC_gtk::replaceInString(const std::string& what,const std::string& with, std::string& text){
-    size_t start = text.find(what);
-    if (start != std::string::npos) {
-        text.replace(start, what.length(), with);
-    }
-}
 
 void AW_GC_gtk::wm_set_font(const char* font_name) {
     font_desc = pango_font_description_from_string(font_name);

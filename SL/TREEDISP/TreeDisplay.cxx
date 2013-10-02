@@ -2716,53 +2716,49 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def)
 
 static void fake_AD_map_viewer_cb(GBDATA *, AD_MAP_VIEWER_TYPE ) {}
 
-static AW_rgb colors_def[] = {
-    AW_NO_COLOR, AW_NO_COLOR, AW_NO_COLOR, AW_NO_COLOR, AW_NO_COLOR, AW_NO_COLOR,
-    0x30b0e0,
-    0xff8800, // AWT_GC_CURSOR
-    0xa3b3cf, // AWT_GC_BRANCH_REMARK
-    0x53d3ff, // AWT_GC_BOOTSTRAP
-    0x808080, // AWT_GC_BOOTSTRAP_LIMITED
-    0x000000, // AWT_GC_GROUPS
-    0xf0c000, // AWT_GC_SELECTED
-    0xbb8833, // AWT_GC_UNDIFF
-    0x622300, // AWT_GC_NSELECTED
-    0x977a0e, // AWT_GC_SOME_MISMATCHES
-    0x000000, // AWT_GC_BLACK
-    0xffff00, // AWT_GC_YELLOW
-    0xff0000, // AWT_GC_RED
-    0xff00ff, // AWT_GC_MAGENTA
-    0x00ff00, // AWT_GC_GREEN
-    0x00ffff, // AWT_GC_CYAN
-    0x0000ff, // AWT_GC_BLUE
-    0x808080, // AWT_GC_WHITE
-    0xd50000, // AWT_GC_FIRST_COLOR_GROUP
-    0x00c0a0, 
-    0x00ff77,
-    0xc700c7,
-    0x0000ff,
-    0xffce5b,
-    0xab2323,
-    0x008888,
-    0x008800,
-    0x880088,
-    0x000088,
-    0x888800,
-    AW_NO_COLOR
+static const char* colors_def[] = {
+    "#30b0e0",
+    "#ff8800", // AWT_GC_CURSOR
+    "#a3b3cf", // AWT_GC_BRANCH_REMARK
+    "#53d3ff", // AWT_GC_BOOTSTRAP
+    "#808080", // AWT_GC_BOOTSTRAP_LIMITED
+    "#000000", // AWT_GC_GROUPS
+    "#f0c000", // AWT_GC_SELECTED
+    "#bb8833", // AWT_GC_UNDIFF
+    "#622300", // AWT_GC_NSELECTED
+    "#977a0e", // AWT_GC_SOME_MISMATCHES
+    "#000000", // AWT_GC_BLACK
+    "#ffff00", // AWT_GC_YELLOW
+    "#ff0000", // AWT_GC_RED
+    "#ff00ff", // AWT_GC_MAGENTA
+    "#00ff00", // AWT_GC_GREEN
+    "#00ffff", // AWT_GC_CYAN
+    "#0000ff", // AWT_GC_BLUE
+    "#808080", // AWT_GC_WHITE
+    "#d50000", // AWT_GC_FIRST_COLOR_GROUP
+    "#00c0a0", 
+    "#00ff77",
+    "#c700c7",
+    "#0000ff",
+    "#ffce5b",
+    "#ab2323",
+    "#008888",
+    "#008800",
+    "#880088",
+    "#000088",
+    "#888800"
 };
-static AW_rgb *fcolors       = colors_def;
-static AW_rgb *dcolors       = colors_def;
 static long    dcolors_count = ARRAY_ELEMS(colors_def);
 
 class fake_AW_GC : public AW_GC {
-    virtual void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
-    virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
-    virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
 #ifdef ARB_GTK
-    virtual void wm_set_grey_level(AW_grey_level) OVERRIDE {}
     virtual void wm_set_font(const char*) OVERRIDE {
         int size=10;
 #else
+    virtual void wm_set_grey_level(AW_grey_level) OVERRIDE {}
+    virtual void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
+    virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
+    virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
     virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) OVERRIDE {
 #endif
         unsigned int i;
@@ -2784,7 +2780,7 @@ public:
 class fake_AW_common : public AW_common {
 public:
     fake_AW_common()
-        : AW_common(fcolors, dcolors, dcolors_count)
+        : AW_common()
     {
         for (int gc = 0; gc < dcolors_count; ++gc) { // gcs used in this example
             new_gc(gc);
@@ -2797,7 +2793,7 @@ public:
             gcm->set_font(12, 8, NULL); // 12 is Courier (use monospaced here, cause font limits are faked)
 #endif
 
-            gcm->set_fg_color(colors_def[gc+AW_STD_COLOR_IDX_MAX]);
+            gcm->set_fg_color(colors_def[gc]);
         }
     }
     virtual ~fake_AW_common() OVERRIDE {}
