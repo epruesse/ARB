@@ -183,8 +183,8 @@ bool AW_device_cairo::arc_impl(int gc, bool filled, const AW::Position& center,
     cairo_scale(cr, tradius.x(), tradius.y());
     cairo_set_line_width(cr, cairo_get_line_width(cr) / (tradius.x() + tradius.y())*2);
 
-    double angle1 = start_degrees * (M_PI / 180.d);
-    double angle2 = (start_degrees + arc_degrees) * (M_PI / 180.d);
+    double angle1 = start_degrees * (M_PI / 180.);
+    double angle2 = (start_degrees + arc_degrees) * (M_PI / 180.);
 
     // cairo_arc draws in direction of increasing angle
     // switch angle1/2 if we want to draw in the other direction as
