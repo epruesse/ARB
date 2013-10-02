@@ -1005,9 +1005,6 @@ void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_act
     // use the new submenu as current menu shell.
     prvt->menus.push(GTK_MENU_SHELL(submenu));
 
-    // add tearof item
-    gtk_menu_shell_append(prvt->menus.top(), gtk_tearoff_menu_item_new());
-       
     #if defined(DUMP_MENU_LIST)
         dumpOpenSubMenu(name);
     #endif // DUMP_MENU_LIST
