@@ -14,7 +14,16 @@ OBSOLETE_STAMP   = phyml.stamp
 # ARBs standard target:
 $(MAIN) : $(INSTALLED_BINARY)
 	rm -f $(OBSOLETE_STAMP)
+ifeq ($(DONT_RETRY_TWICE),1)
 	test -f $(INSTALLED_BINARY)
+else
+	test -f $(INSTALLED_BINARY) || $(MAKE) retry
+endif
+
+retry: clean
+	@echo "---------------------------------------- PHYML 'make install' failed to install -> trigger rebuild"
+	$(MAKE) "DONT_RETRY_TWICE=1" $(MAIN)
+	@echo "---------------------------------------- PHYML rebuild succeeded"
 
 $(INSTALLED_BINARY): $(CONFIG_STATUS)
 	$(MAKE) -C $(BUILDDIR) install
