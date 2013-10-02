@@ -1477,19 +1477,19 @@ static AW_window *CPRO_showstatistic_cb(AW_root *aw_root, AW_CL which_statistic)
 
     device->new_gc(GC_black);
     device->set_line_attributes(GC_black, 1, AW_SOLID);
-    device->set_foreground_color(GC_black, AW_WINDOW_FG);
+    device->set_foreground_color(GC_black, AW_rgb("black"));
 #ifndef ARB_GTK
     device->set_font(GC_black, 0, 10, 0);
 #endif
     device->new_gc(GC_blue);
     device->set_line_attributes(GC_blue, 1, AW_SOLID);
-    device->set_foreground_color(GC_blue, AW_WINDOW_C1);
+    device->set_foreground_color(GC_blue, AW_rgb("blue"));
     device->new_gc(GC_green);
     device->set_line_attributes(GC_green, 1, AW_SOLID);
-    device->set_foreground_color(GC_green, AW_WINDOW_C2);
+    device->set_foreground_color(GC_green, AW_rgb("green"));
     device->new_gc(GC_grid);
     device->set_line_attributes(GC_grid, 1, AW_DASHED);
-    device->set_foreground_color(GC_grid, AW_WINDOW_C3);
+    device->set_foreground_color(GC_grid, AW_rgb("grey"));
 
     return (AW_window *)aws;
 }

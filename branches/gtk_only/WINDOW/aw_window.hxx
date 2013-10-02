@@ -229,8 +229,6 @@ public:
     void *_create_option_entry(GB_TYPES type, const char *name, const char *mnemonic, const char *name_of_color);
     void  unset_at_commands();
 
-    AW_color_idx alloc_named_data_color(int colnum, char *colorname);
-
     void _get_area_size(AW_area area, AW_screen_area *square);
     
     int label_widget(void *wgt, const char *str, char *mnemonic=0, int width = 0, int alignment = 0);
@@ -605,6 +603,6 @@ public:
     void init(AW_root *root, const char *wid, const char *windowname);
 };
 
-typedef struct aw_gc_manager *AW_gc_manager;
+typedef class _AW_gc_manager* AW_gc_manager;
 
 

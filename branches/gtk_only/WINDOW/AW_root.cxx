@@ -52,17 +52,14 @@ typedef std::tr1::unordered_map<std::string, AW_action*> action_hash_t;
 typedef std::tr1::unordered_map<std::string, AW_awar*> awar_hash_t;
 #endif
 
-struct AW_root::pimpl : public Noncopyable {
-    GdkColormap* colormap; /** < Contains a color for each value in AW_base::AW_color_idx */
-    AW_rgb  *color_table; /** < Contains pixel values that can be used to retrieve a color from the colormap  */
-    AW_rgb foreground; /** <Pixel value of the foreground color */
+struct AW_root::pimpl : virtual Noncopyable {
     GdkCursor* cursors[3]; /** < The available cursors. Use AW_root::AW_Cursor as index when accessing */    
     AW_active  active_mask;
 
     action_hash_t action_hash;
     awar_hash_t   awar_hash;
 
-    pimpl() : colormap(NULL), color_table(NULL), foreground(0) {}
+    pimpl()  {}
 };
 
 /// functions
@@ -138,21 +135,6 @@ void AW_root::setUserActionTracker(UserActionTracker *user_tracker) {
 
     delete tracker;
     tracker = user_tracker;
-}
-
-unsigned int AW_root::alloc_named_data_color(char *colorname){
-  
-    GdkColor allocatedColor;
-    gdk_color_parse(colorname, &allocatedColor);
-    gdk_colormap_alloc_color(prvt->colormap, &allocatedColor, true, true);
-    return allocatedColor.pixel;
-}
-
-GdkColor AW_root::getColor(unsigned int pixel) {
-    GdkColor color;
-    gdk_colormap_query_color(prvt->colormap, pixel, &color);
-    return color;
-    //note: a copy is returned to avoid memory leaks. GdkColor is small and this should not be a problem.
 }
 
 /** Fetch action from hash, return NULL on failure */
@@ -247,23 +229,6 @@ void AW_root::apply_sensitivity(AW_active mask) {
     prvt->active_mask = mask;
 }
 
-struct fallbacks {
-    const char *fb;
-    const char *awar;
-    const char *init;
-};
-
-static struct fallbacks aw_fb[] = { 
-    // Name         fallback awarname    default value
-    { "FontList",   "window/font",       "8x13bold" }, 
-    { "background", "window/background", "grey" },
-    { "foreground", "window/foreground", "Black", },
-    { 0,            "window/color_1",    "red", },
-    { 0,            "window/color_2",    "green", },
-    { 0,            "window/color_3",    "blue", },
-    { 0,            0,                   0 }
-};
-
 static void aw_message_and_dump_stderr(const char *msg) {
     fflush(stdout);
     fprintf(stderr, "ARB: %s\n", msg); // print to console as well
@@ -317,18 +282,11 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
     
     AW_root::SINGLETON = this;
     
-    for (int i=0; aw_fb[i].awar; ++i) {
-        awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
-    }
-
     gtk_init(argc, argv);
 
     // add our own icon path to the gtk theme search path
     gtk_icon_theme_prepend_search_path(gtk_icon_theme_get_default(),
                                        GB_path_in_ARBLIB("pixmaps/icons"));
-
-    color_mode = AW_RGB_COLOR; //mono color mode is not supported
-    create_colormap();//load the colortable from database
 
     prvt->cursors[NORMAL_CURSOR] = gdk_cursor_new(GDK_LEFT_PTR);
     prvt->cursors[WAIT_CURSOR] = gdk_cursor_new(GDK_WATCH);
@@ -391,57 +349,6 @@ AW_root::~AW_root() {
     free(program_name);
     AW_root::SINGLETON = NULL;
 }
-
-/**
- * A list of awar names that contain color names
- */
-static const char *aw_awar_2_color[] = {
-    "window/background",
-    "window/foreground",
-    "window/color_1",
-    "window/color_2",
-    "window/color_3",
-    0
-};
-
-void AW_root::create_colormap() {
-    prvt->color_table = (AW_rgb*)GB_calloc(sizeof(AW_rgb), AW_STD_COLOR_IDX_MAX);
-    GBDATA *gbd = check_properties(NULL);
-    prvt->colormap = gdk_colormap_get_system();
-
-    // Color monitor, B&W monitor is no longer supported
-    const char **awar_2_color;
-    int color;
-    for (color = 0, awar_2_color = aw_awar_2_color;
-         *awar_2_color;
-         awar_2_color++, color++)
-    {
-        const char *name_of_color = GB_read_char_pntr(GB_search(gbd, *awar_2_color, GB_FIND));
-        GdkColor gdkColor;
-
-        if(!gdk_color_parse (name_of_color, &gdkColor)) {
-            fprintf(stderr, "gdk_color_parse(%s) failed\n", name_of_color);
-        }
-        else {
-            gdk_colormap_alloc_color(prvt->colormap, &gdkColor, false, true);
-            prvt->color_table[color] = gdkColor.pixel;
-
-        }
-    }
-
-    GdkColor black;
-    if(gdk_color_black(prvt->colormap, &black)) {
-        prvt->foreground = black.pixel;
-    }
-    else {
-        fprintf(stderr, "gdk_color_black() failed\n");
-    }
-}
-
-AW_rgb*& AW_root::getColorTable() {
-    return prvt->color_table;
-}
-
 
 void AW_root::window_hide(AW_window *aww) {
     active_windows--;

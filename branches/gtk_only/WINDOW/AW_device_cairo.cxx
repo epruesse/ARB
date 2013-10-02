@@ -210,10 +210,7 @@ void AW_device_cairo::clear(AW_bitset filteri)
     if (!cr) return;
     
     AW_rgb col = get_common()->get_bg_color();
-    cairo_set_source_rgb(cr, 
-                         (double)((col & 0xff0000)>>16) / 255,
-                         (double)((col & 0xff00)>>8) / 255,
-                         (double)(col & 0xff) / 255);
+    cairo_set_source_rgb(cr, col.r(), col.g(), col.b());
 
     cairo_paint(cr);
 }
@@ -229,10 +226,7 @@ void AW_device_cairo::clear_part(const Rectangle& rect, AW_bitset filteri)
         if (!cr) return;
 
         AW_rgb col = get_common()->get_bg_color();
-        cairo_set_source_rgb(cr, 
-                         (double)((col & 0xff0000)>>16) / 255,
-                         (double)((col & 0xff00)>>8) / 255,
-                         (double)(col & 0xff) / 255);
+        cairo_set_source_rgb(cr, col.r(), col.g(), col.b());
     
         cairo_rectangle(cr,
                         clippedRect.left(),

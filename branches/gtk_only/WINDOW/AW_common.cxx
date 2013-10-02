@@ -13,28 +13,17 @@
 #include <vector>
 
 struct AW_common::Pimpl {
-    AW_rgb*& frame_colors;
-    AW_rgb*& data_colors;
     AW_rgb   background_color;
-    long&    data_colors_size;
 
     std::vector<AW_GC*> gcmap;
 
     AW_screen_area screen;
 
-    Pimpl(AW_rgb*& fcolors,
-          AW_rgb*& dcolors,
-          long&    dcolors_count)
-        : frame_colors(fcolors), 
-          data_colors(dcolors), 
-          data_colors_size(dcolors_count)
-    {}
+    Pimpl() {}
 };
 
-AW_common::AW_common(AW_rgb*& fcol,
-                     AW_rgb*& dcol,
-                     long&    dcolc)
-  : prvt(new Pimpl(fcol, dcol, dcolc))
+AW_common::AW_common()
+    : prvt(new Pimpl())
 {
 
     // start out with a faked pretty big screen
@@ -58,20 +47,12 @@ const AW_screen_area& AW_common::get_screen() const {
     return prvt->screen; 
 }
 
-AW_rgb AW_common::get_color(AW_color_idx color) const {
-    return color >= AW_STD_COLOR_IDX_MAX 
-        ? prvt->data_colors[color] 
-        : prvt->frame_colors[color];
-}
-
-void AW_common::set_bg_color(AW_rgb& rgb) {
+void AW_common::set_bg_color(const AW_rgb& rgb) {
     prvt->background_color = rgb; 
 }
 
 AW_rgb AW_common::get_bg_color() const {
-    return prvt->data_colors 
-        ? prvt->data_colors[AW_DATA_BG] 
-        : prvt->frame_colors[AW_WINDOW_BG];
+    return prvt->background_color;
 }
 
 
@@ -109,6 +90,7 @@ bool AW_common::gc_mapable(int gc) const {
 
 /**
  * Retrieves const GC pointer
+ * pointer may change on call to new_gc!
  */
 const AW_GC *AW_common::map_gc(int gc) const {
     return  prvt->gcmap[gc];
@@ -116,6 +98,7 @@ const AW_GC *AW_common::map_gc(int gc) const {
 
 /**
  * Retrieves GC pointer
+ * pointer may change on call to new_gc!
  */
 AW_GC *AW_common::map_mod_gc(int gc) {
     return prvt->gcmap[gc];
@@ -129,21 +112,6 @@ const AW_font_limits& AW_common::get_font_limits(int gc, char c) const {
     return c
         ? map_gc(gc)->get_font_limits(c)
         : map_gc(gc)->get_font_limits();
-}
-
-/**
- * Returns a data color
- */
-AW_rgb AW_common::get_data_color(int i) const {
-    aw_assert(i < get_data_color_size());
-    return prvt->data_colors[i];
-}
-
-/** 
- * Returns the size of the data color table
- */
-int AW_common::get_data_color_size() const {
-    return prvt->data_colors_size;
 }
 
 /**
@@ -179,7 +147,7 @@ struct AW_GC::Pimpl {
     Pimpl() {
         memset(width_of_chars, 0, 
                ARRAY_ELEMS(width_of_chars)*sizeof(*width_of_chars));
-		memset(ascent_of_chars, 0, 
+        memset(ascent_of_chars, 0, 
                ARRAY_ELEMS(ascent_of_chars)*sizeof(*ascent_of_chars));
         memset(descent_of_chars, 0, 
                ARRAY_ELEMS(descent_of_chars)*sizeof(*descent_of_chars));
@@ -202,7 +170,7 @@ AW_GC::config::config()
       grey_level(0.5),
       line_width(GC_DEFAULT_LINE_WIDTH),
       style(AW_SOLID), 
-      color(0) 
+      color() 
 {}
 
 bool AW_GC::config::operator==(const AW_GC::config& o) const {
@@ -233,7 +201,6 @@ void AW_GC::set_no_char_size(int i) {
  */
 void AW_GC::set_function(AW_function mode) {
     if (conf.function != mode) {
-        wm_set_function(mode);
         conf.function = mode;
     }
 }
@@ -248,7 +215,6 @@ void AW_GC::set_function(AW_function mode) {
 void AW_GC::set_grey_level(AW_grey_level grey_level_) {
     if (conf.grey_level != grey_level_) {
         conf.grey_level = grey_level_;
-        wm_set_grey_level(grey_level_);
     }
 }
 
@@ -260,7 +226,6 @@ void AW_GC::set_line_attributes(short new_width, AW_linestyle new_style) {
     if (new_style != conf.style || new_width != conf.line_width) {
         conf.line_width = new_width;
         conf.style      = new_style;
-        wm_set_lineattributes(conf.line_width, conf.style);
     }
 }
 
@@ -270,7 +235,6 @@ void AW_GC::set_line_attributes(short new_width, AW_linestyle new_style) {
 void AW_GC::set_fg_color(AW_rgb col) {
     if (conf.color != col) {
         conf.color = col;
-        wm_set_foreground_color(col);
     }
 }
 

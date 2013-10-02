@@ -41,15 +41,17 @@
 //  - use AW_set_color_group to set and AW_find_color_group to read the
 //    color of a species/gene/experiment/organism/etc.
 
+
 #define AWAR_COLOR_GROUPS_PREFIX "color_groups"
 #define AWAR_COLOR_GROUPS_USE    AWAR_COLOR_GROUPS_PREFIX "/use" // int : whether to use the colors in display or not
-
 #define AW_COLOR_GROUP_PREFIX     "color_group_"
 #define AW_COLOR_GROUP_PREFIX_LEN 12
 #define AW_COLOR_GROUP_NAME_LEN   (AW_COLOR_GROUP_PREFIX_LEN+2)
 
 #define AW_COLOR_GROUP_ENTRY "ARB_color"
+// number of color groups
 #define AW_COLOR_GROUPS      12
+
 
 GB_ERROR  AW_set_color_group(GBDATA *gbd, long color_group);
 long      AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag = false);
