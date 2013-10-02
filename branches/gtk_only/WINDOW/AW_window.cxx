@@ -258,7 +258,12 @@ GtkWidget* AW_window::make_label(const char* label_text, short label_len, const 
         widget = gtk_image_new_from_file(GB_path_in_ARBLIB("pixmaps", label_text+1));
     }
     else {
-        if (mnemonic) {
+        AW_awar *awar = get_root()->label_is_awar(label_text);
+        if (awar) { 
+            widget = gtk_label_new("");
+            awar->bind_value(G_OBJECT(widget), "label");
+        }
+        else if (mnemonic) {
             char *label_w_mnemonic = aw_convert_mnemonic(label_text, mnemonic);        
             widget = gtk_label_new_with_mnemonic(label_w_mnemonic);
             free(label_w_mnemonic);
@@ -266,11 +271,6 @@ GtkWidget* AW_window::make_label(const char* label_text, short label_len, const 
             widget = gtk_label_new_with_mnemonic(label_text);
         }
     
-        AW_awar *awar = get_root()->label_is_awar(label_text);
-        if (awar) { 
-            awar->bind_value(G_OBJECT(widget), "label");
-        }
-
         if (label_len) {
             gtk_label_set_width_chars(GTK_LABEL(widget), label_len);
         }
