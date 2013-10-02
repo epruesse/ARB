@@ -56,7 +56,7 @@ protected:
     void run_callbacks();
 
 public:
-    char *get_name() const { return awar_name; }
+    const char *get_name() const { return awar_name; }
 
     GBDATA    *gb_origin;                    // this is set ONCE on creation of awar
     GBDATA    *gb_var;                       // if unmapped, points to same DB elem as 'gb_origin'
