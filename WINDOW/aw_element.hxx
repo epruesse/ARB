@@ -36,6 +36,8 @@ public:
     void set_help(const char*);
     void set_active_mask(AW_active);
     void set_accel(guint);
+    virtual void set_enabled(bool);
+    void enable_by_mask(AW_active);
 
     const char* get_id() const;
     const char* get_label() const;
@@ -43,8 +45,8 @@ public:
     const char* get_tooltip() const;
     const char* get_help() const;
     AW_active   get_active_mask() const;
+    bool        get_enabled() const;
     guint       get_accel() const;
 
-    void enable_by_mask(AW_active);
-    virtual void set_enabled(bool);
+
 };
