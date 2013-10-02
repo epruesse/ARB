@@ -189,6 +189,8 @@ AW_action* AW_root::action_register(const char* action_id, const AW_action& _act
         aw_warning("replaced duplicate action name with '%s'", act->get_id());
     }
 
+    act->enable_by_mask(prvt->active_mask);
+
     return prvt->action_hash[std::string(act->get_id())] = act;
 }
 

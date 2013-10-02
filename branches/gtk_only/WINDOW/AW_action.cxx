@@ -134,6 +134,8 @@ void AW_action::bind(GtkWidget* widget, const char* sig) {
     aw_return_if_fail(widget != NULL);
     aw_return_if_fail(sig != NULL);
     
+    g_object_set(G_OBJECT(widget), "sensitive", get_enabled(), NULL);
+
     prvt->gsignals.push_back(AW_action_g_signal_binding(widget, sig));
     prvt->gsignals.back().connect(this);
 }

@@ -232,9 +232,12 @@ guint AW_element::get_accel() const {
     return accel_key;
 }
 
-
 void AW_element::set_enabled(bool enabled) {
     active = enabled;
+}
+
+bool AW_element::get_enabled() const {
+    return active;
 }
 
 void AW_element::enable_by_mask(AW_active mask) {
