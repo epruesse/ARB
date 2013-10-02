@@ -7,5 +7,5 @@
 
 #pragma once
 
-
 void AW_POPUP_HELP(AW_window *, AW_CL /* char */ helpfile);
+void AW_insert_default_help_entries(AW_window*);
