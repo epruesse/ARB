@@ -59,7 +59,7 @@ struct AW_root::pimpl : virtual Noncopyable {
     action_hash_t action_hash;
     awar_hash_t   awar_hash;
 
-    pimpl()  {}
+    pimpl() : active_mask(AWM_ALL) {}
 };
 
 /// functions
