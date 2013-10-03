@@ -10,7 +10,7 @@ AW_element::AW_element()
       tooltip(NULL),
       help_entry(NULL),
       active_mask(AWM_ALL),
-      active(false),
+      active(true),
       accel_key(0)
 {
 }
@@ -28,7 +28,7 @@ AW_element::AW_element(const AW_element& o)
       tooltip(NULL),
       help_entry(NULL),
       active_mask(AWM_ALL),
-      active(false),
+      active(true),
       accel_key(0)
 {
     *this = o;
