@@ -1,0 +1,4 @@
+# libraries needed to link against SL/ALIVIEW/ALIVIEW.a
+
+SL/FILTER/FILTER.a
+
