@@ -5,6 +5,7 @@
 #include "global.h"
 #include <static_assert.h>
 #include <unistd.h>
+#include <arb_diff.h>
 
 static const char *format2name(Format type) {
     switch (type) {

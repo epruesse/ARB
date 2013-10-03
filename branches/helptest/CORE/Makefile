@@ -9,6 +9,8 @@ GENERATED_HEADERS= \
 	arb_string.h \
 	arb_signal.h \
 	arb_file.h \
+	arb_diff.h \
+	arb_match.h \
 
 LIB_SHARED=../lib/$(MAIN:.a=).$(SHARED_LIB_SUFFIX)
 
@@ -67,6 +69,21 @@ arb_cs.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_cs.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_cs.o: $(ARBHOME)/INCLUDE/test_global.h
 
+arb_diff.o: arb_assert.h
+arb_diff.o: arb_core.h
+arb_diff.o: arb_diff.h
+arb_diff.o: arb_file.h
+arb_diff.o: arb_match.h
+arb_diff.o: arb_msg.h
+arb_diff.o: arb_string.h
+arb_diff.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_diff.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_diff.o: $(ARBHOME)/INCLUDE/cxxforward.h
+arb_diff.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_diff.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_diff.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_diff.o: $(ARBHOME)/INCLUDE/test_unit.h
+
 arb_file.o: arb_assert.h
 arb_file.o: arb_core.h
 arb_file.o: arb_file.h
@@ -91,6 +108,19 @@ arb_handlers.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/test_global.h
+
+arb_match.o: arb_assert.h
+arb_match.o: arb_core.h
+arb_match.o: arb_match.h
+arb_match.o: arb_msg.h
+arb_match.o: arb_strbuf.h
+arb_match.o: arb_string.h
+arb_match.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_match.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_match.o: $(ARBHOME)/INCLUDE/cxxforward.h
+arb_match.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_match.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_match.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_misc.o: arb_assert.h
 arb_misc.o: arb_core.h

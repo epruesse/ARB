@@ -36,23 +36,13 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 RegExpr.o: RegExpr.hxx
-RegExpr.o: $(ARBHOME)/INCLUDE/ad_prot.h
-RegExpr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_core.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arb_error.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arb_msg.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arb_string.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arbdb.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arbdbt.h
+RegExpr.o: $(ARBHOME)/INCLUDE/arb_match.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arbtools.h
 RegExpr.o: $(ARBHOME)/INCLUDE/attributes.h
 RegExpr.o: $(ARBHOME)/INCLUDE/cxxforward.h
-RegExpr.o: $(ARBHOME)/INCLUDE/downcast.h
 RegExpr.o: $(ARBHOME)/INCLUDE/dupstr.h
 RegExpr.o: $(ARBHOME)/INCLUDE/gccver.h
-RegExpr.o: $(ARBHOME)/INCLUDE/smartptr.h
-RegExpr.o: $(ARBHOME)/INCLUDE/static_assert.h
 RegExpr.o: $(ARBHOME)/INCLUDE/test_global.h
 RegExpr.o: $(ARBHOME)/INCLUDE/test_unit.h

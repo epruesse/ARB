@@ -14,6 +14,7 @@
 #include <TreeRead.h>
 #include <TreeWrite.h>
 #include <arb_str.h>
+#include <arb_diff.h>
 
 using namespace std;
 

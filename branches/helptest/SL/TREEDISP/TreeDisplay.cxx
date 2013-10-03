@@ -20,6 +20,7 @@
 #include <awt_attributes.hxx>
 #include <arb_defs.h>
 #include <arb_strarray.h>
+#include <arb_diff.h>
 
 #include <unistd.h>
 #include <iostream>

@@ -10,7 +10,7 @@
 // ============================================================= //
 
 #include "RegExpr.hxx"
-#include <arbdbt.h>
+#include <arb_match.h>
 #include <regex.h>
 
 using namespace std;

@@ -11,6 +11,7 @@
 
 #include "ptclean.h"
 #include <arbdbt.h>
+#include <arb_diff.h>
 
 #define pt_assert(cond) arb_assert(cond)
 
