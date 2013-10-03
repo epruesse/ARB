@@ -826,6 +826,7 @@ void aw_initstatus() {
         aws->at("elapsed");
         aws->create_button(0, AWAR_STATUS_ELAPSED);
 
+        aws->button_length(0);
         aws->at("Hide");
         aws->callback(aw_status_hide);
         aws->create_button("HIDE", "Hide", "h");
@@ -836,6 +837,8 @@ void aw_initstatus() {
 
         aw_stg.hide = 0;
         aw_stg.aws = aws;
+
+
 
         AW_window_simple *awm = new AW_window_simple;
         awm->init(aw_root, "MESSAGE_BOX", "MESSAGE BOX");
