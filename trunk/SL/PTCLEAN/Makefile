@@ -35,6 +35,7 @@ ptclean.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ptclean.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_core.h
+ptclean.o: $(ARBHOME)/INCLUDE/arb_diff.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_error.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_file.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_msg.h

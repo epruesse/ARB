@@ -15,6 +15,7 @@
 char *GB_strduplen(const char *p, unsigned len);
 char *GB_strpartdup(const char *start, const char *end);
 char *GB_strndup(const char *start, int len);
+const char *GB_date_string(void);
 
 #else
 #error arb_string.h included twice

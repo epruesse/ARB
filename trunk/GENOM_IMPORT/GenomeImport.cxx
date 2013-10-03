@@ -18,6 +18,7 @@
 #include <aw_question.hxx>
 #include <arb_str.h>
 #include <arb_file.h>
+#include <arb_diff.h>
 
 using namespace std;
 
