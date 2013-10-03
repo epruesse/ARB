@@ -66,6 +66,7 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/aisc_global.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_core.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_defs.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_diff.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_error.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_file.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_msg.h

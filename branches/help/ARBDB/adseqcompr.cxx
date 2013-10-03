@@ -12,6 +12,7 @@
 #include <arb_progress.h>
 #include <arb_file.h>
 #include <arb_misc.h>
+#include <arb_diff.h>
 
 #include "gb_key.h"
 #include <climits>

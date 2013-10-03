@@ -248,6 +248,8 @@ depend.init:
 
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_defs.h
+arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_diff.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/cxxforward.h
