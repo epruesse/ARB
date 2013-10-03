@@ -30,8 +30,11 @@ VALIDATE = $(QUIETLY) XMLLINT
 # --------------------------------------------------------------------------------
 
 $(MAIN) : all
+#$(MAIN) : prepare # uncomment to skip help generation (only prepare and allow to run unit test, while help generation fails)
 
-all: date generated dirs tools nonhlp_formats delzerohtml
+prepare: date generated dirs tools nonhlp_formats delzerohtml
+
+all: prepare
 		@echo --------------------------------------------------- [old hlp 2 xml]
 		time $(MAKE) xml
 		@echo --------------------------------------------------- [xml 2 hlp]
