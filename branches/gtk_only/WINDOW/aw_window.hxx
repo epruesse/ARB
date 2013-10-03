@@ -195,8 +195,6 @@ public:
 
     AW_event       event;
     unsigned long  click_time;
-    long           color_table_size;
-    AW_rgb        *color_table;
 
     int number_of_timed_title_changes;
 

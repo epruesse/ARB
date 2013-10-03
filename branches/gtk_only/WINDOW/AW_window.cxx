@@ -1348,8 +1348,6 @@ AW_window::AW_window()
     _at(this),
     event(),
     click_time(0),
-    color_table_size(0),
-    color_table(NULL),
     number_of_timed_title_changes(0),
     xfig_data(NULL),
     window_name(NULL),
