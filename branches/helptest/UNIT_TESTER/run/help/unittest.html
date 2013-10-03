@@ -47,15 +47,21 @@
         belonging to description. It is followed by
         an enumeration on the same indentation level:</B><BR><OL><LI>
           <PRE><FONT color="navy" size="-1">first enum</FONT></PRE>
-          <UL><LI>
-              
-                Again a paragraph - a one liner followed by an item list. It is completely misplaced at the moment!
-            </LI><LI>
-              <PRE><FONT color="navy" size="-1">- item 1
-- item 2
-- item 3
-  contains 2 lines</FONT></PRE>
-            </LI></UL><BR>
+          <P style="margin-left:+10pt">
+            
+              Again a paragraph - a one liner followed by an item list. It is completely misplaced at the moment!
+            <UL><LI>
+                
+                  item 1
+              </LI><LI>
+                
+                  item 2
+              </LI><LI>
+                
+                  item 3
+                  contains 2 lines
+              </LI></UL><BR>
+          </P>
         </LI><LI>
           <PRE><FONT color="navy" size="-1">   second enum which
    is continued on the next line.
@@ -138,31 +144,36 @@ row2    -           3</FONT></PRE>
             (should better be combined)
         </LI></UL><BR></P>
     <P><B>
-        Here is some unsupported itemlist:</B><BR><P style="margin-left:+10pt">
-        <PRE><FONT color="navy" size="-1">* item1
-  continued on next line
-* item2
-* item3</FONT></PRE>
-      </P></P>
+        Here is some unsupported itemlist:</B><BR><UL><LI>
+          
+            item1
+            continued on next line
+        </LI><LI>
+          
+            item2
+        </LI><LI>
+          
+            item3
+        </LI></UL><BR></P>
     <P><B>
         Itemlist containing paragraphs under some items</B><BR><UL><LI>
           
-            - item 1
-            - item 2
-          <P style="margin-left:+10pt">
-            
-              This is a short
-              description of item 2.
-              Currently it does not differ from the items, but it should.
-          </P>
+            item 1
         </LI><LI>
           
-            - item 3
-          <P style="margin-left:+10pt">
-            
-              This is a not much longer
-              description of item 3.
-          </P>
+            item 2
+        </LI><LI>
+          
+            This is a short
+            description of item 2.
+            Currently it does not differ from the items, but it should.
+        </LI><LI>
+          
+            item 3
+        </LI><LI>
+          
+            This is a not much longer
+            description of item 3.
         </LI><LI>
           
             This is a paragraph which should
@@ -212,17 +223,21 @@ row2    -           3</FONT></PRE>
   </TD></TR><TR><TD> </TD></TR></TABLE></TD></TR></TABLE><A name="FEATURE_TESTS"></A><H2>FEATURE TESTS</H2><TABLE width="100%" border="0"><TR><TD align="right"><TABLE width="97%" border="0"><TR><TD>
     <P><B>
         Here all existing helpfile features should be tested:</B><BR><UL><LI>
-          <PRE><FONT color="navy" size="-1">- first testing an inlined
-  link to another help file: <A href="srt.html">´Search and Replace Tool (SRT)´</A>
-          </FONT></PRE>
+          
+            first testing an inlined
+            link to another help file: <A href="srt.html">´Search and Replace Tool (SRT)´</A>
+          
         </LI><LI>
-          <PRE><FONT color="navy" size="-1">- and a link to the arb homepage
-  <A href="http://www.arb-home.de/">http://www.arb-home.de/</A>  followed by text.
-          </FONT></PRE>
+          
+            and a link to the arb homepage
+            <A href="http://www.arb-home.de/">http://www.arb-home.de/</A>
+            followed by text.
+          
         </LI><LI>
-          <PRE><FONT color="navy" size="-1">- arb help also supports mail-links (like <A href="mailto:devel@arb-home.de?subject=Concerning%20helppage%20unittest.xml">devel@arb-home.de</A>).
-  All 3 sorts of links should be clickable in the html version.
-          </FONT></PRE>
+          
+            arb help also supports mail-links (like <A href="mailto:devel@arb-home.de?subject=Concerning%20helppage%20unittest.xml">devel@arb-home.de</A>).
+            All 3 sorts of links should be clickable in the html version.
+          
         </LI></UL><BR></P>
   </TD></TR><TR><TD> </TD></TR></TABLE></TD></TR></TABLE><A name="NOTES"></A><H2>NOTES</H2><TABLE width="100%" border="0"><TR><TD align="right"><TABLE width="97%" border="0"><TR><TD>
     <P><B>

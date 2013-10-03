@@ -198,11 +198,13 @@ public:
 class Ostring {
     string content;
     size_t lineNo; // where string came from
+    bool   is_itemlist_member; // true if the paragraph originally started with a (now already removed) itemlist marker
 public:
 
-    Ostring(const string& s, size_t line_no)
+    Ostring(const string& s, size_t line_no, bool is_itemlist_member_)
         : content(s),
-          lineNo(line_no)
+          lineNo(line_no),
+          is_itemlist_member(is_itemlist_member_)
     {}
 
     operator const string&() const { return content; }
@@ -212,6 +214,8 @@ public:
     string& as_string() { return content; }
 
     size_t get_lineno() const { return lineNo; }
+
+    bool is_member_of_itemlist() const { return is_itemlist_member; }
 
     // some wrapper to make Ostring act like string
     const char *c_str() const { return content.c_str(); }
@@ -340,10 +344,11 @@ inline const char *eatWhite(const char *line) {
     return line;
 }
 
-inline void pushParagraph(Section& sec, string& paragraph, size_t lineNo) {
+inline void pushParagraph(Section& sec, string& paragraph, size_t lineNo, bool& is_itemlist_member) {
     if (paragraph.length()) {
-        sec.Content().push_back(Ostring(paragraph, lineNo));
-        paragraph = "";
+        sec.Content().push_back(Ostring(paragraph, lineNo, is_itemlist_member));
+        is_itemlist_member = false;
+        paragraph          = "";
     }
 }
 
@@ -356,12 +361,13 @@ inline bool is_startof_itemlist_element(const char *contentStart) {
     return
         (contentStart[0] == '-' ||
          contentStart[0] == '*') &&
-        isspace(contentStart[1] && !isspace(contentStart[2]));
+        isspace(contentStart[1]) && !isspace(contentStart[2]);
 }
 
 static void parseSection(Section& sec, const char *line, int indentation, Reader& reader) {
-    string paragraph         = line;
-    size_t para_start_lineno = reader.getLineNo();
+    string paragraph               = line;
+    size_t para_start_lineno       = reader.getLineNo();
+    bool   para_is_itemlist_member = false;
 
     h2x_assert(sec.Content().empty());
 
@@ -370,7 +376,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         if (!line) break;
 
         if (isEmptyOrComment(line)) {
-            pushParagraph(sec, paragraph, para_start_lineno);
+            pushParagraph(sec, paragraph, para_start_lineno, para_is_itemlist_member);
 #if defined(WARN_MISSING_HELP)
             check_TODO(line, reader);
 #endif // WARN_MISSING_HELP
@@ -391,15 +397,16 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
             string Line = line;
 
             if (sec.get_type() == SEC_OCCURRENCE) {
-                pushParagraph(sec, paragraph, para_start_lineno);
+                pushParagraph(sec, paragraph, para_start_lineno, para_is_itemlist_member);
             }
             else {
                 const char *firstNonWhite = firstChar(line);
                 if (is_startof_itemlist_element(firstNonWhite)) {
                     h2x_assert(firstNonWhite != line);
 
-                    pushParagraph(sec, paragraph, para_start_lineno);
+                    pushParagraph(sec, paragraph, para_start_lineno, para_is_itemlist_member);
                     Line[firstNonWhite-line] = ' ';
+                    para_is_itemlist_member  = true; // reset in call to pushParagraph
                 }
             }
 
@@ -413,7 +420,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         }
     }
 
-    pushParagraph(sec, paragraph, para_start_lineno);
+    pushParagraph(sec, paragraph, para_start_lineno, para_is_itemlist_member);
 
     if (sec.Content().size()>0 && indentation>0) {
         string spaces;
@@ -719,7 +726,7 @@ class ParagraphTree : virtual Noncopyable {
         h2x_assert(begin != end);
 
         string& text  = otext;
-        is_enumerated = startsWithNumber(text, enumeration);
+        is_enumerated = !otext.is_member_of_itemlist() && startsWithNumber(text, enumeration);
 
         if (is_enumerated) {
             size_t text_start     = text.find_first_not_of(" \n");
@@ -869,9 +876,9 @@ public:
     ParagraphTree* format_indentations();
     ParagraphTree* format_enums();
 private:
-    static ParagraphTree* buildNewParagraph(const string& Text, size_t beginLineNo) {
+    static ParagraphTree* buildNewParagraph(const string& Text, size_t beginLineNo, bool is_itemlist_member) {
         Ostrings S;
-        S.push_back(Ostring(Text, beginLineNo));
+        S.push_back(Ostring(Text, beginLineNo, is_itemlist_member));
         return new ParagraphTree(S.begin(), S.end());
     }
     ParagraphTree *extractEmbeddedEnum(unsigned lookfor) {
@@ -886,7 +893,7 @@ private:
             if (startsWithNumber(embedded, number, false)) {
                 if (number == lookfor) {
                     text.erase(this_lineend);
-                    return buildNewParagraph(embedded, otext.get_lineno()+line_offset);
+                    return buildNewParagraph(embedded, otext.get_lineno()+line_offset, false);
                 }
                 break;
             }
