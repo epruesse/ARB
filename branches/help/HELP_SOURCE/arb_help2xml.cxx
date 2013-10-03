@@ -1250,21 +1250,21 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
 
 #if defined(DEBUG)
         size_t textnodes = ptree->countTextNodes();
-#endif // DEBUG
+#endif
 
         ptree = ptree->format_enums();
 
 #if defined(DEBUG)
         size_t textnodes2 = ptree->countTextNodes();
         h2x_assert(textnodes2 == (textnodes+ParagraphTree::embeddedCounter)); // if this occurs format_enums has an error
-#endif // DEBUG
+#endif
 
         ptree = ptree->format_indentations();
 
 #if defined(DEBUG)
         size_t textnodes3 = ptree->countTextNodes();
         h2x_assert(textnodes3 == textnodes2); // if this occurs format_indentations has an error
-#endif // DEBUG
+#endif
 
         ptree->xml_write();
 
@@ -1498,9 +1498,9 @@ void TEST_hlp2xml_output() {
 # if defined(NDEBUG)
 #  error please use auto-update only in DEBUG mode
 # endif
-        cmd = string("cp ") + xml  + ' ' + xml_expected;  system(cmd.c_str());
-        cmd = string("cp ") + html + ' ' + html_expected; system(cmd.c_str());
-        cmd = string("cp ") + hlp  + ' ' + hlp_expected;  system(cmd.c_str());
+        cmd = string("cp ") + xml  + ' ' + xml_expected;  TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
+        cmd = string("cp ") + html + ' ' + html_expected; TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
+        cmd = string("cp ") + hlp  + ' ' + hlp_expected;  TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
 #else // !defined(TEST_AUTO_UPDATE)
 
 # if defined(DEBUG)
