@@ -95,6 +95,7 @@ public:
     gboolean handle_event(GdkEventButton*);
     gboolean handle_event(GdkEventKey*);
     gboolean handle_event(GdkEventMotion*);
+    gboolean handle_event(GdkEventScroll*);
 };
 
 GtkWidget *AW_area_management::get_area() const {
@@ -117,6 +118,9 @@ extern "C"  gboolean key_event_cbproxy(GtkWidget *, GdkEventKey *ev, gpointer se
     return ((AW_area_management::Pimpl*)self)->handle_event(ev);
 }
 extern "C"  gboolean motion_event_cbproxy(GtkWidget *, GdkEventMotion *ev, gpointer self) {
+    return ((AW_area_management::Pimpl*)self)->handle_event(ev);
+}
+extern "C"  gboolean scroll_event_cbproxy(GtkWidget*, GdkEventScroll *ev, gpointer self) {
     return ((AW_area_management::Pimpl*)self)->handle_event(ev);
 }
 
@@ -157,6 +161,28 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventButton *event) {
 
     DUMP_EVENT("input/button");
     input_cb->run_callbacks();
+    return false;
+}
+
+gboolean AW_area_management::Pimpl::handle_event(GdkEventScroll *event) {
+    aw_event_clear(aww);
+    aww->event.type        = AW_Mouse_Press;
+    aww->event.x           = event->x;
+    aww->event.y           = event->y;
+    aww->event.keymodifier = (AW_key_mod) event->state;
+
+    if (event->direction == GDK_SCROLL_UP) {
+        aww->event.button = AW_WHEEL_UP;
+    }
+    else if (event->direction == GDK_SCROLL_DOWN) {
+        aww->event.button = AW_WHEEL_DOWN;
+    }
+
+    DUMP_EVENT("input/scroll");
+    if (aww->event.button) {
+        input_cb->run_callbacks();
+        return true;
+    }
     return false;
 }
 
@@ -229,6 +255,8 @@ void AW_area_management::set_input_callback(AW_window *aww, const WindowCallback
                           G_CALLBACK (button_event_cbproxy), (gpointer) prvt);
         g_signal_connect (prvt->area, "button-release-event",
                           G_CALLBACK (button_event_cbproxy), (gpointer) prvt);
+        g_signal_connect (prvt->area, "scroll-event",
+                          G_CALLBACK (scroll_event_cbproxy), (gpointer) prvt);
     }
     prvt->input_cb = new AW_cb(aww, wcb, 0, prvt->input_cb);
 }
