@@ -3,7 +3,8 @@
 
 # --------------------------------------------------------------------------------
 
-TEST_ONE=0# default is 0 (if 1 only one .hlp file is processed. see below @ TEST_ONE)
+TEST_ONE:=0# default is 0; if 1 -> only one .hlp file is processed. see below .@TEST_ONE
+ONLY_DO_UNITTEST:=0# default is 0; if 1 -> only unittest.hlp is processed (to make unit-test auto-update work)
 
 # --------------------------------------------------------------------------------
 # directories of source/destination files:
@@ -30,7 +31,6 @@ VALIDATE = $(QUIETLY) XMLLINT
 # --------------------------------------------------------------------------------
 
 $(MAIN) : all
-#$(MAIN) : prepare # uncomment to skip help generation (only prepare and allow to run unit test, while help generation fails)
 
 prepare: date generated dirs tools nonhlp_formats delzerohtml
 
@@ -74,7 +74,9 @@ generated:
 
 HELP_INDEX_XML = $(XML_LOCATION)/$(HELP_INDEX_NAME).xml
 
-#OLD_HELP= oldhelp/importift.hlp
+ifeq ($(ONLY_DO_UNITTEST),1)
+OLD_HELP_ALL= $(HLP_SOURCE)/unittest.hlp
+else
 OLD_HELP_ALL= \
 		$(HLP_SOURCE)/arb.hlp \
 		$(wildcard \
@@ -82,6 +84,7 @@ OLD_HELP_ALL= \
 				$(HLP_SOURCE)/*.hlp \
 				$(HLP_SOURCE)/prompt/*.hlp \
 		)
+endif
 
 ifeq ($(TEST_ONE),1)
 #OLD_HELP=$(HLP_SOURCE)/arb.hlp $(HLP_SOURCE)/version.hlp $(HLP_SOURCE)/translate_dna_2_pro.hlp $(HLP_SOURCE)/species_join.hlp
