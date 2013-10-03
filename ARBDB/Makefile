@@ -230,6 +230,7 @@ ad_save_load.o: gb_storage.h
 ad_save_load.o: gb_tune.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_core.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/arb_diff.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_file.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -666,6 +667,7 @@ admatch.o: gb_prot.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_assert.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_core.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_error.h
+admatch.o: $(ARBHOME)/INCLUDE/arb_match.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_msg.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -705,6 +707,7 @@ adname.o: gb_local.h
 adname.o: gb_prot.h
 adname.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adname.o: $(ARBHOME)/INCLUDE/arb_core.h
+adname.o: $(ARBHOME)/INCLUDE/arb_diff.h
 adname.o: $(ARBHOME)/INCLUDE/arb_error.h
 adname.o: $(ARBHOME)/INCLUDE/arb_file.h
 adname.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -741,6 +744,7 @@ adoptimize.o: gb_storage.h
 adoptimize.o: gb_tune.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_core.h
+adoptimize.o: $(ARBHOME)/INCLUDE/arb_diff.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_error.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_file.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -795,6 +799,7 @@ adquery.o: gb_tune.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_core.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_error.h
+adquery.o: $(ARBHOME)/INCLUDE/arb_match.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -842,6 +847,7 @@ adseqcompr.o: gb_prot.h
 adseqcompr.o: gb_tune.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_core.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/arb_diff.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_error.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_file.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_misc.h

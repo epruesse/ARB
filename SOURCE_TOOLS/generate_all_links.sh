@@ -233,7 +233,9 @@ symlink_file ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx &&
 symlink_file ../CORE/arb_assert.h INCLUDE/arb_assert.h &&
 symlink_file ../CORE/arb_core.h INCLUDE/arb_core.h &&
 symlink_file ../CORE/arb_cs.h INCLUDE/arb_cs.h &&
+symlink_file ../CORE/arb_diff.h INCLUDE/arb_diff.h &&
 symlink_file ../CORE/arb_file.h INCLUDE/arb_file.h &&
+symlink_file ../CORE/arb_match.h INCLUDE/arb_match.h &&
 symlink_file ../CORE/arb_msg.h INCLUDE/arb_msg.h &&
 symlink_file ../CORE/arb_msg_fwd.h INCLUDE/arb_msg_fwd.h &&
 symlink_file ../CORE/arb_misc.h INCLUDE/arb_misc.h &&

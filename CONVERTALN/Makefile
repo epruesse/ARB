@@ -112,6 +112,7 @@ fconv.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_assert.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_core.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_defs.h
+fconv.o: $(ARBHOME)/INCLUDE/arb_diff.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_error.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_file.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_msg.h

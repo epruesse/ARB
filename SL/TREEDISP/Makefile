@@ -132,6 +132,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_defs.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_diff.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_msg.h
