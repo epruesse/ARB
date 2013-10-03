@@ -1444,7 +1444,7 @@ static arb_test::match_expectation help_file_compiles(const char *helpfile, cons
 #define HELP_FILE_COMPILE_ERROR(name,expError) TEST_EXPECTATION(help_file_compiles(name,NULL,expError))
 
 void TEST_hlp2xml_conversion() {
-    chdir("../../HELP_SOURCE");
+    TEST_EXPECT_ZERO(chdir("../../HELP_SOURCE"));
 
     HELP_FILE_COMPILES("genhelp/agde_treepuzzle.hlp", "treepuzzle");        // genhelp/agde_treepuzzle.hlp
 
@@ -1467,7 +1467,7 @@ void TEST_hlp2xml_output() {
     string LIB         = "../../lib/";
     string EXPECTED    = "help/";
 
-    for (int i = 0; i<ARRAY_ELEMS(tested_helpfile); ++i) {
+    for (size_t i = 0; i<ARRAY_ELEMS(tested_helpfile); ++i) {
         string xml  = HELP_SOURCE + "Xml/" + tested_helpfile[i] + ".xml";
         string html = LIB + "help_html/" + tested_helpfile[i] + ".html";
         string hlp  = LIB + "help/" + tested_helpfile[i] + ".hlp";
@@ -1479,13 +1479,24 @@ void TEST_hlp2xml_output() {
         string cmd;
 
 #if defined(TEST_AUTO_UPDATE)
+# if defined(NDEBUG)
+#  error please use auto-update only in DEBUG mode
+# endif
         cmd = string("cp ") + xml  + ' ' + xml_expected;  system(cmd.c_str());
         cmd = string("cp ") + html + ' ' + html_expected; system(cmd.c_str());
         cmd = string("cp ") + hlp  + ' ' + hlp_expected;  system(cmd.c_str());
 #else // !defined(TEST_AUTO_UPDATE)
-        TEST_EXPECT_TEXTFILE_DIFFLINES(xml.c_str(),  xml_expected.c_str(),  0);
+
+# if defined(DEBUG)
+        int expected_xml_difflines = 0;
+        int expected_hlp_difflines = 0;
+# else // !defined(DEBUG)
+        int expected_xml_difflines = 1; // value of "edit_warning" differs - see .@edit_warning
+        int expected_hlp_difflines = 1; // resulting warning in helpfile
+# endif
+        TEST_EXPECT_TEXTFILE_DIFFLINES(xml.c_str(),  xml_expected.c_str(),  expected_xml_difflines);
         TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(html.c_str(), html_expected.c_str(), 0); // html contains the update-date
-        TEST_EXPECT_TEXTFILE_DIFFLINES(hlp.c_str(),  hlp_expected.c_str(),  0);
+        TEST_EXPECT_TEXTFILE_DIFFLINES(hlp.c_str(),  hlp_expected.c_str(),  expected_hlp_difflines);
 #endif
     }
 }
