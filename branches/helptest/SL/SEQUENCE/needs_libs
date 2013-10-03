@@ -1,0 +1,4 @@
+# libraries needed to link against SL/SEQUENCE/SEQUENCE.a
+
+SL/PRONUC/PRONUC.a
+SL/ALIVIEW/ALIVIEW.a
