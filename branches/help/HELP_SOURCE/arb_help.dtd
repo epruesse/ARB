@@ -14,7 +14,7 @@
 
 <!ELEMENT PAGE (UP*,SUB*,TITLE,SECTION*) >
 <!ATTLIST PAGE name CDATA #REQUIRED > <!--name of page (equal to filename)-->
-<!ATTLIST PAGE edit_warning (release|devel) #REQUIRED > <!--name of page (equal to filename)-->
+<!ATTLIST PAGE edit_warning (release|devel) #REQUIRED > <!--affects the kind of edit-warning which is written into generated help-files-->
 
 <!ELEMENT UP EMPTY>
 <!ATTLIST UP dest CDATA #REQUIRED >

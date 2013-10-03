@@ -83,5 +83,5 @@ if [ "$ki" = "kill" ] ; then
     kill -TERM $i
 fi
 if [ "$ki" = "killall" ] ; then
-    arb_clean
+    arb_clean killall
 fi

@@ -77,8 +77,8 @@ public:
                 add("<MON>[ -][0-9 ]?[0-9]",   GB_IGNORE_CASE, "<MON> <DAY>");
                 add("<Month>[ -][0-9 ]?[0-9]", GB_IGNORE_CASE, "<Month> <DAY>");
 
-                add("[0-9]{2}[ -\.]+<MON>",   GB_IGNORE_CASE, "<DAY> <MON>");
-                add("[0-9]{2}[ -\.]+<Month>", GB_IGNORE_CASE, "<DAY> <Month>");
+                add("[0-9]{2}[ -\\.]+<MON>",   GB_IGNORE_CASE, "<DAY> <MON>");
+                add("[0-9]{2}[ -\\.]+<Month>", GB_IGNORE_CASE, "<DAY> <Month>");
 
                 add("<DAY>, [0-9]{4}", GB_IGNORE_CASE, "<DAY> <YEAR>");
 
