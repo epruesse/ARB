@@ -180,6 +180,44 @@ FEATURE TESTS
 
 
 
+NESTED LISTS
+
+    text before enum
+
+        first enum
+
+         1. text below first enum
+
+                first item below first enum
+
+                second item below first enum 1. first subenum below second 
+                item
+
+                  - first item below first subenum
+
+                   second item below first subenum
+                2. second subenum below second item
+
+                  - text before subsubenum
+
+                        first subsubenum below second subenum
+
+                         1. text behind subsubenum
+
+                                third subenum below second item
+
+                        second subsubenum below second subenum
+
+                third item below first enum
+
+                    second enum
+
+                    third enum
+
+    text behind enum
+
+
+
 NOTES
 
     Note that this test may help me.

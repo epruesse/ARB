@@ -170,6 +170,37 @@ SECTION FEATURE TESTS
                      - arb help also supports mail-links (like LINK{devel@arb-home.de}).
                        All 3 sorts of links should be clickable in the html version.
 
+SECTION NESTED LISTS
+
+               text before enum
+
+               1. first enum
+
+                  text below first enum
+
+                  - first item below first enum
+                  - second item below first enum
+                    1. first subenum below second item
+                     - first item below first subenum
+                     - second item below first subenum
+                    2. second subenum below second item
+
+                     text before subsubenum
+
+                     1. first subsubenum below second subenum
+                     2. second subsubenum below second subenum
+
+                     text behind subsubenum
+
+                    3. third subenum below second item
+                  - third item below first enum
+
+               2. second enum
+
+               3. third enum
+
+               text behind enum
+
 NOTES		Note that this test may help me.
 
 EXAMPLES	The whole file is just an example.

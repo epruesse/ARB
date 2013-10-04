@@ -323,6 +323,84 @@ row2    -           3</T>
       </LIST>
     </P>
   </SECTION>
+  <SECTION name="NESTED LISTS">
+    <P>
+      <T reflow="1">
+        text before enum</T>
+      <ENUM>
+        <ENTRY>
+          <T reflow="1">
+            first enum</T>
+          <P>
+            <T reflow="1">
+              text below first enum</T>
+            <LIST>
+              <ENTRY>
+                <T reflow="1">
+                  first item below first enum</T>
+              </ENTRY>
+              <ENTRY>
+                <T reflow="1">
+                  second item below first enum
+                  1. first subenum below second item</T>
+                <P>
+                  <T reflow="1">
+                    first item below first subenum</T>
+                </P>
+              </ENTRY>
+              <ENTRY>
+                <T reflow="0">
+   second item below first subenum
+2. second subenum below second item</T>
+                <P>
+                  <T reflow="1">
+                    text before subsubenum</T>
+                  <ENUM>
+                    <ENTRY>
+                      <T reflow="1">
+                        first subsubenum below second subenum</T>
+                      <P>
+                        <T reflow="1">
+                          text behind subsubenum</T>
+                        <ENUM>
+                          <ENTRY>
+                            <T reflow="1">
+                              third subenum below second item</T>
+                          </ENTRY>
+                        </ENUM>
+                      </P>
+                    </ENTRY>
+                    <ENTRY>
+                      <T reflow="1">
+                        second subsubenum below second subenum</T>
+                    </ENTRY>
+                  </ENUM>
+                </P>
+              </ENTRY>
+              <ENTRY>
+                <T reflow="1">
+                  third item below first enum</T>
+                <ENUM>
+                  <ENTRY>
+                    <T reflow="1">
+                      second enum</T>
+                  </ENTRY>
+                  <ENTRY>
+                    <T reflow="1">
+                      third enum</T>
+                  </ENTRY>
+                </ENUM>
+              </ENTRY>
+            </LIST>
+          </P>
+        </ENTRY>
+      </ENUM>
+    </P>
+    <P>
+      <T reflow="1">
+        text behind enum</T>
+    </P>
+  </SECTION>
   <SECTION name="NOTES">
     <P>
       <T reflow="1">
