@@ -1510,9 +1510,9 @@ void TEST_hlp2xml_output() {
         int expected_xml_difflines = 1; // value of "edit_warning" differs - see .@edit_warning
         int expected_hlp_difflines = 1; // resulting warning in helpfile
 # endif
-        TEST_EXPECT_TEXTFILE_DIFFLINES(xml.c_str(),  xml_expected.c_str(),  expected_xml_difflines);
-        TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(html.c_str(), html_expected.c_str(), 0); // html contains the update-date
-        TEST_EXPECT_TEXTFILE_DIFFLINES(hlp.c_str(),  hlp_expected.c_str(),  expected_hlp_difflines);
+        TEST_EXPECT_TEXTFILE_DIFFLINES(xml_expected.c_str(),  xml.c_str(),  expected_xml_difflines);
+        TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(html_expected.c_str(), html.c_str(), 0); // html contains the update-date
+        TEST_EXPECT_TEXTFILE_DIFFLINES(hlp_expected.c_str(),  hlp.c_str(),  expected_hlp_difflines);
 #endif
     }
 }
