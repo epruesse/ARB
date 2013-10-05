@@ -1144,62 +1144,67 @@ static void print_XML_Text_expanding_links(const string& text, size_t lineNo) {
         size_t inside_link = found+5;
         size_t close = text.find('}', inside_link);
 
-        if (close != string::npos) {
-            string   link_target = text.substr(inside_link, close-inside_link);
-            LinkType type        = detectLinkType(link_target);
-            string   dest        = link_target;
+        if (close == string::npos) throw "unclosed 'LINK{}'";
 
-            // cppcheck-suppress unusedScopedObject
-            XML_Text(text.substr(0, found));
+        string   link_target = text.substr(inside_link, close-inside_link);
+        LinkType type        = detectLinkType(link_target);
+        string   dest        = link_target;
 
-            {
-                XML_Tag link("LINK");
-                link.set_on_extra_line(false);
-                add_link_attributes(link, type, dest, lineNo);
-            }
+        // cppcheck-suppress unusedScopedObject
+        XML_Text(text.substr(0, found));
 
-            return print_XML_Text_expanding_links(text.substr(close+1), lineNo);
+        {
+            XML_Tag link("LINK");
+            link.set_on_extra_line(false);
+            add_link_attributes(link, type, dest, lineNo);
         }
-    }
 
-    XML_Text t(text);
+        print_XML_Text_expanding_links(text.substr(close+1), lineNo);
+    }
+    else {
+        XML_Text t(text);
+    }
 }
 
 void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
-    if (is_enumerated && !ignore_enumerated) {
-        XML_Tag e("ENUM");
-        xml_write(true);
-    }
-    else {
-        {
-            XML_Tag para(is_enumerated || write_as_entry ? "ENTRY" : "P");
+    try {
+        if (is_enumerated && !ignore_enumerated) {
+            XML_Tag e("ENUM");
+            xml_write(true);
+        }
+        else {
             {
-                XML_Tag textblock("T");
-                textblock.add_attribute("reflow", reflow ? "1" : "0");
+                XML_Tag para(is_enumerated || write_as_entry ? "ENTRY" : "P");
                 {
-                    string        usedText;
-                    const string& text = otext;
-                    if (reflow) {
-                        usedText = correctIndentation(text, (textblock.Indent()+1) * the_XML_Document->indentation_per_level);
+                    XML_Tag textblock("T");
+                    textblock.add_attribute("reflow", reflow ? "1" : "0");
+                    {
+                        string        usedText;
+                        const string& text = otext;
+                        if (reflow) {
+                            usedText = correctIndentation(text, (textblock.Indent()+1) * the_XML_Document->indentation_per_level);
+                        }
+                        else {
+                            usedText = text;
+                        }
+                        print_XML_Text_expanding_links(usedText, otext.get_lineno());
+                    }
+                }
+                if (son) {
+                    if (!son->is_enumerated && son->brother) {
+                        XML_Tag son_tag("LIST");
+                        son->xml_write(false, true);
                     }
                     else {
-                        usedText = text;
+                        son->xml_write(false);
                     }
-                    print_XML_Text_expanding_links(usedText, otext.get_lineno());
                 }
             }
-            if (son) {
-                if (!son->is_enumerated && son->brother) {
-                    XML_Tag sontag("LIST");
-                    son->xml_write(false, true);
-                }
-                else {
-                    son->xml_write(false);
-                }
-            }
+            if (brother) brother->xml_write(ignore_enumerated, write_as_entry);
         }
-        if (brother) brother->xml_write(ignore_enumerated, write_as_entry);
     }
+    catch (string& err) { throw make_paragraph_message(err); }
+    catch (const char *err) { throw make_paragraph_message(err); }
 }
 
 static void create_top_links(const Links& links, const char *tag) {
