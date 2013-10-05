@@ -1332,7 +1332,7 @@ void AW_window::window_fit() {
     // let gtk do the sizing based on content
     // (default size will be ignored if requisition of 
     //  children is greater)
-    set_window_size(0,0);
+    prvt->set_size(0,0);
 }
 
 AW_window::AW_window() 
@@ -1343,8 +1343,6 @@ AW_window::AW_window()
     prvt(new AW_window::AW_window_gtk()),
     _at(this),
     event(),
-    click_time(0),
-    number_of_timed_title_changes(0),
     xfig_data(NULL),
     window_name(NULL),
     window_defaults_name(NULL),
@@ -1382,7 +1380,7 @@ void AW_window::init_window(const char *window_name_, const char* window_title,
         
     set_window_title(window_title);
     
-    set_window_size(awar_width->read_int(), awar_height->read_int());
+    prvt->set_size(awar_width->read_int(), awar_height->read_int());
     prvt->set_resizable(resizable);
 
     // set minimum window size to size provided by init

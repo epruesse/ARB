@@ -63,7 +63,6 @@ public:
     AW_device_size  *size_device;
     AW_device_print *print_device;
     AW_device_click *click_device;
-    long click_time;
 
     AW_cb *resize_cb; /** < A list of callback functions that are called whenever this area is resized. */
     AW_cb *expose_cb;
@@ -82,7 +81,6 @@ public:
         size_device(NULL),
         print_device(NULL),
         click_device(NULL),
-        click_time(0),
         resize_cb(NULL),
         expose_cb(NULL),
         input_cb(NULL),
