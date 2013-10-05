@@ -268,7 +268,7 @@
         <xsl:variable name="print">
           <xsl:choose>
             <xsl:when test="$last-space='0'"><xsl:value-of select="substring($text,1,$printlen)"/></xsl:when>
-            <xsl:otherwise><xsl:value-of select="substring($text,1,$last-space)"/></xsl:otherwise>
+            <xsl:otherwise><xsl:value-of select="substring($text,1,$last-space - 1)"/></xsl:otherwise>
           </xsl:choose>
         </xsl:variable>
         <xsl:variable name="rest">

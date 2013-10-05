@@ -15,8 +15,6 @@
                >
 
   <!--  <xsl:output method="html" encoding="iso-8859-1" indent="no"/>-->
-  <!--<xsl:output method="html" indent="no"/>-->
-  <!--<xsl:output method="html" encoding="iso-8859-1" indent="yes"/>-->
   <xsl:output method="html" indent="no"/>
 
   <xsl:param name="myname"/>
@@ -186,13 +184,18 @@
   <!--     uplinks     -->
   <!-- =============== -->
 
-  <xsl:template match="UP" mode="uplinks"><LI><xsl:call-template name="link-to-document">
+  <xsl:template match="UP" mode="uplinks">
+    <LI>
+      <xsl:call-template name="link-to-document">
         <xsl:with-param name="doc" select="@dest"/>
         <xsl:with-param name="type" select="@type"/>
         <xsl:with-param name="missing" select="@missing"/>
-      </xsl:call-template></LI></xsl:template>
+      </xsl:call-template>
+    </LI>
+  </xsl:template>
 
   <xsl:template match="*" mode="uplinks">
+    <xsl:call-template name="error"><xsl:with-param name="text">Unwanted match in mode 'uplinks'</xsl:with-param></xsl:call-template>
   </xsl:template>
 
   <!-- ================ -->
@@ -210,6 +213,7 @@
   </xsl:template>
 
   <xsl:template match="*" mode="sublinks">
+    <xsl:call-template name="error"><xsl:with-param name="text">Unwanted match in mode 'sublinks'</xsl:with-param></xsl:call-template>
   </xsl:template>
 
   <!-- =================== -->
@@ -217,8 +221,31 @@
   <!-- =================== -->
 
   <xsl:template match="text()" mode="reflow">
-    <xsl:value-of select="."/>
+    <xsl:variable name="normaltext"><xsl:value-of select="normalize-space(.)"/></xsl:variable>
+    <xsl:choose>
+      <xsl:when test="string-length($normaltext)='0'"></xsl:when><!--skip whitespace-only text-nodes-->
+      <xsl:otherwise>
+        <xsl:variable name="first"><xsl:value-of select="normalize-space(substring(.,1,1))"/></xsl:variable>
+        <xsl:variable name="last"><xsl:value-of select="normalize-space(substring(.,string-length(.)))"/></xsl:variable>
+        <xsl:if test="string-length($first)='0'"><!--if text starts with whitespace ..-->
+          <xsl:variable name="prevtag"><xsl:for-each select="preceding-sibling::*"><xsl:value-of select="name()"/></xsl:for-each></xsl:variable>
+          <xsl:if test="$prevtag='LINK'"><!--.. and preceding-sibling is a LINK -> keep one space-->
+            <xsl:text> </xsl:text>
+          </xsl:if>
+        </xsl:if>
+
+        <xsl:value-of select="$normaltext"/>
+
+        <xsl:if test="string-length($last)='0'"><!--if text ends with whitespace ..-->
+          <xsl:variable name="nexttag"><xsl:for-each select="following-sibling::*"><xsl:value-of select="name()"/></xsl:for-each></xsl:variable>
+          <xsl:if test="$nexttag='LINK'"><!--.. and following-sibling is a LINK -> keep one space-->
+            <xsl:text> </xsl:text>
+          </xsl:if>
+        </xsl:if>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
+
   <xsl:template match="LINK" mode="reflow">
     <xsl:apply-templates select="." mode="link-recursion"/>
   </xsl:template>
@@ -292,7 +319,7 @@
   <xsl:template match="T" mode="condensed">
     <xsl:choose>
       <xsl:when test="@reflow='1'">
-        <xsl:apply-templates mode="reflow"/>
+          <xsl:apply-templates mode="reflow"/>
       </xsl:when>
       <xsl:otherwise>
         <PRE><FONT color="navy" size="-1"><xsl:apply-templates mode="preformatted"/></FONT></PRE>
@@ -355,7 +382,6 @@
                 <xsl:apply-templates mode="top-level"/>
               </TD>
             </TR>
-<!--            <TR><TD>&nbsp;</TD></TR>-->
             <TR><TD>&nbsp;</TD></TR>
           </TABLE>
         </TD>
@@ -414,12 +440,22 @@
         </TABLE>
         <TABLE border="{$tableBorder}" width="98%" align="center">
           <TR bgcolor="{$linkSectionsColor}">
+            <xsl:text>
+            </xsl:text>
             <TD valign="top" width="50%">Main topics:<BR/>
-              <UL><xsl:apply-templates mode="uplinks"/></UL>
+              <UL>
+                <xsl:apply-templates select="UP" mode="uplinks"/>
+              </UL>
             </TD>
+            <xsl:text>
+            </xsl:text>
             <TD valign="top">Related topics:<BR/>
-              <UL><xsl:apply-templates mode="sublinks"/></UL>
+              <UL>
+                <xsl:apply-templates select="SUB" mode="sublinks"/>
+              </UL>
             </TD>
+            <xsl:text>
+            </xsl:text>
           </TR>
           <TR>
             <TD colspan="2">
@@ -441,7 +477,7 @@
    <xsl:choose>
      <!-- tags-->
      <xsl:when test="string-length(name())>0">
-       <xsl:call-template name="error"><xsl:with-param name="text">Unbekannter TAG <xsl:value-of select="name()"/></xsl:with-param></xsl:call-template>
+       <xsl:call-template name="error"><xsl:with-param name="text">Unhandled TAG <xsl:value-of select="name()"/></xsl:with-param></xsl:call-template>
      </xsl:when>
      <!-- text() -->
      <xsl:otherwise>

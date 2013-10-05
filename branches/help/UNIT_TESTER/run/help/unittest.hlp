@@ -27,15 +27,15 @@ OCCURRENCE
 
 DESCRIPTION
 
-    This is the first paragraph of the description. It may be continued on 
+    This is the first paragraph of the description. It may be continued on
     the next line.
 
-    Another paragraph also belonging to description. It is followed by an 
+    Another paragraph also belonging to description. It is followed by an
     enumeration on the same indentation level:
 
         first enum
 
-         1. Again a paragraph - a one liner followed by an item list. It is 
+         1. Again a paragraph - a one liner followed by an item list. It is
             completely misplaced at the moment!
 
                 item 1
@@ -54,12 +54,12 @@ DESCRIPTION
 
 CUSTOM    A custom section.
 
-    Acts like DESCRIPTION, despite the SECTION line will be part of the 
+    Acts like DESCRIPTION, despite the SECTION line will be part of the
     headline. In DESCRIPTION it would be part of the first paragraph.
 
     First i need to check proper support for different indentation levels.
 
-        This paragraph has to be indented one level deeper than the 
+        This paragraph has to be indented one level deeper than the
         previous paragraph.
 
         That paragraph should be on the same level.
@@ -72,14 +72,14 @@ CUSTOM    A custom section.
 
             One step down - ignoring deeper indentation in source.
 
-            Consecutive paragraphs are only placed on the same level if 
+            Consecutive paragraphs are only placed on the same level if
             their indentation matches.
 
-            Using the indentation level used 4 paragraphs above, wont help 
+            Using the indentation level used 4 paragraphs above, wont help
             here.
 
-                But the "wrong" indentation of the previous paragraph 
-                forces this paragraph to get indented one level deeper than 
+                But the "wrong" indentation of the previous paragraph
+                forces this paragraph to get indented one level deeper than
                 the paragraphs before.
 
                 This does not step back.
@@ -92,7 +92,7 @@ CUSTOM    A custom section.
 
 Wanted fixes
 
-    Paragraphs containing multiple spaces will be treated as monospaced. 
+    Paragraphs containing multiple spaces will be treated as monospaced.
     This is done to support tabular information like the following:
 
                             other
@@ -124,20 +124,20 @@ Wanted fixes
 
         item 2
 
-        This is a short description of item 2. Currently it does not differ 
+        This is a short description of item 2. Currently it does not differ
         from the items, but it should.
 
         item 3
 
         This is a not much longer description of item 3.
 
-        This is a paragraph which should be placed outside the itemlist. 
+        This is a paragraph which should be placed outside the itemlist.
         Currently this is placed like the items above.
 
-    And this paragraph should be back where we were before the itemlist 
+    And this paragraph should be back where we were before the itemlist
     began.
 
-    Now to sth completely unsupported. It would be nice, to support 
+    Now to sth completely unsupported. It would be nice, to support
     enumerations using letters, since that is common, i.e. sth like
 
     A. first enum B. 2nd enum C. third enum D. last enum
@@ -168,14 +168,14 @@ FEATURE TESTS
 
     Here all existing helpfile features should be tested:
 
-        first testing an inlined link to another help file: TOPIC 'Search 
+        first testing an inlined link to another help file: TOPIC 'Search
         and Replace Tool (SRT)'
 
-        and a link to the arb homepage http://www.arb-home.de/ followed by 
+        and a link to the arb homepage http://www.arb-home.de/ followed by
         text.
 
-        arb help also supports mail-links (like devel@arb-home.de [mailto: 
-        devel@arb-home.de subject: 'Concerning helppage unittest.xml']). 
+        arb help also supports mail-links (like devel@arb-home.de [mailto:
+        devel@arb-home.de subject: 'Concerning helppage unittest.xml']).
         All 3 sorts of links should be clickable in the html version.
 
 
@@ -190,7 +190,7 @@ NESTED LISTS
 
                 first item below first enum
 
-                second item below first enum 1. first subenum below second 
+                second item below first enum 1. first subenum below second
                 item
 
                   - first item below first subenum
@@ -240,6 +240,6 @@ WARNINGS
 
 BUGS
 
-    will be detected by the unit test checking the files into which this 
+    will be detected by the unit test checking the files into which this
     file gets converted.
 
