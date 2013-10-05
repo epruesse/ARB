@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 
 #include <arb_file.h>
+#include <arb_diff.h>
 
 #include "gb_key.h"
 #include "gb_map.h"

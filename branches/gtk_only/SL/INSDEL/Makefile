@@ -41,6 +41,7 @@ insdel.o: $(ARBHOME)/INCLUDE/adGene.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_assert.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_core.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_defs.h
+insdel.o: $(ARBHOME)/INCLUDE/arb_diff.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_error.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_msg.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_progress.h

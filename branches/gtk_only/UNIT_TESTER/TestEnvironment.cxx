@@ -14,6 +14,8 @@
 #include <arb_defs.h>
 #include <arb_str.h>
 #include <arb_file.h>
+#include <arb_diff.h>
+
 #include <arbdb.h>
 #include <PT_com.h>
 #include <client.h>

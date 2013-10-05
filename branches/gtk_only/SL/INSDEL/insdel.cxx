@@ -19,6 +19,7 @@
 #include <adGene.h>
 #include <arb_progress.h>
 #include <arb_defs.h>
+#include <arb_diff.h>
 #include <algorithm>
 
 using namespace std;
