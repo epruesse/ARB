@@ -47,6 +47,9 @@ AW_action::~AW_action() {
 }
 
 AW_action& AW_action::operator=(const AW_action& o) {
+    // copy element
+    AW_element::operator=(o);
+
     // copy the upstream g_signals we are connected to
     prvt->gsignals = o.prvt->gsignals;
 
