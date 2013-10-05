@@ -495,7 +495,7 @@ void AW_awar_string::do_update() {
 
     // update targets
     for (unsigned int i=0; i<target_variables.size(); i++) {
-        freeset(*target_variables[i], str);
+        freedup(*target_variables[i], str);
     }
     free(str);
 }
