@@ -123,7 +123,6 @@ void aw_drawing_area_set_horizontal_slider(AwDrawingArea *area, gdouble pos) {
     aw_assert(NULL != area->prvt);
     AwDrawingAreaPrivate *prvt = area->prvt; 
     gtk_adjustment_set_value(prvt->horizontalAdjustment, pos);
-    gtk_adjustment_value_changed(prvt->horizontalAdjustment);
 }
 
 void aw_drawing_area_set_vertical_slider(AwDrawingArea *area, gdouble pos) {
@@ -131,7 +130,6 @@ void aw_drawing_area_set_vertical_slider(AwDrawingArea *area, gdouble pos) {
     aw_assert(NULL != area->prvt);
     AwDrawingAreaPrivate *prvt = area->prvt; 
     gtk_adjustment_set_value(prvt->verticalAdjustment, pos);
-    gtk_adjustment_value_changed(prvt->verticalAdjustment);
 }
 
 
