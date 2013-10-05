@@ -26,6 +26,7 @@
 #include <arb_strbuf.h>
 #include <arb_sort.h>
 #include <arb_str.h>
+#include <arb_match.h>
 
 #include <list>
 #include <string>

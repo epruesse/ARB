@@ -11,6 +11,9 @@
 #include <climits>
 #include <netinet/in.h>
 
+#include <arb_file.h>
+#include <arb_diff.h>
+
 #include <arbdbt.h>
 
 #include "gb_key.h"
@@ -2596,7 +2599,6 @@ GB_ERROR GB_optimize(GBDATA *gb_main) {
 #ifdef UNIT_TESTS
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
-#include <arb_file.h>
 #endif
 
 // #define TEST_AUTO_UPDATE // uncomment to auto-update binary result of DB optimization
