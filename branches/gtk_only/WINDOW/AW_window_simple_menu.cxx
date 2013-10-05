@@ -9,7 +9,7 @@ AW_window_simple_menu::~AW_window_simple_menu() {
 
 void AW_window_simple_menu::init(AW_root */*root_in*/, const char *window_name_, const char *window_title) {
     init_window(window_name_, window_title, 0, 0, true /*resizable*/);
-    const char *help_button   = "_HELP"; //underscore + mnemonic  
+    const char *help_button   = "_Help"; //underscore + mnemonic  
 
     // create menu bar
     prvt->menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
