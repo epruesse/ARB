@@ -194,9 +194,6 @@ public:
 
 
     AW_event       event;
-    unsigned long  click_time;
-
-    int number_of_timed_title_changes;
 
     AW_xfig  *xfig_data;
 
