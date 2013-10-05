@@ -21,7 +21,7 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name_, 
 #if defined(DUMP_MENU_LIST)
     initMenuListing(window_name_);
 #endif // DUMP_MENU_LIST
-    const char *help_button   = "_HELP"; //underscore + mnemonic 
+    const char *help_button   = "_Help"; //underscore + mnemonic 
 
     // create menu bar
     prvt->menu_bar = (GtkMenuBar*) gtk_menu_bar_new();
