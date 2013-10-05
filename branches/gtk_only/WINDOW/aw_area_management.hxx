@@ -10,6 +10,7 @@
 #include "aw_base.hxx"
 #include "aw_gtk_forward_declarations.hxx"
 #include "aw_keysym.hxx"
+#include "aw_signal.hxx"
 #include <gdk/gdk.h>
 
 class AW_window;
@@ -82,6 +83,11 @@ private:
     Pimpl* prvt; /* < Contains all private attributes and gtk dependencies */  
 
 public:
+    AW_signal resize; //! issued when the area size changes
+    AW_signal expose; //! issued when parts of the area need to be redrawn
+    AW_signal input;  //! issued when mouse button or key presses happened
+    AW_signal motion; //! issued when the mouse is moved with a button depressed
+
     AW_area_management(GtkWidget *area, AW_window *aww);
     ~AW_area_management();
 
@@ -106,13 +112,6 @@ public:
     void set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_input_callback(AW_window *aww, const WindowCallback& wcb);
     void set_motion_callback(AW_window *aww, const WindowCallback& wcb);
-
-
-    bool is_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
 };
 
 

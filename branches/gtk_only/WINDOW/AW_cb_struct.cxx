@@ -71,64 +71,6 @@ void AW_cb::run_callbacks() {
     aw_assert(f);
 
     AW_root *root = aw->get_root();
-    if (root->disable_callbacks) {
-        // some functions (namely aw_message, aw_input, aw_string_selection and aw_file_selection)
-        // have to disable most callbacks, because they are often called from inside these callbacks
-        // (e.g. because some exceptional condition occurred which needs user interaction) and if
-        // callbacks weren't disabled, a recursive deadlock occurs.
-
-        // the following callbacks are allowed even if disable_callbacks is true
-
-        bool isPopdown = (f == AW_CB(AW_POPDOWN));
-        bool isHelp    = (f == AW_CB(AW_POPUP_HELP));
-        bool allow     = isHelp || isPopdown;
-
-        bool isInfoResizeExpose = false;
-
-        if (!allow) {
-            isInfoResizeExpose = aw->is_expose_callback(AW_INFO_AREA, f) || aw->is_resize_callback(AW_INFO_AREA, f);
-            allow              = isInfoResizeExpose;
-        }
-
-        if (!allow) {
-            // do not change position of modal dialog, when one of the following callbacks happens - just raise it
-            // (other callbacks like pressing a button, will position the modal dialog under mouse)
-            bool onlyRaise =
-                aw->is_expose_callback(AW_MIDDLE_AREA, f) ||
-                aw->is_focus_callback(f) ||
-                aw->is_resize_callback(AW_MIDDLE_AREA, f);
-
-            if (root->current_modal_window) { 
-                AW_window *awmodal = root->current_modal_window;
-
-                AW_PosRecalc prev = awmodal->get_recalc_pos_atShow();
-                if (onlyRaise) awmodal->recalc_pos_atShow(AW_KEEP_POS);
-                awmodal->activate();
-                awmodal->recalc_pos_atShow(prev);
-            }
-            else {
-                aw_message("Internal error (callback suppressed when no modal dialog active)");
-                aw_assert(0);
-            }
-#if defined(TRACE_CALLBACKS)
-            printf("suppressing callback %p\n", f);
-#endif // TRACE_CALLBACKS
-            return; // suppress the callback!
-        }
-#if defined(TRACE_CALLBACKS)
-        else {
-            if (isPopdown) printf("allowed AW_POPDOWN\n");
-            else if (isHelp) printf("allowed AW_POPUP_HELP\n");
-            else if (isInfoResizeExpose) printf("allowed expose/resize infoarea\n");
-            else printf("allowed other (unknown) callback %p\n", f);
-        }
-#endif // TRACE_CALLBACKS
-    }
-    else {
-#if defined(TRACE_CALLBACKS)
-        printf("Callbacks are allowed (executing %p)\n", f);
-#endif // TRACE_CALLBACKS
-    }
 
     useraction_init();
     

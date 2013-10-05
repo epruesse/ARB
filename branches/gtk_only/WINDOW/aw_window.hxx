@@ -289,12 +289,6 @@ public:
 
     void set_double_click_callback(AW_area area, const WindowCallback& wcb);
 
-    bool is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-
     void get_event(AW_event *eventi) const;       // In an event callback get the events info
 
     void force_expose(); // forces the window to expose instantly

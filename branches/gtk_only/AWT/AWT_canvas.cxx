@@ -339,9 +339,7 @@ void AWT_canvas::refresh() {
 
 void AWT_resize_cb(AW_window *, AWT_canvas *scr, AW_CL) {
     scr->zoom_reset();
-    AWT_expose_cb(scr->aww, scr, 0);
 }
-
 
 static void canvas_focus_cb(AW_window *, AWT_canvas *scr) {
     if (scr->gb_main) {

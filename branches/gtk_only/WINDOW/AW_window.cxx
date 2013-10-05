@@ -1314,20 +1314,6 @@ void AW_window::button_height(int height) {
     _at.height_of_buttons = height>1 ? height : 0; 
 }
 
-bool AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
-    AW_area_management *aram = prvt->areas[area];
-    return aram && aram->is_expose_callback(this, f);
-}
-
-bool AW_window::is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL)) {
-    return prvt->focus_cb && prvt->focus_cb->contains(f);
-}
-
-bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
-    AW_area_management *aram = prvt->areas[area];
-    return aram && aram->is_resize_callback(this, f);
-}
-
 void AW_window::window_fit() {
     // let gtk do the sizing based on content
     // (default size will be ignored if requisition of 

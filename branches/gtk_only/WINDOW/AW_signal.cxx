@@ -189,7 +189,7 @@ void AW_signal::connect(const WindowCallback& wcb, AW_window* aww) {
         aw_warning("duplicate signal!");
     }
 #endif
-    prvt->slots.push_front(new WindowCallbackSlot(wcb, aww));
+    prvt->slots.push_back(new WindowCallbackSlot(wcb, aww));
 }
 
 /** Connects the Signal to the supplied RootCallback */
@@ -202,7 +202,7 @@ void AW_signal::connect(const RootCallback& rcb) {
         aw_warning("duplicate signal!");
     }
 #endif
-    prvt->slots.push_front(new RootCallbackSlot(rcb));
+    prvt->slots.push_back(new RootCallbackSlot(rcb));
 }
 
 /** Disconnects the Signal from the supplied RCB */
