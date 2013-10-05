@@ -47,12 +47,9 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name_, 
 
     // create main drawing area ('middle area')
     prvt->drawing_area = AW_DRAWING_AREA(aw_drawing_area_new());
-    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(GTK_WIDGET(prvt->drawing_area), this);
 
     // create secondary drawing area ('bottom_area')
     prvt->bottom_area = AW_DRAWING_AREA(aw_drawing_area_new());
-    prvt->areas[AW_BOTTOM_AREA] = new AW_area_management(GTK_WIDGET(prvt->bottom_area), this);
-
 
     aw_assert(NULL != prvt->drawing_area);
     gtk_container_add(GTK_CONTAINER(scrolledWindow), GTK_WIDGET(prvt->drawing_area));
@@ -73,6 +70,9 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name_, 
     gtk_widget_realize(GTK_WIDGET(prvt->window)); 
     gtk_widget_realize(GTK_WIDGET(prvt->drawing_area));
     gtk_widget_realize(GTK_WIDGET(prvt->bottom_area));
+
+    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(GTK_WIDGET(prvt->drawing_area), this);
+    prvt->areas[AW_BOTTOM_AREA] = new AW_area_management(GTK_WIDGET(prvt->bottom_area), this);
 
     create_devices();
     AW_insert_default_help_entries(this);

@@ -36,7 +36,8 @@
            aww->event.keymodifier & AW_KEYMODE_CONTROL ? "C" : "",      \
            aww->event.keymodifier & AW_KEYMODE_ALT ? "A" : "",          \
            aww->event.keycode,                                          \
-           aww->event.character)
+           aww->event.character);                                       
+    
 #else
 #  define DUMP_EVENT(type)
 #endif // DEBUG
@@ -55,6 +56,7 @@ static void aw_event_clear(AW_window* aww) {
 
 class AW_area_management::Pimpl {
 public:
+    AW_area_management *self;
     GtkWidget *area; /** < the drawing area */
     AW_window *aww; /* parent window */
     AW_common_gtk *common;
@@ -64,29 +66,16 @@ public:
     AW_device_print *print_device;
     AW_device_click *click_device;
 
-    AW_cb *resize_cb; /** < A list of callback functions that are called whenever this area is resized. */
-    AW_cb *expose_cb;
-    AW_cb *input_cb;
-    AW_cb *motion_cb;
-    
-    /**used to simulate resize events*/
-    int old_width;
-    int old_height;
-    
-    Pimpl(GtkWidget* widget, AW_window* window) : 
+    Pimpl(AW_area_management* self_, GtkWidget* widget, AW_window* window) : 
+        self(self_),
         area(widget),
         aww(window),
         common(NULL),
         screen_device(NULL),
         size_device(NULL),
         print_device(NULL),
-        click_device(NULL),
-        resize_cb(NULL),
-        expose_cb(NULL),
-        input_cb(NULL),
-        motion_cb(NULL),
-        old_width(-1),
-        old_height(-1){}   
+        click_device(NULL)
+    {}
 
     gboolean handle_event(GdkEventConfigure*);
     gboolean handle_event(GdkEventExpose*);
@@ -131,7 +120,7 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventExpose* event) {
     aww->event.height      = event->area.height;
 
     DUMP_EVENT("expose");
-    expose_cb->run_callbacks();
+    self->expose.emit();
     return false;
 }
 
@@ -144,8 +133,7 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventConfigure* event) {
     aww->event.height = event->height;
 
     DUMP_EVENT("resize");
-    resize_cb->run_callbacks();
-
+    self->resize.emit();
     return true; // event handled
 }
 
@@ -158,7 +146,7 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventButton *event) {
     aww->event.keymodifier = (AW_key_mod) event->state;
 
     DUMP_EVENT("input/button");
-    input_cb->run_callbacks();
+    self->input.emit();
     return false;
 }
 
@@ -178,7 +166,7 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventScroll *event) {
 
     DUMP_EVENT("input/scroll");
     if (aww->event.button) {
-        input_cb->run_callbacks();
+        self->input.emit();
         return true;
     }
     return false;
@@ -198,7 +186,7 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventKey *event) {
     }
  
     DUMP_EVENT("input/key");
-    input_cb->run_callbacks();
+    self->input.emit();
     return true;
 }
 
@@ -220,8 +208,10 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventMotion *event) {
     }
   
     DUMP_EVENT("motion");
-    expose_cb->run_callbacks(); // work around for XOR drawing
-    motion_cb->run_callbacks();
+    self->expose.emit(); // work around for XOR drawing
+    self->motion.emit();
+
+    // done processing, allow receiving next motion event:
     gdk_event_request_motions(event);
     return true;
 }
@@ -229,83 +219,51 @@ gboolean AW_area_management::Pimpl::handle_event(GdkEventMotion *event) {
 
 void AW_area_management::set_expose_callback(AW_window *aww, 
                                              void (*f)(AW_window*, AW_CL, AW_CL),
-                                             AW_CL cd1, AW_CL cd2) 
-{
-    if (!prvt->expose_cb) { 
-        g_signal_connect (prvt->area, "expose_event",
-                          G_CALLBACK (expose_event_cbproxy), (gpointer) prvt);
-
-    }
-    prvt->expose_cb = new AW_cb(aww, f, cd1, cd2, 0, prvt->expose_cb);
+                                             AW_CL cd1, AW_CL cd2) {
+    expose.connect(makeWindowCallback(f, cd1, cd2), aww);
 }
 
 void AW_area_management::set_input_callback(AW_window *aww, const WindowCallback& wcb) {
-    if(!prvt->input_cb) {
-        // enable button press and release events
-        gtk_widget_add_events(prvt->area, GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | 
-                               GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK);
-        
-        g_signal_connect (prvt->area, "key_press_event", 
-                          G_CALLBACK (key_event_cbproxy), (gpointer) prvt);
-        g_signal_connect (prvt->area, "key_release_event", 
-                          G_CALLBACK (key_event_cbproxy), (gpointer) prvt);
-        g_signal_connect (prvt->area, "button-press-event",
-                          G_CALLBACK (button_event_cbproxy), (gpointer) prvt);
-        g_signal_connect (prvt->area, "button-release-event",
-                          G_CALLBACK (button_event_cbproxy), (gpointer) prvt);
-        g_signal_connect (prvt->area, "scroll-event",
-                          G_CALLBACK (scroll_event_cbproxy), (gpointer) prvt);
-    }
-    prvt->input_cb = new AW_cb(aww, wcb, 0, prvt->input_cb);
+    input.connect(wcb, aww);
 }
 
 void AW_area_management::set_motion_callback(AW_window *aww, const WindowCallback& wcb) {
-    if (!prvt->motion_cb) {
-        gtk_widget_add_events(prvt->area, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-        g_signal_connect(prvt->area, "motion-notify-event", 
-                         G_CALLBACK (motion_event_cbproxy), (gpointer) prvt);
-    }
-    prvt->motion_cb = new AW_cb(aww, wcb, 0, prvt->motion_cb);
+    motion.connect(wcb, aww);
 }
 
 void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
-                                             AW_CL cd1, AW_CL cd2) 
-{
-    if (!prvt->resize_cb) {
-        g_signal_connect (prvt->area, "configure-event",
-                          G_CALLBACK (configure_event_cbproxy), (gpointer) prvt);
-
-    }
-    prvt->resize_cb = new AW_cb(aww, f, cd1, cd2, 0, prvt->resize_cb);
+                                             AW_CL cd1, AW_CL cd2) {
+    resize.connect(makeWindowCallback(f, cd1, cd2), aww);
 }
-
 
 
 AW_area_management::AW_area_management(GtkWidget* area, AW_window* window) 
-    : prvt(new AW_area_management::Pimpl(area, window))
+    : prvt(new AW_area_management::Pimpl(this, area, window)) 
 {
+    g_signal_connect(prvt->area, "expose_event",
+                      G_CALLBACK (expose_event_cbproxy), (gpointer) prvt);
+    gtk_widget_add_events(prvt->area, GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | 
+                          GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK);
+    g_signal_connect(prvt->area, "key_press_event", 
+                     G_CALLBACK (key_event_cbproxy), (gpointer) prvt);
+    g_signal_connect(prvt->area, "key_release_event", 
+                     G_CALLBACK (key_event_cbproxy), (gpointer) prvt);
+    g_signal_connect(prvt->area, "button-press-event",
+                     G_CALLBACK (button_event_cbproxy), (gpointer) prvt);
+    g_signal_connect(prvt->area, "button-release-event",
+                     G_CALLBACK (button_event_cbproxy), (gpointer) prvt);
+    g_signal_connect(prvt->area, "scroll-event",
+                     G_CALLBACK (scroll_event_cbproxy), (gpointer) prvt);
+    gtk_widget_add_events(prvt->area, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+    g_signal_connect(prvt->area, "motion-notify-event", 
+                     G_CALLBACK (motion_event_cbproxy), (gpointer) prvt);
+    g_signal_connect(prvt->area, "configure-event",
+                     G_CALLBACK (configure_event_cbproxy), (gpointer) prvt);
 }
+
 AW_area_management::~AW_area_management() {
-  delete prvt;
-}
-
-bool AW_area_management::is_input_callback(AW_window* /*aww*/,
-        void (*f)(AW_window*, AW_CL, AW_CL)) {
-    return prvt->input_cb && prvt->input_cb->contains(f);
-}
-
-bool AW_area_management::is_motion_callback(AW_window* /*aww*/,
-        void (*f)(AW_window*, AW_CL, AW_CL)) {
-    return prvt->motion_cb && prvt->motion_cb->contains(f);
-}
-
-bool AW_area_management::is_expose_callback(AW_window */*aww*/,
-        void (*f)(AW_window*, AW_CL, AW_CL)) {
-     return prvt->expose_cb && prvt->expose_cb->contains(f);
-}
-
-bool AW_area_management::is_resize_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
-    return prvt->resize_cb && prvt->resize_cb->contains(f);
+    delete prvt;
+    // fixme, disconnect signals
 }
 
 void AW_area_management::create_devices(AW_window *aww, AW_area area) {
