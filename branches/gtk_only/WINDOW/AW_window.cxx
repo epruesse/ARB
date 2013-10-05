@@ -1042,10 +1042,6 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
         set_window_size(_at.max_x_size, _at.max_y_size);
-
-        FIXME("this call should not be necessary. The screen size should have been set by the resize_callback...");
-        device->get_common()->set_screen_size(_at.max_x_size, _at.max_y_size);
-
     }
 
     set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data);
