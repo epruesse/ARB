@@ -940,7 +940,7 @@ void AW_window::insert_help_topic(const char *labeli,
     aw_return_if_fail(prvt->help_menu != NULL);
     
     prvt->menus.push(prvt->help_menu);
-    insert_menu_topic("", labeli, mnemonic, helpText, mask, f, cd1, cd2);
+    insert_menu_topic(helpText, labeli, mnemonic, helpText, mask, f, cd1, cd2);
     prvt->menus.pop();
 }
 
