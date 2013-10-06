@@ -326,15 +326,14 @@ static void clip_expose(AW_window *aww, AWT_canvas *scr,
     scr->gfx->show(device);
 }
 
-void AWT_expose_cb(AW_window *, AWT_canvas *scr, AW_CL) {
-    scr->refresh();
+void AWT_expose_cb(AW_window */*NULL*/, AWT_canvas *scr, AW_CL) {
+    clip_expose(scr->aww, scr, scr->rect.l, scr->rect.r,
+                scr->rect.t, scr->rect.b, 0, 0);
 }
 
 void AWT_canvas::refresh() {
     AW_device *device = this->aww->get_device (AW_MIDDLE_AREA);
-    device->clear(-1);
-    clip_expose(this->aww, this, this->rect.l, this->rect.r,
-                this->rect.t, this->rect.b, 0, 0);
+    device->queue_draw();
 }
 
 void AWT_resize_cb(AW_window *, AWT_canvas *scr, AW_CL) {

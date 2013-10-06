@@ -36,4 +36,7 @@ public:
 
     void move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, 
                      AW_pos dest_x, AW_pos dest_y) OVERRIDE;
+    
+    void queue_draw() OVERRIDE;
+    void queue_draw(const AW_screen_area&) OVERRIDE;
 };
