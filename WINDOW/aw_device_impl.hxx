@@ -320,6 +320,9 @@ public:
 
 
     // ********* X11 Device only ********
+    virtual void queue_draw() {}
+    virtual void queue_draw(const AW_screen_area&) {}
+
     virtual void clear(AW_bitset filteri);
     virtual void clear_part(const AW::Rectangle& rect, AW_bitset filteri);
 

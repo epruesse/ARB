@@ -91,3 +91,11 @@ void AW_device_gtk::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos
 AW_DEVICE_TYPE AW_device_gtk::type() { 
     return AW_DEVICE_SCREEN; 
 }
+
+void AW_device_gtk::queue_draw() {
+    gtk_widget_queue_draw(prvt->drawingArea);
+}
+
+void AW_device_gtk::queue_draw(const AW_screen_area& r) {
+    gtk_widget_queue_draw_area(prvt->drawingArea, r.l, r.t, r.r-r.l, r.b-r.t);
+}
