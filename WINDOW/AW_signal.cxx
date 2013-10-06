@@ -97,6 +97,12 @@ struct AW_signal::Pimpl {
     std::list<Slot*> slots;
     bool enabled;            // false -> no signal propagation
     Pimpl() : enabled(true) {}
+    ~Pimpl() {
+        for (std::list<Slot*>::iterator it = slots.begin();
+             it != slots.end(); ++it) {
+            delete (*it);
+        }
+    }
 };
 
      
@@ -117,6 +123,7 @@ AW_signal::AW_signal(const AW_signal& o)
 AW_signal& AW_signal::operator=(const AW_signal& o) {
     // copy the slots containing downstream callbacks
     prvt->slots.clear();
+
     return operator+=(o);
 }
 
@@ -234,11 +241,8 @@ void AW_signal::emit() {
 
 /** Disconnects all callbacks from signal */
 void AW_signal::clear() {
-    for (std::list<Slot*>::iterator it = prvt->slots.begin();
-         it != prvt->slots.end(); ++it) {
-        delete (*it);
-    }
-    prvt->slots.clear();
+    delete prvt;
+    prvt = new Pimpl;
 }
 
 

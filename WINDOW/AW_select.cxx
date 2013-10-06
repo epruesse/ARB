@@ -203,7 +203,6 @@ void AW_selection_list::update() {
 void AW_selection_list::refresh() {
     aw_return_if_fail(widget != NULL);
     // select the item that matches the awars value
-    AW_root *root  = AW_root::SINGLETON;
 
     AW_selection_list_entry *lt;
 

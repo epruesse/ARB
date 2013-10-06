@@ -47,7 +47,6 @@ int aw_question(const char *unique_id, const char *question, const char *buttons
 
     // create no-repeat checkbox if we have a unique-id
     AW_awar *awar = NULL;
-    GtkWidget *no_repeat = NULL;
     if (unique_id) {
         awar = AW_root::SINGLETON->awar_int(GBS_global_string("answers/%s", unique_id),
                                             0, AW_ROOT_DEFAULT);
