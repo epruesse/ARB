@@ -95,6 +95,7 @@ private:
             awar_font(NULL),
             hidden(false), 
             has_font(true), has_color(true),
+            fixed_width_font(false),
             same_line(false), is_color_group(false)
         {}
     };

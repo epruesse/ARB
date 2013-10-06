@@ -35,7 +35,6 @@ private:
     typedef std::vector<AW_choice> choices_t;
     AW_awar   *awar;
     choices_t  choices;
-    size_t     default_idx;
     
     friend class AW_choice;
 public:

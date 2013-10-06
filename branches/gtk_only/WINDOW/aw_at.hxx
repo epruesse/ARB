@@ -122,7 +122,7 @@ class AW_at_auto {
     int x, y;
     int xfn, xfnb, yfnb, bhob;
 public:
-    AW_at_auto() : type(OFF) {}
+    AW_at_auto() : type(OFF), x(0), y(0), xfn(0), xfnb(0), yfnb(0), bhob(0) {}
 
     void store(const AW_at &at);
     void restore(AW_at &at) const;
