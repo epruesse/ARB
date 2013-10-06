@@ -580,7 +580,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
                     do_jump = false;
 
                     AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
-                    device->set_filter(AW_SIZE|AW_SIZE_UNSCALED);
+                    device->set_filter(AW_SIZE);
                     device->reset();
                     ntw->init_device(device);
                     ntw->gfx->show(device);
