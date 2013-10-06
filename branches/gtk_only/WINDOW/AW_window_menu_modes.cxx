@@ -36,6 +36,7 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name_, 
     prvt->mode_menu = GTK_TOOLBAR(gtk_toolbar_new());
     gtk_toolbar_set_orientation(prvt->mode_menu, GTK_ORIENTATION_VERTICAL);
     gtk_toolbar_set_show_arrow(prvt->mode_menu, true);
+    gtk_toolbar_set_style(prvt->mode_menu,  GTK_TOOLBAR_ICONS);
     
     GtkWidget *scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
     // Scrollbars must be shown alwyas because dynamic display will cause 
