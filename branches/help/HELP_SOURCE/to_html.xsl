@@ -127,9 +127,22 @@
     <HEAD>
       <META NAME="Author" CONTENT="{$author}"/>
       <meta http-equiv="expires" content="86400"/>
-      <!--<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>   this is added automatically   --> 
-      <!--<meta http-equiv="expires" content="86400"/>-->
       <TITLE>ARB help: <xsl:value-of select="$title"/></TITLE>
+      <style type="text/css">
+        <xsl:text>
+          div {
+          margin-left:+10pt;
+          padding-top:3pt;
+          padding-bottom:3pt;
+<!--uncomment for layout fixes--><!--border:1px solid #ffdddd;-->}
+          h3 {
+          font-weight:normal;
+          padding:0px;
+          padding-top:3pt;
+          margin:0px;
+<!--border:1px solid #00bbbb;-->}
+<!--h1 { border:1px solid #008800; }--><!--h2 { border:1px solid #0000ff; }--></xsl:text>
+      </style>
     </HEAD>
   </xsl:template>
 
@@ -334,8 +347,7 @@
   <xsl:template match="T">
     <xsl:choose>
       <xsl:when test="@reflow='1'">
-        <B><xsl:apply-templates mode="reflow"/></B>
-        <BR/>
+        <H3><xsl:apply-templates mode="reflow"/></H3>
       </xsl:when>
       <xsl:otherwise>
         <PRE><FONT color="navy" size="-1"><xsl:apply-templates mode="preformatted"/></FONT></PRE>
@@ -351,7 +363,7 @@
   </xsl:template>
 
   <xsl:template match="P">
-    <P style="margin-left:+10pt"><xsl:apply-templates mode="condensed"/></P>
+    <DIV><xsl:apply-templates mode="condensed"/></DIV>
   </xsl:template>
 
   <xsl:template match="ENUM">
@@ -367,7 +379,7 @@
     <BR/>
   </xsl:template>
 
-  <xsl:template match="P" mode="top-level"><P><xsl:apply-templates/></P></xsl:template>
+  <xsl:template match="P" mode="top-level"><DIV><xsl:apply-templates/></DIV></xsl:template>
   <xsl:template match="T|ENUM|LIST" mode="top-level"><xsl:apply-templates select="."/></xsl:template>
 
   <xsl:template match="SECTION" mode="main">

@@ -4,7 +4,7 @@
 # --------------------------------------------------------------------------------
 
 TEST_ONE:=0# default is 0; if 1 -> only one .hlp file is processed. see below .@TEST_ONE
-ONLY_DO_UNITTEST:=0# default is 0; if 1 -> only unittest.hlp is processed (to make unit-test auto-update work)
+ONLY_DO_UNITTEST:=0# default is 0; if 1 -> only unittest.hlp is processed (to make unit-test auto-update work) #@@@ set to 0 before checkin
 
 # --------------------------------------------------------------------------------
 # directories of source/destination files:

@@ -33,22 +33,21 @@ DESCRIPTION
     Another paragraph also belonging to description. It is followed by an
     enumeration on the same indentation level:
 
-        first enum
+    first enum
 
-         1. Again a paragraph - a one liner followed by an item list. It is
-            completely misplaced at the moment!
+    second enum which is continued on the next line. Now this is no longer
+    misinterpreted as monospaced paragraph.
 
-                item 1
+    third enum
 
-                item 2
+    Again a paragraph - a one liner followed by an item list. It is no
+    longer misplaced now!
 
-                item 3 contains 2 lines
+    item 1
 
-           second enum which
-           is continued on the next line.
-           Currently is misinterpreted as monospaced paragraph.
+    item 2
 
-        third enum
+    item 3 contains 2 lines
 
 
 
@@ -110,7 +109,7 @@ Wanted fixes
 
         (should better be combined)
 
-    Here is some unsupported itemlist:
+    Here is an itemlist whose items are triggered by '*':
 
         item1 continued on next line
 
@@ -124,15 +123,15 @@ Wanted fixes
 
         item 2
 
-        This is a short description of item 2. Currently it does not differ
-        from the items, but it should.
+          - This is a short description of item 2. This description gets
+            indented below the corresponding item.
 
         item 3
 
-        This is a not much longer description of item 3.
+          - This is a shorter description of item 3.
 
         This is a paragraph which should be placed outside the itemlist.
-        Currently this is placed like the items above.
+        Currently this is misinterpreted as part of the itemlist.
 
     And this paragraph should be back where we were before the itemlist
     began.
@@ -184,35 +183,43 @@ NESTED LISTS
 
     text before enum
 
-        first enum
+    first enum
 
-         1. text below first enum
+     1. text below first enum
 
-                first item below first enum
+        first item below first enum
 
-                second item below first enum 1. first subenum below second
-                item
+        second item below first enum
 
-                  - first item below first subenum
+            first subenum below second item
 
-                   second item below first subenum
-                2. second subenum below second item
+                first item below first subenum
 
-                  - text before subsubenum
+                second item below first subenum
 
-                        first subsubenum below second subenum
+            second subenum below second item
 
-                         1. text behind subsubenum
+             1. text before subsubenum
 
-                                third subenum below second item
+                first subsubenum below second subenum
 
-                        second subsubenum below second subenum
+                second subsubenum below second subenum
 
-                third item below first enum
+             1. text behind subsubenum
 
-                    second enum
+            third subenum below second item
 
-                    third enum
+        third item below first enum
+
+    second enum
+
+     1. This text is not indented more than the second enum, but is
+        nevertheless interpreted as sub-elements which belongs to the enum.
+
+    third enum
+
+     1. behind the last enum, text only becomes a son of the enum-entry if
+        it is indented.
 
     text behind enum
 

@@ -33,6 +33,7 @@ using namespace std;
 
 #if defined(DEBUG)
 #define WARN_MISSING_HELP
+// #define DUMP_PARAGRAPHS
 #endif // DEBUG
 
 
@@ -194,18 +195,36 @@ public:
     int getLineNo() const { return lineNo; }
 };
 
+enum ParagraphType {
+    PLAIN_TEXT,
+    ENUMERATED,
+    ITEM,
+};
 
 class Ostring {
-    string content;
-    size_t lineNo; // where string came from
-    bool   is_itemlist_member; // true if the paragraph originally started with a (now already removed) itemlist marker
+    string        content;
+    size_t        lineNo; // where string came from
+    ParagraphType type;
+    unsigned      number; // only valid if type==ENUMERATED
+
 public:
 
-    Ostring(const string& s, size_t line_no, bool is_itemlist_member_)
+    Ostring(const string& s, size_t line_no, ParagraphType type_)
         : content(s),
           lineNo(line_no),
-          is_itemlist_member(is_itemlist_member_)
-    {}
+          type(type_)
+    {
+        h2x_assert(type != ENUMERATED);
+    }
+    Ostring(const string& s, size_t line_no, ParagraphType type_, unsigned num)
+        : content(s),
+          lineNo(line_no),
+          type(type_),
+          number(num)
+    {
+        h2x_assert(type == ENUMERATED);
+    }
+
 
     operator const string&() const { return content; }
     operator string&() { return content; }
@@ -215,7 +234,11 @@ public:
 
     size_t get_lineno() const { return lineNo; }
 
-    bool is_member_of_itemlist() const { return is_itemlist_member; }
+    const ParagraphType& get_type() const { return type; }
+    unsigned get_number() const {
+        h2x_assert(type == ENUMERATED);
+        return number;
+    }
 
     // some wrapper to make Ostring act like string
     const char *c_str() const { return content.c_str(); }
@@ -344,11 +367,16 @@ inline const char *eatWhite(const char *line) {
     return line;
 }
 
-inline void pushParagraph(Section& sec, string& paragraph, size_t lineNo, bool& is_itemlist_member) {
+inline void pushParagraph(Section& sec, string& paragraph, size_t lineNo, ParagraphType& type, unsigned num) {
     if (paragraph.length()) {
-        sec.Content().push_back(Ostring(paragraph, lineNo, is_itemlist_member));
-        is_itemlist_member = false;
-        paragraph          = "";
+        if (type == ENUMERATED) {
+            sec.Content().push_back(Ostring(paragraph, lineNo, type, num));
+        }
+        else {
+            sec.Content().push_back(Ostring(paragraph, lineNo, type));
+        }
+        type      = PLAIN_TEXT;
+        paragraph = "";
     }
 }
 
@@ -364,10 +392,39 @@ inline bool is_startof_itemlist_element(const char *contentStart) {
         isspace(contentStart[1]) && !isspace(contentStart[2]);
 }
 
+static bool startsWithNumber(string& s, unsigned& number, bool do_erase) {
+    // tests if first line starts with 'number.'
+    // if true then the number is removed from the string
+
+    size_t off = s.find_first_not_of(" \n");
+    if (off == string::npos) return false;
+    if (!isdigit(s[off])) return false;
+
+    size_t num_start = off;
+    number           = 0;
+
+    for (; isdigit(s[off]); ++off) {
+        number = number*10 + (s[off]-'0');
+    }
+
+    if (s[off] != '.') return false;
+    if (s[off+1] != ' ') return false;
+
+    if (do_erase) {
+        // remove 'number.' from string :
+        ++off;
+        while (s[off+1] == ' ') ++off;
+        s.erase(num_start, off-num_start+1);
+    }
+
+    return true;
+}
+
 static void parseSection(Section& sec, const char *line, int indentation, Reader& reader) {
-    string paragraph               = line;
-    size_t para_start_lineno       = reader.getLineNo();
-    bool   para_is_itemlist_member = false;
+    string        paragraph         = line;
+    size_t        para_start_lineno = reader.getLineNo();
+    ParagraphType type              = PLAIN_TEXT;
+    unsigned      num               = 0;
 
     h2x_assert(sec.Content().empty());
 
@@ -376,7 +433,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         if (!line) break;
 
         if (isEmptyOrComment(line)) {
-            pushParagraph(sec, paragraph, para_start_lineno, para_is_itemlist_member);
+            pushParagraph(sec, paragraph, para_start_lineno, type, num);
 #if defined(WARN_MISSING_HELP)
             check_TODO(line, reader);
 #endif // WARN_MISSING_HELP
@@ -397,16 +454,26 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
             string Line = line;
 
             if (sec.get_type() == SEC_OCCURRENCE) {
-                pushParagraph(sec, paragraph, para_start_lineno, para_is_itemlist_member);
+                pushParagraph(sec, paragraph, para_start_lineno, type, num);
             }
             else {
                 const char *firstNonWhite = firstChar(line);
                 if (is_startof_itemlist_element(firstNonWhite)) {
                     h2x_assert(firstNonWhite != line);
 
-                    pushParagraph(sec, paragraph, para_start_lineno, para_is_itemlist_member);
+                    pushParagraph(sec, paragraph, para_start_lineno, type, num);
+
                     Line[firstNonWhite-line] = ' ';
-                    para_is_itemlist_member  = true; // reset in call to pushParagraph
+                    type = ITEM; // is reset in call to pushParagraph
+                }
+                else {
+                    unsigned foundNum;
+                    if (startsWithNumber(Line, foundNum, true)) {
+                        pushParagraph(sec, paragraph, para_start_lineno, type, num);
+
+                        type = ENUMERATED;
+                        num  = foundNum;
+                    }
                 }
             }
 
@@ -420,7 +487,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         }
     }
 
-    pushParagraph(sec, paragraph, para_start_lineno, para_is_itemlist_member);
+    pushParagraph(sec, paragraph, para_start_lineno, type, num);
 
     if (sec.Content().size()>0 && indentation>0) {
         string spaces;
@@ -591,43 +658,6 @@ static bool shouldReflow(const string& s, int& foundIndentation) {
     return equal_indent;
 }
 
-static bool startsWithNumber(string& s, unsigned& number, bool do_erase = true) {
-    // tests if first line starts with 'number.'
-    // if true then the number is removed
-
-    size_t off = s.find_first_not_of(" \n");
-    if (off == string::npos) return false;
-    if (!isdigit(s[off])) return false;
-
-    size_t num_start = off;
-    number           = 0;
-
-    for (; isdigit(s[off]); ++off) {
-        number = number*10 + (s[off]-'0');
-    }
-
-    if (s[off] != '.') return false;
-    if (s[off+1] != ' ') return false;
-
-    if (do_erase) {
-        // remove 'number.' from string :
-        for (size_t erase = num_start; erase <= off; ++erase) {
-            s[erase] = ' ';
-        }
-    }
-
-    return true;
-}
-
-static int get_first_indentation(const string& s) {
-    // returns the indentation of the first line containing other than spaces
-    size_t text_start   = s.find_first_not_of(" \n");
-    size_t prev_lineend = s.find_last_of('\n', text_start);
-
-    if (prev_lineend == string::npos) return text_start;
-    return text_start-prev_lineend-1;
-}
-
 static string correctSpaces(const string& text, int change) {
     h2x_assert(text.find('\n') == string::npos);
 
@@ -647,7 +677,7 @@ static string correctSpaces(const string& text, int change) {
 }
 
 static string correctIndentation(const string& text, int change) {
-    // removes 'remove' spaces from evry line
+    // removes 'remove' spaces from every line
 
     size_t this_lineend = text.find('\n');
     string result;
@@ -709,36 +739,20 @@ class ParagraphTree : virtual Noncopyable {
     ParagraphTree *brother;     // has same indentation as this
     ParagraphTree *son;         // indentation + 1
 
-    bool     is_enumerated;     // 1., 2.,  usw.
-    unsigned enumeration;       // the value of the enumeration (undefined if !is_enumerated)
+    Ostring otext;              // text of the Section (containing linefeeds)
 
     bool reflow;                // should the paragraph be reflown ? (true if indentation is equal for all lines of text)
     int  indentation;           // the real indentation of the blank (behind removed enumeration)
 
-    Ostring otext;              // text of the Section (containing linefeeds)
 
     ParagraphTree(Ostrings::const_iterator begin, const Ostrings::const_iterator end)
         : son(NULL),
-          enumeration(0),
-          indentation(0),
-          otext(*begin)
+          otext(*begin),
+          indentation(0)
     {
         h2x_assert(begin != end);
 
-        string& text  = otext;
-        is_enumerated = !otext.is_member_of_itemlist() && startsWithNumber(text, enumeration);
-
-        if (is_enumerated) {
-            size_t text_start     = text.find_first_not_of(" \n");
-            size_t next_linestart = text.find('\n', text_start);
-
-            if (next_linestart != string::npos) {
-                // more than one line -> set indent of 1st line to indent of 2nd line :
-                ++next_linestart; // point behind \n
-                size_t ind = get_first_indentation(text.substr(next_linestart));
-                text       = string("\n")+string(ind, ' ') + text.substr(text_start);
-            }
-        }
+        string& text = otext;
 
         reflow = shouldReflow(text, indentation);
         if (!reflow) {
@@ -749,18 +763,31 @@ class ParagraphTree : virtual Noncopyable {
                 bool   rest_reflow = shouldReflow(rest, rest_indent);
 
                 if (rest_reflow) {
-                    int    first_indent = countSpaces(text.substr(1));
-                    size_t last         = text.find_last_not_of(' ', reststart-1);
-                    bool   is_header    = last != string::npos && text[last] == ':';
+                    int first_indent = countSpaces(text.substr(1));
+                    if (get_type() == PLAIN_TEXT) {
+                        size_t last         = text.find_last_not_of(' ', reststart-1);
+                        bool   is_header    = last != string::npos && text[last] == ':';
 
-                    if (!is_header && rest_indent == (first_indent+8)) {
+                        if (!is_header && rest_indent == (first_indent+8)) {
 #if defined(DEBUG)
-                        size_t textstart = text.find_first_not_of(" \n");
-                        h2x_assert(textstart != string::npos);
+                            size_t textstart = text.find_first_not_of(" \n");
+                            h2x_assert(textstart != string::npos);
 #endif // DEBUG
 
-                        text   = text.substr(0, reststart)+correctIndentation(rest, -8);
-                        reflow = shouldReflow(text, indentation);
+                            text   = text.substr(0, reststart)+correctIndentation(rest, -8);
+                            reflow = shouldReflow(text, indentation);
+                        }
+                    }
+                    else {
+                        int diff = rest_indent-first_indent;
+                        if (diff>0) {
+                            text   = text.substr(0, reststart)+correctIndentation(rest, -diff);
+                            reflow = shouldReflow(text, indentation);
+                        }
+                        else if (diff<0) {
+                            // paragraph with more indent on first line (occurs?)
+                            add_warning(make_paragraph_message(strf("[internal] unhandled: more indentation on the 1st line (diff=%i)", diff)));
+                        }
                     }
                 }
             }
@@ -769,16 +796,37 @@ class ParagraphTree : virtual Noncopyable {
         if (!reflow) {
             indentation = scanMinIndentation(text);
         }
-
         text = correctIndentation(text, -indentation);
+        if (get_type() == ITEM) {
+            h2x_assert(indentation >= 2);
+            indentation -= 2;
+        }
 
         brother = buildParagraphTree(++begin, end);
     }
+
+    void brothers_to_sons(ParagraphTree *new_brother);
 
 public:
     virtual ~ParagraphTree() {
         delete brother;
         delete son;
+    }
+
+    ParagraphType get_type() const { return otext.get_type(); }
+
+    bool is_itemlist_member() const { return get_type() == ITEM; }
+    bool is_enumerated() const { return get_type() == ENUMERATED; }
+    bool is_list_member() const { return get_type() != PLAIN_TEXT; }
+
+    const char *readable_type() const {
+        const char *res = NULL;
+        switch (get_type()) {
+            case PLAIN_TEXT: res = "PLAIN_TEXT"; break;
+            case ITEM:       res = "ITEM";       break;
+            case ENUMERATED: res = "ENUMERATED"; break;
+        }
+        return res;
     }
 
     LineAttachedMessage make_paragraph_message(const string& msg) const {
@@ -792,16 +840,42 @@ public:
         return nodes;
     }
 
-    void dump(ostream& out) {
-        out << "text='" << otext.as_string() << "'\n";
-        out << "is_enumerated='" << is_enumerated << "'";
-        out << "enumeration='" << enumeration << "'";
-        out << "reflow='" << reflow << "'";
+#if defined(DUMP_PARAGRAPHS)
+    void print_indent(ostream& out, int indent) { while (indent-->0) out << ' '; }
+    char *masknl(const char *text) {
+        char *result = strdup(text);
+        for (int i = 0; result[i]; ++i) {
+            if (result[i] == '\n') result[i] = '|';
+        }
+        return result;
+    }
+    void dump(ostream& out, int indent = 0) {
+        print_indent(out, indent+1);
+        {
+            char *mtext = masknl(otext.as_string().c_str());
+            out << "text='" << mtext << "'\n";
+            free(mtext);
+        }
+
+        print_indent(out, indent+1);
+        out << "type='" << readable_type() << "' ";
+        if (get_type() == ENUMERATED) {
+            out << "enumeration='" << otext.get_number() << "' ";
+        }
+        out << "reflow='" << reflow << "' ";
         out << "indentation='" << indentation << "'\n";
 
-        if (brother) { cout << "\nbrother:\n"; brother->dump(out); cout << "\n"; }
-        if (son) { cout << "\nson:\n"; son->dump(out); cout << "\n"; }
+        if (son) {
+            print_indent(out, indent+2); cout << "son:\n";
+            son->dump(out, indent+2);
+            cout << "\n";
+        }
+        if (brother) {
+            print_indent(out, indent); cout << "brother:\n";
+            brother->dump(out, indent);
+        }
     }
+#endif // DUMP_PARAGRAPHS
 
     static ParagraphTree* buildParagraphTree(Ostrings::const_iterator begin, const Ostrings::const_iterator end) {
         if (begin == end) return 0;
@@ -822,10 +896,10 @@ public:
             (brother && brother->contains(that));
     }
 
-    ParagraphTree *predeccessor(ParagraphTree *before_this) {
+    ParagraphTree *predecessor(ParagraphTree *before_this) {
         if (brother == before_this) return this;
         if (!brother) return 0;
-        return brother->predeccessor(before_this);
+        return brother->predecessor(before_this);
     }
 
     void append(ParagraphTree *new_brother) {
@@ -833,9 +907,15 @@ public:
         else brother->append(new_brother);
     }
 
+    bool is_some_brother(const ParagraphTree *other) const {
+        return (other == brother) || (brother && brother->is_some_brother(other));
+    }
+
     ParagraphTree* takeAllInFrontOf(ParagraphTree *after) {
         ParagraphTree *removed    = this;
         ParagraphTree *after_pred = this;
+
+        h2x_assert(is_some_brother(after));
 
         while (1) {
             h2x_assert(after_pred);
@@ -851,20 +931,21 @@ public:
         return removed;
     }
 
-    ParagraphTree *firstEnumerated() {
-        if (is_enumerated) return this;
-        if (brother) return brother->firstEnumerated();
-        return 0;
+    ParagraphTree *firstListMember() {
+        if (is_list_member()) return this;
+        if (brother) return brother->firstListMember();
+        return NULL;
     }
-    ParagraphTree *nextEnumerated() {
-        h2x_assert(is_enumerated);
-        if (brother) {
-            ParagraphTree *next = brother->firstEnumerated();
-            if (next && next->enumeration == (enumeration+1)) {
-                return next;
-            }
+
+    ParagraphTree *findListMember(ParagraphType t, int ind) {
+        if (indentation<ind) return NULL;
+        if (indentation == ind) {
+            if (get_type() == t) return this;
         }
-        return 0;
+        return brother ? brother->findListMember(t, ind) : NULL;
+    }
+    ParagraphTree *nextListMember(ParagraphType t, int ind) {
+        return brother ? brother->findListMember(t, ind) : NULL;
     }
 
     ParagraphTree* firstWithLessIndentThan(int wanted_indentation) {
@@ -873,160 +954,121 @@ public:
         return brother->firstWithLessIndentThan(wanted_indentation);
     }
 
-    ParagraphTree* format_indentations();
-    ParagraphTree* format_enums();
+    void format_indentations();
+    void format_lists();
+
 private:
-    static ParagraphTree* buildNewParagraph(const string& Text, size_t beginLineNo, bool is_itemlist_member) {
+    static ParagraphTree* buildNewParagraph(const string& Text, size_t beginLineNo, ParagraphType type) {
         Ostrings S;
-        S.push_back(Ostring(Text, beginLineNo, is_itemlist_member));
+        S.push_back(Ostring(Text, beginLineNo, type));
         return new ParagraphTree(S.begin(), S.end());
     }
-    ParagraphTree *extractEmbeddedEnum(unsigned lookfor) {
-        string& text = otext;
+    ParagraphTree *xml_write_list_contents();
+    ParagraphTree *xml_write_enum_contents();
+    void xml_write_textblock();
 
-        size_t this_lineend = text.find('\n');
-        size_t line_offset  = 0;
-
-        while (this_lineend != string::npos) {
-            unsigned number;
-            string   embedded = text.substr(this_lineend);
-            if (startsWithNumber(embedded, number, false)) {
-                if (number == lookfor) {
-                    text.erase(this_lineend);
-                    return buildNewParagraph(embedded, otext.get_lineno()+line_offset, false);
-                }
-                break;
-            }
-            this_lineend = text.find('\n', this_lineend+1);
-            ++line_offset;
-        }
-
-        return 0;
-    }
 public:
-    static size_t embeddedCounter;
-
-    void xml_write(bool ignore_enumerated = false, bool write_as_entry = false);
+    void xml_write();
 };
 
-size_t ParagraphTree::embeddedCounter = 0;
+#if defined(DUMP_PARAGRAPHS)
+static void dump_paragraph(ParagraphTree *para) {
+    // helper function for use in gdb
+    para->dump(cout, 0);
+}
+#endif
 
-ParagraphTree* ParagraphTree::format_enums() {
-    // reformats tree such that all enums are brothers
-    ParagraphTree *curr_enum = firstEnumerated();
+void ParagraphTree::brothers_to_sons(ParagraphTree *new_brother) {
+    /*! folds down brothers to sons
+     * @param new_brother brother of 'this->brother', will become new brother.
+     * If new_brother == NULL -> make all brothers sons.
+     */
 
-    if (curr_enum) {        // we have enumeration
-        ParagraphTree * const prev_enum = predeccessor(curr_enum);
+    if (new_brother) {
+        h2x_assert(is_some_brother(new_brother));
 
-        if (prev_enum) {
-            h2x_assert(prev_enum->son == 0);
-            prev_enum->son     = prev_enum->brother;
-            prev_enum->brother = 0;
-        }
+        if (brother != new_brother) {
+#if defined(DEBUG)
+            if (son) {
+                add_warning(son->make_paragraph_message("Found unexpected son (in brothers_to_sons)"));
+                add_warning(brother->make_paragraph_message("while trying to transform paragraphs from here .."));
+                add_warning(new_brother->make_paragraph_message(".. to here .."));
+                add_warning(make_paragraph_message(".. into sons of this paragraph."));
+                return;
+            }
+#endif
 
-        {
-            for (ParagraphTree *enum_next = curr_enum->nextEnumerated();
-                 enum_next;
-                 curr_enum = enum_next, enum_next = curr_enum->nextEnumerated())
-            {
-                if (enum_next != curr_enum->brother) {
-                    h2x_assert(curr_enum->son == 0);
-                    curr_enum->son     = curr_enum->brother->takeAllInFrontOf(enum_next);
-                    curr_enum->brother = enum_next;
-                }
+            h2x_assert(!son);
+            h2x_assert(brother);
+
+            if (new_brother == NULL) { // all brothers -> sons
+                son     = brother;
+                brother = NULL;
+            }
+            else {
+                son     = brother->takeAllInFrontOf(new_brother);
+                brother = new_brother;
             }
         }
-
-        // curr_enum is the last enumeration
-        h2x_assert(!curr_enum->son);
-
-        if (curr_enum->brother) { // there are more sections behind the current enum
-            ParagraphTree * const next_enum = curr_enum->firstWithLessIndentThan(curr_enum->indentation);
-
-            if (next_enum) { // indent should go back after enum
-                h2x_assert(!curr_enum->son);
-
-                if (next_enum != curr_enum->brother) {
-                    curr_enum->son = curr_enum->brother->takeAllInFrontOf(next_enum);
-                }
-                curr_enum->brother = 0;
-
-                if (!prev_enum) {
-                    add_warning(next_enum->make_paragraph_message("trying to raise indentation of this enumeration"));
-                    throw curr_enum->make_paragraph_message("found enumeration without predecessor");
-                }
-
-                h2x_assert(prev_enum);
-                h2x_assert(prev_enum->brother == 0);
-                prev_enum->brother = next_enum->format_enums();
-            }
-            else { // nothing after enum -> take all as children
-                h2x_assert(curr_enum->son == 0);
-                curr_enum->son     = curr_enum->brother;
-                curr_enum->brother = 0;
-            }
-            if (curr_enum->son) curr_enum->son = curr_enum->son->format_enums();
-        }
-        else {
-            if (prev_enum) {
-                if (prev_enum->son) prev_enum->son->append(prev_enum->brother);
-                prev_enum->brother = 0;
-            }
-        }
-
-        if (curr_enum->enumeration == 1) { // oops - only '1.' search for enum inside block
-            ParagraphTree *lookin = curr_enum;
-            int            lookfor;
-
-            for (lookfor = 2; ; ++lookfor) {
-                ParagraphTree * const next_enum = lookin->extractEmbeddedEnum(lookfor);
-                if (!next_enum) break;
-
-                embeddedCounter++;
-                next_enum->brother = lookin->brother;
-                lookin->brother    = next_enum;
-                lookin             = next_enum;
-            }
-        }
-
-        return this;
     }
+    else {
+        h2x_assert(!son);
+        son     = brother;
+        brother = NULL;
+    }
+}
+void ParagraphTree::format_lists() {
+    // reformats tree such that all items/enumerations are brothers
+    ParagraphTree *member = firstListMember();
+    if (member) {
+        for (ParagraphTree *curr = this; curr != member; curr = curr->brother) {
+            h2x_assert(curr);
+            if (curr->son) curr->son->format_lists();
+        }
 
-    // no enumerations found
-    return this;
+        ParagraphType list_type        = member->get_type();
+        unsigned      list_indentation = member->indentation;
+
+        for (ParagraphTree *next = member->nextListMember(list_type, list_indentation);
+             next;
+             member = next, next = member->nextListMember(list_type, list_indentation))
+        {
+            member->brothers_to_sons(next);
+            h2x_assert(member->brother == next);
+
+            if (member->son) member->son->format_lists();
+        }
+
+        h2x_assert(!member->son); // member is the last item
+
+        if (member->brother) {
+            ParagraphTree *non_member = member->brother->firstWithLessIndentThan(member->indentation+1);
+            member->brothers_to_sons(non_member);
+        }
+
+        if (member->son)     member->son->format_lists();
+        if (member->brother) member->brother->format_lists();
+    }
+    else {
+        for (ParagraphTree *curr = this; curr; curr = curr->brother) {
+            h2x_assert(curr);
+            if (curr->son) curr->son->format_lists();
+        }
+    }
 }
 
-ParagraphTree* ParagraphTree::format_indentations() {
+void ParagraphTree::format_indentations() {
     if (brother) {
-        if (is_enumerated) {
-            if (brother) brother = brother->format_indentations();
-            if (son) son = son->format_indentations();
+        ParagraphTree *same_indent = brother->firstWithLessIndentThan(indentation+1);
+        if (same_indent && indentation != same_indent->indentation) {
+            add_warning(same_indent->make_paragraph_message("indentation is assumed to be same as .."));
+            add_warning(make_paragraph_message(".. here"));
         }
-        else {
-            ParagraphTree *same_indent = brother->firstWithLessIndentThan(indentation+1);
-            if (same_indent) {
-                if (same_indent == brother) {
-                    brother     = brother->format_indentations();
-                    if (son) son = son->format_indentations();
-                }
-                else {
-                    ParagraphTree *children = brother->takeAllInFrontOf(same_indent);
-                    brother                 = same_indent->format_indentations();
-                    h2x_assert(!son);
-                    son                     = children->format_indentations();
-                }
-            }
-            else { // none with same indent
-                h2x_assert(!son);
-                son     = brother->format_indentations();
-                brother = 0;
-            }
-        }
+        brothers_to_sons(same_indent); // if same_indent==NULL -> make all brothers childs
+        if (brother) brother->format_indentations();
     }
-    else { // no brother
-        if (son) son = son->format_indentations();
-    }
-    return this;
+
+    if (son) son->format_indentations();
 }
 
 // -----------------
@@ -1166,42 +1208,70 @@ static void print_XML_Text_expanding_links(const string& text, size_t lineNo) {
     }
 }
 
-void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
+void ParagraphTree::xml_write_textblock() {
+    XML_Tag textblock("T");
+    textblock.add_attribute("reflow", reflow ? "1" : "0");
+
+    {
+        string        usedText;
+        const string& text = otext;
+        if (reflow) {
+            usedText = correctIndentation(text, (textblock.Indent()+1) * the_XML_Document->indentation_per_level);
+        }
+        else {
+            usedText = text;
+        }
+        print_XML_Text_expanding_links(usedText, otext.get_lineno());
+    }
+}
+
+ParagraphTree *ParagraphTree::xml_write_list_contents() {
+    h2x_assert(is_itemlist_member());
+    {
+        XML_Tag entry("ENTRY");
+        entry.add_attribute("item", "1");
+        xml_write_textblock();
+        if (son) son->xml_write();
+    }
+    if (brother && brother->is_itemlist_member()) {
+        return brother->xml_write_list_contents();
+    }
+    return brother;
+}
+ParagraphTree *ParagraphTree::xml_write_enum_contents() {
+    h2x_assert(is_enumerated());
+    {
+        XML_Tag entry("ENTRY");
+        entry.add_attribute("enumerated", "1");
+        xml_write_textblock();
+        if (son) son->xml_write();
+    }
+    if (brother && brother->is_enumerated()) {
+        return brother->xml_write_enum_contents();
+    }
+    return brother;
+}
+
+void ParagraphTree::xml_write() {
     try {
-        if (is_enumerated && !ignore_enumerated) {
-            XML_Tag e("ENUM");
-            xml_write(true);
+        ParagraphTree *next = NULL;
+        if (is_enumerated()) {
+            XML_Tag enu("ENUM");
+            next = xml_write_enum_contents();
+        }
+        else if (is_itemlist_member()) {
+            XML_Tag list("LIST");
+            next = xml_write_list_contents();
         }
         else {
             {
-                XML_Tag para(is_enumerated || write_as_entry ? "ENTRY" : "P");
-                {
-                    XML_Tag textblock("T");
-                    textblock.add_attribute("reflow", reflow ? "1" : "0");
-                    {
-                        string        usedText;
-                        const string& text = otext;
-                        if (reflow) {
-                            usedText = correctIndentation(text, (textblock.Indent()+1) * the_XML_Document->indentation_per_level);
-                        }
-                        else {
-                            usedText = text;
-                        }
-                        print_XML_Text_expanding_links(usedText, otext.get_lineno());
-                    }
-                }
-                if (son) {
-                    if (!son->is_enumerated && son->brother) {
-                        XML_Tag son_tag("LIST");
-                        son->xml_write(false, true);
-                    }
-                    else {
-                        son->xml_write(false);
-                    }
-                }
+                XML_Tag para("P");
+                xml_write_textblock();
+                if (son) son->xml_write();
             }
-            if (brother) brother->xml_write(ignore_enumerated, write_as_entry);
+            next = brother;
         }
+        if (next) next->xml_write();
     }
     catch (string& err) { throw make_paragraph_message(err); }
     catch (const char *err) { throw make_paragraph_message(err); }
@@ -1251,21 +1321,34 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
 
         ParagraphTree *ptree = ParagraphTree::buildParagraphTree(*named_sec);
 
-        ParagraphTree::embeddedCounter = 0;
-
 #if defined(DEBUG)
         size_t textnodes = ptree->countTextNodes();
 #endif
-
-        ptree = ptree->format_enums();
-
-#if defined(DEBUG)
-        size_t textnodes2 = ptree->countTextNodes();
-        h2x_assert(textnodes2 == (textnodes+ParagraphTree::embeddedCounter)); // if this occurs format_enums has an error
+#if defined(DUMP_PARAGRAPHS)
+        cout << "Dump of section '" << named_sec->getName() << "' (before format_lists):\n";
+        ptree->dump(cout);
+        cout << "----------------------------------------\n";
 #endif
 
-        ptree = ptree->format_indentations();
+        ptree->format_lists();
 
+#if defined(DUMP_PARAGRAPHS)
+        cout << "Dump of section '" << named_sec->getName() << "' (after format_lists):\n";
+        ptree->dump(cout);
+        cout << "----------------------------------------\n";
+#endif
+#if defined(DEBUG)
+        size_t textnodes2 = ptree->countTextNodes();
+        h2x_assert(textnodes2 == textnodes); // if this occurs format_lists has an error
+#endif
+
+        ptree->format_indentations();
+
+#if defined(DUMP_PARAGRAPHS)
+        cout << "Dump of section '" << named_sec->getName() << "' (after format_indentations):\n";
+        ptree->dump(cout);
+        cout << "----------------------------------------\n";
+#endif
 #if defined(DEBUG)
         size_t textnodes3 = ptree->countTextNodes();
         h2x_assert(textnodes3 == textnodes2); // if this occurs format_indentations has an error
