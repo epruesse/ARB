@@ -350,6 +350,7 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_window.hxx

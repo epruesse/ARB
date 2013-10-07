@@ -489,6 +489,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -681,6 +682,7 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_window.hxx

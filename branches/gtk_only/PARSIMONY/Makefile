@@ -101,6 +101,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -164,6 +165,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -227,6 +229,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -279,6 +282,7 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+PARS_debug.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -406,6 +410,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx

@@ -214,6 +214,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -360,6 +361,7 @@ AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -523,6 +525,7 @@ AWT_modules.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_modules.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_window.hxx

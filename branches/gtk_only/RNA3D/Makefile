@@ -75,6 +75,7 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -195,6 +196,7 @@ RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -318,6 +320,7 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_window.hxx

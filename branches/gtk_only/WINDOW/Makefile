@@ -178,6 +178,7 @@ AW_area_management.o: aw_keysym.hxx
 AW_area_management.o: aw_position.hxx
 AW_area_management.o: aw_rgb.hxx
 AW_area_management.o: aw_root.hxx
+AW_area_management.o: aw_signal.hxx
 AW_area_management.o: aw_simple_device.hxx
 AW_area_management.o: aw_stylable.hxx
 AW_area_management.o: aw_window.hxx
@@ -227,6 +228,7 @@ AW_at.o: aw_keysym.hxx
 AW_at.o: aw_position.hxx
 AW_at.o: aw_rgb.hxx
 AW_at.o: aw_root.hxx
+AW_at.o: aw_signal.hxx
 AW_at.o: aw_simple_device.hxx
 AW_at.o: aw_stylable.hxx
 AW_at.o: aw_window.hxx
@@ -500,6 +502,7 @@ AW_common_gtk.o: aw_keysym.hxx
 AW_common_gtk.o: aw_position.hxx
 AW_common_gtk.o: aw_rgb.hxx
 AW_common_gtk.o: aw_root.hxx
+AW_common_gtk.o: aw_signal.hxx
 AW_common_gtk.o: aw_simple_device.hxx
 AW_common_gtk.o: aw_stylable.hxx
 AW_common_gtk.o: aw_window.hxx
@@ -789,6 +792,7 @@ AW_edit.o: aw_msg.hxx
 AW_edit.o: aw_position.hxx
 AW_edit.o: aw_rgb.hxx
 AW_edit.o: aw_root.hxx
+AW_edit.o: aw_signal.hxx
 AW_edit.o: aw_simple_device.hxx
 AW_edit.o: aw_stylable.hxx
 AW_edit.o: aw_window.hxx
@@ -841,6 +845,7 @@ AW_element.o: aw_keysym.hxx
 AW_element.o: aw_position.hxx
 AW_element.o: aw_rgb.hxx
 AW_element.o: aw_root.hxx
+AW_element.o: aw_signal.hxx
 AW_element.o: aw_simple_device.hxx
 AW_element.o: aw_stylable.hxx
 AW_element.o: aw_window.hxx
@@ -1322,6 +1327,7 @@ AW_root_debug.o: aw_msg.hxx
 AW_root_debug.o: aw_position.hxx
 AW_root_debug.o: aw_rgb.hxx
 AW_root_debug.o: aw_root.hxx
+AW_root_debug.o: aw_signal.hxx
 AW_root_debug.o: aw_simple_device.hxx
 AW_root_debug.o: aw_stylable.hxx
 AW_root_debug.o: aw_window.hxx

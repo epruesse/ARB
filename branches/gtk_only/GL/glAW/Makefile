@@ -75,6 +75,7 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
