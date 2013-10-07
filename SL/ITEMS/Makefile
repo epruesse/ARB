@@ -71,6 +71,7 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_select.hxx
+changekey.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -126,6 +127,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_select.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx

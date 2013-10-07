@@ -206,6 +206,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_select.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -260,6 +261,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx

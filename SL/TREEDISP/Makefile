@@ -85,6 +85,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx

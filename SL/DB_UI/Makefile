@@ -70,6 +70,7 @@ info_window.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+info_window.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx

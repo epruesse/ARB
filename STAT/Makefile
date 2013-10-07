@@ -113,6 +113,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_window.hxx

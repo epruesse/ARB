@@ -94,6 +94,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx

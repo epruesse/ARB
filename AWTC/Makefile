@@ -67,6 +67,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_window.hxx

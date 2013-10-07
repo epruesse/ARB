@@ -214,6 +214,7 @@ ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -408,6 +409,7 @@ ED4_dump.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_dump.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -689,6 +691,7 @@ ED4_members.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_members.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1011,6 +1014,7 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1071,6 +1075,7 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1775,6 +1780,7 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_window.hxx
