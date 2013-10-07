@@ -11,6 +11,4 @@ void AW_window_simple::init(AW_root */*root_in*/, const char *window_name_, cons
     init_window(window_name_, window_title, 0, 0, true /*resizable*/);
 
     gtk_container_add(GTK_CONTAINER(prvt->window), GTK_WIDGET(prvt->fixed_size_area));
-
-    create_devices();
 }

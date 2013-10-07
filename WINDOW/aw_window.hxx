@@ -157,8 +157,6 @@ protected:
     class AW_window_gtk;
     AW_window_gtk* prvt; /*< Contains all gtk dependent attributes */
   
-    void create_devices();
-
     /* put a widget into prvt->fixedArea according to _at.
      * @param label_alignment the alignment for the label.
      *        Do NOT delete label_alignment after this call. Gtk will take care of it when the window is closed.*/

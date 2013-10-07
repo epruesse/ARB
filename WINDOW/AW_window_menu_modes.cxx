@@ -72,10 +72,11 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name_, 
     gtk_widget_realize(GTK_WIDGET(prvt->drawing_area));
     gtk_widget_realize(GTK_WIDGET(prvt->bottom_area));
 
-    prvt->areas[AW_MIDDLE_AREA] = new AW_area_management(GTK_WIDGET(prvt->drawing_area), this);
-    prvt->areas[AW_BOTTOM_AREA] = new AW_area_management(GTK_WIDGET(prvt->bottom_area), this);
+    prvt->areas[AW_MIDDLE_AREA] = 
+        new AW_area_management(this, AW_MIDDLE_AREA, GTK_WIDGET(prvt->drawing_area));
+    prvt->areas[AW_BOTTOM_AREA] = 
+        new AW_area_management(this, AW_BOTTOM_AREA, GTK_WIDGET(prvt->bottom_area));
 
-    create_devices();
     AW_insert_default_help_entries(this);
     create_window_variables();
 

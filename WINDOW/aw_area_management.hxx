@@ -79,16 +79,14 @@ struct AW_event {
 class AW_area_management : virtual Noncopyable {
 public:
     class Pimpl;
-private:
     Pimpl* prvt; /* < Contains all private attributes and gtk dependencies */  
 
-public:
     AW_signal resize; //! issued when the area size changes
     AW_signal expose; //! issued when parts of the area need to be redrawn
     AW_signal input;  //! issued when mouse button or key presses happened
     AW_signal motion; //! issued when the mouse is moved with a button depressed
 
-    AW_area_management(GtkWidget *area, AW_window *aww);
+    AW_area_management(AW_window*, AW_area, GtkWidget*);
     ~AW_area_management();
 
     GtkWidget *get_area() const;
@@ -98,8 +96,6 @@ public:
     AW_device_size *get_size_device();
     AW_device_print *get_print_device();
     AW_device_click *get_click_device();
-
-    void create_devices(AW_window *aww, AW_area ar);
 
     /**
      * Adds a new callback.
