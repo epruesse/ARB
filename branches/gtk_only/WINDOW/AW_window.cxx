@@ -1420,7 +1420,7 @@ void AW_window::init_window(const char *window_name_, const char* window_title,
     prvt->fixed_size_area = AW_AT_LAYOUT(aw_at_layout_new());
     // we want this to have its own GdkWindow
     gtk_widget_set_has_window(GTK_WIDGET(prvt->fixed_size_area),true);
-    prvt->areas[AW_INFO_AREA] = new AW_area_management(GTK_WIDGET(prvt->fixed_size_area), this);
+    prvt->areas[AW_INFO_AREA] = new AW_area_management(this, AW_INFO_AREA, GTK_WIDGET(prvt->fixed_size_area));
     g_signal_connect (prvt->window, "delete_event", G_CALLBACK (close_window_handler), this);
     
 }
@@ -1457,19 +1457,6 @@ void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
     }
     recalc_size_at_show = sr;
 }
-
-void AW_window::create_devices() {
-    if (prvt->areas[AW_INFO_AREA]) {
-        prvt->areas[AW_INFO_AREA]->create_devices(this, AW_INFO_AREA);
-    }
-    if (prvt->areas[AW_MIDDLE_AREA]) {
-        prvt->areas[AW_MIDDLE_AREA]->create_devices(this, AW_MIDDLE_AREA);
-    }
-    if (prvt->areas[AW_BOTTOM_AREA]) {
-        prvt->areas[AW_BOTTOM_AREA]->create_devices(this, AW_BOTTOM_AREA);
-    }
-}
-
 
 void AW_window::create_font_button(const char* var_name, const char *label_) {
     AW_awar* awar = get_root()->awar_no_error(var_name);

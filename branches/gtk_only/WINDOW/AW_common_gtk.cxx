@@ -18,17 +18,6 @@
 #include <string>
 #include <algorithm>
 
-/*
- * Is called upon window resize
- * @param cl_common_gtk Pointer to the common_gtk instance that registered this callback.
- */
-static void AW_window_resize_cb(AW_window *, AW_CL cl_common_gtk, AW_CL) {
-    AW_common_gtk *common = (AW_common_gtk*)cl_common_gtk;
-    GtkAllocation alloc;
-    gtk_widget_get_allocation(GTK_WIDGET(common->get_window()), &alloc);
-    common->set_screen_size(alloc.width, alloc.height);
-}
-
 struct AW_common_gtk::Pimpl {
     GtkWidget  *window;
     AW_window  *aww;
@@ -44,8 +33,6 @@ AW_common_gtk::AW_common_gtk(GtkWidget *window,
     prvt->window  = window;
     prvt->aww     = aw_window;
     prvt->area    = area;
-
-    aw_window->set_resize_callback(area, AW_window_resize_cb, (AW_CL)this);
 }
 
 AW_common_gtk::~AW_common_gtk() {
