@@ -201,7 +201,11 @@
   <xsl:template name="indent-preformatted">
     <xsl:param name="indent" select="''"/>
     <xsl:param name="text"/>
-    <xsl:param name="first" select="''"/>
+    <xsl:param name="prefix" select="''"/>
+
+    <xsl:if test="$prefix!=''">
+      <!--<xsl:call-template name="error"><xsl:with-param name="text">detected test-case (indent-preformatted with prefix)</xsl:with-param></xsl:call-template>-->
+    </xsl:if>
 
     <xsl:variable name="line1" select="substring-before($text,$lb)"/>
     <xsl:variable name="line2" select="substring-after($text,$lb)"/>
@@ -235,9 +239,10 @@
     <xsl:param name="text"/>
     <xsl:param name="prefix" select="''"/>
 
-<!--    <xsl:text>{</xsl:text><xsl:copy-of select="$text"/><xsl:text>}</xsl:text>-->
+    <!--<xsl:text>{</xsl:text><xsl:copy-of select="$text"/><xsl:text>}</xsl:text><xsl:text>&br;</xsl:text>-->
 
-    <xsl:variable name="printlen"><xsl:value-of select="$width - string-length($indent)"/></xsl:variable>
+    <xsl:variable name="indent-length"><xsl:value-of select="string-length($indent) + string-length($prefix)"/></xsl:variable>
+    <xsl:variable name="printlen"><xsl:value-of select="$width - $indent-length"/></xsl:variable>
     <xsl:variable name="textlen"><xsl:value-of select="string-length($text)"/></xsl:variable>
 
     <xsl:variable name="this-indent">
@@ -246,7 +251,7 @@
           <xsl:value-of select="$indent"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="substring($indent,1,string-length($indent) - string-length($prefix))"/>
+          <xsl:value-of select="$indent"/>
           <xsl:value-of select="$prefix"/>
         </xsl:otherwise>
       </xsl:choose>
@@ -284,8 +289,24 @@
         <xsl:text>&br;</xsl:text>
 
         <xsl:if test="number($restlen)">
+
+          <xsl:variable name="next-indent">
+            <xsl:choose>
+              <xsl:when test="$prefix=''">
+                <xsl:value-of select="$indent"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:variable name="enough-spaces">
+                  <xsl:value-of select="$indent"/>
+                  <xsl:text>                    </xsl:text>
+                </xsl:variable>
+                <xsl:value-of select="substring($enough-spaces, 1, $indent-length)"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+
           <xsl:call-template name="reflow-paragraph">
-            <xsl:with-param name="indent" select="$indent"/>
+            <xsl:with-param name="indent" select="$next-indent"/>
             <xsl:with-param name="text" select="$rest"/>
           </xsl:call-template>
         </xsl:if>
@@ -296,14 +317,17 @@
   <xsl:template match="ENTRY" mode="calc-prefix">
     <xsl:choose>
       <xsl:when test="name(..)='ENUM'">
-        <xsl:value-of select="position()"/>
+        <xsl:value-of select="@enumerated"/>
         <xsl:text>. </xsl:text>
       </xsl:when>
-      <xsl:when test="name(..)='LIST'"><xsl:text>- </xsl:text></xsl:when>
+      <xsl:when test="name(..)='LIST'"><xsl:text>* </xsl:text></xsl:when>
       <xsl:otherwise></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
+  <xsl:template match="ENUM|LIST" mode="calc-prefix">
+    <xsl:call-template name="error"><xsl:with-param name="text">Illegal ENUM or LIST in calc-prefix-mode</xsl:with-param></xsl:call-template>
+  </xsl:template>
   <xsl:template match="*|text()" mode="calc-prefix">
   </xsl:template>
 
@@ -353,7 +377,7 @@
 
   <xsl:template match="T">
     <xsl:variable name="indent"><xsl:apply-templates mode="calc-indent" select=".."/></xsl:variable>
-    <xsl:variable name="prefix"><xsl:apply-templates mode="calc-prefix" select="../.."/></xsl:variable>
+    <xsl:variable name="prefix"><xsl:apply-templates mode="calc-prefix" select=".."/></xsl:variable>
     <xsl:variable name="text"><xsl:apply-templates mode="expand-links"/></xsl:variable>
 
     <xsl:choose>
@@ -374,14 +398,6 @@
         <xsl:text>&br;</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
-  </xsl:template>
-
-  <xsl:template match="T" mode="disabled">
-    <xsl:choose>
-      <xsl:when test="@reflow='1'"><xsl:apply-templates mode="reflow"/></xsl:when>
-      <xsl:otherwise><xsl:apply-templates mode="preformatted"/></xsl:otherwise>
-    </xsl:choose>
-    <xsl:text>&br;</xsl:text>
   </xsl:template>
 
   <xsl:template match="ENTRY"><xsl:apply-templates/></xsl:template>

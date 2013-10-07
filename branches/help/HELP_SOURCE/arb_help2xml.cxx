@@ -1242,7 +1242,7 @@ ParagraphTree *ParagraphTree::xml_write_enum_contents() {
     h2x_assert(is_enumerated());
     {
         XML_Tag entry("ENTRY");
-        entry.add_attribute("enumerated", "1");
+        entry.add_attribute("enumerated", strf("%i", otext.get_number()));
         xml_write_textblock();
         if (son) son->xml_write();
     }

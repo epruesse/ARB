@@ -38,13 +38,13 @@
         <T reflow="1">
           first enum</T>
       </ENTRY>
-      <ENTRY enumerated="1">
+      <ENTRY enumerated="2">
         <T reflow="1">
           second enum which
           is continued on the next line.
           Now this is no longer misinterpreted as monospaced paragraph.</T>
       </ENTRY>
-      <ENTRY enumerated="1">
+      <ENTRY enumerated="3">
         <T reflow="1">
           third enum</T>
       </ENTRY>
@@ -346,7 +346,7 @@ row2    -           3</T>
                   </ENTRY>
                 </LIST>
               </ENTRY>
-              <ENTRY enumerated="1">
+              <ENTRY enumerated="2">
                 <T reflow="1">
                   second subenum below second item</T>
                 <P>
@@ -358,7 +358,7 @@ row2    -           3</T>
                     <T reflow="1">
                       first subsubenum below second subenum</T>
                   </ENTRY>
-                  <ENTRY enumerated="1">
+                  <ENTRY enumerated="2">
                     <T reflow="1">
                       second subsubenum below second subenum</T>
                   </ENTRY>
@@ -368,7 +368,7 @@ row2    -           3</T>
                     text behind subsubenum</T>
                 </P>
               </ENTRY>
-              <ENTRY enumerated="1">
+              <ENTRY enumerated="3">
                 <T reflow="1">
                   third subenum below second item</T>
               </ENTRY>
@@ -380,7 +380,7 @@ row2    -           3</T>
           </ENTRY>
         </LIST>
       </ENTRY>
-      <ENTRY enumerated="1">
+      <ENTRY enumerated="2">
         <T reflow="1">
           second enum</T>
         <P>
@@ -390,7 +390,7 @@ row2    -           3</T>
             belongs to the enum.</T>
         </P>
       </ENTRY>
-      <ENTRY enumerated="1">
+      <ENTRY enumerated="3">
         <T reflow="1">
           third enum</T>
         <P>
