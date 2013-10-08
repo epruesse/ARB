@@ -149,7 +149,9 @@ line. Several versions can now be recognised:-
 
      clustalw input.aln -gapopen=8.0
 
-instead of  clustalw input.aln /gapopen=8.0
+instead of
+
+     clustalw input.aln /gapopen=8.0
 
 
                       ATTENTION SOFTWARE DEVELOPERS!!
