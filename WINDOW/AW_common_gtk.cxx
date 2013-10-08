@@ -104,15 +104,11 @@ AW_GC_gtk::~AW_GC_gtk(){};
 void AW_GC_gtk::wm_set_font(const char* font_name) {
     font_desc = pango_font_description_from_string(font_name);
 
-    // begin acrobatics to get the glyph sizes
-    // get the actual widget we're drawing on, 
-    GtkWidget *widget = get_common()->get_drawing_target();
-    // get its context,
-    PangoContext *context = gtk_widget_get_pango_context(widget);
-    // and the fontmap thereof
-    PangoFontMap *fontmap = pango_context_get_font_map(context);//pango_cairo_font_map_get_default();
-    // use all of those to finally get the probably used font
+    // now determine char sizes; get the font structure first:
+    PangoFontMap *fontmap = pango_cairo_font_map_get_default();
+    PangoContext *context = pango_font_map_create_context(fontmap);
     PangoFont *font = pango_font_map_load_font(fontmap, context, font_desc);
+    
     // iterate through the ascii chars
     for (unsigned int j = AW_FONTINFO_CHAR_ASCII_MIN; j <= AW_FONTINFO_CHAR_ASCII_MAX; j++) {
         // make a char* and from that a gunichar which is a PangoGlyph
