@@ -4,12 +4,7 @@
 STD = standard.header
 SED:=$(ARBHOME)/SH/arb_sed
 
-# @@@ remove these:
-AUTOSECTION = $(SED) -e 's/^\([^ \#]\)/SECTION \1/'
-AUTOTITLE = $(SED) -e '1 s/^SECTION/TITLE/'
-
 POSTPROCESS=./postprocess_genhelp.pl
-
 HLP_DEPENDS=Makefile $(POSTPROCESS)
 
 ARBHOME=../..
@@ -38,10 +33,7 @@ copyright.hlp : $(ARBHOME)/arb_LICENSE.txt $(HLP_DEPENDS)
 	@-test -f $@ && chmod u+w $@
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
-	cp $@ $@.old
-	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@.old
 	@cat $< | $(POSTPROCESS) $@ >> $@
-	diff -u $@.old $@
 	@chmod a-w $@
 
 changes.hlp : $(ARBHOME)/arb_CHANGES.txt $(HLP_DEPENDS)
@@ -49,10 +41,7 @@ changes.hlp : $(ARBHOME)/arb_CHANGES.txt $(HLP_DEPENDS)
 	@-test -f $@ && chmod u+w $@
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
-	cp $@ $@.old
-	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@.old
 	@cat $< | $(POSTPROCESS) $@ >> $@
-	diff -u $@.old $@
 	@@chmod a-w $@
 
 agde_%.hlp : $(GDEGENDIR)/%.help $(HLP_DEPENDS)
@@ -63,10 +52,7 @@ agde_%.hlp : $(GDEGENDIR)/%.help $(HLP_DEPENDS)
 	@echo "#             (which is generated itself)" >>$@
 	@echo "" >>$@
 	@echo "UP agde.hlp" >>$@
-	cp $@ $@.old
-	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@.old
 	@cat $< | $(POSTPROCESS) $@ >> $@
-	diff -u $@.old $@
 	@chmod a-w $@
 
 agde_%.hlp : $(GDEWRITTENDIR)/%.help $(HLP_DEPENDS)
@@ -76,10 +62,7 @@ agde_%.hlp : $(GDEWRITTENDIR)/%.help $(HLP_DEPENDS)
 	@echo "# BUILD FROM: $<" >>$@
 	@echo "" >>$@
 	@echo "UP agde.hlp" >>$@
-	cp $@ $@.old
-	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@.old
 	@cat $< | $(POSTPROCESS) $@ >> $@
-	diff -u $@.old $@
 	@chmod a-w $@
 
 agde.hlp: $(GDE_HLP) agde.footer Makefile
