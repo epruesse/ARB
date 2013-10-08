@@ -51,8 +51,8 @@ DESCRIPTION	The command interpreter is a simple interpreter.
 
 		Finally all output streams are concatenated and
 
-			- NDS:                     printed at the tips of the tree.
-			- MODIFY DATABASE FIELD:   stored in the destination field.
+			- NDS:printed at the tips of the tree.
+			- MODIFY DATABASE FIELD: stored in the destination field.
 
 DESCRIPTION
 

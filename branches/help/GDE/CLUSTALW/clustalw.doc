@@ -61,7 +61,8 @@ read.
 5. The clustal sequence alignment file format has been changed to allow
 sequence names longer than 10 characters. The maximum length allowed is set in
 clustalw.h by the statement:
-#define MAXNAMES	10
+
+        #define MAXNAMES	10
 
 For the fasta format, the name is taken as the first string after the '>'
 character, stopping at the first white space. (Previously, the first 10
@@ -98,8 +99,11 @@ default.
 
 12. The conservation line output in the clustal format alignment file has been
 changed. Three characters are now used:
-'*' indicates positions which have a single, fully conserved residue
-':' indicates that one of the following 'strong' groups is fully conserved:-
+
+        '*' indicates positions which have a single, fully conserved residue
+
+        ':' indicates that one of the following 'strong' groups is fully conserved:-
+
                  STA
                  NEQK
                  NHQK
@@ -110,7 +114,8 @@ changed. Three characters are now used:
                  HY
                  FYW
 
-'.' indicates that one of the following 'weaker' groups is fully conserved:-
+        '.' indicates that one of the following 'weaker' groups is fully conserved:-
+
                  CSA
                  ATV
                  SAG
@@ -166,7 +171,7 @@ sequences. In the past, all characters (upper or lower case) other than
 a,c,g,t or u were converted to N. Now the following characters are recognised 
 and retained in the alignment output: ABCDGHKMNRSTUVWXY (upper or lower case).
 
-5. A  Blank line inadvertently added in the version 1.6 header has been taken
+5. A Blank line inadvertently added in the version 1.6 header has been taken
 out again.
 
 
@@ -255,6 +260,7 @@ What's New (April 1995) in Version 1.5 (since version 1.3).
 have a nice beefy machine.  On a Power Mac or a Pentium box
 it is nice and fast.  Two precompiled versions are supplied for Macs
 (Power mac and old mac versions).
+
 Mac:       1500 residues by 100 sequences
 Power Mac  3000    "     "   "     "
 PC         1500    "     "   "     "
