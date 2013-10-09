@@ -30,9 +30,9 @@ AW_common::AW_common()
     // the editor balks out if with/height is smaller 
     // than the respective "scroll indent"
     prvt->screen.t = 0;
-    prvt->screen.b = 30000;
+    prvt->screen.b = 1000;
     prvt->screen.l = 0;
-    prvt->screen.r = 40000;
+    prvt->screen.r = 1000;
     
     // let's start with a gcmap that's got a bit of space
     prvt->gcmap.resize(32, NULL);
