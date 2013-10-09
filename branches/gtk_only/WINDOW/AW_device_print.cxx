@@ -7,7 +7,9 @@
 
 #include "aw_device_print.hxx"
 #include "aw_gtk_migration_helpers.hxx"
+#include "arb_msg.h"
 #include <cairo-pdf.h>
+#include <cairo-svg.h>
 
 // ---------------------
 //      Please note
@@ -47,12 +49,32 @@ void AW_device_print::close() {
     cairo_surface_destroy(prvt->surface);
 }
 
-GB_ERROR AW_device_print::open(char const* path) {
+GB_ERROR AW_device_print::open(const char* path) {
     AW_screen_area cliprect = get_cliprect();
-    prvt->surface = cairo_pdf_surface_create(path, cliprect.r, cliprect.b);
+    const char* ext = strrchr(path, '.');
+    if (!ext) ext = "";
+
+    if (!strcasecmp(ext, ".svg")) {
+        prvt->surface = cairo_svg_surface_create(path, cliprect.r, cliprect.b);
+    } else if (!strcasecmp(ext, ".pdf")) {
+        prvt->surface = cairo_pdf_surface_create(path, cliprect.r, cliprect.b);
+    } else {
+        return "unrecognized file extension. Supported types are SVG and PDF.";
+    }
+
+    cairo_status_t state = cairo_surface_status(prvt->surface);
+    if (state != CAIRO_STATUS_SUCCESS) {
+        return GB_export_errorf("failed to print to file\n"
+                                "filename: %s\n"
+                                "error code: %s\n"
+                                "Does the path exist? Do you have permission to write?",
+                                path, cairo_status_to_string(state));
+    }
+
     prvt->cr = cairo_create(prvt->surface);
     clear(AW_ALL_DEVICES);
-    return NULL;
+
+    return NULL; // no error
 }
 
 void AW_device_print::set_color_mode(bool /*mode*/) {
