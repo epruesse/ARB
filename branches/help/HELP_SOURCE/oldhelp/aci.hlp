@@ -40,8 +40,10 @@ DESCRIPTION	The command interpreter is a simple interpreter.
 
                         count("A");count("AG")
 
-                                creates two streams: 1. how many A's
-                                                     2. and how many A's and G's
+                                creates two streams:
+
+                                        1. how many A's
+                                        2. and how many A's and G's
 
                         count("A");count("G")|per_cent
 

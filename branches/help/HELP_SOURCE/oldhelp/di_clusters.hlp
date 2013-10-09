@@ -128,8 +128,10 @@ EXAMPLES        One use case is to reduce a given tree by removing clones or ver
 
 WARNINGS        Be careful when the minimum distance reported for a cluster is zero.
                 This may have 2 reasons:
+
                      - two sequences are identical (in filtered region)
                      - one sequence is empty (in filtered region)
+
                 In the second case, the results are meaningless and the empty sequence
                 will be used as representative (which makes no sense).
 
