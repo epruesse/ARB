@@ -92,7 +92,6 @@ PangoFontDescription* AW_common_gtk::get_font(int gc) {
 
 AW_GC_gtk::AW_GC_gtk(AW_common *aw_common) 
     : AW_GC(aw_common),
-      cr(NULL),
       font_desc(NULL)
 {
 }
