@@ -32,9 +32,16 @@ using namespace std;
 #define h2x_assert(bed) arb_assert(bed)
 
 #if defined(DEBUG)
-#define WARN_MISSING_HELP
+#define WARN_FORMATTING_PROBLEMS
+// #define WARN_MISSING_HELP // @@@ reenable later
 // #define DUMP_PARAGRAPHS
 #endif // DEBUG
+
+
+#if defined(WARN_FORMATTING_PROBLEMS)
+// #define WARN_POSSIBLY_WRONG_INDENTATION_CORRECTION
+#define WARN_FIXED_LAYOUT_LIST_ELEMENTS
+#endif
 
 
 #define MAX_LINE_LENGTH 200     // maximum length of lines in input stream
@@ -166,7 +173,10 @@ private:
                 }
 
                 char *eol = strchr(lineBuffer, 0)-1;
-                while (eol >= lineBuffer && eol[0] == ' ') eol--;
+                while (eol >= lineBuffer && isspace(eol[0])) {
+                    eol[0] = 0; // trim trailing whitespace
+                    eol--;
+                }
                 if (eol > lineBuffer) {
                     // now eol points to last character
                     if (eol[0] == '-' && isalnum(eol[-1])) {
@@ -388,8 +398,12 @@ inline const char *firstChar(const char *s) {
 inline bool is_startof_itemlist_element(const char *contentStart) {
     return
         (contentStart[0] == '-' ||
-         contentStart[0] == '*') &&
-        isspace(contentStart[1]) && !isspace(contentStart[2]);
+         contentStart[0] == '*')
+        &&
+        isspace(contentStart[1])
+        &&
+        !(isspace(contentStart[2]) ||
+          contentStart[2] == '-');
 }
 
 static bool startsWithNumber(string& s, unsigned& number, bool do_erase) {
@@ -407,7 +421,7 @@ static bool startsWithNumber(string& s, unsigned& number, bool do_erase) {
         number = number*10 + (s[off]-'0');
     }
 
-    if (s[off] != '.') return false;
+    if (s[off] != '.' && s[off] != ')') return false;
     if (s[off+1] != ' ') return false;
 
     if (do_erase) {
@@ -757,6 +771,11 @@ class ParagraphTree : virtual Noncopyable {
         reflow = shouldReflow(text, indentation);
         if (!reflow) {
             size_t reststart = text.find('\n', 1);
+
+            if (reststart == 0) {
+                add_warning(make_paragraph_message("[internal] Paragraph starts with LF -> reflow calculation will probably fail"));
+            }
+
             if (reststart != string::npos) {
                 int    rest_indent = -1;
                 string rest        = text.substr(reststart);
@@ -1060,10 +1079,12 @@ void ParagraphTree::format_lists() {
 void ParagraphTree::format_indentations() {
     if (brother) {
         ParagraphTree *same_indent = brother->firstWithLessIndentThan(indentation+1);
+#if defined(WARN_POSSIBLY_WRONG_INDENTATION_CORRECTION)
         if (same_indent && indentation != same_indent->indentation) {
             add_warning(same_indent->make_paragraph_message("indentation is assumed to be same as .."));
             add_warning(make_paragraph_message(".. here"));
         }
+#endif
         brothers_to_sons(same_indent); // if same_indent==NULL -> make all brothers childs
         if (brother) brother->format_indentations();
     }
@@ -1227,6 +1248,9 @@ void ParagraphTree::xml_write_textblock() {
 
 ParagraphTree *ParagraphTree::xml_write_list_contents() {
     h2x_assert(is_itemlist_member());
+#if defined(WARN_FIXED_LAYOUT_LIST_ELEMENTS)
+    if (!reflow) add_warning(make_paragraph_message("ITEM not reflown (check output)"));
+#endif
     {
         XML_Tag entry("ENTRY");
         entry.add_attribute("item", "1");
@@ -1240,6 +1264,9 @@ ParagraphTree *ParagraphTree::xml_write_list_contents() {
 }
 ParagraphTree *ParagraphTree::xml_write_enum_contents() {
     h2x_assert(is_enumerated());
+#if defined(WARN_FIXED_LAYOUT_LIST_ELEMENTS)
+    if (!reflow) add_warning(make_paragraph_message("ENUMERATED not reflown (check output)"));
+#endif
     {
         XML_Tag entry("ENTRY");
         entry.add_attribute("enumerated", strf("%i", otext.get_number()));
