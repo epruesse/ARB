@@ -41,6 +41,7 @@ using namespace std;
 #if defined(WARN_FORMATTING_PROBLEMS)
 // #define WARN_POSSIBLY_WRONG_INDENTATION_CORRECTION
 #define WARN_FIXED_LAYOUT_LIST_ELEMENTS
+// #define WARN_LONESOME_LIST_ELEMENTS
 #endif
 
 
@@ -1307,10 +1308,16 @@ void ParagraphTree::xml_write() {
                 add_warning(make_paragraph_message(strf("First enum starts with '%u.' (maybe previous enum was not detected)", get_enumeration())));
             }
             next = xml_write_enum_contents();
+#if defined(WARN_LONESOME_LIST_ELEMENTS)
+            if (next == brother) add_warning(make_paragraph_message("Suspicious single-element-ENUM"));
+#endif
         }
         else if (is_itemlist_member()) {
             XML_Tag list("LIST");
             next = xml_write_list_contents();
+#if defined(WARN_LONESOME_LIST_ELEMENTS)
+            if (next == brother) add_warning(make_paragraph_message("Suspicious single-element-LIST"));
+#endif
         }
         else {
             {
