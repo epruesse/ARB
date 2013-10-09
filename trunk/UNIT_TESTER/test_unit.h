@@ -333,83 +333,6 @@ namespace arb_test {
 #endif
     };
 
-    inline bool files_are_equal(const char *file1, const char *file2) {
-        const char    *error = NULL;
-        FILE          *fp1   = fopen(file1, "rb");
-        FlushedOutput  yes;
-
-        if (!fp1) {
-            StaticCode::printf("can't open '%s'", file1);
-            error = "i/o error";
-        }
-        else {
-            FILE *fp2 = fopen(file2, "rb");
-            if (!fp2) {
-                StaticCode::printf("can't open '%s'", file2);
-                error = "i/o error";
-            }
-            else {
-                const int      BLOCKSIZE    = 4096;
-                unsigned char *buf1         = (unsigned char*)malloc(BLOCKSIZE);
-                unsigned char *buf2         = (unsigned char*)malloc(BLOCKSIZE);
-                int            equal_bytes  = 0;
-
-                while (!error) {
-                    int read1  = fread(buf1, 1, BLOCKSIZE, fp1);
-                    int read2  = fread(buf2, 1, BLOCKSIZE, fp2);
-                    int common = read1<read2 ? read1 : read2;
-
-                    if (!common) {
-                        if (read1 != read2) error = "filesize differs";
-                        break;
-                    }
-
-                    if (memcmp(buf1, buf2, common) == 0) {
-                        equal_bytes += common;
-                    }
-                    else {
-                        int x = 0;
-                        while (buf1[x] == buf2[x]) {
-                            x++;
-                            equal_bytes++;
-                        }
-                        error = "content differs";
-
-                        // x is the position inside the current block
-                        const int DUMP       = 7;
-                        int       y1         = x >= DUMP ? x-DUMP : 0;
-                        int       y2         = (x+DUMP)>common ? common : (x+DUMP);
-                        int       blockstart = equal_bytes-x;
-
-                        for (int y = y1; y <= y2; y++) {
-                            fprintf(stderr, "[0x%04x]", blockstart+y);
-                            print_pair(buf1[y], buf2[y]);
-                            fputc(' ', stderr);
-                            print_hex_pair(buf1[y], buf2[y]);
-                            if (x == y) fputs("                     <- diff", stderr);
-                            fputc('\n', stderr);
-                        }
-                        if (y2 == common) {
-                            fputs("[end of block - truncated]\n", stderr);
-                        }
-                    }
-                }
-
-                if (error) StaticCode::printf("files_are_equal: equal_bytes=%i\n", equal_bytes);
-                test_assert(error || equal_bytes, true); // comparing empty files is nonsense
-
-                free(buf2);
-                free(buf1);
-                fclose(fp2);
-            }
-            fclose(fp1);
-        }
-
-        if (error) StaticCode::printf("files_are_equal(%s, %s) fails: %s\n", file1, file2, error);
-        return !error;
-    }
-
-
     // -------------------------------
     //      some output functions
 
@@ -1290,41 +1213,41 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #ifdef ARB_DIFF_H
 
 namespace arb_test {
-    inline bool test_mem_equal(const void *mem1, const void *mem2, size_t size) {
+    inline bool memory_is_equal(const void *mem1, const void *mem2, size_t size) {
         FlushedOutputNoLF yes;
-        return GB_test_mem_equal(reinterpret_cast<const unsigned char *>(mem1),
-                                 reinterpret_cast<const unsigned char *>(mem2), size) == size;
+        return ARB_test_mem_equal(reinterpret_cast<const unsigned char *>(mem1),
+                                  reinterpret_cast<const unsigned char *>(mem2), size, 0) == size;
     }
-    inline bool test_files_equal(const char *file1, const char *file2) {
+    inline bool files_are_equal(const char *file1, const char *file2) {
         FlushedOutputNoLF yes;
-        return GB_test_files_equal(file1, file2);
+        return ARB_files_are_equal(file1, file2);
     }
-    inline bool test_textfile_difflines(const char *file1, const char *file2, int expected_difflines) {
+    inline bool textfiles_have_difflines(const char *file1, const char *file2, int expected_difflines) {
         FlushedOutputNoLF yes;
-        return GB_test_textfile_difflines(file1, file2, expected_difflines, 0);
+        return ARB_textfiles_have_difflines(file1, file2, expected_difflines, 0);
     }
-    inline bool test_textfile_difflines_ignoreDates(const char *file1, const char *file2, int expected_difflines) {
+    inline bool textfiles_have_difflines_ignoreDates(const char *file1, const char *file2, int expected_difflines) {
         FlushedOutputNoLF yes;
-        return GB_test_textfile_difflines(file1, file2, expected_difflines, 1);
+        return ARB_textfiles_have_difflines(file1, file2, expected_difflines, 1);
     }
 };
 
 #define TEST_COPY_FILE(src, dst) TEST_EXPECT_ZERO(system(GBS_global_string("cp '%s' '%s'", src, dst)))
 
-#define TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_EXPECT(arb_test::test_textfile_difflines(f1,f2, diff))
-#define TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_EXPECT__BROKEN(arb_test::test_textfile_difflines(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_EXPECT(arb_test::textfiles_have_difflines(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_EXPECT__BROKEN(arb_test::textfiles_have_difflines(f1,f2, diff))
 
-#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         TEST_EXPECT(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
-#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) TEST_EXPECT__BROKEN(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         TEST_EXPECT(arb_test::textfiles_have_difflines_ignoreDates(f1,f2, diff))
+#define TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) TEST_EXPECT__BROKEN(arb_test::textfiles_have_difflines_ignoreDates(f1,f2, diff))
 
-#define TEST_EXPECT_FILES_EQUAL(f1,f2)         TEST_EXPECT(arb_test::test_files_equal(f1,f2))
-#define TEST_EXPECT_FILES_EQUAL__BROKEN(f1,f2) TEST_EXPECT__BROKEN(arb_test::test_files_equal(f1,f2))
+#define TEST_EXPECT_FILES_EQUAL(f1,f2)         TEST_EXPECT(arb_test::files_are_equal(f1,f2))
+#define TEST_EXPECT_FILES_EQUAL__BROKEN(f1,f2) TEST_EXPECT__BROKEN(arb_test::files_are_equal(f1,f2))
 
 #define TEST_EXPECT_TEXTFILES_EQUAL(f1,f2)         TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,0)
 #define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2) TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,0)
 
-#define TEST_EXPECT_MEM_EQUAL(m1,m2,size)         TEST_EXPECT(arb_test::test_mem_equal(m1,m2,size)) 
-#define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_EXPECT__BROKEN(arb_test::test_mem_equal(m1,m2,size)) 
+#define TEST_EXPECT_MEM_EQUAL(m1,m2,size)         TEST_EXPECT(arb_test::memory_is_equal(m1,m2,size)) 
+#define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_EXPECT__BROKEN(arb_test::memory_is_equal(m1,m2,size)) 
 
 #else
 
@@ -1341,10 +1264,10 @@ namespace arb_test {
 #define TEST_EXPECT_MEM_EQUAL(m1,m2,size)                               WARN_MISS_ARBDIFF()
 #define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size)                       WARN_MISS_ARBDIFF()
 
-#define test_mem_equal(m1,m2,size)                    WARN_MISS_ARBDIFF()
-#define test_files_equal(f1,f2)                       WARN_MISS_ARBDIFF()
-#define test_textfile_difflines(f1,f2,ed)             WARN_MISS_ARBDIFF()
-#define test_textfile_difflines_ignoreDates(f1,f2,ed) WARN_MISS_ARBDIFF()
+#define memory_is_equal(m1,m2,size)                    WARN_MISS_ARBDIFF()
+#define files_are_equal(f1,f2)                         WARN_MISS_ARBDIFF()
+#define textfiles_have_difflines(f1,f2,ed)             WARN_MISS_ARBDIFF()
+#define textfiles_have_difflines_ignoreDates(f1,f2,ed) WARN_MISS_ARBDIFF()
 
 #endif // ARB_DIFF_H
 

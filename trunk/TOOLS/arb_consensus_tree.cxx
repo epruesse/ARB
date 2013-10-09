@@ -465,7 +465,7 @@ void TEST_SLOW_treeIO_stable() {
 #if defined(TREEIO_AUTO_UPDATE)
                         system(GBS_global_string("cp %s %s", outfile, expectedfile));
 #else // !defined(TREEIO_AUTO_UPDATE)
-                        bool exported_as_expected = arb_test::test_textfile_difflines_ignoreDates(expectedfile, outfile, 0);
+                        bool exported_as_expected = arb_test::textfiles_have_difflines_ignoreDates(expectedfile, outfile, 0);
 #if defined(TREEIO_AUTO_UPDATE_IF_EXPORT_DIFFERS)
                         if (!exported_as_expected) {
                             system(GBS_global_string("cp %s %s", outfile, expectedfile));
@@ -518,7 +518,7 @@ void TEST_SLOW_treeIO_stable() {
                             free(cmd);
                         }
 
-                        bool reexported_as_expected = arb_test::test_textfile_difflines(expectedfile, outfile2, 0);
+                        bool reexported_as_expected = arb_test::textfiles_have_difflines(expectedfile, outfile2, 0);
 
 #if defined(TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS)
                         if (!reexported_as_expected) {
