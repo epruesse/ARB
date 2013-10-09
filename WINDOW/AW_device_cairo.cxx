@@ -46,7 +46,6 @@ bool AW_device_cairo::line_impl(int gc, const LineVector& Line, AW_bitset filter
     cairo_line_to(cr, x+width, y+height);
     cairo_stroke(cr);
 
-    AUTO_FLUSH(this);
     return true;
 }
 
@@ -75,7 +74,6 @@ bool AW_device_cairo::draw_string_on_screen(AW_device *device, int gc, const  ch
     cairo_move_to(cr, x, y);
     pango_cairo_show_layout(cr, pl);
 
-    AUTO_FLUSH(device_cairo);
     return true;
 }
 
@@ -143,7 +141,6 @@ bool AW_device_cairo::filled_area_impl(int gc, int npos,
     get_common()->update_cr(cr, gc, false);
     cairo_stroke(cr);
     
-    AUTO_FLUSH(this);
     return true;
 }
 
@@ -198,7 +195,6 @@ bool AW_device_cairo::arc_impl(int gc, bool filled, const AW::Position& center,
     cairo_stroke(cr);
     cairo_restore(cr);
 
-    AUTO_FLUSH(this);
     return true;
 }
 
@@ -240,7 +236,5 @@ void AW_device_cairo::clear_part(const Rectangle& rect, AW_bitset filteri)
                         clippedRect.height() +1);
         
         cairo_fill(cr);
-        
-        AUTO_FLUSH(this);
     }
 }

@@ -85,7 +85,6 @@ void AW_device_gtk::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos
     rect.x = AW_INT(src_x), rect.y = AW_INT(src_y), rect.width=AW_INT(width), rect.height=AW_INT(height);
     gdk_window_move_region(gtk_widget_get_window(prvt->drawingArea), gdk_region_rectangle(&rect),
                            AW_INT(dest_x-src_x), AW_INT(dest_y-src_y));
-    AUTO_FLUSH(this);
 }
 
 AW_DEVICE_TYPE AW_device_gtk::type() { 

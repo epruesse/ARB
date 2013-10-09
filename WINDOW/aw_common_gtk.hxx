@@ -47,7 +47,6 @@ public:
  * identical arguments do not need to be passed repeatedly.
  */
 class AW_GC_gtk : public AW_GC { // derived from Noncopyable
-    cairo_t *cr;
     PangoFontDescription *font_desc;
 
     virtual void wm_set_font(const char* fontname) OVERRIDE;
@@ -64,7 +63,6 @@ public:
 
     inline AW_common_gtk *get_common() const;
 
-    cairo_t* get_cr() const {return cr; }
     PangoFontDescription* get_font() const { return font_desc; }
 };
 

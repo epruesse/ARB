@@ -273,14 +273,6 @@ void AW_device::move_region(AW_pos /*src_x*/, AW_pos /*src_y*/, AW_pos /*width*/
     // empty default
 }
 
-void AW_device::invalidate() {
-    // empty default
-}
-
-void AW_device::flush() {
-    // empty default
-}
-
 static const AW_screen_area& get_universe() {
     // "unrestricted" area
     const int UMIN = INT_MIN/10;

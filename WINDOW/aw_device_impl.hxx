@@ -20,13 +20,6 @@
 #include "aw_clipable.hxx"
 #include "aw_zoomable.hxx"
 
-#if defined(DEBUG) && defined(DEBUG_GRAPHICS)
-// if you want flush() to be called after every motif command :
-#define AUTO_FLUSH(device) (device)->flush()
-#else
-#define AUTO_FLUSH(device)
-#endif
-
 #define AW_INT(x) ((int)(((x)>=0.0) ? ((float)(x)+.5) : ((float)(x)-.5)))
 
 // #define AW_PIXELS_PER_MM 1.0001 // stupid and wrong
@@ -332,9 +325,6 @@ public:
     }
 
     virtual void move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
-
-    virtual void flush(); // empty X11 buffers
-    virtual void invalidate(); // schedule redraw
 };
 
 
