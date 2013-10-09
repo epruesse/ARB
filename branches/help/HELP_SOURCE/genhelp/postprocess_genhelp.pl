@@ -1,4 +1,8 @@
 #!/usr/bin/perl
+#
+# The main intention of this script is to make unchangable help files
+# delivered with some of the integrated software compatible with
+# the arb_hlp2xml help converter.
 
 use strict;
 use warnings;
@@ -11,10 +15,9 @@ sub clustalTopic2Section($) {
   }
   return $line;
 }
-
-sub plus2star($) {
+sub fancyitemind2star($) {
   my ($line) = @_;
-  $line =~ s/^(\s+)\+\s/$1\* /;
+  $line =~ s/^(\s+)[\+\=]\s/$1\* /;
   return $line;
 }
 
@@ -37,12 +40,13 @@ sub main() {
   elsif ($filename =~ /readseq/) {
     push @reg, qr/([\.])(\s)\s+/;
     push @reg, qr/(LINE\s)\s+([0-9]+)/;
-    push @fun, \&plus2star;
+    push @fun, \&fancyitemind2star;
   }
 
   my $titled = 0;
 
   foreach (<STDIN>) {
+    chomp;
     # convert all lines starting at column zero into SECTIONs
     if (s/^([^ \#\n])/SECTION $1/) {
       # convert first SECTION into TITLE
@@ -60,7 +64,7 @@ sub main() {
     foreach my $fn (@fun) {
       $_ = &$fn($_);
     }
-    print $_;
+    print $_."\n";
   }
 }
 main();
