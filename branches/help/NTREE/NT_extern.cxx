@@ -1269,7 +1269,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->sep______________();
 
             awm->insert_menu_topic("dna_2_pro", "Perform translation", "t", "translate_dna_2_pro.hlp", AWM_ALL, AW_POPUP,            (AW_CL)NT_create_dna_2_pro_window, 0);
-            awm->insert_menu_topic("arb_dist",  "Distance matrix",     "D", "dist.hlp",                AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_dist &",               0);
+            awm->insert_menu_topic("arb_dist",  "Distance Matrix + ARB NJ",     "D", "dist.hlp",                AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_dist &",               0);
             awm->sep______________();
 
             awm->insert_menu_topic("seq_quality",   "Check Sequence Quality", "Q", "seq_quality.hlp",   AWM_EXP, AW_POPUP, (AW_CL)SQ_create_seq_quality_window,   (AW_CL)GLOBAL.gb_main);
@@ -1360,7 +1360,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_sub_menu("Build tree from sequence data",    "B");
             {
                 awm->insert_sub_menu("Distance matrix methods", "D");
-                awm->insert_menu_topic("arb_dist",      "ARB Neighbour Joining",     "J", "dist.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
+                awm->insert_menu_topic("arb_dist",      "Distance Matrix + ARB NJ",     "J", "dist.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
                 GDE_load_menu(awm, AWM_ALL, "Phylogeny Distance Matrix");
                 awm->close_sub_menu();
 
@@ -1724,9 +1724,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     awm->at(db_infox, second_uppery);
     awm->button_length(13);
-    awm->help_text("marked_species.hlp");
+    awm->help_text("configuration.hlp");
     awm->callback(NT_popup_configuration_admin, (AW_CL)ntw, 0);
-    awm->create_button("selection_admin", AWAR_MARKED_SPECIES_COUNTER);
+    awm->create_button("selection_admin2", AWAR_MARKED_SPECIES_COUNTER);
     {
         GBDATA *gb_species_data = GBT_get_species_data(GLOBAL.gb_main);
         GB_add_callback(gb_species_data, GB_CB_CHANGED, NT_update_marked_counter, (int*)awm);
