@@ -38,14 +38,6 @@ public:
     PangoFontDescription* get_font(int gc);
 };
 
-/**
- * All drawing operations in GDK take a graphics context (GC) argument.
- * A graphics context encapsulates information about
- * the way things are drawn, such as the foreground color or line width.
- * By using graphics contexts, the number of arguments to each drawing
- * call is greatly reduced, and communication overhead is minimized, since
- * identical arguments do not need to be passed repeatedly.
- */
 class AW_GC_gtk : public AW_GC { // derived from Noncopyable
     PangoFontDescription *font_desc;
 
@@ -65,9 +57,6 @@ public:
 
     PangoFontDescription* get_font() const { return font_desc; }
 };
-
-
-
 
 inline AW_common_gtk *AW_GC_gtk::get_common() const {
     return DOWNCAST(AW_common_gtk*, AW_GC::get_common());
