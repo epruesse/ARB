@@ -20,6 +20,23 @@ sub fancyitemind2star($) {
   $line =~ s/^(\s+)[\+\=]\s/$1\* /;
   return $line;
 }
+sub formatFormatHeadlines($) {
+  my ($line) = @_;
+  if ($line =~ /File\sFormat/o) {
+    $line =~ s/^\s+/  /g;
+  }
+  elsif ($line =~ /Example\s.*\sfile/o) {
+    $line =~ s/^\s+/   /g;
+  }
+  return $line;
+}
+sub readseq_promote_sections($) {
+  my ($line) = @_;
+  if ($line =~ /^\s+\|[\|]+\s+/) {
+    $line = "SECTION $'";
+  }
+  return $line;
+}
 
 sub main() {
   my $args = scalar(@ARGV);
@@ -41,6 +58,10 @@ sub main() {
     push @reg, qr/([\.])(\s)\s+/;
     push @reg, qr/(LINE\s)\s+([0-9]+)/;
     push @fun, \&fancyitemind2star;
+    push @fun, \&readseq_promote_sections;
+    if ($filename =~ /Formats/) {
+      push @fun, \&formatFormatHeadlines;
+    }
   }
 
   my $titled = 0;
