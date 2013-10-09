@@ -59,7 +59,7 @@ AW_rgb AW_common::get_bg_color() const {
 void AW_common::reset_style() {
     std::vector<AW_GC*>::iterator it;
     for(it = prvt->gcmap.begin(); it != prvt->gcmap.end(); it++) {
-        (*it)->reset();
+        if (*it) (*it)->reset();
     }
 }
 
