@@ -324,7 +324,7 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
 
     AW_gc_manager gcmgr = new _AW_gc_manager(gc_base_name, device, base_gc -1, base_drag -1);
 
-    aww->main_drag_gc = base_drag;
+    if (aww) aww->main_drag_gc = base_drag;
 
     char background[50];
     sprintf(background, "-background$%s", default_background_color);
