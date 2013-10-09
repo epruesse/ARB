@@ -76,6 +76,7 @@ arb_diff.o: arb_file.h
 arb_diff.o: arb_match.h
 arb_diff.o: arb_msg.h
 arb_diff.o: arb_string.h
+arb_diff.o: $(ARBHOME)/INCLUDE/arb_str.h
 arb_diff.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_diff.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_diff.o: $(ARBHOME)/INCLUDE/cxxforward.h
