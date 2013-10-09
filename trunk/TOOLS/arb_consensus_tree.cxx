@@ -427,7 +427,7 @@ static const char *findFirstNameContaining(GBT_TREE *tree, const char *part) {
     return found;
 }
 
-void TEST_treeIO_stable() {
+void TEST_SLOW_treeIO_stable() {
     const char *dbname   = "trees/bootstrap_groups.arb";
     const char *treename = "tree_bootstrap_and_groups";
     const char *savename = "bg";
