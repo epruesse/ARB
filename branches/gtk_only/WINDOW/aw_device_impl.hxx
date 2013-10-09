@@ -325,6 +325,8 @@ public:
     }
 
     virtual void move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
+
+    void flush() {};
 };
 
 
