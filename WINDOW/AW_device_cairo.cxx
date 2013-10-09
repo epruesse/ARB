@@ -18,7 +18,12 @@ using namespace AW;
 
 //#define TRACE_DRAWING
 #ifdef TRACE_DRAWING
-#define TRACE(format, ...) printf("%s " format "\n", __func__, ##__VA_ARGS__)
+#define TRACE(format, ...)                              \
+    printf("%s " format "\n", __func__, ##__VA_ARGS__); \
+    usleep(10000)
+#define cairo_stroke for (int i=0; i<1000; i++) cairo_stroke
+#define pango_cairo_show_layout for (int i=0; i<1000; i++) pango_cairo_show_layout
+
 #else
 #define TRACE(format, ...)
 #endif
