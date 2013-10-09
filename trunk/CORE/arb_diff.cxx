@@ -25,6 +25,7 @@
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
+#include <arb_str.h>
 
 // ARB_textfiles_have_difflines + ARB_files_are_equal are helper functions used by unit tests.
 
@@ -225,6 +226,10 @@ public:
 
 bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode) {
     // special_mode: 0 = none, 1 = accept date and time changes as equal
+    //
+    // Warning: also returns true if comparing two EQUAL binary files.
+    //          But it always fails if one file is binary and files differ
+
     const char *error   = NULL;
 
     if      (!GB_is_regularfile(file1)) error = GBS_global_string("No such file '%s'", file1);
@@ -242,7 +247,7 @@ bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expe
 
             TEST_EXPECT_NO_ERROR(mode.get_error());
 
-            while (!feof(diffout)) {
+            while (!error && !feof(diffout)) {
                 char *line = fgets(buffer, BUFSIZE, diffout);
                 if (!line) break;
 
@@ -251,33 +256,42 @@ bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expe
                 arb_assert(line && len<(BUFSIZE-1)); // increase BUFSIZE
 #endif
 
-                bool remove_now = true;
-                if (strncmp(line, "@@", 2) == 0) inHunk = true;
-                else if (!inHunk && strncmp(line, "Index: ", 7) == 0) inHunk = false;
-                else if (inHunk) {
-                    remove_now = !diff_lines.add(line);
+                if (ARB_strBeginsWith(line, "Binary files")) {
+                    if (strstr(line, "differ")) {
+                        error = "attempt to compare binary files";
+                    }
+                }
+                else {
+                    bool remove_now = true;
+                    if (strncmp(line, "@@", 2) == 0) inHunk = true;
+                    else if (!inHunk && strncmp(line, "Index: ", 7) == 0) inHunk = false;
+                    else if (inHunk) {
+                        remove_now = !diff_lines.add(line);
+                    }
+
+                    if (remove_now) diff_lines.remove_accepted_lines(mode);
+                }
+            }
+
+            if (!error) {
+                diff_lines.remove_accepted_lines(mode);
+
+                int added   = diff_lines.added();
+                int deleted = diff_lines.deleted();
+
+                if (added != deleted) {
+                    error = GBS_global_string("added lines (=%i) differ from deleted lines(=%i)", added, deleted);
+                }
+                else if (added != expected_difflines) {
+                    error = GBS_global_string("files differ in %i lines (expected=%i)", added, expected_difflines);
                 }
 
-                if (remove_now) diff_lines.remove_accepted_lines(mode);
+                if (error) {
+                    fputs("Different lines:\n", stdout);
+                    diff_lines.print(stdout);
+                    fputc('\n', stdout);
+                }
             }
-
-            diff_lines.remove_accepted_lines(mode);
-
-            int added   = diff_lines.added();
-            int deleted = diff_lines.deleted();
-
-            if (added != deleted) {
-                error = GBS_global_string("added lines (=%i) differ from deleted lines(=%i)", added, deleted);
-            }
-            else if (added != expected_difflines) {
-                error = GBS_global_string("files differ in %i lines (expected=%i)", added, expected_difflines);
-            }
-            if (error) {
-                fputs("Different lines:\n", stdout);
-                diff_lines.print(stdout);
-                fputc('\n', stdout);
-            }
-
             free(buffer);
             IF_ASSERTION_USED(int err =) pclose(diffout);
             arb_assert(err != -1);
@@ -403,19 +417,21 @@ void TEST_diff_files() {
     const char *text    = file;
 
     // diff between text and binary should fail
-    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(text,    binary,  0, 0));
-    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary,  text,    0, 0));
-    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary2, text,    0, 0));
-    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(text,    binary2, 0, 0));
+    TEST_REJECT(ARB_textfiles_have_difflines(text,    binary,  0, 0));
+    TEST_REJECT(ARB_textfiles_have_difflines(binary,  text,    0, 0));
+    TEST_REJECT(ARB_textfiles_have_difflines(binary2, text,    0, 0));
+    TEST_REJECT(ARB_textfiles_have_difflines(text,    binary2, 0, 0));
 
     // diff between two binaries shall fails as well ..
-    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary,  binary2, 0, 0));
-    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary2, binary,  0, 0));
+    TEST_REJECT(ARB_textfiles_have_difflines(binary,  binary2, 0, 0));
+    TEST_REJECT(ARB_textfiles_have_difflines(binary2, binary,  0, 0));
 
-    // .. even if files are identical
-    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary,  binary,  0, 0));
-    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary2, binary2, 0, 0));
-    TEST_EXPECT        (ARB_textfiles_have_difflines(text,    text,    0, 0));
+    // when files do not differ, ARB_textfiles_have_difflines always
+    // returns true - even if the files are binary
+    // (unwanted but accepted behavior)
+    TEST_EXPECT(ARB_textfiles_have_difflines(binary,  binary,  0, 0));
+    TEST_EXPECT(ARB_textfiles_have_difflines(binary2, binary2, 0, 0));
+    TEST_EXPECT(ARB_textfiles_have_difflines(text,    text,    0, 0));
 }
 
 // --------------------------------------------------------------------------------
