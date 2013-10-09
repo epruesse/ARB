@@ -378,6 +378,7 @@ bool ARB_files_are_equal(const char *file1, const char *file2) {
 }
 
 void TEST_diff_files() {
+    // files are in ../UNIT_TESTER/run/diff
     const char *file              = "diff/base.input";
     const char *file_swapped      = "diff/swapped.input";
     const char *file_date_swapped = "diff/date_swapped.input";
@@ -397,6 +398,24 @@ void TEST_diff_files() {
     TEST_EXPECT(ARB_textfiles_have_difflines(file_date_swapped, file_date_changed, 6, 0));
     TEST_EXPECT(ARB_textfiles_have_difflines(file_date_swapped, file_date_changed, 0, 1));
 
+    const char *binary  = "TEST_gpt.arb";             // a binary arb DB
+    const char *binary2 = "TEST_gpt.arb.pt.expected"; // a ptserver index
+    const char *text    = file;
+
+    // diff between text and binary should fail
+    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(text,    binary,  0, 0));
+    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary,  text,    0, 0));
+    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary2, text,    0, 0));
+    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(text,    binary2, 0, 0));
+
+    // diff between two binaries shall fails as well ..
+    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary,  binary2, 0, 0));
+    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary2, binary,  0, 0));
+
+    // .. even if files are identical
+    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary,  binary,  0, 0));
+    TEST_REJECT__BROKEN(ARB_textfiles_have_difflines(binary2, binary2, 0, 0));
+    TEST_EXPECT        (ARB_textfiles_have_difflines(text,    text,    0, 0));
 }
 
 // --------------------------------------------------------------------------------
