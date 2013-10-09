@@ -16,6 +16,13 @@
 
 using namespace AW;
 
+//#define TRACE_DRAWING
+#ifdef TRACE_DRAWING
+#define TRACE(format, ...) printf("%s " format "\n", __func__, ##__VA_ARGS__)
+#else
+#define TRACE(format, ...)
+#endif
+
 AW_device_cairo::AW_device_cairo(AW_common *awc) : AW_device(awc) {}
 AW_device_cairo::~AW_device_cairo() {};
 
@@ -46,6 +53,8 @@ bool AW_device_cairo::line_impl(int gc, const LineVector& Line, AW_bitset filter
     cairo_line_to(cr, x+width, y+height);
     cairo_stroke(cr);
 
+    TRACE("%i %i %i %i", (int)x, (int)y, (int)width, (int)height);
+
     return true;
 }
 
@@ -73,6 +82,8 @@ bool AW_device_cairo::draw_string_on_screen(AW_device *device, int gc, const  ch
 
     cairo_move_to(cr, x, y);
     pango_cairo_show_layout(cr, pl);
+
+    TRACE("%i %i %s", (int)x, (int)y, str+start);
 
     return true;
 }
@@ -109,6 +120,8 @@ bool AW_device_cairo::box_impl(int gc, bool filled, const Rectangle& rect, AW_bi
     else {
         cairo_stroke(cr);
     }
+
+    TRACE("%i %i %i %i %s", (int)x, (int)y, (int)width, (int)height, filled?"filled":"");
 
     return true;
 }
@@ -214,6 +227,7 @@ void AW_device_cairo::clear(AW_bitset filteri)
     cairo_set_source_rgb(cr, col.r(), col.g(), col.b());
 
     cairo_paint(cr);
+    TRACE("");
 }
 
 void AW_device_cairo::clear_part(const Rectangle& rect, AW_bitset filteri) 
@@ -236,5 +250,10 @@ void AW_device_cairo::clear_part(const Rectangle& rect, AW_bitset filteri)
                         clippedRect.height() +1);
         
         cairo_fill(cr);
+        TRACE("%i %i %i %i",  
+              (int)clippedRect.left(),
+              (int)clippedRect.top(),
+              (int)clippedRect.width() + 1,
+              (int)clippedRect.height() +1 );
     }
 }
