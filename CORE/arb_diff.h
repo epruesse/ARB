@@ -17,9 +17,9 @@
 #include <cstdlib>
 #endif
 
-bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
-size_t GB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common);
-bool GB_test_files_equal(const char *file1, const char *file2);
+bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
+size_t ARB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common, size_t blockStartAddress);
+bool ARB_files_are_equal(const char *file1, const char *file2);
 
 #else
 #error arb_diff.h included twice

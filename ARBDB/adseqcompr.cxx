@@ -390,7 +390,7 @@ arb_test::match_expectation put_read_num_using_bytes(int num_written, int bytes_
         expected.add(that(bytes_written).is_equal_to(bytes_expected));
 
         if (buffer_expected) {
-            expected.add(that(arb_test::test_mem_equal(buffer, buffer_expected, bytes_expected)).is_equal_to(true));
+            expected.add(that(arb_test::memory_is_equal(buffer, buffer_expected, bytes_expected)).is_equal_to(true));
         }
     }
     {
