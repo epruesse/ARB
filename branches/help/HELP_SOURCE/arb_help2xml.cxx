@@ -233,6 +233,7 @@ public:
           number(num)
     {
         h2x_assert(type == ENUMERATED);
+        h2x_assert(num>0);
     }
 
 
@@ -406,6 +407,8 @@ inline bool is_startof_itemlist_element(const char *contentStart) {
           contentStart[2] == '-');
 }
 
+#define MAX_ALLOWED_ENUM 99 // otherwise it start interpreting years as enums 
+
 static bool startsWithNumber(string& s, unsigned& number, bool do_erase) {
     // tests if first line starts with 'number.'
     // if true then the number is removed from the string
@@ -420,6 +423,7 @@ static bool startsWithNumber(string& s, unsigned& number, bool do_erase) {
     for (; isdigit(s[off]); ++off) {
         number = number*10 + (s[off]-'0');
     }
+    if (number>MAX_ALLOWED_ENUM) return false;
 
     if (s[off] != '.' && s[off] != ')') return false;
     if (s[off+1] != ' ') return false;
@@ -487,6 +491,10 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
 
                         type = ENUMERATED;
                         num  = foundNum;
+
+                        if (!num) {
+                            throw "Enumerations starting with zero are not supported";
+                        }
                     }
                 }
             }
@@ -835,8 +843,7 @@ public:
     ParagraphType get_type() const { return otext.get_type(); }
 
     bool is_itemlist_member() const { return get_type() == ITEM; }
-    bool is_enumerated() const { return get_type() == ENUMERATED; }
-    bool is_list_member() const { return get_type() != PLAIN_TEXT; }
+    unsigned get_enumeration() const { return get_type() == ENUMERATED ? otext.get_number() : 0; }
 
     const char *readable_type() const {
         const char *res = NULL;
@@ -951,20 +958,30 @@ public:
     }
 
     ParagraphTree *firstListMember() {
-        if (is_list_member()) return this;
+        switch (get_type()) {
+            case PLAIN_TEXT: break;
+            case ITEM: return this;
+            case ENUMERATED: {
+                if (get_enumeration() == 1) return this;
+                break;
+            }
+        }
         if (brother) return brother->firstListMember();
         return NULL;
     }
 
-    ParagraphTree *findListMember(ParagraphType t, int ind) {
-        if (indentation<ind) return NULL;
-        if (indentation == ind) {
-            if (get_type() == t) return this;
+    ParagraphTree *nextListMemberAfter(const ParagraphTree& previous) {
+        if (indentation<previous.indentation) return NULL;
+        if (indentation == previous.indentation && get_type() == previous.get_type()) {
+            if (get_type() != ENUMERATED) return this;
+            if (get_enumeration() > previous.get_enumeration()) return this;
+            return NULL;
         }
-        return brother ? brother->findListMember(t, ind) : NULL;
+        if (!brother) return NULL;
+        return brother->nextListMemberAfter(previous);
     }
-    ParagraphTree *nextListMember(ParagraphType t, int ind) {
-        return brother ? brother->findListMember(t, ind) : NULL;
+    ParagraphTree *nextListMember() const {
+        return brother ? brother->nextListMemberAfter(*this) : NULL;
     }
 
     ParagraphTree* firstWithLessIndentThan(int wanted_indentation) {
@@ -1045,12 +1062,9 @@ void ParagraphTree::format_lists() {
             if (curr->son) curr->son->format_lists();
         }
 
-        ParagraphType list_type        = member->get_type();
-        unsigned      list_indentation = member->indentation;
-
-        for (ParagraphTree *next = member->nextListMember(list_type, list_indentation);
+        for (ParagraphTree *next = member->nextListMember();
              next;
-             member = next, next = member->nextListMember(list_type, list_indentation))
+             member = next, next = member->nextListMember())
         {
             member->brothers_to_sons(next);
             h2x_assert(member->brother == next);
@@ -1263,7 +1277,7 @@ ParagraphTree *ParagraphTree::xml_write_list_contents() {
     return brother;
 }
 ParagraphTree *ParagraphTree::xml_write_enum_contents() {
-    h2x_assert(is_enumerated());
+    h2x_assert(get_enumeration());
 #if defined(WARN_FIXED_LAYOUT_LIST_ELEMENTS)
     if (!reflow) add_warning(make_paragraph_message("ENUMERATED not reflown (check output)"));
 #endif
@@ -1273,7 +1287,12 @@ ParagraphTree *ParagraphTree::xml_write_enum_contents() {
         xml_write_textblock();
         if (son) son->xml_write();
     }
-    if (brother && brother->is_enumerated()) {
+    if (brother && brother->get_enumeration()) {
+        int diff = brother->get_enumeration()-get_enumeration();
+        if (diff != 1) {
+            add_warning(make_paragraph_message("Non-consecutive enumeration detected between here.."));
+            add_warning(brother->make_paragraph_message(".. and here"));
+        }
         return brother->xml_write_enum_contents();
     }
     return brother;
@@ -1282,8 +1301,11 @@ ParagraphTree *ParagraphTree::xml_write_enum_contents() {
 void ParagraphTree::xml_write() {
     try {
         ParagraphTree *next = NULL;
-        if (is_enumerated()) {
+        if (get_enumeration()) {
             XML_Tag enu("ENUM");
+            if (get_enumeration() != 1) {
+                add_warning(make_paragraph_message(strf("First enum starts with '%u.' (maybe previous enum was not detected)", get_enumeration())));
+            }
             next = xml_write_enum_contents();
         }
         else if (is_itemlist_member()) {
