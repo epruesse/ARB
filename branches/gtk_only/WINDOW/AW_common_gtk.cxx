@@ -84,8 +84,6 @@ void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
         default:
           aw_assert(false);
     }
-
-    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE); 
 }
 
 PangoFontDescription* AW_common_gtk::get_font(int gc) { 

@@ -73,7 +73,6 @@ bool AW_device_cairo::draw_string_on_screen(AW_device *device, int gc, const  ch
     AW_pos y      = AW_INT(Y - base -1) + 0.5;
 
     cairo_move_to(cr, x, y);
-    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     pango_cairo_show_layout(cr, pl);
 
     AUTO_FLUSH(device_cairo);
@@ -107,11 +106,9 @@ bool AW_device_cairo::box_impl(int gc, bool filled, const Rectangle& rect, AW_bi
 
     if (filled) {
         get_common()->update_cr(cr, gc, true);
-        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
         cairo_fill_preserve(cr);
     }
     else {
-        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
         cairo_stroke(cr);
     }
 
@@ -142,9 +139,7 @@ bool AW_device_cairo::filled_area_impl(int gc, int npos,
     }
     cairo_close_path(cr); // draw line to first point
     get_common()->update_cr(cr, gc, true);
-    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     cairo_fill_preserve(cr);
-    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
     get_common()->update_cr(cr, gc, false);
     cairo_stroke(cr);
     
@@ -197,10 +192,8 @@ bool AW_device_cairo::arc_impl(int gc, bool filled, const AW::Position& center,
 
     if (filled) {
         get_common()->update_cr(cr, gc, true);
-        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
         cairo_fill_preserve(cr);
         get_common()->update_cr(cr, gc, false);
-        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
     }
     cairo_stroke(cr);
     cairo_restore(cr);
