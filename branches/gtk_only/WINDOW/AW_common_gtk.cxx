@@ -102,6 +102,7 @@ AW_GC_gtk::AW_GC_gtk(AW_common *aw_common)
 AW_GC_gtk::~AW_GC_gtk(){};
 
 void AW_GC_gtk::wm_set_font(const char* font_name) {
+    if (font_desc) pango_font_description_free(font_desc);
     font_desc = pango_font_description_from_string(font_name);
 
     // now determine char sizes; get the font structure first:
