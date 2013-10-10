@@ -282,20 +282,6 @@ public:
 
 typedef list<Ostring> Ostrings;
 
-class Section {
-    SectionType type;
-    Ostrings    content;
-
-public:
-    Section(SectionType type_) : type(type_) {}
-
-    const Ostrings& Content() const { return content; }
-    Ostrings& Content() { return content; }
-
-    SectionType get_type() const { return type; }
-};
-
-
 #if defined(WARN_MISSING_HELP)
 static void check_TODO(const char *line, const Reader& reader) {
     if (strstr(line, "@@@") != NULL || strstr(line, "TODO") != NULL) {
@@ -307,29 +293,33 @@ inline void check_TODO(const char *, const Reader&) { }
 #endif // WARN_MISSING_HELP
 
 // ----------------------------
-//      class NamedSection
+//      class Section
 
-class NamedSection : public MessageAttachable, public Section {
-    string name;
-    size_t lineno;
+class Section : public MessageAttachable {
+    SectionType type;
+    string      name;
+    Ostrings    content;
+    size_t      lineno;
 
     string location_description() const OVERRIDE { return string("in SECTION '")+name+"'"; }
 
 public:
-    NamedSection(const string& name_, const Section& section_, size_t lineno_)
-        : Section(section_),
+    Section(string name_, SectionType type_, size_t lineno_)
+        : type(type_),
           name(name_),
           lineno(lineno_)
     {}
-    virtual ~NamedSection() {}
+    virtual ~Section() {}
 
-    const string& getName() const { return name; }
+    const Ostrings& Content() const { return content; }
+    Ostrings& Content() { return content; }
+    SectionType get_type() const { return type; }
     size_t line_number() const OVERRIDE { return lineno; }
-
+    const string& getName() const { return name; }
     void setName(const string& name_) { name = name_; }
 };
 
-typedef list<NamedSection> NamedSections;
+typedef list<Section> SectionList;
 
 // --------------------
 //      class Link
@@ -355,15 +345,15 @@ typedef list<Link> Links;
 
 class Helpfile {
 private:
-    Links         uplinks;
-    Links         references;
-    Links         auto_references;
-    Section       title;
-    NamedSections sections;
-    string        inputfile;
+    Links       uplinks;
+    Links       references;
+    Links       auto_references;
+    Section     title;
+    SectionList sections;
+    string      inputfile;
 
 public:
-    Helpfile() : title(SEC_FAKE) {}
+    Helpfile() : title("TITLE", SEC_FAKE, NO_LINENUMBER_INFO) {}
     virtual ~Helpfile() {}
 
     void readHelp(istream& in, const string& filename);
@@ -560,13 +550,13 @@ inline void check_duplicates(const string& link, const Links& uplinks, const Lin
     check_specific_duplicates(link, references, add_warnings);
 }
 
-static void warnAboutDuplicate(NamedSections& sections) {
+static void warnAboutDuplicate(SectionList& sections) {
     set<string> seen;
-    NamedSections::iterator end = sections.end();
-    for (NamedSections::iterator s = sections.begin(); s != end; ++s) {
+    SectionList::iterator end = sections.end();
+    for (SectionList::iterator s = sections.begin(); s != end; ++s) {
         const string& sname = s->getName();
 
-        NamedSections::iterator o = s; ++o;
+        SectionList::iterator o = s; ++o;
         for (; o != end; ++o) {
             if (sname == o->getName()) {
                 o->attach_warning("duplicated SECTION name");
@@ -628,7 +618,6 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                 }
                 else if (keyword == "TITLE") {
                     rest = eatWhite(rest);
-                    // parseSection(title, rest, rest-line, read);
                     parseSection(title, rest, 0, read);
 
                     if (title.Content().empty()) throw "empty TITLE not allowed";
@@ -659,17 +648,15 @@ void Helpfile::readHelp(istream& in, const string& filename) {
 
                     if (stype == SEC_SECTION) {
                         string  section_name = eatWhite(rest);
-                        Section sec(stype);
-
+                        Section sec(section_name, stype, lineno);
                         parseSection(sec, "", 0, read);
-                        sections.push_back(NamedSection(section_name, sec, lineno));
+                        sections.push_back(sec);
                     }
                     else {
-                        Section sec(stype);
-
+                        Section sec(keyword, stype, lineno);
                         rest = eatWhite(rest);
                         parseSection(sec, rest, rest-line, read);
-                        sections.push_back(NamedSection(keyword, sec, lineno));
+                        sections.push_back(sec);
                     }
                 }
             }
@@ -950,10 +937,10 @@ private:
         return new ParagraphTree(begin, end);
     }
 public:
-    static ParagraphTree* buildParagraphTree(const NamedSection& N) {
-        const Ostrings& S = N.Content();
-        if (S.empty()) throw "attempt to build an empty ParagraphTree";
-        return buildParagraphTree(S.begin(), S.end());
+    static ParagraphTree* buildParagraphTree(const Section& sec) {
+        const Ostrings& txt = sec.Content();
+        if (txt.empty()) throw "attempt to build an empty ParagraphTree";
+        return buildParagraphTree(txt.begin(), txt.end());
     }
 
     bool contains(ParagraphTree *that) {
@@ -1411,18 +1398,18 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
         }
     }
 
-    for (NamedSections::const_iterator named_sec = sections.begin(); named_sec != sections.end(); ++named_sec) {
+    for (SectionList::const_iterator sec = sections.begin(); sec != sections.end(); ++sec) {
         try {
             XML_Tag section_tag("SECTION");
-            section_tag.add_attribute("name", named_sec->getName());
+            section_tag.add_attribute("name", sec->getName());
 
-            ParagraphTree *ptree = ParagraphTree::buildParagraphTree(*named_sec);
+            ParagraphTree *ptree = ParagraphTree::buildParagraphTree(*sec);
 
 #if defined(DEBUG)
             size_t textnodes = ptree->countTextNodes();
 #endif
 #if defined(DUMP_PARAGRAPHS)
-            cout << "Dump of section '" << named_sec->getName() << "' (before format_lists):\n";
+            cout << "Dump of section '" << sec->getName() << "' (before format_lists):\n";
             ptree->dump(cout);
             cout << "----------------------------------------\n";
 #endif
@@ -1430,7 +1417,7 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
             ptree->format_lists();
 
 #if defined(DUMP_PARAGRAPHS)
-            cout << "Dump of section '" << named_sec->getName() << "' (after format_lists):\n";
+            cout << "Dump of section '" << sec->getName() << "' (after format_lists):\n";
             ptree->dump(cout);
             cout << "----------------------------------------\n";
 #endif
@@ -1442,7 +1429,7 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
             ptree->format_indentations();
 
 #if defined(DUMP_PARAGRAPHS)
-            cout << "Dump of section '" << named_sec->getName() << "' (after format_indentations):\n";
+            cout << "Dump of section '" << sec->getName() << "' (after format_indentations):\n";
             ptree->dump(cout);
             cout << "----------------------------------------\n";
 #endif
@@ -1455,15 +1442,15 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
 
             delete ptree;
         }
-        catch (string& err)     { throw named_sec->attached_message(err); }
-        catch (const char *err) { throw named_sec->attached_message(err); }
+        catch (string& err)     { throw sec->attached_message(err); }
+        catch (const char *err) { throw sec->attached_message(err); }
     }
 }
 
 void Helpfile::extractInternalLinks() {
-    for (NamedSections::const_iterator named_sec = sections.begin(); named_sec != sections.end(); ++named_sec) {
+    for (SectionList::const_iterator sec = sections.begin(); sec != sections.end(); ++sec) {
         try {
-            const Ostrings& s = named_sec->Content();
+            const Ostrings& s = sec->Content();
 
             for (Ostrings::const_iterator li = s.begin(); li != s.end(); ++li) {
                 const string& line = *li;
@@ -1489,7 +1476,7 @@ void Helpfile::extractInternalLinks() {
                             check_specific_duplicates(link_target, auto_references, false); // check only sublinks here
 
                             // only auto-add inline reference if none of the above checks has thrown
-                            auto_references.push_back(Link(link_target, named_sec->line_number()));
+                            auto_references.push_back(Link(link_target, sec->line_number()));
                         }
                         catch (string& err) {
                             ; // silently ignore inlined
@@ -1500,7 +1487,7 @@ void Helpfile::extractInternalLinks() {
             }
         }
         catch (string& err) {
-            throw named_sec->attached_message("'"+err+"' while scanning LINK{}");
+            throw sec->attached_message("'"+err+"' while scanning LINK{}");
         }
     }
 }
@@ -1626,7 +1613,7 @@ static arb_test::match_expectation help_file_compiles(const char *helpfile, cons
     else {
         expected.add(that(error).is_equal_to_NULL());
         if (!error) {
-            Section title = help.get_title();
+            Section         title         = help.get_title();
             const Ostrings& title_strings = title.Content();
 
             expected.add(that(title_strings.front().as_string()).is_equal_to(expected_title));
