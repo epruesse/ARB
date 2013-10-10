@@ -1703,4 +1703,46 @@ void TEST_hlp2xml_output() {
     }
 }
 
+void TEST_protect_help_vs_changes() { // should normally be disabled
+    // fails if help changes compared to another checkout
+    // or just updates the diff w/o failing (if you comment out the last line)
+    //
+    // if the patch is hugo and you load it into xemacs
+    // you might want to (turn-on-lazy-shot)
+    //
+    // patch-pointer: ../UNIT_TESTER/run/help_changes.patch
+
+    bool do_help = true;
+    bool do_html = true;
+
+    const char *ref_WC = "ARB.help.ref";
+
+    // ---------------------------------------- config above
+
+    string this_base = "../..";
+    string ref_base  = this_base+"/../"+ref_WC;
+    string to_help   = "/lib/help";
+    string to_html   = "/lib/help_html";
+    string diff_help = "diff -u "+ref_base+to_help+" "+this_base+to_help;
+    string diff_html = "diff -u "+ref_base+to_html+" "+this_base+to_html;
+
+    string update_cmd;
+
+    if (do_help) {
+        if (do_html) update_cmd = string("(")+diff_help+";"+diff_html+")";
+        else update_cmd = diff_help;
+    }
+    else if (do_html) update_cmd = diff_html;
+
+    string patch = "help_changes.patch";
+    update_cmd += " >"+patch+" ||true";
+
+    int    expected_lines     = do_html+do_help;
+    string fail_on_change_cmd = strf("test \"`cat %s | grep -v 'GDEHELP' | wc -l`\" = \"%i\" || ( echo \"Error: Help changed\"; false)",
+                                     patch.c_str(), expected_lines);
+
+    TEST_EXPECT_NO_ERROR(GBK_system(update_cmd.c_str()));
+    TEST_EXPECT_NO_ERROR(GBK_system(fail_on_change_cmd.c_str()));
+}
+
 #endif // UNIT_TESTS
