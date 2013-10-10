@@ -239,9 +239,20 @@ void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window
 }
 
 
+static const char* AW_area_labels[] = {
+    "info_area",
+    "middle_area",
+    "bottom_area"
+};
+
 AW_area_management::AW_area_management(AW_window* window, AW_area area, GtkWidget* widget) 
     : prvt(new AW_area_management::Pimpl(this, window, area, widget)) 
 {
+    aw_assert(area >= 0 && area < AW_MAX_AREA);
+    
+    // assign name to this area (useful for styling and debugging)
+    gtk_widget_set_name(widget, AW_area_labels[area]);
+
     gtk_widget_add_events(prvt->widget, 
                           GDK_BUTTON_RELEASE_MASK | 
                           GDK_BUTTON_PRESS_MASK | 

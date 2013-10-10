@@ -47,7 +47,7 @@ static void aw_at_layout_class_init(AwAtLayoutClass *klass) {
     g_type_class_add_private(G_OBJECT_CLASS (klass), sizeof(AwAtLayoutPrivate));
 }
 
-static void aw_at_layout_init(AwAtLayout *) {
+static void aw_at_layout_init(AwAtLayout *self) {
 }
 
 GtkWidget *aw_at_layout_new() {

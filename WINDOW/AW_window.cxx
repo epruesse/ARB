@@ -305,6 +305,8 @@ void AW_window::put_with_label(GtkWidget *widget, GtkAlignment* label_alignment)
     
     // (having/not having the hbox changes appearance!)
     hbox = gtk_hbox_new(false,0);
+    if (_at.at_id) gtk_widget_set_name(hbox, _at.at_id);
+
     if (wlabel) {
         // pack label into alignment and alignment into hbox
         gtk_container_add(GTK_CONTAINER(label_alignment), wlabel);
@@ -1394,7 +1396,12 @@ void AW_window::init_window(const char *window_name_, const char* window_title,
     }
 #endif
 
-    
+    // assign name to window (for styling and debugging)
+    // scheme is "<main>/<window>", i.e. "ARB_NT/ARB_NT" or "ARB_NT/SEARCH_AND_QUERY"
+    const char* name = GBS_global_string("%s/%s", get_root()->root_window->window_defaults_name, 
+                      window_defaults_name);
+    gtk_widget_set_name(GTK_WIDGET(prvt->window), name);
+
     // try setting a window icon 
     GtkIconTheme *theme = gtk_icon_theme_get_default();
     const char* icon_name = NULL;
