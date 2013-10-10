@@ -21,8 +21,10 @@
 
 AW_at::AW_at(AW_window* pWindow) {
     memset((char*)this, 0, sizeof(AW_at));
-    
+
     aw_assert(NULL != pWindow);
+
+    at_id = NULL;
     window = pWindow;
     xfig_data = NULL;
     
@@ -83,9 +85,11 @@ void AW_at::set_mask(AW_active mask) {
     widget_mask = mask;
 }
 
-void AW_at::at(const char *at_id) {
+void AW_at::at(const char *at_id_) {
     char to_position[100];
     memset(to_position, 0, sizeof(to_position));
+
+    freedup(at_id, at_id_);
 
     attach_y   = attach_x = false;
     attach_ly  = attach_lx = false;
@@ -238,6 +242,7 @@ void AW_at::unset_at_commands() {
     to_position_exists    = false;
     highlight             = false;
 
+    freenull(at_id);
     freenull(helptext_for_next_button);
     freenull(label_for_inputfield);
 

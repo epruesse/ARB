@@ -50,6 +50,7 @@ enum AW_area {
     AW_MIDDLE_AREA,
     AW_BOTTOM_AREA,
     AW_MAX_AREA
+    // make sure matching labels exist in AW_area_management.cxx in AW_area_labels
 };
 
 AW_default get_AW_ROOT_DEFAULT();
