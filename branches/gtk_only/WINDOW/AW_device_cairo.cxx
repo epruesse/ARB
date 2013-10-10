@@ -20,9 +20,10 @@ using namespace AW;
 #ifdef TRACE_DRAWING
 #define TRACE(format, ...)                              \
     printf("%s " format "\n", __func__, ##__VA_ARGS__); \
-    usleep(10000)
+    usleep(5000)
 #define cairo_stroke for (int i=0; i<1000; i++) cairo_stroke
 #define pango_cairo_show_layout for (int i=0; i<1000; i++) pango_cairo_show_layout
+#define cairo_fill_preserve for (int i=0; i<1000; i++) cairo_fill_preserve
 
 #else
 #define TRACE(format, ...)
@@ -120,7 +121,7 @@ bool AW_device_cairo::box_impl(int gc, bool filled, const Rectangle& rect, AW_bi
 
     if (filled) {
         get_common()->update_cr(cr, gc, true);
-        cairo_fill_preserve(cr);
+        cairo_fill(cr);
     }
     else {
         cairo_stroke(cr);
@@ -199,6 +200,7 @@ bool AW_device_cairo::arc_impl(int gc, bool filled, const AW::Position& center,
     // cairo_arc draws in direction of increasing angle
     // switch angle1/2 if we want to draw in the other direction as
     // indicated by negative arc_degrees
+    cairo_new_path(cr);
     if (arc_degrees > 0) {
         cairo_arc(cr, 0., 0., 1., angle1, angle2);
     } else {

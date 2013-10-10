@@ -50,18 +50,30 @@ AW_device_gtk::AW_device_gtk(AW_common *commoni, GtkWidget *gtk_drawingArea) :
     aw_assert(gtk_drawingArea != NULL);
     aw_assert(commoni != NULL);
     gtk_widget_set_app_paintable(gtk_drawingArea, true);
+    //gtk_widget_set_double_buffered(gtk_drawingArea, false);
 }
 
 AW_device_gtk::~AW_device_gtk() {
     delete prvt;
 }
 
+void AW_device_gtk::set_cr(cairo_t* cr) {
+    if (prvt->cr)
+        cairo_destroy(prvt->cr);
+    prvt->cr = cr;
+}
+
 cairo_t* AW_device_gtk::get_cr(int gc) {
+    /*
     // destroy old cr
     if (prvt->cr)
         cairo_destroy(prvt->cr);
     // create new one
     prvt->cr = gdk_cairo_create(gtk_widget_get_window(prvt->drawingArea));
+    */
+    if (!prvt->cr) 
+        set_cr(gdk_cairo_create(gtk_widget_get_window(prvt->drawingArea)));
+
     // update with settings from gc
     get_common()->update_cr(prvt->cr, gc, false);
     return prvt->cr;

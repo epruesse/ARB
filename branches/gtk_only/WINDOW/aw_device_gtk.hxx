@@ -39,4 +39,6 @@ public:
     
     void queue_draw() OVERRIDE;
     void queue_draw(const AW_screen_area&) OVERRIDE;
+
+    void set_cr(cairo_t*);
 };
