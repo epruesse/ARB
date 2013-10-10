@@ -106,8 +106,9 @@ extern "C" gboolean aw_handle_configure_event(GtkWidget *, GdkEventConfigure *ev
     aww->event.height = event->height;
 
     area->prvt->common->set_screen_size(event->width, event->height);
-    DUMP_EVENT("resize");
+    area->prvt->screen_device->set_cr(0);
     area->resize.emit();
+    DUMP_EVENT("resize");
     return true; // event handled
 }
     
@@ -121,8 +122,10 @@ extern "C" gboolean aw_handle_expose_event(GtkWidget *, GdkEventExpose *event, g
     aww->event.width       = event->area.width;
     aww->event.height      = event->area.height;
 
-    DUMP_EVENT("expose");
+    area->prvt->screen_device->set_cr(0);
     area->expose.emit();
+    area->prvt->screen_device->set_cr(0);
+    DUMP_EVENT("expose");
     return false;
 }
    
@@ -137,8 +140,8 @@ extern "C" gboolean aw_handle_button_event(GtkWidget *, GdkEventButton *event, g
     aww->event.y           = event->y; 
     aww->event.keymodifier = (AW_key_mod) event->state;
 
-    DUMP_EVENT("input/button");
     area->input.emit();
+    DUMP_EVENT("input/button");
     return false;
 }
 
@@ -159,8 +162,8 @@ extern "C" gboolean aw_handle_key_event(GtkWidget *, GdkEventKey *event, gpointe
         aww->event.keycode = AW_KEY_ASCII;
     }
  
-    DUMP_EVENT("input/key");
     area->input.emit();
+    DUMP_EVENT("input/key");
     return true;
 }
 
@@ -184,10 +187,9 @@ extern "C" gboolean aw_handle_motion_event(GtkWidget *, GdkEventMotion *event, g
         return false;
     }
   
-    DUMP_EVENT("motion");
     area->expose.emit(); // work around for XOR drawing
     area->motion.emit();
-
+    DUMP_EVENT("motion");
     // done processing, allow receiving next motion event:
     gdk_event_request_motions(event);
     return true;
@@ -210,9 +212,9 @@ extern "C" gboolean aw_handle_scroll_event(GtkWidget*, GdkEventScroll *event, gp
         aww->event.button = AW_WHEEL_DOWN;
     }
 
-    DUMP_EVENT("input/scroll");
     if (aww->event.button) {
         area->input.emit();
+        DUMP_EVENT("input/scroll");
         return true;
     }
     return false;
