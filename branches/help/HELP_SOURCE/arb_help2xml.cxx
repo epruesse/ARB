@@ -135,7 +135,7 @@ struct MessageAttachable {
     virtual ~MessageAttachable() {}
 
     virtual string location_description() const = 0; // may return empty string
-    virtual size_t line_number() const          = 0;
+    virtual size_t line_number() const          = 0; // if unknown -> should return NO_LINENUMBER_INFO
 
     LineAttachedMessage attached_message(const string& message) const {
         string where = location_description();
@@ -287,8 +287,6 @@ public:
     Ostrings& Content() { return content; }
 
     SectionType get_type() const { return type; }
-
-    size_t StartLineno() const { return content.front().get_lineno(); }
 };
 
 
@@ -306,25 +304,31 @@ inline void check_TODO(const char *, const Reader&) { }
 //      class NamedSection
 
 class NamedSection : public MessageAttachable {
-private:
     string  name;
+    size_t  lineno;
     Section section;
 
     string location_description() const OVERRIDE { return string("in SECTION '")+name+"'"; }
-    size_t line_number() const OVERRIDE { return section.StartLineno(); }
 
 public:
-    NamedSection(const string& name_, const Section& section_)
-        : name(name_)
-        , section(section_)
+    NamedSection(const string& name_, const Section& section_, size_t lineno_)
+        : name(name_),
+          lineno(lineno_),
+          section(section_)
     {}
     virtual ~NamedSection() {}
 
     const Section& getSection() const { return section; }
     const string& getName() const { return name; }
+    size_t line_number() const OVERRIDE { return lineno; }
+
+    void setName(const string& name_) { name = name_; }
 };
 
 typedef list<NamedSection> NamedSections;
+
+// --------------------
+//      class Link
 
 class Link {
     string target;
@@ -552,6 +556,25 @@ inline void check_duplicates(const string& link, const Links& uplinks, const Lin
     check_specific_duplicates(link, references, add_warnings);
 }
 
+static void warnAboutDuplicate(NamedSections& sections) {
+    set<string> seen;
+    NamedSections::iterator end = sections.end();
+    for (NamedSections::iterator s = sections.begin(); s != end; ++s) {
+        const string& sname = s->getName();
+
+        NamedSections::iterator o = s; ++o;
+        for (; o != end; ++o) {
+            if (sname == o->getName()) {
+                o->attach_warning("duplicated SECTION name");
+                if (seen.find(sname) == seen.end()) {
+                    s->attach_warning("name was first used");
+                    seen.insert(sname);
+                }
+            }
+        }
+    }
+}
+
 void Helpfile::readHelp(istream& in, const string& filename) {
     if (!in.good()) throw unattached_message(strf("Can't read from '%s'", filename.c_str()));
 
@@ -626,20 +649,22 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                         }
                     }
 
+                    size_t lineno = read.getLineNo();
+
                     if (knownSections[idx]) {
                         if (stype == SEC_SECTION) {
                             string  section_name = eatWhite(rest);
                             Section sec(stype);
 
                             parseSection(sec, "", 0, read);
-                            sections.push_back(NamedSection(section_name, sec));
+                            sections.push_back(NamedSection(section_name, sec, lineno));
                         }
                         else {
                             Section sec(stype);
 
                             rest = eatWhite(rest);
                             parseSection(sec, rest, rest-line, read);
-                            sections.push_back(NamedSection(keyword, sec));
+                            sections.push_back(NamedSection(keyword, sec, lineno));
                         }
                     }
                     else {
@@ -651,6 +676,8 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                 throw strf("Unhandled line");
             }
         }
+
+        warnAboutDuplicate(sections);
     }
     catch (string& err)     { throw read.attached_message(err); }
     catch (const char *err) { throw read.attached_message(err); }
@@ -916,16 +943,16 @@ public:
     }
 #endif // DUMP_PARAGRAPHS
 
+private: 
     static ParagraphTree* buildParagraphTree(Ostrings::const_iterator begin, const Ostrings::const_iterator end) {
         if (begin == end) return 0;
         return new ParagraphTree(begin, end);
     }
+public:
     static ParagraphTree* buildParagraphTree(const NamedSection& N) {
-        ParagraphTree *ptree = 0;
         const Ostrings& S = N.getSection().Content();
-        if (S.empty()) throw string("Tried to build an empty ParagraphTree (Section=")+N.getName()+")";
-        else ptree = buildParagraphTree(S.begin(), S.end());
-        return ptree;
+        if (S.empty()) throw "attempt to build an empty ParagraphTree";
+        return buildParagraphTree(S.begin(), S.end());
     }
 
     bool contains(ParagraphTree *that) {
@@ -1384,47 +1411,51 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
     }
 
     for (NamedSections::const_iterator named_sec = sections.begin(); named_sec != sections.end(); ++named_sec) {
-        XML_Tag section_tag("SECTION");
-        section_tag.add_attribute("name", named_sec->getName());
+        try {
+            XML_Tag section_tag("SECTION");
+            section_tag.add_attribute("name", named_sec->getName());
 
-        ParagraphTree *ptree = ParagraphTree::buildParagraphTree(*named_sec);
+            ParagraphTree *ptree = ParagraphTree::buildParagraphTree(*named_sec);
 
 #if defined(DEBUG)
-        size_t textnodes = ptree->countTextNodes();
+            size_t textnodes = ptree->countTextNodes();
 #endif
 #if defined(DUMP_PARAGRAPHS)
-        cout << "Dump of section '" << named_sec->getName() << "' (before format_lists):\n";
-        ptree->dump(cout);
-        cout << "----------------------------------------\n";
+            cout << "Dump of section '" << named_sec->getName() << "' (before format_lists):\n";
+            ptree->dump(cout);
+            cout << "----------------------------------------\n";
 #endif
 
-        ptree->format_lists();
+            ptree->format_lists();
 
 #if defined(DUMP_PARAGRAPHS)
-        cout << "Dump of section '" << named_sec->getName() << "' (after format_lists):\n";
-        ptree->dump(cout);
-        cout << "----------------------------------------\n";
+            cout << "Dump of section '" << named_sec->getName() << "' (after format_lists):\n";
+            ptree->dump(cout);
+            cout << "----------------------------------------\n";
 #endif
 #if defined(DEBUG)
-        size_t textnodes2 = ptree->countTextNodes();
-        h2x_assert(textnodes2 == textnodes); // if this occurs format_lists has an error
+            size_t textnodes2 = ptree->countTextNodes();
+            h2x_assert(textnodes2 == textnodes); // if this occurs format_lists has an error
 #endif
 
-        ptree->format_indentations();
+            ptree->format_indentations();
 
 #if defined(DUMP_PARAGRAPHS)
-        cout << "Dump of section '" << named_sec->getName() << "' (after format_indentations):\n";
-        ptree->dump(cout);
-        cout << "----------------------------------------\n";
+            cout << "Dump of section '" << named_sec->getName() << "' (after format_indentations):\n";
+            ptree->dump(cout);
+            cout << "----------------------------------------\n";
 #endif
 #if defined(DEBUG)
-        size_t textnodes3 = ptree->countTextNodes();
-        h2x_assert(textnodes3 == textnodes2); // if this occurs format_indentations has an error
+            size_t textnodes3 = ptree->countTextNodes();
+            h2x_assert(textnodes3 == textnodes2); // if this occurs format_indentations has an error
 #endif
 
-        ptree->xml_write();
+            ptree->xml_write();
 
-        delete ptree;
+            delete ptree;
+        }
+        catch (string& err)     { throw named_sec->attached_message(err); }
+        catch (const char *err) { throw named_sec->attached_message(err); }
     }
 }
 
@@ -1458,7 +1489,7 @@ void Helpfile::extractInternalLinks() {
                             check_specific_duplicates(link_target, auto_references, false); // check only sublinks here
 
                             // only auto-add inline reference if none of the above checks has thrown
-                            auto_references.push_back(Link(link_target, sec.StartLineno()));
+                            auto_references.push_back(Link(link_target, named_sec->line_number()));
                         }
                         catch (string& err) {
                             ; // silently ignore inlined
@@ -1497,9 +1528,9 @@ inline void show_warnings(const string& helpfile) {
         show_warning(*wi, helpfile);
     }
 }
-static void show_warnings_and_error(const LineAttachedMessage& error, const string& helpfile) {
-    show_warnings(helpfile);
+static void show_error_and_warnings(const LineAttachedMessage& error, const string& helpfile) {
     show_err(error, helpfile);
+    show_warnings(helpfile);
 }
 
 int ARB_main(int argc, char *argv[]) {
@@ -1556,7 +1587,7 @@ int ARB_main(int argc, char *argv[]) {
         catch (LineAttachedMessage& err) { throw; }
         catch (...)                      { throw unattached_message("unknown exception in arb_help2xml"); }
     }
-    catch (LineAttachedMessage& err) { show_warnings_and_error(err, arb_help); }
+    catch (LineAttachedMessage& err) { show_error_and_warnings(err, arb_help); }
     catch (...) { h2x_assert(0); }
 
     return EXIT_FAILURE;
@@ -1602,7 +1633,7 @@ static arb_test::match_expectation help_file_compiles(const char *helpfile, cons
             expected.add(that(title_strings.size()).is_equal_to(1));
         }
         else {
-            show_warnings_and_error(*error, helpfile);
+            show_error_and_warnings(*error, helpfile);
         }
     }
 

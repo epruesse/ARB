@@ -12,7 +12,7 @@
   <UP dest="arb.hlp" type="hlp" source_line="2"/>
   <UP dest="glossary.hlp" type="hlp" source_line="3"/>
   <SUB dest="aci.hlp" type="hlp" source_line="6"/>
-  <SUB dest="srt.hlp" type="hlp" source_line="160"/>
+  <SUB dest="srt.hlp" type="hlp" source_line="158"/>
   <TITLE>Unittest example helpfile</TITLE>
   <SECTION name="OCCURRENCE">
     <P>
