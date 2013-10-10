@@ -303,22 +303,20 @@ inline void check_TODO(const char *, const Reader&) { }
 // ----------------------------
 //      class NamedSection
 
-class NamedSection : public MessageAttachable {
-    string  name;
-    size_t  lineno;
-    Section section;
+class NamedSection : public MessageAttachable, public Section {
+    string name;
+    size_t lineno;
 
     string location_description() const OVERRIDE { return string("in SECTION '")+name+"'"; }
 
 public:
     NamedSection(const string& name_, const Section& section_, size_t lineno_)
-        : name(name_),
-          lineno(lineno_),
-          section(section_)
+        : Section(section_),
+          name(name_),
+          lineno(lineno_)
     {}
     virtual ~NamedSection() {}
 
-    const Section& getSection() const { return section; }
     const string& getName() const { return name; }
     size_t line_number() const OVERRIDE { return lineno; }
 
@@ -950,7 +948,7 @@ private:
     }
 public:
     static ParagraphTree* buildParagraphTree(const NamedSection& N) {
-        const Ostrings& S = N.getSection().Content();
+        const Ostrings& S = N.Content();
         if (S.empty()) throw "attempt to build an empty ParagraphTree";
         return buildParagraphTree(S.begin(), S.end());
     }
@@ -1461,9 +1459,8 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
 
 void Helpfile::extractInternalLinks() {
     for (NamedSections::const_iterator named_sec = sections.begin(); named_sec != sections.end(); ++named_sec) {
-        const Section& sec = named_sec->getSection();
         try {
-            const Ostrings& s = sec.Content();
+            const Ostrings& s = named_sec->Content();
 
             for (Ostrings::const_iterator li = s.begin(); li != s.end(); ++li) {
                 const string& line = *li;
