@@ -10,7 +10,6 @@ SUB	savedef.hlp
 SUB	props_frame.hlp
 SUB	sel_fil.hlp
 SUB	awt_csp.hlp
-SUB	props_nds.hlp
 SUB	bootstrap.hlp
 
 
@@ -58,24 +57,29 @@ DESCRIPTION	Reconstructs a tree for all or marked species by first
 		   button.
 
 		   none:
+
 		   	Differences/Sequence length. May be a good
 		   	choice for short sequences (length < 300 )
 
 		   similarity:
+
 		   	1.0 - Differences/Sequence_Length
 
 		   jukes-cantor:
+
 		   	Accounts for multiple base changes, assumes
 		   	equal base frequencies.
 		   	Good choice for medium sized sequences
 		   	( 300 - 1000/2000 sequence length )
 
 		   felsenstein:
+
 		   	Similar to jukes-cantor transformation. Allows
 		   	unequal base frequencies.
 		   	( length > 1000/2000 )
 
 		   olsen:
+
 		   	As Felsenstein, except the base frequencies are
 		   	calculated for each pair of sequences.
 
@@ -118,18 +122,13 @@ SECTION 	Calculate compressed matrix
 		The distance shown for each group is the arithmetic average of 
 		of the distances of all contained species.
 
-NOTE		Read the NDS help text
-
-NOTE		Computing time can be estimated using the following
-		formula:
+NOTES           Computing time can be estimated using the following formula:
 
 			time = (Sequence_Length * Nr.of.Spec * Nr.of.Spec)/
 				Computer Power
 
-		Examples:	Sparc 10,
-				74 Sequences, length 8000 characters
-
-				-> 10 Seconds
+                                Example: Sparc 10, 74 Sequences, length 8000 characters
+                                         -> 10 Seconds
 
 
 WARNINGS	Don't try to build a tree with the 'similarity' distance
