@@ -101,8 +101,8 @@ __ATTR__FORMAT(1) static string strf(const char *format, ...) {
     return result;
 }
 
-// ------------------
-//      warnings
+// -----------------------------
+//      warnings and errors
 
 class LineAttachedMessage {
     string message;
@@ -122,8 +122,6 @@ const size_t NO_LINENUMBER_INFO = -1U;
 
 LineAttachedMessage unattached_message(const string& message) { return LineAttachedMessage(message, NO_LINENUMBER_INFO); }
 
-// ------------------
-//      warnings
 
 static list<LineAttachedMessage> warnings;
 inline void add_warning(const LineAttachedMessage& laMsg) {
@@ -133,10 +131,27 @@ inline void add_warning(const string& warning, size_t lineno) {
     add_warning(LineAttachedMessage(warning, lineno));
 }
 
+struct MessageAttachable {
+    virtual ~MessageAttachable() {}
+
+    virtual string location_description() const = 0; // may return empty string
+    virtual size_t line_number() const          = 0;
+
+    LineAttachedMessage attached_message(const string& message) const {
+        string where = location_description();
+        if (where.empty()) return LineAttachedMessage(message, line_number());
+        return LineAttachedMessage(message+" ["+where+"]", line_number());
+    }
+    void attach_warning(const string& message) const {
+        add_warning(attached_message(message));
+    }
+};
+
+
 // ----------------------
 //      class Reader
 
-class Reader {
+class Reader : public MessageAttachable {
 private:
     istream& in;
     char     lineBuffer[MAX_LINE_LENGTH];
@@ -144,6 +159,9 @@ private:
     bool     readAgain;
     bool     eof;
     int      lineNo;
+
+    string location_description() const OVERRIDE { return ""; }
+    size_t line_number() const OVERRIDE { return lineNo; }
 
     void getline() {
         if (!eof) {
@@ -181,7 +199,7 @@ private:
                 if (eol > lineBuffer) {
                     // now eol points to last character
                     if (eol[0] == '-' && isalnum(eol[-1])) {
-                        add_warning("manual hyphenation detected", lineNo);
+                        attach_warning("manual hyphenation detected");
                     }
                 }
             }
@@ -275,21 +293,25 @@ public:
 
 
 #if defined(WARN_MISSING_HELP)
-void check_TODO(const char *line, const Reader& reader) {
+static void check_TODO(const char *line, const Reader& reader) {
     if (strstr(line, "@@@") != NULL || strstr(line, "TODO") != NULL) {
-        string warn = strf("TODO: %s", line);
-        add_warning(warn.c_str(), reader.getLineNo());
+        reader.attach_warning(strf("TODO: %s", line));
     }
 }
+#else
+inline void check_TODO(const char *, const Reader&) { }
 #endif // WARN_MISSING_HELP
 
 // ----------------------------
 //      class NamedSection
 
-class NamedSection {
+class NamedSection : public MessageAttachable {
 private:
     string  name;
     Section section;
+
+    string location_description() const OVERRIDE { return string("in SECTION '")+name+"'"; }
+    size_t line_number() const OVERRIDE { return section.StartLineno(); }
 
 public:
     NamedSection(const string& name_, const Section& section_)
@@ -453,9 +475,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
 
         if (isEmptyOrComment(line)) {
             pushParagraph(sec, paragraph, para_start_lineno, type, num);
-#if defined(WARN_MISSING_HELP)
             check_TODO(line, reader);
-#endif // WARN_MISSING_HELP
         }
         else {
             string      keyword;
@@ -466,9 +486,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
                 break;
             }
 
-#if defined(WARN_MISSING_HELP)
             check_TODO(line, reader);
-#endif // WARN_MISSING_HELP
 
             string Line = line;
 
@@ -553,15 +571,11 @@ void Helpfile::readHelp(istream& in, const string& filename) {
             if (!line) break;
 
             if (isEmptyOrComment(line)) {
-#if defined(WARN_MISSING_HELP)
                 check_TODO(line, read);
-#endif // WARN_MISSING_HELP
                 continue;
             }
 
-#if defined(WARN_MISSING_HELP)
             check_TODO(line, read);
-#endif // WARN_MISSING_HELP
 
             string      keyword;
             const char *rest = extractKeyword(line, keyword);
@@ -638,9 +652,8 @@ void Helpfile::readHelp(istream& in, const string& filename) {
             }
         }
     }
-
-    catch (string& err) { throw LineAttachedMessage(err, read.getLineNo()); }
-    catch (const char *err) { throw LineAttachedMessage(err, read.getLineNo()); }
+    catch (string& err)     { throw read.attached_message(err); }
+    catch (const char *err) { throw read.attached_message(err); }
 }
 
 static bool shouldReflow(const string& s, int& foundIndentation) {
@@ -758,7 +771,7 @@ static size_t scanMinIndentation(const string& text) {
 // -----------------------------
 //      class ParagraphTree
 
-class ParagraphTree : virtual Noncopyable {
+class ParagraphTree : public MessageAttachable, virtual Noncopyable {
     ParagraphTree *brother;     // has same indentation as this
     ParagraphTree *son;         // indentation + 1
 
@@ -767,6 +780,9 @@ class ParagraphTree : virtual Noncopyable {
     bool reflow;                // should the paragraph be reflown ? (true if indentation is equal for all lines of text)
     int  indentation;           // the real indentation of the blank (behind removed enumeration)
 
+
+    string location_description() const OVERRIDE { return "in paragraph starting here"; }
+    size_t line_number() const OVERRIDE { return otext.get_lineno(); }
 
     ParagraphTree(Ostrings::const_iterator begin, const Ostrings::const_iterator end)
         : son(NULL),
@@ -782,7 +798,7 @@ class ParagraphTree : virtual Noncopyable {
             size_t reststart = text.find('\n', 1);
 
             if (reststart == 0) {
-                add_warning(make_paragraph_message("[internal] Paragraph starts with LF -> reflow calculation will probably fail"));
+                attach_warning("[internal] Paragraph starts with LF -> reflow calculation will probably fail");
             }
 
             if (reststart != string::npos) {
@@ -814,7 +830,7 @@ class ParagraphTree : virtual Noncopyable {
                         }
                         else if (diff<0) {
                             // paragraph with more indent on first line (occurs?)
-                            add_warning(make_paragraph_message(strf("[internal] unhandled: more indentation on the 1st line (diff=%i)", diff)));
+                            attach_warning(strf("[internal] unhandled: more indentation on the 1st line (diff=%i)", diff));
                         }
                     }
                 }
@@ -854,10 +870,6 @@ public:
             case ENUMERATED: res = "ENUMERATED"; break;
         }
         return res;
-    }
-
-    LineAttachedMessage make_paragraph_message(const string& msg) const {
-        return LineAttachedMessage(string("[in paragraph starting here] ")+msg, otext.get_lineno());
     }
 
     size_t countTextNodes() {
@@ -1027,10 +1039,10 @@ void ParagraphTree::brothers_to_sons(ParagraphTree *new_brother) {
         if (brother != new_brother) {
 #if defined(DEBUG)
             if (son) {
-                add_warning(son->make_paragraph_message("Found unexpected son (in brothers_to_sons)"));
-                add_warning(brother->make_paragraph_message("while trying to transform paragraphs from here .."));
-                add_warning(new_brother->make_paragraph_message(".. to here .."));
-                add_warning(make_paragraph_message(".. into sons of this paragraph."));
+                son->attach_warning("Found unexpected son (in brothers_to_sons)");
+                brother->attach_warning("while trying to transform paragraphs from here ..");
+                new_brother->attach_warning(".. to here ..");
+                attach_warning(".. into sons of this paragraph.");
                 return;
             }
 #endif
@@ -1096,8 +1108,8 @@ void ParagraphTree::format_indentations() {
         ParagraphTree *same_indent = brother->firstWithLessIndentThan(indentation+1);
 #if defined(WARN_POSSIBLY_WRONG_INDENTATION_CORRECTION)
         if (same_indent && indentation != same_indent->indentation) {
-            add_warning(same_indent->make_paragraph_message("indentation is assumed to be same as .."));
-            add_warning(make_paragraph_message(".. here"));
+            same_indent->attach_warning("indentation is assumed to be same as ..")
+            attach_warning(".. here");
         }
 #endif
         brothers_to_sons(same_indent); // if same_indent==NULL -> make all brothers childs
@@ -1264,7 +1276,7 @@ void ParagraphTree::xml_write_textblock() {
 ParagraphTree *ParagraphTree::xml_write_list_contents() {
     h2x_assert(is_itemlist_member());
 #if defined(WARN_FIXED_LAYOUT_LIST_ELEMENTS)
-    if (!reflow) add_warning(make_paragraph_message("ITEM not reflown (check output)"));
+    if (!reflow) attach_warning("ITEM not reflown (check output)");
 #endif
     {
         XML_Tag entry("ENTRY");
@@ -1280,7 +1292,7 @@ ParagraphTree *ParagraphTree::xml_write_list_contents() {
 ParagraphTree *ParagraphTree::xml_write_enum_contents() {
     h2x_assert(get_enumeration());
 #if defined(WARN_FIXED_LAYOUT_LIST_ELEMENTS)
-    if (!reflow) add_warning(make_paragraph_message("ENUMERATED not reflown (check output)"));
+    if (!reflow) attach_warning("ENUMERATED not reflown (check output)");
 #endif
     {
         XML_Tag entry("ENTRY");
@@ -1291,8 +1303,8 @@ ParagraphTree *ParagraphTree::xml_write_enum_contents() {
     if (brother && brother->get_enumeration()) {
         int diff = brother->get_enumeration()-get_enumeration();
         if (diff != 1) {
-            add_warning(make_paragraph_message("Non-consecutive enumeration detected between here.."));
-            add_warning(brother->make_paragraph_message(".. and here"));
+            attach_warning("Non-consecutive enumeration detected between here..");
+            brother->attach_warning(".. and here");
         }
         return brother->xml_write_enum_contents();
     }
@@ -1305,18 +1317,18 @@ void ParagraphTree::xml_write() {
         if (get_enumeration()) {
             XML_Tag enu("ENUM");
             if (get_enumeration() != 1) {
-                add_warning(make_paragraph_message(strf("First enum starts with '%u.' (maybe previous enum was not detected)", get_enumeration())));
+                attach_warning(strf("First enum starts with '%u.' (maybe previous enum was not detected)", get_enumeration()));
             }
             next = xml_write_enum_contents();
 #if defined(WARN_LONESOME_LIST_ELEMENTS)
-            if (next == brother) add_warning(make_paragraph_message("Suspicious single-element-ENUM"));
+            if (next == brother) attach_warning("Suspicious single-element-ENUM");
 #endif
         }
         else if (is_itemlist_member()) {
             XML_Tag list("LIST");
             next = xml_write_list_contents();
 #if defined(WARN_LONESOME_LIST_ELEMENTS)
-            if (next == brother) add_warning(make_paragraph_message("Suspicious single-element-LIST"));
+            if (next == brother) attach_warning("Suspicious single-element-LIST");
 #endif
         }
         else {
@@ -1329,8 +1341,8 @@ void ParagraphTree::xml_write() {
         }
         if (next) next->xml_write();
     }
-    catch (string& err) { throw make_paragraph_message(err); }
-    catch (const char *err) { throw make_paragraph_message(err); }
+    catch (string& err) { throw attached_message(err); }
+    catch (const char *err) { throw attached_message(err); }
 }
 
 static void create_top_links(const Links& links, const char *tag) {
@@ -1457,8 +1469,7 @@ void Helpfile::extractInternalLinks() {
             }
         }
         catch (string& err) {
-            throw LineAttachedMessage(string("'"+err+"' while scanning LINK{} in SECTION '"+named_sec->getName()+'\''),
-                                      sec.StartLineno());
+            throw named_sec->attached_message("'"+err+"' while scanning LINK{}");
         }
     }
 }
