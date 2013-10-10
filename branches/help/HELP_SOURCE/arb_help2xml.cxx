@@ -555,6 +555,7 @@ static void warnAboutDuplicate(SectionList& sections) {
     SectionList::iterator end = sections.end();
     for (SectionList::iterator s = sections.begin(); s != end; ++s) {
         const string& sname = s->getName();
+        if (sname == "NOTES") continue; // do not warn about multiple NOTES sections
 
         SectionList::iterator o = s; ++o;
         for (; o != end; ++o) {
@@ -1729,7 +1730,7 @@ void TEST_protect_help_vs_changes() { // should normally be disabled
                                      patch.c_str(), expected_lines);
 
     TEST_EXPECT_NO_ERROR(GBK_system(update_cmd.c_str()));
-    TEST_EXPECT_NO_ERROR(GBK_system(fail_on_change_cmd.c_str()));
+    TEST_EXPECT_NO_ERROR(GBK_system(fail_on_change_cmd.c_str())); // @@@ uncomment before commit
 }
 
 #endif // UNIT_TESTS
