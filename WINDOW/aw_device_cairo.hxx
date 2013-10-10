@@ -58,6 +58,7 @@ public:
     static bool draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t /* opt_str_len */, size_t start, size_t size,
                                         AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL /*cduser*/);
 
+    int  get_string_size(int gc, const  char *string, long textlen) const OVERRIDE;
 };
 
 

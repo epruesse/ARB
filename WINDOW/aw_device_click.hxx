@@ -60,6 +60,8 @@ public:
 
     void get_clicked_line(class AW_clicked_line *ptr) const;
     void get_clicked_text(class AW_clicked_text *ptr) const;
+
+    int  get_string_size(int gc, const  char *string, long textlen) const OVERRIDE;
 };
 
 bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2);

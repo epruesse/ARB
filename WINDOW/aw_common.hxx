@@ -121,6 +121,7 @@ public:
     short get_descent_of_char(char c) const;
 
     int get_string_size(const char *str, long textlen) const;
+    int get_string_size_fast(const char *str, long textlen) const;
 
     void establish_default();
     void reset();

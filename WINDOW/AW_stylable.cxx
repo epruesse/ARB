@@ -12,10 +12,6 @@ const AW_font_limits& AW_stylable::get_font_limits(int gc, char c) const {
     return get_common()->get_font_limits(gc, c);
 }
 
-int AW_stylable::get_string_size(int gc, const char *str, long textlen) const {
-    return get_common()->map_gc(gc)->get_string_size(str, textlen);
-}
-
 void AW_stylable::establish_default(int gc) {
     get_common()->map_mod_gc(gc)->establish_default();
 }

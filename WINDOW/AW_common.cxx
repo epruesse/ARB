@@ -278,6 +278,7 @@ short AW_GC::get_descent_of_char(char c) const {
     return prvt->descent_of_chars[safeCharIndex(c)]; 
 }
 
+
 /**
  * calculate display size of 'str'
  * 'str' and/or 'textlen' may be 0
@@ -292,22 +293,11 @@ int AW_GC::get_string_size(const char *str, long textlen) const {
     // do the layout and check the size. That's what
     // get_actual_string() does.
 
-    int actual_size;
-    if (str) actual_size = get_actual_string_size(str);
-    else {
-      char *tmp = (char*)malloc(textlen+1);
-      memset(tmp, 'A', textlen);
-      tmp[textlen]=0;
-      actual_size =  get_actual_string_size(str);
-      free(tmp);
-    }
-    
-    if (actual_size) 
-      return actual_size;
-    
-    // If the AW_GC implementation doesn't have get_actual_string_size,
-    // try calculating an approximation:
+    if (str) return get_actual_string_size(str);
+    return get_string_size_fast(NULL, textlen);
+}
 
+int AW_GC::get_string_size_fast(const char *str, long textlen) const {
     int width = 0;
     if (prvt->font_limits.is_monospaced() || !str) {
         if (!textlen && str) textlen = strlen(str);
@@ -319,6 +309,8 @@ int AW_GC::get_string_size(const char *str, long textlen) const {
    
     return width;
 }
+
+
 
 /**
  * memorizes the current settings as default
