@@ -1725,9 +1725,7 @@ void TEST_protect_help_vs_changes() { // should normally be disabled
     string patch = "help_changes.patch";
     update_cmd += " >"+patch+" ||true";
 
-    int    expected_lines     = do_html+do_help;
-    string fail_on_change_cmd = strf("test \"`cat %s | grep -v 'GDEHELP' | wc -l`\" = \"%i\" || ( echo \"Error: Help changed\"; false)",
-                                     patch.c_str(), expected_lines);
+    string fail_on_change_cmd = "test \"`cat "+patch+" | grep -v '^Common subdirectories' | wc -l`\" = \"0\" || ( echo \"Error: Help changed\"; false)";
 
     TEST_EXPECT_NO_ERROR(GBK_system(update_cmd.c_str()));
     TEST_EXPECT_NO_ERROR(GBK_system(fail_on_change_cmd.c_str())); // @@@ uncomment before commit
