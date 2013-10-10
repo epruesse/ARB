@@ -204,3 +204,10 @@ bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL
 
     return bestClick;
 }
+
+/**
+ * Calculate the precise size of the string to be rendered 
+ */
+int AW_device_click::get_string_size(int gc, const char *str, long textlen) const {
+    return get_common()->map_gc(gc)->get_string_size(str, textlen);
+}

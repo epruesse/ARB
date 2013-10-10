@@ -264,3 +264,10 @@ void AW_device_cairo::clear_part(const Rectangle& rect, AW_bitset filteri)
               (int)clippedRect.height() +1 );
     }
 }
+
+/**
+ * Calculate the precise size of the string to be rendered 
+ */
+int AW_device_cairo::get_string_size(int gc, const char *str, long textlen) const {
+    return get_common()->map_gc(gc)->get_string_size(str, textlen);
+}

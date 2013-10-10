@@ -43,7 +43,7 @@ public:
     AW::Rectangle get_size_information_inclusive_text() const {
         return get_size_information().bounding_box(get_size_information_unscaled());
     }
-
+    int  get_string_size(int gc, const  char *string, long textlen) const OVERRIDE;
     AW_borders get_unscaleable_overlap() const;
 };
 

@@ -50,7 +50,7 @@ public:
     void set_function(int gc, AW_function function);
     void establish_default(int gc);
     void set_foreground_color(int gc, AW_rgb);
-    int  get_string_size(int gc, const  char *string, long textlen) const; // get the size of the string
+    virtual int  get_string_size(int gc, const  char *string, long textlen) const = 0; 
 
     const AW_font_limits& get_font_limits(int gc, char c) const; // for one characters (c == 0 -> for all characters)
 

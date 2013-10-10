@@ -54,7 +54,7 @@ bool AW_device_size::text_impl(int gc, const char *str, const AW::Position& pos,
     const AW_font_limits& font_limits = get_common()->map_gc(gc)->get_font_limits();
     AW_pos                l_ascent    = font_limits.ascent;
     AW_pos                l_descent   = font_limits.descent;
-    AW_pos                l_width     = get_string_size(gc, str, opt_strlen);
+    AW_pos                l_width     = get_common()->map_gc(gc)->get_string_size_fast(str, opt_strlen);
 
     AW::Position upperLeft(AW::x_alignment(transPos.xpos(), l_width, alignment),
                            transPos.ypos()-l_ascent);
@@ -88,4 +88,13 @@ inline void AW_device_size::dot_transformed(const AW::Position& pos, AW_bitset f
 
 void AW_device_size::specific_reset() {
     forget_tracked();
+}
+
+/**
+ * Calculate an estimate of the size of the string to be rendered.
+ * (Other devices calculate precise size, we overestimate)
+ * See also AW_GC::get_string_size_fast
+ */
+int AW_device_size::get_string_size(int gc, const char *str, long textlen) const {
+    return get_common()->map_gc(gc)->get_string_size_fast(str, textlen);
 }
