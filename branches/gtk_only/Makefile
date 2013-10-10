@@ -135,7 +135,7 @@ ifeq ($(DEBUG),0)
 	ifdef DARWIN
 		cflags := -O3# compiler flags (C and C++)
 	else
-		cflags := -g -ggdb -O0# compiler flags (C and C++)
+		cflags := -O4# compiler flags (C and C++)
 		lflags += -O99# linker flags
 	endif
 endif
