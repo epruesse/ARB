@@ -13,6 +13,7 @@
 #include <xml.hxx>
 #include <arb_defs.h>
 #include <arb_diff.h>
+#include <static_assert.h>
 
 #include <list>
 #include <set>
@@ -48,9 +49,15 @@ using namespace std;
 #define MAX_LINE_LENGTH 200     // maximum length of lines in input stream
 #define TABSIZE         8
 
-static const char *knownSections[] = { "OCCURRENCE", "DESCRIPTION", "NOTES", "EXAMPLES", "WARNINGS", "BUGS",
-                                       "QUESTION", "ANSWER", "SECTION",
-                                       0 };
+static const char *knownSections[] = {
+    "OCCURRENCE",
+    "DESCRIPTION",
+    "NOTES",
+    "EXAMPLES",
+    "WARNINGS",
+    "BUGS",
+    "SECTION",
+};
 
 enum SectionType {
     SEC_OCCURRENCE,
@@ -59,15 +66,14 @@ enum SectionType {
     SEC_EXAMPLES,
     SEC_WARNINGS,
     SEC_BUGS,
-    SEC_QUESTION,
-    SEC_ANSWER,
     SEC_SECTION,
 
+    KNOWN_SECTION_TYPES,
     SEC_NONE,
-
-    SEC_FAKE, 
+    SEC_FAKE,
 };
 
+STATIC_ASSERT(ARRAY_ELEMS(knownSections) == KNOWN_SECTION_TYPES);
 
 __ATTR__VFORMAT(1) static string vstrf(const char *format, va_list argPtr) {
     static size_t  buf_size = 256;
@@ -640,7 +646,7 @@ void Helpfile::readHelp(istream& in, const string& filename) {
 
                     SectionType stype = SEC_NONE;
                     int         idx;
-                    for (idx = 0; knownSections[idx]; ++idx) {
+                    for (idx = 0; idx<KNOWN_SECTION_TYPES; ++idx) {
                         if (knownSections[idx] == keyword) {
                             stype = SectionType(idx);
                             break;
@@ -649,24 +655,21 @@ void Helpfile::readHelp(istream& in, const string& filename) {
 
                     size_t lineno = read.getLineNo();
 
-                    if (knownSections[idx]) {
-                        if (stype == SEC_SECTION) {
-                            string  section_name = eatWhite(rest);
-                            Section sec(stype);
+                    if (idx >= KNOWN_SECTION_TYPES) throw strf("unknown keyword '%s'", keyword.c_str());
 
-                            parseSection(sec, "", 0, read);
-                            sections.push_back(NamedSection(section_name, sec, lineno));
-                        }
-                        else {
-                            Section sec(stype);
+                    if (stype == SEC_SECTION) {
+                        string  section_name = eatWhite(rest);
+                        Section sec(stype);
 
-                            rest = eatWhite(rest);
-                            parseSection(sec, rest, rest-line, read);
-                            sections.push_back(NamedSection(keyword, sec, lineno));
-                        }
+                        parseSection(sec, "", 0, read);
+                        sections.push_back(NamedSection(section_name, sec, lineno));
                     }
                     else {
-                        throw strf("unknown keyword '%s'", keyword.c_str());
+                        Section sec(stype);
+
+                        rest = eatWhite(rest);
+                        parseSection(sec, rest, rest-line, read);
+                        sections.push_back(NamedSection(keyword, sec, lineno));
                     }
                 }
             }
