@@ -17,7 +17,6 @@ private:
 
 protected:
     cairo_t *get_cr(int gc) OVERRIDE;
-    pango_layout_t *get_pl(int gc) OVERRIDE;
 
 public:
     AW_device_print(AW_common *common_);

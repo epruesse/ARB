@@ -22,7 +22,18 @@ struct AW_common_gtk::Pimpl {
     GtkWidget  *window;
     AW_window  *aww;
     AW_area    area;
-    Pimpl() {}
+
+    PangoFontMap *fontmap = pango_cairo_font_map_get_default();
+    PangoContext *context = pango_font_map_create_context(fontmap);
+    
+    Pimpl() 
+        : fontmap(pango_cairo_font_map_get_default()),
+          context(pango_font_map_create_context(fontmap)) 
+    {}
+    ~Pimpl() {
+        g_object_unref(context);
+        g_object_unref(fontmap);
+    }
 };
 
 AW_common_gtk::AW_common_gtk(GtkWidget *window,
@@ -33,7 +44,12 @@ AW_common_gtk::AW_common_gtk(GtkWidget *window,
     prvt->window  = window;
     prvt->aww     = aw_window;
     prvt->area    = area;
-}
+
+    // we want to always have at least background and one foreground gc
+    new_gc(-1); 
+    new_gc(0);
+} 
+
 
 AW_common_gtk::~AW_common_gtk() {
     delete prvt;
@@ -86,26 +102,24 @@ void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
     }
 }
 
-PangoFontDescription* AW_common_gtk::get_font(int gc) { 
-    return map_gc(gc)->get_font(); 
-}
-
 AW_GC_gtk::AW_GC_gtk(AW_common *aw_common) 
     : AW_GC(aw_common),
-      font_desc(NULL)
+      pl(NULL)
 {
 }
 
 AW_GC_gtk::~AW_GC_gtk(){};
 
 void AW_GC_gtk::wm_set_font(const char* font_name) {
-    if (font_desc) pango_font_description_free(font_desc);
-    font_desc = pango_font_description_from_string(font_name);
+    if (pl) g_object_unref(pl);
+    AW_common_gtk* common = DOWNCAST(AW_common_gtk*, get_common());
+    pl = pango_layout_new(common->prvt->context);
+    
+    PangoFontDescription * desc = pango_font_description_from_string(font_name);
+    pango_layout_set_font_description(pl, desc);
 
     // now determine char sizes; get the font structure first:
-    PangoFontMap *fontmap = pango_cairo_font_map_get_default();
-    PangoContext *context = pango_font_map_create_context(fontmap);
-    PangoFont *font = pango_font_map_load_font(fontmap, context, font_desc);
+    PangoFont *font = pango_font_map_load_font(common->prvt->fontmap, common->prvt->context, desc);
     
     // iterate through the ascii chars
     for (unsigned int j = AW_FONTINFO_CHAR_ASCII_MIN; j <= AW_FONTINFO_CHAR_ASCII_MAX; j++) {
@@ -117,13 +131,30 @@ void AW_GC_gtk::wm_set_font(const char* font_name) {
         pango_extents_to_pixels(&rect, 0);
         set_char_size(j, PANGO_ASCENT(rect), PANGO_DESCENT(rect), PANGO_RBEARING(rect));
     }
+
+    pango_font_description_free(desc);
+    g_object_unref(font);
 }
 
+/**
+ * Gets the current PangoLayout, updated with the supplied string if necessary.
+ * We keep the PangoLayout around to make subsequents calls with the same
+ * text faster.
+ */
+PangoLayout* AW_GC_gtk::get_pl(const char* str) const {
+    if (!pl) return NULL;
+    if (!str) str = ""; // paranoia
+    const char* oldstr = pango_layout_get_text(pl);
+    if (!oldstr || strcmp(pango_layout_get_text(pl), str)) {
+        pango_layout_set_text(pl, str, -1);
+    }
+    return pl;
+}
 
 int AW_GC_gtk::get_actual_string_size(const char* str) const {
-    GtkWidget *widget = get_common()->get_drawing_target();
-    PangoLayout *pl = gtk_widget_create_pango_layout(widget, str);
-    pango_layout_set_font_description(pl, font_desc);
+    if (!pl) return 0;    
+    get_pl(str); // update with string if necessary
+   
     int w, h;
     pango_layout_get_pixel_size (pl, &w, &h);
     return w;

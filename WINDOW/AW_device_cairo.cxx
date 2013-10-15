@@ -19,7 +19,7 @@ using namespace AW;
 //#define TRACE_DRAWING
 #ifdef TRACE_DRAWING
 #define TRACE(format, ...)                              \
-    printf("%s " format "\n", __func__, ##__VA_ARGS__); \
+    printf("%2i %s" format "\n", gc, __func__, ##__VA_ARGS__);   \
     usleep(5000)
 #define cairo_stroke for (int i=0; i<1000; i++) cairo_stroke
 #define pango_cairo_show_layout for (int i=0; i<1000; i++) pango_cairo_show_layout
@@ -79,8 +79,7 @@ bool AW_device_cairo::draw_string_on_screen(AW_device *device, int gc, const  ch
     cairo_t *cr = device_cairo->get_cr(gc);
     if (!cr) return true; 
 
-    PangoLayout *pl = device_cairo->get_pl(gc);
-    pango_layout_set_text(pl, str+start, -1);
+    PangoLayout *pl = device_cairo->get_common()->map_gc(gc)->get_pl(str+start);
    
     AW_pos base = pango_layout_get_baseline(pl)  / PANGO_SCALE;
     AW_pos x      = AW_INT(X) + 0.5;
@@ -122,6 +121,7 @@ bool AW_device_cairo::box_impl(int gc, bool filled, const Rectangle& rect, AW_bi
     if (filled) {
         get_common()->update_cr(cr, gc, true);
         cairo_fill(cr);
+        get_common()->update_cr(cr, gc, false);
     }
     else {
         cairo_stroke(cr);
@@ -227,12 +227,10 @@ void AW_device_cairo::clear(AW_bitset filteri)
 {
     if (! (filteri & filter)) return;
 
-    cairo_t *cr = get_cr(0);
+    int gc=-1; // background
+    cairo_t *cr = get_cr(gc);
     if (!cr) return;
     
-    AW_rgb col = get_common()->get_bg_color();
-    cairo_set_source_rgb(cr, col.r(), col.g(), col.b());
-
     cairo_paint(cr);
     TRACE("");
 }
@@ -244,11 +242,10 @@ void AW_device_cairo::clear_part(const Rectangle& rect, AW_bitset filteri)
     Rectangle transRect = transform(rect);
     Rectangle clippedRect;
     if (box_clip(transRect, clippedRect)) {
-        cairo_t *cr = get_cr(0);
-        if (!cr) return;
+        int gc = -1; // background
 
-        AW_rgb col = get_common()->get_bg_color();
-        cairo_set_source_rgb(cr, col.r(), col.g(), col.b());
+        cairo_t *cr = get_cr(gc);
+        if (!cr) return;
     
         cairo_rectangle(cr,
                         clippedRect.left(),

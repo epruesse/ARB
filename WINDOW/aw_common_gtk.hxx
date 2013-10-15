@@ -20,6 +20,7 @@ class AW_GC_gtk;
 class AW_common_gtk: public AW_common { // derived from Noncopyable
     struct Pimpl;
     Pimpl *prvt;
+    friend class AW_GC_gtk;
 public:
     AW_common_gtk(GtkWidget  *window_in,
                   AW_window  *aww,
@@ -39,25 +40,14 @@ public:
 };
 
 class AW_GC_gtk : public AW_GC { // derived from Noncopyable
-    PangoFontDescription *font_desc;
+    mutable PangoLayout *pl; // this is just for caching
 
     virtual void wm_set_font(const char* fontname) OVERRIDE;
     virtual int get_actual_string_size(const char *str) const OVERRIDE;
-
 public:
-    AW_rgb col_fg;
-    AW_function mode;
-    AW_linestyle lstyle;
-    short lwidth;
-
     AW_GC_gtk(AW_common *common);
     ~AW_GC_gtk() OVERRIDE;
 
-    inline AW_common_gtk *get_common() const;
+    PangoLayout *get_pl(const char*) const;
 
-    PangoFontDescription* get_font() const { return font_desc; }
 };
-
-inline AW_common_gtk *AW_GC_gtk::get_common() const {
-    return DOWNCAST(AW_common_gtk*, AW_GC::get_common());
-}

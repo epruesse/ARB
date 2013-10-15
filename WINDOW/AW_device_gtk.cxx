@@ -30,13 +30,13 @@ using namespace AW;
 
 struct AW_device_gtk::Pimpl {
     cairo_t *cr; // owned
-    PangoLayout *pl; // owned
+    int last_gc;
     GtkWidget* drawingArea;
+    
 
-    Pimpl(GtkWidget* w) : cr(NULL), pl(NULL), drawingArea(w) {}
+    Pimpl(GtkWidget* w) : cr(NULL), last_gc(-1), drawingArea(w) {}
     ~Pimpl() {
         if (cr) cairo_destroy(cr);
-        if (pl) g_object_unref(pl);
     }
 private:
     Pimpl(const Pimpl&);
@@ -61,33 +61,23 @@ void AW_device_gtk::set_cr(cairo_t* cr) {
     if (prvt->cr)
         cairo_destroy(prvt->cr);
     prvt->cr = cr;
+    prvt->last_gc = -2;
 }
 
 cairo_t* AW_device_gtk::get_cr(int gc) {
-    /*
-    // destroy old cr
-    if (prvt->cr)
-        cairo_destroy(prvt->cr);
-    // create new one
-    prvt->cr = gdk_cairo_create(gtk_widget_get_window(prvt->drawingArea));
-    */
-    if (!prvt->cr) 
+    //set_cr(0);
+    // if we have no cr, make a new one
+    if (!prvt->cr) {
         set_cr(gdk_cairo_create(gtk_widget_get_window(prvt->drawingArea)));
+    }
 
-    // update with settings from gc
-    get_common()->update_cr(prvt->cr, gc, false);
+    if (gc != prvt->last_gc) {
+        // update with settings from gc
+        get_common()->update_cr(prvt->cr, gc, false);
+        prvt->last_gc = gc;
+    }
+
     return prvt->cr;
-}
-
-PangoLayout* AW_device_gtk::get_pl(int gc) {
-    // free old pl
-    if (prvt->pl)
-        g_object_unref(prvt->pl);
-    // create new one
-    prvt->pl = gtk_widget_create_pango_layout(prvt->drawingArea, NULL);
-    // set font
-    pango_layout_set_font_description(prvt->pl, get_common()->get_font(gc));
-    return prvt->pl;
 }
 
 void AW_device_gtk::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height,
