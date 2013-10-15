@@ -33,12 +33,6 @@ AW_device_print::~AW_device_print() {
     delete prvt;
 }
 
-PangoLayout *AW_device_print::get_pl(int gc) {
-    PangoLayout *pl = pango_cairo_create_layout(get_cr(gc));
-    pango_layout_set_font_description(pl, get_common()->get_font(gc));
-    return pl;
-}
-
 cairo_t *AW_device_print::get_cr(int gc) {
     get_common()->update_cr(prvt->cr, gc);
     return prvt->cr;

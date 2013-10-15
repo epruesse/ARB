@@ -39,7 +39,6 @@ private:
 
 protected:
     virtual cairo_t *get_cr(int gc) = 0;
-    virtual PangoLayout *get_pl(int gc) = 0;
 
 public:
     AW_device_cairo(AW_common* awc);

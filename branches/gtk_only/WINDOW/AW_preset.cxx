@@ -75,7 +75,6 @@ class _AW_gc_manager : virtual Noncopyable {
 private:
     const char         *gc_base_name;
     AW_device          *device;
-    int                 gc_offset;
     int                 drag_gc_offset;
 
     struct gc_desc {
@@ -106,10 +105,10 @@ public:
     static const char **color_group_defaults;
     
     _AW_gc_manager(const char* name, AW_device* device, 
-                  int gc_offset, int drag_gc_offset);
+                   int drag_gc_offset);
     void add_gc(const char* gc_desc, bool is_color_group);
-    void update_gc_color(size_t gc);
-    void update_gc_font(size_t gc);
+    void update_gc_color(int gc);
+    void update_gc_font(int gc);
 
     void create_gc_buttons(AW_window *aww);
     AW_signal changed;
@@ -120,58 +119,55 @@ public:
 const char **_AW_gc_manager::color_group_defaults = ARB_NTREE_color_group;
 
 _AW_gc_manager::_AW_gc_manager(const char* name, AW_device* device_, 
-                               int gc_offset_, int drag_gc_offset_) 
+                               int drag_gc_offset_) 
     : gc_base_name(name),
       device(device_),
-      gc_offset(gc_offset_),
       drag_gc_offset(drag_gc_offset_)
 {
 }
 
-static void aw_update_gc_color(AW_root*, _AW_gc_manager* mgr, size_t gc) {
+static void aw_update_gc_color(AW_root*, _AW_gc_manager* mgr, int gc) {
     mgr->update_gc_color(gc);
 }
-static void aw_update_gc_font(AW_root*, _AW_gc_manager* mgr, size_t gc) {
+static void aw_update_gc_font(AW_root*, _AW_gc_manager* mgr, int gc) {
     mgr->update_gc_font(gc);
 }
 
 void _AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=false) {
+    int gc      = GCs.size() - 1; // -1 is background
+    int gc_drag = GCs.size() + drag_gc_offset - 1;
+
     GCs.push_back(gc_desc());
-    gc_desc &gc = GCs.back();
-    gc.is_color_group = is_color_group;
+    gc_desc &gcd = GCs.back();
+    gcd.is_color_group = is_color_group;
 
-    int base_gc   = gc_offset      + GCs.size() - 1;
-    int base_drag = drag_gc_offset + GCs.size() - 1;
-
-    if (base_gc >= 0) {
-        device->new_gc(base_gc);
-        device->set_line_attributes(base_gc, 1, AW_SOLID);
-        device->set_function(base_gc, AW_COPY);
-        
-        device->new_gc(base_drag);
-        device->set_line_attributes(base_drag, 1, AW_SOLID);
-        device->set_function(base_drag, AW_XOR);
-        device->establish_default(base_drag);
-    }
+    device->new_gc(gc);
+    device->set_line_attributes(gc, 1, AW_SOLID);
+    device->set_function(gc, AW_COPY);
+    
+    device->new_gc(gc_drag);
+    device->set_line_attributes(gc_drag, 1, AW_SOLID);
+    device->set_function(gc_drag, AW_XOR);
+    device->establish_default(gc_drag);
 
     bool done_parsing = false;
     while (*gc_description && !done_parsing) {
         switch (*gc_description++) {
         case '#': 
-            gc.fixed_width_font = true;
+            gcd.fixed_width_font = true;
             break;
         case '+': 
-            gc.same_line = true; 
+            gcd.same_line = true; 
             break;
         case '=': 
-            gc.has_color = false; 
+            gcd.has_color = false; 
             break;
         case '-': 
             if (*(gc_description+1) == '-') {
-                gc.hidden = true;
+                gcd.hidden = true;
             }
             else {
-                gc.has_font = false;
+                gcd.has_font = false;
             }
             break;
         default:
@@ -180,22 +176,30 @@ void _AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=fals
         }
     }
 
-    if (!gc.has_font && !gc.has_color) { // got nothing? hide
-        gc.hidden = true;
+    // hide GC if it defines neither font nor color 
+    if (!gcd.has_font && !gcd.has_color) {
+        gcd.hidden = true;
     }
 
-    if (gc.has_font && gc.same_line) { // font+color needs full line
-        gc.same_line = false;
+    // GC needs full line if definint both color and font
+    if (gcd.has_font && gcd.same_line) {
+        gcd.same_line = false;
     }
+
+    // first GC always has a font
+    if (gc == 0) {
+        gcd.has_font = true;
+    }
+
 
     char *default_color;
     const char *split = strchr(gc_description, '$');
     if (split) { // have color spec
-        gc.label = strndup(gc_description, split-gc_description);
+        gcd.label = strndup(gc_description, split-gc_description);
         default_color = strdup(split+1);
     }
     else {
-        gc.label = strdup(gc_description);
+        gcd.label = strdup(gc_description);
         default_color = strdup("black");
     }
 
@@ -209,42 +213,38 @@ void _AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=fals
             }
         }
     }
-    gc.awar_color = AW_root::SINGLETON->awar_string(_color_awarname(gc_base_name, gc.label), default_color);
-    gc.awar_color->add_callback(makeRootCallback(aw_update_gc_color, this, GCs.size()-1));
-    aw_update_gc_color(NULL, this, GCs.size()-1);
+    gcd.awar_color = AW_root::SINGLETON->awar_string(_color_awarname(gc_base_name, gcd.label), default_color);
+    gcd.awar_color->add_callback(makeRootCallback(aw_update_gc_color, this, gc));
+    aw_update_gc_color(NULL, this, gc);
 
-    if (gc.has_font || GCs.size() == 1) {
-        const char *default_font = gc.fixed_width_font ? "monospace 10" : "sans 10";
-        gc.awar_font = AW_root::SINGLETON->awar_string(_font_awarname(gc_base_name, gc.label), default_font);
+    if (gc != -1) { // no font for background
+        if (gcd.has_font) {
+            const char *default_font = gcd.fixed_width_font ? "monospace 10" : "sans 10";
+            gcd.awar_font = AW_root::SINGLETON->awar_string(_font_awarname(gc_base_name, gcd.label), default_font);
+        }
+        else {
+            // font is same as previous font -> copy awar reference
+            gcd.awar_font = GCs[GCs.size() - 2].awar_font;
+        }
+        gcd.awar_font->add_callback(makeRootCallback(aw_update_gc_font, this, gc));
+        aw_update_gc_font(NULL, this, gc);
     }
-    else {
-        gc.awar_font = GCs[GCs.size() - 2].awar_font;
-    }
-    gc.awar_font->add_callback(makeRootCallback(aw_update_gc_font, this, GCs.size()-1));
-    aw_update_gc_font(NULL, this, GCs.size()-1);
     
     free(default_color);
 }
 
-void _AW_gc_manager::update_gc_color(size_t gc) {
-    aw_assert(gc < GCs.size());
-    const char* color = GCs[gc].awar_color->read_char_pntr();
-    if (gc == 0) { // background
-        device->get_common()->set_bg_color(AW_rgb(color));
-    } 
-    else {
-        device->set_foreground_color(gc_offset + (int)gc, color);
-    }
+void _AW_gc_manager::update_gc_color(int gc) {
+    aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
+    const char* color = GCs[gc+1].awar_color->read_char_pntr();
+    device->set_foreground_color(gc, color);
     // set drag_color?
     // if bg change, reset drag colors?
     changed.emit();
 }
 
-void _AW_gc_manager::update_gc_font(size_t gc) {
-    // loop avoidance necessary?
-    aw_assert(gc < GCs.size());
-    if (gc == 0) return; // no background font
-    device->set_font(gc_offset + (int)gc, GCs[gc].awar_font->read_char_pntr());
+void _AW_gc_manager::update_gc_font(int gc) {
+    aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
+    device->set_font(gc, GCs[gc+1].awar_font->read_char_pntr());
     // set drag_font?
     // if bg change, reset drag colors?
     changed.emit();
@@ -319,10 +319,11 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
                            const char            *default_background_color,
                            ...) {
     aw_assert(default_background_color[0]);
+    aw_assert(base_gc == 0);
 
     AW_root    *aw_root = AW_root::SINGLETON;
 
-    AW_gc_manager gcmgr = new _AW_gc_manager(gc_base_name, device, base_gc -1, base_drag -1);
+    AW_gc_manager gcmgr = new _AW_gc_manager(gc_base_name, device, base_drag);
 
     if (aww) aww->main_drag_gc = base_drag;
 

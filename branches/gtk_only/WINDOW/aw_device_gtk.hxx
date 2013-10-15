@@ -24,7 +24,6 @@ private:
 
 protected:
     cairo_t *get_cr(int gc) OVERRIDE;
-    PangoLayout *get_pl(int GC) OVERRIDE;
 public:
     /**
      * @param drawingArea the device draws onto the background of this widget.

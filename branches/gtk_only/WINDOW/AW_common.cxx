@@ -13,8 +13,6 @@
 #include <vector>
 
 struct AW_common::Pimpl {
-    AW_rgb   background_color;
-
     std::vector<AW_GC*> gcmap;
 
     AW_screen_area screen;
@@ -47,15 +45,6 @@ const AW_screen_area& AW_common::get_screen() const {
     return prvt->screen; 
 }
 
-void AW_common::set_bg_color(const AW_rgb& rgb) {
-    prvt->background_color = rgb; 
-}
-
-AW_rgb AW_common::get_bg_color() const {
-    return prvt->background_color;
-}
-
-
 void AW_common::reset_style() {
     std::vector<AW_GC*>::iterator it;
     for(it = prvt->gcmap.begin(); it != prvt->gcmap.end(); it++) {
@@ -68,7 +57,8 @@ void AW_common::reset_style() {
  * @param gc the number of the new gc
  */
 void AW_common::new_gc(int gc) {
-    aw_assert(gc >= 0);
+    aw_assert(gc >= -1);
+    gc++; // -1 is background
     // make sure gcmap is large enough
     if ((unsigned int)gc >= prvt->gcmap.size())
         prvt->gcmap.resize(gc+1, NULL);
@@ -85,7 +75,8 @@ void AW_common::new_gc(int gc) {
  * Tests whether a GC with the given index exists.
  */
 bool AW_common::gc_mapable(int gc) const {
-    return gc >= 0 && (unsigned int)gc < prvt->gcmap.size() && prvt->gcmap[gc];
+    gc++; // -1 is background
+    return gc >= 0 && (unsigned int)gc < prvt->gcmap.size() && prvt->gcmap[gc+1];
 }
 
 /**
@@ -93,7 +84,7 @@ bool AW_common::gc_mapable(int gc) const {
  * pointer may change on call to new_gc!
  */
 const AW_GC *AW_common::map_gc(int gc) const {
-    return  prvt->gcmap[gc];
+    return  prvt->gcmap[gc+1];
 }
 
 /**
@@ -101,7 +92,7 @@ const AW_GC *AW_common::map_gc(int gc) const {
  * pointer may change on call to new_gc!
  */
 AW_GC *AW_common::map_mod_gc(int gc) {
-    return prvt->gcmap[gc];
+    return prvt->gcmap[gc+1];
 }
 
 /**
