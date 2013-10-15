@@ -491,7 +491,7 @@ static GB_ERROR gbl_command(GBL_command_arguments *args) {
         error = "syntax: command(\"escaped command\")";
     }
     else {
-        GBDATA *gb_main = GB_get_root(args->gb_ref);
+        GBDATA *gb_main = GB_get_root(gb_local->gbl.gb_main);
         int     i;
         char   *command;
 

@@ -534,6 +534,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
     }
 
     if (isWarningPtr) *isWarningPtr = isWarning;
+    gen_progress.done(); // needed if err
 
     return err;
 }

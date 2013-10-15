@@ -26,6 +26,10 @@ TOOLS += arb_test
 endif
 endif
 
+# ------------------------------------------------------------
+# if you change lib-dependencies here,
+# please update corresponding definitions in ../BINDEP/
+
 LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB)
 LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a
 LIBS_ARB_READ_TREE      := ../SL/TREE_READ/TREE_READ.a
@@ -130,6 +134,7 @@ arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_file.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -399,6 +404,7 @@ arb_test.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_defs.h
+arb_test.o: $(ARBHOME)/INCLUDE/arb_diff.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_file.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_msg.h

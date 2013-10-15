@@ -16,6 +16,7 @@
 #include "gb_ta.h"
 
 #include <arb_strbuf.h>
+#include <arb_match.h>
 
 #include <cctype>
 

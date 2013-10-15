@@ -57,21 +57,21 @@ PARAMETERS
             It is compulsory to use this option when analysing amino acid sequences with the `custom' model.
 
 
-        -f e, m, or fA,fC,fG,fT
-            e : the character frequencies are determined as follows : 
-            - Nucleotide sequences: (Empirical) the equilibrium base frequencies are estimated by counting
-             the occurence of the different bases in the alignment.
-            - Amino-acid sequences: (Empirical) the equilibrium amino-acid frequencies are estimated by counting
-             the occurence of the different amino-acids in the alignment.
+        -f e, m,  or  fA,fC,fG,fT
 
-            m : the character frequencies are determined as follows : 
-            - Nucleotide sequences: (ML) the equilibrium base frequencies are estimated using maximum likelihood 
-            - Amino-acid sequences: (Model) the equilibrium amino-acid frequencies are estimated using
-             the frequencies defined by the substitution model.
+            - e : the character frequencies are determined as follows :
+                - Nucleotide sequences: (Empirical) the equilibrium base frequencies are estimated by counting
+                  the occurence of the different bases in the alignment.
+                - Amino-acid sequences: (Empirical) the equilibrium amino-acid frequencies are estimated by counting
+                  the occurence of the different amino-acids in the alignment.
+            - m : the character frequencies are determined as follows : 
+                - Nucleotide sequences: (ML) the equilibrium base frequencies are estimated using maximum likelihood 
+                - Amino-acid sequences: (Model) the equilibrium amino-acid frequencies are estimated using
+                  the frequencies defined by the substitution model.
+            - "fA,fC,fG,fT" : only valid for nucleotide-based models.
 
-            "fA,fC,fG,fT" : only valid for nucleotide-based models. fA, fC, fG and fT are floating numbers that 
-             correspond to the frequencies of A, C, G and T respectively (WARNING: do not use any blank space between
-             your values of nucleotide frequencies, only commas!)
+                  fA, fC, fG and fT are floating numbers that correspond to the frequencies of A, C, G and T
+                  respectively (WARNING: do not use any blank space between your values of nucleotide frequencies, only commas!)
 
 
         -t (or --ts/tv) ts/tv_ratio

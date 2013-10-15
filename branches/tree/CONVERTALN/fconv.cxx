@@ -5,6 +5,7 @@
 #include "global.h"
 #include <static_assert.h>
 #include <unistd.h>
+#include <arb_diff.h>
 
 static const char *format2name(Format type) {
     switch (type) {
@@ -141,7 +142,7 @@ static Capabilities cap[fcount][fcount];
 #define UPDATE_ONLY_IF_MORE_THAN_DATE_DIFFERS
 
 inline bool more_than_date_differs(const char *file, const char *expected) {
-    return !GB_test_textfile_difflines(file, expected, 0, 1);
+    return !ARB_textfiles_have_difflines(file, expected, 0, 1);
 }
 
 #if defined(TEST_AUTO_UPDATE)

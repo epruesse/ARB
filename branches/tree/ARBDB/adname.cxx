@@ -17,6 +17,7 @@
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <arb_file.h>
+#include <arb_diff.h>
 
 #include <cctype>
 
@@ -293,7 +294,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
 // #define TEST_AUTO_UPDATE // uncomment to auto-update test result db
 
-void TEST_rename_session() {
+void TEST_SLOW_rename_session() {
     const char *inputname    = "TEST_opti_ascii_in.arb";
     const char *outputname   = "TEST_opti_ascii_renamed.arb";
     const char *expectedname = "TEST_opti_ascii_renamed_expected.arb";

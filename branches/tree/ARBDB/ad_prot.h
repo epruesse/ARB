@@ -99,7 +99,6 @@ bool GB_is_server(GBDATA *gbd);
 GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);
 GB_ERROR GB_tell_server_dont_wait(GBDATA *gbd);
 GB_ERROR GB_install_pid(int mode);
-const char *GB_date_string(void);
 
 /* adcompr.cxx */
 bool GB_is_dictionary_compressed(GBDATA *gbd);
@@ -111,9 +110,6 @@ char *GB_find_latest_file(const char *dir, const char *mask);
 char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename);
 char *GB_property_file(bool warn_when_not_found, const char *filename);
 void GBS_read_dir(StrArray& names, const char *dir, const char *mask);
-bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
-size_t GB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common);
-bool GB_test_files_equal(const char *file1, const char *file2);
 
 /* adhash.cxx */
 GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens);
@@ -175,12 +171,6 @@ bool GB_supports_mapfile(void);
 /* admatch.cxx */
 GBS_string_matcher *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag);
 void GBS_free_matcher(GBS_string_matcher *matcher);
-GBS_regex *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR *error);
-void GBS_free_regexpr(GBS_regex *toFree);
-const char *GBS_unwrap_regexpr(const char *regexpr_in_slashes, GB_CASE *case_flag, GB_ERROR *error);
-const char *GBS_regmatch_compiled(const char *str, GBS_regex *comreg, size_t *matchlen);
-const char *GBS_regmatch(const char *str, const char *regExpr, size_t *matchlen, GB_ERROR *error);
-char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error);
 GB_CSTR GBS_find_string(GB_CSTR cont, GB_CSTR substr, int match_mode);
 bool GBS_string_matches(const char *str, const char *search, GB_CASE case_sens);
 bool GBS_string_matches_regexp(const char *str, const GBS_string_matcher *expr);

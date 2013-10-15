@@ -1629,6 +1629,7 @@ realperl: perltools
 			"dflags=$(dflags)" \
 			"cross_cflags=$(cross_cflags) $(cppflags) $(dflags)" \
 			"cross_lflags=$(cross_lflags)" \
+			"GCC_VERSION_FOUND=$(GCC_VERSION_FOUND)" \
 			all && \
 		$(TEST_PERL_SCRIPTS) && \
 		echo "$(SEP) Make PERL2ARB [done]" ; \
@@ -2031,13 +2032,20 @@ clean_cov_all: clean_cov
 run_tests: test_base clean_cov
 	$(MAKE) "ARB_PID=UT_$$$$" run_tests_faked_arbpid
 
+cleanup_faked_arbpids:
+	@-rm /tmp/arb_pids_${USER}_${ARB_PID}_*
+
+cleanup_faked_arbpids_and_fail: cleanup_faked_arbpids
+	@false
+
 run_tests_faked_arbpid:
 	+@$(TEST_RUN_SUITE) init
 	@echo "fake[2]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
-	$(MAKE) $(TEST_MAKE_FLAGS) $(NODIR) $(TESTED_UNITS)
+	$(MAKE) $(TEST_MAKE_FLAGS) $(NODIR) $(TESTED_UNITS) || $(MAKE) cleanup_faked_arbpids_and_fail
 	@echo "fake[2]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
-	+@$(TEST_RUN_SUITE) cleanup
+	+@$(TEST_RUN_SUITE) cleanup || $(MAKE) cleanup_faked_arbpids_and_fail
 	@$(MAKE) clean_cov >/dev/null
+	@$(MAKE) cleanup_faked_arbpids
 
 ut:
 ifeq ($(UNIT_TESTS),1)

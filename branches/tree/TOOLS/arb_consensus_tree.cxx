@@ -14,6 +14,7 @@
 #include <TreeRead.h>
 #include <TreeWrite.h>
 #include <arb_str.h>
+#include <arb_diff.h>
 
 using namespace std;
 
@@ -239,16 +240,16 @@ static arb_test::match_expectation consense_tree_generated(GBT_TREE *tree, GB_ER
 #define DIFF_OR_UPDATE TEST_EXPECT(exported_as_expected)
 #endif
 
-#define TEST_SAVE_AND_COMPARE_CONSTREE(tree,saveasHC,expectedHC) do {           \
-        char *saveas   = saveasHC;                                              \
-        char *expected = expectedHC;                                            \
-        TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));                \
-        bool exported_as_expected =                                             \
-            arb_test::test_textfile_difflines_ignoreDates(expected, saveas, 0); \
-        DIFF_OR_UPDATE;                                                         \
-        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));                      \
-        free(expected);                                                         \
-        free(saveas);                                                           \
+#define TEST_SAVE_AND_COMPARE_CONSTREE(tree,saveasHC,expectedHC) do {                   \
+        char *saveas   = saveasHC;                                                      \
+        char *expected = expectedHC;                                                    \
+        TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));                        \
+        bool exported_as_expected =                                                     \
+            arb_test::textfiles_have_difflines_ignoreDates(expected, saveas, 0);        \
+        DIFF_OR_UPDATE;                                                                 \
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));                              \
+        free(expected);                                                                 \
+        free(saveas);                                                                   \
     } while(0)
 
 void TEST_consensus_tree_1() {
@@ -543,7 +544,7 @@ static const char *findFirstNameContaining(GBT_TREE *tree, const char *part) {
     return found;
 }
 
-void TEST_treeIO_stable() {
+void TEST_SLOW_treeIO_stable() {
     const char *dbname   = "trees/bootstrap_groups.arb";
     const char *treename = "tree_bootstrap_and_groups";
     const char *savename = "bg";
@@ -581,7 +582,7 @@ void TEST_treeIO_stable() {
 #if defined(TREEIO_AUTO_UPDATE)
                         system(GBS_global_string("cp %s %s", outfile, expectedfile));
 #else // !defined(TREEIO_AUTO_UPDATE)
-                        bool exported_as_expected = arb_test::test_textfile_difflines_ignoreDates(expectedfile, outfile, 0);
+                        bool exported_as_expected = arb_test::textfiles_have_difflines_ignoreDates(expectedfile, outfile, 0);
 #if defined(TREEIO_AUTO_UPDATE_IF_EXPORT_DIFFERS)
                         if (!exported_as_expected) {
                             system(GBS_global_string("cp %s %s", outfile, expectedfile));
@@ -634,7 +635,7 @@ void TEST_treeIO_stable() {
                             free(cmd);
                         }
 
-                        bool reexported_as_expected = arb_test::test_textfile_difflines(expectedfile, outfile2, 0);
+                        bool reexported_as_expected = arb_test::textfiles_have_difflines(expectedfile, outfile2, 0);
 
 #if defined(TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS)
                         if (!reexported_as_expected) {

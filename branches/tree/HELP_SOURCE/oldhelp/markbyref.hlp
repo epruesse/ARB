@@ -18,8 +18,8 @@ DESCRIPTION     Allows to mark all species referred to in the content of a field
 
                 Enter name of field containing references.
 
-                      A reference is a single species ID ('name') or a comma-, semicolon-
-                      or space-separated list of species IDs.
+                      A reference is a single species ID ('name') or a
+                      comma-, semicolon- or space-separated list of species IDs.
 
                 Choose whether
                        - to abort if the field is missing or

@@ -311,14 +311,14 @@ static void nt_run(const char *command) {
 }
 
 void nt_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
-    char *command = GBS_global_string_copy("(%s %s) &", restart_with_new_ARB_PID ? "arb" : "arb_ntree", arb_ntree_args);
+    char *command = GBS_global_string_copy("arb_launcher --async %s %s", restart_with_new_ARB_PID ? "arb" : "arb_ntree", arb_ntree_args);
     nt_run(command);
     free(command);
 }
 
 __ATTR__NORETURN static void really_exit(int exitcode, bool kill_my_clients) {
     if (kill_my_clients) {
-        nt_run("(arb_clean >/dev/null 2>&1;echo ARB done) &"); // kills all clients
+        nt_run("(arb_clean session; echo ARB done) &"); // kills all clients
     }
     exit(exitcode);
 }
@@ -331,11 +331,12 @@ void nt_exit(AW_window *aws, AW_CL exitcode) {
         really_exit(exitcode, is_server_and_has_clients);
     }
 }
-void nt_restart(AW_root *aw_root, const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
+void nt_restart(AW_root *aw_root, const char *arb_ntree_args) {
+    // restarts arb_ntree (with new ARB_PID)
     bool is_server_and_has_clients = GLOBAL.gb_main && GB_read_clients(GLOBAL.gb_main)>0;
     if (nt_disconnect_from_db(aw_root, GLOBAL.gb_main))  {
-        nt_start(arb_ntree_args, restart_with_new_ARB_PID);
-        really_exit(EXIT_SUCCESS, restart_with_new_ARB_PID && is_server_and_has_clients);
+        nt_start(arb_ntree_args, true);
+        really_exit(EXIT_SUCCESS, is_server_and_has_clients);
     }
 }
 
@@ -344,9 +345,12 @@ static void nt_start_2nd_arb(AW_window *aww, AW_CL cl_quit) {
     AW_root *aw_root = aww->get_root();
     char    *dir4intro;
     GB_split_full_path(aw_root->awar(AWAR_DB_PATH)->read_char_pntr(), &dir4intro, NULL, NULL, NULL);
+    if (!dir4intro) {
+        dir4intro = strdup(".");
+    }
 
     if (cl_quit) {
-        nt_restart(aw_root, dir4intro, true);
+        nt_restart(aw_root, dir4intro);
     }
     else {
         nt_start(dir4intro, true);
@@ -989,6 +993,16 @@ int NT_get_canvas_id(AWT_canvas *ntw) {
     return id;
 }
 
+static void update_main_window_title(AW_root* awr, AW_window_menu_modes* aww, AW_CL clone) {
+    const char* filename = awr->awar(AWAR_DB_NAME)->read_char_pntr();
+    if (clone) {
+        aww->set_window_title(GBS_global_string("%s - ARB (%li)",  filename, clone));
+    }
+    else {
+        aww->set_window_title(GBS_global_string("%s - ARB", filename));
+    }
+}
+
 // ##########################################
 // ##########################################
 // ###                                    ###
@@ -1013,6 +1027,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     }
     AW_window_menu_modes *awm = new AW_window_menu_modes;
     awm->init(awr, window_title, window_title, 0, 0);
+
+    awr->awar(AWAR_DB_NAME)
+       ->add_callback(makeRootCallback(update_main_window_title, awm, clone))
+       ->update();
 
     awm->button_length(5);
 
@@ -1251,7 +1269,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->sep______________();
 
             awm->insert_menu_topic("dna_2_pro", "Perform translation", "t", "translate_dna_2_pro.hlp", AWM_ALL, AW_POPUP,            (AW_CL)NT_create_dna_2_pro_window, 0);
-            awm->insert_menu_topic("arb_dist",  "Distance matrix",     "D", "dist.hlp",                AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_dist &",               0);
+            awm->insert_menu_topic("arb_dist",  "Distance Matrix + ARB NJ",     "D", "dist.hlp",                AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_dist &",               0);
             awm->sep______________();
 
             awm->insert_menu_topic("seq_quality",   "Check Sequence Quality", "Q", "seq_quality.hlp",   AWM_EXP, AW_POPUP, (AW_CL)SQ_create_seq_quality_window,   (AW_CL)GLOBAL.gb_main);
@@ -1342,7 +1360,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_sub_menu("Build tree from sequence data",    "B");
             {
                 awm->insert_sub_menu("Distance matrix methods", "D");
-                awm->insert_menu_topic("arb_dist",      "ARB Neighbour Joining",     "J", "dist.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
+                awm->insert_menu_topic("arb_dist",      "Distance Matrix + ARB NJ",     "J", "dist.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
                 GDE_load_menu(awm, AWM_ALL, "Phylogeny Distance Matrix");
                 awm->close_sub_menu();
 
@@ -1654,7 +1672,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->at_set_to(false, false, ((2-is_genome_db)*EDIT_XSIZE), EDIT_YSIZE);
     awm->callback(NT_start_editor_on_tree, 0, (AW_CL)ntw);
     awm->help_text("arb_edit4.hlp");
-    awm->create_button("EDIT_SEQUENCES", "#edit.xpm");
+    awm->create_button("EDIT_SEQUENCES", "#editor.xpm");
 
     if (is_genome_db) {
         awm->at_set_to(false, false, EDIT_XSIZE, EDIT_YSIZE);
@@ -1706,9 +1724,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     awm->at(db_infox, second_uppery);
     awm->button_length(13);
-    awm->help_text("marked_species.hlp");
+    awm->help_text("configuration.hlp");
     awm->callback(NT_popup_configuration_admin, (AW_CL)ntw, 0);
-    awm->create_button("selection_admin", AWAR_MARKED_SPECIES_COUNTER);
+    awm->create_button("selection_admin2", AWAR_MARKED_SPECIES_COUNTER);
     {
         GBDATA *gb_species_data = GBT_get_species_data(GLOBAL.gb_main);
         GB_add_callback(gb_species_data, GB_CB_CHANGED, NT_update_marked_counter, (int*)awm);

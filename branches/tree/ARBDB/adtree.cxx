@@ -16,6 +16,7 @@
 #include <limits.h>
 #include <arb_global_defs.h>
 #include <arb_strbuf.h>
+#include <arb_diff.h>
 
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0

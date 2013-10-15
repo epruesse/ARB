@@ -89,11 +89,16 @@ static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
 
         for (int cset = 0; cset<SEQ_COLOR_SETS; ++cset) {
             awar_name         = GBS_global_string(AWAR_SEQ_NAME_TEMPLATE, cset, elem);
-            AW_awar *awar_col = awr->awar_string(awar_name, default_color(cset, elem))->add_callback(awt_awar_changed_cb, (AW_CL)asc);
+            AW_awar *awar_col = awr->awar_string(awar_name, default_color(cset, elem));
 
             if (strcmp(awar_col->read_char_pntr(), "=0") == 0) { // translate old->new default
                 awar_col->write_string("");
             }
+
+            // add callback AFTER writing to awar above to avoid recursion
+            // (the CB calls this function again, and seq_color_awars_created is set 
+            // to true at the very end...
+            awar_col->add_callback(awt_awar_changed_cb, (AW_CL)asc);
         }
     }
 

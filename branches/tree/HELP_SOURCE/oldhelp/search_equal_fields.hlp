@@ -17,9 +17,12 @@ OCCURRENCE      ARB_MERGE/Transfer species/Source-DB/Search entries existing in 
                 ARB_MERGE/Transfer species/Target-DB/Search entries existing words existing in entries of DBs and listed in the source DB hitlist
 
 DESCRIPTION     Searches for
+
                          * entries or
                          * words in entries
+
                 of the 'Search field' selected in the first query expression.
+# @@@ paragraph above gets poor formatting. if blank lines are remove, output is even worse
 
                 When you use these functions from menu 'Source-DB',
                 all species are queried and searched for equal entries (or words in entries).
