@@ -36,7 +36,7 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
 {
     AW_gc_manager gc_manager =
         AW_manage_GC(aww,
-                     ntw->get_gc_base_name(),
+                     ntw?ntw->get_gc_base_name():"unit_tester",
                      device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      makeWindowCallback(AWT_resize_cb, ntw, cd2),
                      true,      // define color groups
@@ -474,10 +474,7 @@ void AWT_graphic_tree::rot_show_line(AW_device *device) {
 
 void AWT_graphic_tree::rot_show_triangle(AW_device *device)
 {
-#ifdef ARB_GTK
-    // drag_gc (XOR based) does not work in GTK
-    return;
-#endif
+    return; //@@@ FIXME handle dragging in GTK
 
     double   w;
     double   len;
@@ -2667,7 +2664,8 @@ void AWT_graphic_tree::show(AW_device *device) {
                 break;
 
             case AP_LIST_SIMPLE:    // simple list of names (used at startup only)
-                show_nds_list(gb_main, false);
+                // don't see why we need to draw ANY tree at startup -> disabled
+                // show_nds_list(gb_main, false);
                 break;
         }
         if (are_distinct(Origin, cursor)) empty_box(AWT_GC_CURSOR, cursor, NT_SELECTED_WIDTH);
@@ -2717,93 +2715,6 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def)
 
 static void fake_AD_map_viewer_cb(GBDATA *, AD_MAP_VIEWER_TYPE ) {}
 
-static const char* colors_def[] = {
-    "#30b0e0",
-    "#ff8800", // AWT_GC_CURSOR
-    "#a3b3cf", // AWT_GC_BRANCH_REMARK
-    "#53d3ff", // AWT_GC_BOOTSTRAP
-    "#808080", // AWT_GC_BOOTSTRAP_LIMITED
-    "#000000", // AWT_GC_GROUPS
-    "#f0c000", // AWT_GC_SELECTED
-    "#bb8833", // AWT_GC_UNDIFF
-    "#622300", // AWT_GC_NSELECTED
-    "#977a0e", // AWT_GC_SOME_MISMATCHES
-    "#000000", // AWT_GC_BLACK
-    "#ffff00", // AWT_GC_YELLOW
-    "#ff0000", // AWT_GC_RED
-    "#ff00ff", // AWT_GC_MAGENTA
-    "#00ff00", // AWT_GC_GREEN
-    "#00ffff", // AWT_GC_CYAN
-    "#0000ff", // AWT_GC_BLUE
-    "#808080", // AWT_GC_WHITE
-    "#d50000", // AWT_GC_FIRST_COLOR_GROUP
-    "#00c0a0", 
-    "#00ff77",
-    "#c700c7",
-    "#0000ff",
-    "#ffce5b",
-    "#ab2323",
-    "#008888",
-    "#008800",
-    "#880088",
-    "#000088",
-    "#888800"
-};
-static long    dcolors_count = ARRAY_ELEMS(colors_def);
-
-class fake_AW_GC : public AW_GC {
-#ifdef ARB_GTK
-    virtual void wm_set_font(const char*) OVERRIDE {
-        int size=10;
-#else
-    virtual void wm_set_grey_level(AW_grey_level) OVERRIDE {}
-    virtual void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
-    virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
-    virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
-    virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) OVERRIDE {
-#endif
-        unsigned int i;
-        for (i = AW_FONTINFO_CHAR_ASCII_MIN; i <= AW_FONTINFO_CHAR_ASCII_MAX; i++) {
-            set_char_size(i, size, 0, size-2); // good fake size for Courier 8pt
-        }
-    }
-public:
-    fake_AW_GC(AW_common *common_) : AW_GC(common_) {}
-#ifdef ARB_GTK
-#else
-    virtual int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const OVERRIDE {
-        td_assert(0);
-        return 0;
-    }
-#endif
-};
-
-class fake_AW_common : public AW_common {
-public:
-    fake_AW_common()
-        : AW_common()
-    {
-        for (int gc = 0; gc < dcolors_count; ++gc) { // gcs used in this example
-            new_gc(gc);
-            AW_GC *gcm = map_mod_gc(gc);
-            gcm->set_line_attributes(1, AW_SOLID);
-            gcm->set_function(AW_COPY);
-#ifdef ARB_GTK
-            gcm->set_font("Courier 8");
-#else
-            gcm->set_font(12, 8, NULL); // 12 is Courier (use monospaced here, cause font limits are faked)
-#endif
-
-            gcm->set_fg_color(colors_def[gc]);
-        }
-    }
-    virtual ~fake_AW_common() OVERRIDE {}
-
-    virtual AW_GC *create_gc() OVERRIDE {
-        return new fake_AW_GC(this);
-    }
-};
-
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
     int var_mode;
 
@@ -2831,7 +2742,8 @@ public:
     void set_var_mode(int mode) { var_mode = mode; }
     void test_show_tree(AW_device *device) { show(device); }
 
-    void test_print_tree(AW_device_print *print_device, AP_tree_sort type, bool show_handles) {
+    void test_print_tree(AW_device_print *print_device, const char* file, 
+                               AP_tree_sort type, bool show_handles) {
         const int      SCREENSIZE = 541; // use a prime as screensize to reduce rounding errors
         AW_device_size size_device(print_device->get_common());
 
@@ -2900,26 +2812,30 @@ public:
         Vector offset(extra_shift+corner_shift+text_shift);
         print_device->set_offset(offset/(zoom*zoom)); // dont really understand this, but it does the right shift
 
+        // open the file now that the size is known
+        TEST_EXPECT_NO_ERROR(print_device->open(file));
+
         test_show_tree(print_device);
         print_device->box(AWT_GC_CURSOR, false, drawn_world);
         print_device->box(AWT_GC_GROUPS, false, drawn_text_world);
+
+        print_device->close();
     }
 };
 
-void fake_AW_init_color_groups();
-void AW_init_color_groups(AW_root *awr, AW_default def);
+void noop_wcbtarget(AW_window*) {}
 
-
-void NOTEST_treeDisplay() { // @@@ should be enabled again ( = remove the 'NO'), when AW_device_print is implemented ENABLE_THIS_TEST
+void TEST_treeDisplay() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("../../demo.arb", "r");
 
     fake_AWT_graphic_tree agt(gb_main, "OctSprin");
-    fake_AW_common        fake_common;
+    AW_root               root("ntree.arb");
+    AW_common_gtk         common(NULL, NULL, AW_MIDDLE_AREA);
+    AW_device_print       print_dev(&common);
 
-    AW_device_print print_dev(&fake_common);
-    AW_init_color_group_defaults(NULL);
-    fake_AW_init_color_groups();
+    agt.init_devices(NULL, &print_dev, NULL, (AW_CL) 0);
+    root.awar_int(AWAR_COLOR_GROUPS_USE, 1);
 
     AP_tree proto(0);
     agt.init(proto, new AliView(gb_main), NULL, true, false);
@@ -2937,52 +2853,39 @@ void NOTEST_treeDisplay() { // @@@ should be enabled again ( = remove the 'NO'),
         NULL, // "simple", (too simple, need no test)
     };
 
-    for (int show_handles = 0; show_handles <= 1; ++show_handles) {
-        for (int color = 0; color <= 1; ++color) {
-            print_dev.set_color_mode(color);
-            // for (AP_tree_sort type = AP_TREE_NORMAL; type <= AP_LIST_SIMPLE; type = AP_tree_sort(type+1)) {
-            for (AP_tree_sort type = AP_LIST_SIMPLE; type >= AP_TREE_NORMAL; type = AP_tree_sort(type-1)) { // now passes
-                if (spoolnameof[type]) {
-                    char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[type], "MC"[color], "NH"[show_handles]);
-                    char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name);
-                    char *spool_expected = GBS_global_string_copy("%s.fig", spool_name);
-
-
-// #define TEST_AUTO_UPDATE // dont test, instead update expected results
-                    
-                    agt.set_tree_type(type, NULL);
-
+    for (int mode = 0; mode <= 3; ++mode) {
+#ifdef TEST_TREE_REVERSE_ORDER
+        // (we skip AP_LIST_SIMPLE)
+        for (AP_tree_sort type = AP_TREE_NORMAL; type < AP_LIST_SIMPLE; type = AP_tree_sort(type+1)) {
+#else
+        for (AP_tree_sort type = AP_tree_sort(AP_LIST_SIMPLE-1); type >= AP_TREE_NORMAL;
+             type = AP_tree_sort(type-1)) { 
+#endif
+            char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[type], "MC"[mode/2], "NH"[mode%2]);
+            char *spool_file     = GBS_global_string_copy("%s_curr.svg", spool_name);
+            char *spool_expected = GBS_global_string_copy("%s.svg", spool_name);
+            
+            agt.set_tree_type(type, NULL);
+            
+            GB_transaction ta(gb_main);
+            agt.set_var_mode(mode);
+            
+            //#define TEST_AUTO_UPDATE // dont test, instead update expected results
 #if defined(TEST_AUTO_UPDATE)
 #warning TEST_AUTO_UPDATE is active (non-default)
-                    TEST_EXPECT_NO_ERROR(print_dev.open(spool_expected));
+            agt.test_print_tree(&print_dev, spool_expected, type, mode%2);
 #else
-                    TEST_EXPECT_NO_ERROR(print_dev.open(spool_file));
+            agt.test_print_tree(&print_dev, spool_file, type, mode%2);
+            TEST_EXPECT_TEXTFILES_EQUAL(spool_expected, spool_file);
+            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
 #endif
-
-                    {
-                        GB_transaction ta(gb_main);
-                        agt.set_var_mode(show_handles+2*color);
-                        agt.test_print_tree(&print_dev, type, show_handles);
-                    }
-
-                    print_dev.close();
-
-#if !defined(TEST_AUTO_UPDATE)
-                    // if (strcmp(spool_expected, "display/irs_CH.fig") == 0) {
-                        TEST_EXPECT_TEXTFILES_EQUAL(spool_expected, spool_file);
-                    // }
-                    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
-#endif
-                    free(spool_expected);
-                    free(spool_file);
-                    free(spool_name);
-                }
-            }
+            free(spool_expected);
+            free(spool_file);
+            free(spool_name);
         }
     }
 
     GB_close(gb_main);
 }
-
 
 #endif // UNIT_TESTS

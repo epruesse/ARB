@@ -473,10 +473,3 @@ void AW_save_specific_properties(AW_window *aw, const char *filename) {  // spec
 void AW_save_properties(AW_window *aw) {
     AW_save_specific_properties(aw, NULL);
 }
-
-
-
-#if defined(UNIT_TESTS) 
-void fake_AW_init_color_groups() {
-}
-#endif
