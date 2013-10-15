@@ -23,8 +23,8 @@ struct AW_common_gtk::Pimpl {
     AW_window  *aww;
     AW_area    area;
 
-    PangoFontMap *fontmap = pango_cairo_font_map_get_default();
-    PangoContext *context = pango_font_map_create_context(fontmap);
+    PangoFontMap *fontmap;
+    PangoContext *context;
     
     Pimpl() 
         : fontmap(pango_cairo_font_map_get_default()),
