@@ -28,45 +28,45 @@ SECTION SPECIAL CHARACTERS
 
 	Search && Replace string:
 
-		:               separates two commands
-		=               separates the search from the replace string
-		\               Escape symbol
-		\\              the '\' symbol itself
-		|               newline
-		\t              tabulator
-		\:              ':'
-		\=              '='
-		\?              '?'
-		\*              '*'
+		':'                separates two commands
+		'='                separates the search from the replace string
+		'\'                Escape symbol
+		'\\'               the '\' symbol itself
+		'|'                newline
+		'\t'               tabulator
+		'\:'               ':'
+		'\='               '='
+		'\?'               '?'
+		'\*'               '*'
 
 	Search string:
 
-		?               single letter wildcard
-		*               multi letter wildcard
+		'?'                single letter wildcard
+		'*'                multi letter wildcard
 
 	Replace string:
 
-		?               a reference to the corresponding single
-                                letter wildcard in the search string
-                                (if no digit or '(' follows).
-		?n              n = { 1,...,9 }
-                                a reference to the n'th single letter wildcard
-                                in the search string
-		*               a reference to the corresponding multi
-                                letter wildcard in the search string
-                                (no digit or '(' follows).
-		*n              n = { 1,...,9 }
-                                a reference to the n'th multi letter wildcard
-                                in the search string
-		*(key)          the value of a database field named <key>
-                                if this field does not exits then the string ''
-		*(key#mystring) the value of a database field named <key>
-                                if this field does not exits then the string 'mystring'
-		*(key\:nsrt)    invokes the SRT recursively on the value of the
-                                database field 'key'
-                                NOTE: All ':' have to be 'escaped'
-		*([key]|ACI)    starts ACI (see LINK{aci.hlp})
-                                on the value of '[key]' (which may be empty).
+		'?'                a reference to the corresponding single
+                                   letter wildcard in the search string
+                                   (if no digit or '(' follows).
+		'?n'               n = { 1,...,9 }
+                                   a reference to the n'th single letter wildcard
+                                   in the search string
+		'*'                a reference to the corresponding multi
+                                   letter wildcard in the search string
+                                   (no digit or '(' follows).
+		'*n'               n = { 1,...,9 }
+                                   a reference to the n'th multi letter wildcard
+                                   in the search string
+		'*(key)'           the value of a database field named <key>
+                                   if this field does not exits then the string ''
+		'*(key#mystring)'  the value of a database field named <key>
+                                   if this field does not exits then the string 'mystring'
+		'*(key\:nsrt)'     invokes the SRT recursively on the value of the
+                                   database field 'key'
+                                   NOTE: All ':' have to be 'escaped'
+		'*([key]|ACI)'     starts ACI (see LINK{aci.hlp})
+                                   on the value of '[key]' (which may be empty).
 
 
 EXAMPLES

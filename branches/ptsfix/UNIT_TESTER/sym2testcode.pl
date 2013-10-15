@@ -8,6 +8,7 @@ use warnings;
 my %location      = (); # key=symbol, value=location
 my %exported      = (); # key=exported symbols
 my %simple_test   = (); # key=names of existing simple test functions; value=1
+my %postcond      = (); # key=names of existing post-condition tests; value=1
 my %skipped_test  = (); # like simple_test, but not performed (atm)
 my %test_priority = (); # key=test value=priority
 
@@ -42,8 +43,8 @@ sub fail_if_no_tests_defined($) {
   my $active  = scalar(keys %simple_test);
 
   if (($skipped+$active)==0) {
-    # my $makefileDefiningTests = $ENV{ARBHOME}.'/Makefile';
-    my $makefileDefiningTests = '../Makefile';
+    my $makefileDefiningTests = $ENV{ARBHOME}.'/Makefile';
+    # my $makefileDefiningTests = '../Makefile';
     my $thisTest = $libname;
 
     $thisTest =~ s/\.(a|o|so)/.test/o;
@@ -101,7 +102,7 @@ sub parse($) {
   eval {
   LINE: while (defined ($line = <IN>)) {
       $lineNr++;
-      if ($line =~ /^(([0-9a-f]|\s)+) (.) (.*)\n/o) {
+      if ($line =~ /^(([0-9a-f]|\s)+) (.+?) (.*)\n/o) {
         my ($type,$rest) = ($3,$4);
         my $symbol;
         my $location = undef;
@@ -117,9 +118,13 @@ sub parse($) {
         if (defined $location) { $location{$symbol} = $location; }
 
         my $is_unit_test     = undef;
+        my $is_postcond      = undef;
         my $is_disabled_test = undef;
 
-        if ($symbol =~ /^TEST_/o) { $is_unit_test = 1; }
+        if ($symbol =~ /^TEST_/o) {
+          $is_unit_test = 1;
+          if ($' =~ /^POSTCOND_/o) { $is_postcond = 1; }
+        }
         elsif ($symbol =~ /TEST_/o) { $is_disabled_test = 1; }
 
         my $is_global_symbol = ($type eq 'T');
@@ -128,7 +133,12 @@ sub parse($) {
 
         if ($is_unit_test) {
           if ($is_global_symbol) {
-            $simple_test{$symbol} = 1;
+            if ($is_postcond) {
+              $postcond{$symbol} = 1;
+            }
+            else {
+              $simple_test{$symbol} = 1;
+            }
           }
           else {
             symbol_warning($symbol, "unit-tests need global scope (type='$type' symbol='$symbol')");
@@ -265,6 +275,7 @@ sub create($$) {
 HEAD
 
   my $TABLES = generate_table(UT_type('simple'), UT_name('simple'), %simple_test, &prototype_simple);
+  $TABLES   .= generate_table(UT_type('simple'), UT_name('postcond'), %postcond, &prototype_simple);
 
   my $skipped_count = scalar(keys %skipped_test);
 
@@ -273,6 +284,7 @@ HEAD
   $UNIT_TESTER .= UT_name('simple');
   $UNIT_TESTER .= ', '.$warn_level;
   $UNIT_TESTER .= ', '.$skipped_count;
+  $UNIT_TESTER .= ', '.UT_name('postcond');
   $UNIT_TESTER .= ');';
 
   my $MAIN = '';

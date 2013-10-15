@@ -893,7 +893,7 @@ void Interpreter::command_table_setup(bool setup) {
         command_table[i++] = new ArgCommand("ERROR",    &Interpreter::do_error,        TERMINATED_ON_ERROR);
         command_table[i++] = new ArgCommand("WARNING",  &Interpreter::do_warning);
 
-        command_table[i++] = new NoSuchCommand(); // should be last!
+        command_table[i++] = new NoSuchCommand; // should be last!
         command_table[i++] = NULL;
 
         aisc_assert(i<MAX_COMMANDS);

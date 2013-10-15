@@ -8,19 +8,17 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
-#include "nt_cb.hxx"
-#include "nt_internal.h"
+#include "NT_cb.h"
+#include "NT_local.h"
 
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <ad_config.h>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
-
-#define nt_assert(bed) arb_assert(bed)
 
 static void init_config_awars(AW_root *root) {
     root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
@@ -600,7 +598,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
 
         aws->at("store");
         aws->callback(nt_store_configuration, (AW_CL)ntw);
-        aws->create_button("STORE", "STORE", "S");
+        aws->create_button(GBS_global_string("STORE_%i", ntw_id), "STORE", "S");
 
         aws->at("extract");
         aws->callback(nt_extract_configuration, CONF_EXTRACT);

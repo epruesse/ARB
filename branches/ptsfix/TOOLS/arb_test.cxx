@@ -11,6 +11,8 @@
 
 #include <arbdbt.h>
 #include <arb_defs.h>
+#include <arb_sleep.h>
+#include <arb_diff.h>
 #include <unistd.h>
 
 int ARB_main(int , char *[]) {
@@ -150,6 +152,8 @@ static GB_ERROR removeVaryingDateFromTreeRemarks(const char *dbname) {
     return error;
 }
 
+// #define TEST_AUTO_UPDATE_TREE // uncomment to auto-update expected tree
+
 void TEST_SLOW_arb_read_tree() {
     struct {
         const char *basename;
@@ -184,7 +188,11 @@ void TEST_SLOW_arb_read_tree() {
     }
 
     TEST_EXPECT_NO_ERROR(removeVaryingDateFromTreeRemarks(dbout));
-    TEST_EXPECT_TEXTFILES_EQUAL(dbout, dbexpected);
+#if defined(TEST_AUTO_UPDATE_TREE)
+    system(GBS_global_string("cp %s %s", dbout, dbexpected));
+#else // !defined(TEST_AUTO_UPDATE_TREE)
+    TEST_EXPECT_TEXTFILES_EQUAL(dbexpected, dbout);
+#endif
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(dbout));
 }
 
@@ -321,7 +329,7 @@ static void test_notification_cb(const char *message, void *cd) {
 #define TEST_DBSERVER_SERVE_UNTIL(gbmain, cond) do {                    \
         bool success            = GBCMS_accept_calls(gb_main, false);   \
         while (success) success = GBCMS_accept_calls(gb_main, true);    \
-        GB_usleep(10000);                                               \
+        GB_sleep(10, MS);                                               \
     } while(!(cond))
 
 #define TEST_DBSERVER_CLOSE(gbmain) GBCMS_shutdown(gb_main)

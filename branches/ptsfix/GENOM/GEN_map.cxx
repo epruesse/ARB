@@ -27,6 +27,8 @@
 #include <aw_root.hxx>
 #include <adGene.h>
 #include <db_query.h>
+#include <rootAsWin.h>
+#include <mode_text.h>
 
 #include <map>
 
@@ -117,7 +119,7 @@ GEN_map_manager::GEN_map_manager()
 GEN_map_manager *GEN_map_manager::get_map_manager() {
     if (!the_manager) {
         gen_assert(aw_root);    // call initialize() before!
-        new GEN_map_manager();  // sets the manager
+        new GEN_map_manager;  // sets the manager
         gen_assert(the_manager);
     }
     return the_manager;
@@ -488,24 +490,15 @@ static void GEN_add_global_awar_callbacks(AW_root *awr) {
 static void GEN_mode_event(AW_window *aws, AW_CL cl_win, AW_CL cl_mode) {
     GEN_map_window   *win  = (GEN_map_window*)cl_win;
     AWT_COMMAND_MODE  mode = (AWT_COMMAND_MODE)cl_mode;
-    const char       *text = 0;
+
+    const char *text = 0;
     switch (mode) {
-        case AWT_MODE_SELECT: {
-            text="SELECT MODE  LEFT: click to select";
-            break;
-        }
-        case AWT_MODE_ZOOM: {
-            text="ZOOM MODE    LEFT: drag to zoom   RIGHT: zoom out";
-            break;
-        }
-        case AWT_MODE_EDIT: {
-            text="INFO MODE    LEFT: click for info";
-            break;
-        }
-        default: {
-            gen_assert(0);
-            break;
-        }
+        case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "click to select a gene"); break;
+        case AWT_MODE_EDIT:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");         break;
+
+        case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE();
+
+        default: text = no_mode_text_defined(); break;
     }
 
     gen_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!
@@ -699,7 +692,7 @@ struct EG2PS_data : virtual Noncopyable {
                                          , duplicateSpecies));
         }
         if (nameProblem) {
-            aw_message("Naming problems occurred.\nYou have to call 'Generate new names'!");
+            aw_message("Naming problems occurred.\nYou have to call 'Species/Synchronize IDs'!");
         }
         GBS_free_hash(pseudo_hash);
         free(ali);
@@ -1108,8 +1101,8 @@ static void gene_extract_cb(AW_window *aww, AW_CL cl_GEN_extract_mode_param) {
         aw_message(error);
     }
     else {
-        ask_about_existing_gene_species = new AW_repeated_question();
-        ask_to_overwrite_alignment      = new AW_repeated_question();
+        ask_about_existing_gene_species = new AW_repeated_question;
+        ask_to_overwrite_alignment      = new AW_repeated_question;
 
         arb_progress progress("Extracting pseudo-species");
         {
@@ -1435,12 +1428,6 @@ static AW_window *create_colorize_organisms_window(AW_root *aw_root, AW_CL cl_gb
     return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, ORGANISM_get_selector());
 }
 
-static void GEN_popup_organism_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
-    // used to avoid that the organisms info window is stored in a menu (or with a button)
-    AW_window *aws = DBUI::create_organism_info_window(aww->get_root(), cl_gb_main);
-    aws->activate();
-}
-
 static void GEN_create_organism_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool submenu) {
     const char *title  = "Organisms";
     const char *hotkey = "O";
@@ -1449,7 +1436,7 @@ static void GEN_create_organism_submenu(AW_window_menu_modes *awm, GBDATA *gb_ma
     else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
-        awm->insert_menu_topic("organism_info", "Organism information", "i", "organism_info.hlp", AWM_ALL, GEN_popup_organism_window,  (AW_CL)gb_main, 0);
+        awm->insert_menu_topic("organism_info", "Organism information", "i", "organism_info.hlp", AWM_ALL, RootAsWindowCallback::simple(DBUI::popup_organism_info_window, gb_main));
 
         awm->sep______________();
 
@@ -1508,7 +1495,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
             awm->sep______________();
         }
 
-        awm->insert_menu_topic("gene_info",   "Gene information", "i", "gene_info.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_window,       (AW_CL)gb_main);
+        awm->insert_menu_topic("gene_info",   "Gene information", "i", "gene_info.hlp",   AWM_ALL, RootAsWindowCallback::simple(GEN_popup_gene_infowindow, gb_main));
         awm->insert_menu_topic("gene_search", "Search and Query", "Q", "gene_search.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_query_window, (AW_CL)gb_main);
 
         GEN_create_mask_submenu(awm, gb_main);
@@ -1612,9 +1599,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     GEN_create_genemap_local_awars(awr, AW_ROOT_DEFAULT, window_nr);
 
     gen_graphic = new GEN_graphic(awr, gb_main, GEN_gene_container_cb_installer, window_nr);
-
-    AW_gc_manager aw_gc_manager;
-    gen_canvas = new AWT_canvas(gb_main, this, gen_graphic, aw_gc_manager, AWAR_SPECIES_NAME);
+    gen_canvas  = new AWT_canvas(gb_main, this, get_window_id(), gen_graphic, AWAR_SPECIES_NAME);
 
     GEN_add_local_awar_callbacks(awr, AW_ROOT_DEFAULT, this);
 
@@ -1644,7 +1629,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     create_menu("Properties", "r", AWM_ALL);
     insert_menu_topic("gene_props_menu",   "Menu: Colors and Fonts ...",   "M", "props_frame.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
     // @@@ FIXME: replace AW_preset_window by local function returning same window for all mapped views
-    insert_menu_topic("gene_props",        "GENEMAP: Colors and Fonts ...", "C", "gene_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager);
+    insert_menu_topic("gene_props",        "GENEMAP: Colors and Fonts ...", "C", "gene_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)gen_canvas->gc_manager);
     // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
     insert_menu_topic("gene_layout",       "Layout",   "L", "gene_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_layout_window, 0);
     insert_menu_topic("gene_options",      "Options",  "O", "gene_options.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_options_window, 0);

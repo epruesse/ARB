@@ -20,12 +20,15 @@
 #include <db_query.h>
 #include <AW_rename.hxx>
 #include <aw_awar_defs.hxx>
-#include <aw_detach.hxx>
+#include <aw_awar.hxx>
+#include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <aw_question.hxx>
 #include <algorithm>
 #include <arb_progress.h>
 #include <item_sel_list.h>
+#include <map>
+#include <info_window.h>
 
 using namespace DBUI;
 using namespace QUERY;
@@ -156,7 +159,7 @@ static AW_window *create_species_create_window(AW_root *root, AW_CL cl_gb_main) 
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "Close", "C");
 
     aws->at("label");
     aws->create_autosize_button(0, "Please enter the name\nof the new species");
@@ -166,7 +169,7 @@ static AW_window *create_species_create_window(AW_root *root, AW_CL cl_gb_main) 
 
     aws->at("ok");
     aws->callback(species_create_cb, cl_gb_main);
-    aws->create_button("GO", "GO", "G");
+    aws->create_button("GO", "Go", "G");
 
     return (AW_window *)aws;
 }
@@ -239,8 +242,12 @@ static void species_rename_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
                 error = GB_write_string(gb_full_name, new_full_name);
             }
             if (!error) {
-                if (aw_ask_sure("recreate_name_field", "Do you want to re-create the 'name' field?")) {
-                    arb_progress progress("Recreating species name", 1);
+                bool recreateID = ARB_in_expert_mode(aw_root) && // never re-create ID in novice mode
+                    aw_ask_sure("recreate_name_field",
+                                "Regenerate species identifier ('name')?\n"
+                                "(only do this if you know what you're doing)");
+                if (recreateID) {
+                    arb_progress progress("Regenerating species ID", 1);
                     error = AWTC_recreate_name(gb_species);
                     if (!error) aw_root->awar(AWAR_SPECIES_NAME)->write_string(GBT_read_name(gb_species)); // set focus
                 }
@@ -273,17 +280,6 @@ static void species_delete_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
 
     if (error) aw_message(error);
     free(name);
-}
-
-static void map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism) {
-    DbScanner *scanner = (DbScanner*)scannerid;
-    GBDATA    *gb_main = get_db_scanner_main(scanner);
-    GB_push_transaction(gb_main);
-
-    const char *name       = aw_root->awar((bool)mapOrganism ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME)->read_char_pntr();
-    GBDATA     *gb_species = GBT_find_species(gb_main, name);
-    if (gb_species) map_db_scanner(scanner, gb_species, CHANGE_KEY_PATH);
-    GB_pop_transaction(gb_main);
 }
 
 static long count_field_occurrance(BoundItemSel *bsel, const char *field_name) {
@@ -604,12 +600,12 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item
 
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE", "Close", "C");
 
         const char *HELPFILE = "spaf_reorder.hlp";
         aws->callback(AW_POPUP_HELP, (AW_CL)HELPFILE);
         aws->at("help");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "Help", "H");
 
         Itemfield_Selection *sel1 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_SOURCE, FIELD_FILTER_NDS, "source", 0, selector, 20, 10);
         Itemfield_Selection *sel2 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_DEST,   FIELD_FILTER_NDS, "dest",   0, selector, 20, 10);
@@ -738,10 +734,10 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_s
         aws->button_length(6);
 
         aws->at("close"); aws->callback(AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"spaf_delete.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "Help", "H");
 
         Itemfield_Selection *item_sel =
             create_selection_list_on_itemfields(bound_selector->gb_main,
@@ -764,7 +760,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_s
         aws->at("delf");
         aws->callback(field_delete_cb, (AW_CL)item_sel);
         aws->help_text("rm_field_cmpt.hlp");
-        aws->create_button("DELETE_FIELD", "DELETE FIELD\n(DATA DELETED)", "C");
+        aws->create_button("DELETE_FIELD", "Delete field\n(data deleted)", "C");
     }
     
     return awsa[selector.type];
@@ -807,7 +803,7 @@ AW_window *DBUI::create_field_create_window(AW_root *root, AW_CL cl_bound_item_s
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "Close", "C");
 
     aws->at("input");
     aws->label("FIELD NAME");
@@ -824,7 +820,7 @@ AW_window *DBUI::create_field_create_window(AW_root *root, AW_CL cl_bound_item_s
 
     aws->at("ok");
     aws->callback(field_create_cb, cl_bound_item_selector);
-    aws->create_button("CREATE", "CREATE", "C");
+    aws->create_button("CREATE", "Create", "C");
 
     return (AW_window *)aws;
 }
@@ -878,11 +874,11 @@ static AW_window *create_field_convert_window(AW_root *root, AW_CL cl_bound_item
 
     aws->at("close");
     aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "Close", "C");
 
     aws->at("help");
     aws->callback(AW_POPUP_HELP, (AW_CL)"spaf_convert.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->create_button("HELP", "Help", "H");
 
     aws->callback(field_convert_update_typesel_cb, cl_bound_item_selector);
     create_selection_list_on_itemfields(bound_selector->gb_main,
@@ -906,7 +902,7 @@ static AW_window *create_field_convert_window(AW_root *root, AW_CL cl_bound_item
 
     aws->at("convert");
     aws->callback(field_convert_commit_cb, cl_bound_item_selector);
-    aws->create_button("CONVERT", "CONVERT", "T");
+    aws->create_button("CONVERT", "Convert", "T");
 
     return (AW_window*)aws;
 }
@@ -1303,11 +1299,11 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL c
 
         aws->at("close");
         aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours_listed.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "Help", "H");
 
         create_common_next_neighbour_fields(aws);
 
@@ -1339,11 +1335,11 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
 
         aws->at("close");
         aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "Help", "H");
 
         create_common_next_neighbour_fields(aws);
 
@@ -1358,7 +1354,7 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
 
         aws->at("go");
         aws->callback(awtc_nn_search);
-        aws->create_button("SEARCH", "SEARCH");
+        aws->create_button("SEARCH", "Search");
 
         aws->at("auto_go");
         aws->label("Auto on selection change");
@@ -1380,103 +1376,84 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
     return aws;
 }
 
+// ---------------------------------------------
+//      species/organism specific callbacks
 
-void DBUI::detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information) {
-    AW_window **aww_pointer = (AW_window**)cl_pointer_to_aww;
+static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id);
 
-    AW_detach_information *di           = (AW_detach_information*)cl_AW_detach_information;
-    Awar_Callback_Info    *cb_info      = di->get_cb_info();
-    AW_root               *awr          = cb_info->get_root();
-    char                  *curr_species = awr->awar(cb_info->get_org_awar_name())->read_string();
-
-    if (*aww_pointer == aww) {  // first click on detach-button
-        // create unique awar :
-        static int detach_counter = 0;
-        char       new_awar[100];
-        sprintf(new_awar, "tmp/DETACHED_INFO_%i", detach_counter++);
-        awr->awar_string(new_awar, "", AW_ROOT_DEFAULT);
-
-        cb_info->remap(new_awar); // remap the callback from old awar to new unique awar
-        aww->update_label(di->get_detach_button(), "GET");
-
-        *aww_pointer = 0;       // caller window will be recreated on next open after clearing this pointer
-        // [Note : the aww_pointer points to the static window pointer]
+static void popup_detached_speciesOrganismWindow(AW_window *aw_parent, const InfoWindow *infoWin) {
+    const InfoWindow *reusable = InfoWindowRegistry::infowin.find_reusable_of_same_type_as(*infoWin);
+    if (reusable) reusable->reuse();
+    else { // create a new window if none is reusable
+        popup_new_speciesOrganismWindow(aw_parent->get_root(),
+                                        infoWin->get_gbmain(),
+                                        infoWin->mapsOrganism(),
+                                        InfoWindowRegistry::infowin.allocate_detach_id(*infoWin));
     }
-
-    awr->awar(cb_info->get_awar_name())->write_string(curr_species);
-    aww->set_window_title(GBS_global_string("%s INFORMATION", curr_species));
-    free(curr_species);
 }
 
-static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow) {
+static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow, int detach_id) { // INFO_WINDOW_CREATOR
+    // if detach_id is MAIN_WINDOW -> create main window (not detached)
+
+    AW_window_simple_menu *aws      = new AW_window_simple_menu;
+    const ItemSelector&    itemType = organismWindow ? ORGANISM_get_selector() : SPECIES_get_selector();
+
+    init_info_window(aw_root, aws, itemType, detach_id);
+
+    aws->load_xfig("ad_spec.fig");
+
+    aws->button_length(8);
+
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
+    aws->create_button("CLOSE", "Close", "C");
+
+    aws->at("search");
+    aws->callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main);
+    aws->create_autosize_button("SEARCH", "Search...", "S");
+
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
+    aws->create_button("HELP", "Help", "H");
+
+    DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
+    const InfoWindow&  infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
+
+    if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
+    else                aws->create_menu("SPECIES",     "S", AWM_ALL);
+
+    aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, species_delete_cb,        (AW_CL)gb_main,                      0);
+    aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, species_rename_cb,        (AW_CL)gb_main,                      0);
+    aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, species_copy_cb,          (AW_CL)gb_main,                      0);
+    aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, AW_POPUP,                 (AW_CL)create_species_create_window, (AW_CL)gb_main);
+    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, move_species_to_extended, (AW_CL)gb_main,                      0);
+    aws->sep______________();
+
+    aws->create_menu("FIELDS", "F", AWM_ALL);
+    insert_field_admin_menuitems(aws, gb_main);
+
+    aws->at("detach");
+    infoWin.add_detachOrGet_button(popup_detached_speciesOrganismWindow);
+
+    aws->show();
+    infoWin.attach_selected_item();
+    return aws;
+}
+
+static void popup_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow) {
     int windowIdx = (int)organismWindow;
 
-    static AW_window_simple_menu *AWS[2] = { 0, 0 };
+    static AW_window *AWS[2] = { 0, 0 };
     if (!AWS[windowIdx]) {
-        AW_window_simple_menu *& aws = AWS[windowIdx];
-
-        aws = new AW_window_simple_menu;
-        if (organismWindow) aws->init(aw_root, "ORGANISM_INFORMATION", "ORGANISM INFORMATION");
-        else                aws->init(aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION");
-        aws->load_xfig("ad_spec.fig");
-
-        aws->button_length(8);
-
-        aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("search");
-        aws->callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main);
-        aws->create_button("SEARCH", "SEARCH", "S");
-
-        aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
-        aws->create_button("HELP", "HELP", "H");
-
-        DbScanner *scannerid = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS,
-                                                       organismWindow ? ORGANISM_get_selector() : ORGANISM_get_selector());
-
-        if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
-        else                aws->create_menu("SPECIES",     "S", AWM_ALL);
-
-        aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, species_delete_cb,     (AW_CL)gb_main,                      0);
-        aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, species_rename_cb,     (AW_CL)gb_main,                      0);
-        aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, species_copy_cb,       (AW_CL)gb_main,                      0);
-        aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, AW_POPUP,                 (AW_CL)create_species_create_window, (AW_CL)gb_main);
-        aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, move_species_to_extended, (AW_CL)gb_main,                      0);
-        aws->sep______________();
-
-        aws->create_menu("FIELDS", "F", AWM_ALL);
-        insert_field_admin_menuitems(aws, gb_main);
-
-        {
-            const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
-            AW_root            *awr       = aws->get_root();
-            Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, map_species, (AW_CL)scannerid, (AW_CL)organismWindow); // do not delete!
-            cb_info->add_callback();
-
-            AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
-
-            aws->at("detach");
-            aws->callback(detach_info_window, (AW_CL)&aws, (AW_CL)detach_info);
-            aws->create_button("DETACH", "DETACH", "D");
-
-            detach_info->set_detach_button(aws->get_last_widget());
-        }
-
-        aws->show();
-        map_species(aws->get_root(), (AW_CL)scannerid, (AW_CL)organismWindow);
+        AWS[windowIdx] = popup_new_speciesOrganismWindow(aw_root, gb_main, organismWindow, InfoWindow::MAIN_WINDOW);
     }
-    return AWS[windowIdx]; // already created (and not detached)
+    else {
+        AWS[windowIdx]->activate();
+    }
 }
 
-AW_window *DBUI::create_species_info_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, false);
-}
-AW_window *DBUI::create_organism_info_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, true);
-}
+void DBUI::popup_species_info_window (AW_root *aw_root, GBDATA *gb_main) { popup_speciesOrganismWindow(aw_root, gb_main, false); }
+void DBUI::popup_organism_info_window(AW_root *aw_root, GBDATA *gb_main) { popup_speciesOrganismWindow(aw_root, gb_main, true);  }
 
 static DbQuery *GLOBAL_species_query = NULL; // @@@ fix design
 
@@ -1520,7 +1497,7 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main)
         awtqs.do_set_pos_fig      = "doset";
         awtqs.do_refresh_pos_fig  = "dorefresh";
         awtqs.open_parser_pos_fig = "openparser";
-        awtqs.create_view_window  = create_species_info_window;
+        awtqs.popup_info_window   = popup_species_info_window;
 
         DbQuery *query           = create_query_box(aws, &awtqs, "spec");
         GLOBAL_species_query = query;
@@ -1535,12 +1512,13 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main)
 
         aws->at("close");
         aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"sp_search.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "Help", "H");
     }
     return aws;
 }
+
 

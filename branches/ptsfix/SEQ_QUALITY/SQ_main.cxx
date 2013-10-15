@@ -198,7 +198,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
     if (error) aw_message(error);
 
     SQ_clear_group_dictionary();
-    if (tree) GBT_delete_tree(tree);
+    GBT_delete_tree(tree);
 }
 
 static void sq_remove_quality_entries_cb(AW_window *, AW_CL cl_gb_main) {

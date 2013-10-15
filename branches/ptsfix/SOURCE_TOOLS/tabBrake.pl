@@ -12,6 +12,8 @@ use warnings;
 my $forceAll  = 0; # 1 -> force scan of all files if no stamp, 0 -> assume all ok, scan only new files
 my $defsStart = 15; # lineno of start of definition
 
+my $checkForOldLogs = 1; # whether to check for old logfile and delete them
+
 my %scan_extension = map { $_ => 1; } (
                                        'c', 'h',
                                        'cxx', 'hxx',
@@ -59,18 +61,16 @@ my %ignore_extension = map { $_ => 1; } (
                                         );
 
 my %ignored_subdirs = map { $_ => 1; } (
-                                        'GDE/CLUSTAL',
-                                        'GDE/CLUSTALW',
-                                        'GDE/FASTDNAML',
-                                        'GDE/AxML',
-                                        'GDE/TREEPUZZLE',
-                                        'GDE/PHYML',
-                                        'GDE/RAxML',
-                                        'GDE/SUPPORT',
-                                        'GDE/PHYLIP',
+                                        'GDE',
+                                        'READSEQ',
                                         'HEADERLIBS',
                                         'patches',
+                                        'UNIT_TESTER/flags',
+                                        'UNIT_TESTER/logs',
                                         'UNIT_TESTER/run',
+                                        'UNIT_TESTER/sockets',
+                                        'UNIT_TESTER/tests',
+                                        'UNIT_TESTER/valgrind',
                                         'bin',
                                        );
 
@@ -148,12 +148,15 @@ sub recurse_dirs($$) {
         my $modtime   = getModtime($full);
 
         if ($modtime<$files_newer_than) {
+          # file was created before last run of tabBrake.pl
           $scan = 0;
-          # file was created before last compile start
+
           # check if it's a log from an aborted compile
           if (/^[^.]+\.([0-9]+)\.log$/o) {
-            print "Old log file: $full -- removing\n";
-            unlink($full) || print "$full:0: can't unlink (Reason: $!)\n";
+            if ($checkForOldLogs and $modtime<($files_newer_than-3*60)) {
+              print "Old log file: $full -- removing\n";
+              unlink($full) || print "$full:0: can't unlink (Reason: $!)\n";
+            }
           }
         }
         elsif (defined $ignored_relpath{$rel}) {
@@ -277,6 +280,7 @@ else {
   else {
     print "Initial call - assuming everything is TAB-free\n";
     $files_newer_than = time;
+    $checkForOldLogs  = 0; # do not check for old logs (sometimes fails on fresh checkouts, e.g. in jenkins build server)
   }
 }
 

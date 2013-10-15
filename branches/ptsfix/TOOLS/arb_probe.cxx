@@ -16,6 +16,7 @@
 
 #include <arb_defs.h>
 #include <arb_strbuf.h>
+#include <arb_diff.h>
 #include <RegExpr.hxx>
 
 #include <algorithm>
@@ -2251,8 +2252,12 @@ void TEST_SLOW_variable_defaults_in_server() {
     const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
     TEST_EXPECT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag));
 
-    const char *servername = GBS_read_arb_tcp(server_tag);;
-    TEST_EXPECT_CONTAINS(servername, "/UNIT_TESTER/sockets/ptserver.socket"); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER
+    const char *servername = GBS_read_arb_tcp(server_tag);
+    {
+        char *socketname = GBS_global_string_copy(":%s", GB_path_in_ARBHOME("UNIT_TESTER/sockets/pt.socket"));
+        TEST_EXPECT_EQUAL(servername, socketname); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER
+        free(socketname);
+    }
 
     T_PT_MAIN  com;
     T_PT_LOCS  locs;

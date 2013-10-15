@@ -20,7 +20,6 @@
 #include <arbdbt.h>
 #include <arb_str.h>
 #include <arb_defs.h>
-#include <static_assert.h>
 
 #define WWW_COUNT                10
 #define AWAR_WWW_SELECT          "www/url_select"
@@ -260,3 +259,9 @@ AW_window *AWT_open_www_window(AW_root *aw_root, AW_CL cgb_main) {
     awt_www_select_change(aws, aw_root->awar(AWAR_WWW_SELECT)->read_int());
     return (AW_window *)aws;
 }
+
+void AWT_openURL_cb(AW_window *aww, AW_CL cl_url) {
+    const char *url = (const char*)cl_url;
+    AW_openURL(aww->get_root(), url);
+}
+

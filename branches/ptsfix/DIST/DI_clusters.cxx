@@ -964,11 +964,11 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
         aws->create_button("HELP", "HELP");
 
         aws->at("max_dist");
-        aws->d_callback(calculate_clusters);
+        aws->d_callback(makeWindowCallback(calculate_clusters));
         aws->create_input_field(AWAR_CLUSTER_MAXDIST, 12);
 
         aws->at("min_size");
-        aws->d_callback(calculate_clusters);
+        aws->d_callback(makeWindowCallback(calculate_clusters));
         aws->create_input_field(AWAR_CLUSTER_MINSIZE, 5);
 
         aws->at("calculate");

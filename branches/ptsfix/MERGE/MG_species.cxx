@@ -747,15 +747,15 @@ GB_ERROR MERGE_sequences_simple(AW_root *awr) {
                     }
                     else {
                         switch (aw_question("merge_existing_species",
-                                            GBS_global_string("Warning:  There is a name conflict for species '%s'\n"
+                                            GBS_global_string("Warning: There is an ID conflict for species '%s'\n"
                                                               "  You may:\n"
                                                               "  - Overwrite existing species\n"
-                                                              "  - Overwrite all species with name conflicts\n"
+                                                              "  - Overwrite all species with ID conflicts\n"
                                                               "  - Not import species\n"
-                                                              "  - Rename imported species\n"
-                                                              "  - Automatically rename species (append .NUM)\n"
+                                                              "  - Enter ID for imported species\n"
+                                                              "  - Automatically create unique species IDs (append .NUM)\n"
                                                               "  - Abort everything", s_name),
-                                            "overwrite, overwrite all, don't import, rename, auto-rename, abort")) {
+                                            "overwrite, overwrite all, don't import, create ID, auto-create IDs, abort")) {
                             case 1:
                                 overwriteall = true;
                             case 0:
@@ -770,7 +770,7 @@ GB_ERROR MERGE_sequences_simple(AW_root *awr) {
                                 char     *autoname = AWTC_create_numbered_suffix(D_species_hash, s_name, warning);
 
                                 if (!autoname) autoname = strdup(s_name);
-                                freeset(s_name, aw_input("Rename species", "Enter new name of species", autoname));
+                                freeset(s_name, aw_input("Species ID", "Enter new species ID", autoname));
                                 free(autoname);
                                 retry = true;
                                 break;

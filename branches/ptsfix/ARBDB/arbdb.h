@@ -77,12 +77,6 @@ enum GB_TYPES {                                     // supported DB entry types
 
 };
 
-enum GB_CASE {
-    GB_IGNORE_CASE    = 0,
-    GB_MIND_CASE      = 1,
-    GB_CASE_UNDEFINED = 2
-};
-
 enum GB_SEARCH_TYPE {
     SEARCH_BROTHER       = 1,                       // [was: this_level]
     SEARCH_CHILD         = 2,                       // [was: down_level]
@@ -102,8 +96,6 @@ enum GB_UNDO_TYPE {
 
 // -----------------------
 //      callback types
-
-typedef void (*GB_CB)(GBDATA *, int *clientdata, GB_CB_TYPE gbtype);
 
 struct gb_cb_spec {
     GB_CB       func;

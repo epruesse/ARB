@@ -67,6 +67,8 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/cb.h
+irstree_display.o: $(ARBHOME)/INCLUDE/cbtypes.h
 irstree_display.o: $(ARBHOME)/INCLUDE/cxxforward.h
 irstree_display.o: $(ARBHOME)/INCLUDE/downcast.h
 irstree_display.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -75,6 +77,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/nds.h
 irstree_display.o: $(ARBHOME)/INCLUDE/smartptr.h
 irstree_display.o: $(ARBHOME)/INCLUDE/static_assert.h
 irstree_display.o: $(ARBHOME)/INCLUDE/test_global.h
+irstree_display.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 TreeCallbacks.o: TreeCallbacks.hxx
 TreeCallbacks.o: TreeDisplay.hxx
@@ -108,13 +111,16 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/cb.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/cbtypes.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/gccver.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/mode_text.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/test_global.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 TreeDisplay.o: ../../WINDOW/aw_common.hxx
 TreeDisplay.o: TreeDisplay.hxx
@@ -126,6 +132,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_defs.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_diff.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -153,6 +160,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cb.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/cbtypes.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -162,3 +170,4 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/test_global.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/test_unit.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/ttypes.h

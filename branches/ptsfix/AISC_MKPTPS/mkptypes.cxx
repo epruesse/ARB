@@ -26,8 +26,7 @@
 #include <arb_early_check.h>
 #include <attributes.h>
 
-#define SIMPLE_ARB_ASSERT
-#include <arb_assert.h>
+#include <arb_simple_assert.h>
 #include <arbtools.h>
 
 #define mp_assert(cond) arb_assert(cond)

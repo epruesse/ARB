@@ -477,7 +477,7 @@ static void PV_SaveData(AW_window */*aww*/) {
     // 6. write to the database
     gbWritingData = true;
     if (gTerminalsCreated) {
-        ASKtoOverWriteData = new AW_repeated_question();
+        ASKtoOverWriteData = new AW_repeated_question;
 
         for (ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
              terminal;
@@ -1038,7 +1038,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
         aws->create_button("COLORMAPS", "#colorMaps.xpm");
 
         aws->at("colors");
-        aws->callback(AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)ED4_ROOT->aw_gc_manager);
+        aws->callback(AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)ED4_ROOT->gc_manager);
         aws->button_length(0);
         aws->create_button("COLORS", "#colors.xpm");
 

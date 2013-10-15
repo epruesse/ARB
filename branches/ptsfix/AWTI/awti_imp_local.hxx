@@ -34,32 +34,32 @@
 #define AWAR_ALI_TYPE       "tmp/import/alignment_type"
 #define AWAR_ALI_PROTECTION "tmp/import/alignment_protection"
 
-#define GB_MAIN awtcig.gb_main
-#define AWTC_IMPORT_CHECK_BUFFER_SIZE 10000
+#define AWTI_IMPORT_CHECK_BUFFER_SIZE 10000
 
 
-struct input_format_per_line : virtual Noncopyable {
-    char *match;
-    char *aci;
-    char *srt;
-    char *mtag;
-    char *append;
-    char *write;
-    char *setvar;
-    GB_TYPES type;
+struct import_match : virtual Noncopyable {
+    // one for each "MATCH" section of the import format
 
-    char *defined_at; // where was match defined
+    char     *match;
+    char     *aci;
+    char     *srt;
+    char     *mtag;
+    char     *append;
+    char     *write;
+    char     *setvar;
+    GB_TYPES  type;
+    char     *defined_at;     // where was match defined
 
-    input_format_per_line *next;
+    import_match *next;
 
-    input_format_per_line *reverse(input_format_per_line *to_append) {
-        input_format_per_line *rest = next;
+    import_match *reverse(import_match *to_append) {
+        import_match *rest = next;
         next = to_append;
         return rest ? rest->reverse(this) : this;
     }
 
-    input_format_per_line();
-    ~input_format_per_line();
+    import_match();
+    ~import_match();
 };
 
 #define IFS_VARIABLES 26                            // 'a'-'z'
@@ -83,7 +83,7 @@ public:
 };
 
 
-struct input_format_struct : virtual Noncopyable {
+struct import_format : virtual Noncopyable {
     char   *autodetect;
     char   *system;
     char   *new_format;
@@ -111,26 +111,65 @@ struct input_format_struct : virtual Noncopyable {
     char *b1;
     char *b2;
 
-    input_format_per_line *pl;
+    import_match *match;
 
-    input_format_struct();
-    ~input_format_struct();
+    import_format();
+    ~import_format();
 };
 
-struct awtcig_struct {
-    struct input_format_struct *ifo;      // main input format
-    struct input_format_struct *ifo2;     // symlink to input format
-    
-    GBDATA *gb_main;                      // import database
-    AW_CL   cd1, cd2;
-    AWTC_RCB(func);
+struct ArbImporter : virtual Noncopyable {
+    import_format *ifo;  // main input format
+    import_format *ifo2; // symlink to input format
+
+    GBDATA *gb_import_main; // import database
+
+    RootCallback after_import_cb;
 
     StrArray filenames;
     int      current_file_idx;
 
-    FILE   *in;
-    bool    doExit;                             // whether import window 'close' does exit
-    GBDATA *gb_other_main;                      // main DB
+    FILE *in;
+    bool  doExit; // whether import window 'close' does exit // @@@ rename (meaning is: import from inside ARB or not)
+
+    GBDATA *gb_main_4_nameserver; // main DB (needed to select nameserver-settings)
+
+    ArbImporter(const RootCallback& after_import_cb_)
+        : ifo(NULL),
+          ifo2(NULL),
+          gb_import_main(NULL),
+          after_import_cb(after_import_cb_),
+          current_file_idx(0),
+          in(NULL),
+          doExit(false),
+          gb_main_4_nameserver(NULL)
+    {
+    }
+
+    ~ArbImporter() {
+        if (gb_import_main) GB_close(gb_import_main);
+        delete ifo;
+        delete ifo2;
+
+        awti_assert(!in);
+    }
+
+    GB_ERROR read_format(const char *file);
+    void detect_format(AW_root *root);
+
+    int       next_file();
+    char     *read_line(int tab, char *sequencestart, char *sequenceend);
+    GB_ERROR  read_data(char *ali_name, int security_write);
+
+    void go(AW_window *aww);
+
+    GBDATA *peekImportDB() {
+        return gb_import_main;
+    }
+    GBDATA *takeImportDB() {
+        GBDATA *gbm    = gb_import_main;
+        gb_import_main = NULL;
+        return gbm;
+    }
 };
 
 

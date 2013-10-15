@@ -17,6 +17,7 @@
 #include <arb_defs.h>
 #include <arb_file.h>
 #include <arb_misc.h>
+#include <arb_diff.h>
 
 #include <arb_progress.h>
 
@@ -1038,24 +1039,24 @@ void TEST_SLOW_decide_passes_to_use() {
 void NOTEST_SLOW_maybe_build_tree() {
     // does only test sth if DB is present.
 
-    char *dbarg      = "-D" "extra_pt_src.arb";
-    char *testDB     = dbarg+2;
-    char *resultPT   = "extra_pt_src.arb.pt";
-    char *expectedPT = "extra_pt_src.arb_expected.pt";
+    char        dbarg[]    = "-D" "extra_pt_src.arb";
+    char       *testDB     = dbarg+2;
+    const char *resultPT   = "extra_pt_src.arb.pt";
+    const char *expectedPT = "extra_pt_src.arb_expected.pt";
     bool        exists     = GB_is_regularfile(testDB);
 
     if (exists) {
+        char pname[] = "fake_pt_server";
+        char barg[]  = "-build";
         char *argv[] = {
-            "fake_pt_server",
-            "-build",
+            pname,
+            barg,
             dbarg,
         };
 
-#if 1
         // build
         int res = ARB_main(ARRAY_ELEMS(argv), argv);
         TEST_EXPECT_EQUAL(res, EXIT_SUCCESS);
-#endif
 
 // #define TEST_AUTO_UPDATE
 #if defined(TEST_AUTO_UPDATE)

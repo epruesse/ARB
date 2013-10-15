@@ -20,6 +20,7 @@
 #include <awt_attributes.hxx>
 #include <arb_defs.h>
 #include <arb_strarray.h>
+#include <arb_diff.h>
 
 #include <unistd.h>
 #include <iostream>
@@ -33,9 +34,11 @@ using namespace AW;
 
 AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
 {
-    AW_gc_manager preset_window =
-        AW_manage_GC(aww, device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
-                     (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
+    AW_gc_manager gc_manager =
+        AW_manage_GC(aww,
+                     ntw->get_gc_base_name(),
+                     device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
+                     makeWindowCallback(AWT_resize_cb, ntw, cd2),
                      true,      // define color groups
                      "#3be",
 
@@ -59,7 +62,7 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
                      "+-Probe 3$blue",      "-All probes$white",
                      NULL);
 
-    return preset_window;
+    return gc_manager;
 }
 
 AP_tree *AWT_graphic_tree::search(AP_tree *node, const char *name) {
@@ -414,12 +417,12 @@ int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
 
     if ((mode &1) == 0) {   // to top
         if (rightsize >leftsize) {
-            at->swap_sons();
+            at->swap_featured_sons();
         }
     }
     else {
         if (rightsize < leftsize) {
-            at->swap_sons();
+            at->swap_featured_sons();
         }
     }
 
@@ -448,7 +451,7 @@ int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
         else { // (name_cmp>=0) aka: rightleafname <= leftleafname
             leafname = rightleafname;
             if (rightsize==leftsize && name_cmp>0) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
-                at->swap_sons();
+                at->swap_featured_sons();
             }
         }
     }
@@ -1211,8 +1214,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         GB_ERROR error;
                         switch (button) {
                             case AW_BUTTON_LEFT:
-                                error = source->cantMoveTo(dest);
-                                if (!error) source->moveTo(dest, cl->nearest_rel_pos);
+                                error = source->cantMoveNextTo(dest);
+                                if (!error) source->moveNextTo(dest, cl->nearest_rel_pos);
                                 break;
 
                             case AW_BUTTON_RIGHT:
@@ -1424,7 +1427,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
-                                at->reset_child_linewidths();
+                                at->reset_linewidths();
                                 at->set_linewidth(1);
                                 exports.save    = 1;
                                 exports.refresh = 1;
@@ -1562,19 +1565,22 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
         case AWT_MODE_SWAP:
             if (type==AW_Mouse_Press) {
-                switch (button) {
-                    case AW_BUTTON_LEFT:
-                        if (cl->exists) {
-                            at = (AP_tree *)cl->client_data1;
-                            if (!at) break;
-                            at->swap_sons();
-
-                            this->exports.refresh = 1;
-                            this->exports.save = 1;
+                if (cl->exists) {
+                    at = (AP_tree *)cl->client_data1;
+                    if (at) {
+                        switch (button) {
+                            case AW_BUTTON_LEFT:
+                                at->swap_featured_sons();
+                                exports.refresh = 1;
+                                exports.save = 1;
+                                break;
+                            case AW_BUTTON_RIGHT:
+                                at->rotate_subtree();
+                                exports.refresh = 1;
+                                exports.save = 1;
+                                break;
                         }
-                        break;
-                    case AW_BUTTON_RIGHT:
-                        break;
+                    }
                 }
             }
             break;

@@ -37,6 +37,7 @@ names.o: $(ARBHOME)/INCLUDE/arb_core.h
 names.o: $(ARBHOME)/INCLUDE/arb_error.h
 names.o: $(ARBHOME)/INCLUDE/arb_file.h
 names.o: $(ARBHOME)/INCLUDE/arb_msg.h
+names.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 names.o: $(ARBHOME)/INCLUDE/arb_string.h
 names.o: $(ARBHOME)/INCLUDE/arbdb.h
 names.o: $(ARBHOME)/INCLUDE/arbdb_base.h

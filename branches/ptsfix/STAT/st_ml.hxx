@@ -23,17 +23,18 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 
 #define st_assert(cond) arb_assert(cond)
-
 
 class ColumnStat;
 class MostLikelySeq;
 
-class   AW_root;
-class   AW_awar;
-class   AW_window;
-typedef void (*AW_CB0)(AW_window*);
+class AW_root;
+class AW_awar;
+class AW_window;
 
 class AP_tree;
 class AP_tree_root;
@@ -124,8 +125,9 @@ class ST_ML : virtual Noncopyable {
     int           latest_modification;              // last mod
     size_t        first_pos;                        // first..
     size_t        last_pos;                         // .. and last alignment position of current slice
-    AW_CB0        refresh_callback;
-    AW_window    *refreshed_window;
+
+    AW_CB0     postcalc_cb;
+    AW_window *cb_window;
 
     GBDATA *gb_main;
 
@@ -173,12 +175,14 @@ public:
     void create_column_statistic(AW_root *awr, const char *awarname, AW_awar *awar_default_alignment);
     ColumnStat *get_column_statistic() { return column_stat; }
 
-    GB_ERROR init_st_ml(const char           *tree_name,
+    GB_ERROR calc_st_ml(const char           *tree_name,
                         const char           *alignment_name,
                         const char           *species_names, // 0 -> all [marked] species (else species_names is a (char)1 separated list of species)
                         int                   marked_only,
                         ColumnStat           *colstat,
                         const WeightedFilter *weighted_filter) __ATTR__USERESULT;
+
+    void cleanup();
 
     const AP_filter *get_filter() const;
     size_t get_filtered_length() const;
@@ -194,11 +198,11 @@ public:
 
     AP_tree *find_node_by_name(const char *species_name);
 
-    void set_refresh_callback(AW_CB0 refresh_cb, AW_window *refreshed_win) {
-        refresh_callback = refresh_cb;
-        refreshed_window = refreshed_win;
+    void set_postcalc_callback(AW_CB0 postcalc_cb_, AW_window *cb_window_) {
+        postcalc_cb = postcalc_cb_;
+        cb_window   = cb_window_;
     }
-    void do_refresh() { if (refresh_callback) refresh_callback(refreshed_window); }
+    void do_postcalc_callback() { if (postcalc_cb) postcalc_cb(cb_window); }
 
     size_t get_first_pos() const { return first_pos; }
     size_t get_last_pos() const { return last_pos; }

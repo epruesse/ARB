@@ -212,21 +212,18 @@ void DI_dmatrix::handle_move(AW_event& event) {
     }
 }
 
-static void motion_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
+static void motion_cb(AW_window *aww, DI_dmatrix *dmatrix) {
     AW_event event;
     aww->get_event(&event);
 
-    DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
     if (event.button == AW_BUTTON_MIDDLE) {
         dmatrix->handle_move(event);
     }
 }
 
-static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
+static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
     AW_event event;
     aww->get_event(&event);
-
-    DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
 
     if (event.button == AW_WHEEL_UP || event.button == AW_WHEEL_DOWN) {
         if (event.type == AW_Mouse_Press) {
@@ -702,7 +699,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     di_bind_dist_awars(awr, dmatrix);
     create_matrix_awars(awr, dmatrix);
     
-    AW_window_menu *awm = new AW_window_menu();
+    AW_window_menu *awm = new AW_window_menu;
     awm->init(awr, "SHOW_MATRIX", "ARB_SHOW_MATRIX", 800, 600);
 
     dmatrix->device = awm->get_device(AW_MIDDLE_AREA);
@@ -711,17 +708,19 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     AW_awar *awar_sel = awr->awar(AWAR_SPECIES_NAME);
     awar_sel->add_callback(selected_species_changed_cb, (AW_CL)awm, (AW_CL)dmatrix);
     
-    awm->set_vertical_change_callback  ((AW_CB2)vertical_change_cb,   (AW_CL)dmatrix, 0);
-    awm->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, (AW_CL)dmatrix, 0);
+    awm->set_vertical_change_callback  (makeWindowCallback(vertical_change_cb,  dmatrix));
+    awm->set_horizontal_change_callback(makeWindowCallback(horizontal_change_cb, dmatrix));
 
-    awm->set_resize_callback(AW_MIDDLE_AREA, (AW_CB2)resize_needed,    (AW_CL)dmatrix, 0);
-    awm->set_expose_callback(AW_MIDDLE_AREA, (AW_CB2)redisplay_needed, (AW_CL)dmatrix, 0);
-    awm->set_input_callback (AW_MIDDLE_AREA, (AW_CB) input_cb,         (AW_CL)dmatrix, 0);
-    awm->set_motion_callback(AW_MIDDLE_AREA, (AW_CB) motion_cb,        (AW_CL)dmatrix, 0);
+    awm->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(resize_needed, dmatrix));
+    awm->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(redisplay_needed, dmatrix));
+    awm->set_input_callback (AW_MIDDLE_AREA, makeWindowCallback(input_cb, dmatrix));
+    awm->set_motion_callback(AW_MIDDLE_AREA, makeWindowCallback(motion_cb, dmatrix));
 
-    AW_gc_manager preset_window =
-        AW_manage_GC(awm, dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
-                     (AW_CB)resize_needed, (AW_CL)dmatrix, 0,
+    AW_gc_manager gc_manager =
+        AW_manage_GC(awm,
+                     awm->get_window_id(),
+                     dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
+                     makeWindowCallback(resize_needed, dmatrix),
                      false,
                      "#D0D0D0",
                      "#Standard$#000000",
@@ -746,7 +745,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
 
     awm->create_menu("Properties", "P");
     awm->insert_menu_topic("matrix_settings", "Settings ...",         "S", "matrix_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_matrix_settings_window, (AW_CL)0);
-    awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...", "C", "neprops_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)preset_window);
+    awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...", "C", "neprops_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)gc_manager);
     
     int x, y;
     awm->get_at_position(&x, &y);

@@ -8,18 +8,17 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
+#include "NT_local.h"
 
 #include <RangeList.h>
 #include <arbdbt.h>
 #include <insdel.h>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <awt_sel_boxes.hxx>
 #include <arb_defs.h>
-
-#define nt_assert(bed) arb_assert(bed)
 
 #define AWAR_INSDEL     "insdel/"
 #define TMP_AWAR_INSDEL "tmp/" AWAR_INSDEL
@@ -83,8 +82,8 @@ static void range_count_update_cb(AW_root *root) {
 }
 
 static void range_changed_cb(AW_root *root) {
-    UseRange    use = UseRange(root->awar(AWAR_INSDEL_RANGE)->read_int());
-    const char *what;
+    UseRange    use  = UseRange(root->awar(AWAR_INSDEL_RANGE)->read_int());
+    const char *what = NULL;
     switch (use) {
         case RANGES:         what = "selected ranges";  break;
         case SINGLE_COLUMNS: what = "selected columns"; break;

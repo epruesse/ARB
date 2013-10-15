@@ -10,9 +10,8 @@
 
 #include "aw_nawar.hxx"
 #include "aw_awar.hxx"
-#include "aw_detach.hxx"
+#include "aw_root.hxx"
 #include "aw_msg.hxx"
-#include "aw_question.hxx"
 #include "aw_window.hxx"
 #include "aw_select.hxx"
 #include <arb_str.h>
@@ -208,8 +207,7 @@ void AW_awar::untie_all_widgets() {
 
 
 AW_awar *AW_awar::add_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::add(callback_list, AW_root_callback(value_changed_cb, cd1, cd2));
-    return this;
+    return add_callback(makeRootCallback(value_changed_cb, cd1, cd2));
 }
 
 AW_awar *AW_awar::add_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
@@ -219,6 +217,11 @@ AW_awar *AW_awar::add_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
 AW_awar *AW_awar::add_callback(void (*f)(AW_root*)) {
     return add_callback((AW_RCB)f, 0, 0);
 }
+
+AW_awar *AW_awar::add_callback(const RootCallback& rcb) {
+    AW_root_cblist::add(callback_list, rcb);
+    return this;
+} 
 
 AW_awar *AW_awar::add_target_var(char **ppchr) {
     assert_var_type(AW_STRING);
@@ -499,8 +502,7 @@ AW_awar *AW_awar::map(const char *awarn) {
 }
 
 AW_awar *AW_awar::remove_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::remove(callback_list, AW_root_callback(value_changed_cb, cd1, cd2));
-    return this;
+    return remove_callback(makeRootCallback(value_changed_cb, cd1, cd2));
 }
 
 AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
@@ -508,6 +510,11 @@ AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
 }
 AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) {
     return remove_callback((AW_RCB) f, 0, 0);
+}
+
+AW_awar *AW_awar::remove_callback(const RootCallback& rcb) {
+    AW_root_cblist::remove(callback_list, rcb);
+    return this;
 }
 
 AW_awar *AW_awar::set_minmax(float min, float max) {
@@ -667,93 +674,6 @@ AW_awar::~AW_awar() {
     free(awar_name);
 }
 
-// ----------------------------
-//      Awar_Callback_Info
-
-void Awar_Callback_Info::remap(const char *new_awar) {
-    if (strcmp(awar_name, new_awar) != 0) {
-        remove_callback();
-        freedup(awar_name, new_awar);
-        add_callback();
-    }
-}
-void Awar_Callback_Info::init(AW_root *awr_, const char *awar_name_, Awar_CB2 callback_, AW_CL cd1_, AW_CL cd2_) {
-    awr           = awr_;
-    callback      = callback_;
-    cd1           = cd1_;
-    cd2           = cd2_;
-    awar_name     = strdup(awar_name_);
-    org_awar_name = strdup(awar_name_);
-}
-
-void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
-                                   const char *directory, const char *filter, const char *file_name,
-                                   AW_default default_file, bool resetValues)
-{
-    int   base_len  = strlen(awar_base);
-    bool  has_slash = awar_base[base_len-1] == '/';
-    char *awar_name = new char[base_len+30]; // use private buffer, because caller will most likely use GBS_global_string for arguments
-
-    sprintf(awar_name, "%s%s", awar_base, "/directory"+int(has_slash));
-    AW_awar *awar_dir = awr->awar_string(awar_name, directory, default_file);
-
-    sprintf(awar_name, "%s%s", awar_base, "/filter"   + int(has_slash));
-    AW_awar *awar_filter = awr->awar_string(awar_name, filter, default_file);
-
-    sprintf(awar_name, "%s%s", awar_base, "/file_name"+int(has_slash));
-    AW_awar *awar_filename = awr->awar_string(awar_name, file_name, default_file);
-
-    if (resetValues) {
-        awar_dir->write_string(directory);
-        awar_filter->write_string(filter);
-        awar_filename->write_string(file_name);
-    }
-    else {
-        char *stored_directory = awar_dir->read_string();
-#if defined(DEBUG)
-        if (strncmp(awar_base, "tmp/", 4) == 0) { // non-saved awar
-            if (directory[0] != 0) { // accept empty dir (means : use current ? )
-                aw_assert(GB_is_directory(directory)); // default directory does not exist
-            }
-        }
-#endif // DEBUG
-
-        if (strcmp(stored_directory, directory) != 0) { // does not have default value
-#if defined(DEBUG)
-            const char *arbhome    = GB_getenvARBHOME();
-            int         arbhomelen = strlen(arbhome);
-
-            if (strncmp(directory, arbhome, arbhomelen) == 0) { // default points into $ARBHOME
-                aw_assert(resetValues); // should be called with resetValues == true
-                // otherwise it's possible, that locations from previously installed ARB versions are used
-            }
-#endif // DEBUG
-
-            if (!GB_is_directory(stored_directory)) {
-                awar_dir->write_string(directory);
-                fprintf(stderr,
-                        "Warning: Replaced reference to non-existing directory '%s'\n"
-                        "         by '%s'\n"
-                        "         (Save properties to make this change permanent)\n",
-                        stored_directory, directory);
-            }
-        }
-
-        free(stored_directory);
-    }
-
-    char *dir = awar_dir->read_string();
-    if (dir[0] && !GB_is_directory(dir)) {
-        if (aw_ask_sure("create_directory", GBS_global_string("Directory '%s' does not exist. Create?", dir))) {
-            GB_ERROR error = GB_create_directory(dir);
-            if (error) aw_message(GBS_global_string("Failed to create directory '%s' (Reason: %s)", dir, error));
-        }
-    }
-    free(dir);
-
-    delete [] awar_name;
-}
-
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
@@ -776,9 +696,9 @@ static void test_cb2(AW_root *, AW_CL cd1, AW_CL cd2) { test_cb2_called += (cd1+
 void TEST_AW_root_cblist() {
     AW_root_cblist *cb_list = NULL;
 
-    AW_root_callback tcb1(test_cb1, 1, 0);
-    AW_root_callback tcb2(test_cb2, 0, 1);
-    AW_root_callback wrong_tcb2(test_cb2, 1, 0);
+    RootCallback tcb1(test_cb1, 1, 0);
+    RootCallback tcb2(test_cb2, 0, 1);
+    RootCallback wrong_tcb2(test_cb2, 1, 0);
 
     AW_root_cblist::add(cb_list, tcb1); TEST_EXPECT_CBS_CALLED(cb_list, 1, 0);
     AW_root_cblist::add(cb_list, tcb2); TEST_EXPECT_CBS_CALLED(cb_list, 1, 1);

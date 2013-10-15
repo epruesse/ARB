@@ -1,0 +1,244 @@
+<HTML><!--Generated from XML - XSLT-Stylesheet by Ralf Westram (ralf@arb-home.de) --><HEAD><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><META NAME="Author" CONTENT="ARB development"><meta http-equiv="expires" content="86400"><TITLE>ARB help: Unittest example helpfile</TITLE></HEAD><BODY LEFTMARGIN="10" TEXT="black" BGCOLOR="white" LINK="blue" VLINK="green" ALINK="red"><TABLE width="95%"><TR><TD align="left" valign="top"><FORM method="GET" action="http://www.google.com/search" name="google"><A HREF="http://www.google.com"><IMG SRC="Logo_25wht.gif" width="75" height="32" border="0" ALT="Google" align="absmiddle"></A><INPUT TYPE="hidden" name="q"><INPUT TYPE="hidden" name="hl" value="en"><INPUT TYPE="hidden" name="as_sitesearch" value="help.arb-home.de"><INPUT TYPE="text" name="q2" size="31" maxlength="255"><INPUT type="submit" name="btnG" VALUE="Search help" onClick="google.q.value=google.q2.value;return true;"><INPUT type="submit" name="btnG" VALUE="Search site" onClick="google.as_sitesearch.value='arb-home.de';google.q.value=google.q2.value;return true;"></FORM></TD><TD valign="top" align="right"><FONT size="-1"><NOBR>More docs on the
+                <A href="http://rtfm.arb-home.de/">ARB website</A>.</NOBR><BR>
+                See also <A href="help_index.html">index</A> of helppages.<BR>
+                Last update on 
+03. Oct 2013
+  .
+              </FONT></TD></TR></TABLE><TABLE border="0" width="98%" align="center"><TR bgcolor="#ccccff"><TD valign="top" width="50%">Main topics:<BR><UL>
+  <LI><A href="arb.html">ARB: a Short Introduction</A></LI>
+  <LI><A href="glossary.html">Glossary</A></LI>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+</UL></TD><TD valign="top">Related topics:<BR><UL>
+  
+  
+  <LI><A href="aci.html">ARB Command Interpreter (ACI)</A></LI>
+  <LI><A href="srt.html">Search and Replace Tool (SRT)</A></LI>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+</UL></TD></TR><TR><TD colspan="2"><H1>Unittest example helpfile</H1><UL><LI><A href="#OCCURRENCE">OCCURRENCE</A></LI><LI><A href="#DESCRIPTION">DESCRIPTION</A></LI><LI><A href="#CUSTOM____A_custom_section.">CUSTOM    A custom section.</A></LI><LI><A href="#Wanted_fixes">Wanted fixes</A></LI><LI><A href="#FEATURE_TESTS">FEATURE TESTS</A></LI><LI><A href="#NOTES">NOTES</A></LI><LI><A href="#EXAMPLES">EXAMPLES</A></LI><LI><A href="#WARNINGS">WARNINGS</A></LI><LI><A href="#BUGS">BUGS</A></LI></UL><A name="OCCURRENCE"></A><H2>OCCURRENCE</H2><TABLE width="100%" border="0"><TR><TD align="right"><TABLE width="97%" border="0"><TR><TD>
+    <P><B>
+        nowhere</B><BR></P>
+  </TD></TR><TR><TD> </TD></TR></TABLE></TD></TR></TABLE><A name="DESCRIPTION"></A><H2>DESCRIPTION</H2><TABLE width="100%" border="0"><TR><TD align="right"><TABLE width="97%" border="0"><TR><TD>
+    <P><B>
+        This is the first paragraph of the description.
+        It may be continued on the next line.</B><BR></P>
+    <P><B>
+        Another paragraph
+        also
+        belonging to description. It is followed by
+        an enumeration on the same indentation level:</B><BR><OL><LI>
+          <PRE><FONT color="navy" size="-1">first enum</FONT></PRE>
+          <UL><LI>
+              
+                Again a paragraph - a one liner followed by an item list. It is completely misplaced at the moment!
+            </LI><LI>
+              <PRE><FONT color="navy" size="-1">- item 1
+- item 2
+- item 3
+  contains 2 lines</FONT></PRE>
+            </LI></UL><BR>
+        </LI><LI>
+          <PRE><FONT color="navy" size="-1">   second enum which
+   is continued on the next line.
+   Currently is misinterpreted as monospaced paragraph.</FONT></PRE>
+        </LI><LI>
+          
+            third enum
+        </LI></OL><BR></P>
+  </TD></TR><TR><TD> </TD></TR></TABLE></TD></TR></TABLE><A name="CUSTOM____A_custom_section."></A><H2>CUSTOM    A custom section.</H2><TABLE width="100%" border="0"><TR><TD align="right"><TABLE width="97%" border="0"><TR><TD>
+    <P><B>
+        Acts like DESCRIPTION, despite the SECTION line will be part of the headline.
+        In DESCRIPTION it would be part of the first paragraph.</B><BR></P>
+    <P><B>
+        First i need to check proper support for different
+        indentation levels.</B><BR><UL><LI>
+          
+            This paragraph has to be indented one level deeper than
+            the previous paragraph.
+        </LI><LI>
+          
+            That paragraph should be on
+            the same level.
+          <UL><LI>
+              
+                Here is another one, even deeper.
+            </LI><LI>
+              
+                Same,
+                same.
+            </LI></UL><BR>
+        </LI><LI>
+          
+            Back one step.
+          <UL><LI>
+              
+                One step down - ignoring deeper
+                indentation in source.
+            </LI><LI>
+              
+                Consecutive paragraphs are only placed on the same
+                level if their indentation matches.
+            </LI><LI>
+              
+                Using the indentation level used 4 paragraphs above, wont help here.
+              <UL><LI>
+                  
+                    But the "wrong" indentation of the previous
+                    paragraph forces this paragraph to get indented one
+                    level deeper than the paragraphs before.
+                </LI><LI>
+                  
+                    This does not step back.
+                </LI><LI>
+                  
+                    same same.
+                </LI></UL><BR>
+            </LI></UL><BR>
+        </LI></UL><BR></P>
+    <P><B>
+        Back to top (end of indentation tests).</B><BR></P>
+  </TD></TR><TR><TD> </TD></TR></TABLE></TD></TR></TABLE><A name="Wanted_fixes"></A><H2>Wanted fixes</H2><TABLE width="100%" border="0"><TR><TD align="right"><TABLE width="97%" border="0"><TR><TD>
+    <P><B>
+        Paragraphs containing multiple spaces will be
+        treated as monospaced. This is done to support
+        tabular information like the following:</B><BR><P style="margin-left:+10pt">
+        <PRE><FONT color="navy" size="-1">                    other
+        column      column
+row     1           2
+row2    -           3</FONT></PRE>
+      </P></P>
+    <P><B>
+        Problems occur if there are empty lines inside such a table, like here:</B><BR><UL><LI>
+          <PRE><FONT color="navy" size="-1">            other
+column      column</FONT></PRE>
+        </LI><LI>
+          <PRE><FONT color="navy" size="-1">row     1           2
+row2    -           3</FONT></PRE>
+        </LI><LI>
+          
+            (should better be combined)
+        </LI></UL><BR></P>
+    <P><B>
+        Here is some unsupported itemlist:</B><BR><P style="margin-left:+10pt">
+        <PRE><FONT color="navy" size="-1">* item1
+  continued on next line
+* item2
+* item3</FONT></PRE>
+      </P></P>
+    <P><B>
+        Itemlist containing paragraphs under some items</B><BR><UL><LI>
+          
+            - item 1
+            - item 2
+          <P style="margin-left:+10pt">
+            
+              This is a short
+              description of item 2.
+              Currently it does not differ from the items, but it should.
+          </P>
+        </LI><LI>
+          
+            - item 3
+          <P style="margin-left:+10pt">
+            
+              This is a not much longer
+              description of item 3.
+          </P>
+        </LI><LI>
+          
+            This is a paragraph which should
+            be placed outside the itemlist.
+            Currently this is placed like the items above.
+        </LI></UL><BR></P>
+    <P><B>
+        And this paragraph should be back where we were before
+        the itemlist began.</B><BR></P>
+    <P><B>
+        Now to sth completely unsupported. It would be nice,
+        to support enumerations using letters, since that is
+        common, i.e. sth like</B><BR></P>
+    <P><B>
+        A. first enum
+        B. 2nd enum
+        C. third enum
+        D. last enum</B><BR></P>
+    <P><B>
+        should work, but it doesn't. Also</B><BR><P style="margin-left:+10pt">
+        
+          a. first enum
+          b. 2nd enum
+          c. third enum
+          d. last enum
+      </P></P>
+    <P><B>
+        should work.</B><BR></P>
+    <P><B>
+        Check some "illegal" itemlists:</B><BR><UL><LI>
+          
+            ----------------------
+        </LI><LI>
+          
+            -noitem
+        </LI><LI>
+          <PRE><FONT color="navy" size="-1">-  eithernoitem</FONT></PRE>
+        </LI><LI>
+          
+            **********************
+        </LI><LI>
+          
+            *noitem
+        </LI><LI>
+          <PRE><FONT color="navy" size="-1">*  eithernoitem</FONT></PRE>
+        </LI></UL><BR></P>
+  </TD></TR><TR><TD> </TD></TR></TABLE></TD></TR></TABLE><A name="FEATURE_TESTS"></A><H2>FEATURE TESTS</H2><TABLE width="100%" border="0"><TR><TD align="right"><TABLE width="97%" border="0"><TR><TD>
+    <P><B>
+        Here all existing helpfile features should be tested:</B><BR><UL><LI>
+          <PRE><FONT color="navy" size="-1">- first testing an inlined
+  link to another help file: <A href="srt.html">´Search and Replace Tool (SRT)´</A>
+          </FONT></PRE>
+        </LI><LI>
+          <PRE><FONT color="navy" size="-1">- and a link to the arb homepage
+  <A href="http://www.arb-home.de/">http://www.arb-home.de/</A>  followed by text.
+          </FONT></PRE>
+        </LI><LI>
+          <PRE><FONT color="navy" size="-1">- arb help also supports mail-links (like <A href="mailto:devel@arb-home.de?subject=Concerning%20helppage%20unittest.xml">devel@arb-home.de</A>).
+  All 3 sorts of links should be clickable in the html version.
+          </FONT></PRE>
+        </LI></UL><BR></P>
+  </TD></TR><TR><TD> </TD></TR></TABLE></TD></TR></TABLE><A name="NOTES"></A><H2>NOTES</H2><TABLE width="100%" border="0"><TR><TD align="right"><TABLE width="97%" border="0"><TR><TD>
+    <P><B>
+        Note that this test may help me.</B><BR></P>
+  </TD></TR><TR><TD> </TD></TR></TABLE></TD></TR></TABLE><A name="EXAMPLES"></A><H2>EXAMPLES</H2><TABLE width="100%" border="0"><TR><TD align="right"><TABLE width="97%" border="0"><TR><TD>
+    <P><B>
+        The whole file is just an example.</B><BR></P>
+  </TD></TR><TR><TD> </TD></TR></TABLE></TD></TR></TABLE><A name="WARNINGS"></A><H2>WARNINGS</H2><TABLE width="100%" border="0"><TR><TD align="right"><TABLE width="97%" border="0"><TR><TD>
+    <P><B>
+        This text wont help you.</B><BR></P>
+    <P><B>
+        Even if i add more paragraphs here,
+        it will not get more useful.</B><BR></P>
+  </TD></TR><TR><TD> </TD></TR></TABLE></TD></TR></TABLE><A name="BUGS"></A><H2>BUGS</H2><TABLE width="100%" border="0"><TR><TD align="right"><TABLE width="97%" border="0"><TR><TD>
+    <P><B>
+        will be detected by the unit test
+        checking the files into which
+        this file gets converted.</B><BR></P>
+  </TD></TR><TR><TD> </TD></TR></TABLE></TD></TR></TABLE></TD></TR></TABLE></BODY></HTML>

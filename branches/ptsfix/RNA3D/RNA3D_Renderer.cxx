@@ -29,7 +29,7 @@ GLRenderer::GLRenderer() {
     iMapSpeciesDels = iMapSpeciesMiss = 0;
     iMapSpeciesIns = iMapSpeciesInsInfo = 0;
 
-    G                  = new OpenGLGraphics();
+    G                  = new OpenGLGraphics;
 }
 
 GLRenderer::~GLRenderer() {

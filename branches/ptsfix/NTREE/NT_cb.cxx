@@ -8,10 +8,9 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
-#include "nt_internal.h"
-#include "nt_cb.hxx"
-#include "ad_trees.hxx"
+#include "NT_local.h"
+#include "NT_cb.h"
+#include "ad_trees.h"
 
 #include <awt_canvas.hxx>
 #include <awt_sel_boxes.hxx>
@@ -21,6 +20,9 @@
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 
+#include <map>
+
+
 // AISC_MKPT_PROMOTE:#ifndef ARBDB_BASE_H
 // AISC_MKPT_PROMOTE:#include <arbdb_base.h>
 // AISC_MKPT_PROMOTE:#endif
@@ -29,7 +31,7 @@
 // AISC_MKPT_PROMOTE:#endif
 // AISC_MKPT_PROMOTE:class AWT_canvas;
 
-#define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree *, (ntw)->tree_disp)
+#define AWT_TREE(ntw)  DOWNCAST(AWT_graphic_tree *, (ntw)->tree_disp)
 
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
     if (aw_ask_sure("delete_marked_species",
@@ -59,30 +61,38 @@ void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
 }
 
 
-AW_window * NT_open_select_tree_window(AW_root *awr, char *awar_tree) {
-    AW_window_simple *aws = new AW_window_simple;
+AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree) {
+    static std::map<std::string,AW_window*> tree_select_windows;
+    if (tree_select_windows.find(awar_tree) == tree_select_windows.end()) {
+        AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(awr, "SELECT_TREE", "SELECT A TREE");
-    aws->load_xfig("select_simple.fig");
+        const char *id = strrchr(awar_tree, '/');
+        nt_assert(id);
+        id++; // use name-part of awar_tree as id (results in 'SELECT_tree_name', 'SELECT_tree_name_1', ...)
 
-    aws->at("selection");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, awar_tree);
+        aws->init(awr, GBS_global_string("SELECT_%s", id), "SELECT A TREE");
+        aws->load_xfig("select_simple.fig");
 
-    aws->auto_space(5, 5);
-    aws->button_length(6);
+        aws->at("selection");
+        awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, awar_tree);
 
-    aws->at("button");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->auto_space(5, 5);
+        aws->button_length(6);
 
-    aws->callback(popup_tree_admin_window, (AW_CL)aws);
-    aws->help_text("treeadm.hlp");
-    aws->create_button("MODIFY", "ADMIN", "A");
+        aws->at("button");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    return aws;
+        aws->callback(popup_tree_admin_window);
+        aws->help_text("treeadm.hlp");
+        aws->create_button("MODIFY", "ADMIN", "A");
+
+        tree_select_windows[awar_tree] = aws;
+    }
+    return tree_select_windows[awar_tree];
 }
 
-void NT_select_bottom_tree(AW_window *aww, char *awar_tree) {
+void NT_select_bottom_tree(AW_window *aww, const char *awar_tree) {
     GB_transaction dummy(GLOBAL.gb_main);
     const char *ltree = GBT_name_of_bottom_tree(GLOBAL.gb_main);
     if (ltree) aww->get_root()->awar(awar_tree)->write_string(ltree);

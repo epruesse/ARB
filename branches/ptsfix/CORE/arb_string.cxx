@@ -16,6 +16,8 @@
 #include <cstring>
 #include <cstdlib>
 
+#include <ctime>
+#include <sys/time.h>
 
 char *GB_strduplen(const char *p, unsigned len) {
     // fast replacement for strdup, if len is known
@@ -65,6 +67,28 @@ char *GB_strpartdup(const char *start, const char *end) {
 
 char *GB_strndup(const char *start, int len) {
     return GB_strpartdup(start, start+len-1);
+}
+
+const char *GB_date_string() {
+    timeval  date;
+    tm      *p;
+
+    gettimeofday(&date, 0);
+
+#if defined(DARWIN)
+    struct timespec local;
+    TIMEVAL_TO_TIMESPEC(&date, &local); // not avail in time.h of Linux gcc 2.95.3
+    p = localtime(&local.tv_sec);
+#else
+    p = localtime(&date.tv_sec);
+#endif // DARWIN
+
+    char *readable = asctime(p); // points to a static buffer
+    char *cr       = strchr(readable, '\n');
+    arb_assert(cr);
+    cr[0]          = 0;         // cut of \n
+
+    return readable;
 }
 
 

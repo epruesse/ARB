@@ -67,7 +67,10 @@ DBwriter.o: $(ARBHOME)/INCLUDE/attributes.h
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/cb.h
+DBwriter.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DBwriter.o: $(ARBHOME)/INCLUDE/cxxforward.h
+DBwriter.o: $(ARBHOME)/INCLUDE/downcast.h
 DBwriter.o: $(ARBHOME)/INCLUDE/dupstr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 DBwriter.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -75,8 +78,10 @@ DBwriter.o: $(ARBHOME)/INCLUDE/GEN.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/items.h
 DBwriter.o: $(ARBHOME)/INCLUDE/Location.h
 DBwriter.o: $(ARBHOME)/INCLUDE/smartptr.h
+DBwriter.o: $(ARBHOME)/INCLUDE/static_assert.h
 DBwriter.o: $(ARBHOME)/INCLUDE/test_global.h
 DBwriter.o: $(ARBHOME)/INCLUDE/Translate.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 Feature.o: defs.h
 Feature.o: Feature.h
@@ -105,7 +110,9 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_core.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/arb_diff.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_error.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/arb_file.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_str.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -118,12 +125,15 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/cxxforward.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/downcast.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/dupstr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/gccver.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/Location.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/smartptr.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/static_assert.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/test_global.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 Importer.o: DBwriter.h
 Importer.o: defs.h

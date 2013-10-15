@@ -309,7 +309,7 @@ GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQ
             type = GB_STRING;
             // fall-through
         case GB_STRING:
-            gbe->insert_data("<NONE>", 6, 7);
+            gbe->insert_data("", 0, 1);
             break;
         case GB_LINK:
             gbe->insert_data(":", 1, 2);

@@ -77,6 +77,12 @@ public:
     void announce_db_open(GB_MAIN_TYPE *Main);
     void announce_db_close(GB_MAIN_TYPE *Main);
     GB_MAIN_TYPE *get_any_open_db() { int idx = open_dbs(); return idx ? open_gb_mains[idx-1] : NULL; }
+
+#if defined(UNIT_TESTS)
+    void fake_closed_DBs() {
+        closedDBs = openedDBs;
+    }
+#endif
 };
 
 extern gb_local_data *gb_local;

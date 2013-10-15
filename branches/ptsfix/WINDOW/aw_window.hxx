@@ -16,6 +16,9 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 
 class AW_window;
 class AW_device;
@@ -149,10 +152,10 @@ void AW_openURL(AW_root *aw_root, const char *url);
 
 typedef void (*AW_cb_struct_guard)();
 
-class AW_cb_struct {
-    AW_CL         cd1;
-    AW_CL         cd2;
-    AW_cb_struct *next;
+class AW_cb : virtual Noncopyable {
+    WindowCallback cb;
+
+    AW_cb *next;
 
     static AW_cb_struct_guard guard_before;
     static AW_cb_struct_guard guard_after;
@@ -161,26 +164,32 @@ class AW_cb_struct {
 public:
     // private (read-only):
     AW_window  *pop_up_window;
-    AW_CB       f;
     AW_window  *aw;
     const char *help_text;
     char       *id;
 
     // real public section:
-    AW_cb_struct(AW_window    *awi,
-                 AW_CB         g,
-                 AW_CL         cd1i       = 0,
-                 AW_CL         cd2i       = 0,
-                 const char   *help_texti = 0,
-                 AW_cb_struct *next       = 0);
+    AW_cb(AW_window  *awi,
+          AW_CB       g,
+          AW_CL       cd1i       = 0,
+          AW_CL       cd2i       = 0,
+          const char *help_texti = 0,
+          AW_cb      *next       = 0);
 
-    void run_callback();                            // runs the whole list
+    AW_cb(AW_window             *awi,
+          const WindowCallback&  wcb,
+          const char            *help_texti = 0,
+          AW_cb                 *next       = 0);
+
+    void run_callbacks();                           // runs the whole list
     bool contains(AW_CB g);                         // test if contained in list
-    bool is_equal(const AW_cb_struct& other) const;
+    bool is_equal(const AW_cb& other) const;
 
-#if defined(DEBUG)
-    AW_CL get_cd1() const { return cd1; }
-    AW_CL get_cd2() const { return cd2; }
+    int compare(const AW_cb& other) const { return cb<other.cb ? -1 : (other.cb<cb ? 1 : 0); }
+
+#if defined(ASSERTION_USED)
+    AW_CL get_cd1() const { return cb.inspect_CD1(); }
+    AW_CL get_cd2() const { return cb.inspect_CD2(); }
 #endif // DEBUG
 
     static void set_AW_cb_guards(AW_cb_struct_guard before, AW_cb_struct_guard after) {
@@ -245,7 +254,7 @@ class AW_window : virtual Noncopyable {
 
     bool expose_callback_added;
 
-    AW_cb_struct *focus_cb;
+    AW_cb *focus_cb;
     
     int left_indent_of_horizontal_scrollbar;
     int top_indent_of_vertical_scrollbar;
@@ -267,8 +276,8 @@ public:
 
     AW_window_Motif *p_w;       // Do not use !!!
     AW_at           *_at;
-    AW_cb_struct    *_callback;
-    AW_cb_struct    *_d_callback;
+    AW_cb    *_callback;
+    AW_cb    *_d_callback;
 
     AW_window();
     virtual ~AW_window();
@@ -370,15 +379,19 @@ public:
 
     // ******************* Input and Motion Events **********************
 
-    void set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_popup_callback(const WindowCallback& wcb);
+    void set_focus_callback(const WindowCallback& wcb);
     bool is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL));
 
+    void set_expose_callback(AW_area area, const WindowCallback& wcb);
+    void set_resize_callback(AW_area area, const WindowCallback& wcb);
     void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
-    void set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
-    void set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
-    void set_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+
+    void set_input_callback(AW_area area, const WindowCallback& wcb);
+    void set_motion_callback(AW_area area, const WindowCallback& wcb);
+
+    void set_double_click_callback(AW_area area, const WindowCallback& wcb);
 
     bool is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
@@ -403,6 +416,7 @@ public:
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2);
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, cd1, 0); }
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, 0, 0); }
+    void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb);
     void sep______________(); // insert a separator
     void close_sub_menu();
 
@@ -423,8 +437,10 @@ public:
     void calculate_scrollbars();
     void set_vertical_scrollbar_position(int position);
     void set_horizontal_scrollbar_position(int position);
-    void set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+
+    void set_vertical_change_callback(const WindowCallback& wcb);
+    void set_horizontal_change_callback(const WindowCallback& wcb);
+
     void set_horizontal_scrollbar_left_indent(int indent);
     void set_vertical_scrollbar_top_indent(int indent);
 
@@ -514,12 +530,14 @@ public:
     void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // normal callbacks
     void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1);
     void callback(void (*f)(AW_window*));
-    void callback(AW_cb_struct * /* owner */ awcbs); // Calls f with
+    void callback(AW_cb * /* owner */ awcbs); // Calls f with
+    void callback(const WindowCallback& cb);
     // aww in awcbs
     void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // double click callbacks
     void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1); // selection lists only !!
     void d_callback(void (*f)(AW_window*));
-    void d_callback(AW_cb_struct * /* owner */ awcbs); // Calls f with
+    void d_callback(AW_cb * /* owner */ awcbs); // Calls f with
+    void d_callback(const WindowCallback& cb);
     // *** create the buttons ********
 
     void   create_button(const char *macro_name, AW_label label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
@@ -628,8 +646,8 @@ public:
     void init(AW_root *root, const char *windowname, bool allow_close);
 };
 
+typedef struct aw_gc_manager *AW_gc_manager;
 
-typedef void* AW_gc_manager;
 
 #else
 #error aw_window.hxx included twice

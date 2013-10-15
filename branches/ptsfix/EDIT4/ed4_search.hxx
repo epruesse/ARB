@@ -30,17 +30,16 @@ enum ED4_SEARCH_GAPS {
 void ED4_search_cb(AW_window *aww, AW_CL searchDescriptor, AW_CL cl_ed4w);
 
 GB_ERROR ED4_repeat_last_search(class ED4_window *ed4w);
-AW_window *ED4_create_search_window(AW_root *root, AW_CL cl_type_and_ed4w);
+void ED4_popup_search_window(AW_window *aww, AW_CL cl_search_type);
 
 void ED4_create_search_awars(AW_root *root);
 
 // --------------------------------------------------------------------------------
 
-#define SEARCH_PATTERNS 9
 #define MAX_MISMATCHES  5
 
 enum ED4_SearchPositionType {
-    ED4_USER1_PATTERN,
+    ED4_USER1_PATTERN = 0,
     ED4_USER2_PATTERN,
     ED4_PROBE_PATTERN,
     ED4_PRIMER1_PATTERN,
@@ -49,15 +48,8 @@ enum ED4_SearchPositionType {
     ED4_SIG1_PATTERN,
     ED4_SIG2_PATTERN,
     ED4_SIG3_PATTERN,
-    ED4_ANY_PATTERN
-};
-
-struct ED4_search_type_and_ed4w {
-    ED4_SearchPositionType  type;
-    ED4_window             *ed4w;
-
-    ED4_search_type_and_ed4w(ED4_SearchPositionType type_, ED4_window *ed4w_)
-        : type(type_), ed4w(ed4w_) {}
+    SEARCH_PATTERNS, // counter
+    ED4_ANY_PATTERN   = SEARCH_PATTERNS
 };
 
 extern const char *ED4_SearchPositionTypeId[];

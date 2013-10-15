@@ -314,7 +314,7 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
     new_name = 0;
     if (!acc) acc = "";
 
-    arb_progress progress("Generating short name");
+    arb_progress progress("Generating species ID");
 
     GB_ERROR err = name_server.connect(gb_main);
     if (err) return err;
@@ -345,7 +345,7 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
             shrt = 0;
         }
         else {
-            err = GB_export_errorf("Generation of short name for '%s' failed", full_name);
+            err = GB_export_errorf("Failed to generate species ID (shortname) for '%s'", full_name);
         }
     }
 
@@ -356,7 +356,7 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
 
 GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
     GBDATA       *gb_main = GB_get_root(gb_species);
-    arb_progress  progress("Recreating name");
+    arb_progress  progress("Recreating species ID");
     GB_ERROR      error   = name_server.connect(gb_main);
     if (!error) {
         const char *add_field = AW_get_nameserver_addid(gb_main);
@@ -372,7 +372,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
         char *acc       = gb_acc ?      GB_read_string   (gb_acc)      : strdup("");
         char *addid     = gb_addfield ? GB_read_as_string(gb_addfield) : strdup("");
 
-        int   deleted = 0;
+        long   deleted = 0;
         char *shrt    = 0;
 
         if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
@@ -408,7 +408,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
                     }
 
                     if (!done && !error) {
-                        error = "Failed to regenerate name. Please use 'Generate new names'";
+                        error = "Failed to regenerate species ID. Please use 'Species/Synchronize IDs'";
                     }
                 }
             }
@@ -437,9 +437,11 @@ char *AWTC_create_numbered_suffix(GB_HASH *species_name_hash, const char *shortn
             if (!GBS_read_hash(species_name_hash, newshort))break;
         }
 
-        warning = "There are duplicated entries!!.\n"
-            "The duplicated entries contain a '.' character in field 'name'!\n"
-            "Please resolve this problem (see HELP in 'Generate new names' window)";
+        warning =
+            "There are duplicated species!\n"
+            "The IDs of these species ('name') contain a '.' character followed by a number.\n"
+            "We strongly recommend you try understand and solve this problem\n"
+            "(see HELP in 'Species/Synchronize IDs' window)";
     }
     return newshort;
 }
@@ -534,6 +536,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
     }
 
     if (isWarningPtr) *isWarningPtr = isWarning;
+    gen_progress.done(); // needed if err
 
     return err;
 }
@@ -548,7 +551,7 @@ static void awt_rename_cb(AW_window *aww, GBDATA *gb_main) {
 
 AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "AUTORENAME_SPECIES", "AUTORENAME SPECIES");
+    aws->init(root, "AUTORENAME_SPECIES", "Synchronize species IDs");
 
     aws->load_xfig("awtc/autoren.fig");
 
@@ -643,7 +646,7 @@ char *AWTC_makeUniqueShortName(const char *prefix, UniqueNameDetector& existingN
     }
 
     aw_assert(!result || strlen(result) <= 8);
-    if (!result) GB_export_errorf("Failed to create unique shortname (prefix='%s')", prefix);
+    if (!result) GB_export_errorf("Failed to create unique species ID (prefix='%s')", prefix);
 
     return result;
 }

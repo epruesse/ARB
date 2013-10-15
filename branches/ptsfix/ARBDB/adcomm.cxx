@@ -11,11 +11,9 @@
 #include <unistd.h>
 
 #include <csignal>
-#include <ctime>
 #include <cerrno>
 
 #include <sys/socket.h>
-#include <sys/time.h>
 
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -1148,7 +1146,7 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
 
     if (wait_extra_time) {
         timeout.tv_sec = 0;
-        timeout.tv_usec = 100000;
+        timeout.tv_usec = 100000; // 100 ms
     }
     else {
         timeout.tv_sec = (int)(hs->timeout / 1000);
@@ -1890,27 +1888,5 @@ GB_ERROR GB_install_pid(int mode) {
     }
 
     return error;
-}
-
-const char *GB_date_string() {
-    timeval  date;
-    tm      *p;
-
-    gettimeofday(&date, 0);
-
-#if defined(DARWIN)
-    struct timespec local;
-    TIMEVAL_TO_TIMESPEC(&date, &local); // not avail in time.h of Linux gcc 2.95.3
-    p = localtime(&local.tv_sec);
-#else
-    p = localtime(&date.tv_sec);
-#endif // DARWIN
-
-    char *readable = asctime(p); // points to a static buffer
-    char *cr       = strchr(readable, '\n');
-    gb_assert(cr);
-    cr[0]          = 0;         // cut of \n
-
-    return readable;
 }
 

@@ -25,7 +25,6 @@
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
-#include <awt_macro.hxx>
 
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
@@ -41,6 +40,7 @@
 #include <cmath>
 #include <arb_sort.h>
 #include <arb_global_defs.h>
+#include <macros.hxx>
 
 // --------------------------------------------------------------------------------
 
@@ -469,7 +469,7 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
 
 GB_ERROR DI_MATRIX::haeschoe(const char *path) {
     static BI_helix *helix = 0;
-    if (!helix) helix      = new BI_helix();
+    if (!helix) helix      = new BI_helix;
 
     GB_ERROR error = helix->init(get_gb_main());
     if (!error) {
@@ -1018,7 +1018,7 @@ static void di_view_matrix_cb(AW_window *aww, AW_CL cl_sparam) {
     GB_ERROR            error  = di_calculate_matrix(aww, sparam->weighted_filter, 0, true, NULL);
     if (error) return;
 
-    if (!di_dmatrix) di_dmatrix = new DI_dmatrix();
+    if (!di_dmatrix) di_dmatrix = new DI_dmatrix;
 
     static AW_window *viewer = 0;
     if (!viewer) viewer = DI_create_view_matrix_window(aww->get_root(), di_dmatrix, sparam);
@@ -1197,7 +1197,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
 
         if (bootstrap_flag) {
             ctree->insert(tree, 1);
-            GBT_delete_tree(tree); tree = 0;
+            GBT_delete_tree(tree);
             loop_count++;
             progress->inc();
             if (!bootstrap_count) { // when waiting for kill
@@ -1229,7 +1229,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
             int         transr      = aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
             const char *comment     = GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB", enum_trans_to_string[transr], filter_name);
 
-            error = GBT_write_tree_rem(GLOBAL_gb_main, tree_name, comment);
+            error = GBT_write_tree_remark(GLOBAL_gb_main, tree_name, comment);
             free(filter_name);
         }
 
@@ -1237,7 +1237,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         free(tree_name);
     }
 
-    if (tree) GBT_delete_tree(tree);
+    GBT_delete_tree(tree);
 
     // aw_status(); // remove 'abort' flag (@@@ got no equiv for arb_progress yet. really needed?)
 
@@ -1338,7 +1338,9 @@ static void di_autodetect_callback(AW_window *aww)
 
 __ATTR__NORETURN static void di_exit(AW_window *aww) {
     if (GLOBAL_gb_main) {
-        aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
+        AW_root *aw_root = aww->get_root();
+        shutdown_macro_recording(aw_root);
+        aw_root->unlink_awars_from_DB(GLOBAL_gb_main);
         GB_close(GLOBAL_gb_main);
     }
     exit(0);
@@ -1418,8 +1420,8 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     AWT_create_debug_menu(aws);
 #endif // DEBUG
 
-    aws->create_menu("FILE", "F", AWM_ALL);
-    aws->insert_menu_topic("macros", "Macros  ...", "M", "macro.hlp", AWM_ALL, (AW_CB)awt_popup_macro_window, (AW_CL)"NEIGHBOUR_JOINING", (AW_CL)GLOBAL_gb_main);
+    aws->create_menu("File", "F", AWM_ALL);
+    insert_macro_menu_entry(aws, false);
     aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)di_exit,  0,  0);
 
     aws->create_menu("Properties", "P", AWM_ALL);

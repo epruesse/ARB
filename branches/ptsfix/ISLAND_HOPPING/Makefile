@@ -5,10 +5,12 @@
 # modify cflags 
 
 RAISE_WARNINGS=0# no warnings in this subtree
+LOCAL_DEFINES=-DSIMPLE_ARB_ASSERT
 
-my_cflags:=$(cflags)
+LOCAL_MAKEDEPENDFLAGS=$(MAKEDEPENDFLAGS) $(LOCAL_DEFINES)
+LOCAL_CFLAGS:=$(cflags) $(LOCAL_DEFINES)
 ifeq ('$(RAISE_WARNINGS)','0')
-my_cflags:=$(subst -W -Wall,-w,$(my_cflags))
+LOCAL_CFLAGS:=$(subst -W -Wall,-w,$(LOCAL_CFLAGS))
 endif
 
 # --------------------------------------------------------------------------------
@@ -19,9 +21,9 @@ CPP_OBJECTS = island_hopping.o i-hopper.o align.o mem.o trnsprob.o
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .c.o:
-	$(ACC) $(my_cflags) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(ACC) $(LOCAL_CFLAGS) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(CPP) $(my_cflags) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(LOCAL_CFLAGS) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -32,11 +34,11 @@ depends: $(DEPENDS)
 	@rm $(DEPENDS)
 $(DEPENDS): depend.init
 depend.init:
-	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+	$(MAKEDEPEND) $(LOCAL_MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
 .c.depend:
-	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+	$(MAKEDEPEND) -f- $(LOCAL_MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 .cxx.depend:
-	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+	$(MAKEDEPEND) -f- $(LOCAL_MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE
 
@@ -74,4 +76,5 @@ trnsprob.o: defs.h
 trnsprob.o: mem.h
 trnsprob.o: trnsprob.h
 trnsprob.o: $(ARBHOME)/INCLUDE/arb_assert.h
+trnsprob.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 trnsprob.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -40,17 +40,3 @@ void ED4_set_clipping_rectangle(AW_screen_area *rect)
     current_device()->set_right_clip_border(rect->r);
 }
 
-void ED4_aws_init(AW_root *root, AW_window_simple *aws, GB_CSTR macro_format, GB_CSTR window_format, GB_CSTR typeId) {
-    int typeIdLen = strlen(typeId);
-    int macro_format_len = strlen(macro_format);
-    int window_format_len = strlen(window_format);
-    char *macro_buffer = GB_give_buffer(macro_format_len+window_format_len+2*typeIdLen);
-    char *window_buffer = macro_buffer+macro_format_len+typeIdLen;
-
-    sprintf(macro_buffer, macro_format, typeId);
-    sprintf(window_buffer, window_format, typeId);
-
-    char *macro = GBS_string_2_key(macro_buffer);
-    aws->init(root, macro, window_buffer);
-    free(macro);
-}

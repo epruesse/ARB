@@ -37,6 +37,7 @@ nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 nds.o: $(ARBHOME)/INCLUDE/arb_core.h
 nds.o: $(ARBHOME)/INCLUDE/arb_error.h
 nds.o: $(ARBHOME)/INCLUDE/arb_msg.h
+nds.o: $(ARBHOME)/INCLUDE/arb_msg_fwd.h
 nds.o: $(ARBHOME)/INCLUDE/arb_string.h
 nds.o: $(ARBHOME)/INCLUDE/arbdb.h
 nds.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -55,9 +56,14 @@ nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 nds.o: $(ARBHOME)/INCLUDE/cb.h
+nds.o: $(ARBHOME)/INCLUDE/cbtypes.h
 nds.o: $(ARBHOME)/INCLUDE/cxxforward.h
+nds.o: $(ARBHOME)/INCLUDE/downcast.h
 nds.o: $(ARBHOME)/INCLUDE/dupstr.h
 nds.o: $(ARBHOME)/INCLUDE/gccver.h
 nds.o: $(ARBHOME)/INCLUDE/items.h
 nds.o: $(ARBHOME)/INCLUDE/smartptr.h
+nds.o: $(ARBHOME)/INCLUDE/static_assert.h
 nds.o: $(ARBHOME)/INCLUDE/test_global.h
+nds.o: $(ARBHOME)/INCLUDE/test_unit.h
+nds.o: $(ARBHOME)/INCLUDE/ttypes.h

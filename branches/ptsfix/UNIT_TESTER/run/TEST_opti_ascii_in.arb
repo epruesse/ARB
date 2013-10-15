@@ -1262,7 +1262,7 @@ tree_data		%% (%
 description		"User text"
 focus			%% (%
 	tree_name		"tree_pars"
-	configuration		"compression"
+	configuration		"other"
 	%) /*focus*/
 
 nt			%% (%
@@ -1366,6 +1366,27 @@ secedit			%% (%
 
 table_data		%% (%
 	%) /*table_data*/
+
+configuration_data		%% (%
+	configuration		%% (%
+		name			"some"
+		top_area		"\ASHELIX_NR\ASHELIX\ASECOLI"
+		middle_area		"\AGSAI-Maingroup\AFSAI:SAI's\ASAaaa\ASmarkerline\ASposvar_full_all\ASprimer_3\AE\AFSAI:default_group\ASPOS_VAR_BY_PARSIMONY\AE\AE\AFMore Sequences\AE\ALNatMagad\ALMetMazei\ALMthBurto\ALMtsHunga\ALLacPonti\ALLacReute\ALPseFlave\ALCloTherm\ALCalSacch"
+		%) /*configuration*/
+
+	configuration		%% (%
+		name			"other"
+		top_area		"\ASHELIX_NR\ASHELIX\ASECOLI"
+		middle_area		"\AGSAI-Maingroup\AFSAI:SAI's\ASAaaa\ASmarkerline\ASposvar_full_all\ASprimer_3\AE\AFSAI:default_group\ASPOS_VAR_BY_PARSIMONY\AE\AE\AFMore Sequences\AE\ALBctFragi\ALDsfDesul\ALSt0Isola\ALDslToluo\ALFrnPhilo\ALLacPonti\ALLacReute\ALPseFlave\ALCloTherm\ALCalSacch"
+		%) /*configuration*/
+
+	configuration		%% (%
+		name			"rest"
+		top_area		"\ASHELIX_NR\ASHELIX\ASECOLI"
+		middle_area		"\AGSAI-Maingroup\AFSAI:SAI's\ASAaaa\ASmarkerline\ASposvar_full_all\ASprimer_3\AE\AFSAI:default_group\ASPOS_VAR_BY_PARSIMONY\AE\AE\AFMore Sequences\AE\ALVibFurni\ALVibVulni\ALVibChole\ALHlmHalod\ALPseAerug\ALLegLytic\ALDchNodos\ALPelAcety\ALPelPropi\ALAnaMargi\ALCowRumin\ALAzoCauli\ALBraJapon\ALRhoMarin\ALChlPneum\ALChlTrach\ALPlaLimno\ALFusNecro\ALProModes\ALMycChlor\ALBifBifid\ALDicTherm\ALThnCellu\ALCloCorin\ALCloParap\ALCloPerfr\ALCloColla\ALCloSardi\ALCloTyrob\ALCloProte\ALCloBifer\ALCloGhoni\ALClrFervi\ALMooTherm\ALLacAcido\ALLacFruct\ALLacSanfr\ALStrSaliv\ALCarAlter\ALStaHaemo\ALStaHomin\ALStaAureu\ALBacGlobi\ALBacLiche\ALBacMetha\ALBacStear"
+		%) /*configuration*/
+
+	%) /*configuration_data*/
 
 tmp			%% (%
 	message			%% (%

@@ -31,6 +31,7 @@
 #include <arb_str.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
+#include <arb_sleep.h>
 
 #include "gb_comm.h"
 #include "gb_data.h"
@@ -41,11 +42,6 @@
 
 #include <algorithm>
 #include <arb_misc.h>
-
-void GB_usleep(long usec) {
-    usleep(usec);
-}
-
 
 static int gbcm_pipe_violation_flag = 0;
 void gbcms_sigpipe(int) {
@@ -122,8 +118,7 @@ GBCM_ServerResult gbcm_write_flush(int socket) {
     leftsize = leftsize - writesize;
 
     while (leftsize) {
-
-        GB_usleep(10000);
+        GB_sleep(10, MS);
 
         writesize = write(socket, ptr, (size_t)leftsize);
         if (gbcm_pipe_violation_flag || writesize<0) {
@@ -254,6 +249,9 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
     }
     else {        // UNIX
         sockaddr_un so_ad;
+        if (strlen(machName) >= sizeof(so_ad.sun_path)) {
+            return "Could not open socket on Server (socket name too long)";
+        }
         memset((char *)&so_ad, 0, sizeof(so_ad));
         *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
         if (*psocket <= 0) {
@@ -1102,6 +1100,9 @@ GB_CSTR GB_canonical_path(const char *anypath) {
     if (!anypath) {
         GB_export_error("NULL path (internal error)");
     }
+    else if (!anypath[0]) {
+        result = "/";
+    }
     else if (strlen(anypath) >= PATH_MAX) {
         GB_export_errorf("Path too long (> %i chars)", PATH_MAX-1);
     }
@@ -1122,11 +1123,17 @@ GB_CSTR GB_canonical_path(const char *anypath) {
                 char *dir, *fullname;
                 GB_split_full_path(anypath, &dir, &fullname, NULL, NULL);
 
-                gb_assert(dir);                       // maybe you'd like to use GB_unfold_path()
-                gb_assert(strcmp(dir, anypath) != 0); // avoid deadlock
+                const char *canonical_dir = NULL;
+                if (!dir) {
+                    gb_assert(anypath[0] == '/' && !strchr(anypath+1, '/'));
+                    canonical_dir = "/";
+                }
+                else {
+                    gb_assert(strcmp(dir, anypath) != 0); // avoid deadlock
 
-                const char *canonical_dir = GB_canonical_path(dir);
-                gb_assert(canonical_dir);
+                    canonical_dir = GB_canonical_path(dir);
+                    gb_assert(canonical_dir);
+                }
 
                 // manually resolve '.' and '..' in non-existing parent directories
                 if (strcmp(fullname, "..") == 0) {
@@ -1161,16 +1168,24 @@ GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
 
     GB_CSTR result = NULL;
 
-    if (anypath_left) {
-        if (anypath_right) {
-            result = GBS_global_string_to_buffer(use_other_path_buf(), sizeof(path_buf[0]), "%s/%s", anypath_left, anypath_right);
+    if (anypath_right) {
+        if (anypath_right[0] == '/') {
+            result = GB_concat_path(anypath_left, anypath_right+1);
+        }
+        else if (anypath_left) {
+            if (anypath_left[strlen(anypath_left)-1] == '/') {
+                result = GBS_global_string_to_buffer(use_other_path_buf(), sizeof(path_buf[0]), "%s%s", anypath_left, anypath_right);
+            }
+            else {
+                result = GBS_global_string_to_buffer(use_other_path_buf(), sizeof(path_buf[0]), "%s/%s", anypath_left, anypath_right);
+            }
         }
         else {
-            result = anypath_left;
+            result = anypath_right;
         }
     }
     else {
-        result = anypath_right;
+        result = anypath_left;
     }
 
     return result;
@@ -1461,6 +1476,8 @@ void TEST_paths() {
     TEST_EXPECT_EQUAL(GB_concat_path(NULL, "b"), "b");
     TEST_EXPECT_EQUAL(GB_concat_path("a", "b"), "a/b");
 
+    TEST_EXPECT_EQUAL(GB_concat_path("/", "test.fig"), "/test.fig");
+
     {
         char        *arbhome    = strdup(GB_getenvARBHOME());
         const char*  nosuchfile = "nosuchfile";
@@ -1478,6 +1495,10 @@ void TEST_paths() {
         TEST_EXPECT_IS_CANONICAL(somefile_in_arbhome);
         TEST_EXPECT_IS_CANONICAL(nosuchpath_in_arbhome);
         TEST_EXPECT_IS_CANONICAL(file_in_nosuchpath);
+
+        TEST_EXPECT_IS_CANONICAL("/tmp"); // existing (most likely)
+        TEST_EXPECT_IS_CANONICAL("/tmp/arbtest.fig");
+        TEST_EXPECT_IS_CANONICAL("/arbtest.fig"); // not existing (most likely)
 
         TEST_EXPECT_CANONICAL_TO("./PARSIMONY/./../ARBDB/./arbdb.h",     "ARBDB/arbdb.h"); // test parent-path
         TEST_EXPECT_CANONICAL_TO("INCLUDE/arbdb.h",                   "ARBDB/arbdb.h"); // test symbolic link to file
@@ -1522,6 +1543,7 @@ void TEST_paths() {
     }
 
     TEST_EXPECT_EQUAL(GB_path_in_ARBLIB("help"), GB_path_in_ARBHOME("lib", "help"));
+
 }
 
 // ----------------------------------------

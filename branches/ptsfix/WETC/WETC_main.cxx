@@ -18,7 +18,7 @@ AW_HEADER_MAIN
 
 int ARB_main(int argc, char *argv[]) {
     GB_shell shell;
-    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_WETC", &argc, &argv);
+    AW_root *aw_root = AWT_create_root("ntree.arb", "ARB_WETC", new NullTracker, &argc, &argv); // no macro recording here
 
     GB_ERROR error = NULL;
 
@@ -33,7 +33,6 @@ int ARB_main(int argc, char *argv[]) {
             error = GBS_global_string("Unexpected parameter '%s'", com);
         }
         else {
-
             AWT_show_file(aw_root, file);
             aw_root->window_hide(NULL);
             AWT_install_cb_guards();

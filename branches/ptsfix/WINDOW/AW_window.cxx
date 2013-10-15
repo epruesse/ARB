@@ -20,7 +20,6 @@
 #include "aw_msg.hxx"
 #include "aw_root.hxx"
 #include "aw_xargs.hxx"
-#include "aw_macro.hxx"
 
 #include <arbdbt.h>
 #include <arb_file.h>
@@ -42,18 +41,6 @@
 
 #include <cctype>
 #include "aw_question.hxx"
-
-AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb_struct *nexti) {
-    aw            = awi;
-    f             = g;
-    cd1           = cd1i;
-    cd2           = cd2i;
-    help_text     = help_texti;
-    pop_up_window = NULL;
-    this->next = nexti;
-
-    id = NULL;
-}
 
 void AW_root::make_sensitive(Widget w, AW_active mask) {
     // Don't call make_sensitive directly!
@@ -142,31 +129,6 @@ AW_toggle_field_struct::AW_toggle_field_struct(int toggle_field_numberi,
     default_toggle = NULL;
     next = NULL;
     correct_for_at_center_intern = correct;
-}
-
-char *AW_selection_list_entry::copy_string_for_display(const char *str) {
-    char *out = strdup(str);
-    char *p   = out;
-    int   ch;
-
-    while ((ch=*(p++)) != 0) {
-        if (ch==',')
-            p[-1] = ';';
-        if (ch=='\n')
-            p[-1] = '#';
-    }
-    return out;
-}
-
-AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti) {
-    // @@@ fix initialization
-    memset((char *)this, 0, sizeof(AW_selection_list));
-    variable_name          = nulldup(variable_namei);
-    variable_type          = (AW_VARIABLE_TYPE)variable_typei;
-    select_list_widget     = select_list_widgeti;
-    list_table             = NULL;
-    last_of_list_table     = NULL;
-    default_select         = NULL;
 }
 
 AW_window_Motif::AW_window_Motif() {
@@ -262,52 +224,53 @@ void AW_window::set_horizontal_scrollbar_left_indent(int indent) {
 
 static void value_changed_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
-    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
+    AW_cb *cbs = (AW_cb *) aw_cb_struct;
     (cbs->aw)->slider_pos_horizontal = sbcbs->value; // setzt Scrollwerte im AW_window
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 static void drag_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
-    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
+    AW_cb *cbs = (AW_cb *) aw_cb_struct;
     (cbs->aw)->slider_pos_horizontal = sbcbs->value; // setzt Scrollwerte im AW_window
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
-void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+
+void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
     XtAddCallback(p_w->scroll_bar_horizontal, XmNvalueChangedCallback,
-            (XtCallbackProc) value_changed_scroll_bar_horizontal,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
+                  (XtCallbackProc) value_changed_scroll_bar_horizontal,
+                  (XtPointer) new AW_cb(this, wcb, ""));
     XtAddCallback(p_w->scroll_bar_horizontal, XmNdragCallback,
             (XtCallbackProc) drag_scroll_bar_horizontal,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
+            (XtPointer) new AW_cb(this, wcb, ""));
 }
 
 static void value_changed_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
-    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
+    AW_cb *cbs = (AW_cb *) aw_cb_struct;
     cbs->aw->slider_pos_vertical = sbcbs->value; // setzt Scrollwerte im AW_window
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 static void drag_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
-    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
+    AW_cb *cbs = (AW_cb *) aw_cb_struct;
     cbs->aw->slider_pos_vertical = sbcbs->value; // setzt Scrollwerte im AW_window
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 
-void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_vertical_change_callback(const WindowCallback& wcb) {
     XtAddCallback(p_w->scroll_bar_vertical, XmNvalueChangedCallback,
             (XtCallbackProc) value_changed_scroll_bar_vertical,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
+            (XtPointer) new AW_cb(this, wcb, ""));
     XtAddCallback(p_w->scroll_bar_vertical, XmNdragCallback,
             (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
+            (XtPointer) new AW_cb(this, wcb, ""));
 
     XtAddCallback(p_w->scroll_bar_vertical, XmNpageIncrementCallback,
             (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
+            (XtPointer) new AW_cb(this, wcb, ""));
     XtAddCallback(p_w->scroll_bar_vertical, XmNpageDecrementCallback,
             (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
+            (XtPointer) new AW_cb(this, wcb, ""));
 }
 
 void AW_window::tell_scrolled_picture_size(AW_screen_area rectangle) {
@@ -496,7 +459,7 @@ void AW_window::get_pos_from_awars(int& posx, int& posy) {
 #undef aw_awar_name_height
 
 static void aw_onExpose_calc_WM_offsets(AW_window *aww);
-static void aw_calc_WM_offsets_delayed(AW_root *, AW_CL cl_aww, AW_CL) { aw_onExpose_calc_WM_offsets((AW_window*)cl_aww); }
+static unsigned aw_calc_WM_offsets_delayed(AW_root *, AW_window*aww) { aw_onExpose_calc_WM_offsets(aww); }
 
 static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
     AW_window_Motif *motif = p_aww(aww);
@@ -513,7 +476,7 @@ static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
         aww->set_window_frame_pos(oposx, oposy);
 
         if (!motif->knows_WM_offset()) {
-            aww->get_root()->add_timed_callback(100, aw_calc_WM_offsets_delayed, (AW_CL)aww, 0);
+            aww->get_root()->add_timed_callback(100, makeTimedCallback(aw_calc_WM_offsets_delayed, aww));
         }
     }
     else if (!motif->knows_WM_offset()) {
@@ -522,142 +485,6 @@ static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
         motif->WM_top_offset  = posy-oposy;
         motif->WM_left_offset = posx-oposx;
     }
-}
-
-bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
-    bool equal = false;
-    if (f == other.f) {                             // same callback function
-        equal = (cd1 == other.cd1) && (cd2 == other.cd2);
-        if (equal) {
-            if (f == AW_POPUP) {
-                equal = aw->get_root() == other.aw->get_root();
-            }
-            else {
-                equal = aw == other.aw;
-                if (!equal) {
-                    equal = aw->get_root() == other.aw->get_root();
-#if defined(DEBUG) && 0
-                    if (equal) {
-                        fprintf(stderr,
-                                "callback '%s' instantiated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
-                                id, aw->get_window_id(), other.aw->get_window_id());
-                    }
-#endif // DEBUG
-                }
-            }
-        }
-    }
-    return equal;
-}
-
-#if defined(DEBUG)
-// #define TRACE_CALLBACKS
-#endif // DEBUG
-
-
-AW_cb_struct_guard AW_cb_struct::guard_before = NULL;
-AW_cb_struct_guard AW_cb_struct::guard_after  = NULL;
-AW_postcb_cb       AW_cb_struct::postcb       = NULL;
-
-void AW_cb_struct::run_callback() {
-    if (next) next->run_callback();                 // callback the whole list
-    if (!f) return;                                 // run no callback
-
-    AW_root *root = aw->get_root();
-    if (root->disable_callbacks) {
-        // some functions (namely aw_message, aw_input, aw_string_selection and aw_file_selection)
-        // have to disable most callbacks, because they are often called from inside these callbacks
-        // (e.g. because some exceptional condition occurred which needs user interaction) and if
-        // callbacks weren't disabled, a recursive deadlock occurs.
-
-        // the following callbacks are allowed even if disable_callbacks is true
-
-        bool isModalCallback = (f == AW_CB(message_cb) ||
-                                f == AW_CB(input_history_cb) ||
-                                f == AW_CB(input_cb) ||
-                                f == AW_CB(file_selection_cb));
-
-        bool isPopdown = (f == AW_CB(AW_POPDOWN));
-        bool isHelp    = (f == AW_CB(AW_POPUP_HELP));
-        bool allow     = isModalCallback || isHelp || isPopdown;
-
-        bool isInfoResizeExpose = false;
-
-        if (!allow) {
-            isInfoResizeExpose = aw->is_expose_callback(AW_INFO_AREA, f) || aw->is_resize_callback(AW_INFO_AREA, f);
-            allow              = isInfoResizeExpose;
-        }
-
-        if (!allow) {
-            // do not change position of modal dialog, when one of the following callbacks happens - just raise it
-            // (other callbacks like pressing a button, will position the modal dialog under mouse)
-            bool onlyRaise =
-                aw->is_expose_callback(AW_MIDDLE_AREA, f) ||
-                aw->is_focus_callback(f) ||
-                root->is_focus_callback((AW_RCB)f) ||
-                aw->is_resize_callback(AW_MIDDLE_AREA, f);
-
-            if (root->current_modal_window) { 
-                AW_window *awmodal = root->current_modal_window;
-
-                AW_PosRecalc prev = awmodal->get_recalc_pos_atShow();
-                if (onlyRaise) awmodal->recalc_pos_atShow(AW_KEEP_POS);
-                awmodal->activate();
-                awmodal->recalc_pos_atShow(prev);
-            }
-            else {
-                aw_message("Internal error (callback suppressed when no modal dialog active)");
-                aw_assert(0);
-            }
-#if defined(TRACE_CALLBACKS)
-            printf("suppressing callback %p\n", f);
-#endif // TRACE_CALLBACKS
-            return; // suppress the callback!
-        }
-#if defined(TRACE_CALLBACKS)
-        else {
-            if (isModalCallback) printf("allowed modal callback %p\n", f);
-            else if (isPopdown) printf("allowed AW_POPDOWN\n");
-            else if (isHelp) printf("allowed AW_POPUP_HELP\n");
-            else if (isInfoResizeExpose) printf("allowed expose/resize infoarea\n");
-            else printf("allowed other (unknown) callback %p\n", f);
-        }
-#endif // TRACE_CALLBACKS
-    }
-    else {
-#if defined(TRACE_CALLBACKS)
-        printf("Callbacks are allowed (executing %p)\n", f);
-#endif // TRACE_CALLBACKS
-    }
-
-    useraction_init();
-    
-    if (f == AW_POPUP) {
-        if (pop_up_window) { // already exists
-            pop_up_window->activate();
-        }
-        else {
-            AW_PPP g = (AW_PPP)cd1;
-            if (g) {
-                pop_up_window = g(aw->get_root(), cd2, 0);
-                pop_up_window->activate();
-            }
-            else {
-                aw_message("not implemented -- please report to devel@arb-home.de");
-            }
-        }
-        if (pop_up_window && p_aww(pop_up_window)->popup_cb)
-            p_aww(pop_up_window)->popup_cb->run_callback();
-    }
-    else {
-        f(aw, cd1, cd2);
-    }
-
-    useraction_done(aw);
-}
-
-bool AW_cb_struct::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
-    return (f == g) || (next && next->contains(g));
 }
 
 AW_root_Motif::AW_root_Motif() {
@@ -692,7 +519,7 @@ void AW_root_Motif::normal_cursor() {
 }
 
 void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call_data*/) {
-    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
+    AW_cb *cbs = (AW_cb *) aw_cb_struct;
 
     AW_root *root = cbs->aw->get_root();
     if (p_global->help_active) {
@@ -711,16 +538,16 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
         return;
     }
 
-    if (root->prvt->recording) root->prvt->recording->record_action(cbs->id);
+    if (root->is_tracking()) root->track_action(cbs->id);
 
-    if (cbs->f == AW_POPUP) {
-        cbs->run_callback();
+    if (cbs->contains(AW_POPUP)) {
+        cbs->run_callbacks();
     }
     else {
         p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
                 XtWindow(p_aww(cbs->aw)->shell),
                 p_global->clock_cursor);
-        cbs->run_callback();
+        cbs->run_callbacks();
 
         XEvent event; // destroy all old events !!!
         while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
@@ -742,19 +569,11 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
 
 }
 
-void AW_clock_cursor(AW_root *root) {
-    p_global->set_cursor(0, 0, p_global->clock_cursor);
-}
-
-void AW_normal_cursor(AW_root *root) {
-    p_global->set_cursor(0, 0, 0);
-}
-
 // ---------------
 //      popup
 
-void AW_window::set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    p_w->popup_cb = new AW_cb_struct(this, f, cd1, cd2, 0, p_w->popup_cb);
+void AW_window::set_popup_callback(const WindowCallback& wcb) {
+    p_w->popup_cb = new AW_cb(this, wcb, 0, p_w->popup_cb);
 }
 
 // --------------
@@ -771,15 +590,15 @@ static void AW_focusCB(Widget /*wgt*/, XtPointer cl_aww, XEvent*, Boolean*) {
     aww->run_focus_callback();
 }
 void AW_window::run_focus_callback() {
-    if (focus_cb) focus_cb->run_callback();
+    if (focus_cb) focus_cb->run_callbacks();
 }
 
-void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_focus_callback(const WindowCallback& wcb) {
     if (!focus_cb) {
         XtAddEventHandler(MIDDLE_WIDGET, EnterWindowMask, FALSE, AW_focusCB, (XtPointer) this);
     }
-    if (!focus_cb || !focus_cb->contains(f)) {
-        focus_cb = new AW_cb_struct(this, f, cd1, cd2, 0, focus_cb);
+    if (!focus_cb || !focus_cb->contains((AW_CB)wcb.callee())) {
+        focus_cb = new AW_cb(this, wcb, 0, focus_cb);
     }
 }
 bool AW_window::is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL)) {
@@ -790,7 +609,7 @@ bool AW_window::is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL)) {
 //      expose
 
 inline void AW_area_management::run_expose_callback() {
-    if (expose_cb) expose_cb->run_callback();
+    if (expose_cb) expose_cb->run_callbacks();
 }
 
 static void AW_exposeCB(Widget /*wgt*/, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
@@ -807,12 +626,16 @@ void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window
         XtAddCallback(area, XmNexposeCallback, (XtCallbackProc) AW_exposeCB,
                 (XtPointer) this);
     }
-    expose_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, expose_cb);
+    expose_cb = new AW_cb(aww, f, cd1, cd2, 0, expose_cb);
 }
 
 void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     AW_area_management *aram = MAP_ARAM(area);
     if (aram) aram->set_expose_callback(this, f, cd1, cd2);
+}
+void AW_window::set_expose_callback(AW_area area, const WindowCallback& wcb) {
+    AW_area_management *aram = MAP_ARAM(area);
+    if (aram) aram->set_expose_callback(this, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
 }
 
 bool AW_area_management::is_expose_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
@@ -930,7 +753,7 @@ static void cleanupResizeEvents(Display *display) {
 
 
 inline void AW_area_management::run_resize_callback() {
-    if (resize_cb) resize_cb->run_callback();
+    if (resize_cb) resize_cb->run_callbacks();
 }
 
 static void AW_resizeCB_draw_area(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call_data*/) {
@@ -945,7 +768,7 @@ void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window
         XtAddCallback(area, XmNresizeCallback,
                 (XtCallbackProc) AW_resizeCB_draw_area, (XtPointer) this);
     }
-    resize_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, resize_cb);
+    resize_cb = new AW_cb(aww, f, cd1, cd2, 0, resize_cb);
 }
 
 void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -955,13 +778,17 @@ void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
     aram->set_resize_callback(this, f, cd1, cd2);
 }
 
+void AW_window::set_resize_callback(AW_area area, const WindowCallback& wcb) {
+    set_resize_callback(area, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
+}
+
 // -------------------
 //      user input
 
 
 static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
     XEvent             *ev                        = call_data->event;
-    AW_cb_struct       *cbs                       = (AW_cb_struct *) aw_cb_struct;
+    AW_cb       *cbs                       = (AW_cb *) aw_cb_struct;
     AW_window          *aww                       = cbs->aw;
     bool                run_callback              = false;
     bool                run_double_click_callback = false;
@@ -1034,7 +861,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         if (!mykey->awmod && mykey->awkey >= AW_KEY_F1 && mykey->awkey
                 <= AW_KEY_F12 && p_aww(aww)->modes_f_callbacks && p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1]
                 && aww->event.type == AW_Keyboard_Press) {
-            p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1]->run_callback();
+            p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1]->run_callbacks();
         }
         else {
             run_callback = true;
@@ -1043,41 +870,39 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
 
     if (run_double_click_callback) {
         if (cbs->help_text == (char*)1) {
-            cbs->run_callback();
+            cbs->run_callbacks();
         }
         else {
             if (area)
-                area->get_double_click_cb()->run_callback();
+                area->get_double_click_cb()->run_callbacks();
         }
     }
 
     if (run_callback && (cbs->help_text == (char*)0)) {
-        cbs->run_callback();
+        cbs->run_callbacks();
     }
 }
 
-void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_input_callback(AW_window *aww, const WindowCallback& wcb) {
     XtAddCallback(area, XmNinputCallback,
-            (XtCallbackProc) AW_inputCB_draw_area,
-            (XtPointer) new AW_cb_struct(aww, f, cd1, cd2, (char*)0));
+            (XtCallbackProc)AW_inputCB_draw_area,
+            (XtPointer)new AW_cb(aww, wcb));
 }
 
-void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_input_callback(AW_area area, const WindowCallback& wcb) {
+    AW_area_management *aram = MAP_ARAM(area);
+    if (aram) aram->set_input_callback(this, wcb);
+}
+
+void AW_area_management::set_double_click_callback(AW_window *aww, const WindowCallback& wcb) {
+    double_click_cb = new AW_cb(aww, wcb, (char*)0, double_click_cb);
+}
+
+void AW_window::set_double_click_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return;
-    aram->set_input_callback(this, f, cd1, cd2);
-}
-
-void AW_area_management::set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    double_click_cb = new AW_cb_struct(aww, f, cd1, cd2, (char*)0, double_click_cb);
-}
-
-void AW_window::set_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    AW_area_management *aram = MAP_ARAM(area);
-    if (!aram)
-        return;
-    aram->set_double_click_callback(this, f, cd1, cd2);
+    aram->set_double_click_callback(this, wcb);
 }
 
 void AW_window::get_event(AW_event *eventi) const {
@@ -1088,24 +913,22 @@ void AW_window::get_event(AW_event *eventi) const {
 //      motion
 
 static void AW_motionCB(Widget /*w*/, XtPointer aw_cb_struct, XEvent *ev, Boolean*) {
-    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
+    AW_cb *cbs = (AW_cb *) aw_cb_struct;
 
     cbs->aw->event.type    = AW_Mouse_Drag;
     cbs->aw->event.x       = ev->xmotion.x;
     cbs->aw->event.y       = ev->xmotion.y;
     cbs->aw->event.keycode = AW_KEY_NONE;
 
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
-void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window *, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_motion_callback(AW_window *aww, const WindowCallback& wcb) {
     XtAddEventHandler(area, ButtonMotionMask, False,
-                      AW_motionCB, (XtPointer) new AW_cb_struct(aww, f, cd1, cd2, ""));
+                      AW_motionCB, (XtPointer) new AW_cb(aww, wcb, ""));
 }
-void AW_window::set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_motion_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = MAP_ARAM(area);
-    if (!aram)
-        return;
-    aram->set_motion_callback(this, f, cd1, cd2);
+    if (aram) aram->set_motion_callback(this, wcb);
 }
 
 static long destroy_awar(const char *, long val, void *) {
@@ -1285,11 +1108,6 @@ void AW_window::create_devices() {
     if (p_w->areas[AW_BOTTOM_AREA]) {
         p_w->areas[AW_BOTTOM_AREA]->create_devices(this, AW_BOTTOM_AREA);
     }
-}
-
-void AW_help_entry_pressed(AW_window *aww) {
-    AW_root *root = aww->get_root();
-    p_global->help_active = 1;
 }
 
 void aw_insert_default_help_entries(AW_window *aww) {
@@ -2199,9 +2017,9 @@ void AW_window::select_mode(int mode) {
     XtVaSetValues(widget, XmNbackground, p_global->foreground, NULL);
 }
 
-static void aw_mode_callback(AW_window *aww, long mode, AW_cb_struct *cbs) {
+static void aw_mode_callback(AW_window *aww, long mode, AW_cb *cbs) {
     aww->select_mode((int)mode);
-    cbs->run_callback();
+    cbs->run_callbacks();
 }
 
 #define MODE_BUTTON_OFFSET 34
@@ -2228,14 +2046,14 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     XtVaSetValues(button, RES_CONVERT(XmNlabelPixmap, path), NULL);
     XtVaGetValues(button, XmNforeground, &p_global->foreground, NULL);
 
-    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
-    AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, helpText, cbs);
+    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, 0);
+    AW_cb *cb2 = new AW_cb(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, helpText, cbs);
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
     (XtPointer) cb2);
 
     if (!p_w->modes_f_callbacks) {
-        p_w->modes_f_callbacks = (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
+        p_w->modes_f_callbacks = (AW_cb **)GB_calloc(sizeof(AW_cb*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
     }
     if (!p_w->modes_widgets) {
         p_w->modes_widgets = (Widget *)GB_calloc(sizeof(Widget), AW_NUMBER_OF_F_KEYS);
@@ -2548,14 +2366,17 @@ void AW_window::close_sub_menu() {
         p_w->menu_deep--;
 }
 
+void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb) {
+    insert_menu_topic(topic_id, name, mnemonic, helpText, Mask,
+                      AW_CB(cb.callee()), cb.inspect_CD1(), cb.inspect_CD2());
+}
+
 void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
                                   const char *mnemonic, const char *helpText, AW_active mask,
                                   void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2)
 {
     aw_assert(legal_mask(mask));
     Widget button;
-
-    if (!topic_id) topic_id = name; // hmm, due to this we cannot insert_menu_topic w/o id. Change? @@@
 
     TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_MENUTOPIC); // set background color for normal menu topics
 
@@ -2583,11 +2404,16 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
     }
 
     AW_label_in_awar_list(this, button, name);
-    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, helpText);
+    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, helpText);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
 
+#if defined(DEVEL_RALF) // wanted version
+    aw_assert(topic_id);
+#else // !defined(DEVEL_RALF)
+    if (!topic_id) topic_id = name;
+#endif
     cbs->id = strdup(topic_id);
     root->define_remote_command(cbs);
     root->make_sensitive(button, mask);
@@ -2606,7 +2432,7 @@ void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const cha
                                       RES_CONVERT(XmNmnemonic, mnemonic), NULL);
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
-    (XtPointer) new AW_cb_struct(this, f, cd1, cd2, helpText));
+    (XtPointer) new AW_cb(this, f, cd1, cd2, helpText));
 
     root->make_sensitive(button, mask);
 }
@@ -2870,16 +2696,14 @@ void AW_window::hide_or_notify(const char *error) {
     else hide();
 }
 
-static void timed_window_title_cb(AW_root* /*aw_root*/, AW_CL cd1, AW_CL cd2) {
-    char *title = (char *)cd1;
-    AW_window *aw = (AW_window *)cd2;
-
+static unsigned timed_window_title_cb(AW_root*, char *title, AW_window *aw) {
     aw->number_of_timed_title_changes--;
     if (!aw->number_of_timed_title_changes) {
         aw->set_window_title_intern(title);
     }
 
     delete title;
+    return 0; // do not recall
 }
 void AW_window::message(char *title, int ms) {
     char *old_title = NULL;
@@ -2890,9 +2714,7 @@ void AW_window::message(char *title, int ms) {
 
     XtVaSetValues(p_w->shell, XmNtitle, title, NULL);
 
-    get_root()->add_timed_callback(ms, timed_window_title_cb, (AW_CL)old_title,
-            (AW_CL)this);
-
+    get_root()->add_timed_callback(ms, makeTimedCallback(timed_window_title_cb, old_title, this));
 }
 
 void AW_window::set_window_title_intern(char *title) {
@@ -2986,112 +2808,6 @@ void AW_window::_set_activate_callback(void *widget) {
                 (XtCallbackProc) AW_server_callback, (XtPointer) _callback);
     }
     _callback = NULL;
-}
-
-GB_ERROR AW_root::start_macro_recording(const char *file, const char *application_id, const char *stop_action_name, bool expand_existing) {
-    GB_ERROR error = NULL;
-    if (prvt->recording) error = "Already recording macro";
-    else {
-        prvt->recording = new RecordingMacro(file, application_id, stop_action_name, expand_existing);
-        error           = prvt->recording->has_error();
-        if (error) stop_macro_recording();
-    }
-    return error;
-}
-
-GB_ERROR AW_root::stop_macro_recording() {
-    GB_ERROR error = NULL;
-    if (!prvt->recording) {
-        error = "Not recording macro";
-    }
-    else {
-        error = prvt->recording->stop();
-
-        delete prvt->recording;
-        prvt->recording = NULL;
-    }
-    return error;
-}
-
-bool AW_root::is_recording_macro() const { return prvt->recording; }
-
-class ExecutingMacro {
-    AW_RCB1 done_cb;
-    AW_CL   cd;
-
-    ExecutingMacro        *next;
-    static ExecutingMacro *head;
-
-    ExecutingMacro(AW_RCB1 execution_done_cb, AW_CL client_data)
-        : done_cb(execution_done_cb),
-          cd(client_data),
-          next(head)
-    {
-        head = this;
-    }
-
-    void call() const { done_cb(AW_root::SINGLETON, cd); }
-    void destroy() { head = next; delete this; }
-
-public:
-
-    static void add(AW_RCB1 execution_done_cb, AW_CL client_data) { new ExecutingMacro(execution_done_cb, client_data); }
-    static void done() {
-        // aw_assert(head); // fails when a macro is called from command line
-        if (head) {
-            head->call();
-            head->destroy();
-        }
-    }
-};
-
-ExecutingMacro *ExecutingMacro::head = NULL;
-
-static void macro_terminated(GBDATA */*gb_terminated*/, int *, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
-    aw_assert(cb_type == GB_CB_CHANGED);
-    ExecutingMacro::done();
-}
-
-static void dont_announce_done(AW_root*, AW_CL) {}
-
-GB_ERROR AW_root::execute_macro(GBDATA *gb_main, const char *file, AW_RCB1 execution_done_cb, AW_CL client_data) {
-    GB_ERROR  error = NULL;
-    char     *path;
-    if (file[0] == '/') {
-        path = strdup(file);
-    }
-    else {
-        path = GBS_global_string_copy("%s/%s", GB_getenvARBMACROHOME(), file);
-    }
-
-    {
-        GB_transaction ta(gb_main);
-
-        GBDATA *gb_term = GB_search(gb_main, MACRO_TRIGGER_CONTAINER "/terminated", GB_FIND);
-        if (!gb_term) {
-            gb_term = GB_search(gb_main, MACRO_TRIGGER_CONTAINER "/terminated", GB_INT);
-            if (!gb_term) {
-                error = GB_await_error();
-            }
-            else {
-                GB_add_callback(gb_term, GB_CB_CHANGED, macro_terminated, 0);
-            }
-        }
-        error = ta.close(error);
-    }
-
-    if (!error) {
-        if (!execution_done_cb) execution_done_cb = dont_announce_done;
-        ExecutingMacro::add(execution_done_cb, client_data);
-
-        const char *com = GBS_global_string("perl %s &", path);
-        printf("[Action '%s']\n", com);
-        if (system(com)) { // async(!) call to macro
-            aw_message(GBS_global_string("Calling '%s' failed", com));
-        }
-        free(path);
-    }
-    return error;
 }
 
 

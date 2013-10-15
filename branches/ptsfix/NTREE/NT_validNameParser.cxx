@@ -13,7 +13,8 @@
 #define DUMP
 #endif // DEVEL_LOTHAR
 
-#include "nt_validNameParser.hxx"
+#include "NT_validNameParser.h"
+#include "NT_local.h"
 
 #include <arb_assert.h>
 
@@ -23,8 +24,6 @@
 #include <fstream>
 
 using namespace std;
-
-#define nt_assert(bed) arb_assert(bed)
 
 namespace validNames {
 

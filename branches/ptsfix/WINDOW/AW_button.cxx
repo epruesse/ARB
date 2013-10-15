@@ -18,12 +18,7 @@
 #include "aw_root.hxx"
 #include "aw_question.hxx"
 #include "aw_xargs.hxx"
-#include "aw_macro.hxx"
 
-#include <arb_str.h>
-#include <arb_strbuf.h>
-#include <arb_strarray.h>
-#include <arb_sort.h>
 #include <arb_algo.h>
 
 #include <Xm/Frame.h>
@@ -49,18 +44,18 @@ class VarUpdateInfo : virtual Noncopyable { // used to refresh single items on c
     AW_widget_type     widget_type;
     AW_awar           *awar;
     AW_scalar          value;
-    AW_cb_struct      *cbs;
+    AW_cb             *cbs;
     AW_selection_list *sellist;
 
 public:
-    VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, AW_cb_struct *cbs_)
+    VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, AW_cb *cbs_)
         : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
           value(a),
           cbs(cbs_), sellist(NULL)
     {
     }
     template<typename T>
-    VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, T t, AW_cb_struct *cbs_)
+    VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, T t, AW_cb *cbs_)
         : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
           value(t),
           cbs(cbs_), sellist(NULL)
@@ -80,14 +75,14 @@ static void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_updat
     vui->change_from_widget(call_data);
 }
 
-static void record_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
+static void track_awar_change(GBDATA*, int *cl_awar, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
     AW_awar *awar = (AW_awar*)cl_awar;
     aw_assert(cb_type == GB_CB_CHANGED);
-    awar->root->prvt->recording->record_awar_change(awar);
+    awar->root->track_awar_change(awar);
 }
 
 void VarUpdateInfo::change_from_widget(XtPointer call_data) {
-    AW_cb_struct::useraction_init();
+    AW_cb::useraction_init();
     
     GB_ERROR  error = NULL;
     AW_root  *root  = awar->root;
@@ -96,10 +91,10 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
         root->changer_of_variable = widget;
     }
 
-    if (root->prvt->recording) {
+    if (root->is_tracking()) {
         // add a callback which writes macro-code (BEFORE any other callback happens; last added, first calledback)
         GB_transaction ta(awar->gb_var);
-        GB_add_callback(awar->gb_var, GB_CB_CHANGED, record_awar_change, (int*)awar);
+        GB_add_callback(awar->gb_var, GB_CB_CHANGED, track_awar_change, (int*)awar);
     }
 
     bool run_cb = true;
@@ -156,9 +151,9 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
             break;
     }
 
-    if (root->prvt->recording) {
+    if (root->is_tracking()) {
         GB_transaction ta(awar->gb_var);
-        GB_remove_callback(awar->gb_var, GB_CB_CHANGED, record_awar_change, (int*)awar);
+        GB_remove_callback(awar->gb_var, GB_CB_CHANGED, track_awar_change, (int*)awar);
     }
 
     if (error) {
@@ -167,13 +162,13 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
         aw_message(error);
     }
     else {
-        if (cbs && run_cb) cbs->run_callback();
+        if (cbs && run_cb) cbs->run_callbacks();
         root->value_changed = false;
 
         if (GB_have_error()) aw_message(GB_await_error()); // show error exported by awar-change-callback
     }
 
-    AW_cb_struct::useraction_done(aw_parent);
+    AW_cb::useraction_done(aw_parent);
 }
 
 
@@ -476,6 +471,11 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
             _callback->id = 0;
         }
     }
+#if defined(DEVEL_RALF) && 1
+    else {
+        aw_assert(!macro_name); // please pass NULL for buttons w/o callback
+    }
+#endif
 
 #define SPACE_BEHIND_LABEL  10
 #define SPACE_BEHIND_BUTTON 3
@@ -763,8 +763,8 @@ void AW_window::update_toggle(Widget widget, const char *var, AW_CL cd_toggle_da
 }
 
 void AW_window::create_toggle(const char *var_name, aw_toggle_data *tdata) {
-    AW_cb_struct *cbs = _callback;
-    _callback         = (AW_cb_struct *)1;
+    AW_cb *cbs = _callback;
+    _callback         = (AW_cb *)1;
 
     {
         int old_length_of_buttons = _at->length_of_buttons;
@@ -850,7 +850,7 @@ void AW_window::create_inverse_toggle(const char *var_name) {
 void AW_window::create_input_field(const char *var_name,   int columns) {
     Widget         textField      = 0;
     Widget         tmp_label      = 0;
-    AW_cb_struct  *cbs;
+    AW_cb  *cbs;
     VarUpdateInfo *vui;
     char          *str;
     int            xoff_for_label = 0;
@@ -980,7 +980,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
     Widget         scrolledWindowText;
     Widget         scrolledText;
     Widget         tmp_label             = 0;
-    AW_cb_struct  *cbs;
+    AW_cb         *cbs;
     VarUpdateInfo *vui;
     char          *str                   = NULL;
     short          width_of_last_widget  = 0;
@@ -1136,8 +1136,8 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     Widget         scrolledWindowList; // @@@ fix locals
     Widget         scrolledList;
     VarUpdateInfo *vui;
-    AW_cb_struct  *cbs;
-    
+    AW_cb         *cbs;
+
     int width_of_list;
     int height_of_list;
     int width_of_last_widget  = 0;
@@ -1283,479 +1283,8 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     return p_global->last_selection_list;
 }
 
-void AW_selection_list::move_content_to(AW_selection_list *target_list) {
-    // @@@ instead of COPYING, it could simply move the entries (may cause problems with iterator)
-
-    AW_selection_list_entry *entry = list_table;
-    while (entry) {
-        aw_assert(default_select != entry); // should not be possible
-        
-        if (!target_list->list_table) {
-            target_list->last_of_list_table = target_list->list_table = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
-        }
-        else {
-            target_list->last_of_list_table->next = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
-            target_list->last_of_list_table = target_list->last_of_list_table->next;
-            target_list->last_of_list_table->next = NULL;
-        }
-
-        entry = entry->next;
-    }
-
-    clear(false);
-}
-
-void AW_selection_list::set_file_suffix(const char *suffix) {
-    AW_root *aw_root = AW_root::SINGLETON;
-    char     filter[200];
-    sprintf(filter, "tmp/save_box_sel_%li/filter", (long)this);
-    aw_root->awar_string(filter, suffix);
-    sprintf(filter, "tmp/load_box_sel_%li/filter", (long)this);
-    aw_root->awar_string(filter, suffix);
-}
-
-int AW_selection_list::get_index_of_selected() {
-    // returns index of element (or index of default)
-    const char *awar_value = get_awar_value();
-    return get_index_of(awar_value);
-}
-
-void AW_selection_list::select_element_at(int wanted_index) {
-    const char *wanted_value = get_value_at(wanted_index);
-
-    if (!wanted_value) {
-        wanted_value = get_default_value();
-        if (!wanted_value) wanted_value = "";
-    }
-
-    set_awar_value(wanted_value);
-}
-
-void AW_selection_list::move_selection(int offset) {
-    /*! move selection 'offset' position
-     *  offset == 1  -> select next element
-     *  offset == -1 -> select previous element
-     */
-    
-    int index = get_index_of_selected();
-    select_element_at(index+offset);
-}
-
-int AW_selection_list::get_index_of(const char *searched_value) {
-    /*! get index of an entry in the selection list
-     * @return 0..n-1 index of matching element (or -1)
-     */
-    int element_index = 0;
-    for (AW_selection_list_iterator entry(this); entry; ++entry) {
-        if (strcmp(entry.get_value(), searched_value) == 0) return element_index;
-        ++element_index;
-    }
-    return -1;
-}
-int AW_selection_list::get_index_of_displayed(const char *displayed) {
-    /*! get index of an entry in the selection list
-     * @return 0..n-1 index of first element displaying displayed (or -1)
-     */
-    int                        element_index = 0;
-    AW_selection_list_iterator entry(this);
-
-    while (entry) {
-        if (strcmp(entry.get_displayed(), displayed) == 0) break;
-        ++element_index;
-    }
-
-    return element_index;
-}
-
-AW_selection_list_entry *AW_selection_list::get_entry_at(int index) {
-    AW_selection_list_entry *entry = list_table;
-    while (index && entry) {
-        entry = entry->next;
-        index--;
-    }
-    return entry;
-}
-
-const char *AW_selection_list::get_value_at(int index) {
-    // get value of the entry at position 'index' [0..n-1] of the 'selection_list'
-    // returns NULL if index is out of bounds
-    AW_selection_list_entry *entry = get_entry_at(index);
-    return entry ? entry->value.get_string() : NULL;
-}
-
-void AW_selection_list::delete_element_at(const int index) {
-    if (index<0) return;
-    
-    AW_selection_list_entry *prev = NULL;
-    if (index>0) {
-        prev = get_entry_at(index-1);
-        if (!prev) return; // invalid index
-    }
-    
-    int selected_index = get_index_of_selected();
-    if (index == selected_index) select_default();
-
-    AW_selection_list_entry *toDel = prev ? prev->next : list_table;
-    aw_assert(toDel != default_select);
-
-    (prev ? prev->next : list_table) = toDel->next;
-    delete toDel;
-
-    if (last_of_list_table == toDel) last_of_list_table = prev;
-}
-
-void AW_selection_list::delete_value(const char *value) {
-    int index = get_index_of(value);
-    delete_element_at(index);
-}
-
-__ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *intoWhat) {
-    GBK_terminatef("Cannot insert %s into %s which uses a non-%s AWAR", triedType, intoWhat, triedType);
-}
-
-__ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { type_mismatch(triedType, "selection-list"); }
 __ATTR__NORETURN inline void option_type_mismatch(const char *triedType) { type_mismatch(triedType, "option-menu"); }
 __ATTR__NORETURN inline void toggle_type_mismatch(const char *triedType) { type_mismatch(triedType, "toggle"); }
-
-void AW_selection_list::insert(const char *displayed, const char *value) {
-    if (variable_type != AW_STRING) {
-        selection_type_mismatch("string");
-        return;
-    }
-
-    if (list_table) {
-        last_of_list_table->next = new AW_selection_list_entry(displayed, value);
-        last_of_list_table = last_of_list_table->next;
-        last_of_list_table->next = NULL;
-    }
-    else {
-        last_of_list_table = list_table = new AW_selection_list_entry(displayed, value);
-    }
-}
-
-void AW_selection_list::insert_default(const char *displayed, const char *value) {
-    if (variable_type != AW_STRING) {
-        selection_type_mismatch("string");
-        return;
-    }
-    if (default_select) delete default_select;
-    default_select = new AW_selection_list_entry(displayed, value);
-}
-
-void AW_selection_list::insert(const char *displayed, int32_t value) {
-    if (variable_type != AW_INT) {
-        selection_type_mismatch("int");
-        return;
-    }
-    if (list_table) {
-        last_of_list_table->next = new AW_selection_list_entry(displayed, value);
-        last_of_list_table = last_of_list_table->next;
-        last_of_list_table->next = NULL;
-    }
-    else {
-        last_of_list_table = list_table = new AW_selection_list_entry(displayed, value);
-    }
-}
-
-void AW_selection_list::insert_default(const char *displayed, int32_t value) {
-    if (variable_type != AW_INT) {
-        selection_type_mismatch("int");
-        return;
-    }
-    if (default_select) {
-        delete default_select;
-    }
-    default_select = new AW_selection_list_entry(displayed, value);
-}
-
-void AW_selection_list::insert(const char *displayed, GBDATA *pointer) {
-    if (variable_type != AW_POINTER) {
-        selection_type_mismatch("pointer");
-        return;
-    }
-    if (list_table) {
-        last_of_list_table->next = new AW_selection_list_entry(displayed, pointer);
-        last_of_list_table = last_of_list_table->next;
-        last_of_list_table->next = NULL;
-    }
-    else {
-        last_of_list_table = list_table = new AW_selection_list_entry(displayed, pointer);
-    }
-}
-
-void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
-    if (variable_type != AW_POINTER) {
-        selection_type_mismatch("pointer");
-        return;
-    }
-    if (default_select) delete default_select;
-    default_select = new AW_selection_list_entry(displayed, pointer);
-}
-
-void AW_selection_list::clear(bool clear_default) {
-    while (list_table) {
-        AW_selection_list_entry *nextEntry = list_table->next;
-        delete list_table;
-        list_table = nextEntry;
-    }
-    list_table = NULL;
-    last_of_list_table = NULL;
-
-    if (clear_default && default_select) {
-        delete default_select;
-        default_select = NULL;
-    }
-}
-
-inline XmString XmStringCreateSimple_wrapper(const char *text) {
-    return XmStringCreateSimple((char*)text);
-}
-
-void AW_selection_list::update() {
-    // Warning:
-    // update() will not set the connected awar to the default value
-    // if it contains a value which is not associated with a list entry!
-
-    size_t count = size();
-    if (default_select) count++;
-
-    XmString *strtab = new XmString[count];
-
-    count = 0;
-    for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
-        const char *s2 = lt->get_displayed();
-        if (!strlen(s2)) s2 = "  ";
-        strtab[count] = XmStringCreateSimple_wrapper(s2);
-        count++;
-    }
-
-    if (default_select) {
-        const char *s2 = default_select->get_displayed();
-        if (!strlen(s2)) s2 = "  ";
-        strtab[count] = XmStringCreateSimple_wrapper(s2);
-        count++;
-    }
-    if (!count) {
-        strtab[count] = XmStringCreateSimple_wrapper("   ");
-        count ++;
-    }
-
-    XtVaSetValues(select_list_widget, XmNitemCount, count, XmNitems, strtab, NULL);
-
-    refresh();
-
-    for (size_t i=0; i<count; i++) XmStringFree(strtab[i]);
-    delete [] strtab;
-}
-
-void AW_selection_list::init_from_array(const CharPtrArray& entries, const char *defaultEntry) {
-    // update selection list with contents of NULL-terminated array 'entries'
-    // 'defaultEntry' is used as default selection
-    // awar value will be changed to 'defaultEntry' if it does not match any other entry
-    // Note: This works only with selection lists bound to AW_STRING awars.
-
-    aw_assert(defaultEntry);
-    char *defaultEntryCopy = strdup(defaultEntry); // use a copy (just in case defaultEntry point to a value free'd by clear_selection_list())
-    bool  defInserted      = false;
-
-    clear();
-    for (int i = 0; entries[i]; ++i) {
-        if (!defInserted && strcmp(entries[i], defaultEntryCopy) == 0) {
-            insert_default(defaultEntryCopy, defaultEntryCopy);
-            defInserted = true;
-        }
-        else {
-            insert(entries[i], entries[i]);
-        }
-    }
-    if (!defInserted) insert_default(defaultEntryCopy, defaultEntryCopy);
-    update();
-
-    const char *selected = get_selected_value();
-    if (selected) set_awar_value(selected);
-
-    free(defaultEntryCopy);
-}
-
-void AW_selection_list::to_array(StrArray& array, bool values) {
-    /*! read contents of selection list into an array.
-     * @param array contents are stored here
-     * @param values true->read values, false->read displayed strings
-     * Use GBT_free_names() to free the result.
-     *
-     * Note: if 'values' is true, this function only works for string selection lists!
-     */
-
-    array.reserve(size());
-    
-    for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
-        array.put(strdup(values ? lt->value.get_string() : lt->get_displayed()));
-    }
-    aw_assert(array.size() == size());
-}
-
-void AW_selection_list::refresh() {
-    if (!variable_name) return;     // not connected to awar
-
-    AW_root *root  = AW_root::SINGLETON;
-    bool     found = false;
-    int      pos   = 0;
-    AW_awar *awar  = root->awar(variable_name);
-
-    AW_selection_list_entry *lt;
-
-    switch (variable_type) {
-        case AW_STRING: {
-            char *var_value = awar->read_string();
-            for (lt = list_table; lt; lt = lt->next) {
-                if (strcmp(var_value, lt->value.get_string()) == 0) {
-                    found = true;
-                    break;
-                }
-                pos++;
-            }
-            free(var_value);
-            break;
-        }
-        case AW_INT: {
-            int var_value = awar->read_int();
-            for (lt = list_table; lt; lt = lt->next) {
-                if (var_value == lt->value.get_int()) {
-                    found = true;
-                    break;
-                }
-                pos++;
-            }
-            break;
-        }
-        case AW_FLOAT: {
-            float var_value = awar->read_float();
-            for (lt = list_table; lt; lt = lt->next) {
-                if (var_value == lt->value.get_float()) {
-                    found = true;
-                    break;
-                }
-                pos++;
-            }
-            break;
-        }
-        case AW_POINTER: {
-            GBDATA *var_value = awar->read_pointer();
-            for (lt = list_table; lt; lt = lt->next) {
-                if (var_value == lt->value.get_pointer()) {
-                    found = true;
-                    break;
-                }
-                pos++;
-            }
-            break;
-        }
-        default:
-            aw_assert(0);
-            GB_warning("Unknown AWAR type");
-            break;
-    }
-
-    if (found || default_select) {
-        pos++;
-        int top;
-        int vis;
-        XtVaGetValues(select_list_widget,
-                      XmNvisibleItemCount, &vis,
-                      XmNtopItemPosition, &top,
-                      NULL);
-        XmListSelectPos(select_list_widget, pos, False);
-
-        if (pos < top) {
-            if (pos > 1) pos --;
-            XmListSetPos(select_list_widget, pos);
-        }
-        if (pos >= top + vis) {
-            XmListSetBottomPos(select_list_widget, pos + 1);
-        }
-    }
-    else {
-        GBK_terminatef("Selection list '%s' has no default selection", variable_name);
-    }
-}
-
-char *AW_selection_list::get_content_as_string(long number_of_lines) {
-    // number_of_lines == 0 -> print all
-
-    AW_selection_list_entry *lt;
-    GBS_strstruct *fd = GBS_stropen(10000);
-
-    for (lt = list_table; lt; lt = lt->next) {
-        number_of_lines--;
-        GBS_strcat(fd, lt->get_displayed());
-        GBS_chrcat(fd, '\n');
-        if (!number_of_lines) break;
-    }
-    return GBS_strclose(fd);
-}
-
-GB_HASH *AW_selection_list::to_hash(bool case_sens) {
-    // creates a hash (key = value of selection list, value = display string from selection list)
-    // (Warning: changing the selection list will render the hash invalid!)
-
-    GB_HASH *hash = GBS_create_hash(size(), case_sens ? GB_MIND_CASE : GB_IGNORE_CASE);
-
-    for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
-        GBS_write_hash(hash, lt->value.get_string(), (long)lt->get_displayed());
-    }
-
-    return hash;
-}
-
-static int AW_sort_AW_select_table_struct(const void *t1, const void *t2, void *) {
-    return strcmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
-                  static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
-}
-static int AW_sort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
-    return strcmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
-                  static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
-}
-static int AW_isort_AW_select_table_struct(const void *t1, const void *t2, void *) {
-    return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
-                       static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
-}
-static int AW_isort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
-    return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
-                       static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
-}
-
-void AW_selection_list::sort(bool backward, bool case_sensitive) {
-    size_t count = size();
-    if (count) {
-        AW_selection_list_entry **tables = new AW_selection_list_entry *[count];
-        count = 0;
-        for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
-            tables[count++] = lt;
-        }
-
-        gb_compare_function comparator;
-        if (backward) {
-            if (case_sensitive) comparator = AW_sort_AW_select_table_struct_backward;
-            else comparator                = AW_isort_AW_select_table_struct_backward;
-        }
-        else {
-            if (case_sensitive) comparator = AW_sort_AW_select_table_struct;
-            else comparator                = AW_isort_AW_select_table_struct;
-        }
-
-        GB_sort((void**)tables, 0, count, comparator, 0);
-
-        size_t i;
-        for (i=0; i<count-1; i++) {
-            tables[i]->next = tables[i+1];
-        }
-        tables[i]->next = 0;
-        list_table = tables[0];
-        last_of_list_table = tables[i];
-
-        delete [] tables;
-    }
-}
 
 // ----------------------
 //      Options-Menu
@@ -1941,7 +1470,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
     }
     else {
         Widget        entry = (Widget)_create_option_entry(AW_STRING, option_name, mnemonic, name_of_color);
-        AW_cb_struct *cbs   = _callback; // user-own callback
+        AW_cb *cbs   = _callback; // user-own callback
 
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
@@ -1961,7 +1490,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
     }
     else {
         Widget        entry = (Widget)_create_option_entry(AW_INT, option_name, mnemonic, name_of_color);
-        AW_cb_struct *cbs   = _callback; // user-own callback
+        AW_cb *cbs   = _callback; // user-own callback
 
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
@@ -1981,7 +1510,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
     }
     else {
         Widget        entry = (Widget)_create_option_entry(AW_FLOAT, option_name, mnemonic, name_of_color);
-        AW_cb_struct *cbs   = _callback; // user-own callback
+        AW_cb *cbs   = _callback; // user-own callback
 
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,

@@ -7,11 +7,21 @@ my $debug_matching = 0;
 my $ignore_unknown = 0;
 
 # ------------------------------------------------------------
+# override checks below and save strictly as checked-in in SVN
+
+my @strictly_as_in_svn_when_matchesDir = (
+                                           qr/\/GDE\/MAFFT\/mafft-[0-9\.]+-with[out]*-extensions\/.*$/o,
+                                          );
+
+# ------------------------------------------------------------
 # skipped_directories and files inside are never examined:
 
 my @skipped_directories = (
                            qr/\/.+\/bin$/o,
+                           qr/\/.+\/build$/o,
                            qr/\/HELP_SOURCE\/Xml$/o,
+                           qr/\/GDE\/MUSCLE\/obj$/o,
+                           qr/\/GDE\/PHYML20130708\/phyml\/autom4te.cache$/o,
                            qr/\/ignore\./o,
                            qr/\/PERL2ARB\/blib$/o,
                            qr/\/HEADERLIBS\/[^\/]+/o,
@@ -23,12 +33,14 @@ my @skipped_directories = (
                            qr/^\.\/lib\/help$/o,
                            qr/^\.\/lib\/help_html$/o,
                            qr/^\.\/lib\/pts$/o,
+                           qr/^\.\/lib\/mafft$/o,
                            qr/^\.\/patches.arb$/o,
                            qr/^\.\/PERL5$/o,
                            qr/_COM\/DUMP$/o,
                            qr/_COM\/GEN[CH]$/o,
                            qr/_COM\/O$/o,
                            qr/_GEN$/o,
+                           qr/nbproject/o,
                            # needed by ralf:
                            qr/^\.\/test_arb_make_targets_logs/o,
                            qr/\.dSYM$/o,
@@ -67,10 +79,11 @@ my %skipped_files = map { $_ => 1; } (
                                       'nt_date.h',
                                       'postcompile.sav',
                                       'TAGS',
-                                      '.DS_Store',);
+                                      '.DS_Store',
+                                      );
 
 my %used_extensions = map { $_ => 1; } (
-                                        'c', 'cpp', 'cxx',
+                                        'c', 'cpp', 'cxx', 'cc',
                                         'h', 'hpp', 'hxx',
 
                                         'aisc', 'pa',
@@ -84,6 +97,7 @@ my %used_extensions = map { $_ => 1; } (
                                         'java', 'manifest',
                                         'makefile',
                                         'pl', 'pm', 'PL', 'cgi', 'xs',
+                                        'awk',
                                         'py',
                                         'script',
                                         'sh',
@@ -173,6 +187,7 @@ my @used_when_matchesFull = (
                              qr/\/UNIT_TESTER\/run\/.*\.input$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.out$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.tree$/o,
+                             qr/\/UNIT_TESTER\/run\/help\//o,
                              qr/\/UNIT_TESTER\/run\/impexp\/.*\.exported$/o,
                              qr/\/UNIT_TESTER\/valgrind\/arb_valgrind_logged$/o,
                              qr/^\.\/etc\//o,
@@ -193,7 +208,8 @@ my @used_when_matchesFull = (
                              qr/^\.\/lib\/submit\//o,
                              qr/^\.\/util\/arb_.*$/o,
                              qr/^\.\/util\/config\..*$/o,
-                             qr/GDE\/.*\/Makefile\.[^\/]+$/io,
+                             qr/\/GDE\/.*\/Makefile\.[^\/]+$/io,
+                             qr/\/GDE\/PHYML[^\/]+\/phyml\//o,
                             );
 
 # skipped_when_matchesFull and forced_when_matchesFull are always tested! (@3)
@@ -202,6 +218,7 @@ my @skipped_when_matchesFull = (
                                 qr/\/genhelp\/.*\.hlp$/o,
                                 qr/\/lib\/addlibs\/(lib.*\.so\..*)$/o,
                                 qr/^\.\/arb.*\.tgz$/o,
+                                qr/^\.\/bin\//o,
                                 qr/^\.\/GDE\/CORE\/functions.h$/o,
                                 qr/^\.\/lib\/ARB\.pm$/o,
                                 qr/^\.\/lib\/arb_tcp\.dat$/o,
@@ -226,7 +243,9 @@ my @skipped_when_matchesFull = (
                                );
 
 my @forced_when_matchesFull = (
+                               qr/^\.\/bin\/Makefile/o,
                                qr/\/PROBE_WEB\/SERVER\/.*\.jar$/o,
+                               qr/\/GDE\/PHYML[^\/]+\/phyml\/.*\.log$/o,
                               );
 
 # files that are even packed when generated and not in VC
@@ -502,10 +521,28 @@ my %unpackedCVSmember = map { $_ => 1; } (
 sub unexpectVCmember($$\%) {
   my ($full,$item,$VC_r) = @_;
   if (defined $$VC_r{$item}) {
-    if (not exists $unpackedCVSmember{$item} and $ignore_unknown==0) {
+    if ((not exists $unpackedCVSmember{$item}) and ($ignore_unknown==0)) {
       die "'$full' excluded, but in $VC";
     }
   }
+}
+
+sub is_version_controlled($\%) {
+  my ($item,$VC_r) = @_;
+  if (defined $$VC_r{$item}) {
+    return 1;
+  }
+  return 0;
+}
+
+sub saveAsInSVNforDir($) {
+  my ($dir) = @_;
+  foreach my $reg (@strictly_as_in_svn_when_matchesDir) {
+    if ($dir =~ $reg) {
+      return 1;
+    }
+  }
+  return 0;
 }
 
 sub dumpFiles($);
@@ -521,26 +558,45 @@ sub dumpFiles($) {
       die "arb_srclst.pl only works in a SVN checkout";
     }
 
+    my $as_in_svn = saveAsInSVNforDir($dir);
+
     opendir(DIR,$dir) || die "can't read directory '$dir' (Reason: $!)";
     foreach (readdir(DIR)) {
       if ($_ ne '.' and $_ ne '..') {
         my $full = $dir.'/'.$_;
+
+        # print STDERR "full='$full' (as_in_svn=$as_in_svn)\n";
+
         if (not -l $full) {
           if (-d $full) {
-            if (useDir($full)==1) {
-              expectVCmember($full,$_,%CVS);
-              push @subdirs, $full;
+            if ($as_in_svn==1) {
+              if (is_version_controlled($_,%CVS)==1) {
+                push @subdirs, $full;
+              }
             }
-            else { unexpectVCmember($full,$_,%CVS); }
+            else {
+              if (useDir($full)==1) {
+                expectVCmember($full,$_,%CVS);
+                push @subdirs, $full;
+              }
+              else { unexpectVCmember($full,$_,%CVS); }
+            }
           }
           elsif (-f $full) {
-            if (useFile($dir,$_)==1) {
-              expectVCmember($full,$_,%CVS);
-              push @files, $full;
+            if ($as_in_svn==1) {
+              if (is_version_controlled($_,%CVS)==1) {
+                push @files, $full;
+              }
             }
-            else { unexpectVCmember($full,$_,%CVS); }
+            else {
+              if (useFile($dir,$_)==1) {
+                expectVCmember($full,$_,%CVS);
+                push @files, $full;
+              }
+              else { unexpectVCmember($full,$_,%CVS); }
+            }
           }
-          else { die "Unknown: '$full'"; }
+          else { die "Unknown (neighter link nor file nor directory): '$full'"; }
         }
       }
     }

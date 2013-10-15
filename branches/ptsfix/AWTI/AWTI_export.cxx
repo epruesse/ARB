@@ -35,7 +35,7 @@
 #define AWAR_EXPORT_FILTER_ALI     AWAR_EXPORT_FILTER_PREFIX "/alignment"
 #define AWAR_EXPORT_CUTSTOP        "export/cutstop"
 
-static void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_create_select_filter) {
+static void export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_create_select_filter) {
     GBDATA           *gb_main = (GBDATA*)cl_gb_main;
     GB_transaction    dummy(gb_main);
     adfiltercbstruct *acbs    = (adfiltercbstruct*)res_from_awt_create_select_filter;
@@ -71,7 +71,7 @@ static void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_a
 
 }
 
-static void AWTC_create_export_awars(AW_root *awr, AW_default def) {
+static void create_export_awars(AW_root *awr, AW_default def) {
     AW_create_fileselection_awars(awr, AWAR_EXPORT_FORM, GB_path_in_ARBLIB("export"), ".eft", "*", AW_ROOT_DEFAULT, true);
     AW_create_fileselection_awars(awr, AWAR_EXPORT_FILE, "", "", "noname");
 
@@ -154,7 +154,7 @@ AW_window *open_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
     static AW_window_simple *aws = 0;
     if (aws) return aws;
 
-    AWTC_create_export_awars(awr, AW_ROOT_DEFAULT);
+    create_export_awars(awr, AW_ROOT_DEFAULT);
 
     aws = new AW_window_simple;
 
@@ -201,7 +201,7 @@ AW_window *open_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
 
     aws->at("go");
     aws->highlight();
-    aws->callback(AWTC_export_go_cb, (AW_CL)gb_main, (AW_CL)filtercd);
+    aws->callback(export_go_cb, (AW_CL)gb_main, (AW_CL)filtercd);
     aws->create_button("GO", "GO", "G");
 
     return aws;

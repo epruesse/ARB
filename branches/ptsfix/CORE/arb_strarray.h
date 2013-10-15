@@ -28,7 +28,8 @@
 
 typedef int (*CharPtrArray_compare_fun)(const void *p0, const void *p1, void *client_data); // same as arb_sort.h@gb_compare_function
 
-class CharPtrArray : virtual Noncopyable {
+struct CharPtrArray : virtual Noncopyable {
+private:
     size_t allocated;
 
 protected:
@@ -121,7 +122,8 @@ public:
     void sort(CharPtrArray_compare_fun compare, void *client_data);
 };
 
-class StrArray : public CharPtrArray {
+struct StrArray : public CharPtrArray {
+private:
     virtual void free_elem(int i) OVERRIDE {
         freenull(str[i]);
     }
@@ -143,7 +145,8 @@ public:
     }
 };
 
-class ConstStrArray : public CharPtrArray { // derived from a Noncopyable
+struct ConstStrArray : public CharPtrArray { // derived from a Noncopyable
+private:
     char *memblock;
 
     virtual void free_elem(int i) OVERRIDE { str[i] = NULL; }

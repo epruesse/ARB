@@ -31,9 +31,11 @@ depend.init:
 db_server.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_assert.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_core.h
+db_server.o: $(ARBHOME)/INCLUDE/arb_diff.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_error.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_file.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_msg.h
+db_server.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_string.h
 db_server.o: $(ARBHOME)/INCLUDE/arbdb.h
 db_server.o: $(ARBHOME)/INCLUDE/arbdb_base.h

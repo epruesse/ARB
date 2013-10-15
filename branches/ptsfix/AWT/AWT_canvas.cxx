@@ -417,7 +417,7 @@ bool AWT_canvas::handleWheelEvent(AW_device *device, const AW_event& event) {
     return true;
 }
 
-static void input_event(AW_window *aww, AWT_canvas *scr, AW_CL /*cd2*/) {
+static void input_event(AW_window *aww, AWT_canvas *scr) {
     awt_assert(aww = scr->aww);
 
     AW_event event;
@@ -538,7 +538,7 @@ void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
     }
 }
 
-static void motion_event(AW_window *aww, AWT_canvas *scr, AW_CL /*cd2*/) {
+static void motion_event(AW_window *aww, AWT_canvas *scr) {
     AW_device *device = aww->get_device(AW_MIDDLE_AREA);
     device->reset();
     device->set_filter(AW_SCREEN);
@@ -686,7 +686,7 @@ void AWT_canvas::scroll(int dx, int dy, bool dont_update_scrollbars) {
     this->refresh();
 }
 
-static void scroll_vert_cb(AW_window *aww, AWT_canvas* scr, AW_CL /*cl1*/) {
+static void scroll_vert_cb(AW_window *aww, AWT_canvas* scr) {
     int new_vert       = aww->slider_pos_vertical;
     int delta_screen_y = (new_vert - scr->old_vert_scroll_pos);
 
@@ -694,7 +694,7 @@ static void scroll_vert_cb(AW_window *aww, AWT_canvas* scr, AW_CL /*cl1*/) {
     scr->old_vert_scroll_pos = new_vert;
 }
 
-static void scroll_hor_cb(AW_window *aww, AWT_canvas* scr, AW_CL /*cl1*/) {
+static void scroll_hor_cb(AW_window *aww, AWT_canvas* scr) {
     int new_hor        = aww->slider_pos_horizontal;
     int delta_screen_x = (new_hor - scr->old_hor_scroll_pos);
 
@@ -703,8 +703,9 @@ static void scroll_hor_cb(AW_window *aww, AWT_canvas* scr, AW_CL /*cl1*/) {
 }
 
 
-AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_gc_manager &set_gc_manager, const char *user_awari)
-    : consider_text_for_size(true) 
+AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_name_, AWT_graphic *awd, const char *user_awari)
+    : consider_text_for_size(true)
+    , gc_base_name(strdup(gc_base_name_))
     , user_awar(strdup(user_awari))
     , shift_x_to_fit(0)
     , shift_y_to_fit(0)
@@ -712,12 +713,11 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
     , aww(awwi)
     , awr(aww->get_root())
     , gfx(awd)
-    , gc_manager(gfx->init_devices(aww, aww->get_device (AW_MIDDLE_AREA), this, (AW_CL)0))
+    , gc_manager(gfx->init_devices(aww, aww->get_device(AW_MIDDLE_AREA), this, (AW_CL)0))
     , drag_gc(aww->main_drag_gc)
     , mode(AWT_MODE_NONE)
 {
     gfx->drag_gc   = drag_gc;
-    set_gc_manager = gc_manager;
 
     memset((char *)&clicked_line, 0, sizeof(clicked_line));
     memset((char *)&clicked_text, 0, sizeof(clicked_text));
@@ -726,12 +726,12 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
 
     aww->set_expose_callback(AW_MIDDLE_AREA, (AW_CB)AWT_expose_cb, (AW_CL)this, 0);
     aww->set_resize_callback(AW_MIDDLE_AREA, (AW_CB)AWT_resize_cb, (AW_CL)this, 0);
-    aww->set_input_callback(AW_MIDDLE_AREA, (AW_CB)input_event, (AW_CL)this, 0);
-    aww->set_focus_callback((AW_CB)canvas_focus_cb, (AW_CL)this, 0);
+    aww->set_input_callback(AW_MIDDLE_AREA, makeWindowCallback(input_event, this));
+    aww->set_focus_callback(makeWindowCallback(canvas_focus_cb, this));
 
-    aww->set_motion_callback(AW_MIDDLE_AREA, (AW_CB)motion_event, (AW_CL)this, 0);
-    aww->set_horizontal_change_callback((AW_CB)scroll_hor_cb, (AW_CL)this, 0);
-    aww->set_vertical_change_callback((AW_CB)scroll_vert_cb, (AW_CL)this, 0);
+    aww->set_motion_callback(AW_MIDDLE_AREA, makeWindowCallback(motion_event, this));
+    aww->set_horizontal_change_callback(makeWindowCallback(scroll_hor_cb, this));
+    aww->set_vertical_change_callback(makeWindowCallback(scroll_vert_cb, this));
 }
 
 // --------------------

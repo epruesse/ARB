@@ -134,6 +134,9 @@ GB_ERROR GBT_write_int(GBDATA *gb_container, const char *fieldpath, long content
 GB_ERROR GBT_write_byte(GBDATA *gb_container, const char *fieldpath, unsigned char content);
 GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double content);
 GBDATA *GBT_open(const char *path, const char *opent);
+GB_ERROR GB_set_macro_error(GBDATA *gb_main, const char *curr_error);
+GB_ERROR GB_get_macro_error(GBDATA *gb_main);
+GB_ERROR GB_clear_macro_error(GBDATA *gb_main);
 GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name);
 GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value);
 GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name);
@@ -144,10 +147,11 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message);
 /* adtree.cxx */
 GBDATA *GBT_get_tree_data(GBDATA *gb_main);
 GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_HASH *species_hash, int *removed, int *groups_removed);
-void GBT_delete_tree(GBT_TREE *tree);
+void GBT_delete_tree(GBT_TREE*& tree);
 GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name);
 GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree);
-GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *remark);
+GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const char *remark);
+GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree, const char *remark);
 GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long structure_size, int *tree_size);
 GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, long structure_size);
 size_t GBT_count_leafs(const GBT_TREE *tree);

@@ -28,7 +28,7 @@
 <!ELEMENT ITEM EMPTY>
 <!ATTLIST ITEM name ID #REQUIRED> <!--unique ID (enumerates the single branches, items and groups) -->
 <!ATTLIST ITEM length CDATA #IMPLIED> <!--branchlength (defaults to zero)-->
-<!ATTLIST ITEM itemname CDATA #REQUIRED> <!--species name (should be a unique name (at least inside ARB))-->
+<!ATTLIST ITEM itemname CDATA #REQUIRED> <!--species ID (should be a unique ID (at least inside ARB))-->
 
 <!ELEMENT FOLDED_GROUP EMPTY> <!--a folded group-->
 <!ATTLIST FOLDED_GROUP name ID #REQUIRED> <!--unique ID (enumerates the single branches, items and groups) -->

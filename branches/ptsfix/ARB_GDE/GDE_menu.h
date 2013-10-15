@@ -35,16 +35,24 @@ struct GmenuItemArg {
     char       *method;         // commandline interpretation
     GargChoice *choice;         // choices
     // ARB BEGIN
+    AW_active     active_mask;  // expert/novice
+};
+
+enum TypeInfo {
+    BASIC_TYPEINFO    = 0, // has to be zero (default value; initialized with calloc)
+    DETAILED_TYPEINFO = 1,
+    UNKNOWN_TYPEINFO  = 2,
 };
 
 struct GfileFormat {
-    int   save;                 // how should file be saved
-    int   overwrite;            // how should file be loaded
-    int   format;               // what format is each field
-    int   maskable;             // Can a write through mask be used?
-    int   select;               // what type of selection
-    char *symbol;               // internal symbol table mapping
-    char *name;                 // file name
+    int       save;             // how should file be saved
+    int       overwrite;        // how should file be loaded
+    int       format;           // what format is each field
+    int       maskable;         // Can a write through mask be used?
+    int       select;           // what type of selection
+    char     *symbol;           // internal symbol table mapping
+    char     *name;             // file name
+    TypeInfo  typeinfo;
 };
 
 class AW_window;
@@ -64,6 +72,7 @@ struct GmenuItem {
     // ARB BEGIN
     struct Gmenu *parent_menu;
     AW_window    *aws;            // opened window
+    AW_active     active_mask;    // expert/novice
 };
 
 struct Gmenu {
@@ -72,6 +81,7 @@ struct Gmenu {
     GmenuItem *item;            // menu items
     // ARB BEGIN
     char       meta;            // Meta character for menu
+    AW_active     active_mask;    // expert/novice
 };
 
 typedef unsigned char uchar;

@@ -399,9 +399,11 @@ static void AWT_announce_properties_to_browser(GBDATA *gb_defaults, const char *
 }
 
 void AWT_browser_forget_db(GBDATA *gb_main) {
-    DB_browser *browser = get_the_browser(false);
-    awt_assert(browser);
-    if (browser) browser->del_db(gb_main);
+    if (gb_main) {
+        DB_browser *browser = get_the_browser(false);
+        awt_assert(browser);
+        if (browser) browser->del_db(gb_main);
+    }
 }
 
 // ---------------------------------------
@@ -1167,8 +1169,8 @@ void AWT_create_debug_menu(AW_window *awmm) {
 
 #endif // DEBUG
 
-AW_root *AWT_create_root(const char *properties, const char *program, int *argc, char*** argv) {
-    AW_root *aw_root = new AW_root(properties, program, false, argc, argv);
+AW_root *AWT_create_root(const char *properties, const char *program, UserActionTracker *user_tracker, int *argc, char*** argv) {
+    AW_root *aw_root = new AW_root(properties, program, false, user_tracker, argc, argv);
 #if defined(DEBUG)
     AWT_announce_properties_to_browser(AW_ROOT_DEFAULT, properties);
 #endif // DEBUG
@@ -1204,9 +1206,9 @@ static void after_callback_guard() {
 
 void AWT_install_cb_guards() {
     awt_assert(!GB_have_error());
-    AW_cb_struct::set_AW_cb_guards(before_callback_guard, after_callback_guard);
+    AW_cb::set_AW_cb_guards(before_callback_guard, after_callback_guard);
 }
 void AWT_install_postcb_cb(AW_postcb_cb postcb_cb) {
-    AW_cb_struct::set_AW_postcb_cb(postcb_cb);
+    AW_cb::set_AW_postcb_cb(postcb_cb);
 }
 

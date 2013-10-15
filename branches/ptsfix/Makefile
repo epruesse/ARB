@@ -49,20 +49,8 @@ READLINK:=$(ARBHOME)/SH/arb_readlink
 
 # ---------------------- [basic compiler setting]
 
-ifdef DARWIN
-	GCC:= clang
-	GPP:= clang++
-else
-	GCC:=$(CC)
-	GPP:=$(CXX)
-
-#       to use clang-static-analyzer , call make like this:
-#       setenv CLANG_STATIC_CHECKER 1 ; scan-build make -j5 build
-	ifeq ($(CLANG_STATIC_CHECKER),1)
-		CCC_ANALYZER_CPLUSPLUS=1
-	endif
-endif
-
+GCC ?= $(CC)
+GPP ?= $(CXX)
 
 # ---------------------- compiler version detection
 
@@ -71,12 +59,11 @@ endif
 ALLOWED_GCC_4xx_VERSIONS=\
 	4.2.1 \
 	4.3.1 4.3.2 4.3.3 4.3.4 \
-	4.4.1       4.4.3       4.4.5 4.4.6 \
+	4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
 	      4.5.2 \
-	4.6.1 \
-	4.7.1 4.7.2 \
-	4.8.0
-# Note: gcc 4.8 is not released yet (just experimenting with gcc-dev-version)
+	4.6.1 4.6.2 4.6.3 \
+	4.7.1 4.7.2 4.7.3 \
+	4.8.0 4.8.1
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
@@ -132,6 +119,7 @@ ifdef DARWIN
 	LINK_STATIC=1# link static
 else
 	LINK_STATIC=0# link dynamically
+#	LINK_STATIC=1# link static (testing only)
 endif
 
 shared_cflags :=# flags for shared lib compilation
@@ -187,7 +175,9 @@ ifeq ($(DEBUG),1)
 
 # ------- above only warnings available in 3.0
 
+ ifneq ('$(GCC_VERSION_FOUND)','4.7.3') # g++ crashes on GenomeImport.cxx when -Weffc++ is active (bug reported)
 	extended_cpp_warnings += -Weffc++# gcc 3.0.1
+ endif
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
 #	extended_cpp_warnings += -Wold-style-cast# gcc 3.0.4 (warn about 28405 old-style casts)
 	extended_cpp_warnings += -Winit-self# gcc 3.4.0
@@ -456,16 +446,7 @@ LINK_SHARED_LIB := $(GPP) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link sh
 endif
 
 # other used tools
-
-
-ifdef DARWIN
-	XMKMF := $(PREFIX)/bin/xmkmf
-else
-	XMKMF := /usr/bin/X11/xmkmf
-endif
-
 MAKEDEPEND_PLAIN = makedepend
-
 MAKEDEPEND = $(FORCEMASK);$(MAKEDEPEND_PLAIN)
 
 #SEP:=--------------------------------------------------------------------------------
@@ -529,6 +510,12 @@ endif
 		@echo ' dep_graph   - Build dependency graphs'
 		@echo ' clean_cov   - Clean coverage results'
 		@echo ''
+		@echo ' post_commit_check - Checks whether'
+		@echo '                     * main make targets work,'
+		@echo '                     * dependencies and prototypes are up to date,'
+		@echo '                     * SVN-controlled files remain unaffected by called targets and'
+		@echo '                     * all generated files are ignored.'
+		@echo '                     (has to be called in a clean SVN checkout)'
 		@echo $(SEP)
 		@echo ''
 
@@ -652,7 +639,6 @@ check_TOOLS:
 		"$(GCC)" \
 		"$(ACCLIB)" \
 		"$(CPPLIB)" \
-		"$(XMKMF)" \
 		"$(MAKEDEPEND_PLAIN)" \
 		"$(LINK_SHARED_LIB)" \
 		"$(LINK_SHARED_LIB)" \
@@ -782,7 +768,6 @@ ARCHS = \
 			NTREE/NTREE.a \
 			PARSIMONY/PARSIMONY.a \
 			PERLTOOLS/PERLTOOLS.a \
-			PGT/PGT.a \
 			PHYLO/PHYLO.a \
 			PRIMER_DESIGN/PRIMER_DESIGN.a \
 			PROBE_COM/server.a \
@@ -877,6 +862,7 @@ ARCHS_NTREE = \
 		SL/ITEMS/ITEMS.a \
 		SL/INSDEL/INSDEL.a \
 		SL/LOCATION/LOCATION.a \
+		SL/MACROS/MACROS.a \
 		SL/TRANSLATE/TRANSLATE.a \
 		SL/TREEDISP/TREEDISP.a \
 		SL/TREE_ADMIN/TREE_ADMIN.a \
@@ -911,6 +897,8 @@ ARCHS_EDIT4 := \
 		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
 		SL/HELIX/HELIX.a \
 		SL/TRANSLATE/TRANSLATE.a \
+		SL/MACROS/MACROS.a \
+		SL/NDS/NDS.a \
 		STAT/STAT.a \
 		XML/XML.a \
 
@@ -941,23 +929,6 @@ $(RNACMA) : $(ARCHS_RNACMA:.a=.dummy) link_db
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
-#***********************************	arb_pgt **************************************
-
-PGT = bin/arb_pgt
-ARCHS_PGT = \
-		PGT/PGT.a \
-
-PGT_SYS_LIBS=$(XLIBS) $(TIFFLIBS) $(LIBS)
-
-$(PGT) : $(ARCHS_PGT:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PGT) || ( \
-		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS)	"; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS) && \
-		echo "$(SEP) Link $@ [done]"; \
-		)
-
-
 #***********************************	arb_wetc **************************************
 WETC = bin/arb_wetc
 ARCHS_WETC = \
@@ -985,6 +956,7 @@ ARCHS_DIST = \
 		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
 		SL/HELIX/HELIX.a \
 		SL/MATRIX/MATRIX.a \
+		SL/MACROS/MACROS.a \
 		SL/NDS/NDS.a \
 		SL/ITEMS/ITEMS.a \
 		SL/NEIGHBOURJOIN/NEIGHBOURJOIN.a \
@@ -1007,6 +979,7 @@ ARCHS_PARSIMONY = \
 		SL/AW_NAME/AW_NAME.a \
 		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
 		SL/HELIX/HELIX.a \
+		SL/MACROS/MACROS.a \
 		SL/NDS/NDS.a \
 		SL/ITEMS/ITEMS.a \
 		SL/TRANSLATE/TRANSLATE.a \
@@ -1029,8 +1002,8 @@ ARCHS_CONVERT_ALN =	\
 $(CONVERT_ALN) : $(ARCHS_CONVERT_ALN:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(ARBDB_LIB) $(EXECLIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(ARBDB_LIB) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1070,6 +1043,7 @@ ARCHS_PHYLO = \
 		SL/HELIX/HELIX.a \
 		SL/FILTER/FILTER.a \
 		SL/MATRIX/MATRIX.a \
+		SL/MACROS/MACROS.a \
 		XML/XML.a \
 
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) link_awt
@@ -1248,7 +1222,6 @@ ISLAND_HOPPING/ISLAND_HOPPING.dummy:	links_non_perl
 MERGE/MERGE.dummy:			links_non_perl
 NTREE/NTREE.dummy:			links_non_perl genheaders
 PARSIMONY/PARSIMONY.dummy:		links_non_perl
-PGT/PGT.dummy:				links_non_perl
 PHYLO/PHYLO.dummy:			links_non_perl
 PRIMER_DESIGN/PRIMER_DESIGN.dummy:	links_non_perl
 PROBE_SET/PROBE_SET.dummy:		links_non_perl link_db
@@ -1271,6 +1244,7 @@ SL/HELIX/HELIX.dummy:			links_non_perl
 SL/INSDEL/INSDEL.dummy:			links_non_perl
 SL/ITEMS/ITEMS.dummy:			links_non_perl
 SL/LOCATION/LOCATION.dummy:		links_non_perl
+SL/MACROS/MACROS.dummy:			links_non_perl
 SL/MATRIX/MATRIX.dummy:			links_non_perl
 SL/NDS/NDS.dummy:			links_non_perl
 SL/NEIGHBOURJOIN/NEIGHBOURJOIN.dummy:	links_non_perl
@@ -1431,7 +1405,6 @@ e4:	$(EDIT4) readseq menus
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
 wetc:	$(WETC)
 
-pgt:	$(PGT)
 xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
 stat:   STAT/STAT.dummy $(NTREE) $(EDIT4)
@@ -1470,16 +1443,36 @@ clrdotdepends:
 
 comdepends: comtools clrdotdepends
 	@echo "$(SEP) Partially build com interface"
-	$(MAKE) PROBE_COM/PROBE_COM.depends
-	$(MAKE) NAMES_COM/NAMES_COM.depends
+	$(MAKE) PROBE_COM/PROBE_COM.depends NAMES_COM/NAMES_COM.depends
+	$(MAKE) PROBE_COM/server.depends    NAMES_COM/server.depends
 
 depends: genheaders comdepends
 	@echo "$(SEP) Updating other dependencies"
-	$(MAKE) $(ARCHS:.a=.depends) \
+	$(MAKE) $(subst NAMES_COM/server.depends,,$(subst PROBE_COM/server.depends,,$(ARCHS:.a=.depends))) \
 		HELP_SOURCE/HELP_SOURCE.depends
 	$(MAKE) libdepends
 
 depend: depends
+
+# ------------------------------------------------------------
+# dependency generation tests for AISC code
+#(all should work w/o creating wrong dependencies;
+# neither in XXX_COM/Makefile nor in code using AISC interface)
+dependstest1: silent_clean
+	$(MAKE) depends
+dependstest2: silent_clean
+	$(MAKE) com
+dependstest3: silent_clean
+	$(MAKE) aw
+dependstest4: silent_clean
+	$(MAKE) pt
+dependstest5: silent_clean
+	$(MAKE) na
+dependstest6: silent_clean
+	$(MAKE) nt
+dependstest7: silent_clean
+	$(MAKE) all
+# ------------------------------------------------------------
 
 AISC_MKPTPS/AISC_MKPTPS.dummy: links
 
@@ -1512,7 +1505,6 @@ TAGFILE_TMP=TAGS.tmp
 
 TAG_SOURCE_HEADERS=TAGS.headers
 TAG_SOURCE_CODE=TAGS.codefiles
-
 TAG_SOURCE_LISTS=$(TAG_SOURCE_HEADERS) $(TAG_SOURCE_CODE)
 
 ETAGS=ctags -e -f $(TAGFILE_TMP) --sort=no --if0=no --extra=q
@@ -1520,15 +1512,15 @@ ETAGS_TYPES=--C-kinds=cgnsut --C++-kinds=cgnsut
 ETAGS_FUN  =--C-kinds=fm     --C++-kinds=fm
 ETAGS_REST =--C-kinds=dev    --C++-kinds=dev
 
+FILTER_TAGS_SOURCES= \
+	$(SED) -e 's/^.\///g' | \
+	grep -P -v -i '^HEADERLIBS|^GDE/|/GEN[CH]/'
+
 $(TAG_SOURCE_HEADERS): links
-#	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
-#	workaround a bug in ctags 5.8:
-	find . \( -name '*.hxx' -o -name "*.h" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
+	find . \( -name '*.hxx' -o -name "*.h" \) -type f | $(FILTER_TAGS_SOURCES) > $@
 
 $(TAG_SOURCE_CODE): links
-#	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
-#	workaround a bug in ctags 5.8:
-	find . \( -name '*.cxx' -o -name "*.c" \) -type f | grep -v -i perl5 | $(SED) -e 's/^.\///g' > $@
+	find . \( -name '*.cxx' -o -name "*.c" \) -type f | $(FILTER_TAGS_SOURCES) > $@
 
 tags: $(TAG_SOURCE_LISTS)
 	$(ETAGS)    $(ETAGS_TYPES) -L $(TAG_SOURCE_HEADERS)
@@ -1639,8 +1631,9 @@ realperl: perltools
 		$(TIME) $(MAKE) -C PERL2ARB -r -f Makefile.main \
 			"AUTODEPENDS=1" \
 			"dflags=$(dflags)" \
-			"cross_cflags=$(cross_cflags) $(dflags)" \
+			"cross_cflags=$(cross_cflags) $(cppflags) $(dflags)" \
 			"cross_lflags=$(cross_lflags)" \
+			"GCC_VERSION_FOUND=$(GCC_VERSION_FOUND)" \
 			all && \
 		$(TEST_PERL_SCRIPTS) && \
 		echo "$(SEP) Make PERL2ARB [done]" ; \
@@ -1694,7 +1687,7 @@ rmbak:
 	@find . \(	-name '*%' \
 			-o -name '*.bak' \
 			-o -name '*~' \) \
-			-o -name 'core' \
+			-o \( -name 'core' -a \! -type d \) \
 	        -exec rm -v {} \;
 
 bin_reinit:
@@ -1737,6 +1730,9 @@ clean2: $(ARCHS:.a=.clean) \
 clean: redo_links motif_xpm_hack_clean
 	$(MAKE) clean2
 	$(MAKE) clean_cov_all clean_links
+
+silent_clean:
+	$(MAKE) clean >/dev/null
 
 # 'relocated' is about 50% faster than 'rebuild'
 reloc_clean: links
@@ -1830,11 +1826,13 @@ do_release:
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) testsave
 	$(MAKE) genheaders # auto upgrades version early
-	$(MAKE) tarfile sourcetarfile
+	$(MAKE) tarfile 
+	$(MAKE) sourcetarfile
 
 release_quick:
 	-rm arb.tgz arbsrc.tgz
-	$(MAKE) tarfile_quick sourcetarfile
+	$(MAKE) tarfile_quick
+	$(MAKE) sourcetarfile
 
 # --------------------------------------------------------------------------------
 
@@ -1848,7 +1846,7 @@ reset_committed_build:
 
 # --------------------------------------------------------------------------------
 
-arbapplications: nt pa e4 wetc pt na nal di ph ds pgt wetc cma
+arbapplications: nt pa e4 wetc pt na nal di ph ds wetc cma
 
 arb_external: convert tools gde readseq tg pst xmlin
 
@@ -1876,7 +1874,6 @@ rac_arb_naligner:	nal
 rac_arb_pt_server:	pt
 rac_arb_db_server:	ds
 rac_arb_name_server:	na
-rac_arb_pgt:		pgt
 rac_arb_convert_aln:	convert
 rac_arb_treegen:	tg
 rac_arb_rnacma:		cma
@@ -1897,19 +1894,16 @@ TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 
 UNITS_WORKING = \
 	$(RNA3D_TEST) \
-	ARB_GDE/ARB_GDE.test \
 	AWTI/AWTI.test \
 	DIST/DIST.test \
 	EISPACK/EISPACK.test \
 	GENOM/GENOM.test \
-	GENOM_IMPORT/GENOM_IMPORT.test \
 	GL/glAW/libglAW.test \
 	GL/glpng/libglpng_arb.test \
 	ISLAND_HOPPING/ISLAND_HOPPING.test \
 	NALIGNER/NALIGNER.test \
 	NAMES/NAMES.test \
 	PARSIMONY/PARSIMONY.test \
-	PGT/PGT.test \
 	PHYLO/PHYLO.test \
 	PRIMER_DESIGN/PRIMER_DESIGN.test \
 	PROBE_DESIGN/PROBE_DESIGN.test \
@@ -1927,13 +1921,11 @@ UNITS_WORKING = \
 	SL/ITEMS/ITEMS.test \
 	SL/LOCATION/LOCATION.test \
 	SL/MATRIX/MATRIX.test \
-	SL/NDS/NDS.test \
 	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
 	SL/REFENTRIES/REFENTRIES.test \
 	SL/SEQUENCE/SEQUENCE.test \
 	SL/TRANSLATE/TRANSLATE.test \
 	SL/TREE_ADMIN/TREE_ADMIN.test \
-	SL/TREE_READ/TREE_READ.test \
 	SL/TREE_WRITE/TREE_WRITE.test \
 	STAT/STAT.test \
 	TREEGEN/TREEGEN.test \
@@ -1952,6 +1944,10 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	SL/NDS/NDS.test \
+	ARB_GDE/ARB_GDE.test \
+	GENOM_IMPORT/GENOM_IMPORT.test \
+	SL/MACROS/MACROS.test \
 	SL/REGEXPR/REGEXPR.test \
 	SL/FILTER/FILTER.test \
 	ARBDB/libARBDB.test \
@@ -1962,7 +1958,12 @@ UNITS_TESTED_FIRST = \
 	PERLTOOLS/arb_proto_2_xsub.test \
 	AWTC/AWTC.test \
 
+# plain test-libaries not linked anywhere
+TEST_SANDBOXES = \
+	SL/CB/CB.test \
+
 UNITS_TESTED = \
+	SL/TREE_READ/TREE_READ.test \
 	DBSERVER/DBSERVER.test \
 	AWT/libAWT.test \
 	CORE/libCORE.test \
@@ -1985,6 +1986,7 @@ UNITS_TESTED = \
 	SL/DB_QUERY/DB_QUERY.test \
 
 TESTED_UNITS_MANUAL = \
+	$(TEST_SANDBOXES) \
 	$(UNITS_TESTED_FIRST) \
 	$(UNITS_TESTED) \
 
@@ -2007,9 +2009,10 @@ TEST_MAKE_FLAGS+=-j1
 endif
 
 
-%.test: %.dummy
+%.test:
 	-@( export ID=$$$$; mkdir -p $(TEST_LOG_DIR); \
 	( \
+	    echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"; \
 	    $(MAKE) -C UNIT_TESTER -f Makefile.test -r \
 		"UNITDIR=$(@D)" \
 		"UNITLIBNAME=$(@F:.test=)" \
@@ -2017,11 +2020,12 @@ endif
 		"cflags=$(cflags)" \
 		"ARB_PID=$(ARB_PID)_$(@F)" \
 		runtest; \
+	    echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"; \
 	    $(TEST_POST_CLEAN) \
 	) >$(TEST_LOG_DIR)/$(@F).log 2>&1; echo "- $(@F)")
 
 
-test_base: $(UNIT_TESTER_LIB:.a=.dummy)
+test_base: $(UNIT_TESTER_LIB:.a=.dummy) $(subst .test,.dummy,$(TEST_SANDBOXES))
 
 clean_cov:
 	find . \( -name "*.gcda" -o -name "*.gcov" -o -name "*.cov" \) -exec rm {} \;
@@ -2032,13 +2036,20 @@ clean_cov_all: clean_cov
 run_tests: test_base clean_cov
 	$(MAKE) "ARB_PID=UT_$$$$" run_tests_faked_arbpid
 
+cleanup_faked_arbpids:
+	@-rm /tmp/arb_pids_${USER}_${ARB_PID}_*
+
+cleanup_faked_arbpids_and_fail: cleanup_faked_arbpids
+	@false
+
 run_tests_faked_arbpid:
 	+@$(TEST_RUN_SUITE) init
-	@echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
-	$(MAKE) $(TEST_MAKE_FLAGS) $(NODIR) $(TESTED_UNITS)
-	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
-	+@$(TEST_RUN_SUITE) cleanup
+	@echo "fake[2]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
+	$(MAKE) $(TEST_MAKE_FLAGS) $(NODIR) $(TESTED_UNITS) || $(MAKE) cleanup_faked_arbpids_and_fail
+	@echo "fake[2]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
+	+@$(TEST_RUN_SUITE) cleanup || $(MAKE) cleanup_faked_arbpids_and_fail
 	@$(MAKE) clean_cov >/dev/null
+	@$(MAKE) cleanup_faked_arbpids
 
 ut:
 ifeq ($(UNIT_TESTS),1)
@@ -2106,6 +2117,57 @@ endif
 
 # --------------------------------------------------------------------------------
 
+CHECKOUT_MODIFIED=0# set to 1 to temporarily skip test for modifications (do not check in if set to 1)
+
+check_svn_does_not_contain_generated:
+ifeq ($(CHECKOUT_MODIFIED),0) 
+	@echo "Testing that build does not modify files in SVN"
+	@test 0 = `svn status | wc -l` || ( \
+		echo "The checkout is not/no longer clean:"; \
+		svn status; \
+		echo "- if this fails instantly, your checkout is not clean"; \
+		echo "- if this fails after other targets, these targets modify checked in data"; \
+		echo "  (a common cause may be that depends are not up to date)"; \
+		false)
+else
+	grep -Hn 'CHECKOUT_MODIFIED' Makefile
+endif
+
+check_svn_ignores_generated:
+	@test 0 = `svn status | grep '^\?' | wc -l` || ( \
+		echo "There are svn-unignored files:"; \
+		svn status | grep '^\?'; \
+		echo "(all generated files should be svn-ignored)"; \
+		false)
+
+check_svn_state: check_svn_does_not_contain_generated
+	$(MAKE) check_svn_ignores_generated
+	$(MAKE) savetest
+
+things_that_always_should_work: depends proto
+
+post_commit_check:
+	@echo "---------------------------------------- [Initial]"
+	$(MAKE) check_svn_state
+
+	$(MAKE) clean
+	@echo "---------------------------------------- [After 'make clean']"
+	$(MAKE) check_svn_state
+
+	$(MAKE) things_that_always_should_work
+	@echo "---------------------------------------- [After 'make things_that_always_should_work']"
+	$(MAKE) check_svn_state
+
+	$(MAKE) all
+	@echo "---------------------------------------- [After 'make all']"
+	$(MAKE) check_svn_state
+
+	$(MAKE) things_that_always_should_work
+	@echo "---------------------------------------- [Final]"
+	$(MAKE) check_svn_state
+
+# --------------------------------------------------------------------------------
+
 build: arb
 	$(MAKE) binlink preplib
 
@@ -2124,5 +2186,4 @@ endif
 	@$(MAKE) save_test_no_error >/dev/null # just show hints
 	@cat $(TIMELOG)
 	@rm $(TIMELOG)
-
 

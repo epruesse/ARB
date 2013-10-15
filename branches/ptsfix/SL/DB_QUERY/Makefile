@@ -37,6 +37,7 @@ db_query.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_assert.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_core.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_error.h
+db_query.o: $(ARBHOME)/INCLUDE/arb_match.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_msg.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_progress.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_sort.h
@@ -63,11 +64,16 @@ db_query.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_query.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 db_query.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 db_query.o: $(ARBHOME)/INCLUDE/cb.h
+db_query.o: $(ARBHOME)/INCLUDE/cbtypes.h
 db_query.o: $(ARBHOME)/INCLUDE/cxxforward.h
+db_query.o: $(ARBHOME)/INCLUDE/downcast.h
 db_query.o: $(ARBHOME)/INCLUDE/dupstr.h
 db_query.o: $(ARBHOME)/INCLUDE/gccver.h
 db_query.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 db_query.o: $(ARBHOME)/INCLUDE/items.h
+db_query.o: $(ARBHOME)/INCLUDE/rootAsWin.h
 db_query.o: $(ARBHOME)/INCLUDE/smartptr.h
+db_query.o: $(ARBHOME)/INCLUDE/static_assert.h
 db_query.o: $(ARBHOME)/INCLUDE/test_global.h
 db_query.o: $(ARBHOME)/INCLUDE/test_unit.h
+db_query.o: $(ARBHOME)/INCLUDE/ttypes.h

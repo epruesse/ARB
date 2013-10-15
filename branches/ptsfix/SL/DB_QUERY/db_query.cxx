@@ -26,10 +26,12 @@
 #include <arb_strbuf.h>
 #include <arb_sort.h>
 #include <arb_str.h>
+#include <arb_match.h>
 
 #include <list>
 #include <string>
 #include <awt_sel_boxes.hxx>
+#include <rootAsWin.h>
 
 using namespace std;
 using namespace QUERY;
@@ -126,7 +128,7 @@ query_spec::query_spec(ItemSelector& selector_)
       do_set_pos_fig(0),
       open_parser_pos_fig(0),
       do_refresh_pos_fig(0),
-      create_view_window(0),
+      popup_info_window(0),
       info_box_pos_fig(0)
 {
     dbq_assert(&selector);
@@ -190,38 +192,54 @@ static int query_count_items(DbQuery *query, QUERY_RANGE range, QUERY_MODES mode
 
 const int MAX_CRITERIA = int(sizeof(unsigned long)*8/QUERY_SORT_CRITERIA_BITS);
 
-static QUERY_RESULT_ORDER split_sort_mask(unsigned long sort_mask, QUERY_RESULT_ORDER *order) {
-    // splits the sort order bit mask 'sort_mask' into single sort criteria
-    // (order[0] contains the primary sort criteria)
-    //
-    // Returns the first criteria matching
-    // QUERY_SORT_BY_1STFIELD_CONTENT or QUERY_SORT_BY_HIT_DESCRIPTION
-    // (or QUERY_SORT_NONE if no sort order defined)
+static void split_sort_mask(unsigned long sort_mask, QUERY_RESULT_ORDER *order) {
+    // splits the sort order bit mask 'sort_mask' into single sort criteria and write these into 'order'
+    // (order[0] will contain the primary sort criteria, order[1] the secondary, ...)
 
-    QUERY_RESULT_ORDER first = QUERY_SORT_NONE;
-
-    for (int o = 0; o<MAX_CRITERIA; o++) {
+    for (int o = 0; o<MAX_CRITERIA; ++o) {
         order[o] = QUERY_RESULT_ORDER(sort_mask&QUERY_SORT_CRITERIA_MASK);
         dbq_assert(order[o] == (order[o]&QUERY_SORT_CRITERIA_MASK));
-
-        if (first == QUERY_SORT_NONE) {
-            if (order[o] & (QUERY_SORT_BY_1STFIELD_CONTENT|QUERY_SORT_BY_HIT_DESCRIPTION)) {
-                first = order[o];
-            }
-        }
-
         sort_mask = sort_mask>>QUERY_SORT_CRITERIA_BITS;
     }
+}
+
+static QUERY_RESULT_ORDER find_display_determining_sort_order(QUERY_RESULT_ORDER *order) {
+    // Returns the first criteria in 'order' (which has to have MAX_CRITERIA elements)
+    // that matches
+    // - QUERY_SORT_BY_1STFIELD_CONTENT or
+    // - QUERY_SORT_BY_HIT_DESCRIPTION
+    // (or QUERY_SORT_NONE if none of the above is used)
+
+    QUERY_RESULT_ORDER first = QUERY_SORT_NONE;
+    for (int o = 0; o<MAX_CRITERIA && first == QUERY_SORT_NONE; ++o) {
+        if (order[o] & (QUERY_SORT_BY_1STFIELD_CONTENT|QUERY_SORT_BY_HIT_DESCRIPTION)) {
+            first = order[o];
+        }
+    }
     return first;
+}
+
+static void remove_keydependent_sort_criteria(QUERY_RESULT_ORDER *order) {
+    // removes all sort-criteria from order which would use the order of the currently selected primary key
+
+    int n = 0;
+    for (int o = 0; o<MAX_CRITERIA; ++o) {
+        if (order[o] != QUERY_SORT_BY_1STFIELD_CONTENT) {
+            order[n++] = order[o];
+        }
+    }
+    for (; n<MAX_CRITERIA; ++n) {
+        order[n] = QUERY_SORT_NONE;
+    }
 }
 
 static void first_searchkey_changed_cb(AW_root *, AW_CL cl_query) {
     DbQuery *query = reinterpret_cast<DbQuery*>(cl_query);
 
     QUERY_RESULT_ORDER order[MAX_CRITERIA];
-    QUERY_RESULT_ORDER first = split_sort_mask(query->sort_mask, order);
+    split_sort_mask(query->sort_mask, order);
 
-    if (first != QUERY_SORT_BY_HIT_DESCRIPTION) { // do we display values?
+    if (find_display_determining_sort_order(order) != QUERY_SORT_BY_HIT_DESCRIPTION) { // do we display values?
         DbQuery_update_list(query);
     }
 }
@@ -235,11 +253,11 @@ inline bool keep_criteria(QUERY_RESULT_ORDER old_criteria, QUERY_RESULT_ORDER ne
 
 static void sort_order_changed_cb(AW_root *aw_root, AW_CL cl_query) {
     // adds the new selected sort order to the sort order mask
-    // (removes itself, if previously existed in sort order mask)
+    // (added order removes itself, if it previously existed in sort order mask)
     //
     // if 'unsorted' is selected -> delete sort order
 
-    DbQuery                *query          = reinterpret_cast<DbQuery*>(cl_query);
+    DbQuery            *query        = reinterpret_cast<DbQuery*>(cl_query);
     QUERY_RESULT_ORDER  new_criteria = (QUERY_RESULT_ORDER)aw_root->awar(query->awar_sort)->read_int();
 
     if (new_criteria == QUERY_SORT_NONE) {
@@ -356,6 +374,20 @@ static long detectMaxNameLength(const char *key, long val, void *cl_len) {
     return val;
 }
 
+#if defined(ASSERTION_USED)
+inline bool SLOW_is_pseudo_key(const char *key) {
+    return
+        strcmp(key, PSEUDO_FIELD_ANY_FIELD) == 0 ||
+        strcmp(key, PSEUDO_FIELD_ALL_FIELDS) == 0;
+}
+#endif
+inline bool is_pseudo_key(const char *key) {
+    // returns true, if 'key' is a pseudo-key
+    bool is_pseudo = key[0] == '[';
+    dbq_assert(is_pseudo == SLOW_is_pseudo_key(key));
+    return is_pseudo;
+}
+
 void QUERY::DbQuery_update_list(DbQuery *query) {
     GB_push_transaction(query->gb_main);
 
@@ -387,14 +419,18 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
 
     // sort hits
 
-    bool show_value = true; // default
     hits_sort_params param = { query, NULL, {} };
     param.first_key = aww->get_root()->awar(query->awar_keys[0])->read_string();
 
-    if (query->sort_mask != QUERY_SORT_NONE) {    // unsorted -> don't sort
-        QUERY_RESULT_ORDER main_criteria = split_sort_mask(query->sort_mask, param.order);
+    bool is_pseudo  = is_pseudo_key(param.first_key);
+    bool show_value = !is_pseudo; // cannot refer to key-value of pseudo key
 
-        if (main_criteria == QUERY_SORT_BY_HIT_DESCRIPTION) {
+    if (query->sort_mask != QUERY_SORT_NONE) {    // unsorted -> don't sort
+        split_sort_mask(query->sort_mask, param.order);
+        if (is_pseudo) {
+            remove_keydependent_sort_criteria(param.order);
+        }
+        if (show_value && find_display_determining_sort_order(param.order) == QUERY_SORT_BY_HIT_DESCRIPTION) {
             show_value = false;
         }
         GB_sort((void**)sorted, 0, count, compare_hits, &param);
@@ -694,13 +730,6 @@ public:
     }
 
     void negate();
-
-    bool prefers_sort_by_hit() {
-        return
-            match_field == AQFT_ALL_FIELDS ||
-            match_field == AQFT_ANY_FIELD ||
-            (next && next->prefers_sort_by_hit());
-    }
 
 #if defined(DEBUG)
     string dump_str() const { return string(key)+(Not ? "!=" : "==")+expr; }
@@ -1029,15 +1058,13 @@ bool query_info::matches(const char *data, GBDATA *gb_item) const {
     return applyNot(hit);
 }
 
-static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
-    DbQuery       *query    = (DbQuery*)cl_query;
-    ItemSelector&  selector = query->selector;
+static void perform_query_cb(AW_window*, DbQuery *query, EXT_QUERY_TYPES ext_query) {
+    ItemSelector& selector = query->selector;
 
     GB_push_transaction(query->gb_main);
 
-    EXT_QUERY_TYPES  ext_query = (EXT_QUERY_TYPES)cl_ext_query;
-    AW_root         *aw_root   = query->aws->get_root();
-    query_info       qinfo(query);
+    AW_root    *aw_root = query->aws->get_root();
+    query_info  qinfo(query);
 
     QUERY_MODES mode  = (QUERY_MODES)aw_root->awar(query->awar_ere)->read_int();
     QUERY_RANGE range = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
@@ -1155,11 +1182,6 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
 #if defined(DEBUG)
                 else { fputs("query: ", stdout); qinfo.dump(); fputc('\n', stdout); }
 #endif // DEBUG
-
-                if (qinfo.prefers_sort_by_hit()) {
-                    // automatically switch to sorting 'by hit' if 'any field' or 'all fields' is selected
-                    aw_root->awar(query->awar_sort)->write_int(QUERY_SORT_BY_HIT_DESCRIPTION);
-                }
 
                 for (GBDATA *gb_item_container = selector.get_first_item_container(query->gb_main, aw_root, range);
                      gb_item_container && !error;
@@ -2505,9 +2527,8 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     return aws;
 }
 
-static void toggle_flag_cb(AW_window *aww, AW_CL cl_query) {
-    DbQuery        *query   = (DbQuery*)cl_query;
-    GB_transaction  dummy(query->gb_main);
+static void toggle_flag_cb(AW_window *aww, DbQuery *query) {
+    GB_transaction  ta(query->gb_main);
     GBDATA         *gb_item = query->selector.get_selected_item(query->gb_main, aww->get_root());
     if (gb_item) {
         long flag = GB_read_flag(gb_item);
@@ -2543,13 +2564,6 @@ static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL c
     AWT_config_definition cdef(aww->get_root());
     query_box_init_config(cdef, (DbQuery *)cl_query);
     cdef.write(stored);
-}
-
-
-static void query_box_popup_view_window(AW_window *aww, AW_CL cl_create_window, AW_CL cl_gb_main) {
-    create_info_window_cb  create_window = (create_info_window_cb)cl_create_window;
-    AW_window                   *aw_viewer     = create_window(aww->get_root(), cl_gb_main);
-    aw_viewer->show();
 }
 
 static void query_rel_menu_entry(AW_window *aws, const char *id, const char *query_id, AW_label label, const char *mnemonic, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -2716,17 +2730,17 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         for (int key = 0; key<QUERY_SEARCHES; ++key) {
             aws->at(xpos_calc[2], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
-            aws->d_callback(perform_query_cb, (AW_CL)query, EXT_QUERY_NONE); // enable ENTER in searchfield to start search
+            aws->d_callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE)); // enable ENTER in searchfield to start search
             aws->create_input_field(query->awar_queries[key], 12);
         }
     }
 
     if (awtqs->result_pos_fig) {
         aws->at(awtqs->result_pos_fig);
-        if (awtqs->create_view_window) {
-            aws->callback(query_box_popup_view_window, (AW_CL)awtqs->create_view_window, (AW_CL)query->gb_main);
+        if (awtqs->popup_info_window) {
+            aws->callback(RootAsWindowCallback::simple(awtqs->popup_info_window, query->gb_main));
         }
-        aws->d_callback(toggle_flag_cb, (AW_CL)query);
+        aws->d_callback(makeWindowCallback(toggle_flag_cb, query));
 
         {
             char    *this_awar_name = GBS_global_string_copy("tmp/dbquery_%s/select", query_id); // do not free this, cause it's passed to new_selection_made_cb
@@ -2757,7 +2771,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     aws->button_length(18);
     if (awtqs->do_query_pos_fig) {
         aws->at(awtqs->do_query_pos_fig);
-        aws->callback(perform_query_cb, (AW_CL)query, EXT_QUERY_NONE);
+        aws->callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE));
         char *macro_id = GBS_global_string_copy("SEARCH_%s", query_id);
         aws->create_button(macro_id, "Search");
         free(macro_id);
@@ -2859,15 +2873,15 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             aws->sep______________();
             if (query->expect_hit_in_ref_list) {
                 aws->insert_menu_topic("search_equal_fields_and_listed_in_I", "Search entries existing in both DBs and listed in the source DB hitlist", "S",
-                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, EXT_QUERY_COMPARE_LINES);
+                                       "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_LINES));
                 aws->insert_menu_topic("search_equal_words_and_listed_in_I",  "Search words existing in entries of both DBs and listed in the source DB hitlist", "W",
-                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, EXT_QUERY_COMPARE_WORDS);
+                                       "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_WORDS));
             }
             else {
                 aws->insert_menu_topic("search_equal_field_in_both_db", "Search entries existing in both DBs", "S",
-                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, EXT_QUERY_COMPARE_LINES);
+                                       "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_LINES));
                 aws->insert_menu_topic("search_equal_word_in_both_db", "Search words existing in entries of both DBs", "W",
-                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, EXT_QUERY_COMPARE_WORDS);
+                                       "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_WORDS));
             }
         }
     }

@@ -15,7 +15,6 @@
 #include <adGene.h>
 #include <arbdbt.h>
 
-#include <static_assert.h>
 #include <arb_defs.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
@@ -492,7 +491,7 @@ static GB_ERROR gbl_command(GBL_command_arguments *args) {
         error = "syntax: command(\"escaped command\")";
     }
     else {
-        GBDATA *gb_main = GB_get_root(args->gb_ref);
+        GBDATA *gb_main = GB_get_root(gb_local->gbl.gb_main);
         int     i;
         char   *command;
 
@@ -1733,7 +1732,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
             }
         }
 
-        if (tree) GBT_delete_tree(tree);
+        GBT_delete_tree(tree);
     }
 
     if (!*error) {

@@ -21,8 +21,8 @@ ST_Container::ST_Container(int anz_sonden) {
 
     Sondennamen = new List<char>;
 
-    Auswahlliste = new MO_Liste();
-    Bakterienliste = new MO_Liste();
+    Auswahlliste = new MO_Liste;
+    Bakterienliste = new MO_Liste;
 
     Bakterienliste->get_all_species();
 

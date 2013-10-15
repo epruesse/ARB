@@ -44,6 +44,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_defs.h
+PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_file.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_misc.h
@@ -146,6 +147,7 @@ PT_family.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_family.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_family.o: $(ARBHOME)/INCLUDE/cache.h
 PT_family.o: $(ARBHOME)/INCLUDE/cxxforward.h
+PT_family.o: $(ARBHOME)/INCLUDE/downcast.h
 PT_family.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_family.o: $(ARBHOME)/INCLUDE/gccver.h
 PT_family.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -207,6 +209,7 @@ PT_io.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 PT_io.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_io.o: $(ARBHOME)/INCLUDE/cache.h
 PT_io.o: $(ARBHOME)/INCLUDE/cxxforward.h
+PT_io.o: $(ARBHOME)/INCLUDE/downcast.h
 PT_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_io.o: $(ARBHOME)/INCLUDE/gccver.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -231,6 +234,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_file.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_misc.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PT_main.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -243,6 +247,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/cache.h
 PT_main.o: $(ARBHOME)/INCLUDE/client.h
 PT_main.o: $(ARBHOME)/INCLUDE/client_types.h
 PT_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
+PT_main.o: $(ARBHOME)/INCLUDE/downcast.h
 PT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_main.o: $(ARBHOME)/INCLUDE/gccver.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_com.h

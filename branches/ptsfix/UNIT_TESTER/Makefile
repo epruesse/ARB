@@ -5,6 +5,10 @@ first: $(MAIN)
 
 include Makefile.setup.include
 
+LOCAL_DEFINES=-DSIMPLE_ARB_ASSERT
+LOCAL_CFLAGS=$(cflags) $(LOCAL_DEFINES)
+LOCAL_MAKEDEPENDFLAGS=$(MAKEDEPENDFLAGS) $(LOCAL_DEFINES)
+
 TESTER_OBJECTS = \
 	UnitTester.o \
 
@@ -30,7 +34,7 @@ test_environment: $(ALL_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
 	$(LINK_EXECUTABLE) test_environment $(ALL_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(EXECLIBS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CPPINCLUDES) $(POST_COMPILE)
+	$(CPP) $(LOCAL_CFLAGS) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(ALL_OBJECTS) *.a test_environment skipslow.stamp
@@ -44,11 +48,11 @@ depends: $(DEPENDS)
 	@rm $(DEPENDS)
 $(DEPENDS): depend.init
 depend.init:
-	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+	$(MAKEDEPEND) $(LOCAL_MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
 .c.depend:
-	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+	$(MAKEDEPEND) -f- $(LOCAL_MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 .cxx.depend:
-	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+	$(MAKEDEPEND) -f- $(LOCAL_MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
@@ -63,9 +67,11 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/aisc_global.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_core.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_defs.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_diff.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_error.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_file.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_msg.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_str.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_string.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -89,11 +95,13 @@ UnitTester.o: $(ARBHOME)/INCLUDE/arb_assert.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_core.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_msg.h
+UnitTester.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arbtools.h
 UnitTester.o: $(ARBHOME)/INCLUDE/attributes.h
 UnitTester.o: $(ARBHOME)/INCLUDE/cxxforward.h
 UnitTester.o: $(ARBHOME)/INCLUDE/dupstr.h
 UnitTester.o: $(ARBHOME)/INCLUDE/gccver.h
 UnitTester.o: $(ARBHOME)/INCLUDE/SigHandler.h
+UnitTester.o: $(ARBHOME)/INCLUDE/SuppressOutput.h
 UnitTester.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
 UnitTester.o: $(ARBHOME)/INCLUDE/valgrind.h

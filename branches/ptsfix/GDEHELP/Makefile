@@ -14,17 +14,42 @@ GENMENUS=$(SUBMENUS:.menu=.genmenu)
 PPP:=./pp.pl
 CLEAN:=./cleanmenu.pl
 
-all: $(MENUS) help
+# ---------------------------------------- help for refactoring
+MENUS_EXPECTED = ARB_GDEmenus.expected
+
+# check expected result (to avoid unwanted changes)
+# call 'make update_expected' to expect the current result
+
+#CHECK_AS_EXPECTED = check_as_expected
+CHECK_AS_EXPECTED = 
+
+# ----------------------------------------
+
+all: $(MENUS) help $(CHECK_AS_EXPECTED)
 
 MENUS/%.genmenu : genmenu.header
 
 MENUS/%.genmenu : MENUS/%.menu
 		( cat genmenu.header; $(SED) -e "s/^[ ]*//" ) < $< > $@
 
-$(MENUS) : $(MENUS_SRC) $(GENMENUS) Makefile $(PPP) $(CLEAN)
+MENUS_DIRTY=$(MENUS).dirty
+
+$(MENUS_DIRTY) : $(MENUS_SRC) $(GENMENUS) Makefile $(PPP)
+	$(PPP) -IMENUS $(MENUS_SRC) >$@
+
+$(MENUS) : $(MENUS_DIRTY) $(CLEAN)
 	-chmod a+w $@
-	$(PPP) -IMENUS $(MENUS_SRC) | $(CLEAN) >$@
+	$(CLEAN) <$(MENUS_DIRTY) >$@
+	rm $(MENUS_DIRTY)
 	chmod a-w $@
+
+# ------------------------------------------------------------
+
+update_expected: $(MENUS)
+	cp $(MENUS) $(MENUS_EXPECTED)
+
+check_as_expected: $(MENUS) $(MENUS_EXPECTED)
+	diff --unified --ignore-space-change --ignore-blank-lines  $(MENUS_EXPECTED) $(MENUS) 
 
 # ------------------------------------------------------------
 
@@ -33,8 +58,8 @@ help: $(HELPFILELIST)
 	@test -d $(GENDOCDEST) || mkdir $(GENDOCDEST)
 	@$(MAKE) -f Makefile.helpfiles "GENHELPDEST=$(GENHELPDEST)" "GENDOCDEST=$(GENDOCDEST)" "HELPFILELIST=$(HELPFILELIST)"
 
-$(HELPFILELIST): $(SUBMENUS)
-	grep -i '^itemhelp:' < $< | $(SED) -e 's/^itemhelp://' | sort | uniq > $@
+$(HELPFILELIST): $(SUBMENUS) Makefile
+	grep -ih '^itemhelp:' $(SUBMENUS) | $(SED) -e 's/^itemhelp://' | sort | uniq > $@
 
 # ------------------------------------------------------------
 

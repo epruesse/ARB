@@ -13,6 +13,8 @@ HEADER=$3
 shift;shift;shift
 SED=${ARBHOME}/SH/arb_sed
 
+test -f $INDEXFILE && chmod u+w $INDEXFILE
+
 BASE=`echo $INDEXFILE | $SED -e 's/^.*\///' | $SED -e 's/.help//'`
 PREFIX=`echo $INDEXFILE | $SED -e 's/\/[^\/]*$//'`
 echo "BASE='$BASE' PREFIX='$PREFIX'"
@@ -33,6 +35,7 @@ write_index() {
 }
 
 write_index $* > $INDEXFILE
+test -f $INDEXFILE && chmod a-w $INDEXFILE
 
 while [ \! -z "$1" ]; do
     SUBBASE=`echo $1 | $SED -e 's/^.*\///'`

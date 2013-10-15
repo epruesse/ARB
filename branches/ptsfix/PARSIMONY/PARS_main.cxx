@@ -31,6 +31,7 @@
 #include <TreeCallbacks.hxx>
 
 #include <list>
+#include <macros.hxx>
 
 #if defined(DEBUG)
 # define TESTMENU
@@ -66,7 +67,9 @@ static void pars_export_tree() {
 }
 
 __ATTR__NORETURN static void pars_exit(AW_window *aww) {
-    aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
+    AW_root *aw_root = aww->get_root();
+    shutdown_macro_recording(aw_root);
+    aw_root->unlink_awars_from_DB(GLOBAL_gb_main);
 #if defined(DEBUG)
     AWT_browser_forget_db(GLOBAL_gb_main);
 #endif // DEBUG
@@ -139,168 +142,6 @@ public:
     arb_progress& get_progress() { return progress; }
 };
 
-static long insert_species_in_tree_test(const char *key, long val, void *cd_isits) {
-    if (!val) return val;
-
-    InsertData *isits = (InsertData*)cd_isits;
-    if (isits->aborted()) return val;
-
-    GBDATA  *gb_node = (GBDATA *)val;
-
-#if defined(WARN_TODO)
-#warning following code could be a method ..
-    // ARB_tree *ARB_tree_root::create_linked_leaf(GBDATA *gb_species, const char *name)
-#endif
-
-    AP_tree *tree = rootNode();
-    AP_tree *leaf = tree->dup();
-    leaf->gb_node = gb_node;
-    leaf->name    = strdup(key);
-    leaf->is_leaf = true;
-
-    leaf->set_seq(leaf->get_tree_root()->get_seqTemplate()->dup());
-    GB_ERROR error = leaf->get_seq()->bind_to_species(gb_node);
-
-    if (error) {
-        aw_message(error);
-        return val;
-    }
-
-    if (leaf->get_seq()->weighted_base_count() < MIN_SEQUENCE_LENGTH) {
-        aw_message(GBS_global_string("Species %s has too short sequence (%f, minimum is %i)",
-                                     key,
-                                     leaf->get_seq()->weighted_base_count(),
-                                     MIN_SEQUENCE_LENGTH));
-        delete leaf;
-        return val;
-    }
-
-    isits->inc();
-
-    {
-        AP_FLOAT best_val = 9999999999999.0;
-        AP_FLOAT this_val;
-        int      cnt      = 0;
-
-        while (cnt<2) {
-            this_val = rootEdge()->nni_rek(-1, false, AP_BL_NNI_ONLY, NULL);
-            if (this_val<best_val) {
-                best_val = this_val;
-                cnt      = 0;
-            }
-            else if (this_val==best_val) {
-                cnt++;
-            }
-            else {
-                cnt = 0;
-            }
-        }
-    }
-
-    rootEdge()->dumpNNI=2;
-
-    AP_tree      **blist;
-    AP_tree_nlen  *bl, *blf;
-    long           bsum    = 0;
-    long           counter = 0;
-
-    tree->buildBranchList(blist, bsum, true, -1); // get all branches
-
-#if defined(DEBUG)
-    long prevCombineCount = AP_sequence::combine_count();
-#endif // DEBUG
-
-    AP_tree *bestposl = tree->get_leftson();
-    AP_tree *bestposr = tree->get_rightson();
-    leaf->insert(bestposl);
-    AP_FLOAT best_parsimony, akt_parsimony;
-    best_parsimony = akt_parsimony = rootNode()->costs();
-
-    for (counter = 0; !isits->aborted() && blist[counter]; counter += 2)
-    {
-        bl = (AP_tree_nlen *)blist[counter];
-        blf = (AP_tree_nlen *)blist[counter+1];
-        if (blf->father == bl)
-        {
-            bl = (AP_tree_nlen *)blist[counter+1];
-            blf = (AP_tree_nlen *)blist[counter];
-        }
-
-        if (bl->father) bl->set_root();
-
-        leaf->moveTo(bl, 0.5);
-        akt_parsimony = rootNode()->costs();
-
-        if (akt_parsimony<best_parsimony)
-        {
-            best_parsimony = akt_parsimony;
-            bestposl = bl;
-            bestposr = blf;
-        }
-    }
-    delete blist;
-    blist = 0;
-    if (bestposl->father != bestposr) bestposl = bestposr;
-    leaf->moveTo(bestposl, 0.5);
-
-    // calculate difference in father-sequence
-
-    int baseDiff = 0;
-
-    {
-        AP_tree_nlen *fath = ((AP_tree_nlen*)bestposl)->get_father()->get_father();
-
-        char *seq_with_leaf;
-        char *seq_without_leaf;
-        long  i;
-
-        // Note: removed sequence length code here,
-        // cause "sequence_len" is always filter-length (i.e. constant until filter changes)
-        // ralf 10/2009
-
-        seq_with_leaf = fath->getSequenceCopy();
-
-        ap_main->push();
-
-        leaf->remove();
-        seq_without_leaf = fath->getSequenceCopy();
-
-        ap_main->pop();
-
-        for (i=0; seq_with_leaf[i]; i++) {
-            if (seq_with_leaf[i]!=seq_without_leaf[i]) {
-                baseDiff++;
-            }
-
-        }
-
-        delete [] seq_with_leaf;
-        delete [] seq_without_leaf;
-    }
-
-    rootEdge()->countSpecies();
-
-#if defined(DEBUG)
-    printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
-#endif // DEBUG
-
-    if (!isits->quick_add_flag) {
-        int           deep    = -1;
-        AP_tree_nlen *bestpos = (AP_tree_nlen*)bestposl;
-        AP_tree_edge *e       = bestpos->edgeTo(bestpos->get_father());
-
-        if (isits->every_sixteenth())  deep = -1;
-
-        arb_progress progress("optimization");
-        e->dumpNNI          = 1;
-        e->distInsertBorder = e->distanceToBorder(INT_MAX, (AP_tree_nlen*)leaf);
-        e->basesChanged     = baseDiff;
-        e->nni_rek(deep, false, AP_BL_NNI_ONLY, NULL);
-        e->dumpNNI          = 0;
-    }
-
-    return val;
-}
 
 static int sort_sequences_by_length(const char*, long leaf0_ptr, const char*, long leaf1_ptr) {
     AP_tree *leaf0 = (AP_tree*)leaf0_ptr;
@@ -409,7 +250,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
 
                 ASSERT_VALID_TREE(rootNode());
 
-                leaf->moveTo(bl, 0.5);
+                leaf->moveNextTo(bl, 0.5);
                 ASSERT_VALID_TREE(rootNode());
 
                 curr_parsimony = rootNode()->costs();
@@ -430,7 +271,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
 
         ASSERT_VALID_TREE(rootNode());
 
-        leaf->moveTo(bestposl, 0.5);
+        leaf->moveNextTo(bestposl, 0.5);
 
         ASSERT_VALID_TREE(rootNode());
 
@@ -487,8 +328,7 @@ enum AddWhat {
     NT_ADD_SELECTED,
 };
 
-static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int test)
-{
+static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
     GB_ERROR  error = 0;
 
     AP_tree *oldrootleft  = NULL;
@@ -496,6 +336,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
     {
         AP_tree *root = rootNode();
         if (root) {
+            root->reset_layout();
             oldrootleft  = root->get_leftson();
             oldrootright = root->get_rightson();
         }
@@ -535,15 +376,11 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
         GBS_hash_do_loop(hash, count_hash_elements, &max_species);
         InsertData isits(quick, max_species, 1); // 1 extra step for calc_branchlengths below
 
-        if (test) {
-            GBS_hash_do_loop(hash, insert_species_in_tree_test, &isits);
-        }
-        else {
-            GB_begin_transaction(GLOBAL_gb_main);
-            GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
-            GB_commit_transaction(GLOBAL_gb_main);
-            GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
-        }
+        GB_begin_transaction(GLOBAL_gb_main);
+        GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
+        GB_commit_transaction(GLOBAL_gb_main);
+        GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
+
         if (!quick) {
             rootEdge()->nni_rek(-1, false, AP_BL_NNI_ONLY, NULL);
         }
@@ -828,6 +665,8 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
         }
 
         if (!error) {
+            rootNode()->reset_layout();
+
             // find best matching full sequence for each partial sequence
             error = nt_best_partial_match_rek(partial, rootNode());
 
@@ -955,22 +794,13 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
 // -------------------------------
 //      add marked / selected
 
-// normal versions :
-
-static void NT_add      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, false, 0); }
-static void NT_quick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true, 0); }
-
-// test versions :
-
-#if defined(TESTMENU)
-static void TESTMENU_add      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, false, 1); }
-static void TESTMENU_quick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true, 1); }
-#endif // TESTMENU
+static void NT_add      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, false); }
+static void NT_quick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true); }
 
 // ------------------------------------------
 //      remove and add marked / selected
 
-static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, AddWhat what, bool quick, int test) {
+static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, AddWhat what, bool quick) {
     AW_awar *awar_best_pars = aww->get_root()->awar(AWAR_BEST_PARSIMONY);
     int      oldparsval     = awar_best_pars->read_int();
 
@@ -982,20 +812,11 @@ static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, AddWhat what, boo
     // restore old parsimony value (otherwise the state where species were removed would count) :
     awar_best_pars->write_int(oldparsval);
 
-    nt_add(aww, ntw, what, quick, test);
+    nt_add(aww, ntw, what, quick);
 }
 
-// normal versions :
-
-static void NT_radd      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, false, 0); }
-static void NT_rquick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, true, 0); }
-
-// test versions :
-
-#if defined(TESTMENU)
-static void TESTMENU_radd           (AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, false, 1); }
-static void TESTMENU_rquick_add_test(AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, true, 1); }
-#endif // TESTMENU
+static void NT_radd      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, false); }
+static void NT_rquick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, true); }
 
 // -------------------------------
 //      Add Partial sequences
@@ -1180,14 +1001,6 @@ static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
     awm->insert_menu_topic(0, "Set branchlens",     "b", "", AWM_ALL, (AW_CB)TESTMENU_setBranchlen,      (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Sort tree by name",  "o", "", AWM_ALL, (AW_CB)TESTMENU_sortTreeByName,    (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Build & dump chain", "c", "", AWM_ALL, (AW_CB)TESTMENU_buildAndDumpChain, (AW_CL)ntw, 0);
-    awm->sep______________();
-    awm->insert_menu_topic(0, "Add marked species",          "A", "pa_quick.hlp", AWM_ALL, (AW_CB)TESTMENU_quick_add,       (AW_CL)ntw, NT_ADD_MARKED);
-    awm->insert_menu_topic(0, "Add marked species + NNI",    "N", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_add,             (AW_CL)ntw, NT_ADD_MARKED);
-    awm->insert_menu_topic(0, "Remove & add marked species", "o", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_rquick_add_test, (AW_CL)ntw, NT_ADD_MARKED);
-    awm->insert_menu_topic(0, "Remove & add marked + NNI",   "v", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_radd,            (AW_CL)ntw, NT_ADD_MARKED);
-    awm->sep______________();
-    awm->insert_menu_topic(0, "Add selected species",       "l", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)TESTMENU_quick_add, (AW_CL)ntw, NT_ADD_SELECTED);
-    awm->insert_menu_topic(0, "Add selected species + NNI", "I", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)TESTMENU_add,       (AW_CL)ntw, NT_ADD_SELECTED);
 }
 #endif // TESTMENU
 
@@ -1254,10 +1067,8 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     }
 
 
-    AW_window_menu_modes *awm = new AW_window_menu_modes();
+    AW_window_menu_modes *awm = new AW_window_menu_modes;
     awm->init(awr, "ARB_PARSIMONY", "ARB_PARSIMONY", 400, 200);
-
-    AW_gc_manager aw_gc_manager = 0;
 
     GLOBAL_PARS->generate_tree(wfilt);
 
@@ -1265,7 +1076,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     {
         AP_tree_sort  old_sort_type = global_tree()->tree_sort;
         global_tree()->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
-        ntw = new AWT_canvas(GLOBAL_gb_main, (AW_window *)awm, global_tree(), aw_gc_manager, AWAR_TREE);
+        ntw = new AWT_canvas(GLOBAL_gb_main, awm, awm->get_window_id(), global_tree(), AWAR_TREE);
         global_tree()->set_tree_type(old_sort_type, ntw);
     }
 
@@ -1301,7 +1112,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
         if (error) aw_popup_exit(error);
     }
 
-    awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback((AW_RCB)NT_recompute_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback(makeRootCallback(TREE_recompute_cb, ntw));
 
     if (cmds->add_marked)           NT_quick_add(awm, ntw, NT_ADD_MARKED);
     if (cmds->add_selected)         NT_quick_add(awm, ntw, NT_ADD_SELECTED);
@@ -1320,6 +1131,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
     awm->create_menu("File", "F", AWM_ALL);
     {
+        insert_macro_menu_entry(awm, false);
         awm->insert_menu_topic("print_tree", "Print Tree ...",          "P", "tree2prt.hlp", AWM_ALL, AWT_popup_print_window, (AW_CL)ntw, 0);
         awm->insert_menu_topic("quit",      "Quit",             "Q", "quit.hlp",    AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw, 2);
     }
@@ -1398,7 +1210,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->create_menu("Properties", "r", AWM_ALL);
     {
         awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...", "M", "props_frame.hlp",      AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,        0);
-        awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window,     (AW_CL)aw_gc_manager);
+        awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window,     (AW_CL)ntw->gc_manager);
         awm->insert_menu_topic("props_tree2", "Tree: Settings ...",         "T", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP,(AW_CL)NT_create_tree_setting,  (AW_CL)ntw);
         awm->insert_menu_topic("props_kl",    "KERN. LIN ...",              "K", "kernlin.hlp",          AWM_ALL, AW_POPUP,(AW_CL)create_kernighan_window, 0);
         awm->sep______________();
@@ -1457,7 +1269,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
     awm->button_length(0);
 
-    awm->callback((AW_CB)NT_jump_cb, (AW_CL)ntw, 1);
+    awm->callback(makeWindowCallback(NT_jump_cb, ntw, true));
     awm->help_text("tr_jump.hlp");
     awm->create_button("JUMP", "Jump", 0);
 
@@ -1669,7 +1481,7 @@ int ARB_main(int argc, char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS", &argc, &argv);
+    AW_root *aw_root      = AWT_create_root("pars.arb", "ARB_PARS", need_macro_ability(), &argc, &argv);
     AD_map_viewer_aw_root = aw_root;
 
     ap_main     = new AP_main;
@@ -1704,24 +1516,31 @@ int ARB_main(int argc, char *argv[]) {
     }
 
 
-    if (argc==2) {
-        db_server = argv[1];
-    }
+    if (argc==2) db_server = argv[1];
 
+    GB_ERROR error = NULL;
     GLOBAL_gb_main = GBT_open(db_server, "rw");
-    if (!GLOBAL_gb_main) aw_popup_exit(GB_await_error()); // exits
 
+    if (!GLOBAL_gb_main) error = GB_await_error();
+    else {
+        error = configure_macro_recording(aw_root, "ARB_PARS", GLOBAL_gb_main);
+
+        if (!error) {
 #if defined(DEBUG)
-    AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
+            AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
 #endif // DEBUG
 
-    pars_create_all_awars(aw_root, AW_ROOT_DEFAULT);
+            pars_create_all_awars(aw_root, AW_ROOT_DEFAULT);
 
-    AW_window *aww = create_pars_init_window(aw_root, &cmds);
-    aww->show();
+            AW_window *aww = create_pars_init_window(aw_root, &cmds);
+            aww->show();
 
-    AWT_install_cb_guards();
-    aw_root->main_loop();
+            AWT_install_cb_guards();
+            aw_root->main_loop();
+        }
+    }
+
+    if (error) aw_popup_exit(error);
     return EXIT_SUCCESS;
 }
 

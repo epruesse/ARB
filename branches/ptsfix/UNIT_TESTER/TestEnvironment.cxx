@@ -9,11 +9,13 @@
 //                                                                   //
 // ================================================================= //
 
-#define SIMPLE_ARB_ASSERT
+#include <arb_simple_assert.h>
 
 #include <arb_defs.h>
 #include <arb_str.h>
 #include <arb_file.h>
+#include <arb_diff.h>
+
 #include <arbdb.h>
 #include <PT_com.h>
 #include <client.h>
@@ -105,7 +107,7 @@ public:
                     GBK_terminatef("[%s] Failed to get mutex for more than %i seconds", now(), maxwait);
                 }
                 printf("[%s] mutex '%s' exists.. sleeping\n", now(), name.c_str());
-                sleep(1);
+                sleepms(1000);
                 wait++;
             }
             else {
@@ -478,6 +480,12 @@ class FunInfo {
 
                 case TEST_INVALID:
                     error = strdup("is invalid");
+                    break;
+
+                case TEST_FAILED_POSTCONDITION:
+                case TEST_UNKNOWN_RESULT:
+                    env_assert(0); // should not happen here
+                    break;
             }
             if (error.isSet()) {
                 error = GBS_global_string_copy("%s(%s) %s", name.c_str(), upcase(mode_command[mode]), &*error);
@@ -570,7 +578,7 @@ public:
             bool reached = false;
             while (!reached && !error.isSet()) {
                 StaticCode::printf("[waiting until environment '%s' reaches '%s']\n", get_name(), mode_command[mode]);
-                sleep(1);
+                sleepms(1000);
                 {
                     Mutex m(FLAG_MUTEX);
                     if (!changing && is_setup == want_setup) reached = true;
@@ -592,7 +600,7 @@ public:
 
 #define FUNINFO(fun) FunInfo(fun,#fun)
 
-static FunInfo modules[] = {
+static FunInfo modules[] = { // ExistingEnvironments
     FUNINFO(ptserver),
     FUNINFO(ptserver_gene),
 };

@@ -22,6 +22,8 @@
 #include <arb_strarray.h>
 
 #include <iostream>
+#include <macros.hxx>
+#include <aw_question.hxx>
 
 using namespace std;
 
@@ -66,13 +68,15 @@ static void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww) {
     aw_root->awar("phyl/filter/stopcol")->set_minmax(0, len);
 
     ((AW_window*)cl_aww)->activate(); // pop up main window
-    ph_view_species_cb(0, 0, 0);
+    ph_view_species_cb();
 }
 
 __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
     GBDATA *gb_main = ph_root->get_gb_main();
     if (gb_main) {
-        aw_window->get_root()->unlink_awars_from_DB(gb_main);
+        AW_root *aw_root = aw_window->get_root();
+        shutdown_macro_recording(aw_root);
+        aw_root->unlink_awars_from_DB(gb_main);
 #if defined(DEBUG)
         AWT_browser_forget_db(gb_main);
 #endif // DEBUG
@@ -82,7 +86,7 @@ __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
 }
 
 
-void expose_callb(AW_window */*aw*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void expose_callb() {
     if (PH_display::ph_display->displayed()!=NONE) {
         PH_display::ph_display->clear_window();
         PH_display::ph_display->display();
@@ -90,7 +94,7 @@ void expose_callb(AW_window */*aw*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 }
 
 
-static void resize_callb(AW_window */*aw*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+static void resize_callb() {
     if (PH_display::ph_display) {
         PH_display::ph_display->resized();
         PH_display::ph_display->display();
@@ -408,31 +412,32 @@ static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
 }
 
 static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graphic * /*awd*/) {
-    AW_window_menu_modes *awm = new AW_window_menu_modes();
+    AW_window_menu_modes *awm = new AW_window_menu_modes;
     awm->init(aw_root, "ARB_PHYLO", "ARB_PHYLO", 830, 630);
 
     // create menus and menu inserts with callbacks
-    //
 
     AW_gc_manager gcmiddle = AW_manage_GC(awm,
-                                           awm->get_device (AW_MIDDLE_AREA),
-                                           PH_GC_0, PH_GC_0_DRAG, AW_GCM_DATA_AREA,
-                                           resize_callb, 0, 0,
-                                           false, // no color groups
-                                           "#CC9AF8",
-                                           "#SEQUENCE$#000000",
-                                           "#MARKER$#FF0000",
-                                           "NOT_MARKER$#A270C0",
-                                           NULL);
-    /* AW_gc_manager gcbottom = */ AW_manage_GC(awm,
-                                           awm->get_device (AW_BOTTOM_AREA),
-                                           PH_GC_0, PH_GC_0_DRAG, AW_GCM_WINDOW_AREA,
-                                           resize_callb, 0, 0,
-                                           false, // no color groups
-                                           "pink",
-                                           "#FOOTER", NULL);
+                                          awm->get_window_id(),
+                                          awm->get_device(AW_MIDDLE_AREA),
+                                          PH_GC_0, PH_GC_0_DRAG, AW_GCM_DATA_AREA,
+                                          makeWindowCallback(resize_callb),
+                                          false, // no color groups
+                                          "#CC9AF8",
+                                          "#SEQUENCE$#000000",
+                                          "#MARKER$#FF0000",
+                                          "NOT_MARKER$#A270C0",
+                                          NULL);
+    AW_manage_GC(awm,
+                 awm->get_window_id(),
+                 awm->get_device(AW_BOTTOM_AREA),
+                 PH_GC_0, PH_GC_0_DRAG, AW_GCM_WINDOW_AREA,
+                 makeWindowCallback(resize_callb),
+                 false, // no color groups
+                 "pink",
+                 "#FOOTER",
+                 NULL);
 
-    // GBUSE(gcbottom);
 
 #if defined(DEBUG)
     AWT_create_debug_menu(awm);
@@ -442,11 +447,12 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
     awm->create_menu("File", "F");
     awm->insert_menu_topic("export_filter", "Export Filter",      "E", "ph_export_markerline.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)PH_save_markerline, 0);
     awm->insert_menu_topic("export_freq",   "Export Frequencies", "F", "ph_export_markerline.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)PH_save_markerline, 1);
+    insert_macro_menu_entry(awm, false);
     awm->insert_menu_topic("quit",          "Quit",               "Q", "quit.hlp",                 AWM_ALL, (AW_CB)ph_exit,  (AW_CL)ph_root,            0);
 
     // Calculate menu
     awm->create_menu("Calculate", "C");
-    awm->insert_menu_topic("calc_column_filter", "Column Filter", "F", "no help", AWM_ALL, (AW_CB2)ph_view_filter_cb, (AW_CL)0, (AW_CL)0);
+    awm->insert_menu_topic("calc_column_filter", "Column Filter", "F", "no help", AWM_ALL, makeWindowCallback(ph_view_filter_cb));
 
     // Config menu
     awm->create_menu("Config", "o");
@@ -479,8 +485,8 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 
     awm->set_bottom_area_height(120);
 
-    awm->set_expose_callback(AW_MIDDLE_AREA, expose_callb,   (AW_CL)awm,     0);
-    awm->set_resize_callback(AW_MIDDLE_AREA, resize_callb,   (AW_CL)awm,     0);
+    awm->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(expose_callb));
+    awm->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(resize_callb));
     awm->set_expose_callback(AW_BOTTOM_AREA, display_status, (AW_CL)aw_root, 0);
     awm->set_resize_callback(AW_BOTTOM_AREA, display_status, (AW_CL)aw_root, 0);
 
@@ -522,67 +528,75 @@ int ARB_main(int argc, char *argv[]) {
     aw_initstatus();
 
     GB_shell shell;
-    AW_root  *aw_root = AWT_create_root("phylo.arb", "ARB_PHYLO", &argc, &argv);
+    AW_root  *aw_root = AWT_create_root("phylo.arb", "ARB_PHYLO", need_macro_ability(), &argc, &argv);
 
+    int exitcode = EXIT_SUCCESS;
     if (argc > 2 || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
         fprintf(stderr, "Usage: arb_phylo [database]\n");
-        return EXIT_FAILURE;
-    }
-
-    const char *db_server = (argc == 2 ? argv[1] : ":");
-
-    PH_used_windows *puw = new PH_used_windows;
-    PH_display      *phd = new PH_display;
-
-    PH_root  *ph_root = new PH_root;
-    GB_ERROR  error   = ph_root->open(db_server);
-    if (error) {
-        aw_message(error);
-        exit(-1);
-    }
-
-    // create arb_phylo awars :
-    PH_create_filter_variables(aw_root, AW_ROOT_DEFAULT);
-    PH_create_matrix_variables(aw_root, AW_ROOT_DEFAULT);
-    ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
-#if defined(DEBUG)
-    AWT_create_db_browser_awars(aw_root, AW_ROOT_DEFAULT);
-#endif // DEBUG
-
-#if defined(DEBUG)
-    AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
-#endif // DEBUG
-
-    create_filter_text();
-
-    // create main window :
-
-    puw->phylo_main_window = create_phyl_main_window(aw_root, ph_root, 0);
-    puw->windowList        = puw;
-
-    phd->ph_display = phd;
-
-    // loading database
-    GB_push_transaction(GLOBAL_gb_main);
-
-    ConstStrArray alignment_names;
-    GBT_get_alignment_names(alignment_names, GLOBAL_gb_main);
-
-    int num_alignments;
-    for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) {}
-
-    if (num_alignments > 1) {
-        AW_window *sel_ali_aww = create_select_alignment_window(aw_root, (AW_CL)puw->phylo_main_window);
-        sel_ali_aww->show();
+        exitcode = EXIT_FAILURE;
     }
     else {
-        aw_root->awar("phyl/alignment")->write_string(alignment_names[0]);
-        startup_sequence_cb(0, (AW_CL)aw_root, (AW_CL)puw->phylo_main_window);
-    }
-    GB_pop_transaction(GLOBAL_gb_main);
+        const char *db_server = (argc == 2 ? argv[1] : ":");
 
-    AWT_install_cb_guards();
-    aw_root->main_loop();
-    return EXIT_SUCCESS;
+        PH_used_windows *puw = new PH_used_windows;
+        PH_display      *phd = new PH_display;
+
+        PH_root  *ph_root = new PH_root;
+        GB_ERROR  error   = ph_root->open(db_server);
+
+        if (!error) error = configure_macro_recording(aw_root, "ARB_PHYLO", GLOBAL_gb_main);
+        if (!error) {
+            // create arb_phylo awars :
+            PH_create_filter_variables(aw_root, AW_ROOT_DEFAULT);
+            PH_create_matrix_variables(aw_root, AW_ROOT_DEFAULT);
+            ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
+#if defined(DEBUG)
+            AWT_create_db_browser_awars(aw_root, AW_ROOT_DEFAULT);
+#endif // DEBUG
+
+#if defined(DEBUG)
+            AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
+#endif // DEBUG
+
+            create_filter_text();
+
+            // create main window :
+
+            puw->phylo_main_window = create_phyl_main_window(aw_root, ph_root, 0);
+            puw->windowList        = puw;
+
+            phd->ph_display = phd;
+
+            // loading database
+            GB_push_transaction(GLOBAL_gb_main);
+
+            ConstStrArray alignment_names;
+            GBT_get_alignment_names(alignment_names, GLOBAL_gb_main);
+
+            int num_alignments;
+            for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) {}
+
+            if (num_alignments > 1) {
+                AW_window *sel_ali_aww = create_select_alignment_window(aw_root, (AW_CL)puw->phylo_main_window);
+                sel_ali_aww->show();
+            }
+            else {
+                aw_root->awar("phyl/alignment")->write_string(alignment_names[0]);
+                startup_sequence_cb(0, (AW_CL)aw_root, (AW_CL)puw->phylo_main_window);
+            }
+            GB_pop_transaction(GLOBAL_gb_main);
+
+            AWT_install_cb_guards();
+            aw_root->main_loop();
+        }
+
+        if (error) {
+            aw_popup_exit(error);
+            exitcode = EXIT_FAILURE;
+        }
+    }
+
+    delete aw_root;
+    return exitcode;
 }
 

@@ -194,7 +194,7 @@ void AWT_ptserver_selection::refresh_all() {
 static void awt_refresh_all_pt_server_selection_lists() {
     AWT_ptserver_selection::refresh_all();
 }
-static void track_log_cb(AW_root *awr) {
+static unsigned track_log_cb(AW_root *) {
     static long  last_ptserverlog_mod = 0;
     const char  *ptserverlog          = GBS_ptserver_logname();
     long         ptserverlog_mod      = GB_time_of_file(ptserverlog);
@@ -207,7 +207,7 @@ static void track_log_cb(AW_root *awr) {
         last_ptserverlog_mod = ptserverlog_mod;
     }
 
-    awr->add_timed_callback(PT_SERVER_TRACKLOG_TIMER, track_log_cb);
+    return PT_SERVER_TRACKLOG_TIMER;
 }
 
 AWT_ptserver_selection::AWT_ptserver_selection(AW_selection_list *sellist_)
@@ -215,7 +215,7 @@ AWT_ptserver_selection::AWT_ptserver_selection(AW_selection_list *sellist_)
 {
     if (ptserver_selections.empty()) {
         // first pt server selection list -> install log tracker
-        AW_root::SINGLETON->add_timed_callback(PT_SERVER_TRACKLOG_TIMER, track_log_cb);
+        AW_root::SINGLETON->add_timed_callback(PT_SERVER_TRACKLOG_TIMER, makeTimedCallback(track_log_cb));
     }
     ptserver_selections.push_back(this);
 }
@@ -241,6 +241,7 @@ static char *readable_pt_servername(int index, int maxlength) {
 #ifdef DEBUG
         printf("awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index\n");
 #endif
+        GB_clear_error();
         return strdup("-undefined-");
     }
 
@@ -303,6 +304,8 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
 
         char  *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
         AW_CL  cl_varname    = (AW_CL)strdup(varname); // make copy of awar_name for callbacks
+
+        awt_assert(!GB_have_error());
 
         aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
         aw_root->awar(varname)->add_callback(update_ptserver_button, cl_varname);
@@ -1089,7 +1092,7 @@ class AW_subset_selection : public AW_selection {
     static AW_selection_list *create_box(AW_window *aww, AW_selection_list& parent_sellist) {
         const char *parent_awar_name = parent_sellist.variable_name;
         awt_assert(parent_awar_name[0] != '/');
-        awt_assert(parent_sellist.variable_type == GB_STRING); // only impl for strings
+        awt_assert(parent_sellist.variable_type == AW_STRING); // only impl for strings
 
         AW_root *aw_root   = aww->get_root();
         char    *awar_name = GBS_global_string_copy("tmp/subsel/%s", parent_awar_name);

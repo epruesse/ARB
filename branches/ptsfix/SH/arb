@@ -1,17 +1,36 @@
 #!/bin/bash
 
-nargs=$#
-args="$*"
-
 # error message function
 err () {
 	echo "`basename $0`: $@" 1>&2
 	exit 1
 }
 
+# find the installation path for this ARB (the ARBHOME)
+get_arbhome() {
+    # save cwd
+    pushd . >/dev/null
+    # full path of this script, but may be symlinked
+    me="${BASH_SOURCE[0]}"
+    # while me is symlink
+    while [ -h "$me" ]; do 
+        # change to directory where symlink "$me" resides
+        cd "$(dirname "$me")"
+        # set $me to whatever $me links to
+        me="$(readlink "$(basename "$me")")"
+    done
+    # me isn't a symlink, so the directory it resides in
+    # must be the actual $ARBHOME/SH
+    cd "$(dirname "$me")"
+    # in $ARBHOME now
+    cd ..
+    echo -n "$PWD"
+    # restore old cwd
+    popd >/dev/null
+}
+
 # Add to the path variable named by $1 the component $2.  $3 must be
 # "append" or "prepend" to indicate where the component is added.
-
 addpath () {
     eval value=\"\$$1\"
     case "$value" in
@@ -45,24 +64,20 @@ prepend () {
     addpath "$1" "$2" prepend
 }
 
-ARB_SCRIPT=`readlink -f $0`
-export ARB_SCRIPT ; ARB_SH=`dirname $ARB_SCRIPT`
-export ARB_SH ; ARBHOME_OF_SCRIPT=`dirname $ARB_SH`
+# get absolute path to directory where this script resides
+# (avoid use of readlink as it is missing on OSX)
+ARBHOME_OF_SCRIPT="$(get_arbhome)"
+ARB_SH="$ARBHOME_OF_SCRIPT/SH"
+ARB_SCRIPT="$ARB_SH/arb"
 
-# echo "ARBHOME_OF_SCRIPT='$ARBHOME_OF_SCRIPT'"
+export ARB_SH ARB_SCRIPT ARBHOME_OF_SCRIPT
 
-case "X${ARBHOME}" in
-    X)
-    # ARBHOME is not set (as expected)
-    ;;
-    *)
-    if [ "$ARBHOME_OF_SCRIPT" != "$ARBHOME" ]; then
-        echo "Ignoring set ARBHOME '$ARBHOME' (overridden by explicit call of '$0')"
-    fi
-esac
+if [ -n "$ARBHOME" -a "$ARBHOME" != "$ARBHOME_OF_SCRIPT" ]; then
+    echo "Ignoring set ARBHOME '$ARBHOME' (overridden by explicit call of '$0')"
+fi
 
 # use ARBHOME defined by location of script (comment out for old behavior)
-#ARBHOME=$ARBHOME_OF_SCRIPT
+ARBHOME=$ARBHOME_OF_SCRIPT
 
 echo "Using ARBHOME='$ARBHOME'"
 
@@ -136,7 +151,10 @@ export ARB_XCMD
 ARB_LIBRARY_PATH="${LD_LIBRARY_PATH}"
 export ARB_LIBRARY_PATH
 
-if [ "$args" = "help" -o "$args" = "-h" -o "$args" = "--help" ]; then
+case "$1" in
+  help|-h|--help)
+    arb_ntree --help
+    echo ""
     echo ""
     echo "arb - script to start arb"
     echo "Usage:"
@@ -146,23 +164,25 @@ if [ "$args" = "help" -o "$args" = "-h" -o "$args" = "--help" ]; then
     echo "       arb help             # show help"
     echo "       arb trace [ntargs]   # trace arb (to detect errors)"
     echo ""
-    echo "ntargs are any argument allowed to arb_ntree (see below)"
+    echo "ntargs are any argument allowed to arb_ntree (see above)"
     echo ""
     echo ""
-    arb_ntree --help
-else
-    if [ "$args" = "shell" ]; then
-        echo "Opening an ARB shell"
-        sh
-    else    
-        if [ "$1" = "trace" ]; then
-            shift
-            $ARBHOME/SH/arb_trace $*
-        else
-            echo "Please wait while the program ARB is starting ....."
-            # (arb_ntree $args;arb_clean >/dev/null 2>&1;echo ARB done) &
-            arb_ntree $args &
-        fi
+  ;;
+  shell)
+    echo "Opening an ARB shell"
+    if [ -n "$SHELL" ]; then
+        $SHELL
+    else
+        bash -i
     fi
-fi
+    echo "ARB shell terminates"
+  ;;
+  trace)
+    shift
+    arb_launcher $ARBHOME/SH/arb_trace "$@"
+  ;;
+  *)
+    echo "Please wait while the program ARB is starting ....."
+    arb_launcher arb_ntree "$@"
+esac
 

@@ -72,6 +72,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/bytestring.h
 probe_design.o: $(ARBHOME)/INCLUDE/cb.h
+probe_design.o: $(ARBHOME)/INCLUDE/cbtypes.h
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
 probe_design.o: $(ARBHOME)/INCLUDE/client_types.h
 probe_design.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -89,6 +90,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/static_assert.h
 probe_design.o: $(ARBHOME)/INCLUDE/test_global.h
 probe_design.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 probe_match_parser.o: probe_match_parser.hxx
 probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -105,9 +107,11 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/attributes.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/cxxforward.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/downcast.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/dupstr.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/gccver.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/smartptr.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/static_assert.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SaiProbeVisualization.o: probe_match_parser.hxx
@@ -139,10 +143,14 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cb.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/downcast.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/dupstr.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/gccver.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/items.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/nds.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/smartptr.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/static_assert.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/test_global.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/ttypes.h

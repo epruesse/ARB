@@ -1559,7 +1559,7 @@ public:
     GB_alignment_type        alignment_type;
     AWT_reference           *reference;
     AWT_seq_colors          *sequence_colors;
-    AW_gc_manager            aw_gc_manager;
+    AW_gc_manager            gc_manager;
     ST_ML                   *st_ml;
     AW_helix                *helix;
     int                      helix_spacing;
@@ -2301,16 +2301,15 @@ void ED4_with_all_edit_windows(void (*cb)(ED4_window *));
 void ED4_expose_recalculations();
 void ED4_calc_terminal_extentions();
 
-void        ED4_input_cb            (AW_window *aww, AW_CL cd1, AW_CL cd2);
+void        ED4_input_cb            (AW_window *aww);
 
 void ED4_remote_event(AW_event *faked_event);
 
-void        ED4_quit(AW_window *aww, AW_CL cd1, AW_CL cd2);
-
-void        ED4_motion_cb           (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_vertical_change_cb      (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_horizontal_change_cb    (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_scrollbar_change_cb     (AW_window *aww, AW_CL cd1, AW_CL cd2);
+void        ED4_quit                    (AW_window *aww, AW_CL cd1, AW_CL cd2);
+void        ED4_motion_cb               (AW_window *aww);
+void        ED4_vertical_change_cb      (AW_window *aww);
+void        ED4_horizontal_change_cb    (AW_window *aww);
+void        ED4_scrollbar_change_cb     (AW_window *aww);
 
 void        ED4_no_dangerous_modes      ();
 void        group_species_cb        (AW_window *aww, AW_CL cd1, AW_CL cd2);
@@ -2337,21 +2336,18 @@ ARB_ERROR rebuild_consensus(ED4_base *object);
 
 void ED4_exit() __ATTR__NORETURN;
 
-void        ED4_quit_editor         (AW_window *aww, AW_CL cd1, AW_CL cd2);                 // Be Careful: Is this the last window?
+void        ED4_quit_editor         (AW_window *aww);                 // Be Careful: Is this the last window?
 
-void        ED4_store_curpos        (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_restore_curpos      (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_clear_stored_curpos     (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_helix_jump_opposite     (AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */);
+void        ED4_store_curpos        (AW_window *aww);
+void        ED4_restore_curpos      (AW_window *aww);
+void        ED4_clear_stored_curpos     ();
+void        ED4_helix_jump_opposite     (AW_window *aww);
 void        ED4_jump_to_cursor_position (AW_window *aww, AW_CL cl_awar_name, AW_CL cl_pos_type);
-void        ED4_remote_set_cursor_cb    (AW_root *awr, AW_CL, AW_CL);
-void        ED4_change_cursor       (AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */);
+void        ED4_remote_set_cursor_cb    (AW_root *awr);
+void        ED4_change_cursor       (AW_window *aww);
 void        ED4_set_reference_species   (AW_window *aww, AW_CL cd1, AW_CL cd2);
 
-void        ED4_toggle_detailed_column_stats  (AW_window *aww, AW_CL, AW_CL);
-void        ED4_set_col_stat_threshold  (AW_window *aww, AW_CL, AW_CL);
-
-void        ED4_new_editor_window       (AW_window *aww, AW_CL cd1, AW_CL cd2);
+void        ED4_new_editor_window       (AW_window *aww);
 
 AW_window   *ED4_create_consensus_definition_window (AW_root *root);
 void        ED4_create_consensus_awars      (AW_root *aw_root);

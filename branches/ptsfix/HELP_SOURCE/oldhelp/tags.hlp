@@ -7,7 +7,7 @@ UP	glossary.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
-# @@@ ************* Title of helpfile !! and start of real helpfile ********
+#************* Title of helpfile !! and start of real helpfile ********
 TITLE		TAGS: Subfields
 
 OCCURRENCE	ARB_NT: Merge Tools / Modify Database Fields

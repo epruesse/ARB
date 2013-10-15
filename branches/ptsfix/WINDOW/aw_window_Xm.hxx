@@ -16,6 +16,9 @@
 #ifndef AW_SCALAR_HXX
 #include "aw_scalar.hxx"
 #endif
+#ifndef ARB_MSG_H
+#include <arb_msg.h>
+#endif
 
 // macro definitions
 #define  p_r        prvt
@@ -117,7 +120,7 @@ struct AW_toggle_field_struct {
 
 class AW_common_Xm;
 class AW_device_Xm;
-class AW_cb_struct;
+class AW_cb;
 
 class AW_area_management {
     Widget form; // for resizing
@@ -130,9 +133,9 @@ class AW_area_management {
     AW_device_print *print_device;
     AW_device_click *click_device;
 
-    AW_cb_struct *expose_cb;
-    AW_cb_struct *resize_cb;
-    AW_cb_struct *double_click_cb;
+    AW_cb *expose_cb;
+    AW_cb *resize_cb;
+    AW_cb *double_click_cb;
 
     long click_time;
 
@@ -153,9 +156,9 @@ public:
 
     void set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_input_callback(AW_window *aww, const WindowCallback& wcb);
+    void set_double_click_callback(AW_window *aww, const WindowCallback& wcb);
+    void set_motion_callback(AW_window *aww, const WindowCallback& wcb);
 
     bool is_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
@@ -166,13 +169,12 @@ public:
     void run_expose_callback();
     void run_resize_callback();
 
-    AW_cb_struct *get_double_click_cb() { return double_click_cb; }
+    AW_cb *get_double_click_cb() { return double_click_cb; }
     long get_click_time() const { return click_time; }
     void set_click_time(long click_time_) { click_time = click_time_; }
 };
 
 class AW_selection_list;
-class RecordingMacro;
 
 class AW_root_Motif : virtual Noncopyable {
     Widget           last_widget;                   // last created (sensitive) widget
@@ -210,8 +212,6 @@ public:
     Window   old_cursor_window;
     bool     no_exit;
 
-    RecordingMacro *recording;
-
     GB_HASH *action_hash;
 
     AW_root_Motif();
@@ -241,10 +241,10 @@ public:
 
     // ********** local modifiers **********
 
-    AW_cb_struct **modes_f_callbacks;
+    AW_cb **modes_f_callbacks;
     Widget        *modes_widgets;
     int            selected_mode;
-    AW_cb_struct  *popup_cb;
+    AW_cb  *popup_cb;
     Widget         frame;
 
     Widget            toggle_field;
@@ -271,16 +271,23 @@ void        AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str
 void        AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data);
 
 // ------------------------------------------------------------
-// do not use the following functions
+// do not use the following
+extern int aw_message_cb_result;
+#define AW_MESSAGE_LISTEN_DELAY 500 // look in ms whether a father died
 void message_cb(AW_window *aw, AW_CL cd1);
 void input_cb(AW_window *aw, AW_CL cd1);
 void input_history_cb(AW_window *aw, AW_CL cl_mode);
 void file_selection_cb(AW_window *aw, AW_CL cd1);
+unsigned aw_message_timer_listen_event(AW_root *awr, AW_window *aww);
 // ------------------------------------------------------------
 
 Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy);
 void   aw_realize_widget(AW_window *aww);
 void   aw_insert_default_help_entries(AW_window *aww);
+
+__ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *intoWhat) {
+    GBK_terminatef("Cannot insert %s into %s which uses a non-%s AWAR", triedType, intoWhat, triedType);
+}
 
 #else
 #error aw_window_Xm.hxx included twice

@@ -92,6 +92,12 @@ bool ARB_global_awars_initialized() {
     return initialized;
 }
 
+bool ARB_in_expert_mode(AW_root *awr) {
+    aw_assert(ARB_global_awars_initialized());
+    int mask = awr->awar(AWAR_AWM_MASK)->read_int();
+    return (mask == AWM_MASK_EXPERT);
+}
+
 static void AWAR_AWM_MASK_changed_cb(AW_root *awr) {
     int mask = awr->awar(AWAR_AWM_MASK)->read_int();
 #if defined(DEBUG)

@@ -8,12 +8,13 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ntree.hxx"
-#include "ap_pos_var_pars.hxx"
+#include "NT_local.h"
+#include "AP_pos_var_pars.h"
 
 #include <AP_pro_a_nucs.hxx>
 #include <awt_sel_boxes.hxx>
 #include <arb_progress.h>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
@@ -309,7 +310,7 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
         tree_name = root->awar(AWAR_PVP_TREE)->read_string();
         tree = GBT_read_tree(GLOBAL.gb_main, tree_name, sizeof(GBT_TREE));
         if (!tree) {
-            error = "Please select a valid tree";
+            error = GB_await_error();
         }
         else {
             GBT_link_tree(tree, GLOBAL.gb_main, true, 0, 0);
@@ -340,7 +341,7 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
         free(ali_name);
     }
 
-    if (tree) GBT_delete_tree(tree);
+    GBT_delete_tree(tree);
     free(tree_name);
 
     if (error) aw_message(error);

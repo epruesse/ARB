@@ -31,6 +31,18 @@ void AW_system(AW_window *aww, const char *command, const char *auto_help_file) 
     aw_message_if(GBK_system(command));
 }
 
+void AW_clock_cursor(AW_root *awr) {
+    awr->prvt->set_cursor(0, 0, awr->prvt->clock_cursor);
+}
+
+void AW_normal_cursor(AW_root *awr) {
+    awr->prvt->set_cursor(0, 0, 0);
+}
+
+void AW_help_entry_pressed(AW_window *aww) {
+    AW_root *root = aww->get_root();
+    p_global->help_active = 1;
+}
 
 void AW_root::process_events() {
     XtAppProcessEvent(p_r->context, XtIMAll);
@@ -43,7 +55,8 @@ void AW_root::process_pending_events() {
     }
 }
 
-AW_ProcessEventType AW_root::peek_key_event(AW_window * /* aww */) {
+
+AW_ProcessEventType AW_root::peek_key_event(AW_window *) {
     //! Returns type if key event follows, else 0
 
     XEvent xevent;
@@ -85,11 +98,11 @@ static void destroy_AW_root() {
 }
 
 
-bool AW_root::is_focus_callback(AW_RCB fcb) const {
-    return focus_callback_list && focus_callback_list->contains(AW_root_callback(fcb, 0, 0));
+bool AW_root::is_focus_callback(AW_RCB fcb) const { // eliminated in gtk-branch
+    return focus_callback_list && focus_callback_list->contains(makeRootCallback(fcb, AW_CL(0), AW_CL(0)));
 }
 
-AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, int */*argc*/, char ***/*argv*/) {
+AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int */*argc*/, char ***/*argv*/) {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
 
@@ -99,6 +112,8 @@ AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, in
 
     init_variables(load_properties(propertyFile));
     init_root(program, no_exit);
+
+    tracker = user_tracker;
 
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
@@ -114,6 +129,14 @@ AW_root::AW_root(const char *propertyFile) {
 }
 #endif
 
+void AW_root::setUserActionTracker(UserActionTracker *user_tracker) {
+    aw_assert(user_tracker);
+    aw_assert(tracker->is_replaceable()); // there is already another tracker (program-logic-error)
+
+    delete tracker;
+    tracker = user_tracker;
+}
+
 AW_awar *AW_root::label_is_awar(const char *label) {
     AW_awar *awar_exists = NULL;
     size_t   off         = strcspn(label, "/ ");
@@ -124,17 +147,17 @@ AW_awar *AW_root::label_is_awar(const char *label) {
     return awar_exists;
 }
 
-void AW_root::define_remote_command(AW_cb_struct *cbs) {
-    if (cbs->f == (AW_CB)AW_POPDOWN) {
+void AW_root::define_remote_command(AW_cb *cbs) {
+    if (cbs->contains(AW_CB(AW_POPDOWN))) {
         aw_assert(!cbs->get_cd1() && !cbs->get_cd2()); // popdown takes no parameters (please pass ", 0, 0"!)
     }
 
-    AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(prvt->action_hash, cbs->id, (long)cbs);
+    AW_cb *old_cbs = (AW_cb*)GBS_write_hash(prvt->action_hash, cbs->id, (long)cbs);
     if (old_cbs) {
         if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
 #if defined(DEBUG)
             fputs(GBS_global_string("Warning: reused callback id '%s' for different callback\n", old_cbs->id), stderr);
-#if defined(DEVEL_RALF) && 0
+#if defined(DEVEL_RALF) && 1
             aw_assert(0);
 #endif // DEVEL_RALF
 #endif // DEBUG
@@ -143,8 +166,8 @@ void AW_root::define_remote_command(AW_cb_struct *cbs) {
     }
 }
 
-AW_cb_struct *AW_root::search_remote_command(const char *action) {
-    return (AW_cb_struct *)GBS_read_hash(prvt->action_hash, action);
+AW_cb *AW_root::search_remote_command(const char *action) {
+    return (AW_cb *)GBS_read_hash(prvt->action_hash, action);
 }
 
 static long set_focus_policy(const char *, long cl_aww, void *) {
@@ -314,6 +337,23 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
 }
 
+AW_root::~AW_root() {
+    delete tracker; tracker = NULL;
+
+    AW_root_cblist::clear(focus_callback_list);
+    delete button_sens_list;    button_sens_list = NULL;
+
+    exit_root();
+    exit_variables();
+    aw_assert(this == AW_root::SINGLETON);
+
+    delete prvt;
+
+    free(program_name);
+
+    AW_root::SINGLETON = NULL;
+}
+
 /**
  * A list of awar names that contain color names
  */
@@ -369,59 +409,66 @@ void AW_root::window_show() {
 
 /// begin timer stuff 
 
-// internal struct to pass data to handler
-struct AW_timer_cb_struct : virtual Noncopyable {
-    AW_root *ar;
-    AW_RCB   f;
-    AW_CL    cd1;
-    AW_CL    cd2;
+class AW_timer_cb_struct : virtual Noncopyable {
+    AW_root       *awr;
+    TimedCallback  cb;
 
-    AW_timer_cb_struct(AW_root *ari, AW_RCB cb, AW_CL cd1i, AW_CL cd2i)
-        : ar(ari), f(cb), cd1(cd1i), cd2(cd2i) {}
+    AW_timer_cb_struct(AW_root *aw_root, const TimedCallback& tcb) : awr(aw_root), cb(tcb) {} // use install!
+public:
+
+    typedef XtTimerCallbackProc timer_callback;
+
+    static void install(AW_root *aw_root, const TimedCallback& tcb, unsigned ms, timer_callback tc) {
+        AW_timer_cb_struct *tcbs = new AW_timer_cb_struct(aw_root, tcb);
+        tcbs->callAfter(ms, tc);
+    }
+
+    unsigned call() {
+        return cb(awr);
+    }
+    unsigned callOrDelayIfDisabled() {
+        return awr->disable_callbacks
+            ? 25 // delay by 25 ms
+            : cb(awr);
+    }
+    void callAfter(unsigned ms, timer_callback tc) {
+        XtAppAddTimeOut(awr->prvt->context, ms, tc, this);
+    }
+    void recallOrUninstall(unsigned restart, timer_callback tc) {
+        if (restart) callAfter(restart, tc);
+        else delete this;
+    }
 };
 
-static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId */*id*/) {
-    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
-    if (!tcbs)
-        return;
-
-    AW_root *root = tcbs->ar;
-    if (root->disable_callbacks) {
-        // delay the timer callback for 25ms
-        XtAppAddTimeOut(p_global->context,
-        (unsigned long)25, // wait 25 msec = 1/40 sec
-        (XtTimerCallbackProc)AW_timer_callback,
-        aw_timer_cb_struct);
+static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId*) {
+    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *)aw_timer_cb_struct;
+    if (tcbs) {
+        unsigned restart = tcbs->callOrDelayIfDisabled();
+        tcbs->recallOrUninstall(restart, AW_timer_callback);
     }
-    else {
-        tcbs->f(root, tcbs->cd1, tcbs->cd2);
-        delete tcbs; // timer only once
+}
+static void AW_timer_callback_never_disabled(XtPointer aw_timer_cb_struct, XtIntervalId*) {
+    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *)aw_timer_cb_struct;
+    if (tcbs) {
+        unsigned restart = tcbs->call();
+        tcbs->recallOrUninstall(restart, AW_timer_callback_never_disabled);
     }
 }
 
-static void AW_timer_callback_never_disabled(XtPointer aw_timer_cb_struct, XtIntervalId */*id*/) {
-    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
-    if (!tcbs)
-        return;
-
-    tcbs->f(tcbs->ar, tcbs->cd1, tcbs->cd2);
-    delete tcbs; // timer only once
+void AW_root::add_timed_callback(int ms, const TimedCallback& tcb) {
+    AW_timer_cb_struct::install(this, tcb, ms, AW_timer_callback);
+}
+void AW_root::add_timed_callback_never_disabled(int ms, const TimedCallback& tcb) {
+    AW_timer_cb_struct::install(this, tcb, ms, AW_timer_callback_never_disabled);
 }
 
-void AW_root::add_timed_callback(int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2) {
-    XtAppAddTimeOut(p_r->context,
-                    (unsigned long)ms,
-                    (XtTimerCallbackProc)AW_timer_callback,
-                    (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
-}
-
-void AW_root::add_timed_callback_never_disabled(int ms, AW_RCB f, AW_CL cd1, AW_CL cd2) {
-    XtAppAddTimeOut(p_r->context,
-                    (unsigned long)ms,
-                    (XtTimerCallbackProc)AW_timer_callback_never_disabled,
-                    (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
-}
 /// end timer stuff
+
+/// begin awar stuff
+
+AW_awar *AW_root::awar_no_error(const char *var_name) {
+    return hash_table_for_variables ? (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name) : NULL;
+}
 
 
 AW_awar *AW_root::awar(const char *var_name) {
@@ -459,11 +506,6 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
     }
     return vs;
 }
-
-AW_awar *AW_root::awar_no_error(const char *var_name) {
-    return hash_table_for_variables ? (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name) : NULL;
-}
-
 
 AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
     AW_awar *vs = awar_no_error(var_name);
@@ -505,10 +547,6 @@ void AW_root::main_loop() {
     XtAppMainLoop(p_r->context);
 }
 
-void AW_root::set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2) {
-    AW_root_cblist::add(focus_callback_list, AW_root_callback(fcb, cd1, cd2));
-}
-
 static long AW_unlink_awar_from_DB(const char */*key*/, long cl_awar, void *cl_gb_main) {
     AW_awar *awar    = (AW_awar*)cl_awar;
     GBDATA  *gb_main = (GBDATA*)cl_gb_main;
@@ -523,21 +561,6 @@ void AW_root::unlink_awars_from_DB(AW_default database) {
 
     GB_transaction ta(gb_main); // needed in awar-callbacks during unlink
     GBS_hash_do_loop(hash_table_for_variables, AW_unlink_awar_from_DB, gb_main);
-}
-
-AW_root::~AW_root() {
-    AW_root_cblist::clear(focus_callback_list);
-    delete button_sens_list;    button_sens_list = NULL;
-
-    exit_root();
-    exit_variables();
-    aw_assert(this == AW_root::SINGLETON);
-
-    delete prvt;
-
-    free(program_name);
-
-    AW_root::SINGLETON = NULL;
 }
 
 typedef std::list<GBDATA*> DataPointers;
@@ -564,6 +587,7 @@ static GB_ERROR set_parents_with_only_temp_childs_temp(GBDATA *gbd, DataPointers
 
     return error;
 }
+
 static GB_ERROR clear_temp_flags(DataPointers& made_temp) {
     GB_ERROR error = NULL;
     for (DataPointers::iterator mt = made_temp.begin(); mt != made_temp.end() && !error; ++mt) {
@@ -597,5 +621,3 @@ GB_ERROR AW_root::save_properties(const char *filename) {
 
     return error;
 }
-
-

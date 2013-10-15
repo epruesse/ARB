@@ -110,7 +110,6 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_H
             if (deleteSelf) {
                 GBT_delete_tree(tree);
                 if (removed) (*removed)++;
-                tree = 0;
             }
         }
     }
@@ -131,7 +130,6 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_H
             if (tree->name && groups_removed) (*groups_removed)++;
             tree->is_leaf = true;
             GBT_delete_tree(tree);
-            tree          = 0;
         }
     }
 
@@ -142,21 +140,24 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_H
 //      free tree
 
 
-void GBT_delete_tree(GBT_TREE *tree)
+void GBT_delete_tree(GBT_TREE*& tree)
      /* frees a tree only in memory (not in the database)
         to delete the tree in Database
         just call GB_delete((GBDATA *)gb_tree);
      */
 {
-    free(tree->name);
-    free(tree->remark_branch);
+    if (tree) {
+        free(tree->name);
+        free(tree->remark_branch);
 
-    if (!tree->is_leaf) {
-        GBT_delete_tree(tree->leftson);
-        GBT_delete_tree(tree->rightson);
-    }
-    if (!tree->tree_is_one_piece_of_memory || !tree->father) {
-        free(tree);
+        if (!tree->is_leaf) {
+            GBT_delete_tree(tree->leftson);
+            GBT_delete_tree(tree->rightson);
+        }
+        if (!tree->tree_is_one_piece_of_memory || !tree->father) {
+            free(tree);
+        }
+        tree = NULL;
     }
 }
 
@@ -367,8 +368,14 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
 GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree) {
     return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 0);
 }
-GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *remark) {
+GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const char *remark) {
     return GBT_write_string(GBT_find_tree(gb_main, tree_name), "remark", remark);
+}
+
+GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree, const char *remark) {
+    GB_ERROR error              = GBT_write_tree(gb_main, NULL, tree_name, tree);
+    if (!error && remark) error = GBT_write_tree_remark(gb_main, tree_name, remark);
+    return error;
 }
 
 // ----------------------------
