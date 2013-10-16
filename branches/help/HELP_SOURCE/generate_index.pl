@@ -85,6 +85,8 @@ sub find_indexed_xmls($$) {
   return @xml;
 }
 
+my %title_line = (); # key=xml-filename, value=lineno of <TITLE>..
+
 sub parse_titles($\@\%) {
   my ($xml_dir,$xml_r, $title_r) = @_;
   foreach my $name (@$xml_r) {
@@ -94,6 +96,7 @@ sub parse_titles($\@\%) {
   LINE: while (defined($line=<FILE>)) {
       if ($line =~ /<TITLE>(.*)<\/TITLE>/) {
         $$title_r{$name} = $1;
+        $title_line{$name} = $.;
         last LINE;
       }
     }
@@ -105,12 +108,34 @@ sub parse_titles($\@\%) {
   }
 }
 
+sub warn_duplicate_titles($\%) {
+  my ($xml_dir,$title_r) = @_;
+  my $hlpdir = $xml_dir;
+  my %seen = ();
+  foreach my $file (keys %$title_r) {
+    my $title = $$title_r{$file};
+    if (defined $seen{$title}) {
+      my $firstFile = $seen{$title};
+      my $thisLine  = $title_line{$file};
+      my $firstLine = $title_line{$firstFile};
+
+      print STDERR "${xml_dir}/${file}:${thisLine}: Warning: duplicated title '$title' ..\n";
+      print STDERR "${xml_dir}/${firstFile}:${firstLine}: Warning: .. first seen here.\n";
+    }
+    else {
+      $seen{$title} = $file;
+    }
+  }
+}
+
 sub generate_index($$) {
   my ($index_name,$xml_dir) = @_;
 
   my @xml   = find_indexed_xmls($index_name,$xml_dir);
   my %title = ();
   parse_titles($xml_dir,@xml,%title);
+
+  warn_duplicate_titles($xml_dir,%title);
 
   @xml = sort { $title{$a} cmp $title{$b}; } @xml;
 
