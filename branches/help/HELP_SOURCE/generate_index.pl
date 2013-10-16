@@ -7,8 +7,6 @@ sub read_xml($);
 sub read_xml($) {
   my ($xml_dir) = @_;
 
-  # print "xml_dir='$xml_dir'\n";
-
   my @xml = ();
   my @sub = ();
 
@@ -25,8 +23,6 @@ sub read_xml($) {
     }
   }
   closedir(DIR);
-
-  # foreach (@sub) { print "sub='$_'\n"; }
 
   foreach my $sub (@sub) {
     my @subxml = read_xml($xml_dir.'/'.$sub);
@@ -79,8 +75,7 @@ sub find_indexed_xmls($$) {
   my @xml = read_xml($xml_dir);
   @xml = sort map {
     if ($_ eq $index_name) { ; } # dont index the index
-    # else { $xml_dir.'/'.$_; } # prefix with xml_dir
-    else { $_; }                # prefix with xml_dir
+    else { $_; }
   } @xml;
   return @xml;
 }
@@ -140,8 +135,6 @@ sub generate_index($$) {
   @xml = sort { $title{$a} cmp $title{$b}; } @xml;
 
   print_index(@xml);
-
-  # foreach (@xml) { print "xml='$_'\n"; }
 }
 
 sub main() {
