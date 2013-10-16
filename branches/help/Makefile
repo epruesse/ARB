@@ -1546,6 +1546,8 @@ $(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh
 clean_links:
 #       avoid to delete linked pts, nas or arb_tcp.dat:
 	find . -path './lib' -prune -o -type l -exec rm {} \;
+#       removed obsolete file - refuses to disappear due to 'prune' above
+	@rm -f lib/help/GDEHELP
 	@rm -f $(LINKSTAMP) lib/inputMasks/format.readme
 
 redo_links: clean_links
