@@ -8,9 +8,13 @@
 #include "aw_device_print.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 #include "arb_msg.h"
+
+#include <cairo.h>
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
+#ifdef CAIRO_HAS_SCRIPT_SURFACE
 #include <cairo-script.h>
+#endif
 
 // ---------------------
 //      Please note
@@ -51,14 +55,19 @@ GB_ERROR AW_device_print::open(const char* path) {
 
     if (!strcasecmp(ext, ".svg")) {
         prvt->surface = cairo_svg_surface_create(path, cliprect.r, cliprect.b);
-    } else if (!strcasecmp(ext, ".pdf")) {
+    }
+    else if (!strcasecmp(ext, ".pdf")) {
         prvt->surface = cairo_pdf_surface_create(path, cliprect.r, cliprect.b);
-    } else if (!strcasecmp(ext, ".cairo-script")) {
+    }
+#ifdef CAIRO_HAS_SCRIPT_SURFACE
+    else if (!strcasecmp(ext, ".cairo-script")) {
         cairo_device_t *script_dev = cairo_script_create(path);
         cairo_script_set_mode(script_dev,  CAIRO_SCRIPT_MODE_ASCII);
         prvt->surface = cairo_script_surface_create(script_dev, CAIRO_CONTENT_COLOR,
                                                     cliprect.r, cliprect.b);
-    } else {
+    } 
+#endif
+    else {
         return "unrecognized file extension. Supported types are SVG and PDF.";
     }
 
