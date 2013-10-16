@@ -1350,8 +1350,7 @@ dep_graph:
 
 help:   HELP_SOURCE/HELP_SOURCE.dummy
 
-# @@@ when backtracing code is in libCORE, link vs ARBDB is no longer needed 
-HELP_SOURCE/HELP_SOURCE.dummy: link_db xml menus
+HELP_SOURCE/HELP_SOURCE.dummy: link_core xml menus
 
 db:	ARBDB/libARBDB.dummy
 core:	CORE/libCORE.dummy
