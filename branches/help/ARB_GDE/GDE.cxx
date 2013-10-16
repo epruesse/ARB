@@ -436,12 +436,10 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const 
     // Else                       -> load only specific menu topic
 
     gde_assert(db_access.gb_main); // forgot to call GDE_create_var() ?
-    
-    long       nitem, num_items; // @@@ scope
-    GmenuItem *menuitem;
-    char       hotkey[]   = "x";
-    bool       menuloaded = false;
-    bool       itemloaded = false;
+
+    char hotkey[]   = "x";
+    bool menuloaded = false;
+    bool itemloaded = false;
 
     for (long nmenu = 0; nmenu<num_menus; nmenu++) {
         {
@@ -452,16 +450,16 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const 
                 }
             }
             else {
-                hotkey[0]     = menu[nmenu].meta;
+                hotkey[0] = menu[nmenu].meta;
                 awm->insert_sub_menu(menuname, hotkey, menu[nmenu].active_mask);
             }
         }
 
         menuloaded = true;
 
-        num_items = menu[nmenu].numitems;
-        for (nitem=0; nitem<num_items; nitem++) {
-            menuitem=&menu[nmenu].item[nitem];
+        long num_items = menu[nmenu].numitems;
+        for (long nitem=0; nitem<num_items; nitem++) {
+            GmenuItem *menuitem=&menu[nmenu].item[nitem];
             if (!menuitemlabel || strcmp(menuitem->label, menuitemlabel) == 0) {
                 itemloaded = true;
                 gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
