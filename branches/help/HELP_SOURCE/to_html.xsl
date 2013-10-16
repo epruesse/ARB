@@ -241,7 +241,7 @@
         <xsl:variable name="first"><xsl:value-of select="normalize-space(substring(.,1,1))"/></xsl:variable>
         <xsl:variable name="last"><xsl:value-of select="normalize-space(substring(.,string-length(.)))"/></xsl:variable>
         <xsl:if test="string-length($first)='0'"><!--if text starts with whitespace ..-->
-          <xsl:variable name="prevtag"><xsl:for-each select="preceding-sibling::*"><xsl:value-of select="name()"/></xsl:for-each></xsl:variable>
+          <xsl:variable name="prevtag"><xsl:copy-of select="name(preceding-sibling::*[1])"/></xsl:variable>
           <xsl:if test="$prevtag='LINK'"><!--.. and preceding-sibling is a LINK -> keep one space-->
             <xsl:text> </xsl:text>
           </xsl:if>
@@ -250,7 +250,7 @@
         <xsl:value-of select="$normaltext"/>
 
         <xsl:if test="string-length($last)='0'"><!--if text ends with whitespace ..-->
-          <xsl:variable name="nexttag"><xsl:for-each select="following-sibling::*"><xsl:value-of select="name()"/></xsl:for-each></xsl:variable>
+          <xsl:variable name="nexttag"><xsl:copy-of select="name(following-sibling::*[1])"/></xsl:variable>
           <xsl:if test="$nexttag='LINK'"><!--.. and following-sibling is a LINK -> keep one space-->
             <xsl:text> </xsl:text>
           </xsl:if>
