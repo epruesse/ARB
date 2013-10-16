@@ -25,7 +25,7 @@ BINARIES = $(TOOL_OBJECTS:%.o=$(ARBHOME)/bin/%)
 QUIETLY = ./quietly.pl
 
 # using xsltproc and XMLLINT:
-XSLTPROC = xsltproc
+XSLTPROC = ./arb_xslt.sh
 VALIDATE = $(QUIETLY) XMLLINT
 
 # --------------------------------------------------------------------------------
