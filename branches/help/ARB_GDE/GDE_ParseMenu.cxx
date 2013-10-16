@@ -173,9 +173,7 @@ void ParseMenu() {
         // Help file
         else if (Find(in_line, "itemhelp:")) {
             crop(in_line, head, temp);
-            thisitem->help = (char*)calloc(strlen(temp)+1, sizeof(char));
-            if (thisitem->method == NULL) Error("Calloc");
-            (void)strcpy(thisitem->help, temp);
+            thisitem->help = GBS_string_eval(temp, "*.help=agde_*1.hlp", 0);
         }
         // Meta key equiv
         else if (Find(in_line, "itemmeta:")) {

@@ -10,6 +10,7 @@
 #include <awt_filter.hxx>
 
 #include <cmath>
+#include <arb_str.h>
 
 // AISC_MKPT_PROMOTE:#ifndef GDE_MENU_H
 // AISC_MKPT_PROMOTE:#include "GDE_menu.h"
@@ -32,11 +33,8 @@ struct gde_iteminfo {
 };
 
 static void GDE_showhelp_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /* cd */) {
-    const char *help_file = gmenuitem->help;
-    if (help_file) {
-        char *agde_help_file = GBS_string_eval(help_file, "*.help=agde_*1.hlp", 0);
-        AW_POPUP_HELP(aw, (AW_CL)agde_help_file);
-        free(agde_help_file);
+    if (gmenuitem->help) {
+        AW_POPUP_HELP(aw, (AW_CL)gmenuitem->help);
     }
     else {
         aw_message("Sorry - no help available (please report to devel@arb-home.de)");
@@ -439,9 +437,7 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const 
 
     gde_assert(db_access.gb_main); // forgot to call GDE_create_var() ?
     
-    char       buffer[1024];
-    char      *help;
-    long       nitem, num_items;
+    long       nitem, num_items; // @@@ scope
     GmenuItem *menuitem;
     char       hotkey[]   = "x";
     bool       menuloaded = false;
@@ -468,16 +464,10 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const 
             menuitem=&menu[nmenu].item[nitem];
             if (!menuitemlabel || strcmp(menuitem->label, menuitemlabel) == 0) {
                 itemloaded = true;
-                if (menuitem->help) {
-                    sprintf(buffer, "GDEHELP/%s", menuitem->help);
-                    help = strdup(buffer);
-                }
-                else {
-                    help = 0;
-                }
-                hotkey[0]     = menuitem->meta;
+                gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
+                hotkey[0] = menuitem->meta;
                 awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,
-                                       help, menuitem->active_mask,
+                                       menuitem->help, menuitem->active_mask,
                                        AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
             }
         }
