@@ -103,7 +103,7 @@ void ParseMenu() {
         }
         else if (Find(in_line, "menumask:")) {
             crop(in_line, head, temp);
-            if (temp && !strcmp("expert", temp)) thismenu->active_mask = AWM_EXP;
+            if (strcmp("expert", temp) == 0) thismenu->active_mask = AWM_EXP;
         }
         // item: chooses menu item to use
         else if (Find(in_line, "item:")) {
@@ -182,7 +182,7 @@ void ParseMenu() {
         }
         else if (Find(in_line, "itemmask:")) {
             crop(in_line, head, temp);
-            if (temp && !strcmp("expert", temp)) thisitem->active_mask = AWM_EXP;
+            if (strcmp("expert", temp) == 0) thisitem->active_mask = AWM_EXP;
         }
         else if (Find(in_line, "menumeta:")) {
             if (thismenu == NULL) ParseError("'menumeta' used w/o 'menu' or 'lmenu'", menufile, linenr);
@@ -349,7 +349,7 @@ void ParseMenu() {
         }
         else if (Find(in_line, "argmask:")) {
             crop(in_line, head, temp);
-            if (temp && !strcmp("expert", temp)) thisarg->active_mask = AWM_EXP;
+            if (strcmp("expert", temp) == 0) thisarg->active_mask = AWM_EXP;
         }
         // in: Input file description
         else if (Find(in_line, "in:")) {
