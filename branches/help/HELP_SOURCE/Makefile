@@ -1,5 +1,7 @@
 
 .SUFFIXES: .o .c .cxx .source .hlp .xml .dtd .html .depend .ps.gz .pdf.gz
+.PHONY: prepare all dirs generated xml dump ps pdf nonhlp_formats
+.PHONY: delzerohtml interdepends google_logo html help clean tools depends depend.init
 
 # --------------------------------------------------------------------------------
 
@@ -37,11 +39,13 @@ prepare: date generated dirs tools nonhlp_formats delzerohtml
 all: prepare
 		@echo --------------------------------------------------- [old hlp 2 xml]
 		time $(MAKE) xml
+		@echo --------------------------------------------------- [xml 2 depends]
+		time $(MAKE) interdepends
 		@echo --------------------------------------------------- [xml 2 hlp]
-		time $(MAKE) help
+		time $(MAKE) "USE_GENERATED_DEPENDS=1" help
 		$(MAKE) $(HLP_DEST)/FORM.hlp
 		@echo --------------------------------------------------- [xml 2 html]
-		time $(MAKE) html
+		time $(MAKE) "USE_GENERATED_DEPENDS=1" html
 
 $(HLP_DEST)/FORM.hlp: $(HLP_SOURCE)/FORM.hlp
 		cp -p $< $@
@@ -103,8 +107,8 @@ DTD=arb_help.dtd
 
 $(XML) : $(XML_DEPEND) Makefile $(QUIETLY)
 
-$(HELP_INDEX_XML): $(OLD_HELP_ALL) $(XML) ./generate_index.pl Makefile 
-	./generate_index.pl $(HELP_INDEX_NAME).xml $(XML_LOCATION) > $(HELP_INDEX_XML)
+$(HELP_INDEX_XML): $(OLD_HELP_ALL) $(XML) ./generate_index.pl Makefile
+	./generate_index.pl $(HELP_INDEX_NAME).xml $(XML_LOCATION) > $@
 
 xml : $(XML) $(HELP_INDEX_XML)
 
@@ -175,10 +179,29 @@ date.xsl : date
 
 STYLE_HTML=to_html.xsl
 STYLE_HELP=to_help.xsl
+STYLE_DEPENDS=to_depends.xsl
+
+XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
 
 # --------------------------------------------------------------------------------
 
-XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
+INTERDEPENDS=inter.depends
+INTERDEPENDS_TMP=$(INTERDEPENDS).tmp
+INTERDEPENDS_SOURCE=$(XML) $(HELP_INDEX_XML)
+XML2DEPENDS=./xml_2_depends.sh
+
+$(INTERDEPENDS_TMP): $(INTERDEPENDS_SOURCE) $(XML2DEPENDS) Makefile $(STYLE_DEPENDS)
+	( ( echo "$(INTERDEPENDS_SOURCE)" | $(XML2DEPENDS) $(XSLTPROC) $(STYLE_DEPENDS) $(XSLTPROC_ARGS) >$@ ) 2>interdep.err && rm interdep.err ) || \
+		(cat interdep.err; false)
+
+interdepends: $(INTERDEPENDS_TMP)
+	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $< $(INTERDEPENDS) 
+
+ifeq ($(USE_GENERATED_DEPENDS),1)
+include $(INTERDEPENDS)
+endif
+
+# --------------------------------------------------------------------------------
 
 $(HELP) : $(STYLE_HELP) $(DTD) Makefile
 
@@ -213,7 +236,7 @@ help : $(HELP)
 clean:
 	-rm -f $(TOOL_OBJECTS) $(BINARIES)
 	-rm -f $(XML_DEPEND) dummy date.xsl
-	-rm -rf $(XML_LOCATION) $(HLP_DEST) $(HTML_LOCATION)
+	-rm -rf $(XML_LOCATION) $(HLP_DEST) $(HTML_LOCATION) $(INTERDEPENDS)
 	$(MAKE) -C $(HLP_GENERATED) clean
 
 # --------------------------------------------------------------------------------
