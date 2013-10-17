@@ -6,7 +6,7 @@ xslt() {
 }
 
 format_error_messages() {
-    perl -pne 's/^compilation\s+error:\s+file\s+([^\s]+)\s+line\s+([0-9]+)\s+/\1:\2: Error: /'
+    perl -pne 's/^([a-z]+)\s+error:\s+file\s+([^\s]+)\s+line\s+([0-9]+)\s+/\2:\3: Error: [\1] /'
 }
         
 ( xslt "$@" ) 2> >( format_error_messages >&2 )
