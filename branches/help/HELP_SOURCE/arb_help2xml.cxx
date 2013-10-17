@@ -235,12 +235,19 @@ enum ParagraphType {
     ENUMERATED,
     ITEM,
 };
+enum EnumerationType {
+    UNDEFINED,
+    DIGITS,
+};
 
 class Ostring {
     string        content;
-    size_t        lineNo; // where string came from
+    size_t        lineNo;   // where string came from
     ParagraphType type;
-    unsigned      number; // only valid if type==ENUMERATED
+
+    // only valid for type==ENUMERATED:
+    EnumerationType etype;
+    unsigned        number;
 
 public:
 
@@ -251,13 +258,15 @@ public:
     {
         h2x_assert(type != ENUMERATED);
     }
-    Ostring(const string& s, size_t line_no, ParagraphType type_, unsigned num)
+    Ostring(const string& s, size_t line_no, ParagraphType type_, EnumerationType etype_, unsigned num)
         : content(s),
           lineNo(line_no),
           type(type_),
+          etype(etype_),
           number(num)
     {
         h2x_assert(type == ENUMERATED);
+        h2x_assert(etype == DIGITS);
         h2x_assert(num>0);
     }
 
@@ -273,6 +282,7 @@ public:
     const ParagraphType& get_type() const { return type; }
     unsigned get_number() const {
         h2x_assert(type == ENUMERATED);
+        h2x_assert(etype == DIGITS);
         return number;
     }
 
@@ -399,15 +409,17 @@ inline const char *eatWhite(const char *line) {
     return line;
 }
 
-inline void pushParagraph(Section& sec, string& paragraph, size_t lineNo, ParagraphType& type, unsigned num) {
+inline void pushParagraph(Section& sec, string& paragraph, size_t lineNo, ParagraphType& type, EnumerationType& etype, unsigned num) {
     if (paragraph.length()) {
         if (type == ENUMERATED) {
-            sec.Content().push_back(Ostring(paragraph, lineNo, type, num));
+            sec.Content().push_back(Ostring(paragraph, lineNo, type, etype, num));
         }
         else {
             sec.Content().push_back(Ostring(paragraph, lineNo, type));
         }
+
         type      = PLAIN_TEXT;
+        etype     = UNDEFINED;
         paragraph = "";
     }
 }
@@ -460,10 +472,12 @@ static bool startsWithNumber(string& s, unsigned& number, bool do_erase) {
 }
 
 static void parseSection(Section& sec, const char *line, int indentation, Reader& reader) {
-    string        paragraph         = line;
-    size_t        para_start_lineno = reader.getLineNo();
-    ParagraphType type              = PLAIN_TEXT;
-    unsigned      num               = 0;
+    string paragraph         = line;
+    size_t para_start_lineno = reader.getLineNo();
+
+    ParagraphType   type  = PLAIN_TEXT;
+    EnumerationType etype = UNDEFINED;
+    unsigned        num   = 0;
 
     h2x_assert(sec.Content().empty());
 
@@ -472,7 +486,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         if (!line) break;
 
         if (isEmptyOrComment(line)) {
-            pushParagraph(sec, paragraph, para_start_lineno, type, num);
+            pushParagraph(sec, paragraph, para_start_lineno, type, etype, num);
             check_TODO(line, reader);
         }
         else {
@@ -489,14 +503,14 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
             string Line = line;
 
             if (sec.get_type() == SEC_OCCURRENCE) {
-                pushParagraph(sec, paragraph, para_start_lineno, type, num);
+                pushParagraph(sec, paragraph, para_start_lineno, type, etype, num);
             }
             else {
                 const char *firstNonWhite = firstChar(line);
                 if (is_startof_itemlist_element(firstNonWhite)) {
                     h2x_assert(firstNonWhite != line);
 
-                    pushParagraph(sec, paragraph, para_start_lineno, type, num);
+                    pushParagraph(sec, paragraph, para_start_lineno, type, etype, num);
 
                     Line[firstNonWhite-line] = ' ';
                     type = ITEM; // is reset in call to pushParagraph
@@ -504,10 +518,11 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
                 else {
                     unsigned foundNum;
                     if (startsWithNumber(Line, foundNum, true)) {
-                        pushParagraph(sec, paragraph, para_start_lineno, type, num);
+                        pushParagraph(sec, paragraph, para_start_lineno, type, etype, num);
 
-                        type = ENUMERATED;
-                        num  = foundNum;
+                        type  = ENUMERATED;
+                        etype = DIGITS;
+                        num   = foundNum;
 
                         if (!num) {
                             throw "Enumerations starting with zero are not supported";
@@ -526,7 +541,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         }
     }
 
-    pushParagraph(sec, paragraph, para_start_lineno, type, num);
+    pushParagraph(sec, paragraph, para_start_lineno, type, etype, num);
 
     if (sec.Content().size()>0 && indentation>0) {
         string spaces;
