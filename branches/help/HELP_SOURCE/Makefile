@@ -39,7 +39,7 @@ prepare: date generated dirs tools nonhlp_formats delzerohtml
 all: prepare
 		@echo --------------------------------------------------- [old hlp 2 xml]
 		time $(MAKE) xml
-		@echo --------------------------------------------------- [xml 2 depends]
+		@echo --------------------------------------------------- [interdependencies]
 		time $(MAKE) interdepends
 		@echo --------------------------------------------------- [xml 2 hlp]
 		time $(MAKE) "USE_GENERATED_DEPENDS=1" help
@@ -186,16 +186,14 @@ XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
 # --------------------------------------------------------------------------------
 
 INTERDEPENDS=inter.depends
-INTERDEPENDS_TMP=$(INTERDEPENDS).tmp
-INTERDEPENDS_SOURCE=$(XML) $(HELP_INDEX_XML)
+INTERDEPENDS_SOURCE=$(XML)
 XML2DEPENDS=./xml_2_depends.sh
 
-$(INTERDEPENDS_TMP): $(INTERDEPENDS_SOURCE) $(XML2DEPENDS) Makefile $(STYLE_DEPENDS)
-	( ( echo "$(INTERDEPENDS_SOURCE)" | $(XML2DEPENDS) $(XSLTPROC) $(STYLE_DEPENDS) $(XSLTPROC_ARGS) >$@ ) 2>interdep.err && rm interdep.err ) || \
+$(INTERDEPENDS): $(INTERDEPENDS_SOURCE) $(XML2DEPENDS) Makefile $(STYLE_DEPENDS)
+	@( ( echo "$(INTERDEPENDS_SOURCE)" | $(XML2DEPENDS) $(XSLTPROC) $(STYLE_DEPENDS) $(XSLTPROC_ARGS) >$@ ) 2>interdep.err && rm interdep.err ) || \
 		(cat interdep.err; false)
 
-interdepends: $(INTERDEPENDS_TMP)
-	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $< $(INTERDEPENDS) 
+interdepends: $(INTERDEPENDS)
 
 ifeq ($(USE_GENERATED_DEPENDS),1)
 include $(INTERDEPENDS)
