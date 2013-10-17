@@ -8,7 +8,7 @@
 ]>
 
   <!--automatically generated from ../oldhelp/unittest.hlp -->
-<PAGE name="unittest" edit_warning="devel">
+<PAGE name="unittest" edit_warning="devel" source="oldhelp/unittest.hlp">
   <UP dest="arb.hlp" type="hlp" source_line="2"/>
   <UP dest="glossary.hlp" type="hlp" source_line="3"/>
   <SUB dest="aci.hlp" type="hlp" source_line="6"/>

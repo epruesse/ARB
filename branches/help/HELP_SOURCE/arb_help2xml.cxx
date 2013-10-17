@@ -1381,6 +1381,8 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
     xml.getRoot().add_attribute("edit_warning", "release"); // inserts a different edit warning into release version
 #endif // DEBUG
 
+    xml.getRoot().add_attribute("source", inputfile.c_str());
+
     {
         // cppcheck-suppress unusedScopedObject
         XML_Comment(string("automatically generated from ../")+inputfile+' ');
