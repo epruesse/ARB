@@ -185,7 +185,7 @@ XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
 
 # --------------------------------------------------------------------------------
 
-INTERDEPENDS=inter.depends
+INTERDEPENDS=.depends
 INTERDEPENDS_SOURCE=$(XML)
 XML2DEPENDS=./xml_2_depends.sh
 
