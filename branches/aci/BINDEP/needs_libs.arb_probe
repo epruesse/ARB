@@ -1,0 +1,4 @@
+# [libraries needed to link arb_probe]
+# defined indirecly via ../TOOLS/needs_libs.arb_probe_o
+
+TOOLS/arb_probe.o

@@ -1,0 +1,1653 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<HTML>
+<!-- To view this document properly please use a HTML browser -->
+
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <TITLE>Documentation of TREE-PUZZLE 5.0</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+
+<H1>
+<img ALT="PUZZLE Logo" SRC="puzzle.gif" HSPACE=10 BORDER=0 height=32 width=32 align=LEFT>
+<b><font size="+3">TREE-PUZZLE Manual</font></b>
+<img ALT="PPUZZLE Logo" SRC="ppuzzle.gif" HSPACE=10 BORDER=0 height=32 width=32>
+</H1>
+<B>Maximum likelihood analysis for nucleotide, amino acid, and two-state data</B>
+
+
+<P>Version 5.0
+<BR>October 2000
+<BR>Copyright 1999-2000 by Heiko A. Schmidt, Korbinian Strimmer, Martin Vingron, and Arndt von Haeseler
+<BR>Copyright 1995-1999 by Korbinian Strimmer and Arndt von Haeseler
+
+<P><b>Heiko A. Schmidt</b>,  
+email: h.schmidt@dkfz-heidelberg.de,
+<A HREF="http://www.dkfz-heidelberg.de/tbi/">Theoretical Bioinformatics</A>,
+<A HREF="http://www.dkfz-heidelberg.de/">DKFZ</A>,
+Im Neuenheimer Feld 280, D-69124 Heidelberg, Germany.
+
+<P><b>Korbinian Strimmer</b>, 
+email: korbinian.strimmer@zoo.ox.ac.uk, 
+<A HREF="http://www.zoo.ox.ac.uk/">Department of Zoology</A>, 
+<A HREF="http://www.ox.ac.uk/">University of Oxford</A>, 
+South Parks Road, Oxford OX1 3PS, UK.
+
+<P><b>Martin Vingron</b>,  
+email: vingron@dkfz-heidelberg.de,
+<A HREF="http://www.dkfz-heidelberg.de/tbi/">Theoretical Bioinformatics</A>,
+<A HREF="http://www.dkfz-heidelberg.de/">DKFZ</A>,
+Im Neuenheimer Feld 280, D-69124 Heidelberg, Germany.
+
+<P><b>Arndt von Haeseler</b>,
+email: haeseler@eva.mpg.de,
+<A HREF="http://www.eva.mpg.de/">Max-Planck-Institute for Evolutionary Anthropology</A>,
+Inselstr. 22, D-04103 Leipzig, Germany.
+
+<p><font size ="-1" color ="brown">The official name of the program has been 
+   changed to TREE-PUZZLE to avoid legal conflict with the Fraunhofer 
+   Gesellschaft. We are sorry for any inconvenience this may cause to you. 
+   Any reference to PUZZLE in this package is only colloquial and refers 
+   to TREE-PUZZLE.
+</font>
+
+<P>TREE-PUZZLE is a computer program to reconstruct phylogenetic trees from
+molecular sequence data by maximum likelihood. It implements a fast tree
+search algorithm, quartet puzzling, that allows analysis of large data
+sets and automatically assigns estimations of support to each internal
+branch. TREE-PUZZLE also computes pairwise maximum likelihood distances as well
+as branch lengths for user specified trees. Branch lengths can also be
+calculated under the clock-assumption. In addition, TREE-PUZZLE offers a novel
+method, likelihood mapping, to investigate the support of a hypothesized
+internal branch without computing an overall tree and to visualize the
+phylogenetic content of a sequence alignment. TREE-PUZZLE also conducts a number
+of statistical tests on the data set (chi-square test for homogeneity of
+base composition, likelihood ratio to test the clock hypothesis, Kishino-Hasegawa
+test). The models of substitution provided by TREE-PUZZLE are TN, HKY, F84,
+SH for nucleotides, Dayhoff, JTT, mtREV24, BLOSUM 62, VT, WAG for amino acids, and
+F81 for two-state data. Rate heterogeneity is modelled by a discrete Gamma
+distribution and by allowing invariable sites. The corresponding parameters
+can be inferred from the data set.
+
+<P>TREE-PUZZLE is available free of charge from
+<DL>
+<DD>
+<A HREF="http://www.tree-puzzle.de/">http://www.tree-puzzle.de/</A> (TREE-PUZZLE home page)
+</DD>
+
+<DD>
+<A HREF="http://www.dkfz-heidelberg.de/tbi/tree-puzzle/">http://www.dkfz-heidelberg.de/tbi/tree-puzzle/</A> (TREE-PUZZLE home page mirror at DKFZ)
+</DD>
+
+<DD>
+<A HREF="http://iubio.bio.indiana.edu/soft/molbio/evolve">http://iubio.bio.indiana.edu/soft/molbio/evolve</A>
+(IUBio archive www, USA)
+</DD>
+
+<DD>
+<A HREF="ftp://iubio.bio.indiana.edu/molbio/evolve">ftp://iubio.bio.indiana.edu/molbio/evolve</A>
+(IUBio archive ftp, USA)
+</DD>
+
+<DD>
+<A HREF="ftp://ftp.ebi.ac.uk/pub/software">ftp://ftp.ebi.ac.uk/pub/software</A>
+(European Bioinformatics Institute, UK)
+</DD>
+
+<DD>
+<A HREF="ftp://ftp.pasteur.fr/pub/GenSoft">ftp://ftp.pasteur.fr/pub/GenSoft</A>
+(Institut Pasteur, France)
+</DD>
+
+</DL>
+TREE-PUZZLE is written in ANSI C. It will run on most personal computers and
+workstations if compiled by an appropriate C compiler. 
+The tree reconstruction part of TREE-PUZZLE has been parallelized using 
+the Message Passing Interface (MPI)
+library standard (<A HREF="#snir1998">Snir et al.</A>, 1998 and
+<A HREF="#gropp1998">Gropp et al.</A>, 1998). If desired to run 
+TREE-PUZZLE in parallel you need an implementation of the MPI library on your
+system as well.
+
+<P>Please read the <A HREF="#Installation">installation section</A>
+for more details.
+
+<P>We suggest that this documentation should be read before using TREE-PUZZLE
+the first time. If you do not have the time to read this manual completely
+please do read at least the sections <A HREF="#Input/Output Conventions">Input/Output
+Conventions</A> and <A HREF="#Quick Start">Quick Start </A>below. Then
+you should be able to use the TREE-PUZZLE program, especially if you have some
+experience with the PHYLIP programs. The other sections should then be read
+at a later time.
+
+<P>To find out what's new in version 5.0 please read the 
+<A HREF="#Version History">Version History</A>.
+
+<P>
+<HR ALIGN=center WIDTH="100%" SIZE=2>
+<CENTER><H2>Contents</H2></CENTER><P>
+
+<UL>
+<LI><A HREF="#Legal Stuff">Legal Stuff</A></LI>
+
+<LI><A HREF="#Installation">Installation</A>
+    <UL>
+    <LI><A HREF="#Unix">UNIX</A></LI>
+    <LI><A HREF="#MacOS">MacOS</A></LI>
+    <LI><A HREF="#Win32">Windows 95/98/NT</A></LI>
+    <LI><A HREF="#VMS">VMS</A></LI>
+    <LI><A HREF="#MPI">Parallel TREE-PUZZLE</A></LI>
+    </UL>
+</LI>
+
+<LI><A HREF="#Introduction">Introduction</A></LI>
+<LI><A HREF="#Input/Output Conventions">Input/Output Conventions</A>
+    <UL>
+    <LI><A HREF="#Sequence Input">Sequence Input</A></LI>
+    <LI><A HREF="#General Output">General Output</A></LI>
+    <LI><A HREF="#Distance Output">Distance Output</A></LI>
+    <LI><A HREF="#Tree Output">Tree Output</A></LI>
+    <LI><A HREF="#Tree Input">Tree Input</A></LI>
+    <LI><A HREF="#Likelihood Mapping Output">Likelihood Mapping Output</A></LI>
+    </UL>
+</LI>
+
+<LI><A HREF="#Quick Start">Quick Start</A></LI>
+<LI><A HREF="#Models of Sequence Evolution">Models of Sequence Evolution</A>
+    <UL>
+    <LI><A HREF="#Models of Substitution">Models of Substitution</A></LI>
+    <LI><A HREF="#Models of Rate Heterogeneity">Models of Rate Heterogeneity</A></LI>
+    </UL>
+</LI>
+
+<LI><A HREF="#Options Available">Available Options</A></LI>
+<LI><A HREF="#Other Features">Other Features</A></LI>
+<LI><A HREF="#Interpretation and Hints">Interpretation and Hints</A>
+    <UL>
+    <LI><A HREF="#Quartet Puzzling Support Values">Quartet Puzzling Support Values</A></LI>
+    <LI><A HREF="#Percentage of Unresolved Quartets">Percentage of Unresolved Quartets</A></LI>
+    <LI><A HREF="#Automatic Parameter Estimation">Automatic Parameter Estimation</A></LI>
+    <LI><A HREF="#Likelihood Mapping">Likelihood Mapping</A></LI>
+    <LI><A HREF="#Batch Mode">Batch Mode</A></LI>
+    </UL>
+</LI>
+<LI><A HREF="#Limits and Error Messages">Limits and Error Messages</A></LI>
+<LI><A HREF="#Are Quartets Reliable">Are Quartets Reliable?</A></LI>
+<LI><A HREF="#Other Programs">Other Programs</A></LI>
+<LI><A HREF="#Acknowledgements">Acknowledgements</A></LI>
+<LI><A HREF="#References">References</A></LI>
+<LI><A HREF="#Known Bugs">Known Bugs</A></LI>
+<LI><A HREF="#Version History">Version History</A></LI>
+</UL>
+
+<HR>
+<H2>
+<A NAME="Legal Stuff"></A>Legal Stuff</H2>
+TREE-PUZZLE 5.0 is (c) 1999-2000 Heiko A. Schmidt, Korbinian Strimmer, Martin Vingron, and Arndt von Haeseler.<BR>
+Earlier PUZZLE versions were (c) 1995-1999 by Korbinian Strimmer and Arndt von Haeseler.<BR>
+The software and its accompanying documentation are provided as
+is, without guarantee of support or maintenance. The whole package is
+licensed under the GNU public license, except for the parts indicated in
+the sources where the copyright of the authors does not apply.  Please see
+<A
+HREF="http://www.opensource.org/licenses/gpl-license.html">http://www.opensource.org/licenses/gpl-license.html</A> for details.
+
+<H2>
+<A NAME="Installation"></A>Installation</H2>
+The source code of the TREE-PUZZLE software is 100% identical across platforms.
+However, installation procedures differ.
+
+<H3>
+<A NAME="Unix"></A>UNIX</H3>
+Get the file <B>tree-puzzle-5.0.tar</B>. If you received a compressed tar file
+(<B>tree-puzzle-5.0.tar.Z</B> or <B>tree-puzzle-5.0.tar.gz</B>) you have to decompress
+it first (using the "uncompress" or "gunzip" command). Then untar the file
+with
+<PRE>        tar xvf tree-puzzle-5.0.tar</PRE>
+The newly created directory "tree-puzzle-5.0" contains four subdirectories called
+"doc", "data", "bin", and "src". The "doc" directory
+contains this manual in HTML format. The "data"
+directory contains example input files. The "src" directory contains the
+ANSI C sources of TREE-PUZZLE. Switch to this directory by typing
+<PRE>        cd tree-puzzle-5.0</PRE>
+To compile we recommend the GNU gcc (or GNU egcs) compiler. If gcc is installed
+just type
+<PRE>        sh ./configure</PRE>
+<PRE>        make</PRE>
+<PRE>        make install</PRE>
+and the executable <TT>puzzle</TT> is compiled and put into the <TT>/usr/local/bin</TT> directory.
+If you want to have <TT>puzzle</TT> installed into another directory you can set this
+by setting the <TT>--prefix=/name/of/the/wanted/directory</TT> directive at the
+<TT>sh ./configure</TT> command line.
+The parallel version should have been built and installed as well, if <TT>configure</TT> 
+found a known MPI compiler (cf. <A HREF="#MPI">Parallel TREE-PUZZLE</A> section).
+
+
+Then type 
+<PRE>        make clean</PRE>
+and everything will be nicely cleaned up.
+
+If your compiler is not the GNU gcc compiler and not found by <TT>configure</TT> you will have to 
+modify that, by setting the <TT>CC</TT> variable (e.g. <TT>setenv CC cc</TT> under <TT>csh</TT> or
+ <TT>CC=cc; export CC</TT> under <TT>sh</TT>) before running <TT>sh ./configure</TT>.
+If you still cannot compile properly then your compiler or its runtime library
+is most probably not ANSI compliant (e.g., old SUN compilers). In most
+cases, however, you will succeed to compile by changing some parameters
+in the "makefile". Ask your local Unix expert for help.
+
+<H3>
+<A NAME="MacOS"></A>MacOS</H3>
+Get the file <B>tree-puzzle-5.0.hqx</B>. After decoding this BinHex file (this
+is done automatically on a properly installed system, otherwise use programs
+like "StuffIt Expander" or ask your local Mac expert) you will find a folder
+called "tree-puzzle-5.0" on your hard disk. This folder contains the four subfolders
+"doc", "data", "bin", and "src". The "doc" folder contains
+this manual in HTML format. The "data" folder contains
+example input files. The "bin" folder contains a Macintosh PPC executable
+with a default memory partition of 3000K.
+There is no 68k executable. <u>If you get a memory allocation error while running
+TREE-PUZZLE you have to increase TREE-PUZZLE´s memory partition with the "Get Info" command
+of the Macintosh Finder</u>. The "src" folder contains the ANSI C sources of TREE-PUZZLE.
+
+<P>The MacOS executables have been compiled for the PowerMac using Metrowerks CodeWarrior.
+
+<P>Note: It is probably a good idea to install PPC Linux (or MkLinux) on your Macintosh.
+TREE-PUZZLE (as any other program) runs 20-50% faster under Linux compared to the
+same program under MacOS (on the same machine!), and the Mac does not freeze
+during execution because of Linux´s multitasking capabilities (maybe this changes in MacOS X).  
+
+
+<H3>
+<A NAME="Win32"></A>Windows 95/98/NT</H3>
+
+Get the file <B>tree-puzzle-5.0.zip</B>. After uncompressing (using, e.g., WinZip
+or a similar tool) a directory "tree-puzzle-5.0" is created containing
+four subdirectories called "doc", "data", "bin", and "src". The "doc" directory
+contains this manual in HTML format. The "data"
+directory contains example input files. The "src" directory contains the
+ANSI C sources of TREE-PUZZLE. The "bin" directory contains the executable
+<TT>puzzle.exe</TT>. To use TREE-PUZZLE the system path to the executable
+needs to be set correctly.  Ask your local Windows expert for help.
+
+<P>The executable has been compiled using
+Microsoft Visual C++ and the "makefile.w32" (contained in "src").
+
+<P>If you have a Linux partition on your PC we recommend
+to install and use TREE-PUZZLE under Linux (see <A HREF="#Unix">Unix</A> section) because it runs
+TREE-PUZZLE significantly faster than Windows.
+
+<H3>
+<A NAME="VMS"></A>VMS</H3>
+
+
+<P>Get the Unix sources and install the package on your computer
+(ask your local VMS expert for help).  Go to the subdirectory
+"src" and compile TREE-PUZZLE using the command file "makefile.com".
+
+<H3>
+<A NAME="MPI"></A>Parallel TREE-PUZZLE</H3>
+
+
+<P>To compile and run the parallelized TREE-PUZZLE you need an implementation
+of the Message Passing Interface (MPI) library, a widely used 
+message passing library standard. Implementations of the MPI libraries 
+are available for almost all parallel platforms and computer systems,
+and there are free implementations for most platforms as well.
+
+<P>To find an MPI implementation suitable for your platform visit 
+the following web sites:
+<UL>
+   <LI><A HREF="http://www-unix.mcs.anl.gov/mpi/implementations.html">http://www-unix.mcs.anl.gov/mpi/implementations.html</A>
+   <LI><A HREF="http://WWW.ERC.MsState.Edu/labs/hpcl/projects/mpi/implementations.html">http://WWW.ERC.MsState.Edu/labs/hpcl/projects/mpi/implementations.html</A>
+   <LI><A HREF="http://www.mpi.nd.edu/MPI/">http://www.mpi.nd.edu/MPI/</A>
+</UL>
+
+Although MPI is also available on Macintosh and Windows systems,
+the developers never ran the parallel version on those 
+platforms.
+
+<P>To install the parallel version of TREE-PUZZLE you need the 
+Unix sources for TREE-PUZZLE and install the package on your computer 
+as described above.
+The <TT>configure</TT> should configure the Makefiles apropriately.
+If there is no known MPI compiler found on the system the parallel
+version is not configured.
+(If problems occur ask your local system administrator for help.)
+
+<P>Than you should be able to compile the parallel version of TREE-PUZZLE
+using the following commands:
+<PRE>        sh ./configure</PRE>
+<PRE>        make</PRE>
+<PRE>        make install</PRE>
+and the executable <TT>ppuzzle</TT> is compiled and put into the <TT>/usr/local/bin</TT> directory.
+If you want to have the executable installed into another directory please proceede as 
+described in the <A HREF="#Unix">Unix</A> section.
+
+If your compiler is non out of <TT>mpcc</TT> (IBM), <TT>hcc</TT> (LAM), 
+<TT>mpicc_lam</TT> (LAM under LINUX), <TT>mpicc_mpich</TT> (MPICH under LINUX), 
+and <TT>mpicc</TT> (LAM, MPICH, HP-UX, etc.) and not found by <TT>configure</TT> you will have to 
+modify that by setting the <TT>MPICC</TT> variable (e.g. <TT>setenv MPICC /another/mpicc</TT> 
+under <TT>csh</TT> or <TT>MPICC=/another/mpicc; export MPICC</TT> under <TT>sh</TT>) 
+before running <TT>sh ./configure</TT>.
+
+The way you have to start <TT>ppuzzle</TT> depends on the MPI implementation
+installed. So please refer to your MPI manual or ask your local MPI expert
+for help.
+
+<P><B>Note:</B>
+<BR>The parallelization of the tree reconstruction method follows a
+master-worker-concept, i.e., a master process handles the scheduling of 
+the computation to the <em>n</em> worker processes, while the worker processes are 
+doing almost all the computation work of evaluating the quartets and
+constructing the puzzling step trees. 
+
+<BR>Since the master process does not require a lot of CPU time,
+it can be scheduled sharing one processor with a worker process.
+Thus, you can run <TT>ppuzzle</TT> by assigning <em>n+1</em> processes. 
+
+<BR>If you want to evaluate a usertree or perform likelihood
+mapping analysis it is not recommended to do a parallel run, because all
+the computation will be done by the master process. Hence a run of the
+sequential version of TREE-PUZZLE is more appropriate for usertree or likelihood
+mapping analysis.
+
+<H2>
+<A NAME="Introduction"></A>Introduction</H2>
+TREE-PUZZLE is an ANSI C application to reconstruct phylogenetic trees from
+molecular sequence data by maximum likelihood. It implements a fast tree
+search algorithm, quartet puzzling, that allows analysis of large data
+sets and automatically assigns estimations of support to each internal
+branch. Rate heterogeneity (invariable sites plus Gamma distributed rates)
+is incorporated in all models of substitution available (nucleotides: SH,
+TN, HKY, F84, and submodels; amino acids: Dayhoff, JTT, mtREV24, BLOSUM
+62, VT, and WAG; two-state data: F81). All parameters including rate heterogeneity can
+be estimated from the data by maximum likelihood approaches. TREE-PUZZLE also
+computes pairwise maximum likelihood distances as well as branch lengths
+for user specified trees. In addition, TREE-PUZZLE offers a novel method, likelihood
+mapping, to investigate the support of internal branches without computing
+an overall tree.
+<H2>
+<A NAME="Input/Output Conventions"></A>Input/Output Conventions</H2>
+
+A few things of the name conventions have changed compared to
+earlier (< 5.0) PUZZLE releases. From version 5.0 onwards 
+names of the sequence input file and the usertree file can be specified 
+at the command line (e.g. '<TT>puzzle infilename intreename</TT>',
+where <TT>infilename</TT> is the name of the sequence file and <TT>intreename</TT>
+is the name of the usertree file).
+If only the input filename or no 
+filename is given at the command line the TREE-PUZZLE software searches 
+for input files named "<TT>infile</TT>" and/or "<TT>intree</TT>" respectively.
+
+<P>The naming conventions of the output files have changed as well.
+As prefix of the output filenames the name of the sequence input file
+(or the usertree file in the usertree analysis case) is used and an
+extension added to denote the content of the file. If no input filename
+is given at the command line the default filenames of the earlier
+versions are used.
+
+The following extensions/default filenames are possible:
+<DL><DT><DD>
+<TABLE><TR><TD><B>Extension</B></TD><TD><B>default filename</B></TD><TD><B>file content</B></TD></TR>
+       <TR><TD><TT>.puzzle </TT></TD><TD><TT>outfile       </TT></TD><TD>for the TREE-PUZZLE report</TD></TR>
+       <TR><TD><TT>.dist   </TT></TD><TD><TT>outdist       </TT></TD><TD>for the ML distances</TD></TR> 
+       <TR><TD><TT>.tree   </TT></TD><TD><TT>outtree       </TT></TD><TD>for the final tree(s)</TD></TR> 
+       <TR><TD><TT>.qlist  </TT></TD><TD><TT>outqlist      </TT></TD><TD>for the list of unresolved quartets</TD></TR> 
+       <TR><TD><TT>.ptorder</TT></TD><TD><TT>outptorder    </TT></TD><TD>for the list of unique puzzling step tree topologies</TD></TR> 
+       <TR><TD><TT>.pstep  </TT></TD><TD><TT>outpstep      </TT></TD><TD>for the list of puzzling step tree topologies in chronological order</TD></TR> 
+       <TR><TD><TT>.eps    </TT></TD><TD><TT>outlm.eps     </TT></TD><TD>for the EPS file generated in the likelihood mapping analysis</TD></TR> 
+</TABLE></DL>
+
+The file types are described in detail below. In the following 
+"INFILENAME" denotes the prefix, which is the sequence input filename
+or the usertree filename respectively.
+
+<H3>
+<A NAME="Sequence Input"></A>Sequence Input</H3>
+TREE-PUZZLE requests sequence input in PHYLIP INTERLEAVED format (sometimes
+also called PHYLIP 3.4 format). Many sequence editors and alignment programs
+(e.g., CLUSTAL W) output data in this format.  The "data" directory 
+contains four example input files ("globin.a", "marswolf.n", "atp6.a",
+"primates.b") that can be used as templates for own data files.
+The default name of the sequence input file is "infile", if no
+input filename is given at the command line.
+If an "infile" or a file with the given name is not present TREE-PUZZLE
+will request an alternative file name. Sequences names in the
+input file are allowed to contain blanks but all blanks will internally
+be converted to underscores "_". Sequences can be in upper or lower case,
+any spaces or control characters are ignored. The dot "." is recognized
+as character matching to the first sequence, it can be used in all sequences except in the
+first sequence. Valid symbols for nucleotides are A, C, G, T and
+U, and for amino acids A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S,
+T, V, W, and Y. All other visible characters (including gaps, question
+marks etc.) are treated as N (DNA/RNA) or X (amino acids). For two-state
+data the symbols 0 and 1 are allowed. The first sequence in the data set is
+considered the default outgroup.
+<H3>
+<A NAME="General Output"></A>General Output</H3>
+All results are written to the TREE-PUZZLE report file (INFILENAME.puzzle or 
+outfile). If the option "List all unresolved quartets" is invoked a file 
+called "INFILENAME.qlist"/"outqlist" is created showing all these quartets. 
+If the option "List puzzling step trees" is set accordingly the files 
+"INFILENAME.pstep"/"outpstep" and/or "INFILENAME.ptorder"/"outptorder" are 
+generated.
+
+<P>The "INFILENAME.ptorder"/"outptorder" file contains the unique tree
+topologies in PHYLIP format preceded by PHYLIP-format comment (in parenthesis).
+A typical line in the ptorder file looks like this:
+
+<P><TT>[ 2. 60 6.00 2 5 1000 ](chicken,((cat,(horse,(mouse,rat))),(opossum,platypus)));</TT></P>
+
+The entries (separated by single blanks) in the parenthesis mean the following:
+<UL>
+  <LI><B>2.</B>   - Topology occurs second-most among all 
+                    intermediate tree topologies (= order number).
+  <LI><B>60</B>   - Topology occurs 60 times.
+  <LI><B>6.00</B> - Topology occurs in 6.00 % of the intermediate tree topologies.
+  <LI><B>2</B>    - unique topology ID (needed for the pstep file)
+  <LI><B>5</B>    - Sum of uniquely occuring topologies.
+  <LI><B>1000</B> - Sum of intermediate trees estimated during the analysis.
+</UL>
+ 
+<P>The "INFILENAME.pstep"/"outpstep" file contains a log of the 
+puzzling steps performed and the occuring tree topologies.
+
+A typical line in the pstep file contains the following entries 
+(separated by tabstops):
+
+<P><TT>"6.	55	698	3	5	828"</TT></P>
+
+The entries in the rows mean the following:
+<UL>
+  <LI><B>6.</B>  - 6th block of intermediate trees performed.
+  <LI><B>55</B>  - number of intermediate trees inferred in this block.
+  <LI><B>698</B> - occurances of this topology so far.
+  <LI><B>3</B>   - unique topology ID (for lookup in the ptorder file).
+  <LI><B>5</B>   - number unique topologies occurred so far.
+  <LI><B>828</B> - number of puzzling step performed so far.
+</UL>
+In the case of a sequential run (<TT>puzzle</TT>) the entries of this
+file are more resolved, because every block consists of one intermediate tree.
+
+<H3>
+<A NAME="Distance Output"></A>Distance Output</H3>
+TREE-PUZZLE automatically computes pairwise maximum likelihood distances for
+all the sequences in the data file. They are written in the TREE-PUZZLE report 
+file "INFILENAME.puzzle"/"outfile" and in the separate file 
+"INFILENAME.dist"/"outdist". The format of distance file is PHYLIP compatible
+(i.e. it can directly be used as input for PHYLIP distance-based programs 
+such as "neighbor").
+<H3>
+<A NAME="Tree Output"></A>Tree Output</H3>
+The quartet puzzling tree with its support values
+and with maximum likelihood branch lengths is displayed as ASCII drawing
+in the TREE-PUZZLE report in "INFILENAME.puzzle"/"outfile". The same tree 
+is written into the "INFILENAME.tree"/"outtree" file in CLUSTAL W format. 
+If clock-like maximum-likelihood branch lengths are computed
+there will be both an unrooted and a rooted tree in the
+"INFILENAME.puzzle"/"outfile". The tree convention follows the NEWICK format
+(as implemented in PHYLIP or CLUSTAL W): the tree topology is described 
+by the usual round brackets 
+<TT>(a,b,(c,d));</TT>
+where branch lengths are written after the colon a:0.22,b:0.33. 
+Support values for each branch 
+are displayed as internal node labels, i.e., they follow directly after each
+node before the branch length to each node. Here is an example:
+
+<P>(Gibbon:0.1393, ((Human:0.0414, Chimpanzee:0.0538)99:0.0175, Gorilla:0.0577)98:0.0531,
+Orangutan:0.1003);
+
+<P>The likelihood value of each tree is added in parenthesis before
+the tree string (e.g. "[ lh=-1621.201605 ]"). Parenthesis mark comments
+in the Newick or PHYLIP tree format. In some cases the
+comment has to be removed before using them with other programs.
+
+<P>With the programs 
+<a href="http://taxonomy.zoology.gla.ac.uk/rod/treeview.html">TreeView</a> and 
+<a href="ftp://rdp.life.uiuc.edu/pub/RDP/programs/TreeTool/">TreeTool</a> 
+it is possible to view a tree both 
+with its branch lengths and simultaneously with the support values for the internal
+branches (here 98% and 99%). Note, the PHYLIP programs DRAWTREE and DRAWGRAM may
+also be used with the CLUSTAL W treefile format. However, in the current version
+(3.5) they ignore the internal labels and simply print the tree
+topology along with branch lengths.
+
+<H3>
+<A NAME="Tree Input"></A>Tree Input</H3>
+TREE-PUZZLE optionally also reads input trees. The default name for the file
+containing the input tree is "intree", if not given at the command line,
+but if you choose the input tree option and there is no file with the
+given name or "intree" present you will be prompted for an alternative
+name. The format of the input trees is identical to the trees in the 
+"INFILENAME.tree"/"outtree" file. 
+However, it is sufficient to provide the tree topology only, you
+don't need to specify branch lengths (that are ignored anyway) or 
+internal labels (that are read, stored, and written back to the 
+"INFILENAME.tree"/"outtree" file).
+The input trees needs not to be unrooted, they can also be rooted. It is
+important that sequence names in the input tree file do not contain blanks
+(use underscores!). The trees can be multifurcating. 
+The format of the tree input file is easy: just put the
+trees into the file. TREE-PUZZLE counts the ';' at the end of each tree description
+to determine how many input trees there are. Any header (e.g., with the
+number of trees) is ignored (this is useful in conjunction with programs
+like MOLPHY that need this header). If there is more than one tree TREE-PUZZLE 
+performs the Kishino-Hasegawa test.
+<H3>
+<A NAME="Likelihood Mapping Output"></A>Likelihood Mapping Output</H3>
+TREE-PUZZLE also offers likelihood mapping analysis, a method to investigate
+support for internal branches of a tree without computing an overall tree
+ and to graphically visualize
+phylogenetic content of a sequence alignment. The results of likelihood
+mapping are written in ASCII to the "INFILENAME.puzzle"/"outfile" as well 
+as to a file called "INFILENAME.eps" or "outlm.eps" respectively. 
+This file contains in encapsulated Postscript format (EPSF)
+a picture of the triangle that forms the basis of the likelihood mapping
+analysis. You may print it out on a Postscript capable printer or view
+it with a suitable program. The "INFILENAME.eps"/"outlm.eps" file can be 
+edited by hand (it is plain ASCII text!) or by drawing programs that 
+understand the Postcript language (e.g., Adobe Ilustrator).
+<H2>
+<A NAME="Quick Start"></A>Quick Start</H2>
+Prepare your sequence input file and, optionally, your tree input
+file. Then start the TREE-PUZZLE program. TREE-PUZZLE will choose
+automatically the nucleotide or the amino acid mode. If more than 85% of
+the characters (not counting the - and ?) in the sequences are A, C, G,
+T, U or N, it will be assumed that the sequences consists of nucleotides.
+If your data set contains amino acids TREE-PUZZLE suggests whether you have
+amino acids encoded on mtDNA or on nuclear DNA, and selects the appropriate
+model of amino acid evolution. If your data set contains nucleotides the
+default model of sequence evolution chosen is the HKY model. Parameters
+need not to be specified, they will be estimated by a maximum likelihood
+procedure from the data. If TREE-PUZZLE detects a usertree file stated at the 
+command line or one called "intree" it automatically switches to the input 
+tree mode.
+
+<P>Then, a menu (PHYLIP "look and feel") appears with default options set.
+It is possible to change all available options. For example, if you want
+to incorporate rate heterogeneity you have to select option "w" as rate
+heterogeneity is switched off by default. Then type "y" at the input prompt
+and start the analysis. You will see a number of status messages on the
+screen during computation. When the analysis is finished all output files 
+(e.g., "outfile", "outtree", "outdist", "outqlist", "outlm.eps", "outpstep", 
+"outptlist" or "INFILENAME.puzzle", "INFILENAME.tree", "INFILENAME.dist", 
+"INFILENAME.qlist", "INFILENAME.eps", "INFILENAME.pstep", "INFILENAME.ptorder") 
+will be in the same directory as the input files.
+
+<P>To obtain a high quality picture of the output tree (including node labels)
+you might want to use use the TreeView program by Roderic Page. It is
+available free of charge and runs on MacOS and MS-Windows. It can be retrieved
+from <A HREF="http://taxonomy.zoology.gla.ac.uk/rod/treeview.html">http://taxonomy.zoology.gla.ac.uk/rod/treeview.html</A>.
+TreeView understands the CLUSTAL W treefile conventions, reads multifurcating
+trees and is able to simultaneously display branch lengths and support values
+for each branch. Open the "INFILENAME.tree"/"outtree" file with TreeView, 
+choose "Phylogram" to draw branch lengths, and select "Show internal edge 
+labels".
+
+<P>On a Unix you can use the TreeTool program to display and
+manipulate TREE-PUZZLE trees (See <A HREF="ftp://rdp.life.uiuc.edu/pub/RDP/programs/TreeTool/">ftp://rdp.life.uiuc.edu/pub/RDP/programs/TreeTool</A>
+for precompiled Sun executables.  A version that runs on Linux has been prepared by
+<A HREF="mailto:cato@biochem.kth.se">Anders Holmberg</A> from the Dept. of Biochemistry at 
+the Royal Institute of Technology, Stockholm).
+
+<H2>
+<A NAME="Models of Sequence Evolution"></A>Models of Sequence Evolution</H2>
+Here we give a brief overview over the models implemented in TREE-PUZZLE. Formulas
+are written in TeX style.
+<H3>
+<A NAME="Models of Substitution"></A>Models of Substitution</H3>
+The substitution process is modelled as reversible time homogeneous stationary
+Markov process. If the corresponding stationary nucleotide (amino acid)
+frequencies are denoted pi_i the most general rate matrix for the transition
+from nucleotide (amino acid) i to j can be written as
+<PRE>
+                |   Q_{ij} pi_j               for i != j
+       R_{ij} = |
+                | - Sum_m Q_{im} pi_m         for i == j
+</PRE>
+The matrix Q_{ij} is symmetric with Q_{ii} == 0 (diagonals are zero). For
+nucleotides the most general model built into TREE-PUZZLE is the Tamura-Nei
+model (TN, <A HREF="#tamura1993">Tamura and Nei</A>, 1993). 
+The matrix Q_{ij} for this model equals
+<PRE>
+                | 4*t*gamma/(gamma+1)         for i -> j pyrimidine transition
+                |
+       Q_{ij} = | 4*t/(gamma+1)               for i -> j purine transition
+                |
+                | 1                           for i -> j transversion
+</PRE>
+The parameter gamma is called the "Y/R transition parameter" whereas t
+is the "Transition/transversion parameter". If gamma is equal to 1 we
+get the HKY model (<A HREF="#hasegawa1985">Hasegawa et al.</A>, 1985). 
+Note, the ratio of the transition and transversion
+rates (without frequencies) is kappa = 2*t. There is a subtle but important
+difference between the <I>transition-transversion parameter</I>, the 
+<I>expected transition-transversion ratio</I>, and the <I>observed 
+transition transversion ratio</I>. 
+The <I>transition-transversion parameter</I> simply is a parameter in the
+rate matrix. The <I>expected transition-transversion ratio</I> is the ratio of
+actually occurring transitions to actually occurring transversions taking
+into account nucleotide frequencies in the alignment. Due to saturation
+and multiple hits not all substitutions are observable. Thus, the <I>observed
+transition-transversion ratio</I> counts observable transitions and transversions
+only. If the base frequencies in the HKY model are homogeneous (pi_i =
+0.25) HKY further reduces to the Kimura model. In this case t is identical
+to the expected transition/transversion ratio. If t is set to 0.5 the Jukes-Cantor
+model is obtained. The F84 model (as implemented in the various PHYLIP 
+programs, <A HREF="#felsenstein1984">Felsenstein</A>, 1984)
+is a special case of the Tamura-Nei model.
+
+<P>For amino acids the matrix Q_{ij} is fixed and does not contain any free
+parameters. Depending on the type of input data four different Q_{ij} matrices 
+are available in TREE-PUZZLE. 
+The Dayhoff (<A HREF="#dayhoff1978">Dayhoff et al.</A>, 1978) and 
+JTT (<A HREF="#jones1992">Jones et al.</A>, 1992) matrices are for use with 
+proteins encoded on nuclear DNA, the mtREV24 (<A HREF="#adachi1996">Adachi 
+and Hasegawa</A>, 1996) matrix is for use with proteins encoded on mtDNA, 
+and the BLOSUM 62 (<A HREF="#henikoff1992">Henikoff and Henikoff</A>, 
+1992) and the WAG model (<A HREF="#whelan2000">Whelan and Goldman</A>) 
+are for more distantly related amino acid sequences. 
+The WAG matrix has been infered from a database of 3905 globular protein 
+sequences, forming 182 distinct gene families spanning a broad range of
+evolutionary distances (<A HREF="#whelan2000">Whelan and Goldman</A>). 
+
+The VT model is based an new estimator for amino acid replacement rates, 
+the resolvent method. The VT matrix has been computed from a large set 
+alignments of varying degree of divergence. Hence VT is for use with
+proteins of distant relatedness as well (<A HREF="#mueller2000">Mueller and Vingron</A>, 2000).
+
+<P>For doublets (pairs of dependent nucleotides) the SH model 
+(<A HREF="#schoeniger1994">Schoeniger and von Haeseler</A>, 1994) is 
+implemented in TREE-PUZZLE. The corresponding matrix Q_{ij} reads
+<PRE>
+                | 2*t         for i -> j transition substitution
+                |
+       Q_{ij} = | 1           for i -> j transversion substitution
+                |
+                | 0           for i -> j two substitutions
+</PRE>
+The SH model basically is a F81 model 
+(<A HREF="#felsenstein1981">Felsenstein</A>, 1981) for single substitutions 
+in doublets.
+<H3>
+<A NAME="Models of Rate Heterogeneity"></A>Models of Rate Heterogeneity</H3>
+Rate heterogeneity is taken into account by considering invariable sites
+and by introducing Gamma-distributed rates for the variable sites.
+
+<P>For invariable sites the parameter theta ("Fraction of invariable sites")
+determines the probability of a given site to be invariable. If a site
+is invariable the probability for the constant site patterns is pi_i, the
+frequency of each nucleotide (amino acid).
+
+<P>The rates r for variable sites are determined by a discrete Gamma 
+distribution that approximates the continuous Gamma distribution
+<PRE>
+                    alpha     alpha-1
+               alpha         r
+       g(r) = ------------------------
+                alpha r
+               e        Gamma(alpha)
+</PRE>
+where the parameter alpha ranges from alpha = infinity (no rate heterogeneity)
+to alpha &lt; 1 (strong heterogeneity). The mean expectation of r under this
+distribution is 1.
+
+<P>A mixed model of rate heterogeneity (Gamma plus invariable sites)
+is also available.  In this case the total rate heterogeneity rho
+(as defined by <A HREF="#gu1995">Gu et al.</A>, 1995) computes as rho = (1+theta
+alpha)/(1+alpha).
+
+<H2>
+<A NAME="Options Available"></A>Available Options</H2>
+All options can be selected and changed after TREE-PUZZLE has read the input
+file. Depending on the input files options are preselected and displayed
+in a menu ("PHYLIP look and feel"):
+<PRE>
+GENERAL OPTIONS
+ b                     Type of analysis?  Tree reconstruction
+ k                Tree search procedure?  Quartet puzzling
+ v       Approximate quartet likelihood?  No
+ u             List unresolved quartets?  No
+ n             Number of puzzling steps?  1000
+ j             List puzzling step trees?  No
+ o                  Display as outgroup?  Gibbon
+ z     Compute clocklike branch lengths?  No
+ e                  Parameter estimates?  Approximate (faster)
+ x            Parameter estimation uses?  Neighbor-joining tree
+SUBSTITUTION PROCESS
+ d          Type of sequence input data?  Nucleotides
+ m                Model of substitution?  HKY (Hasegawa et al. 1985)
+ t    Transition/transversion parameter?  Estimate from data set
+ f               Nucleotide frequencies?  Estimate from data set
+RATE HETEROGENEITY
+ w          Model of rate heterogeneity?  Uniform rate
+
+Quit [q], confirm [y], or change [menu] settings:
+</PRE>
+By typing the letters shown in the menu you can either change settings
+or enter new parameters. Some options (for example "m" and "w") can be
+invoked several times to switch through a number of different settings.
+The parameters of the models of sequence evolution can be estimated from
+the data by a variety of procedures based on maximum likelihood. The analysis
+is started by typing "y" at the input prompt. To quit the program
+type "q".
+
+<P>The following table lists in alphabetical order all TREE-PUZZLE options.
+Be aware, however, not all of them are accessible at the same time:
+<TABLE CELLPADDING=2 >
+<TR VALIGN=TOP>
+<TD>
+<CENTER><B>Option</B></CENTER>
+</TD>
+<TD>
+<CENTER><B>Description</B></CENTER>
+</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>a</CENTER>
+</TD>
+<TD>Gamma rate heterogeneity parameter alpha. This is the so-called shape
+parameter of the Gamma distribution.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>b</CENTER>
+</TD>
+<TD>Type of analysis. Allows to switch between tree reconstruction by maximum
+likelihood and likelihood mapping.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>c</CENTER>
+</TD>
+<TD>Number of rate categories (4-16) for the discrete Gamma distribution
+(rate heterogeneity).</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>d</CENTER>
+</TD>
+<TD>Data type. Specifies whether nucleotide, amino acid sequences, or
+two-state data serve as input. The default is automatically set by
+inspection of the input data.
+After TREE-PUZZLE has selected an appropriate data type (marked by 'Auto:')
+the 'd'-option changes the type in the following order:
+selected type -> Nucleotides -> Amino acids -> automatically selected type.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>e</CENTER>
+</TD>
+<TD>Approximation option. Determines whether an approximate or the exact
+likelihood function is used to estimate parameters of the models of sequence
+evolution. The approximate likelihood function is in most cases sufficient
+and is faster.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>f</CENTER>
+</TD>
+<TD>Base frequencies. The maximum likelihood calculation needs the frequency
+of each nucleotide (amino acid, doublet) as input. TREE-PUZZLE estimates these
+values from the sequence input data. This option allows specification of
+other values.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>g</CENTER>
+</TD>
+<TD>Group sequences in clusters. Allows to define clusters of sequences
+as needed for the likelihood mapping analysis. Only available when likelihood
+mapping is selected ("b" option).</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>h</CENTER>
+</TD>
+<TD>Codon positions or definition of doublets. For nucleotide data only.
+If the TN or HKY model of substitution is used and the number of sites
+in the alignment is a multiple of three the analysis can be restricted
+to each of the three codon positions and to the 1st and 2nd positions.
+If the SH model is used this options allows to specify that the 1st and
+2nd codon positions in the alignment define a doublet.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>i</CENTER>
+</TD>
+<TD>Fraction of invariable sites. Probability of a site to be invariable.
+This parameter can be estimated from the data by TREE-PUZZLE
+(only if the approximation option for the likelihood function is
+turned off).</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>j</CENTER>
+</TD>
+<TD>List puzzling steps trees. Writes all intermediate trees (puzzling
+step trees) used to compute the quartet puzzling tree into a file, either
+as a list of topologies ordered by number of occurrences (*.ptorder), or 
+as list about the chronological occurrence of the topologies (*.pstep), or
+both.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>k</CENTER>
+</TD>
+<TD>Tree search. Determines how the overall tree is obtained. The topology
+is either computed with the quartet puzzling algorithm or is defined by
+the user. Maximum likelihood branch lengths will be computed for this tree.
+Alternatively, a maximum likelihood distance matrix only can also be computed
+(no overall tree). </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>l</CENTER>
+</TD>
+<TD>Location of root. Only for computation of clock-like maximum likelihood
+branch lengths. Allows to specify the branch where the root should be placed
+in an unrooted tree topology. For example, in the tree (a,b,(c,d)) l =
+1 places the root at the branch leading to sequence a whereas l=5 places
+the root at the internal branch.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>m</CENTER>
+</TD>
+<TD>Model of substitution. The following models are implemented for nucleotides:
+the <A HREF="#tamura1993">Tamura-Nei</A> (TN) model, 
+the <A HREF="#hasegawa1985">Hasegawa et al.</A> (HKY) model, and 
+the <A HREF="#schoeniger1994">Schoeniger &amp; von Haeseler</A> (SH) model. 
+The SH model describes the evolution of
+pairs of dependent nucleotides (pairs are the first and the second nucleotide,
+the third and the fourth nucleotide and so on). It allows for specification
+of the transition-transversion ratio. The original model 
+(<A HREF="#schoeniger1994">Schoeniger &amp; von Haeseler</A>, 1994) 
+is obtained by setting the transition-transversion parameter to 0.5. 
+The <A HREF="#jukes1969">Jukes-Cantor</A> (1969), 
+the <A HREF="#felsenstein1981">Felsenstein</A> (1981), and
+the <A HREF="#kimura1980">Kimura</A> (1980) model are all special cases of 
+the HKY model. 
+<BR>For amino acid sequence data 
+the <A HREF="#dayhoff1978">Dayhoff et al.</A> (Dayhoff) model, 
+the <A HREF="#jones1992">Jones et al.</A> (JTT) model, 
+the <A HREF="#adachi1996">Adachi and Hasegawa</A> (mtREV24) model, 
+the <A HREF="#henikoff1992">Henikoff and Henikoff</A> (BLOSUM 62), 
+the <A HREF="#mueller2000">Mueller and Vingron</A> (VT), and 
+the <A HREF="#whelan2000">Whelan and Goldman</A> (WAG) substitution 
+model are implemented in TREE-PUZZLE.
+The mtREV24 model describes the evolution of amino acids encoded on mtDNA,
+and BLOSUM 62 is for distantly related amino acid sequences, as well as the
+VT model.
+After TREE-PUZZLE has selected an appropriate amino acid substitution model
+(marked by 'Auto:') the 'm'-option changes the model in the following order:
+selected model -> Dayhoff -> JTT -> mtREV24 -> BLOSUM62 -> VT -> WAG ->
+automatically selected model
+<BR>For more information
+please read the section in this manual about models of sequence evolution.
+See also option "w" (model of rate heterogeneity).</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>n</CENTER>
+</TD>
+<TD>If tree reconstruction is selected: number of puzzling steps. Parameter 
+of the quartet puzzling tree search. Generally,
+the more sequences are used the more puzzling steps are advised. The default
+value varies depending on the number of sequences (at least 1000).<br>
+
+If likelihood mapping is selected: number of quartets in a likelihood mapping analysis. Equal to the number
+of dots in the likelihood mapping diagram. By default 10000 dots/quartets
+are assumed. To use all possible quartets in clustered likelihood mapping
+you have to specify a value of n=0.
+</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>o</CENTER>
+</TD>
+<TD>Outgroup. For displaying purposes of the unrooted quartet puzzling
+tree only. The default outgroup is the first sequence of the data set.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>p</CENTER>
+</TD>
+<TD>Constrain the TN model to the F84 model. This option is only available
+for the Tamura-Nei model. With this option the expected (!) transition-transversion
+ratio for the F84 model have to be entered and TREE-PUZZLE computes the corresponding
+parameters of the TN model (this depends on base frequencies of the data).
+This allows to compare the results of TREE-PUZZLE and the PHYLIP maximum likelihood
+programs which use the F84 model.
+</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>q</CENTER>
+</TD>
+<TD>Quits analysis.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>r</CENTER>
+</TD>
+<TD>Y/R transition parameter. This option is only available for the TN
+model. This parameter is the ratio of the rates for pyrimidine transitions
+and purine transitions. You do not need to specify this parameter as TREE-PUZZLE
+estimates it from the data. For precise definition please read the section
+in this manual about models of sequence evolution.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>s</CENTER>
+</TD>
+<TD>Symmetrize doublet frequencies. This option is only available for the
+SH model. With this option the doublet frequencies are symmetrized. For
+example, the frequencies of "AT" and "TA" are then set to the average of both
+frequencies.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>t</CENTER>
+</TD>
+<TD>Transition/transversion parameter. For nucleotide data only. You do not
+need to specify this parameter as TREE-PUZZLE estimates it from the data. The
+precise definition of this parameter is given in the section on models
+of sequence evolution in this manual.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>u</CENTER>
+</TD>
+<TD>Show unresolved quartets. During the quartet puzzling tree search TREE-PUZZLE
+counts the number of unresolved quartet trees. An unresolved quartet is
+a quartet where the maximum likelihood values for each of the three possible
+quartet topologies are so similar that it is not possible to prefer one
+of them (<A HREF="#strimmer1997">Strimmer, Goldman, and von Haeseler</A>, 1997).
+If this option is selected you will get a detailed list of all starlike 
+quartets. Note, for some data
+sets there may be a lot of unresolved quartets. In this case a list of
+all unresolved quartets is probably not very useful and also needs a lot
+of disk space.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>v</CENTER>
+</TD>
+<TD>Approximate quartet likelihood. For the quartet puzzling tree search
+only. Only for very small data sets it is necessary to compute an exact
+maximum likelihood. For larger data sets this option should always be turned
+on.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>w</CENTER>
+</TD>
+<TD>Model of rate heterogeneity. TREE-PUZZLE provides several different models
+of rate heterogeneity: uniform rate over all sites (rate homogeneity),
+Gamma distributed rates, two rates (1 invariable + 1 variable), and a mixed
+model (1 invariable rate + Gamma distributed rates). All necessary parameters
+can be estimated by TREE-PUZZLE. Note that whenever invariable sites are taken
+into account the parameter estimation will invoke the "e" option to use
+an exact likelihood function. For more detailed information please read
+the section in this manual about models of sequence evolution. See also
+option "m" (model of substitution).</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>x</CENTER>
+</TD>
+<TD>Selects the methods used in the estimation of the model parameters.
+Neighbor-joining tree means that a NJ tree is used to estimate the parameters.
+Quartet sampling means that a number of random sets of four sequences are
+selected to estimate parameters.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>y</CENTER>
+</TD>
+<TD>Starts analysis.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>
+<CENTER>z</CENTER>
+</TD>
+<TD>Computation of clock-like maximum likelihood branch lengths. This option
+also invokes the likelihood ratio clock test.</TD>
+</TR>
+</TABLE>
+
+<H2>
+<A NAME="Other Features"></A>Other Features</H2>
+For nucleotide data TREE-PUZZLE computes the expected transition/transversion
+ratio and the expected pyrimidine transition/purine transition ratio
+corresponding to the selected model. Base frequencies play an important
+role in the calculation of both numbers.
+
+<P>TREE-PUZZLE also tests with a 5% level chi-square-test whether the base composition
+of each sequence is identical to the average base composition of the whole
+alignment. All sequences with deviating composition are listed in the TREE-PUZZLE
+report file. It is desired that no sequence (possibly except for the outgroup)
+has a deviating base composition. Otherwise a basic assumption implicit
+in the maximum likelihood calculation is violated.
+
+<P>A hidden feature of TREE-PUZZLE (since version 2.5) is the employment of
+a weighting scheme of quartets (<A HREF="#strimmer1997">Strimmer, Goldman, 
+and von Haeseler</A>, 1997) in the quartet puzzling tree search.
+
+<P>TREE-PUZZLE also computes the average distance between all pairs of sequences
+(maximum likelihood distances). The average distances can be viewed as
+a rough measure for the overall sequence divergence.
+
+<P>If more than one input tree is provided TREE-PUZZLE uses the 
+<A HREF="#kishino1989">Kishino-Hasegawa</A> test (1989) to check which 
+trees are significantly worse than the best tree.
+
+<P>If clock-like maximum-likelihood branch lengths are computed TREE-PUZZLE
+checks with the help of a likelihood-ratio test 
+(<A HREF="#felsenstein1988">Felsenstein</A>, 1988) whether
+the data set is clock-like.
+
+<P>TREE-PUZZLE also detects sequences that occur more than once in the data
+and that therefore can be removed from the data set to speed up analysis.
+
+<P>If rate heterogeneity is taken into account in the analysis TREE-PUZZLE also
+computes the most probable assignment of rate categories to sequence positions,
+according <A HREF="#felsenstein1996">Felsenstein and Churchill</A> (1996).
+
+<H2>
+<A NAME="Interpretation and Hints"></A>Interpretation and Hints</H2>
+
+<H3>
+<A NAME="Quartet Puzzling Support Values"></A>Quartet Puzzling Support
+Values</H3>
+The quartet puzzling (QP) tree search estimates support values for each
+internal branch. They can be interpreted in much the same way as 
+bootstrap values (though they should not be confused with them).
+Branches showing a QP reliability from 90% to 100% can be considered
+very strongly supported. Branches with lower reliability (> 70%) can 
+in principle be also trusted but in this case it is advisable to
+check how well the respective internal branch does in comparison to other
+branches in the tree (i.e. check relative reliability).
+If you are interested in a branch with a low confidence it is also
+important to check the alternative groupings that are not included
+in the QP tree (they are listed in the TREE-PUZZLE report file in *.** format).
+There should be a substantial gap between the lowest reliability
+value of the QP tree and
+the most frequent grouping that is not included in the QP tree.
+<H3>
+<A NAME="Percentage of Unresolved Quartets"></A>Percentage of Unresolved
+Quartets</H3>
+TREE-PUZZLE computes the number and the percentage of completely unresolved
+maximum likelihood quartets. An unresolved quartet is a quartet where the
+maximum likelihood values for each of the three possible quartet topologies
+are so similar that it is not possible to prefer one of them 
+(<A HREF="#strimmer1997">Strimmer, Goldman, and von Haeseler</A>, 1997).
+The percentage of the unresolved quartets
+among all possible quartets is an indicator of the suitability of the data
+for phylogenetic analysis. A high percentage usually results in a highly
+multifurcating quartet puzzling tree. If you only have a few unresolved
+quartets we recommend to invoke option "u" to get a list of all these quartets.
+In a likelihood mapping analysis the percentage of completely unresolved
+quartets is shown in the central region of the triangle diagram.
+<H3>
+<A NAME="Automatic Parameter Estimation"></A>Automatic Parameter Estimation</H3>
+TREE-PUZZLE estimates both the parameters of the models of substitution (TN,
+HKY) and of the model of rate variation (Gamma distribution, fraction of
+invariable sites) without prior knowledge of an overall tree by a number
+of different strategies based on maximum likelihood. For all estimated
+parameters a corresponding standard error (S.E.) is computed. If you have
+good arguments to choose a different set of parameters than the values
+obtained by TREE-PUZZLE don't hesitate to use them. If sequences are extremely
+similar it is very hard for every algorithm to extract information about
+the model of substitution from the data set. Also, be careful if the
+estimated parameter values
+are very close to the internal upper and lower bounds:
+<TABLE CELLPADDING=2 >
+<TR VALIGN=TOP>
+<TD><B>Parameter (Symbol)</B> </TD>
+
+<TD><B>Minimal Value</B> </TD>
+
+<TD><B>Maximal Value</B> </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>Transition/transversion parameter (t) </TD>
+
+<TD>0.20 </TD>
+
+<TD>30.00 </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>Y/R transition parameter (gamma) </TD>
+
+<TD>0.10 </TD>
+
+<TD>6.00 </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>Fraction of invariable sites (theta) </TD>
+
+<TD>0.00 </TD>
+
+<TD>0.99 </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>Gamma rate heterogeneity parameter (alpha) </TD>
+
+<TD>0.01 </TD>
+
+<TD>99 </TD>
+</TR>
+</TABLE>
+
+<H3>
+<A NAME="Likelihood Mapping"></A>Likelihood Mapping</H3>
+Likelihood mapping (<A HREF="#strimmer1997">Strimmer and von Haeseler</A>, 
+1997) is a method to analyzethe support for internal branches in a tree 
+without having to compute an overall tree. 
+Every internal branch in an a completely resolved tree defines
+up to four clusters of sequences. Sometimes only the relationship of these
+groups are of interest and not details of the structure of the clusters 
+themselves. Then a likelihood mapping analysis is sufficient.
+The corresponding likelihood mapping triangle diagrams (as contained in
+various output files generated by TREE-PUZZLE) will
+illucidate the possible relationships in detail.
+
+<H3><A NAME="Batch Mode"></A>Batch Mode</H3>
+Running TREE-PUZZLE from a Unix batch file is straightforward despite the lack
+of command switches. For example, to run TREE-PUZZLE with a the transition/transversion
+parameter equal to 10 the following lines in a batch file are sufficient:
+<PRE>
+puzzle &lt;&lt; !
+t
+10
+y
+!
+</PRE>
+All other parameters can also be accessed the same way.
+
+<H2>
+<A NAME="Limits and Error Messages"></A>Limits and Error Messages</H2>
+TREE-PUZZLE has a built-in limit to allow data sets only up to 257 sequences
+in order to avoid overflow of internal integer variables. At least 32767
+sites should be possible depending on the compiler used. Computation time
+will be the largest constraint even if sufficient computer memory is available.
+If rate heterogeneity is taken into account every additional category slows
+down the overall computation by the amount of time needed for one complete
+run assuming rate homogeneity.
+
+<P>If problems are encountered TREE-PUZZLE terminates program execution and
+returns a plain text error message. Depending on the severity errors can be
+classified into three groups:
+<TABLE CELLPADDING=2 >
+<TR VALIGN=TOP>
+<TD>"HALT " errors: </TD>
+
+<TD>Very severe. You should never ever see one of these messages. If so,
+please contact the developers! </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>"Unable to proceed" errors: </TD>
+
+<TD>Harmless but annoying. Mostly memory errors (not enough RAM) or problems
+with the format of the input files. </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>Other errors: </TD>
+
+<TD>Completely uncritical. Occur mostly when options of TREE-PUZZLE are being
+set. </TD>
+</TR>
+</TABLE>
+A standard machine (1996 Unix workstation) with 32 to 64 MB RAM TREE-PUZZLE
+can easily do maximum likelihood tree searches including estimation of
+support values for data sets with 50-100 sequences. As likelihood mapping
+is not memory consuming and computationally quite fast it can be applied
+to large data sets as well.
+<H2>
+<A NAME="Are Quartets Reliable"></A>Are Quartets Reliable?</H2>
+Quartets may be intrinsically one of the most difficult phylogenies to
+resolve accurately (cf. <A HREF="#hillis1996">Hillis</A>, 1996). 
+It has been asked whether this is
+a problem for quartet puzzling because it works with quartets.
+
+<P>However, this is not true. According to Hillis' findings 
+(<A HREF="#hillis1996">Hillis</A>, 1996),
+quartets can be hard, but extra information helps. That is, if all you
+have are data on species (A, B, C, D) then it might be relatively difficult
+to find the correct tree for them. But if you have additional data (species
+E, F, G, ...) and try to find a tree for all the species, then that part
+of the tree relating (A, B, C, D) will more likely be correct than if you
+had just the data for (A, B, C, D). In Hillis' big 'model' tree, there
+are many examples of subsets of 4 species which in themselves might be
+hard to resolve correctly, but which are correctly resolved thanks to the
+(...large amount of...) additional data. TREE-PUZZLE (quartet puzzling) also
+gains advantage from extra data in the same way. It's 'understanding' or
+resolution of the quartet (A, B, C, D) might be incorrect, but the information
+on the relationships of (A, B, C, D) implicit in its treatment of (A, B,
+C, E), (A, B, E, D), (A, E, C, D), (E, B, C, D), (A, B, C, F), (A, B, F,
+D), (A, F, C, D), (F, B, C, D), (A, B, C, G), etc. etc. should overcome
+this problem.
+
+<P>The facts about how well TREE-PUZZLE actually works have been investigated
+in the <A HREF="#strimmer1996">Strimmer and von Haeseler</A> (1996) and 
+<A HREF="#strimmer1997">Strimmer, Goldman, and von Haeseler</A> (1997) papers. 
+Their results cannot be altered by Hillis' findings.
+Considered as a heuristic search for maximum likelihood trees, quartet
+puzzling works very well.
+
+<P>(This section follows N. Goldman, personal communication).
+<H2>
+<A NAME="Other Programs"></A>Other Programs</H2>
+There are a number of other very useful and widespread programs to reconstruct
+phylogenetic relationships and to analyse molecular sequence data that
+are available free of charge. Here are the URLS of some web pages that
+provide links to most of them (including the PHYLIP package and
+the MOLPHY and PAML maximum likelihood programs):
+<DL>
+
+<DD>
+Joe Felsenstein's list of programs (well-organized and pretty exhaustive):<br>
+<A
+HREF="http://evolution.genetics.washington.edu/phylip/software.html">http://evolution.genetics.washington.edu/phylip/software.html</A></DD>
+
+
+<DD>
+"Tree of Life" software page:<br>
+<A HREF="http://phylogeny.arizona.edu/tree/programs/programs.html">http://phylogeny.arizona.edu/tree/programs/programs.html</A></DD>
+
+
+<DD>
+European Bioinformatics Institute:<br>
+<A HREF="http://www.ebi.ac.uk/biocat/biocat.html">http://www.ebi.ac.uk/biocat/biocat.html</A></DD>
+
+</DL>
+
+<H2>
+<A NAME="Acknowledgements"></A>Acknowledgements</H2>
+The maximum likelihood kernel of TREE-PUZZLE is an offspring of the program
+NucML/ProtML version 2.2 by Jun Adachi and Masami Hasegawa (<A HREF="ftp://sunmh.ism.ac.jp/pub/molphy">ftp://sunmh.ism.ac.jp/pub/molphy</A>).
+We thank them for generously allowing us to use the source code of their
+program.
+We would also like to thank 
+the <A HREF="http://www.ebi.ac.uk">European Bioinformatics Institute (EBI)</A>, 
+the <A HREF="http://www.pasteur.fr">Institut Pasteur</A>,
+and the <A HREF="http://www.indiana.edu">University of Indiana</A> 
+(i.e. Don Gilbert) 
+for kindly distributing the TREE-PUZZLE program.
+
+We thank Stephane Bortzmeyer for his with debugging of
+<EM>floating point exception</EM> errors.
+
+We also thank Peter Foster for pointing out the inconsistency
+in the invariable site models in respect to other programs.
+
+Finally we thank the 
+<A HREF="http://www.dfg.de">Deutsche Forschungsgemeinschaft</A> 
+(VI 160/3-1 and Ha 1628/4-1) and the Max-Planck-Society
+for financial support.
+
+<H2><A NAME="References"></A>References</H2>
+
+<A NAME="adachi1996"></A>
+Adachi, J., and M. Hasegawa. 1996. MOLPHY: programs for molecular phylogenetics,
+version 2.3. Institute of Statistical Mathematics, Tokyo.
+
+<P><A NAME="adachi1996"></A>
+Adachi, J., and M. Hasegawa. 1996. Model of amino acid substitution
+in proteins encoded by mitochondrial DNA. <I>J. Mol. Evol.</I> <B>42</B>:
+459-468.
+
+<P><A NAME="dayhoff1978"></A>
+Dayhoff, M. O., R. M. Schwartz, and B. C. Orcutt. 1978. A model of evolutionary
+change in proteins. In: Dayhoff, M. O. (ed.) Atlas of Protein Sequence
+Structure, Vol. 5, Suppl. 3. National Biomedical Research Foundation, Washington
+DC, pp. 345-352.
+
+<P><A NAME="felsenstein1981"></A>
+Felsenstein, J. 1981. Evolutionary trees from DNA sequences: A maximum
+likelihood approach. <I>J. Mol. Evol.</I> <B>17</B>: 368-376.
+
+<P><A NAME="felsenstein1984"></A>
+Felsenstein, J. 1984. Distance methods for inferring phylogenies: 
+A Justification. <I>Evolution</I> <B>38</B>: 16-24.
+
+<P><A NAME="felsenstein1988"></A>
+Felsenstein, J. 1988. Phylogenies from molecular sequences: Inference
+and reliability. <I>Annu. Rev. Genet.</I> <B>22</B>: 521-565.
+
+<P><A NAME="felsenstein1993"></A>
+Felsenstein, J. 1993. PHYLIP (Phylogeny Inference Package) version 3.5c.
+Distributed by the author. Department of Genetics, University of Washington,
+Seattle.
+
+<P><A NAME="felsenstein1996"></A>
+Felsenstein, J., and G.A. Churchill. 1996. A hidden Markov model approach
+to variation among sites in rate of evolution. <I>Mol. Biol. Evol.</I>
+<B>13</B>: 93-104.
+
+<P><A NAME="gropp1998"></A>
+Gropp, W., S. Huss-Lederman, A. Lumsdaine, E. Lusk, B. Nitzberg,
+W. Saphir, and M. Snir. 1998. MPI - The Complete Reference: Volume 2, 
+The MPI Extensions. 2nd Edition, The MIT Press, Cambridge, MA.
+
+<P><A NAME="gu1995"></A>
+Gu, X., Y.-X. Fu, and W.-H. Li. 1995. Maximum likelihood estimation
+of the heterogeneity of substitution rate among nucleotide sites. <I>Mol.
+Biol. Evol.</I> <B>12</B>: 546-557.
+
+<P><A NAME="hasegawa1985"></A
+>Hasegawa, M., H. Kishino, and K. Yano. 1985. Dating of the human-ape
+splitting by a molecular clock of mitochondrial DNA. <I>J. Mol. Evol.</I>
+<B>22</B>: 160-174.
+
+<P><A NAME="henikoff1992"></A>
+Henikoff, S., J. G. Henikoff. 1992. Amino acid substitution matrices
+from protein blocks. <I>PNAS (USA)</I> <B>89</B>:10915-10919.
+
+<P><A NAME="hillis1996"></A>
+Hillis, D. M. 1996. Inferring complex phylogenies. <I>Nature</I> 
+<B>383</B>:130-131.
+
+<P><A NAME="jukes1969"></A>
+Jukes, T. H., and C. R. Cantor. 1969. Evolution of protein molecules.
+In: Munro, H. N. (ed.) Mammalian Protein Metabolism, New York: Academic
+Press, pp. 21-132.
+
+<P><A NAME="jones1992"></A>
+Jones, D. T., W. R. Taylor, and J. M. Thornton. 1992. The rapid generation
+of mutation data matrices from protein sequences. <I>CABIOS</I> <B>8</B>:
+275-282.
+
+<P><A NAME="kimura1980"></A>
+Kimura, M. 1980. A simple method for estimating evolutionary rates of
+base substitutions through comparative studies of nucleotide sequences.
+<I>J. Mol. Evol.</I> <B>16</B>: 111-120.
+
+<P><A NAME="kishino1989"></A>
+Kishino, H., and M. Hasegawa. 1989. Evaluation of the maximum likelihood
+estimate of the evolutionary tree topologies from DNA sequence data, and
+the branching order in Hominoidea. <I>J. Mol. Evol.</I> <B>29</B>: 170-179.
+
+<P><A NAME="mueller2000"></A>
+Mueller, T., and M. Vingron. 2000. Modeling Amino Acid Replacement.
+<I>J. Comp. Biol.</I>, to appear 
+(<A HREF="http://www.dkfz-heidelberg.de/tbi/people/tmueller/paper/paper.ps">preprint of the article</A>) 
+
+<P><A NAME="saitou1987"></A>
+Saitou, N., and M. Nei. 1987. The neighbor-joining method: a new method
+for reconstructing phylogenetic trees. <I>Mol. Biol. Evol.</I> <B>4</B>:
+1406-425.
+
+<P><A NAME="schoeniger1994"></A>
+Schoeniger, M., and A. von Haeseler. 1994. A stochastic model for
+the evolution of autocorrelated DNA sequences. <I>Mol. Phyl. Evol.</I>
+<B>3</B>: 240-247.
+
+<P><A NAME="snir1998"></A>
+Snir, M., S. Otto, S. Huss-Lederman, D. Walker, and J. Dongarra.
+1998. MPI - The Complete Reference: Volume 1, The MPI Core. 2nd Edition, 
+The MIT Press, Cambridge, MA.
+
+<P><A NAME="strimmer1996"></A>
+Strimmer, K., and A. von Haeseler. 1996. Quartet puzzling: a quartet
+maximum likelihood method for reconstructing tree topologies. <I>Mol. Biol.
+Evol.</I> <B>13</B>: 964-969.
+
+<P><A NAME="strimmer1997"></A>
+Strimmer, K., N. Goldman, and A. von Haeseler. 1997. Bayesian probabilities
+and quartet puzzling. <I>Mol. Biol. Evol.</I> <B>14</B>: 210-211.
+
+<P><A NAME="strimmer1997"></A>
+Strimmer, K., and A. von Haeseler. 1997. Likelihood-mapping: a simple
+method to visualize phylogenetic content of a sequence alignment. <I>PNAS
+(USA).</I> <B>94</B>:6815-6819.
+
+<P><A NAME="tamura1993"></A>
+Tamura, K., and M. Nei. 1993. Estimation of the number of nucleotide
+substitutions in the control region of mitochondrial DNA in humans and
+chimpanzees. <I>Mol. Biol. Evol.</I> <B>10</B>: 512-526.
+
+<P><A NAME="tamura1994"></A>
+Tamura K. 1994. Model selection in the estimation of the number of 
+nucleotide substitutions. <I>Mol. Biol. Evol.</I> <B>11</B>: 154-157.
+
+<P><A NAME="thompson1994"></A>
+Thompson, J. D., D. G. Higgins, and T. J. Gibson. 1994. CLUSTAL W: Improving
+the sensitivity of progressive multiple sequence alignment through sequence
+weighting, positions-specific gap penalties and weight matrix choice. <I>Nucl.
+Acids Res.</I> <B>22</B>: 4673-4680.
+
+<P><A NAME="whelan2000"></A>
+Whelan, S. and Goldman, N. 2000. A new empirical model of
+amino acid evolution. <I>Manuscript in prep.</I>
+
+<P><A NAME="yang1994"></A>
+Yang, Z. 1994. Maximum likelihood phylogenetic estimation from DNA sequences
+with variable rates over sites: approximate methods. <I>J. Mol. Evol.</I>
+<B>39</B>:306-314.
+
+
+<H2>
+<A NAME="Known Bugs"></A>Known Bugs</H2>
+
+On Alpha based computers sometimes <EM>floating point exception</EM>
+errors occur. Some of those result on a bug in the malloc routine
+in the system routines of the Compaq operating system. We recomend
+to use the GNU cc compiler 
+(<TT><A HREF="http://egcs.gnu.org">http://egcs.gnu.org</A></TT>),
+which does not use the system malloc routine.
+
+For other occurrances of the <EM>floating point exception</EM>
+we need datasets and information about the operating system
+to reproduce and debug those errors.
+
+<H2>
+<A NAME="Version History"></A>Version History</H2>
+The TREE-PUZZLE program has first been distributed in 1995 under the name 
+PUZZLE. Since then it has
+been continually improved. Here is a list of the most important changes.
+<TABLE CELLPADDING=2 >
+
+<TR VALIGN=TOP>
+<TD>5.0</TD>
+
+<TD>Puzzle tree reconstruction part parallelized using the MPI standard
+(Message Passing Interface).
+<BR>Possibility added to give input file and user tree file at the command line.
+Output files renamed to the form PREFIX.EXTENSION, where PREFIX is the
+input file name or, if used, the user tree file name.
+The EXTENSION could be one of the following: puzzle (PUZZLE report), 
+tree (tree file), dist (ML distance file), eps (likelihood mapping output 
+in eps format), qlist (bad quartets), qstep (puzzling step tree IDs as they 
+occur in the analysis), or qtorder (sorted unique list of puzzling step trees).
+<BR>The likelihood value is added to the treefile as a leading comment 
+("[ lh=x.xxx ]") to the tree string.
+<BR>VT (variable time) matrix (<A HREF="#mueller2000">Mueller and 
+Vingron</A>, 2000) and WAG matrix (<A HREF="#whelan2000">Whelan and 
+Goldman</A>, 2000) 
+added to the AA substitution models.
+<BR>The Data type and AA-model options in the menu now show the
+automatically set type/model first. These can now be changed using 'd' or
+'m' key in an order independent from the type/model selected. This makes
+it possible to select a desired AA substitution model or data type by
+piping letters to the standard input without knowing PUZZLE's preselection.
+<BR>Parameters are written to file when estimated before evaluation of 
+the quartets.
+<BR>The inconsistency to respect to other programs in handling
+invariable sites has been fixed.
+<BR>Some minor bug fixes (e.g. the clockbug and another in the optimization 
+routine have been fixed).
+</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>4.0.2</TD>
+
+<TD>Update to provide precompiled Windows 95/98/NT executables. In addition:
+Internal rearrangement of rate matrices.
+Improved BLOSUM 62 matrix.  Endless input loop for input
+files restricted to 10 trials.  
+Source code clean up to remove compile time warnings.
+Explicit quit option in menu. Changes in NJ tree code.
+Updates of documentation (address changes, correction of errors). 
+</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>4.0.1</TD>
+
+<TD>Maintenance release. Correction of mtREV matrix. Fix of the "intree bug".
+Removal of stringent runtime-compatibility check to allow out-of-the-box compile
+on alpha. More accurate gamma distribution allowing 16 instead of 8 categories
+and ensuring a better alpha > 1.0. Update of documentation (mainly address changes).
+More Unix-like file layout, and change of license to GPL.
+</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>4.0 </TD>
+
+<TD>Executables for Windows 95/NT and OS/2 instead of MS-DOS. Computation
+of clock-like branch lengths (also for amino acids and for non-binary trees).
+Automatic likelihood ratio clock test. Model for two-state sequences data
+(0,1) included. Display of most probable assignment of rates to sites.
+Identification of groups of identical sequences. Possibility to read multiple
+input trees. Kishino-Hasegawa test to check whether trees are significantly
+different. BLOSUM 62 model of amino acid substitution 
+(<A HREF="#henikoff1992">Henikoff-Henikoff</A>, 1992). 
+Use of parameter alpha instead of eta = 1/(1+alpha) (for rate heterogeneity).
+
+Improvements to user interface. SH model can be applied to 1st and 2nd
+codon positions. Automatic check for compatible compiler settings. Workaround
+for severe runtime problem when the gcc compiler was used.</TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>3.1 </TD>
+
+<TD>Much improved user interface to rate heterogeneity (less confusing
+menu, rearranged outfile, additional out-of-range check). Possibility to
+read rooted input trees (automatic removal of basal bifurcation). Computation
+of average distance between all pairs of sequences. Fix of a bug that caused
+PUZZLE 3.0 to crash on some systems (DEC Alpha). Cosmetic changes in program
+and documentation. </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>3.0 </TD>
+
+<TD>Rate heterogeneity included in all models of substitution (Gamma distribution
+plus invariable sites). Likelihood mapping analysis with Postscript output
+added. Much more sophisticated maximum likelihood parameter estimation
+for all model parameters including those of rate heterogeneity. Codon positions
+selectable. Update to mtREV24. New icon. Less verbose runtime messages.
+HTML documentation. Better internal error classification. More information
+in outfile (number of constant positions etc.). </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>2.5.1 </TD>
+
+<TD>Fix of a bug (present only in version 2.5) related to computation of
+the variance of the maximum likelihood branch lengths that caused occasional
+crashes of PUZZLE on some systems when applied to data sets containing many
+very similar sequences. Drop of support for non-FPU Macintosh version.
+Corrections in manual. </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>2.5 </TD>
+
+<TD>Improved QP algorithm (<A HREF="#strimmer1997">Strimmer, Goldman, and 
+von Haeseler</A>, 1997). Bug
+fixes in ML engine, computation of ML distances and ML branch lengths,
+optional input of a user tree, F84 model added, estimation of all TN model
+parameters and corresponding standard errors, CLUSTAL W treefile convention
+adopted to allow to show branch lengths and QP support values simultaneously,
+display of unresolved quartets, update of mtREV matrix, source code more
+compatible with some almost-ANSI compilers, more safety checks in the code. </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>2.4 </TD>
+
+<TD>Automatic data type recognition, chi-square-test on base composition,
+automatic selection of best amino acid model, estimation of transition-transversion
+parameter, ASCII plot of quartet puzzling tree into the outfile. </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>2.3 </TD>
+
+<TD>More models, many usability improvements, built-in consensus tree routines,
+more supported systems, bug fixes, no more dependencies of input order.
+First EBI distributed version. </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>2.2 </TD>
+
+<TD>Optimized internal data structure requiring much less computer memory.
+Bug fixes. </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>2.1 </TD>
+
+<TD>Bug fixes concerning algorithm and transition/transversion parameter. </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>2.0 </TD>
+
+<TD>Complete revision merging the maximum likelihood and the quartet puzzling
+routines into one user friendly program. First electronic distribution. </TD>
+</TR>
+
+<TR VALIGN=TOP>
+<TD>1.0 </TD>
+
+<TD>First public release, presented at the 1995 phylogenetic workshop (15-17
+June 1995) at the University of Bielefeld, Germany. </TD>
+</TR>
+</TABLE>
+ 
+</BODY>
+</HTML>
+

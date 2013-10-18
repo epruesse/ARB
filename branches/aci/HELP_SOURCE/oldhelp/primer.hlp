@@ -1,0 +1,40 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Design Sequencing Primers
+
+OCCURRENCE	ARB_NT/Probes/Design Sequencing Primers
+
+DESCRIPTION
+                @@@ need translation into english 
+
+                nur markierte Sequencen
+		Daten muessen aligned sein,
+		sucht alignmentabschnitte mit moeglichst wenig verschiedenen
+		Kombinationen
+		fals ihre Anzahl < Wert -> moeglicher Prime
+
+		Die Ausgabe erfordert viel viel Handarbeit
+
+		normalerweise mehrere hundert Seiten
+
+		ctrl-C bricht das Programm ab
+
+SECTION         PraxisErfahrung
+
+		Schlechte Sequencen bringen den Alg. durcheinander -> entmarkieren
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
