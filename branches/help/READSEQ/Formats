@@ -49,6 +49,7 @@ A. determine file format:
         if (error!=0) fail;
 
 B. read number and list of sequences (optional)
+
         short numseqs;    /* resulting number of sequences found in file */
         char  *seqlist;   /* list of sequence names, newline separated, 0 terminated */
 
@@ -57,6 +58,7 @@ B. read number and list of sequences (optional)
         free( seqlist);
 
 C.  read individual sequences as desired
+
         short seqIndex;   /* sequence index #, or == kListSeqs for listSeqs equivalent */
         long  seqlen;     /* length of seq */
         char  seqid[256]; /* sequence name */
@@ -68,6 +70,7 @@ C.  read individual sequences as desired
         free(seq);
 
 D. write sequences as desired
+
         int nlines;     /* number of lines of sequence written */
         FILE* fout;     /* open file pointer (stdout or other) */
         short outform;  /* output format, see ureadseq.h */
