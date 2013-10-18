@@ -88,8 +88,6 @@ void AW_cb::run_callbacks() {
                 aw_message("not implemented -- please report to devel@arb-home.de");
             }
         }
-        if (pop_up_window && pop_up_window->prvt->popup_cb)
-            pop_up_window->prvt->popup_cb->run_callbacks();
     }
     else {
         cb(aw);

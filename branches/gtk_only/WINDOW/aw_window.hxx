@@ -147,8 +147,6 @@ class AW_window : virtual Noncopyable {
 //
 //    AW_cb *focus_cb;
 //
-    int left_indent_of_horizontal_scrollbar;
-    int top_indent_of_vertical_scrollbar;
 
 //    void all_menus_created() const;
 
@@ -190,9 +188,6 @@ public:
     AW_window();
     virtual ~AW_window();
 
-
-    AW_event       event;
-
     AW_xfig  *xfig_data;
 
     void create_window_variables();
@@ -229,14 +224,19 @@ public:
     // ------------------------------
     //      The read only section
 
-    char *window_name;                              // window title
-    char *window_defaults_name;
+    AW_event event;             //! holds information about the most recent event
+    char *window_name;          //! window title
+    char *window_defaults_name; //! window id
 
-    int slider_pos_vertical; /** < current position of the vertical slider */
-    int slider_pos_horizontal;/** < current position of the horizontal slider */
+    long int slider_pos_vertical;                 //! current position of the vertical slider 
+    long int slider_pos_horizontal;               //! current position of the horizontal slider 
+    int left_indent_of_horizontal_scrollbar; //! unscrolled part of screen area
+    int top_indent_of_vertical_scrollbar;    //! unscrolled part of screen area
+    AW_screen_area *picture;                 //! size of scrollable
+
     int main_drag_gc;
 
-    AW_screen_area *picture;      // the result of tell scrolled
+
     // picture size
 
     // --------------------------------
