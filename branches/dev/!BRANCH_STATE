@@ -174,7 +174,7 @@ BRANCH->TRUNK
                 7909 safeCallbacks (several WindowCallback as examples)
                 7956 fix for [7882]
 
-    not merged yet:
+    merged into branch 'aci' -> [10845]
 
                 7288 GB_command_interpreter unittests
                 7289 GB_command_interpreter refactor
@@ -201,6 +201,9 @@ BRANCH->TRUNK
                 7847 ACI (streamlimit removed)
                 7848 ACI (avoid streamcopies)
                 7939 adlang DEBUG prints
+
+    not merged yet:
+
 
                 7912 clickDevice (Rectangle)
                 7914 clickDevice (fix click behavior)
