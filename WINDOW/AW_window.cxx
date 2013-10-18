@@ -144,14 +144,6 @@ void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL c
  * Register callback for the next action implicitly created 
  * when making a widget.
  */
-void AW_window::callback(AW_cb * /* owner */ awcbs) {
-    FIXME("not implemented (AW_cb callback)");
-}
-
-/**
- * Register callback for the next action implicitly created 
- * when making a widget.
- */
 void AW_window::callback(const WindowCallback& wcb){
     prvt->action_template.clicked.connect(wcb, this);
 }
@@ -1088,7 +1080,7 @@ void AW_window::set_focus_callback(const WindowCallback& wcb) {
     // middle area. the API was designed for "focus-follows-mouse" mode,
     // and makes little sense for GTK
     // (we might need other means to trigger an update of the tree at the right time)
-    prvt->focus_cb = new AW_cb(this, wcb, 0, prvt->focus_cb);
+    prvt->focus_cb.connect(wcb, this);
 }
 
 /**
@@ -1096,7 +1088,7 @@ void AW_window::set_focus_callback(const WindowCallback& wcb) {
  * Called multiple times if a show() follows a hide().
  */
 void AW_window::set_popup_callback(const WindowCallback& wcb) {
-    prvt->popup_cb = new AW_cb(this, wcb, 0, prvt->popup_cb);
+    prvt->popup_cb.connect(wcb, this);
 }
 
 void AW_window::set_info_area_height(int h) {
@@ -1197,7 +1189,7 @@ void AW_window::calculate_scrollbars(){
     aw_drawing_area_set_picture_size(prvt->drawing_area, width, height, scrollArea_width, scrollArea_height);
     
     char buffer[200];
-     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
+    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
     const int hpage_increment = scrollArea.r * get_root()->awar(buffer)->read_int() / 100;
     sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
     const int hstep_increment = get_root()->awar(buffer)->read_int();
@@ -1215,6 +1207,8 @@ static void _aw_window_recalc_scrollbar_cb(AW_root*, AW_window* aww) {
 }
 
 void AW_window::create_window_variables() {
+    aw_return_if_fail(prvt->drawing_area != NULL);
+
     char buffer[200];
 
     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
@@ -1232,16 +1226,18 @@ void AW_window::create_window_variables() {
     sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 20);
     get_root()->awar(buffer)->add_callback((AW_RCB1)_aw_window_recalc_scrollbar_cb, (AW_CL)this);
-}
 
-static void value_changed_scroll_bar_vertical(GtkAdjustment *adjustment, AW_cb *cbs) {
-    cbs->aw->slider_pos_vertical = gtk_adjustment_get_value(adjustment);
-    cbs->run_callbacks();
-}
+    GtkAdjustment *adj;
+    adj = aw_drawing_area_get_vertical_adjustment(prvt->drawing_area);
+    sprintf(buffer, "window/%s/scroll_position_vertical", window_defaults_name);
+    get_root()->awar_int(buffer, 0)
+        ->add_target_var(&this->slider_pos_vertical)
+        ->bind_value(G_OBJECT(adj), "value", new _awar_float_to_int_mapper());
 
-static void value_changed_scroll_bar_horizontal(GtkAdjustment *adjustment, AW_cb *cbs) {
-    (cbs->aw)->slider_pos_horizontal = gtk_adjustment_get_value(adjustment);
-    cbs->run_callbacks();
+    adj = aw_drawing_area_get_horizontal_adjustment(prvt->drawing_area);
+    sprintf(buffer, "window/%s/scroll_position_horizontal", window_defaults_name);    get_root()->awar_int(buffer, 0)
+        ->add_target_var(&this->slider_pos_horizontal)
+        ->bind_value(G_OBJECT(adj), "value", new _awar_float_to_int_mapper());
 }
 
 void AW_window::set_vertical_scrollbar_position(int position){
@@ -1262,31 +1258,21 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
 }
 
 void AW_window::set_vertical_change_callback(const WindowCallback& wcb) {
-    aw_return_if_fail(prvt->drawing_area != NULL);
-
-    GtkAdjustment *hAdj = aw_drawing_area_get_vertical_adjustment(prvt->drawing_area);
-
-    g_signal_connect((gpointer)hAdj, "value_changed",
-                     G_CALLBACK(value_changed_scroll_bar_vertical),
-                     (gpointer)new AW_cb(this, wcb, ""));
-
+    const char *awar_name = GBS_global_string("window/%s/scroll_position_vertical", window_defaults_name);
+    get_root()->awar(awar_name)->changed.connect(wcb, this);
 }
 
 void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
-    aw_return_if_fail(prvt->drawing_area != NULL);
-    GtkAdjustment *hAdj = aw_drawing_area_get_horizontal_adjustment(prvt->drawing_area);
-    g_signal_connect((gpointer)hAdj, "value_changed",
-                     G_CALLBACK(value_changed_scroll_bar_horizontal),
-                     (gpointer)new AW_cb(this, wcb, ""));
-
+    const char *awar_name = GBS_global_string("window/%s/scroll_position_horizontal", window_defaults_name);
+    get_root()->awar(awar_name)->changed.connect(wcb, this);
 }
 
 void AW_window::set_vertical_scrollbar_top_indent(int indent) {
-  top_indent_of_vertical_scrollbar =  indent;
+    top_indent_of_vertical_scrollbar =  indent;
 }
 
 void AW_window::set_horizontal_scrollbar_left_indent(int indent) {
-  left_indent_of_horizontal_scrollbar = indent;
+    left_indent_of_horizontal_scrollbar = indent;
 }
 
 
@@ -1545,7 +1531,7 @@ void AW_window::show() {
     prvt->show();
     get_root()->window_show(); // increment window counter
 
-    if (prvt->popup_cb) prvt->popup_cb->run_callbacks();
+    prvt->popup_cb.emit();
 }
 
 void AW_window::hide(){

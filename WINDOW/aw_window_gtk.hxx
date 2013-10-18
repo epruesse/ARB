@@ -91,12 +91,12 @@ public:
     /**
      * Callback struct for the currently open popup
      */
-    AW_cb  *popup_cb;
+    AW_signal popup_cb;
     
     /**
      TODO comment
     */
-    AW_cb *focus_cb;
+    AW_signal focus_cb;
 
     /** Contains the last callback struct created by AW_window::callback(). */
     AW_cb *callback;
