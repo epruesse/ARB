@@ -2825,7 +2825,10 @@ public:
 
 void noop_wcbtarget(AW_window*) {}
 
-void TEST_treeDisplay() {
+
+// @@@FIXME: This test is currently disabled because the SVG and PDF look slightly
+//           different on different OS versions due to i.e. Font differences.
+void NOTEST_treeDisplay() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("../../demo.arb", "r");
 
