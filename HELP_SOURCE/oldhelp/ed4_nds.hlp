@@ -6,7 +6,7 @@
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Node Display Setup (NDS)
+TITLE		ARB_EDIT4: Node Display Setup (NDS)
 
 OCCURRENCE	ARB_EDIT4/Properties/NDS
 

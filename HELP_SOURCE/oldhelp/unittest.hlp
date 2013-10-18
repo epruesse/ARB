@@ -23,10 +23,10 @@ DESCRIPTION     This is the first paragraph of the description.
                 1. first enum
                 2. second enum which
                    is continued on the next line.
-                   Currently is misinterpreted as monospaced paragraph.
+                   Now this is no longer misinterpreted as monospaced paragraph.
                 3. third enum
 
-                Again a paragraph - a one liner followed by an item list. It is completely misplaced at the moment!
+                Again a paragraph - a one liner followed by an item list. It is no longer misplaced now!
 
                 - item 1
                 - item 2
@@ -95,7 +95,7 @@ SECTION Wanted fixes
 
 
 
-                  Here is some unsupported itemlist:
+                  Here is an itemlist whose items are triggered by '*':
 
                        * item1
                          continued on next line
@@ -109,38 +109,35 @@ SECTION Wanted fixes
 
                              This is a short
                              description of item 2.
-                             Currently it does not differ from the items, but it should.
+                             This description gets indented below the corresponding item.
 
                            - item 3
 
-                             This is a not much longer
-                             description of item 3.
+                             This is a shorter description of item 3.
 
                            This is a paragraph which should
                            be placed outside the itemlist.
-                           Currently this is placed like the items above.
+                           Currently this is misinterpreted as part of the itemlist.
 
                    
                   And this paragraph should be back where we were before
                   the itemlist began.
 
-                  Now to sth completely unsupported. It would be nice,
-                  to support enumerations using letters, since that is
-                  common, i.e. sth like
+                  Enumeration also work if using letters
+                  instead of digits. You can use capital letters as in
+                  the following enum
 
                   A. first enum
                   B. 2nd enum
                   C. third enum
                   D. last enum
 
-                  should work, but it doesn't. Also
+                  or small letters like here:
 
                                     a. first enum
                                     b. 2nd enum
                                     c. third enum
                                     d. last enum
-
-                  should work.
 
                   Check some "illegal" itemlists:
 
@@ -169,6 +166,44 @@ SECTION FEATURE TESTS
 
                      - arb help also supports mail-links (like LINK{devel@arb-home.de}).
                        All 3 sorts of links should be clickable in the html version.
+
+SECTION NESTED LISTS
+
+               text before enum
+
+               1. first enum
+
+                  text below first enum
+
+                  - first item below first enum
+                  - second item below first enum
+                    1. first subenum below second item
+                     - first item below first subenum
+                     - second item below first subenum
+                    2. second subenum below second item
+
+                     text before subsubenum
+
+                     1. first subsubenum below second subenum
+                     2. second subsubenum below second subenum
+
+                     text behind subsubenum
+
+                    3. third subenum below second item
+                  - third item below first enum
+
+               2. second enum
+
+               This text is not indented more than the second enum,
+               but is nevertheless interpreted as sub-elements which
+               belongs to the enum.
+
+               3. third enum
+
+                  behind the last enum, text only becomes a son
+                  of the enum-entry if it is indented.
+
+               text behind enum
 
 NOTES		Note that this test may help me.
 
