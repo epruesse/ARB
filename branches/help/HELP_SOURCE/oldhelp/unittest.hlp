@@ -123,23 +123,21 @@ SECTION Wanted fixes
                   And this paragraph should be back where we were before
                   the itemlist began.
 
-                  Now to sth completely unsupported. It would be nice,
-                  to support enumerations using letters, since that is
-                  common, i.e. sth like
+                  Enumeration also work if using letters
+                  instead of digits. You can use capital letters as in
+                  the following enum
 
                   A. first enum
                   B. 2nd enum
                   C. third enum
                   D. last enum
 
-                  should work, but it doesn't. Also
+                  or small letters like here:
 
                                     a. first enum
                                     b. 2nd enum
                                     c. third enum
                                     d. last enum
-
-                  should work.
 
                   Check some "illegal" itemlists:
 

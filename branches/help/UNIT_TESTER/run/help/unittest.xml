@@ -12,7 +12,7 @@
   <UP dest="arb.hlp" type="hlp" source_line="2"/>
   <UP dest="glossary.hlp" type="hlp" source_line="3"/>
   <SUB dest="aci.hlp" type="hlp" source_line="6"/>
-  <SUB dest="srt.hlp" type="hlp" source_line="158"/>
+  <SUB dest="srt.hlp" type="hlp" source_line="156"/>
   <TITLE>Unittest example helpfile</TITLE>
   <SECTION name="OCCURRENCE">
     <P>
@@ -228,9 +228,9 @@ row2    -           3</T>
     </P>
     <P>
       <T reflow="1">
-        Now to sth completely unsupported. It would be nice,
-        to support enumerations using letters, since that is
-        common, i.e. sth like</T>
+        Enumeration also work if using letters
+        instead of digits. You can use capital letters as in
+        the following enum</T>
     </P>
     <ENUM>
       <ENTRY enumerated="A">
@@ -252,7 +252,7 @@ row2    -           3</T>
     </ENUM>
     <P>
       <T reflow="1">
-        should work, but it doesn&apostr;t. Also</T>
+        or small letters like here:</T>
       <ENUM>
         <ENTRY enumerated="a">
           <T reflow="1">
@@ -271,10 +271,6 @@ row2    -           3</T>
             last enum</T>
         </ENTRY>
       </ENUM>
-    </P>
-    <P>
-      <T reflow="1">
-        should work.</T>
     </P>
     <P>
       <T reflow="1">
@@ -313,19 +309,19 @@ row2    -           3</T>
         <ENTRY item="1">
           <T reflow="1">
             first testing an inlined
-            link to another help file: <LINK dest="srt.hlp" type="hlp" source_line="162"/>
+            link to another help file: <LINK dest="srt.hlp" type="hlp" source_line="160"/>
           </T>
         </ENTRY>
         <ENTRY item="1">
           <T reflow="1">
             and a link to the arb homepage
-            <LINK dest="http://www.arb-home.de/" type="www" source_line="165"/>
+            <LINK dest="http://www.arb-home.de/" type="www" source_line="163"/>
             followed by text.
           </T>
         </ENTRY>
         <ENTRY item="1">
           <T reflow="1">
-            arb help also supports mail-links (like <LINK dest="devel@arb-home.de" type="email" source_line="169"/>).
+            arb help also supports mail-links (like <LINK dest="devel@arb-home.de" type="email" source_line="167"/>).
             All 3 sorts of links should be clickable in the html version.
           </T>
         </ENTRY>
