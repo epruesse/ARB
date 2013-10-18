@@ -36,6 +36,7 @@ using namespace std;
 #define WARN_FORMATTING_PROBLEMS
 #define WARN_MISSING_HELP
 // #define DUMP_PARAGRAPHS
+// #define PROTECT_HELP_VS_CHANGES
 #endif // DEBUG
 
 
@@ -1785,6 +1786,8 @@ void TEST_hlp2xml_output() {
     }
 }
 
+
+#if defined(PROTECT_HELP_VS_CHANGES)
 void TEST_protect_help_vs_changes() { // should normally be disabled
     // fails if help changes compared to another checkout
     // or just updates the diff w/o failing (if you comment out the last line)
@@ -1824,5 +1827,6 @@ void TEST_protect_help_vs_changes() { // should normally be disabled
     TEST_EXPECT_NO_ERROR(GBK_system(update_cmd.c_str()));
     TEST_EXPECT_NO_ERROR(GBK_system(fail_on_change_cmd.c_str())); // @@@ uncomment before commit
 }
+#endif
 
 #endif // UNIT_TESTS
