@@ -8,7 +8,7 @@ TAIL 20   ! Show 20 last positions,                                 |tail(20)
 CNT(A)    ! Count all 'A's,                                         |count(aA)
 CNT(ACGT) ! Count all 'ACGTU',                                      |count("ACGTU")
 CNT ambi  ! Count all small letters + ambiguous codes + '.',        |len("-ACGTU")
-CNT ambi2 ! Count ambiguous c. + 'acgtu.' in pos 100 - (len-100),   |mid(100,-100)|len("-ACGTU")
+CNT ambi2 ! Count ambiguous c. + 'acgtu.' in range [100..len-100],  |mid(100,-99)|len("-ACGTU")
 G+C       ! G+C content,                                            |count("gcGC");count("agctuAGCTU")|per_cent
 CHECKALL  ! Overall Checksum,                                       |checksum
 CHECKBAS  ! Checksum (no gaps),                                     |checksum(exclude=.-n;touppper)
