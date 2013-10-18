@@ -68,7 +68,7 @@ struct GmenuItem {
     GmenuItemArg *arg;            // argument definitions
     char          meta;           // Meta character for function
     char          seqtype;        // A -> amino, N -> nucleotide, '-' -> no sequence, otherwise both
-    char         *help;           // commandline help
+    char         *help;           // associated helpfile ("agde_*.hlp")
     // ARB BEGIN
     struct Gmenu *parent_menu;
     AW_window    *aws;            // opened window

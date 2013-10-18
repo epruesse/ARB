@@ -8,11 +8,11 @@
 ]>
 
   <!--automatically generated from ../oldhelp/unittest.hlp -->
-<PAGE name="unittest" edit_warning="devel">
+<PAGE name="unittest" edit_warning="devel" source="oldhelp/unittest.hlp">
   <UP dest="arb.hlp" type="hlp" source_line="2"/>
   <UP dest="glossary.hlp" type="hlp" source_line="3"/>
   <SUB dest="aci.hlp" type="hlp" source_line="6"/>
-  <SUB dest="srt.hlp" type="hlp" source_line="161"/>
+  <SUB dest="srt.hlp" type="hlp" source_line="156"/>
   <TITLE>Unittest example helpfile</TITLE>
   <SECTION name="OCCURRENCE">
     <P>
@@ -32,36 +32,42 @@
         also
         belonging to description. It is followed by
         an enumeration on the same indentation level:</T>
-      <ENUM>
-        <ENTRY>
-          <T reflow="0">
-first enum</T>
-          <LIST>
-            <ENTRY>
-              <T reflow="1">
-                Again a paragraph - a one liner followed by an item list. It is completely misplaced at the moment!</T>
-            </ENTRY>
-            <ENTRY>
-              <T reflow="0">
-- item 1
-- item 2
-- item 3
-  contains 2 lines</T>
-            </ENTRY>
-          </LIST>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="0">
-   second enum which
-   is continued on the next line.
-   Currently is misinterpreted as monospaced paragraph.</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="1">
-            third enum</T>
-        </ENTRY>
-      </ENUM>
     </P>
+    <ENUM>
+      <ENTRY enumerated="1">
+        <T reflow="1">
+          first enum</T>
+      </ENTRY>
+      <ENTRY enumerated="2">
+        <T reflow="1">
+          second enum which
+          is continued on the next line.
+          Now this is no longer misinterpreted as monospaced paragraph.</T>
+      </ENTRY>
+      <ENTRY enumerated="3">
+        <T reflow="1">
+          third enum</T>
+      </ENTRY>
+    </ENUM>
+    <P>
+      <T reflow="1">
+        Again a paragraph - a one liner followed by an item list. It is no longer misplaced now!</T>
+    </P>
+    <LIST>
+      <ENTRY item="1">
+        <T reflow="1">
+          item 1</T>
+      </ENTRY>
+      <ENTRY item="1">
+        <T reflow="1">
+          item 2</T>
+      </ENTRY>
+      <ENTRY item="1">
+        <T reflow="1">
+          item 3
+          contains 2 lines</T>
+      </ENTRY>
+    </LIST>
   </SECTION>
   <SECTION name="CUSTOM    A custom section.">
     <P>
@@ -73,65 +79,57 @@ first enum</T>
       <T reflow="1">
         First i need to check proper support for different
         indentation levels.</T>
-      <LIST>
-        <ENTRY>
+      <P>
+        <T reflow="1">
+          This paragraph has to be indented one level deeper than
+          the previous paragraph.</T>
+      </P>
+      <P>
+        <T reflow="1">
+          That paragraph should be on
+          the same level.</T>
+        <P>
           <T reflow="1">
-            This paragraph has to be indented one level deeper than
-            the previous paragraph.</T>
-        </ENTRY>
-        <ENTRY>
+            Here is another one, even deeper.</T>
+        </P>
+        <P>
           <T reflow="1">
-            That paragraph should be on
-            the same level.</T>
-          <LIST>
-            <ENTRY>
-              <T reflow="1">
-                Here is another one, even deeper.</T>
-            </ENTRY>
-            <ENTRY>
-              <T reflow="1">
-                Same,
-                same.</T>
-            </ENTRY>
-          </LIST>
-        </ENTRY>
-        <ENTRY>
+            Same,
+            same.</T>
+        </P>
+      </P>
+      <P>
+        <T reflow="1">
+          Back one step.</T>
+        <P>
           <T reflow="1">
-            Back one step.</T>
-          <LIST>
-            <ENTRY>
-              <T reflow="1">
-                One step down - ignoring deeper
-                indentation in source.</T>
-            </ENTRY>
-            <ENTRY>
-              <T reflow="1">
-                Consecutive paragraphs are only placed on the same
-                level if their indentation matches.</T>
-            </ENTRY>
-            <ENTRY>
-              <T reflow="1">
-                Using the indentation level used 4 paragraphs above, wont help here.</T>
-              <LIST>
-                <ENTRY>
-                  <T reflow="1">
-                    But the "wrong" indentation of the previous
-                    paragraph forces this paragraph to get indented one
-                    level deeper than the paragraphs before.</T>
-                </ENTRY>
-                <ENTRY>
-                  <T reflow="1">
-                    This does not step back.</T>
-                </ENTRY>
-                <ENTRY>
-                  <T reflow="1">
-                    same same.</T>
-                </ENTRY>
-              </LIST>
-            </ENTRY>
-          </LIST>
-        </ENTRY>
-      </LIST>
+            One step down - ignoring deeper
+            indentation in source.</T>
+        </P>
+        <P>
+          <T reflow="1">
+            Consecutive paragraphs are only placed on the same
+            level if their indentation matches.</T>
+        </P>
+        <P>
+          <T reflow="1">
+            Using the indentation level used 4 paragraphs above, wont help here.</T>
+          <P>
+            <T reflow="1">
+              But the "wrong" indentation of the previous
+              paragraph forces this paragraph to get indented one
+              level deeper than the paragraphs before.</T>
+          </P>
+          <P>
+            <T reflow="1">
+              This does not step back.</T>
+          </P>
+          <P>
+            <T reflow="1">
+              same same.</T>
+          </P>
+        </P>
+      </P>
     </P>
     <P>
       <T reflow="1">
@@ -155,65 +153,73 @@ row2    -           3</T>
     <P>
       <T reflow="1">
         Problems occur if there are empty lines inside such a table, like here:</T>
-      <LIST>
-        <ENTRY>
-          <T reflow="0">
+      <P>
+        <T reflow="0">
             other
 column      column</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="0">
+      </P>
+      <P>
+        <T reflow="0">
 row     1           2
 row2    -           3</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="1">
-            (should better be combined)</T>
-        </ENTRY>
-      </LIST>
+      </P>
+      <P>
+        <T reflow="1">
+          (should better be combined)</T>
+      </P>
     </P>
     <P>
       <T reflow="1">
-        Here is some unsupported itemlist:</T>
-      <P>
-        <T reflow="0">
-* item1
-  continued on next line
-* item2
-* item3</T>
-      </P>
+        Here is an itemlist whose items are triggered by &apostr;*&apostr;:</T>
+      <LIST>
+        <ENTRY item="1">
+          <T reflow="1">
+            item1
+            continued on next line</T>
+        </ENTRY>
+        <ENTRY item="1">
+          <T reflow="1">
+            item2</T>
+        </ENTRY>
+        <ENTRY item="1">
+          <T reflow="1">
+            item3</T>
+        </ENTRY>
+      </LIST>
     </P>
     <P>
       <T reflow="1">
         Itemlist containing paragraphs under some items</T>
       <LIST>
-        <ENTRY>
+        <ENTRY item="1">
           <T reflow="1">
-            - item 1
-            - item 2</T>
+            item 1</T>
+        </ENTRY>
+        <ENTRY item="1">
+          <T reflow="1">
+            item 2</T>
           <P>
             <T reflow="1">
               This is a short
               description of item 2.
-              Currently it does not differ from the items, but it should.</T>
+              This description gets indented below the corresponding item.</T>
           </P>
         </ENTRY>
-        <ENTRY>
+        <ENTRY item="1">
           <T reflow="1">
-            - item 3</T>
+            item 3</T>
           <P>
             <T reflow="1">
-              This is a not much longer
-              description of item 3.</T>
+              This is a shorter description of item 3.</T>
           </P>
         </ENTRY>
-        <ENTRY>
-          <T reflow="1">
-            This is a paragraph which should
-            be placed outside the itemlist.
-            Currently this is placed like the items above.</T>
-        </ENTRY>
       </LIST>
+      <P>
+        <T reflow="1">
+          This is a paragraph which should
+          be placed outside the itemlist.
+          Currently this is misinterpreted as part of the itemlist.</T>
+      </P>
     </P>
     <P>
       <T reflow="1">
@@ -222,61 +228,77 @@ row2    -           3</T>
     </P>
     <P>
       <T reflow="1">
-        Now to sth completely unsupported. It would be nice,
-        to support enumerations using letters, since that is
-        common, i.e. sth like</T>
+        Enumeration also work if using letters
+        instead of digits. You can use capital letters as in
+        the following enum</T>
     </P>
-    <P>
-      <T reflow="1">
-        A. first enum
-        B. 2nd enum
-        C. third enum
-        D. last enum</T>
-    </P>
-    <P>
-      <T reflow="1">
-        should work, but it doesn&apostr;t. Also</T>
-      <P>
+    <ENUM>
+      <ENTRY enumerated="A">
         <T reflow="1">
-          a. first enum
-          b. 2nd enum
-          c. third enum
-          d. last enum</T>
-      </P>
-    </P>
+          first enum</T>
+      </ENTRY>
+      <ENTRY enumerated="B">
+        <T reflow="1">
+          2nd enum</T>
+      </ENTRY>
+      <ENTRY enumerated="C">
+        <T reflow="1">
+          third enum</T>
+      </ENTRY>
+      <ENTRY enumerated="D">
+        <T reflow="1">
+          last enum</T>
+      </ENTRY>
+    </ENUM>
     <P>
       <T reflow="1">
-        should work.</T>
+        or small letters like here:</T>
+      <ENUM>
+        <ENTRY enumerated="a">
+          <T reflow="1">
+            first enum</T>
+        </ENTRY>
+        <ENTRY enumerated="b">
+          <T reflow="1">
+            2nd enum</T>
+        </ENTRY>
+        <ENTRY enumerated="c">
+          <T reflow="1">
+            third enum</T>
+        </ENTRY>
+        <ENTRY enumerated="d">
+          <T reflow="1">
+            last enum</T>
+        </ENTRY>
+      </ENUM>
     </P>
     <P>
       <T reflow="1">
         Check some "illegal" itemlists:</T>
-      <LIST>
-        <ENTRY>
-          <T reflow="1">
-            ----------------------</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="1">
-            -noitem</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="0">
+      <P>
+        <T reflow="1">
+          ----------------------</T>
+      </P>
+      <P>
+        <T reflow="1">
+          -noitem</T>
+      </P>
+      <P>
+        <T reflow="0">
 -  eithernoitem</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="1">
-            **********************</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="1">
-            *noitem</T>
-        </ENTRY>
-        <ENTRY>
-          <T reflow="0">
+      </P>
+      <P>
+        <T reflow="1">
+          **********************</T>
+      </P>
+      <P>
+        <T reflow="1">
+          *noitem</T>
+      </P>
+      <P>
+        <T reflow="0">
 *  eithernoitem</T>
-        </ENTRY>
-      </LIST>
+      </P>
     </P>
   </SECTION>
   <SECTION name="FEATURE TESTS">
@@ -284,26 +306,121 @@ row2    -           3</T>
       <T reflow="1">
         Here all existing helpfile features should be tested:</T>
       <LIST>
-        <ENTRY>
-          <T reflow="0">
-- first testing an inlined
-  link to another help file: <LINK dest="srt.hlp" type="hlp" source_line="163"/>
+        <ENTRY item="1">
+          <T reflow="1">
+            first testing an inlined
+            link to another help file: <LINK dest="srt.hlp" type="hlp" source_line="160"/>
           </T>
         </ENTRY>
-        <ENTRY>
-          <T reflow="0">
-- and a link to the arb homepage
-  <LINK dest="http://www.arb-home.de/" type="www" source_line="166"/>
-  followed by text.
+        <ENTRY item="1">
+          <T reflow="1">
+            and a link to the arb homepage
+            <LINK dest="http://www.arb-home.de/" type="www" source_line="163"/>
+            followed by text.
           </T>
         </ENTRY>
-        <ENTRY>
-          <T reflow="0">
-- arb help also supports mail-links (like <LINK dest="devel@arb-home.de" type="email" source_line="170"/>).
-  All 3 sorts of links should be clickable in the html version.
+        <ENTRY item="1">
+          <T reflow="1">
+            arb help also supports mail-links (like <LINK dest="devel@arb-home.de" type="email" source_line="167"/>).
+            All 3 sorts of links should be clickable in the html version.
           </T>
         </ENTRY>
       </LIST>
+    </P>
+  </SECTION>
+  <SECTION name="NESTED LISTS">
+    <P>
+      <T reflow="1">
+        text before enum</T>
+    </P>
+    <ENUM>
+      <ENTRY enumerated="1">
+        <T reflow="1">
+          first enum</T>
+        <P>
+          <T reflow="1">
+            text below first enum</T>
+        </P>
+        <LIST>
+          <ENTRY item="1">
+            <T reflow="1">
+              first item below first enum</T>
+          </ENTRY>
+          <ENTRY item="1">
+            <T reflow="1">
+              second item below first enum</T>
+            <ENUM>
+              <ENTRY enumerated="1">
+                <T reflow="1">
+                  first subenum below second item</T>
+                <LIST>
+                  <ENTRY item="1">
+                    <T reflow="1">
+                      first item below first subenum</T>
+                  </ENTRY>
+                  <ENTRY item="1">
+                    <T reflow="1">
+                      second item below first subenum</T>
+                  </ENTRY>
+                </LIST>
+              </ENTRY>
+              <ENTRY enumerated="2">
+                <T reflow="1">
+                  second subenum below second item</T>
+                <P>
+                  <T reflow="1">
+                    text before subsubenum</T>
+                </P>
+                <ENUM>
+                  <ENTRY enumerated="1">
+                    <T reflow="1">
+                      first subsubenum below second subenum</T>
+                  </ENTRY>
+                  <ENTRY enumerated="2">
+                    <T reflow="1">
+                      second subsubenum below second subenum</T>
+                  </ENTRY>
+                </ENUM>
+                <P>
+                  <T reflow="1">
+                    text behind subsubenum</T>
+                </P>
+              </ENTRY>
+              <ENTRY enumerated="3">
+                <T reflow="1">
+                  third subenum below second item</T>
+              </ENTRY>
+            </ENUM>
+          </ENTRY>
+          <ENTRY item="1">
+            <T reflow="1">
+              third item below first enum</T>
+          </ENTRY>
+        </LIST>
+      </ENTRY>
+      <ENTRY enumerated="2">
+        <T reflow="1">
+          second enum</T>
+        <P>
+          <T reflow="1">
+            This text is not indented more than the second enum,
+            but is nevertheless interpreted as sub-elements which
+            belongs to the enum.</T>
+        </P>
+      </ENTRY>
+      <ENTRY enumerated="3">
+        <T reflow="1">
+          third enum</T>
+        <P>
+          <T reflow="1">
+            behind the last enum, text only becomes a son
+            of the enum-entry if it is indented.</T>
+        </P>
+      </ENTRY>
+    </ENUM>
+    <P>
+      <T reflow="1">
+        text behind enum</T>
     </P>
   </SECTION>
   <SECTION name="NOTES">

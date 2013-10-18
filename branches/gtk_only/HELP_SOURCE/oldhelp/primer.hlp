@@ -8,9 +8,9 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Primer Design
+TITLE		Design Sequencing Primers
 
-
+OCCURRENCE	ARB_NT/Probes/Design Sequencing Primers
 
 DESCRIPTION
                 @@@ need translation into english 
