@@ -34,16 +34,21 @@ using namespace std;
 
 #if defined(DEBUG)
 #define WARN_FORMATTING_PROBLEMS
-// #define WARN_MISSING_HELP // @@@ reenable later
+#define WARN_MISSING_HELP
 // #define DUMP_PARAGRAPHS
 #endif // DEBUG
 
 
 #if defined(WARN_FORMATTING_PROBLEMS)
-// #define WARN_POSSIBLY_WRONG_INDENTATION_CORRECTION
+
 #define WARN_FIXED_LAYOUT_LIST_ELEMENTS
+#define WARN_LONESOME_ENUM_ELEMENTS
+
+// warnings below are useless for production and shall be disabled in SVN
 // #define WARN_LONESOME_LIST_ELEMENTS
-#define WARN_IGNORED_ALPHA_ENUMS // should be disabled 
+// #define WARN_POSSIBLY_WRONG_INDENTATION_CORRECTION
+// #define WARN_IGNORED_ALPHA_ENUMS
+
 #endif
 
 
@@ -1198,7 +1203,7 @@ void ParagraphTree::format_indentations() {
         ParagraphTree *same_indent = brother->firstWithLessIndentThan(indentation+1);
 #if defined(WARN_POSSIBLY_WRONG_INDENTATION_CORRECTION)
         if (same_indent && indentation != same_indent->indentation) {
-            same_indent->attach_warning("indentation is assumed to be same as ..")
+            same_indent->attach_warning("indentation is assumed to be same as ..");
             attach_warning(".. here");
         }
 #endif
@@ -1423,7 +1428,7 @@ void ParagraphTree::xml_write() {
                 attach_warning(strf("First enum starts with '%u.' (maybe previous enum was not detected)", get_enumeration()));
             }
             next = xml_write_enum_contents();
-#if defined(WARN_LONESOME_LIST_ELEMENTS)
+#if defined(WARN_LONESOME_ENUM_ELEMENTS)
             if (next == brother) attach_warning("Suspicious single-element-ENUM");
 #endif
         }
