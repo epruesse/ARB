@@ -96,7 +96,7 @@ static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
             }
 
             // add callback AFTER writing to awar above to avoid recursion
-            // (the CB calls this function again, and seq_color_awars_created is set 
+            // (the CB calls this function again, and seq_color_awars_created is set
             // to true at the very end...
             awar_col->add_callback(awt_awar_changed_cb, (AW_CL)asc);
         }

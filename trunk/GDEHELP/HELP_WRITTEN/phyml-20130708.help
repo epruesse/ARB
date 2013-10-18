@@ -44,12 +44,13 @@ PARAMETERS
         -m (or --model) model
             model : substitution model name.
             - Nucleotide-based models : HKY85 (default) | JC69 | K80 | F81 | F84 | TN93 | GTR | custom (*)
-            (*) : for the custom option, a string of six digits identifies the model. For instance, 000000
+
+             (*) : for the custom option, a string of six digits identifies the model. For instance, 000000
              corresponds to F81 (or JC69 provided the distribution of nucleotide frequencies is uniform).
              012345 corresponds to GTR. This option can be used for encoding any model that is a nested within GTR.
 
             - Amino-acid based models : LG (default) | WAG | JTT | MtREV | Dayhoff | DCMut | RtREV | CpREV | VT
-             Blosum62 | MtMam | MtArt | HIVw |  HIVb | custom
+              Blosum62 | MtMam | MtArt | HIVw | HIVb | custom
 
 
         --aa_rate_file filename

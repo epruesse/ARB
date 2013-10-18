@@ -10,7 +10,6 @@ SUB	savedef.hlp
 SUB	props_frame.hlp
 SUB	sel_fil.hlp
 SUB	awt_csp.hlp
-SUB	props_nds.hlp
 SUB	bootstrap.hlp
 
 
@@ -44,48 +43,55 @@ DESCRIPTION	Reconstructs a tree for all or marked species by first
 
 		6. Select rate matrix: !!! not implemented !!!
 
-                     7. Type characters for the exclusion of alignment postions to
-			the 'Exclude Column' subwindow. The positions are
-			excluded from the calculation of binary distance values
-			if one of the specified characters is present in one or
-			both sequences. The described function acts as a second
-			filter and affects only the particular sequence
-			pairs, not the whole alignment.
+                7. Type characters for the exclusion of alignment postions to
+		   the 'Exclude Column' subwindow. The positions are
+		   excluded from the calculation of binary distance values
+		   if one of the specified characters is present in one or
+		   both sequences. The described function acts as a second
+		   filter and affects only the particular sequence
+		   pairs, not the whole alignment.
 
-           	     8. Select the type of distance correction from the 'Distance
-			Correction' submenu. You can use the program to detect
-			the best correction for you by pressing the AUTODETECT
-			button.
+           	8. Select the type of distance correction from the 'Distance
+		   Correction' submenu. You can use the program to detect
+		   the best correction for you by pressing the AUTODETECT
+		   button.
 
-			none:
-				Differences/Sequence length. May be a good
-				choice for short sequences (length < 300 )
+		   none:
 
-			similarity:
-				1.0 - Differences/Sequence_Length
+		   	Differences/Sequence length. May be a good
+		   	choice for short sequences (length < 300 )
 
-			jukes-cantor:
-				Accounts for multiple base changes, assumes
-				equal base frequencies.
-				Good choice for medium sized sequences
-				( 300 - 1000/2000 sequence length )
+		   similarity:
 
-			felsenstein:
-				Similar to jukes-cantor transformation. Allows
-				unequal base frequencies.
-				( length > 1000/2000 )
+		   	1.0 - Differences/Sequence_Length
 
-			olsen:
-				As Felsenstein, except the base frequencies are
-				calculated for each pair of sequences.
+		   jukes-cantor:
 
-		!!! The other correcting functions are in an experimental state.
-				Wait for new release.!!!
+		   	Accounts for multiple base changes, assumes
+		   	equal base frequencies.
+		   	Good choice for medium sized sequences
+		   	( 300 - 1000/2000 sequence length )
 
-		     9. Select a name for the tree from the 'Trees in Database'
-			subwindow or type a new tree name.
-			The tree name has to be 'tree_*'.
-			An existing tree with that name will be deleted.
+		   felsenstein:
+
+		   	Similar to jukes-cantor transformation. Allows
+		   	unequal base frequencies.
+		   	( length > 1000/2000 )
+
+		   olsen:
+
+		   	As Felsenstein, except the base frequencies are
+		   	calculated for each pair of sequences.
+
+                   Please note:
+
+                          the other correcting functions are in an experimental state.
+                          Wait for new release.!!!
+
+		9. Select a name for the tree from the 'Trees in Database'
+		   subwindow or type a new tree name.
+		   The tree name has to be 'tree_*'.
+		   An existing tree with that name will be deleted.
 
 		10. Press the 'CALCULATE TREE' button
 
@@ -116,18 +122,13 @@ SECTION 	Calculate compressed matrix
 		The distance shown for each group is the arithmetic average of 
 		of the distances of all contained species.
 
-NOTE		Read the NDS help text
-
-NOTE		Computing time can be estimated using the following
-		formula:
+NOTES           Computing time can be estimated using the following formula:
 
 			time = (Sequence_Length * Nr.of.Spec * Nr.of.Spec)/
 				Computer Power
 
-		Examples:	Sparc 10,
-				74 Sequences, length 8000 characters
-
-				-> 10 Seconds
+                                Example: Sparc 10, 74 Sequences, length 8000 characters
+                                         -> 10 Seconds
 
 
 WARNINGS	Don't try to build a tree with the 'similarity' distance

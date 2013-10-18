@@ -27,38 +27,38 @@ OCCURRENCE
 
 DESCRIPTION
 
-    This is the first paragraph of the description. It may be continued on 
+    This is the first paragraph of the description. It may be continued on
     the next line.
 
-    Another paragraph also belonging to description. It is followed by an 
+    Another paragraph also belonging to description. It is followed by an
     enumeration on the same indentation level:
 
-        first enum
+    1. first enum
 
-            Again a paragraph - a one liner followed by an item list. It is 
-            completely misplaced at the moment!
+    2. second enum which is continued on the next line. Now this is no
+       longer misinterpreted as monospaced paragraph.
 
-            - item 1
-            - item 2
-            - item 3
-              contains 2 lines
+    3. third enum
 
-           second enum which
-           is continued on the next line.
-           Currently is misinterpreted as monospaced paragraph.
+    Again a paragraph - a one liner followed by an item list. It is no
+    longer misplaced now!
 
-        third enum
+    * item 1
+
+    * item 2
+
+    * item 3 contains 2 lines
 
 
 
 CUSTOM    A custom section.
 
-    Acts like DESCRIPTION, despite the SECTION line will be part of the 
+    Acts like DESCRIPTION, despite the SECTION line will be part of the
     headline. In DESCRIPTION it would be part of the first paragraph.
 
     First i need to check proper support for different indentation levels.
 
-        This paragraph has to be indented one level deeper than the 
+        This paragraph has to be indented one level deeper than the
         previous paragraph.
 
         That paragraph should be on the same level.
@@ -71,14 +71,14 @@ CUSTOM    A custom section.
 
             One step down - ignoring deeper indentation in source.
 
-            Consecutive paragraphs are only placed on the same level if 
+            Consecutive paragraphs are only placed on the same level if
             their indentation matches.
 
-            Using the indentation level used 4 paragraphs above, wont help 
+            Using the indentation level used 4 paragraphs above, wont help
             here.
 
-                But the "wrong" indentation of the previous paragraph 
-                forces this paragraph to get indented one level deeper than 
+                But the "wrong" indentation of the previous paragraph
+                forces this paragraph to get indented one level deeper than
                 the paragraphs before.
 
                 This does not step back.
@@ -91,7 +91,7 @@ CUSTOM    A custom section.
 
 Wanted fixes
 
-    Paragraphs containing multiple spaces will be treated as monospaced. 
+    Paragraphs containing multiple spaces will be treated as monospaced.
     This is done to support tabular information like the following:
 
                             other
@@ -109,40 +109,53 @@ Wanted fixes
 
         (should better be combined)
 
-    Here is some unsupported itemlist:
+    Here is an itemlist whose items are triggered by '*':
 
-        * item1
-          continued on next line
+        * item1 continued on next line
+
         * item2
+
         * item3
 
     Itemlist containing paragraphs under some items
 
-        - item 1 - item 2
+        * item 1
 
-          - This is a short description of item 2. Currently it does not 
-            differ from the items, but it should.
+        * item 2
 
-        - item 3
+            This is a short description of item 2. This description gets
+            indented below the corresponding item.
 
-          - This is a not much longer description of item 3.
+        * item 3
 
-        This is a paragraph which should be placed outside the itemlist. 
-        Currently this is placed like the items above.
+            This is a shorter description of item 3.
 
-    And this paragraph should be back where we were before the itemlist 
+        This is a paragraph which should be placed outside the itemlist.
+        Currently this is misinterpreted as part of the itemlist.
+
+    And this paragraph should be back where we were before the itemlist
     began.
 
-    Now to sth completely unsupported. It would be nice, to support 
-    enumerations using letters, since that is common, i.e. sth like
+    Enumeration also work if using letters instead of digits. You can use
+    capital letters as in the following enum
 
-    A. first enum B. 2nd enum C. third enum D. last enum
+    A. first enum
 
-    should work, but it doesn't. Also
+    B. 2nd enum
 
-        a. first enum b. 2nd enum c. third enum d. last enum
+    C. third enum
 
-    should work.
+    D. last enum
+
+    or small letters like here:
+
+        a. first enum
+
+        b. 2nd enum
+
+        c. third enum
+
+        d. last enum
 
     Check some "illegal" itemlists:
 
@@ -164,18 +177,62 @@ FEATURE TESTS
 
     Here all existing helpfile features should be tested:
 
-        - first testing an inlined
-          link to another help file: TOPIC 'Search and Replace Tool (SRT)'
-                  
+        * first testing an inlined link to another help file: TOPIC 'Search
+          and Replace Tool (SRT)'
 
-        - and a link to the arb homepage
-          http://www.arb-home.de/
-          followed by text.
-                  
+        * and a link to the arb homepage http://www.arb-home.de/ followed
+          by text.
 
-        - arb help also supports mail-links (like devel@arb-home.de [mailto: devel@arb-home.de  subject: 'Concerning helppage unittest.xml']).
-          All 3 sorts of links should be clickable in the html version.
-                  
+        * arb help also supports mail-links (like devel@arb-home.de
+          [mailto: devel@arb-home.de subject: 'Concerning helppage
+          unittest.xml']). All 3 sorts of links should be clickable in the
+          html version.
+
+
+
+NESTED LISTS
+
+    text before enum
+
+    1. first enum
+
+        text below first enum
+
+        * first item below first enum
+
+        * second item below first enum
+
+            1. first subenum below second item
+
+                * first item below first subenum
+
+                * second item below first subenum
+
+            2. second subenum below second item
+
+                text before subsubenum
+
+                1. first subsubenum below second subenum
+
+                2. second subsubenum below second subenum
+
+                text behind subsubenum
+
+            3. third subenum below second item
+
+        * third item below first enum
+
+    2. second enum
+
+        This text is not indented more than the second enum, but is
+        nevertheless interpreted as sub-elements which belongs to the enum.
+
+    3. third enum
+
+        behind the last enum, text only becomes a son of the enum-entry if
+        it is indented.
+
+    text behind enum
 
 
 
@@ -201,6 +258,6 @@ WARNINGS
 
 BUGS
 
-    will be detected by the unit test checking the files into which this 
+    will be detected by the unit test checking the files into which this
     file gets converted.
 

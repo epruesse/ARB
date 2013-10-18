@@ -9,9 +9,9 @@ SUB     iupac-codes.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Primer Design
+TITLE		Design Primers
 
-OCCURRENCE	ARB_NT/ETC/Primer Design
+OCCURRENCE	ARB_NT/Probes/Design Primers
 
 DESCRIPTION     Searches for primer pairs
                 within the given physical and biological ranges

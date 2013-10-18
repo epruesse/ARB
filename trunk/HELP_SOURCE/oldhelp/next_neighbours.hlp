@@ -16,8 +16,6 @@ OCCURRENCE	ARB_NT/Search/More search/Search Next Relatives of SELECTED Species i
 DESCRIPTION	Scans PT_SERVER database for the nearest relatives
 		of the currently selected species.
 
-SECTION         DESCRIPTION
-
                 See LINK{next_neighbours_common.hlp} for a description of the used algorithm
                 and common parameters.
 
