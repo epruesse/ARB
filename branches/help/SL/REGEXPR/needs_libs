@@ -1,4 +1,0 @@
-# libraries needed to link against SL/REGEXPR/REGEXPR.a
-
-lib/libCORE.so
-
