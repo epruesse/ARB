@@ -156,6 +156,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbtools.h
 primer_design.o: $(ARBHOME)/INCLUDE/attributes.h
+primer_design.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -174,6 +175,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

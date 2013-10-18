@@ -45,6 +45,7 @@ refentries.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 refentries.o: $(ARBHOME)/INCLUDE/arbdbt.h
 refentries.o: $(ARBHOME)/INCLUDE/arbtools.h
 refentries.o: $(ARBHOME)/INCLUDE/attributes.h
+refentries.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -63,6 +64,7 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+refentries.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

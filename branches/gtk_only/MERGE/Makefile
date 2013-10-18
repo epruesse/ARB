@@ -78,6 +78,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/attributes.h
+MG_alignment.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -94,6 +95,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MG_alignment.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -138,6 +140,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/attributes.h
+MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -154,6 +157,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -198,6 +202,7 @@ MG_configs.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_configs.o: $(ARBHOME)/INCLUDE/attributes.h
+MG_configs.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -214,6 +219,7 @@ MG_configs.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MG_configs.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -255,6 +261,7 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/attributes.h
+MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -271,6 +278,7 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -316,6 +324,7 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/attributes.h
+MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -332,6 +341,7 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -377,6 +387,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_main.o: $(ARBHOME)/INCLUDE/attributes.h
+MG_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -395,6 +406,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -442,6 +454,7 @@ MG_names.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_names.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_names.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_names.o: $(ARBHOME)/INCLUDE/attributes.h
+MG_names.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -458,6 +471,7 @@ MG_names.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MG_names.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -503,6 +517,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/attributes.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -519,6 +534,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MG_preserves.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -566,6 +582,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_species.o: $(ARBHOME)/INCLUDE/attributes.h
+MG_species.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -584,6 +601,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -633,6 +651,7 @@ MG_trees.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_trees.o: $(ARBHOME)/INCLUDE/attributes.h
+MG_trees.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -649,6 +668,7 @@ MG_trees.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MG_trees.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

@@ -70,6 +70,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbtools.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/attributes.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -85,6 +86,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -137,6 +139,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 SQ_main.o: $(ARBHOME)/INCLUDE/attributes.h
+SQ_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -155,6 +158,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

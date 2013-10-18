@@ -49,6 +49,7 @@ AW_helix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_helix.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_helix.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -65,6 +66,7 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+AW_helix.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

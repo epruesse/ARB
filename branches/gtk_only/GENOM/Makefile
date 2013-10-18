@@ -59,6 +59,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/attributes.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -76,6 +77,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -126,6 +128,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 EXP_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 EXP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 EXP_main.o: $(ARBHOME)/INCLUDE/attributes.h
+EXP_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -144,6 +147,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+EXP_main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -230,6 +234,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/attributes.h
+GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -247,6 +252,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -294,6 +300,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/attributes.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -311,6 +318,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -369,6 +377,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_map.o: $(ARBHOME)/INCLUDE/attributes.h
+GEN_map.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -388,6 +397,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+GEN_map.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -436,6 +446,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/attributes.h
+GEN_nds.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -452,6 +463,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+GEN_nds.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

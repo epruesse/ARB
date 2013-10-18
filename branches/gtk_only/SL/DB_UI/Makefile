@@ -46,6 +46,7 @@ info_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 info_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
 info_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 info_window.o: $(ARBHOME)/INCLUDE/attributes.h
+info_window.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -61,6 +62,7 @@ info_window.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+info_window.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -105,6 +107,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ui_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ui_species.o: $(ARBHOME)/INCLUDE/arbtools.h
 ui_species.o: $(ARBHOME)/INCLUDE/attributes.h
+ui_species.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -122,6 +125,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

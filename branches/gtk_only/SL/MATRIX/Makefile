@@ -49,6 +49,7 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/attributes.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -65,6 +66,7 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+AP_matrix.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

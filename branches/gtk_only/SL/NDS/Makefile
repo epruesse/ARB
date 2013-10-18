@@ -45,6 +45,7 @@ nds.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 nds.o: $(ARBHOME)/INCLUDE/arbdbt.h
 nds.o: $(ARBHOME)/INCLUDE/arbtools.h
 nds.o: $(ARBHOME)/INCLUDE/attributes.h
+nds.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -61,6 +62,7 @@ nds.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+nds.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx

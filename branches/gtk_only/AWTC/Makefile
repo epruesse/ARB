@@ -44,6 +44,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/attributes.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -59,6 +60,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -106,6 +108,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/attributes.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -125,6 +128,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

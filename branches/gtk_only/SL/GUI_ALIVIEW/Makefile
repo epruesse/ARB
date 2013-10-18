@@ -56,6 +56,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -74,6 +75,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+AWT_filter.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -118,6 +120,7 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arbtools.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/attributes.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -134,6 +137,7 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

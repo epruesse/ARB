@@ -73,12 +73,26 @@ bool AW_action::equal_nobound(const AW_action& o) const {
         && dclicked == o.dclicked;
 }
 
+static AW_postcb_cb postcb_cb = NULL;
+//static
+void AW_action::set_AW_postcb_cb(AW_postcb_cb cb) {
+    postcb_cb = cb;
+}
+
+
 /** 
  * Triggers the action
  * This is called when the user clicks on a connected widget.
  */
 void AW_action::user_clicked(GtkWidget*) {
     AW_root *root = AW_root::SINGLETON;
+
+    // clear and show database error
+    if (GB_have_error()) {
+        GB_ERROR error = GB_await_error();
+        aw_message(GBS_global_string("Warning: unhandled error status\n"
+                                     "%s", error));
+    }
 
     if (root->is_help_active()) {
         root->set_help_active(false);
@@ -97,11 +111,23 @@ void AW_action::user_clicked(GtkWidget*) {
     root->set_cursor(WAIT_CURSOR);
 
     clicked.emit();
-
-    if (! root->is_help_active()) {
+    
+    if (GB_have_error()) {
+        GB_ERROR error = GB_await_error();
+        aw_message(GBS_global_string("Warning: error while executing action %s\n"
+                                     "%s", get_id(), error));
+    }
+    
+    if (!root->is_help_active()) {
         AW_root::SINGLETON->set_cursor(NORMAL_CURSOR);
     }
+
+    // editor wants to know the last window after every CB
+    if (clicked.get_last_window() && postcb_cb) {
+        postcb_cb(clicked.get_last_window());
+    }
 }
+
 
 /////////////////////// binding to GTK / GLIB Signals ////////////////////////
 
@@ -220,6 +246,7 @@ void AW_action_g_signal_binding::connect(AW_action* a) {
     handler_id = g_signal_connect(object, sig_name, 
                                   G_CALLBACK(_aw_signal_received_from_widget), action);
 }
+
 
 
 

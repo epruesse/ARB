@@ -21,10 +21,6 @@ private:
     struct Pimpl;
     Pimpl *prvt;
 
-protected:
-    virtual bool pre_emit() { return true; }
-    virtual void post_emit() {}
-
 public:
     AW_signal();
     virtual ~AW_signal();
@@ -49,6 +45,8 @@ public:
 
     void emit();
     void clear();
+
+    AW_window* get_last_window() const;
 };
 
 

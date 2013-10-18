@@ -53,6 +53,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
@@ -71,6 +72,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -114,6 +116,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_rename.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_rename.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -132,6 +135,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+AW_rename.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

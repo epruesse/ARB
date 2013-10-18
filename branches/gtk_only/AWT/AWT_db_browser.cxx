@@ -1181,37 +1181,11 @@ AW_root *AWT_create_root(const char *properties, const char *program, UserAction
     return aw_root;
 }
 
-// ------------------------
-//      callback guards
-
-static void before_callback_guard() {
-    if (GB_have_error()) {
-        GB_ERROR error = GB_await_error();
-        aw_message(GBS_global_string("Error not clear before calling callback\n"
-                                     "Unhandled error was:\n"
-                                     "%s", error));
-#if defined(DEVEL_RALF)
-        awt_assert(0);
-#endif // DEVEL_RALF
-    }
-}
-static void after_callback_guard() {
-    if (GB_have_error()) {
-        GB_ERROR error = GB_await_error();
-        aw_message(GBS_global_string("Error not handled by callback!\n"
-                                     "Unhandled error was:\n"
-                                     "'%s'", error));
-#if defined(DEVEL_RALF)
-        awt_assert(0);
-#endif // DEVEL_RALF
-    }
-}
-
 void AWT_install_cb_guards() {
-    awt_assert(!GB_have_error());
-    AW_cb::set_AW_cb_guards(before_callback_guard, after_callback_guard);
+    // deprecated
 }
 void AWT_install_postcb_cb(AW_postcb_cb postcb_cb) {
-    AW_cb::set_AW_postcb_cb(postcb_cb);
+    AW_action::set_AW_postcb_cb(postcb_cb);
 }
+
 

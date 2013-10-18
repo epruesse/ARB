@@ -50,6 +50,7 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arbdb.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/attributes.h
+RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -65,6 +66,7 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -111,6 +113,7 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arbdb.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/attributes.h
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -129,6 +132,7 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -173,6 +177,7 @@ RNA3D_Main.o: $(ARBHOME)/INCLUDE/arbdb.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/attributes.h
+RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -188,6 +193,7 @@ RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -234,6 +240,7 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arbdb.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/attributes.h
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -252,6 +259,7 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -297,6 +305,7 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arbdb.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/attributes.h
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -312,6 +321,7 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -356,6 +366,7 @@ RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arbdb.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/attributes.h
+RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -372,6 +383,7 @@ RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -416,6 +428,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arbdbt.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/attributes.h
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -435,6 +448,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
