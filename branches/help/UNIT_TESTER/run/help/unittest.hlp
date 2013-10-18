@@ -139,11 +139,23 @@ Wanted fixes
     Now to sth completely unsupported. It would be nice, to support
     enumerations using letters, since that is common, i.e. sth like
 
-    A. first enum B. 2nd enum C. third enum D. last enum
+    A. first enum
+
+    B. 2nd enum
+
+    C. third enum
+
+    D. last enum
 
     should work, but it doesn't. Also
 
-        a. first enum b. 2nd enum c. third enum d. last enum
+        a. first enum
+
+        b. 2nd enum
+
+        c. third enum
+
+        d. last enum
 
     should work.
 

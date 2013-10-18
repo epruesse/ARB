@@ -367,9 +367,28 @@
   </xsl:template>
 
   <xsl:template match="ENUM">
-    <OL>
-      <xsl:apply-templates/>
-    </OL>
+    <xsl:variable name="enumval"><xsl:value-of select="ENTRY[1]/@enumerated"/></xsl:variable>
+    <xsl:variable name="type">
+      <xsl:choose>
+        <xsl:when test="$enumval='a'">a</xsl:when>
+        <xsl:when test="$enumval='A'">A</xsl:when>
+        <xsl:otherwise>1</xsl:otherwise><!--fallback to 1. 2. 3. ..-->
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:choose>
+      <xsl:when test="$type='1'">
+        <OL>
+          <xsl:apply-templates/>
+        </OL>
+      </xsl:when>
+      <xsl:otherwise>
+        <OL type="{$type}">
+          <xsl:apply-templates/>
+        </OL>
+      </xsl:otherwise>
+    </xsl:choose>
+
     <BR/>
   </xsl:template>
   <xsl:template match="LIST">

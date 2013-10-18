@@ -43,6 +43,7 @@ using namespace std;
 // #define WARN_POSSIBLY_WRONG_INDENTATION_CORRECTION
 #define WARN_FIXED_LAYOUT_LIST_ELEMENTS
 // #define WARN_LONESOME_LIST_ELEMENTS
+#define WARN_IGNORED_ALPHA_ENUMS // should be disabled 
 #endif
 
 
@@ -236,8 +237,10 @@ enum ParagraphType {
     ITEM,
 };
 enum EnumerationType {
-    UNDEFINED,
+    NONE,
     DIGITS,
+    ALPHA_UPPER,
+    ALPHA_LOWER,
 };
 
 class Ostring {
@@ -266,7 +269,7 @@ public:
           number(num)
     {
         h2x_assert(type == ENUMERATED);
-        h2x_assert(etype == DIGITS);
+        h2x_assert(etype == DIGITS || etype == ALPHA_UPPER || etype == ALPHA_LOWER);
         h2x_assert(num>0);
     }
 
@@ -280,9 +283,12 @@ public:
     size_t get_lineno() const { return lineNo; }
 
     const ParagraphType& get_type() const { return type; }
+    const EnumerationType& get_enum_type() const {
+        h2x_assert(type == ENUMERATED);
+        return etype;
+    }
     unsigned get_number() const {
         h2x_assert(type == ENUMERATED);
-        h2x_assert(etype == DIGITS);
         return number;
     }
 
@@ -419,7 +425,7 @@ inline void pushParagraph(Section& sec, string& paragraph, size_t lineNo, Paragr
         }
 
         type      = PLAIN_TEXT;
-        etype     = UNDEFINED;
+        etype     = NONE;
         paragraph = "";
     }
 }
@@ -440,11 +446,39 @@ inline bool is_startof_itemlist_element(const char *contentStart) {
           contentStart[2] == '-');
 }
 
-#define MAX_ALLOWED_ENUM 99 // otherwise it start interpreting years as enums 
+#define MAX_ALLOWED_ENUM 99 // otherwise it starts interpreting years as enums
 
-static bool startsWithNumber(string& s, unsigned& number, bool do_erase) {
+static EnumerationType startsWithLetter(string& s, unsigned& number) {
+    // tests if first line starts with 'letter.'
+    // if true then 'letter.' is removed from the string
+    // the letter is converted and returned in 'number' ('a'->1, 'b'->2, ..)
+
+    size_t off = s.find_first_not_of(" \n");
+    if (off == string::npos) return NONE;
+    if (!isalpha(s[off])) return NONE;
+
+    size_t          astart = off;
+    EnumerationType etype  = isupper(s[off]) ? ALPHA_UPPER : ALPHA_LOWER;
+
+    number = s[off]-(etype == ALPHA_UPPER ? 'A' : 'a')+1;
+    ++off;
+
+    h2x_assert(number>0 && number<MAX_ALLOWED_ENUM);
+
+    if (s[off] != '.' && s[off] != ')') return NONE;
+    if (s[off+1] != ' ') return NONE;
+
+    // remove 'letter.' from string :
+    ++off;
+    while (s[off+1] == ' ') ++off;
+    s.erase(astart, off-astart+1);
+
+    return etype;
+}
+
+static bool startsWithNumber(string& s, unsigned& number) {
     // tests if first line starts with 'number.'
-    // if true then the number is removed from the string
+    // if true then 'number.' is removed from the string
 
     size_t off = s.find_first_not_of(" \n");
     if (off == string::npos) return false;
@@ -461,14 +495,17 @@ static bool startsWithNumber(string& s, unsigned& number, bool do_erase) {
     if (s[off] != '.' && s[off] != ')') return false;
     if (s[off+1] != ' ') return false;
 
-    if (do_erase) {
-        // remove 'number.' from string :
-        ++off;
-        while (s[off+1] == ' ') ++off;
-        s.erase(num_start, off-num_start+1);
-    }
+    // remove 'number.' from string :
+    ++off;
+    while (s[off+1] == ' ') ++off;
+    s.erase(num_start, off-num_start+1);
 
     return true;
+}
+
+static EnumerationType detectLineEnumType(string& line, unsigned& number) {
+    if (startsWithNumber(line, number)) return DIGITS;
+    return startsWithLetter(line, number);
 }
 
 static void parseSection(Section& sec, const char *line, int indentation, Reader& reader) {
@@ -476,8 +513,10 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
     size_t para_start_lineno = reader.getLineNo();
 
     ParagraphType   type  = PLAIN_TEXT;
-    EnumerationType etype = UNDEFINED;
+    EnumerationType etype = NONE;
     unsigned        num   = 0;
+
+    unsigned last_alpha_num = -1;
 
     h2x_assert(sec.Content().empty());
 
@@ -516,15 +555,34 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
                     type = ITEM; // is reset in call to pushParagraph
                 }
                 else {
-                    unsigned foundNum;
-                    if (startsWithNumber(Line, foundNum, true)) {
+                    unsigned        foundNum;
+                    EnumerationType foundEtype = detectLineEnumType(Line, foundNum);
+
+                    if (foundEtype == ALPHA_UPPER || foundEtype == ALPHA_LOWER) {
+                        if (foundNum == (last_alpha_num+1) || foundNum == 1) {
+                            last_alpha_num = foundNum;
+                        }
+                        else {
+#if defined(WARN_IGNORED_ALPHA_ENUMS)
+                            add_warning(reader.attached_message("Ignoring non-consecutive alpha-enum"));
+#endif
+                            foundEtype = NONE;
+
+                            reader.back();
+                            Line           = reader.getNext();
+                            last_alpha_num = -1;
+                        }
+                    }
+
+                    if (foundEtype != NONE) {
                         pushParagraph(sec, paragraph, para_start_lineno, type, etype, num);
 
                         type  = ENUMERATED;
-                        etype = DIGITS;
                         num   = foundNum;
+                        etype = foundEtype;
 
                         if (!num) {
+                            h2x_assert(etype == DIGITS);
                             throw "Enumerations starting with zero are not supported";
                         }
                     }
@@ -892,6 +950,7 @@ public:
 
     bool is_itemlist_member() const { return get_type() == ITEM; }
     unsigned get_enumeration() const { return get_type() == ENUMERATED ? otext.get_number() : 0; }
+    EnumerationType get_enum_type() const { return otext.get_enum_type(); }
 
     const char *readable_type() const {
         const char *res = NULL;
@@ -1327,7 +1386,20 @@ ParagraphTree *ParagraphTree::xml_write_enum_contents() {
 #endif
     {
         XML_Tag entry("ENTRY");
-        entry.add_attribute("enumerated", strf("%i", otext.get_number()));
+        switch (get_enum_type()) {
+            case DIGITS:
+                entry.add_attribute("enumerated", strf("%i", get_enumeration()));
+                break;
+            case ALPHA_UPPER:
+                entry.add_attribute("enumerated", strf("%c", 'A'-1+get_enumeration()));
+                break;
+            case ALPHA_LOWER:
+                entry.add_attribute("enumerated", strf("%c", 'a'-1+get_enumeration()));
+                break;
+            default:
+                h2x_assert(0);
+                break;
+        }
         xml_write_textblock();
         if (son) son->xml_write();
     }

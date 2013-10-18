@@ -232,23 +232,45 @@ row2    -           3</T>
         to support enumerations using letters, since that is
         common, i.e. sth like</T>
     </P>
-    <P>
-      <T reflow="1">
-        A. first enum
-        B. 2nd enum
-        C. third enum
-        D. last enum</T>
-    </P>
+    <ENUM>
+      <ENTRY enumerated="A">
+        <T reflow="1">
+          first enum</T>
+      </ENTRY>
+      <ENTRY enumerated="B">
+        <T reflow="1">
+          2nd enum</T>
+      </ENTRY>
+      <ENTRY enumerated="C">
+        <T reflow="1">
+          third enum</T>
+      </ENTRY>
+      <ENTRY enumerated="D">
+        <T reflow="1">
+          last enum</T>
+      </ENTRY>
+    </ENUM>
     <P>
       <T reflow="1">
         should work, but it doesn&apostr;t. Also</T>
-      <P>
-        <T reflow="1">
-          a. first enum
-          b. 2nd enum
-          c. third enum
-          d. last enum</T>
-      </P>
+      <ENUM>
+        <ENTRY enumerated="a">
+          <T reflow="1">
+            first enum</T>
+        </ENTRY>
+        <ENTRY enumerated="b">
+          <T reflow="1">
+            2nd enum</T>
+        </ENTRY>
+        <ENTRY enumerated="c">
+          <T reflow="1">
+            third enum</T>
+        </ENTRY>
+        <ENTRY enumerated="d">
+          <T reflow="1">
+            last enum</T>
+        </ENTRY>
+      </ENUM>
     </P>
     <P>
       <T reflow="1">
