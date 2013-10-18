@@ -24,21 +24,27 @@ info:
 ARBHOME=..
 GDE=$(ARBHOME)/GDE
 
+GENHELP_DEPENDS=genhelp.sh Makefile.helpfiles
+GENHELPTREE_DEPENDS=genhelptree.sh $(GENHELP_DEPENDS)
+
+# ---------- CLUSTALW
+
 CLUSTALW=$(GDE)/CLUSTALW
 CLUSTALW_HELP=$(CLUSTALW)/clustalw_help
 CLUSTALW_DOC=$(CLUSTALW)/clustalw.doc
 
-GENHELP_DEPENDS=genhelp.sh Makefile.helpfiles
-GENHELPTREE_DEPENDS=genhelptree.sh $(GENHELP_DEPENDS)
-
 $(GENHELPDEST)/clustalw.help: $(CLUSTALW_HELP) $(CLUSTALW_DOC) $(GENHELPTREE_DEPENDS)
 	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $(CLUSTALW_HELP) $(CLUSTALW_DOC)
+
+# ---------- AXML / FASTDNAML
 
 AXML_HELP=$(GDE)/AxML/AxML.doc
 FASTDNAML_DOC=$(GDE)/FASTDNAML/fastDNAml.doc
 
 $(GENHELPDEST)/dnaml.help: $(AXML_HELP) $(FASTDNAML_DOC) $(GENHELPTREE_DEPENDS)
 	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $(AXML_HELP) $(FASTDNAML_DOC)
+
+# ---------- READSEQ
 
 READSEQ=$(ARBHOME)/READSEQ
 READSEQ_DOC_NAMES=Readme Formats Readseq.help
@@ -47,12 +53,15 @@ READSEQ_DOCS=$(addprefix $(READSEQ)/,$(READSEQ_DOC_NAMES))
 $(GENHELPDEST)/readseq.help: $(READSEQ_DOCS) $(GENHELPTREE_DEPENDS)
 	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $(READSEQ_DOCS)
 
+# ---------- PHYLIP
+
 PHYLIP_DISTANCE_HELP_NAMES=fitch kitsch neighbor dnadist protdist
 PHYLIP_DISTANCE_HELPS=$(addsuffix .doc,$(addprefix $(GENDOCDEST)/,$(PHYLIP_DISTANCE_HELP_NAMES)))
 
 $(GENHELPDEST)/phylip_distance.help: $(PHYLIP_DISTANCE_HELPS) $(GENHELPTREE_DEPENDS)
 	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $(PHYLIP_DISTANCE_HELPS)
 
+# ------------------------------------------------------------
 # all help files in ./HELP_PLAIN are automatically found
 
 $(GENHELPDEST)/%.help: $(HELP_PLAIN)/%.help $(HEADER) $(GENHELP_DEPENDS)
@@ -76,25 +85,25 @@ LYNX_PARA=-dump -nolist -display_charset=iso-8859-1
 
 $(GENDOCDEST)/%.doc: $(HELP_PHYLIP)/%.html Makefile.helpfiles
 	@-test -f $@ && chmod u+w $@
-	(echo "# generated from $<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
+	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
 	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
 	@chmod a-w $@
 
 $(GENDOCDEST)/treepuzzle.doc: $(HELP_TREEPUZZLE)/manual.html Makefile.helpfiles
 	@-test -f $@ && chmod u+w $@
-	(echo "# generated from $<\n"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
+	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
 	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
 	@chmod a-w $@
 
 $(GENDOCDEST)/phyml.doc: $(HELP_PHYML)/usersguide_phyliplike.html Makefile.helpfiles
 	@-test -f $@ && chmod u+w $@
-	lynx $(LYNX_PARA) $< | $(SED) -e 's/©/(C)/' > $@
+	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
 	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
 	@chmod a-w $@
 
 $(GENDOCDEST)/phylip.doc: $(PHYLIP_MAIN)/phylip.html Makefile.helpfiles
 	@-test -f $@ && chmod u+w $@
-	lynx $(LYNX_PARA) $< | $(SED) -e 's/©/(C)/' > $@
+	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
 	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
 	@chmod a-w $@
 

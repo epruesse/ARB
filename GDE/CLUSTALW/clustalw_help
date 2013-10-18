@@ -198,7 +198,9 @@ or sequences.  This is done progressively, following the branching order in
 the GUIDE TREE.  The basic parameters to control this are two gap penalties and
 the scores for various identical-non-identical residues.  
 
-1) and 2) The GAP PENALTIES are set by menu items 1 and 2. These control the 
+1) and ..
+
+2) The GAP PENALTIES are set by menu items 1 and 2. These control the 
 cost of opening up every new gap and the cost of every item in a gap. 
 Increasing the gap opening penalty will make gaps less frequent. Increasing 
 the gap extension penalty will make gaps shorter. Terminal gaps are not 
@@ -249,7 +251,9 @@ sequence.  See the documentation for details.  As an example, positions that
 are rich in glycine are more likely to have an adjacent gap than positions that
 are rich in valine.
 
-2) 3) HYDROPHILIC GAP PENALTIES are used to increase the chances of a gap within
+2) [and ..]
+
+3) HYDROPHILIC GAP PENALTIES are used to increase the chances of a gap within
 a run (5 or more residues) of hydrophilic amino acids; these are likely to
 be loop or random coil regions where gaps are more common.  The residues that 
 are "considered" to be hydrophilic are set by menu item 3.
@@ -647,51 +651,60 @@ the minimum score over the whole matrix.
 
 >>HELP 0 <<           Help for tree output format options
 
-Four output formats are offered: 1) Clustal, 2) Phylip, 3) Just the distances
-4) Nexus
+Four output formats are offered:
+        1) Clustal,
+        2) Phylip,
+        3) Just the distances
+        4) Nexus
 
 None of these formats displays the results graphically. Many packages can
 display trees in the the PHYLIP format 2) below. It can also be imported into
 the PHYLIP programs RETREE, DRAWTREE and DRAWGRAM for graphical display. 
 NEXUS format trees can be read by PAUP and MacClade.
 
-1) Clustal format output. 
-This format is verbose and lists all of the distances between the sequences and
-the number of alignment positions used for each. The tree is described at the
-end of the file. It lists the sequences that are joined at each alignment step
-and the branch lengths. After two sequences are joined, it is referred to later
-as a NODE. The number of a NODE is the number of the lowest sequence in that
-NODE.   
+1) Clustal format output.
+
+        This format is verbose and lists all of the distances between the sequences and
+        the number of alignment positions used for each. The tree is described at the
+        end of the file. It lists the sequences that are joined at each alignment step
+        and the branch lengths. After two sequences are joined, it is referred to later
+        as a NODE. The number of a NODE is the number of the lowest sequence in that
+        NODE.   
 
 2) Phylip format output.
-This format is the New Hampshire format, used by many phylogenetic analysis
-packages. It consists of a series of nested parentheses, describing the
-branching order, with the sequence names and branch lengths. It can be used by
-the RETREE, DRAWGRAM and DRAWTREE programs of the PHYLIP package to see the
-trees graphically. This is the same format used during multiple alignment for
-the guide trees. 
 
-Use this format with NJplot (Manolo Gouy), supplied with Clustal W. Some other
-packages that can read and display New Hampshire format are TreeView (Mac/PC),
-TreeTool (UNIX), and Phylowin.
+        This format is the New Hampshire format, used by many phylogenetic analysis
+        packages. It consists of a series of nested parentheses, describing the
+        branching order, with the sequence names and branch lengths. It can be used by
+        the RETREE, DRAWGRAM and DRAWTREE programs of the PHYLIP package to see the
+        trees graphically. This is the same format used during multiple alignment for
+        the guide trees. 
+        
+        Use this format with NJplot (Manolo Gouy), supplied with Clustal W. Some other
+        packages that can read and display New Hampshire format are TreeView (Mac/PC),
+        TreeTool (UNIX), and Phylowin.
 
 3) The distances only.
-This format just outputs a matrix of all the pairwise distances in a format
-that can be used by the Phylip package. It used to be useful when one could not
-produce distances from protein sequences in the Phylip package but is now
-redundant (Protdist of Phylip 3.5 now does this).
 
-4) NEXUS FORMAT TREE. This format is used by several popular phylogeny programs,
-including PAUP and MacClade. The format is described fully in:
-Maddison, D. R., D. L. Swofford and W. P. Maddison.  1997.
-NEXUS: an extensible file format for systematic information.
-Systematic Biology 46:590-621.
+        This format just outputs a matrix of all the pairwise distances in a format
+        that can be used by the Phylip package. It used to be useful when one could not
+        produce distances from protein sequences in the Phylip package but is now
+        redundant (Protdist of Phylip 3.5 now does this).
+
+4) NEXUS FORMAT TREE.
+
+        This format is used by several popular phylogeny programs,
+        including PAUP and MacClade. The format is described fully in:
+        Maddison, D. R., D. L. Swofford and W. P. Maddison.  1997.
+        NEXUS: an extensible file format for systematic information.
+        Systematic Biology 46:590-621.
 
 5) TOGGLE PHYLIP BOOTSTRAP POSITIONS
-By default, the bootstrap values are placed on the nodes of the phylip format
-output tree. This is inaccurate as the bootstrap values should be associated
-with the tree branches and not the nodes. However, this format can be read and
-displayed by TreeTool, TreeView and Phylowin. An option is available to
-correctly place the bootstrap values on the branches with which they are
-associated.
+
+        By default, the bootstrap values are placed on the nodes of the phylip format
+        output tree. This is inaccurate as the bootstrap values should be associated
+        with the tree branches and not the nodes. However, this format can be read and
+        displayed by TreeTool, TreeView and Phylowin. An option is available to
+        correctly place the bootstrap values on the branches with which they are
+        associated.
 

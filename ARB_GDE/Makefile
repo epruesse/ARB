@@ -58,6 +58,7 @@ GDE.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_defs.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_msg.h
+GDE.o: $(ARBHOME)/INCLUDE/arb_str.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_string.h
 GDE.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE.o: $(ARBHOME)/INCLUDE/arbdb_base.h

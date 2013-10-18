@@ -32,10 +32,19 @@ DESCRIPTION	This menu allows you to perform different block operations.
 		Use the second section of the block menu to copy selection to 
 		marks or vv.
 
-		[Please consider the difference between the following terms:
-		  - Marked species: 	species marked in ARB_NT
-		  - Selected species: 	species selected in ARB_EDIT4 (right click)
-		  - Current species: 	species under cursor ]
+		Please consider the difference between the following terms:
+
+		  - Marked species:
+
+                    species marked in ARB_NT
+
+		  - Selected species:
+
+                    species selected in ARB_EDIT4 (right click)
+
+		  - Current species:
+
+                    species under cursor
 
 		Several actions (third section of Block menu) can be
 		performed on the selected block. These actions can be performed

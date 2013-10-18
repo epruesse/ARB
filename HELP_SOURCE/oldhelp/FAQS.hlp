@@ -7,47 +7,21 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Frequently Asked Questions
+TITLE		FAQ: Frequently Asked Questions
 
-OCCURRENCE	Everywhere
+SECTION I have no tree. How can I get one ??
 
-QUESTION	I have no tree. How can I get one ??
+        See LINK{no_tree.hlp}
 
-ANSWER		See LINK{no_tree.hlp}
+SECTION  When I'm using the Phylip tools for building trees, I cannot access the Phylip menu.
 
-QUESTION When I'm using the Phylip tools for building trees, the program skips over
-         the Phylip menu (except in ARB_NT, Phylip Distance Methods). It is,
-         therefore, not possible to use the Phylip options, e.g. to select an
-         outgroup when doing bootstrap analysis.
+         There is a second menu-button in the tree-build sub-menu which starts
+         the original phylip programs with interactive access to all parameters.
 
 
-ANSWER	There is a second menu-button in the tree-build sub-menu which starts
-        the original phylip programs with interactive access to all parameters.
+SECTION  It would be nice to be able to close a database without having to exit ARB
 
+         Use 'File/Quit + load other database'
 
-QUESTION It would be nice to be able to close a database without having to exit ARB.
-
-ANSWER	Sorry, that would be to complicated to program.
-
-
-QUESTION Finally, do you have a 23S alignment, that I could use? I have tried to
-         build my own, based on the sequences available from RDP. But that's only 34
-         sequences, and when I align my own 23S sequences against those, the computer
-         runs out of memory. I hope this problem can be solved by putting some more
-         memory in the computer (I currently have 64 mb RAM and I'm going to double
-         that). The shorter 16S sequences causes no problems. Anyway, I would be
-         thankfull if a 23S alignment could be made available.
-
-ANSWER	Wolfgang Ludwig has a 23s alignment with 500 Sequences. I will ask
-        him to give it to me and you.
-
-
-QUESTION When I try to start the aligner V1.0 or V2.0 I get a message:
-	 libARBDB.so.2 not found, Aligner failed
-
-ANSWER  You are probably using the LINUX operating system and have not
-	installed arb under root account. Please login as root and run
-	the arb_install program again, but don't update the old package.
-
-NOTE            Please also take a look at our Web-FAQ at LINK{http://www.arb-home.de/}
+NOTE     Please also take a look at our Web-FAQ at LINK{http://www.arb-home.de/}
 

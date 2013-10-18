@@ -1,16 +1,18 @@
+[file has been slightly modified to fit into arb help]
+
 ||||||||||| ReadSeq supported formats   (revised 30Dec92)
 --------------------------------------------------------
 
     -f[ormat=]Name Format name for output:
-         1. IG/Stanford           10. Olsen (in-only)
-         2. GenBank/GB            11. Phylip3.2
-         3. NBRF                  12. Phylip
-         4. EMBL                  13. Plain/Raw
-         5. GCG                   14. PIR/CODATA
-         6. DNAStrider            15. MSF
-         7. Fitch                 16. ASN.1
-         8. Pearson/Fasta         17. PAUP
-         9. Zuker (in-only)       18. Pretty (out-only)
+       |  1. IG/Stanford           10. Olsen (in-only)
+       |  2. GenBank/GB            11. Phylip3.2
+       |  3. NBRF                  12. Phylip
+       |  4. EMBL                  13. Plain/Raw
+       |  5. GCG                   14. PIR/CODATA
+       |  6. DNAStrider            15. MSF
+       |  7. Fitch                 16. ASN.1
+       |  8. Pearson/Fasta         17. PAUP
+       |  9. Zuker (in-only)       18. Pretty (out-only)
 
 In general, output supports only minimal subsets of each format
 needed for sequence data exchanges.  Features, descriptions
@@ -47,6 +49,7 @@ A. determine file format:
         if (error!=0) fail;
 
 B. read number and list of sequences (optional)
+
         short numseqs;    /* resulting number of sequences found in file */
         char  *seqlist;   /* list of sequence names, newline separated, 0 terminated */
 
@@ -55,6 +58,7 @@ B. read number and list of sequences (optional)
         free( seqlist);
 
 C.  read individual sequences as desired
+
         short seqIndex;   /* sequence index #, or == kListSeqs for listSeqs equivalent */
         long  seqlen;     /* length of seq */
         char  seqid[256]; /* sequence name */
@@ -66,6 +70,7 @@ C.  read individual sequences as desired
         free(seq);
 
 D. write sequences as desired
+
         int nlines;     /* number of lines of sequence written */
         FILE* fout;     /* open file pointer (stdout or other) */
         short outform;  /* output format, see ureadseq.h */
@@ -624,6 +629,7 @@ File Header
 Sequence Data Entries
 
 3.  Each sequence entry in the file should have the following format.
+
     a) first line:   Must have LOCUS in the first 5 spaces.  The
                      genetic locus name or identifier must be in spaces
                      13 - 22.  The length of the sequences is right
