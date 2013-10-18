@@ -64,6 +64,7 @@ GDE.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GDE.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE.o: $(ARBHOME)/INCLUDE/attributes.h
+GDE.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -80,6 +81,7 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -160,6 +162,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_event.o: $(ARBHOME)/INCLUDE/attributes.h
+GDE_event.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -176,6 +179,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -327,6 +331,7 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/attributes.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -342,6 +347,7 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

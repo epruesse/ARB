@@ -14,6 +14,7 @@
 struct Slot {
     Slot() {}
     virtual void emit() = 0 ;
+    virtual AW_window* get_window() const { return NULL; }
     virtual Slot* clone() const = 0;
     virtual ~Slot() {}
     virtual bool operator==(const Slot&) const = 0;
@@ -57,6 +58,10 @@ struct WindowCallbackSlot : public Slot {
     void emit() OVERRIDE {
         cb(aww);
     }
+
+    AW_window* get_window() const OVERRIDE {
+        return aww;
+    }
 };
 
 /** Slot carrying a RootCallback */
@@ -96,6 +101,7 @@ struct RootCallbackSlot : public Slot {
 struct AW_signal::Pimpl {
     std::list<Slot*> slots;
     bool enabled;            // false -> no signal propagation
+    AW_window* last_window;
     Pimpl() : enabled(true) {}
     ~Pimpl() {
         for (std::list<Slot*>::iterator it = slots.begin();
@@ -229,14 +235,17 @@ void AW_signal::disconnect(const WindowCallback& wcb, AW_window* aww) {
 /** Emits the signal (i.e. runs all connected callbacks) */
 void AW_signal::emit() {
     if (!prvt->enabled) return;
-    if (!pre_emit()) return;
 
     for (std::list<Slot*>::iterator it = prvt->slots.begin();
          it != prvt->slots.end(); ++it) {
         (*it)->emit();
+        if ((*it)->get_window()) 
+            prvt->last_window = (*it)->get_window();
     }
+}
 
-    post_emit();
+AW_window* AW_signal::get_last_window() const {
+    return prvt->last_window;
 }
 
 /** Disconnects all callbacks from signal */

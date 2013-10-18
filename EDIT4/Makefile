@@ -52,6 +52,7 @@ ED4_base.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_base.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_base.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -69,6 +70,7 @@ ED4_base.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_base.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -120,6 +122,7 @@ ED4_block.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_block.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_block.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -139,6 +142,7 @@ ED4_block.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_block.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -188,6 +192,7 @@ ED4_colStat.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_colStat.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_colStat.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_colStat.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -204,6 +209,7 @@ ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -256,6 +262,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -275,6 +282,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -324,6 +332,7 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_dots.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -341,6 +350,7 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_dots.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -384,6 +394,7 @@ ED4_dump.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_dump.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -400,6 +411,7 @@ ED4_dump.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_dump.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -445,6 +457,7 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
@@ -463,6 +476,7 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -524,6 +538,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_main.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
@@ -544,6 +559,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -604,6 +620,7 @@ ED4_manager.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_manager.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -621,6 +638,7 @@ ED4_manager.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_manager.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -664,6 +682,7 @@ ED4_members.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_members.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_members.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -680,6 +699,7 @@ ED4_members.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_members.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -726,6 +746,7 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -743,6 +764,7 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -787,6 +809,7 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -805,6 +828,7 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -847,6 +871,7 @@ ED4_nds.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_nds.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -864,6 +889,7 @@ ED4_nds.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_nds.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -917,6 +943,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -936,6 +963,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -989,6 +1017,7 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1005,6 +1034,7 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -1049,6 +1079,7 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1065,6 +1096,7 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -1114,6 +1146,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1131,6 +1164,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -1178,6 +1212,7 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1197,6 +1232,7 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -1264,6 +1300,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_root.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_root.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
@@ -1284,6 +1321,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_root.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -1343,6 +1381,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_search.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_search.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1362,6 +1401,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_search.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
@@ -1414,6 +1454,7 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1431,6 +1472,7 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -1487,6 +1529,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1504,6 +1547,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -1557,6 +1601,7 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_tools.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1574,6 +1619,7 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_tools.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -1621,6 +1667,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1640,6 +1687,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -1690,6 +1738,7 @@ ED4_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_window.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_window.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1707,6 +1756,7 @@ ED4_window.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ED4_window.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -1754,6 +1804,7 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arbdbt.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arbtools.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/attributes.h
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1770,6 +1821,7 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -1815,6 +1867,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arbdbt.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arbtools.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/attributes.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -1834,6 +1887,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

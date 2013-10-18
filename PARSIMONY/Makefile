@@ -77,6 +77,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_main.o: $(ARBHOME)/INCLUDE/attributes.h
+AP_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -93,6 +94,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -141,6 +143,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/attributes.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -157,6 +160,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -205,6 +209,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/attributes.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -221,6 +226,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -259,6 +265,7 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/arbdb.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arbtools.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/attributes.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -274,6 +281,7 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+PARS_debug.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -325,6 +333,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/attributes.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -342,6 +351,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -387,6 +397,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/arbdb.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arbtools.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/attributes.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -402,6 +413,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -451,6 +463,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 PARS_main.o: $(ARBHOME)/INCLUDE/attributes.h
+PARS_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -470,6 +483,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

@@ -3,6 +3,7 @@
 #include "aw_element.hxx"
 #include "aw_signal.hxx"
 
+typedef void (*AW_postcb_cb)(AW_window *);
 
 class AW_root;
 class AW_window;
@@ -11,7 +12,7 @@ class AW_action : public AW_element {
 private:
     struct Pimpl;
     Pimpl *prvt;
-   
+ 
     friend class AW_root;
     friend class AW_window;
     friend class AW_window_menu_modes;
@@ -33,5 +34,6 @@ public:
     void bind(GtkWidget*, const char*);
     void unbind(GtkWidget*, const char*);
     void bound_set(const char*, ...) __ATTR__SENTINEL;
-  
+
+    static void set_AW_postcb_cb(AW_postcb_cb);
 };

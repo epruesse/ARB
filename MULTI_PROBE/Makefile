@@ -137,6 +137,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_main.o: $(ARBHOME)/INCLUDE/attributes.h
+MP_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -154,6 +155,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MP_main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -247,6 +249,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/attributes.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -264,6 +267,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -352,6 +356,7 @@ MP_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe.o: $(ARBHOME)/INCLUDE/attributes.h
+MP_probe.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -368,6 +373,7 @@ MP_probe.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MP_probe.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -574,6 +580,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_Window.o: $(ARBHOME)/INCLUDE/attributes.h
+MP_Window.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -591,6 +598,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+MP_Window.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx

@@ -46,6 +46,7 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/attributes.h
+TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -62,6 +63,7 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

@@ -51,6 +51,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_design.o: $(ARBHOME)/INCLUDE/attributes.h
+probe_design.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -70,6 +71,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -149,6 +151,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbtools.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/attributes.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -167,6 +170,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

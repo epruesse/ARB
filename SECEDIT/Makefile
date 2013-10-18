@@ -102,6 +102,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_db.o: $(ARBHOME)/INCLUDE/attributes.h
+SEC_db.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -121,6 +122,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+SEC_db.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
@@ -175,6 +177,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/attributes.h
+SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -194,6 +197,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_global.hxx
@@ -388,6 +392,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_main.o: $(ARBHOME)/INCLUDE/attributes.h
+SEC_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -406,6 +411,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
@@ -463,6 +469,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/attributes.h
+SEC_paint.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -479,6 +486,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -659,6 +667,7 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/attributes.h
+SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -674,6 +683,7 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

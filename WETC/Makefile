@@ -41,6 +41,7 @@ WETC_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 WETC_main.o: $(ARBHOME)/INCLUDE/attributes.h
+WETC_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -56,6 +57,7 @@ WETC_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+WETC_main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

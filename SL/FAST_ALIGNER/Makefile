@@ -71,6 +71,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arbtools.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/attributes.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -89,6 +90,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

@@ -90,6 +90,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_quality.o: $(ARBHOME)/INCLUDE/attributes.h
+ST_quality.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -105,6 +106,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -145,6 +147,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_window.o: $(ARBHOME)/INCLUDE/attributes.h
+ST_window.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -163,6 +166,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

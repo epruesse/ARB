@@ -48,6 +48,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_data.o: $(ARBHOME)/INCLUDE/attributes.h
+PH_data.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -64,6 +65,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+PH_data.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -104,6 +106,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_display.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_display.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_display.o: $(ARBHOME)/INCLUDE/attributes.h
+PH_display.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -120,6 +123,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+PH_display.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -164,6 +168,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_filt.o: $(ARBHOME)/INCLUDE/attributes.h
+PH_filt.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -180,6 +185,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -223,6 +229,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_main.o: $(ARBHOME)/INCLUDE/attributes.h
+PH_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -239,6 +246,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+PH_main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -284,6 +292,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_matr.o: $(ARBHOME)/INCLUDE/attributes.h
+PH_matr.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -300,6 +309,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+PH_matr.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx

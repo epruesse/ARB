@@ -107,6 +107,7 @@ macro_gui.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arbdbt.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arbtools.h
 macro_gui.o: $(ARBHOME)/INCLUDE/attributes.h
+macro_gui.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -124,6 +125,7 @@ macro_gui.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
+macro_gui.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx

@@ -63,6 +63,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -81,6 +82,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -181,6 +183,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -196,6 +199,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -235,6 +239,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_main.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -250,6 +255,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -313,6 +319,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_matr.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -332,6 +339,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -454,6 +462,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -473,6 +482,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

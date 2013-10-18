@@ -47,6 +47,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbtools.h
 db_scanner.o: $(ARBHOME)/INCLUDE/attributes.h
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -63,6 +64,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx

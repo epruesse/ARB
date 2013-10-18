@@ -49,6 +49,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/attributes.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -67,6 +68,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -115,6 +117,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/attributes.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
@@ -132,6 +135,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx

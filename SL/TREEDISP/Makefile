@@ -61,6 +61,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arbdbt.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arbtools.h
 irstree_display.o: $(ARBHOME)/INCLUDE/attributes.h
+irstree_display.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -77,6 +78,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -122,6 +124,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/attributes.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
@@ -142,6 +145,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
@@ -190,6 +194,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/attributes.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_at.hxx
@@ -209,6 +214,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
