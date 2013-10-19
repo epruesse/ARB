@@ -237,16 +237,16 @@ void _AW_gc_manager::update_gc_color(int gc) {
     aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
     const char* color = GCs[gc+1].awar_color->read_char_pntr();
     device->set_foreground_color(gc, color);
-    // set drag_color?
-    // if bg change, reset drag colors?
+    if (gc != -1) 
+        device->set_foreground_color(drag_gc_offset + gc, color);
     changed.emit();
 }
 
 void _AW_gc_manager::update_gc_font(int gc) {
     aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
     device->set_font(gc, GCs[gc+1].awar_font->read_char_pntr());
-    // set drag_font?
-    // if bg change, reset drag colors?
+    if (gc != -1) 
+        device->set_font(drag_gc_offset + gc, GCs[gc+1].awar_font->read_char_pntr());
     changed.emit();
 }
 
