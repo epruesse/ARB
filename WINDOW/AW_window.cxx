@@ -548,7 +548,8 @@ void AW_window::create_toggle(const char *awar_name, const char *no, const char 
     awar->bind_value(G_OBJECT(checkButton), "active");
     _aw_update_toggle_icon(NULL,(AW_CL)data);
    
-    // fixme handle action?
+    awar->changed_by_user += prvt->action_template.clicked;
+    prvt->action_template = AW_action();
     
     put_with_label(checkButton);   
 }
@@ -565,6 +566,10 @@ void AW_window::create_checkbox(const char* awar_name, bool inverse) {
     GtkWidget *checkBox = gtk_check_button_new();
     awar->bind_value(G_OBJECT(checkBox), "active",
                      inverse ? new _awar_inverse_bool_mapper() : NULL);
+
+    awar->changed_by_user += prvt->action_template.clicked;
+    prvt->action_template = AW_action();
+
     put_with_label(checkBox);
 }
 
