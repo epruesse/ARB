@@ -48,10 +48,8 @@ static void NDS_changed(AW_root *root, AW_CL refresh) {
     sprintf(buf, ED4_AWAR_NDS_WIDTH_TEMPLATE, toggle);
     NDS_width = root->awar(buf)->read_int();
 
-    if (refresh) {
-        ED4_calc_terminal_extentions();
-        ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension).expect_no_error();
-        ED4_ROOT->main_manager->request_resize();
+    if (refresh) { 
+        ED4_request_relayout();
     }
 }
 
