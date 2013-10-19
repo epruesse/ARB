@@ -826,15 +826,18 @@ bool awar_gparam_binding::connect(const char* propname_, AW_awar_gvalue_mapper* 
     pspec =  g_object_class_find_property(G_OBJECT_GET_CLASS(obj), propname_);
     aw_return_val_if_fail(pspec != NULL, false);
 
+    // create weak reference to object and register handler
+    // for destruction of object (need to safeguard against notifying non-extant object
     g_object_weak_ref(obj, _aw_awar_on_destroy, this);
 
-    handler_id = g_signal_connect(obj, "notify", G_CALLBACK(_aw_awar_on_notify), this);
-
-    awar->add_callback(makeRootCallback(_aw_awar_notify_gparam, this));
-    
-    // update property from awar now:
+    // update property from awar
     _aw_awar_notify_gparam(NULL, this);
 
+    // connect gparam -> awar
+    handler_id = g_signal_connect(obj, "notify", G_CALLBACK(_aw_awar_on_notify), this);
+    // connect awar -> gparam
+    awar->add_callback(makeRootCallback(_aw_awar_notify_gparam, this));
+    
     return true;
 }
 
@@ -860,12 +863,12 @@ static void _aw_awar_on_notify(GObject* obj, GParamSpec *pspec, awar_gparam_bind
 
     // don't loop (notify causing update causing notify...)
     if (binding->frozen) return;
-    binding->frozen = true;
-
+    
     GValue gval = G_VALUE_INIT;
     g_value_init(&gval, G_PARAM_SPEC_VALUE_TYPE(binding->pspec));
     g_object_get_property(obj, pspec->name, &gval);
 
+    binding->frozen = true;
     if (binding->mapper) {
         (*binding->mapper)(&gval, binding->awar);
     } 
@@ -888,10 +891,12 @@ static void _aw_awar_on_notify(GObject* obj, GParamSpec *pspec, awar_gparam_bind
         }
     }
 
+    // unfreeze before emitting changed signal, connected handlers may actually
+    // want to undo a user change (e.g. fake radio buttons in editor NDS)
+    binding->frozen = false; 
+
     binding->awar->changed_by_user.emit();
 
-    binding->frozen = false;
-    
     // FIXME: somehow the UserActionTracker in AW_ROOT needs to be informed:
     // if root->is_tracking(), call root->track_awar_change(awar) after
     // setting the value, but before running other callbacks.
