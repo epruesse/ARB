@@ -444,7 +444,7 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, con
     aws->callback((AW_CB0) AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"color_props.hlp");
+    aws->callback(makeHelpCallback("color_props.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at_newline();

@@ -483,11 +483,10 @@ static void aw_help_search(AW_window *aww) {
     free(searchtext);
 }
 
-void AW_POPUP_HELP(AW_window *, AW_CL /* char */ helpcd) {
+void AW_help_popup(AW_window *, const char *help_file) {
     static AW_window_simple *aws = 0;
 
-    AW_root *awr       = AW_root::SINGLETON;
-    char    *help_file = (char*)helpcd;
+    AW_root *awr = AW_root::SINGLETON;
 
     if (!aws) {
         awr->awar_string(AWAR_HELPTEXT,   "", AW_ROOT_DEFAULT);
@@ -558,6 +557,6 @@ void AW_POPUP_HELP(AW_window *, AW_CL /* char */ helpcd) {
 void AW_insert_default_help_entries(AW_window *aww) {
     aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", "clickhelp", AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
 
-    aww->insert_help_topic("How to use help", "H", "help.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp", 0);
-    aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",  0);
+    aww->insert_help_topic("How to use help", "H", "help.hlp", AWM_ALL, makeHelpCallback("help.hlp"));
+    aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, makeHelpCallback("arb.hlp"));
 }
