@@ -293,7 +293,7 @@ public:
 
     int number_of_timed_title_changes;
 
-    void /* AW_xfig */   *xfig_data;
+    class AW_xfig *xfig_data;
 
     void create_window_variables();
 

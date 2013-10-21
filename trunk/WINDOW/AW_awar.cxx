@@ -47,8 +47,7 @@ struct AW_widget_refresh_cb : virtual Noncopyable {
 };
 
 
-static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
-    AW_widget_refresh_cb *widgetlist = (AW_widget_refresh_cb*)cl_widget_refresh_cb;
+static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_refresh_cb *widgetlist) {
     if (widgetlist->widget == root->changer_of_variable) {
         root->changer_of_variable = 0;
         root->value_changed = false;
@@ -99,12 +98,12 @@ AW_widget_refresh_cb::AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_aw
     aw          = awi;
     next        = previous;
 
-    awar->add_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
+    awar->add_callback(makeRootCallback(aw_cp_awar_2_widget_cb, this));
 }
 
 AW_widget_refresh_cb::~AW_widget_refresh_cb() {
     if (next) delete next;
-    awar->remove_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
+    awar->remove_callback(makeRootCallback(aw_cp_awar_2_widget_cb, this));
 }
 
 AW_var_target::AW_var_target(void* pntr, AW_var_target *nexti) {
