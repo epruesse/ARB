@@ -104,8 +104,14 @@ public:
      * @param cd1 callback parameter 1
      * @param cd2 callback parameter 2
      */
-    void set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_expose_callback(AW_window *aww, const WindowCallback& wcb);
+    void set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
+        set_expose_callback(aww, makeWindowCallback(f, cd1, cd2));
+    }
+    void set_resize_callback(AW_window *aww, const WindowCallback& wcb);
+    void set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
+        set_resize_callback(aww, makeWindowCallback(f, cd1, cd2));
+    }
     void set_input_callback(AW_window *aww, const WindowCallback& wcb);
     void set_motion_callback(AW_window *aww, const WindowCallback& wcb);
 };
