@@ -298,7 +298,7 @@ void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL /*
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"acisrt.hlp");
+        aws->callback(makeHelpCallback("acisrt.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -447,7 +447,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main) {
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"props_nds.hlp");
+        aws->callback(makeHelpCallback("props_nds.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("page");

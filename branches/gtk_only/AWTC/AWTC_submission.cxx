@@ -237,7 +237,7 @@ AW_window *AWTC_create_submission_window(AW_root *root, AW_CL cl_gbmain) {
     aws->callback     ((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "O");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"submission.hlp");
+    aws->callback(makeHelpCallback("submission.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

@@ -76,7 +76,7 @@ AW_window *create_key_map_window(AW_root *root)
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"nekey_map.hlp");
+    aws->callback(makeHelpCallback("nekey_map.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
