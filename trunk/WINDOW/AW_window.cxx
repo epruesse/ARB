@@ -2356,15 +2356,7 @@ void AW_window::close_sub_menu() {
         p_w->menu_deep--;
 }
 
-void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb) {
-    insert_menu_topic(topic_id, name, mnemonic, helpText, Mask,
-                      AW_CB(cb.callee()), cb.inspect_CD1(), cb.inspect_CD2());
-}
-
-void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
-                                  const char *mnemonic, const char *helpText, AW_active mask,
-                                  void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2)
-{
+void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb) {
     aw_assert(legal_mask(mask));
     Widget button;
 
@@ -2394,7 +2386,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
     }
 
     AW_label_in_awar_list(this, button, name);
-    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, helpText);
+    AW_cb *cbs = new AW_cb(this, cb, helpText);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
