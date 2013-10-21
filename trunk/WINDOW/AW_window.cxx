@@ -620,13 +620,13 @@ static void AW_exposeCB(Widget /*wgt*/, XtPointer aw_cb_struct, XmDrawingAreaCal
     }
 }
 
-void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_expose_callback(AW_window *aww, const WindowCallback& cb) {
     // insert expose callback for draw_area
     if (!expose_cb) {
         XtAddCallback(area, XmNexposeCallback, (XtCallbackProc) AW_exposeCB,
                 (XtPointer) this);
     }
-    expose_cb = new AW_cb(aww, f, cd1, cd2, 0, expose_cb);
+    expose_cb = new AW_cb(aww, cb, 0, expose_cb);
 }
 
 void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -762,13 +762,13 @@ static void AW_resizeCB_draw_area(Widget /*wgt*/, XtPointer aw_cb_struct, XtPoin
     aram->run_resize_callback();
 }
 
-void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_resize_callback(AW_window *aww, const WindowCallback& cb) {
     // insert resize callback for draw_area
     if (!resize_cb) {
         XtAddCallback(area, XmNresizeCallback,
                 (XtCallbackProc) AW_resizeCB_draw_area, (XtPointer) this);
     }
-    resize_cb = new AW_cb(aww, f, cd1, cd2, 0, resize_cb);
+    resize_cb = new AW_cb(aww, cb, 0, resize_cb);
 }
 
 void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -2027,7 +2027,7 @@ inline int yoffset_for_mode_button(int button_number) {
     return button_number*MODE_BUTTON_OFFSET + (button_number/4)*8 + 2;
 }
 
-int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active mask, const WindowCallback& cb) {
     aw_assert(legal_mask(mask));
     Widget button;
 
@@ -2046,7 +2046,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     XtVaSetValues(button, RES_CONVERT(XmNlabelPixmap, path), NULL);
     XtVaGetValues(button, XmNforeground, &p_global->foreground, NULL);
 
-    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, 0);
+    AW_cb *cbs = new AW_cb(this, cb, 0);
     AW_cb *cb2 = new AW_cb(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, helpText, cbs);
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
@@ -2420,7 +2420,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
 }
 
 void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const char *helpText, AW_active mask,
-                                  void (*f)(AW_window*, AW_CL,  AW_CL), AW_CL cd1, AW_CL cd2)
+                                  const WindowCallback& cb)
 {
     aw_assert(legal_mask(mask));
     Widget button;
@@ -2432,7 +2432,7 @@ void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const cha
                                       RES_CONVERT(XmNmnemonic, mnemonic), NULL);
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
-    (XtPointer) new AW_cb(this, f, cd1, cd2, helpText));
+    (XtPointer) new AW_cb(this, cb, helpText));
 
     root->make_sensitive(button, mask);
 }
