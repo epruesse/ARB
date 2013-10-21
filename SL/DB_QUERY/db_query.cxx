@@ -1381,7 +1381,7 @@ void QUERY::copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *s
                   " * 'Search/Add/Keep species' and\n"
                   " * 'that match/don't match the query'\n"
                   "in the search tool.",
-                  AW_ADVICE_TOGGLE|AW_ADVICE_HELP,
+                  AW_ADVICE_TOGGLE_AND_HELP,
                   "Behavior changed",
                   "next_neighbours.hlp");
     }
@@ -1565,7 +1565,7 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
             AW_advice("'Find equal entries' now depends on the values selected for\n"
                       " * 'that match/don't match the query'\n"
                       "in the search tool.",
-                      AW_ADVICE_TOGGLE|AW_ADVICE_HELP,
+                      AW_ADVICE_TOGGLE_AND_HELP,
                       "Behavior changed",
                       "search_duplicates.hlp");
         }
