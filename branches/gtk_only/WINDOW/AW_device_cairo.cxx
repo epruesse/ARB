@@ -119,7 +119,7 @@ bool AW_device_cairo::box_impl(int gc, bool filled, const Rectangle& rect, AW_bi
 
     AW_pos x      = AW_INT(clippedRect.left())  - 0.5;
     AW_pos y      = AW_INT(clippedRect.top())   - 0.5;
-    AW_pos width  = AW_INT(clippedRect.width()) + 1.0;
+    AW_pos width  = AW_INT(clippedRect.width()) + 1.0; //see aw_device.hxx@WORLD_vs_PIXEL
     AW_pos height = AW_INT(clippedRect.height())+ 1.0;
 
     cairo_rectangle(cr, x, y, width, height);
