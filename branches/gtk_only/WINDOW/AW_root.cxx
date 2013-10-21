@@ -171,12 +171,12 @@ AW_action* AW_root::action_register(const char* action_id, const AW_action& _act
             return found_act;
         }
         else {
-            printf("%s %s %s %i\n",
+            printf("%s %s %s %zu\n",
                    act->get_id(), 
                    act->get_label(),
                    act->get_help(),
                    act->clicked.size());
-            printf("%s %s %s %i\n",
+            printf("%s %s %s %zu\n",
                    found_act->get_id(), 
                    found_act->get_label(),
                    found_act->get_help(),

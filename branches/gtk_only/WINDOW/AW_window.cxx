@@ -364,12 +364,12 @@ bool AW_window::close_window_handler(GtkWidget* wgt, GdkEvent*, gpointer data) {
 /**
  * Create a label
  */
-void AW_window::create_label(const char* button_text, bool highlight) {
+void AW_window::create_label(const char* button_text, bool highlight_) {
     aw_return_if_fail(button_text != NULL);
 
     GtkWidget *labelw = make_label(button_text, _at.length_of_buttons);
 
-    if (highlight) {
+    if (highlight_) {
         GtkWidget *frame = gtk_frame_new(NULL);
         gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_ETCHED_IN);
         gtk_container_add(GTK_CONTAINER(frame), labelw);
@@ -1030,7 +1030,7 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
 
     _at.set_xfig(xfig_data);
 
-    AW_device *device = get_device(AW_INFO_AREA);
+    // AW_device *device = get_device(AW_INFO_AREA);
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
@@ -1311,18 +1311,18 @@ void AW_window::window_fit() {
 AW_window::AW_window() 
   : recalc_size_at_show(AW_KEEP_SIZE),
     recalc_pos_at_show(AW_KEEP_POS),
-    left_indent_of_horizontal_scrollbar(0),
-    top_indent_of_vertical_scrollbar(0),
     prvt(new AW_window::AW_window_gtk()),
     _at(this),
-    event(),
     xfig_data(NULL),
+    event(),
     window_name(NULL),
     window_defaults_name(NULL),
     slider_pos_vertical(0),
     slider_pos_horizontal(0),
-    main_drag_gc(0),
-    picture(new AW_screen_area)
+    left_indent_of_horizontal_scrollbar(0),
+    top_indent_of_vertical_scrollbar(0),
+    picture(new AW_screen_area),
+    main_drag_gc(0)
 {
     aw_assert(AW_root::SINGLETON); // must have AW_root
   

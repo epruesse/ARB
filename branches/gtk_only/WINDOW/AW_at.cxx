@@ -194,7 +194,7 @@ void AW_at::at_newline(){
     at_x(x_for_newline);
 }
 
-bool AW_at::at_ifdef(const char *at_id) {
+bool AW_at::at_ifdef(const char *at_id_) {
     
     AW_xfig *xfig = window->get_xfig_data();
     
@@ -208,7 +208,7 @@ bool AW_at::at_ifdef(const char *at_id) {
     #if defined(DEBUG)
         int printed =
     #endif // DEBUG
-    sprintf(buffer, "XY:%s", at_id);
+    sprintf(buffer, "XY:%s", at_id_);
         
     #if defined(DEBUG)
         aw_assert(printed<100);
