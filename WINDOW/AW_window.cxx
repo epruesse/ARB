@@ -120,56 +120,8 @@ void AW_window::sens_mask(AW_active mask){
  * Register callback for the next action implicitly created 
  * when making a widget.
  */
-void AW_window::callback(void (*f)(AW_window*)){
-    prvt->action_template.clicked.connect(makeWindowCallback(f), this);
-}
-
-/**
- * Register callback for the next action implicitly created 
- * when making a widget.
- */
-void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
-    prvt->action_template.clicked.connect(makeWindowCallback(f, cd1), this);
-}
-
-/**
- * Register callback for the next action implicitly created 
- * when making a widget.
- */
-void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    prvt->action_template.clicked.connect(makeWindowCallback(f, cd1, cd2), this);
-}
-
-/**
- * Register callback for the next action implicitly created 
- * when making a widget.
- */
 void AW_window::callback(const WindowCallback& wcb){
     prvt->action_template.clicked.connect(wcb, this);
-}
-
-/**
- * Register double click callback for the next action implicitly created 
- * when making a widget.
- */
-void AW_window::d_callback(void (*f)(AW_window*)) {
-    prvt->action_template.dclicked.connect(makeWindowCallback(f), this);
-}
-
-/**
- * Register double click callback for the next action implicitly created 
- * when making a widget.
- */
-void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1){
-    prvt->action_template.dclicked.connect(makeWindowCallback(f, cd1), this);
-}
-
-/**
- * Register double click callback for the next action implicitly created 
- * when making a widget.
- */
-void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    prvt->action_template.dclicked.connect(makeWindowCallback(f, cd1, cd2), this);
 }
 
 /**
