@@ -47,7 +47,7 @@ void AW_advice(const char *message,
                const char *corresponding_help = 0);
 
 //! reactivates all advices which were disabled by the user
-void AW_reactivate_all_advices();
+void AW_reactivate_all_advices(AW_window*);
 
 
 #else
