@@ -990,42 +990,43 @@ void AW_window::update_scrollbar_settings_from_awars(AW_orientation orientation)
     }
 }
 
-static void horizontal_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
-    AW_window *aw = (AW_window *)cd;
+static void horizontal_scrollbar_redefinition_cb(AW_root*, AW_window *aw) {
     aw->update_scrollbar_settings_from_awars(AW_HORIZONTAL);
 }
 
-static void vertical_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
-    AW_window *aw = (AW_window *)cd;
+static void vertical_scrollbar_redefinition_cb(AW_root*, AW_window *aw) {
     aw->update_scrollbar_settings_from_awars(AW_VERTICAL);
 }
 
 void AW_window::create_window_variables() {
     char buffer[200];
 
+    RootCallback hor_src = makeRootCallback(horizontal_scrollbar_redefinition_cb, this);
+    RootCallback ver_src = makeRootCallback(vertical_scrollbar_redefinition_cb, this);
+
     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(hor_src);
 
     sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(ver_src);
 
     sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(hor_src);
 
     sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(ver_src);
 
     sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 9);
-    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(hor_src);
 
     sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(ver_src);
 }
 
 void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
@@ -2646,7 +2647,7 @@ void AW_window::show() {
 
     XtPopup(p_w->shell, XtGrabNone);
     if (!expose_callback_added) {
-        set_expose_callback(AW_INFO_AREA, (AW_CB)aw_onExpose_calc_WM_offsets, 0, 0); // @@@ should be removed after it was called once
+        set_expose_callback(AW_INFO_AREA, aw_onExpose_calc_WM_offsets); // @@@ should be removed after it was called once
         expose_callback_added = true;
     }
 }
@@ -2734,18 +2735,14 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 }
 
 void AW_window::load_xfig(const char *file, bool resize) {
-    AW_xfig *xfig;
+    if (file)   xfig_data = new AW_xfig(file, get_root()->font_width, get_root()->font_height);
+    else        xfig_data = new AW_xfig(get_root()->font_width, get_root()->font_height); // create an empty xfig
 
-    if (file)   xfig = new AW_xfig(file, get_root()->font_width, get_root()->font_height);
-    else        xfig = new AW_xfig(get_root()->font_width, get_root()->font_height); // create an empty xfig
+    set_expose_callback(AW_INFO_AREA, makeWindowCallback(AW_xfigCB_info_area, xfig_data));
+    xfig_data->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1);
 
-    xfig_data = (void*)xfig;
-
-    set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data, 0);
-    xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1);
-
-    int xsize = xfig->maxx - xfig->minx;
-    int ysize = xfig->maxy - xfig->miny;
+    int xsize = xfig_data->maxx - xfig_data->minx;
+    int ysize = xfig_data->maxy - xfig_data->miny;
 
     if (xsize>_at->max_x_size) _at->max_x_size = xsize;
     if (ysize>_at->max_y_size) _at->max_y_size = ysize;

@@ -150,10 +150,10 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
                     ++ret;
                 }
                 if (strcmp(ret, "EXIT") == 0) {
-                    aw_msg->callback(message_cb, -1);
+                    aw_msg->callback(makeWindowCallback(message_cb, -1));
                 }
                 else {
-                    aw_msg->callback(message_cb, (AW_CL)counter++);
+                    aw_msg->callback(makeWindowCallback(message_cb, counter++));
                 }
 
                 if (fixedSizeButtons) {

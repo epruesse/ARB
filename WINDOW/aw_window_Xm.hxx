@@ -281,10 +281,10 @@ void        AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer cal
 // do not use the following
 extern int aw_message_cb_result;
 #define AW_MESSAGE_LISTEN_DELAY 500 // look in ms whether a father died
-void message_cb(AW_window *aw, AW_CL cd1);
-void input_cb(AW_window *aw, AW_CL cd1);
-void input_history_cb(AW_window *aw, AW_CL cl_mode);
-void file_selection_cb(AW_window *aw, AW_CL cd1);
+void message_cb(AW_window*, int result);
+void input_cb(AW_window *aw, int buttonNr);
+void input_history_cb(AW_window *aw, int mode);
+void file_selection_cb(AW_window *aw, int ok_cancel_flag);
 unsigned aw_message_timer_listen_event(AW_root *awr, AW_window *aww);
 // ------------------------------------------------------------
 
