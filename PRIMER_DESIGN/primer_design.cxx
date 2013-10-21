@@ -100,7 +100,7 @@ static void create_primer_design_result_window(AW_window *aww) {
         pdrw->auto_space(10, 10);
 
         pdrw->at("help");
-        pdrw->callback(AW_POPUP_HELP, (AW_CL)"primerdesignresult.hlp");
+        pdrw->callback(makeHelpCallback("primerdesignresult.hlp"));
         pdrw->create_button("HELP", "HELP", "H");
 
         pdrw->at("result");
@@ -488,7 +488,7 @@ AW_window *create_primer_design_window(AW_root *root, AW_CL cl_gb_main) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"primer_new.hlp");
+    aws->callback(makeHelpCallback("primer_new.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("init1");

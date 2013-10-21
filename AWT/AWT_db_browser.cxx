@@ -1076,7 +1076,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"db_browser.hlp");
+        aws->callback(makeHelpCallback("db_browser.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 

@@ -2104,7 +2104,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd)
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"color_loadsave.hlp");
+        aws->callback(makeHelpCallback("color_loadsave.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("name");
@@ -2208,8 +2208,8 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    if (mode == COLORIZE_LISTED) aws->callback(AW_POPUP_HELP, (AW_CL)"set_color_of_listed.hlp");
-    else                                 aws->callback(AW_POPUP_HELP, (AW_CL)"colorize.hlp");
+    if (mode == COLORIZE_LISTED) aws->callback(makeHelpCallback("set_color_of_listed.hlp"));
+    else                                 aws->callback(makeHelpCallback("colorize.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("colorize");
@@ -2289,11 +2289,11 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"mod_field_list.hlp");
+    aws->callback(makeHelpCallback("mod_field_list.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("helptags");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"tags.hlp");
+    aws->callback(makeHelpCallback("tags.hlp"));
     aws->create_button("HELP_TAGS", "HELP TAGS", "H");
 
     aws->at("usetag");  aws->create_toggle(query->awar_use_tag);
@@ -2436,7 +2436,7 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"write_field_list.hlp");
+    aws->callback(makeHelpCallback("write_field_list.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, FIELD_FILTER_NDS, "box", 0, query->selector, 20, 10);
@@ -2504,7 +2504,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"set_protection.hlp");
+    aws->callback(makeHelpCallback("set_protection.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
 

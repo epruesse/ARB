@@ -34,7 +34,7 @@ struct gde_iteminfo {
 
 static void GDE_showhelp_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /* cd */) {
     if (gmenuitem->help) {
-        AW_POPUP_HELP(aw, (AW_CL)gmenuitem->help);
+        AW_help_popup(aw, gmenuitem->help);
     }
     else {
         aw_message("Sorry - no help available (please report to devel@arb-home.de)");

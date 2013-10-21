@@ -71,7 +71,7 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL) "st_ml.hlp");
+    aws->callback(makeHelpCallback("st_ml.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -191,7 +191,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL) "check_quality.hlp");
+        aws->callback(makeHelpCallback("check_quality.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 

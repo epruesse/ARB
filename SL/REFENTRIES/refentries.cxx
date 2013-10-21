@@ -237,7 +237,7 @@ namespace RefEntries {
         aws->callback((AW_CB0) AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)help);
+        aws->callback(makeHelpCallback(help));
         aws->create_button("HELP", "HELP", "H");
 
         const int LABEL_LENGTH = 27;

@@ -665,7 +665,7 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, AW_CL option
     }
     aws->load_xfig("merge_species.fig");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"merge_species.hlp");
+    aws->callback(makeHelpCallback("merge_species.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -718,7 +718,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
 
     aws->button_length(8);
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"concatenate.hlp");
+    aws->callback(makeHelpCallback("concatenate.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

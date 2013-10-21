@@ -364,7 +364,7 @@ AW_window *AP_open_pos_var_pars_window(AW_root *root) {
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"pos_var_pars.hlp");
+    aws->at("help"); aws->callback(makeHelpCallback("pos_var_pars.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("name");

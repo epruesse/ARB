@@ -348,7 +348,7 @@ AW_window *COLSTAT_create_selection_window(AW_root *aw_root, ColumnStat *column_
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"awt_csp.hlp");
+    aws->at("help"); aws->callback(makeHelpCallback("awt_csp.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("box");

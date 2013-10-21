@@ -982,7 +982,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     aws->button_length(0);
     aws->create_button("REFRESH", "#refresh_text.xpm");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"proteinViewer.hlp");
+    aws->callback(makeHelpCallback("proteinViewer.hlp"));
     aws->at("help");
     aws->button_length(0);
     aws->create_button("HELP", "#help_text.xpm");
