@@ -145,7 +145,6 @@ struct AW_event {
 void AW_POPDOWN(AW_window *);
 
 void AW_help_popup(AW_window *aw, const char *help_file);
-__ATTR__DEPRECATED("use AW_help_popup or makeHelpCallback") inline void AW_POPUP_HELP(AW_window *aw, AW_CL helpfile) { AW_help_popup(aw, (const char *)helpfile); }
 inline WindowCallback makeHelpCallback(const char *helpfile) { return makeWindowCallback(AW_help_popup, helpfile); }
 
 void AW_help_entry_pressed(AW_window *);

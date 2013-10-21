@@ -94,7 +94,7 @@ void AW_cb::run_callbacks() {
                                 f == AW_CB(file_selection_cb));
 
         bool isPopdown = (f == AW_CB(AW_POPDOWN));
-        bool isHelp    = (f == AW_CB(AW_help_popup) || f == AW_CB(AW_POPUP_HELP));
+        bool isHelp    = (f == AW_CB(AW_help_popup));
         bool allow     = isModalCallback || isHelp || isPopdown;
 
         bool isInfoResizeExpose = false;
