@@ -58,8 +58,7 @@ static int AW_isort_AW_select_table_struct_backward(const void *t1, const void *
                        static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
 }
 
-static void aw_selection_list_awar_changed(AW_root*, AW_CL cd) {
-    AW_selection_list* slist = (AW_selection_list*) cd;
+static void aw_selection_list_awar_changed(AW_root*, AW_selection_list* slist) {
     slist->refresh();
 }
 
@@ -91,12 +90,12 @@ AW_selection_list::AW_selection_list(AW_awar* awar_)
       select_default_on_unknown_awar_value(true)
 {
     aw_assert(NULL != awar);
-    awar->add_callback(aw_selection_list_awar_changed, (AW_CL)this);
+    awar->add_callback(makeRootCallback(aw_selection_list_awar_changed, this));
 }
 
 AW_selection_list::~AW_selection_list() {
     printf("destroying sellist\n");
-    awar->remove_callback(aw_selection_list_awar_changed, (AW_CL)this);
+    awar->remove_callback(makeRootCallback(aw_selection_list_awar_changed, this));
     if (change_cb_id) {
         GObject *obj;
         if (GTK_IS_TREE_VIEW(widget)) {
