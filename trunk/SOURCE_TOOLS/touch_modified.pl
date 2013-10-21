@@ -44,6 +44,9 @@ sub main() {
         }
       }
     }
+    elsif ($line =~ /^\s+M\s+\.$/) { # accept changed merge-info for rootdir
+      $handled = 1;
+    }
     if ($handled==0) { die "Can't handle status line '$line'"; }
   }
   close(STATUS);
