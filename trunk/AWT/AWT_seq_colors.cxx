@@ -121,7 +121,7 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc) {
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"sequence_colors.hlp");
+    aws->callback(makeHelpCallback("sequence_colors.hlp"));
     aws->create_button("HELP", "HELP");
     
     aws->at_newline();

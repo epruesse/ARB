@@ -267,7 +267,7 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"tr_export.hlp");
+    aws->callback(makeHelpCallback("tr_export.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("user");
@@ -501,7 +501,7 @@ static AW_window *create_tree_diff_window(AW_root *root) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"tree_diff.hlp");
+    aws->callback(makeHelpCallback("tree_diff.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -530,7 +530,7 @@ static AW_window *create_tree_cmp_window(AW_root *root) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"tree_cmp.hlp");
+    aws->callback(makeHelpCallback("tree_cmp.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -616,7 +616,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"treeadm.hlp");
+        aws->callback(makeHelpCallback("treeadm.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -755,7 +755,7 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"consense_tree.hlp");
+        aws->callback(makeHelpCallback("consense_tree.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 

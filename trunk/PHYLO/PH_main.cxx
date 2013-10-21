@@ -393,7 +393,7 @@ static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"ph_export_markerline.hlp");
+    aws->callback(makeHelpCallback("ph_export_markerline.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -478,7 +478,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
     awm->help_text("quit.hlp");
     awm->create_button("QUIT", "QUIT");
 
-    awm->callback(AW_POPUP_HELP, (AW_CL)"phylo.hlp");
+    awm->callback(makeHelpCallback("phylo.hlp"));
     awm->button_length(0);
     awm->create_button("HELP", "HELP", "H");
 

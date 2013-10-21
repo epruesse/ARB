@@ -93,7 +93,7 @@ AW_window *AW_create_namesadmin_window(AW_root *root, AW_CL cl_gb_main) {
 
     aws->load_xfig("awtc/names_admin.fig");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"namesadmin.hlp");
+    aws->callback(makeHelpCallback("namesadmin.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

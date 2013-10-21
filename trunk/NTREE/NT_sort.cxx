@@ -173,7 +173,7 @@ AW_window *NT_build_resort_window(AW_root *awr) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"sp_sort_fld.hlp");
+    aws->callback(makeHelpCallback("sp_sort_fld.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

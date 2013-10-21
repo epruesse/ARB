@@ -413,7 +413,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"mg_preserve.hlp");
+    aws->callback(makeHelpCallback("mg_preserve.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     // ----------

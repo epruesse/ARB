@@ -167,7 +167,7 @@ AW_window *NT_searchManuallyNames(AW_root *aw_root /* , AW_CL */)
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"vn_search.hlp");
+    aws->callback(makeHelpCallback("vn_search.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("nameList");

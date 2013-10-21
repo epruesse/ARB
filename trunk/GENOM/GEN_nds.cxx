@@ -314,7 +314,7 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main)
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"props_nds.hlp");
+        aws->callback(makeHelpCallback("props_nds.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->button_length(13);

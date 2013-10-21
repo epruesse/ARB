@@ -209,7 +209,7 @@ AW_window *create_helix_props_window(AW_root *awr, void (*cb)(AW_window*)) {
 
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"helixsym.hlp");
+        aws->callback(makeHelpCallback("helixsym.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at_newline();

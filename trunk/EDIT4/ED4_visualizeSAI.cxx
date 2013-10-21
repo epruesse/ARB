@@ -704,7 +704,7 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
         aws->init(aw_root, "VISUALIZE_SAI", "Visualize SAIs");
         aws->load_xfig("visualizeSAI.fig");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"visualizeSAI.hlp");
+        aws->callback(makeHelpCallback("visualizeSAI.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 

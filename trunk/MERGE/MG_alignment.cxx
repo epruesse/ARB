@@ -268,7 +268,7 @@ static AW_window *MG_create_alignment_window(AW_root *root, AW_CL db_nr) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"ad_align.hlp");
+    aws->callback(makeHelpCallback("ad_align.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -340,7 +340,7 @@ AW_window *MG_merge_alignment_cb(AW_root *awr) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"mg_alignment.hlp");
+    aws->callback(makeHelpCallback("mg_alignment.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("check");
@@ -365,7 +365,7 @@ AW_window *MG_merge_alignment_cb(AW_root *awr) {
     aws->button_length(0);
     aws->shadow_width(1);
     aws->at("icon");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"mg_alignment.hlp");
+    aws->callback(makeHelpCallback("mg_alignment.hlp"));
     aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
     return aws;
