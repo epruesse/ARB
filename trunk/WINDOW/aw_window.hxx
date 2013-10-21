@@ -388,8 +388,10 @@ public:
 
     void set_expose_callback(AW_area area, const WindowCallback& wcb);
     void set_resize_callback(AW_area area, const WindowCallback& wcb);
-    void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0) __ATTR__DEPRECATED_TODO("pass WindowCallback");
-    void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0) __ATTR__DEPRECATED_TODO("pass WindowCallback");
+    void set_expose_callback(AW_area area, AW_CB0 cb) { set_expose_callback(area, makeWindowCallback(cb)); }
+    void set_resize_callback(AW_area area, AW_CB0 cb) { set_resize_callback(area, makeWindowCallback(cb)); }
+    void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2=0) __ATTR__DEPRECATED_TODO("pass WindowCallback") { set_expose_callback(area, makeWindowCallback(f, cd1, cd2)); }
+    void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2=0) __ATTR__DEPRECATED_TODO("pass WindowCallback") { set_resize_callback(area, makeWindowCallback(f, cd1, cd2)); }
 
     void set_input_callback(AW_area area, const WindowCallback& wcb);
     void set_motion_callback(AW_area area, const WindowCallback& wcb);
@@ -416,14 +418,15 @@ public:
     // ************** Create the menu buttons *********
     void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
     void insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback");
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, cd1, 0); }
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, 0, 0); }
     void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb);
+    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
+    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, cd1, 0); }
+    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback");
     void sep______________(); // insert a separator
     void close_sub_menu();
 
     void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& cb);
+    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_help_topic(name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
     void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
         insert_help_topic(name, mnemonic, help_text_, mask, makeWindowCallback(f, cd1, cd2));
     }
@@ -535,20 +538,23 @@ public:
     void restore_at_size_and_attach(const AW_at_size *at_size);   // set size of a at-element
 
     void sens_mask(AW_active mask);   // Set the sensitivity mask used for following widgets (Note: reset by next at()-command)
-    void help_text(const char *id);  // Set the help text of a button
-    void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback"); // normal callbacks
-    void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback");
-    void callback(void (*f)(AW_window*)) __ATTR__DEPRECATED_TODO("pass WindowCallback");
-    void callback(AW_cb * /* owner */ awcbs); // Calls f with
-    void callback(const WindowCallback& cb);
-    // aww in awcbs
-    void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback"); // double click callbacks
-    void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback"); // selection lists only !!
-    void d_callback(void (*f)(AW_window*)) __ATTR__DEPRECATED_TODO("pass WindowCallback");
-    void d_callback(AW_cb * /* owner */ awcbs); // Calls f with
-    void d_callback(const WindowCallback& cb);
-    // *** create the buttons ********
+    void help_text(const char *id);   // Set the help text of a button
 
+    // normal callbacks
+    void callback(const WindowCallback& cb);
+    void callback(void (*f)(AW_window*)) { callback(makeWindowCallback(f)); }
+    void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1)); }
+    void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1, cd2)); }
+    void callback(AW_cb * /* owner */ awcbs); // calls callback with aww in awcbs
+
+    // double click callbacks (selection lists only)
+    void d_callback(const WindowCallback& cb);
+    void d_callback(void (*f)(AW_window*)) { d_callback(makeWindowCallback(f)); }
+    void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { d_callback(makeWindowCallback(f, cd1)); } 
+    void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { d_callback(makeWindowCallback(f, cd1, cd2)); }
+    void d_callback(AW_cb * /* owner */ awcbs); // calls callback with aww in awcbs
+
+    // *** create the buttons ********
     void   create_button(const char *macro_name, AW_label label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
     void   create_autosize_button(const char *macro_name, AW_label label, const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
     Widget get_last_widget() const;
