@@ -454,8 +454,7 @@ struct toggle_button_data {
     GtkWidget *yes, *no, *toggle;
 };
 
-static void _aw_update_toggle_icon(AW_root*, AW_CL data) {
-    toggle_button_data *tbd = (toggle_button_data*)data;
+static void _aw_update_toggle_icon(AW_root*, toggle_button_data *tbd) {
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(tbd->toggle));
     if (tbd->awar->read_int()) {
         if (child == tbd->yes) return; // nothing to do
@@ -496,9 +495,9 @@ void AW_window::create_toggle(const char *awar_name, const char *no, const char 
     data->yes  = yes_label;
     data->no   = no_label;
     data->toggle = checkButton;
-    awar->add_callback(_aw_update_toggle_icon, (AW_CL)data);
+    awar->add_callback(makeRootCallback(_aw_update_toggle_icon, data));
     awar->bind_value(G_OBJECT(checkButton), "active");
-    _aw_update_toggle_icon(NULL,(AW_CL)data);
+    _aw_update_toggle_icon(NULL, data);
    
     awar->changed_by_user += prvt->action_template.clicked;
     prvt->action_template = AW_action();
@@ -989,7 +988,7 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
         set_window_size(_at.max_x_size, _at.max_y_size);
     }
 
-    set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data);
+    set_expose_callback(AW_INFO_AREA, makeWindowCallback(AW_xfigCB_info_area, xfig_data));
 }
 
 /**
@@ -1153,21 +1152,23 @@ void AW_window::create_window_variables() {
 
     char buffer[200];
 
+    RootCallback scrollbar_recalc_cb = makeRootCallback(_aw_window_recalc_scrollbar_cb, this);
+
     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback((AW_RCB1)_aw_window_recalc_scrollbar_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(scrollbar_recalc_cb);
 
     sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback((AW_RCB1)_aw_window_recalc_scrollbar_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(scrollbar_recalc_cb);
 
     sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 9);
-    get_root()->awar(buffer)->add_callback((AW_RCB1)_aw_window_recalc_scrollbar_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(scrollbar_recalc_cb);
 
     sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback((AW_RCB1)_aw_window_recalc_scrollbar_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(scrollbar_recalc_cb);
 
     GtkAdjustment *adj;
     adj = aw_drawing_area_get_vertical_adjustment(prvt->drawing_area);
