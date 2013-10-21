@@ -347,7 +347,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"sel_fil.hlp");
+        aws->at("help"); aws->callback(makeHelpCallback("sel_fil.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         acbs->aw_filt = aws; // store the filter selection window in 'acbs'

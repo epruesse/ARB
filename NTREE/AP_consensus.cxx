@@ -735,7 +735,7 @@ AP_open_con_expert_window(AW_root *aw_root)
     aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"consensus.hlp");
+    aws->at("help"); aws->callback(makeHelpCallback("consensus.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->button_length(10);
@@ -902,7 +902,7 @@ AP_open_max_freq_window(AW_root *aw_root)
     aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"max_freq.hlp");
+    aws->at("help"); aws->callback(makeHelpCallback("max_freq.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     // activation of consensus calculation by button ...

@@ -124,7 +124,7 @@ AW_window *ED4_create_nds_window(AW_root *root)
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"ed4_nds.hlp");
+    aws->callback(makeHelpCallback("ed4_nds.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

@@ -309,7 +309,7 @@ AW_window *create_mg_check_fields(AW_root *aw_root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"checkfield.hlp");
+    aws->callback(makeHelpCallback("checkfield.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
 

@@ -714,7 +714,7 @@ AW_window *ED4_create_replace_window(AW_root *root) {
     aws->create_button("CLOSE", "Close", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"e4_replace.hlp");
+    aws->callback(makeHelpCallback("e4_replace.hlp"));
     aws->create_button("HELP", "Help", "H");
 
     aws->at("spattern");
@@ -1000,7 +1000,7 @@ AW_window *ED4_create_modsai_window(AW_root *root) {
     aws->create_button("CLOSE", "Close", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"e4_modsai.hlp");
+    aws->callback(makeHelpCallback("e4_modsai.hlp"));
     aws->create_button("HELP", "Help", "H");
     
     aws->at("script");

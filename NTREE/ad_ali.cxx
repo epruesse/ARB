@@ -245,7 +245,7 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_CL popmedown)
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"ad_align.hlp");
+    aws->callback(makeHelpCallback("ad_align.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

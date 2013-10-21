@@ -133,7 +133,8 @@ void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file) {
 
 void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file) {
     char *command = (char *)cl_command;
-    if (cl_auto_help_file) AW_POPUP_HELP(aww, cl_auto_help_file);
+    const char *autohelpfile = (const char *)cl_auto_help_file;
+    if (autohelpfile) AW_help_popup(aww, autohelpfile);
 
     GB_ERROR error = GB_xcmd(command, true, true);
     if (error) aw_message(error);

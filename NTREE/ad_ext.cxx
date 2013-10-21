@@ -304,7 +304,7 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root)
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"ad_extended.hlp");
+        aws->callback(makeHelpCallback("ad_extended.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 

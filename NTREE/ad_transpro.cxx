@@ -251,7 +251,7 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"translate_dna_2_pro.hlp");
+    aws->callback(makeHelpCallback("translate_dna_2_pro.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -727,7 +727,7 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"realign_dna.hlp");
+    aws->callback(makeHelpCallback("realign_dna.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

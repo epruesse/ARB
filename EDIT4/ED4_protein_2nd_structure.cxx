@@ -1048,7 +1048,7 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     // create help button
-    aws->callback(AW_POPUP_HELP, (AW_CL)"pfold_props.hlp");
+    aws->callback(makeHelpCallback("pfold_props.hlp"));
     aws->create_button("HELP", "HELP");
     aws->at_newline();
 

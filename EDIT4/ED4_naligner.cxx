@@ -234,7 +234,7 @@ AW_window *create_naligner_window(AW_root *root, AW_CL /*cd2*/) {
     aws->create_button("CLOSE", "CLOSE", "O");
 
     aws->at("help");
-    aws->callback     (AW_POPUP_HELP, (AW_CL) "ne_align_seq.hlp");
+    aws->callback(makeHelpCallback("ne_align_seq.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at("align");

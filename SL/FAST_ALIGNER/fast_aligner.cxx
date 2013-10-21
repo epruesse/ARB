@@ -2494,7 +2494,7 @@ static AW_window *create_island_hopping_window(AW_root *root, AW_CL) {
     aws->create_button("CLOSE", "CLOSE", "O");
 
     aws->at("help");
-    aws->callback     (AW_POPUP_HELP, (AW_CL) "islandhopping.hlp");
+    aws->callback(makeHelpCallback("islandhopping.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at("use_secondary");
@@ -2588,7 +2588,7 @@ static AW_window *create_family_settings_window(AW_root *root) {
         aws->create_button("CLOSE", "CLOSE", "O");
 
         aws->at("help");
-        aws->callback     (AW_POPUP_HELP, (AW_CL) "next_neighbours_common.hlp");
+        aws->callback(makeHelpCallback("next_neighbours_common.hlp"));
         aws->create_button("HELP", "HELP");
 
         AWTC_create_common_next_neighbour_fields(aws);
@@ -2611,7 +2611,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->create_button("CLOSE", "CLOSE", "O");
 
     aws->at("help");
-    aws->callback     (AW_POPUP_HELP, (AW_CL) "faligner.hlp");
+    aws->callback(makeHelpCallback("faligner.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at("aligner");

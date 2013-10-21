@@ -277,7 +277,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
     aws->set_close_action("EXIT");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"arb_intro.hlp");
+    aws->callback(makeHelpCallback("arb_intro.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     AW_create_fileselection(aws, "tmp/nt/arbdb");
