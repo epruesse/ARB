@@ -1060,13 +1060,9 @@ void AW_window::sep______________() {
  * Called whenever the @param area receives an expose event.
  * This is where any drawing should be handled.
  */
-void AW_window::set_expose_callback(AW_area area, AW_CB f, AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
-    AW_area_management *aram = prvt->areas[area];
-    if (aram) aram->set_expose_callback(this, f, cd1, cd2);
-}
 void AW_window::set_expose_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = prvt->areas[area];
-    if (aram) aram->set_expose_callback(this, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
+    if (aram) aram->set_expose_callback(this, wcb);
 }
 
 /**
@@ -1121,15 +1117,10 @@ void AW_window::set_motion_callback(AW_area area, const WindowCallback& wcb) {
     aram->set_motion_callback(this, wcb);
 }
 
-void AW_window::set_resize_callback(AW_area area, AW_CB f, AW_CL cd1 /*= 0*/, AW_CL cd2 /*= 0*/) {
-    AW_area_management *aram = prvt->areas[area];
-    aw_return_if_fail(aram != NULL);
-    aram->set_resize_callback(this, f, cd1, cd2);
-}
 void AW_window::set_resize_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = prvt->areas[area];
     aw_return_if_fail(aram != NULL);
-    aram->set_resize_callback(this, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
+    aram->set_resize_callback(this, wcb);
 }
 
 // SCROLL BAR STUFF
