@@ -185,7 +185,7 @@ void AW_advice(const char *message, int type, const char *title, const char *cor
         bool help_pops_up = false;
 
         if (has_help) {
-            aws->callback(AW_POPUP_HELP, (AW_CL)corresponding_help);
+            aws->callback(makeHelpCallback(corresponding_help));
             aws->at("help");
             aws->create_button(0, "HELP", "H");
 
@@ -200,7 +200,7 @@ void AW_advice(const char *message, int type, const char *title, const char *cor
                            ? GBS_global_string("%s\n\nPlease refer to 'HELP' for more info.", message)
                            : message);
 
-        if (help_pops_up) AW_POPUP_HELP(aws, (AW_CL)corresponding_help);
+        if (help_pops_up) AW_help_popup(aws, corresponding_help);
 
         if (type & AW_ADVICE_TOGGLE) {
             aws->label("Do not advice me again");

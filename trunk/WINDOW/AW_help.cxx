@@ -471,11 +471,10 @@ static void aw_help_search(AW_window *aww) {
     free(searchtext);
 }
 
-void AW_POPUP_HELP(AW_window *aw, AW_CL /* char */ helpcd) {
+void AW_help_popup(AW_window *aw, const char *help_file) {
     static AW_window_simple *aws = 0;
 
-    AW_root *awr       = aw->get_root();
-    char    *help_file = (char*)helpcd;
+    AW_root *awr = aw->get_root();
 
     if (!aws) {
         awr->awar_string(AWAR_HELPTEXT,   "", AW_ROOT_DEFAULT);

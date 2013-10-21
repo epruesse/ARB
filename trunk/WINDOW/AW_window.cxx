@@ -530,7 +530,7 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
                                (GBS_string_matches(cbs->help_text, "*.hlp", GB_IGNORE_CASE)) ||
                                (GBS_string_matches(cbs->help_text, "*.help", GB_IGNORE_CASE))))
         {
-            AW_POPUP_HELP(cbs->aw, (AW_CL)cbs->help_text);
+            AW_help_popup(cbs->aw, cbs->help_text);
         }
         else {
             aw_message("Sorry no help available");
@@ -1113,8 +1113,8 @@ void AW_window::create_devices() {
 void aw_insert_default_help_entries(AW_window *aww) {
     aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0, AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
 
-    aww->insert_help_topic("How to use help", "H", "help.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp", 0);
-    aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",  0);
+    aww->insert_help_topic("How to use help", "H", "help.hlp", AWM_ALL, makeHelpCallback("help.hlp"));
+    aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, makeHelpCallback("arb.hlp"));
 }
 
 const char *aw_str_2_label(const char *str, AW_window *aww) {
