@@ -88,9 +88,7 @@ void AW_window_menu_modes::select_mode(int mode) {
     get_root()->awar(GBS_global_string("%s/%s", window_defaults_name, "mode"))->write_int(mode);
 }
 
-void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText, AW_active mask, 
-                           void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2){
-    
+void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText, AW_active mask, const WindowCallback& cb) {
     aw_assert(legal_mask(mask));
     
     // create radio button
@@ -130,7 +128,7 @@ void AW_window_menu_modes::create_mode(const char *pixmap, const char *helpText,
     // register clicked callback
     help_text(helpText);
     sens_mask(mask);
-    callback(f, cd1, cd2);
+    callback(cb);
     prvt->action_template.set_icon(pixmap);
     prvt->action_template.set_accel(accel_key);
     AW_awar *awar = get_root()->awar(GBS_global_string("%s/%s", window_defaults_name, "mode"));

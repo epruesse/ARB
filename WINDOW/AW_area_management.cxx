@@ -221,10 +221,8 @@ extern "C" gboolean aw_handle_scroll_event(GtkWidget*, GdkEventScroll *event, gp
 }
 
 
-void AW_area_management::set_expose_callback(AW_window *aww, 
-                                             void (*f)(AW_window*, AW_CL, AW_CL),
-                                             AW_CL cd1, AW_CL cd2) {
-    expose.connect(makeWindowCallback(f, cd1, cd2), aww);
+void AW_area_management::set_expose_callback(AW_window *aww, const WindowCallback& wcb) {
+    expose.connect(wcb, aww);
 }
 
 void AW_area_management::set_input_callback(AW_window *aww, const WindowCallback& wcb) {
@@ -235,9 +233,8 @@ void AW_area_management::set_motion_callback(AW_window *aww, const WindowCallbac
     motion.connect(wcb, aww);
 }
 
-void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), 
-                                             AW_CL cd1, AW_CL cd2) {
-    resize.connect(makeWindowCallback(f, cd1, cd2), aww);
+void AW_area_management::set_resize_callback(AW_window *aww, const WindowCallback& wcb) {
+    resize.connect(wcb, aww);
 }
 
 

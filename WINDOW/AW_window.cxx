@@ -935,14 +935,13 @@ AW_device_size *AW_window::get_size_device(AW_area area){
 
 void AW_window::insert_help_topic(const char *labeli, 
                                   const char *mnemonic, const char *helpText,
-                                  AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2) {
+                                  AW_active mask, const WindowCallback& cb) {
     aw_return_if_fail(prvt->help_menu != NULL);
     
     prvt->menus.push(prvt->help_menu);
-    insert_menu_topic(helpText, labeli, mnemonic, helpText, mask, f, cd1, cd2);
+    insert_menu_topic(helpText, labeli, mnemonic, helpText, mask, cb);
     prvt->menus.pop();
 }
-
 
 void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
                                   const char *mnemonic, const char *helpText,
@@ -967,11 +966,6 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
     
     act->bind(item, "activate");
 }
-
-void AW_window::insert_menu_topic(const char *cmd, const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, AW_CB f, AW_CL cd1, AW_CL cd2) {
-    insert_menu_topic(cmd, labeli, mnemonic, helpText, mask, makeWindowCallback(f, cd1, cd2));
-}
-
 
 void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
     aw_return_if_fail(legal_mask(mask));

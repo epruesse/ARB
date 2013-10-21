@@ -98,12 +98,12 @@ public:
     virtual AW_awar *remove_callback(const RootCallback& cb) = 0;
 
     // wrappers (deprecated!)
-    AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2)    { return add_callback(makeRootCallback(f, cd1, cd2)); }
-    AW_awar *add_callback(Awar_CB1 f, AW_CL cd1)               { return add_callback(Awar_CB2(f), cd1, 0); }
-    AW_awar *add_callback(Awar_CB0 f)                          { return add_callback(Awar_CB1(f), 0); }
-    AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) { return remove_callback(makeRootCallback(f, cd1, cd2)); }
-    AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1)            { return remove_callback(Awar_CB2(f), cd1, 0); }
-    AW_awar *remove_callback(Awar_CB0 f)                       { return remove_callback(Awar_CB1(f), 0); }
+    AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2)    __ATTR__DEPRECATED_TODO("pass RootCallback") { return add_callback(makeRootCallback(f, cd1, cd2)); }
+    AW_awar *add_callback(Awar_CB1 f, AW_CL cd1)               __ATTR__DEPRECATED_TODO("pass RootCallback") { return add_callback(Awar_CB2(f), cd1, 0); }
+    AW_awar *add_callback(Awar_CB0 f)                          __ATTR__DEPRECATED_TODO("pass RootCallback") { return add_callback(Awar_CB1(f), 0); }
+    AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass RootCallback") { return remove_callback(makeRootCallback(f, cd1, cd2)); }
+    AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1)            __ATTR__DEPRECATED_TODO("pass RootCallback") { return remove_callback(Awar_CB2(f), cd1, 0); }
+    AW_awar *remove_callback(Awar_CB0 f)                       __ATTR__DEPRECATED_TODO("pass RootCallback") { return remove_callback(Awar_CB1(f), 0); }
 
     // target vars
     virtual AW_awar *add_target_var(char **ppchr) = 0;
