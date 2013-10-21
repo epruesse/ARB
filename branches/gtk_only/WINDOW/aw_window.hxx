@@ -278,8 +278,12 @@ public:
 
     void set_expose_callback(AW_area area, const WindowCallback& wcb);
     void set_resize_callback(AW_area area, const WindowCallback& wcb);
-    void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0) __ATTR__DEPRECATED_TODO("pass WindowCallback");
-    void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0) __ATTR__DEPRECATED_TODO("pass WindowCallback");
+    void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 = 0, AW_CL cd2=0) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
+        set_expose_callback(area, makeWindowCallback(f, cd1, cd2));
+    }
+    void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1 = 0, AW_CL cd2=0) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
+        set_resize_callback(area, makeWindowCallback(f, cd1, cd2));
+    }
 
     void set_input_callback(AW_area area, const WindowCallback& wcb);
     void set_motion_callback(AW_area area, const WindowCallback& wcb);
