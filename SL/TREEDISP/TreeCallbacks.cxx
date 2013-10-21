@@ -505,7 +505,7 @@ void NT_move_boot_branch(AW_window*, AW_CL cl_ntw, AW_CL cl_direction) // copy b
 
         char *adviceText = GBS_global_string_copy("Please note, that you just overwrote your existing %s.",
                                                   direction ? "bootstrap values" : "branchlengths");
-        AW_advice(adviceText, AW_ADVICE_TOGGLE|AW_ADVICE_HELP, 0, "tbl_boot2len.hlp");
+        AW_advice(adviceText, AW_ADVICE_TOGGLE_AND_HELP, 0, "tbl_boot2len.hlp");
         free(adviceText);
     }
 }

@@ -1058,7 +1058,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             NT_reload_tree_event(awr, ntw, 1); // load first tree
         }
         else {
-            AW_advice("Your database contains no tree.", AW_ADVICE_TOGGLE|AW_ADVICE_HELP, 0, "no_tree.hlp");
+            AW_advice("Your database contains no tree.", AW_ADVICE_TOGGLE_AND_HELP, 0, "no_tree.hlp");
             tree->set_tree_type(AP_LIST_NDS, ntw); // no tree -> show NDS list
         }
 

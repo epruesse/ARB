@@ -105,14 +105,13 @@ inline void toggle_advice_shown(const char *id)    { toggle_advice_id(id, get_sh
 
 // -------------------------------------------
 
-static void advice_close_cb(AW_window *aww, AW_CL cl_id, AW_CL type) {
+static void advice_close_cb(AW_window *aww, const char *id, AW_Advice_Type type) {
     int understood = advice_root->awar(AWAR_ADVICE_UNDERSTOOD)->read_int();
 
     // switch to 'not understood'. Has to be checked by user for each advice.
     advice_root->awar(AWAR_ADVICE_UNDERSTOOD)->write_int(0);
     aww->hide();
     
-    const char *id = (const char *)cl_id;
     toggle_advice_shown(id);
 
     if (understood) {
@@ -128,9 +127,9 @@ static void advice_close_cb(AW_window *aww, AW_CL cl_id, AW_CL type) {
         }
     }
 }
-static void advice_hide_and_close_cb(AW_window *aww, AW_CL cl_id, AW_CL type) {
+static void advice_hide_and_close_cb(AW_window *aww, const char *id, AW_Advice_Type type) {
     advice_root->awar(AWAR_ADVICE_UNDERSTOOD)->write_int(1);
-    advice_close_cb(aww, cl_id, type);
+    advice_close_cb(aww, id, type);
 }
 
 // -------------------------------------------
@@ -158,7 +157,7 @@ void AW_reactivate_all_advices() {
     awar_disabled->write_string("");
 }
 
-void AW_advice(const char *message, int type, const char *title, const char *corresponding_help) {
+void AW_advice(const char *message, AW_Advice_Type type, const char *title, const char *corresponding_help) {
     aw_assert(initialized);
     size_t  message_len = strlen(message); aw_assert(message_len>0);
     long    crc32       = GB_checksum(message, message_len, true, " .,-!"); // checksum is used to test if advice was shown
@@ -210,11 +209,11 @@ void AW_advice(const char *message, int type, const char *title, const char *cor
 
         aws->at("ok");
         if (type & AW_ADVICE_TOGGLE) {
-            aws->callback(advice_close_cb, (AW_CL)advice_id, type);
+            aws->callback(makeWindowCallback(advice_close_cb, advice_id, type));
             aws->create_button(0, "OK", "O");
         }
         else {
-            aws->callback(advice_hide_and_close_cb, (AW_CL)advice_id, type);
+            aws->callback(makeWindowCallback(advice_hide_and_close_cb, advice_id, type));
             aws->create_autosize_button(0, "I understand", "O", 2);
         }
 

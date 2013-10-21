@@ -80,7 +80,7 @@ static void addid_changed_cb(AW_root *, AW_CL cl_gb_main) {
     GB_ERROR  error   = AW_test_nameserver(gb_main);
 
     if (error) aw_message(error);
-    else AW_advice("Calling 'Species/Synchronize IDs' is highly recommended", AW_ADVICE_TOGGLE|AW_ADVICE_HELP, 0, "namesadmin.hlp");
+    else AW_advice("Calling 'Species/Synchronize IDs' is highly recommended", AW_ADVICE_TOGGLE_AND_HELP, 0, "namesadmin.hlp");
 }
 
 void AW_create_namesadmin_awars(AW_root *awr, GBDATA *gb_main) {
