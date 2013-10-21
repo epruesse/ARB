@@ -142,7 +142,7 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
             while (ret) {
                 if (ret[0] == '^') {
                     if (helpfile && !help_button_done) {
-                        aw_msg->callback(AW_POPUP_HELP, (AW_CL)helpfile);
+                        aw_msg->callback(makeHelpCallback(helpfile));
                         aw_msg->create_button("HELP", "HELP", "H");
                         help_button_done = true;
                     }
@@ -166,7 +166,7 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
             }
 
             if (helpfile && !help_button_done) { // if not done above
-                aw_msg->callback(AW_POPUP_HELP, (AW_CL)helpfile);
+                aw_msg->callback(makeHelpCallback(helpfile));
                 aw_msg->create_button("HELP", "HELP", "H");
                 help_button_done = true;
             }

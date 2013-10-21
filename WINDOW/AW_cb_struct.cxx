@@ -94,7 +94,7 @@ void AW_cb::run_callbacks() {
                                 f == AW_CB(file_selection_cb));
 
         bool isPopdown = (f == AW_CB(AW_POPDOWN));
-        bool isHelp    = (f == AW_CB(AW_POPUP_HELP));
+        bool isHelp    = (f == AW_CB(AW_help_popup) || f == AW_CB(AW_POPUP_HELP));
         bool allow     = isModalCallback || isHelp || isPopdown;
 
         bool isInfoResizeExpose = false;
@@ -134,7 +134,7 @@ void AW_cb::run_callbacks() {
         else {
             if (isModalCallback) printf("allowed modal callback %p\n", f);
             else if (isPopdown) printf("allowed AW_POPDOWN\n");
-            else if (isHelp) printf("allowed AW_POPUP_HELP\n");
+            else if (isHelp) printf("allowed AW_help_popup\n");
             else if (isInfoResizeExpose) printf("allowed expose/resize infoarea\n");
             else printf("allowed other (unknown) callback %p\n", f);
         }
