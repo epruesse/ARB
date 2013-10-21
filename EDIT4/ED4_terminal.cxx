@@ -961,22 +961,18 @@ ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos x, AW
 }
 
 ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) {
-    if (shallDraw) {
-        if (update_info.clear_at_refresh && !is_cleared) {
-            clear_background();
-        }
-        draw();
-    }
-    return ED4_R_OK;
-}
-
-
-ED4_returncode ED4_spacer_terminal::draw() {  
 #if defined(DEBUG) && 0
     clear_background(ED4_G_FIRST_COLOR_GROUP); // draw colored spacers to make them visible
 #else
-    clear_background(0);
-#endif // DEBUG
+    if (shallDraw && update_info.clear_at_refresh && !is_cleared) {
+        clear_background();
+    }
+#endif  
+    return ED4_R_OK;
+}
+
+ED4_returncode ED4_spacer_terminal::draw() {  
+    // never called, spacer does not draw anything
     return (ED4_R_OK);
 }
 
