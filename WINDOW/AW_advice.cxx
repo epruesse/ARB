@@ -134,7 +134,7 @@ static void advice_hide_and_close_cb(AW_window *aww, const char *id, AW_Advice_T
 
 // -------------------------------------------
 
-void AW_reactivate_all_advices() {
+void AW_reactivate_all_advices(AW_window*) {
     AW_awar *awar_disabled = get_disabled_advices();
 
     char       *disabled = awar_disabled->read_string();
