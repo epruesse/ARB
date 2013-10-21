@@ -47,8 +47,7 @@ struct AW_widget_refresh_cb : virtual Noncopyable {
 };
 
 
-static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
-    AW_widget_refresh_cb *widgetlist = (AW_widget_refresh_cb*)cl_widget_refresh_cb;
+static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_refresh_cb *widgetlist) {
     if (widgetlist->widget == root->changer_of_variable) {
         root->changer_of_variable = 0;
         root->value_changed = false;
@@ -99,12 +98,12 @@ AW_widget_refresh_cb::AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_aw
     aw          = awi;
     next        = previous;
 
-    awar->add_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
+    awar->add_callback(makeRootCallback(aw_cp_awar_2_widget_cb, this));
 }
 
 AW_widget_refresh_cb::~AW_widget_refresh_cb() {
     if (next) delete next;
-    awar->remove_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
+    awar->remove_callback(makeRootCallback(aw_cp_awar_2_widget_cb, this));
 }
 
 AW_var_target::AW_var_target(void* pntr, AW_var_target *nexti) {
@@ -197,31 +196,14 @@ void AW_awar::touch() {
     }
 }
 
-
-
 void AW_awar::untie_all_widgets() {
     delete refresh_list; refresh_list = NULL;
-}
-
-
-
-
-AW_awar *AW_awar::add_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    return add_callback(makeRootCallback(value_changed_cb, cd1, cd2));
-}
-
-AW_awar *AW_awar::add_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
-    return add_callback((AW_RCB)f, cd1, 0);
-}
-
-AW_awar *AW_awar::add_callback(void (*f)(AW_root*)) {
-    return add_callback((AW_RCB)f, 0, 0);
 }
 
 AW_awar *AW_awar::add_callback(const RootCallback& rcb) {
     AW_root_cblist::add(callback_list, rcb);
     return this;
-} 
+}
 
 AW_awar *AW_awar::add_target_var(char **ppchr) {
     assert_var_type(AW_STRING);
@@ -499,17 +481,6 @@ AW_awar *AW_awar::map(AW_awar *dest) {
 }
 AW_awar *AW_awar::map(const char *awarn) {
     return map(root->awar(awarn));
-}
-
-AW_awar *AW_awar::remove_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    return remove_callback(makeRootCallback(value_changed_cb, cd1, cd2));
-}
-
-AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
-    return remove_callback((AW_RCB) f, cd1, 0);
-}
-AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) {
-    return remove_callback((AW_RCB) f, 0, 0);
 }
 
 AW_awar *AW_awar::remove_callback(const RootCallback& rcb) {

@@ -555,7 +555,7 @@ AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"gene_species_field_transfer.hlp");
+    aws->callback(makeHelpCallback("gene_species_field_transfer.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at("active");

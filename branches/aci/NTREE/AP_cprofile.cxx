@@ -1580,7 +1580,7 @@ AP_open_cprofile_window(AW_root *aw_root)
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"pos_variability.ps");
+    aws->at("help"); aws->callback(makeHelpCallback("pos_variability.ps"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->button_length(10);

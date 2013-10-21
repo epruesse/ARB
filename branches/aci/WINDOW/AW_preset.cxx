@@ -156,8 +156,8 @@ void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_w
 }
 
 static void add_common_property_menu_entries(AW_window *aw) {
-    aw->insert_menu_topic("enable_advices",   "Reactivate advices",   "R", "advice.hlp",    AWM_ALL, (AW_CB)AW_reactivate_all_advices,   0, 0);
-    aw->insert_menu_topic("enable_questions", "Reactivate questions", "q", "questions.hlp", AWM_ALL, (AW_CB)AW_reactivate_all_questions, 0, 0);
+    aw->insert_menu_topic("enable_advices",   "Reactivate advices",   "R", "advice.hlp",    AWM_ALL, AW_reactivate_all_advices);
+    aw->insert_menu_topic("enable_questions", "Reactivate questions", "q", "questions.hlp", AWM_ALL, AW_reactivate_all_questions);
 }
 void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm) { add_common_property_menu_entries(awmm); }
 void AW_insert_common_property_menu_entries(AW_window_simple_menu *awsm) { add_common_property_menu_entries(awsm); }
@@ -167,8 +167,7 @@ static bool         use_color_groups         = false;
 static const char **color_group_gc_defaults  = 0;
 
 
-static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, long mode)
-{
+static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, int mode) {
     static int dont_recurse = 0;
 
     if (dont_recurse == 0) {
@@ -220,7 +219,7 @@ char *AW_get_color_group_name(AW_root *awr, int color_group) {
 }
 
 
-static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode)
+static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, int mode)
 {
     char awar_name[256];
     char *colorname;
@@ -257,7 +256,7 @@ long AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag) {
     return 0;                   // no color group
 }
 
-static void AW_color_group_usage_changed_cb(AW_root *awr, AW_CL /* cl_ntw */) {
+static void AW_color_group_usage_changed_cb(AW_root *awr) {
     use_color_groups       = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
     //     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     //     ntw->refresh();
@@ -276,7 +275,7 @@ static void AW_init_color_groups(AW_root *awr, AW_default def) {
     if (!color_groups_initialized) {
         AW_awar *useAwar = awr->awar_int(AWAR_COLOR_GROUPS_USE, 1, def);
         use_color_groups = useAwar->read_int();
-        useAwar->add_callback(AW_color_group_usage_changed_cb, (AW_CL)0);
+        useAwar->add_callback(AW_color_group_usage_changed_cb);
 
         char name_buf[AW_COLOR_GROUP_NAME_LEN+1];
         for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
@@ -411,8 +410,7 @@ static void aw_init_font_sizes(AW_root *awr, AW_MGC_awar_cb_struct *cbs, bool fi
         add_font_sizes_to_option_menu(aww, found_sizes, available_sizes);
     }
 }
-static void aw_font_changed_cb(AW_root *awr, AW_CL cl_cbs) {
-    AW_MGC_awar_cb_struct *cbs = (AW_MGC_awar_cb_struct*)cl_cbs;
+static void aw_font_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs) {
     aw_init_font_sizes(awr, cbs, false);
 }
 
@@ -495,8 +493,7 @@ static void aw_incdec_color(AW_window *aww, const char *action) {
 
 #define AWAR_GLOBAL_COLOR_NAME "tmp/aw/color_label"
 
-static void aw_set_color(AW_window *aww, AW_CL cl_color_name) {
-    const char *color_name = (const char *)cl_color_name;
+static void aw_set_color(AW_window *aww, const char *color_name) {
     aww->get_root()->awar(aw_glob_font_awar_name)->write_string(color_name);
 }
 static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *label_name) {
@@ -537,7 +534,7 @@ static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name
 
                     char color_name[10];
                     sprintf(color_name, "#%2.2X%2.2X%2.2X", rgb==0 ? 0xff : 0x55, rgb==1 ? 0xff : 0x55, rgb==2 ? 0xff : 0x55);
-                    aws->callback((AW_CB1)aw_incdec_color, (AW_CL)strdup(action));
+                    aws->callback(makeWindowCallback(aw_incdec_color, strdup(action)));
                     aws->create_button(action, action+1, 0, color_name);
                 }
             }
@@ -551,7 +548,7 @@ static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name
                 for (blue = 0; blue <= 255; blue += 255/3) {
                     char color_name[256];
                     sprintf(color_name, "#%2.2X%2.2X%2.2X", red, green, blue);
-                    aws->callback((AW_CB1)aw_set_color, (AW_CL)strdup(color_name));
+                    aws->callback(makeWindowCallback(aw_set_color, strdup(color_name)));
                     aws->create_button(color_name, "=", 0, color_name);
                 }
             }
@@ -560,7 +557,7 @@ static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name
         for (grey = 256/32; grey < 256; grey += 256/16) { // grey buttons (skip black/white - already present above)
             char color_name[256];
             sprintf(color_name, "#%2.2X%2.2X%2.2X", grey, grey, grey);
-            aws->callback(aw_set_color, (AW_CL)strdup(color_name));
+            aws->callback(makeWindowCallback(aw_set_color, strdup(color_name)));
             aws->create_button(color_name, "=", 0, color_name);
         }
         aws->at_newline();
@@ -578,7 +575,7 @@ static void AW_preset_create_color_chooser(AW_window *aws, const char *awar_name
         aw_assert(label);
         aws->label(label);
     }
-    aws->callback((AW_CB)aw_create_color_chooser_window, (AW_CL)strdup(awar_name), (AW_CL)strdup(label));
+    aws->callback(makeWindowCallback(aw_create_color_chooser_window, strdup(awar_name), strdup(label)));
     char *color     = aws->get_root()->awar(awar_name)->read_string();
     char *button_id = GBS_global_string_copy("sel_color[%s]", awar_name);
     aws->create_button(button_id, " ", 0, color);
@@ -747,7 +744,7 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
             acbs->colorindex = col;
 
             aw_root->awar_string(awar_name, gcmgr2->get_default_value(), aw_def);
-            aw_root->awar(awar_name)->add_callback((AW_RCB)aw_gc_color_changed_cb, (AW_CL)acbs, (AW_CL)0);
+            aw_root->awar(awar_name)->add_callback(makeRootCallback(aw_gc_color_changed_cb, acbs, 0));
 
             aw_gc_color_changed_cb(aw_root, acbs, -1);
 
@@ -761,12 +758,12 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
                 AW_awar *font_size_awar = aw_root->awar_int(awar_name, DEF_FONTSIZE, aw_def);
 
                 if (gcp.select_font) {
-                    font_awar->add_callback(aw_font_changed_cb, (AW_CL)acbs);
+                    font_awar->add_callback(makeRootCallback(aw_font_changed_cb, acbs));
                     gcmgr2->set_font_change_parameter(acbs);
                 }
 
-                font_awar->add_callback((AW_RCB)aw_gc_changed_cb, (AW_CL)acbs, (AW_CL)0);
-                font_size_awar->add_callback((AW_RCB)aw_gc_changed_cb, (AW_CL)acbs, (AW_CL)0);
+                font_awar->add_callback(makeRootCallback(aw_gc_changed_cb, acbs, 0));
+                font_size_awar->add_callback(makeRootCallback(aw_gc_changed_cb, acbs, 0));
             }
 
             if (!first) {
@@ -806,7 +803,7 @@ AW_window *AW_preset_window(AW_root *root) {
     aws->callback     (AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"props_frame.hlp");
+    aws->callback(makeHelpCallback("props_frame.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at_newline();
@@ -939,20 +936,19 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
 }
 
 struct attached_window {
-    AW_window_simple       *aws;
-    AW_CL                   attached_to;
-    struct attached_window *next;
+    AW_window_simple *aws;
+    AW_gc_manager     attached_to;
+    attached_window  *next;
 };
 
-static void AW_create_gc_color_groups_name_window(AW_window * /* aww */, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
-    AW_root *aw_root = (AW_root*)cl_aw_root;
+static void AW_create_gc_color_groups_name_window(AW_window *, AW_root *aw_root, aw_gc_manager *gcmgr) {
     static struct attached_window *head = 0;
 
     // search for attached window:
 
     struct attached_window *look = head;
     while (look) {
-        if (look->attached_to == cl_gcmgr) break;
+        if (look->attached_to == gcmgr) break;
         look = look->next;
     }
 
@@ -965,7 +961,7 @@ static void AW_create_gc_color_groups_name_window(AW_window * /* aww */, AW_CL c
         look = new struct attached_window;
 
         look->aws         = new AW_window_simple;
-        look->attached_to = cl_gcmgr;
+        look->attached_to = gcmgr;
         look->next        = head;
         head              = look;
 
@@ -992,11 +988,8 @@ static void AW_create_gc_color_groups_name_window(AW_window * /* aww */, AW_CL c
     aws->activate();
 }
 
-static void AW_create_gc_color_groups_window(AW_window * /* aww */, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
+static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, aw_gc_manager *gcmgr) {
     aw_assert(color_groups_initialized);
-
-    AW_root       *aw_root = (AW_root*)cl_aw_root;
-    aw_gc_manager *gcmgr   = (aw_gc_manager*)cl_gcmgr;
 
     static struct attached_window *head = 0;
 
@@ -1004,7 +997,7 @@ static void AW_create_gc_color_groups_window(AW_window * /* aww */, AW_CL cl_aw_
 
     struct attached_window *look = head;
     while (look) {
-        if (look->attached_to == cl_gcmgr) break;
+        if (look->attached_to == gcmgr) break;
         look = look->next;
     }
 
@@ -1017,7 +1010,7 @@ static void AW_create_gc_color_groups_window(AW_window * /* aww */, AW_CL cl_aw_
         look = new struct attached_window;
 
         look->aws         = new AW_window_simple;
-        look->attached_to = cl_gcmgr;
+        look->attached_to = gcmgr;
         look->next        = head;
         head              = look;
 
@@ -1031,7 +1024,7 @@ static void AW_create_gc_color_groups_window(AW_window * /* aww */, AW_CL cl_aw_
         aws->callback((AW_CB0) AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"color_props_groups.hlp");
+        aws->callback(makeHelpCallback("color_props_groups.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at_newline();
@@ -1044,7 +1037,7 @@ static void AW_create_gc_color_groups_window(AW_window * /* aww */, AW_CL cl_aw_
         aws->label("Use color groups");
         aws->create_toggle(AWAR_COLOR_GROUPS_USE);
 
-        aws->callback((AW_CB)AW_create_gc_color_groups_name_window, (AW_CL)aw_root, cl_gcmgr);
+        aws->callback(makeWindowCallback(AW_create_gc_color_groups_name_window, aw_root, gcmgr));
         aws->create_autosize_button("DEF_NAMES", "Define names", "D");
 
         aws->window_fit();
@@ -1072,7 +1065,7 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, con
     aws->callback((AW_CB0) AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"color_props.hlp");
+    aws->callback(makeHelpCallback("color_props.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at_newline();
@@ -1080,7 +1073,7 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, con
     bool has_color_groups = aw_insert_gcs(aw_root, aws, gcmgr, false);
 
     if (has_color_groups) {
-        aws->callback((AW_CB)AW_create_gc_color_groups_window, (AW_CL)aw_root, (AW_CL)id_par);
+        aws->callback(makeWindowCallback(AW_create_gc_color_groups_window, aw_root, id_par));
         aws->create_autosize_button("EDIT_COLOR_GROUP", "Edit color groups", "E");
         aws->at_newline();
     }

@@ -775,7 +775,7 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"tree2file.hlp");
+        aws->at("help"); aws->callback(makeHelpCallback("tree2file.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->label_length(15);
@@ -822,7 +822,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"tree2file.hlp");
+        aws->at("help"); aws->callback(makeHelpCallback("tree2file.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->label_length(15);
@@ -877,7 +877,7 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"tree2prt.hlp");
+        aws->at("help"); aws->callback(makeHelpCallback("tree2prt.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         // -----------------------------

@@ -208,7 +208,7 @@ AW_window *create_insertDeleteColumn_window(AW_root *root) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"insdel.hlp");
+        aws->callback(makeHelpCallback("insdel.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -250,7 +250,7 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, AW_CL cl_gbmain) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"insdel_sai.hlp");
+        aws->callback(makeHelpCallback("insdel_sai.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 

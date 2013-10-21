@@ -388,7 +388,7 @@ static AW_window *MG_transfer_fields(AW_root *aw_root)
     aws->create_button("GO", "GO");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"mg_spec_sel_field.hlp");
+    aws->callback(makeHelpCallback("mg_spec_sel_field.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at("append");
@@ -495,7 +495,7 @@ static AW_window *create_mg_move_fields(AW_root *aw_root)
     aws->create_button("GO", "GO");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"movefield.hlp");
+    aws->callback(makeHelpCallback("movefield.hlp"));
     aws->create_button("HELP", "HELP");
 
 
@@ -596,7 +596,7 @@ static AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
     aws->create_button("GO", "GO");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"mergetaggedfield.hlp");
+    aws->callback(makeHelpCallback("mergetaggedfield.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at("tag1");    aws->create_input_field(AWAR_TAG_SRC, 5);
@@ -890,7 +890,7 @@ AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"mg_species.hlp");
+    aws->callback(makeHelpCallback("mg_species.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     mg_initialize_species_selectors();
@@ -1010,7 +1010,7 @@ AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new) {
     // top icon
     aws->button_length(0);
     aws->at("icon");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"mg_species.hlp");
+    aws->callback(makeHelpCallback("mg_species.hlp"));
     aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
     aws->create_menu("Source->Target", ">");

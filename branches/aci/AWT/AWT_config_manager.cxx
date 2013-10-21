@@ -275,7 +275,7 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
                 break;
 
             case CM_HELP:
-                AW_POPUP_HELP(aww, (AW_CL)"configurations.hlp");
+                AW_help_popup(aww, "configurations.hlp");
                 break;
             case CM_CLOSE:
                 reopen = false;

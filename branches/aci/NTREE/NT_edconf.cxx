@@ -590,7 +590,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"configuration.hlp");
+        aws->callback(makeHelpCallback("configuration.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("list");

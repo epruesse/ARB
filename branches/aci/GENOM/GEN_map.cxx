@@ -532,7 +532,7 @@ static AW_window *GEN_create_options_window(AW_root *awr) {
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"gene_options.hlp");
+        aws->at("help"); aws->callback(makeHelpCallback("gene_options.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("button");
@@ -559,7 +559,7 @@ static AW_window *GEN_create_layout_window(AW_root *awr) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"gen_layout.hlp");
+        aws->callback(makeHelpCallback("gen_layout.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -1748,7 +1748,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     at(help_x, first_line_y);
     help_text("help.hlp");
-    callback(AW_POPUP_HELP, (AW_CL)"gene_map.hlp");
+    callback(makeHelpCallback("gene_map.hlp"));
     create_button("HELP", "HELP", "H");
 
     at(help_x, second_line_y);
