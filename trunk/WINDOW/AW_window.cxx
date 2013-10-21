@@ -1101,7 +1101,7 @@ void AW_window::create_devices() {
 }
 
 void aw_insert_default_help_entries(AW_window *aww) {
-    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0, AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
+    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0, AWM_ALL, AW_help_entry_pressed);
 
     aww->insert_help_topic("How to use help", "H", "help.hlp", AWM_ALL, makeHelpCallback("help.hlp"));
     aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, makeHelpCallback("arb.hlp"));

@@ -258,7 +258,7 @@ void aw_popup_exit(const char *msg) {
     exit(EXIT_FAILURE);
 }
 
-void AW_reactivate_all_questions() {
+void AW_reactivate_all_questions(AW_window*) {
     GB_transaction  ta(AW_ROOT_DEFAULT);
     GBDATA         *gb_neverAskedAgain = GB_search(AW_ROOT_DEFAULT, "answers", GB_FIND);
     const char     *msg                = "No questions were disabled yet.";

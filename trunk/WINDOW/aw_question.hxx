@@ -76,7 +76,7 @@ bool aw_ask_sure(const char *uniqueID, const char *msg);
 void aw_popup_ok  (const char *msg);
 void aw_popup_exit(const char *msg) __ATTR__NORETURN;
 
-void AW_reactivate_all_questions();
+void AW_reactivate_all_questions(AW_window*);
 
 #else
 #error aw_question.hxx included twice
