@@ -629,13 +629,9 @@ void AW_area_management::set_expose_callback(AW_window *aww, const WindowCallbac
     expose_cb = new AW_cb(aww, cb, 0, expose_cb);
 }
 
-void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    AW_area_management *aram = MAP_ARAM(area);
-    if (aram) aram->set_expose_callback(this, f, cd1, cd2);
-}
 void AW_window::set_expose_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = MAP_ARAM(area);
-    if (aram) aram->set_expose_callback(this, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
+    if (aram) aram->set_expose_callback(this, wcb);
 }
 
 bool AW_area_management::is_expose_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
@@ -771,15 +767,9 @@ void AW_area_management::set_resize_callback(AW_window *aww, const WindowCallbac
     resize_cb = new AW_cb(aww, cb, 0, resize_cb);
 }
 
-void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    AW_area_management *aram = MAP_ARAM(area);
-    if (!aram)
-        return;
-    aram->set_resize_callback(this, f, cd1, cd2);
-}
-
 void AW_window::set_resize_callback(AW_area area, const WindowCallback& wcb) {
-    set_resize_callback(area, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
+    AW_area_management *aram = MAP_ARAM(area);
+    if (aram) aram->set_resize_callback(this, wcb);
 }
 
 // -------------------

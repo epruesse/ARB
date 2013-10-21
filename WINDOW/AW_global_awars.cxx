@@ -26,9 +26,8 @@ inline const char *get_db_path(const AW_awar *awar) {
 
 static bool in_global_awar_cb = false;
 
-static void awar_updated_cb(AW_root * /* aw_root */, AW_CL cl_awar) {
+static void awar_updated_cb(AW_root*, AW_awar *awar) {
     if (!in_global_awar_cb) {
-        AW_awar        *awar    = (AW_awar*)cl_awar;
         char           *content = awar->read_as_string();
         const char     *db_path = get_db_path(awar);
         GB_transaction  dummy(gb_main4awar);
@@ -59,7 +58,7 @@ GB_ERROR AW_awar::make_global() {
     is_global = true;
 #endif // DEBUG
 
-    add_callback(awar_updated_cb, (AW_CL)this);
+    add_callback(makeRootCallback(awar_updated_cb, this));
 
     GB_transaction  dummy(gb_main4awar);
     const char     *db_path = get_db_path(this);
