@@ -98,9 +98,7 @@ void AW_action::user_clicked(GtkWidget*) {
         root->set_help_active(false);
         root->set_cursor(NORMAL_CURSOR);
 
-        if (get_help()) {
-            AW_POPUP_HELP(NULL, (AW_CL)get_help());
-        }
+        if (get_help()) AW_help_popup(NULL, get_help());
         return; // action is done, showing the help
     }
 
