@@ -40,6 +40,9 @@ static const char* _colorgroupname_awarname(int color_group) {
 static const char* _colorgroup_name(int color_group) {
     return GBS_global_string(AW_COLOR_GROUP_PREFIX "%i", color_group);
 }
+static const char* _aa_awar_name(const char* window) {
+    return GBS_global_string("GCS/%s/AA_SETTING", window);
+}
 
 /**
  * Default color group colors for ARB_NTREE (also general default)
@@ -109,6 +112,7 @@ public:
     void add_gc(const char* gc_desc, bool is_color_group);
     void update_gc_color(int gc);
     void update_gc_font(int gc);
+    void update_aa_setting();
 
     void create_gc_buttons(AW_window *aww);
     AW_signal changed;
@@ -118,13 +122,6 @@ public:
 
 const char **_AW_gc_manager::color_group_defaults = ARB_NTREE_color_group;
 
-_AW_gc_manager::_AW_gc_manager(const char* name, AW_device* device_, 
-                               int drag_gc_offset_) 
-    : gc_base_name(name),
-      device(device_),
-      drag_gc_offset(drag_gc_offset_)
-{
-}
 
 static void aw_update_gc_color(AW_root*, _AW_gc_manager* mgr, int gc) {
     mgr->update_gc_color(gc);
@@ -132,6 +129,21 @@ static void aw_update_gc_color(AW_root*, _AW_gc_manager* mgr, int gc) {
 static void aw_update_gc_font(AW_root*, _AW_gc_manager* mgr, int gc) {
     mgr->update_gc_font(gc);
 }
+
+static void aw_update_aa_setting(AW_root*, _AW_gc_manager* mgr) {
+    mgr->update_aa_setting();
+}
+
+_AW_gc_manager::_AW_gc_manager(const char* name, AW_device* device_, 
+                               int drag_gc_offset_) 
+    : gc_base_name(name),
+      device(device_),
+      drag_gc_offset(drag_gc_offset_)
+{
+    AW_root::SINGLETON->awar_int(_aa_awar_name(name), AW_AA_DEFAULT)
+        ->add_callback(makeRootCallback(aw_update_aa_setting, this));
+}
+
 
 void _AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=false) {
     int gc      = GCs.size() - 1; // -1 is background
@@ -252,6 +264,12 @@ void _AW_gc_manager::update_gc_font(int gc) {
     device->queue_draw();
 }
 
+void _AW_gc_manager::update_aa_setting() {
+    AW_antialias aa = (AW_antialias) AW_root::SINGLETON->awar(_aa_awar_name(gc_base_name))->read_int();
+    device->get_common()->set_default_aa(aa);
+    changed.emit();
+    device->queue_draw();
+}
 
 void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) {
     // read the values of the specified GCs from 'source_window'
@@ -322,6 +340,7 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
                            ...) {
     aw_assert(default_background_color[0]);
     aw_assert(base_gc == 0);
+    // assert that aww->window_defaults_name is equal to gc_base_name?
 
     AW_root    *aw_root = AW_root::SINGLETON;
 
@@ -393,6 +412,19 @@ char *AW_get_color_group_name(AW_root *awr, int color_group) {
 void _AW_gc_manager::create_gc_buttons(AW_window *aww) {
     int color_group_no = 0;
     aww->label_length(23);
+
+    aww->label("Anti-Aliasing");
+    aww->create_option_menu(_aa_awar_name(gc_base_name));
+    aww->insert_option("System Default", "", AW_AA_DEFAULT);
+    aww->insert_option("Disabled", "", AW_AA_NONE);
+    aww->insert_option("Greyscale", "", AW_AA_GRAY);
+    aww->insert_option("Subpixel", "", AW_AA_SUBPIXEL);
+    aww->insert_option("Fast", "", AW_AA_FAST);
+    aww->insert_option("Good", "", AW_AA_GOOD);
+    aww->insert_option("Best", "", AW_AA_BEST);
+    aww->update_option_menu();
+    aww->at_newline();
+
     for (std::vector<gc_desc>::iterator it = GCs.begin(); it != GCs.end(); ++it) {
         if (it->hidden) continue;
         
