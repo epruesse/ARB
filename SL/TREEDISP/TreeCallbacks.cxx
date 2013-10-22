@@ -24,7 +24,7 @@ using namespace AW;
 // AISC_MKPT_PROMOTE:#include <TreeDisplay.hxx>
 // AISC_MKPT_PROMOTE:#endif
 
-void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
+void nt_mode_event(AW_window*, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
     const char *text;
 
     switch (mode) {
