@@ -98,6 +98,14 @@ static gint aw_drawing_area_button_press(GtkWidget *widget, GdkEventButton *) {
     return false;
 }
 
+/**
+ * Use this to change the scroll adjustments. GtkAdjustment takes care to have value 
+ * stay between lower and upper bounds when setting it, but the value is not
+ * updated if lower/upper bound change, nor does GtkAdjustment consider the 
+ * page size.
+ * Guarantee is that always lower < value < upper-page_size.
+ * Lower is always 0 for us. 
+ */
 static void adjustment_set_safely(GtkAdjustment *adj, gdouble value, gdouble upper, gdouble page_size) {
     if (!adj) return;
 
@@ -111,9 +119,8 @@ static void adjustment_set_safely(GtkAdjustment *adj, gdouble value, gdouble upp
     else if (value < 0) {
         value = 0;
     }
-    
-    printf("value %f  upper %f  page %f\n", value, upper, page_size);
-
+   
+    // freeze/thaw so we only get one event sent around
     g_object_freeze_notify(G_OBJECT(adj));
     gtk_adjustment_set_value(adj, value);
     gtk_adjustment_set_upper(adj, upper);
