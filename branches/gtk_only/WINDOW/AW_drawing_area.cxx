@@ -128,6 +128,10 @@ static void adjustment_set_safely(GtkAdjustment *adj, gdouble value, gdouble upp
     g_object_thaw_notify(G_OBJECT(adj));
 }
 
+#if GTK_MAJOR_VERSION == 2 && GTK_MINOR_VERSION < 20
+#define gtk_widget_get_realized(widget) GTK_WIDGET_REALIZED(widget)
+#endif
+
 static void aw_drawing_area_size_allocate(GtkWidget *widget, GtkAllocation* allocation) {
     AwDrawingArea *area = AW_DRAWING_AREA(widget);
    
