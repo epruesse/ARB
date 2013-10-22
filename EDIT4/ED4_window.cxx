@@ -160,6 +160,9 @@ void ED4_window::update_scrolled_rectangle() {
             scrolled_rect.add_to_top_left_dimension(dx, dy);
         }
 
+        AW_world rect = { 0, srect.height(), 0, srect.width() };
+        aww->tell_scrolled_picture_size(rect);
+
         const AW_screen_area& area_size = get_device()->get_area_size();
         scrolled_rect.calc_bottomRight_folding_dimensions(area_size.r, area_size.b);
 
@@ -167,9 +170,7 @@ void ED4_window::update_scrolled_rectangle() {
                                 // which might get modified by calculate_scrollbars below);
 
         // update window scrollbars
-        AW_world rect = { 0, srect.height(), 0, srect.width() };
         set_scrollbar_indents();
-        aww->tell_scrolled_picture_size(rect);
         aww->calculate_scrollbars();
 
         check_valid_scrollbar_values(); // test that AW_window slider positions and folding line dimensions are in sync
