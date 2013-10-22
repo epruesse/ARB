@@ -706,8 +706,10 @@ void AW_window::insert_option_internal(const char *option_name, const char */*mn
 }
 
 void AW_window::update_option_menu() {
+    aw_return_if_fail(prvt->selection_list);
     prvt->selection_list->update();
     put_with_label(prvt->combo_box);
+    prvt->selection_list = NULL;
 }
 
 void AW_window::clear_option_menu(AW_selection_list *sel) {
