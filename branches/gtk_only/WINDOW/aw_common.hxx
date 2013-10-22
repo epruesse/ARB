@@ -31,6 +31,17 @@
 
 class AW_GC;
 
+enum AW_antialias {
+    AW_AA_DEFAULT,    // whatever is the device default
+    AW_AA_NONE,       
+    AW_AA_GRAY,
+    AW_AA_SUBPIXEL,
+    AW_AA_FAST,       // hints, let the device choose
+    AW_AA_GOOD,
+    AW_AA_BEST
+};
+
+
 #define AW_NO_COLOR AW_rgb()
 
 class AW_common : virtual Noncopyable {
@@ -38,6 +49,8 @@ class AW_common : virtual Noncopyable {
     Pimpl *prvt;
 
     virtual AW_GC *create_gc() = 0;
+protected:
+    AW_antialias default_aa_setting;
 
 public:
     AW_common();
@@ -53,6 +66,9 @@ public:
     bool         gc_mapable(int gc) const;
     const AW_GC *map_gc(int gc) const;
     AW_GC       *map_mod_gc(int gc);
+
+    void set_default_aa(AW_antialias);
+    AW_antialias get_default_aa() const;
 
     const AW_font_limits& get_font_limits(int gc, char c) const __ATTR__DEPRECATED();
 };

@@ -18,6 +18,37 @@
 #include <string>
 #include <algorithm>
 
+#if (CAIRO_ANTIALIAS_DEFAULT == AW_AA_DEFAULT) &&           \
+    (CAIRO_ANTIALIAS_NONE     == AW_AA_NONE) &&             \
+    (CAIRO_ANTIALIAS_GRAY     == AW_AA_GRAY) &&             \
+    (CAIRO_ANTIALIAS_SUBPIXEL == AW_AA_SUBPIXEL) &&         \
+    (CAIRO_ANTIALIAS_FAST     == AW_AA_FAST) &&             \
+    (CAIRO_ANTIALIAS_GOOD     == AW_AA_GOOD) &&             \
+    (CAIRO_ANTIALIAS_BEST     == AW_AA_BEST)
+#define make_cairo_antialias(aa) ((cairo_antialias_t)(aa))
+#else 
+// just in case... shouldn't happen though
+cairo_antialias_t make_cairo_antialias(AW_antialias aa) {
+    switch(aa) {
+    default:
+    case AW_AA_DEFAULT:
+        return CAIRO_ANTIALIAS_DEFAULT;
+    case AW_AA_NONE:
+        return CAIRO_ANTIALIAS_NONE;
+    case AW_AA_GRAY:
+        return CAIRO_ANTIALIAS_GRAY;
+    case AW_AA_SUBPIXEL:
+        return CAIRO_ANTIALIAS_SUBPIXEL;
+    case AW_AA_FAST:
+        return CAIRO_ANTIALIAS_FAST;
+    case AW_AA_GOOD:
+        return CAIRO_ANTIALIAS_GOOD;
+    case AW_AA_BEST:
+        return CAIRO_ANTIALIAS_BEST;
+    }
+}
+#endif
+
 struct AW_common_gtk::Pimpl {
     GtkWidget  *window;
     AW_window  *aww;
@@ -70,6 +101,9 @@ AW_GC *AW_common_gtk::create_gc() {
 
 void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
     const AW_GC *awgc = map_gc(gc);
+
+    // set antialias
+    cairo_set_antialias(cr, make_cairo_antialias(get_default_aa()));
 
     // set color
     AW_rgb col = awgc->get_fg_color();

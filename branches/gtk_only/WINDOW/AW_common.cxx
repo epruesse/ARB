@@ -21,7 +21,8 @@ struct AW_common::Pimpl {
 };
 
 AW_common::AW_common()
-    : prvt(new Pimpl())
+    : prvt(new Pimpl()),
+      default_aa_setting(AW_AA_DEFAULT)
 {
 
     // start out with a faked pretty big screen
@@ -124,6 +125,15 @@ void AW_common::set_screen_size(unsigned int width, unsigned int height) {
     prvt->screen.l = 0;
     prvt->screen.r = width;
 }
+
+void AW_common::set_default_aa(AW_antialias aa) {
+    default_aa_setting = aa;
+}
+
+AW_antialias AW_common::get_default_aa() const {
+    return default_aa_setting;
+}
+
 
 struct AW_GC::Pimpl {
     AW_common    *common;
