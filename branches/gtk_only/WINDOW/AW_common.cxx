@@ -284,8 +284,10 @@ int AW_GC::get_string_size(const char *str, long textlen) const {
     // do the layout and check the size. That's what
     // get_actual_string() does.
 
-    if (str) return get_actual_string_size(str);
-    return get_string_size_fast(NULL, textlen);
+    if (str && !prvt->font_limits.is_monospaced())
+        return get_actual_string_size(str);
+    else
+        return get_string_size_fast(NULL, textlen);
 }
 
 int AW_GC::get_string_size_fast(const char *str, long textlen) const {
