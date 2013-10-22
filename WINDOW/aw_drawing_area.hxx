@@ -53,10 +53,13 @@ GType aw_drawing_area_get_type() G_GNUC_CONST;
 
 GtkWidget *aw_drawing_area_new();
 
-/**Sets the size of the complete picture and the currently visible area.*/
-void aw_drawing_area_set_picture_size       (AwDrawingArea *area, gint picture_width,
-                                             gint picture_height, gint visible_width,
-                                             gint visible_height);
+void aw_drawing_area_set_size(AwDrawingArea *area, gint width, gint height);
+gint aw_drawing_area_get_width(AwDrawingArea *area);
+gint aw_drawing_area_get_height(AwDrawingArea *area);
+void aw_drawing_area_set_unscrolled_width(AwDrawingArea *area, gint height);
+void aw_drawing_area_set_unscrolled_height(AwDrawingArea *area, gint width);
+void aw_drawing_area_get_scrolled_size(AwDrawingArea *area, gint* width, gint* height);
+
 /** set the step_increment and page_increment values for the scrollbars*/
 void aw_drawing_area_set_increments         (AwDrawingArea *area,
                                              gint horizontal_step_increment,

@@ -1077,32 +1077,35 @@ void AW_window::set_resize_callback(AW_area area, const WindowCallback& wcb) {
 // SCROLL BAR STUFF
 
 void AW_window::tell_scrolled_picture_size(AW_screen_area rectangle) {
-    picture->l = rectangle.l;
-    picture->r = rectangle.r;
-    picture->t = rectangle.t;
-    picture->b = rectangle.b;
+    aw_drawing_area_set_size(prvt->drawing_area,
+                             rectangle.r - rectangle.l, 
+                             rectangle.b - rectangle.t);
 }
 
 void AW_window::tell_scrolled_picture_size(AW_world rectangle) {
-    picture->l = (int)rectangle.l;
-    picture->r = (int)rectangle.r;
-    picture->t = (int)rectangle.t;
-    picture->b = (int)rectangle.b;
+    aw_drawing_area_set_size(prvt->drawing_area,
+                             rectangle.r - rectangle.l, 
+                             rectangle.b - rectangle.t);
 }
 
 AW_pos AW_window::get_scrolled_picture_width() const {
-    return (picture->r - picture->l);
+    return aw_drawing_area_get_width(prvt->drawing_area);
 }
 
 AW_pos AW_window::get_scrolled_picture_height() const {
-    return (picture->b - picture->t);
+    return aw_drawing_area_get_height(prvt->drawing_area);
 }
 
 void AW_window::reset_scrolled_picture_size() {
-    picture->l = 0;
-    picture->r = 0;
-    picture->t = 0;
-    picture->b = 0;
+    aw_drawing_area_set_size(prvt->drawing_area, 0, 0);
+}
+
+void AW_window::set_vertical_scrollbar_top_indent(int indent) {
+    aw_drawing_area_set_unscrolled_height(prvt->drawing_area, indent);
+}
+
+void AW_window::set_horizontal_scrollbar_left_indent(int indent) {
+    aw_drawing_area_set_unscrolled_width(prvt->drawing_area, indent);
 }
 
 void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
@@ -1113,21 +1116,30 @@ void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
 
 void AW_window::get_scrollarea_size(AW_screen_area *square) {
     aw_return_if_fail(square != NULL);
-    _get_area_size(AW_MIDDLE_AREA, square);
-    square->r -= left_indent_of_horizontal_scrollbar;
-    square->b -= top_indent_of_vertical_scrollbar;
+    square->l = square->t = 0;
+    aw_drawing_area_get_scrolled_size(prvt->drawing_area, &square->r, &square->b);
 }
 
 void AW_window::calculate_scrollbars(){
     AW_screen_area scrollArea;
     get_scrollarea_size(&scrollArea);
 
+    /*
     const int width = (int)get_scrolled_picture_width();
     const int height = (int)get_scrolled_picture_height();
     const int scrollArea_width = scrollArea.r - scrollArea.l;
     const int scrollArea_height= scrollArea.b - scrollArea.t;
-    
+   
     aw_drawing_area_set_picture_size(prvt->drawing_area, width, height, scrollArea_width, scrollArea_height);
+    
+
+    if (slider_pos_vertical > height - scrollArea_height) {
+        set_vertical_scrollbar_position(height-scrollArea_height);
+    }
+    if (slider_pos_horizontal > width - scrollArea_width) {
+        set_horizontal_scrollbar_position(width-scrollArea_width);
+    }
+    */
     
     char buffer[200];
     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
@@ -1141,6 +1153,7 @@ void AW_window::calculate_scrollbars(){
 
     aw_drawing_area_set_increments(prvt->drawing_area, hstep_increment, hpage_increment,
                                    vstep_increment, vpage_increment);
+
 }
  
 static void _aw_window_recalc_scrollbar_cb(AW_root*, AW_window* aww) {
@@ -1184,7 +1197,7 @@ void AW_window::create_window_variables() {
 }
 
 void AW_window::set_vertical_scrollbar_position(int position){
-#if defined(DEBUG) && 0
+#if defined(DEBUG) 
     fprintf(stderr, "set_vertical_scrollbar_position to %i\n", position);
 #endif
     
@@ -1210,13 +1223,6 @@ void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
     get_root()->awar(awar_name)->changed.connect(wcb, this);
 }
 
-void AW_window::set_vertical_scrollbar_top_indent(int indent) {
-    top_indent_of_vertical_scrollbar =  indent;
-}
-
-void AW_window::set_horizontal_scrollbar_left_indent(int indent) {
-    left_indent_of_horizontal_scrollbar = indent;
-}
 
 
 // END SCROLLBAR STUFF
@@ -1270,7 +1276,7 @@ AW_window::AW_window()
 {
     aw_assert(AW_root::SINGLETON); // must have AW_root
   
-    reset_scrolled_picture_size();
+    //    reset_scrolled_picture_size();
     
     prvt = new AW_window::AW_window_gtk();
 
