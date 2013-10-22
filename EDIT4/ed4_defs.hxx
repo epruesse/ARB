@@ -63,7 +63,7 @@ extern bool         DRAW;
 // globally used defines and flags
 
 #define INFINITE    -1
-#define SLIDER_OFFSET   5
+#define SLIDER_OFFSET   0
 
 // these are recommended for accessing ED4_extension:
 #define X_POS       0
