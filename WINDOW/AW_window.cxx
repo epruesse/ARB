@@ -1174,7 +1174,8 @@ void AW_window::create_window_variables() {
         ->bind_value(G_OBJECT(adj), "value", new _awar_float_to_int_mapper());
 
     adj = aw_drawing_area_get_horizontal_adjustment(prvt->drawing_area);
-    sprintf(buffer, "window/%s/scroll_position_horizontal", window_defaults_name);    get_root()->awar_int(buffer, 0)
+    sprintf(buffer, "window/%s/scroll_position_horizontal", window_defaults_name);    
+    get_root()->awar_int(buffer, 0)
         ->add_target_var(&this->slider_pos_horizontal)
         ->bind_value(G_OBJECT(adj), "value", new _awar_float_to_int_mapper());
 }
@@ -1183,8 +1184,6 @@ void AW_window::set_vertical_scrollbar_position(int position){
 #if defined(DEBUG) && 0
     fprintf(stderr, "set_vertical_scrollbar_position to %i\n", position);
 #endif
-    
-    slider_pos_vertical = position;
     aw_drawing_area_set_vertical_slider(prvt->drawing_area, position);
 }
 
@@ -1192,7 +1191,6 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
 #if defined(DEBUG) && 0
     fprintf(stderr, "set_horizontal_scrollbar_position to %i\n", position);
 #endif
-    slider_pos_horizontal = position;
     aw_drawing_area_set_horizontal_slider(prvt->drawing_area, position);
 }
 
