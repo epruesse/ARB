@@ -1124,23 +1124,6 @@ void AW_window::calculate_scrollbars(){
     AW_screen_area scrollArea;
     get_scrollarea_size(&scrollArea);
 
-    /*
-    const int width = (int)get_scrolled_picture_width();
-    const int height = (int)get_scrolled_picture_height();
-    const int scrollArea_width = scrollArea.r - scrollArea.l;
-    const int scrollArea_height= scrollArea.b - scrollArea.t;
-   
-    aw_drawing_area_set_picture_size(prvt->drawing_area, width, height, scrollArea_width, scrollArea_height);
-    
-
-    if (slider_pos_vertical > height - scrollArea_height) {
-        set_vertical_scrollbar_position(height-scrollArea_height);
-    }
-    if (slider_pos_horizontal > width - scrollArea_width) {
-        set_horizontal_scrollbar_position(width-scrollArea_width);
-    }
-    */
-    
     char buffer[200];
     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
     const int hpage_increment = scrollArea.r * get_root()->awar(buffer)->read_int() / 100;
@@ -1197,7 +1180,7 @@ void AW_window::create_window_variables() {
 }
 
 void AW_window::set_vertical_scrollbar_position(int position){
-#if defined(DEBUG) 
+#if defined(DEBUG) && 0
     fprintf(stderr, "set_vertical_scrollbar_position to %i\n", position);
 #endif
     
