@@ -240,6 +240,7 @@ void _AW_gc_manager::update_gc_color(int gc) {
     if (gc != -1) 
         device->set_foreground_color(drag_gc_offset + gc, color);
     changed.emit();
+    device->queue_draw();
 }
 
 void _AW_gc_manager::update_gc_font(int gc) {
@@ -248,6 +249,7 @@ void _AW_gc_manager::update_gc_font(int gc) {
     if (gc != -1) 
         device->set_font(drag_gc_offset + gc, GCs[gc+1].awar_font->read_char_pntr());
     changed.emit();
+    device->queue_draw();
 }
 
 
