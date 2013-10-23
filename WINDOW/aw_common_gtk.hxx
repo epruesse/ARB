@@ -40,7 +40,8 @@ public:
 };
 
 class AW_GC_gtk : public AW_GC { // derived from Noncopyable
-    mutable PangoLayout *pl; // this is just for caching
+    struct Pimpl;
+    Pimpl *prvt;
 
     virtual void wm_set_font(const char* fontname) OVERRIDE;
     virtual int get_actual_string_size(const char *str) const OVERRIDE;

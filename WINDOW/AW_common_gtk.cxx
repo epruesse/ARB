@@ -17,6 +17,7 @@
 #include <gtk/gtk.h>
 #include <string>
 #include <algorithm>
+#include <vector>
 
 #if (CAIRO_ANTIALIAS_DEFAULT == AW_AA_DEFAULT) &&           \
     (CAIRO_ANTIALIAS_NONE     == AW_AA_NONE) &&             \
@@ -48,6 +49,72 @@ cairo_antialias_t make_cairo_antialias(AW_antialias aa) {
     }
 }
 #endif
+
+
+/* primitive implementation ahead */
+struct layout_cache {
+    typedef std::vector<PangoLayout*> layout_vec;
+    layout_vec content;
+    layout_vec::iterator cur;
+    PangoContext *context;
+    PangoFontDescription *font_desc;
+    
+    layout_cache(size_t size)
+        : content(size, NULL) ,
+          cur(content.begin()),
+          context(NULL),
+          font_desc(NULL)
+    {}
+    ~layout_cache() {
+        set_font(NULL);
+    }
+
+    void set_context(PangoContext *context_) {
+        context = context_;
+        clear();
+    }
+
+    /* takes ownership of font */
+    void set_font(PangoFontDescription *desc) {
+        if (font_desc) {
+            pango_font_description_free(desc);
+        }
+
+        font_desc = desc;
+        clear();
+    }
+    
+    void clear() {
+        for (layout_vec::iterator it = content.begin(); 
+             it != content.end(); ++it) {
+            if (*it) {
+                g_object_unref(*it);
+                *it = NULL;
+            }
+        }
+    }
+    
+    PangoLayout* get(const char* text) {
+        for (layout_vec::iterator it = content.begin(); 
+             it != content.end(); ++it) {
+            if (!*it) continue;
+            if (!strcmp(pango_layout_get_text(*it), text)) {
+                return *it;
+            }
+        }
+        // not found, replace
+        if (!*cur) {
+            *cur = pango_layout_new(context);
+            pango_layout_set_font_description(*cur, font_desc);
+        }
+        pango_layout_set_text(*cur, text, -1);
+        PangoLayout *rval = *cur;
+        if (++cur == content.end()) cur = content.begin();
+
+        return rval;
+    }
+};
+
 
 struct AW_common_gtk::Pimpl {
     GtkWidget  *window;
@@ -136,21 +203,28 @@ void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
     }
 }
 
+struct AW_GC_gtk::Pimpl {
+    layout_cache cache;
+    Pimpl() : cache(200) {}
+};
+
 AW_GC_gtk::AW_GC_gtk(AW_common *aw_common) 
     : AW_GC(aw_common),
-      pl(NULL)
+      prvt(new Pimpl)
 {
+    AW_common_gtk* common = DOWNCAST(AW_common_gtk*, get_common());
+    prvt->cache.set_context(common->prvt->context);
 }
 
-AW_GC_gtk::~AW_GC_gtk(){};
+AW_GC_gtk::~AW_GC_gtk(){
+    delete prvt;
+};
 
 void AW_GC_gtk::wm_set_font(const char* font_name) {
-    if (pl) g_object_unref(pl);
     AW_common_gtk* common = DOWNCAST(AW_common_gtk*, get_common());
-    pl = pango_layout_new(common->prvt->context);
-    
+
     PangoFontDescription * desc = pango_font_description_from_string(font_name);
-    pango_layout_set_font_description(pl, desc);
+    prvt->cache.set_font(desc);
 
     // now determine char sizes; get the font structure first:
     PangoFont *font = pango_font_map_load_font(common->prvt->fontmap, common->prvt->context, desc);
@@ -166,7 +240,6 @@ void AW_GC_gtk::wm_set_font(const char* font_name) {
         set_char_size(j, PANGO_ASCENT(rect), PANGO_DESCENT(rect), PANGO_RBEARING(rect));
     }
 
-    pango_font_description_free(desc);
     g_object_unref(font);
 }
 
@@ -176,18 +249,11 @@ void AW_GC_gtk::wm_set_font(const char* font_name) {
  * text faster.
  */
 PangoLayout* AW_GC_gtk::get_pl(const char* str) const {
-    if (!pl) return NULL;
-    if (!str) str = ""; // paranoia
-    const char* oldstr = pango_layout_get_text(pl);
-    if (!oldstr || strcmp(pango_layout_get_text(pl), str)) {
-        pango_layout_set_text(pl, str, -1);
-    }
-    return pl;
+    return prvt->cache.get(str);
 }
 
 int AW_GC_gtk::get_actual_string_size(const char* str) const {
-    if (!pl) return 0;    
-    get_pl(str); // update with string if necessary
+    PangoLayout *pl = get_pl(str); // update with string if necessary
    
     int w, h;
     pango_layout_get_pixel_size (pl, &w, &h);
