@@ -278,14 +278,6 @@ public:
 
     void set_expose_callback(AW_area area, const WindowCallback& wcb);
     void set_resize_callback(AW_area area, const WindowCallback& wcb);
-    void set_expose_callback(AW_area area, AW_CB0 cb) { set_expose_callback(area, makeWindowCallback(cb)); }
-    void set_resize_callback(AW_area area, AW_CB0 cb) { set_resize_callback(area, makeWindowCallback(cb)); }
-    void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2=0) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
-        set_expose_callback(area, makeWindowCallback(f, cd1, cd2));
-    }
-    void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2=0) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
-        set_resize_callback(area, makeWindowCallback(f, cd1, cd2));
-    }
 
     void set_input_callback(AW_area area, const WindowCallback& wcb);
     void set_motion_callback(AW_area area, const WindowCallback& wcb);
@@ -461,14 +453,8 @@ public:
     void callback(void (*f)(AW_window*)) { callback(makeWindowCallback(f)); }
     void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1)); }
     void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1, cd2)); }
-    void callback(AW_cb * /* owner */ awcbs); // calls callback with aww in awcbs
 
-    // double click callbacks (selection lists only)
-    void d_callback(const WindowCallback& cb);
-    void d_callback(void (*f)(AW_window*)) { d_callback(makeWindowCallback(f)); }
-    void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { d_callback(makeWindowCallback(f, cd1)); } 
-    void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { d_callback(makeWindowCallback(f, cd1, cd2)); }
-    void d_callback(AW_cb * /* owner */ awcbs); // calls callback with aww in awcbs
+    void d_callback(const WindowCallback& cb); // secondary callback (called for 'double click into selection list' and 'text field hit ENTER')
 
     // *** create the buttons ********
     void create_label(const char* label, bool highlight=false);
@@ -574,9 +560,6 @@ public:
 
     // ************** Create modes on the left side ******************
     void create_mode(const char *pixmap, const char *help_text_, AW_active mask, const WindowCallback& cb);
-    void create_mode(const char *pixmap, const char *help_text_, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
-        create_mode(pixmap, help_text_, mask, makeWindowCallback(f, cd1, cd2));
-    }
     void select_mode(int mode);
 
 };
