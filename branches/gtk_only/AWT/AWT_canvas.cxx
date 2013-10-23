@@ -326,7 +326,7 @@ static void clip_expose(AW_window *aww, AWT_canvas *scr,
     scr->gfx->show(device);
 }
 
-void AWT_expose_cb(AW_window */*NULL*/, AWT_canvas *scr, AW_CL) {
+void AWT_expose_cb(UNFIXED, AWT_canvas *scr) {
     clip_expose(scr->aww, scr, scr->rect.l, scr->rect.r,
                 scr->rect.t, scr->rect.b, 0, 0);
 }
@@ -336,7 +336,7 @@ void AWT_canvas::refresh() {
     device->queue_draw();
 }
 
-void AWT_resize_cb(AW_window *, AWT_canvas *scr, AW_CL) {
+void AWT_resize_cb(UNFIXED, AWT_canvas *scr) {
     scr->zoom_reset();
 }
 
@@ -376,7 +376,7 @@ static bool handleZoomEvent(AWT_canvas *scr, AW_device *device, const AW_event& 
             Rectangle drag(scr->zoom_drag_sx, scr->zoom_drag_sy, scr->zoom_drag_ex, scr->zoom_drag_ey);
 
             scr->zoom(device, zoomIn, drag, screen, percent);
-            AWT_expose_cb(scr->aww, scr, 0);
+            AWT_expose_cb(NULL, scr);
         }
     }
     return handled;
@@ -680,7 +680,7 @@ void AWT_canvas::scroll(int dx, int dy, bool dont_update_scrollbars) {
         // redraw stripes
         this->shift_x_to_fit -= dx/this->trans_to_fit;
         this->shift_y_to_fit -= dy/this->trans_to_fit;
-        AWT_expose_cb(aww, this,  0);
+        AWT_expose_cb(NULL, this);
     }
 }
 
@@ -711,7 +711,7 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
     , aww(awwi)
     , awr(aww->get_root())
     , gfx(awd)
-    , gc_manager(gfx->init_devices(aww, aww->get_device(AW_MIDDLE_AREA), this, (AW_CL)0))
+    , gc_manager(gfx->init_devices(aww, aww->get_device(AW_MIDDLE_AREA), this))
     , drag_gc(aww->main_drag_gc)
     , mode(AWT_MODE_NONE)
 {
@@ -720,10 +720,10 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
     memset((char *)&clicked_line, 0, sizeof(clicked_line));
     memset((char *)&clicked_text, 0, sizeof(clicked_text));
 
-    AWT_resize_cb(aww, this, 0);
+    AWT_resize_cb(NULL, this);
 
-    aww->set_expose_callback(AW_MIDDLE_AREA, (AW_CB)AWT_expose_cb, (AW_CL)this, 0);
-    aww->set_resize_callback(AW_MIDDLE_AREA, (AW_CB)AWT_resize_cb, (AW_CL)this, 0);
+    aww->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(AWT_expose_cb, this));
+    aww->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(AWT_resize_cb, this));
     aww->set_input_callback(AW_MIDDLE_AREA, makeWindowCallback(input_event, this));
     aww->set_focus_callback(makeWindowCallback(canvas_focus_cb, this));
 

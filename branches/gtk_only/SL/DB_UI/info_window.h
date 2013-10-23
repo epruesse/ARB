@@ -53,7 +53,7 @@ class InfoWindow : virtual Noncopyable {
                 free(mapped_item);
             }
             else {
-                title = GBS_global_string_copy("Press GET to attach selected %s", itemname());
+                title = GBS_global_string_copy("Press 'Update' to attach selected %s", itemname());
             }
 
             arb_assert(title);
