@@ -388,8 +388,12 @@ public:
 
     void set_expose_callback(AW_area area, const WindowCallback& wcb);
     void set_resize_callback(AW_area area, const WindowCallback& wcb);
+
+private:
+    // motif relicts:
     void set_expose_callback(AW_area area, AW_CB0 cb) { set_expose_callback(area, makeWindowCallback(cb)); }
     void set_resize_callback(AW_area area, AW_CB0 cb) { set_resize_callback(area, makeWindowCallback(cb)); }
+public:
 
     void set_input_callback(AW_area area, const WindowCallback& wcb);
     void set_motion_callback(AW_area area, const WindowCallback& wcb);
