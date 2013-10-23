@@ -84,16 +84,10 @@ void AW_window::sens_mask(AW_active Mask) {
     _at->widget_mask = Mask;
 }
 
-void AW_window::callback(AW_cb * /* owner */ awcbs) {
-    _callback = awcbs;
-}
 void AW_window::callback(const WindowCallback& cb) {
     _callback = new AW_cb(this, cb);
 }
 
-void AW_window::d_callback(AW_cb * /* owner */ awcbs) {
-    _d_callback = awcbs;
-}
 void AW_window::d_callback(const WindowCallback& cb) {
     _d_callback = new AW_cb(this, cb);
 }
