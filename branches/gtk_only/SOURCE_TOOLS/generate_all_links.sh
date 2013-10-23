@@ -175,6 +175,7 @@ symlink_file ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
 symlink_file ../TEMPLATES/SigHandler.h INCLUDE/SigHandler.h &&
 symlink_file ../TEMPLATES/smartptr.h INCLUDE/smartptr.h &&
 symlink_file ../TEMPLATES/static_assert.h INCLUDE/static_assert.h &&
+symlink_file ../TEMPLATES/stopwatch.hxx INCLUDE/stopwatch.hxx &&
 symlink_file ../TEMPLATES/SuppressOutput.h INCLUDE/SuppressOutput.h &&
 symlink_file ../TEMPLATES/ttypes.h INCLUDE/ttypes.h &&
 symlink_file ../TEMPLATES/ut_valgrinded.h INCLUDE/ut_valgrinded.h &&
