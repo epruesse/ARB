@@ -38,7 +38,7 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
         AW_manage_GC(aww,
                      ntw->get_gc_base_name(),
                      device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
-                     makeWindowCallback(AWT_resize_cb, ntw, AW_CL(0)),
+                     makeWindowCallback(AWT_resize_cb, ntw),
                      true,      // define color groups
                      "#3be",
 
