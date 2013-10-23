@@ -180,7 +180,7 @@ static void wcb2(AW_window *w, char c, long long val) {
 }
 
 
-static void ucb0(UNFIXED u) {
+static void ucb0(UNFIXED) {
     tracef("ucb0()\n");
 }
 static void ucb1(UNFIXED, const char *name) {
