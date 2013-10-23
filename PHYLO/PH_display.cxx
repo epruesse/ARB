@@ -453,12 +453,12 @@ void PH_display_status::clear() {
     device->clear(-1);
 }
 
-void display_status(AW_window *, AW_CL cl_awroot, AW_CL /*cd2*/) {
+void display_status_cb() {
     // bottom area
-    AW_root *aw_root = (AW_root *) cl_awroot;
-
     if (!PH_display::ph_display) return;
     if (!PH_used_windows::windowList) return;
+
+    AW_root *aw_root = AW_root::SINGLETON;
 
     {
         static PH_display_status phds(PH_used_windows::windowList->phylo_main_window->get_device (AW_BOTTOM_AREA));
