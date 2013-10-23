@@ -36,7 +36,7 @@ AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                      SEC_GC_LOOP,
                      SEC_GC_MAX,
                      AW_GCM_DATA_AREA,
-                     makeWindowCallback(AWT_expose_cb, scr, (AW_CL)0),
+                     makeWindowCallback(AWT_expose_cb, scr),
                      false,
                      "#A1A1A1",
                      "LOOP$#247900",

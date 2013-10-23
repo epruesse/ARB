@@ -148,11 +148,9 @@ public:
     virtual void show(AW_device *device) = 0;
 
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     // double click
+
+    /* init gcs, if any gc is changed you may call AWT_expose_cb(aw_window, scr); or AWT_resize_cb(aw_window, scr); */
     virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) = 0;
-            /* init gcs, if any gc is changed you may call
-                AWT_expose_cb(aw_window, scr, cd2);
-                or AWT_resize_cb(aw_window, scr, cd2);
-                The function may return a pointer to a preset window */
 
     // implemented interface (most are dummies doing nothing):
     virtual void command(AW_device *device, AWT_COMMAND_MODE cmd,
@@ -275,8 +273,8 @@ inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
 }
 
 
-void AWT_expose_cb(AW_window *dummy, AWT_canvas *scr, AW_CL cl2);
-void AWT_resize_cb(AW_window *dummy, AWT_canvas *scr, AW_CL cl2);
+void AWT_expose_cb(AW_window*, AWT_canvas *scr);
+void AWT_resize_cb(AW_window*, AWT_canvas *scr);
 
 void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL);
 void AWT_popup_sec_export_window (AW_window *parent_win, AW_CL cl_canvas, AW_CL);

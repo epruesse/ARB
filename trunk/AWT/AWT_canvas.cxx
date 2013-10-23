@@ -326,7 +326,7 @@ static void clip_expose(AW_window *aww, AWT_canvas *scr,
     scr->gfx->show(device);
 }
 
-void AWT_expose_cb(AW_window *, AWT_canvas *scr, AW_CL) {
+void AWT_expose_cb(AW_window *, AWT_canvas *scr) {
     scr->refresh();
 }
 
@@ -337,9 +337,9 @@ void AWT_canvas::refresh() {
                 this->rect.t, this->rect.b, 0, 0);
 }
 
-void AWT_resize_cb(AW_window *, AWT_canvas *scr, AW_CL) {
+void AWT_resize_cb(AW_window *, AWT_canvas *scr) {
     scr->zoom_reset();
-    AWT_expose_cb(scr->aww, scr, 0);
+    AWT_expose_cb(scr->aww, scr);
 }
 
 
@@ -379,7 +379,7 @@ static bool handleZoomEvent(AWT_canvas *scr, AW_device *device, const AW_event& 
             Rectangle drag(scr->zoom_drag_sx, scr->zoom_drag_sy, scr->zoom_drag_ex, scr->zoom_drag_ey);
 
             scr->zoom(device, zoomIn, drag, screen, percent);
-            AWT_expose_cb(scr->aww, scr, 0);
+            AWT_expose_cb(scr->aww, scr);
         }
     }
     return handled;
@@ -681,7 +681,7 @@ void AWT_canvas::scroll(int dx, int dy, bool dont_update_scrollbars) {
         // redraw stripes
         this->shift_x_to_fit -= dx/this->trans_to_fit;
         this->shift_y_to_fit -= dy/this->trans_to_fit;
-        AWT_expose_cb(aww, this,  0);
+        AWT_expose_cb(aww, this);
     }
     this->refresh();
 }
@@ -722,7 +722,7 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
     memset((char *)&clicked_line, 0, sizeof(clicked_line));
     memset((char *)&clicked_text, 0, sizeof(clicked_text));
 
-    AWT_resize_cb(aww, this, 0);
+    AWT_resize_cb(aww, this);
 
     aww->set_expose_callback(AW_MIDDLE_AREA, (AW_CB)AWT_expose_cb, (AW_CL)this, 0);
     aww->set_resize_callback(AW_MIDDLE_AREA, (AW_CB)AWT_resize_cb, (AW_CL)this, 0);
