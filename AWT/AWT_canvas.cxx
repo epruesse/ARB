@@ -713,7 +713,7 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
     , aww(awwi)
     , awr(aww->get_root())
     , gfx(awd)
-    , gc_manager(gfx->init_devices(aww, aww->get_device(AW_MIDDLE_AREA), this, (AW_CL)0))
+    , gc_manager(gfx->init_devices(aww, aww->get_device(AW_MIDDLE_AREA), this))
     , drag_gc(aww->main_drag_gc)
     , mode(AWT_MODE_NONE)
 {
