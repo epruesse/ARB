@@ -43,7 +43,7 @@ static const char *getAwarName(int awarNo) {
     return buf;
 }
 
-AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
+AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr) {
     AW_gc_manager gc_manager =
         AW_manage_GC(aww,
                      scr->get_gc_base_name(),
@@ -51,7 +51,7 @@ AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                      SAI_GC_HIGHLIGHT,
                      SAI_GC_MAX,
                      AW_GCM_DATA_AREA,
-                     makeWindowCallback(AWT_resize_cb, scr, cd2),
+                     makeWindowCallback(AWT_resize_cb, scr, AW_CL(0)),
                      false,
                      "#005500",
                      "Selected Probe$#FF0000",
