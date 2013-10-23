@@ -77,11 +77,16 @@ struct layout_cache {
     /* takes ownership of font */
     void set_font(PangoFontDescription *desc) {
         if (font_desc) {
-            pango_font_description_free(desc);
+            pango_font_description_free(font_desc);
         }
 
-        font_desc = desc;
-        clear();
+        font_desc = desc; 
+        for (layout_vec::iterator it = content.begin(); 
+             it != content.end(); ++it) {
+            if (*it) {
+                pango_layout_set_font_description(*it, font_desc);                
+            }
+        }
     }
     
     void clear() {
