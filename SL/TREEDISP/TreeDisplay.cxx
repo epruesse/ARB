@@ -32,13 +32,12 @@
 
 using namespace AW;
 
-AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
-{
+AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw) {
     AW_gc_manager gc_manager =
         AW_manage_GC(aww,
                      ntw?ntw->get_gc_base_name():"unit_tester",
                      device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
-                     makeWindowCallback(AWT_resize_cb, ntw, cd2),
+                     makeWindowCallback(AWT_resize_cb, ntw),
                      true,      // define color groups
                      "#3be",
 
@@ -2837,7 +2836,7 @@ void NOTEST_treeDisplay() {
     AW_common_gtk         common(NULL, NULL, AW_MIDDLE_AREA);
     AW_device_print       print_dev(&common);
 
-    agt.init_devices(NULL, &print_dev, NULL, (AW_CL) 0);
+    agt.init_devices(NULL, &print_dev, NULL);
     root.awar_int(AWAR_COLOR_GROUPS_USE, 1);
 
     AP_tree proto(0);

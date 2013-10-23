@@ -179,6 +179,20 @@ static void wcb2(AW_window *w, char c, long long val) {
     tracef("wcb2(%c=%lli) [long long]\n", c, val);
 }
 
+
+static void ucb0(UNFIXED) {
+    tracef("ucb0()\n");
+}
+static void ucb1(UNFIXED, const char *name) {
+    tracef("ucb1(%s)\n", name);
+}
+static void ucb2(UNFIXED, const char *name, int val) {
+    tracef("ucb2(%s=%i) [int]\n", name, val);
+}
+static void ucb2(UNFIXED, const char *name, long val) {
+    tracef("ucb2(%s=%li) [long]\n", name, val);
+}
+
 static AW_window *wccb0(AW_root *r) {
     TEST_EXPECT(r == fake_root);
     tracef("wccb0()\n");
@@ -296,6 +310,19 @@ void TEST_cbs() {
         TEST_CB_TRACE(makeWindowCallback(wcb1, "dispatched"), "wcb1(dispatched)\n");
         TEST_CB_TRACE(makeWindowCallback(wcb2, "age",  46),   "wcb2(age=46) [int]\n");
         TEST_CB_TRACE(makeWindowCallback(wcb2, "size", 178L), "wcb2(size=178) [long]\n");
+
+        // declaring a cb with UNFIXED as fixed-argument allows to use callbacks as RootCallback AND as WindowCallback
+        // (when we use sigc++ in the future this should be changed to allowing functions w/o the UNFIXED-parameter)
+
+        TEST_CB_TRACE(makeRootCallback(ucb0),                "ucb0()\n");
+        TEST_CB_TRACE(makeRootCallback(ucb1,  "dispatched"), "ucb1(dispatched)\n");
+        TEST_CB_TRACE(makeRootCallback(ucb2, "age",  46),    "ucb2(age=46) [int]\n");
+        TEST_CB_TRACE(makeRootCallback(ucb2, "size", 178L),  "ucb2(size=178) [long]\n");
+
+        TEST_CB_TRACE(makeWindowCallback(ucb0),                "ucb0()\n");
+        TEST_CB_TRACE(makeWindowCallback(ucb1,  "dispatched"), "ucb1(dispatched)\n");
+        TEST_CB_TRACE(makeWindowCallback(ucb2, "age",  46),    "ucb2(age=46) [int]\n");
+        TEST_CB_TRACE(makeWindowCallback(ucb2, "size", 178L),  "ucb2(size=178) [long]\n");
 
 #if defined(ARB_64)
         TEST_CB_TRACE(makeWindowCallback(wcb2, 'l', 49710827735915452LL),  "wcb2(l=49710827735915452) [long long]\n");

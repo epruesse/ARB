@@ -840,8 +840,7 @@ static float CPRO_confidinterval(long res, long column, unsigned char which_stat
     else return (0.0);
 }
 
-static void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
-{
+static void CPRO_drawstatistic(AW_device *device, unsigned char which_statistic) {
     float topdistance=70.0, leftdistance=40.0;
     float rightdistance=20.0, bottomdistance=10.0;
     float betweendistance=30.0;
@@ -977,8 +976,7 @@ static void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic
     }
 }
 
-static void CPRO_resize_cb(AW_window *aws, AW_CL which_statistic, AW_CL)
-{
+static void CPRO_resize_cb(AW_window *aws, unsigned char which_statistic) {
     AW_root *awr=aws->get_root();
     CPRO.column=awr->awar(AWAR_CURSOR_POSITION)->read_int();
     CPRO.gridvertical=(long)awr->awar("cpro/gridvertical")->read_int();
@@ -988,11 +986,10 @@ static void CPRO_resize_cb(AW_window *aws, AW_CL which_statistic, AW_CL)
 
     AW_device *device=aws->get_device(AW_INFO_AREA);
     device->reset();
-    CPRO_drawstatistic(device, (char)which_statistic);
+    CPRO_drawstatistic(device, which_statistic);
 }
 
-static void CPRO_expose_cb(AW_window *aws, AW_CL which_statistic, AW_CL)
-{
+static void CPRO_expose_cb(AW_window *aws, unsigned char which_statistic) {
     AW_root *awr=aws->get_root();
     CPRO.column=awr->awar(AWAR_CURSOR_POSITION)->read_int();
     char buf[80];
@@ -1007,15 +1004,14 @@ static void CPRO_expose_cb(AW_window *aws, AW_CL which_statistic, AW_CL)
     if ((maxd>0)&&(maxd<101))CPRO.maxdistance=(float)maxd/100.0;
 
     AW_device *device=aws->get_device (AW_INFO_AREA);
-    CPRO_drawstatistic(device, (char)which_statistic);
+    CPRO_drawstatistic(device, which_statistic);
 }
 
-static void CPRO_column_cb(AW_root *awr, AW_window *aws, AW_CL which_statistic)
-{
+static void CPRO_column_cb(AW_root *awr, AW_window *aws, unsigned char which_statistic) {
     char buf[80];
     sprintf(buf, "cpro/drawmode%d", (int)which_statistic);
     CPRO.result[which_statistic].drawmode=(char)awr->awar(buf)->read_int();
-    CPRO_expose_cb(aws, which_statistic, 0);
+    CPRO_expose_cb(aws, which_statistic);
 }
 
 static void CPRO_columnminus_cb(AW_window *aws) {
@@ -1426,8 +1422,7 @@ static AW_window *CPRO_xpert_cb(AW_root *aw_root)
     return expertwindow=(AW_window *)aws;
 }
 
-static AW_window *CPRO_showstatistic_cb(AW_root *aw_root, AW_CL which_statistic)
-{
+static AW_window *CPRO_showstatistic_cb(AW_root *aw_root, unsigned char which_statistic) {
     char buf[20];
     sprintf(buf, "SHOW STATISTIC %d\n", (int)which_statistic+1);
     AW_window_simple *aws=new AW_window_simple;
@@ -1458,18 +1453,23 @@ static AW_window *CPRO_showstatistic_cb(AW_root *aw_root, AW_CL which_statistic)
     aws->insert_option("smoothing 15", "7", 15);
     aws->update_option_menu();
 
-    aw_root->awar(buf)->add_callback((AW_RCB)CPRO_column_cb, (AW_CL)aws, which_statistic);
-    aw_root->awar("cpro/gridhorizontal")->add_callback((AW_RCB)CPRO_column_cb, (AW_CL)aws, which_statistic);
-    aw_root->awar("cpro/gridvertical")->add_callback((AW_RCB)CPRO_column_cb, (AW_CL)aws, which_statistic);
+    {
+        RootCallback column_cb = makeRootCallback(CPRO_column_cb, static_cast<AW_window*>(aws), which_statistic);
 
-    aws->at("maxdistance");
-    aws->create_input_field("cpro/maxdistance", 3);
+        aw_root->awar(buf)->add_callback(column_cb);
+        aw_root->awar("cpro/gridhorizontal")->add_callback(column_cb);
+        aw_root->awar("cpro/gridvertical")->add_callback(column_cb);
 
-    aws->set_resize_callback (AW_INFO_AREA, CPRO_resize_cb, which_statistic, 0);
-    aws->set_expose_callback (AW_INFO_AREA, CPRO_expose_cb, which_statistic, 0);
-    aw_root->awar(AWAR_CURSOR_POSITION)->add_callback((AW_RCB)CPRO_column_cb, (AW_CL)aws, which_statistic);
-    aw_root->awar("cpro/maxdistance")->add_callback((AW_RCB)CPRO_column_cb, (AW_CL)aws, which_statistic);
-    aw_root->awar("cpro/maxdistance")->add_callback((AW_RCB)CPRO_column_cb, (AW_CL)aws, which_statistic);
+        aws->at("maxdistance");
+        aws->create_input_field("cpro/maxdistance", 3);
+
+        aws->set_resize_callback(AW_INFO_AREA, makeWindowCallback(CPRO_resize_cb, which_statistic));
+        aws->set_expose_callback(AW_INFO_AREA, makeWindowCallback(CPRO_expose_cb, which_statistic));
+        aw_root->awar(AWAR_CURSOR_POSITION)->add_callback(column_cb);
+        aw_root->awar("cpro/maxdistance")->add_callback(column_cb);
+        aw_root->awar("cpro/maxdistance")->add_callback(column_cb);
+    }
+
     aws->button_length(6);
 
     AW_device *device=aws->get_device (AW_INFO_AREA);
@@ -1491,7 +1491,7 @@ static AW_window *CPRO_showstatistic_cb(AW_root *aw_root, AW_CL which_statistic)
     device->set_line_attributes(GC_grid, 1, AW_DASHED);
     device->set_foreground_color(GC_grid, AW_rgb("grey"));
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 static AW_window *CPRO_calculatewin_cb(AW_root *aw_root, AW_CL which_statistic)

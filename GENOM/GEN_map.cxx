@@ -487,10 +487,7 @@ static void GEN_add_global_awar_callbacks(AW_root *awr) {
 
 // --------------------------------------------------------------------------------
 
-static void GEN_mode_event(AW_window *aws, AW_CL cl_win, AW_CL cl_mode) {
-    GEN_map_window   *win  = (GEN_map_window*)cl_win;
-    AWT_COMMAND_MODE  mode = (AWT_COMMAND_MODE)cl_mode;
-
+static void GEN_mode_event(AW_window *aws, GEN_map_window *win, AWT_COMMAND_MODE mode) {
     const char *text = 0;
     switch (mode) {
         case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "click to select a gene"); break;
@@ -1640,9 +1637,9 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     // ----------------------
     //      mode buttons
 
-    create_mode("select.xpm", "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_SELECT);
-    create_mode("pzoom.xpm",  "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_ZOOM);
-    create_mode("info.xpm",   "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_EDIT);
+    create_mode("select.xpm", "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_SELECT));
+    create_mode("pzoom.xpm",  "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_ZOOM));
+    create_mode("info.xpm",   "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_EDIT));
 
     // -------------------
     //      info area

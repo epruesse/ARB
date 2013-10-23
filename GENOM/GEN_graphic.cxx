@@ -47,13 +47,13 @@ GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_ins
 
 GEN_graphic::~GEN_graphic() {}
 
-AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
+AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr) {
     disp_device              = device;
     AW_gc_manager gc_manager = AW_manage_GC(aww,
                                             scr->get_gc_base_name(),
                                             device,
                                             GEN_GC_FIRST_FONT, GEN_GC_MAX, AW_GCM_DATA_AREA,
-                                            makeWindowCallback(AWT_resize_cb, scr, cd2),
+                                            makeWindowCallback(AWT_resize_cb, scr),
                                             true, // define color groups
                                             "#55C0AA",
                                             "Default$#5555ff",
