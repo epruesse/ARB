@@ -34,11 +34,9 @@ extern char AW_ERROR_BUFFER[1024];
 
 void aw_set_local_message(); // no message window, AWAR_ERROR_MESSAGES instead (used by EDIT4)
 
-class  AW_awar;
-class  AW_root_cblist;
-class  GB_HASH;
-class  AW_cb;
-
+class AW_awar;
+class AW_root_cblist;
+class GB_HASH;
 
 enum AW_Cursor {
     NORMAL_CURSOR,
