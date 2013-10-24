@@ -1,6 +1,6 @@
 // ============================================================= //
 //                                                               //
-//   File      : Aw_window.cxx                                    //
+//   File      : AW_window.cxx                                   //
 //   Purpose   :                                                 //
 //                                                               //
 //   Coded by Arne Boeckmann aboeckma@mpi-bremen.de on Jul 26, 2012   //
@@ -229,7 +229,6 @@ void AW_window::update_label(GtkWidget* widget, const char* newlabel) {
 
 
 void AW_window::put_with_label(GtkWidget* widget) {
-
     //label will not absorb any free space and will be centered
     GtkAlignment *align = GTK_ALIGNMENT(gtk_alignment_new(0.5f, 0.5f, 0.0f, 0.0f));
     put_with_label(widget, align);

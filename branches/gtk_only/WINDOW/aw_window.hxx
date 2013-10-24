@@ -54,7 +54,6 @@ struct GB_HASH;
 
 // --------------------------------------------------------------------------------
 
-
 #define AW_MESSAGE_TIME 2000
 #define AW_HEADER_MAIN
 
@@ -80,7 +79,6 @@ typedef const char *AW_label;       // label for buttons menus etc
 // "#file.xpm"   // pixmap in $ARBHOME/lib/pixmaps/file.xpm
 
 const char *AW_get_pixmapPath(const char *pixmapName);
-
 
 void AW_POPDOWN(AW_window *);
 void AW_POPUP(AW_window*, AW_CL, AW_CL);
