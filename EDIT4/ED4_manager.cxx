@@ -1025,7 +1025,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
 
         // binary search to find first visible child
 
-        int first_visible_child = 0;
+        int first_visible_child = 0; //@@@FIXME: this variable is never again set
 
         {
             int l = 0;
