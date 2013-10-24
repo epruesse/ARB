@@ -1238,6 +1238,7 @@ AW_root.o: aw_msg.hxx
 AW_root.o: aw_position.hxx
 AW_root.o: aw_rgb.hxx
 AW_root.o: aw_root.hxx
+AW_root.o: aw_root_pimpl.hxx
 AW_root.o: aw_scalar.hxx
 AW_root.o: aw_select.hxx
 AW_root.o: aw_signal.hxx
@@ -1297,6 +1298,7 @@ AW_root_debug.o: aw_msg.hxx
 AW_root_debug.o: aw_position.hxx
 AW_root_debug.o: aw_rgb.hxx
 AW_root_debug.o: aw_root.hxx
+AW_root_debug.o: aw_root_pimpl.hxx
 AW_root_debug.o: aw_signal.hxx
 AW_root_debug.o: aw_simple_device.hxx
 AW_root_debug.o: aw_stylable.hxx
