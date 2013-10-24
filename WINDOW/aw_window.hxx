@@ -108,7 +108,7 @@ typedef const char *AW_label;       // label for buttons menus etc
 const char *AW_get_pixmapPath(const char *pixmapName);
 
 void AW_POPDOWN(AW_window *);
-void AW_POPUP(AW_window*, AW_CL, AW_CL);
+void AW_POPUP(AW_window*, AW_CL, AW_CL) __ATTR__DEPRECATED_TODO("directly pass CreateWindowCallback");
 
 enum AW_event_type {
     AW_Keyboard_Press   = 1,
@@ -418,6 +418,7 @@ public:
     void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
     void insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
     void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb);
+    void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const CreateWindowCallback& cwcb) { insert_menu_topic(topic_id, name, mnemonic, helpText, Mask, makeWindowPopper(cwcb)); }
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1)); }
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1, cd2)); }
@@ -535,8 +536,16 @@ public:
     void sens_mask(AW_active mask);   // Set the sensitivity mask used for following widgets (Note: reset by next at()-command)
     void help_text(const char *id);   // Set the help text of a button
 
+private:
+    static void popper(AW_window *, CreateWindowCallback *windowMaker);
+    static WindowCallback makeWindowPopper(const CreateWindowCallback& cwcb) {
+        return makeWindowCallback(popper, new CreateWindowCallback(cwcb));
+    }
+
+public:
     // normal callbacks
     void callback(const WindowCallback& cb);
+    void callback(const CreateWindowCallback& cwcb) { callback(makeWindowPopper(cwcb)); }
     void callback(void (*f)(AW_window*)) { callback(makeWindowCallback(f)); }
     void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1)); }
     void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1, cd2)); }
