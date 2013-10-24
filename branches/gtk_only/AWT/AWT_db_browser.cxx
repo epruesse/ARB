@@ -1152,8 +1152,8 @@ void AWT_create_debug_menu(AW_window *awmm) {
         awmm->insert_sub_menu("Callbacks (dangerous! use at your own risk)", "C", AWM_ALL);
         awmm->insert_menu_topic("!run_all_cbs_alph",  "Call all callbacks (alpha-order)",     "a", "", AWM_ALL, callallcallbacks, 0, 0);
         awmm->insert_menu_topic("!run_all_cbs_nalph", "Call all callbacks (alpha-reverse)",   "l", "", AWM_ALL, callallcallbacks, 1, 0);
-        awmm->insert_menu_topic("!run_all_cbs_loc",   "Call all callbacks (code-order)",      "c", "", AWM_ALL, callallcallbacks, 2, 0);
-        awmm->insert_menu_topic("!run_all_cbs_nloc",  "Call all callbacks (code-reverse)",    "o", "", AWM_ALL, callallcallbacks, 3, 0);
+        awmm->insert_menu_topic("!run_all_cbs_loc",   "Call all callbacks (action-order)",    "c", "", AWM_ALL, callallcallbacks, 2, 0);
+        awmm->insert_menu_topic("!run_all_cbs_nloc",  "Call all callbacks (action-reverse)",  "o", "", AWM_ALL, callallcallbacks, 3, 0);
         awmm->insert_menu_topic("!run_all_cbs_rnd",   "Call all callbacks (random)",          "r", "", AWM_ALL, callallcallbacks, 4, 0);
         awmm->sep______________();
         awmm->insert_menu_topic("!forget_called_cbs", "Forget called",     "F", "", AWM_ALL, callallcallbacks, -1, 0);
@@ -1161,8 +1161,8 @@ void AWT_create_debug_menu(AW_window *awmm) {
         awmm->sep______________();
         awmm->insert_menu_topic("!run_all_cbs_alph_inf",  "Call all callbacks (alpha-order repeated)",     "", "", AWM_ALL, callallcallbacks, 8|0, 0);
         awmm->insert_menu_topic("!run_all_cbs_nalph_inf", "Call all callbacks (alpha-reverse repeated)",   "", "", AWM_ALL, callallcallbacks, 8|1, 0);
-        awmm->insert_menu_topic("!run_all_cbs_loc_inf",   "Call all callbacks (code-order repeated)",      "", "", AWM_ALL, callallcallbacks, 8|2, 0);
-        awmm->insert_menu_topic("!run_all_cbs_nloc_inf",  "Call all callbacks (code-reverse repeated)",    "", "", AWM_ALL, callallcallbacks, 8|3, 0);
+        awmm->insert_menu_topic("!run_all_cbs_loc_inf",   "Call all callbacks (action-order repeated)",    "", "", AWM_ALL, callallcallbacks, 8|2, 0);
+        awmm->insert_menu_topic("!run_all_cbs_nloc_inf",  "Call all callbacks (action-reverse repeated)",  "", "", AWM_ALL, callallcallbacks, 8|3, 0);
         awmm->insert_menu_topic("!run_all_cbs_rnd_inf",   "Call all callbacks (random repeated)",          "", "", AWM_ALL, callallcallbacks, 8|4, 0);
         awmm->close_sub_menu();
     }

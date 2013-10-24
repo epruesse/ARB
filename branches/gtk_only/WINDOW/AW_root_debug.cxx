@@ -11,6 +11,7 @@
 
 #include "aw_window.hxx"
 #include "aw_root.hxx"
+#include "aw_root_pimpl.hxx"
 #include "aw_msg.hxx"
 
 #include <arbdbt.h>
@@ -21,12 +22,8 @@
 #include <algorithm>
 
 // do includes above (otherwise depends depend on DEBUG)
-#if defined(DEBUG) 
-size_t AW_root::callallcallbacks(int /*mode*/) {
-    return 0;
-}
-#endif
-#if 0
+
+#if defined(DEBUG)
 // --------------------------------------------------------------------------------
 
 using namespace std;
@@ -60,7 +57,9 @@ static void build_dontCallHash() {
     dontCallHash = GBS_create_hash(100, GB_MIND_CASE);
     forgetCalledCallbacks();
 
-    GBS_write_hash(dontCallHash, "ARB_NT/QUIT",                 1);
+    GBS_write_hash(dontCallHash, "ARB_NT/QUIT",                 1); // @@@ obsolete?
+    GBS_write_hash(dontCallHash, "ARB_NT/quit",                 1);
+    GBS_write_hash(dontCallHash, "ARB_NT/restart_arb",          1);
     GBS_write_hash(dontCallHash, "quit",                        1);
     GBS_write_hash(dontCallHash, "new_arb",                     1);
     GBS_write_hash(dontCallHash, "restart_arb",                 1);
@@ -170,37 +169,29 @@ inline bool exclude_key(const char *key) {
     return false;
 }
 
-static long collect_callbacks(const char *key, long value, void *cl_callbacks) {
-    if (GBS_read_hash(alreadyCalledHash, key) == 0) { // don't call twice
-        if (!exclude_key(key)) {
-            CallbackArray *callbacks = reinterpret_cast<CallbackArray*>(cl_callbacks);
-            callbacks->push_back(string(key));
-        }
+struct action_address_compare {
+    const action_hash_t& action_hash;
+    action_address_compare(const action_hash_t& ah) : action_hash(ah) {}
+    inline bool operator()(const string& s1, const string& s2) {
+        action_hash_t::const_iterator a1 = action_hash.find(s1);
+        action_hash_t::const_iterator a2 = action_hash.find(s2);
+        aw_assert(a1 != action_hash.end());
+        aw_assert(a2 != action_hash.end());
+        return *a1 < *a2;
     }
-    return value;
-}
+};
 
-static int sortedByCallbackLocation(const char *k0, long v0, const char *k1, long v1) {
-    AW_cb *cbs0 = reinterpret_cast<AW_cb*>(v0);
-    AW_cb *cbs1 = reinterpret_cast<AW_cb*>(v1);
-
-    int cmp       = cbs0->compare(*cbs1);
-    if (!cmp) cmp = strcmp(k0, k1);
-
-    return cmp;
-}
-
-size_t AW_root::callallcallbacks(int mode) {
+size_t AW_root::pimpl::callallcallbacks(int mode) {
     // mode == -2 -> mark all as called
     // mode == -1 -> forget called
     // mode == 0 -> call all in alpha-order
     // mode == 1 -> call all in reverse alpha-order
-    // mode == 2 -> call all in code-order
-    // mode == 3 -> call all in reverse code-order
+    // mode == 2 -> call all in action-order
+    // mode == 3 -> call all in reverse action-order
     // mode == 4 -> call all in random order
     // mode & 8 -> repeat until no uncalled callbacks left
 
-    size_t count     = GBS_hash_count_elems(action_hash);
+    size_t count     = action_hash.size();
     size_t callCount = 0;
 
     aw_message(GBS_global_string("Found %zi callbacks", count));
@@ -225,18 +216,21 @@ size_t AW_root::callallcallbacks(int mode) {
     }
     else {
         CallbackArray callbacks;
+        for (action_hash_t::const_iterator cbi = action_hash.begin(); cbi != action_hash.end(); ++cbi) {
+            callbacks.push_back(cbi->first);
+        }
+
         switch (mode) {
             case 0:
             case 1:
-                GBS_hash_do_sorted_loop(action_hash, collect_callbacks, GBS_HCF_sortedByKey, &callbacks);
+                sort(callbacks.begin(), callbacks.end());
                 break;
             case 2:
             case 3:
-                GBS_hash_do_sorted_loop(action_hash, collect_callbacks, sortedByCallbackLocation, &callbacks);
+                sort(callbacks.begin(), callbacks.end(), action_address_compare(action_hash));
                 break;
             case -2:
             case 4:
-                GBS_hash_do_loop(action_hash, collect_callbacks, &callbacks);
                 break;
             default:
                 aw_assert(0);
@@ -256,7 +250,8 @@ size_t AW_root::callallcallbacks(int mode) {
         count = callbacks.size();
         aw_message(GBS_global_string("%zu callbacks were not called yet", count));
 
-        CallbackIter end = callbacks.end();
+        AW_root      *root = AW_root::SINGLETON;
+        CallbackIter  end  = callbacks.end();
 
         for (int pass = 1; pass <= 2; ++pass) {
             size_t       curr = 1;
@@ -270,11 +265,9 @@ size_t AW_root::callallcallbacks(int mode) {
                     GBS_write_hash(alreadyCalledHash, remote_command, 1); // don't call twice
 
                     if (mode != -2) { // -2 means "only mark as called"
-                        AW_cb *cbs = (AW_cb *)GBS_read_hash(action_hash, remote_command);
-                        bool skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
-                        if (!skipcb) {
-                            if (cbs->contains(AW_CB(AW_help_entry_pressed))) skipcb = true;
-                        }
+                        AW_action *cbs    = action_hash[remote_command];
+                        bool       skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
+
                         if (skipcb) {
                             fprintf(stderr, "Skipped callback %zu/%zu (%s)\n", curr, count, remote_command);
                         }
@@ -283,7 +276,9 @@ size_t AW_root::callallcallbacks(int mode) {
 
                             GB_clear_error();
 
-                            cbs->run_callbacks();
+                            cbs->clicked.emit();
+                            cbs->dclicked.emit();
+
                             callCount++;
                             //process_pending_events();
 
@@ -291,9 +286,11 @@ size_t AW_root::callallcallbacks(int mode) {
                                 fprintf(stderr, "Unhandled error in '%s': %s\n", remote_command, GB_await_error());
                             }
 
-                            if (cbs->contains(AW_POPUP)) {
-                                fputs("Popping down windows not supported atm\n", stderr);
-                            }
+                            // motif version avoided calls to AW_help_entry_pressed.
+                            // cannot test AW_action target, so simply call it and fix its effect here:
+                            if (root->is_help_active()) root->set_help_active(false);
+
+                            // @@@ need to popdown some windows (but which?)
                         }
                     }
                 }
@@ -312,8 +309,9 @@ size_t AW_root::callallcallbacks(int mode) {
 
     return callCount;
 }
-
-
+size_t AW_root::callallcallbacks(int mode) {
+    return prvt->callallcallbacks(mode);
+}
 // --------------------------------------------------------------------------------
 #endif // DEBUG
 

@@ -22,11 +22,6 @@
 #include "aw_awar_impl.hxx"
 #include <gdk/gdkx.h>
 #include <vector>
-#ifdef Cxx11
-#include <unordered_map>
-#else 
-#include <tr1/unordered_map>
-#endif
 #include "aw_awar_defs.hxx"
 #include "aw_window.hxx"
 #include "aw_global_awars.hxx"
@@ -34,6 +29,7 @@
 #include "aw_select.hxx"
 #include "aw_status.hxx"
 #include "aw_action.hxx"
+#include "aw_root_pimpl.hxx"
 
 // for gdb detection; should go into CORE, actually
 #include <sys/ptrace.h>
@@ -43,24 +39,6 @@
 //TODO use static class or namespace for globals
 
 AW_root *AW_root::SINGLETON = NULL;
-
-#ifdef Cxx11
-typedef std::unordered_map<std::string, AW_action*> action_hash_t;
-typedef std::unordered_map<std::string, AW_awar*> awar_hash_t;
-#else
-typedef std::tr1::unordered_map<std::string, AW_action*> action_hash_t;
-typedef std::tr1::unordered_map<std::string, AW_awar*> awar_hash_t;
-#endif
-
-struct AW_root::pimpl : virtual Noncopyable {
-    GdkCursor* cursors[3]; /** < The available cursors. Use AW_root::AW_Cursor as index when accessing */    
-    AW_active  active_mask;
-
-    action_hash_t action_hash;
-    awar_hash_t   awar_hash;
-
-    pimpl() : active_mask(AWM_ALL) {}
-};
 
 /// functions
 
