@@ -135,7 +135,6 @@ enum AW_PosRecalc {
 typedef AW_CB0 aw_hide_cb;
 
 class AW_window : virtual Noncopyable {
-    friend class AW_cb;//the cb struct needs access to prvt for strange reasons
     AW_SizeRecalc recalc_size_at_show;
     AW_PosRecalc  recalc_pos_at_show;
 //    enum AW_PosRecalc  recalc_pos_at_show;
@@ -143,9 +142,6 @@ class AW_window : virtual Noncopyable {
 //
 //    bool expose_callback_added;
 //
-//    AW_cb *focus_cb;
-//
-
 //    void all_menus_created() const;
 
     AW_awar *awar_posx, *awar_posy, *awar_width, *awar_height;

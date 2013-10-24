@@ -615,22 +615,10 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
     prvt->get_font_size(char_width, char_height);
     gtk_widget_set_size_request(scrolled_entry, char_width * columns, char_height * rows);
 
-
-    
     awar->changed_by_user += prvt->action_template.clicked;
     prvt->action_template = AW_action();
 
-    if (prvt->d_callback) {
-        /*
-        g_signal_connect(G_OBJECT(entry), "activate",
-                         G_CALLBACK(AW_window::click_handler),
-                         (gpointer) prvt->d_callback);
-        prvt->d_callback->id = GBS_global_string_copy("INPUT:%s", var_name);
-        */
-        // FIXME get_root()->define_remote_command(prvt->d_callback);
-    }
-
-    put_with_label(scrolled_entry);  
+    put_with_label(scrolled_entry);
 }
 
 void AW_window::create_menu(const char *name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){

@@ -98,12 +98,6 @@ public:
     */
     AW_signal focus_cb;
 
-    /** Contains the last callback struct created by AW_window::callback(). */
-    AW_cb *callback;
-
-    /** Contains the last callback struct created by AW_window::callback(). */
-    AW_cb *d_callback;
-
     /** Template for action to be created next (for setting help, cbs, etc prior to making button) */
     AW_action action_template;
 

@@ -20,7 +20,6 @@ class AW_device_gtk;
 class AW_device_size;
 class AW_device_print;
 class AW_device_click;
-class AW_cb;
 class AW_common;
 
 enum AW_key_mod {

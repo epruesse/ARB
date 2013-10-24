@@ -10,7 +10,6 @@ AW_window::AW_window_gtk::AW_window_gtk()
       combo_box(NULL),       
       accel_group(gtk_accel_group_new()),
       areas(AW_MAX_AREA, NULL),
-      callback(NULL), d_callback(NULL),
       drawing_area(NULL), hide_on_close(true), close_action(NULL)
 {
     gtk_window_add_accel_group(window, accel_group);
