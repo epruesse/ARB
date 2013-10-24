@@ -2075,7 +2075,7 @@ static void loadsave_colorset_cb(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
     if (error) aw_message(error);
 }
 
-static AW_window *create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd) {
+static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_data *csd) {
     static AW_window **aw_loadsave = 0;
     if (!aw_loadsave) {
         // init data
@@ -2083,7 +2083,6 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd)
         aw_loadsave = (AW_window**)GB_calloc(QUERY_ITEM_TYPES, sizeof(*aw_loadsave)); // contains loadsave windows for each item type
     }
 
-    color_save_data *csd  = (color_save_data*)cl_csd;
     QUERY_ITEM_TYPE  type = csd->cmd->selector.type;
 
     dbq_assert(type<QUERY_ITEM_TYPES);
@@ -2238,7 +2237,7 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
     csd->colorsets       = 0;
 
     aws->at("loadsave");
-    aws->callback(AW_POPUP, (AW_CL)create_loadsave_colored_window, (AW_CL)csd);
+    aws->callback(makeCreateWindowCallback(create_loadsave_colored_window, csd));
     aws->create_autosize_button("LOADSAVE_COLORED", "Load/Save", "L");
 
     if (mode == COLORIZE_MARKED) {
@@ -2571,6 +2570,11 @@ static void query_rel_menu_entry(AW_window *aws, const char *id, const char *que
     aws->insert_menu_topic(rel_id, label, mnemonic, helpText, Mask, f, cd1, cd2);
     free(rel_id);
 }
+static void query_rel_menu_entry(AW_window *aws, const char *id, const char *query_id, AW_label label, const char *mnemonic, const char *helpText, AW_active Mask, const CreateWindowCallback& createWin) {
+    char *rel_id = GBS_global_string_copy("%s_%s", query_id, id);
+    aws->insert_menu_topic(rel_id, label, mnemonic, helpText, Mask, createWin);
+    free(rel_id);
+}
 
 DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *query_id) {
     char     buffer[256];
@@ -2848,7 +2852,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         sprintf(buffer, "tmp/dbquery_%s/awar_parspredefined", query_id); query->awar_parspredefined = strdup(buffer); aw_root->awar_string(query->awar_parspredefined);
 
         if (awtqs->use_menu) {
-            sprintf(buffer, "Modify Fields of Listed %s", Items); query_rel_menu_entry(aws, "mod_fields_of_listed", query_id, buffer, "F", "mod_field_list.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_modify_fields_window, (AW_CL)query);
+            sprintf(buffer, "Modify Fields of Listed %s", Items); query_rel_menu_entry(aws, "mod_fields_of_listed", query_id, buffer, "F", "mod_field_list.hlp", AWM_ALL, makeCreateWindowCallback(create_modify_fields_window, query));
         }
         else {
             aws->at(awtqs->open_parser_pos_fig);
