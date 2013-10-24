@@ -47,10 +47,23 @@ void AW_POPDOWN(AW_window *window){
     window->hide();
 }
 
-/** 
+/**
  * CB wrapper for create_*_window calls to ensure that a window
  * is only created once.
  */
+
+void AW_window::popper(AW_window *, CreateWindowCallback *windowMaker) {
+    typedef std::map<CreateWindowCallback, AW_window*> window_map;
+
+    static window_map     window;  // previously popped up windows
+    CreateWindowCallback& maker = *windowMaker;
+
+    if (window.find(maker) == window.end()) {
+        window[maker] = maker(AW_root::SINGLETON);
+    }
+    window[maker]->activate();
+}
+
 void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) {
     typedef AW_window* (*popup_cb_t)(AW_root*, AW_CL);
     typedef std::map<std::pair<popup_cb_t,AW_CL>, AW_window*> window_map;
