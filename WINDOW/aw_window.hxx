@@ -81,7 +81,7 @@ typedef const char *AW_label;       // label for buttons menus etc
 const char *AW_get_pixmapPath(const char *pixmapName);
 
 void AW_POPDOWN(AW_window *);
-void AW_POPUP(AW_window*, AW_CL, AW_CL);
+void AW_POPUP(AW_window*, AW_CL, AW_CL) __ATTR__DEPRECATED_TODO("directly pass CreateWindowCallback");
 
 /**
  * Switches the window into help mode.
@@ -316,6 +316,7 @@ public:
      * @param cb Callback that should be called when the item is activated.
      */
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& cb);
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const CreateWindowCallback& cwcb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowPopper(cwcb)); }
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
 
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
@@ -442,8 +443,16 @@ public:
     void sens_mask(AW_active mask);   // Set the sensitivity mask used for following widgets (Note: reset by next at()-command)
     void help_text(const char *id);   // Set the help text of a button
 
+private:
+    static void popper(AW_window *, CreateWindowCallback *windowMaker);
+    static WindowCallback makeWindowPopper(const CreateWindowCallback& cwcb) {
+        return makeWindowCallback(popper, new CreateWindowCallback(cwcb));
+    }
+
+public:
     // normal callbacks
     void callback(const WindowCallback& cb);
+    void callback(const CreateWindowCallback& cwcb) { callback(makeWindowPopper(cwcb)); }
     void callback(void (*f)(AW_window*)) { callback(makeWindowCallback(f)); }
     void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1)); }
     void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1, cd2)); }
