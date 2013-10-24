@@ -30,9 +30,6 @@ struct GB_HASH;
 
 // --------------------------------------------------------------------------------
 
-#define AW_POPUP  ((AW_CB)(-1))
-// AW_POPDOWN is defined later in this section
-
 #define AW_MESSAGE_TIME 2000
 #define AW_HEADER_MAIN  extern "C" { int XtAppInitialize(); } void aw_never_called_main() { XtAppInitialize(); }
 
@@ -110,6 +107,9 @@ typedef const char *AW_label;       // label for buttons menus etc
 
 const char *AW_get_pixmapPath(const char *pixmapName);
 
+void AW_POPDOWN(AW_window *);
+void AW_POPUP(AW_window*, AW_CL, AW_CL);
+
 enum AW_event_type {
     AW_Keyboard_Press   = 1,
     AW_Keyboard_Release = 2,
@@ -142,8 +142,6 @@ struct AW_event {
     char        character;          // the c character
 };
 
-void AW_POPDOWN(AW_window *);
-
 void AW_help_popup(AW_window *aw, const char *help_file);
 inline WindowCallback makeHelpCallback(const char *helpfile) { return makeWindowCallback(AW_help_popup, helpfile); }
 
@@ -166,7 +164,6 @@ class AW_cb : virtual Noncopyable {
 
 public:
     // private (read-only):
-    AW_window  *pop_up_window;
     AW_window  *aw;
     const char *help_text;
     char       *id;
