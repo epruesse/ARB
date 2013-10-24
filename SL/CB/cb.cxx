@@ -231,12 +231,33 @@ static AW_window *wccb1(AW_root *r, const char* s) {
 }
 static AW_window *wccb2(AW_root *r, const char *s1, const char *s2) {
     TEST_EXPECT(r == fake_root);
-    tracef("wccb2(%s=%s) [const const]\n", s1, s2);
+    tracef("wccb2(%s,%s) [const const]\n", s1, s2);
     return fake_win;
 }
 static AW_window *wccb2(AW_root *r, const char *s1, char *s2) {
     TEST_EXPECT(r == fake_root);
-    tracef("wccb2(%s=%s) [const mutable]\n", s1, s2);
+    tracef("wccb2(%s,%s) [const mutable]\n", s1, s2);
+    return fake_win;
+}
+
+static AW_window *wccb3(AW_root *r, const char *s1, const char *s2) {
+    TEST_EXPECT(r == fake_root);
+    tracef("wccb3(%s,%s) [const const]\n", s1, s2);
+    return fake_win;
+}
+static AW_window *wccb3(AW_root *r, const char *s1, char *s2) {
+    TEST_EXPECT(r == fake_root);
+    tracef("wccb3(%s,%s) [const mutable]\n", s1, s2);
+    return fake_win;
+}
+static AW_window *wccb3(AW_root *r, char *s1, const char *s2) {
+    TEST_EXPECT(r == fake_root);
+    tracef("wccb3(%s,%s) [mutable const]\n", s1, s2);
+    return fake_win;
+}
+static AW_window *wccb3(AW_root *r, char *s1, char *s2) {
+    TEST_EXPECT(r == fake_root);
+    tracef("wccb3(%s,%s) [mutable mutable]\n", s1, s2);
     return fake_win;
 }
 
@@ -354,10 +375,17 @@ void TEST_cbs() {
         char       *mut = strdup("mut");
         const char *con = "con";
 
-        TEST_CB_TRACE(makeWindowCreatorCallback(wccb2, con, con), "wccb2(con=con) [const const]\n");   // exact match
-        TEST_CB_TRACE(makeWindowCreatorCallback(wccb2, mut, con), "wccb2(mut=con) [const const]\n");   // fallback to const/const
-        TEST_CB_TRACE(makeWindowCreatorCallback(wccb2, con, mut), "wccb2(con=mut) [const mutable]\n"); // exact match
-        TEST_CB_TRACE(makeWindowCreatorCallback(wccb2, mut, mut), "wccb2(mut=mut) [const const]\n");   // fallback to const const
+        // if only const/const and const/mutable exists -> shall always select as much mutable as possible
+        TEST_CB_TRACE(makeWindowCreatorCallback(wccb2, con, con), "wccb2(con,con) [const const]\n");   // exact match
+        TEST_CB_TRACE(makeWindowCreatorCallback(wccb2, mut, con), "wccb2(mut,con) [const const]\n");   // fallback to const/const
+        TEST_CB_TRACE(makeWindowCreatorCallback(wccb2, con, mut), "wccb2(con,mut) [const mutable]\n"); // exact match
+        TEST_CB_TRACE(makeWindowCreatorCallback(wccb2, mut, mut), "wccb2(mut,mut) [const mutable]\n"); // fallback to const/mutable
+
+        // if all const/nonconst combinations exist -> shall always pick exact match
+        TEST_CB_TRACE(makeWindowCreatorCallback(wccb3, con, con), "wccb3(con,con) [const const]\n");     // exact match
+        TEST_CB_TRACE(makeWindowCreatorCallback(wccb3, mut, con), "wccb3(mut,con) [mutable const]\n");   // exact match
+        TEST_CB_TRACE(makeWindowCreatorCallback(wccb3, con, mut), "wccb3(con,mut) [const mutable]\n");   // exact match
+        TEST_CB_TRACE(makeWindowCreatorCallback(wccb3, mut, mut), "wccb3(mut,mut) [mutable mutable]\n"); // exact match
 
         // test reference arguments
         int       imut = 17;
