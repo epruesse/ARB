@@ -41,6 +41,30 @@
 
 #include <cctype>
 #include "aw_question.hxx"
+#include <map>
+
+void AW_POPDOWN(AW_window *window){
+    window->hide();
+}
+
+/** 
+ * CB wrapper for create_*_window calls to ensure that a window
+ * is only created once.
+ */
+void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) {
+    typedef AW_window* (*popup_cb_t)(AW_root*, AW_CL);
+    typedef std::map<std::pair<popup_cb_t,AW_CL>, AW_window*> window_map;
+
+    static window_map windows; // previously popped up windows
+
+    std::pair<popup_cb_t, AW_CL> popup((popup_cb_t)callback, callback_data);
+
+    if (windows.find(popup) == windows.end()) {
+        windows[popup] = popup.first(AW_root::SINGLETON, popup.second);
+    }
+
+    windows[popup]->activate();
+}
 
 void AW_root::make_sensitive(Widget w, AW_active mask) {
     // Don't call make_sensitive directly!
@@ -399,10 +423,6 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
     // @@@ test and constrain against limits
     slider_pos_horizontal = position;
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, position, NULL);
-}
-
-void AW_POPDOWN(AW_window *aww) {
-    aww->hide();
 }
 
 #define BUFSIZE 256
