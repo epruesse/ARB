@@ -24,7 +24,6 @@
 // AISC_MKPT_PROMOTE:#include "arb_core.h"
 // AISC_MKPT_PROMOTE:#endif
 
-
 long GB_size_of_file(const char *path) {
     struct stat stt;
     if (!path || stat(path, &stt)) return -1;

@@ -28,6 +28,7 @@
 #include <arb_strbuf.h>
 #include <arb_file.h>
 #include <arb_sleep.h>
+#include <arb_pathlen.h>
 
 #include "gb_comm.h"
 #include "gb_data.h"
@@ -992,7 +993,7 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
 // @@@ whole section (+ corresponding tests) should move to adfile.cxx
 
 static int  path_toggle = 0;
-static char path_buf[2][PATH_MAX];
+static char path_buf[2][ARB_PATH_MAX];
 
 static char *use_other_path_buf() {
     path_toggle = 1-path_toggle;
@@ -1007,7 +1008,7 @@ GB_CSTR GB_append_suffix(const char *name, const char *suffix) {
     if (suffix) {
         while (suffix[0] == '.') suffix++;
         if (suffix[0]) {
-            result = GBS_global_string_to_buffer(use_other_path_buf(), PATH_MAX, "%s.%s", name, suffix);
+            result = GBS_global_string_to_buffer(use_other_path_buf(), ARB_PATH_MAX, "%s.%s", name, suffix);
         }
     }
     return result;
@@ -1027,8 +1028,8 @@ GB_CSTR GB_canonical_path(const char *anypath) {
     else if (!anypath[0]) {
         result = "/";
     }
-    else if (strlen(anypath) >= PATH_MAX) {
-        GB_export_errorf("Path too long (> %i chars)", PATH_MAX-1);
+    else if (strlen(anypath) >= ARB_PATH_MAX) {
+        GB_export_errorf("Path too long (> %i chars)", ARB_PATH_MAX-1);
     }
     else {
         if (anypath[0] == '~' && (!anypath[1] || anypath[1] == '/')) {
