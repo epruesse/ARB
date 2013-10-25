@@ -16,16 +16,15 @@
 #include <arb_str.h>
 #include <arb_strarray.h>
 #include <arb_file.h>
+#include <arb_pathlen.h>
 
 #include "gb_local.h"
 #include "gb_load.h"
 
-#define FILE_PATH_MAX PATH_MAX
-
 GB_CSTR GB_getcwd() {
     // get the current working directory
     // (directory from which application has been started)
-    RETURN_ONETIME_ALLOC(getcwd(0, FILE_PATH_MAX));
+    RETURN_ONETIME_ALLOC(getcwd(0, ARB_PATH_MAX));
 }
 
 GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) {
@@ -40,7 +39,7 @@ GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) {
     dirent      *dp;
     struct stat  st;
     const char  *oldstyle    = ".arb.quick";
-    char         buffer[FILE_PATH_MAX];
+    char         buffer[ARB_PATH_MAX];
     int          oldstylelen = strlen(oldstyle);
     int          filelen;
 
@@ -129,7 +128,7 @@ char *GB_find_all_files(const char *dir, const char *mask, bool filename_only) {
         if (matcher) {
             for (dirent *dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
                 if (GBS_string_matches_regexp(dp->d_name, matcher)) {
-                    char buffer[FILE_PATH_MAX];
+                    char buffer[ARB_PATH_MAX];
                     sprintf(buffer, "%s/%s", dir, dp->d_name);
                     if (stat(buffer, &st) == 0  && S_ISREG(st.st_mode)) { // regular file ?
                         if (filename_only) strcpy(buffer, dp->d_name);
@@ -169,7 +168,7 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
             GB_ULONG newest = 0;
             for (dirent *dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
                 if (GBS_string_matches_regexp(dp->d_name, matcher)) {
-                    char buffer[FILE_PATH_MAX];
+                    char buffer[ARB_PATH_MAX];
                     sprintf(buffer, "%s/%s", dir, dp->d_name);
                     if (stat(buffer, &st) == 0 &&
                         S_ISREG(st.st_mode) &&
