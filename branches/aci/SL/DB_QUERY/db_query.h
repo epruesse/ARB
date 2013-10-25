@@ -23,6 +23,7 @@ struct AW_selection_list;
 
 namespace QUERY {
 
+    typedef const char *AwarName;
     typedef void (*popup_info_window_cb)(AW_root *aw_root, GBDATA *gb_main);
 
     struct DbQuery;
@@ -35,11 +36,11 @@ namespace QUERY {
 
         ItemSelector& get_queried_itemtype() const { return selector; }
 
-        GBDATA       *gb_main;                          // the main database (in merge tool: source db in left query; dest db in right query)
-        GBDATA       *gb_ref;                           // second reference database (only used by merge tool; dest db in left query; source db in right query)
-        bool          expect_hit_in_ref_list;           // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for target-DB-query)
-        AWAR          species_name;                     // AWAR containing current species name
-        AWAR          tree_name;                        // AWAR containing current tree name
+        GBDATA   *gb_main;                                  // the main database (in merge tool: source db in left query; dest db in right query)
+        GBDATA   *gb_ref;                                   // second reference database (only used by merge tool; dest db in left query; source db in right query)
+        bool      expect_hit_in_ref_list;                   // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for target-DB-query)
+        AwarName  species_name;                             // awar containing current species name
+        AwarName  tree_name;                                // awar containing current tree name
 
         int select_bit;                                 // one of 1 2 4 8 .. 128 (one for each query box)
         int use_menu;                                   // put additional commands in menu

@@ -410,6 +410,7 @@ adfile.o: $(ARBHOME)/INCLUDE/arb_core.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_error.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_file.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adfile.o: $(ARBHOME)/INCLUDE/arb_pathlen.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_sort.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_str.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -420,6 +421,7 @@ adfile.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adfile.o: $(ARBHOME)/INCLUDE/dupstr.h
 adfile.o: $(ARBHOME)/INCLUDE/gccver.h
 adfile.o: $(ARBHOME)/INCLUDE/smartptr.h
+adfile.o: $(ARBHOME)/INCLUDE/static_assert.h
 adfile.o: $(ARBHOME)/INCLUDE/test_global.h
 adfile.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -885,6 +887,7 @@ adsocket.o: $(ARBHOME)/INCLUDE/arb_cs.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_file.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adsocket.o: $(ARBHOME)/INCLUDE/arb_pathlen.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_str.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -896,6 +899,7 @@ adsocket.o: $(ARBHOME)/INCLUDE/dupstr.h
 adsocket.o: $(ARBHOME)/INCLUDE/gccver.h
 adsocket.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adsocket.o: $(ARBHOME)/INCLUDE/smartptr.h
+adsocket.o: $(ARBHOME)/INCLUDE/static_assert.h
 adsocket.o: $(ARBHOME)/INCLUDE/test_global.h
 adsocket.o: $(ARBHOME)/INCLUDE/test_unit.h
 
