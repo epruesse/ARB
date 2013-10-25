@@ -43,8 +43,6 @@ typedef long      AW_bitset;
 typedef AW_bitset AW_active;     // bits to activate/inactivate buttons
 typedef float     AW_grey_level; // <0 don't fill  0.0 white 1.0 black
 
-typedef const char *AWAR;
-
 enum AW_area {
     AW_INFO_AREA,
     AW_MIDDLE_AREA,
