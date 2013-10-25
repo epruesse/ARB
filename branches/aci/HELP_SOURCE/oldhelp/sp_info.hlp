@@ -26,9 +26,10 @@ SUB     scandb.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE           SPECIES INFORMATION
 
-OCCURRENCE      ARB_NT/<INFO> button: left area, fifth from top
-                ARB_NT/Species/Info
-                ARB_NT/Species/Search
+OCCURRENCE      ARB_NT/<INFO> button (top area; showing the short name of the selected species)
+                ARB_NT/Species/Species Information
+                ARB_NT/Species/Search (click into result list)
+                ARB_NT/Info mode button (in the button bar on the left side)
 
 DESCRIPTION     Displays species information stored within the 'fields' (see
                 LINK{glossary.hlp}).
@@ -58,12 +59,24 @@ NOTES           The 'SEARCH & QUERY' window can be displayed by pressing the <SE
                 Use the left mouse button to mark (cut is done automatically).
                 Then use the middle mouse button to paste.
 
+SECTION         Locking information window to a specific species
+
                 When you open this window it will always show the information of
-                the current species. That means if you select another species (in ARB_NT or in the editor)
-                this window will follow and display information of the selected species.
-                After clicking on the <DETACH> button once the window will no longer follow the current
-                species automatically. You may open a new information window then (which will follow again).
-                Clicking again on the <DETACH> button will catch up the detached window to the current species.
+                the currently selected species. That means if you select another species (in
+                the tree or in the editor) this window will follow your selection and display
+                the information of the newly selected species.
+
+                By pressing the 'New window...' button you will open a second information
+                window which will be LOCKED TO the currently selected species.
+                That second information window will NOT FOLLOW the selected species (as the
+                primary information window does). Instead of the 'New window...' button, it
+                shows an 'Update' button. Pressing the 'Update' button will change the
+                displayed species to the species currently selected.
+
+                You can distinguish the two types of information windows by their window
+                title: the LOCKED infowindow contains the name of the LOCKED species, the
+                "normal" infowindow is entitled 'Species Information'.
+
 
 SECTION         STANDARD ENTRIES
 

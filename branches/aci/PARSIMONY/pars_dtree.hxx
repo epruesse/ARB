@@ -21,12 +21,7 @@ class ArbParsimony;
 class AWT_graphic_parsimony : public AWT_graphic_tree, virtual Noncopyable {
     ArbParsimony& parsimony;
 
-    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL cd2) OVERRIDE;
-    /* init gcs, if any gc is changed you may call
-       AWT_expose_cb(aw_window,ntw,cd2);
-       or AWT_resize_cb(aw_window,ntw,cd2);
-       The function may return a pointer to a preset window */
-
+    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
 
     virtual void show(AW_device *device) OVERRIDE;
     virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,

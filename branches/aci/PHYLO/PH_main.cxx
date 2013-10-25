@@ -86,7 +86,7 @@ __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
 }
 
 
-void expose_callb() {
+void expose_cb() {
     if (PH_display::ph_display->displayed()!=NONE) {
         PH_display::ph_display->clear_window();
         PH_display::ph_display->display();
@@ -94,7 +94,7 @@ void expose_callb() {
 }
 
 
-static void resize_callb() {
+static void resize_cb() {
     if (PH_display::ph_display) {
         PH_display::ph_display->resized();
         PH_display::ph_display->display();
@@ -421,7 +421,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
                                           awm->get_window_id(),
                                           awm->get_device(AW_MIDDLE_AREA),
                                           PH_GC_0, PH_GC_0_DRAG, AW_GCM_DATA_AREA,
-                                          makeWindowCallback(resize_callb),
+                                          makeWindowCallback(resize_cb),
                                           false, // no color groups
                                           "#CC9AF8",
                                           "#SEQUENCE$#000000",
@@ -432,7 +432,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
                  awm->get_window_id(),
                  awm->get_device(AW_BOTTOM_AREA),
                  PH_GC_0, PH_GC_0_DRAG, AW_GCM_WINDOW_AREA,
-                 makeWindowCallback(resize_callb),
+                 makeWindowCallback(resize_cb),
                  false, // no color groups
                  "pink",
                  "#FOOTER",
@@ -485,12 +485,12 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 
     awm->set_bottom_area_height(120);
 
-    awm->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(expose_callb));
-    awm->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(resize_callb));
-    awm->set_expose_callback(AW_BOTTOM_AREA, display_status, (AW_CL)aw_root, 0);
-    awm->set_resize_callback(AW_BOTTOM_AREA, display_status, (AW_CL)aw_root, 0);
+    awm->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(expose_cb));
+    awm->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(resize_cb));
+    awm->set_expose_callback(AW_BOTTOM_AREA, makeWindowCallback(display_status_cb));
+    awm->set_resize_callback(AW_BOTTOM_AREA, makeWindowCallback(display_status_cb));
 
-    return (AW_window *)awm;
+    return awm;
 }
 
 

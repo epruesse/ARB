@@ -32,13 +32,12 @@
 
 using namespace AW;
 
-AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
-{
+AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw) {
     AW_gc_manager gc_manager =
         AW_manage_GC(aww,
                      ntw->get_gc_base_name(),
                      device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
-                     makeWindowCallback(AWT_resize_cb, ntw, cd2),
+                     makeWindowCallback(AWT_resize_cb, ntw),
                      true,      // define color groups
                      "#3be",
 

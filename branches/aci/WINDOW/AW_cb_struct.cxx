@@ -25,10 +25,9 @@ AW_postcb_cb       AW_cb::postcb       = NULL;
 AW_cb::AW_cb(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb *nexti)
     : cb(makeWindowCallback(g, cd1i, cd2i))
 {
-    aw            = awi;
-    help_text     = help_texti;
-    pop_up_window = NULL;
-    this->next    = nexti;
+    aw         = awi;
+    help_text  = help_texti;
+    this->next = nexti;
 
     id = NULL;
 }
@@ -36,10 +35,9 @@ AW_cb::AW_cb(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW
 AW_cb::AW_cb(AW_window *awi, const WindowCallback& wcb, const char *help_texti, class AW_cb *nexti)
     : cb(wcb)
 {
-    aw            = awi;
-    help_text     = help_texti;
-    pop_up_window = NULL;
-    this->next    = nexti;
+    aw         = awi;
+    help_text  = help_texti;
+    this->next = nexti;
 
     id = NULL;
 }
@@ -147,27 +145,6 @@ void AW_cb::run_callbacks() {
     }
 
     useraction_init();
-    
-    if (f == AW_POPUP) {
-        if (pop_up_window) { // already exists
-            pop_up_window->activate();
-        }
-        else {
-            AW_PPP g = AW_PPP(cb.inspect_CD1());
-            if (g) {
-                pop_up_window = g(aw->get_root(), cb.inspect_CD2(), 0);
-                pop_up_window->activate();
-            }
-            else {
-                aw_message("not implemented -- please report to devel@arb-home.de");
-            }
-        }
-        if (pop_up_window && p_aww(pop_up_window)->popup_cb)
-            p_aww(pop_up_window)->popup_cb->run_callbacks();
-    }
-    else {
-        cb(aw);
-    }
-
+    cb(aw);
     useraction_done(aw);
 }

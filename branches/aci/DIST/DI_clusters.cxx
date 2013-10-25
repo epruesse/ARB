@@ -977,7 +977,7 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
 
         aws->button_length(20);
         aws->at("tree_name");
-        aws->create_button("TREE", AWAR_DIST_TREE_CURR_NAME);
+        aws->create_button(NULL, AWAR_DIST_TREE_CURR_NAME);
 
         // -------------------
         //      lower area
