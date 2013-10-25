@@ -181,6 +181,7 @@ my @used_when_matchesFull = (
                              qr/\/UNIT_TESTER\/run\/.*\.amc$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.expected$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.fig$/o,
+                             qr/\/UNIT_TESTER\/run\/.*\.svg$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.in$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.inp$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.input$/o,
