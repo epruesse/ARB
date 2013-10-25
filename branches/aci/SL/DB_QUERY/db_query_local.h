@@ -50,13 +50,15 @@ namespace QUERY {
 
     };
 
-    struct DbQuery {
+    class DbQuery {
+        AwarName awar_tree_name;
+
+    public:
         AW_window         *aws;
         GBDATA            *gb_main;                           // the main database (in merge tool: source db in left query; dest db in right query)
         GBDATA            *gb_ref;                            // second reference database (only used by merge tool; dest db in left query; source db in right query)
         bool               expect_hit_in_ref_list;            // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for target-DB-query)
         AwarName           species_name;
-        const char        *tree_name;
         AwarName           awar_keys[QUERY_SEARCHES];
         AwarName           awar_setkey;
         AwarName           awar_setprotection;
@@ -91,9 +93,16 @@ namespace QUERY {
         bool is_queried(GBDATA *gb_item) const {
             return select_bit & GB_read_usr_private(gb_item);
         }
+
+        const char *get_tree_name() const;
+        void set_tree_awar_name(const char *tree_awar_name) { // @@@ intermediate - should be set by ctor
+            awar_tree_name = tree_awar_name;
+        }
     };
 
 };
 #else
 #error db_query_local.h included twice
 #endif // DB_QUERY_LOCAL_H
+
+

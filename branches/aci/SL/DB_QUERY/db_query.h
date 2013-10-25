@@ -26,7 +26,7 @@ namespace QUERY {
     typedef const char *AwarName;
     typedef void (*popup_info_window_cb)(AW_root *aw_root, GBDATA *gb_main);
 
-    struct DbQuery;
+    class DbQuery;
 
     class query_spec {
         ItemSelector& selector;                         // which kind of item do we handle?

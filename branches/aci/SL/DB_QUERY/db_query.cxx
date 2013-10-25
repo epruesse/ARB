@@ -761,7 +761,7 @@ void query_info::initFields(DbQuery *query, int idx, query_operator aqo, AW_root
     expr = aw_root->awar(query->awar_queries[idx])->read_string();
 
     gb_main = query->gb_main;
-    tree    = query->tree_name;
+    tree    = query->get_tree_name();
 
     rek         = false;
     match_field = AQFT_EXPLICIT;
@@ -1682,16 +1682,16 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
                         char   *parsed = 0;
 
                         if (double_pars) {
-                            char *com2 = GB_command_interpreter(query->gb_main, str, command, gb_item, query->tree_name);
+                            char *com2 = GB_command_interpreter(query->gb_main, str, command, gb_item, query->get_tree_name());
                             if (com2) {
                                 if (tag) parsed = GBS_string_eval_tagged_string(query->gb_main, "", deftag, tag, 0, com2, gb_item);
-                                else parsed     = GB_command_interpreter       (query->gb_main, "", com2, gb_item, query->tree_name);
+                                else parsed     = GB_command_interpreter       (query->gb_main, "", com2, gb_item, query->get_tree_name());
                             }
                             free(com2);
                         }
                         else {
                             if (tag) parsed = GBS_string_eval_tagged_string(query->gb_main, str, deftag, tag, 0, command, gb_item);
-                            else parsed     = GB_command_interpreter       (query->gb_main, str, command, gb_item, query->tree_name);
+                            else parsed     = GB_command_interpreter       (query->gb_main, str, command, gb_item, query->get_tree_name());
                         }
 
                         if (!parsed) error = GB_await_error();
@@ -2550,6 +2550,10 @@ static void query_rel_menu_entry(AW_window *aws, const char *id, const char *que
     free(rel_id);
 }
 
+const char *DbQuery::get_tree_name() const {
+    return aws->get_root()->awar(awar_tree_name)->read_char_pntr();
+}
+
 DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *query_id) {
     char     buffer[256];
     AW_root *aw_root = aws->get_root();
@@ -2562,8 +2566,8 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     query->expect_hit_in_ref_list = awtqs->expect_hit_in_ref_list;
     query->select_bit             = awtqs->select_bit;
     query->species_name           = strdup(awtqs->species_name);
-    query->tree_name              = awtqs->tree_name ? aw_root->awar(awtqs->tree_name)->read_string() : 0;
-    query->hit_description        = GBS_create_hash(query_count_items(query, QUERY_ALL_ITEMS, QUERY_GENERATE), GB_IGNORE_CASE);
+    query->set_tree_awar_name(awtqs->tree_name);
+    query->hit_description = GBS_create_hash(query_count_items(query, QUERY_ALL_ITEMS, QUERY_GENERATE), GB_IGNORE_CASE);
 
     GB_push_transaction(gb_main);
 
