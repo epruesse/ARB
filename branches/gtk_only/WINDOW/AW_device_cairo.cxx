@@ -74,27 +74,25 @@ bool AW_device_cairo::draw_string_on_screen(AW_device *device, int gc, const  ch
     AW_pos X, Y;
     device->transform(x_, y_, X, Y);
     aw_assert(size <= strlen(str));
-    // FIXME: should interpret size? it seems to be set by text_overlay
 
     AW_device_cairo *device_cairo = DOWNCAST(AW_device_cairo*, device);
     cairo_t *cr = device_cairo->get_cr(gc);
     if (!cr) return true; 
-    cairo_save(cr);
+    //cairo_save(cr);
+    //AW_screen_area cliprect = device_cairo->get_cliprect();
+    //cairo_rectangle(cr, cliprect.l +.5, cliprect.t +.5, cliprect.r-cliprect.l, cliprect.b-cliprect.t);
+    //cairo_clip(cr);
 
-    AW_screen_area cliprect = device_cairo->get_cliprect();
-    cairo_rectangle(cr, cliprect.l +.5, cliprect.t +.5, cliprect.r-cliprect.l, cliprect.b-cliprect.t);
-    cairo_clip(cr);
+    PangoLayout *pl = device_cairo->get_common()->map_gc(gc)->get_pl(str+start, size);
 
-    PangoLayout *pl = device_cairo->get_common()->map_gc(gc)->get_pl(str+start);
-   
-    AW_pos base = pango_layout_get_baseline(pl)  / PANGO_SCALE;
+    AW_pos base = 13;//pango_layout_get_baseline(pl)  / PANGO_SCALE;
     AW_pos x      = AW_INT(X) + 0.5;
     AW_pos y      = AW_INT(Y - base - 1) + 0.5;
 
     cairo_move_to(cr, x, y);
     pango_cairo_show_layout(cr, pl);
     
-    cairo_restore(cr);
+    //cairo_restore(cr);
     TRACE("%i %i %s", (int)x, (int)y, str+start);
     return true;
 }
