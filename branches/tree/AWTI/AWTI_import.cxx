@@ -1290,7 +1290,7 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"arb_import.hlp");
+        aws->callback(makeHelpCallback("arb_import.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename

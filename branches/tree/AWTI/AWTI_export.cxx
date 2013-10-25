@@ -166,7 +166,7 @@ AW_window *open_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"arb_export.hlp");
+    aws->callback(makeHelpCallback("arb_export.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     AW_create_fileselection(aws, AWAR_EXPORT_FILE, "f");

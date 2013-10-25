@@ -1689,7 +1689,7 @@ static AW_window *loadsave_search_parameters(AW_root *root, const LoadSaveSearch
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"search_parameters.hlp");
+    aws->callback(makeHelpCallback("search_parameters.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -1787,7 +1787,7 @@ void ED4_popup_search_window(AW_window *aww, AW_CL cl_search_type) {
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"e4_search.hlp");
+        aws->callback(makeHelpCallback("e4_search.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         LoadSaveSearchParam *param = new LoadSaveSearchParam(type, ed4w->id); // bound to callbacks (dont free)

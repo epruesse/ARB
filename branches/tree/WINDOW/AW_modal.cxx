@@ -30,13 +30,11 @@ using namespace std;
 
 int aw_message_cb_result;
 
-void message_cb(AW_window *, AW_CL cd1) {
-    long result = (long)cd1;
+void message_cb(AW_window*, int result) {
     if (result == -1) { // exit
         exit(EXIT_FAILURE);
     }
-    aw_message_cb_result = ((int)result);
-    return;
+    aw_message_cb_result = result;
 }
 
 unsigned aw_message_timer_listen_event(AW_root *, AW_window *aww) {
@@ -126,8 +124,8 @@ static void input_history_insert(const char *str, bool front) {
 #endif // TRACE_HISTORY
 }
 
-void input_history_cb(AW_window *aw, AW_CL cl_mode) {
-    int      mode    = (int)cl_mode;                // -1 = '<' +1 = '>'
+void input_history_cb(AW_window *aw, int mode) {
+    // mode: -1 = '<' +1 = '>'
     AW_root *aw_root = aw->get_root();
     AW_awar *awar    = aw_root->awar(AW_INPUT_AWAR);
     char    *content = awar->read_string();
@@ -156,25 +154,25 @@ void input_history_cb(AW_window *aw, AW_CL cl_mode) {
     free(content);
 }
 
-void input_cb(AW_window *aw, AW_CL cd1) {
+void input_cb(AW_window *aw, int buttonNr) {
     // any previous contents were passed to client (who is responsible to free the resources)
     // so DON'T free aw_input_cb_result here:
     aw_input_cb_result        = 0;
-    aw_string_selected_button = int(cd1);
+    aw_string_selected_button = buttonNr;
 
-    if (cd1 >= 0) {              // <0 = cancel button -> no result
+    if (buttonNr >= 0) { // <0 = cancel button -> no result
         // create heap-copy of result -> client will get the owner
         aw_input_cb_result = aw->get_root()->awar(AW_INPUT_AWAR)->read_as_string();
     }
 }
 
-void file_selection_cb(AW_window *aw, AW_CL cd1) {
+void file_selection_cb(AW_window *aw, int ok_cancel_flag) {
     // any previous contents were passed to client (who is responsible to free the resources)
     // so DON'T free aw_input_cb_result here:
     aw_input_cb_result        = 0;
-    aw_string_selected_button = int(cd1);
+    aw_string_selected_button = ok_cancel_flag;
 
-    if (cd1 >= 0) {              // <0 = cancel button -> no result
+    if (ok_cancel_flag >= 0) { // <0 = cancel button -> no result
         // create heap-copy of result -> client will get the owner
         aw_input_cb_result = aw->get_root()->awar(AW_FILE_SELECT_FILE_AWAR)->read_as_string();
     }
@@ -221,8 +219,8 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
 #define MAXBUTTONSPERLINE 5
 
     aw_msg->at_newline();
-    aw_msg->callback(input_history_cb, -1); aw_msg->create_button("bwd", "<<", 0);
-    aw_msg->callback(input_history_cb,  1); aw_msg->create_button("fwd", ">>", 0);
+    aw_msg->callback(makeWindowCallback(input_history_cb, -1)); aw_msg->create_button("bwd", "<<", 0);
+    aw_msg->callback(makeWindowCallback(input_history_cb,  1)); aw_msg->create_button("fwd", ">>", 0);
     size_t thisLine = 2;
 
     // @@@ add a history button (opening a window with elements from history)
@@ -242,14 +240,14 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
                 thisLine = 0;
                 if (forceLF) name++;
             }
-            aw_msg->callback(input_cb, b);          // use b == 0 as result for 1st button, 1 for 2nd button, etc.
+            aw_msg->callback(makeWindowCallback(input_cb, int(b))); // use b == 0 as result for 1st button, 1 for 2nd button, etc.
             aw_msg->create_button(name, name, "");
             thisLine++;
         }
     }
     else {
-        aw_msg->callback(input_cb,  0); aw_msg->create_button("OK", "OK", "O");
-        aw_msg->callback(input_cb, -1); aw_msg->create_button("CANCEL", "CANCEL", "C");
+        aw_msg->callback(makeWindowCallback(input_cb,  0)); aw_msg->create_button("OK", "OK", "O");
+        aw_msg->callback(makeWindowCallback(input_cb, -1)); aw_msg->create_button("CANCEL", "CANCEL", "C");
     }
 
     return aw_msg;
@@ -436,7 +434,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
             free(this_input);
 
             if (!aw_msg->is_shown()) { // somebody hided/closed the window
-                input_cb(aw_msg, (AW_CL)-1); // CANCEL
+                input_cb(aw_msg, -1); // CANCEL
                 break;
             }
         }
@@ -501,11 +499,11 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
         aw_msg->button_length(7);
 
         aw_msg->at("ok");
-        aw_msg->callback(file_selection_cb, 0);
+        aw_msg->callback(makeWindowCallback(file_selection_cb, 0));
         aw_msg->create_button("OK", "OK", "O");
 
         aw_msg->at("cancel");
-        aw_msg->callback(file_selection_cb, -1);
+        aw_msg->callback(makeWindowCallback(file_selection_cb, -1));
         aw_msg->create_button("CANCEL", "CANCEL", "C");
 
         aw_msg->window_fit();

@@ -33,7 +33,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups);
 void TREE_auto_jump_cb(AW_root *, AWT_canvas *ntw);
 void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose);
 void TREE_recompute_cb(AW_root *, AWT_canvas *ntw);
-void NT_reinit_treetype(AW_window *, AWT_canvas *ntw, AW_CL dummy_1x);
+void NT_reinit_treetype(AW_root *, AWT_canvas *ntw);
 void NT_remove_species_in_tree_from_hash(AP_tree *tree, GB_HASH *hash);
 
 #else

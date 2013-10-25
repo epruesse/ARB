@@ -136,11 +136,6 @@ if [ ! -d ${ARBMACRO} ] ; then
   mkdir ${ARBMACRO}
 fi
 
-if [ "X$GDE_HELP_DIR" = "X" ] ; then
-  GDE_HELP_DIR="$ARBHOME/GDEHELP"
-  export GDE_HELP_DIR
-fi
-
 # set default command-tool used by ARB
 ARB_XTERM=${ARB_XTERM:-xterm -sl 1000 -sb -geometry 120x50}
 export ARB_XTERM

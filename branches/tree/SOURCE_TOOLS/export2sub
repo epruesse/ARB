@@ -33,6 +33,7 @@ export MAKEDEPENDFLAGS MAKEDEPEND
 export SEP
 export NODIR
 
+export CORE_LIB
 export ARBDB_LIB
 export UNIT_TESTS
 export SHOWTODO

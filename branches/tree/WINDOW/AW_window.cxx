@@ -41,6 +41,43 @@
 
 #include <cctype>
 #include "aw_question.hxx"
+#include <map>
+
+void AW_POPDOWN(AW_window *window){
+    window->hide();
+}
+
+/**
+ * CB wrapper for create_*_window calls to ensure that a window
+ * is only created once.
+ */
+
+void AW_window::popper(AW_window *, CreateWindowCallback *windowMaker) {
+    typedef std::map<CreateWindowCallback, AW_window*> window_map;
+
+    static window_map     window;  // previously popped up windows
+    CreateWindowCallback& maker = *windowMaker;
+
+    if (window.find(maker) == window.end()) {
+        window[maker] = maker(AW_root::SINGLETON);
+    }
+    window[maker]->activate();
+}
+
+void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) {
+    typedef AW_window* (*popup_cb_t)(AW_root*, AW_CL);
+    typedef std::map<std::pair<popup_cb_t,AW_CL>, AW_window*> window_map;
+
+    static window_map windows; // previously popped up windows
+
+    std::pair<popup_cb_t, AW_CL> popup((popup_cb_t)callback, callback_data);
+
+    if (windows.find(popup) == windows.end()) {
+        windows[popup] = popup.first(AW_root::SINGLETON, popup.second);
+    }
+
+    windows[popup]->activate();
+}
 
 void AW_root::make_sensitive(Widget w, AW_active mask) {
     // Don't call make_sensitive directly!
@@ -401,10 +438,6 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, position, NULL);
 }
 
-void AW_POPDOWN(AW_window *aww) {
-    aww->hide();
-}
-
 #define BUFSIZE 256
 static char aw_size_awar_name_buffer[BUFSIZE];
 static const char *aw_size_awar_name(AW_window *aww, const char *sub_entry) {
@@ -530,7 +563,7 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
                                (GBS_string_matches(cbs->help_text, "*.hlp", GB_IGNORE_CASE)) ||
                                (GBS_string_matches(cbs->help_text, "*.help", GB_IGNORE_CASE))))
         {
-            AW_POPUP_HELP(cbs->aw, (AW_CL)cbs->help_text);
+            AW_help_popup(cbs->aw, cbs->help_text);
         }
         else {
             aw_message("Sorry no help available");
@@ -620,22 +653,18 @@ static void AW_exposeCB(Widget /*wgt*/, XtPointer aw_cb_struct, XmDrawingAreaCal
     }
 }
 
-void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_expose_callback(AW_window *aww, const WindowCallback& cb) {
     // insert expose callback for draw_area
     if (!expose_cb) {
         XtAddCallback(area, XmNexposeCallback, (XtCallbackProc) AW_exposeCB,
                 (XtPointer) this);
     }
-    expose_cb = new AW_cb(aww, f, cd1, cd2, 0, expose_cb);
+    expose_cb = new AW_cb(aww, cb, 0, expose_cb);
 }
 
-void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    AW_area_management *aram = MAP_ARAM(area);
-    if (aram) aram->set_expose_callback(this, f, cd1, cd2);
-}
 void AW_window::set_expose_callback(AW_area area, const WindowCallback& wcb) {
     AW_area_management *aram = MAP_ARAM(area);
-    if (aram) aram->set_expose_callback(this, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
+    if (aram) aram->set_expose_callback(this, wcb);
 }
 
 bool AW_area_management::is_expose_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
@@ -762,24 +791,18 @@ static void AW_resizeCB_draw_area(Widget /*wgt*/, XtPointer aw_cb_struct, XtPoin
     aram->run_resize_callback();
 }
 
-void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_resize_callback(AW_window *aww, const WindowCallback& cb) {
     // insert resize callback for draw_area
     if (!resize_cb) {
         XtAddCallback(area, XmNresizeCallback,
                 (XtCallbackProc) AW_resizeCB_draw_area, (XtPointer) this);
     }
-    resize_cb = new AW_cb(aww, f, cd1, cd2, 0, resize_cb);
-}
-
-void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    AW_area_management *aram = MAP_ARAM(area);
-    if (!aram)
-        return;
-    aram->set_resize_callback(this, f, cd1, cd2);
+    resize_cb = new AW_cb(aww, cb, 0, resize_cb);
 }
 
 void AW_window::set_resize_callback(AW_area area, const WindowCallback& wcb) {
-    set_resize_callback(area, AW_CB(wcb.callee()), wcb.inspect_CD1(), wcb.inspect_CD2());
+    AW_area_management *aram = MAP_ARAM(area);
+    if (aram) aram->set_resize_callback(this, wcb);
 }
 
 // -------------------
@@ -1000,42 +1023,43 @@ void AW_window::update_scrollbar_settings_from_awars(AW_orientation orientation)
     }
 }
 
-static void horizontal_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
-    AW_window *aw = (AW_window *)cd;
+static void horizontal_scrollbar_redefinition_cb(AW_root*, AW_window *aw) {
     aw->update_scrollbar_settings_from_awars(AW_HORIZONTAL);
 }
 
-static void vertical_scrollbar_redefinition_cb(AW_root*, AW_CL cd) {
-    AW_window *aw = (AW_window *)cd;
+static void vertical_scrollbar_redefinition_cb(AW_root*, AW_window *aw) {
     aw->update_scrollbar_settings_from_awars(AW_VERTICAL);
 }
 
 void AW_window::create_window_variables() {
     char buffer[200];
 
+    RootCallback hor_src = makeRootCallback(horizontal_scrollbar_redefinition_cb, this);
+    RootCallback ver_src = makeRootCallback(vertical_scrollbar_redefinition_cb, this);
+
     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(hor_src);
 
     sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(ver_src);
 
     sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(hor_src);
 
     sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(ver_src);
 
     sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 9);
-    get_root()->awar(buffer)->add_callback(horizontal_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(hor_src);
 
     sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(vertical_scrollbar_redefinition_cb, (AW_CL)this);
+    get_root()->awar(buffer)->add_callback(ver_src);
 }
 
 void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
@@ -1111,10 +1135,10 @@ void AW_window::create_devices() {
 }
 
 void aw_insert_default_help_entries(AW_window *aww) {
-    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0, AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
+    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0, AWM_ALL, AW_help_entry_pressed);
 
-    aww->insert_help_topic("How to use help", "H", "help.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp", 0);
-    aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",  0);
+    aww->insert_help_topic("How to use help", "H", "help.hlp", AWM_ALL, makeHelpCallback("help.hlp"));
+    aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, makeHelpCallback("arb.hlp"));
 }
 
 const char *aw_str_2_label(const char *str, AW_window *aww) {
@@ -2027,7 +2051,7 @@ inline int yoffset_for_mode_button(int button_number) {
     return button_number*MODE_BUTTON_OFFSET + (button_number/4)*8 + 2;
 }
 
-int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active mask, const WindowCallback& cb) {
     aw_assert(legal_mask(mask));
     Widget button;
 
@@ -2046,7 +2070,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     XtVaSetValues(button, RES_CONVERT(XmNlabelPixmap, path), NULL);
     XtVaGetValues(button, XmNforeground, &p_global->foreground, NULL);
 
-    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, 0);
+    AW_cb *cbs = new AW_cb(this, cb, 0);
     AW_cb *cb2 = new AW_cb(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, helpText, cbs);
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
@@ -2366,15 +2390,7 @@ void AW_window::close_sub_menu() {
         p_w->menu_deep--;
 }
 
-void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb) {
-    insert_menu_topic(topic_id, name, mnemonic, helpText, Mask,
-                      AW_CB(cb.callee()), cb.inspect_CD1(), cb.inspect_CD2());
-}
-
-void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
-                                  const char *mnemonic, const char *helpText, AW_active mask,
-                                  void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2)
-{
+void AW_window::insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb) {
     aw_assert(legal_mask(mask));
     Widget button;
 
@@ -2404,7 +2420,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
     }
 
     AW_label_in_awar_list(this, button, name);
-    AW_cb *cbs = new AW_cb(this, f, cd1, cd2, helpText);
+    AW_cb *cbs = new AW_cb(this, cb, helpText);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
@@ -2420,7 +2436,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
 }
 
 void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const char *helpText, AW_active mask,
-                                  void (*f)(AW_window*, AW_CL,  AW_CL), AW_CL cd1, AW_CL cd2)
+                                  const WindowCallback& cb)
 {
     aw_assert(legal_mask(mask));
     Widget button;
@@ -2432,7 +2448,7 @@ void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const cha
                                       RES_CONVERT(XmNmnemonic, mnemonic), NULL);
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
-    (XtPointer) new AW_cb(this, f, cd1, cd2, helpText));
+    (XtPointer) new AW_cb(this, cb, helpText));
 
     root->make_sensitive(button, mask);
 }
@@ -2664,7 +2680,7 @@ void AW_window::show() {
 
     XtPopup(p_w->shell, XtGrabNone);
     if (!expose_callback_added) {
-        set_expose_callback(AW_INFO_AREA, (AW_CB)aw_onExpose_calc_WM_offsets, 0, 0); // @@@ should be removed after it was called once
+        set_expose_callback(AW_INFO_AREA, aw_onExpose_calc_WM_offsets); // @@@ should be removed after it was called once
         expose_callback_added = true;
     }
 }
@@ -2752,18 +2768,14 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 }
 
 void AW_window::load_xfig(const char *file, bool resize) {
-    AW_xfig *xfig;
+    if (file)   xfig_data = new AW_xfig(file, get_root()->font_width, get_root()->font_height);
+    else        xfig_data = new AW_xfig(get_root()->font_width, get_root()->font_height); // create an empty xfig
 
-    if (file)   xfig = new AW_xfig(file, get_root()->font_width, get_root()->font_height);
-    else        xfig = new AW_xfig(get_root()->font_width, get_root()->font_height); // create an empty xfig
+    set_expose_callback(AW_INFO_AREA, makeWindowCallback(AW_xfigCB_info_area, xfig_data));
+    xfig_data->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1);
 
-    xfig_data = (void*)xfig;
-
-    set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area, (AW_CL)xfig_data, 0);
-    xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1);
-
-    int xsize = xfig->maxx - xfig->minx;
-    int ysize = xfig->maxy - xfig->miny;
+    int xsize = xfig_data->maxx - xfig_data->minx;
+    int ysize = xfig_data->maxy - xfig_data->miny;
 
     if (xsize>_at->max_x_size) _at->max_x_size = xsize;
     if (ysize>_at->max_y_size) _at->max_y_size = ysize;

@@ -20,7 +20,7 @@ PREFIX=`echo $INDEXFILE | $SED -e 's/\/[^\/]*$//'`
 echo "BASE='$BASE' PREFIX='$PREFIX'"
 
 write_index() {
-    echo "$BASE document index"
+    echo "$BASE [docindex]"
     echo ""
     echo "Documents provided with $BASE:"
     echo ""

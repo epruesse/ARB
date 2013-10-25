@@ -15,8 +15,6 @@ OCCURRENCE	ARB_NT/Sequence/Calculate sequence quality
 DESCRIPTION     'Calculate sequence quality' tries to measure the quality of sequences and
                 the quality their alignment.
 
-                Since "quality" is 
-
         HANDLING:
 
                 Fill in the values you think are appropriate.

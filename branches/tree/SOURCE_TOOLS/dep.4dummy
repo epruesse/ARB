@@ -62,7 +62,7 @@ TOOLS/arb_consensus_tree.dummy: CONSENSUS_TREE/CONSENSUS_TREE.dummy SL/TREE_READ
 TOOLS/arb_probe.dummy: SERVERCNTRL/SERVERCNTRL.dummy
 TOOLS/arb_test.dummy: ARBDB/ARBDB.dummy
 WETC/WETC.dummy: AWT/AWT.dummy
-XML/XML.dummy: ARBDB/ARBDB.dummy
+XML/XML.dummy: CORE/CORE.dummy
 ARBDB/ARBDB.dummy: CORE/CORE.dummy
 AWT/AWT.dummy: WINDOW/WINDOW.dummy
 WINDOW/WINDOW.dummy: ARBDB/ARBDB.dummy

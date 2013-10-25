@@ -158,7 +158,7 @@ void BranchWindow::create_window(AW_root *aw_root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"branch_analysis.hlp");
+    aws->callback(makeHelpCallback("branch_analysis.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("sel");

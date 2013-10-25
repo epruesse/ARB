@@ -23,8 +23,8 @@ public:
 
 };
 
-void display_status(AW_window *dummy, AW_CL awroot, AW_CL cd2);
-void expose_callb();
+void display_status_cb();
+void expose_cb();
 
 #else
 #error phwin.hxx included twice

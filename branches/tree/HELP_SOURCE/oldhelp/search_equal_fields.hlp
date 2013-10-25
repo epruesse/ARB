@@ -22,7 +22,6 @@ DESCRIPTION     Searches for
                          * words in entries
 
                 of the 'Search field' selected in the first query expression.
-# @@@ paragraph above gets poor formatting. if blank lines are remove, output is even worse
 
                 When you use these functions from menu 'Source-DB',
                 all species are queried and searched for equal entries (or words in entries).

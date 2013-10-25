@@ -54,10 +54,10 @@ typedef AW_window *(*AWC_CB)(AW_root *, AW_CL, AW_CL);
 
 // @@@ when gtk port is back to trunk, the definition of these cb-types may be moved into WINDOW
 
-DECLARE_CBTYPE_FVV_AND_BUILDERS(RootCallback,          void,       AW_root*);    // generates makeRootCallback
-DECLARE_CBTYPE_FVV_AND_BUILDERS(TimedCallback,         unsigned,   AW_root*);    // generates makeTimedCallback (return value: 0->do not call again, else: call again after XXX ms)
-DECLARE_CBTYPE_FVV_AND_BUILDERS(WindowCallback,        void,       AW_window*);  // generates makeWindowCallback
-DECLARE_CBTYPE_FVV_AND_BUILDERS(WindowCreatorCallback, AW_window*, AW_root*);    // generates makeWindowCreatorCallback
+DECLARE_CBTYPE_FVV_AND_BUILDERS(RootCallback,         void,       AW_root*);   // generates makeRootCallback
+DECLARE_CBTYPE_FVV_AND_BUILDERS(TimedCallback,        unsigned,   AW_root*);   // generates makeTimedCallback (return value: 0->do not call again, else: call again after XXX ms)
+DECLARE_CBTYPE_FVV_AND_BUILDERS(WindowCallback,       void,       AW_window*); // generates makeWindowCallback
+DECLARE_CBTYPE_FVV_AND_BUILDERS(CreateWindowCallback, AW_window*, AW_root*);   // generates makeCreateWindowCallback
 
 DECLARE_CBTYPE_FVF_AND_BUILDERS(DatabaseCallback, void, GBDATA*, GB_CB_TYPE);    // generates makeDatabaseCallback
 

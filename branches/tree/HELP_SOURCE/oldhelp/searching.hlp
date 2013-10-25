@@ -38,8 +38,13 @@ SECTION SEARCH EXPRESSION
                - if you want to match all fields that contain some substring
                  then use wildcards:
 
-                      - '*'     will match any number of characters (including no characters).
-                      - '?'     will match exactly one character
+                      - '*'
+
+                                will match any number of characters (including no characters).
+
+                      - '?'
+
+                                will match exactly one character
 
                       If the whole search expression is '*', then it is handled like '?*' (which
                       means 'at least one character'). So searching for '*' will report all
@@ -56,10 +61,16 @@ SECTION SEARCH EXPRESSION
                - if the first character is '<' or '>' and the rest is a number,
                  then a numerical comparison is done:
 
-                        - '<7'       matches all fields containing a number smaller than 7
-                        - '>10'      matches all fields containing a number greater than 10
+                        - '<7'
+
+                          matches all fields containing a number smaller than 7
+
+                        - '>10'
+
+                          matches all fields containing a number greater than 10
 
                         Be careful:
+
                            Negating '<7' does NOT only match numbers greater or equal to seven. It as
                            well finds all non-numeric contents. Use something like '>6.999' instead.
 

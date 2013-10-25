@@ -4,8 +4,9 @@
 STD = standard.header
 SED:=$(ARBHOME)/SH/arb_sed
 
-AUTOSECTION = $(SED) -e 's/^\([^ \#]\)/SECTION \1/'
-AUTOTITLE = $(SED) -e '1 s/^SECTION/TITLE/'
+POSTPROCESS=./postprocess_genhelp.pl
+HLP_DEPENDS=Makefile $(POSTPROCESS)
+
 ARBHOME=../..
 
 GDEBASE=$(ARBHOME)/GDEHELP
@@ -27,23 +28,23 @@ $(GDE_HLP) : $(STD) Makefile
 
 %.hlp : %.header
 
-copyright.hlp : $(ARBHOME)/arb_LICENSE.txt Makefile
+copyright.hlp : $(ARBHOME)/arb_LICENSE.txt $(HLP_DEPENDS)
 	@echo Updating $@ from $< 
 	@-test -f $@ && chmod u+w $@
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
-	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@
+	@cat $< | $(POSTPROCESS) $@ >> $@
 	@chmod a-w $@
 
-changes.hlp : $(ARBHOME)/arb_CHANGES.txt Makefile
+changes.hlp : $(ARBHOME)/arb_CHANGES.txt $(HLP_DEPENDS)
 	@echo Updating $@ from $< 
 	@-test -f $@ && chmod u+w $@
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
-	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@
+	@cat $< | $(POSTPROCESS) $@ >> $@
 	@@chmod a-w $@
 
-agde_%.hlp : $(GDEGENDIR)/%.help Makefile
+agde_%.hlp : $(GDEGENDIR)/%.help $(HLP_DEPENDS)
 	@echo Updating $@ from $< 
 	@-test -f $@ && chmod u+w $@
 	@cp $(STD) $@
@@ -51,17 +52,17 @@ agde_%.hlp : $(GDEGENDIR)/%.help Makefile
 	@echo "#             (which is generated itself)" >>$@
 	@echo "" >>$@
 	@echo "UP agde.hlp" >>$@
-	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@
+	@cat $< | $(POSTPROCESS) $@ >> $@
 	@chmod a-w $@
 
-agde_%.hlp : $(GDEWRITTENDIR)/%.help Makefile
+agde_%.hlp : $(GDEWRITTENDIR)/%.help $(HLP_DEPENDS)
 	@echo Updating $@ from $< 
 	@-test -f $@ && chmod u+w $@
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
 	@echo "" >>$@
 	@echo "UP agde.hlp" >>$@
-	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@
+	@cat $< | $(POSTPROCESS) $@ >> $@
 	@chmod a-w $@
 
 agde.hlp: $(GDE_HLP) agde.footer Makefile

@@ -343,8 +343,6 @@ symlink_file ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h &&
 symlink_file ../../GL/glAW/aw_window_ogl.hxx INCLUDE/GL/aw_window_ogl.hxx &&
 
 # help files (make sure the file is present in user distribution!)
-
 symlink_maybe_no_target ../help/input_mask_format.hlp     lib/inputMasks/format.readme &&
-symlink_dir ../../GDEHELP lib/help/GDEHELP &&
 
 echo "generate_all_links.sh done."

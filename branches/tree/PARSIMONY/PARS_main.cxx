@@ -884,7 +884,7 @@ static AW_window *NT_create_tree_setting(AW_root *aw_root)
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"nt_tree_settings.hlp");
+    aws->at("help"); aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("button");
@@ -1124,6 +1124,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
     GBDATA *gb_arb_presets = GB_search(ntw->gb_main, "arb_presets", GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets, GB_CB_CHANGED, (GB_CB)AWT_expose_cb, (int *)ntw);
+    // GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw)); // @@@ makeDatabaseCallback does not work (yet)
 
 #if defined(DEBUG)
     AWT_create_debug_menu(awm);
@@ -1220,22 +1221,22 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     }
     awm->button_length(5);
 
-    awm->insert_help_topic("ARB_PARSIMONY help", "N", "arb_pars.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
+    awm->insert_help_topic("ARB_PARSIMONY help", "N", "arb_pars.hlp", AWM_ALL, (AW_CB)AW_help_popup, (AW_CL)"arb_pars.hlp", 0);
 
-    awm->create_mode("select.xpm", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
-    awm->create_mode("mark.xpm",   "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
-    awm->create_mode("group.xpm",  "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
-    awm->create_mode("pzoom.xpm",  "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode("lzoom.xpm",  "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
-    awm->create_mode("swap.xpm",   "mode_swap.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
-    awm->create_mode("move.xpm",   "mode_move.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
+    awm->create_mode("select.xpm", "mode_select.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SELECT));
+    awm->create_mode("mark.xpm",   "mode_mark.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MARK));
+    awm->create_mode("group.xpm",  "mode_group.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_GROUP));
+    awm->create_mode("pzoom.xpm",  "mode_pzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
+    awm->create_mode("lzoom.xpm",  "mode_lzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
+    awm->create_mode("swap.xpm",   "mode_swap.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
+    awm->create_mode("move.xpm",   "mode_move.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
 #ifdef NNI_MODES
-    awm->create_mode("nearestn.xpm", "mode_nni.hlp",      AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_NNI);
-    awm->create_mode("kernlin.xpm",  "mode_kernlin.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_KERNINGHAN);
-    awm->create_mode("optimize.xpm", "mode_optimize.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_OPTIMIZE);
+    awm->create_mode("nearestn.xpm", "mode_nni.hlp",      AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_NNI));
+    awm->create_mode("kernlin.xpm",  "mode_kernlin.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_KERNINGHAN));
+    awm->create_mode("optimize.xpm", "mode_optimize.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_OPTIMIZE));
 #endif // NNI_MODES
-    awm->create_mode("setroot.xpm", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
-    awm->create_mode("reset.xpm",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
+    awm->create_mode("setroot.xpm", "mode_set_root.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
+    awm->create_mode("reset.xpm",   "mode_reset.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_RESET));
 
     awm->at(5, 2);
     awm->auto_space(0, -2);
@@ -1244,7 +1245,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
     int db_treex, db_treey;
     awm->get_at_position(&db_treex, &db_treey);
-    awm->callback(AW_POPUP_HELP, (AW_CL)"nt_tree_select.hlp");
+    awm->callback(makeHelpCallback("nt_tree_select.hlp"));
     awm->button_length(16);
     awm->help_text("nt_tree_select.hlp");
     awm->create_button(0, AWAR_TREE);
@@ -1255,7 +1256,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->label("Stored");
     awm->get_at_position(&db_stackx, &db_stacky);
     awm->button_length(6);
-    awm->callback(AW_POPUP_HELP, (AW_CL)"ap_stack.hlp");
+    awm->callback(makeHelpCallback("ap_stack.hlp"));
     awm->help_text("ap_stack.hlp");
     awm->create_button(0, AWAR_STACKPOINTER);
 
@@ -1273,7 +1274,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->help_text("tr_jump.hlp");
     awm->create_button("JUMP", "Jump", 0);
 
-    awm->callback(AW_POPUP_HELP, (AW_CL)"arb_pars.hlp");
+    awm->callback(makeHelpCallback("arb_pars.hlp"));
     awm->help_text("help.hlp");
     awm->create_button("HELP", "HELP", "H");
 
@@ -1344,7 +1345,7 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->at("close");
     aws->create_button("ABORT", "ABORT", "A");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"arb_pars_init.hlp");
+    aws->callback(makeHelpCallback("arb_pars_init.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

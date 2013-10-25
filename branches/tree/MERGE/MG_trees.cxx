@@ -218,7 +218,7 @@ AW_window *MG_merge_trees_cb(AW_root *awr) {
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"mg_trees.hlp");
+        aws->callback(makeHelpCallback("mg_trees.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("trees1");
@@ -267,7 +267,7 @@ AW_window *MG_merge_trees_cb(AW_root *awr) {
         aws->button_length(0);
         aws->shadow_width(1);
         aws->at("icon");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"mg_trees.hlp");
+        aws->callback(makeHelpCallback("mg_trees.hlp"));
         aws->create_button("HELP_MERGE", "#merge/icon.xpm");
     }
     return aws;

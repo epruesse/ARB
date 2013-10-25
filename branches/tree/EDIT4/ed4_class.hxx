@@ -755,8 +755,13 @@ public:
 #if defined(DEBUG)
         if (!inSync) {
             fputs("scrollbars not in sync with scrolled_rect:\n", stderr);
+#if defined(ARB_GTK)
+            fprintf(stderr, "    aww->slider_pos_vertical  =%zu scrolled_rect->top_dim() =%f\n", aww->slider_pos_vertical, scrolled_rect.top_dim());
+            fprintf(stderr, "    aww->slider_pos_horizontal=%zu scrolled_rect->left_dim()=%f\n", aww->slider_pos_horizontal, scrolled_rect.left_dim());
+#else // !defined(ARB_GTK)
             fprintf(stderr, "    aww->slider_pos_vertical  =%i scrolled_rect->top_dim() =%f\n", aww->slider_pos_vertical, scrolled_rect.top_dim());
             fprintf(stderr, "    aww->slider_pos_horizontal=%i scrolled_rect->left_dim()=%f\n", aww->slider_pos_horizontal, scrolled_rect.left_dim());
+#endif
         }
 #endif
 

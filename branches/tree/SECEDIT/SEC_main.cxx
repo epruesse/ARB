@@ -187,10 +187,7 @@ static void SEC_fit_window_cb(AW_window * /* aw */, AW_CL cl_secroot, AW_CL) {
     db->canvas()->refresh();
 }
 
-static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode) {
-    SEC_root         *sec_root = (SEC_root*)cl_secroot;
-    AWT_COMMAND_MODE  mode     = (AWT_COMMAND_MODE)cl_mode;
-
+static void sec_mode_event(AW_window *aws, SEC_root *sec_root, AWT_COMMAND_MODE mode) {
     const char *text = 0;
     switch (mode) {
         case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
@@ -424,7 +421,7 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_int
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"sec_imexport.hlp");
+    aws->callback(makeHelpCallback("sec_imexport.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     AW_create_fileselection(aws, AWAR_SECEDIT_SAVEDIR);
@@ -550,7 +547,7 @@ static AW_window *SEC_create_bonddef_window(AW_root *awr) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"sec_bonddef.hlp");
+    aws->callback(makeHelpCallback("sec_bonddef.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -590,7 +587,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"sec_display.hlp");
+    aws->callback(makeHelpCallback("sec_display.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -730,16 +727,16 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)4, 0);
     awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)(1|2|4), 0);
     awm->sep______________();
-    awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p", "savedef.hlp", AWM_ALL, (AW_CB) AW_POPUP_HELP, (AW_CL)"sec_props.hlp", 0);
+    awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p", "savedef.hlp", AWM_ALL, (AW_CB) AW_help_popup, (AW_CL)"sec_props.hlp", 0);
 
-    awm->create_mode("pzoom.xpm",       "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode("sec_modify.xpm",  "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_MOVE);
-    awm->create_mode("setroot.xpm",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_SETROOT);
-    awm->create_mode("rot.xpm",         "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ROT);
-    awm->create_mode("stretch.xpm",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_STRETCH);
-    awm->create_mode("info.xpm",        "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_EDIT);
-    awm->create_mode("sec_setcurs.xpm", "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_SET_CURSOR);
-    awm->create_mode("probeInfo.xpm",   "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_PROINFO);
+    awm->create_mode("pzoom.xpm",       "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_ZOOM));
+    awm->create_mode("sec_modify.xpm",  "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_MOVE));
+    awm->create_mode("setroot.xpm",     "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_SETROOT));
+    awm->create_mode("rot.xpm",         "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_ROT));
+    awm->create_mode("stretch.xpm",     "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_STRETCH));
+    awm->create_mode("info.xpm",        "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_EDIT));
+    awm->create_mode("sec_setcurs.xpm", "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_SET_CURSOR));
+    awm->create_mode("probeInfo.xpm",   "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_PROINFO));
 
     awm->set_info_area_height(250);
     awm->at(5, 2);

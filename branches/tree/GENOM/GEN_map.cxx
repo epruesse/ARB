@@ -487,10 +487,7 @@ static void GEN_add_global_awar_callbacks(AW_root *awr) {
 
 // --------------------------------------------------------------------------------
 
-static void GEN_mode_event(AW_window *aws, AW_CL cl_win, AW_CL cl_mode) {
-    GEN_map_window   *win  = (GEN_map_window*)cl_win;
-    AWT_COMMAND_MODE  mode = (AWT_COMMAND_MODE)cl_mode;
-
+static void GEN_mode_event(AW_window *aws, GEN_map_window *win, AWT_COMMAND_MODE mode) {
     const char *text = 0;
     switch (mode) {
         case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "click to select a gene"); break;
@@ -532,7 +529,7 @@ static AW_window *GEN_create_options_window(AW_root *awr) {
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"gene_options.hlp");
+        aws->at("help"); aws->callback(makeHelpCallback("gene_options.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("button");
@@ -559,7 +556,7 @@ static AW_window *GEN_create_layout_window(AW_root *awr) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"gen_layout.hlp");
+        aws->callback(makeHelpCallback("gen_layout.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -1642,9 +1639,9 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     // ----------------------
     //      mode buttons
 
-    create_mode("select.xpm", "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_SELECT);
-    create_mode("pzoom.xpm",  "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_ZOOM);
-    create_mode("info.xpm",   "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_EDIT);
+    create_mode("select.xpm", "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_SELECT));
+    create_mode("pzoom.xpm",  "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_ZOOM));
+    create_mode("info.xpm",   "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_EDIT));
 
     // -------------------
     //      info area
@@ -1748,7 +1745,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     at(help_x, first_line_y);
     help_text("help.hlp");
-    callback(AW_POPUP_HELP, (AW_CL)"gene_map.hlp");
+    callback(makeHelpCallback("gene_map.hlp"));
     create_button("HELP", "HELP", "H");
 
     at(help_x, second_line_y);

@@ -30,9 +30,6 @@ struct GB_HASH;
 
 // --------------------------------------------------------------------------------
 
-#define AW_POPUP  ((AW_CB)(-1))
-// AW_POPDOWN is defined later in this section
-
 #define AW_MESSAGE_TIME 2000
 #define AW_HEADER_MAIN  extern "C" { int XtAppInitialize(); } void aw_never_called_main() { XtAppInitialize(); }
 
@@ -110,6 +107,9 @@ typedef const char *AW_label;       // label for buttons menus etc
 
 const char *AW_get_pixmapPath(const char *pixmapName);
 
+void AW_POPDOWN(AW_window *);
+void AW_POPUP(AW_window*, AW_CL, AW_CL) __ATTR__DEPRECATED_TODO("directly pass CreateWindowCallback");
+
 enum AW_event_type {
     AW_Keyboard_Press   = 1,
     AW_Keyboard_Release = 2,
@@ -142,8 +142,9 @@ struct AW_event {
     char        character;          // the c character
 };
 
-void AW_POPDOWN(AW_window *);
-void AW_POPUP_HELP(AW_window *, AW_CL /* char */ helpfile);
+void AW_help_popup(AW_window *aw, const char *help_file);
+inline WindowCallback makeHelpCallback(const char *helpfile) { return makeWindowCallback(AW_help_popup, helpfile); }
+
 void AW_help_entry_pressed(AW_window *);
 void AW_clock_cursor(AW_root *);
 void AW_normal_cursor(AW_root *);
@@ -163,7 +164,6 @@ class AW_cb : virtual Noncopyable {
 
 public:
     // private (read-only):
-    AW_window  *pop_up_window;
     AW_window  *aw;
     const char *help_text;
     char       *id;
@@ -290,7 +290,7 @@ public:
 
     int number_of_timed_title_changes;
 
-    void /* AW_xfig */   *xfig_data;
+    class AW_xfig *xfig_data;
 
     void create_window_variables();
 
@@ -385,8 +385,12 @@ public:
 
     void set_expose_callback(AW_area area, const WindowCallback& wcb);
     void set_resize_callback(AW_area area, const WindowCallback& wcb);
-    void set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
-    void set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+
+private:
+    // motif relicts:
+    void set_expose_callback(AW_area area, AW_CB0 cb) { set_expose_callback(area, makeWindowCallback(cb)); }
+    void set_resize_callback(AW_area area, AW_CB0 cb) { set_resize_callback(area, makeWindowCallback(cb)); }
+public:
 
     void set_input_callback(AW_area area, const WindowCallback& wcb);
     void set_motion_callback(AW_area area, const WindowCallback& wcb);
@@ -413,19 +417,23 @@ public:
     // ************** Create the menu buttons *********
     void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
     void insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2);
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, cd1, 0); }
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, (AW_CB)cb, 0, 0); }
     void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const WindowCallback& cb);
+    void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active Mask, const CreateWindowCallback& cwcb) { insert_menu_topic(topic_id, name, mnemonic, helpText, Mask, makeWindowPopper(cwcb)); }
+    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
+    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1)); }
+    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1, cd2)); }
     void sep______________(); // insert a separator
     void close_sub_menu();
 
-    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& cb);
+    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_help_topic(name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
+    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
+        insert_help_topic(name, mnemonic, help_text_, mask, makeWindowCallback(f, cd1, cd2));
+    }
 
     // ************** Create modes on the left side ******************
-    int create_mode(const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    int create_mode(const char *pixmap, const char *help_text_, AW_active mask, const WindowCallback& cb);
     void select_mode(int mode);
-
 
     // ************** Control the size of the main drawing area + scrollbars  *********
     void tell_scrolled_picture_size(AW_screen_area rectangle);
@@ -526,20 +534,25 @@ public:
     void restore_at_size_and_attach(const AW_at_size *at_size);   // set size of a at-element
 
     void sens_mask(AW_active mask);   // Set the sensitivity mask used for following widgets (Note: reset by next at()-command)
-    void help_text(const char *id);  // Set the help text of a button
-    void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // normal callbacks
-    void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1);
-    void callback(void (*f)(AW_window*));
-    void callback(AW_cb * /* owner */ awcbs); // Calls f with
-    void callback(const WindowCallback& cb);
-    // aww in awcbs
-    void d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); // double click callbacks
-    void d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1); // selection lists only !!
-    void d_callback(void (*f)(AW_window*));
-    void d_callback(AW_cb * /* owner */ awcbs); // Calls f with
-    void d_callback(const WindowCallback& cb);
-    // *** create the buttons ********
+    void help_text(const char *id);   // Set the help text of a button
 
+private:
+    static void popper(AW_window *, CreateWindowCallback *windowMaker);
+    static WindowCallback makeWindowPopper(const CreateWindowCallback& cwcb) {
+        return makeWindowCallback(popper, new CreateWindowCallback(cwcb));
+    }
+
+public:
+    // normal callbacks
+    void callback(const WindowCallback& cb);
+    void callback(const CreateWindowCallback& cwcb) { callback(makeWindowPopper(cwcb)); }
+    void callback(void (*f)(AW_window*)) { callback(makeWindowCallback(f)); }
+    void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1)); }
+    void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1, cd2)); }
+
+    void d_callback(const WindowCallback& cb); // secondary callback (called for 'double click into selection list' and 'text field hit ENTER')
+
+    // *** create the buttons ********
     void   create_button(const char *macro_name, AW_label label, const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
     void   create_autosize_button(const char *macro_name, AW_label label, const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
     Widget get_last_widget() const;

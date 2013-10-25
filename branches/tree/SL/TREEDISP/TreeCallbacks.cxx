@@ -24,7 +24,7 @@ using namespace AW;
 // AISC_MKPT_PROMOTE:#include <TreeDisplay.hxx>
 // AISC_MKPT_PROMOTE:#endif
 
-void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
+void nt_mode_event(AW_window*, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
     const char *text;
 
     switch (mode) {
@@ -499,7 +499,7 @@ void NT_move_boot_branch(AW_window*, AW_CL cl_ntw, AW_CL cl_direction) // copy b
 
         char *adviceText = GBS_global_string_copy("Please note, that you just overwrote your existing %s.",
                                                   direction ? "bootstrap values" : "branchlengths");
-        AW_advice(adviceText, AW_ADVICE_TOGGLE|AW_ADVICE_HELP, 0, "tbl_boot2len.hlp");
+        AW_advice(adviceText, AW_ADVICE_TOGGLE_AND_HELP, 0, "tbl_boot2len.hlp");
         free(adviceText);
     }
 }
@@ -683,7 +683,7 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose) {
     free(tree_name);
     if (expose) {
         ntw->zoom_reset();
-        AWT_expose_cb(0, ntw, 0);
+        AWT_expose_cb(NULL, ntw);
     }
     GB_pop_transaction(ntw->gb_main);
 }
@@ -693,14 +693,14 @@ void TREE_recompute_cb(AW_root *, AWT_canvas *ntw) {
     td_assert(gt);
 
     gt->get_root_node()->compute_tree(ntw->gb_main);
-    AWT_expose_cb(ntw->aww, ntw, 0);
+    AWT_expose_cb(NULL, ntw);
 }
 
-void NT_reinit_treetype(AW_window *, AWT_canvas *ntw, AW_CL ) {
+void NT_reinit_treetype(AW_root*, AWT_canvas *ntw) {
     AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->gfx);
     td_assert(gt);
     gt->set_tree_type(gt->tree_sort, ntw);
-    AWT_resize_cb(ntw->aww, ntw, 0);
+    AWT_resize_cb(NULL, ntw);
 }
 
 void NT_remove_species_in_tree_from_hash(AP_tree *tree, GB_HASH *hash) {

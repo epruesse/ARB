@@ -233,9 +233,7 @@ static void remove_keydependent_sort_criteria(QUERY_RESULT_ORDER *order) {
     }
 }
 
-static void first_searchkey_changed_cb(AW_root *, AW_CL cl_query) {
-    DbQuery *query = reinterpret_cast<DbQuery*>(cl_query);
-
+static void first_searchkey_changed_cb(AW_root *, DbQuery *query) {
     QUERY_RESULT_ORDER order[MAX_CRITERIA];
     split_sort_mask(query->sort_mask, order);
 
@@ -251,15 +249,13 @@ inline bool keep_criteria(QUERY_RESULT_ORDER old_criteria, QUERY_RESULT_ORDER ne
          old_criteria == QUERY_SORT_REVERSE);   // reverse may occur several times -> always keep
 }
 
-static void sort_order_changed_cb(AW_root *aw_root, AW_CL cl_query) {
+static void result_sort_order_changed_cb(AW_root *aw_root, DbQuery *query) {
     // adds the new selected sort order to the sort order mask
     // (added order removes itself, if it previously existed in sort order mask)
     //
     // if 'unsorted' is selected -> delete sort order
 
-    DbQuery            *query        = reinterpret_cast<DbQuery*>(cl_query);
-    QUERY_RESULT_ORDER  new_criteria = (QUERY_RESULT_ORDER)aw_root->awar(query->awar_sort)->read_int();
-
+    QUERY_RESULT_ORDER new_criteria = (QUERY_RESULT_ORDER)aw_root->awar(query->awar_sort)->read_int();
     if (new_criteria == QUERY_SORT_NONE) {
         query->sort_mask = QUERY_SORT_NONE; // clear sort_mask
     }
@@ -494,14 +490,12 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
     GB_pop_transaction(query->gb_main);
 }
 
-static void mark_queried_cb(AW_window*, AW_CL cl_query, AW_CL mark) {
+static void mark_queried_cb(AW_window*, DbQuery *query, int mark) {
     // Mark listed species
     // mark = 1 -> mark listed
     // mark | 8 -> don't change rest
 
-    DbQuery       *query    = (DbQuery*)cl_query;
-    ItemSelector&  selector = query->selector;
-
+    ItemSelector& selector = query->selector;
     GB_push_transaction(query->gb_main);
 
     for (GBDATA *gb_item_container = selector.get_first_item_container(query->gb_main, query->aws->get_root(), QUERY_ALL_ITEMS);
@@ -537,10 +531,8 @@ void QUERY::unquery_all(void *, DbQuery *query) {
     GB_pop_transaction(query->gb_main);
 }
 
-static void delete_queried_species_cb(AW_window*, AW_CL cl_query) {
-    DbQuery       *query    = (DbQuery*)cl_query;
-    ItemSelector&  selector = query->selector;
-
+static void delete_queried_species_cb(AW_window*, DbQuery *query) {
+    ItemSelector& selector = query->selector;
     GB_begin_transaction(query->gb_main);
 
     long cnt = 0;
@@ -1381,7 +1373,7 @@ void QUERY::copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *s
                   " * 'Search/Add/Keep species' and\n"
                   " * 'that match/don't match the query'\n"
                   "in the search tool.",
-                  AW_ADVICE_TOGGLE|AW_ADVICE_HELP,
+                  AW_ADVICE_TOGGLE_AND_HELP,
                   "Behavior changed",
                   "next_neighbours.hlp");
     }
@@ -1565,7 +1557,7 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
             AW_advice("'Find equal entries' now depends on the values selected for\n"
                       " * 'that match/don't match the query'\n"
                       "in the search tool.",
-                      AW_ADVICE_TOGGLE|AW_ADVICE_HELP,
+                      AW_ADVICE_TOGGLE_AND_HELP,
                       "Behavior changed",
                       "search_duplicates.hlp");
         }
@@ -1577,8 +1569,7 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
     DbQuery_update_list(query);
 }
 
-static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
-    DbQuery       *query    = (DbQuery*)cl_query;
+static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
     ItemSelector&  selector = query->selector;
     AW_root       *aw_root  = query->aws->get_root();
     GB_ERROR       error    = 0;
@@ -1760,8 +1751,7 @@ static void predef_prg(AW_root *aw_root, DbQuery *query) {
     free(str);
 }
 
-static void colorize_queried_cb(AW_window *, AW_CL cl_query) {
-    DbQuery        *query       = (DbQuery *)cl_query;
+static void colorize_queried_cb(AW_window *, DbQuery *query) {
     ItemSelector&   selector    = query->selector;
     GB_transaction  trans_dummy(query->gb_main);
     GB_ERROR        error       = 0;
@@ -1786,8 +1776,7 @@ static void colorize_queried_cb(AW_window *, AW_CL cl_query) {
     if (error) GB_export_error(error);
 }
 
-static void colorize_marked_cb(AW_window *aww, AW_CL cl_cmd) {
-    BoundItemSel   *cmd         = (BoundItemSel *)cl_cmd;
+static void colorize_marked_cb(AW_window *aww, BoundItemSel *cmd) {
     ItemSelector&   sel         = cmd->selector;
     GB_transaction  trans_dummy(cmd->gb_main);
     GB_ERROR        error       = 0;
@@ -1812,11 +1801,15 @@ static void colorize_marked_cb(AW_window *aww, AW_CL cl_cmd) {
     if (error) GB_export_error(error);
 }
 
-// @@@ mark_colored_cb is obsolete! (will be replaced by dynamic coloring in the future)
-static void mark_colored_cb(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
-    BoundItemSel  *cmd         = (BoundItemSel *)cl_cmd;
+enum mark_mode {
+    UNMARK,
+    MARK,
+    INVERT,
+};
+
+static void mark_colored_cb(AW_window *aww, BoundItemSel *cmd, mark_mode mode) {
+    // @@@ mark_colored_cb is obsolete! (will be replaced by dynamic coloring in the future)
     ItemSelector&  sel         = cmd->selector;
-    int            mode        = int(cl_mode);             // 0 = unmark 1 = mark 2 = invert
     AW_root       *aw_root     = aww->get_root();
     int            color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
     QUERY_RANGE    range       = QUERY_ALL_ITEMS;          // @@@ FIXME: make customizable
@@ -1836,9 +1829,10 @@ static void mark_colored_cb(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
                 bool marked = GB_read_flag(gb_item);
 
                 switch (mode) {
-                    case 0: marked = 0; break;
-                    case 1: marked = 1; break;
-                    case 2: marked = !marked; break;
+                    case UNMARK: marked = 0;       break;
+                    case MARK:   marked = 1;       break;
+                    case INVERT: marked = !marked; break;
+
                     default: dbq_assert(0); break;
                 }
 
@@ -1956,10 +1950,9 @@ static GB_ERROR clear_all_colors(const color_save_data *csd, AW_root *aw_root) {
     return error;
 }
 
-static void clear_all_colors_cb(AW_window *aww, AW_CL cl_csd) {
-    const color_save_data *csd   = (const color_save_data*)cl_csd;
-    GB_transaction         ta(csd->cmd->gb_main);
-    GB_ERROR               error = clear_all_colors(csd, aww->get_root());
+static void clear_all_colors_cb(AW_window *aww, const color_save_data *csd) {
+    GB_transaction ta(csd->cmd->gb_main);
+    GB_ERROR       error = clear_all_colors(csd, aww->get_root());
 
     if (error) {
         error = ta.close(error);
@@ -2005,12 +1998,17 @@ static GB_ERROR restore_colorset_representation(const color_save_data *csd, cons
     return 0;
 }
 
-static void loadsave_colorset_cb(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
-    const color_save_data *csd     = (const color_save_data*)cl_csd;
-    int                    mode    = (int)cl_mode;  // 0 = save; 1 = load; 2 = overlay; 3 = delete;
-    AW_root               *aw_root = aws->get_root();
-    char                  *name    = aw_root->awar(AWAR_COLOR_LOADSAVE_NAME)->read_string();
-    GB_ERROR               error   = 0;
+enum loadsave_mode {
+    SAVE,
+    LOAD,
+    OVERLAY,
+    DELETE,
+};
+
+static void loadsave_colorset_cb(AW_window *aws, const color_save_data *csd, loadsave_mode mode) {
+    AW_root  *aw_root = aws->get_root();
+    char     *name    = aw_root->awar(AWAR_COLOR_LOADSAVE_NAME)->read_string();
+    GB_ERROR  error   = 0;
 
     if (name[0] == 0) {
         error = "Please enter a name for the colorset.";
@@ -2022,7 +2020,7 @@ static void loadsave_colorset_cb(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
 
         GBDATA *gb_colorset_name = GB_find_string(gb_colorset_root, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
         GBDATA *gb_colorset      = gb_colorset_name ? GB_get_father(gb_colorset_name) : 0;
-        if (mode == 0) {        // save-mode
+        if (mode == SAVE) {
             if (!gb_colorset) { // create new (otherwise overwrite w/o comment)
                 gb_colorset             = GB_create_container(gb_colorset_root, "colorset");
                 if (!gb_colorset) error = GB_await_error();
@@ -2038,12 +2036,12 @@ static void loadsave_colorset_cb(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
                 }
             }
         }
-        else { // load/delete
+        else {
             if (!gb_colorset) {
                 error = GBS_global_string("Colorset '%s' not found", name);
             }
             else {
-                if (mode == 1 || mode == 2) { // load- and overlay-mode
+                if (mode == LOAD || mode == OVERLAY) {
                     GBDATA *gb_set = GB_entry(gb_colorset, "color_set");
                     if (!gb_set) {
                         error = "colorset is empty (oops)";
@@ -2052,17 +2050,13 @@ static void loadsave_colorset_cb(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
                         const char *colorset = GB_read_char_pntr(gb_set);
                         if (!colorset) error = GB_await_error();
                         else {
-                            if (mode == 1) { // load => clear all colors
-                                error = clear_all_colors(csd, aw_root);
-                            }
-                            if (!error) {
-                                error = restore_colorset_representation(csd, colorset);
-                            }
+                            if (mode == LOAD) error = clear_all_colors(csd, aw_root);
+                            if (!error)       error = restore_colorset_representation(csd, colorset);
                         }
                     }
                 }
                 else {
-                    dbq_assert(mode == 3); // delete-mode
+                    dbq_assert(mode == DELETE);
                     error = GB_delete(gb_colorset);
                 }
             }
@@ -2075,7 +2069,7 @@ static void loadsave_colorset_cb(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
     if (error) aw_message(error);
 }
 
-static AW_window *create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd) {
+static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_data *csd) {
     static AW_window **aw_loadsave = 0;
     if (!aw_loadsave) {
         // init data
@@ -2083,7 +2077,6 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd)
         aw_loadsave = (AW_window**)GB_calloc(QUERY_ITEM_TYPES, sizeof(*aw_loadsave)); // contains loadsave windows for each item type
     }
 
-    color_save_data *csd  = (color_save_data*)cl_csd;
     QUERY_ITEM_TYPE  type = csd->cmd->selector.type;
 
     dbq_assert(type<QUERY_ITEM_TYPES);
@@ -2104,7 +2097,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd)
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"color_loadsave.hlp");
+        aws->callback(makeHelpCallback("color_loadsave.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("name");
@@ -2116,24 +2109,13 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd)
 
         update_colorset_selection_list(csd);
 
-        aws->at("save");
-        aws->callback(loadsave_colorset_cb, (AW_CL)csd, (AW_CL)0); // 0 = save
-        aws->create_button("save", "Save", "S");
-
-        aws->at("load");
-        aws->callback(loadsave_colorset_cb, (AW_CL)csd, (AW_CL)1); // 1 = load
-        aws->create_button("load", "Load", "L");
-
-        aws->at("overlay");
-        aws->callback(loadsave_colorset_cb, (AW_CL)csd, (AW_CL)2); // 2 = overlay
-        aws->create_button("overlay", "Overlay", "O");
-
-        aws->at("delete");
-        aws->callback(loadsave_colorset_cb, (AW_CL)csd, (AW_CL)3); // 3 = delete
-        aws->create_button("delete", "Delete", "D");
+        aws->at("save");    aws->callback(makeWindowCallback(loadsave_colorset_cb, csd, SAVE));    aws->create_button("save",    "Save",    "S");
+        aws->at("load");    aws->callback(makeWindowCallback(loadsave_colorset_cb, csd, LOAD));    aws->create_button("load",    "Load",    "L");
+        aws->at("overlay"); aws->callback(makeWindowCallback(loadsave_colorset_cb, csd, OVERLAY)); aws->create_button("overlay", "Overlay", "O");
+        aws->at("delete");  aws->callback(makeWindowCallback(loadsave_colorset_cb, csd, DELETE));  aws->create_button("delete",  "Delete",  "D");
 
         aws->at("reset");
-        aws->callback(clear_all_colors_cb, (AW_CL)csd);
+        aws->callback(makeWindowCallback(clear_all_colors_cb, csd));
         aws->create_button("reset", "Reset", "R");
 
         // callbacks
@@ -2208,16 +2190,16 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    if (mode == COLORIZE_LISTED) aws->callback(AW_POPUP_HELP, (AW_CL)"set_color_of_listed.hlp");
-    else                                 aws->callback(AW_POPUP_HELP, (AW_CL)"colorize.hlp");
+    if (mode == COLORIZE_LISTED) aws->callback(makeHelpCallback("set_color_of_listed.hlp"));
+    else                                 aws->callback(makeHelpCallback("colorize.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("colorize");
 
     BoundItemSel *cmd = new BoundItemSel(gb_main, ((mode == COLORIZE_MARKED) ? *sel : query->selector));
 
-    if (mode == COLORIZE_LISTED) aws->callback(colorize_queried_cb, (AW_CL)query);
-    else                         aws->callback(colorize_marked_cb, (AW_CL)cmd);
+    if (mode == COLORIZE_LISTED) aws->callback(makeWindowCallback(colorize_queried_cb, query));
+    else                         aws->callback(makeWindowCallback(colorize_marked_cb, cmd));
 
     aws->create_autosize_button("COLORIZE", GBS_global_string_copy("Set color of %s %s to ...", what, Sel.items_name), "S", 2);
 
@@ -2238,20 +2220,20 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
     csd->colorsets       = 0;
 
     aws->at("loadsave");
-    aws->callback(AW_POPUP, (AW_CL)create_loadsave_colored_window, (AW_CL)csd);
+    aws->callback(makeCreateWindowCallback(create_loadsave_colored_window, csd));
     aws->create_autosize_button("LOADSAVE_COLORED", "Load/Save", "L");
 
     if (mode == COLORIZE_MARKED) {
         aws->at("mark");
-        aws->callback(mark_colored_cb, (AW_CL)cmd, (AW_CL)1);
+        aws->callback(makeWindowCallback(mark_colored_cb, cmd, MARK));
         aws->create_autosize_button("MARK_COLORED", GBS_global_string_copy("Mark all %s of ...", Sel.items_name), "M", 2);
 
         aws->at("unmark");
-        aws->callback(mark_colored_cb, (AW_CL)cmd, (AW_CL)0);
+        aws->callback(makeWindowCallback(mark_colored_cb, cmd, UNMARK));
         aws->create_autosize_button("UNMARK_COLORED", GBS_global_string_copy("Unmark all %s of ...", Sel.items_name), "U", 2);
 
         aws->at("invert");
-        aws->callback(mark_colored_cb, (AW_CL)cmd, (AW_CL)2);
+        aws->callback(makeWindowCallback(mark_colored_cb, cmd, INVERT));
         aws->create_autosize_button("INVERT_COLORED", GBS_global_string_copy("Invert all %s of ...", Sel.items_name), "I", 2);
     }
 
@@ -2289,11 +2271,11 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"mod_field_list.hlp");
+    aws->callback(makeHelpCallback("mod_field_list.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("helptags");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"tags.hlp");
+    aws->callback(makeHelpCallback("tags.hlp"));
     aws->create_button("HELP_TAGS", "HELP TAGS", "H");
 
     aws->at("usetag");  aws->create_toggle(query->awar_use_tag);
@@ -2305,7 +2287,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, FIELD_FILTER_PARS, "field", 0, query->selector, 20, 10);
 
     aws->at("go");
-    aws->callback(modify_fields_of_queried_cb, (AW_CL)query);
+    aws->callback(makeWindowCallback(modify_fields_of_queried_cb, query));
     aws->create_button("GO", "GO", "G");
 
     aws->at("parser");
@@ -2335,18 +2317,17 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
         aw_message(error);
     }
     else {
-        aws->get_root()->awar(query->awar_parspredefined)->add_callback((AW_RCB1)predef_prg, (AW_CL)query);
+        aws->get_root()->awar(query->awar_parspredefined)->add_callback(makeRootCallback(predef_prg, query));
     }
     return aws;
 }
 
-static void set_field_of_queried_cb(AW_window*, AW_CL cl_query, AW_CL append) {
+static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
     // set fields of listed items
-    DbQuery      *query    = (DbQuery*)cl_query;
-    ItemSelector& selector = query->selector;
-    GB_ERROR      error    = 0;
-    AW_root      *aw_root  = query->aws->get_root();
-    char         *key      = aw_root->awar(query->awar_setkey)->read_string();
+    ItemSelector&  selector = query->selector;
+    GB_ERROR       error    = 0;
+    AW_root       *aw_root  = query->aws->get_root();
+    char          *key      = aw_root->awar(query->awar_setkey)->read_string();
 
     if (strcmp(key, "name") == 0) {
         error = "You cannot set the name field";
@@ -2436,15 +2417,15 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"write_field_list.hlp");
+    aws->callback(makeHelpCallback("write_field_list.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, FIELD_FILTER_NDS, "box", 0, query->selector, 20, 10);
     aws->at("create");
-    aws->callback(set_field_of_queried_cb, (AW_CL)query, 0);
+    aws->callback(makeWindowCallback(set_field_of_queried_cb, query, false));
     aws->create_button("SET_SINGLE_FIELD_OF_LISTED", "WRITE");
     aws->at("do");
-    aws->callback(set_field_of_queried_cb, (AW_CL)query, 1);
+    aws->callback(makeWindowCallback(set_field_of_queried_cb, query, true));
     aws->create_button("APPEND_SINGLE_FIELD_OF_LISTED", "APPEND");
 
     aws->at("val");
@@ -2453,13 +2434,12 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query) {
 
 }
 
-static void set_protection_of_queried_cb(AW_window*, AW_CL cl_query) {
+static void set_protection_of_queried_cb(AW_window*, DbQuery *query) {
     // set protection of listed items
-    DbQuery      *query    = (DbQuery*)cl_query;
-    ItemSelector& selector = query->selector;
-    AW_root      *aw_root  = query->aws->get_root();
-    GB_ERROR      error    = 0;
-    char         *key      = aw_root->awar(query->awar_setkey)->read_string();
+    ItemSelector&  selector = query->selector;
+    AW_root       *aw_root  = query->aws->get_root();
+    GB_ERROR       error    = 0;
+    char          *key      = aw_root->awar(query->awar_setkey)->read_string();
 
     GB_begin_transaction(query->gb_main);
     GBDATA *gb_key_data = GB_search(query->gb_main, selector.change_key_path, GB_CREATE_CONTAINER);
@@ -2504,7 +2484,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"set_protection.hlp");
+    aws->callback(makeHelpCallback("set_protection.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
 
@@ -2521,7 +2501,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, FIELD_FILTER_NDS, "list", 0, query->selector, 20, 10);
 
     aws->at("go");
-    aws->callback(set_protection_of_queried_cb, (AW_CL)query);
+    aws->callback(makeWindowCallback(set_protection_of_queried_cb, query));
     aws->create_button("SET_PROTECTION_OF_FIELD_OF_LISTED", "SET PROTECTION");
 
     return aws;
@@ -2537,10 +2517,7 @@ static void toggle_flag_cb(AW_window *aww, DbQuery *query) {
     DbQuery_update_list(query);
 }
 
-static void new_selection_made_cb(AW_root *aw_root, AW_CL cl_awar_selection, AW_CL cl_query) {
-    const char *awar_selection = (const char *)cl_awar_selection;
-    DbQuery    *query          = (DbQuery *)cl_query;
-
+static void new_selection_made_cb(AW_root *aw_root, const char *awar_selection, DbQuery *query) {
     char *item_name = aw_root->awar(awar_selection)->read_as_string();
     query->selector.update_item_awars(query->gb_main, aw_root, item_name);
     free(item_name);
@@ -2566,9 +2543,10 @@ static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL c
     cdef.write(stored);
 }
 
-static void query_rel_menu_entry(AW_window *aws, const char *id, const char *query_id, AW_label label, const char *mnemonic, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+template<typename CB>
+static void query_rel_menu_entry(AW_window *aws, const char *id, const char *query_id, AW_label label, const char *mnemonic, const char *helpText, AW_active Mask, const CB& cb) {
     char *rel_id = GBS_global_string_copy("%s_%s", query_id, id);
-    aws->insert_menu_topic(rel_id, label, mnemonic, helpText, Mask, f, cd1, cd2);
+    aws->insert_menu_topic(rel_id, label, mnemonic, helpText, Mask, cb);
     free(rel_id);
 }
 
@@ -2613,7 +2591,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             query->awar_operator[key_id] = strdup(buffer);
             aw_root->awar_string(query->awar_operator[key_id], "ign", AW_ROOT_DEFAULT);
         }
-        aw_root->awar(query->awar_keys[0])->add_callback(first_searchkey_changed_cb, (AW_CL)query);
+        aw_root->awar(query->awar_keys[0])->add_callback(makeRootCallback(first_searchkey_changed_cb, query));
     }
 
     sprintf(buffer, "tmp/dbquery_%s/ere", query_id);
@@ -2630,7 +2608,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
 
     sprintf(buffer, "tmp/dbquery_%s/sort", query_id);
     query->awar_sort = strdup(buffer);
-    aw_root->awar_int(query->awar_sort, QUERY_SORT_NONE)->add_callback(sort_order_changed_cb, (AW_CL)query);
+    aw_root->awar_int(query->awar_sort, QUERY_SORT_NONE)->add_callback(makeRootCallback(result_sort_order_changed_cb, query));
     query->sort_mask = QUERY_SORT_NONE; // default to unsorted
 
     sprintf(buffer, "tmp/dbquery_%s/by", query_id);
@@ -2747,7 +2725,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             AW_awar *awar           = aw_root->awar_string(this_awar_name, "", AW_ROOT_DEFAULT);
 
             query->hitlist = aws->create_selection_list(this_awar_name, 5, 5);
-            awar->add_callback(new_selection_made_cb, (AW_CL)this_awar_name, (AW_CL)query);
+            awar->add_callback(makeRootCallback(new_selection_made_cb, this_awar_name, query));
         }
         query->hitlist->insert_default("end of list", "");
         query->hitlist->update();
@@ -2797,19 +2775,19 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     if (awtqs->do_mark_pos_fig) {
         aws->at(awtqs->do_mark_pos_fig);
         aws->help_text("mark_list.hlp");
-        aws->callback(mark_queried_cb, (AW_CL)query, 1);
+        aws->callback(makeWindowCallback(mark_queried_cb, query, 1));
         aws->create_button("MARK_LISTED_UNMARK_REST", "Mark Listed\nUnmark Rest", "M");
     }
     if (awtqs->do_unmark_pos_fig) {
         aws->at(awtqs->do_unmark_pos_fig);
         aws->help_text("unmark_list.hlp");
-        aws->callback(mark_queried_cb, (AW_CL)query, 0);
+        aws->callback(makeWindowCallback(mark_queried_cb, query, 0));
         aws->create_button("UNMARK_LISTED_MARK_REST", "Unmark Listed\nMark Rest", "U");
     }
     if (awtqs->do_delete_pos_fig) {
         aws->at(awtqs->do_delete_pos_fig);
         aws->help_text("del_list.hlp");
-        aws->callback(delete_queried_species_cb, (AW_CL)query);
+        aws->callback(makeWindowCallback(delete_queried_species_cb, query));
         char *macro_id = GBS_global_string_copy("DELETE_LISTED_%s", query_id);
         aws->create_button(macro_id, "Delete Listed", "D");
         free(macro_id);
@@ -2829,7 +2807,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
 
         aws->at(awtqs->do_set_pos_fig);
         aws->help_text("mod_field_list.hlp");
-        aws->callback(AW_POPUP, (AW_CL)create_awt_do_set_list, (AW_CL)query);
+        aws->callback(makeCreateWindowCallback(create_awt_do_set_list, query));
         char *macro_id = GBS_global_string_copy("WRITE_TO_FIELDS_OF_LISTED_%s", query_id);
         aws->create_button(macro_id, "Write to Fields\nof Listed", "S");
         free(macro_id);
@@ -2848,25 +2826,25 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         sprintf(buffer, "tmp/dbquery_%s/awar_parspredefined", query_id); query->awar_parspredefined = strdup(buffer); aw_root->awar_string(query->awar_parspredefined);
 
         if (awtqs->use_menu) {
-            sprintf(buffer, "Modify Fields of Listed %s", Items); query_rel_menu_entry(aws, "mod_fields_of_listed", query_id, buffer, "F", "mod_field_list.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_modify_fields_window, (AW_CL)query);
+            sprintf(buffer, "Modify Fields of Listed %s", Items); query_rel_menu_entry(aws, "mod_fields_of_listed", query_id, buffer, "F", "mod_field_list.hlp", AWM_ALL, makeCreateWindowCallback(create_modify_fields_window, query));
         }
         else {
             aws->at(awtqs->open_parser_pos_fig);
-            aws->callback(AW_POPUP, (AW_CL)create_modify_fields_window, (AW_CL)query);
+            aws->callback(makeCreateWindowCallback(create_modify_fields_window, query));
             aws->create_button("MODIFY_FIELDS_OF_LISTED", "MODIFY FIELDS\nOF LISTED", "F");
         }
     }
     if (awtqs->use_menu) {
-        sprintf(buffer, "Set Protection of Fields of Listed %s", Items); query_rel_menu_entry(aws, "s_prot_of_listed", query_id, buffer, "P", "set_protection.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_set_protection_window, (AW_CL)query);
+        sprintf(buffer, "Set Protection of Fields of Listed %s", Items); query_rel_menu_entry(aws, "s_prot_of_listed", query_id, buffer, "P", "set_protection.hlp", AWM_ALL, makeCreateWindowCallback(create_set_protection_window, query));
         aws->sep______________();
-        sprintf(buffer, "Mark Listed %s, don't Change Rest",   Items); query_rel_menu_entry(aws, "mark_listed",             query_id, buffer, "M", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)1 | 8);
-        sprintf(buffer, "Mark Listed %s, Unmark Rest",         Items); query_rel_menu_entry(aws, "mark_listed_unmark_rest", query_id, buffer, "L", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)1);
-        sprintf(buffer, "Unmark Listed %s, don't Change Rest", Items); query_rel_menu_entry(aws, "unmark_listed",           query_id, buffer, "U", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)0 | 8);
-        sprintf(buffer, "Unmark Listed %s, Mark Rest",         Items); query_rel_menu_entry(aws, "unmark_listed_mark_rest", query_id, buffer, "R", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)0);
+        sprintf(buffer, "Mark Listed %s, don't Change Rest",   Items); query_rel_menu_entry(aws, "mark_listed",             query_id, buffer, "M", "mark.hlp", AWM_ALL, makeWindowCallback(mark_queried_cb, query, 1|8));
+        sprintf(buffer, "Mark Listed %s, Unmark Rest",         Items); query_rel_menu_entry(aws, "mark_listed_unmark_rest", query_id, buffer, "L", "mark.hlp", AWM_ALL, makeWindowCallback(mark_queried_cb, query, 1  ));
+        sprintf(buffer, "Unmark Listed %s, don't Change Rest", Items); query_rel_menu_entry(aws, "unmark_listed",           query_id, buffer, "U", "mark.hlp", AWM_ALL, makeWindowCallback(mark_queried_cb, query, 0|8));
+        sprintf(buffer, "Unmark Listed %s, Mark Rest",         Items); query_rel_menu_entry(aws, "unmark_listed_mark_rest", query_id, buffer, "R", "mark.hlp", AWM_ALL, makeWindowCallback(mark_queried_cb, query, 0  ));
         aws->sep______________();
 
 
-        sprintf(buffer, "Set Color of Listed %s", Items);    query_rel_menu_entry(aws, "set_color_of_listed", query_id, buffer, "C", "set_color_of_listed.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_colorize_queried_window, (AW_CL)query);
+        sprintf(buffer, "Set Color of Listed %s", Items);    query_rel_menu_entry(aws, "set_color_of_listed", query_id, buffer, "C", "set_color_of_listed.hlp", AWM_ALL, makeCreateWindowCallback(create_colorize_queried_window, query));
 
         if (query->gb_ref) {
             dbq_assert(query->selector.type == QUERY_ITEM_SPECIES); // stuff below works only for species
