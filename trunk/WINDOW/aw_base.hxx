@@ -45,8 +45,6 @@ typedef float     AW_grey_level; // <0 don't fill  0.0 white 1.0 black
 
 typedef struct _WidgetRec *Widget;
 
-typedef const char *AWAR;
-
 #define AW_NO_COLOR (-1UL)
 typedef unsigned long AW_rgb;
 
