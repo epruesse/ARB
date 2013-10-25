@@ -78,11 +78,17 @@ bool AW_device_cairo::draw_string_on_screen(AW_device *device, int gc, const  ch
     AW_device_cairo *device_cairo = DOWNCAST(AW_device_cairo*, device);
     cairo_t *cr = device_cairo->get_cr(gc);
     if (!cr) return true; 
-    //cairo_save(cr);
-    //AW_screen_area cliprect = device_cairo->get_cliprect();
-    //cairo_rectangle(cr, cliprect.l +.5, cliprect.t +.5, cliprect.r-cliprect.l, cliprect.b-cliprect.t);
-    //cairo_clip(cr);
-
+    /*
+    cairo_save(cr);
+    AW_screen_area cliprect = device_cairo->get_cliprect();
+    cairo_rectangle(cr, 
+                    (int)cliprect.l, 
+                    (int)cliprect.t, 
+                    (int)(cliprect.r-cliprect.l+1), 
+                    (int)(cliprect.b-cliprect.t+1));
+    cairo_clip(cr);
+    */
+                    
     PangoLayout *pl = device_cairo->get_common()->map_gc(gc)->get_pl(str+start, size);
 
     AW_pos base = 13;//pango_layout_get_baseline(pl)  / PANGO_SCALE;
@@ -271,4 +277,23 @@ void AW_device_cairo::clear_part(const Rectangle& rect, AW_bitset filteri)
  */
 int AW_device_cairo::get_string_size(int gc, const char *str, long textlen) const {
     return get_common()->map_gc(gc)->get_string_size(str, textlen);
+}
+
+void AW_device_cairo::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height,
+                                AW_pos dest_x, AW_pos dest_y) {
+    int gc = -1;
+    cairo_t *cr = get_cr(gc);
+    if (!cr) return;
+
+    cairo_save(cr);
+    cairo_set_source_surface(cr, cairo_get_target(cr), dest_x - src_x, dest_y - src_y);
+    cairo_rectangle (cr, dest_x, dest_y, width, height);
+    cairo_fill (cr);
+    cairo_restore(cr);
+    /*
+    GdkRectangle rect;
+    rect.x = AW_INT(src_x), rect.y = AW_INT(src_y), rect.width=AW_INT(width), rect.height=AW_INT(height);
+    gdk_window_move_region(gtk_widget_get_window(prvt->drawingArea), gdk_region_rectangle(&rect),
+                           AW_INT(dest_x-src_x), AW_INT(dest_y-src_y));
+    */
 }

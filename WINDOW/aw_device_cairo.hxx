@@ -58,6 +58,8 @@ public:
                                         AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL /*cduser*/);
 
     int  get_string_size(int gc, const  char *string, long textlen) const OVERRIDE;
+
+    void move_region(AW_pos, AW_pos, AW_pos, AW_pos, AW_pos, AW_pos) OVERRIDE;
 };
 
 
