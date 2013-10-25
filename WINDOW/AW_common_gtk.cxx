@@ -99,10 +99,11 @@ struct layout_cache {
         }
     }
     
-    PangoLayout* get(const char* text) {
+    PangoLayout* get(const char* text, int size) {
         for (layout_vec::iterator it = content.begin(); 
              it != content.end(); ++it) {
             if (!*it) continue;
+            if (size != -1 && size != strlen(text)) continue;
             if (!strcmp(pango_layout_get_text(*it), text)) {
                 return *it;
             }
@@ -112,7 +113,7 @@ struct layout_cache {
             *cur = pango_layout_new(context);
             pango_layout_set_font_description(*cur, font_desc);
         }
-        pango_layout_set_text(*cur, text, -1);
+        pango_layout_set_text(*cur, text, size);
         PangoLayout *rval = *cur;
         if (++cur == content.end()) cur = content.begin();
 
@@ -253,12 +254,12 @@ void AW_GC_gtk::wm_set_font(const char* font_name) {
  * We keep the PangoLayout around to make subsequents calls with the same
  * text faster.
  */
-PangoLayout* AW_GC_gtk::get_pl(const char* str) const {
-    return prvt->cache.get(str);
+PangoLayout* AW_GC_gtk::get_pl(const char* str, int len) const {
+    return prvt->cache.get(str, len);
 }
 
 int AW_GC_gtk::get_actual_string_size(const char* str) const {
-    PangoLayout *pl = get_pl(str); // update with string if necessary
+    PangoLayout *pl = get_pl(str, -1); // update with string if necessary
    
     int w, h;
     pango_layout_get_pixel_size (pl, &w, &h);

@@ -49,6 +49,6 @@ public:
     AW_GC_gtk(AW_common *common);
     ~AW_GC_gtk() OVERRIDE;
 
-    PangoLayout *get_pl(const char*) const;
+    PangoLayout *get_pl(const char*, int) const;
 
 };
