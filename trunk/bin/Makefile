@@ -1,33 +1,51 @@
+
+.PHONY: help all develall mafftlinks scriptlinks devellinks clean cleanbinaries cleanlinks
+
 help:
-	@echo	'Known targets:'
-	@echo	''
-	@echo	'  all		create all links to binaries in: SH PERL_SCRIPTS'
-	@echo	'  develall     create links to arb_binaries in: SOURCE_TOOLS (development only)'
-	@echo	'  realclean:   remove all executables and links'
-	@echo	'  cleanlinks:  remove all links'
+	@echo 'Known targets:'
+	@echo ''
+	@echo '  all          create all links to binaries in: SH PERL_SCRIPTS'
+	@echo '  develall     create links to arb_binaries in: SOURCE_TOOLS (development only)'
+	@echo '  clean:       remove all executables and links'
+	@echo '  cleanlinks:  remove all links'
+
+# ----------------------------------------
 
 all: cleanlinks
-	ln -s -f `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
-	ln -s mafft mafft-linsi
-	ln -s mafft mafft-ginsi
-	ln -s mafft mafft-fftns
-	ln -s mafft mafft-fftnsi
-	ln -s mafft mafft-nwns
-	ln -s mafft mafft-nwnsi
-	ln -s mafft mafft-einsi
-	ln -s mafft mafft-xinsi
-	ln -s mafft mafft-qinsi
+	$(MAKE) scriptlinks mafftlinks
 
-develall: all
+develall: cleanlinks
+	$(MAKE) scriptlinks mafftlinks devellinks
+
+# ----------------------------------------
+
+MAFFTLINKS= \
+	mafft-einsi \
+	mafft-fftns \
+	mafft-fftnsi \
+	mafft-ginsi \
+	mafft-linsi \
+	mafft-nwns \
+	mafft-nwnsi \
+	mafft-qinsi \
+	mafft-xinsi \
+
+mafft-%:
+	ln -s -f mafft $@
+
+mafftlinks: $(MAFFTLINKS)
+
+scriptlinks:
+	ln -s -f `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
+
+devellinks:
 	ln -s -f `find ../SOURCE_TOOLS -name "arb_*" -perm -100 ! -type d -print` .
 
+# ----------------------------------------
+clean: cleanlinks cleanbinaries
 
-clean: realclean
-
-realclean:
-	-find . -type l            -exec rm {} \;
+cleanbinaries:
 	-find . -type f -perm -100 -exec rm {} \;
-
 
 cleanlinks:
 	-find . -type l -exec rm {} \;
