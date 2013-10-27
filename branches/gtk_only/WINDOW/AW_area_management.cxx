@@ -75,9 +75,6 @@ public:
     }
 };
 
-GtkWidget *AW_area_management::get_area() const {
-    return GTK_WIDGET(prvt->widget);
-}
 AW_common *AW_area_management::get_common() const {
     return prvt->common; 
 }

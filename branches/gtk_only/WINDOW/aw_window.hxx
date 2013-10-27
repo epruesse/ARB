@@ -237,12 +237,6 @@ public:
     //      The real public section
 
     AW_root *get_root() { return AW_root::SINGLETON; }
-    /**
-     * 
-     * @param index
-     * @return The area at index i or NULL of that area does not exist 
-     */
-    AW_area_management* get_area(int index);
     // ******************* Global layout functions **********************
 
     void show(); // show newly created window or unhide hidden window (aka closed window)

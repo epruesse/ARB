@@ -144,12 +144,6 @@ void AW_window::d_callback(const WindowCallback& wcb){
     prvt->action_template.dclicked.connect(wcb, this);
 }
 
-
-AW_area_management* AW_window::get_area(int index) {
-    aw_return_val_if_fail(index < AW_MAX_AREA, NULL);
-    return prvt->areas[index];
-}
-
 /** 
  * checks if a label string is an image reference.
  * image references have "#" as their first character
