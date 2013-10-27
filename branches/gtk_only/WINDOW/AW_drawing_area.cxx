@@ -1,7 +1,13 @@
 #include "aw_drawing_area.hxx"
 #include "aw_gtk_closures.hxx"
+#include "aw_at.hxx"
 #include "aw_assert.hxx"
 #include <glib.h>
+
+// workaround for older GTK 2 versions
+#if GTK_MAJOR_VERSION == 2 && GTK_MINOR_VERSION < 20
+#define gtk_widget_get_realized(widget) GTK_WIDGET_REALIZED(widget)
+#endif
 
 struct _AwDrawingAreaPrivate {
     GtkAdjustment *horizontalAdjustment;
@@ -10,24 +16,60 @@ struct _AwDrawingAreaPrivate {
     int top_indent;  //! part of visible area not moving with scrollbar (right)
     int width;
     int height;
+    GList *children;
 };
 
-G_DEFINE_TYPE(AwDrawingArea, aw_drawing_area, GTK_TYPE_DRAWING_AREA);
+struct _AwDrawingAreaChild {
+    GtkWidget *widget;
+    guint x;
+    guint y;
+    gfloat xalign;
+    gfloat yalign;
+    gfloat xscale;
+    gfloat yscale;
+    gfloat xmove;
+    gfloat ymove;
+};
 
+G_DEFINE_TYPE(AwDrawingArea, aw_drawing_area, GTK_TYPE_FIXED);
+
+// overrides on GObject
 static void aw_drawing_area_finalize(GObject* object);
 static void aw_drawing_area_dispose(GObject* object);
-static void aw_drawing_area_set_scroll_adjustments(AwDrawingArea *area, 
-                                                   GtkAdjustment *hadj, 
-                                                   GtkAdjustment *vadj);
+
+// overrides on GtkWidget
 static gint aw_drawing_area_button_press(GtkWidget *widget, 
                                          GdkEventButton *event);
 static void aw_drawing_area_size_allocate(GtkWidget*, GtkAllocation*);
+#if GTK_MAJOR_VERSION > 2
+static void aw_drawing_area_get_preferred_width(GtkWidget*, gint*, gint*);
+static void aw_drawing_area_get_preferred_height(GtkWidget*, gint*, gint*);
+#else
+static void aw_drawing_area_set_scroll_adjustments(AwDrawingArea *area, 
+                                                   GtkAdjustment *hadj, 
+                                                   GtkAdjustment *vadj);
+static void aw_drawing_area_size_request(GtkWidget*, GtkRequisition*);
+#endif
+// overrides on GtkContainer
+static GType aw_drawing_area_child_type(GtkContainer*) {return GTK_TYPE_WIDGET;}
+static void aw_drawing_area_forall(GtkContainer*, gboolean internal, GtkCallback cb, gpointer cd);
 
+/**
+ * GObject boilerplate. This function defines our class and the 
+ * methods it override.
+ */
 static void aw_drawing_area_class_init(AwDrawingAreaClass *clazz) {
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(clazz);
     GObjectClass *object_class = G_OBJECT_CLASS(clazz);
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(clazz);
+    GtkContainerClass *container_class = GTK_CONTAINER_CLASS(clazz);
+
+    //register destructor
+    object_class->dispose = aw_drawing_area_dispose;
+    object_class->finalize = aw_drawing_area_finalize;
     
 #if GTK_MAJOR_VERSION >2
+    widget_class->get_preferred_width = aw_drawing_area_get_preferred_width;
+    widget_class->get_preferred_height = aw_drawing_area_get_preferred_height;
 #else
     //override set_scroll_adjustments
     clazz->set_scroll_adjustments = aw_drawing_area_set_scroll_adjustments;
@@ -41,21 +83,21 @@ static void aw_drawing_area_class_init(AwDrawingAreaClass *clazz) {
                 G_TYPE_NONE, 2,
                 GTK_TYPE_ADJUSTMENT,
                 GTK_TYPE_ADJUSTMENT);  
+    widget_class->size_request = aw_drawing_area_size_request;
 #endif
     widget_class->button_press_event = aw_drawing_area_button_press;
     widget_class->size_allocate = aw_drawing_area_size_allocate;
-
-    //register destructor
-    object_class->dispose = aw_drawing_area_dispose;
-    object_class->finalize = aw_drawing_area_finalize;
     
+    container_class->child_type = aw_drawing_area_child_type;
+    container_class->forall = aw_drawing_area_forall;
+
     //register pimpl. This way it will be freed automatically if the drawing area is destroyed 
     g_type_class_add_private (clazz, sizeof (AwDrawingAreaPrivate));
-    
 }
 
 static void aw_drawing_area_init(AwDrawingArea *area) {
     gtk_widget_set_can_focus (GTK_WIDGET (area), TRUE);
+    gtk_widget_set_has_window(GTK_WIDGET(area),true);
     //this is done to avoid calling G_TYPE_INSTANCE_GET_PRIVATE every time 
     area->prvt = G_TYPE_INSTANCE_GET_PRIVATE (area, AW_DRAWING_AREA_TYPE, AwDrawingAreaPrivate);
     area->prvt->horizontalAdjustment = NULL;
@@ -64,11 +106,6 @@ static void aw_drawing_area_init(AwDrawingArea *area) {
     area->prvt->top_indent = 0;
     area->prvt->width = 0;
     area->prvt->height = 0;
-}
-
-
-GtkWidget *aw_drawing_area_new() {
-    return GTK_WIDGET(g_object_new(AW_DRAWING_AREA_TYPE, NULL));
 }
 
 //see https://developer.gnome.org/gobject/stable/howto-gobject-destruction.html to 
@@ -128,10 +165,13 @@ static void adjustment_set_safely(GtkAdjustment *adj, gdouble value, gdouble upp
     g_object_thaw_notify(G_OBJECT(adj));
 }
 
-#if GTK_MAJOR_VERSION == 2 && GTK_MINOR_VERSION < 20
-#define gtk_widget_get_realized(widget) GTK_WIDGET_REALIZED(widget)
-#endif
-
+/**
+ * Gtk (or rather, our parent container) is giving us space (we got resized)
+ * - update associated gdk window
+ * - update scrollbars
+ * - divice space among children and call allocate on them
+ * - send allocation event in case someone's connected to us
+ */
 static void aw_drawing_area_size_allocate(GtkWidget *widget, GtkAllocation* allocation) {
     AwDrawingArea *area = AW_DRAWING_AREA(widget);
    
@@ -150,6 +190,31 @@ static void aw_drawing_area_size_allocate(GtkWidget *widget, GtkAllocation* allo
     adjustment_set_safely(area->prvt->verticalAdjustment, -1, -1, 
                               allocation->height - area->prvt->top_indent);
 
+    GList *children = area->prvt->children;
+    while(children) {
+        _AwDrawingAreaChild *child = (_AwDrawingAreaChild*) children->data;
+        children = children->next;
+        if (gtk_widget_get_visible(child->widget)) {
+            GtkRequisition child_req;
+            gtk_widget_get_child_requisition(child->widget, &child_req);
+            GtkAllocation child_alloc;
+            child_alloc.x = child->x - child->xalign * child_req.width
+              + child->xmove * (allocation->width - area->prvt->width);
+            child_alloc.y = child->y - child->yalign * child_req.height
+              + child->ymove * (allocation->height - area->prvt->height);
+
+            child_alloc.width = child_req.width + (allocation->width - area->prvt->width) * child->xscale;
+            child_alloc.height =child_req.height + (allocation->height - area->prvt->height) * child->yscale;
+
+            if (!gtk_widget_get_has_window(widget)) {
+              child_alloc.x += allocation->x;
+              child_alloc.y += allocation->y;
+            }
+            
+            gtk_widget_size_allocate(child->widget, &child_alloc);
+        }
+    }
+
     if (gtk_widget_get_has_window(widget) &&
         gtk_widget_get_realized(widget)) {
         GdkEvent *event = gdk_event_new(GDK_CONFIGURE);
@@ -162,6 +227,109 @@ static void aw_drawing_area_size_allocate(GtkWidget *widget, GtkAllocation* allo
         gtk_widget_event(widget, event);
         gdk_event_free(event);
     }
+}
+
+
+static void aw_drawing_area_set_scroll_adjustments(AwDrawingArea *area, 
+                                                   GtkAdjustment *hadj,
+                                                   GtkAdjustment *vadj) {
+    if(NULL != area && NULL != area->prvt) {
+        AwDrawingAreaPrivate *prvt = area->prvt;
+        
+        //unref old adjustments
+        if(prvt->horizontalAdjustment && prvt->horizontalAdjustment != hadj) {
+            g_object_unref(area->prvt->horizontalAdjustment);
+            /*changing the adjustment will break the changed callbacks which are 
+             managed by aw_window. If you want to be able to change the adjustments
+             you have to move set_horizontal_change_callback and set_vertical_change_callback
+             from AW_window into this class.*/
+            aw_assert(false);
+        }
+        if(prvt->verticalAdjustment && prvt->verticalAdjustment != hadj) {
+            g_object_unref(area->prvt->verticalAdjustment);
+            aw_assert(false);
+        }
+        
+        //ref new adjustments if they exist, and set lower bound
+        if(NULL != hadj) {
+            prvt->horizontalAdjustment = hadj;
+            g_object_ref(prvt->horizontalAdjustment);
+ 
+            g_object_freeze_notify(G_OBJECT(prvt->horizontalAdjustment));
+            gtk_adjustment_set_lower(prvt->horizontalAdjustment, 0);
+            gtk_adjustment_set_value(prvt->horizontalAdjustment, 0);
+            g_object_thaw_notify(G_OBJECT(prvt->horizontalAdjustment));
+            
+        }
+        
+        if(NULL != vadj) {
+            prvt->verticalAdjustment = vadj;
+            g_object_ref(prvt->verticalAdjustment);
+            g_object_freeze_notify(G_OBJECT(prvt->verticalAdjustment));    
+            gtk_adjustment_set_lower(prvt->verticalAdjustment, 0);
+            gtk_adjustment_set_value(prvt->horizontalAdjustment, 0);
+            g_object_thaw_notify(G_OBJECT(prvt->verticalAdjustment));
+        }
+    }
+}
+
+/**
+ * super is asking for our "minimum" size
+ */
+static void aw_drawing_area_size_request(GtkWidget *widget, GtkRequisition *requisition) {
+    AwDrawingArea *area = AW_DRAWING_AREA(widget);
+    GList *children = area->prvt->children;
+    
+    // if we have an unscrolled area, we don't want to become smaller than that
+    requisition->width = area->prvt->width;
+    requisition->height = area->prvt->height;
+    while (children) {
+        _AwDrawingAreaChild *child = (_AwDrawingAreaChild*) children->data;
+        children = children->next;
+        if (gtk_widget_get_visible(child->widget)) {
+            GtkRequisition child_req;
+            gtk_widget_size_request(child->widget, &child_req);
+            requisition->width = MAX(requisition->width, child->x + child_req.width * (1.-child->xalign));
+            requisition->height = MAX(requisition->height, child->y + child_req.height * (1.-child->yalign));
+        }
+    }
+}
+
+#if GTK_MAJOR_VERSION > 2
+static void aw_drawing_area_get_preferred_width(GtkWidget* widget, gint *minimal_width, gint *natural_width) {
+    /*
+    GtkRequisition req;
+    aw_drawing_area_size_request(widget, &req);
+    *minimal_width = *natural_width = req.width;
+    */
+}
+static void aw_drawing_area_get_preferred_height(GtkWidget* widget, gint *minimal_height, gint *natural_height) {
+    /*
+    GtkRequisition req;
+    aw_drawing_area_size_request(widget, &req);
+    *minimal_height = *natural_height = req.height;
+    */
+}
+#endif
+
+static void aw_drawing_area_forall(GtkContainer *container, gboolean /*intern*/, GtkCallback cb, gpointer cd) {
+    AwDrawingArea *area = AW_DRAWING_AREA(container);
+    GList *children = area->prvt->children;
+    while(children) {
+        _AwDrawingAreaChild *child = (_AwDrawingAreaChild*) children->data;
+        children = children->next;
+        (*cb)(child->widget, cd);
+    }
+}
+
+
+// Public section, not overridden methods
+
+/**
+ * Constructor
+ */
+GtkWidget *aw_drawing_area_new() {
+    return GTK_WIDGET(g_object_new(AW_DRAWING_AREA_TYPE, NULL));
 }
 
 /**
@@ -284,47 +452,62 @@ void aw_drawing_area_set_vertical_slider(AwDrawingArea *area, gdouble pos) {
     adjustment_set_safely(area->prvt->verticalAdjustment, pos, -1, -1);
 }
 
-static void aw_drawing_area_set_scroll_adjustments(AwDrawingArea *area, 
-                                                   GtkAdjustment *hadj,
-                                                   GtkAdjustment *vadj) {
-    if(NULL != area && NULL != area->prvt) {
-        AwDrawingAreaPrivate *prvt = area->prvt;
-        
-        //unref old adjustments
-        if(prvt->horizontalAdjustment && prvt->horizontalAdjustment != hadj) {
-            g_object_unref(area->prvt->horizontalAdjustment);
-            /*changing the adjustment will break the changed callbacks which are 
-             managed by aw_window. If you want to be able to change the adjustments
-             you have to move set_horizontal_change_callback and set_vertical_change_callback
-             from AW_window into this class.*/
-            aw_assert(false);
+
+void aw_drawing_area_put(AwDrawingArea* area,
+                         GtkWidget* widget, 
+                         AW_at* at) 
+{
+    //g_return_if_fail(IS_AW_DRAWING_AREA(area));
+    g_return_if_fail(GTK_IS_WIDGET(widget));
+    AwDrawingAreaPrivate *prvt = area->prvt;
+    prvt->width = at->max_x_size;
+    prvt->height = at->max_y_size;
+
+    _AwDrawingAreaChild *child = g_new(_AwDrawingAreaChild, 1);
+    child->widget = widget;
+    child->x = at->get_at_xposition();
+    child->y = at->get_at_yposition();
+    child->xalign = at->correct_for_at_center / 2.f;
+    child->yalign = 0.f;
+    
+    if (at->attach_x) {
+        if (at->attach_lx) {
+            child->xmove = 1.f;
+            child->xscale = 0.f;
+        } else {
+            child->xmove = 0.f;
+            child->xscale = 1.f;
         }
-        if(prvt->verticalAdjustment && prvt->verticalAdjustment != hadj) {
-            g_object_unref(area->prvt->verticalAdjustment);
-            aw_assert(false);
-        }
-        
-        //ref new adjustments if they exist, and set lower bound
-        if(NULL != hadj) {
-            prvt->horizontalAdjustment = hadj;
-            g_object_ref(prvt->horizontalAdjustment);
- 
-            g_object_freeze_notify(G_OBJECT(prvt->horizontalAdjustment));
-            gtk_adjustment_set_lower(prvt->horizontalAdjustment, 0);
-            gtk_adjustment_set_value(prvt->horizontalAdjustment, 0);
-            g_object_thaw_notify(G_OBJECT(prvt->horizontalAdjustment));
-            
-        }
-        
-        if(NULL != vadj) {
-            prvt->verticalAdjustment = vadj;
-            g_object_ref(prvt->verticalAdjustment);
-            g_object_freeze_notify(G_OBJECT(prvt->verticalAdjustment));    
-            gtk_adjustment_set_lower(prvt->verticalAdjustment, 0);
-            gtk_adjustment_set_value(prvt->horizontalAdjustment, 0);
-            g_object_thaw_notify(G_OBJECT(prvt->verticalAdjustment));
+    } else {
+        if (at->attach_lx) {
+            child->xmove = 1.f;
+            child->xscale = 0.f;
+        } else {
+            child->xmove = 0.f;
+            child->xscale = 0.f;
         }
     }
+
+    if (at->attach_y) {
+        if (at->attach_ly) {
+            child->ymove = 1.f;
+            child->yscale = 0.f;
+        } else {
+            child->ymove = 0.f;
+            child->yscale = 1.f;
+        }
+    } else {
+        if (at->attach_ly) {
+            child->ymove = 1.f;
+            child->yscale = 0.f;
+        } else {
+            child->ymove = 0.f;
+            child->yscale = 0.f;
+        }
+    }
+
+
+    gtk_widget_set_parent(widget, GTK_WIDGET(area));
+
+    prvt->children = g_list_append(prvt->children, child);
 }
-
-

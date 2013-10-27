@@ -2,7 +2,6 @@
 #include <stack>
 
 #include "aw_drawing_area.hxx"
-#include "aw_at_layout.hxx"
 #include "aw_action.hxx"
 
 
@@ -22,7 +21,7 @@ public:
      * @note This area might not be present in every window.
      * @note This area is the same as the INFO_AREA
      */
-    AwAtLayout *fixed_size_area; 
+    AwDrawingArea *fixed_size_area; 
     
     /**
      * A menu bar at the top of the window.

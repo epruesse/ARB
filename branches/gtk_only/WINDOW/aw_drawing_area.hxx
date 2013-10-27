@@ -19,6 +19,7 @@
 #include <gtk/gtk.h>
 
 #include "aw_gtk_forward_declarations.hxx"
+class AW_at;
 
 //gtk boilerplate 
 G_BEGIN_DECLS
@@ -35,13 +36,13 @@ typedef struct _AwDrawingAreaPrivate AwDrawingAreaPrivate;
 
 struct _AwDrawingArea
 {
-    GtkDrawingArea parent; /**< Parent instance has to be the first attribute */
+    GtkFixed parent; /**< Parent instance has to be the first attribute */
     AwDrawingAreaPrivate *prvt;
 };
 
 struct _AwDrawingAreaClass
 {
-    GtkDrawingAreaClass parent_class; /**< Parent class has to be first attribute */
+    GtkFixedClass parent_class; /**< Parent class has to be first attribute */
     
     /**Is called whenever the value of one of the scrollbars changes */
     void (*scroll_value_changed)   (AwDrawingArea *da);
@@ -68,6 +69,10 @@ void aw_drawing_area_set_increments         (AwDrawingArea *area,
                                              gint vertical_page_increment);
 void aw_drawing_area_set_horizontal_slider  (AwDrawingArea *area, gdouble pos);
 void aw_drawing_area_set_vertical_slider    (AwDrawingArea *area, gdouble pos);
+void aw_drawing_area_put                    (AwDrawingArea *area, 
+                                             GtkWidget* widget,
+                                             AW_at* at);
+
 
 GtkAdjustment* aw_drawing_area_get_vertical_adjustment   (AwDrawingArea *area);
 GtkAdjustment* aw_drawing_area_get_horizontal_adjustment (AwDrawingArea *area);

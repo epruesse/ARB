@@ -67,11 +67,6 @@ void AW_window_menu_modes::init(AW_root */*root_in*/, const char *window_name_, 
 
     gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
 
-    // make-it-so:
-    gtk_widget_realize(GTK_WIDGET(prvt->window)); 
-    gtk_widget_realize(GTK_WIDGET(prvt->drawing_area));
-    gtk_widget_realize(GTK_WIDGET(prvt->bottom_area));
-
     prvt->areas[AW_MIDDLE_AREA] = 
         new AW_area_management(this, AW_MIDDLE_AREA, GTK_WIDGET(prvt->drawing_area));
     prvt->areas[AW_BOTTOM_AREA] = 

@@ -18,7 +18,6 @@
 #include "aw_device_click.hxx"  
 #include "aw_device_size.hxx"
 #include "aw_at.hxx"
-#include "aw_at_layout.hxx"
 #include "aw_msg.hxx"
 #include "aw_awar.hxx"
 #include "aw_common.hxx"
@@ -285,7 +284,7 @@ void AW_window::put_with_label(GtkWidget *widget, GtkAlignment* label_alignment)
     }
 
 
-    aw_at_layout_put(prvt->fixed_size_area, hbox, &_at);
+    aw_drawing_area_put(prvt->fixed_size_area, hbox, &_at);
 
     _at.increment_at_commands(hbox_req.width * (2-_at.correct_for_at_center) / 2. + SPACE_BEHIND, 
                                   hbox_req.height + SPACE_BELOW);
@@ -1342,12 +1341,9 @@ void AW_window::init_window(const char *window_name_, const char* window_title,
     } 
 
     // create area for buttons at top ('info area')
-    prvt->fixed_size_area = AW_AT_LAYOUT(aw_at_layout_new());
-    // we want this to have its own GdkWindow
-    gtk_widget_set_has_window(GTK_WIDGET(prvt->fixed_size_area),true);
+    prvt->fixed_size_area = AW_DRAWING_AREA(aw_drawing_area_new());
     prvt->areas[AW_INFO_AREA] = new AW_area_management(this, AW_INFO_AREA, GTK_WIDGET(prvt->fixed_size_area));
     g_signal_connect (prvt->window, "delete_event", G_CALLBACK (close_window_handler), this);
-    
 }
 
 /** 
