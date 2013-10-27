@@ -26,6 +26,11 @@
 // * functions shall use Position/LineVector/Rectangle only
 #endif
 
+// workaround for older GTK 2 versions
+#if GTK_MAJOR_VERSION == 2 && GTK_MINOR_VERSION < 20
+#define gtk_widget_get_realized(widget) GTK_WIDGET_REALIZED(widget)
+#endif
+
 using namespace AW;
 
 struct AW_device_gtk::Pimpl {
