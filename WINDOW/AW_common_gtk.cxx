@@ -163,11 +163,6 @@ GtkWidget  *AW_common_gtk::get_window() const {
     return prvt->window; 
 }
 
-GtkWidget *AW_common_gtk::get_drawing_target() {
-    return prvt->aww->get_area(prvt->area)->get_area();
-} 
-
-
 AW_GC *AW_common_gtk::create_gc() {
     return new AW_GC_gtk(this);
 }

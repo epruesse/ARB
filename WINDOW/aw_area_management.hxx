@@ -88,7 +88,6 @@ public:
     AW_area_management(AW_window*, AW_area, GtkWidget*);
     ~AW_area_management();
 
-    GtkWidget *get_area() const;
     AW_common *get_common() const;
 
     AW_device_gtk *get_screen_device();

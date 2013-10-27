@@ -33,7 +33,6 @@ public:
     AW_GC_gtk       *map_mod_gc(int gc) { return DOWNCAST(AW_GC_gtk*, AW_common::map_mod_gc(gc)); }
 
     GtkWidget  *get_window() const;
-    GtkWidget  *get_drawing_target(); 
 
     void update_cr(cairo_t *cr, int gc, bool use_grey=false);
     PangoFontDescription* get_font(int gc);
