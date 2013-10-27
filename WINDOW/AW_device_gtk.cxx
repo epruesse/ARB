@@ -68,6 +68,7 @@ cairo_t* AW_device_gtk::get_cr(int gc) {
     //set_cr(0);
     // if we have no cr, make a new one
     if (!prvt->cr) {
+        if (!gtk_widget_get_realized(prvt->drawingArea)) return NULL;
         set_cr(gdk_cairo_create(gtk_widget_get_window(prvt->drawingArea)));
     }
 

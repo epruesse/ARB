@@ -25,7 +25,6 @@ void AW_window_simple_menu::init(AW_root */*root_in*/, const char *window_name_,
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(prvt->fixed_size_area), true, true, 0);
     gtk_container_add(GTK_CONTAINER(prvt->window), vbox);
 
-    gtk_widget_realize(GTK_WIDGET(prvt->window));
     g_signal_connect (prvt->window, "delete-event", G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
     AW_insert_default_help_entries(this);

@@ -48,7 +48,6 @@ AW_action.o: aw_action.hxx
 AW_action.o: aw_area_management.hxx
 AW_action.o: aw_assert.hxx
 AW_action.o: aw_at.hxx
-AW_action.o: aw_at_layout.hxx
 AW_action.o: aw_base.hxx
 AW_action.o: aw_cb_struct.hxx
 AW_action.o: aw_clipable.hxx
@@ -261,15 +260,6 @@ AW_at.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_at.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_at.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_at.o: $(ARBHOME)/INCLUDE/ttypes.h
-
-AW_at_layout.o: aw_assert.hxx
-AW_at_layout.o: aw_at.hxx
-AW_at_layout.o: aw_at_layout.hxx
-AW_at_layout.o: aw_base.hxx
-AW_at_layout.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AW_at_layout.o: $(ARBHOME)/INCLUDE/arb_core.h
-AW_at_layout.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_at_layout.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_awar.o: aw_action.hxx
 AW_awar.o: aw_area_management.hxx
@@ -714,6 +704,8 @@ AW_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_dialog.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_drawing_area.o: aw_assert.hxx
+AW_drawing_area.o: aw_at.hxx
+AW_drawing_area.o: aw_base.hxx
 AW_drawing_area.o: aw_drawing_area.hxx
 AW_drawing_area.o: aw_gtk_closures.hxx
 AW_drawing_area.o: aw_gtk_forward_declarations.hxx
@@ -1530,7 +1522,6 @@ AW_window.o: aw_action.hxx
 AW_window.o: aw_area_management.hxx
 AW_window.o: aw_assert.hxx
 AW_window.o: aw_at.hxx
-AW_window.o: aw_at_layout.hxx
 AW_window.o: aw_awar.hxx
 AW_window.o: aw_base.hxx
 AW_window.o: aw_cb_struct.hxx
@@ -1592,7 +1583,6 @@ AW_window_gtk.o: aw_action.hxx
 AW_window_gtk.o: aw_area_management.hxx
 AW_window_gtk.o: aw_assert.hxx
 AW_window_gtk.o: aw_at.hxx
-AW_window_gtk.o: aw_at_layout.hxx
 AW_window_gtk.o: aw_base.hxx
 AW_window_gtk.o: aw_cb_struct.hxx
 AW_window_gtk.o: aw_clipable.hxx
@@ -1647,7 +1637,6 @@ AW_window_menu_modes.o: aw_action.hxx
 AW_window_menu_modes.o: aw_area_management.hxx
 AW_window_menu_modes.o: aw_assert.hxx
 AW_window_menu_modes.o: aw_at.hxx
-AW_window_menu_modes.o: aw_at_layout.hxx
 AW_window_menu_modes.o: aw_awar.hxx
 AW_window_menu_modes.o: aw_base.hxx
 AW_window_menu_modes.o: aw_cb_struct.hxx
@@ -1705,7 +1694,6 @@ AW_window_simple.o: aw_action.hxx
 AW_window_simple.o: aw_area_management.hxx
 AW_window_simple.o: aw_assert.hxx
 AW_window_simple.o: aw_at.hxx
-AW_window_simple.o: aw_at_layout.hxx
 AW_window_simple.o: aw_base.hxx
 AW_window_simple.o: aw_cb_struct.hxx
 AW_window_simple.o: aw_clipable.hxx
@@ -1760,7 +1748,6 @@ AW_window_simple_menu.o: aw_action.hxx
 AW_window_simple_menu.o: aw_area_management.hxx
 AW_window_simple_menu.o: aw_assert.hxx
 AW_window_simple_menu.o: aw_at.hxx
-AW_window_simple_menu.o: aw_at_layout.hxx
 AW_window_simple_menu.o: aw_base.hxx
 AW_window_simple_menu.o: aw_cb_struct.hxx
 AW_window_simple_menu.o: aw_clipable.hxx
