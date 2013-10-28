@@ -1874,6 +1874,7 @@ rac_arb_name_server:	na
 rac_arb_convert_aln:	convert
 rac_arb_treegen:	tg
 rac_arb_rnacma:		cma
+rac_arb_help2xml:	help
 
 rac_arb_a2ps:		tools
 rac_arb_consensus_tree:	tools
