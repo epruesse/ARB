@@ -2410,7 +2410,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
     if (!error) {
         O_gbdByKey *gbk = g_b_opti_createGbdByKey(Main);
-        int idx;
+        int         idx = -1;
 
         printf("Creating dictionaries..\n");
 
@@ -2436,7 +2436,6 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
         {
             GB_DICTIONARY *dict;
-            int            compression_mask;
             GB_CSTR        key_name = Main->keys[idx].key;
             GBDATA        *gb_main  = Main->gb_main();
 
@@ -2453,7 +2452,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
             GB_TYPES type = gbk[idx].gbds[0]->type();
 
             GB_begin_transaction(gb_main);
-            compression_mask = gb_get_compression_mask(Main, idx, type);
+            int compression_mask = gb_get_compression_mask(Main, idx, type);
             GB_commit_transaction(gb_main);
 
             if ((compression_mask & GB_COMPRESSION_DICTIONARY) == 0) continue; // compression with dictionary is not allowed

@@ -226,7 +226,7 @@ static char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const 
         char   *generated_id  = (char*)malloc(strlen(default_id)+20);
         size_t  min_num = 1;
 
-#define GENERATE_ID(num) sprintf(generated_id, "%s%zi", default_id, num);
+#define GENERATE_ID(num) sprintf(generated_id, "%s%zu", default_id, num);
 
         GENERATE_ID(min_num);
         gb_item = GBT_find_item_rel_item_data(gb_item_container, id_field, generated_id);
