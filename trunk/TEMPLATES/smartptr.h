@@ -224,6 +224,7 @@ public:
     ~SmartPtr() { Unbind(); }
 
     SmartPtr(const SmartPtr<T, C>& other) {
+        // cppcheck-suppress copyCtorPointerCopying (that's exactly what a SmartPtr is made for)
         object = other.object;
         if (object) object->new_reference();
     }
