@@ -212,6 +212,11 @@ sub main() {
   my $dir = `pwd`;
   chomp($dir);
 
+  if (not defined $ENV{LINK_STATIC}) {
+    print "Warning: LINK_STATIC not defined (assuming 0 - which is wrong for OSX)\n";
+    $ENV{LINK_STATIC} = '0'; # wrong for OSX
+  }
+
   my $UNIT_TESTS = config2env();
 
   if (not $dir =~ /^$ARBHOME/) {

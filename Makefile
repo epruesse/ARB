@@ -1886,6 +1886,7 @@ rac_arb_name_server:	na
 rac_arb_convert_aln:	convert
 rac_arb_treegen:	tg
 rac_arb_rnacma:		cma
+rac_arb_probe:		tools
 
 # --------------------------------------------------------------------------------
 # unit testing 
