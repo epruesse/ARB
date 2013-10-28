@@ -187,7 +187,7 @@ void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
     cairo_set_line_width(cr, awgc->get_line_width());
 
     // set line style
-    const double dotted[] = {1.0};
+    const double dotted[] = {2.0}; // 1px dots merge into line using aa
     const double dashed[] = {8.0, 3.0};
     switch (awgc->get_line_style()) {
         case AW_SOLID:
