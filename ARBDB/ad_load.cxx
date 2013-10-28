@@ -1074,7 +1074,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
                         map_fail_reason = "modification times of DB and fastload file differ (too much)";
                     }
                     else {
-                        fprintf(stderr, "(accepting modification time difference of %li seconds)\n", diff);
+                        fprintf(stderr, "(accepting modification time difference of %lu seconds)\n", diff);
                     }
                 }
 
@@ -1411,6 +1411,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                         }
                         else {
                             freeset(path, found_path);
+                            // cppcheck-suppress deallocuse (false positive; path is reassigned to non-NULL above)
                             input = fopen(path, "rb");
                         }
                     }
