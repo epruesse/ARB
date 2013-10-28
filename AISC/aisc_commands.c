@@ -683,7 +683,6 @@ int Interpreter::do_for(const char *str) {
                         fd.forstr = strdup(ident);
                     }
                 }
-                // cppcheck-suppress memleak (fd.forstr is released from Interpreter::do_next)
             }
         }
         else {
@@ -697,7 +696,6 @@ int Interpreter::do_for(const char *str) {
                 fd.forstr    = strdup(p ? p+1 : ident);
                 fd.forcursor = data.get_cursor();
                 data.set_cursor(fo);
-                // cppcheck-suppress memleak (fd.forstr is released from Interpreter::do_next)
             }
             err = 0;
         }

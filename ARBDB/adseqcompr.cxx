@@ -113,7 +113,6 @@ static void g_b_Consensus_add(Consensus *gcon, unsigned char *seq, long seq_len)
         }
     }
     if (li<seq_len) {
-        // cppcheck-suppress unreadVariable
         c = last;
         i = seq_len;
         goto inc_hits;

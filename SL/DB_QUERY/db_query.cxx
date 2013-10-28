@@ -2156,12 +2156,10 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
 
     dbq_assert(contradicted(query, sel));
 
-    // cppcheck-suppress nullPointer
     if (query) {
         dbq_assert(mode == COLORIZE_INVALID);
         mode = COLORIZE_LISTED;
     }
-    // cppcheck-suppress nullPointer
     if (sel) {
         dbq_assert(mode == COLORIZE_INVALID);
         mode = COLORIZE_MARKED;

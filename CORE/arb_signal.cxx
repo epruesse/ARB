@@ -97,7 +97,6 @@ GB_ERROR GBK_test_address(long *address, long key) {
 }
 
 bool GBK_running_on_valgrind() {
-    // cppcheck-suppress unreachableCode
     return RUNNING_ON_VALGRIND>0;
 }
 
@@ -115,7 +114,6 @@ bool GBK_raises_SIGSEGV(void (*cb)(void)) {
     // start of critical section
     // (need volatile for modified local auto variables, see man longjump)
     {
-        // cppcheck-suppress variableScope
         volatile int trapped;
         {
             volatile SuppressOutput toConsole;           // comment-out this line to show console output of 'cb'

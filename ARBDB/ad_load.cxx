@@ -64,7 +64,6 @@ static int is_a_unused_reading_buffer(ReadingBuffer *rb) {
 #endif // CHECK_RELEASED_BUFFERS
 
 static ReadingBuffer *allocate_ReadingBuffer() {
-    // cppcheck-suppress mismatchSize
     ReadingBuffer *rb = (ReadingBuffer*)malloc(sizeof(*rb)+READING_BUFFER_SIZE);
     rb->data          = ((char*)rb)+sizeof(*rb);
     rb->next          = 0;
@@ -1385,7 +1384,6 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
         else {
             int read_from_stdin = strcmp(path, "-") == 0;
 
-            // cppcheck-suppress variableScope (cannot change due to goto-bypass)
             GB_ULONG time_of_main_file = 0; long i;
 
             Main->mark_as_server();
