@@ -48,19 +48,22 @@ class BasicStatus : virtual Noncopyable {
 
     time_t start;
 
+    void reset() {
+        printed  = 0;
+        cursor   = NULL;
+        subtitle = NULL;
+        time(&start);
+    }
+
 public:
-    BasicStatus() : openCount(0) { time(&start); }
+    BasicStatus() : openCount(0) { reset(); }
     ~BasicStatus() { if (openCount) close(); }
 
     void open(const char *title) {
         arb_assert(++openCount <= 1);
-        
-        fprintf(arbout, "Progress: %s\n", title);
-        printed  = 0;
-        cursor   = NULL;
-        subtitle = NULL;
 
-        time(&start);
+        fprintf(arbout, "Progress: %s\n", title);
+        reset();
     }
     void close() {
         freenull(subtitle);

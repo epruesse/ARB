@@ -189,6 +189,7 @@ inline void GBT_split_string(ConstStrArray& dest, const char *namelist, const ch
 inline void GBT_split_string(ConstStrArray& dest, const char *namelist, char separator) {
     char *dup = strdup(namelist);
     GBT_splitNdestroy_string(dest, dup, separator);
+    // cppcheck-suppress memleak (GBT_splitNdestroy_string takes ownership of 'dup')
 }
 
 char *GBT_join_names(const CharPtrArray& names, char separator);

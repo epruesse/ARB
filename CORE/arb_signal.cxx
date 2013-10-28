@@ -114,6 +114,7 @@ bool GBK_raises_SIGSEGV(void (*cb)(void)) {
     // start of critical section
     // (need volatile for modified local auto variables, see man longjump)
     {
+        // cppcheck-suppress variableScope (false positive)
         volatile int trapped;
         {
             volatile SuppressOutput toConsole;           // comment-out this line to show console output of 'cb'
