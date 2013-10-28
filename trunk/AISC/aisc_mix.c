@@ -26,23 +26,23 @@ static Code *aisc_calc_blocks(Code * co, Code * afor, Code * aif, int up) {
         co->IF = aif;
         co->FOR = afor;
         switch (co->command) {
-            case NEXT:
+            case CT_NEXT:
                 if (!co->FOR) print_error(co, "NEXT without FOR");
                 return co;
-            case ENDFOR:
+            case CT_ENDFOR:
                 if (!co->FOR) print_error(co, "ENDFOR without FOR");
                 return co;
-            case ELSE:
+            case CT_ELSE:
                 if (!co->IF) print_error(co, "ELSE without IF");
                 return co;
-            case ELSEIF:
+            case CT_ELSEIF:
                 if (!co->IF) print_error(co, "ELSEIF without IF");
                 return co;
-            case ENDIF:
+            case CT_ENDIF:
                 if (!co->IF) print_error(co, "ENDIF without IF");
                 return co;
 
-            case IF:
+            case CT_IF:
                 oif = aif;
                 aif = co;
                 co  = aisc_calc_blocks(co->next, afor, aif, 0);
@@ -50,7 +50,7 @@ static Code *aisc_calc_blocks(Code * co, Code * afor, Code * aif, int up) {
                     print_error(aif, "IF without ELSE or ENDIF");
                     return 0;
                 }
-                if (co->command == ELSE) {
+                if (co->command == CT_ELSE) {
                     aif->ELSE=co;
                     aelse = co;
                     co = aisc_calc_blocks(co->next, afor, aif, 0);
@@ -58,7 +58,7 @@ static Code *aisc_calc_blocks(Code * co, Code * afor, Code * aif, int up) {
                         print_error(aif, "ELSE without ENDIF");
                         return 0;
                     }
-                    if  (co->command!=ENDIF) {
+                    if  (co->command!=CT_ENDIF) {
                         print_error(aif, "ELSE without ENDIF");
                         print_error(co, "<detected here>");
                         return 0;
@@ -67,10 +67,10 @@ static Code *aisc_calc_blocks(Code * co, Code * afor, Code * aif, int up) {
                     aelse->ENDIF=co;
                     if (up) return co;
                 }
-                else if (co->command == ELSEIF) {
+                else if (co->command == CT_ELSEIF) {
                     Code *co_if    = new Code(*co);
-                    co_if->command = IF;   // when jumped to (from prev failed IF, act like IF)
-                    co->command    = ELSE; // when running into, act like else
+                    co_if->command = CT_IF;   // when jumped to (from prev failed IF, act like IF)
+                    co->command    = CT_ELSE; // when running into, act like else
                     co ->next      = co_if;
                     freenull(co->str);
                     aif->ELSE = co;
@@ -80,19 +80,19 @@ static Code *aisc_calc_blocks(Code * co, Code * afor, Code * aif, int up) {
                         print_error(aif->ELSE, "ELSEIF without ENDIF or ELSE");
                         return 0;
                     }
-                    if  (co->command!=ENDIF) {
+                    if  (co->command!=CT_ENDIF) {
                         print_error(aif->ELSE, "ELSEIF without ENDIF");
                         print_error(co, "<detected here>");
                         return 0;
                     }
-                    aif->ENDIF=co;
-                    co_if->ENDIF=co;
-                    aelse->ENDIF=co;
+                    aif->ENDIF   = co;
+                    co_if->ENDIF = co;
+                    aelse->ENDIF = co;
                     if (up) return co;
                 }
-                else if (co->command == ENDIF) {
-                    aif->ELSE=co;
-                    aif->ENDIF=co;
+                else if (co->command == CT_ENDIF) {
+                    aif->ELSE  = co;
+                    aif->ENDIF = co;
                     if (up) return co;
                 }
                 else {
@@ -102,7 +102,7 @@ static Code *aisc_calc_blocks(Code * co, Code * afor, Code * aif, int up) {
                 }
                 aif = oif;
                 break;
-            case FOR:
+            case CT_FOR:
                 ofor = afor;
                 afor = co;
                 co = aisc_calc_blocks(co->next, afor, aif, 0);
@@ -110,7 +110,7 @@ static Code *aisc_calc_blocks(Code * co, Code * afor, Code * aif, int up) {
                     print_error(afor, "FOR without NEXT or ENDFOR");
                     return 0;
                 }
-                if (co->command == NEXT) {
+                if (co->command == CT_NEXT) {
                     afor->NEXT=co;
                     anext = co;
                     co = aisc_calc_blocks(co->next, afor, aif, 0);
@@ -118,19 +118,19 @@ static Code *aisc_calc_blocks(Code * co, Code * afor, Code * aif, int up) {
                         print_error(afor->NEXT, "NEXT without ENDFOR");
                         return 0;
                     }
-                    if  (co->command!=ENDFOR) {
+                    if  (co->command!=CT_ENDFOR) {
                         print_error(afor->NEXT, "NEXT without ENDFOR");
                         print_error(co, "<detected here>");
                         return 0;
                     }
-                    afor->ENDFOR=co;
-                    anext->ENDFOR=co;
+                    afor->ENDFOR  = co;
+                    anext->ENDFOR = co;
 
                 }
-                else if (co->command == ENDFOR) {
-                    afor->ENDFOR=co;
-                    afor->NEXT=co;
-                    co->command = NEXT;
+                else if (co->command == CT_ENDFOR) {
+                    afor->ENDFOR = co;
+                    afor->NEXT   = co;
+                    co->command  = CT_NEXT;
                 }
                 else {
                     print_error(afor, "FOR without NEXT or ENDFOR");
@@ -150,16 +150,16 @@ static Code *aisc_calc_blocks(Code * co, Code * afor, Code * aif, int up) {
 
 int Interpreter::compile_program() {
     for (Code *co=prg; co; co=co->next) {
-        if (!strncmp(co->str, "IF", 2))     { co->set_command(IF, co->str+2); continue; }
-        if (!strncmp(co->str, "ELSEIF", 6)) { co->set_command(ELSEIF, co->str+6); continue; }
-        if (!strncmp(co->str, "ELSE", 4))   { co->set_command(ELSE, co->str+4); continue; }
-        if (!strncmp(co->str, "ENDIF", 5))  { co->set_command(ENDIF, co->str+5); continue; }
-        if (!strncmp(co->str, "FOR", 3))    { co->set_command(FOR, co->str+3); continue; }
-        if (!strncmp(co->str, "ENDFOR", 6)) { co->set_command(ENDFOR, co->str+6); continue; }
-        if (!strncmp(co->str, "NEXT", 4))   { co->set_command(NEXT, co->str+4); continue; }
+        if (!strncmp(co->str, "IF", 2))     { co->set_command(CT_IF, co->str+2); continue; }
+        if (!strncmp(co->str, "ELSEIF", 6)) { co->set_command(CT_ELSEIF, co->str+6); continue; }
+        if (!strncmp(co->str, "ELSE", 4))   { co->set_command(CT_ELSE, co->str+4); continue; }
+        if (!strncmp(co->str, "ENDIF", 5))  { co->set_command(CT_ENDIF, co->str+5); continue; }
+        if (!strncmp(co->str, "FOR", 3))    { co->set_command(CT_FOR, co->str+3); continue; }
+        if (!strncmp(co->str, "ENDFOR", 6)) { co->set_command(CT_ENDFOR, co->str+6); continue; }
+        if (!strncmp(co->str, "NEXT", 4))   { co->set_command(CT_NEXT, co->str+4); continue; }
         
         if (!strncmp(co->str, "LABEL", 5)) {
-            co->set_command(LABEL, co->str+5);
+            co->set_command(CT_LABEL, co->str+5);
             define_fun(co->str, co);
             continue;
         }
@@ -167,7 +167,7 @@ int Interpreter::compile_program() {
             char *buf1, *buf2;
             char *s, *s2;
             buf1 = co->str+8;
-            co->command = FUNCTION;
+            co->command = CT_FUNCTION;
             SKIP_SPACE_LF(buf1);
             for (s=buf1; !is_SPACE_SEP_LF_EOS(*s); s++) ;
             if (*s) {
@@ -187,7 +187,7 @@ int Interpreter::compile_program() {
             continue;
         }
 
-        co->command = OTHER_CMD;
+        co->command = CT_OTHER_CMD;
         co->cmd     = find_command(co);
     }
 
@@ -219,7 +219,7 @@ hash::~hash() {
     free(entries);
 }
 
-int hash::index(const char *key) const {
+int hash::Index(const char *key) const {
     const char *p = key;
     int         x = 1;
     char        c;
@@ -240,7 +240,7 @@ const hash_entry *hash::find_entry(const char *key, int idx) const {
 }
 
 void hash::write(const char *key, const char *val) {
-    int         idx = index(key);
+    int         idx = Index(key);
     hash_entry *e   = find_entry(key, idx);
     if (e) {
         freeset(e->val, nulldup(val));
