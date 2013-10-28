@@ -77,11 +77,15 @@ cairo_t* AW_device_gtk::get_cr(int gc) {
         set_cr(gdk_cairo_create(gtk_widget_get_window(prvt->drawingArea)));
     }
 
+    /*
+      // doesn't work ... gc may have changed in the mean time
     if (gc != prvt->last_gc) {
         // update with settings from gc
         get_common()->update_cr(prvt->cr, gc, false);
         prvt->last_gc = gc;
     }
+    */
+    get_common()->update_cr(prvt->cr, gc, false);
 
     return prvt->cr;
 }
