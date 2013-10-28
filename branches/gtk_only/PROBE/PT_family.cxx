@@ -345,7 +345,7 @@ class oligo_comparator {
     int oligo_len;
 public:
     oligo_comparator(int len) : oligo_len(len) {}
-    bool operator()(const char *p1, const char *p2) {
+    bool operator()(const char *p1, const char *p2) const {
         bool isless = false;
         for (int o = 0; o<oligo_len; ++o) {
             if (p1[o] != p2[o]) {
