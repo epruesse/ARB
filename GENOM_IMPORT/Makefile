@@ -114,7 +114,7 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/arb_diff.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_error.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_file.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_msg.h
-GenomeImport.o: $(ARBHOME)/INCLUDE/arb_str.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/arb_stdstr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_string.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arbdb.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -150,7 +150,7 @@ Importer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_core.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_error.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_msg.h
-Importer.o: $(ARBHOME)/INCLUDE/arb_str.h
+Importer.o: $(ARBHOME)/INCLUDE/arb_stdstr.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_string.h
 Importer.o: $(ARBHOME)/INCLUDE/arbdb.h
 Importer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
