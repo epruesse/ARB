@@ -9,7 +9,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a

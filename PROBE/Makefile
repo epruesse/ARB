@@ -23,7 +23,7 @@ $(MAIN): $(OBJECTS)
 	$(A_CC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 .cxx.o:
-	$(A_CXX) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -G -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) probe_tree.h >pt_prototypes.h.tmp

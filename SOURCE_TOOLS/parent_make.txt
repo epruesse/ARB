@@ -15,6 +15,9 @@ Short description of most important variables passed from parent makefiles:
       A_CC                C-compiler
       A_CXX               C++-compiler
 
+      cflags              C-compiler flags
+      cxxflags            additional C++-compiler flags (should be used together with cflags!)
+
       ACCLIB              \ same as above containg any specials needed
       CPPLIB              / to compile objects used in a shared library
 

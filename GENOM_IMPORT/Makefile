@@ -16,7 +16,7 @@ $(MAIN): $(CPP_OBJECTS)
 	)
 
 .cxx.o:
-	$(A_CXX) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 .c.o:
 	$(A_CC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)

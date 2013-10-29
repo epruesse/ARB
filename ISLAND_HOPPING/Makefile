@@ -23,7 +23,7 @@ $(MAIN): $(CPP_OBJECTS)
 .c.o:
 	$(A_CC) $(LOCAL_CFLAGS) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(A_CXX) $(LOCAL_CFLAGS) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(LOCAL_CFLAGS) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a

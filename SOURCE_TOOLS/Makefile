@@ -10,7 +10,7 @@ all:
 OBJECTS=arb_main_cpp.o arb_main_c.o
 
 arb_main_cpp.o: arb_main.cxx Makefile
-	$(A_CXX) $(cflags) -c $< -o $@ $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) -c $< -o $@ $(CPPINCLUDES) $(POST_COMPILE)
 
 arb_main_c.o: arb_main.c arb_main.cxx Makefile
 	$(A_CC) $(cflags) -c $< -o $@ $(CPPINCLUDES) $(POST_COMPILE)

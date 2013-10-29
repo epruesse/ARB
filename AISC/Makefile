@@ -7,17 +7,16 @@ OBJECTS = $(subst .c,.o,$(SOURCES))
 BINARY=aisc
 
 LOCAL_DEFINES=-DSIMPLE_ARB_ASSERT
-LOCAL_CFLAGS=$(cflags) $(LOCAL_DEFINES)
 LOCAL_MAKEDEPENDFLAGS=$(MAKEDEPENDFLAGS) $(LOCAL_DEFINES)
 
 $(MAIN): proto
 	$(MAKE) $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	$(A_CXX) $(LOCAL_CFLAGS) -o $@ $(OBJECTS)
+	$(LINK_EXECUTABLE) $@ $(OBJECTS) 
 
 .c.o:
-	$(A_CXX) -x c++ $(LOCAL_CFLAGS) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CXX) -x c++ $(cxxflags) $(cflags) $(LOCAL_DEFINES) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)

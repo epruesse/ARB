@@ -13,7 +13,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) -c $< $(EXTENDED_CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) -c $< $(EXTENDED_CPPINCLUDES) $(POST_COMPILE)
 
 .c.o:
 	$(A_CC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
