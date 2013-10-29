@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
 CPP_OBJECTS =  PARS_main.o PARS_dtree.o PARS_debug.o PARS_klprops.o AP_buffer.o AP_main.o AP_tree_nlen.o AP_tree_edge.o
 

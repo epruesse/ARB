@@ -2,6 +2,7 @@
 #
 # --------------------------------------------------------------------------------
 # variables listed here are automatically exported to sub-makefiles
+# documentation for single variables can be found in ../SOURCE_TOOLS/parent_make.txt
 
 export ARBHOME
 

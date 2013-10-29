@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .c .depend
 
