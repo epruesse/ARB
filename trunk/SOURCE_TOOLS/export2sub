@@ -19,6 +19,8 @@ export DARWIN
 
 export A_CC ACCLIB AINCLUDES
 export A_CXX CPPLIB CPPINCLUDES
+export cflags cxxflags
+
 export POST_COMPILE
 
 export LD_LIBRARY_PATH LIBPATH SYSLIBS

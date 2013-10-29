@@ -6,7 +6,7 @@ $(MAIN): $(OBJECTS)
 .c.o:
 	$(A_CC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(A_CXX) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -w servercntrl.h $(OBJECTS:.o=.cxx) >servercntrl.h.tmp

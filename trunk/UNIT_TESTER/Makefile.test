@@ -111,7 +111,7 @@ $(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test
 	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $< $@ $(WARN_LEVEL)
 
 $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
-	$(A_CXX) $(cflags) -c $< -o $@ -I. $(POST_COMPILE) 
+	$(A_CXX) $(cxxflags) $(cflags) -c $< -o $@ -I. $(POST_COMPILE) 
 
 $(TEST_EXE) : $(TEST_OBJ) $(UNIT_TESTER_LIB) $(LINKDEPS)
 	$(LINK_EXECUTABLE) $@ $< $(UNIT_TESTER_LIB) -L../lib $(LINKLIST) $(EXECLIBS)
