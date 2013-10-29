@@ -18,9 +18,6 @@ $(LIB_SHARED): $(OBJECTS)
 .cxx.o:
 	$(CPPLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
-.c.o:
-	$(ACCLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
-
 clean:
 	rm -f $(OBJECTS) *.a *.so
 
