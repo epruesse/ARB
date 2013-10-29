@@ -430,7 +430,6 @@ endif
 
 A_CC:=$(GCC)# compile C
 A_CXX:= $(GPP)# compile C++
-CPPLIB := $(A_CXX) $(cxxflags) $(shared_cflags)# compile C++ (shared libs)
 
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
 LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
@@ -633,7 +632,6 @@ check_TOOLS:
 	@util/arb_check_build_env.pl \
 		"$(A_CC)" \
 		"$(A_CXX)" \
-		"$(CPPLIB)" \
 		"$(MAKEDEPEND_PLAIN)" \
 		"$(LINK_SHARED_LIB)" \
 		"$(LINK_SHARED_LIB)" \
