@@ -140,7 +140,7 @@ _AW_gc_manager::_AW_gc_manager(const char* name, AW_device* device_,
       device(device_),
       drag_gc_offset(drag_gc_offset_)
 {
-    AW_root::SINGLETON->awar_int(_aa_awar_name(name), AW_AA_DEFAULT)
+    AW_root::SINGLETON->awar_int(_aa_awar_name(name), AW_AA_NONE)
         ->add_callback(makeRootCallback(aw_update_aa_setting, this));
 }
 
