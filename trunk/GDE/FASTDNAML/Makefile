@@ -6,10 +6,10 @@ TARGET = $(ARBHOME)/bin/fastdnaml
 all : $(TARGET)
 
 $(TARGET) : $(OBJECT)
-	$(ACC) $(cflags) -o $@ $< -lm
+	$(A_CC) $(cflags) -o $@ $< -lm
 
 .c.o:
-	$(ACC) $(cflags) -c -o $@ $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c -o $@ $< $(AINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECT) $(TARGET)

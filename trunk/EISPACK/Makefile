@@ -12,7 +12,7 @@ clean:
 	rm -f $(CPP_OBJECTS) *.a
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)

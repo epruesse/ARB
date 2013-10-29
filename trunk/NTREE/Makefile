@@ -18,7 +18,7 @@ proto:
 	../SOURCE_TOOLS/mv_if_diff NT_cb.h.tmp NT_cb.h
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a

@@ -14,10 +14,10 @@ BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
 all: $(BINARIES)
 
 %.o: %.cxx 
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 %.o: %.c
-	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 $(ARBHOME)/bin/%: %.o
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIB_ARBDB) $(EXECLIBS)

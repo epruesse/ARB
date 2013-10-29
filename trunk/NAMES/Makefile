@@ -4,9 +4,9 @@ OBJECTS = names.o
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a

@@ -4,7 +4,7 @@
 
 CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
-cma_CPP:= $(CPP)
+cma_CPP:= $(A_CXX)
 cma_cflags:= $(cflags)
 
 SUPPRESS_WARNINGS=1# set to 0 to show warnings
