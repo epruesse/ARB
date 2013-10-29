@@ -37,7 +37,7 @@ Location.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Location.o: $(ARBHOME)/INCLUDE/arb_core.h
 Location.o: $(ARBHOME)/INCLUDE/arb_error.h
 Location.o: $(ARBHOME)/INCLUDE/arb_msg.h
-Location.o: $(ARBHOME)/INCLUDE/arb_str.h
+Location.o: $(ARBHOME)/INCLUDE/arb_stdstr.h
 Location.o: $(ARBHOME)/INCLUDE/arb_string.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb_base.h
