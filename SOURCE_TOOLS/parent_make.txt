@@ -12,8 +12,8 @@ export2sub.  Currently these export2sub exist:
 
 Short description of most important variables passed from parent makefiles:
 
-      ACC                 C-compiler
-      CPP                 C++-compiler
+      A_CC                C-compiler
+      A_CXX               C++-compiler
 
       ACCLIB              \ same as above containg any specials needed
       CPPLIB              / to compile objects used in a shared library

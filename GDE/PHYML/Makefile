@@ -24,7 +24,7 @@ else
 # ----------------------------------------
 # compilation together with ARB
 
-CC     = $(ACC)
+CC     = $(A_CC)
 CFLAGS = $(cflags) -fomit-frame-pointer
 EXEC   = $(ARBHOME)/bin/phyml
 

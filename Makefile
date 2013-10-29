@@ -429,10 +429,10 @@ endif
 
 # compiler settings:
 
-ACC := $(GCC)# compile C
-CPP := $(GPP) $(cppflags)# compile C++
-ACCLIB := $(ACC) $(shared_cflags)# compile C (shared libs)
-CPPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
+A_CC:=$(GCC)# compile C
+A_CXX:= $(GPP) $(cppflags)# compile C++
+ACCLIB := $(A_CC) $(shared_cflags)# compile C (shared libs)
+CPPLIB := $(A_CXX) $(shared_cflags)# compile C++ (shared libs)
 
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
 LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
@@ -633,8 +633,8 @@ endif
 
 check_TOOLS:
 	@util/arb_check_build_env.pl \
-		"$(ACC)" \
-		"$(CPP)" \
+		"$(A_CC)" \
+		"$(A_CXX)" \
 		"$(GPP)" \
 		"$(GCC)" \
 		"$(ACCLIB)" \

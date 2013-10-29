@@ -16,10 +16,10 @@ $(MAIN): $(CPP_OBJECTS)
 	)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	-rm -f *.[ao] *.bak *~

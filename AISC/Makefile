@@ -14,10 +14,10 @@ $(MAIN): proto
 	$(MAKE) $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	$(CPP) $(LOCAL_CFLAGS) -o $@ $(OBJECTS)
+	$(A_CXX) $(LOCAL_CFLAGS) -o $@ $(OBJECTS)
 
 .c.o:
-	$(CPP) -x c++ $(LOCAL_CFLAGS) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CXX) -x c++ $(LOCAL_CFLAGS) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
