@@ -18,9 +18,9 @@ use arb_common;
 WriteMakefile(
               'NAME'         => $arb_common::name,
               'VERSION_FROM' => $arb_common::version_from,
-              'CC'           => 'g++',
+              'CC'           => $ENV{'A_CXX'},
               'CCFLAGS'      => $cflags,
-              'LD'           => 'g++ '.$lflags,
+              'LD'           => $ENV{'A_CXX'}.' '.$lflags,
               'DEFINE'       => '',
               'INC'          => $arb_common::inc,
               'LIBS'         => $arb_common::libs,

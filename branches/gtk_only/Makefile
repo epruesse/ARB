@@ -10,6 +10,9 @@
 # -----------------------------------------------------
 # The ARB Makefile is aware of the following defines:
 #
+# CC                    C compiler (should be defined by OS)
+# CXX                   C++ compiler (should be defined by OS)
+#
 # BUILDHOST_64=0/1      1=>compile on 64 bit platform (defaults to ARB_64)
 # DEVELOPER=name        special compilation (values: ANY,RELEASE,your name)
 # OPENGL=0/1            whether OPENGL is available
@@ -37,6 +40,10 @@
 # Read configuration 
 include config.makefile
 
+# compiler settings:
+A_CC:=$(CC)# compile C
+A_CXX:=$(CXX)# compile C++
+
 ifeq ($(LD_LIBRARY_PATH),'')
 LD_LIBRARY_PATH:=${ARBHOME}/lib
 endif
@@ -46,13 +53,6 @@ NODIR=--no-print-directory
 
 SED:=$(ARBHOME)/SH/arb_sed
 READLINK:=$(ARBHOME)/SH/arb_readlink
-
-# ---------------------- [basic compiler setting]
-
-GCC ?= $(CC)
-GPP ?= $(CXX)
-export GCC
-export GPP
 
 # ---------------------- compiler version detection
 
@@ -69,7 +69,7 @@ ALLOWED_GCC_4xx_VERSIONS=\
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
-GCC_VERSION_FOUND=$(shell SOURCE_TOOLS/arb_gcc_version.pl)
+GCC_VERSION_FOUND=$(shell SOURCE_TOOLS/arb_gcc_version.pl $(A_CXX))
 GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
 
 #---------------------- split gcc version 
@@ -439,21 +439,19 @@ cxxflags += -std=gnu++0x
  endif
 endif
 
-# compiler settings:
-
-A_CC:=$(GCC)# compile C
-A_CXX:= $(GPP)# compile C++
-
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
-LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
+LINK_EXECUTABLE := $(A_CXX) $(lflags) $(cdynamic) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(GPP) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(A_CXX) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
 endif
+
+# delete variables unused below
+lflags:=
 
 # other used tools
 MAKEDEPEND_PLAIN = makedepend
@@ -464,22 +462,6 @@ SEP=[`date +%M:%S.%N`] ------------------------------------------------
 # to analyse timings run
 # make -j9 clean; make -j9 all  | grep '^\[' | sort
 # make -j9 "TIMED_TARGET=perl" clean_timed_target | grep '^\[' | sort
-
-
-
-# delete variables unused below
-
-lflags:=
-
-GCC_WITH_VTABLE_AFTER_CLASS=#occurred only with no longer supported $(ALLOWED_GCC_295_VERSIONS)
-HAVE_GCC_WITH_VTABLE_AFTER_CLASS=$(strip $(foreach version,$(GCC_WITH_VTABLE_AFTER_CLASS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
-
-# depending on the version of gcc the location of the vtable pointer differs.
-ifeq ('$(HAVE_GCC_WITH_VTABLE_AFTER_CLASS)', '')
-VTABLE_INFRONTOF_CLASS=1
-else
-VTABLE_INFRONTOF_CLASS=0
-endif
 
 CORE_LIB=-lCORE
 ARBDB_LIB=-lARBDB $(CORE_LIB)
@@ -503,14 +485,12 @@ AINCLUDES := -I. -I$(ARBHOME)/INCLUDE
 CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
-ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # Some code in ARB depends on the location of the vtable pointer
 # (it does a cast from class AP_tree to struct GBT_TREE). In order to
 # work around that hack properly, we define FAKE_VTAB_PTR
 # if the vtable is located at the beginning of class.
 # We are really sorry for that hack.
 cflags:=$(cflags) -DFAKE_VTAB_PTR=char
-endif
 
 # ------------------------------- 
 #     old PTSERVER or PTPAN?
