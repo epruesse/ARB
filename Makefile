@@ -320,8 +320,6 @@ ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
 endif
 #cflags += -save-temps# uncomment to see preprocessor output
 
-
-
 #---------------------- GTK 
 
 ifeq ($(GTK),)
@@ -473,6 +471,85 @@ SEP=[`date +%M:%S.%N`] ------------------------------------------------
 
 lflags:=
 
+GCC_WITH_VTABLE_AFTER_CLASS=#occurred only with no longer supported $(ALLOWED_GCC_295_VERSIONS)
+HAVE_GCC_WITH_VTABLE_AFTER_CLASS=$(strip $(foreach version,$(GCC_WITH_VTABLE_AFTER_CLASS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
+
+# depending on the version of gcc the location of the vtable pointer differs.
+ifeq ('$(HAVE_GCC_WITH_VTABLE_AFTER_CLASS)', '')
+VTABLE_INFRONTOF_CLASS=1
+else
+VTABLE_INFRONTOF_CLASS=0
+endif
+
+CORE_LIB=-lCORE
+ARBDB_LIB=-lARBDB $(CORE_LIB)
+LIBS = $(ARBDB_LIB) $(SYSLIBS)
+
+GUI_LIBS_PREFIX:=
+ifdef DARWIN
+#       this seem to be added at wrong place, since opengl is only needed to link EDIT4 
+        GUI_LIBS_PREFIX:=-framework GLUT -framework OpenGL
+endif
+
+GUI_LIBS=$(GUI_LIBS_PREFIX) $(LIBS) -lAWT -lWINDOW
+GUI_LIBS+=$(GTKLIBS)
+
+LIBPATH = -L$(ARBHOME)/lib
+
+DEST_LIB = lib
+DEST_BIN = bin
+
+AINCLUDES := -I. -I$(ARBHOME)/INCLUDE
+CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE
+MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
+
+ifeq ($(VTABLE_INFRONTOF_CLASS),1)
+# Some code in ARB depends on the location of the vtable pointer
+# (it does a cast from class AP_tree to struct GBT_TREE). In order to
+# work around that hack properly, we define FAKE_VTAB_PTR
+# if the vtable is located at the beginning of class.
+# We are really sorry for that hack.
+cflags:=$(cflags) -DFAKE_VTAB_PTR=char
+endif
+
+# ------------------------------- 
+#     old PTSERVER or PTPAN?
+
+ifeq ($(PTPAN),1)
+# PTPAN only libs
+ARCHS_PT_SERVER = \
+	ptpan/PROBE.a
+else
+ifeq ($(PTPAN),2)
+# special mode to compile both servers (developers only!)
+ARCHS_PT_SERVER = \
+	ptpan/PROBE.a \
+	PROBE/PROBE.a
+ARCHS_PT_SERVER_LINK = PROBE/PROBE.a# default to old ptserver
+else
+# PT-server only libs
+ARCHS_PT_SERVER = \
+	PROBE/PROBE.a
+endif
+endif
+
+ifndef ARCHS_PT_SERVER_LINK
+ARCHS_PT_SERVER_LINK = $(ARCHS_PT_SERVER)
+endif
+
+# ---------------------------------------
+# wrap main()
+
+use_ARB_main=$(ARBHOME)/SOURCE_TOOLS/arb_main_cpp.o
+use_ARB_main_C=$(ARBHOME)/SOURCE_TOOLS/arb_main_c.o
+
+# ----------------------------------------- 
+#     export variables to submakefiles     
+
+include SOURCE_TOOLS/export2sub
+
+# do not define (exported) variables below this point 
+
 # ------------------------- 
 #     Main arb targets:     
 # ------------------------- 
@@ -605,16 +682,6 @@ else
 
 endif
 
-GCC_WITH_VTABLE_AFTER_CLASS=#occurred only with no longer supported $(ALLOWED_GCC_295_VERSIONS)
-HAVE_GCC_WITH_VTABLE_AFTER_CLASS=$(strip $(foreach version,$(GCC_WITH_VTABLE_AFTER_CLASS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
-
-# depending on the version of gcc the location of the vtable pointer differs.
-ifeq ('$(HAVE_GCC_WITH_VTABLE_AFTER_CLASS)', '')
-VTABLE_INFRONTOF_CLASS=1
-else
-VTABLE_INFRONTOF_CLASS=0
-endif
-
 #---------------------- check ARBHOME
 
 # use arb_INSTALL.txt to determine whether ARBHOME points to correct directory
@@ -674,72 +741,6 @@ checks: check_setup check_tabs
 
 
 # end test section ------------------------------
-
-CORE_LIB=-lCORE
-ARBDB_LIB=-lARBDB $(CORE_LIB)
-LIBS = $(ARBDB_LIB) $(SYSLIBS)
-
-GUI_LIBS_PREFIX:=
-ifdef DARWIN
-#       this seem to be added at wrong place, since opengl is only needed to link EDIT4 
-        GUI_LIBS_PREFIX:=-framework GLUT -framework OpenGL
-endif
-
-GUI_LIBS = $(GUI_LIBS_PREFIX) $(LIBS) -lAWT  
-GUI_LIBS += -lWINDOW $(GTKLIBS)
-
-LIBPATH = -L$(ARBHOME)/lib
-
-DEST_LIB = lib
-DEST_BIN = bin
-
-AINCLUDES := -I. -I$(ARBHOME)/INCLUDE
-CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE
-
-MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
-
-ifeq ($(VTABLE_INFRONTOF_CLASS),1)
-# Some code in ARB depends on the location of the vtable pointer
-# (it does a cast from class AP_tree to struct GBT_TREE). In order to
-# work around that hack properly, we define FAKE_VTAB_PTR
-# if the vtable is located at the beginning of class.
-# We are really sorry for that hack.
-cflags:=$(cflags) -DFAKE_VTAB_PTR=char
-endif
-
-# ------------------------------- 
-#     old PTSERVER or PTPAN?
-
-ifeq ($(PTPAN),1)
-# PTPAN only libs
-ARCHS_PT_SERVER = \
-	ptpan/PROBE.a
-else
-ifeq ($(PTPAN),2)
-# special mode to compile both servers (developers only!)
-ARCHS_PT_SERVER = \
-	ptpan/PROBE.a \
-	PROBE/PROBE.a
-ARCHS_PT_SERVER_LINK = PROBE/PROBE.a# default to old ptserver
-else
-# PT-server only libs
-ARCHS_PT_SERVER = \
-	PROBE/PROBE.a
-endif
-endif
-
-ifndef ARCHS_PT_SERVER_LINK
-ARCHS_PT_SERVER_LINK = $(ARCHS_PT_SERVER)
-endif
-
-# ---------------------------------------
-# wrap main()
-
-use_ARB_main=$(ARBHOME)/SOURCE_TOOLS/arb_main_cpp.o
-use_ARB_main_C=$(ARBHOME)/SOURCE_TOOLS/arb_main_c.o
-
-arbmainwrapper:
-	$(MAKE) -C SOURCE_TOOLS -r mainwrapper
 
 # ---------------------------------------
 # List of standard top level directories
@@ -838,6 +839,10 @@ link_awt:	awt link_aw
 #***************************************************************************************
 #		Individual_Programs_Section 
 #***************************************************************************************
+
+arbmainwrapper:
+	$(MAKE) -C SOURCE_TOOLS -r mainwrapper
+
 
 #***********************************	arb_ntree **************************************
 NTREE = bin/arb_ntree
@@ -1131,8 +1136,6 @@ addlibs:
 #			Recursive calls to sub-makefiles
 #***************************************************************************************
 
-include SOURCE_TOOLS/export2sub
-
 %.depends:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
 	@$(MAKE) -C $(@D) -r \
@@ -1170,9 +1173,9 @@ target_is_missing_lib_prefix:
 	@echo "Error: Denied to build shared library target with missing 'lib'-prefix"
 	false
 
-ARBDB/ARBDB.dummy:           target_is_missing_lib_prefix
-CORE/CORE.dummy:             target_is_missing_lib_prefix
-AWT/AWT.dummy:               target_is_missing_lib_prefix
+ARBDB/ARBDB.dummy:   target_is_missing_lib_prefix
+CORE/CORE.dummy:     target_is_missing_lib_prefix
+AWT/AWT.dummy:       target_is_missing_lib_prefix
 WINDOW/WINDOW.dummy: target_is_missing_lib_prefix
 
 # rule to generate main target (normally a library):
@@ -1273,7 +1276,7 @@ SL/TREEDISP/TREEDISP.dummy:		links_non_perl
 STAT/STAT.dummy:			links_non_perl
 TREEGEN/TREEGEN.dummy:			links_non_perl
 WETC/WETC.dummy:			links_non_perl
-WINDOW/libWINDOW.dummy:		links_non_perl
+WINDOW/libWINDOW.dummy:			links_non_perl
 XML/XML.dummy:				links_non_perl
 
 ifeq ($(OPENGL),1)
