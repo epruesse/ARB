@@ -20,16 +20,16 @@
 
 enum CommandType {
     NO_COMMAND, 
-    IF = 1,
-    ENDIF,
-    ELSE,
-    FOR,
-    NEXT,
-    ENDFOR,
-    ELSEIF,
-    FUNCTION,
-    LABEL,
-    OTHER_CMD,
+    CT_IF = 1,
+    CT_ENDIF,
+    CT_ELSE,
+    CT_FOR,
+    CT_NEXT,
+    CT_ENDFOR,
+    CT_ELSEIF,
+    CT_FUNCTION,
+    CT_LABEL,
+    CT_OTHER_CMD,
 };
 
 struct Code {

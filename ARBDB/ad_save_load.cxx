@@ -438,7 +438,7 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
             GB_PUT_OUT(c, out);
             c = gb->flags.security_read;
             GB_PUT_OUT(c, out);
-            fprintf(out, "%i\t", gb->flags2.last_updated);
+            fprintf(out, "%u\t", gb->flags2.last_updated);
         }
         else {
             putc('\t', out);

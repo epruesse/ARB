@@ -145,7 +145,6 @@ void GenePositionMap::announceGene(PositionPair gene)
 
             usedRanges.erase(found);
 
-            // cppcheck-suppress unreadVariable
             gene_length = combined_length;
             found       = usedRanges.find(gene); // search for further overlaps
         } while (found != usedRanges.end());
