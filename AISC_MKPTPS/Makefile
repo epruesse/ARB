@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -6,7 +6,6 @@ OBJECTS = mkptypes.o
 BINARY = aisc_mkpt
 
 LOCAL_DEFINES=-DSIMPLE_ARB_ASSERT
-LOCAL_CFLAGS=$(cflags) $(LOCAL_DEFINES)
 LOCAL_MAKEDEPENDFLAGS=$(MAKEDEPENDFLAGS) $(LOCAL_DEFINES)
 
 $(MAIN): $(BINARY)
@@ -15,7 +14,7 @@ $(BINARY): $(OBJECTS)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(OBJECTS) $(EXECLIBS)
 
 .cxx.o:
-	$(CPP) $(LOCAL_CFLAGS) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) $(LOCAL_DEFINES) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) $(BINARY)

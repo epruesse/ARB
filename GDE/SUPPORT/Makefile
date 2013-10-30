@@ -8,7 +8,7 @@ BINARIES=$(OBJECT:%.o=$(ARBHOME)/bin/%)
 all: $(BINARIES)
 
 $(ARBHOME)/bin/%: %.c
-	$(ACC) $(cflags) -o $@ $< $(AINCLUDES) -lm
+	$(A_CC) $(cflags) -o $@ $< $(AINCLUDES) -lm
 
 clean:
 	rm -f $(BINARIES)

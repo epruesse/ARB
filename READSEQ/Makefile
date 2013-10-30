@@ -18,10 +18,10 @@ subcflags:=$(subst -W -Wall,-w,$(cflags))
 
 
 $(BINARY):  $(OBJECT)
-	$(ACC) $(subcflags) -o $@ $(OBJECT)
+	$(A_CC) $(subcflags) -o $@ $(OBJECT)
 
 .c.o:
-	$(ACC) $(subcflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(subcflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECT) $(BINARY) 

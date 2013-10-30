@@ -1,10 +1,10 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
-cma_CPP:= $(CPP)
+cma_CPP:= $(A_CXX) $(cxxflags)
 cma_cflags:= $(cflags)
 
 SUPPRESS_WARNINGS=1# set to 0 to show warnings

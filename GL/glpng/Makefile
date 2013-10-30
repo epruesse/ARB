@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .depend
 
@@ -8,7 +8,7 @@ $(MAIN): $(C_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(C_OBJECTS)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(C_OBJECTS) *.a

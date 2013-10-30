@@ -21,7 +21,7 @@ LDFLAGS = -lm
 # compile for ARB:
 else
 
-CC      = $(ACC)
+CC      = $(A_CC)
 TARGET 	= $(ARBHOME)/bin/axml
 LDFLAGS = -lm
 CFLAGS  = $(cflags)

@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
 
 # --------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ CPP_OBJECTS = $(SHARED_OBJECTS) \
 	$(PS_SHOW_RESULT_OBJECTS) \
 
 .cxx.o:
-	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS)

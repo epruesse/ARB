@@ -18,11 +18,7 @@ $(LIB_SHARED): $(OBJECTS)
 	@$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	@echo "CPPLIB WINDOW/$@"
-	@$(CPPLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
-
-.c.o:
-	$(ACCLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(shared_cflags) $(cxxflags) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
