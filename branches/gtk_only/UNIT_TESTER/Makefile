@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend .setup
 
 first: $(MAIN)
@@ -6,7 +6,6 @@ first: $(MAIN)
 include Makefile.setup.include
 
 LOCAL_DEFINES=-DSIMPLE_ARB_ASSERT
-LOCAL_CFLAGS=$(cflags) $(LOCAL_DEFINES)
 LOCAL_MAKEDEPENDFLAGS=$(MAKEDEPENDFLAGS) $(LOCAL_DEFINES)
 
 TESTER_OBJECTS = \
@@ -33,7 +32,7 @@ test_environment: $(ALL_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
 	$(LINK_EXECUTABLE) test_environment $(ALL_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(EXECLIBS)
 
 .cxx.o:
-	$(CPP) $(LOCAL_CFLAGS) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) $(LOCAL_DEFINES) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(ALL_OBJECTS) *.a test_environment skipslow.stamp

@@ -7,9 +7,7 @@ CXXFLAGS += $(CPPINCLUDES)
 LIBS += $(ARBDB_LIB)
 # LIBPATH: -L statements => add to LDLIBS
 LDLIBS += $(LIBPATH)
-# CPP=g++
-CXX=$(CPP)
-# CPPLIB=g++ -fpic
+CXX=$(A_CXX) $(cxxflags)
 CXXFLAGS += -fpic
 CFLAGS += -fpic
 

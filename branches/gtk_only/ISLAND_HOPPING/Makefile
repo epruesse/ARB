@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .c .cxx .depend
 
 # --------------------------------------------------------------------------------
@@ -21,9 +21,9 @@ CPP_OBJECTS = island_hopping.o i-hopper.o align.o mem.o trnsprob.o
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .c.o:
-	$(ACC) $(LOCAL_CFLAGS) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(LOCAL_CFLAGS) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(CPP) $(LOCAL_CFLAGS) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(LOCAL_CFLAGS) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a

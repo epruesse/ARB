@@ -6,10 +6,10 @@ OBJECTS = clustalv.o amenu.o myers.o sequence.o showpair.o \
 BINARY=$(ARBHOME)/bin/clustalv
 
 $(BINARY) : $(OBJECTS)
-	$(ACC) $(cflags) -o $@ $(OBJECTS) -lm
+	$(A_CC) $(cflags) -o $@ $(OBJECTS) -lm
 
 .c.o:
-	$(ACC) $(cflags) -c -o $@ $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c -o $@ $< $(AINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) $(BINARY)

@@ -42,10 +42,10 @@ BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
 all: $(BINARIES)
 
 %.o: %.cxx 
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 %.o: %.c
-	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 $(ARBHOME)/bin/arb_probe: arb_probe.o $(LIBS_ARB_PROBE)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 

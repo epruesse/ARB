@@ -428,26 +428,23 @@ endif
 # -------------------------------------------------------------------------
 
 cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
-
-cppflags := $(extended_cpp_warnings)
+cxxflags := $(extended_cpp_warnings)
 
 ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
-cppflags += -std=gnu++11# see also TEMPLATES/cxxforward.h@USE_Cxx11
+cxxflags += -std=gnu++11# see also TEMPLATES/cxxforward.h@USE_Cxx11
 else
 # only use for gcc versions between 4.3 and <4.7 (4.7++ adds -Wc++11-compat above)
 HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(GCC_VERSION_FOUND)`
  ifeq ($(HAVE_GNUPP0X),1)
 # ensure compatibility with upcoming C++ standard
-cppflags += -std=gnu++0x
+cxxflags += -std=gnu++0x
  endif
 endif
 
 # compiler settings:
 
-ACC := $(GCC)# compile C
-CPP := $(GPP) $(cppflags)# compile C++
-ACCLIB := $(ACC) $(shared_cflags)# compile C (shared libs)
-CPPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
+A_CC:=$(GCC)# compile C
+A_CXX:= $(GPP)# compile C++
 
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
 LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
@@ -648,12 +645,8 @@ endif
 
 check_TOOLS:
 	@util/arb_check_build_env.pl \
-		"$(ACC)" \
-		"$(CPP)" \
-		"$(GPP)" \
-		"$(GCC)" \
-		"$(ACCLIB)" \
-		"$(CPPLIB)" \
+		"$(A_CC)" \
+		"$(A_CXX)" \
 		"$(MAKEDEPEND_PLAIN)" \
 		"$(LINK_SHARED_LIB)" \
 		"$(LINK_SHARED_LIB)" \
@@ -746,7 +739,7 @@ use_ARB_main=$(ARBHOME)/SOURCE_TOOLS/arb_main_cpp.o
 use_ARB_main_C=$(ARBHOME)/SOURCE_TOOLS/arb_main_c.o
 
 arbmainwrapper:
-	$(MAKE) -C SOURCE_TOOLS -r "cflags = $(cflags)" mainwrapper
+	$(MAKE) -C SOURCE_TOOLS -r mainwrapper
 
 # ---------------------------------------
 # List of standard top level directories
@@ -1146,6 +1139,7 @@ include SOURCE_TOOLS/export2sub
 		"AUTODEPENDS=1" \
 		"MAIN=nothing" \
 		"cflags=noCflagsHere_use_MAKEDEPENDFLAGS" \
+		"cxxflags=noCxxflagsHere_use_MAKEDEPENDFLAGS" \
 		depends
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null
 	@cat $(@D)/Makefile \
@@ -1159,6 +1153,7 @@ include SOURCE_TOOLS/export2sub
 		"AUTODEPENDS=0" \
 		"MAIN=nothing" \
 		"cflags=noCflags" \
+		"cxxflags=noCxxflags" \
 		proto
 
 %.clean:
@@ -1166,6 +1161,7 @@ include SOURCE_TOOLS/export2sub
 		"AUTODEPENDS=0" \
 		"MAIN=nothing" \
 		"cflags=noCflags" \
+		"cxxflags=noCxxflags" \
 		clean
 
 
@@ -1186,8 +1182,9 @@ WINDOW/WINDOW.dummy: target_is_missing_lib_prefix
 	    echo "$(SEP) Make $(@D)"; \
 	    $(MAKE) -C $(@D) -r \
 		"AUTODEPENDS=1" \
-		"MAIN = $(@F:.dummy=.a)" \
-		"cflags = $(cflags) -DIN_ARB_$(subst /,_,$(@D))" && \
+		"MAIN=$(@F:.dummy=.a)" \
+		"cflags=$(cflags) -DIN_ARB_$(subst /,_,$(@D))" \
+		&& \
 	    echo "$(SEP) Make $(@D) [done]"; \
 	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
 
@@ -2039,7 +2036,6 @@ endif
 		"UNITDIR=$(@D)" \
 		"UNITLIBNAME=$(@F:.test=)" \
 		"COVERAGE=$(COVERAGE)" \
-		"cflags=$(cflags)" \
 		"ARB_PID=$(ARB_PID)_$(@F)" \
 		runtest; \
 	    echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"; \
