@@ -70,7 +70,6 @@ bool FileBuffer::getLine_intern(string& line)
         offset = lineEnd+1;
         if (offset == read) fillBuffer();
 
-        // cppcheck-suppress redundantOperationIn (fails to track 'offset' and 'read' modified by fillBuffer)
         if (offset<read) { // otherwise EOF!
             char nextChar = buf[offset];
             if (is_EOL(nextChar) && nextChar != lf) offset++; // skip DOS linefeed

@@ -1886,7 +1886,19 @@ rac_arb_name_server:	na
 rac_arb_convert_aln:	convert
 rac_arb_treegen:	tg
 rac_arb_rnacma:		cma
+rac_arb_help2xml:	help
+
+rac_arb_a2ps:		tools
+rac_arb_consensus_tree:	tools
+rac_arb_dnarates:	tools
+rac_arb_export_rates:	tools
+rac_arb_export_tree:	tools
+rac_arb_gene_probe:	tools
+rac_arb_message:	tools
+rac_arb_notify:		tools
+rac_arb_primer:		tools
 rac_arb_probe:		tools
+rac_arb_read_tree:	tools
 
 # --------------------------------------------------------------------------------
 # unit testing 

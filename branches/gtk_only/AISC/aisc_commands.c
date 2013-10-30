@@ -922,7 +922,7 @@ int Interpreter::run_program() {
         nextpc = pc->next;
 
         switch (pc->command) {
-            case IF: {
+            case CT_IF: {
                 Expression  expr(data, pc->source, pc->str, true);
                 bool        eval_failed;
                 char       *val = expr.evaluate(eval_failed);
@@ -933,12 +933,12 @@ int Interpreter::run_program() {
                 break;
             }
 
-            case ELSE:
+            case CT_ELSE:
                 nextpc = pc->IF->ENDIF->next;
-            case ENDIF:
+            case CT_ENDIF:
                 break;
 
-            case FOR: {
+            case CT_FOR: {
                 Expression  expr(data, pc->source, pc->str, false);
                 bool        eval_failed;
                 char       *val   = expr.evalVarDecl(eval_failed);
@@ -948,25 +948,25 @@ int Interpreter::run_program() {
                 break;
             }
 
-            case NEXT:
+            case CT_NEXT:
                 if (do_next()) return 1;
-            case ENDFOR:
+            case CT_ENDFOR:
                 break;
 
-            case FUNCTION:
+            case CT_FUNCTION:
                 print_error(at(), "fatal: ran into FUNCTION (missing EXIT?)");
                 break;
 
                 break;
 
-            case OTHER_CMD: {
+            case CT_OTHER_CMD: {
                 int res = pc->cmd->call(*this);
                 if (res == -1) return 1;
                 break;
             }
 
-            case LABEL:
-            case ELSEIF: // 
+            case CT_LABEL:
+            case CT_ELSEIF:
             case NO_COMMAND:
                 printf_error(at(), "internal error: Expected not to reach command type=%i", pc->command);
                 return 1;
