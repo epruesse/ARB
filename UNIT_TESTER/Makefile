@@ -32,7 +32,7 @@ test_environment: $(ALL_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
 	$(LINK_EXECUTABLE) test_environment $(ALL_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(EXECLIBS)
 
 .cxx.o:
-	$(A_CXX) $(cxxflags) $(cflags) $(LOCAL_DEFINES) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) $(LOCAL_DEFINES) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(ALL_OBJECTS) *.a test_environment skipslow.stamp

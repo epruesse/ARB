@@ -19,8 +19,8 @@ Short description of most important variables passed from parent makefiles:
       cxxflags            additional C++-compiler flags (should be used together with cflags!)
       shared_cflags       additional compiler flags used when compiling objects for a shared library
 
-      AINCLUDES           include directories for C-compiler
-      CPPINCLUDES         include directories for C++-compiler
+      CC_INCLUDES         include directories for C-compiler
+      CXX_INCLUDES        include directories for C++-compiler
 
       POST_COMPILE        global filter applied to compiler output (i.e. to errors and warnings)
 
