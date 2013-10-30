@@ -13,7 +13,7 @@ arb_main_cpp.o: arb_main.cxx Makefile
 	$(A_CXX) $(cxxflags) $(cflags) -c $< -o $@ $(CXX_INCLUDES) $(POST_COMPILE)
 
 arb_main_c.o: arb_main.c arb_main.cxx Makefile
-	$(A_CC) $(cflags) -c $< -o $@ $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< -o $@ $(CC_INCLUDES) $(POST_COMPILE)
 
 mainwrapper: $(OBJECTS)
 

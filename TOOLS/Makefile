@@ -45,7 +45,7 @@ all: $(BINARIES)
 	$(A_CXX) $(cxxflags) $(cflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 %.o: %.c
-	$(A_CC) $(cflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 $(ARBHOME)/bin/arb_probe: arb_probe.o $(LIBS_ARB_PROBE)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 
