@@ -10,8 +10,11 @@
 # -----------------------------------------------------
 # The ARB Makefile is aware of the following defines:
 #
+# CC                    C compiler (should be defined by OS)
+# CXX                   C++ compiler (should be defined by OS)
+#
 # BUILDHOST_64=0/1      1=>compile on 64 bit platform (defaults to ARB_64)
-# DEVELOPER=name	special compilation (values: ANY,RELEASE,your name)
+# DEVELOPER=name        special compilation (values: ANY,RELEASE,your name)
 # OPENGL=0/1            whether OPENGL is available
 #
 # -----------------------------------------------------
@@ -46,11 +49,6 @@ NODIR=--no-print-directory
 
 SED:=$(ARBHOME)/SH/arb_sed
 READLINK:=$(ARBHOME)/SH/arb_readlink
-
-# ---------------------- [basic compiler setting]
-
-GCC ?= $(CC)
-GPP ?= $(CXX)
 
 # ---------------------- compiler version detection
 
@@ -433,18 +431,18 @@ endif
 
 # compiler settings:
 
-A_CC:=$(GCC)# compile C
-A_CXX:= $(GPP)# compile C++
+A_CC:=$(CC)# compile C
+A_CXX:= $(CXX)# compile C++
 
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
-LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
+LINK_EXECUTABLE := $(A_CXX) $(lflags) $(cdynamic) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(GPP) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(A_CXX) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 # other used tools
