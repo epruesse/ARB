@@ -17,7 +17,7 @@ CPP_OBJECTS = \
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
-	$(A_CXX) $(cxxflags) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a

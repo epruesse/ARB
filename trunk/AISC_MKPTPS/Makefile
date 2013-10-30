@@ -14,7 +14,7 @@ $(BINARY): $(OBJECTS)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(OBJECTS) $(EXECLIBS)
 
 .cxx.o:
-	$(A_CXX) $(cxxflags) $(cflags) $(LOCAL_DEFINES) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) $(LOCAL_DEFINES) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) $(BINARY)
