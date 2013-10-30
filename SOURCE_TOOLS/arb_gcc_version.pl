@@ -4,15 +4,15 @@ use strict;
 use warnings;
 
 sub main() {
-  my $detectedVersion;
+  my $detectedVersion = 'failed_to_detect_compiler';
 
-  my $gcc = $ENV{A_CXX};
-  if (not defined $gcc) { $gcc = $ENV{A_CC}; }
-
-  if (not defined $gcc) {
-    $detectedVersion = 'failed_to_detect_compiler';
+  my $args = scalar(@ARGV);
+  if ($args != 1) {
+    print STDERR 'Usage: arb_gcc_version.pl ${CXX}'."\n";
+    $detectedVersion .= '__missing_arg_to__arb_gcc_version';
   }
   else {
+    my $gcc = $ARGV[0];
     $detectedVersion = 'unknown_gcc_version';
 
     my $dumpedVersion = `$gcc -dumpversion`;

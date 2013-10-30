@@ -40,6 +40,10 @@
 # Read configuration 
 include config.makefile
 
+# compiler settings:
+A_CC:=$(CC)# compile C
+A_CXX:=$(CXX)# compile C++
+
 ifeq ($(LD_LIBRARY_PATH),'')
 LD_LIBRARY_PATH:=${ARBHOME}/lib
 endif
@@ -65,7 +69,7 @@ ALLOWED_GCC_4xx_VERSIONS=\
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 
-GCC_VERSION_FOUND=$(shell SOURCE_TOOLS/arb_gcc_version.pl)
+GCC_VERSION_FOUND=$(shell SOURCE_TOOLS/arb_gcc_version.pl $(A_CXX))
 GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
 
 #---------------------- split gcc version 
@@ -428,11 +432,6 @@ HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(GCC_VERSION_FOUND)`
 cxxflags += -std=gnu++0x
  endif
 endif
-
-# compiler settings:
-
-A_CC:=$(CC)# compile C
-A_CXX:= $(CXX)# compile C++
 
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
 LINK_EXECUTABLE := $(A_CXX) $(lflags) $(cdynamic) -o# link executable (c++)
