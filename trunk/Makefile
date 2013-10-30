@@ -476,7 +476,7 @@ DEST_LIB = lib
 DEST_BIN = bin
 
 CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-CXX_INCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+CXX_INCLUDES := $(CC_INCLUDES)
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
 # Some code in ARB depends on the location of the vtable pointer
