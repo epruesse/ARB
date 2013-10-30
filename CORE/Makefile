@@ -27,7 +27,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(shared_cflags) $(cxxflags) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(shared_cflags) $(cxxflags) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 .cxx.genh:
 	../AISC_MKPTPS/aisc_mkpt -P -G -w $(subst .genh,.h,$@) $< > $@

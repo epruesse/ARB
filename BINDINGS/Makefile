@@ -1,8 +1,8 @@
 # Variables we get from main makefile:
 # DFLAGS: -D statements => add to preprocessor flags
 CPPFLAGS += $(DFLAGS)
-# CPPINCLUDES:  -I statemenmts => add to g++ flags
-CXXFLAGS += $(CPPINCLUDES)
+# CXX_INCLUDES:  -I statemenmts => add to g++ flags
+CXXFLAGS += $(CXX_INCLUDES)
 # ARBDB_LIB: -l statements => add to LIBS
 LIBS += $(ARBDB_LIB)
 # LIBPATH: -L statements => add to LDLIBS
