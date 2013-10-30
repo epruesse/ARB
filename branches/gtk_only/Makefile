@@ -481,8 +481,8 @@ LIBPATH = -L$(ARBHOME)/lib
 DEST_LIB = lib
 DEST_BIN = bin
 
-AINCLUDES := -I. -I$(ARBHOME)/INCLUDE
-CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE
+CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE
+CXX_INCLUDES := $(CC_INCLUDES)
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
 # Some code in ARB depends on the location of the vtable pointer

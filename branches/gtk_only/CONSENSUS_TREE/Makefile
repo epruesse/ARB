@@ -6,7 +6,7 @@ $(MAIN): $(OBJS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJS)
 
 .cxx.o:
-	$(A_CXX) $(cxxflags) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cxxflags) $(cflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 clean:
 	rm -f $(OBJS) *.a
 

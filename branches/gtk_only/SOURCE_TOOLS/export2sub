@@ -17,8 +17,8 @@ export MACH
 export DEBIAN
 export DARWIN
 
-export A_CC  AINCLUDES
-export A_CXX CPPINCLUDES
+export A_CC  CC_INCLUDES
+export A_CXX CXX_INCLUDES
 export cflags cxxflags shared_cflags
 
 export POST_COMPILE

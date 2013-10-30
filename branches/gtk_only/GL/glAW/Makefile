@@ -7,7 +7,7 @@ CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
 OBJECTS = $(C_OBJECTS) $(CPP_OBJECTS)
 
-EXTENDED_CPPINCLUDES = $(CPPINCLUDES) -I$(ARBHOME)/WINDOW
+EXTENDED_CPPINCLUDES = $(CXX_INCLUDES) -I$(ARBHOME)/WINDOW
 
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
@@ -16,7 +16,7 @@ $(MAIN): $(OBJECTS)
 	$(A_CXX) $(cxxflags) $(cflags) -c $< $(EXTENDED_CPPINCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a

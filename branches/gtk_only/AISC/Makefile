@@ -16,7 +16,7 @@ $(BINARY): $(OBJECTS)
 	$(LINK_EXECUTABLE) $@ $(OBJECTS) 
 
 .c.o:
-	$(A_CXX) -x c++ $(cxxflags) $(cflags) $(LOCAL_DEFINES) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CXX) -x c++ $(cxxflags) $(cflags) $(LOCAL_DEFINES) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
