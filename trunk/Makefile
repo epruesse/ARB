@@ -229,7 +229,9 @@ ifeq ($(USE_CLANG),1)
 # -Wmismatched-tags warns about struct/class mismatch in forward declarations (which is explicitely allowed)
 # -Wchar-subscripts reports too many bogus warnings for "array['x']" (when 'x' is known to be in range [0..128])
 # -Wunused-private-field report too many false positives (currently ~ 2 of 3)
-	extended_cpp_warnings += -Wno-mismatched-tags -Wno-char-subscripts -Wno-unused-private-field
+# -Wstring-plus-int warns about common ARB coding practice
+# -Wgnu-static-float-init warns about accepted GNU extension
+	extended_cpp_warnings += -Wno-mismatched-tags -Wno-char-subscripts -Wno-unused-private-field -Wno-string-plus-int -Wno-gnu-static-float-init
 endif
 
 #---------------------- developer
