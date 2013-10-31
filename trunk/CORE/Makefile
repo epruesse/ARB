@@ -219,6 +219,7 @@ FileBuffer.o: arb_assert.h
 FileBuffer.o: arb_core.h
 FileBuffer.o: FileBuffer.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/attributes.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/cxxforward.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/gccver.h

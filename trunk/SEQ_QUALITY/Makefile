@@ -88,6 +88,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/ttypes.h
 SQ_GroupData.o: SQ_GroupData.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/arb_core.h
+SQ_GroupData.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/gccver.h
