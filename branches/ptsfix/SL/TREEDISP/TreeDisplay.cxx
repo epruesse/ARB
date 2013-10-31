@@ -32,13 +32,12 @@
 
 using namespace AW;
 
-AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
-{
+AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw) {
     AW_gc_manager gc_manager =
         AW_manage_GC(aww,
                      ntw->get_gc_base_name(),
                      device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
-                     makeWindowCallback(AWT_resize_cb, ntw, cd2),
+                     makeWindowCallback(AWT_resize_cb, ntw),
                      true,      // define color groups
                      "#3be",
 
@@ -2768,8 +2767,7 @@ public:
     }
 };
 
-class fake_AW_common : public AW_common {
-public:
+struct fake_AW_common : public AW_common {
     fake_AW_common()
         : AW_common(fcolors, dcolors, dcolors_count)
     {
@@ -2852,7 +2850,7 @@ public:
 
         if (!nearlyEqual(zoom, 1.0)) {
             // recalculate size
-            size_device.clear();
+            size_device.restart_tracking();
             size_device.reset();
             size_device.zoom(zoom);
             size_device.set_filter(AW_SIZE|AW_SIZE_UNSCALED);

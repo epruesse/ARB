@@ -199,8 +199,7 @@ struct GBDATA {
     gb_transaction_save *get_oldData() const { return ext ? ext->old : 0; }
 };
 
-struct GBENTRY : public GBDATA {
-private:
+class GBENTRY : public GBDATA {
     // calls that make no sense:
     bool is_entry() const;
     GBENTRY *as_entry() const;
@@ -241,8 +240,7 @@ public:
     void index_check_out();
 };
 
-struct GBCONTAINER : public GBDATA {
-private:
+class GBCONTAINER : public GBDATA {
     // calls that make no sense:
     bool is_container() const;
     GBCONTAINER *as_container() const;

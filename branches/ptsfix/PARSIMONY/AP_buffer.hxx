@@ -128,8 +128,7 @@ struct AP_tree_buffer {
     void print();
 };
 
-class AP_tree_stack : public AP_STACK {
-public:
+struct AP_tree_stack : public AP_STACK {
     AP_tree_stack() {}
     virtual ~AP_tree_stack() OVERRIDE {}
     void  push(AP_tree_buffer *value) { AP_STACK::push((void *)value); }
@@ -154,8 +153,7 @@ public:
 };
 
 
-class AP_main_list : public AP_LIST {
-public:
+struct AP_main_list : public AP_LIST {
     AP_main_stack * pop() { return  (AP_main_stack *)AP_LIST::pop(); }
     void push(AP_main_stack * stack) { AP_LIST::push((void *) stack); }
     void insert(AP_main_stack * stack) { AP_LIST::insert((void *)stack); }

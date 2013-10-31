@@ -27,7 +27,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(CPPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .cxx.genh:
 	../AISC_MKPTPS/aisc_mkpt -P -G -w $(subst .genh,.h,$@) $< > $@
@@ -220,6 +220,7 @@ FileBuffer.o: arb_assert.h
 FileBuffer.o: arb_core.h
 FileBuffer.o: FileBuffer.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/attributes.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/cxxforward.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/gccver.h

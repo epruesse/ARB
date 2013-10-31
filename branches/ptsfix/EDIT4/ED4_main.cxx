@@ -107,49 +107,6 @@ inline void set_and_realloc_gde_array(uchar **&the_names, uchar **&the_sequences
     numberspecies++;
 }
 
-#ifndef NDEBUG
-
-inline const char *id(ED4_base *base)
-{
-    return base->id ? base->id : "???";
-}
-
-static void children(ED4_manager *manager)
-{
-    int i;
-    int anz = manager->children->members();
-
-    if (anz) {
-        printf("(");
-        for (i=0; i<anz; i++) {
-            if (i) printf(", ");
-            printf("%s", id(manager->children->member(i)));
-        }
-        printf(")");
-    }
-}
-
-static void baum(ED4_base *base)
-{
-    static int level;
-
-    level++;
-
-    if (base->parent) {
-        baum(base->parent);
-    }
-
-    printf("[%2i] %-30s", level, id(base));
-    if (base->is_manager()) {
-        children(base->to_manager());
-    }
-    printf("\n");
-
-    level--;
-}
-
-#endif
-
 static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uchar **&the_sequences,
                               long &allocated, long &numberspecies, long &maxalign,
                               int show_sequence, int show_SAI, int show_helix, int show_consensus, int show_remark)

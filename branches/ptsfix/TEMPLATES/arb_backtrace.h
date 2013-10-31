@@ -52,6 +52,7 @@ public:
         size_t msize = wantedFrames*sizeof(*array);
 
         array = (void**)malloc(msize);
+        // cppcheck-suppress arithOperationsOnVoidPointer (false positive: pointer-arithmetics on void** are completely standard compliant)
         memcpy(array, tmp+skipFramesAtBottom, msize);
 
         size = wantedFrames;

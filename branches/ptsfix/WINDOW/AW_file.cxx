@@ -337,7 +337,7 @@ static void show_soft_link(AW_selection_list *filelist, const char *envar, Dupli
     }
 }
 
-static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
+static void fill_fileselection_cb(AW_root*, File_selection *cbs) {
     // @@@ move code into method(s) of File_selection
 
     AW_root *aw_root = cbs->awr;
@@ -464,14 +464,14 @@ static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
 
 static bool filter_has_changed = false;
 
-static void fileselection_filter_changed_cb(void *, File_selection *) {
+static void fileselection_filter_changed_cb(AW_root*) {
     filter_has_changed = true;
 #if defined(TRACE_FILEBOX)
     printf("fileselection_filter_changed_cb: marked as changed\n");
 #endif // TRACE_FILEBOX
 }
 
-static void fileselection_filename_changed_cb(void *, File_selection *cbs) {
+static void fileselection_filename_changed_cb(AW_root*, File_selection *cbs) {
     AW_root *aw_root = cbs->awr;
     char    *fname   = aw_root->awar(cbs->def_name)->read_string();
 
@@ -695,15 +695,15 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
     acbs->previous_filename = 0;
     acbs->leave_wildcards   = allow_wildcards;
 
-    aw_root->awar(acbs->def_name)->add_callback((AW_RCB1)fileselection_filename_changed_cb, (AW_CL)acbs);
+    aw_root->awar(acbs->def_name)->add_callback(makeRootCallback(fileselection_filename_changed_cb, acbs));
 
     acbs->def_dir = GBS_string_eval(awar_prefix, "*=*/directory", 0);
-    aw_root->awar(acbs->def_dir)->add_callback((AW_RCB1)fill_fileselection_cb, (AW_CL)acbs);
+    aw_root->awar(acbs->def_dir)->add_callback(makeRootCallback(fill_fileselection_cb, acbs));
 
     acbs->def_filter = GBS_string_eval(awar_prefix, "*=*/filter", 0);
-    aw_root->awar(acbs->def_filter)->add_callback((AW_RCB1)fileselection_filter_changed_cb, (AW_CL)acbs);
-    aw_root->awar(acbs->def_filter)->add_callback((AW_RCB1)fileselection_filename_changed_cb, (AW_CL)acbs);
-    aw_root->awar(acbs->def_filter)->add_callback((AW_RCB1)fill_fileselection_cb, (AW_CL)acbs);
+    aw_root->awar(acbs->def_filter)->add_callback(fileselection_filter_changed_cb);
+    aw_root->awar(acbs->def_filter)->add_callback(makeRootCallback(fileselection_filename_changed_cb, acbs));
+    aw_root->awar(acbs->def_filter)->add_callback(makeRootCallback(fill_fileselection_cb, acbs));
 
     char buffer[1024];
     sprintf(buffer, "%sfilter", at_prefix);

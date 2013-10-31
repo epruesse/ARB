@@ -16,7 +16,7 @@
 #define AW_RENAME_SKIP_GUI
 #include <AW_rename.hxx>
 #include <aw_question.hxx>
-#include <arb_str.h>
+#include <arb_stdstr.h>
 #include <arb_file.h>
 #include <arb_diff.h>
 

@@ -16,10 +16,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(CPPLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
-
-.c.o:
-	$(ACCLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
@@ -464,7 +461,9 @@ AW_position.o: aw_base.hxx
 AW_position.o: aw_position.hxx
 AW_position.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_position.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_position.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_position.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_position.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_position.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_preset.o: aw_advice.hxx

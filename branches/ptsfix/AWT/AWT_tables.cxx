@@ -79,7 +79,7 @@ static AW_window *create_ad_table_field_reorder_window(AW_root *root, awt_table 
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"spaf_reorder.hlp");
+    aws->callback(makeHelpCallback("spaf_reorder.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -282,7 +282,7 @@ static void create_ad_table_field_admin(AW_window *aww, GBDATA *gb_main, const c
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"tableadm.hlp");
+        aws->callback(makeHelpCallback("tableadm.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -529,7 +529,7 @@ AW_window *AWT_create_tables_admin_window(AW_root *aw_root, GBDATA *gb_main)
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"tableadm.hlp");
+    aws->callback(makeHelpCallback("tableadm.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

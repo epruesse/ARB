@@ -120,7 +120,7 @@ static AW_window *create_nds_export_window(AW_root *root) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"arb_export_nds.hlp");
+    aws->callback(makeHelpCallback("arb_export_nds.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -408,7 +408,7 @@ static AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"save.hlp");
+    aws->callback(makeHelpCallback("save.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -476,7 +476,7 @@ static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"optimize.hlp");
+    aws->callback(makeHelpCallback("optimize.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -498,7 +498,7 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"save.hlp");
+    aws->callback(makeHelpCallback("save.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -575,7 +575,7 @@ static AW_window *NT_create_tree_setting(AW_root *aw_root)
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"nt_tree_settings.hlp");
+    aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("button");
@@ -685,10 +685,9 @@ inline void append_command_output(GBS_strstruct *out, const char *prefix, const 
     }
 }
 
-static void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
-    AWT_canvas *canvas = (AWT_canvas*)cd1;
+static void NT_modify_cb(AW_window *aww, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
     DBUI::popup_species_info_window(aww->get_root(), canvas->gb_main);
-    nt_mode_event(aww, canvas, (AWT_COMMAND_MODE)cd2);
+    nt_mode_event(aww, canvas, mode);
 }
 
 static void NT_primer_cb() {
@@ -770,8 +769,7 @@ static void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
 // #########################################
 // #########################################
 
-class nt_item_type_species_selector : public awt_item_type_selector {
-public:
+struct nt_item_type_species_selector : public awt_item_type_selector {
     nt_item_type_species_selector() : awt_item_type_selector(AWT_IT_SPECIES) {}
     virtual ~nt_item_type_species_selector() OVERRIDE {}
 
@@ -1058,7 +1056,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             NT_reload_tree_event(awr, ntw, 1); // load first tree
         }
         else {
-            AW_advice("Your database contains no tree.", AW_ADVICE_TOGGLE|AW_ADVICE_HELP, 0, "no_tree.hlp");
+            AW_advice("Your database contains no tree.", AW_ADVICE_TOGGLE_AND_HELP, 0, "no_tree.hlp");
             tree->set_tree_type(AP_LIST_NDS, ntw); // no tree -> show NDS list
         }
 
@@ -1066,24 +1064,29 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     }
 
     awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw));
-    awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback((AW_RCB)AWT_resize_cb, (AW_CL)ntw, 0);
-    awr->awar(AWAR_DTREE_BASELINEWIDTH)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
-    awr->awar(AWAR_DTREE_SHOW_CIRCLE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
-    awr->awar(AWAR_DTREE_SHOW_BRACKETS)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
-    awr->awar(AWAR_DTREE_CIRCLE_ZOOM)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
-    awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
-    awr->awar(AWAR_DTREE_USE_ELLIPSE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
 
-    awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback((AW_RCB)NT_reinit_treetype, (AW_CL)ntw, 0);
-    awr->awar(AWAR_DTREE_RADIAL_XPAD)->add_callback((AW_RCB)NT_reinit_treetype, (AW_CL)ntw, 0);
-    awr->awar(AWAR_DTREE_DENDRO_ZOOM_TEXT)->add_callback((AW_RCB)NT_reinit_treetype, (AW_CL)ntw, 0);
-    awr->awar(AWAR_DTREE_DENDRO_XPAD)->add_callback((AW_RCB)NT_reinit_treetype, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback(makeRootCallback(AWT_resize_cb, ntw));
 
-    awr->awar(AWAR_TREE_REFRESH)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
+    RootCallback expose_cb = makeRootCallback(AWT_expose_cb, ntw);
+    awr->awar(AWAR_DTREE_BASELINEWIDTH)  ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_SHOW_CIRCLE)    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_SHOW_BRACKETS)  ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_CIRCLE_ZOOM)    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_USE_ELLIPSE)    ->add_callback(expose_cb);
+
+    RootCallback reinit_treetype_cb = makeRootCallback(NT_reinit_treetype, ntw);
+    awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
+    awr->awar(AWAR_DTREE_RADIAL_XPAD)     ->add_callback(reinit_treetype_cb);
+    awr->awar(AWAR_DTREE_DENDRO_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
+    awr->awar(AWAR_DTREE_DENDRO_XPAD)     ->add_callback(reinit_treetype_cb);
+
+    awr->awar(AWAR_TREE_REFRESH)->add_callback(expose_cb);
     awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback(makeRootCallback(TREE_recompute_cb, ntw));
 
-    GBDATA *gb_arb_presets =    GB_search(GLOBAL.gb_main, "arb_presets", GB_CREATE_CONTAINER);
+    GBDATA *gb_arb_presets = GB_search(GLOBAL.gb_main, "arb_presets", GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets, GB_CB_CHANGED, (GB_CB)AWT_expose_cb, (int *)ntw);
+    // GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw)); // @@@ makeDatabaseCallback does not work (yet)
 
     bool is_genome_db = GEN_is_genome_db(GLOBAL.gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
 
@@ -1150,7 +1153,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("VersionInfo/Bugreport/MailingList", "V");
             {
-                awm->insert_menu_topic("version_info", "Version info (" ARB_VERSION ")", "V", "version.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, AW_CL("version.hlp"), 0);
+                awm->insert_menu_topic("version_info", "Version info (" ARB_VERSION ")", "V", "version.hlp", AWM_ALL, (AW_CB)AW_help_popup, AW_CL("version.hlp"), 0);
                 awm->insert_menu_topic("bug_report",   "Report bug",                     "b", NULL,          AWM_ALL, AWT_openURL_cb,       AW_CL("http://bugs.arb-home.de/wiki/BugReport"));
                 awm->insert_menu_topic("mailing_list", "Mailing list",                   "M", NULL,          AWM_ALL, AWT_openURL_cb,       AW_CL("http://bugs.arb-home.de/wiki/ArbMailingList"));
             }
@@ -1259,7 +1262,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("Align Sequences",  "S");
             {
-                awm->insert_menu_topic("arb_align",   "Align sequence into an existing alignment",         "A", "align.hlp",       AWM_EXP, (AW_CB) AW_POPUP_HELP, (AW_CL)"align.hlp",                  0);
+                awm->insert_menu_topic("arb_align",   "Align sequence into an existing alignment",         "A", "align.hlp",       AWM_EXP, (AW_CB) AW_help_popup, (AW_CL)"align.hlp",                  0);
                 awm->insert_menu_topic("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, AW_POPUP,              (AW_CL)NT_create_realign_dna_window, 0);
                 GDE_load_menu(awm, AWM_ALL, "Align");
             }
@@ -1436,7 +1439,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         }
         awm->sep______________();
 
-        awm->insert_menu_topic("transversion",       "Transversion analysis",   "y", "trans_anal.hlp", AWM_EXP, (AW_CB)AW_POPUP_HELP,       (AW_CL)"trans_anal.hlp", 0);
+        awm->insert_menu_topic("transversion",       "Transversion analysis",   "y", "trans_anal.hlp", AWM_EXP, (AW_CB)AW_help_popup,       (AW_CL)"trans_anal.hlp", 0);
 
         awm->sep______________();
 
@@ -1512,24 +1515,24 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         }
     }
 
-    awm->insert_help_topic("ARB_NT help",     "N", "arb_ntree.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_ntree.hlp", 0);
+    awm->insert_help_topic("ARB_NT help",     "N", "arb_ntree.hlp", AWM_ALL, (AW_CB)AW_help_popup, (AW_CL)"arb_ntree.hlp", 0);
 
-    awm->create_mode("select.xpm",   "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
-    awm->create_mode("mark.xpm",     "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
-    awm->create_mode("group.xpm",    "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
-    awm->create_mode("pzoom.xpm",    "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode("lzoom.xpm",    "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
-    awm->create_mode("modify.xpm",   "mode_info.hlp",   AWM_ALL, (AW_CB)NT_modify_cb,  (AW_CL)ntw, (AW_CL)AWT_MODE_EDIT);
-    awm->create_mode("www_mode.xpm", "mode_www.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_WWW);
+    awm->create_mode("select.xpm",   "mode_select.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SELECT));
+    awm->create_mode("mark.xpm",     "mode_mark.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MARK));
+    awm->create_mode("group.xpm",    "mode_group.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_GROUP));
+    awm->create_mode("pzoom.xpm",    "mode_pzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
+    awm->create_mode("lzoom.xpm",    "mode_lzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
+    awm->create_mode("modify.xpm",   "mode_info.hlp",   AWM_ALL, makeWindowCallback(NT_modify_cb,  ntw, AWT_MODE_EDIT));
+    awm->create_mode("www_mode.xpm", "mode_www.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_WWW));
 
-    awm->create_mode("line.xpm",    "mode_width.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LINE);
-    awm->create_mode("rot.xpm",     "mode_rotate.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ROT);
-    awm->create_mode("spread.xpm",  "mode_angle.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SPREAD);
-    awm->create_mode("swap.xpm",    "mode_swap.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
-    awm->create_mode("length.xpm",  "mode_length.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LENGTH);
-    awm->create_mode("move.xpm",    "mode_move.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
-    awm->create_mode("setroot.xpm", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
-    awm->create_mode("reset.xpm",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
+    awm->create_mode("line.xpm",    "mode_width.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LINE));
+    awm->create_mode("rot.xpm",     "mode_rotate.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ROT));
+    awm->create_mode("spread.xpm",  "mode_angle.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SPREAD));
+    awm->create_mode("swap.xpm",    "mode_swap.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
+    awm->create_mode("length.xpm",  "mode_length.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LENGTH));
+    awm->create_mode("move.xpm",    "mode_move.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
+    awm->create_mode("setroot.xpm", "mode_set_root.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
+    awm->create_mode("reset.xpm",   "mode_reset.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_RESET));
 
     awm->set_info_area_height(250);
     awm->at(5, 2);

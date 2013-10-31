@@ -272,7 +272,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"experiment_search.hlp");
+        aws->callback(makeHelpCallback("experiment_search.hlp"));
         aws->create_button("HELP", "HELP", "H");
     }
     return aws;
@@ -508,7 +508,7 @@ static AW_window *popup_new_experiment_window(AW_root *aw_root, GBDATA *gb_main,
     aws->create_button("SEARCH", "SEARCH", "S");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"experiment_info.hlp");
+    aws->callback(makeHelpCallback("experiment_info.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);

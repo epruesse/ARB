@@ -325,7 +325,6 @@ void AW_device::set_filter(AW_bitset filteri) {
     filter = filteri;
 }
 
-void AW_device::clear_text(int /* gc */, const char * /* string */, AW_pos /* x */, AW_pos /* y */, AW_pos /* alignment */, AW_bitset /* filteri */) {}
 void AW_device::fast() {}
 void AW_device::slow() {}
 bool AW_device::ready_to_draw(int gc) {
@@ -469,8 +468,7 @@ void AW_stylable::reset_style() {
     get_common()->reset_style();
 }
 
-static void AW_get_common_extends_cb(AW_window */*aww*/, AW_CL cl_common_xm, AW_CL) {
-    AW_common_Xm *common = (AW_common_Xm*)cl_common_xm;
+static void AW_get_common_extends_cb(AW_window *, AW_common_Xm *common) {
     Window        root;
     unsigned int  width, height;
     unsigned int  depth, borderwidth; // unused
@@ -489,7 +487,7 @@ static void AW_get_common_extends_cb(AW_window */*aww*/, AW_CL cl_common_xm, AW_
 }
 
 void AW_common_Xm::install_common_extends_cb(AW_window *aww, AW_area area) {
-    aww->set_resize_callback(area, AW_get_common_extends_cb, (AW_CL)this);
-    AW_get_common_extends_cb(aww, (AW_CL)this, 0);
+    aww->set_resize_callback(area, makeWindowCallback(AW_get_common_extends_cb, this));
+    AW_get_common_extends_cb(aww, this);
 }
 

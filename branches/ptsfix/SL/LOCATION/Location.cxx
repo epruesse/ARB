@@ -10,7 +10,7 @@
 // ================================================================ //
 
 #include "Location.h"
-#include <arb_str.h>
+#include <arb_stdstr.h>
 
 #include <adGene.h>
 #include <arbdb.h>

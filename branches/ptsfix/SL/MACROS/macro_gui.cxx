@@ -147,7 +147,7 @@ static void awt_popup_macro_window(AW_window *aww) {
         aws->at("close"); aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"macro.hlp");
+        aws->at("help"); aws->callback(makeHelpCallback("macro.hlp"));
         aws->create_button("HELP", "HELP");
 
         aws->at("record"); aws->callback(awt_start_macro_cb);

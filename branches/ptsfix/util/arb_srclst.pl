@@ -115,6 +115,7 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'genmenu',
                                            'jar',
                                            'last_gcc',
+                                           'last_compiler',
                                            'list',
                                            'log',
                                            'o',

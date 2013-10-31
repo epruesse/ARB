@@ -431,8 +431,7 @@ void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, 
 // -------------------------------------------------
 //      selection boxes on editor configurations
 
-class AWT_configuration_selection : public AW_DB_selection {
-public:
+struct AWT_configuration_selection : public AW_DB_selection {
     AWT_configuration_selection(AW_selection_list *sellist_, GBDATA *gb_configuration_data)
         : AW_DB_selection(sellist_, gb_configuration_data)
     {}
@@ -1052,7 +1051,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *action, const char 
 #if 0
     // @@@ allow to pass helpfile
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"");
+    aws->callback(makeHelpCallback(""));
     aws->create_button("HELP", "HELP");
 #endif
 

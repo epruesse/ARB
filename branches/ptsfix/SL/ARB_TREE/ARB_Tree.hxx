@@ -239,8 +239,7 @@ public:
 
 };
 
-class ARB_tree_predicate {
-public:
+struct ARB_tree_predicate {
     virtual ~ARB_tree_predicate() {}
     virtual bool selects(const ARB_tree& tree) const = 0;
 };

@@ -19,7 +19,7 @@
 
 char *GDE_makeawarname(GmenuItem *gmenuitem, long i);
 char *GDE_maketmpawarname(GmenuItem *gmenuitem, long i);
-void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const char *menuitemlabel);
+void GDE_load_menu(AW_window *awm, AW_active dummy_1x, const char *menulabel, const char *menuitemlabel);
 void GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
 
 /* GDE_FileIO.cxx */

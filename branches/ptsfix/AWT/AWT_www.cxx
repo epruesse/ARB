@@ -197,7 +197,7 @@ AW_window *AWT_open_www_window(AW_root *aw_root, AW_CL cgb_main) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"props_www.hlp");
+    aws->callback(makeHelpCallback("props_www.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("action");

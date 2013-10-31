@@ -247,8 +247,7 @@ struct initial_counting_progress : public initial_progress {
         : initial_progress(title, new concrete_counter(this, overall_count)) {}
 };
 
-class null_progress: public arb_parent_progress {
-public:
+struct null_progress: public arb_parent_progress {
     null_progress(arb_progress_counter *counter_)
         : arb_parent_progress(counter_, false)
     {

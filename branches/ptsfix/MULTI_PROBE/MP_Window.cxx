@@ -49,7 +49,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->create_button("CLOSE", "CLOSE");
 
         result_window->at("Help");
-        result_window->callback(AW_POPUP_HELP, (AW_CL)"multiproberesults.hlp");
+        result_window->callback(makeHelpCallback("multiproberesults.hlp"));
         result_window->create_button("HELP", "HELP");
 
         result_window->at("Comment");
@@ -397,7 +397,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     aws->create_button("CLOSE", "CLOSE");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"multiprobe.hlp");
+    aws->callback(makeHelpCallback("multiprobe.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->button_length(7);

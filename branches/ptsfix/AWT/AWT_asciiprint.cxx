@@ -360,7 +360,7 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
 
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"asciiprint.hlp");
+        aws->callback(makeHelpCallback("asciiprint.hlp"));
         aws->create_button("HELP", "HELP");
 
         aws->at("go");

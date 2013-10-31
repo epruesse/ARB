@@ -1046,7 +1046,7 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
                 AW_advice("You have keymapped the space-key!\n"
                           "The new functionality assigned to space-key is not available when\n"
                           "key-mapping is enabled.\n",
-                          AW_ADVICE_TOGGLE|AW_ADVICE_HELP, "Obsolete default keymapping", "nekey_map.hlp");
+                          AW_ADVICE_TOGGLE_AND_HELP, "Obsolete default keymapping", "nekey_map.hlp");
             }
         }
     }

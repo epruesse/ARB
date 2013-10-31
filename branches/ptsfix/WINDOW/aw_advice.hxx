@@ -27,6 +27,8 @@ enum AW_Advice_Type {
     AW_ADVICE_HELP       = 2,                       // advice has corresponding help file
     AW_ADVICE_HELP_POPUP = 4,                       // this helpfile should popup immediately
 
+    // convenience defs:
+    AW_ADVICE_TOGGLE_AND_HELP = AW_ADVICE_TOGGLE|AW_ADVICE_HELP,
 };
 
 //! has to be called one time (before calling AW_advice)
@@ -40,12 +42,12 @@ void init_Advisor(AW_root *awr);
     @see init_Advisor
 */
 void AW_advice(const char *message,
-               int type = AW_ADVICE_SIMPLE,
+               AW_Advice_Type type = AW_ADVICE_SIMPLE,
                const char *title = 0,
                const char *corresponding_help = 0);
 
 //! reactivates all advices which were disabled by the user
-void AW_reactivate_all_advices();
+void AW_reactivate_all_advices(AW_window*);
 
 
 #else

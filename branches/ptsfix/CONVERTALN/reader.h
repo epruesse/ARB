@@ -90,8 +90,7 @@ struct SimpleFormatReader : public Reader, public FormatReader {
 #define ENFORCE_CHECKED_WRITTEN
 #endif
 
-class Writer {
-public:
+struct Writer {
     Writer() {}
     virtual ~Writer() {}
 

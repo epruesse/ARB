@@ -1578,7 +1578,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             aws->at_newline();
 
             aws->callback((AW_CB0)AW_POPDOWN);                          aws->create_button(ID.fromKey("CLOSE"), "CLOSE", "C");
-            aws->callback(AW_POPUP_HELP, (AW_CL)"input_mask.hlp");      aws->create_button(ID.fromKey("HELP"), "HELP", "H");
+            aws->callback(makeHelpCallback("input_mask.hlp"));      aws->create_button(ID.fromKey("HELP"), "HELP", "H");
 
             if (edit_reload) {
                 aws->callback(AWT_edit_input_mask, (AW_CL)&mask->mask_global().get_maskname(), (AW_CL)mask->mask_global().is_local_mask());   aws->create_button(0, "EDIT", "E");
@@ -2065,7 +2065,6 @@ void awt_input_mask::link_to(GBDATA *gb_item) {
 
 awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_) {
     title = strdup(title_);
-    // cppcheck-suppress copyCtorNoAllocation (fails to detect strdup as allocation)
     internal_maskname    = (char*)malloc(strlen(maskname_)+2);
     internal_maskname[0] = local ? '0' : '1';
     strcpy(internal_maskname+1, maskname_);
@@ -2322,7 +2321,7 @@ static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { /
         aws->button_length(10);
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", 0);
-        aws->callback(AW_POPUP_HELP, (AW_CL)"input_mask_new.hlp");
+        aws->callback(makeHelpCallback("input_mask_new.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at_newline();

@@ -82,7 +82,7 @@ static AW_window *create_dna_matrix_window(AW_root *aw_root) {
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"user_matrix.hlp");
+    aws->callback(makeHelpCallback("user_matrix.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at_newline();
@@ -1057,7 +1057,7 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *sa
         aws->create_button("CLOSE", "CANCEL", "C");
 
 
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"save_matrix.hlp");
+        aws->at("help"); aws->callback(makeHelpCallback("save_matrix.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("user");
@@ -1410,7 +1410,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"dist.hlp");
+    aws->callback(makeHelpCallback("dist.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
 
@@ -1431,7 +1431,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->sep______________();
     aws->insert_menu_topic("save_props",  "Save Properties (dist.arb)", "S", "savedef.hlp",     AWM_ALL,          (AW_CB)AW_save_properties, 0, 0);
 
-    aws->insert_help_topic("ARB_DIST help", "h", "dist.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"dist.hlp", 0);
+    aws->insert_help_topic("ARB_DIST help", "h", "dist.hlp", AWM_ALL, (AW_CB)AW_help_popup, (AW_CL)"dist.hlp", 0);
 
     // ------------------
     //      left side

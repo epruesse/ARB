@@ -1228,16 +1228,16 @@ static void ED4_menu_perform_block_operation(AW_window */*aww*/, AW_CL type, AW_
     ED4_perform_block_operation(ED4_blockoperation_type(type));
 }
 
-static void modes_cb(AW_window*, AW_CL cd1, AW_CL) {
-    ED4_ROOT->species_mode = ED4_species_mode(cd1);
+static void modes_cb(AW_window*, ED4_species_mode smode) {
+    ED4_ROOT->species_mode = smode;
     for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
-        win->aww->select_mode(cd1);
+        win->aww->select_mode(smode);
     }
 }
 
 void ED4_no_dangerous_modes() {
     if (ED4_ROOT->species_mode == ED4_SM_KILL) {
-        modes_cb(NULL, (AW_CL)ED4_SM_MOVE, 0);
+        modes_cb(NULL, ED4_SM_MOVE);
     }
 }
 
@@ -1618,7 +1618,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     }
     awmm->close_sub_menu();
 
-    awmm->insert_help_topic("ARB_EDIT4 help",     "E", "e4.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"e4.hlp", 0);
+    awmm->insert_help_topic("ARB_EDIT4 help",     "E", "e4.hlp", AWM_ALL, (AW_CB)AW_help_popup, (AW_CL)"e4.hlp", 0);
 
     // ----------------------------------------------------------------------------------------------------
 
@@ -1864,9 +1864,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     // Buttons at left window border
 
-    awmm->create_mode("edit/arrow.xpm", "normal.hlp", AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_MOVE, (AW_CL)0);
-    awmm->create_mode("edit/kill.xpm",  "kill.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_KILL, (AW_CL)0);
-    awmm->create_mode("edit/mark.xpm",  "mark.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_MARK, (AW_CL)0);
+    awmm->create_mode("edit/arrow.xpm", "normal.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MOVE));
+    awmm->create_mode("edit/kill.xpm",  "kill.hlp",   AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_KILL));
+    awmm->create_mode("edit/mark.xpm",  "mark.hlp",   AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MARK));
 
     FastAligner_create_variables(awmm->get_root(), props_db);
 

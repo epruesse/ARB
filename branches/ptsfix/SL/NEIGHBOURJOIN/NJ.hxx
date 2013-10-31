@@ -22,8 +22,7 @@
 
 typedef double AP_FLOAT;
 
-class PH_NEIGHBOUR_DIST {
-public:
+struct PH_NEIGHBOUR_DIST {
     PH_NEIGHBOUR_DIST();
     long    i, j;
     AP_FLOAT val;

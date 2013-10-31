@@ -197,7 +197,7 @@ static void popup_probe_design_result_window(AW_window *aww, AW_CL cl_gb_main) {
         PD.win->auto_space(10, 10);
 
         PD.win->at("help");
-        PD.win->callback(AW_POPUP_HELP, (AW_CL)"probedesignresult.hlp");
+        PD.win->callback(makeHelpCallback("probedesignresult.hlp"));
         PD.win->create_button("HELP", "HELP", "H");
 
         PD.win->at("result");
@@ -1211,7 +1211,7 @@ static AW_window *create_probe_expert_window(AW_root *root, AW_CL for_design) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)(for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp")); // uses_hlp_res("pm_spec_param.hlp", "pd_spec_param.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
+    aws->callback(makeWindowCallback(AW_help_popup, for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp")); // uses_hlp_res("pm_spec_param.hlp", "pd_spec_param.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
     aws->at("help");
     aws->create_button("HELP", "HELP", "C");
 
@@ -1296,7 +1296,7 @@ AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"probedesign.hlp");
+    aws->callback(makeHelpCallback("probedesign.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->callback(probe_design_event, cl_gb_main);
@@ -1525,7 +1525,7 @@ static AW_window *create_IUPAC_resolve_window(AW_root *root, AW_CL cl_gb_main) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"pd_match_iupac.hlp");
+    aws->callback(makeHelpCallback("pd_match_iupac.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "C");
 
@@ -1575,7 +1575,7 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"probematch.hlp");
+        aws->callback(makeHelpCallback("probematch.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -1839,7 +1839,7 @@ AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     aws->load_xfig("pd_admin.fig");
 
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"probeadmin.hlp");
+    aws->callback(makeHelpCallback("probeadmin.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -2075,7 +2075,7 @@ static void create_probe_group_groups_window(AW_window *aww, AW_CL) {
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"");
+        aws->callback(makeHelpCallback(""));
         aws->create_button("HELP", "HELP");
 
         create_probe_group_result_sel_box(aw_root, aws, gb_main);

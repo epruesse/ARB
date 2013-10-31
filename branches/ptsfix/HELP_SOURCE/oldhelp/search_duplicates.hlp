@@ -19,7 +19,6 @@ DESCRIPTION     Searches groups of species containing
                          * identical words in values
 
                 in the field selected at 'Search field' of the first query.
-# @@@ paragraph above gets poor formatting. if blank lines are remove, output is even worse
 
                 All duplicated occurrences are added to the hitlist - first occurrence gets '1st' added,
                 following occurrences get 'dup' added.

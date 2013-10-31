@@ -243,7 +243,7 @@ public:
             case PT_SECOND_FREQUENT_BASE: f = freq[1][pos]; break;
             case PT_THIRD_FREQUENT_BASE:  f = freq[2][pos]; break;
             case PT_LEAST_FREQUENT_BASE:  f = freq[3][pos]; break;
-            default: nt_assert(0); break;
+            default: nt_assert(0); f = 0; break;
         }
         return f;
     }
@@ -589,7 +589,7 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"csp_2_gnuplot.hlp");
+    aws->at("help"); aws->callback(makeHelpCallback("csp_2_gnuplot.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     AW_create_fileselection(aws, AWAR_CS2GP);

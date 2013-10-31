@@ -48,10 +48,8 @@ static void NDS_changed(AW_root *root, AW_CL refresh) {
     sprintf(buf, ED4_AWAR_NDS_WIDTH_TEMPLATE, toggle);
     NDS_width = root->awar(buf)->read_int();
 
-    if (refresh) {
-        ED4_calc_terminal_extentions();
-        ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension).expect_no_error();
-        ED4_ROOT->main_manager->request_resize();
+    if (refresh) { 
+        ED4_request_relayout();
     }
 }
 
@@ -126,7 +124,7 @@ AW_window *ED4_create_nds_window(AW_root *root)
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"ed4_nds.hlp");
+    aws->callback(makeHelpCallback("ed4_nds.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

@@ -662,7 +662,8 @@ static GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
     for (cbl = Main->cbld; cbl;  cbl = cbl_next) {
         g_b_old_callback_list = cbl;
         cbl->spec.func(cbl->gbd, cbl->spec.clientdata, GB_CB_DELETE);
-        cbl_next = cbl->next;
+        cbl_next              = cbl->next;
+        // cppcheck-suppress redundantAssignment (g_b_old_callback_list is tested by callback, e.g. via GB_inside_callback)
         g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
         gbm_free_mem(cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
@@ -676,6 +677,7 @@ static GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
         g_b_old_callback_list = cbl;
         cbl->spec.func(cbl->gbd, cbl->spec.clientdata, cbl->spec.type);
         cbl_next = cbl->next;
+        // cppcheck-suppress redundantAssignment (g_b_old_callback_list is tested by callback, e.g. via GB_inside_callback)
         g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
         gbm_free_mem(cbl, sizeof(gb_callback_list), GBM_CB_INDEX);

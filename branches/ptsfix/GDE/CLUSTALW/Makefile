@@ -7,10 +7,10 @@ OBJECTS = $(SOURCE_FILES:.c=.o)
 BINARY=$(ARBHOME)/bin/clustalw
 
 $(BINARY) : $(OBJECTS)
-	 $(ACC) $(cflags) -o $@ $(OBJECTS) -lm
+	$(A_CC) $(cflags) -o $@ $(OBJECTS) -lm
 
 .c.o:
-	$(ACC) $(cflags) -c -o $@ $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c -o $@ $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f *.o $(BINARY)

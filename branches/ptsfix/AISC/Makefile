@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .depend
 SOURCES = $(wildcard *.c)
@@ -7,17 +7,16 @@ OBJECTS = $(subst .c,.o,$(SOURCES))
 BINARY=aisc
 
 LOCAL_DEFINES=-DSIMPLE_ARB_ASSERT
-LOCAL_CFLAGS=$(cflags) $(LOCAL_DEFINES)
 LOCAL_MAKEDEPENDFLAGS=$(MAKEDEPENDFLAGS) $(LOCAL_DEFINES)
 
 $(MAIN): proto
 	$(MAKE) $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	$(CPP) $(LOCAL_CFLAGS) -o $@ $(OBJECTS)
+	$(LINK_EXECUTABLE) $@ $(OBJECTS) 
 
 .c.o:
-	$(CPP) -x c++ $(LOCAL_CFLAGS) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CXX) -x c++ $(cflags) $(cxxflags) $(LOCAL_DEFINES) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)

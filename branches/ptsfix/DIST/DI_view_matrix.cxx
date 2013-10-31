@@ -658,7 +658,7 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"matrix_settings.hlp");
+    aws->callback(makeHelpCallback("matrix_settings.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->label_length(21);

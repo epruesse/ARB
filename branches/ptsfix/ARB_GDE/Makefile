@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS =   \
@@ -16,7 +16,7 @@ CPP_FILES=$(CPP_OBJECTS:.o=.cxx)
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 GDE_proto.h: $(CPP_FILES) Makefile
 	$(MAKE) proto
@@ -57,6 +57,7 @@ GDE.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_msg.h
+GDE.o: $(ARBHOME)/INCLUDE/arb_str.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_string.h
 GDE.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE.o: $(ARBHOME)/INCLUDE/arbdb_base.h
