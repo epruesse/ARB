@@ -85,6 +85,7 @@ iupac.o: $(ARBHOME)/INCLUDE/arb_assert.h
 iupac.o: $(ARBHOME)/INCLUDE/arb_core.h
 iupac.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 iupac.o: $(ARBHOME)/INCLUDE/arbtools.h
+iupac.o: $(ARBHOME)/INCLUDE/attributes.h
 iupac.o: $(ARBHOME)/INCLUDE/cxxforward.h
 iupac.o: $(ARBHOME)/INCLUDE/dupstr.h
 iupac.o: $(ARBHOME)/INCLUDE/gccver.h
