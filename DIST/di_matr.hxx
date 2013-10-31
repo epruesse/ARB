@@ -119,7 +119,7 @@ public:
         return defined() ? GBS_read_hash(name2pos, name) : -1;
     }
 
-    void applyTo(class TreeOrderedSpecies **gb_species_array, size_t array_size) const;
+    void applyTo(struct TreeOrderedSpecies **gb_species_array, size_t array_size) const;
 };
 
 typedef void (*DI_MATRIX_CB)();

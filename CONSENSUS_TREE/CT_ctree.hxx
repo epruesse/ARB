@@ -30,10 +30,10 @@
 #include <string>
 #endif
 
-class PART;
-class NT_NODE;
-class PartitionSize;
-class PartRegistry;
+class  PART;
+struct NT_NODE;
+class  PartitionSize;
+class  PartRegistry;
 
 class ConsensusTree : virtual Noncopyable {
     double   overall_weight;
@@ -57,8 +57,8 @@ class ConsensusTree : virtual Noncopyable {
         return names[idx];
     }
 
-    class RB_INFO *rbtree(const NT_NODE *tree, GBT_TREE *father);
-    GBT_TREE      *rb_gettree(const NT_NODE *tree);
+    struct RB_INFO *rbtree(const NT_NODE *tree, GBT_TREE *father);
+    GBT_TREE       *rb_gettree(const NT_NODE *tree);
 
 
 public:
