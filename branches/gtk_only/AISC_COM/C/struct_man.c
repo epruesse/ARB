@@ -263,8 +263,7 @@ void trf_create(long old, long new_item) {
     for (ts = trf_sp[i]; ts; ts = ts->next) {
         if (ts->old == old) {
             if (ts->new_item && (ts->new_item != new_item)) {
-                fprintf(stderr, "ERROR IN trf_create:\n");
-                *(int *) NULL = 0;
+                GBK_terminate("ERROR IN trf_create");
             }
             else {
                 ts->new_item = new_item;
@@ -325,8 +324,7 @@ void trf_commit(int errors) {
             for (ts = trf_sp[i]; ts; ts = nts) {
                 if (errors) {
                     if (ts->dests) {
-                        fprintf(stderr, "ERROR IN trf_commit:\n");
-                        *(int *) NULL = 0;
+                        GBK_terminate("ERROR IN trf_commit");
                     }
                 }
                 else {
