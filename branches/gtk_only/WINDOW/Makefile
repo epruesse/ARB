@@ -18,7 +18,7 @@ $(LIB_SHARED): $(OBJECTS)
 	@$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(shared_cflags) $(cxxflags) $(cflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
@@ -356,7 +356,9 @@ AW_clipable.o: aw_gtk_migration_helpers.hxx
 AW_clipable.o: aw_position.hxx
 AW_clipable.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_clipable.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_clipable.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_clipable.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_clipable.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_clipable.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_color_groups.o: aw_area_management.hxx
@@ -707,7 +709,9 @@ AW_drawing_area.o: aw_gtk_closures.hxx
 AW_drawing_area.o: aw_gtk_forward_declarations.hxx
 AW_drawing_area.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_drawing_area.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_drawing_area.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_drawing_area.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_drawing_area.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_drawing_area.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_edit.o: aw_action.hxx
@@ -1098,7 +1102,9 @@ AW_position.o: aw_gtk_migration_helpers.hxx
 AW_position.o: aw_position.hxx
 AW_position.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_position.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_position.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_position.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_position.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_position.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_preset.o: aw_action.hxx
@@ -1841,5 +1847,7 @@ AW_zoomable.o: aw_position.hxx
 AW_zoomable.o: aw_zoomable.hxx
 AW_zoomable.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_zoomable.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_zoomable.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_zoomable.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_zoomable.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_zoomable.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -22,7 +22,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cxxflags) $(cflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -49,6 +49,7 @@ SEC_abspos.o: SEC_defs.hxx
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arbtools.h
+SEC_abspos.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/gccver.h

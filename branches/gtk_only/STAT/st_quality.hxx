@@ -92,14 +92,12 @@ public:
     // int is_bad();                                   // 0 == ok, 1 strange, 2 bad, 3 very bad
 };
 
-class ColumnQualityInfo {
-public:
+struct ColumnQualityInfo {
     LikelihoodRanges stat_half;                    // two ranges (one for each half)
     LikelihoodRanges stat_five;                    // five ranges
     LikelihoodRanges stat_user;                    // user defined range size
-    LikelihoodRanges stat_cons;                    // two ranges (conserved + variable positions) -- @@@ unused 
+    LikelihoodRanges stat_cons;                    // two ranges (conserved + variable positions) -- @@@ unused
 
-public:
     ColumnQualityInfo(int seq_len, int bucket_size);
 
     size_t overall_range_count() {

@@ -31,11 +31,25 @@
 
 
 class SQ_helix : virtual Noncopyable {
+    const char *sequence;
+    int         count_strong_helix;
+    int         count_weak_helix;
+    int         count_no_helix;
+    int         size;
+
+    static SmartPtr<BI_helix>  helix;
+    static GBDATA             *helix_gb_main;
+    static std::string         helix_ali_name;
+    static std::map<int, int>  filterMap;
+    static bool                has_filterMap;
+
+    static BI_helix & getHelix(GBDATA * gb_main, const char *ali_name);
+
 public:
     SQ_helix(int size);
     ~SQ_helix();
     void SQ_calc_helix_layout(const char *sequence, GBDATA * gb_main,
-            char *alignment_name, GBDATA * gb_quality, AP_filter * filter);
+                              char       *alignment_name, GBDATA * gb_quality, AP_filter * filter);
     int SQ_get_no_helix() const {
         return count_no_helix;
     }
@@ -45,20 +59,6 @@ public:
     int SQ_get_strong_helix() const {
         return count_strong_helix;
     }
-private:
-    const char *sequence;
-    int count_strong_helix;
-    int count_weak_helix;
-    int count_no_helix;
-    int size;
-
-    static SmartPtr<BI_helix> helix;
-    static GBDATA *helix_gb_main;
-    static std::string helix_ali_name;
-    static std::map<int, int> filterMap;
-    static bool has_filterMap;
-
-    static BI_helix & getHelix(GBDATA * gb_main, const char *ali_name);
 };
 
 // global data

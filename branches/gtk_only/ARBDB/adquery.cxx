@@ -147,7 +147,7 @@ static GBDATA *find_sub_by_quark(GBCONTAINER *father, GBQUARK key_quark, GB_TYPE
     }
     else { // specific key quark
         for (; index < end; index++) {
-            if ((key_quark == header[index].flags.key_quark)) {
+            if (key_quark == header[index].flags.key_quark) {
                 if (header[index].flags.changed >= GB_DELETED) continue;
                 GBDATA *gb = GB_HEADER_LIST_GBD(header[index]);
                 if (!gb) {
@@ -948,7 +948,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         if (*s1 == '|') s1++;
 
         // ** loop over all commands **
-        for (s1 = s1; s1;  s1 = s2) {
+        for (; s1;  s1 = s2) {
             int separator;
             GBL_COMMAND command;
             s2 = gbs_search_next_separator(s1, "|;,");

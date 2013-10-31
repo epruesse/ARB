@@ -51,9 +51,7 @@ enum {
     RNA3D_GC_MAX
 };
 
-class RNA3D_Graphics : public AWT_nonDB_graphic, virtual Noncopyable {
-public:
-
+struct RNA3D_Graphics : public AWT_nonDB_graphic, virtual Noncopyable {
     GBDATA     *gb_main;
     AW_root    *aw_root;
 

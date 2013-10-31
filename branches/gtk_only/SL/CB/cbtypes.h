@@ -55,16 +55,14 @@ struct Function<RT, void, void, void> {
 //      forward parameters
 
 template<typename T>
-class ForwardParamT {
-public:
+struct ForwardParamT {
     typedef typename IfThenElseType< TypeT<T>::IsClassT,
                                      typename TypeOp<T>::RefConstT,
                                      typename TypeOp<T>::ArgT >::ResultType Type;
 };
 
 template<typename T>
-class ForwardParamT<T*> {
-public:
+struct ForwardParamT<T*> {
     typedef typename TypeOp<T>::ArgT *Type;
 };
 template<> class ForwardParamT<void> { class Unused {}; public: typedef Unused Type; };
@@ -73,15 +71,13 @@ template<> class ForwardParamT<void> { class Unused {}; public: typedef Unused T
 //      const parameter types
 
 template<typename T>
-class ConstParamT {
-public:
+struct ConstParamT {
     typedef typename IfThenElseType< TypeT<T>::IsClassT,
                                      typename TypeOp<T>::RefConstT,
                                      typename TypeOp<T>::ConstT >::ResultType Type;
 };
 template<typename T>
-class ConstParamT<T*> {
-public:
+struct ConstParamT<T*> {
     typedef typename TypeOp<T>::ConstT *Type;
 };
 template<> class ConstParamT<void> { class Unused {}; public: typedef Unused Type; };
@@ -103,8 +99,7 @@ INVALID_CB_PARAM_TYPE(float);
 //      typed callback
 
 template<typename RT, typename P1 = void, typename P2 = void, typename P3 = void>
-class StrictlyTypedCallback {
-public:
+struct StrictlyTypedCallback {
     typedef typename Function<RT,P1,P2,P3>::Type FuncType;
 
 private:
@@ -165,8 +160,7 @@ typedef CallbackData<AW_CL,AW_CL> UntypedCallbackData;
 typedef struct Unfixed_cb_parameter *UNFIXED; // Unfixed_cb_parameter does not exist (intentionally!)
 
 template<typename RT, typename FIXED>
-class Callback_FVV { // FVV stands for arguments (FIXED, VARIABLE, VARIABLE)
-public:
+struct Callback_FVV { // FVV stands for arguments (FIXED, VARIABLE, VARIABLE)
     typedef StrictlyTypedCallback<RT,FIXED,AW_CL,AW_CL> Signature;
 
 private:
@@ -188,8 +182,7 @@ public:
 };
 
 template<typename RT, typename F1, typename F2>
-class Callback_FVF { // FVF stands for arguments (FIXED, VARIABLE, FIXED)
-public:
+struct Callback_FVF { // FVF stands for arguments (FIXED, VARIABLE, FIXED)
     typedef StrictlyTypedCallback<RT,F1,AW_CL,F2>  SigP1;
     typedef StrictlyTypedCallback<RT,F1,F2,void>   SigP0F12;
     typedef StrictlyTypedCallback<RT,F2,void,void> SigP0F2;

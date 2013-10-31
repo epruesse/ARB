@@ -47,10 +47,8 @@
 #define SUPPORTS_PALETTE_EXT
 #endif
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 static unsigned char DefaultAlphaCallback(unsigned char red, unsigned char green, unsigned char blue) {
-    red   = red;   // unused
-    green = green; // unused
-    blue  = blue;  // unused
     return 255;
 }
 

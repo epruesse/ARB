@@ -41,11 +41,11 @@
 
 #define cl_assert(cond) arb_assert(cond)
 
-class ClusterTree;
-class ARB_tree_predicate;
-class ARB_countedTree;
-class AW_selection_list;
-class AW_window;
+class  ClusterTree;
+class  ARB_tree_predicate;
+struct ARB_countedTree;
+class  AW_selection_list;
+class  AW_window;
 
 // ---------------------
 //      Cluster

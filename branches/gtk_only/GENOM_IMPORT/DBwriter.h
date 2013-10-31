@@ -48,7 +48,7 @@ public:
 };
 
 typedef std::map<std::string, int> NameCounter;
-class Translator;
+struct Translator;
 
 class DBwriter : virtual Noncopyable {
     const char     *ali_name;

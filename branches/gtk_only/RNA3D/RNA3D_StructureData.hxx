@@ -106,8 +106,7 @@ class ED4_sequence_terminal;
 class BI_ecoli_ref;
 struct ED4_plugin_host;
 
-class Structure3D : virtual Noncopyable {
-public:
+struct Structure3D : virtual Noncopyable {
     Vector3 *strCen;
 
     int iInterval;

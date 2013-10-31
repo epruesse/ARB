@@ -19,7 +19,7 @@
 #endif
 
 
-struct AW_selection_list;
+class AW_selection_list;
 
 namespace QUERY {
 
