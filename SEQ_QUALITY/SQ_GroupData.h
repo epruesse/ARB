@@ -37,10 +37,17 @@ struct consensus_result {
 };
 
 class SQ_GroupData {
+protected:
+    int    size;
+    int    avg_bases;
+    int    nr_sequences;
+    double gc_prop;
+    bool   initialized;
+
 public:
     SQ_GroupData();
     virtual ~SQ_GroupData();
-    virtual SQ_GroupData& operator = (const SQ_GroupData& other) = 0;
+    virtual SQ_GroupData& operator      = (const SQ_GroupData& other) = 0;
     virtual SQ_GroupData *clone() const = 0;
 
     void SQ_set_avg_bases(int bases) {
@@ -75,12 +82,6 @@ public:
         return size;
     }
 
-protected:
-    int size;
-    int avg_bases;
-    int nr_sequences;
-    double gc_prop;
-    bool initialized;
 };
 
 template <int I> class Int {

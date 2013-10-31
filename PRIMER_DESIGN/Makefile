@@ -19,7 +19,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_EXECUTABLE) $@ PRD_main.o $(MAIN) $(EXECLIBS)
 
 .cxx.o:
-	$(A_CXX) $(cxxflags) $(cflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -75,6 +75,7 @@ PRD_Item.o: PRD_SequenceIterator.hxx
 PRD_Item.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/arb_core.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/arbtools.h
+PRD_Item.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -85,6 +86,7 @@ PRD_Node.o: PRD_Node.hxx
 PRD_Node.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/arb_core.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/arbtools.h
+PRD_Node.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -96,6 +98,7 @@ PRD_Pair.o: PRD_Pair.hxx
 PRD_Pair.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/arb_core.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/arbtools.h
+PRD_Pair.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -106,6 +109,7 @@ PRD_Range.o: PRD_Range.hxx
 PRD_Range.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/arb_core.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/arbtools.h
+PRD_Range.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -118,6 +122,7 @@ PRD_SearchFIFO.o: PRD_SearchFIFO.hxx
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/arb_core.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/arbtools.h
+PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -128,6 +133,7 @@ PRD_SequenceIterator.o: PRD_SequenceIterator.hxx
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/arb_core.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/arbtools.h
+PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/gccver.h

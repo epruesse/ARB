@@ -42,7 +42,7 @@ BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
 all: $(BINARIES)
 
 %.o: %.cxx 
-	$(A_CXX) $(cxxflags) $(cflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 %.o: %.c
 	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)

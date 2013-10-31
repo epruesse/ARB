@@ -28,8 +28,7 @@ enum {
     OPT_COUNT = 8,
 };
 
-class PH_filter : virtual Noncopyable {
-public:
+struct PH_filter : virtual Noncopyable {
     char *filter;                                   // 0 1
     long  filter_len;
     long  real_len;                                 // how many 1

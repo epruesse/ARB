@@ -96,8 +96,7 @@ GB_ERROR GBP_remove_callback(GBDATA *gbd, const char *perl_func, const char *per
 }
 
 
-class ARB_init_perl_interface {
- public:
+struct ARB_init_perl_interface {
     ARB_init_perl_interface() {
         GBP_croak_function = GBP_croak;
     }

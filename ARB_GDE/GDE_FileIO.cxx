@@ -735,10 +735,10 @@ void ReadCMask(const char *filename)
                     if (aln->element[indx].tmatrix)
                         for (; (getelem(&(aln->element[indx]), jj
                                       +offset)
-                                ==(aln->element[indx].tmatrix[safeCharIndex('-')])
+                                ==(aln->element[indx].tmatrix['-'])
                               || (getelem(&(aln->element[indx]), jj
                                           +offset)
-                                  ==aln->element[indx].tmatrix[safeCharIndex('~')]))
+                                  ==aln->element[indx].tmatrix['~']))
                                 && jj < aln->element[indx].seqlen;)
                             colors[jj++] = 12;
                     else

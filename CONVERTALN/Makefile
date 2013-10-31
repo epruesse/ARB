@@ -9,7 +9,7 @@ check_error_codes:
 	@./show_error_list.pl -check
 
 .cxx.o:
-	$(A_CXX) $(cxxflags) $(cflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -G -w prototypes.h $(OBJECTS:.o=.cxx) >prototypes.h.tmp

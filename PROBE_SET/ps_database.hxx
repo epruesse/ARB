@@ -42,10 +42,10 @@ private:
     void writeTree(PS_FileBuffer *_file);
 
     // tree merging data structures and functions
-    ID2IDMap       db_file2db_id_map;
-    PS_NodePtr     db_path;
-    SpeciesID      db_MAX_ID;
-    SpeciesID      db_MIN_ID;
+    ID2IDMap   db_file2db_id_map;
+    PS_NodePtr db_path;
+    SpeciesID  db_MAX_ID;
+
     void callback(void *_caller) OVERRIDE;
 
 public:

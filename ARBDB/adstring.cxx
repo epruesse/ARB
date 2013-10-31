@@ -74,7 +74,7 @@ GB_ERROR GB_check_key(const char *key) { // goes to header: __ATTR__USERESULT
         if ((c>='a') && (c<='z')) continue;
         if ((c>='A') && (c<='Z')) continue;
         if ((c>='0') && (c<='9')) continue;
-        if ((c=='_')) continue;
+        if (c=='_') continue;
         return GBS_global_string("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
     }
 
@@ -95,7 +95,7 @@ GB_ERROR GB_check_link_name(const char *key) { // goes to header: __ATTR__USERES
         if ((c>='a') && (c<='z')) continue;
         if ((c>='A') && (c<='Z')) continue;
         if ((c>='0') && (c<='9')) continue;
-        if ((c=='_')) continue;
+        if (c=='_') continue;
         return GB_export_errorf("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
     }
 
@@ -992,7 +992,7 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
 // #define TEST_TEST_MACROS
 
 #ifdef ENABLE_CRASH_TESTS
-static void provokesegv() { *(int *)0 = 0; }
+static void provokesegv() { *(volatile int *)0 = 0; }
 # if defined(TEST_TEST_MACROS)
 static void dont_provokesegv() {}
 # endif

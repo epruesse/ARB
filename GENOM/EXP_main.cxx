@@ -50,8 +50,7 @@ void EXP_create_awars(AW_root *aw_root, AW_default /* aw_def */, GBDATA *gb_main
 // ---------------------------------------
 //      EXP_item_type_species_selector
 
-class EXP_item_type_species_selector : public awt_item_type_selector {
-public:
+struct EXP_item_type_species_selector : public awt_item_type_selector {
     EXP_item_type_species_selector() : awt_item_type_selector(AWT_IT_EXPERIMENT) {}
     virtual ~EXP_item_type_species_selector() OVERRIDE {}
 

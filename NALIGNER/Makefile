@@ -2,10 +2,6 @@
 
 .SUFFIXES: .o .c .cxx .depend
 
-#CFLAGS = -g
-#CFLAGS = -O2
-CFLAGS = $(cflags)
-
 CPP_OBJECTS = \
 	ali_aligner.o \
 	ali_arbdb.o \
@@ -22,7 +18,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cxxflags) $(CFLAGS) -c -o $@ $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a

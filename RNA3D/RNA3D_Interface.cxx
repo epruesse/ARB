@@ -454,12 +454,10 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
         aws->at("helixSize");
         aws->create_input_field(AWAR_3D_HELIX_SIZE, 5);
         {
-            const char  *helixRange = 0;
-            Structure3D *s;
-#if defined(WARN_TODO)
-#warning s is not initialized here
-#endif
-            int          rnaType    = s->FindTypeOfRNA();
+            const char *helixRange = 0;
+
+            arb_assert(RNA3D->cStructure);
+            int rnaType = RNA3D->cStructure->FindTypeOfRNA();
 
             switch (rnaType) {
                 case LSU_23S: helixRange = "[1-101]"; break;
@@ -681,10 +679,11 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
 
     awm->create_menu("File", "F", AWM_ALL);
     {
-        Structure3D *s;
-        int rnaType = s->FindTypeOfRNA();
-        if (rnaType == LSU_23S)
+        arb_assert(RNA3D->cStructure);
+        int rnaType = RNA3D->cStructure->FindTypeOfRNA();
+        if (rnaType == LSU_23S) {
             awm->insert_menu_topic("changeMolecule", "Change Molecule", "M", "rna3d_changeMolecule.hlp", AWM_ALL, AW_POPUP, (AW_CL)CreateChangeMolecule_window, 0);
+        }
     }
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 

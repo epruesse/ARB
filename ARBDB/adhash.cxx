@@ -978,8 +978,7 @@ static bool hashes_are_equal(GB_HASH *h1, GB_HASH *h2) {
     return equal;
 }
 
-class TestData : virtual Noncopyable {
-public:
+struct TestData : virtual Noncopyable {
     GB_HASH    *mind;
     GB_HASH    *ignore;
     GB_NUMHASH *num;
@@ -1145,7 +1144,9 @@ inline long key2val(long key, int pass) {
             val = key*17461;
             break;
         default :
+            val = LONG_MIN;
             TEST_EXPECT(0); // NEED_NO_COV
+            break;
     }
     return val;
 }

@@ -49,6 +49,7 @@ if (defined $ARBHOME) {
   push @boring_extensions, 'stamp';
   push @boring_extensions, 'depends';
   push @boring_extensions, 'last_gcc';
+  push @boring_extensions, 'last_compiler';
 
   push @boring_fullmatches, qr/$ARBHOME\/lib\/ARB\.pm$/;
   push @boring_fullmatches, qr/$ARBHOME\/PERL2ARB\/.*ARB\.(bs|xs|c|3pm)$/;

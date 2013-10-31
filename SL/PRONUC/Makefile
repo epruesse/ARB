@@ -14,7 +14,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cxxflags) $(cflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
 	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
@@ -85,6 +85,7 @@ iupac.o: $(ARBHOME)/INCLUDE/arb_assert.h
 iupac.o: $(ARBHOME)/INCLUDE/arb_core.h
 iupac.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 iupac.o: $(ARBHOME)/INCLUDE/arbtools.h
+iupac.o: $(ARBHOME)/INCLUDE/attributes.h
 iupac.o: $(ARBHOME)/INCLUDE/cxxforward.h
 iupac.o: $(ARBHOME)/INCLUDE/dupstr.h
 iupac.o: $(ARBHOME)/INCLUDE/gccver.h

@@ -387,7 +387,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
 
 
-void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const char *menuitemlabel) {
+void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel, const char *menuitemlabel) {
     // Load GDE menu items.
     //
     // If 'menulabel' == NULL -> load all menus

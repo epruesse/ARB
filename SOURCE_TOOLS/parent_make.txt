@@ -16,7 +16,8 @@ Short description of most important variables passed from parent makefiles:
       A_CXX               C++-compiler
 
       cflags              C-compiler flags
-      cxxflags            additional C++-compiler flags (should be used together with cflags!)
+      cxxflags            additional C++-compiler flags
+                          (should be used as '$(cflags) $(cxxflags)'!)
       shared_cflags       additional compiler flags used when compiling objects for a shared library
 
       CC_INCLUDES         include directories for C-compiler
