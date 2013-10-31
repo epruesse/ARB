@@ -60,25 +60,45 @@ READLINK:=$(ARBHOME)/SH/arb_readlink
 
 # ---------------------- compiler version detection
 
-# supported compiler versions:
-
-ALLOWED_GCC_4xx_VERSIONS=\
-	4.2.1 \
+# supported gcc versions:
+ALLOWED_gcc_VERSIONS=\
 	4.3.1 4.3.2 4.3.3 4.3.4 \
 	4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
 	      4.5.2 \
 	4.6.1 4.6.2 4.6.3 \
 	4.7.1 4.7.2 4.7.3 \
-	4.8.0 4.8.1
+	4.8.0 4.8.1 \
 
-ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
+# supported clang versions:
+ALLOWED_clang_VERSIONS=\
+	4.2.1 \
 
-GCC_VERSION_FOUND=$(shell SOURCE_TOOLS/arb_gcc_version.pl $(A_CXX))
-GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
+# ----------------------
+
+COMPILER_INFO=$(shell SOURCE_TOOLS/arb_compiler_version.pl $(A_CXX))
+COMPILER_NAME=$(word 1,$(COMPILER_INFO))
+COMPILER_VERSION=$(word 2,$(COMPILER_INFO))
+
+USE_CLANG:=0
+ifneq ($(COMPILER_NAME),gcc)
+ ifeq ($(COMPILER_NAME),clang)
+  USE_CLANG:=1
+ else
+  $(error failed to detect COMPILER_NAME (got '$(COMPILER_NAME)', expected 'clang' or 'gcc'))
+ endif
+endif
+
+ifeq ($(USE_CLANG),1)
+ALLOWED_COMPILER_VERSIONS=$(ALLOWED_clang_VERSIONS)
+else
+ALLOWED_COMPILER_VERSIONS=$(ALLOWED_gcc_VERSIONS)
+endif
+
+COMPILER_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_COMPILER_VERSIONS),$(findstring ___$(version)___,___$(COMPILER_VERSION)___))))
 
 #---------------------- split gcc version 
 
-SPLITTED_VERSION:=$(subst ., ,$(GCC_VERSION_FOUND))
+SPLITTED_VERSION:=$(subst ., ,$(COMPILER_VERSION))
 
 USE_GCC_MAJOR:=$(word 1,$(SPLITTED_VERSION))
 USE_GCC_MINOR:=$(word 2,$(SPLITTED_VERSION))
@@ -186,7 +206,7 @@ endif
 
 # ------- above only warnings available in 3.0
 
- ifneq ('$(GCC_VERSION_FOUND)','4.7.3') # g++ crashes on GenomeImport.cxx when -Weffc++ is active (bug reported)
+ ifneq ('$(COMPILER_VERSION)','4.7.3') # g++ crashes on GenomeImport.cxx when -Weffc++ is active (bug reported)
 	extended_cpp_warnings += -Weffc++# gcc 3.0.1
  endif
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
@@ -430,7 +450,7 @@ ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
 cxxflags += -std=gnu++11# see also TEMPLATES/cxxforward.h@USE_Cxx11
 else
 # only use for gcc versions between 4.3 and <4.7 (4.7++ adds -Wc++11-compat above)
-HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(GCC_VERSION_FOUND)`
+HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(COMPILER_VERSION)`
  ifeq ($(HAVE_GNUPP0X),1)
 # ensure compatibility with upcoming C++ standard
 cxxflags += -std=gnu++0x
@@ -639,22 +659,22 @@ endif
 # ---------------------------------------- check gcc version
 
 check_same_GCC_VERSION:
-		$(ARBHOME)/SOURCE_TOOLS/check_same_gcc_version.pl $(GCC_VERSION_ALLOWED)
+		$(ARBHOME)/SOURCE_TOOLS/check_same_compiler_version.pl $(COMPILER_NAME) $(COMPILER_VERSION_ALLOWED)
 
 check_GCC_VERSION:
-		@echo 'GCC version check:'
-		@echo "  - Your version is '$(GCC_VERSION_FOUND)'"
-ifeq ('$(GCC_VERSION_ALLOWED)', '')
-		@echo '  - This version is not in the list of supported gcc-versions:'
-		@$(foreach version,$(ALLOWED_GCC_VERSIONS),echo '    * $(version)';)
+		@echo 'Compiler version check:'
+ifeq ('$(COMPILER_VERSION_ALLOWED)', '')
+		@echo "  - Your compiler is '$(COMPILER_NAME)' version '$(COMPILER_VERSION)'"
+		@echo '    This version is not in the list of supported $(COMPILER_NAME)-versions:'
+		@$(foreach version,$(ALLOWED_COMPILER_VERSIONS),echo '    * $(version)';)
 		@echo '  - You may either ..'
-		@echo '    - add your version to ALLOWED_GCC_VERSIONS in the Makefile and try it out or'
+		@echo '    - add your version to ALLOWED_$(COMPILER_NAME)_VERSIONS in the Makefile and try it out or'
 		@echo '    - switch to one of the allowed versions (see arb_README_gcc.txt for installing'
 		@echo '      a different version of gcc)'
 		@echo ''
 		@false
 else
-		@echo "  - Supported gcc version '$(GCC_VERSION_ALLOWED)' detected - fine!"
+		@echo "  - Supported $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' detected - fine!"
 		@echo ''
 		$(MAKE) check_same_GCC_VERSION
 
@@ -1626,7 +1646,7 @@ realperl: perltools
 			"dflags=$(dflags)" \
 			"cross_cflags=$(cross_cflags) $(cppflags) $(dflags)" \
 			"cross_lflags=$(cross_lflags)" \
-			"GCC_VERSION_FOUND=$(GCC_VERSION_FOUND)" \
+			"COMPILER_VERSION=$(COMPILER_VERSION)" \
 			all && \
 		$(TEST_PERL_SCRIPTS) && \
 		echo "$(SEP) Make PERL2ARB [done]" ; \
@@ -1717,7 +1737,7 @@ clean2: $(ARCHS:.a=.clean) \
 		perl_clean \
 		clean_directories \
 
-	rm -f *.last_gcc config.makefile.bak
+	rm -f *.last_gcc *.last_compiler config.makefile.bak
 
 # links are needed for cleanup
 clean: redo_links motif_xpm_hack_clean
