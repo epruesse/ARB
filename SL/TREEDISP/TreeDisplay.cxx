@@ -2851,7 +2851,7 @@ public:
 
         if (!nearlyEqual(zoom, 1.0)) {
             // recalculate size
-            size_device.clear();
+            size_device.restart_tracking();
             size_device.reset();
             size_device.zoom(zoom);
             size_device.set_filter(AW_SIZE|AW_SIZE_UNSCALED);
