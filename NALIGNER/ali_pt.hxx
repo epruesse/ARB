@@ -39,8 +39,7 @@ struct ALI_PT_CONTEXT {
 };
 
 // class of family members
-class ali_pt_member : virtual Noncopyable {
-public:
+struct ali_pt_member : virtual Noncopyable {
     char *name;
     int matches;
 

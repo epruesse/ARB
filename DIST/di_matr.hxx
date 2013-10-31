@@ -61,8 +61,7 @@ class AW_root;
 class AP_sequence_parsimony;
 class AP_sequence_simple_protein;
 
-class DI_ENTRY : virtual Noncopyable {
-public:
+struct DI_ENTRY : virtual Noncopyable {
     DI_ENTRY(GBDATA *gbd, class DI_MATRIX *phmatri);
     DI_ENTRY(char *namei, class DI_MATRIX *phmatri);
     ~DI_ENTRY();

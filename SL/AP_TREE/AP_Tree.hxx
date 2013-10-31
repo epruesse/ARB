@@ -87,8 +87,7 @@ enum AWT_REMOVE_TYPE { // bit flags
     // see ../../ARBDB/arbdbt.h@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
 };
 
-class AP_rates : virtual Noncopyable {
-public:
+struct AP_rates : virtual Noncopyable {
     AP_FLOAT  *rates;
     long       rate_len;
     AP_filter *filter;

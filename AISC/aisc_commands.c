@@ -751,8 +751,7 @@ enum CallMode {
 
 const int DISPATCH_LIMIT = 5000000; // abort after 5mio dispatches to one command-type (DEBUG only)
 
-class Command {
-public:
+struct Command {
     virtual ~Command() {}
     virtual bool matches(const char *code) const   = 0;
     virtual int call(Interpreter& interpret) const = 0;

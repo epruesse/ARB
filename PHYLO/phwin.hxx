@@ -15,8 +15,7 @@
 #include <aw_window.hxx>
 #endif
 
-class PH_used_windows {
-public:
+struct PH_used_windows {
         PH_used_windows();                      // constructor
         static PH_used_windows  *windowList;    // List of all global needed windows and items
         AW_window *phylo_main_window;           // control window

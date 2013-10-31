@@ -431,8 +431,7 @@ void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, 
 // -------------------------------------------------
 //      selection boxes on editor configurations
 
-class AWT_configuration_selection : public AW_DB_selection {
-public:
+struct AWT_configuration_selection : public AW_DB_selection {
     AWT_configuration_selection(AW_selection_list *sellist_, GBDATA *gb_configuration_data)
         : AW_DB_selection(sellist_, gb_configuration_data)
     {}
