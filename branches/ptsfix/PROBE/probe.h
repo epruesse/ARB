@@ -51,8 +51,6 @@ typedef unsigned long ULONG;
 typedef unsigned int  UINT;
 typedef unsigned char uchar;
 
-#define PT_CORE *(int *)0 = 0;
-
 #define PT_MAX_PARTITION_DEPTH 4
 
 #define PT_POS_TREE_HEIGHT 20

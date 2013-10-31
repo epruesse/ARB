@@ -168,9 +168,8 @@ static ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATT
     return error;
 }
 
-int server_shutdown(PT_main *pm, aisc_string passwd) {
+int server_shutdown(PT_main */*pm*/, aisc_string passwd) {
     // password check
-    pm = pm;
     if (strcmp(passwd, "47@#34543df43%&3667gh")) return 1;
 
     fflush_all();

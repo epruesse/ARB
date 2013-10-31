@@ -53,7 +53,7 @@ long PT_abs_2_ecoli_rel(long pos);
 /* PT_main.cxx */
 void PT_init_psg(void);
 void PT_exit_psg(void);
-int server_shutdown(PT_main *pm, aisc_string passwd);
+int server_shutdown(PT_main *, aisc_string passwd);
 int broadcast(PT_main *main, int dummy_1x);
 int ARB_main(int argc, char *argv[]);
 

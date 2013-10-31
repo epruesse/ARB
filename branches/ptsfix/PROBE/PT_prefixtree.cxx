@@ -307,7 +307,7 @@ POS_TREE1 *PT_leaf_to_chain(POS_TREE1 *node) { // @@@ become member
 
 POS_TREE1 *PT_create_leaf(POS_TREE1 **pfather, PT_base base, const DataLoc& loc) {
     pt_assert_stage(STAGE1);
-    if (base >= PT_BASES) PT_CORE;
+    pt_assert(base<PT_BASES);
 
     int leafsize = PT1_EMPTY_LEAF_SIZE;
 
@@ -867,10 +867,7 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE2*& root_ptr) { //
             }
         }
 
-#ifdef ARB_64
-        // not used in 64bit version:
-        info_detected = info_detected;
-#else
+#ifndef ARB_64
         // 32bit version:
         if (!error && psg.big_db) {
             error = "PT-server database can only be used with 64bit-PT-Server";
