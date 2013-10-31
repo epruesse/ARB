@@ -30,7 +30,7 @@ typedef std::vector<int>  intVector;
 typedef std::vector<char> charVector;
 typedef std::vector<bool> boolVector;
 
-class GEN_position;
+struct GEN_position;
 
 enum LocationJoinType {
     LJT_UNDEF,                  // undefined
