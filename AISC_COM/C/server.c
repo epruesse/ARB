@@ -612,8 +612,7 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int) { // ha
 
 static int aisc_server_index = -1;
 
-static void aisc_talking_set_index(int *obj, int i) {
-    obj = obj;
+static void aisc_talking_set_index(int */*obj*/, int i) {
     aisc_server_index = i;
 }
 
@@ -857,7 +856,7 @@ static long aisc_talking_create(long *in_buf, int size, long *out_buf, int) { //
     }
 }
 
-static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_COPY
+static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int /*max_size*/) { // handles AISC_COPY
     aisc_server_error = NULL;
 
     int  in_pos      = 0;
@@ -907,7 +906,6 @@ static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_siz
         md.type = object_type;
         erg = function(father, object);
     }
-    max_size = max_size;
     if (aisc_server_error) {
         sprintf((char *) out_buf, "%s", aisc_server_error);
         return -((strlen(aisc_server_error) + 1) / sizeof(long) + 1);
@@ -975,29 +973,18 @@ static long aisc_talking_find(long *in_buf, int /*size*/, long *out_buf, int /*m
 
 extern int *aisc_main;
 
-static long aisc_talking_init(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_INIT
-    in_buf            = in_buf;
-    size              = size;
-    max_size          = max_size;
+static long aisc_talking_init(long */*in_buf*/, int /*size*/, long *out_buf, int /*max_size*/) { // handles AISC_INIT
     aisc_server_error = NULL;
     out_buf[0]        = (long)aisc_main;
     return 1;
 }
 
-static long aisc_fork_server(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_FORK_SERVER
-    pid_t pid;
-
-    in_buf   = in_buf;
-    size     = size;
-    out_buf  = out_buf;
-    max_size = max_size;
-    pid      = fork();
-
-    if (pid<0) return 0;                            // return OK because fork does not work
-    return pid;
+static long aisc_fork_server(long */*in_buf*/, int /*size*/, long */*out_buf*/, int /*max_size*/) { // handles AISC_FORK_SERVER
+    pid_t pid = fork();
+    return pid<0 ? 0 : pid; // return OK(=0) when fork does not work
 }
 
-static long aisc_talking_delete(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_DELETE
+static long aisc_talking_delete(long *in_buf, int /*size*/, long *out_buf, int /*max_size*/) { // handles AISC_DELETE
     int             in_pos, out_pos;
     long             object_type;
 
@@ -1032,14 +1019,13 @@ static long aisc_talking_delete(long *in_buf, int size, long *out_buf, int max_s
         }
     }
     if (aisc_server_error) {
-        size = size; max_size = max_size;
         sprintf((char *) out_buf, "%s", aisc_server_error);
         return -((strlen(aisc_server_error) + 1) / sizeof(long) + 1);
     }
     return 0;
 }
 
-static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_DEBUG_INFO
+static long aisc_talking_debug_info(long *in_buf, int /*size*/, long *out_buf, int /*max_size*/) { // handles AISC_DEBUG_INFO
     int  in_pos, out_pos;
     long object_type, attribute;
 
@@ -1050,8 +1036,6 @@ static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int m
     int   i;
     long *object;
 
-    size              = size;
-    max_size          = max_size;
     in_pos            = out_pos = 0;
     aisc_server_error = NULL;
 

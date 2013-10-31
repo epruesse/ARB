@@ -44,6 +44,10 @@ include config.makefile
 A_CC:=$(CC)# compile C
 A_CXX:=$(CXX)# compile C++
 
+# uncomment to ensure no submakefile uses CC and CXX directly
+#CC:=use__A_CC__instead_of__CC
+#CXX:=use__A_CXX__instead_of__CXX
+
 ifeq ($(LD_LIBRARY_PATH),'')
 LD_LIBRARY_PATH:=${ARBHOME}/lib
 endif
