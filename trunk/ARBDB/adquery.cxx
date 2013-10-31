@@ -751,9 +751,9 @@ static char *gbs_search_next_separator(const char *source, const char *seps) {
         memset(tab, 0, 256);
     }
     for (p = seps; (c=*p); p++) tab[c] = 1; // tab[seps[x]] = 1
-    tab[safeCharIndex('(')] = 1;               // exclude () pairs
-    tab[safeCharIndex('"')] = 1;               // exclude " pairs
-    tab[safeCharIndex('\\')] = 1;              // exclude \-escaped chars
+    tab['('] = 1;               // exclude () pairs
+    tab['"'] = 1;               // exclude " pairs
+    tab['\\'] = 1;              // exclude \-escaped chars
 
     for (; (c=*source); source++) {
         if (tab[c]) {
