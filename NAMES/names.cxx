@@ -166,14 +166,13 @@ static AN_shorts *an_find_shrt_prefix(const char *search) {
 
 // ----------------------------------------
 
-static void an_add_short(AN_local *locs, const char *new_name,
+static void an_add_short(AN_local */*locs*/, const char *new_name,
                          const char *parsed_name, const char *parsed_sym,
                          const char *shrt, const char *acc, const char *add_id)
 {
     AN_shorts *an_shorts;
     AN_revers *an_revers;
     char      *full_name;
-    locs = locs;
 
     if (strlen(parsed_sym)) {
         full_name = (char *)calloc(sizeof(char), strlen(parsed_name) + strlen(" sym")+1);
@@ -1140,7 +1139,7 @@ int names_server_save() {
     return 0;
 }
 
-int server_shutdown(AN_main *pm, aisc_string passwd) {
+int server_shutdown(AN_main */*pm*/, aisc_string passwd) {
     // password check
     if (strcmp(passwd, "ldfiojkherjkh")) return 1;
     printf("\narb_name_server: I got the shutdown message.\n");
@@ -1152,7 +1151,6 @@ int server_shutdown(AN_main *pm, aisc_string passwd) {
     // shutdown server
     printf("ARB_name_server: server shutdown by administrator\n");
     names_server_shutdown(0);   // never returns!
-    pm = pm;
     return 0;
 }
 
