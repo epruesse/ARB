@@ -21,7 +21,7 @@ typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
 
 typedef void (*AW_postcb_cb)(AW_window *);
 
-class           GBDATA;
+struct          GBDATA;
 typedef GBDATA *AW_default;
 
 typedef double AW_pos;
