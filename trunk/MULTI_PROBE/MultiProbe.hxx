@@ -37,9 +37,9 @@ class AW_window_simple;
 class AWT_canvas;
 class ProbeValuation;
 
-class ST_Container;
-class Bitvector;
-class Sonde;
+struct ST_Container;
+class  Bitvector;
+class  Sonde;
 
 #define MP_AWAR_SEQIN               "tmp/mp/seqin"
 #define MP_AWAR_SELECTEDPROBES      "mp/selectedprobes"

@@ -52,7 +52,7 @@ class  AW_root_Motif;
 class  AW_awar;
 struct AW_buttons_struct;
 class  AW_root_cblist;
-class  GB_HASH;
+struct GB_HASH;
 class  AW_cb;
 
 enum AW_ProcessEventType {
