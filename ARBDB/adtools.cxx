@@ -494,9 +494,8 @@ GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double con
 }
 
 
-static GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link) {
+static GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA */*gb_link*/, const char *link) {
     GBDATA *linktarget = GB_search(gb_main, "tmp/link/string", GB_STRING);
-    // GBUSE(gb_link);
     GB_write_string(linktarget, GBS_global_string("Link is '%s'", link));
     return GB_get_father(linktarget);
 }
