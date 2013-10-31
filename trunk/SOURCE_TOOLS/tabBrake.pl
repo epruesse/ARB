@@ -52,7 +52,7 @@ my %ignore_extension = map { $_ => 1; } (
                                          'exists', 'ignore', '3pm',
                                          'arb', 'seq', 'genmenu',
                                          'init', 'cvsignore', 'log', 'am', 'org',
-                                         'last_gcc', 'csv',
+                                         'last_gcc', 'last_compiler', 'csv',
                                          'b', 'n', 'helpfiles', 
                                          'ms', 'gon', 'pep', 'bla', 'tct', 'comm',
                                          'before', 'v1', 'data', 'pdb', 'embl', 'xpm', 'big',
