@@ -11,19 +11,12 @@
 #ifndef PS_ASSERT_HXX
 #define PS_ASSERT_HXX
 
-#define CRASH() do { *(int *)0=0; } while (0)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 
-#ifndef NDEBUG
-# define ps_assert(bed) do { if (!(bed)) CRASH(); } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define ps_assert(bed)
-#endif // NDEBUG
+#define ps_assert(cond) arb_assert(cond)
+#define CRASH           provoke_core_dump
 
 #else
 #error ps_assert.hxx included twice
