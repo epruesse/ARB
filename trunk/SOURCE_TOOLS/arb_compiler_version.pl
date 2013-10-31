@@ -29,6 +29,10 @@ sub main() {
     }
 
     if ($detectedCompiler eq 'unknown') {
+      if ($detailedVersion =~ /apple.*llvm.*clang/oi) { $detectedCompiler = 'clang'; }
+    }
+
+    if ($detectedCompiler eq 'unknown') {
       print STDERR "Problems detecting compiler type:\n";
       print STDERR "dumpedVersion='$dumpedVersion'\n";
       print STDERR "detailedVersion='$detailedVersion'\n";
