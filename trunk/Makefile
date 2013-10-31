@@ -223,7 +223,15 @@ endif
  endif
 endif
 
-#---------------------- developer 
+#---------------------- turn off clang bogus warnings
+
+ifeq ($(USE_CLANG),1)
+# -Wno-mismatched-tags turns off bogus struct/class warning which is explicitely allowed by C++ standards
+# -Wno-char-subscripts turns off bogus warnings for "array['x']" (bogus when 'x' is known to be in range [0..128])
+	extended_cpp_warnings += -Wno-mismatched-tags -Wno-char-subscripts
+endif
+
+#---------------------- developer
 
 ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code)
  ifdef dflags
