@@ -557,9 +557,9 @@ class ChainIteratorStage1 : virtual Noncopyable {
             const PT_short_chain_header *header;
             int                          next_entry;
 
-            void set_loc(AbsLoc& loc) {
+            void set_loc(AbsLoc& location) {
                 pt_assert(next_entry<SHORT_CHAIN_HEADER_ELEMS);
-                loc = AbsLoc(header->name[next_entry], header->abspos[next_entry]);
+                location = AbsLoc(header->name[next_entry], header->abspos[next_entry]);
                 ++next_entry;
             }
         } S;
@@ -567,11 +567,11 @@ class ChainIteratorStage1 : virtual Noncopyable {
             int         refabspos;
             const char *read_pos;
 
-            void set_loc(AbsLoc& loc) {
+            void set_loc(AbsLoc& location) {
                 uint_8  has_refabspos;
-                uint_32 name   = loc.get_name()+read_nat_with_reserved_bits<1>(read_pos, has_refabspos);
+                uint_32 name   = location.get_name()+read_nat_with_reserved_bits<1>(read_pos, has_refabspos);
                 uint_32 abspos = has_refabspos ? refabspos : PT_read_compact_nat(read_pos);
-                loc = AbsLoc(name, abspos);
+                location = AbsLoc(name, abspos);
             }
         } L;
     } iter;
