@@ -1145,7 +1145,9 @@ inline long key2val(long key, int pass) {
             val = key*17461;
             break;
         default :
+            val = LONG_MIN;
             TEST_EXPECT(0); // NEED_NO_COV
+            break;
     }
     return val;
 }
