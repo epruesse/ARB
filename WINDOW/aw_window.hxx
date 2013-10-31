@@ -49,7 +49,7 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
 class AW_window;
 class AW_xfig;
 class AW_device;
-class AW_screen_area;
+struct AW_screen_area;
 struct GB_HASH;
 
 // --------------------------------------------------------------------------------
@@ -113,7 +113,7 @@ enum {
 typedef char *AW_pixmap;
 
 class  AW_window_Motif;
-struct AW_selection_list_entry;
+class  AW_selection_list_entry;
 class  AW_selection_list;
 typedef AW_selection_list AW_option_menu_struct; //for compatibility reasons with old arb code
 struct aw_toggle_data;
