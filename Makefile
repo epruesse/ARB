@@ -226,9 +226,10 @@ endif
 #---------------------- turn off clang bogus warnings
 
 ifeq ($(USE_CLANG),1)
-# -Wno-mismatched-tags turns off bogus struct/class warning which is explicitely allowed by C++ standards
-# -Wno-char-subscripts turns off bogus warnings for "array['x']" (bogus when 'x' is known to be in range [0..128])
-	extended_cpp_warnings += -Wno-mismatched-tags -Wno-char-subscripts
+# -Wmismatched-tags warns about struct/class mismatch in forward declarations (which is explicitely allowed)
+# -Wchar-subscripts reports too many bogus warnings for "array['x']" (when 'x' is known to be in range [0..128])
+# -Wunused-private-field report too many false positives (currently ~ 2 of 3)
+	extended_cpp_warnings += -Wno-mismatched-tags -Wno-char-subscripts -Wno-unused-private-field
 endif
 
 #---------------------- developer
