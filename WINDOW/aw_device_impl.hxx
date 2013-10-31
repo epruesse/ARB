@@ -349,9 +349,9 @@ class AW_size_tracker {
         high = std::max(high, val);
     }
 public:
-    AW_size_tracker() { clear(); }
+    AW_size_tracker() { restart(); }
 
-    void clear() { drawn = false; size.clear(); }
+    void restart() { drawn = false; size.clear(); }
     void track(const AW::Position& pos) {
         if (drawn) {
             extend(size.l, pos.xpos(), size.r);
