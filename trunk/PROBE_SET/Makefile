@@ -226,9 +226,14 @@ ps_eval_candidates.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_filebuffer.o: ps_assert.hxx
 ps_filebuffer.o: ps_filebuffer.hxx
+ps_filebuffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_filebuffer.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_filebuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_filebuffer.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_filebuffer.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ps_filebuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_filebuffer.o: $(ARBHOME)/INCLUDE/gccver.h
+ps_filebuffer.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_find_probes.o: ps_assert.hxx
 ps_find_probes.o: ps_bitmap.hxx
@@ -332,8 +337,13 @@ ps_show_result.o: ps_bitmap.hxx
 ps_show_result.o: ps_bitset.hxx
 ps_show_result.o: ps_defs.hxx
 ps_show_result.o: ps_filebuffer.hxx
+ps_show_result.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_show_result.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_show_result.o: $(ARBHOME)/INCLUDE/arbtools.h
+ps_show_result.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_show_result.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ps_show_result.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_show_result.o: $(ARBHOME)/INCLUDE/gccver.h
+ps_show_result.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_tools.o: ps_tools.hxx
