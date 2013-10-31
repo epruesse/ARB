@@ -29,14 +29,14 @@ void AP_sequence_simple_protein::set(const char *isequence) {
 
     size_t sequence_len = get_sequence_length();
     sequence     = new ap_pro[sequence_len+1];
-    memset(sequence, s2str[safeCharIndex('.')]->index, (size_t)(sizeof(ap_pro) * sequence_len));
+    memset(sequence, s2str['.']->index, (size_t)(sizeof(ap_pro) * sequence_len));
 
     const char    *s = isequence;
     ap_pro        *d = sequence;
 
     const AP_filter *filt      = get_filter();
     const uchar     *simplify  = filt->get_simplify_table();
-    int              sindex    = s2str[safeCharIndex('s')]->index;
+    int              sindex    = s2str['s']->index;
 
     if (filt->does_bootstrap()) {
         int iseqlen = strlen(isequence);

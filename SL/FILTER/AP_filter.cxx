@@ -72,7 +72,7 @@ AP_filter::AP_filter(const char *ifilter, const char *zerobases, size_t size) {
             for (i = 0; zerobases[i]; ++i) char2mask[safeCharIndex(zerobases[i])] = false;
         }
         else {
-            char2mask[safeCharIndex('0')] = false;
+            char2mask['0'] = false;
         }
 
         real_len = 0;
