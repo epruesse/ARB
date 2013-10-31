@@ -21,8 +21,7 @@ enum GA_JOB_MODE {
     GA_NONE
 };
 
-class GA_tree {
-public:
+struct GA_tree {
     int ref_count;
     AP_FLOAT criteria;
     AP_tree_nlen *tree;
@@ -30,8 +29,7 @@ public:
 
 };
 
-class GA_job {
-public:
+struct GA_job {
     AP_FLOAT criteria;
     int cluster0;
     int cluster1;

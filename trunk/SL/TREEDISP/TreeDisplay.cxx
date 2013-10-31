@@ -2767,8 +2767,7 @@ public:
     }
 };
 
-class fake_AW_common : public AW_common {
-public:
+struct fake_AW_common : public AW_common {
     fake_AW_common()
         : AW_common(fcolors, dcolors, dcolors_count)
     {

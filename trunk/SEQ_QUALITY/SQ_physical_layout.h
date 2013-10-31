@@ -22,22 +22,22 @@
 #define seq_assert(bed) arb_assert(bed)
 
 class SQ_physical_layout {
-public:
-    SQ_physical_layout();
-    void SQ_calc_physical_layout(const char *sequence, int size,
-            GBDATA * gb_quality_ali);
-    int SQ_get_number_of_bases() const;
-    double SQ_get_gc_proportion() const;
-private:
-    int roundme(double value);
     double temp;
     double count_bases;
     double count_scores;
     double count_dots;
     double GC;
     double GC_proportion;
-    int percent_bases;
-    int count_bases2;
+    int    percent_bases;
+    int    count_bases2;
+
+    int roundme(double value);
+
+public:
+    SQ_physical_layout();
+    void SQ_calc_physical_layout(const char *sequence, int size, GBDATA *gb_quality_ali);
+    int SQ_get_number_of_bases() const;
+    double SQ_get_gc_proportion() const;
 };
 
 SQ_physical_layout::SQ_physical_layout() {

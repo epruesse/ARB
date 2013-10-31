@@ -85,8 +85,7 @@ public:
     }
 };
 
-class SAI_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
-public:
+struct SAI_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
     GBDATA     *gb_main;
     AW_root    *aw_root;
 

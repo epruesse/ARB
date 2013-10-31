@@ -978,8 +978,7 @@ static bool hashes_are_equal(GB_HASH *h1, GB_HASH *h2) {
     return equal;
 }
 
-class TestData : virtual Noncopyable {
-public:
+struct TestData : virtual Noncopyable {
     GB_HASH    *mind;
     GB_HASH    *ignore;
     GB_NUMHASH *num;

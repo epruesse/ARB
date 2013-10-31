@@ -769,8 +769,7 @@ static void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
 // #########################################
 // #########################################
 
-class nt_item_type_species_selector : public awt_item_type_selector {
-public:
+struct nt_item_type_species_selector : public awt_item_type_selector {
     nt_item_type_species_selector() : awt_item_type_selector(AWT_IT_SPECIES) {}
     virtual ~nt_item_type_species_selector() OVERRIDE {}
 

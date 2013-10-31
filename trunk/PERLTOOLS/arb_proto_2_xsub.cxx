@@ -37,8 +37,7 @@ using namespace std;
 
 // --------------------------------------------------------------------------------
 
-class Error {
-public:
+struct Error {
     virtual ~Error() {}
     virtual void print() const = 0;
 };

@@ -51,8 +51,7 @@ struct ALI_PROFILE_CONTEXT {
 
 
 // Class for a family member
-class ali_family_member {
-public:
+struct ali_family_member {
     ALI_SEQUENCE *sequence;
     float matches;
     float weight;

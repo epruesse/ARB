@@ -402,8 +402,7 @@ public:
 };
 
 template<typename T>
-class SpecificGap : public TypedAliData<T> {
-public:
+struct SpecificGap : public TypedAliData<T> {
     typedef TypedAliData<T> BaseType;
 
     SpecificGap(size_t gapsize, const T& gap_)
@@ -1011,8 +1010,7 @@ public:
 
 // --------------------------------------------------------------------------------
 
-class AliEditCommand {
-public:
+struct AliEditCommand {
     virtual ~AliEditCommand() {}
     virtual AliDataPtr apply(AliDataPtr to, GB_ERROR& error) const                                 = 0;
     virtual GB_ERROR check_applicable_to(const Alignment& ali, size_t& resulting_ali_length) const = 0;
