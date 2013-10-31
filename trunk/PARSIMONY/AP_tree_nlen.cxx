@@ -949,7 +949,10 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
 
         if (!pars_refpntr[i])   continue;
         if (pars_refpntr[i]->is_leaf) continue;
-        if (!pars_refpntr[i]->kernighan == AP_NONE) continue;
+
+        ap_assert(pars_refpntr[i]->kernighan != AP_NONE); // i think this condition was originally meant below. if you find a case where this occurs please examine whats going on!
+        // if (!pars_refpntr[i]->kernighan == AP_NONE) continue; // @@@ always false (never continues)
+
         if (pars_refpntr[i]->gr.hidden) continue;
         if (pars_refpntr[i]->get_father()->gr.hidden) continue;
 
