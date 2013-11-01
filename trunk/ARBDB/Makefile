@@ -176,11 +176,15 @@ ad_core.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_core.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_core.o: $(ARBHOME)/INCLUDE/attributes.h
+ad_core.o: $(ARBHOME)/INCLUDE/cb.h
+ad_core.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ad_core.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_core.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_core.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_core.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_core.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_core.o: $(ARBHOME)/INCLUDE/test_global.h
+ad_core.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ad_load.o: ad_io_inline.h
 ad_load.o: ad_prot.h
@@ -1142,12 +1146,16 @@ arbdb.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_string.h
 arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
+arbdb.o: $(ARBHOME)/INCLUDE/cb.h
+arbdb.o: $(ARBHOME)/INCLUDE/cbtypes.h
 arbdb.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arbdb.o: $(ARBHOME)/INCLUDE/dupstr.h
 arbdb.o: $(ARBHOME)/INCLUDE/gccver.h
 arbdb.o: $(ARBHOME)/INCLUDE/smartptr.h
+arbdb.o: $(ARBHOME)/INCLUDE/static_assert.h
 arbdb.o: $(ARBHOME)/INCLUDE/test_global.h
 arbdb.o: $(ARBHOME)/INCLUDE/test_unit.h
+arbdb.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 arbdbpp.o: ad_prot.h
 arbdbpp.o: arbdb.h
