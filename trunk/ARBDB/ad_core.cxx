@@ -13,6 +13,7 @@
 #include "gb_index.h"
 #include "gb_localdata.h"
 #include "gb_storage.h"
+#include "gb_cb.h"
 
 // Copy all info + external data mem to an one step undo buffer
 // (needed to abort transactions)

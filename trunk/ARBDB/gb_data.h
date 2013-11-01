@@ -52,19 +52,10 @@ union gb_data_base_type_union {
 
 // --------------------------------------------------------------------------------
 
-struct gb_callback {
-    gb_callback *next;
-    gb_cb_spec   spec;
-    short        priority;
-    short        running; // @@@ only used in no-transaction mode
-};
-
-// --------------------------------------------------------------------------------
-
 struct gb_db_extended {
     long                 creation_date;
     long                 update_date;
-    gb_callback         *callback;
+    struct gb_callback  *callback;
     gb_transaction_save *old;
 };
 

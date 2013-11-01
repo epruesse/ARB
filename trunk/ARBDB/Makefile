@@ -156,6 +156,7 @@ ad_config.o: $(ARBHOME)/INCLUDE/test_unit.h
 ad_core.o: ad_prot.h
 ad_core.o: arbdb.h
 ad_core.o: arbdb_base.h
+ad_core.o: gb_cb.h
 ad_core.o: gb_data.h
 ad_core.o: gb_header.h
 ad_core.o: gb_index.h
