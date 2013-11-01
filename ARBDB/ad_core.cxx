@@ -398,7 +398,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
         if (!gbd->ext->old && type != GB_DB) {
             gb_save_extern_data_in_ts(gbd->as_entry());
         }
-        if (cb->spec.type & GB_CB_DELETE) {
+        if (cb->spec.get_type() & GB_CB_DELETE) {
             gb_add_delete_callback_list(gbd, gbd->ext->old, cb->spec);
         }
         gbm_free_mem(cb, sizeof(gb_callback), gbm_index);
@@ -903,7 +903,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
                 }
 
                 for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
-                    if (cb->spec.type & (GB_CB_CHANGED|GB_CB_SON_CREATED)) {
+                    if (cb->spec.get_type() & (GB_CB_CHANGED|GB_CB_SON_CREATED)) {
                         gb_add_changed_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(gbtype));
                     }
                 }
