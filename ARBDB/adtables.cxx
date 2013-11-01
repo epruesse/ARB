@@ -75,7 +75,7 @@ GB_ERROR GBT_install_table_link_follower(GBDATA *gb_main) {
     return 0;
 }
 
-static void g_bt_table_deleted(GBDATA */*gb_table*/, int */*clientdata*/, GB_CB_TYPE gbtype) {
+static void g_bt_table_deleted(GBDATA */*gb_table*/, int */*clientdata*/, GB_CB_TYPE /*gbtype*/) {
     GB_MAIN_TYPE *Main = gb_get_main_during_cb();
     GBS_free_hash(Main->table_hash);
     Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
