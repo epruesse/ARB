@@ -11,23 +11,12 @@
 #ifndef AW_ROOT_PIMPL_HXX
 #define AW_ROOT_PIMPL_HXX
 
-#ifdef DARWIN
-# include <map>
-# define ANYMAP std::map
-#else
-# ifdef Cxx11
-#  include <unordered_map>
-#  define ANYMAP std::unordered_map
-# else
-#  include <tr1/unordered_map>
-#  define ANYMAP std::tr1::unordered_map
-# endif
+#ifndef ARB_UNORDERED_MAP_H
+#include <arb_unordered_map.h>
 #endif
 
-typedef ANYMAP<std::string, AW_action*> action_hash_t;
-typedef ANYMAP<std::string, AW_awar*> awar_hash_t;
-
-#undef ANYMAP
+typedef arb_unordered_map<std::string, AW_action*> action_hash_t;
+typedef arb_unordered_map<std::string, AW_awar*> awar_hash_t;
 
 struct AW_root::pimpl : virtual Noncopyable {
     GdkCursor* cursors[3]; /** < The available cursors. Use AW_root::AW_Cursor as index when accessing */

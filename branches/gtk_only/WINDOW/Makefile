@@ -1250,6 +1250,7 @@ AW_root.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_string.h
+AW_root.o: $(ARBHOME)/INCLUDE/arb_unordered_map.h
 AW_root.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_root.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_root.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -1306,6 +1307,7 @@ AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_string.h
+AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_unordered_map.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arbdbt.h
