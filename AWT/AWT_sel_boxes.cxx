@@ -20,6 +20,7 @@
 #include <aw_edit.hxx>
 
 #include <ad_config.h>
+#include <ad_cb.h>
 
 #include <arbdbt.h>
 #include <arb_strbuf.h>

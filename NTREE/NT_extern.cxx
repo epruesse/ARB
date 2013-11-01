@@ -51,6 +51,7 @@
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <arb_file.h>
+#include <ad_cb.h>
 
 #include <arb_version.h>
 #include <refentries.h>

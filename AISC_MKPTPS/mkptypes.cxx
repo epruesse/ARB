@@ -121,8 +121,31 @@ struct SymPart {
     int   len;                                      // len of part
     bool  atStart;                                  // part has to match at start of name
 
+    SymPart *And;
     SymPart *next;
 };
+
+static SymPart* makeSymPart(char *token) {
+    SymPart *sp = (SymPart*)malloc(sizeof(*sp));
+
+    sp->atStart = token[0] == '^';
+    char *part  = sp->atStart ? token+1 : token;
+    char *plus  = strchr(part, '+');
+
+    if (plus) {
+        *plus++ = 0;
+        sp->And = makeSymPart(plus);
+    }
+    else {
+        sp->And = NULL;
+    }
+    sp->part = strdup(part);
+    sp->len = strlen(sp->part);
+
+    sp->next = NULL;
+
+    return sp;
+}
 
 static void addSymParts(SymPart*& symParts, const char *parts) {
     char       *p   = strdup(parts);
@@ -130,24 +153,18 @@ static void addSymParts(SymPart*& symParts, const char *parts) {
     char       *s   = strtok(p, sep);
 
     while (s) {
-        SymPart *sp = (SymPart*)malloc(sizeof(*sp));
-
-        sp->atStart = s[0] == '^';
-        sp->part    = strdup(sp->atStart ? s+1 : s);
-        sp->len     = strlen(sp->part);
+        SymPart *sp = makeSymPart(s);
         sp->next    = symParts;
-
-        symParts = sp;
-
-        s = strtok(0, sep);
+        symParts    = sp;
+        s           = strtok(0, sep);
     }
 
     free(p);
 }
 
-static bool matchesSymPart(SymPart*& symParts, const char *name) {
-    SymPart *sp      = symParts;
-    bool     matches = false;
+static bool matchesSymPart(const SymPart* symParts, const char *name) {
+    const SymPart *sp      = symParts;
+    bool           matches = false;
 
     while (sp && !matches) {
         if (sp->atStart) {
@@ -156,6 +173,7 @@ static bool matchesSymPart(SymPart*& symParts, const char *name) {
         else {
             matches = strstr(name, sp->part) != NULL;
         }
+        if (matches && sp->And) matches = matchesSymPart(sp->And, name);
         sp = sp->next;
     }
 
@@ -167,8 +185,9 @@ static void freeSymParts(SymPart*& symParts) {
 
     while (next) {
         SymPart *del = next;
-        next = del->next;
+        next         = del->next;
 
+        if (del->And) freeSymParts(del->And);
         free(del->part);
         free(del);
     }
@@ -1448,6 +1467,8 @@ __ATTR__NORETURN static void Usage(const char *msg = NULL) {
           "\n   -F part[,part]*  only promote declarations for functionnames containing one of the parts"
           "\n                    if 'part' starts with a '^' functionname has to start with rest of part"
           "\n   -S (like -F)     do NOT promote matching declarations (defaults to -S '^TEST_,^NOTEST_')"
+          "\n"
+          "\n                    Instead of ',' (=or) you may use '+' (=and)"
           "\n"
           "\n   -G               search for ARB macro __ATTR__ in comment behind function header"
           "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"

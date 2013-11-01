@@ -14,6 +14,7 @@
 
 #include <adGene.h>
 #include <arbdbt.h>
+#include <ad_cb.h>
 
 #include <arb_defs.h>
 #include <arb_strbuf.h>

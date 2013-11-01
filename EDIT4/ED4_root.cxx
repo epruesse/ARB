@@ -41,6 +41,7 @@
 #include <arb_version.h>
 #include <arb_file.h>
 #include <arbdbt.h>
+#include <ad_cb.h>
 #include <macros.hxx>
 
 #include <cctype>

@@ -21,6 +21,7 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <arbdbt.h>
+#include <ad_cb.h>
 
 #define ma_assert(bed) arb_assert(bed)
 

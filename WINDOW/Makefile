@@ -293,6 +293,8 @@ AW_awar.o: aw_simple_device.hxx
 AW_awar.o: aw_stylable.hxx
 AW_awar.o: aw_window.hxx
 AW_awar.o: aw_zoomable.hxx
+AW_awar.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AW_awar.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AW_awar.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -949,6 +951,8 @@ AW_global_awars.o: aw_simple_device.hxx
 AW_global_awars.o: aw_stylable.hxx
 AW_global_awars.o: aw_window.hxx
 AW_global_awars.o: aw_zoomable.hxx
+AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -1387,6 +1391,8 @@ AW_select.o: aw_stylable.hxx
 AW_select.o: aw_type_checking.hxx
 AW_select.o: aw_window.hxx
 AW_select.o: aw_zoomable.hxx
+AW_select.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AW_select.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AW_select.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_core.h

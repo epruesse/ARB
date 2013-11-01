@@ -14,6 +14,8 @@
 #include <AP_filter.hxx>
 #include <AP_sequence.hxx>
 
+#include <ad_cb.h>
+
 using namespace std;
 
 // ----------------------

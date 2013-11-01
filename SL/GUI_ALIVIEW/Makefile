@@ -41,6 +41,8 @@ depend.init:
 
 AWT_filter.o: awt_filter.hxx
 AWT_filter.o: ga_local.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
