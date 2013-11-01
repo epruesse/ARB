@@ -54,6 +54,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/arb_defs.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_error.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_string.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/arb_unordered_map.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arbdb.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -295,6 +296,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_string.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/arb_unordered_map.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
