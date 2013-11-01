@@ -156,9 +156,10 @@ symlink_file ../TEMPLATES/arb_error.h INCLUDE/arb_error.h &&
 symlink_file ../TEMPLATES/arb_global_defs.h INCLUDE/arb_global_defs.h &&
 symlink_file ../TEMPLATES/arb_simple_assert.h INCLUDE/arb_simple_assert.h &&
 symlink_file ../TEMPLATES/arb_sleep.h INCLUDE/arb_sleep.h &&
-symlink_file ../TEMPLATES/arb_str.h INCLUDE/arb_str.h &&
 symlink_file ../TEMPLATES/arb_stdstr.h INCLUDE/arb_stdstr.h &&
+symlink_file ../TEMPLATES/arb_str.h INCLUDE/arb_str.h &&
 symlink_file ../TEMPLATES/arb_unit_test.h INCLUDE/arb_unit_test.h &&
+symlink_file ../TEMPLATES/arb_unordered_map.h INCLUDE/arb_unordered_map.h &&
 symlink_file ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
 symlink_file ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
 symlink_file ../TEMPLATES/attributes.h INCLUDE/attributes.h &&
