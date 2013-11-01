@@ -101,6 +101,8 @@ AW_awar.o: aw_root.hxx
 AW_awar.o: aw_scalar.hxx
 AW_awar.o: aw_select.hxx
 AW_awar.o: aw_window.hxx
+AW_awar.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AW_awar.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AW_awar.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -142,6 +144,8 @@ AW_button.o: aw_window.hxx
 AW_button.o: aw_window_Xm.hxx
 AW_button.o: aw_xargs.hxx
 AW_button.o: aw_Xm.hxx
+AW_button.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AW_button.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AW_button.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_algo.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -367,6 +371,8 @@ AW_global_awars.o: aw_global_awars.hxx
 AW_global_awars.o: aw_keysym.hxx
 AW_global_awars.o: aw_root.hxx
 AW_global_awars.o: aw_window.hxx
+AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -661,6 +667,8 @@ AW_select.o: aw_scalar.hxx
 AW_select.o: aw_select.hxx
 AW_select.o: aw_window.hxx
 AW_select.o: aw_window_Xm.hxx
+AW_select.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AW_select.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AW_select.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_core.h

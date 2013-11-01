@@ -35,6 +35,8 @@ depend.init:
 
 ST_ml.o: MostLikelySeq.hxx
 ST_ml.o: st_ml.hxx
+ST_ml.o: $(ARBHOME)/INCLUDE/ad_cb.h
+ST_ml.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/AliView.hxx

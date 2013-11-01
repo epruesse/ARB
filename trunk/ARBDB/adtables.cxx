@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include <arbdbt.h>
+#include <ad_cb.h>
 
 #include "gb_main.h"
 #include "gb_data.h"

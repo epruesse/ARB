@@ -1,4 +1,5 @@
 #include <arbdbt.h>
+#include <ad_cb.h>
 #include <aw_preset.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>

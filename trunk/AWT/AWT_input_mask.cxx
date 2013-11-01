@@ -15,6 +15,7 @@
 #include "awt_input_mask_internal.hxx"
 
 #include <arbdbt.h>
+#include <ad_cb.h>
 #include <arb_file.h>
 #include <awt_www.hxx>
 #include <aw_edit.hxx>

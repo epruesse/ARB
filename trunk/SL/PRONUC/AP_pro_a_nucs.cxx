@@ -12,6 +12,7 @@
 
 #include <AP_codon_table.hxx>
 #include <arbdbt.h>
+#include <ad_cb.h>
 #include <arb_str.h>
 
 #define pn_assert(cond) arb_assert(cond)

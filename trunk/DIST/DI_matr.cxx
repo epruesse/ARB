@@ -41,6 +41,7 @@
 #include <arb_sort.h>
 #include <arb_global_defs.h>
 #include <macros.hxx>
+#include <ad_cb.h>
 
 // --------------------------------------------------------------------------------
 

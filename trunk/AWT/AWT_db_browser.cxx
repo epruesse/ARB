@@ -28,6 +28,7 @@
 #include <map>
 #include <algorithm>
 #include <arb_misc.h>
+#include <ad_cb.h>
 
 // do includes above (otherwise depends depend on DEBUG)
 #if defined(DEBUG)

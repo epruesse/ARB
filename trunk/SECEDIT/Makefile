@@ -88,6 +88,8 @@ SEC_db.o: SEC_graphic.hxx
 SEC_db.o: SEC_root.hxx
 SEC_db.o: SEC_toggle.hxx
 SEC_db.o: secedit_extern.hxx
+SEC_db.o: $(ARBHOME)/INCLUDE/ad_cb.h
+SEC_db.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 SEC_db.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_db.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -139,6 +141,8 @@ SEC_graphic.o: SEC_iter.hxx
 SEC_graphic.o: SEC_root.hxx
 SEC_graphic.o: SEC_toggle.hxx
 SEC_graphic.o: secedit_extern.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/ad_cb.h
+SEC_graphic.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arb_assert.h

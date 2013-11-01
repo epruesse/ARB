@@ -15,6 +15,7 @@
 #include <arb_sleep.h>
 #include <arb_str.h>
 #include <arb_strarray.h>
+#include <ad_cb.h>
 
 #include <algorithm>
 #include "ad_remote.h"

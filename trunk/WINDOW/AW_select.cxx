@@ -18,6 +18,7 @@
 #include <arb_strbuf.h>
 #include <arb_str.h>
 #include <arb_sort.h>
+#include <ad_cb.h>
 
 #include <Xm/List.h>
 

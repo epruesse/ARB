@@ -16,6 +16,7 @@
 #include "aw_select.hxx"
 #include <arb_str.h>
 #include <arb_file.h>
+#include <ad_cb.h>
 #include <list>
 #include <sys/stat.h>
 

@@ -20,6 +20,7 @@
 #include <aw_root.hxx>
 #include <ed4_extern.hxx>
 #include <arbdbt.h>
+#include <ad_cb.h>
 
 #include <arb_defs.h>
 

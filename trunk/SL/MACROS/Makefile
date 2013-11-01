@@ -66,6 +66,8 @@ dbserver.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 macro_gui.o: macros.hxx
 macro_gui.o: trackers.hxx
+macro_gui.o: $(ARBHOME)/INCLUDE/ad_cb.h
+macro_gui.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 macro_gui.o: $(ARBHOME)/INCLUDE/ad_prot.h
 macro_gui.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -135,6 +137,8 @@ trackers.o: dbserver.hxx
 trackers.o: macros.hxx
 trackers.o: recmac.hxx
 trackers.o: trackers.hxx
+trackers.o: $(ARBHOME)/INCLUDE/ad_cb.h
+trackers.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 trackers.o: $(ARBHOME)/INCLUDE/ad_prot.h
 trackers.o: $(ARBHOME)/INCLUDE/ad_remote.h
 trackers.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

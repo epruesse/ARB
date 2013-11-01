@@ -29,6 +29,7 @@
 #include <db_query.h>
 #include <rootAsWin.h>
 #include <mode_text.h>
+#include <ad_cb.h>
 
 #include <map>
 

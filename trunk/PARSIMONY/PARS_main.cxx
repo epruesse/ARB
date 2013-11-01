@@ -27,6 +27,7 @@
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <gui_aliview.hxx>
+#include <ad_cb.h>
 
 #include <TreeCallbacks.hxx>
 
