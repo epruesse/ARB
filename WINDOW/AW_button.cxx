@@ -20,6 +20,7 @@
 #include "aw_xargs.hxx"
 
 #include <arb_algo.h>
+#include <ad_cb.h>
 
 #include <Xm/Frame.h>
 #include <Xm/MenuShell.h>

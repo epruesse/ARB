@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 
 #include <arbdbt.h>
+#include <ad_cb.h>
 
 #include "gb_key.h"
 #include "gb_dict.h"

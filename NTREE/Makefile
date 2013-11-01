@@ -633,6 +633,8 @@ NT_extern.o: map_viewer.h
 NT_extern.o: NT_cb.h
 NT_extern.o: NT_local.h
 NT_extern.o: NT_local_proto.h
+NT_extern.o: $(ARBHOME)/INCLUDE/ad_cb.h
+NT_extern.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/AliView.hxx

@@ -8,6 +8,7 @@
 /*                                                                  */
 /* ================================================================ */
 
+#include <ad_cb.h>
 
 char *static_pntr                 = 0; // see ../PERLTOOLS/arb_proto_2_xsub.cxx@static_pntr
 

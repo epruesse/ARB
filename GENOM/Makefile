@@ -252,6 +252,8 @@ GEN_map.o: GEN_gene.hxx
 GEN_map.o: GEN_graphic.hxx
 GEN_map.o: GEN_local.hxx
 GEN_map.o: GEN_nds.hxx
+GEN_map.o: $(ARBHOME)/INCLUDE/ad_cb.h
+GEN_map.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 GEN_map.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_map.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GEN_map.o: $(ARBHOME)/INCLUDE/adGene.h
@@ -300,6 +302,8 @@ GEN_map.o: $(ARBHOME)/INCLUDE/test_global.h
 GEN_map.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GEN_nds.o: GEN.hxx
+GEN_nds.o: $(ARBHOME)/INCLUDE/ad_cb.h
+GEN_nds.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_core.h

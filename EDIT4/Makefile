@@ -38,6 +38,8 @@ ED4_base.o: ed4_edit_string.hxx
 ED4_base.o: ed4_extern.hxx
 ED4_base.o: ed4_list.hxx
 ED4_base.o: ed4_search.hxx
+ED4_base.o: $(ARBHOME)/INCLUDE/ad_cb.h
+ED4_base.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 ED4_base.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_base.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -819,6 +821,8 @@ ED4_root.o: ed4_search.hxx
 ED4_root.o: ed4_tools.hxx
 ED4_root.o: ed4_visualizeSAI.hxx
 ED4_root.o: graph_aligner_gui.hxx
+ED4_root.o: $(ARBHOME)/INCLUDE/ad_cb.h
+ED4_root.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -1064,6 +1068,8 @@ ED4_visualizeSAI.o: ed4_class.hxx
 ED4_visualizeSAI.o: ed4_defs.hxx
 ED4_visualizeSAI.o: ed4_extern.hxx
 ED4_visualizeSAI.o: ed4_search.hxx
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/ad_cb.h
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_assert.h

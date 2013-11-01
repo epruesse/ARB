@@ -16,6 +16,7 @@
 #include <AP_Tree.hxx>
 #include <arb_progress.h>
 #include <gui_aliview.hxx>
+#include <ad_cb.h>
 
 #include <cctype>
 #include <cmath>

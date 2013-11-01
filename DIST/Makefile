@@ -212,6 +212,8 @@ DI_matr.o: di_matr.hxx
 DI_matr.o: di_protdist.hxx
 DI_matr.o: di_view_matrix.hxx
 DI_matr.o: dist.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/ad_cb.h
+DI_matr.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/AliView.hxx
