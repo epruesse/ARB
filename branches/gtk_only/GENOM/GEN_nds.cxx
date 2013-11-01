@@ -20,6 +20,7 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
+#include <ad_cb.h>
 
 #define gen_assert(bed) arb_assert(bed)
 

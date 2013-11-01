@@ -19,9 +19,7 @@
 #include "aw_choice.hxx"
 #include "glib-object.h"
 
-#ifndef ARBDB_H
-#  include <arbdb.h>
-#endif
+#include <ad_cb.h>
 #include <arb_str.h>
 
 #include <algorithm>

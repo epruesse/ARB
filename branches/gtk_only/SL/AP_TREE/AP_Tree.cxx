@@ -18,6 +18,7 @@
 #include <map>
 #include <climits>
 #include <arb_progress.h>
+#include <ad_cb.h>
 
 using namespace std;
 

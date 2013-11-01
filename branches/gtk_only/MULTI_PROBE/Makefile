@@ -563,6 +563,8 @@ MP_Window.o: mp_proto.hxx
 MP_Window.o: mpdefs.h
 MP_Window.o: MultiProbe.hxx
 MP_Window.o: SoTl.hxx
+MP_Window.o: $(ARBHOME)/INCLUDE/ad_cb.h
+MP_Window.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/aisc_global.h

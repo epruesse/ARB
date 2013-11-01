@@ -12,9 +12,7 @@
 
 #define TEMP_DB_PATH "tmp/global_awars"
 
-#ifndef ARBDB_H
-#include <arbdb.h>
-#endif
+#include <ad_cb.h>
 
 #include <aw_global_awars.hxx>
 #include <aw_awars.hxx>

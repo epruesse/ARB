@@ -31,6 +31,8 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 db_scanner.o: db_scanner.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/ad_cb.h
+db_scanner.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_assert.h

@@ -32,6 +32,7 @@
 #include <string>
 #include <awt_sel_boxes.hxx>
 #include <rootAsWin.h>
+#include <ad_cb.h>
 
 using namespace std;
 using namespace QUERY;

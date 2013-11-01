@@ -23,6 +23,7 @@
 #include <aw_select.hxx>
 
 #include <arbdbt.h>
+#include <ad_cb.h>
 #include <arb_strbuf.h>
 
 #include <iostream>

@@ -9,6 +9,7 @@
 // ============================================================= //
 
 #include <arbdb.h>
+#include <ad_cb.h>
 #include <servercntrl.h>
 #include <ut_valgrinded.h>
 #include <arb_file.h>

@@ -19,25 +19,11 @@
 #include <string>
 #include <list>
 
-#ifndef ARBDB_H
-#include <arbdb.h>
-#endif
-
-#ifndef ARB_STRBUF_H
+#include <ad_cb.h>
 #include <arb_strbuf.h>
-#endif
-
-#ifndef ARB_SORT_H
 #include <arb_sort.h>
-#endif
-
-#ifndef ARB_STRARRAY_H
 #include <arb_strarray.h>
-#endif
-
-#ifndef ARB_STR_H
 #include <arb_str.h>
-#endif
 
 #include "aw_type_checking.hxx"
 
