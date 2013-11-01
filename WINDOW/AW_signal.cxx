@@ -2,6 +2,7 @@
 #include "aw_assert.hxx"
 #include "aw_root.hxx"
 
+#include <functional> // required by osx
 #include <algorithm>
 
 /**
