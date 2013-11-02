@@ -2605,7 +2605,7 @@ static void gb_remove_callbacks_marked_for_deletion(GBDATA *gbd) {
 }
 
 struct IsCallback : private TypedDatabaseCallback {
-    IsCallback(GB_CB func_, GB_CB_TYPE type_) : TypedDatabaseCallback(func_, type_, NULL) {} // @@@ create typed flavor
+    IsCallback(GB_CB func_, GB_CB_TYPE type_) : TypedDatabaseCallback(makeDatabaseCallback((GB_CB)func_, (int*)NULL), type_) {}
     bool operator()(const gb_callback& cb) const { return sig_is_equal_to(cb.spec); }
 };
 struct IsSpecificCallback : private TypedDatabaseCallback {
