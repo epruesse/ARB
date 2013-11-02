@@ -83,6 +83,7 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/downcast.h

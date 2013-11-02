@@ -47,7 +47,7 @@ struct GB_DICTIONARY;
 struct gb_compress_list;
 struct gb_compress_tree;
 
-struct gb_cb_spec;
+struct TypedDatabaseCallback;
 
 struct gb_map_header;
 

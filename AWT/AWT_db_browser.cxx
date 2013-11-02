@@ -966,7 +966,7 @@ static void child_changed_cb(AW_root *aw_root) {
                             }
 
                             if (gb_selected_node == gb_tracked_node) {
-                                info += "          | (Note: one callback was installed by this broweser)\n";
+                                info += "          | (Note: one callback was installed by this browser)\n";
                             }
                         }
 

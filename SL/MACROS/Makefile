@@ -81,6 +81,7 @@ dbserver.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/cb.h
+dbserver.o: $(ARBHOME)/INCLUDE/cb_base.h
 dbserver.o: $(ARBHOME)/INCLUDE/cbtypes.h
 dbserver.o: $(ARBHOME)/INCLUDE/cxxforward.h
 dbserver.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -144,6 +145,7 @@ macro_gui.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/cb.h
+macro_gui.o: $(ARBHOME)/INCLUDE/cb_base.h
 macro_gui.o: $(ARBHOME)/INCLUDE/cbtypes.h
 macro_gui.o: $(ARBHOME)/INCLUDE/cxxforward.h
 macro_gui.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -181,6 +183,7 @@ recmac.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 recmac.o: $(ARBHOME)/INCLUDE/cb.h
+recmac.o: $(ARBHOME)/INCLUDE/cb_base.h
 recmac.o: $(ARBHOME)/INCLUDE/cbtypes.h
 recmac.o: $(ARBHOME)/INCLUDE/cxxforward.h
 recmac.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -224,6 +227,7 @@ trackers.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 trackers.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 trackers.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 trackers.o: $(ARBHOME)/INCLUDE/cb.h
+trackers.o: $(ARBHOME)/INCLUDE/cb_base.h
 trackers.o: $(ARBHOME)/INCLUDE/cbtypes.h
 trackers.o: $(ARBHOME)/INCLUDE/cxxforward.h
 trackers.o: $(ARBHOME)/INCLUDE/downcast.h
