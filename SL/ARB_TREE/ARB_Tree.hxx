@@ -30,7 +30,7 @@
 #endif // DEVEL_RALF
 #endif // DEBUG
 
-typedef void (*ARB_tree_node_del_cb)(GBDATA *, int *cl_ARB_tree, GB_CB_TYPE);
+typedef void (*ARB_tree_node_del_cb)(GBDATA*, class ARB_tree*);
 
 class ARB_tree;
 class ARB_edge;
