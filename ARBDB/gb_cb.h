@@ -18,38 +18,43 @@
 #include <cb.h>
 #endif
 
-class gb_cb_spec {
-    GB_CB       func;
-    GB_CB_TYPE  type;
-    int        *clientdata;
+class gb_cb_spec { // @@@ rename
+    DatabaseCallback dbcb;
+    GB_CB_TYPE       type;
+
+    static DatabaseCallback MARKED_DELETED;
 
 public:
-    gb_cb_spec(GB_CB func_, GB_CB_TYPE type_, int *clientdata_)
-        : func(func_),
-          type(type_),
-          clientdata(clientdata_)
+    gb_cb_spec(GB_CB func_, GB_CB_TYPE type_, int *clientdata_) // @@@ deprecated
+        : dbcb(makeDatabaseCallback(func_, clientdata_)),
+          type(type_)
     {}
 
-    gb_cb_spec with_type_changed_to(GB_CB_TYPE type_) const { return gb_cb_spec(func, type_, clientdata); }
+    gb_cb_spec(const DatabaseCallback& cb, GB_CB_TYPE type_)
+        : dbcb(cb),
+          type(type_)
+    {}
+
+    gb_cb_spec with_type_changed_to(GB_CB_TYPE type_) const { return gb_cb_spec(dbcb, type_); }
 
     GB_CB_TYPE get_type() const { return type; }
 
     void operator()(GBDATA *gbd, GB_CB_TYPE type_) const {
         gb_assert(type&type_);
         gb_assert(!is_marked_for_removal());
-        func(gbd, clientdata, type_);
+        dbcb(gbd, type_);
     }
     void operator()(GBDATA *gbd) const { (*this)(gbd, type); }
 
     bool sig_is_equal_to(const gb_cb_spec& other) const { // ignores 'clientdata'
-        return func == other.func && type == other.type;
+        return type == other.type && dbcb.same_function_as(other.dbcb);
     }
     bool is_equal_to(const gb_cb_spec& other) const {
-        return sig_is_equal_to(other) && clientdata == other.clientdata;
+        return type == other.type && dbcb == other.dbcb;
     }
 
-    void mark_for_removal() { func = NULL; }
-    bool is_marked_for_removal() const { return func == NULL; }
+    void mark_for_removal() { dbcb = MARKED_DELETED; }
+    bool is_marked_for_removal() const { return dbcb == MARKED_DELETED; }
 
     char *get_info() const;
 };
