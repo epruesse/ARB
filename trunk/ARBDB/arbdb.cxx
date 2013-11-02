@@ -2562,9 +2562,6 @@ inline GB_ERROR gb_add_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs) {
 GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
     return gb_add_callback(gbd, TypedDatabaseCallback(dbcb, type));
 }
-GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // goes2header: __ATTR__DEPRECATED_CALLBACK
-    return gb_add_callback(gbd, TypedDatabaseCallback(func, type, clientdata));
-}
 
 template <typename PRED>
 inline void gb_remove_callbacks_that(GBDATA *gbd, PRED shallRemove) {
@@ -2620,10 +2617,6 @@ void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& db
     // remove specific callback; 'type' and 'dbcb' have to match
     gb_remove_callbacks_that(gbd, IsSpecificCallback(TypedDatabaseCallback(dbcb, type)));
 }
-void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // goes2header: __ATTR__DEPRECATED_CALLBACK
-    // remove specific callback; 'type', 'func' and 'clientdata' have to match
-    gb_remove_callbacks_that(gbd, IsSpecificCallback(TypedDatabaseCallback(func, type, clientdata)));
-}
 void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
     // removes all callbacks 'func' bound to 'gbd' with 'type'
     gb_remove_callbacks_that(gbd, IsCallback(func, type));
@@ -2631,16 +2624,6 @@ void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
 
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
     TypedDatabaseCallback newcb(dbcb, type);
-    for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
-        if (cb->spec.is_equal_to(newcb) && !cb->spec.is_marked_for_removal()) {
-            return NULL;        // already in cb list
-        }
-    }
-    return gb_add_callback(gbd, newcb);
-}
-
-GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // goes2header: __ATTR__DEPRECATED_CALLBACK
-    TypedDatabaseCallback newcb(func, type, clientdata);
     for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
         if (cb->spec.is_equal_to(newcb) && !cb->spec.is_marked_for_removal()) {
             return NULL;        // already in cb list
