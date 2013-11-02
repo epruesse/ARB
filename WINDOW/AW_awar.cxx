@@ -250,7 +250,7 @@ void AW_awar_int::do_update() {
 }
 
 AW_choice* AW_awar_int::add_choice(AW_action& act, int val, bool def) {
-    return choices.add_choice(act, (int32_t)val, def);
+    return choices.add_choice(act, (int32_t)val, def); // @@@ dangerous cast (check input 'val' for overflow here)
 }
 
 AW_awar* AW_awar_int::set_minmax(float min, float max) {
@@ -670,9 +670,9 @@ static void _aw_awar_gbdata_deleted(GBDATA *gbd, AW_awar_impl *awar) {
 
 AW_awar *AW_awar_impl::map(AW_default gbd) {
     if (gb_var) {                                   // remove old mapping
-        GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, makeDatabaseCallback(_aw_awar_gbdata_changed, this));
+        GB_remove_callback(gb_var, GB_CB_CHANGED, makeDatabaseCallback(_aw_awar_gbdata_changed, this));
         if (gb_var != gb_origin) {                  // keep callback if pointing to origin!
-            GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, makeDatabaseCallback(_aw_awar_gbdata_deleted, this));
+            GB_remove_callback(gb_var, GB_CB_DELETE, makeDatabaseCallback(_aw_awar_gbdata_deleted, this));
         }
         gb_var = NULL;
     }
@@ -684,9 +684,9 @@ AW_awar *AW_awar_impl::map(AW_default gbd) {
     if (gbd) {
         GB_transaction ta(gbd);
 
-        GB_ERROR error = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, makeDatabaseCallback(_aw_awar_gbdata_changed, this));
+        GB_ERROR error = GB_add_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(_aw_awar_gbdata_changed, this));
         if (!error && gbd != gb_origin) {           // do not add delete callback if mapping to origin
-            error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, makeDatabaseCallback(_aw_awar_gbdata_deleted, this));
+            error = GB_add_callback(gbd, GB_CB_DELETE, makeDatabaseCallback(_aw_awar_gbdata_deleted, this));
         }
         if (error) aw_message(error);
 
@@ -703,7 +703,7 @@ AW_awar *AW_awar_impl::map(AW_default gbd) {
 }
 
 AW_awar *AW_awar_impl::map(AW_awar *dest) {
-    return map(((AW_awar_impl*)dest)->gb_var);
+    return map(DOWNCAST(AW_awar_impl*, dest)->gb_var);
 }
 AW_awar *AW_awar_impl::map(const char *awarn) {
     return map(AW_root::SINGLETON->awar(awarn));
