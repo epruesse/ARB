@@ -184,10 +184,12 @@ public:
 
 ExecutingMacro *ExecutingMacro::head = NULL;
 
-static void macro_terminated(GBDATA *gb_terminated, int *, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
+static void macro_terminated(GBDATA *gb_terminated, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
     ma_assert(cb_type == GB_CB_CHANGED);
+    fprintf(stderr, "macro_terminated called\n");
     bool allMacrosTerminated = ExecutingMacro::done();
     if (allMacrosTerminated) {
+        fprintf(stderr, "macro_terminated: allMacrosTerminated\n");
         GBDATA   *gb_main = GB_get_root(gb_terminated);
         GB_ERROR  error   = clearMacroExecutionAuthorization(gb_main);
         aw_message_if(error);
@@ -227,7 +229,7 @@ GB_ERROR MacroRecorder::execute(const char *file, AW_RCB1 execution_done_cb, AW_
                 error = GB_await_error();
             }
             else {
-                GB_add_callback(gb_term, GB_CB_CHANGED, macro_terminated, 0);
+                GB_add_callback(gb_term, GB_CB_CHANGED, makeDatabaseCallback(macro_terminated));
             }
         }
         error = ta.close(error);
@@ -297,8 +299,7 @@ void ClientActionTracker::set_tracking_according_to(GBDATA *gb_recording) {
     if (is_tracking() != recording) set_recording(recording);
 }
 
-static void record_state_changed_cb(GBDATA *gb_recording, int *cl_ClientActionTracker, GB_CB_TYPE) {
-    ClientActionTracker *cat = (ClientActionTracker*)cl_ClientActionTracker;
+static void record_state_changed_cb(GBDATA *gb_recording, ClientActionTracker *cat) {
     cat->set_tracking_according_to(gb_recording);
 }
 
@@ -312,11 +313,11 @@ void ClientActionTracker::bind_callbacks(bool install) {
     }
     else {
         if (install) {
-            error = GB_add_callback(gb_recording, GB_CB_CHANGED, record_state_changed_cb, (int*)this);
-            record_state_changed_cb(gb_recording, (int*)this, GB_CB_CHANGED); // call once
+            error = GB_add_callback(gb_recording, GB_CB_CHANGED, makeDatabaseCallback(record_state_changed_cb, this));
+            record_state_changed_cb(gb_recording, this); // call once
         }
         else {
-            GB_remove_callback(gb_recording, GB_CB_CHANGED, record_state_changed_cb, (int*)this);
+            GB_remove_callback(gb_recording, GB_CB_CHANGED, makeDatabaseCallback(record_state_changed_cb, this));
         }
     }
 

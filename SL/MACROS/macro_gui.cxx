@@ -105,7 +105,7 @@ static void awt_edit_macro_cb(AW_window *aww) {
     free(path);
 }
 
-static void macro_recording_changed_cb(GBDATA *, int *, GB_CB_TYPE ) {
+static void macro_recording_changed_cb() {
     update_macro_record_button(AW_root::SINGLETON);
 }
 
@@ -126,7 +126,7 @@ void awt_create_macro_variables(AW_root *aw_root) {
 
         GBDATA *gb_recording     = GB_searchOrCreate_int(gb_main, MACRO_TRIGGER_RECORDING, 0);
         if (!gb_recording) error = GB_await_error();
-        else    error            = GB_add_callback(gb_recording, GB_CB_CHANGED, macro_recording_changed_cb, 0);
+        else    error            = GB_add_callback(gb_recording, GB_CB_CHANGED, makeDatabaseCallback(macro_recording_changed_cb));
 
         if (error) aw_message(GBS_global_string("Failed to bind macro_recording_changed_cb (Reason: %s)", error));
     }
