@@ -303,7 +303,7 @@ void MP_Window::build_pt_server_list() {
     aws->update_option_menu();
 }
 
-static void track_ali_change_cb(GBDATA *gb_ali, int*, GB_CB_TYPE) {
+static void track_ali_change_cb(GBDATA *gb_ali) {
     GB_transaction     ta(gb_ali);
     GBDATA            *gb_main = GB_get_root(gb_ali);
     char              *aliname = GBT_get_default_alignment(gb_main);
@@ -323,8 +323,8 @@ static void install_track_ali_type_callback(GBDATA *gb_main) {
         error = GB_await_error();
     }
     else {
-        error = GB_add_callback(gb_ali, GB_CB_CHANGED, track_ali_change_cb, 0);
-        track_ali_change_cb(gb_ali, 0, GB_CB_CHANGED);
+        error = GB_add_callback(gb_ali, GB_CB_CHANGED, makeDatabaseCallback(track_ali_change_cb));
+        track_ali_change_cb(gb_ali);
     }
 
     if (error) {

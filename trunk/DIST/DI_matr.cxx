@@ -71,7 +71,7 @@ static void refresh_matrix_display() {
     }
 }
 
-static void delete_matrix_cb(AW_root *) {
+static void delete_matrix_cb() {
     GLOBAL_MATRIX.forget();
 }
 
@@ -104,27 +104,28 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
 
     DI_dna_matrix.create_awars(aw_root, AWAR_DIST_MATRIX_DNA_BASE);
 
-    aw_root->awar_int(AWAR_DIST_MATRIX_DNA_ENABLED, 0)->add_callback(delete_matrix_cb); // user matrix disabled by default
+    RootCallback delete_matrix_callback = makeRootCallback(delete_matrix_cb);
+    aw_root->awar_int(AWAR_DIST_MATRIX_DNA_ENABLED, 0)->add_callback(delete_matrix_callback); // user matrix disabled by default
     {
         GBDATA *gbd = GB_search(AW_ROOT_DEFAULT, AWAR_DIST_MATRIX_DNA_BASE, GB_FIND);
-        GB_add_callback(gbd, GB_CB_CHANGED, (GB_CB)delete_matrix_cb, 0);
+        GB_add_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(delete_matrix_cb));
     }
 
     aw_root->awar_string("tmp/dummy_string", "0", def);
 
-    aw_root->awar_string(AWAR_DIST_WHICH_SPECIES, "marked", def)->add_callback(delete_matrix_cb);
+    aw_root->awar_string(AWAR_DIST_WHICH_SPECIES, "marked", def)->add_callback(delete_matrix_callback);
     {
         char *default_ali = GBT_get_default_alignment(db);
-        aw_root->awar_string(AWAR_DIST_ALIGNMENT, "", def)     ->add_callback(delete_matrix_cb)->write_string(default_ali);
+        aw_root->awar_string(AWAR_DIST_ALIGNMENT, "", def)     ->add_callback(delete_matrix_callback)->write_string(default_ali);
         free(default_ali);
     }
     aw_root->awar_string(AWAR_DIST_FILTER_ALIGNMENT, "none", def);
     aw_root->awar_string(AWAR_DIST_FILTER_NAME,      "none", def);
-    aw_root->awar_string(AWAR_DIST_FILTER_FILTER,    "",     def)->add_callback(delete_matrix_cb);
-    aw_root->awar_int   (AWAR_DIST_FILTER_SIMPLIFY,  0,      def)->add_callback(delete_matrix_cb);
+    aw_root->awar_string(AWAR_DIST_FILTER_FILTER,    "",     def)->add_callback(delete_matrix_callback);
+    aw_root->awar_int   (AWAR_DIST_FILTER_SIMPLIFY,  0,      def)->add_callback(delete_matrix_callback);
 
-    aw_root->awar_string(AWAR_DIST_CANCEL_CHARS, ".", def)->add_callback(delete_matrix_cb);
-    aw_root->awar_int(AWAR_DIST_CORR_TRANS, (int)DI_TRANSFORMATION_SIMILARITY, def)->add_callback(delete_matrix_cb);
+    aw_root->awar_string(AWAR_DIST_CANCEL_CHARS, ".", def)->add_callback(delete_matrix_callback);
+    aw_root->awar_int(AWAR_DIST_CORR_TRANS, (int)DI_TRANSFORMATION_SIMILARITY, def)->add_callback(delete_matrix_callback);
 
     aw_root->awar(AWAR_DIST_FILTER_ALIGNMENT)->map(AWAR_DIST_ALIGNMENT);
 
@@ -135,10 +136,10 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     {
         char *currentTree = aw_root->awar_string(AWAR_TREE, "", db)->read_string();
         aw_root->awar_string(AWAR_DIST_TREE_CURR_NAME, currentTree, def);
-        aw_root->awar_string(AWAR_DIST_TREE_SORT_NAME, currentTree, def)->add_callback(delete_matrix_cb);
+        aw_root->awar_string(AWAR_DIST_TREE_SORT_NAME, currentTree, def)->add_callback(delete_matrix_callback);
         free(currentTree);
     }
-    aw_root->awar_string(AWAR_DIST_TREE_COMP_NAME, NO_TREE_SELECTED, def)->add_callback(delete_matrix_cb);
+    aw_root->awar_string(AWAR_DIST_TREE_COMP_NAME, NO_TREE_SELECTED, def)->add_callback(delete_matrix_callback);
 
     aw_root->awar_int(AWAR_DIST_BOOTSTRAP_COUNT, 1000, def);
 
@@ -157,7 +158,7 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
         GB_push_transaction(db);
 
         GBDATA *gb_species_data = GBT_get_species_data(db);
-        GB_add_callback(gb_species_data, GB_CB_CHANGED, (GB_CB)delete_matrix_cb, 0);
+        GB_add_callback(gb_species_data, GB_CB_CHANGED, makeDatabaseCallback(delete_matrix_cb));
 
         GB_pop_transaction(db);
     }

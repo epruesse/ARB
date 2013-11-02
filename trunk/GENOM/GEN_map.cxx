@@ -176,7 +176,7 @@ static void reinit_NDS_4_window(GEN_map_window *win) {
     win->get_graphic()->get_gen_root()->reinit_NDS();
 }
 
-static void GEN_NDS_changed(GBDATA *gb_viewkey, int *, GB_CB_TYPE) {
+static void GEN_NDS_changed(GBDATA *gb_viewkey) {
     GBDATA *gb_main = GB_get_root(gb_viewkey);
     GEN_make_node_text_init(gb_main);
     GEN_map_manager::with_all_mapped_windows(reinit_NDS_4_window);
@@ -195,8 +195,7 @@ struct gene_container_changed_cb_data {
     {}
 };
 
-static void GEN_gene_container_changed_cb(GBDATA * /* gb_gene_data */, int *cl_cb_data, GB_CB_TYPE /* gb_type */) {
-    gene_container_changed_cb_data *cb_data = (gene_container_changed_cb_data*)cl_cb_data;
+static void GEN_gene_container_changed_cb(GBDATA*, gene_container_changed_cb_data *cb_data) {
     cb_data->graphic->reinit_gen_root(cb_data->canvas, true);
     cb_data->canvas->refresh();
 }
@@ -223,12 +222,12 @@ static void GEN_gene_container_cb_installer(bool install, AWT_canvas *gmw, GEN_g
         // @@@ FIXME: get data of local genome!
 
         if (curr_cb_data->gb_gene_data) {
-            GB_add_callback(curr_cb_data->gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), GEN_gene_container_changed_cb, (int*)curr_cb_data);
+            GB_add_callback(curr_cb_data->gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
         }
     }
     else {
         if (curr_cb_data->gb_gene_data) { // if callback is installed
-            GB_remove_callback(curr_cb_data->gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), GEN_gene_container_changed_cb, (int*)curr_cb_data);
+            GB_remove_callback(curr_cb_data->gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
             curr_cb_data->gb_gene_data = 0;
         }
     }
@@ -462,7 +461,7 @@ static void GEN_create_genemap_global_awars(AW_root *aw_root, AW_default def, GB
 
     aw_root->awar_int(AWAR_GENMAP_AUTO_JUMP, 1);
 
-    GEN_create_nds_vars(aw_root, def, gb_main, GEN_NDS_changed);
+    GEN_create_nds_vars(aw_root, def, gb_main, makeDatabaseCallback(GEN_NDS_changed));
 }
 
 static void GEN_add_global_awar_callbacks(AW_root *awr) {
