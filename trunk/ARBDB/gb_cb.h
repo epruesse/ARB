@@ -18,24 +18,24 @@
 #include <cb.h>
 #endif
 
-class gb_cb_spec { // @@@ rename
+class TypedDatabaseCallback {
     DatabaseCallback dbcb;
     GB_CB_TYPE       type;
 
     static DatabaseCallback MARKED_DELETED;
 
 public:
-    gb_cb_spec(GB_CB func_, GB_CB_TYPE type_, int *clientdata_) // @@@ deprecated
+    TypedDatabaseCallback(GB_CB func_, GB_CB_TYPE type_, int *clientdata_) // @@@ deprecated
         : dbcb(makeDatabaseCallback(func_, clientdata_)),
           type(type_)
     {}
 
-    gb_cb_spec(const DatabaseCallback& cb, GB_CB_TYPE type_)
+    TypedDatabaseCallback(const DatabaseCallback& cb, GB_CB_TYPE type_)
         : dbcb(cb),
           type(type_)
     {}
 
-    gb_cb_spec with_type_changed_to(GB_CB_TYPE type_) const { return gb_cb_spec(dbcb, type_); }
+    TypedDatabaseCallback with_type_changed_to(GB_CB_TYPE type_) const { return TypedDatabaseCallback(dbcb, type_); }
 
     GB_CB_TYPE get_type() const { return type; }
 
@@ -46,10 +46,10 @@ public:
     }
     void operator()(GBDATA *gbd) const { (*this)(gbd, type); }
 
-    bool sig_is_equal_to(const gb_cb_spec& other) const { // ignores 'clientdata'
+    bool sig_is_equal_to(const TypedDatabaseCallback& other) const { // ignores 'clientdata'
         return type == other.type && dbcb.same_function_as(other.dbcb);
     }
-    bool is_equal_to(const gb_cb_spec& other) const {
+    bool is_equal_to(const TypedDatabaseCallback& other) const {
         return type == other.type && dbcb == other.dbcb;
     }
 
@@ -61,7 +61,7 @@ public:
 
 struct gb_callback {
     gb_callback *next;
-    gb_cb_spec   spec;
+    TypedDatabaseCallback   spec;
     short        priority;
     short        running; // @@@ only used in no-transaction mode
 };
@@ -70,7 +70,7 @@ struct gb_transaction_save;
 
 struct gb_callback_list {
     gb_callback_list    *next;
-    gb_cb_spec           spec;
+    TypedDatabaseCallback           spec;
     gb_transaction_save *old;
     GBDATA              *gbd;
 };
