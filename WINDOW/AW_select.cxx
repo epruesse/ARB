@@ -576,8 +576,7 @@ char *AW_selection_list_entry::copy_string_for_display(const char *str) {
     return out;
 }
 
-static void AW_DB_selection_refresh_cb(GBDATA *, int *cl_selection, GB_CB_TYPE) {
-    AW_DB_selection *selection = (AW_DB_selection*)cl_selection;
+static void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *selection) {
     selection->refresh();
 }
 
@@ -588,12 +587,12 @@ AW_DB_selection::AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_)
     , gbd(gbd_)
 {
     GB_transaction ta(gbd);
-    GB_add_callback(gbd, GB_CB_CHANGED, AW_DB_selection_refresh_cb, (int*)this);
+    GB_add_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(AW_DB_selection_refresh_cb, this));
 }
 
 AW_DB_selection::~AW_DB_selection() {
     GB_transaction ta(gbd);
-    GB_remove_callback(gbd, GB_CB_CHANGED, AW_DB_selection_refresh_cb, (int*)this);
+    GB_remove_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(AW_DB_selection_refresh_cb, this));
 }
 
 GBDATA *AW_DB_selection::get_gb_main() {

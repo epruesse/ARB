@@ -240,7 +240,6 @@ public:
     GBDATA *get_gbd() { return gbd; }
     GBDATA *get_gb_main();
 };
-void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *);
 
     
 __ATTR__NORETURN inline void selection_type_mismatch(const char *triedType);

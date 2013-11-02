@@ -42,12 +42,11 @@ static void awar_updated_cb(AW_root*, AW_awar *awar) {
     }
 }
 
-static void db_updated_cb(GBDATA *gbd, int *cl_awar, GB_CB_TYPE /* cbtype */) {
+static void db_updated_cb(GBDATA *gbd, AW_awar *awar) {
     if (!in_global_awar_cb) {
-        AW_awar        *awar = (AW_awar*)cl_awar;
-        GB_transaction  dummy(gb_main4awar);
-
+        GB_transaction      ta(gb_main4awar);
         LocallyModify<bool> flag(in_global_awar_cb, true);
+
         awar->write_as_string(GB_read_char_pntr(gbd));
     }
 }
@@ -80,7 +79,7 @@ GB_ERROR AW_awar::make_global() {
         free(content);
     }
 
-    if (!error) GB_add_callback(gbd, GB_CB_CHANGED, db_updated_cb, (int*)this);
+    if (!error) GB_add_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(db_updated_cb, this));
     return error;
 }
 

@@ -650,14 +650,11 @@ void AW_awar_impl::touch() {
     }
 }
 
-static void _aw_awar_gbdata_changed(GBDATA *, int *cl, GB_CB_TYPE) {
-    AW_awar *awar = (AW_awar *)cl;
+static void _aw_awar_gbdata_changed(GBDATA *, AW_awar_impl *awar) {
     awar->update();
 }
 
-static void _aw_awar_gbdata_deleted(GBDATA *gbd, int *cl, GB_CB_TYPE) {
-    AW_awar_impl *awar = (AW_awar_impl *)cl;
-
+static void _aw_awar_gbdata_deleted(GBDATA *gbd, AW_awar_impl *awar) {
     if (awar->gb_origin == gbd) {
         // make awar zombie
         awar->gb_var    = NULL;
@@ -673,9 +670,9 @@ static void _aw_awar_gbdata_deleted(GBDATA *gbd, int *cl, GB_CB_TYPE) {
 
 AW_awar *AW_awar_impl::map(AW_default gbd) {
     if (gb_var) {                                   // remove old mapping
-      GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)_aw_awar_gbdata_changed, (int *)this);
+        GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, makeDatabaseCallback(_aw_awar_gbdata_changed, this));
         if (gb_var != gb_origin) {                  // keep callback if pointing to origin!
-          GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, (GB_CB)_aw_awar_gbdata_deleted, (int *)this);
+            GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, makeDatabaseCallback(_aw_awar_gbdata_deleted, this));
         }
         gb_var = NULL;
     }
@@ -687,9 +684,9 @@ AW_awar *AW_awar_impl::map(AW_default gbd) {
     if (gbd) {
         GB_transaction ta(gbd);
 
-        GB_ERROR error = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)_aw_awar_gbdata_changed, (int *)this);
+        GB_ERROR error = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, makeDatabaseCallback(_aw_awar_gbdata_changed, this));
         if (!error && gbd != gb_origin) {           // do not add delete callback if mapping to origin
-            error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)_aw_awar_gbdata_deleted, (int *)this);
+            error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, makeDatabaseCallback(_aw_awar_gbdata_deleted, this));
         }
         if (error) aw_message(error);
 
