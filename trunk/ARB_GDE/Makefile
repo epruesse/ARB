@@ -74,6 +74,7 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GDE.o: $(ARBHOME)/INCLUDE/cb.h
+GDE.o: $(ARBHOME)/INCLUDE/cb_base.h
 GDE.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -145,6 +146,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/cb.h
+GDE_event.o: $(ARBHOME)/INCLUDE/cb_base.h
 GDE_event.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE_event.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE_event.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -281,6 +283,7 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cb.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cb_base.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/downcast.h

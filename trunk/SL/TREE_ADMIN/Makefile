@@ -52,6 +52,7 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cb.h
+TreeAdmin.o: $(ARBHOME)/INCLUDE/cb_base.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cbtypes.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/downcast.h

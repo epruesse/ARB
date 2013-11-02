@@ -72,6 +72,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/cb.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
@@ -161,6 +162,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/cb.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
@@ -195,6 +197,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/cb.h
+DI_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_main.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -255,6 +258,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/cb.h
+DI_matr.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_matr.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
@@ -369,6 +373,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/cb.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -406,6 +411,7 @@ distanalyse.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/cb.h
+distanalyse.o: $(ARBHOME)/INCLUDE/cb_base.h
 distanalyse.o: $(ARBHOME)/INCLUDE/cbtypes.h
 distanalyse.o: $(ARBHOME)/INCLUDE/cxxforward.h
 distanalyse.o: $(ARBHOME)/INCLUDE/downcast.h

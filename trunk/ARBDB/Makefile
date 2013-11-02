@@ -177,6 +177,7 @@ ad_core.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_core.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_core.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_core.o: $(ARBHOME)/INCLUDE/cb.h
+ad_core.o: $(ARBHOME)/INCLUDE/cb_base.h
 ad_core.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ad_core.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_core.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -593,6 +594,7 @@ adlang1.o: $(ARBHOME)/INCLUDE/arbtools.h
 adlang1.o: $(ARBHOME)/INCLUDE/attributes.h
 adlang1.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 adlang1.o: $(ARBHOME)/INCLUDE/cb.h
+adlang1.o: $(ARBHOME)/INCLUDE/cb_base.h
 adlang1.o: $(ARBHOME)/INCLUDE/cbtypes.h
 adlang1.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adlang1.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -969,6 +971,7 @@ adsystem.o: $(ARBHOME)/INCLUDE/arb_string.h
 adsystem.o: $(ARBHOME)/INCLUDE/arbtools.h
 adsystem.o: $(ARBHOME)/INCLUDE/attributes.h
 adsystem.o: $(ARBHOME)/INCLUDE/cb.h
+adsystem.o: $(ARBHOME)/INCLUDE/cb_base.h
 adsystem.o: $(ARBHOME)/INCLUDE/cbtypes.h
 adsystem.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adsystem.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -999,6 +1002,7 @@ adtables.o: $(ARBHOME)/INCLUDE/arb_string.h
 adtables.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtables.o: $(ARBHOME)/INCLUDE/attributes.h
 adtables.o: $(ARBHOME)/INCLUDE/cb.h
+adtables.o: $(ARBHOME)/INCLUDE/cb_base.h
 adtables.o: $(ARBHOME)/INCLUDE/cbtypes.h
 adtables.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adtables.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -1082,6 +1086,7 @@ adtools.o: $(ARBHOME)/INCLUDE/arb_string.h
 adtools.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtools.o: $(ARBHOME)/INCLUDE/attributes.h
 adtools.o: $(ARBHOME)/INCLUDE/cb.h
+adtools.o: $(ARBHOME)/INCLUDE/cb_base.h
 adtools.o: $(ARBHOME)/INCLUDE/cbtypes.h
 adtools.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adtools.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -1149,6 +1154,7 @@ arbdb.o: $(ARBHOME)/INCLUDE/arb_string.h
 arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
 arbdb.o: $(ARBHOME)/INCLUDE/cb.h
+arbdb.o: $(ARBHOME)/INCLUDE/cb_base.h
 arbdb.o: $(ARBHOME)/INCLUDE/cbtypes.h
 arbdb.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arbdb.o: $(ARBHOME)/INCLUDE/dupstr.h
