@@ -24,6 +24,7 @@
 #include "gb_ts.h"
 #include "gb_index.h"
 #include <arb_strarray.h>
+#include "ad_cb.h"
 
 gb_local_data *gb_local = 0;
 
@@ -2934,15 +2935,15 @@ void TEST_GB_number_of_subentries() {
     GB_close(gb_main);
 }
 
-static void test_count_cb(GBDATA *, int *counter, GB_CB_TYPE) {
+static void test_count_cb(GBDATA *, int *counter) {
     fprintf(stderr, "test_count_cb: var.add=%p old.val=%i ", counter, *counter);
     (*counter)++;
     fprintf(stderr, "new.val=%i\n", *counter);
     fflush(stderr);
 }
 
-static void remove_self_cb(GBDATA *gbe, int *cd, GB_CB_TYPE cbtype) {
-    GB_remove_callback(gbe, cbtype, remove_self_cb, cd);
+static void remove_self_cb(GBDATA *gbe, GB_CB_TYPE cbtype) {
+    GB_remove_callback(gbe, cbtype, makeDatabaseCallback(remove_self_cb));
 }
 
 void TEST_db_callbacks_ta_nota() {
@@ -3013,10 +3014,10 @@ void TEST_db_callbacks_ta_nota() {
         // install some DB callbacks
         {
             GB_transaction ta(gb_main);
-            GB_add_callback(gbe1, GB_CB_CHANGED,     test_count_cb, &e1_changed);
-            GB_add_callback(gbe2, GB_CB_CHANGED,     test_count_cb, &e2_changed);
-            GB_add_callback(gbc,  GB_CB_CHANGED,     test_count_cb, &c_changed);
-            GB_add_callback(gbc,  GB_CB_SON_CREATED, test_count_cb, &c_son_created);
+            GB_add_callback(gbe1, GB_CB_CHANGED,     makeDatabaseCallback(test_count_cb, &e1_changed));
+            GB_add_callback(gbe2, GB_CB_CHANGED,     makeDatabaseCallback(test_count_cb, &e2_changed));
+            GB_add_callback(gbc,  GB_CB_CHANGED,     makeDatabaseCallback(test_count_cb, &c_changed));
+            GB_add_callback(gbc,  GB_CB_SON_CREATED, makeDatabaseCallback(test_count_cb, &c_son_created));
         }
 
         // check callbacks were not called yet
@@ -3066,10 +3067,10 @@ void TEST_db_callbacks_ta_nota() {
         {
             GB_transaction ta(gb_main);
 
-            GB_add_callback(gbe1, GB_CB_DELETE, test_count_cb, &e1_deleted);
-            GB_add_callback(gbe2, GB_CB_DELETE, test_count_cb, &e2_deleted);
-            GB_add_callback(gbe3, GB_CB_DELETE, test_count_cb, &e3_deleted);
-            GB_add_callback(gbc,  GB_CB_DELETE, test_count_cb, &c_deleted);
+            GB_add_callback(gbe1, GB_CB_DELETE, makeDatabaseCallback(test_count_cb, &e1_deleted));
+            GB_add_callback(gbe2, GB_CB_DELETE, makeDatabaseCallback(test_count_cb, &e2_deleted));
+            GB_add_callback(gbe3, GB_CB_DELETE, makeDatabaseCallback(test_count_cb, &e3_deleted));
+            GB_add_callback(gbc,  GB_CB_DELETE, makeDatabaseCallback(test_count_cb, &c_deleted));
         }
         TEST_EXPECT_CHCB_COUNTERS(0, 0, 0, 0, BOTH_TA_MODES); // adding callbacks does not trigger existing change-callbacks
         {
@@ -3102,7 +3103,7 @@ void TEST_db_callbacks_ta_nota() {
         {
             GB_transaction ta(gb_main);
             gbe1 = GB_create(gb_main, "new_e1", GB_INT); // recreate
-            GB_add_callback(gbe1, GB_CB_CHANGED, remove_self_cb, NULL);
+            GB_add_callback(gbe1, GB_CB_CHANGED, makeDatabaseCallback(remove_self_cb));
         }
         {
             GB_transaction ta(gb_main);
@@ -3145,24 +3146,23 @@ public:
     bool was_called() const { return !was_not_called() && callcount == 1; }
 };
 
-static void some_cb(GBDATA *gbd, int *cd, GB_CB_TYPE cbtype) {
-    callback_trace *trace = (callback_trace*)cd;
+static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
     trace->set_called_by(gbd, cbtype);
 }
 
 #define TRACESTRUCT(ELEM,FLAVOR) trace_##ELEM##_##FLAVOR
 
-#define ADD_CHANGED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_CHANGED,     some_cb, (int*)&TRACESTRUCT(elem,changed)))
-#define ADD_DELETE_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_DELETE,      some_cb, (int*)&TRACESTRUCT(elem,deleted)))
-#define ADD_NCHILD_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_SON_CREATED, some_cb, (int*)&TRACESTRUCT(elem,newchild)))
+#define ADD_CHANGED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_CHANGED,     makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,changed))));
+#define ADD_DELETE_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted))));
+#define ADD_NCHILD_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,newchild))));
 
-#define ENSURE_CHANGED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_CHANGED,     some_cb, (int*)&TRACESTRUCT(elem,changed)))
-#define ENSURE_DELETE_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_DELETE,      some_cb, (int*)&TRACESTRUCT(elem,deleted)))
-#define ENSURE_NCHILD_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_SON_CREATED, some_cb, (int*)&TRACESTRUCT(elem,newchild)))
+#define ENSURE_CHANGED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_CHANGED,     makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,changed))));
+#define ENSURE_DELETE_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted))));
+#define ENSURE_NCHILD_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,newchild))));
 
-#define REMOVE_CHANGED_CALLBACK(elem) GB_remove_callback(elem, GB_CB_CHANGED,     some_cb, (int*)&TRACESTRUCT(elem,changed))
-#define REMOVE_DELETE_CALLBACK(elem)  GB_remove_callback(elem, GB_CB_DELETE,      some_cb, (int*)&TRACESTRUCT(elem,deleted))
-#define REMOVE_NCHILD_CALLBACK(elem)  GB_remove_callback(elem, GB_CB_SON_CREATED, some_cb, (int*)&TRACESTRUCT(elem,newchild))
+#define REMOVE_CHANGED_CALLBACK(elem) GB_remove_callback(elem, GB_CB_CHANGED,     makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,changed)));
+#define REMOVE_DELETE_CALLBACK(elem)  GB_remove_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted)));
+#define REMOVE_NCHILD_CALLBACK(elem)  GB_remove_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,newchild)));
 
 #define INIT_CHANGED_CALLBACK(elem) callback_trace TRACESTRUCT(elem,changed); ADD_CHANGED_CALLBACK(elem)
 #define INIT_DELETE_CALLBACK(elem)  callback_trace TRACESTRUCT(elem,deleted); ADD_DELETE_CALLBACK(elem)

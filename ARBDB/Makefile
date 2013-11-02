@@ -1126,6 +1126,8 @@ adtree.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adtune.o: gb_tune.h
 
+arbdb.o: ad_cb.h
+arbdb.o: ad_cb_prot.h
 arbdb.o: ad_prot.h
 arbdb.o: arbdb.h
 arbdb.o: arbdb_base.h
