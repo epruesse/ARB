@@ -2560,6 +2560,9 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     GBDATA  *gb_main = awtqs->gb_main;
     DbQuery *query   = new DbQuery(awtqs->get_queried_itemtype());
 
+    // @@@ set all the things below via ctor!
+    // @@@ create a copyable object containing everything query_spec and DbQuery have in common -> pass that object to DbQuery-ctor
+
     query->gb_main                = awtqs->gb_main;
     query->aws                    = aws;
     query->gb_ref                 = awtqs->gb_ref;
