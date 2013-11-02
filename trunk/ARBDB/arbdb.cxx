@@ -2561,7 +2561,7 @@ inline GB_ERROR gb_add_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs) {
 GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
     return gb_add_callback(gbd, TypedDatabaseCallback(dbcb, type));
 }
-GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // @@@ deprecated
+GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // goes2header: __ATTR__DEPRECATED_CALLBACK
     return gb_add_callback(gbd, TypedDatabaseCallback(func, type, clientdata));
 }
 
@@ -2607,7 +2607,7 @@ static void gb_remove_callbacks_marked_for_deletion(GBDATA *gbd) {
 }
 
 struct IsCallback : private TypedDatabaseCallback {
-    IsCallback(GB_CB func_, GB_CB_TYPE type_) : TypedDatabaseCallback(func_, type_, NULL) {}
+    IsCallback(GB_CB func_, GB_CB_TYPE type_) : TypedDatabaseCallback(func_, type_, NULL) {} // @@@ create typed flavor
     bool operator()(const gb_callback& cb) const { return sig_is_equal_to(cb.spec); }
 };
 struct IsSpecificCallback : private TypedDatabaseCallback {
@@ -2619,7 +2619,7 @@ void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& db
     // remove specific callback; 'type' and 'dbcb' have to match
     gb_remove_callbacks_that(gbd, IsSpecificCallback(TypedDatabaseCallback(dbcb, type)));
 }
-void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // @@@ deprecated
+void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // goes2header: __ATTR__DEPRECATED_CALLBACK
     // remove specific callback; 'type', 'func' and 'clientdata' have to match
     gb_remove_callbacks_that(gbd, IsSpecificCallback(TypedDatabaseCallback(func, type, clientdata)));
 }
@@ -2638,7 +2638,7 @@ GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback
     return gb_add_callback(gbd, newcb);
 }
 
-GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // @@@ deprecated
+GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // goes2header: __ATTR__DEPRECATED_CALLBACK
     TypedDatabaseCallback newcb(func, type, clientdata);
     for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
         if (cb->spec.is_equal_to(newcb) && !cb->spec.is_marked_for_removal()) {
