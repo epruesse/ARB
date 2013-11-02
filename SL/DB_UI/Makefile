@@ -51,6 +51,7 @@ info_window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 info_window.o: $(ARBHOME)/INCLUDE/cb.h
+info_window.o: $(ARBHOME)/INCLUDE/cb_base.h
 info_window.o: $(ARBHOME)/INCLUDE/cbtypes.h
 info_window.o: $(ARBHOME)/INCLUDE/cxxforward.h
 info_window.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
@@ -95,6 +96,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/cb.h
+ui_species.o: $(ARBHOME)/INCLUDE/cb_base.h
 ui_species.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ui_species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_query.h
