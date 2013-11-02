@@ -97,25 +97,6 @@ enum GB_UNDO_TYPE {
 // -----------------------
 //      callback types
 
-struct gb_cb_spec {
-    GB_CB       func;
-    GB_CB_TYPE  type;
-    int        *clientdata;
-
-    gb_cb_spec(GB_CB func_, GB_CB_TYPE type_, int *clientdata_)
-        : func(func_), type(type_), clientdata(clientdata_)
-    {}
-
-    gb_cb_spec with_type_changed_to(GB_CB_TYPE type_) const { return gb_cb_spec(func, type_, clientdata); }
-
-    bool sig_is_equal_to(const gb_cb_spec& other) const { // ignores 'clientdata'
-        return func == other.func && type == other.type;
-    }
-    bool is_equal_to(const gb_cb_spec& other) const {
-        return sig_is_equal_to(other) && clientdata == other.clientdata;
-    }
-};
-
 typedef long (*gb_hash_loop_type)(const char *key, long val, void *client_data);
 typedef void (*gb_hash_const_loop_type)(const char *key, long val, void *client_data);
 typedef int (*gbs_hash_compare_function) (const char *key0, long val0, const char *key1, long val1);

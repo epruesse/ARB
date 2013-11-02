@@ -7,14 +7,22 @@
 #ifndef AD_CB_PROT_H
 #define AD_CB_PROT_H
 
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
+#endif
+
 
 /* arbdb.cxx */
 NOT4PERL bool GB_inside_callback(GBDATA *of_gbd, GB_CB_TYPE cbtype);
 char *GB_get_callback_info(GBDATA *gbd);
-GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata);
-void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata);
+GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb);
+GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) __ATTR__DEPRECATED_CALLBACK;
+void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb);
+void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) __ATTR__DEPRECATED_CALLBACK;
 void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func);
-GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata);
+GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb);
+GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) __ATTR__DEPRECATED_CALLBACK;
 
 #else
 #error ad_cb_prot.h included twice

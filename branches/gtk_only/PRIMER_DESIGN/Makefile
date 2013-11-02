@@ -202,6 +202,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/cb.h
+primer_design.o: $(ARBHOME)/INCLUDE/cb_base.h
 primer_design.o: $(ARBHOME)/INCLUDE/cbtypes.h
 primer_design.o: $(ARBHOME)/INCLUDE/cxxforward.h
 primer_design.o: $(ARBHOME)/INCLUDE/downcast.h

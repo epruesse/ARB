@@ -54,6 +54,7 @@ ARB_Tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arbtools.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/attributes.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/cb.h
+ARB_Tree.o: $(ARBHOME)/INCLUDE/cb_base.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/downcast.h

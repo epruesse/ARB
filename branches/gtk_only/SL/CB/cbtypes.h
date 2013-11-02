@@ -12,8 +12,8 @@
 #ifndef CBTYPES_H
 #define CBTYPES_H
 
-#ifndef CB_H
-#include <cb.h>
+#ifndef CB_BASE_H
+#include "cb_base.h"
 #endif
 #ifndef TTYPES_H
 #include <ttypes.h>
@@ -157,8 +157,6 @@ typedef CallbackData<AW_CL,AW_CL> UntypedCallbackData;
 // ------------------------------
 //      casted callback types
 
-typedef struct Unfixed_cb_parameter *UNFIXED; // Unfixed_cb_parameter does not exist (intentionally!)
-
 template<typename RT, typename FIXED>
 struct Callback_FVV { // FVV stands for arguments (FIXED, VARIABLE, VARIABLE)
     typedef StrictlyTypedCallback<RT,FIXED,AW_CL,AW_CL> Signature;
@@ -175,6 +173,8 @@ public:
 
     bool operator <  (const Callback_FVV& other) const { return cb<other.cb || (cb == other.cb && *cd<*other.cd); }
     bool operator == (const Callback_FVV& other) const { return cb == other.cb && *cd == *other.cd; }
+
+    bool same_function_as(const Callback_FVV& other) const { return cb == other.cb; }
 
     AW_CL callee() const { return cb.get_cb(); } // @@@ only intermediate - remove later
     AW_CL inspect_CD1() const { return cd->p1; } // @@@ only intermediate - remove later
@@ -213,6 +213,8 @@ public:
 
     bool operator <  (const Callback_FVF& other) const { return cb<other.cb || (cb == other.cb && *cd<*other.cd); }
     bool operator == (const Callback_FVF& other) const { return cb == other.cb && *cd == *other.cd; }
+
+    bool same_function_as(const Callback_FVF& other) const { return cb == other.cb; }
 
     AW_CL callee() const { return cb; }          // @@@ only intermediate - remove later
     AW_CL inspect_CD1() const { return cd->p1; } // @@@ only intermediate - remove later
@@ -276,7 +278,7 @@ public:
     CBTYPE_FVV_BUILDER_NP12(BUILDER,CB,RESULT,FIXED,SIG,P1,P2);                                         \
     CBTYPE_FVV_BUILDER_NP12(BUILDER,CB,RESULT,UNFIXED,SIG,P1,P2)
 
-#define CBTYPE_FVF_BUILDER_P1(BUILDER,CB,RESULT,F1,F2,SIG,P1,P1fun)                                             \
+#define CBTYPE_FVF_BUILDER_P1_F1F2(BUILDER,CB,RESULT,F1,F2,SIG,P1,P1fun)                                        \
     template<typename P1>                                                                                       \
     inline CB BUILDER(RESULT (*cb)(F1, P1fun, F2), P1 p1) {                                                     \
         STATIC_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                   \
@@ -289,13 +291,32 @@ public:
         return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1));        \
     }
 
-#define CBTYPE_FVF_BUILDER_TEMPLATES(BUILDER,CB,RESULT,F1,F2,SIG,SIG01,SIG02)   \
+#define CBTYPE_FVF_BUILDER_P1_F1(BUILDER,CB,RESULT,F1,SIG,P1,P1fun)                                             \
+    template<typename P1>                                                                                       \
+    inline CB BUILDER(RESULT (*cb)(F1, P1fun), P1 p1) {                                                         \
+        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                   \
+        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1));                                                               \
+    }                                                                                                           \
+    template<typename P1>                                                                                       \
+    inline CB BUILDER(RESULT (*cb)(F1, P1fun),                                                                  \
+                      void (*dealloc)(P1), P1 p1) {                                                             \
+        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                   \
+        return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1));        \
+    }
+
+#define CBTYPE_FVF_BUILDER_NP1(BUILDER,CB,RESULT,F1,F2,SIG,SIG01,P1)                    \
     inline CB BUILDER(RESULT (*cb)(F1)) { return CB((SIG01)cb); }               \
     inline CB BUILDER(RESULT (*cb)(F1,F2)) { return CB((SIG01)cb); }            \
-    inline CB BUILDER(RESULT (*cb)(F2)) { return CB((SIG02)cb); }               \
-    CBTYPE_FVF_BUILDER_P1(BUILDER,CB,RESULT,F1,F2,SIG,P1,P1);                   \
-    CBTYPE_FVF_BUILDER_P1(BUILDER,CB,RESULT,F1,F2,SIG,P1,CONST_PARAM_T(P1));
+    CBTYPE_FVF_BUILDER_P1_F1F2(BUILDER,CB,RESULT,F1,F2,SIG,P1,P1);                      \
+    CBTYPE_FVF_BUILDER_P1_F1F2(BUILDER,CB,RESULT,F1,F2,SIG,P1,CONST_PARAM_T(P1));       \
+    CBTYPE_FVF_BUILDER_P1_F1(BUILDER,CB,RESULT,F1,SIG,P1,P1);                           \
+    CBTYPE_FVF_BUILDER_P1_F1(BUILDER,CB,RESULT,F1,SIG,P1,CONST_PARAM_T(P1))
 
+#define CBTYPE_FVF_BUILDER_TEMPLATES(BUILDER,CB,RESULT,F1,F2,SIG,SIG01,SIG02)           \
+    inline CB BUILDER(RESULT (*cb)()) { return CB((SIG01)cb); }                         \
+    inline CB BUILDER(RESULT (*cb)(F2)) { return CB((SIG02)cb); }                       \
+    CBTYPE_FVF_BUILDER_NP1(BUILDER,CB,RESULT,F1,F2,SIG,SIG01,P1);                       \
+    CBTYPE_FVF_BUILDER_NP1(BUILDER,CB,RESULT,UNFIXED,F2,SIG,SIG01,P1)
 
 // declares the callback type (CBTYPE) and the makeCBTYPE() templates needed to ensure
 // typecheck between callback-signature and bound parameters

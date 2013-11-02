@@ -73,6 +73,7 @@ WETC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/cb.h
+WETC_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 WETC_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 WETC_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 WETC_main.o: $(ARBHOME)/INCLUDE/downcast.h

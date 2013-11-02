@@ -113,6 +113,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/cb.h
+MG_alignment.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -176,6 +177,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/cb.h
+MG_checkfield.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -236,6 +238,7 @@ MG_configs.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/cb.h
+MG_configs.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_configs.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MG_configs.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MG_configs.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -295,6 +298,7 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/cb.h
+MG_extendeds.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
@@ -360,6 +364,7 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/cb.h
+MG_gene_species.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -427,6 +432,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/cb.h
+MG_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MG_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MG_main.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -488,6 +494,7 @@ MG_names.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/cb.h
+MG_names.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_names.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MG_names.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MG_names.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -552,6 +559,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/cb.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -621,6 +629,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/cb.h
+MG_species.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_species.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MG_species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MG_species.o: $(ARBHOME)/INCLUDE/db_query.h
@@ -685,6 +694,7 @@ MG_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/cb.h
+MG_trees.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_trees.o: $(ARBHOME)/INCLUDE/cbtypes.h
 MG_trees.o: $(ARBHOME)/INCLUDE/cxxforward.h
 MG_trees.o: $(ARBHOME)/INCLUDE/downcast.h

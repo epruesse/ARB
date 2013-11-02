@@ -92,7 +92,7 @@ pro: $(GB_O:.o=.cxx)
 	../SOURCE_TOOLS/mv_if_diff ad_prot.h.tmp ad_prot.h
 
 cbpro: $(GB_O:.o=.cxx)
-	../AISC_MKPTPS/aisc_mkpt -c "ARB database callback interface" -w ad_cb_prot.h -F '^GB_+callback' $^ >ad_cb_prot.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -c "ARB database callback interface" -G -w ad_cb_prot.h -F '^GB_+callback' $^ >ad_cb_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_cb_prot.h.tmp ad_cb_prot.h
 
 ppro: $(GB_O:.o=.cxx)
@@ -156,6 +156,7 @@ ad_config.o: $(ARBHOME)/INCLUDE/test_unit.h
 ad_core.o: ad_prot.h
 ad_core.o: arbdb.h
 ad_core.o: arbdb_base.h
+ad_core.o: gb_cb.h
 ad_core.o: gb_data.h
 ad_core.o: gb_header.h
 ad_core.o: gb_index.h
@@ -175,11 +176,16 @@ ad_core.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_core.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_core.o: $(ARBHOME)/INCLUDE/attributes.h
+ad_core.o: $(ARBHOME)/INCLUDE/cb.h
+ad_core.o: $(ARBHOME)/INCLUDE/cb_base.h
+ad_core.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ad_core.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_core.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_core.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_core.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_core.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_core.o: $(ARBHOME)/INCLUDE/test_global.h
+ad_core.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ad_load.o: ad_io_inline.h
 ad_load.o: ad_prot.h
@@ -588,6 +594,7 @@ adlang1.o: $(ARBHOME)/INCLUDE/arbtools.h
 adlang1.o: $(ARBHOME)/INCLUDE/attributes.h
 adlang1.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 adlang1.o: $(ARBHOME)/INCLUDE/cb.h
+adlang1.o: $(ARBHOME)/INCLUDE/cb_base.h
 adlang1.o: $(ARBHOME)/INCLUDE/cbtypes.h
 adlang1.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adlang1.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -926,6 +933,7 @@ adstring.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_error.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_sort.h
+adstring.o: $(ARBHOME)/INCLUDE/arb_str.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_string.h
 adstring.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -963,6 +971,7 @@ adsystem.o: $(ARBHOME)/INCLUDE/arb_string.h
 adsystem.o: $(ARBHOME)/INCLUDE/arbtools.h
 adsystem.o: $(ARBHOME)/INCLUDE/attributes.h
 adsystem.o: $(ARBHOME)/INCLUDE/cb.h
+adsystem.o: $(ARBHOME)/INCLUDE/cb_base.h
 adsystem.o: $(ARBHOME)/INCLUDE/cbtypes.h
 adsystem.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adsystem.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -993,6 +1002,7 @@ adtables.o: $(ARBHOME)/INCLUDE/arb_string.h
 adtables.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtables.o: $(ARBHOME)/INCLUDE/attributes.h
 adtables.o: $(ARBHOME)/INCLUDE/cb.h
+adtables.o: $(ARBHOME)/INCLUDE/cb_base.h
 adtables.o: $(ARBHOME)/INCLUDE/cbtypes.h
 adtables.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adtables.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -1076,6 +1086,7 @@ adtools.o: $(ARBHOME)/INCLUDE/arb_string.h
 adtools.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtools.o: $(ARBHOME)/INCLUDE/attributes.h
 adtools.o: $(ARBHOME)/INCLUDE/cb.h
+adtools.o: $(ARBHOME)/INCLUDE/cb_base.h
 adtools.o: $(ARBHOME)/INCLUDE/cbtypes.h
 adtools.o: $(ARBHOME)/INCLUDE/cxxforward.h
 adtools.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -1138,15 +1149,21 @@ arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_core.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arbdb.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_string.h
 arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
+arbdb.o: $(ARBHOME)/INCLUDE/cb.h
+arbdb.o: $(ARBHOME)/INCLUDE/cb_base.h
+arbdb.o: $(ARBHOME)/INCLUDE/cbtypes.h
 arbdb.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arbdb.o: $(ARBHOME)/INCLUDE/dupstr.h
 arbdb.o: $(ARBHOME)/INCLUDE/gccver.h
 arbdb.o: $(ARBHOME)/INCLUDE/smartptr.h
+arbdb.o: $(ARBHOME)/INCLUDE/static_assert.h
 arbdb.o: $(ARBHOME)/INCLUDE/test_global.h
 arbdb.o: $(ARBHOME)/INCLUDE/test_unit.h
+arbdb.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 arbdbpp.o: ad_prot.h
 arbdbpp.o: arbdb.h
