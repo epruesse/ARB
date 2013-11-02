@@ -2420,7 +2420,8 @@ long GB_read_old_size() {
 }
 
 char *gb_cb_spec::get_info() const {
-    return GBS_global_string_copy("func=%p type=%i clientdata=%p", (void*)func, type, clientdata);
+    const char *readable_fun = GBS_funptr2readable((void*)func, true);
+    return GBS_global_string_copy("func='%s' type=%i clientdata=%p", readable_fun, type, clientdata);
 }
 
 char *GB_get_callback_info(GBDATA *gbd) {

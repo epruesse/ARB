@@ -272,6 +272,7 @@ char *GBS_fconvert_string(char *buffer);
 char *GBS_replace_tabs_by_spaces(const char *text);
 char *GBS_trim(const char *str);
 char *GBS_log_dated_action_to(const char *comment, const char *action);
+const char *GBS_funptr2readable(void *funptr, bool stripARBHOME);
 
 /* adsystem.cxx */
 DictData *GB_get_dictionary(GBDATA *gb_main, const char *key);
