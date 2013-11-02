@@ -134,11 +134,11 @@ void AP_tree_root::update_timers() {
 }
 
 /*!***************************************************************************************
- ************           AP_tree                     **********
- *****************************************************************************************/
-static void ap_tree_node_deleted(GBDATA *, int *cl, GB_CB_TYPE) {
-    AP_tree *THIS = (AP_tree *)cl;
-    THIS->gb_node = 0;
+************           AP_tree                     **********
+*****************************************************************************************/
+
+static void ap_tree_node_deleted(GBDATA *, AP_tree *tree) {
+    tree->gb_node = 0;
 }
 
 AP_tree::AP_tree(AP_tree_root *tree_rooti)
@@ -152,7 +152,7 @@ AP_tree::AP_tree(AP_tree_root *tree_rooti)
 
 AP_tree::~AP_tree() {
     if (gr.callback_exists && gb_node) {
-        GB_remove_callback(gb_node, GB_CB_DELETE, ap_tree_node_deleted, (int *)this);
+        GB_remove_callback(gb_node, GB_CB_DELETE, makeDatabaseCallback(ap_tree_node_deleted, this));
     }
 
     AP_tree_root *root = get_tree_root();
