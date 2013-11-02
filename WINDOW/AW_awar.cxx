@@ -238,15 +238,12 @@ AW_VARIABLE_TYPE AW_awar::get_type() const {
 
 
 // extern "C"
-static void AW_var_gbdata_callback(GBDATA *, int *cl, GB_CB_TYPE) {
-    AW_awar *awar = (AW_awar *)cl;
+static void AW_var_gbdata_callback(GBDATA*, AW_awar *awar) {
     awar->update();
 }
 
 
-static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
-    AW_awar *awar = (AW_awar *)cl;
-
+static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, AW_awar *awar) {
     if (awar->gb_origin == gbd) {
         // make awar zombie
         awar->gb_var    = NULL;
@@ -439,15 +436,15 @@ void AW_awar::assert_var_type(AW_VARIABLE_TYPE wanted_type) {
 }
 
 // extern "C"
-static void AW_var_gbdata_callback_delete(GBDATA *gbd, int *cl, GB_CB_TYPE) {
-    AW_var_gbdata_callback_delete_intern(gbd, cl);
+static void AW_var_gbdata_callback_delete(GBDATA *gbd, AW_awar *awar) {
+    AW_var_gbdata_callback_delete_intern(gbd, awar);
 }
 
 AW_awar *AW_awar::map(AW_default gbd) {
     if (gb_var) {                                   // remove old mapping
-        GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
+        GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, makeDatabaseCallback(AW_var_gbdata_callback, this));
         if (gb_var != gb_origin) {                  // keep callback if pointing to origin!
-            GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
+            GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, makeDatabaseCallback(AW_var_gbdata_callback_delete, this));
         }
         gb_var = NULL;
     }
@@ -459,9 +456,9 @@ AW_awar *AW_awar::map(AW_default gbd) {
     if (gbd) {
         GB_transaction ta(gbd);
 
-        GB_ERROR error = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
+        GB_ERROR error = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, makeDatabaseCallback(AW_var_gbdata_callback, this));
         if (!error && gbd != gb_origin) {           // do not add delete callback if mapping to origin
-            error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
+            error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, makeDatabaseCallback(AW_var_gbdata_callback_delete, this));
         }
         if (error) aw_message(error);
 
