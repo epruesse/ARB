@@ -579,7 +579,6 @@ public:
         clear_part(AW::Rectangle(AW::Position(x, y), AW::Vector(width, height)), filteri);
     }
 
-    virtual void    clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
     virtual void    move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
     virtual void    fast();                                         // e.g. zoom linewidth off
     virtual void    slow();
@@ -655,9 +654,9 @@ class AW_size_tracker {
         high = std::max(high, val);
     }
 public:
-    AW_size_tracker() { clear(); }
+    AW_size_tracker() { restart(); }
 
-    void clear() { drawn = false; size.clear(); }
+    void restart() { drawn = false; size.clear(); }
     void track(const AW::Position& pos) {
         if (drawn) {
             extend(size.l, pos.xpos(), size.r);
@@ -696,7 +695,7 @@ class AW_device_size : public AW_simple_device {
 public:
     AW_device_size(AW_common *common_) : AW_simple_device(common_) {}
 
-    void clear();
+    void restart_tracking();
 
     AW_DEVICE_TYPE type();
 

@@ -10,8 +10,11 @@
 # -----------------------------------------------------
 # The ARB Makefile is aware of the following defines:
 #
+# CC                    C compiler (should be defined by OS)
+# CXX                   C++ compiler (should be defined by OS)
+#
 # BUILDHOST_64=0/1      1=>compile on 64 bit platform (defaults to ARB_64)
-# DEVELOPER=name	special compilation (values: ANY,RELEASE,your name)
+# DEVELOPER=name        special compilation (values: ANY,RELEASE,your name)
 # OPENGL=0/1            whether OPENGL is available
 #
 # -----------------------------------------------------
@@ -37,6 +40,14 @@
 # Read configuration 
 include config.makefile
 
+# compiler settings:
+A_CC:=$(CC)# compile C
+A_CXX:=$(CXX)# compile C++
+
+# uncomment to ensure no submakefile uses CC and CXX directly
+#CC:=use__A_CC__instead_of__CC
+#CXX:=use__A_CXX__instead_of__CXX
+
 ifeq ($(LD_LIBRARY_PATH),'')
 LD_LIBRARY_PATH:=${ARBHOME}/lib
 endif
@@ -47,32 +58,47 @@ NODIR=--no-print-directory
 SED:=$(ARBHOME)/SH/arb_sed
 READLINK:=$(ARBHOME)/SH/arb_readlink
 
-# ---------------------- [basic compiler setting]
-
-GCC ?= $(CC)
-GPP ?= $(CXX)
-
 # ---------------------- compiler version detection
 
-# supported compiler versions:
-
-ALLOWED_GCC_4xx_VERSIONS=\
-	4.2.1 \
+# supported gcc versions:
+ALLOWED_gcc_VERSIONS=\
 	4.3.1 4.3.2 4.3.3 4.3.4 \
 	4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
 	      4.5.2 \
 	4.6.1 4.6.2 4.6.3 \
 	4.7.1 4.7.2 4.7.3 \
-	4.8.0 4.8.1
+	4.8.0 4.8.1 \
 
-ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
+# supported clang versions:
+ALLOWED_clang_VERSIONS=\
+	4.2.1 \
 
-GCC_VERSION_FOUND=$(shell SOURCE_TOOLS/arb_gcc_version.pl)
-GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
+# ----------------------
+
+COMPILER_INFO=$(shell SOURCE_TOOLS/arb_compiler_version.pl $(A_CXX))
+COMPILER_NAME=$(word 1,$(COMPILER_INFO))
+COMPILER_VERSION=$(word 2,$(COMPILER_INFO))
+
+USE_CLANG:=0
+ifneq ($(COMPILER_NAME),gcc)
+ ifeq ($(COMPILER_NAME),clang)
+  USE_CLANG:=1
+ else
+  $(error failed to detect COMPILER_NAME (got '$(COMPILER_NAME)', expected 'clang' or 'gcc'))
+ endif
+endif
+
+ifeq ($(USE_CLANG),1)
+ALLOWED_COMPILER_VERSIONS=$(ALLOWED_clang_VERSIONS)
+else
+ALLOWED_COMPILER_VERSIONS=$(ALLOWED_gcc_VERSIONS)
+endif
+
+COMPILER_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_COMPILER_VERSIONS),$(findstring ___$(version)___,___$(COMPILER_VERSION)___))))
 
 #---------------------- split gcc version 
 
-SPLITTED_VERSION:=$(subst ., ,$(GCC_VERSION_FOUND))
+SPLITTED_VERSION:=$(subst ., ,$(COMPILER_VERSION))
 
 USE_GCC_MAJOR:=$(word 1,$(SPLITTED_VERSION))
 USE_GCC_MINOR:=$(word 2,$(SPLITTED_VERSION))
@@ -153,6 +179,7 @@ ifeq ($(DEBUG),1)
  endif
 
 # control how much you get spammed
+# (please do not change default in SVN, use developer specific setting as below)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --original# dont modify compiler output
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --hide-Noncopyable-advices
@@ -160,6 +187,10 @@ ifeq ($(DEBUG),1)
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings --only-first-error
+ifeq ($(DEVELOPER),ELMAR)
+	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
+endif
+
 
 # Enable extra warnings
 	extended_warnings :=
@@ -175,7 +206,7 @@ ifeq ($(DEBUG),1)
 
 # ------- above only warnings available in 3.0
 
- ifneq ('$(GCC_VERSION_FOUND)','4.7.3') # g++ crashes on GenomeImport.cxx when -Weffc++ is active (bug reported)
+ ifneq ('$(COMPILER_VERSION)','4.7.3') # g++ crashes on GenomeImport.cxx when -Weffc++ is active (bug reported)
 	extended_cpp_warnings += -Weffc++# gcc 3.0.1
  endif
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
@@ -192,7 +223,18 @@ ifeq ($(DEBUG),1)
  endif
 endif
 
-#---------------------- developer 
+#---------------------- turn off clang bogus warnings
+
+ifeq ($(USE_CLANG),1)
+# -Wmismatched-tags warns about struct/class mismatch in forward declarations (which is explicitely allowed)
+# -Wchar-subscripts reports too many bogus warnings for "array['x']" (when 'x' is known to be in range [0..128])
+# -Wunused-private-field report too many false positives (currently ~ 2 of 3)
+# -Wstring-plus-int warns about common ARB coding practice
+# -Wgnu-static-float-init warns about accepted GNU extension
+	extended_cpp_warnings += -Wno-mismatched-tags -Wno-char-subscripts -Wno-unused-private-field -Wno-string-plus-int -Wno-gnu-static-float-init
+endif
+
+#---------------------- developer
 
 ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code)
  ifdef dflags
@@ -413,37 +455,32 @@ endif
 # -------------------------------------------------------------------------
 
 cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
-
-cppflags := $(extended_cpp_warnings)
+cxxflags := $(extended_cpp_warnings)
 
 ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
-cppflags += -std=gnu++11# see also TEMPLATES/cxxforward.h@USE_Cxx11
+cxxflags += -std=gnu++11# see also TEMPLATES/cxxforward.h@USE_Cxx11
 else
 # only use for gcc versions between 4.3 and <4.7 (4.7++ adds -Wc++11-compat above)
-HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(GCC_VERSION_FOUND)`
+HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $(COMPILER_VERSION)`
  ifeq ($(HAVE_GNUPP0X),1)
 # ensure compatibility with upcoming C++ standard
-cppflags += -std=gnu++0x
+cxxflags += -std=gnu++0x
  endif
 endif
 
-# compiler settings:
-
-ACC := $(GCC)# compile C
-CPP := $(GPP) $(cppflags)# compile C++
-ACCLIB := $(ACC) $(shared_cflags)# compile C (shared libs)
-CPPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
-
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
-LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
+LINK_EXECUTABLE := $(A_CXX) $(lflags) $(cdynamic) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(GPP) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(A_CXX) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
 endif
+
+# delete variables unused below
+lflags:=
 
 # other used tools
 MAKEDEPEND_PLAIN = makedepend
@@ -455,11 +492,72 @@ SEP=[`date +%M:%S.%N`] ------------------------------------------------
 # make -j9 clean; make -j9 all  | grep '^\[' | sort
 # make -j9 "TIMED_TARGET=perl" clean_timed_target | grep '^\[' | sort
 
+CORE_LIB=-lCORE
+ARBDB_LIB=-lARBDB $(CORE_LIB)
+LIBS = $(ARBDB_LIB) $(SYSLIBS)
 
+GUI_LIBS_PREFIX:=
+ifdef DARWIN
+#       this seem to be added at wrong place, since opengl is only needed to link EDIT4 
+        GUI_LIBS_PREFIX:=-framework GLUT -framework OpenGL
+endif
 
-# delete variables unused below
+GUI_LIBS=$(GUI_LIBS_PREFIX) $(LIBS) -lAWT -lWINDOW
+GUI_LIBS+=$(XLIBS)
 
-lflags:=
+LIBPATH = -L$(ARBHOME)/lib
+
+DEST_LIB = lib
+DEST_BIN = bin
+
+CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+CXX_INCLUDES := $(CC_INCLUDES)
+MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
+
+# Some code in ARB depends on the location of the vtable pointer
+# (it does a cast from class AP_tree to struct GBT_TREE). In order to
+# work around that hack properly, we define FAKE_VTAB_PTR
+# if the vtable is located at the beginning of class.
+# We are really sorry for that hack.
+cflags:=$(cflags) -DFAKE_VTAB_PTR=char
+
+# ------------------------------- 
+#     old PTSERVER or PTPAN?
+
+ifeq ($(PTPAN),1)
+# PTPAN only libs
+ARCHS_PT_SERVER = \
+	ptpan/PROBE.a
+else
+ifeq ($(PTPAN),2)
+# special mode to compile both servers (developers only!)
+ARCHS_PT_SERVER = \
+	ptpan/PROBE.a \
+	PROBE/PROBE.a
+ARCHS_PT_SERVER_LINK = PROBE/PROBE.a# default to old ptserver
+else
+# PT-server only libs
+ARCHS_PT_SERVER = \
+	PROBE/PROBE.a
+endif
+endif
+
+ifndef ARCHS_PT_SERVER_LINK
+ARCHS_PT_SERVER_LINK = $(ARCHS_PT_SERVER)
+endif
+
+# ---------------------------------------
+# wrap main()
+
+use_ARB_main=$(ARBHOME)/SOURCE_TOOLS/arb_main_cpp.o
+use_ARB_main_C=$(ARBHOME)/SOURCE_TOOLS/arb_main_c.o
+
+# ----------------------------------------- 
+#     export variables to submakefiles     
+
+include SOURCE_TOOLS/export2sub
+
+# do not define (exported) variables below this point 
 
 # ------------------------- 
 #     Main arb targets:     
@@ -572,35 +670,25 @@ endif
 # ---------------------------------------- check gcc version
 
 check_same_GCC_VERSION:
-		$(ARBHOME)/SOURCE_TOOLS/check_same_gcc_version.pl $(GCC_VERSION_ALLOWED)
+		$(ARBHOME)/SOURCE_TOOLS/check_same_compiler_version.pl $(COMPILER_NAME) $(COMPILER_VERSION_ALLOWED)
 
 check_GCC_VERSION:
-		@echo 'GCC version check:'
-		@echo "  - Your version is '$(GCC_VERSION_FOUND)'"
-ifeq ('$(GCC_VERSION_ALLOWED)', '')
-		@echo '  - This version is not in the list of supported gcc-versions:'
-		@$(foreach version,$(ALLOWED_GCC_VERSIONS),echo '    * $(version)';)
+		@echo 'Compiler version check:'
+ifeq ('$(COMPILER_VERSION_ALLOWED)', '')
+		@echo "  - Your compiler is '$(COMPILER_NAME)' version '$(COMPILER_VERSION)'"
+		@echo '    This version is not in the list of supported $(COMPILER_NAME)-versions:'
+		@$(foreach version,$(ALLOWED_COMPILER_VERSIONS),echo '    * $(version)';)
 		@echo '  - You may either ..'
-		@echo '    - add your version to ALLOWED_GCC_VERSIONS in the Makefile and try it out or'
+		@echo '    - add your version to ALLOWED_$(COMPILER_NAME)_VERSIONS in the Makefile and try it out or'
 		@echo '    - switch to one of the allowed versions (see arb_README_gcc.txt for installing'
 		@echo '      a different version of gcc)'
 		@echo ''
 		@false
 else
-		@echo "  - Supported gcc version '$(GCC_VERSION_ALLOWED)' detected - fine!"
+		@echo "  - Supported $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' detected - fine!"
 		@echo ''
 		$(MAKE) check_same_GCC_VERSION
 
-endif
-
-GCC_WITH_VTABLE_AFTER_CLASS=#occurred only with no longer supported $(ALLOWED_GCC_295_VERSIONS)
-HAVE_GCC_WITH_VTABLE_AFTER_CLASS=$(strip $(foreach version,$(GCC_WITH_VTABLE_AFTER_CLASS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
-
-# depending on the version of gcc the location of the vtable pointer differs.
-ifeq ('$(HAVE_GCC_WITH_VTABLE_AFTER_CLASS)', '')
-VTABLE_INFRONTOF_CLASS=1
-else
-VTABLE_INFRONTOF_CLASS=0
 endif
 
 #---------------------- check ARBHOME
@@ -633,12 +721,8 @@ endif
 
 check_TOOLS:
 	@util/arb_check_build_env.pl \
-		"$(ACC)" \
-		"$(CPP)" \
-		"$(GPP)" \
-		"$(GCC)" \
-		"$(ACCLIB)" \
-		"$(CPPLIB)" \
+		"$(A_CC)" \
+		"$(A_CXX)" \
 		"$(MAKEDEPEND_PLAIN)" \
 		"$(LINK_SHARED_LIB)" \
 		"$(LINK_SHARED_LIB)" \
@@ -666,69 +750,6 @@ checks: check_setup check_tabs
 
 
 # end test section ------------------------------
-
-CORE_LIB=-lCORE
-ARBDB_LIB=-lARBDB $(CORE_LIB)
-LIBS = $(ARBDB_LIB) $(SYSLIBS)
-
-GUI_LIBS_PREFIX:=
-ifdef DARWIN
-#       this seem to be added at wrong place, since opengl is only needed to link EDIT4 
-        GUI_LIBS_PREFIX:=-framework GLUT -framework OpenGL
-endif
-
-GUI_LIBS = $(GUI_LIBS_PREFIX) $(LIBS) -lWINDOW -lAWT $(XLIBS)
-LIBPATH = -L$(ARBHOME)/lib
-
-DEST_LIB = lib
-DEST_BIN = bin
-
-AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
-
-ifeq ($(VTABLE_INFRONTOF_CLASS),1)
-# Some code in ARB depends on the location of the vtable pointer
-# (it does a cast from class AP_tree to struct GBT_TREE). In order to
-# work around that hack properly, we define FAKE_VTAB_PTR
-# if the vtable is located at the beginning of class.
-# We are really sorry for that hack.
-cflags:=$(cflags) -DFAKE_VTAB_PTR=char
-endif
-
-# ------------------------------- 
-#     old PTSERVER or PTPAN?
-
-ifeq ($(PTPAN),1)
-# PTPAN only libs
-ARCHS_PT_SERVER = \
-	ptpan/PROBE.a
-else
-ifeq ($(PTPAN),2)
-# special mode to compile both servers (developers only!)
-ARCHS_PT_SERVER = \
-	ptpan/PROBE.a \
-	PROBE/PROBE.a
-ARCHS_PT_SERVER_LINK = PROBE/PROBE.a# default to old ptserver
-else
-# PT-server only libs
-ARCHS_PT_SERVER = \
-	PROBE/PROBE.a
-endif
-endif
-
-ifndef ARCHS_PT_SERVER_LINK
-ARCHS_PT_SERVER_LINK = $(ARCHS_PT_SERVER)
-endif
-
-# ---------------------------------------
-# wrap main()
-
-use_ARB_main=$(ARBHOME)/SOURCE_TOOLS/arb_main_cpp.o
-use_ARB_main_C=$(ARBHOME)/SOURCE_TOOLS/arb_main_c.o
-
-arbmainwrapper:
-	$(MAKE) -C SOURCE_TOOLS -r "cflags = $(cflags)" mainwrapper
 
 # ---------------------------------------
 # List of standard top level directories
@@ -827,6 +848,10 @@ link_awt:	awt link_aw
 #***************************************************************************************
 #		Individual_Programs_Section 
 #***************************************************************************************
+
+arbmainwrapper:
+	$(MAKE) -C SOURCE_TOOLS -r mainwrapper
+
 
 #***********************************	arb_ntree **************************************
 NTREE = bin/arb_ntree
@@ -1120,14 +1145,13 @@ addlibs:
 #			Recursive calls to sub-makefiles
 #***************************************************************************************
 
-include SOURCE_TOOLS/export2sub
-
 %.depends:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
 	@$(MAKE) -C $(@D) -r \
 		"AUTODEPENDS=1" \
 		"MAIN=nothing" \
 		"cflags=noCflagsHere_use_MAKEDEPENDFLAGS" \
+		"cxxflags=noCxxflagsHere_use_MAKEDEPENDFLAGS" \
 		depends
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null
 	@cat $(@D)/Makefile \
@@ -1141,6 +1165,7 @@ include SOURCE_TOOLS/export2sub
 		"AUTODEPENDS=0" \
 		"MAIN=nothing" \
 		"cflags=noCflags" \
+		"cxxflags=noCxxflags" \
 		proto
 
 %.clean:
@@ -1148,6 +1173,7 @@ include SOURCE_TOOLS/export2sub
 		"AUTODEPENDS=0" \
 		"MAIN=nothing" \
 		"cflags=noCflags" \
+		"cxxflags=noCxxflags" \
 		clean
 
 
@@ -1168,8 +1194,9 @@ WINDOW/WINDOW.dummy: target_is_missing_lib_prefix
 	    echo "$(SEP) Make $(@D)"; \
 	    $(MAKE) -C $(@D) -r \
 		"AUTODEPENDS=1" \
-		"MAIN = $(@F:.dummy=.a)" \
-		"cflags = $(cflags) -DIN_ARB_$(subst /,_,$(@D))" && \
+		"MAIN=$(@F:.dummy=.a)" \
+		"cflags=$(cflags) -DIN_ARB_$(subst /,_,$(@D))" \
+		&& \
 	    echo "$(SEP) Make $(@D) [done]"; \
 	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
 
@@ -1630,7 +1657,7 @@ realperl: perltools
 			"dflags=$(dflags)" \
 			"cross_cflags=$(cross_cflags) $(cppflags) $(dflags)" \
 			"cross_lflags=$(cross_lflags)" \
-			"GCC_VERSION_FOUND=$(GCC_VERSION_FOUND)" \
+			"COMPILER_VERSION=$(COMPILER_VERSION)" \
 			all && \
 		$(TEST_PERL_SCRIPTS) && \
 		echo "$(SEP) Make PERL2ARB [done]" ; \
@@ -1721,7 +1748,7 @@ clean2: $(ARCHS:.a=.clean) \
 		perl_clean \
 		clean_directories \
 
-	rm -f *.last_gcc config.makefile.bak
+	rm -f *.last_gcc *.last_compiler config.makefile.bak
 
 # links are needed for cleanup
 clean: redo_links motif_xpm_hack_clean
@@ -1874,6 +1901,19 @@ rac_arb_name_server:	na
 rac_arb_convert_aln:	convert
 rac_arb_treegen:	tg
 rac_arb_rnacma:		cma
+rac_arb_help2xml:	help
+
+rac_arb_a2ps:		tools
+rac_arb_consensus_tree:	tools
+rac_arb_dnarates:	tools
+rac_arb_export_rates:	tools
+rac_arb_export_tree:	tools
+rac_arb_gene_probe:	tools
+rac_arb_message:	tools
+rac_arb_notify:		tools
+rac_arb_primer:		tools
+rac_arb_probe:		tools
+rac_arb_read_tree:	tools
 
 # --------------------------------------------------------------------------------
 # unit testing 
@@ -2014,7 +2054,6 @@ endif
 		"UNITDIR=$(@D)" \
 		"UNITLIBNAME=$(@F:.test=)" \
 		"COVERAGE=$(COVERAGE)" \
-		"cflags=$(cflags)" \
 		"ARB_PID=$(ARB_PID)_$(@F)" \
 		runtest; \
 	    echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"; \

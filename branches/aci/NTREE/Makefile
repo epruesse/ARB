@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -18,7 +18,7 @@ proto:
 	../SOURCE_TOOLS/mv_if_diff NT_cb.h.tmp NT_cb.h
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -61,6 +61,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/cb.h
+ad_ali.o: $(ARBHOME)/INCLUDE/cb_base.h
 ad_ali.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ad_ali.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_ali.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -97,6 +98,7 @@ ad_ext.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/cb.h
+ad_ext.o: $(ARBHOME)/INCLUDE/cb_base.h
 ad_ext.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ad_ext.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_ext.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
@@ -145,6 +147,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/cb.h
+ad_spec.o: $(ARBHOME)/INCLUDE/cb_base.h
 ad_spec.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ad_spec.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_spec.o: $(ARBHOME)/INCLUDE/dbui.h
@@ -188,6 +191,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/cb.h
+ad_transpro.o: $(ARBHOME)/INCLUDE/cb_base.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -234,6 +238,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/cb.h
+ad_trees.o: $(ARBHOME)/INCLUDE/cb_base.h
 ad_trees.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ad_trees.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -273,6 +278,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -306,6 +312,7 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/cb.h
+AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -346,6 +353,7 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/cb.h
+AP_cprofile.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -382,6 +390,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cb.h
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -421,6 +430,7 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/cb.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/cb_base.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -461,6 +471,7 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cb.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -503,6 +514,7 @@ NT_cb.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/cb.h
+NT_cb.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_cb.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_cb.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_cb.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -543,6 +555,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/cb.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -578,6 +591,7 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/cb.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -618,6 +632,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/cb.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -633,6 +648,8 @@ NT_extern.o: map_viewer.h
 NT_extern.o: NT_cb.h
 NT_extern.o: NT_local.h
 NT_extern.o: NT_local_proto.h
+NT_extern.o: $(ARBHOME)/INCLUDE/ad_cb.h
+NT_extern.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -681,6 +698,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awtc_submission.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awti_export.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/cb.h
+NT_extern.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_extern.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_extern.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_extern.o: $(ARBHOME)/INCLUDE/db_query.h
@@ -735,6 +753,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/cb.h
+NT_import.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_import.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_import.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_import.o: $(ARBHOME)/INCLUDE/dbui.h
@@ -775,6 +794,7 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cb.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -813,6 +833,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/cb.h
+NT_join.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_join.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_join.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_join.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -861,6 +882,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/cb.h
+NT_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_main.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -901,6 +923,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/cb.h
+NT_sort.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_sort.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_sort.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_sort.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -937,6 +960,7 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/cb.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -1003,6 +1027,7 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/cb.h
+NT_validManual.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/downcast.h

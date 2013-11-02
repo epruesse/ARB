@@ -679,7 +679,6 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en) {
             if (l<k) k = l;
             if (m<k) k = m;     // k = minimum of all paths
 
-            // cppcheck-suppress unreadVariable
             n      = zza[j];    // minimum of same row; one column to the left
             zza[j] = k;         // minimum of all paths to this matrix position
             zzb[j] = m;         // minimum of those two paths, where gap was inserted into slave
@@ -730,8 +729,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en) {
             if (l<k) k = l;
             if (m<k) k = m;     // k = minimum of all paths
 
-            // cppcheck-suppress unreadVariable
-            n = zzc[j];         // minimum of same row; one column to the right
+            n      = zzc[j];    // minimum of same row; one column to the right
             zzc[j] = k;         // minimum of all paths to this matrix position
             zzd[j] = m;         // minimum of those two paths, where gap was inserted into slave
         }
@@ -1027,10 +1025,8 @@ ARB_ERROR ClustalV_align(int           is_dna,
             typedef void (*encoder)(const unsigned char*, unsigned char*, int);
             encoder encode = dnaflag ? n_encode : p_encode;
 
-            // cppcheck-suppress uninitvar
             encode((const unsigned char*)(seq1-1), seq_array[1], length1);
             seqlen_array[1] = length1;
-            // cppcheck-suppress uninitvar
             encode((const unsigned char*)(seq2-1), seq_array[2], length2);
             seqlen_array[2] = length2;
 

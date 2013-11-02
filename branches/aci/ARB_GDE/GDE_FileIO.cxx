@@ -735,7 +735,7 @@ void ReadCMask(const char *filename)
                     if (aln->element[indx].tmatrix)
                         for (; (getelem(&(aln->element[indx]), jj
                                       +offset)
-                              ==(aln->element[indx].tmatrix['-'])
+                                ==(aln->element[indx].tmatrix['-'])
                               || (getelem(&(aln->element[indx]), jj
                                           +offset)
                                   ==aln->element[indx].tmatrix['~']))

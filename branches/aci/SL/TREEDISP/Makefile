@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .cxx .hxx .depend
 
@@ -14,10 +14,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 proto:
 	../../AISC_MKPTPS/aisc_mkpt -P -w TreeCallbacks.hxx TreeCallbacks.cxx >TreeCallbacks.hxx.tmp
@@ -68,6 +68,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/cb.h
+irstree_display.o: $(ARBHOME)/INCLUDE/cb_base.h
 irstree_display.o: $(ARBHOME)/INCLUDE/cbtypes.h
 irstree_display.o: $(ARBHOME)/INCLUDE/cxxforward.h
 irstree_display.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -111,6 +112,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/cb.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/cb_base.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/cbtypes.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -160,6 +162,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cb.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/cb_base.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cbtypes.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/downcast.h

@@ -28,6 +28,7 @@
 #include <map>
 #include <algorithm>
 #include <arb_misc.h>
+#include <ad_cb.h>
 
 // do includes above (otherwise depends depend on DEBUG)
 #if defined(DEBUG)
@@ -962,7 +963,7 @@ static void child_changed_cb(AW_root *aw_root) {
                             }
 
                             if (gb_selected_node == gb_tracked_node) {
-                                info += "          | (Note: one callback was installed by this broweser)\n";
+                                info += "          | (Note: one callback was installed by this browser)\n";
                             }
                         }
 

@@ -15,6 +15,7 @@
 #include "awt_input_mask_internal.hxx"
 
 #include <arbdbt.h>
+#include <ad_cb.h>
 #include <arb_file.h>
 #include <awt_www.hxx>
 #include <aw_edit.hxx>
@@ -2065,7 +2066,6 @@ void awt_input_mask::link_to(GBDATA *gb_item) {
 
 awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_) {
     title = strdup(title_);
-    // cppcheck-suppress copyCtorNoAllocation (fails to detect strdup as allocation)
     internal_maskname    = (char*)malloc(strlen(maskname_)+2);
     internal_maskname[0] = local ? '0' : '1';
     strcpy(internal_maskname+1, maskname_);

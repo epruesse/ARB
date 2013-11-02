@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .cxx .depend
 
@@ -7,16 +7,16 @@ CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
 OBJECTS = $(C_OBJECTS) $(CPP_OBJECTS)
 
-EXTENDED_CPPINCLUDES = $(CPPINCLUDES) -I$(ARBHOME)/WINDOW
+EXTENDED_CPPINCLUDES = $(CXX_INCLUDES) -I$(ARBHOME)/WINDOW
 
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(EXTENDED_CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(EXTENDED_CPPINCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -58,6 +58,7 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/dupstr.h

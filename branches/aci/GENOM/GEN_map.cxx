@@ -29,6 +29,7 @@
 #include <db_query.h>
 #include <rootAsWin.h>
 #include <mode_text.h>
+#include <ad_cb.h>
 
 #include <map>
 
@@ -1041,8 +1042,7 @@ public:
 GEN_unique_param::ExistingParams GEN_unique_param::existing_params;
 
 
-class GEN_command_mode_param : public GEN_unique_param {
-public:
+struct GEN_command_mode_param : public GEN_unique_param {
     static GEN_command_mode_param *get(GBDATA *gb_main_, AW_CL command_mode_) { return (GEN_command_mode_param*)GEN_unique_param::get(gb_main_, command_mode_); }
     AW_CL get_command_mode() { return get_unique(); }
 };
@@ -1073,8 +1073,7 @@ static void GEN_mark_command(AW_window *aww, AW_CL cl_pmode, AW_CL cl_mode_param
     }
 }
 
-class GEN_extract_mode_param : public GEN_unique_param {
-public:
+struct GEN_extract_mode_param : public GEN_unique_param {
     static GEN_extract_mode_param *get(GBDATA *gb_main_, GEN_PERFORM_MODE perform_mode) { return (GEN_extract_mode_param*)GEN_unique_param::get(gb_main_, perform_mode); }
     GEN_PERFORM_MODE get_perform_mode() { return (GEN_PERFORM_MODE)get_unique(); }
 };
@@ -1361,8 +1360,7 @@ static AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
 // ---------------------------
 //      user mask section
 
-class GEN_item_type_species_selector : public awt_item_type_selector {
-public:
+struct GEN_item_type_species_selector : public awt_item_type_selector {
     GEN_item_type_species_selector() : awt_item_type_selector(AWT_IT_GENE) {}
     virtual ~GEN_item_type_species_selector() OVERRIDE {}
 

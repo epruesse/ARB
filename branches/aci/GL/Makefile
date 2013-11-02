@@ -22,8 +22,7 @@ endif
 RAISE_WARNINGS=1
 
 ifeq ($(RAISE_WARNINGS),0)
-CPP:=$(CPP:-W -Wall=-w)
-ACC:=$(ACC:-W -Wall=-w)
+cflags:=$(cflags:-W -Wall=-w)
 endif
 
 include $(ARBHOME)/SOURCE_TOOLS/export2sub

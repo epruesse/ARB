@@ -112,7 +112,7 @@ class NoCaseCmp {
 public:
     NoCaseCmp() {}
 
-    bool operator()(const string& s1, const string& s2) {
+    bool operator()(const string& s1, const string& s2) const {
         return lexicographical_compare(s1.begin(), s1.end(),
                                        s2.begin(), s2.end(),
                                        less_nocase);

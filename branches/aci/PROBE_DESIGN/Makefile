@@ -1,10 +1,10 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
 CPP_OBJECTS = probe_design.o SaiProbeVisualization.o probe_match_parser.o
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
-	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $(@:.o=.cxx)  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -70,6 +70,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/bytestring.h
 probe_design.o: $(ARBHOME)/INCLUDE/cb.h
+probe_design.o: $(ARBHOME)/INCLUDE/cb_base.h
 probe_design.o: $(ARBHOME)/INCLUDE/cbtypes.h
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
 probe_design.o: $(ARBHOME)/INCLUDE/client_types.h
@@ -140,6 +141,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cb.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cb_base.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/downcast.h

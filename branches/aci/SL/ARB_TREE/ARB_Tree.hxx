@@ -30,7 +30,7 @@
 #endif // DEVEL_RALF
 #endif // DEBUG
 
-typedef void (*ARB_tree_node_del_cb)(GBDATA *, int *cl_ARB_tree, GB_CB_TYPE);
+typedef void (*ARB_tree_node_del_cb)(GBDATA*, class ARB_tree*);
 
 class ARB_tree;
 class ARB_edge;
@@ -239,8 +239,7 @@ public:
 
 };
 
-class ARB_tree_predicate {
-public:
+struct ARB_tree_predicate {
     virtual ~ARB_tree_predicate() {}
     virtual bool selects(const ARB_tree& tree) const = 0;
 };

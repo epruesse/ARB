@@ -7,8 +7,7 @@ class Texture2D;
 class Structure3D;
 class OpenGLGraphics;
 
-class GLRenderer : virtual Noncopyable {
-public:
+struct GLRenderer : virtual Noncopyable {
     float ObjectSize;
     int iDisplayBases, iBaseMode;
     int iBaseHelix,  iBaseUnpairHelix,  iBaseNonHelix;

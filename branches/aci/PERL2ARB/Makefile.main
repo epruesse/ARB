@@ -88,7 +88,7 @@ ARB.c : $(XS_DEPENDS)
 # (see http://bugs.arb-home.de/changeset/10566 for why)
 
 PERL_GCC_INCOMPAT:= v5.10.1___4.7.3
-PERL_GCC:=$(shell perl -e 'print "$$^V\n";')___$(GCC_VERSION_FOUND)
+PERL_GCC:=$(shell perl -e 'print "$$^V\n";')___$(COMPILER_VERSION)
 WONT_COMPILE_CXX11:=$(findstring $(PERL_GCC),$(PERL_GCC_INCOMPAT))
 
 ifneq ('$(WONT_COMPILE_CXX11)','')
@@ -100,13 +100,15 @@ endif
 used_cflags:=$(subst -Weffc++,,$(hacked_cflags))
 used_lflags:=$(cross_lflags)
 
-Makefile : $(MACH).PL typemap Makefile.main arb_common.pm $(ARB_MAINMAKEFILE)
+MAKE_MAKEFILE=make_arbperl_makefile.pl
+
+Makefile : $(MAKE_MAKEFILE) typemap Makefile.main $(ARB_MAINMAKEFILE)
 	( PATH=/usr/arb/bin:${PATH}; \
 	  export PATH; \
-	  echo calling perl ${MACH}.PL "$(used_cflags)" "$(used_lflags)"; \
-	  perl ${MACH}.PL "$(used_cflags)" "$(used_lflags)" )
+	  echo calling perl $(MAKE_MAKEFILE) "$(used_cflags)" "$(used_lflags)"; \
+	  perl $(MAKE_MAKEFILE) "$(used_cflags)" "$(used_lflags)" )
 
-Makefile.PL : $(MACH).PL
+Makefile.PL : $(MAKE_MAKEFILE)
 	( \
 		echo "system('perl $< \"$(used_cflags)\" \"$(used_lflags)\"');" \
 	) > $@

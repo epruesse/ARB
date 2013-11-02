@@ -1,10 +1,6 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .cxx .depend
-
-#CFLAGS = -g
-#CFLAGS = -O2
-CFLAGS = $(cflags)
 
 CPP_OBJECTS = \
 	ali_aligner.o \
@@ -22,7 +18,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(CPP) $(CFLAGS) -c -o $@ $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a

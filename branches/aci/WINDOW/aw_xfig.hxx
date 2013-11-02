@@ -62,6 +62,18 @@ struct AW_xfig_pos {
 class AW_xfig : virtual Noncopyable {
     void calc_scaling(int font_width, int font_height);
 
+    void init(int font_width, int font_height) {
+        text        = NULL;
+        at_pos_hash = NULL;
+
+        memset(line, 0, sizeof(line));
+
+        minx = 0; maxx = 0; centerx = 0;
+        miny = 0; maxy = 0; centery = 0;
+
+        calc_scaling(font_width, font_height);
+    }
+
 public:
     struct AW_xfig_text *text;
     struct AW_xfig_line *line[MAX_LINE_WIDTH];

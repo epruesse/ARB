@@ -325,7 +325,6 @@ void AW_device::set_filter(AW_bitset filteri) {
     filter = filteri;
 }
 
-void AW_device::clear_text(int /* gc */, const char * /* string */, AW_pos /* x */, AW_pos /* y */, AW_pos /* alignment */, AW_bitset /* filteri */) {}
 void AW_device::fast() {}
 void AW_device::slow() {}
 bool AW_device::ready_to_draw(int gc) {

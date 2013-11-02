@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .cxx .depend
 
@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -56,6 +56,8 @@ ClustalV.o: $(ARBHOME)/INCLUDE/test_unit.h
 fast_aligner.o: ClustalV.hxx
 fast_aligner.o: fast_aligner.hxx
 fast_aligner.o: seq_search.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/ad_cb.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -84,6 +86,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/cb.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/cb_base.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/cbtypes.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/downcast.h

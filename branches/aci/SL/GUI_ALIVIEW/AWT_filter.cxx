@@ -9,6 +9,7 @@
 #include <AP_filter.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <ad_cb.h>
 
 //! recalc filter
 static void awt_create_select_filter_window_aw_cb(void *, struct adfiltercbstruct *cbs)

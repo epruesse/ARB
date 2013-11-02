@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .cxx .depend
 
@@ -13,10 +13,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -63,6 +63,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/cb.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -99,6 +100,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/bytestring.h
 AW_rename.o: $(ARBHOME)/INCLUDE/cb.h
+AW_rename.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_rename.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client_types.h

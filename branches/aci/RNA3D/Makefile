@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = 	RNA3D_Main.o \
@@ -13,7 +13,7 @@ CPP_OBJECTS = 	RNA3D_Main.o \
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
-	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $(@:.o=.cxx)  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -54,6 +54,7 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/cb.h
+RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/cb_base.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/cbtypes.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/cxxforward.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -95,6 +96,7 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_window_Xm_interface.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/cb.h
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/cb_base.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/cbtypes.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/cxxforward.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -125,6 +127,7 @@ RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/cb.h
+RNA3D_Main.o: $(ARBHOME)/INCLUDE/cb_base.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -167,6 +170,7 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/cb.h
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/cb_base.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/cbtypes.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/cxxforward.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -202,6 +206,7 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_window_Xm_interface.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/cb.h
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/cb_base.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/cbtypes.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/cxxforward.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -238,6 +243,7 @@ RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/cb.h
+RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/cb_base.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/cbtypes.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/cxxforward.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -279,6 +285,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/cb.h
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/cb_base.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/cbtypes.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/cxxforward.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/downcast.h

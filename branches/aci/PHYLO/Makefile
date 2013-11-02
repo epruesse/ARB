@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -8,7 +8,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -53,6 +53,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/cb.h
+PH_data.o: $(ARBHOME)/INCLUDE/cb_base.h
 PH_data.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PH_data.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_data.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -87,6 +88,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/cb.h
+PH_display.o: $(ARBHOME)/INCLUDE/cb_base.h
 PH_display.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PH_display.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_display.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -122,6 +124,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/cb.h
+PH_filt.o: $(ARBHOME)/INCLUDE/cb_base.h
 PH_filt.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PH_filt.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_filt.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -163,6 +166,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/cb.h
+PH_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 PH_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PH_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_main.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -192,6 +196,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/cb.h
+PH_matr.o: $(ARBHOME)/INCLUDE/cb_base.h
 PH_matr.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PH_matr.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_matr.o: $(ARBHOME)/INCLUDE/dupstr.h

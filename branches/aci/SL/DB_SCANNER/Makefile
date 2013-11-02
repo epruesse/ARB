@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -31,6 +31,8 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 db_scanner.o: db_scanner.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/ad_cb.h
+db_scanner.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -56,6 +58,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/cb.h
+db_scanner.o: $(ARBHOME)/INCLUDE/cb_base.h
 db_scanner.o: $(ARBHOME)/INCLUDE/cbtypes.h
 db_scanner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 db_scanner.o: $(ARBHOME)/INCLUDE/downcast.h
