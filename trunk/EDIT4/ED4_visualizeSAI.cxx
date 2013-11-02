@@ -260,7 +260,7 @@ static void colorDefTabNameChanged_callback(AW_root *awr) {
     if (!inCallback && clrDefinitionsChanged) ED4_ROOT->request_refresh_for_sequence_terminals();
 }
 
-static void refresh_display_cb(GBDATA *, int *, GB_CB_TYPE cb_type) {
+static void refresh_display_cb(GB_CB_TYPE cb_type) {
     if ((cb_type & GB_CB_CHANGED) &&
         ED4_ROOT->aw_root->awar(AWAR_SAI_ENABLE)->read_int())
     {
@@ -278,7 +278,7 @@ static void saiChanged_callback(AW_root *awr) {
 
             if (gb_last_SAI) {
                 GB_transaction dummy(GLOBAL_gb_main);
-                GB_remove_callback(gb_last_SAI, GB_CB_CHANGED, refresh_display_cb, 0);
+                GB_remove_callback(gb_last_SAI, GB_CB_CHANGED, makeDatabaseCallback(refresh_display_cb));
                 gb_last_SAI = 0;
             }
 
@@ -296,7 +296,7 @@ static void saiChanged_callback(AW_root *awr) {
                 GB_transaction dummy(GLOBAL_gb_main);
                 gb_last_SAI = GBT_find_SAI(GLOBAL_gb_main, saiName);
                 if (gb_last_SAI) {
-                    GB_add_callback(gb_last_SAI, GB_CB_CHANGED, refresh_display_cb, 0);
+                    GB_add_callback(gb_last_SAI, GB_CB_CHANGED, makeDatabaseCallback(refresh_display_cb));
                 }
             }
             awr->awar(AWAR_SAI_CLR_TRANS_TABLE)->write_string(transTabName ? transTabName : "");

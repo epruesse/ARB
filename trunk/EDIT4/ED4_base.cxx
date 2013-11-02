@@ -44,7 +44,7 @@ void ED4_terminal::changed_by_database()
             int alignment_length = GB_read_int(gb_alignment_len);
 
             if (MAXSEQUENCECHARACTERLENGTH!=alignment_length) {
-                ED4_alignment_length_changed(gb_alignment_len, 0, GB_CB_CHANGED);
+                ED4_alignment_length_changed(gb_alignment_len, GB_CB_CHANGED);
             }
         }
 
@@ -143,10 +143,7 @@ void ED4_manager::deleted_from_database() {
     }
 }
 
-static void ED4_sequence_changed_cb(GBDATA *gb_seq, int *cl, GB_CB_TYPE gbtype)
-{
-    ED4_base *base = (ED4_base*)(cl);
-
+static void sequence_changed_cb(GBDATA *gb_seq, ED4_base *base, GB_CB_TYPE gbtype) {
     if (base->get_species_pointer()!=gb_seq) {
         e4_assert(0);
         aw_message("Illegal callback (ED4_sequence_changed_cb())");
@@ -166,31 +163,26 @@ static void ED4_sequence_changed_cb(GBDATA *gb_seq, int *cl, GB_CB_TYPE gbtype)
     }
 }
 
-ED4_species_pointer::ED4_species_pointer()
-{
+ED4_species_pointer::ED4_species_pointer() {
     species_pointer = 0;
 }
-ED4_species_pointer::~ED4_species_pointer()
-{
+ED4_species_pointer::~ED4_species_pointer() {
     e4_assert(species_pointer==0);      // must be destroyed before
 }
-void ED4_species_pointer::add_callback(int *clientdata)
-{
-    GB_push_transaction(GLOBAL_gb_main);
-    GB_add_callback(species_pointer, (GB_CB_TYPE) (GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)ED4_sequence_changed_cb, clientdata);
-    GB_pop_transaction(GLOBAL_gb_main);
+
+void ED4_species_pointer::addCallback(ED4_base *base) {
+    GB_transaction ta(GLOBAL_gb_main);
+    GB_add_callback(species_pointer, (GB_CB_TYPE) (GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(sequence_changed_cb, base));
 }
-void ED4_species_pointer::remove_callback(int *clientdata)
-{
-    GB_push_transaction(GLOBAL_gb_main);
-    GB_remove_callback(species_pointer, (GB_CB_TYPE) (GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)ED4_sequence_changed_cb, clientdata);
-    GB_pop_transaction(GLOBAL_gb_main);
+void ED4_species_pointer::removeCallback(ED4_base *base) {
+    GB_transaction ta(GLOBAL_gb_main);
+    GB_remove_callback(species_pointer, (GB_CB_TYPE) (GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(sequence_changed_cb, base));
 }
-void ED4_species_pointer::Set(GBDATA *gbd, int *clientdata)
-{
-    if (species_pointer) remove_callback(clientdata);
+
+void ED4_species_pointer::Set(GBDATA *gbd, ED4_base *base) {
+    if (species_pointer) removeCallback(base);
     species_pointer = gbd;
-    if (species_pointer) add_callback(clientdata);
+    if (species_pointer) addCallback(base);
 }
 
 // -----------------
