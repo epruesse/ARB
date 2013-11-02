@@ -23,6 +23,7 @@
 #include "gb_ta.h"
 #include "gb_ts.h"
 #include "gb_index.h"
+#include <arb_strarray.h>
 
 gb_local_data *gb_local = 0;
 
@@ -2290,6 +2291,9 @@ int GB_get_transaction_level(GBDATA *gbd) {
 // ------------------
 //      callbacks
 
+static void dummy_db_cb(GBDATA*, GB_CB_TYPE) { gb_assert(0); } // used as marker for deleted callbacks
+DatabaseCallback gb_cb_spec::MARKED_DELETED = makeDatabaseCallback(dummy_db_cb);
+
 void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, const gb_cb_spec& cb) {
     GB_MAIN_TYPE     *Main = GB_MAIN(gbd);
     gb_callback_list *cbl  = (gb_callback_list *)gbm_get_mem(sizeof(gb_callback_list), GBM_CB_INDEX);
@@ -2419,9 +2423,34 @@ long GB_read_old_size() {
     return GB_GETSIZE_TS(g_b_old_callback_list->old);
 }
 
+inline char *cbtype2readable(GB_CB_TYPE type) {
+    ConstStrArray septype;
+
+#define appendcbtype(cbt) do {                  \
+        if (type&cbt) {                         \
+            type = GB_CB_TYPE(type-cbt);        \
+            septype.put(#cbt);                  \
+        }                                       \
+    } while(0)
+
+    appendcbtype(GB_CB_DELETE);
+    appendcbtype(GB_CB_CHANGED);
+    appendcbtype(GB_CB_SON_CREATED);
+
+    gb_assert(type == GB_CB_NONE);
+
+    return GBT_join_names(septype, '|');
+}
+
 char *gb_cb_spec::get_info() const {
-    const char *readable_fun = GBS_funptr2readable((void*)func, true);
-    return GBS_global_string_copy("func='%s' type=%i clientdata=%p", readable_fun, type, clientdata);
+    const char *readable_fun    = GBS_funptr2readable((void*)dbcb.callee(), true);
+    char       *readable_cbtype = cbtype2readable((GB_CB_TYPE)dbcb.inspect_CD2());
+    char       *result          = GBS_global_string_copy("func='%s' type=%s clientdata=%p",
+                                                         readable_fun, readable_cbtype, (void*)dbcb.inspect_CD1());
+
+    free(readable_cbtype);
+
+    return result;
 }
 
 char *GB_get_callback_info(GBDATA *gbd) {
@@ -2529,7 +2558,10 @@ inline GB_ERROR gb_add_callback(GBDATA *gbd, const gb_cb_spec& cbs) {
     return add_priority_callback(gbd, cbs, 5); // use default priority 5
 }
 
-GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {
+GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
+    return gb_add_callback(gbd, gb_cb_spec(dbcb, type));
+}
+GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // @@@ deprecated
     return gb_add_callback(gbd, gb_cb_spec(func, type, clientdata));
 }
 
@@ -2583,8 +2615,12 @@ struct IsSpecificCallback : private gb_cb_spec {
     bool operator()(const gb_callback& cb) const { return is_equal_to(cb.spec); }
 };
 
-void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {
-    // remove specific callback; type, func and clientdata must match
+void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
+    // remove specific callback; 'type' and 'dbcb' have to match
+    gb_remove_callbacks_that(gbd, IsSpecificCallback(gb_cb_spec(dbcb, type)));
+}
+void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // @@@ deprecated
+    // remove specific callback; 'type', 'func' and 'clientdata' have to match
     gb_remove_callbacks_that(gbd, IsSpecificCallback(gb_cb_spec(func, type, clientdata)));
 }
 void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
@@ -2592,14 +2628,24 @@ void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
     gb_remove_callbacks_that(gbd, IsCallback(func, type));
 }
 
-GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {
-    gb_cb_spec cbs(func, type, clientdata);
+GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
+    gb_cb_spec newcb(dbcb, type);
     for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
-        if (cb->spec.is_equal_to(cbs) && !cb->spec.is_marked_for_removal()) {
+        if (cb->spec.is_equal_to(newcb) && !cb->spec.is_marked_for_removal()) {
             return NULL;        // already in cb list
         }
     }
-    return gb_add_callback(gbd, cbs);
+    return gb_add_callback(gbd, newcb);
+}
+
+GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) { // @@@ deprecated
+    gb_cb_spec newcb(func, type, clientdata);
+    for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
+        if (cb->spec.is_equal_to(newcb) && !cb->spec.is_marked_for_removal()) {
+            return NULL;        // already in cb list
+        }
+    }
+    return gb_add_callback(gbd, newcb);
 }
 
 int GB_nsons(GBDATA *gbd) {

@@ -1144,6 +1144,7 @@ arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_core.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arbdb.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_string.h
 arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
