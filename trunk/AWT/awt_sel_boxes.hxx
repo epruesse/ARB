@@ -13,6 +13,9 @@
 #ifndef AWT_SEL_BOXES_HXX
 #define AWT_SEL_BOXES_HXX
 
+#ifndef CB_BASE_H
+#include <cb_base.h>
+#endif
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
@@ -106,7 +109,7 @@ void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, 
 AW_window *AWT_create_tables_admin_window(AW_root *aw_root, GBDATA *gb_main);
 
 AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
-void awt_selection_list_on_sai_update_cb(GBDATA *dummy, AWT_sai_selection *cbsid);
+void awt_selection_list_on_sai_update_cb(UNFIXED, AWT_sai_selection *cbsid);
 void awt_popup_sai_selection_list(AW_root *aw_root, AW_CL cl_awar_name, AW_CL cl_gb_main);
 void awt_popup_sai_selection_list(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main);
 void awt_popup_filtered_sai_selection_list(AW_root *aw_root, AW_CL cl_sai_sellist_spec);
