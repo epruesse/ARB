@@ -92,7 +92,7 @@ pro: $(GB_O:.o=.cxx)
 	../SOURCE_TOOLS/mv_if_diff ad_prot.h.tmp ad_prot.h
 
 cbpro: $(GB_O:.o=.cxx)
-	../AISC_MKPTPS/aisc_mkpt -c "ARB database callback interface" -w ad_cb_prot.h -F '^GB_+callback' $^ >ad_cb_prot.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -c "ARB database callback interface" -G -w ad_cb_prot.h -F '^GB_+callback' $^ >ad_cb_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_cb_prot.h.tmp ad_cb_prot.h
 
 ppro: $(GB_O:.o=.cxx)
