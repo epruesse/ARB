@@ -12,6 +12,7 @@
 #include <arb_strbuf.h>
 #include <arb_sort.h>
 #include <arb_defs.h>
+#include <arb_str.h>
 
 #include "gb_key.h"
 
@@ -981,6 +982,20 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
     free(dated_action);
 
     return GBS_strclose(new_comment);
+}
+
+const char *GBS_funptr2readable(void *funptr, bool stripARBHOME) {
+    // only returns module and offset for static functions :-(
+    char       **funNames     = backtrace_symbols(&funptr, 1);
+    const char  *readable_fun = funNames[0];
+
+    if (stripARBHOME) {
+        const char *ARBHOME = GB_getenvARBHOME();
+        if (ARB_strBeginsWith(readable_fun, ARBHOME)) {
+            readable_fun += strlen(ARBHOME)+1; // +1 hides slash behind ARBHOME
+        }
+    }
+    return readable_fun;
 }
 
 // --------------------------------------------------------------------------------

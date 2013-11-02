@@ -931,6 +931,7 @@ adstring.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_error.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_sort.h
+adstring.o: $(ARBHOME)/INCLUDE/arb_str.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_string.h
 adstring.o: $(ARBHOME)/INCLUDE/arbtools.h
