@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -22,7 +22,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -407,6 +407,8 @@ MP_Window.o: mp_proto.hxx
 MP_Window.o: mpdefs.h
 MP_Window.o: MultiProbe.hxx
 MP_Window.o: SoTl.hxx
+MP_Window.o: $(ARBHOME)/INCLUDE/ad_cb.h
+MP_Window.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/aisc_global.h

@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
 CPP_OBJECTS =  PARS_main.o PARS_dtree.o PARS_debug.o PARS_klprops.o AP_buffer.o AP_main.o AP_tree_nlen.o AP_tree_edge.o
 
@@ -6,7 +6,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -279,6 +279,8 @@ PARS_main.o: ap_tree_nlen.hxx
 PARS_main.o: pars_dtree.hxx
 PARS_main.o: pars_klprops.hxx
 PARS_main.o: pars_main.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/ad_cb.h
+PARS_main.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/AliView.hxx

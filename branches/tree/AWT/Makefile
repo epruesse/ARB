@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -20,7 +20,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(CPPLIB) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
@@ -191,6 +191,8 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_db_browser.o: awt.hxx
 AWT_db_browser.o: awt_hexdump.hxx
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -253,6 +255,8 @@ AWT_input_mask.o: awt_hotkeys.hxx
 AWT_input_mask.o: awt_input_mask.hxx
 AWT_input_mask.o: awt_input_mask_internal.hxx
 AWT_input_mask.o: awt_www.hxx
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -331,6 +335,8 @@ AWT_modules.o: $(ARBHOME)/INCLUDE/ttypes.h
 AWT_sel_boxes.o: awt.hxx
 AWT_sel_boxes.o: awt_modules.hxx
 AWT_sel_boxes.o: awt_sel_boxes.hxx
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_config.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

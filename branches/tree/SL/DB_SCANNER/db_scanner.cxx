@@ -20,6 +20,7 @@
 
 #include <arb_str.h>
 #include <arb_strbuf.h>
+#include <ad_cb.h>
 
 #include <unistd.h>
 #include <ctime>

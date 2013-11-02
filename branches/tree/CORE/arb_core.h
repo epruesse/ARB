@@ -18,6 +18,9 @@
 #ifndef DUPSTR_H
 #include <dupstr.h>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
 
 typedef const char *GB_ERROR; // memory managed by CORE
 
@@ -44,7 +47,7 @@ void GBK_install_SIGSEGV_handler(bool dump_backtrace);
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
 
 void GBK_dump_backtrace(FILE *out, const char *message);
-void GBK_terminate(const char *error);
+void GBK_terminate(const char *error) __ATTR__NORETURN;
 
 GB_ERROR GBK_system(const char *system_command);
 

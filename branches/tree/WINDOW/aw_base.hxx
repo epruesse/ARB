@@ -21,7 +21,7 @@ typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
 
 typedef void (*AW_postcb_cb)(AW_window *);
 
-class           GBDATA;
+struct          GBDATA;
 typedef GBDATA *AW_default;
 
 typedef double AW_pos;
@@ -44,8 +44,6 @@ typedef AW_bitset AW_active;     // bits to activate/inactivate buttons
 typedef float     AW_grey_level; // <0 don't fill  0.0 white 1.0 black
 
 typedef struct _WidgetRec *Widget;
-
-typedef const char *AWAR;
 
 #define AW_NO_COLOR (-1UL)
 typedef unsigned long AW_rgb;

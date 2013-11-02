@@ -28,8 +28,7 @@
 
 typedef int (*CharPtrArray_compare_fun)(const void *p0, const void *p1, void *client_data); // same as arb_sort.h@gb_compare_function
 
-struct CharPtrArray : virtual Noncopyable {
-private:
+class CharPtrArray : virtual Noncopyable {
     size_t allocated;
 
 protected:
@@ -122,8 +121,7 @@ public:
     void sort(CharPtrArray_compare_fun compare, void *client_data);
 };
 
-struct StrArray : public CharPtrArray {
-private:
+class StrArray : public CharPtrArray {
     virtual void free_elem(int i) OVERRIDE {
         freenull(str[i]);
     }
@@ -145,8 +143,7 @@ public:
     }
 };
 
-struct ConstStrArray : public CharPtrArray { // derived from a Noncopyable
-private:
+class ConstStrArray : public CharPtrArray { // derived from a Noncopyable
     char *memblock;
 
     virtual void free_elem(int i) OVERRIDE { str[i] = NULL; }
@@ -189,6 +186,7 @@ inline void GBT_split_string(ConstStrArray& dest, const char *namelist, const ch
 inline void GBT_split_string(ConstStrArray& dest, const char *namelist, char separator) {
     char *dup = strdup(namelist);
     GBT_splitNdestroy_string(dest, dup, separator);
+    // cppcheck-suppress memleak (GBT_splitNdestroy_string takes ownership of 'dup')
 }
 
 char *GBT_join_names(const CharPtrArray& names, char separator);

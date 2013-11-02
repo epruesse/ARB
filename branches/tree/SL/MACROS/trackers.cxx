@@ -19,6 +19,7 @@
 #include <arb_sleep.h>
 #include <ad_remote.h>
 #include <unistd.h>
+#include <ad_cb.h>
 
 bool BoundActionTracker::reconfigure(const char *application_id, GBDATA *IF_ASSERTION_USED(gb_main)) {
     ma_assert(gb_main == gbmain);

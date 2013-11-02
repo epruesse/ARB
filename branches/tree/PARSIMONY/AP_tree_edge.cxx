@@ -883,7 +883,6 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
             << ", node[0]=" << *(e.node[0])
             << ", node[1]=" << *(e.node[1])
             << ")";
-        // cppcheck-suppress redundantAssignment (does not detect recursion)
         notTooDeep = 0;
     }
 

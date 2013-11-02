@@ -10,8 +10,7 @@
 
 class FormatReader;
 
-class OutputFormat {
-public:
+struct OutputFormat {
     virtual ~OutputFormat() { }
     virtual Format format() const = 0;
 };

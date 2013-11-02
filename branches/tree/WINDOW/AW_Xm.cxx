@@ -149,40 +149,6 @@ void AW_device_Xm::clear_part(const Rectangle& rect, AW_bitset filteri) {
     }
 }
 
-
-void AW_device_Xm::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset /*filteri*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    const XFontStruct *xfs     = get_common()->get_xfont(gc);
-    AW_pos             X, Y;    // Transformed pos
-    AW_pos             width, height;
-    long               textlen = strlen(string);
-
-    this->transform(x, y, X, Y);
-    width  = get_string_size(gc, string, textlen);
-    height = xfs->max_bounds.ascent + xfs->max_bounds.descent;
-    X      = x_alignment(X, width, alignment);
-
-    const AW_screen_area& clipRect = get_cliprect();
-
-    if (X > clipRect.r) return;
-    if (X < clipRect.l) {
-        width = width + X - clipRect.l;
-        X = clipRect.l;
-    }
-
-    if (X + width > clipRect.r) {
-        width = clipRect.r - X;
-    }
-
-    if (Y < clipRect.t) return;
-    if (Y > clipRect.b) return;
-    if (width <= 0 || height <= 0) return;
-
-    XClearArea(XDRAW_PARAM2(get_common()),
-               AW_INT(X), AW_INT(Y)-AW_INT(xfs->max_bounds.ascent), AW_INT(width), AW_INT(height), False);
-
-    AUTO_FLUSH(this);
-}
-
 void AW_device_Xm::flush() {
     XFlush(get_common()->get_display());
 }

@@ -109,8 +109,7 @@ class AW_root;
 class AWT_canvas;
 struct ED4_plugin_host;
 
-class RNA3D_Global : virtual Noncopyable {
-public:
+struct RNA3D_Global : virtual Noncopyable {
     Widget      glw;
     AW_root    *root;
     AWT_canvas *gl_Canvas;

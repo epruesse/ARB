@@ -243,7 +243,7 @@ public:
             case PT_SECOND_FREQUENT_BASE: f = freq[1][pos]; break;
             case PT_THIRD_FREQUENT_BASE:  f = freq[2][pos]; break;
             case PT_LEAST_FREQUENT_BASE:  f = freq[3][pos]; break;
-            default: nt_assert(0); break;
+            default: nt_assert(0); f = 0; break;
         }
         return f;
     }

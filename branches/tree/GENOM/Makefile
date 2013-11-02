@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .c .depend
 
@@ -16,10 +16,10 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -53,6 +53,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/arb_core.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_error.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_string.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/arb_unordered_map.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arbdb.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -209,6 +210,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_string.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/arb_unordered_map.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -250,6 +252,8 @@ GEN_map.o: GEN_gene.hxx
 GEN_map.o: GEN_graphic.hxx
 GEN_map.o: GEN_local.hxx
 GEN_map.o: GEN_nds.hxx
+GEN_map.o: $(ARBHOME)/INCLUDE/ad_cb.h
+GEN_map.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 GEN_map.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_map.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GEN_map.o: $(ARBHOME)/INCLUDE/adGene.h
@@ -298,6 +302,8 @@ GEN_map.o: $(ARBHOME)/INCLUDE/test_global.h
 GEN_map.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GEN_nds.o: GEN.hxx
+GEN_nds.o: $(ARBHOME)/INCLUDE/ad_cb.h
+GEN_nds.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_core.h

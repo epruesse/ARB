@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -40,6 +40,7 @@ info_window.o: $(ARBHOME)/INCLUDE/arb_error.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_str.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_string.h
+info_window.o: $(ARBHOME)/INCLUDE/arb_unordered_map.h
 info_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 info_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 info_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -74,6 +75,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_string.h
+ui_species.o: $(ARBHOME)/INCLUDE/arb_unordered_map.h
 ui_species.o: $(ARBHOME)/INCLUDE/arbdb.h
 ui_species.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ui_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
