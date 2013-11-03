@@ -222,12 +222,12 @@ static void GEN_gene_container_cb_installer(bool install, AWT_canvas *gmw, GEN_g
         // @@@ FIXME: get data of local genome!
 
         if (curr_cb_data->gb_gene_data) {
-            GB_add_callback(curr_cb_data->gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
+            GB_add_callback(curr_cb_data->gb_gene_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
         }
     }
     else {
         if (curr_cb_data->gb_gene_data) { // if callback is installed
-            GB_remove_callback(curr_cb_data->gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
+            GB_remove_callback(curr_cb_data->gb_gene_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
             curr_cb_data->gb_gene_data = 0;
         }
     }

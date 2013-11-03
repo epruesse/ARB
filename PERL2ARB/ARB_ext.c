@@ -64,7 +64,7 @@ GB_ERROR GBP_add_callback(GBDATA *gbd, const char *perl_func, const char *perl_c
         char *arg = GBS_global_string_copy("%s%c%s", perl_func, '\0', perl_cl);
 
         GBS_write_hash(gbp_cp_hash_table, data, (long)arg);
-        error = GB_add_callback(gbd, GB_CB_TYPE(GB_CB_DELETE|GB_CB_CHANGED), makeDatabaseCallback(GBP_callback, arg));
+        error = GB_add_callback(gbd, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(GBP_callback, arg));
 
         GBS_optimize_hash(gbp_cp_hash_table);
     }
@@ -83,7 +83,7 @@ GB_ERROR GBP_remove_callback(GBDATA *gbd, const char *perl_func, const char *per
     }
     else {
         GBS_write_hash(gbp_cp_hash_table, data, 0); 
-        GB_remove_callback(gbd, GB_CB_TYPE(GB_CB_DELETE|GB_CB_CHANGED), makeDatabaseCallback(GBP_callback, arg));
+        GB_remove_callback(gbd, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(GBP_callback, arg));
         free(arg);
     }
     free(data);

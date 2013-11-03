@@ -46,7 +46,12 @@ enum GB_CB_TYPE {
     GB_CB_DELETE      = 1,
     GB_CB_CHANGED     = 2, // element or son of element changed
     GB_CB_SON_CREATED = 4, // new son created
-    GB_CB_ALL         = 7
+
+    // convenience defs:
+    GB_CB_ALL = GB_CB_DELETE|GB_CB_CHANGED|GB_CB_SON_CREATED,
+
+    GB_CB_CHANGED_OR_DELETED     = GB_CB_CHANGED|GB_CB_DELETE,
+    GB_CB_CHANGED_OR_SON_CREATED = GB_CB_CHANGED|GB_CB_SON_CREATED,
 };
 
 typedef void (*GB_CB)(GBDATA *, int *clientdata, GB_CB_TYPE gbtype);

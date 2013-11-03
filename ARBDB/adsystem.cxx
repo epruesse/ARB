@@ -145,7 +145,7 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
             GB_write_string(gb_name, key);
         }
 
-        GB_ensure_callback(gb_key, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(gb_system_key_changed_cb, q));
+        GB_ensure_callback(gb_key, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(gb_system_key_changed_cb, q));
 
         if (ks->dictionary) {
             delete_gb_dictionary(ks->dictionary);
@@ -162,7 +162,7 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
             sprintf(buffer, "%s/@master_data/@%s", GB_SYSTEM_FOLDER, key);
             ks->gb_master_ali = GB_search(gb_main, buffer, GB_FIND)->as_container();
             if (ks->gb_master_ali) {
-                GB_ensure_callback(ks->gb_master_ali, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(gb_system_master_changed_cb, q));
+                GB_ensure_callback(ks->gb_master_ali, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(gb_system_master_changed_cb, q));
             }
         }
         GB_pop_my_security(gb_main);
