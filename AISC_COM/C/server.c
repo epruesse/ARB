@@ -76,7 +76,16 @@ struct Hs_struct : virtual Noncopyable {
     int            fork;
     char          *unix_name;
 
-    Hs_struct() { memset(this, 0, sizeof(*this)); }
+    Hs_struct()
+        : hso(0),
+          soci(NULL),
+          fds(NULL),
+          nfds(0),
+          nsoc(0),
+          timeout(0),
+          fork(0),
+          unix_name(NULL)
+    {}
     ~Hs_struct() { freenull(unix_name); }
 };
 
