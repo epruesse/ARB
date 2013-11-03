@@ -32,6 +32,7 @@
 #include <string>
 #include <awt_sel_boxes.hxx>
 #include <rootAsWin.h>
+#include <ad_cb.h>
 
 using namespace std;
 using namespace QUERY;
@@ -1880,9 +1881,8 @@ static void update_colorset_selection_list(const color_save_data *csd) {
     csd->colorsets->update();
 }
 
-static void colorset_changed_cb(GBDATA*, int *cl_csd, GB_CB_TYPE cbt) {
+static void colorset_changed_cb(GBDATA*, const color_save_data *csd, GB_CB_TYPE cbt) {
     if (cbt&GB_CB_CHANGED) {
-        const color_save_data *csd = (const color_save_data*)cl_csd;
         update_colorset_selection_list(csd);
     }
 }
@@ -2122,7 +2122,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
         {
             GB_transaction  ta(csd->cmd->gb_main);
             GBDATA         *gb_colorset = get_colorset_root(csd);
-            GB_add_callback(gb_colorset, GB_CB_CHANGED, colorset_changed_cb, (int*)csd);
+            GB_add_callback(gb_colorset, GB_CB_CHANGED, makeDatabaseCallback(colorset_changed_cb, csd));
         }
 
         aw_loadsave[type] = aws;

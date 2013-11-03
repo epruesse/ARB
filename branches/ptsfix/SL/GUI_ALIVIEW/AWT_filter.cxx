@@ -9,9 +9,10 @@
 #include <AP_filter.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <ad_cb.h>
 
 //! recalc filter
-static void awt_create_select_filter_window_aw_cb(void *, struct adfiltercbstruct *cbs)
+static void awt_create_select_filter_window_aw_cb(UNFIXED, struct adfiltercbstruct *cbs)
 {       // update the variables
     AW_root *aw_root = cbs->awr;
     GB_push_transaction(cbs->gb_main);
@@ -151,7 +152,7 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
     }
 }
 
-static void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs) {
+static void awt_create_select_filter_window_gb_cb(UNFIXED, struct adfiltercbstruct *cbs) {
     // update list widget and variables
     GB_push_transaction(cbs->gb_main);
 
@@ -216,8 +217,8 @@ adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, co
 
     acbs->def_min = GBS_string_eval(def_name, "*/name=tmp/*1/min:tmp/tmp=tmp", 0);
     acbs->def_max = GBS_string_eval(def_name, "*/name=tmp/*1/max:tmp/tmp=tmp", 0);
-    aw_root->awar_int(acbs->def_min)->add_callback((AW_RCB1)awt_create_select_filter_window_aw_cb, (AW_CL)acbs);
-    aw_root->awar_int(acbs->def_max)->add_callback((AW_RCB1)awt_create_select_filter_window_aw_cb, (AW_CL)acbs);
+    aw_root->awar_int(acbs->def_min)->add_callback(makeRootCallback(awt_create_select_filter_window_aw_cb, acbs));
+    aw_root->awar_int(acbs->def_max)->add_callback(makeRootCallback(awt_create_select_filter_window_aw_cb, acbs));
 
     acbs->def_len = GBS_string_eval(def_name, "*/name=tmp/*1/len:tmp/tmp=tmp", 0);
     aw_root->awar_int(acbs->def_len);
@@ -260,12 +261,12 @@ adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, co
     GBDATA *gb_sai_data = GBT_get_SAI_data(acbs->gb_main);
     GBDATA *gb_sel      = GB_search(acbs->gb_main, AWAR_SPECIES_NAME, GB_STRING);
 
-    GB_add_callback(gb_sai_data, GB_CB_CHANGED, (GB_CB)awt_create_select_filter_window_gb_cb, (int *)acbs);
-    GB_add_callback(gb_sel,      GB_CB_CHANGED, (GB_CB)awt_create_select_filter_window_gb_cb, (int *)acbs);
+    GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_create_select_filter_window_gb_cb, acbs));
+    GB_add_callback(gb_sel,      GB_CB_CHANGED, makeDatabaseCallback(awt_create_select_filter_window_gb_cb, acbs));
 
-    aw_root->awar(acbs->def_alignment)->add_callback((AW_RCB1)awt_create_select_filter_window_gb_cb, (AW_CL)acbs);
-    aw_root->awar(acbs->def_2filter)  ->add_callback((AW_RCB1)awt_create_select_filter_window_aw_cb, (AW_CL)acbs);
-    aw_root->awar(acbs->def_subname)  ->add_callback((AW_RCB1)awt_create_select_filter_window_aw_cb, (AW_CL)acbs);
+    aw_root->awar(acbs->def_alignment)->add_callback(makeRootCallback(awt_create_select_filter_window_gb_cb, acbs));
+    aw_root->awar(acbs->def_2filter)  ->add_callback(makeRootCallback(awt_create_select_filter_window_aw_cb, acbs));
+    aw_root->awar(acbs->def_subname)  ->add_callback(makeRootCallback(awt_create_select_filter_window_aw_cb, acbs));
 
     awt_create_select_filter_window_gb_cb(0, acbs);
 
@@ -360,7 +361,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
         aws->create_button(acbs->def_2name, acbs->def_2name);
 
         aws->at("zero");
-        aws->callback((AW_CB1)awt_create_select_filter_window_aw_cb, (AW_CL)acbs);
+        aws->callback(makeWindowCallback(awt_create_select_filter_window_aw_cb, acbs));
         aws->create_input_field(acbs->def_cancel, 10);
 
         aws->at("sequence");

@@ -68,6 +68,7 @@ DBwriter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/cb.h
+DBwriter.o: $(ARBHOME)/INCLUDE/cb_base.h
 DBwriter.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DBwriter.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DBwriter.o: $(ARBHOME)/INCLUDE/downcast.h

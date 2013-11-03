@@ -51,6 +51,7 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 changekey.o: $(ARBHOME)/INCLUDE/cb.h
+changekey.o: $(ARBHOME)/INCLUDE/cb_base.h
 changekey.o: $(ARBHOME)/INCLUDE/cbtypes.h
 changekey.o: $(ARBHOME)/INCLUDE/cxxforward.h
 changekey.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -81,6 +82,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/cb.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/cb_base.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cbtypes.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cxxforward.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -115,6 +117,7 @@ species.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 species.o: $(ARBHOME)/INCLUDE/cb.h
+species.o: $(ARBHOME)/INCLUDE/cb_base.h
 species.o: $(ARBHOME)/INCLUDE/cbtypes.h
 species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 species.o: $(ARBHOME)/INCLUDE/downcast.h

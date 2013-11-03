@@ -24,8 +24,8 @@
 #ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
-#ifndef _GLIBCXX_MAP
-#include <map>
+#ifndef ARB_UNORDERED_MAP_H
+#include <arb_unordered_map.h>
 #endif
 
 // --------------------
@@ -133,7 +133,7 @@ public:
 };
 
 class InfoWindowRegistry {
-    typedef std::map<AW_window*, InfoWindow::Ptr> WinMap;
+    typedef arb_unordered_map<AW_window*, InfoWindow::Ptr> WinMap;
     WinMap win;
 
     InfoWindowRegistry(){} // InfoWindowRegistry is a singleton and always exists

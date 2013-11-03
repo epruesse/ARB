@@ -56,6 +56,8 @@ ClustalV.o: $(ARBHOME)/INCLUDE/test_unit.h
 fast_aligner.o: ClustalV.hxx
 fast_aligner.o: fast_aligner.hxx
 fast_aligner.o: seq_search.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/ad_cb.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -84,6 +86,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/cb.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/cb_base.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/cbtypes.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/downcast.h

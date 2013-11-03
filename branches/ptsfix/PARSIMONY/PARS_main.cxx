@@ -27,6 +27,7 @@
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <gui_aliview.hxx>
+#include <ad_cb.h>
 
 #include <TreeCallbacks.hxx>
 
@@ -1123,8 +1124,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     GB_transaction dummy(ntw->gb_main);
 
     GBDATA *gb_arb_presets = GB_search(ntw->gb_main, "arb_presets", GB_CREATE_CONTAINER);
-    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, (GB_CB)AWT_expose_cb, (int *)ntw);
-    // GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw)); // @@@ makeDatabaseCallback does not work (yet)
+    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw));
 
 #if defined(DEBUG)
     AWT_create_debug_menu(awm);

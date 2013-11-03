@@ -1023,8 +1023,8 @@ class ED4_species_pointer : virtual Noncopyable {
 
     GBDATA *species_pointer;    // points to database
 
-    void add_callback(int *clientdata);
-    void remove_callback(int *clientdata);
+    void addCallback(ED4_base *base);
+    void removeCallback(ED4_base *base);
 
 public:
 
@@ -1032,7 +1032,7 @@ public:
     ~ED4_species_pointer();
 
     GBDATA *Get() const { return species_pointer; } 
-    void Set(GBDATA *gbd, int *clientdata);
+    void Set(GBDATA *gbd, ED4_base *base);
     void notify_deleted() {
         species_pointer=0;
     }
@@ -1090,7 +1090,7 @@ public:
     // function for species_pointer
 
     GBDATA *get_species_pointer() const { return my_species_pointer.Get(); }
-    void set_species_pointer(GBDATA *gbd) { my_species_pointer.Set(gbd, (int*)(this)); }
+    void set_species_pointer(GBDATA *gbd) { my_species_pointer.Set(gbd, this); }
     int has_callback() const { return get_species_pointer()!=0; }
 
     // callbacks
@@ -2383,7 +2383,7 @@ void ED4_compression_changed_cb(AW_root *awr);
 // functions passed to external c-functions (i.e. as callbacks) have to be declared as 'extern "C"'
 
 extern "C" {
-    void    ED4_alignment_length_changed(GBDATA *gb_alignment_len, int *dummy, GB_CB_TYPE gbtype);
+    void ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE gbtype);
 }
 
 struct AlignDataAccess;

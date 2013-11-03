@@ -58,6 +58,7 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb.h
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/dupstr.h

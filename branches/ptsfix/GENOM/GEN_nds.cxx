@@ -17,6 +17,7 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
+#include <ad_cb.h>
 
 #define gen_assert(bed) arb_assert(bed)
 
@@ -180,9 +181,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode) {
     return NDS_mask_nonprintable_chars(gen_nds_ms->buf);
 }
 
-
-
-void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, GB_CB NDS_changed_callback) {
+void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, const DatabaseCallback& NDS_changed_callback) {
     GB_ERROR  error          = GB_push_transaction(gb_main);
     GBDATA   *gb_arb_presets = GB_search(gb_main, "arb_presets", GB_CREATE_CONTAINER);
     GBDATA   *gb_viewkey     = 0;
@@ -206,7 +205,7 @@ void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, GB
             error = GB_await_error();
         }
         else {
-            GB_add_callback(gb_viewkey, GB_CB_CHANGED, NDS_changed_callback, 0);
+            GB_add_callback(gb_viewkey, GB_CB_CHANGED, NDS_changed_callback);
 
             const char *default_key = 0;
             switch (i) {

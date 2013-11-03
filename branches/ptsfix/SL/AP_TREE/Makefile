@@ -36,6 +36,8 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AP_Tree.o: AP_Tree.hxx
+AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -57,6 +59,9 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
+AP_Tree.o: $(ARBHOME)/INCLUDE/cb.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/cb_base.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -64,3 +69,4 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/ttypes.h

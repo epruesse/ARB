@@ -40,6 +40,7 @@ info_window.o: $(ARBHOME)/INCLUDE/arb_error.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_str.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_string.h
+info_window.o: $(ARBHOME)/INCLUDE/arb_unordered_map.h
 info_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 info_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 info_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -50,6 +51,7 @@ info_window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 info_window.o: $(ARBHOME)/INCLUDE/cb.h
+info_window.o: $(ARBHOME)/INCLUDE/cb_base.h
 info_window.o: $(ARBHOME)/INCLUDE/cbtypes.h
 info_window.o: $(ARBHOME)/INCLUDE/cxxforward.h
 info_window.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
@@ -74,6 +76,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_string.h
+ui_species.o: $(ARBHOME)/INCLUDE/arb_unordered_map.h
 ui_species.o: $(ARBHOME)/INCLUDE/arbdb.h
 ui_species.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ui_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -93,6 +96,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/cb.h
+ui_species.o: $(ARBHOME)/INCLUDE/cb_base.h
 ui_species.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ui_species.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ui_species.o: $(ARBHOME)/INCLUDE/db_query.h

@@ -28,6 +28,8 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
+db_server.o: $(ARBHOME)/INCLUDE/ad_cb.h
+db_server.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 db_server.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_assert.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -41,11 +43,16 @@ db_server.o: $(ARBHOME)/INCLUDE/arbdb.h
 db_server.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 db_server.o: $(ARBHOME)/INCLUDE/arbtools.h
 db_server.o: $(ARBHOME)/INCLUDE/attributes.h
+db_server.o: $(ARBHOME)/INCLUDE/cb.h
+db_server.o: $(ARBHOME)/INCLUDE/cb_base.h
+db_server.o: $(ARBHOME)/INCLUDE/cbtypes.h
 db_server.o: $(ARBHOME)/INCLUDE/cxxforward.h
 db_server.o: $(ARBHOME)/INCLUDE/dupstr.h
 db_server.o: $(ARBHOME)/INCLUDE/gccver.h
 db_server.o: $(ARBHOME)/INCLUDE/servercntrl.h
 db_server.o: $(ARBHOME)/INCLUDE/smartptr.h
+db_server.o: $(ARBHOME)/INCLUDE/static_assert.h
 db_server.o: $(ARBHOME)/INCLUDE/test_global.h
 db_server.o: $(ARBHOME)/INCLUDE/test_unit.h
+db_server.o: $(ARBHOME)/INCLUDE/ttypes.h
 db_server.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h

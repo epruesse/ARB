@@ -32,6 +32,8 @@ depend.init:
 
 db_query.o: db_query.h
 db_query.o: db_query_local.h
+db_query.o: $(ARBHOME)/INCLUDE/ad_cb.h
+db_query.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 db_query.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_query.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -64,6 +66,7 @@ db_query.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_query.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 db_query.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 db_query.o: $(ARBHOME)/INCLUDE/cb.h
+db_query.o: $(ARBHOME)/INCLUDE/cb_base.h
 db_query.o: $(ARBHOME)/INCLUDE/cbtypes.h
 db_query.o: $(ARBHOME)/INCLUDE/cxxforward.h
 db_query.o: $(ARBHOME)/INCLUDE/downcast.h

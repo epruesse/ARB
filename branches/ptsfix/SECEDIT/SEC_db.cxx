@@ -20,6 +20,7 @@
 #include <aw_root.hxx>
 #include <ed4_extern.hxx>
 #include <arbdbt.h>
+#include <ad_cb.h>
 
 #include <arb_defs.h>
 
@@ -43,8 +44,7 @@ static void awar_cb(AW_root *, AW_CL cl_db_cb, AW_CL) {
     cb->call();
 }
 
-static void db_callback(GBDATA *, int *cl_cb, GB_CB_TYPE) {
-    SEC_dbcb *cb = (SEC_dbcb*)cl_cb;
+static void db_callback(GBDATA *, const SEC_dbcb *cb) {
     cb->call();
 }
 
@@ -58,13 +58,13 @@ SEC_seq_data::SEC_seq_data(GBDATA *gb_item, const char *aliname, const SEC_dbcb 
     len       = GB_read_string_count(gb_data);
     Data      = GB_read_string(gb_data);
 
-    if (gb_name) GB_add_callback(gb_name, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
-    if (gb_data) GB_add_callback(gb_data, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
+    if (gb_name) GB_add_callback(gb_name, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
+    if (gb_data) GB_add_callback(gb_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
 }
 
 SEC_seq_data::~SEC_seq_data() {
-    if (gb_name) GB_remove_callback(gb_name, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
-    if (gb_data) GB_remove_callback(gb_data, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
+    if (gb_name) GB_remove_callback(gb_name, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
+    if (gb_data) GB_remove_callback(gb_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
     free(Data);
 }
 
@@ -449,7 +449,7 @@ SEC_db_interface::SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Scr, ED4_plugin
         GBDATA *gb_alignment     = GBT_get_alignment(gb_main, aliname);
         GBDATA *gb_alignment_len = GB_search(gb_alignment, "alignment_len", GB_FIND);
         sec_assert(gb_alignment_len);
-        GB_add_callback(gb_alignment_len, GB_CB_CHANGED, db_callback, (int*)alilen_changed_cb);
+        GB_add_callback(gb_alignment_len, GB_CB_CHANGED, makeDatabaseCallback(db_callback, alilen_changed_cb));
     }
 
     sequence_cb->call();
