@@ -564,60 +564,73 @@ char *get_match_overlay(const PT_probematch *ml) {
     int       pr_len = strlen(ml->sequence);
     PT_local *locs   = (PT_local *)ml->mh.parent->parent;
 
-    char *ref = (char *)calloc(sizeof(char), 21+pr_len);
-    memset(ref, '.', 10);
+    const int CONTEXT_SIZE = 9;
+
+    char *ref = (char *)calloc(sizeof(char), CONTEXT_SIZE+1+pr_len+1+CONTEXT_SIZE+1);
+    memset(ref, '.', CONTEXT_SIZE+1);
 
     SmartCharPtr  seqPtr = psg.data[ml->name].get_dataPtr();
     const char   *seq    = &*seqPtr;
 
     const Splits& splits = splits_for_match_overlay[locs];
 
-    for (int pr_pos  = 8, al_pos = ml->rpos-1;
+    for (int pr_pos  = CONTEXT_SIZE-1, al_pos = ml->rpos-1;
          pr_pos     >= 0 && al_pos >= 0;
          pr_pos--, al_pos--)
     {
         if (!seq[al_pos]) break;
         ref[pr_pos] = base_2_readable(seq[al_pos]);
     }
-    ref[9] = '-';
+    ref[CONTEXT_SIZE] = '-';
 
     pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, ml->sequence);
 
-    for (int pr_pos = 0, al_pos = ml->rpos;
-         pr_pos < pr_len && al_pos < psg.data[ml->name].get_size();
-         pr_pos++, al_pos++)
     {
-        int a = ml->sequence[pr_pos];
-        int b = seq[al_pos];
-        if (a == b) {
-            ref[pr_pos+10] = '=';
-        }
-        else {
-            if (b) {
-                int r = base_2_readable(b);
-                if (is_std_base(a) && is_std_base(b)) {
-                    double h = splits.check(ml->sequence[pr_pos], b);
-                    if (h>=0.0) r = tolower(r);
-                }
-                ref[pr_pos+10] = r;
+        char *pref = ref+CONTEXT_SIZE+1;
+
+        for (int pr_pos = 0, al_pos = ml->rpos;
+             pr_pos < pr_len && al_pos < psg.data[ml->name].get_size();
+             pr_pos++, al_pos++)
+        {
+            int ps = ml->sequence[pr_pos]; // probe sequence
+            int ts = seq[al_pos];          // target sequence (hit)
+            if (ps == ts) {
+                pref[pr_pos] = '=';
             }
             else {
-                // end of sequence reached (rest of probe was accepted by N-matches)
-                for (; pr_pos < pr_len; pr_pos++) {
-                    ref[pr_pos+10]  = '.';
+                if (ts) {
+                    int r = base_2_readable(ts);
+                    if (is_std_base(ps) && is_std_base(ts)) {
+                        double h = splits.check(ml->sequence[pr_pos], ts);
+                        if (h>=0.0) r = tolower(r);
+                    }
+                    pref[pr_pos] = r;
+                }
+                else {
+                    // end of sequence reached (rest of probe was accepted by N-matches)
+                    for (; pr_pos < pr_len; pr_pos++) {
+                        pref[pr_pos]  = '.';
+                    }
                 }
             }
+
         }
-
     }
 
-    for (int pr_pos = 0, al_pos = ml->rpos+pr_len;
-         pr_pos < 9 && al_pos < psg.data[ml->name].get_size();
-         pr_pos++, al_pos++)
     {
-        ref[pr_pos+11+pr_len] = base_2_readable(seq[al_pos]);
+        char *cref    = ref+CONTEXT_SIZE+1+pr_len+1;
+        int   al_size = psg.data[ml->name].get_size();
+
+        cref[-1] = '-';
+
+        for (int pr_pos = 0, al_pos = ml->rpos+pr_len;
+             pr_pos < CONTEXT_SIZE && al_pos < al_size;
+             pr_pos++, al_pos++)
+        {
+            cref[pr_pos] = base_2_readable(seq[al_pos]);
+        }
     }
-    ref[10+pr_len] = '-';
+
     return ref;
 }
 
