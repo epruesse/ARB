@@ -1276,8 +1276,8 @@ void TEST_SLOW_match_probe() {
             "CPPParap\1" "  CPPParap            3     0  4.1  25    21 0   GAUCAAGUC-=====A=G=A-GUUCCUUCG\1"
             "ClfPerfr\1" "  ClfPerfr            3     0  4.1  25    21 0   GAUCAAGUC-=====A=G=A-GUUUCCUUC\1"
             "DlcTolu2\1" "  DlcTolu2            3     0  4.1 157   143 0   GUAGCCGUU-===GAA====-CGGCUGGAU\1"
-            "PslFlave\1" "  PslFlave            3     3  2.4  25    21 0   GAUCAAGUC-=======...-GGGAGCUUG\1"  // @@@ display is wrong (right seqpart should not be displayed)
-            "PtVVVulg\1" "  PtVVVulg            3     3  2.4  29    24 0   GAUCAAGUC-=======...-GAGAAAGCU\1"; // @@@ same
+            "PslFlave\1" "  PslFlave            3     3  2.4  25    21 0   GAUCAAGUC-=======...-<more>\1"
+            "PtVVVulg\1" "  PtVVVulg            3     3  2.4  29    24 0   GAUCAAGUC-=======...-<more>\1";
 
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
@@ -1322,8 +1322,8 @@ void TEST_SLOW_match_probe() {
             "HllHalod\1" "  HllHalod            6     0  4.3 149   135 0   GUAACAAGG-U===C==ag==gA-ACCUGCGGC\1"
             "VbrFurni\1" "  VbrFurni            5     0  4.4  68    60 0   GGAUUUGUU-=g====CG==Cg=-CGGACGGAC\1"
             "AclPleur\1" "  AclPleur            6     0  4.4  35    30 0   GUCGAACGG-U=A===ga===gA-GCUUGCUUU\1"
-            "PslFlave\1" "  PslFlave            6     6  4.4  25    21 0   GAUCAAGUC-=======......-AGCUUGCUC\1" // @@@ display is wrong (right seqpart should not be displayed)
-            "PtVVVulg\1" "  PtVVVulg            6     6  4.4  29    24 0   GAUCAAGUC-=======......-AAAGCUUGC\1" // @@@ same
+            "PslFlave\1" "  PslFlave            6     6  4.4  25    21 0   GAUCAAGUC-=======......-<more>\1"
+            "PtVVVulg\1" "  PtVVVulg            6     6  4.4  29    24 0   GAUCAAGUC-=======......-<more>\1"
             "VbrFurni\1" "  VbrFurni            6     0  4.4 149   135 0   GUAACAAGG-U====C=ag==gA-ACCUGGCGC\1"
             "VblVulni\1" "  VblVulni            6     0  4.4 149   135 0   GUAACAAGG-U====C=ag==gA-ACCUGGCGC\1"
             "VbhChole\1" "  VbhChole            6     0  4.4 149   135 0   GUAACAAGG-U====C=ag==gA-ACCUGGCGC\1";

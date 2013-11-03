@@ -585,6 +585,7 @@ char *get_match_overlay(const PT_probematch *ml) {
 
     pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, ml->sequence);
 
+    bool display_right_context = true;
     {
         char *pref = ref+CONTEXT_SIZE+1;
 
@@ -607,7 +608,9 @@ char *get_match_overlay(const PT_probematch *ml) {
                     pref[pr_pos] = r;
                 }
                 else {
-                    // end of sequence reached (rest of probe was accepted by N-matches)
+                    // end of sequence or missing data (dots inside sequence) reached
+                    // (rest of probe was accepted by N-matches)
+                    display_right_context = false;
                     for (; pr_pos < pr_len; pr_pos++) {
                         pref[pr_pos]  = '.';
                     }
@@ -618,16 +621,22 @@ char *get_match_overlay(const PT_probematch *ml) {
     }
 
     {
-        char *cref    = ref+CONTEXT_SIZE+1+pr_len+1;
-        int   al_size = psg.data[ml->name].get_size();
+        char *cref = ref+CONTEXT_SIZE+1+pr_len+1;
+        cref[-1]   = '-';
 
-        cref[-1] = '-';
+        int al_size = psg.data[ml->name].get_size();
+        int al_pos  = ml->rpos+pr_len;
 
-        for (int pr_pos = 0, al_pos = ml->rpos+pr_len;
-             pr_pos < CONTEXT_SIZE && al_pos < al_size;
-             pr_pos++, al_pos++)
-        {
-            cref[pr_pos] = base_2_readable(seq[al_pos]);
+        if (display_right_context) {
+            for (int pr_pos = 0;
+                 pr_pos < CONTEXT_SIZE && al_pos < al_size;
+                 pr_pos++, al_pos++)
+            {
+                cref[pr_pos] = base_2_readable(seq[al_pos]);
+            }
+        }
+        else {
+            if (al_pos < al_size) strcpy(cref, "<more>");
         }
     }
 
