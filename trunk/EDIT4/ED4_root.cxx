@@ -506,7 +506,7 @@ ED4_returncode ED4_root::init_alignment() {
     int alignment_length = GB_read_int(gb_alignment_len);
     MAXSEQUENCECHARACTERLENGTH = alignment_length;
 
-    GB_add_callback(gb_alignment_len, (GB_CB_TYPE)GB_CB_CHANGED, makeDatabaseCallback(ED4_alignment_length_changed));
+    GB_add_callback(gb_alignment_len, GB_CB_CHANGED, makeDatabaseCallback(ED4_alignment_length_changed));
 
     aw_root->awar_string(AWAR_EDITOR_ALIGNMENT, alignment_name);
 

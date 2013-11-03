@@ -1610,7 +1610,7 @@ static void flush_taxonomy_cb(GBDATA *gbd, cached_taxonomy *ct) {
 #endif // DEBUG
 
     if (!GB_inside_callback(gbd, GB_CB_DELETE)) {
-        GB_remove_all_callbacks_to(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)flush_taxonomy_cb);
+        GB_remove_all_callbacks_to(gbd, GB_CB_CHANGED_OR_DELETED, (GB_CB)flush_taxonomy_cb);
     }
 
     if (found && !error) {
@@ -1706,8 +1706,8 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
                     GBDATA *gb_group_node;
 
                     if (gb_tree_entry) {
-                        GB_remove_all_callbacks_to(gb_tree_entry, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)flush_taxonomy_cb);
-                        GB_add_callback(gb_tree_entry, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(flush_taxonomy_cb, ct));
+                        GB_remove_all_callbacks_to(gb_tree_entry, GB_CB_CHANGED_OR_DELETED, (GB_CB)flush_taxonomy_cb);
+                        GB_add_callback(gb_tree_entry, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(flush_taxonomy_cb, ct));
                     }
 
                     // add callbacks for all node/group_name subentries
@@ -1717,8 +1717,8 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
                     {
                         GBDATA *gb_group_name = GB_entry(gb_group_node, "group_name");
                         if (gb_group_name) { // group with id = 0 has no name
-                            GB_remove_all_callbacks_to(gb_group_name, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)flush_taxonomy_cb);
-                            GB_add_callback(gb_group_name, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(flush_taxonomy_cb, ct));
+                            GB_remove_all_callbacks_to(gb_group_name, GB_CB_CHANGED_OR_DELETED, (GB_CB)flush_taxonomy_cb);
+                            GB_add_callback(gb_group_name, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(flush_taxonomy_cb, ct));
                             ct->groups++;
                         }
                     }

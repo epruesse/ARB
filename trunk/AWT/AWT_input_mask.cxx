@@ -86,7 +86,7 @@ static void item_changed_cb(GBDATA*, awt_linked_to_item *item_link, GB_CB_TYPE t
         if (type&GB_CB_DELETE) { // handled child was deleted
             item_link->relink();
         }
-        else if ((type&(GB_CB_CHANGED|GB_CB_SON_CREATED)) == (GB_CB_CHANGED|GB_CB_SON_CREATED)) {
+        else if ((type&GB_CB_CHANGED_OR_SON_CREATED) == GB_CB_CHANGED_OR_SON_CREATED) {
             // child was created (not only changed)
             item_link->relink();
         }
@@ -266,12 +266,12 @@ GB_ERROR awt_script::set_value(const string& /* new_value */)
 GB_ERROR awt_linked_to_item::add_db_callbacks()
 {
     GB_ERROR error = 0;
-    if (gb_item) error = GB_add_callback(gb_item, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(item_changed_cb, this));
+    if (gb_item) error = GB_add_callback(gb_item, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(item_changed_cb, this));
     return error;
 }
 
 void awt_linked_to_item::remove_db_callbacks() {
-    GB_remove_callback(gb_item, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(item_changed_cb, this));
+    GB_remove_callback(gb_item, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(item_changed_cb, this));
 }
 
 awt_script_viewport::awt_script_viewport(awt_input_mask_global& global_, const awt_script *script_, const string& label_, long field_width_)
@@ -331,12 +331,12 @@ void awt_script_viewport::awar_changed() {
 
 GB_ERROR awt_input_handler::add_db_callbacks() {
     GB_ERROR error = awt_linked_to_item::add_db_callbacks();
-    if (item() && gbd) error = GB_add_callback(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(field_changed_cb, this));
+    if (item() && gbd) error = GB_add_callback(gbd, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(field_changed_cb, this));
     return error;
 }
 void awt_input_handler::remove_db_callbacks() {
     awt_linked_to_item::remove_db_callbacks();
-    if (item() && gbd) GB_remove_callback(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(field_changed_cb, this));
+    if (item() && gbd) GB_remove_callback(gbd, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(field_changed_cb, this));
 }
 
 awt_input_handler::awt_input_handler(awt_input_mask_global& global_, const string& child_path_, GB_TYPES type_, const string& label_)

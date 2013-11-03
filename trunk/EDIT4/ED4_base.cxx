@@ -172,11 +172,11 @@ ED4_species_pointer::~ED4_species_pointer() {
 
 void ED4_species_pointer::addCallback(ED4_base *base) {
     GB_transaction ta(GLOBAL_gb_main);
-    GB_add_callback(species_pointer, (GB_CB_TYPE) (GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(sequence_changed_cb, base));
+    GB_add_callback(species_pointer, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(sequence_changed_cb, base));
 }
 void ED4_species_pointer::removeCallback(ED4_base *base) {
     GB_transaction ta(GLOBAL_gb_main);
-    GB_remove_callback(species_pointer, (GB_CB_TYPE) (GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(sequence_changed_cb, base));
+    GB_remove_callback(species_pointer, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(sequence_changed_cb, base));
 }
 
 void ED4_species_pointer::Set(GBDATA *gbd, ED4_base *base) {

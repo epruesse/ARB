@@ -294,7 +294,7 @@ static void remap_edit_box(GBDATA *, DbScanner *cbs) {
     GBDATA *gbd = cbs->awr->awar(cbs->awarname_current_item)->read_pointer();
 
     if (cbs->gb_edit) {
-        GB_remove_callback(cbs->gb_edit, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(selected_field_changed_cb, cbs));
+        GB_remove_callback(cbs->gb_edit, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(selected_field_changed_cb, cbs));
     }
 
     if (cbs->awr->awar(cbs->awarname_edit_enabled)->read_int()) {      // edit enabled
@@ -304,7 +304,7 @@ static void remap_edit_box(GBDATA *, DbScanner *cbs) {
         cbs->gb_edit = 0;       // disable map
     }
     if (cbs->gb_edit) {
-        GB_add_callback(cbs->gb_edit, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(selected_field_changed_cb, cbs));
+        GB_add_callback(cbs->gb_edit, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(selected_field_changed_cb, cbs));
     }
     selected_field_changed_cb(gbd, cbs, GB_CB_CHANGED);
 
@@ -590,18 +590,18 @@ void map_db_scanner(DbScanner *scanner, GBDATA *gb_pntr, const char *key_path) {
     GBDATA *gb_key_data = GB_search(scanner->gb_main, key_path, GB_CREATE_CONTAINER);
 
     if (scanner->gb_user) {
-        GB_remove_callback(scanner->gb_user, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(scanner_changed_dcb, scanner));
+        GB_remove_callback(scanner->gb_user, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(scanner_changed_dcb, scanner));
     }
     if (scanner->scannermode == DB_VIEWER) {
-        GB_remove_callback(gb_key_data, (GB_CB_TYPE)(GB_CB_CHANGED), makeDatabaseCallback(scanner_changed_dcb2, scanner));
+        GB_remove_callback(gb_key_data, GB_CB_CHANGED, makeDatabaseCallback(scanner_changed_dcb2, scanner));
     }
 
     scanner->gb_user = gb_pntr;
 
     if (gb_pntr) {
-        GB_add_callback(gb_pntr, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(scanner_changed_dcb, scanner));
+        GB_add_callback(gb_pntr, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(scanner_changed_dcb, scanner));
         if (scanner->scannermode == DB_VIEWER) {
-            GB_add_callback(gb_key_data, (GB_CB_TYPE)(GB_CB_CHANGED), makeDatabaseCallback(scanner_changed_dcb2, scanner));
+            GB_add_callback(gb_key_data, GB_CB_CHANGED, makeDatabaseCallback(scanner_changed_dcb2, scanner));
         }
     }
 

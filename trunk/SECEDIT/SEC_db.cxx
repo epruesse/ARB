@@ -58,13 +58,13 @@ SEC_seq_data::SEC_seq_data(GBDATA *gb_item, const char *aliname, const SEC_dbcb 
     len       = GB_read_string_count(gb_data);
     Data      = GB_read_string(gb_data);
 
-    if (gb_name) GB_add_callback(gb_name, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), makeDatabaseCallback(db_callback, change_cb));
-    if (gb_data) GB_add_callback(gb_data, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), makeDatabaseCallback(db_callback, change_cb));
+    if (gb_name) GB_add_callback(gb_name, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
+    if (gb_data) GB_add_callback(gb_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
 }
 
 SEC_seq_data::~SEC_seq_data() {
-    if (gb_name) GB_remove_callback(gb_name, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), makeDatabaseCallback(db_callback, change_cb));
-    if (gb_data) GB_remove_callback(gb_data, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), makeDatabaseCallback(db_callback, change_cb));
+    if (gb_name) GB_remove_callback(gb_name, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
+    if (gb_data) GB_remove_callback(gb_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
     free(Data);
 }
 
