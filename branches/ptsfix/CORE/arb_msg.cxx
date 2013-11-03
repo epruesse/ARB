@@ -179,13 +179,10 @@ const char *GBS_global_string(const char *templat, ...) {
     return result;
 }
 
-//<<<<<<< variant A
-const char *GBS_static_string(const char *str) { // @@@ needed?
+const char *GBS_static_string(const char *str) {
     return GBS_global_string("%s", str);
 }
 
-//>>>>>>> variant B
-//======= end
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
 #define BUFSIZE 1000
     static char *buffer   = 0;

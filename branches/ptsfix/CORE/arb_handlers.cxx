@@ -108,12 +108,7 @@ public:
                 }
                 else {
                     cursor = 0;
-                    // if (mayRedicideHeight) {
-                    // fputc("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[height], arbout);
-                    // }
-                    // else {
                     fputc(CHAR, arbout);
-                    // }
                 }
                 int nextLF = next_LF();
                 printed++;
