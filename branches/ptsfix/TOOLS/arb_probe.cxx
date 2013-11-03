@@ -1008,6 +1008,60 @@ void TEST_SLOW_match_probe() {
     {
         const char *arguments[] = {
             "prgnamefake",
+            "matchsequence=UUUCUUU", // contains no N
+            NULL, // matchmismatches
+            "matchacceptN=0",
+        };
+
+        CCP expectd0 = "    name---- fullname mis N_mis wmis pos ecoli rev          'UUUCUUU'\1"
+            "AclPleur\1" "  AclPleur            0     0  0.0  54    49 0   GGAGCUUGC-=======-GCCGACGAG\1";
+
+        CCP expectd1 = "    name---- fullname mis N_mis wmis pos ecoli rev          'UUUCUUU'\1"
+            "AclPleur\1" "  AclPleur            0     0  0.0  54    49 0   GGAGCUUGC-=======-GCCGACGAG\1"
+            "AclPleur\1" "  AclPleur            1     0  0.6  50    45 0   GAAGGGAGC-==g====-CUUUGCCGA\1"
+            "PtVVVulg\1" "  PtVVVulg            1     0  0.6  50    45 0   GGAGAAAGC-==g====-CUUGCUGAC\1"
+            "PtVVVulg\1" "  PtVVVulg            1     0  0.6  54    49 0   AAAGCUUGC-======g-CUGACGAGC\1"
+            "ClfPerfr\1" "  ClfPerfr            1     0  1.1  49    44 0   GCGAUGAAG-====C==-CGGGAAACG\1";
+
+        CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'UUUCUUU'\1"
+            "AclPleur\1" "  AclPleur            0     0  0.0  54    49 0   GGAGCUUGC-=======-GCCGACGAG\1"
+            "AclPleur\1" "  AclPleur            1     0  0.6  50    45 0   GAAGGGAGC-==g====-CUUUGCCGA\1"
+            "PtVVVulg\1" "  PtVVVulg            1     0  0.6  50    45 0   GGAGAAAGC-==g====-CUUGCUGAC\1"
+            "PtVVVulg\1" "  PtVVVulg            1     0  0.6  54    49 0   AAAGCUUGC-======g-CUGACGAGC\1"
+            "ClfPerfr\1" "  ClfPerfr            1     0  1.1  49    44 0   GCGAUGAAG-====C==-CGGGAAACG\1"
+            "DlcTolu2\1" "  DlcTolu2            2     0  1.2  47    42 0   AGAAAGGGA-==g===g-CAAUCCUGA\1"
+            "ClnCorin\1" "  ClnCorin            2     0  1.7  48    43 0   AGCGAUGAA-g===C==-CGGGAAUGG\1"
+            "CPPParap\1" "  CPPParap            2     0  1.7  48    43 0   AGCGAUGAA-g===C==-CGGGAACGG\1"
+            "HllHalod\1" "  HllHalod            2     0  1.7  49    44 0   GAUGGAAGC-==g===C-CAGGCGUCG\1"
+            "DcdNodos\1" "  DcdNodos            2     0  1.7  50    45 0   UUAUGUAGC-==g==A=-GUAACCUAG\1"
+            "VbhChole\1" "  VbhChole            2     0  1.7  55    50 0   GAGGAACUU-g===C==-GGGUGGCGA\1"
+            "VbrFurni\1" "  VbrFurni            2     0  1.7  62    57 0   UUCGGGGGA-===G==g-GGCGGCGAG\1"
+            "VblVulni\1" "  VblVulni            2     0  1.7  62    57 0   AGAAACUUG-=====Cg-GGUGGCGAG\1"
+            "VbhChole\1" "  VbhChole            2     0  1.7  62    57 0   AGGAACUUG-==C===g-GGUGGCGAG\1"
+            "ClnCorin\1" "  ClnCorin            2     0  2.2  49    44 0   GCGAUGAAG-==C===C-GGGAAUGGA\1"
+            "CltBotul\1" "  CltBotul            2     0  2.2  49    44 0   GCGAUGAAG-C=====C-GGAAGUGGA\1"
+            "CPPParap\1" "  CPPParap            2     0  2.2  49    44 0   GCGAUGAAG-==C===C-GGGAACGGA\1"
+            "ClfPerfr\1" "  ClfPerfr            2     0  2.2  50    45 0   CGAUGAAGU-==C===C-GGGAAACGG\1"
+            "VblVulni\1" "  VblVulni            2     0  2.2  52    47 0   ACAGAGAAA-C==G===-CUCGGGUGG\1"
+            "BcSSSS00\1" "  BcSSSS00            2     0  2.2 179   165 0   CUGGAUCAC-C=C====-CU.\1"
+            "ClfPerfr\1" "  ClfPerfr            2     0  2.2 179   165 0   UUAAUACCC-C=C====-CU.\1"
+            "PbcAcet2\1" "  PbcAcet2            2     0  2.2 179   165 0   CUGGAUCAC-C=C====-NN.\1"
+            "PbrPropi\1" "  PbrPropi            2     0  2.2 179   165 0   CUGGAUCAC-C=C====-NN.\1"
+            "Stsssola\1" "  Stsssola            2     0  2.2 179   165 0   CUGGAUCAC-C=C====-.\1"
+            "DcdNodos\1" "  DcdNodos            2     0  2.2 179   165 0   UUGGAUCAC-C=C====-.\1"
+            "VbrFurni\1" "  VbrFurni            2     0  2.2 179   165 0   CUGGAUCAC-C=C====-.\1"
+            "VblVulni\1" "  VblVulni            2     0  2.2 179   165 0   CUGGAUCAC-C=C====-.\1"
+            "VbhChole\1" "  VbhChole            2     0  2.2 179   165 0   CUGGAUCAC-C=C====-.\1"
+            "BcSSSS00\1" "  BcSSSS00            2     2  1.4 183   169 0   AUCACCUCC-=====..-\1"
+            "ClfPerfr\1" "  ClfPerfr            2     2  1.4 183   169 0   UACCCCUCC-=====..-\1";
+
+        arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
+        arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
+        arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
             "matchsequence=UCACCUCCUUUC", // contains no N
             NULL, // matchmismatches
             "matchacceptN=0",
