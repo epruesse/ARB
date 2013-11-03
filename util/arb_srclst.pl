@@ -149,6 +149,7 @@ my @skipped_when_matches = (
                             qr/^arbsrc.*\.tgz$/o,
                             qr/^arbsrc\.lst$/o,
                             qr/^arbsrc\.lst\.tmp$/o,
+                            qr/^callgrind\./o,
                            );
 
 my @used_when_matchesFull = (

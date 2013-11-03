@@ -71,10 +71,6 @@ void RegExpr::perform_match(const char *str, size_t offset) const {
     free(possMatch);
 }
 
-void RegExpr::test() const {
-    compile();
-}
-
 const RegMatch *RegExpr::match(const std::string& versus, size_t offset) const {
     if (!comreg) compile();                         // lazy compilation
     perform_match(versus.c_str(), offset);

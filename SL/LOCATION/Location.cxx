@@ -380,8 +380,8 @@ static GB_ERROR perform_conversions(const string& in, string& out, string& out2)
 
         GEN_free_position(gp);
     }
-    catch (std::string& err) { error = GBS_global_string("%s", err.c_str()); }
-    catch (const char *&err) { error = GBS_global_string("%s", err); }
+    catch (std::string& err) { error = GBS_static_string(err.c_str()); }
+    catch (const char *&err) { error = GBS_static_string(err); }
     return error;
 }
 

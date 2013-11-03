@@ -70,7 +70,7 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=SEQIO:CONVERTALN
 #RESTRICT_LIB=client:arb_probe:AWTC
 #RESTRICT_LIB=libARBDB:libWINDOW:SEQIO
-#RESTRICT_LIB=arb_probe:arb_test:AWTC:PTCLEAN
+#RESTRICT_LIB=arb_probe:arb_test:AWTC:PTCLEAN:PROBE:MULTI_PROBE
 
 # ---------- slow tests 
 SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)

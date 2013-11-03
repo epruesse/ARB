@@ -246,18 +246,18 @@ void TEST_SLOW_arb_probe() {
                        " designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr"
                        " designmintargets=100",
 
-                       "Probe design Parameters:\n"
-                       "Length of probe      18\n"
+                       "Probe design parameters:\n"
+                       "Length of probe    18\n"
                        "Temperature        [ 0.0 -400.0]\n"
-                       "GC-Content         [30.0 -80.0]\n"
-                       "E.Coli Position    [any]\n"
-                       "Max Non Group Hits     0\n"
-                       "Min Group Hits       100%\n"
-                       "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
-                       "AUCAAGUCGAGCGAUGAA 18 A=    17   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-                       "CGAAAGGAAGAUUAAUAC 18 B=    94   82    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-                       "GAAAGGAAGAUUAAUACC 18 B+     1   83    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-                       "UCAAGUCGAGCGAUGAAG 18 A+     1   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+                       "GC-content         [30.0 - 80.0]\n"
+                       "E.Coli position    [any]\n"
+                       "Max. nongroup hits 0\n"
+                       "Min. group hits    100% (max. rejected coverage: 75%)\n"
+                       "Target             le apos ecol qual grps   G+C temp     Probe sequence | Decrease T by n*.3C -> probe matches n non group species\n"
+                       "CGAAAGGAAGAUUAAUAC 18 A=94   82   77    4  33.3 48.0 GUAUUAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -\n"
+                       "GAAAGGAAGAUUAAUACC 18 A+ 1   83   77    4  33.3 48.0 GGUAUUAAUCUUCCUUUC | - - - - - - - - - - - - - - - - - - - -\n"
+                       "UCAAGUCGAGCGAUGAAG 18 B=18   17   61    4  50.0 54.0 CUUCAUCGCUCGACUUGA | - - - - - - - - - - - - - - - 2 2 2 2 2\n"
+                       "AUCAAGUCGAGCGAUGAA 18 B- 1   16   45    4  44.4 52.0 UUCAUCGCUCGACUUGAU | - - - - - - - - - - - 2 2 2 2 2 2 2 2 2\n"
                        );
 }
 

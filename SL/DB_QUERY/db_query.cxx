@@ -871,7 +871,7 @@ GB_ERROR query_info::getError(int count) const {
 
             err = next->getError(count+1);
             if (err) err = GBS_global_string("%s\n%s", dup, err);
-            else err = GBS_global_string("%s", dup);
+            else err = GBS_static_string(dup);
             free(dup);
         }
         else {

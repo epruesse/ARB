@@ -190,7 +190,7 @@ public:
 #if defined(ASSERTION_USED)
     AW_CL get_cd1() const { return cb.inspect_CD1(); }
     AW_CL get_cd2() const { return cb.inspect_CD2(); }
-#endif // ASSERTION_USED
+#endif // DEBUG
 
     static void set_AW_cb_guards(AW_cb_struct_guard before, AW_cb_struct_guard after) {
         guard_before = before;

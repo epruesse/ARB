@@ -59,6 +59,7 @@ client.o: aisc_global.h
 client.o: client.h
 client.o: client_privat.h
 client.o: client_types.h
+client.o: common.h
 client.o: trace.h
 client.o: $(ARBHOME)/INCLUDE/arb_assert.h
 client.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -71,6 +72,15 @@ client.o: $(ARBHOME)/INCLUDE/dupstr.h
 client.o: $(ARBHOME)/INCLUDE/gccver.h
 client.o: $(ARBHOME)/INCLUDE/SigHandler.h
 client.o: $(ARBHOME)/INCLUDE/test_global.h
+
+common.o: common.h
+common.o: $(ARBHOME)/INCLUDE/arb_assert.h
+common.o: $(ARBHOME)/INCLUDE/arb_core.h
+common.o: $(ARBHOME)/INCLUDE/arb_cs.h
+common.o: $(ARBHOME)/INCLUDE/arb_msg.h
+common.o: $(ARBHOME)/INCLUDE/attributes.h
+common.o: $(ARBHOME)/INCLUDE/dupstr.h
+common.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GENC/aisc_global.o: aisc_func_types.h
 GENC/aisc_global.o: aisc_global.h
@@ -113,6 +123,7 @@ GENC/aisc_server.o: $(ARBHOME)/INCLUDE/test_global.h
 
 server.o: aisc_func_types.h
 server.o: aisc_global.h
+server.o: common.h
 server.o: GENH/aisc_com.h
 server.o: server.h
 server.o: trace.h

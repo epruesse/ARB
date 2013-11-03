@@ -179,6 +179,10 @@ const char *GBS_global_string(const char *templat, ...) {
     return result;
 }
 
+const char *GBS_static_string(const char *str) {
+    return GBS_global_string("%s", str);
+}
+
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
 #define BUFSIZE 1000
     static char *buffer   = 0;
@@ -467,8 +471,14 @@ void GBS_reuse_buffer(const char *global_buffer) {
 #endif
 GB_ERROR GBK_system(const char *system_command) {
     // goes to header: __ATTR__USERESULT
-    fprintf(stderr, "[Action: '%s']\n", system_command);
-    int      res   = system(system_command);
+    fflush(stdout);
+    fprintf(stderr, "[Action: '%s']\n", system_command); fflush(stderr);
+
+    int res = system(system_command);
+
+    fflush(stdout);
+    fflush(stderr);
+
     GB_ERROR error = NULL;
     if (res) {
         if (res == -1) {

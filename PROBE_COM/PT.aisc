@@ -1,6 +1,6 @@
 PROJECT         pb_com
 OBJECT_KEY      PT,             # MAIN PREFIX
-MAX_KEY         35,             # MAX NUMBER OF AN ATTRIBUTE
+MAX_KEY         37,             # MAX NUMBER OF AN ATTRIBUTE
 MAX_OBJECT      12,             # MAX DIFFERENT USER STRUCTURES
 MAX_STRING_LEN  1024,
 MAX_PAR_CNT     16,
@@ -51,27 +51,6 @@ dll_header,     COMMON, 0,      (~link header (should be head of each function)~
 
 # new probe design/match:
 
-PT_probeparts, TPROBEPARTS,     11,      (~a part of a probe to search in the prefix tree~), {
-    @TYPE,      @IDENT,   @REF, @ACC,   @KEY,  @KEYC,  @INIT, @DOCU;
-    dllh,       mh,       t,    ,       (~~),  0,      ,      (~Header~);
-    aisc_string,sequence, t,    ,       ,      ,       ,      (~The Sequence to check~);
-    PT_tprobes, source,   fl,   ,       ,      ,       ,      (~A pointer to the source~);
-    int,        start,    t,    ,       ,      ,       ,      (~The number of characters cut off at the start of the tprobe~);
-    double,     dt,       t,    ,       ,      ,       ,      (~Add this temperature to the result~);
-    double,     sum_bonds,t,    ,       ,      ,       ,      (~The sum of bonds of the longest non mismatch string~);
-};
-
-PT_pdc_specials, SPECIALS,      10,     (~non standard substrings of a probe~), {
-    @TYPE,  @IDENT, @REF,   @ACC,   @KEY,           @KEYC,  @INIT,          @DOCU;
-    dllh,   mh,     t,      ,       (~~),           0,      ,               (~Header~);
-    int,    mode,   t,      ,       MODE,           8,      ,               (~==1 -> split domains; ==0 -> don't split domains~);
-    double, ll,     t,      ,       LLEFT,          9,      ,               (~the bond value of the character left of the left~);
-    double, l,      t,      ,       LEFT,           10,     ,               (~The bond value left character~);
-    double, c,      t,      ,       CENTER,         11,     ,               (~The center character~);
-    double, r,      t,      ,       RIGHT,          12,     ,               (~...~);
-    double, rr,     t,      ,       RRIGHT,         13,     ,               (~...~);
-};
-
 PT_tprobes, TPROBE,     9,     (~the probe we want to test~), {
     @TYPE,      @IDENT,          @REF, @ACC, @KEY,        @KEYC, @INIT, @DOCU;
     dllh,       mh,              t,    ,     (~~),        0,     ,      (~Header~);
@@ -84,11 +63,10 @@ PT_tprobes, TPROBE,     9,     (~the probe we want to test~), {
     double,     whairpin,        t,    r,    WHAIRPIN,    12,    ,      (~Weighted Hairpins~);
     int,        perc,            vt,   r,    PERC,        13,    ,      (~Result: How many non group hits per centigrade~), SIZE PERC_SIZE;
     double,     temp,            t,    r,    TEMPERATURE, 14,    ,      (~The temperature of the probe~);
-    int,        mishit,          t,    r,    MISHIT,      15,    ,      (~How many non group members hit~);
+    int,        mishits,         t,    r,    MISHIT,      15,    ,      (~How many outgroup members hit~);
     int,        apos,            t,    ,     APOS,        16,    ,      (~The absolute position of probe~);
     int,        get_r_pos,       t,    ,     ECOLI_POS,   17,    ,      (~The ecoli based position of probe~);
-    aisc_string,get_design_hinfo,%,    r,    INFO_HEADER, 18,    ,      (~the combined info text of a probe design~);
-    aisc_string,get_design_info, %,    r,    INFO,        19,    ,      (~the combined info text of a probe design~);
+    aisc_string,get_design_info, %,    r,    INFO,        19,    ,      (~the info text for each of the designed probes~);
 };
 
 PT_bond,   ,    ,       (~the definition of a bond~), {
@@ -103,32 +81,33 @@ PT_sequence, SEQUENCE,  8,     (~the additional sequences~), {
 };
 
 PT_pdc, PDC,    7,     (~probe design~), {
-    @TYPE,          @IDENT,         @REF,   @ACC,   @KEY,           @KEYC,  @INIT,                  @DOCU;
-    dllh,           mh,             t,      ,       (~~),           0,      ,                       (~Header~);
-    PT_probeparts,  parts,          d,      ,       ,               ,       ,                       (~The parts of the probes~);
-    PT_probeparts,  dparts,         d,      ,       ,               ,       ,                       (~The duplicated parts of the probes~);
-    double,         dte,            t,      ,       DTEDGE,         9,      50.0,                   (~The Temperature drop per percent mismatch on the edge of the probe~);
-    double,         dt,             t,      ,       DT,             10,     50.0,                   (~The temperature drop per percent mismatch~);
-    PT_pdc_specials,specials,       d,      ,       SPECIALS,       12,     ,                       (~Exceptions of splitting domains~);
-    int,            looplen,        t,      ,       LOOPLEN,        14,     4,                      (~The Loop Length of a probe~);
-    int,            probelen,       t,      ,       PROBELENGTH,    15,     18,                     (~the length of the probe~);
-    double,         mintemp,        t,      ,       MINTEMP,        16,     30.0,                   (~minimum temperature~);
-    double,         maxtemp,        t,      ,       MAXTEMP,        17,     100.0,                  (~maximum temperature~);
-    double,         min_gc,         t,      ,       MINGC,          18,     .3,                     (~the minimum GC content~);
-    double,         max_gc,         t,      ,       MAXGC,          19,     1.0,                    (~the maximum GC content~);
-    double,         maxbonds,       t,      ,       MAXBOND,        20,     4.0,                    (~The maximum of hairpin bonds~);
-    int,            min_ecolipos,   t,      ,       MIN_ECOLIPOS,   21,     -1,                     (~the minimum ecoli position [1..N]. -1 means 'no restriction'~);
-    int,            max_ecolipos,   t,      ,       MAX_ECOLIPOS,   22,     -1,                     (~the maximum ecoli position [1..N]. -1 means 'no restriction'~);
-    double,         mintarget,      t,      ,       MINTARGETS,     23,     .7,                     (~the minimum targets for a group of species~);
-    int,            mishit,         t,      ,       MISHIT,         24,     0,                      (~the maximum mis hits~);
-    int,            clipresult,     t,      ,       CLIPRESULT,     25,     40,                     (~Clip the Result list~);
-    int,            pos_groups,     vt,     ,       ,               ,       ,                       (~Position of Groups~), SIZE ALPHA_SIZE;
-    bytestring,     checksums,      t,      w,      CHECKSUMS,      26,     ,                       (~a list of sequence checksums separated by '#' is optional~);
-    bytestring,     names,          t,      w,      NAMES,          27,     ,                       (~a list of names separated by '#' is expected~);
-    bytestring,     PT_unknown_names,%,     r,      UNKNOWN_NAMES,  28,     ,                       (~List of unknown names~);
-    PT_sequence,    sequences,      d,      ,       SEQUENCE,       29,     ,                       (~Additional Sequences~);
-    int,            PT_start_design,%,      w,      GO,             31,     ,                       (~Start the design procedure~);
-    PT_tprobes,     tprobes,        d,      r,      TPROBE,         32,     ,                       (~The result~);
+    @TYPE,          @IDENT,           @REF,   @ACC,   @KEY,           @KEYC,  @INIT,                  @DOCU;
+    dllh,           mh,               t,      ,       (~~),           0,      ,                       (~Header~);
+    double,         dte,              t,      ,       DTEDGE,         9,      50.0,                   (~The Temperature drop per percent mismatch on the edge of the probe~);
+    double,         dt,               t,      ,       DT,             10,     50.0,                   (~The temperature drop per percent mismatch~);
+    int,            looplen,          t,      ,       LOOPLEN,        14,     4,                      (~The Loop Length of a probe~);
+    int,            min_probelen,     t,      ,       MIN_PROBELEN,   15,     18,                     (~the minimum length of the designed probes~);
+    double,         mintemp,          t,      ,       MINTEMP,        16,     30.0,                   (~minimum temperature~);
+    double,         maxtemp,          t,      ,       MAXTEMP,        17,     100.0,                  (~maximum temperature~);
+    double,         min_gc,           t,      ,       MINGC,          18,     .3,                     (~the minimum GC content~);
+    double,         max_gc,           t,      ,       MAXGC,          19,     1.0,                    (~the maximum GC content~);
+    double,         maxbonds,         t,      ,       MAXBOND,        20,     4.0,                    (~The maximum of hairpin bonds~);
+    int,            min_ecolipos,     t,      ,       MIN_ECOLIPOS,   21,     -1,                     (~the minimum ecoli position [1..N]. -1 means 'no restriction'~);
+    int,            max_ecolipos,     t,      ,       MAX_ECOLIPOS,   22,     -1,                     (~the maximum ecoli position [1..N]. -1 means 'no restriction'~);
+    double,         min_coverage,     t,      ,       MINTARGETS,     23,     .7,                     (~the minimum coverage for the targetted group of species~);
+    int,            max_mishits,      t,      ,       MISHIT,         24,     0,                      (~the maximum mishits~);
+    int,            clipresult,       t,      ,       CLIPRESULT,     25,     40,                     (~Clip the Result list~);
+    int,            pos_groups,       vt,     ,       ,               ,       ,                       (~Position of Groups~), SIZE ALPHA_SIZE;
+    bytestring,     checksums,        t,      w,      CHECKSUMS,      26,     ,                       (~a list of sequence checksums separated by '#' is optional~);
+    bytestring,     names,            t,      w,      NAMES,          27,     ,                       (~a list of names separated by '#' is expected~);
+    bytestring,     PT_unknown_names, %,      r,      UNKNOWN_NAMES,  28,     ,                       (~List of unknown names~);
+    PT_sequence,    sequences,        d,      ,       SEQUENCE,       29,     ,                       (~Additional Sequences~);
+    int,            PT_start_design,  %,      w,      GO,             31,     ,                       (~Start the design procedure~);
+    PT_tprobes,     tprobes,          d,      r,      TPROBE,         32,     ,                       (~The result~);
+    double,         max_rj_coverage,  t,      r,      MAX_RJ_TARGETS, 34,     0.0,                    (~the maximum rejected coverage for the targetted group of species~);
+    int,            min_rj_mishits,   t,      r,      MIN_RJ_MISHIT,  35,     INT_MAX,                (~the minimum rejected mishits~);
+    aisc_string,    get_design_hinfo, %,      r,      INFO_HEADER,    36,     ,                       (~the result info header of this probe design~);
+    int,            max_probelen,     t,      ,       MAX_PROBELEN,   37,     -1,                     (~the maximum length of the designed probes (or -1 to use MIN_PROBELEN~);
 };
 
 # function to iterate through all probes existing in PT-Server
@@ -257,6 +236,8 @@ PT_main, MAIN, 1, (~global data~), {
     aisc_string,    m_text,         t,      ,       ,       MESSAGE,            6,          "NO_MSG",       (~the message text~);
     int,            broadcast,      %,      w,      ,       BROADCAST,          7,          ,               (~broadcast func~);
     PT_species_list,sl,             d,      r,      ,       SPECIESLIST,        8,          ,               (~list of species~);
+    aisc_string,    dumpname,       t,      rw,     ,       DUMP_NAME,          10,         "",             (~filename used for DUMP_INDEX~);
+    int,            PT_index_dump,  %,      r,      ,       DUMP_INDEX,         11,         ,               (~dump index (=postree) to file~);
 };
 
 };

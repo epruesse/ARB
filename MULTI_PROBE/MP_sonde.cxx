@@ -76,15 +76,20 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
         char           *match_name, *match_mismatches, *match_wmismatches;
         char            toksep[2];
         T_PT_MATCHLIST  match_list;
-        char           *probe    = NULL;
-        char           *locs_error;
+        char           *probe      = NULL;
+        char           *locs_error = 0;
         long            match_list_cnt;
         bytestring      bs;
-        int             i        = 0;
+        int             i          = 0;
 
-        mp_pd_gl.link = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER);
+        GB_ERROR openerr = NULL;
+        mp_pd_gl.link    = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER, &openerr);
         mp_pd_gl.locs.clear();
 
+        if (openerr) {
+            aw_message(openerr);
+            return NULL;
+        }
         if (!mp_pd_gl.link) {
             aw_message("Cannot contact Probe bank server ");
             return NULL;
@@ -113,9 +118,8 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
                  LOCS_MP_MATCH_STRING, &bs,
                  LOCS_ERROR,           &locs_error,
                  NULL);
-        if (*locs_error) {
-            aw_message(locs_error);
-        }
+
+        if (locs_error[0]) aw_message(locs_error);
         free(locs_error);
 
         toksep[0] = 1;

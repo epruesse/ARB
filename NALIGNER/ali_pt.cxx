@@ -109,7 +109,13 @@ int ALI_PT::open(char *servername)
         return -1;
     }
 
-    link = aisc_open(socketid, com, AISC_MAGIC_NUMBER);
+    GB_ERROR openerr = NULL;
+    link             = aisc_open(socketid, com, AISC_MAGIC_NUMBER, &openerr);
+
+    if (openerr) {
+        ali_message (openerr);
+        return -1;
+    }
 
     if (!link) {
         ali_message ("Cannot contact Probe bank server ");

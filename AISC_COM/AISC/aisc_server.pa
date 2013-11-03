@@ -305,10 +305,10 @@ FUNCTION accessors struct,a,c
                     CALL define_callback $(a),get,(const char*(*)(int*))$(IDENT)
                 ELSE
                     # explicit cast to overloaded function type before casting to void
-                    CALL define_callback $(a),get,($(TYPE:bytestring=bytestring *)(*)($(maintype)*))$(IDENT)
+                    CALL define_callback $(a),get,($(TYPE:bytestring=bytestring *)(*)(const $(maintype)*))$(IDENT)
                 ENDIF
                 OUT import      # Generate Prototypes for import
-                P extern $(TYPE:bytestring=bytestring *) $(IDENT)($(maintype)*);
+                P extern $(TYPE:bytestring=bytestring *) $(IDENT)(const $(maintype)*);
                 OUT save
             ENDIF
         ELSE
@@ -465,7 +465,7 @@ FUNCTION init_structure,self,deref
                 GOSUB init_structure,$(member),.
                 POP
             ELSEIF $(REF) ~ o
-                # just a NULL pointer - no init neccessary
+                # just a NULL pointer - no init necessary
             ELSEIF $(REF) ~ d
                 PUSH
                     SET $(member) = $(self)$(deref)p$(IDENT)

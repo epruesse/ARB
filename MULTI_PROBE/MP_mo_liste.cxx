@@ -46,7 +46,7 @@ void MO_Liste::get_all_species() {
     char       *match_name = NULL;
     char        toksep[2];
     char       *probe      = NULL;
-    char       *locs_error;
+    char       *locs_error = 0;
     bytestring  bs;
     int         i          = 0;
     long        j          = 0, nr_of_species;
@@ -55,9 +55,15 @@ void MO_Liste::get_all_species() {
         return;
     }
 
-    mp_pd_gl.link = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER);
+    GB_ERROR openerr = NULL;
+    mp_pd_gl.link    = aisc_open(servername, mp_pd_gl.com, AISC_MAGIC_NUMBER, &openerr);
     mp_pd_gl.locs.clear();
-    servername = 0;
+    servername       = 0;
+
+    if (openerr) {
+        aw_message(openerr);
+        return;
+    }
 
     if (!mp_pd_gl.link) {
         aw_message ("Cannot contact Probe bank server ");
@@ -81,10 +87,10 @@ void MO_Liste::get_all_species() {
 
     bs.data = 0;
     aisc_get(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
-              LOCS_MP_ALL_SPECIES_STRING,       &bs,
-              LOCS_MP_COUNT_ALL_SPECIES,    &nr_of_species,
-              LOCS_ERROR,               &locs_error,
-              NULL);
+             LOCS_MP_ALL_SPECIES_STRING, &bs,
+             LOCS_MP_COUNT_ALL_SPECIES,  &nr_of_species,
+             LOCS_ERROR,                 &locs_error,
+             NULL);
 
     if (*locs_error)
     {

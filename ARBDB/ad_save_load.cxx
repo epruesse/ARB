@@ -95,6 +95,11 @@ GB_CSTR gb_mapfile_name(GB_CSTR path) {
     return mapname;
 }
 
+GB_CSTR GB_mapfile(GBDATA *gb_main) {
+    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
+    return gb_mapfile_name(Main->path);
+}
+
 static GB_CSTR gb_overwriteName(GB_CSTR path) {
     static SmartCharPtr Oname;
 
@@ -856,7 +861,9 @@ GB_ERROR GB_MAIN_TYPE::check_saveable(const char *new_path, const char *flags) c
     }
 
 #if (MEMORY_TEST==1)
-    if (!error && strchr(flags, 'm')) error = "Impossible to use mapfiles (ARBDB is MEMORY_TEST mode 1)";
+    if (!error && strchr(flags, 'm')) {
+        error = "It's impossible to save mapfiles (ARBDB is MEMORY_TEST mode 1)";
+    }
 #endif
 
     return error;

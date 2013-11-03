@@ -23,6 +23,10 @@
 #include <sys/time.h>
 #include <sys/un.h>
 
+#if defined(DARWIN)
+# include <sys/sysctl.h>
+#endif // DARWIN
+
 #include <arb_cs.h>
 #include <arb_str.h>
 #include <arb_strbuf.h>
@@ -37,9 +41,8 @@
 
 #include <SigHandler.h>
 
-#if defined(DARWIN)
-# include <sys/sysctl.h>
-#endif // DARWIN
+#include <algorithm>
+#include <arb_misc.h>
 
 static int gbcm_pipe_violation_flag = 0;
 void gbcms_sigpipe(int) {
@@ -866,76 +869,149 @@ bool GB_host_is_local(const char *hostname) {
         ARB_stricmp(hostname, arb_gethostname()) == 0;
 }
 
-#define MIN(a, b) (((a)<(b)) ? (a) : (b))
-
 GB_ULONG GB_get_physical_memory() {
     // Returns the physical available memory size in k available for one process
-    GB_ULONG memsize; // real existing memory in k
-
+    static GB_ULONG physical_memsize = 0;
+    if (!physical_memsize) {
+        GB_ULONG memsize; // real existing memory in k
 #if defined(LINUX)
-    {
-        long pagesize = sysconf(_SC_PAGESIZE);
-        long pages    = sysconf(_SC_PHYS_PAGES);
+        {
+            long pagesize = sysconf(_SC_PAGESIZE);
+            long pages    = sysconf(_SC_PHYS_PAGES);
 
-        memsize = (pagesize/1024) * pages;
-    }
+            memsize = (pagesize/1024) * pages;
+        }
 #elif defined(DARWIN)
 #warning memsize detection needs to be tested for Darwin
-    {
-        int      mib[2];
-        uint64_t bytes;
-        size_t   len;
+        {
+            int      mib[2];
+            uint64_t bytes;
+            size_t   len;
 
-        mib[0] = CTL_HW;
-        mib[1] = HW_MEMSIZE; // uint64_t: physical ram size
-        len = sizeof(bytes);
-        sysctl(mib, 2, &bytes, &len, NULL, 0);
+            mib[0] = CTL_HW;
+            mib[1] = HW_MEMSIZE; // uint64_t: physical ram size
+            len = sizeof(bytes);
+            sysctl(mib, 2, &bytes, &len, NULL, 0);
 
-        memsize = bytes/1024;
-    }
+            memsize = bytes/1024;
+        }
 #else
-    memsize = 1024*1024; // assume 1 Gb
-    printf("\n"
-           "Warning: ARB is not prepared to detect the memory size on your system!\n"
-           "         (it assumes you have %ul Mb,  but does not use more)\n\n", memsize/1024);
+        memsize = 1024*1024; // assume 1 Gb
+        printf("\n"
+               "Warning: ARB is not prepared to detect the memory size on your system!\n"
+               "         (it assumes you have %ul Mb,  but does not use more)\n\n", memsize/1024);
 #endif
 
-    GB_ULONG net_memsize = memsize - 10240;         // reduce by 10Mb
+        GB_ULONG net_memsize = memsize - 10240;         // reduce by 10Mb
 
-    // detect max allocateable memory by ... allocating
-    GB_ULONG max_malloc_try = net_memsize*1024;
-    GB_ULONG max_malloc     = 0;
-    {
-        GB_ULONG step_size  = 4096;
-        void *head = 0;
+        // detect max allocateable memory by ... allocating
+        GB_ULONG max_malloc_try = net_memsize*1024;
+        GB_ULONG max_malloc     = 0;
+        {
+            GB_ULONG step_size  = 4096;
+            void *head = 0;
 
-        do {
-            void **tmp;
-            while ((tmp=(void**)malloc(step_size))) {
-                *tmp        = head;
-                head        = tmp;
-                max_malloc += step_size;
-                if (max_malloc >= max_malloc_try) break;
-                step_size *= 2;
-            }
-        } while ((step_size=step_size/2) > sizeof(void*));
+            do {
+                void **tmp;
+                while ((tmp=(void**)malloc(step_size))) {
+                    *tmp        = head;
+                    head        = tmp;
+                    max_malloc += step_size;
+                    if (max_malloc >= max_malloc_try) break;
+                    step_size *= 2;
+                }
+            } while ((step_size=step_size/2) > sizeof(void*));
 
-        while (head) freeset(head, *(void**)head);
-        max_malloc /= 1024;
-    }
+            while (head) freeset(head, *(void**)head);
+            max_malloc /= 1024;
+        }
 
-    GB_ULONG usedmemsize = (MIN(net_memsize, max_malloc)*95)/100; // arb uses max. 95 % of available memory (was 70% in the past)
+        physical_memsize = std::min(net_memsize, max_malloc);
 
 #if defined(DEBUG) && 0
-    printf("- memsize(real)        = %20lu k\n", memsize);
-    printf("- memsize(net)         = %20lu k\n", net_memsize);
-    printf("- memsize(max_malloc)  = %20lu k\n", max_malloc);
-    printf("- memsize(used by ARB) = %20lu k\n", usedmemsize);
+        printf("- memsize(real)        = %20lu k\n", memsize);
+        printf("- memsize(net)         = %20lu k\n", net_memsize);
+        printf("- memsize(max_malloc)  = %20lu k\n", max_malloc);
 #endif // DEBUG
 
-    arb_assert(usedmemsize != 0);
+        GB_informationf("Visible memory: %s", GBS_readable_size(physical_memsize*1024, "b"));
+    }
 
-    return usedmemsize;
+    arb_assert(physical_memsize>0);
+    return physical_memsize;
+}
+
+static GB_ULONG parse_env_mem_definition(const char *env_override, GB_ERROR& error) {
+    const char *end;
+    GB_ULONG    num = strtoul(env_override, const_cast<char**>(&end), 10);
+
+    error = NULL;
+
+    bool valid = num>0 || env_override[0] == '0';
+    if (valid) {
+        const char *formatSpec = end;
+        double      factor     = 1;
+
+        switch (tolower(formatSpec[0])) {
+            case 0:
+                num = GB_ULONG(num/1024.0+0.5); // byte->kb
+                break; // no format given
+
+            case 'g': factor *= 1024;
+            case 'm': factor *= 1024;
+            case 'k': break;
+
+            case '%':
+                factor = num/100.0;
+                num    = GB_get_physical_memory();
+                break;
+
+            default: valid = false; break;
+        }
+
+        if (valid) return GB_ULONG(num*factor+0.5);
+    }
+
+    error = "expected digits (optionally followed by k, M, G or %)";
+    return 0;
+}
+
+GB_ULONG GB_get_usable_memory() {
+    // memory allowed to be used by a single ARB process (in kbyte)
+
+    static GB_ULONG useable_memory = 0;
+    if (!useable_memory) {
+        bool        allow_fallback = true;
+        const char *env_override   = GB_getenv("ARB_MEMORY");
+        const char *via_whom;
+        if (env_override) {
+            via_whom = "via envar ARB_MEMORY";
+        }
+        else {
+          FALLBACK:
+            env_override   = "90%"; // ARB processes do not use more than 90% of physical memory
+            via_whom       = "by internal default";
+            allow_fallback = false;
+        }
+
+        gb_assert(env_override);
+
+        GB_ERROR env_error;
+        GB_ULONG env_memory = parse_env_mem_definition(env_override, env_error);
+        if (env_error) {
+            GB_warningf("Ignoring invalid setting '%s' %s (%s)", env_override, via_whom, env_error);
+            if (allow_fallback) goto FALLBACK;
+            GBK_terminate("failed to detect usable memory");
+        }
+
+        GB_informationf("Restricting used memory (%s '%s') to %s", via_whom, env_override, GBS_readable_size(env_memory*1024, "b"));
+        if (!allow_fallback) {
+            GB_informationf("Note: Setting envar ARB_MEMORY will override that restriction (percentage or absolute memsize)");
+        }
+        useable_memory = env_memory;
+        gb_assert(useable_memory>0 && useable_memory<GB_get_physical_memory());
+    }
+    return useable_memory;
 }
 
 // ---------------------------

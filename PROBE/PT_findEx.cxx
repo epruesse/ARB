@@ -14,39 +14,43 @@
 #include "pt_prototypes.h"
 #include <arb_strbuf.h>
 
-static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int height) {
+static bool findLeftmostProbe(POS_TREE2 *node, char *probe, int restlen, int height) {
     if (restlen==0) return true;
 
-    switch (PT_read_type(node)) {
-        case PT_NT_NODE: {
-            for (int i=PT_A; i<PT_B_MAX; ++i) {
-                POS_TREE *son = PT_read_son(node, PT_BASES(i));
+    switch (node->get_type()) {
+        case PT2_NODE:
+            for (int i=PT_A; i<PT_BASES; ++i) { // Note: does not iterate probes containing N
+                POS_TREE2 *son = PT_read_son(node, PT_base(i));
                 if (son) {
-                    probe[0] = PT_BASES(i); // write leftmost probe into result
+                    probe[0] = PT_base(i); // write leftmost probe into result
                     bool found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
                     pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
                     if (found) return true;
                 }
             }
             break;
-        }
-        case PT_NT_CHAIN: {
-            pt_assert(0);  // unhandled yet
+
+        case PT2_CHAIN:
+            // probe cut-off in index -> do not iterate
             break;
-        }
-        case PT_NT_LEAF: {
+
+        case PT2_LEAF: {
             // here the probe-tree is cut off, because only one species matches
             DataLoc loc(node);
-            int     pos  = loc.rpos + height;
-            int     name = loc.name;
+            int     pos  = loc.get_rel_pos() + height;
+            int     name = loc.get_name();
 
-            if (pos + restlen >= psg.data[name].get_size())
+            if (pos + restlen >= psg.data[name].get_size()) // @@@ superfluous ? 
                 break;          // at end-of-sequence -> no probe with wanted length here
 
             pt_assert(probe[restlen] == 0);
-            const char *seq_data = psg.data[name].get_data();
+
+            const probe_input_data& pid = psg.data[name];
+            SmartCharPtr            seq = pid.get_dataPtr();
+
             for (int r = 0; r<restlen; ++r) {
-                int data = seq_data[pos+r];
+                int rel_pos = pos+r;
+                int data = pid.valid_rel_pos(rel_pos) ? PT_base((&*seq)[rel_pos]) : PT_QU;
                 if (data == PT_QU || data == PT_N) return false; // ignore probes that contain 'N' or '.'
                 probe[r] = data;
             }
@@ -54,13 +58,12 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
             pt_assert(strlen(probe) == (size_t)restlen);
             return true;
         }
-        default: pt_assert(0); break;  // oops
     }
 
     return false;
 }
 
-static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) {
+static bool findNextProbe(POS_TREE2 *node, char *probe, int restlen, int height) {
     // searches next probe after 'probe' ('probe' itself may not exist)
     // returns: true if next probe was found
     // 'probe' is modified to next probe
@@ -68,31 +71,34 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
     if (restlen==0) return false;  // in this case we found the recent probe
     // returning false upwards takes the next after
 
-    switch (PT_read_type(node)) {
-        case PT_NT_NODE: {
-            POS_TREE *son   = PT_read_son(node, PT_BASES(probe[0]));
-            bool      found = (son != 0) && findNextProbe(son, probe+1, restlen-1, height+1);
+    switch (node->get_type()) {
+        case PT2_NODE: {
+            if (!is_std_base(probe[0])) return false;
+
+            POS_TREE2 *son   = PT_read_son(node, PT_base(probe[0]));
+            bool       found = (son != 0) && findNextProbe(son, probe+1, restlen-1, height+1);
 
             pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
 
             if (!found) {
-                for (int i=probe[0]+1; !found && i<PT_B_MAX; ++i) {
-                    son = PT_read_son(node, PT_BASES(i));
-                    if (son) {
-                        probe[0] = PT_BASES(i); // change probe
-                        found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
-                        pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
+                for (int i=probe[0]+1; !found && i<PT_BASES; ++i) {
+                    if (is_std_base(i)) {
+                        son = PT_read_son(node, PT_base(i));
+                        if (son) {
+                            probe[0] = PT_base(i); // change probe
+                            found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
+                            pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
+                        }
                     }
                 }
             }
             return found;
         }
-        case PT_NT_CHAIN:
-        case PT_NT_LEAF: {
+        case PT2_CHAIN:
+        case PT2_LEAF: {
             // species list or single species reached
             return false;
         }
-        default: pt_assert(0); break;  // oops
     }
 
     pt_assert(0);
@@ -100,7 +106,7 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
 }
 
 int PT_find_exProb(PT_exProb *pep, int) {
-    POS_TREE      *pt      = psg.pt; // start search at root
+    POS_TREE2     *pt      = psg.TREE_ROOT2();  // start search at root
     GBS_strstruct *gbs_str = GBS_stropen(pep->numget*(pep->plength+1)+1);
     bool           first   = true;
 
@@ -117,7 +123,7 @@ int PT_find_exProb(PT_exProb *pep, int) {
             compress_data(probe);
 
             pep->next_probe.data = probe;
-            pep->next_probe.size = pep->plength+1;
+            pep->next_probe.size = pep->plength;
 
             found = findLeftmostProbe(pt, pep->next_probe.data, pep->plength, 0);
         }

@@ -15,6 +15,7 @@ TOOLS := \
 	arb_probe \
 	arb_read_tree \
 	arb_replace \
+	arb_flush_mem \
 
 ifeq ($(DEBUG),1)
 # add all arb*test*.c[xx] files
@@ -31,7 +32,7 @@ endif
 # please update corresponding definitions in ../BINDEP/
 
 LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB)
-LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a
+LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a ../PROBE_COM/common.a ../SL/REGEXPR/REGEXPR.a
 LIBS_ARB_READ_TREE      := ../SL/TREE_READ/TREE_READ.a
 LIBS_ARB_EXPORT_TREE    := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
 LIBS_ARB_CONSENSUS_TREE := $(LIBS_ARB_EXPORT_TREE) ../CONSENSUS_TREE/CONSENSUS_TREE.a
@@ -230,6 +231,24 @@ arb_export_tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/TreeWrite.h
 
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/arb_misc.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/arb_progress.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/arb_string.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/cxxforward.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_flush_mem.o: $(ARBHOME)/INCLUDE/test_global.h
+
 arb_gene_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_gene_probe.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_gene_probe.o: $(ARBHOME)/INCLUDE/adGene.h
@@ -337,6 +356,7 @@ arb_probe.o: $(ARBHOME)/INCLUDE/aisc_global.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_defs.h
+arb_probe.o: $(ARBHOME)/INCLUDE/arb_diff.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -353,6 +373,7 @@ arb_probe.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_probe.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_probe.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_probe.o: $(ARBHOME)/INCLUDE/PT_com.h
+arb_probe.o: $(ARBHOME)/INCLUDE/RegExpr.hxx
 arb_probe.o: $(ARBHOME)/INCLUDE/servercntrl.h
 arb_probe.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_probe.o: $(ARBHOME)/INCLUDE/test_global.h
