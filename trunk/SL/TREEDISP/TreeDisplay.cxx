@@ -692,7 +692,7 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
 
 /**
  * Called from AWT_graphic_tree::command() to handle AW_Event_Type=AW_Keyboard_Press.
- */ 
+ */
 void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_modifier, char key_char,
                                    AW_pos /* x */, AW_pos /* y */, AW_clicked_line *cl, AW_clicked_text *ct)
 {
@@ -959,7 +959,7 @@ static bool command_on_GBDATA(GBDATA *gbd, AWT_COMMAND_MODE cmd, AW_event_type t
 }
 
 /**
- * Handle input_events 
+ * Handle input_events
  *
  * Overrides pure virtual in AWT_graphic, which in turn is called by the
  * input_event() handler registered by AWT_graphic.

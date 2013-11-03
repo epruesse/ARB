@@ -306,6 +306,12 @@ static void test_ptserver_activate(bool start, int serverid) {
     }
 }
 
+// to activate INDEX_HEXDUMP uncomment TEST_AUTO_UPDATE and INDEX_HEXDUMP once (before modifying index),
+// then comment out TEST_AUTO_UPDATE again
+// 
+// #define TEST_AUTO_UPDATE
+// #define INDEX_HEXDUMP
+
 static Error ptserver(Mode mode) {
     // test-ptserver is restarted and rebuild.
     // This is done only once in the complete test suite.
@@ -313,17 +319,25 @@ static Error ptserver(Mode mode) {
     // every unit-test using the test-ptserver should simply call
     // TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
 
-// #define TEST_AUTO_UPDATE
-
     Error error;
     switch (mode) {
         case SETUP: {
-            test_ptserver_activate(false, TEST_SERVER_ID);                     // first kill pt-server (otherwise we may test an outdated pt-server)
+            test_ptserver_activate(false, TEST_SERVER_ID);                      // first kill pt-server (otherwise we may test an outdated pt-server)
             TEST_EXPECT_NO_ERROR(GBK_system("cp TEST_pt_src.arb TEST_pt.arb")); // force rebuild
             test_ptserver_activate(true, TEST_SERVER_ID);
+#if defined(INDEX_HEXDUMP)
+            TEST_DUMP_FILE("TEST_pt.arb.pt", "TEST_pt.arb.pt.dump");
+#endif
+
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE("TEST_pt.arb.pt", "TEST_pt.arb.pt.expected");
+# if defined(INDEX_HEXDUMP)
+            TEST_COPY_FILE("TEST_pt.arb.pt.dump", "TEST_pt.arb.pt.dump.expected");
+# endif
 #else // !defined(TEST_AUTO_UPDATE)
+# if defined(INDEX_HEXDUMP)
+            TEST_EXPECT_TEXTFILES_EQUAL("TEST_pt.arb.pt.dump.expected", "TEST_pt.arb.pt.dump");
+# endif
             TEST_EXPECT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
 #endif
             TEST_EXPECT_LESS_EQUAL(GB_time_of_file("TEST_pt.arb"), GB_time_of_file("TEST_pt.arb.pt"));
@@ -332,6 +346,9 @@ static Error ptserver(Mode mode) {
         case CLEAN: {
             test_ptserver_activate(false, TEST_SERVER_ID);
             TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt"));
+#if defined(INDEX_HEXDUMP)
+            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt.dump"));
+#endif
             break;
         }
         case UNKNOWN:
@@ -340,8 +357,6 @@ static Error ptserver(Mode mode) {
     }
 
     return error;
-    
-#undef TEST_AUTO_UPDATE
 }
 
 static Error ptserver_gene(Mode mode) {
@@ -350,8 +365,6 @@ static Error ptserver_gene(Mode mode) {
     // 
     // every unit-test using the test-gene-ptserver should simply call
     // TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver_gene");
-
-// #define TEST_AUTO_UPDATE
 
     Error error;
     switch (mode) {
@@ -368,10 +381,19 @@ static Error ptserver_gene(Mode mode) {
 #endif
 
             test_ptserver_activate(true, TEST_GENESERVER_ID);
+#if defined(INDEX_HEXDUMP)
+            TEST_DUMP_FILE("TEST_gpt.arb.pt", "TEST_gpt.arb.pt.dump");
+#endif
 
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE("TEST_gpt.arb.pt", "TEST_gpt.arb.pt.expected");
+# if defined(INDEX_HEXDUMP)
+            TEST_COPY_FILE("TEST_gpt.arb.pt.dump", "TEST_gpt.arb.pt.dump.expected");
+# endif
 #else // !defined(TEST_AUTO_UPDATE)
+# if defined(INDEX_HEXDUMP)
+            TEST_EXPECT_TEXTFILES_EQUAL("TEST_gpt.arb.pt.dump.expected", "TEST_gpt.arb.pt.dump");
+# endif
             TEST_EXPECT_FILES_EQUAL("TEST_gpt.arb.pt.expected", "TEST_gpt.arb.pt");
 #endif
 
@@ -381,6 +403,9 @@ static Error ptserver_gene(Mode mode) {
         case CLEAN: {
             test_ptserver_activate(false, TEST_GENESERVER_ID);
             TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink("TEST_gpt.arb.pt"));
+#if defined(INDEX_HEXDUMP)
+            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink("TEST_gpt.arb.pt.dump"));
+#endif
             break;
         }
         case UNKNOWN:
@@ -388,10 +413,10 @@ static Error ptserver_gene(Mode mode) {
             break;
     }
 
-#undef TEST_AUTO_UPDATE
-    
     return error;
 }
+
+#undef TEST_AUTO_UPDATE
 
 // --------------------------------------------------------------------------------
 

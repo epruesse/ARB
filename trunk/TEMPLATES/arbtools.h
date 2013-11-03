@@ -83,7 +83,7 @@ public:
 
 // locally modify a value, restore on destruction
 template<typename T>
-class LocallyModify {
+class LocallyModify : virtual Noncopyable {
     T& var;
     T  prevValue;
 public:

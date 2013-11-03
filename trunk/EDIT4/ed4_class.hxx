@@ -826,6 +826,10 @@ public:
 // # define TEST_BASES_TABLE
 #endif
 
+#if defined(DEBUG) && !defined(DEVEL_RELEASE)
+# define TEST_CHAR_TABLE_INTEGRITY
+#endif
+
 #define SHORT_TABLE_ELEM_SIZE 1
 #define SHORT_TABLE_MAX_VALUE 0xff
 #define LONG_TABLE_ELEM_SIZE  4
@@ -917,16 +921,12 @@ public:
     void change_table_length(int new_length, int default_entry);
 
 
-#ifdef ASSERTION_USED
+#if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
     int empty() const;
-#endif // ASSERTION_USED
+#endif // TEST_CHAR_TABLE_INTEGRITY
 };
 
 typedef ED4_bases_table *ED4_bases_table_ptr;
-
-#if defined(DEBUG) && !defined(DEVEL_RELEASE)
-# define TEST_CHAR_TABLE_INTEGRITY // uncomment to remove tests for ED4_char_table
-#endif // DEBUG
 
 class ED4_char_table : virtual Noncopyable {
     ED4_bases_table_ptr *bases_table;

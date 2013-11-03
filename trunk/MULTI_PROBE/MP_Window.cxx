@@ -213,8 +213,16 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
             display.clear();
             value.clear();
 
-            // try to read designed list 
-            RegExpr reg_designed("^([A-Z]+)[[:space:]]+[0-9]+[[:space:]]+[A-Z][=+-][[:space:]]+[0-9]+[[:space:]]+([0-9]+)[[:space:]]+[0-9]+[[:space:]]+[0-9.]+[[:space:]]+[0-9.]+[[:space:]]+[A-Z]+[[:space:]]+[|]", true);
+            // try to read designed list
+            RegExpr reg_designed("^([A-Z]+)"            // subexpr #1 (target)
+                                 "[[:space:]]+[0-9]+"
+                                 "[[:space:]]+[A-Z][=+-]"
+                                 "[[:space:]]*[0-9]+"
+                                 "[[:space:]]+([0-9]+)" // subexpr #2 (ecoli pos)
+                                 "([[:space:]]+[0-9]+){1,2}" // accept with and without quality entry
+                                 "([[:space:]]+[0-9.]+){2}"
+                                 "[[:space:]]+[A-Z]+"
+                                 "[[:space:]]+[|]", true);
 
             for (size_t i = 0; i<line.size() && !error; ++i) {
                 char *probe       = NULL;
@@ -574,106 +582,123 @@ static arb_test::match_expectation inputConvertsInto(const char *input, const ch
     return all().ofgroup(expected);
 }
 
-#define TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(input,expected) TEST_EXPECTATION(inputConvertsInto(input, expected))
+#define TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(input,expected)         TEST_EXPECTATION(inputConvertsInto(input, expected))
+#define TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS__BROKEN(input,expected) TEST_EXPECTATION__BROKEN(inputConvertsInto(input, expected))
 
 void TEST_load_probe_design_results() {
-    const char *expected =
-        "3#0#  521#GCAGCCGCGGUAAUACGG\n"
-        "3#0#  510#ACUCCGUGCCAGCAGCCG\n"
-        "3#0#  511#CUCCGUGCCAGCAGCCGC\n"
-        "3#0#  512#UCCGUGCCAGCAGCCGCG\n"
-        "3#0#  513#CCGUGCCAGCAGCCGCGG\n"
-        "3#0#  509#AACUCCGUGCCAGCAGCC\n";
-
-    const char *old_probeDesignSave =
-        "Probe design Parameters:\n"
-        "Length of probe      18\n"
-        "Temperature        [30.0 -100.0]\n"
-        "GC-Content         [50.0 -100.0]\n"
-        "E.Coli Position    [any]\n"
-        "Max Non Group Hits     0\n"
-        "Min Group Hits        50%\n"
-        "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
-        "GCAGCCGCGGUAAUACGG 18 A=  4398  521   23 66.7 60.0    CCGUAUUACCGCGGCUGC |  0;  0;  0;  0;  0;  0;  0;  0; 35; 35; 35; 38; 74; 74; 74; 77;113;113;113;148;\n"
-        "ACUCCGUGCCAGCAGCCG 18 B=  3852  510   23 72.2 62.0    CGGCUGCUGGCACGGAGU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80; 80;120;120;120;200;200;200;200;201;\n"
-        "CUCCGUGCCAGCAGCCGC 18 B+     4  511   23 77.8 64.0    GCGGCUGCUGGCACGGAG |  0;  0;  0;  0;  0; 40; 40; 40; 40; 80; 80; 80;160;160;160;160;201;201;201;201;\n"
-        "UCCGUGCCAGCAGCCGCG 18 B+     7  512   23 77.8 64.0    CGCGGCUGCUGGCACGGA |  0;  0;  0;  0;  0; 40; 40; 40;120;120;120;120;160;160;161;201;201;201;202;202;\n"
-        "CCGUGCCAGCAGCCGCGG 18 B+     9  513   23 83.3 66.0    CCGCGGCUGCUGGCACGG |  0;  0;  0;  0;  0; 80; 80; 80; 80;120;120;121;161;161;161;162;203;203;204;204;\n"
-        "AACUCCGUGCCAGCAGCC 18 B-     1  509   22 66.7 60.0    GGCUGCUGGCACGGAGUU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80;120;120;120;120;160;160;160;240;240;\n";
-
-    TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(old_probeDesignSave, expected);
-
-
-    const char *old_multiprobeInputSave = // old multi-probe saved probe (i.e. not target) sequences -> load shall correct that
-        "3,0#   521#CCGUAUUACCGCGGCUGC\n"
-        "3,0#   510#CGGCUGCUGGCACGGAGU\n"
-        "3,0#   511#GCGGCUGCUGGCACGGAG\n"
-        "3,0#   512#CGCGGCUGCUGGCACGGA\n"
-        "3,0#   513#CCGCGGCUGCUGGCACGG\n"
-        "3,0#   509#GGCUGCUGGCACGGAGUU\n";
-
     {
-        LocallyModify<char> TorU(T_or_U_for_load, 'U');
-        TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(old_multiprobeInputSave, expected);
+        const char *expected =
+            "3#0#  521#GCAGCCGCGGUAAUACGG\n"
+            "3#0#  510#ACUCCGUGCCAGCAGCCG\n"
+            "3#0#  511#CUCCGUGCCAGCAGCCGC\n"
+            "3#0#  512#UCCGUGCCAGCAGCCGCG\n"
+            "3#0#  513#CCGUGCCAGCAGCCGCGG\n"
+            "3#0#  509#AACUCCGUGCCAGCAGCC\n";
+
+        const char *old_probeDesignSave =
+            "Probe design Parameters:\n"
+            "Length of probe      18\n"
+            "Temperature        [30.0 -100.0]\n"
+            "GC-Content         [50.0 -100.0]\n"
+            "E.Coli Position    [any]\n"
+            "Max Non Group Hits     0\n"
+            "Min Group Hits        50%\n"
+            "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
+            "GCAGCCGCGGUAAUACGG 18 A=  4398  521   23 66.7 60.0    CCGUAUUACCGCGGCUGC |  0;  0;  0;  0;  0;  0;  0;  0; 35; 35; 35; 38; 74; 74; 74; 77;113;113;113;148;\n"
+            "ACUCCGUGCCAGCAGCCG 18 B=  3852  510   23 72.2 62.0    CGGCUGCUGGCACGGAGU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80; 80;120;120;120;200;200;200;200;201;\n"
+            "CUCCGUGCCAGCAGCCGC 18 B+     4  511   23 77.8 64.0    GCGGCUGCUGGCACGGAG |  0;  0;  0;  0;  0; 40; 40; 40; 40; 80; 80; 80;160;160;160;160;201;201;201;201;\n"
+            "UCCGUGCCAGCAGCCGCG 18 B+     7  512   23 77.8 64.0    CGCGGCUGCUGGCACGGA |  0;  0;  0;  0;  0; 40; 40; 40;120;120;120;120;160;160;161;201;201;201;202;202;\n"
+            "CCGUGCCAGCAGCCGCGG 18 B+     9  513   23 83.3 66.0    CCGCGGCUGCUGGCACGG |  0;  0;  0;  0;  0; 80; 80; 80; 80;120;120;121;161;161;161;162;203;203;204;204;\n"
+            "AACUCCGUGCCAGCAGCC 18 B-     1  509   22 66.7 60.0    GGCUGCUGGCACGGAGUU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80;120;120;120;120;160;160;160;240;240;\n";
+
+        TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(old_probeDesignSave, expected);
+
+
+        const char *old_multiprobeInputSave = // old multi-probe saved probe (i.e. not target) sequences -> load shall correct that
+            "3,0#   521#CCGUAUUACCGCGGCUGC\n"
+            "3,0#   510#CGGCUGCUGGCACGGAGU\n"
+            "3,0#   511#GCGGCUGCUGGCACGGAG\n"
+            "3,0#   512#CGCGGCUGCUGGCACGGA\n"
+            "3,0#   513#CCGCGGCUGCUGGCACGG\n"
+            "3,0#   509#GGCUGCUGGCACGGAGUU\n";
+
+        {
+            LocallyModify<char> TorU(T_or_U_for_load, 'U');
+            TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(old_multiprobeInputSave, expected);
+        }
+
+        const char *new_probeDesignSave_v1 =
+            "Probe design Parameters:,\n"
+            "Length of probe      18,\n"
+            "Temperature        [30.0 -100.0],\n"
+            "GC-Content         [50.0 -100.0],\n"
+            "E.Coli Position    [any],\n"
+            "Max Non Group Hits     0,\n"
+            "Min Group Hits        50%,\n"
+            "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species,\n"
+            "GCAGCCGCGGUAAUACGG 18 A=  4398  521   23 66.7 60.0    CCGUAUUACCGCGGCUGC |  0;  0;  0;  0;  0;  0;  0;  0; 35; 35; 35; 38; 74; 74; 74; 77;113;113;113;148;,GCAGCCGCGGUAAUACGG\n"
+            "ACUCCGUGCCAGCAGCCG 18 B=  3852  510   23 72.2 62.0    CGGCUGCUGGCACGGAGU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80; 80;120;120;120;200;200;200;200;201;,ACUCCGUGCCAGCAGCCG\n"
+            "CUCCGUGCCAGCAGCCGC 18 B+     4  511   23 77.8 64.0    GCGGCUGCUGGCACGGAG |  0;  0;  0;  0;  0; 40; 40; 40; 40; 80; 80; 80;160;160;160;160;201;201;201;201;,CUCCGUGCCAGCAGCCGC\n"
+            "UCCGUGCCAGCAGCCGCG 18 B+     7  512   23 77.8 64.0    CGCGGCUGCUGGCACGGA |  0;  0;  0;  0;  0; 40; 40; 40;120;120;120;120;160;160;161;201;201;201;202;202;,UCCGUGCCAGCAGCCGCG\n"
+            "CCGUGCCAGCAGCCGCGG 18 B+     9  513   23 83.3 66.0    CCGCGGCUGCUGGCACGG |  0;  0;  0;  0;  0; 80; 80; 80; 80;120;120;121;161;161;161;162;203;203;204;204;,CCGUGCCAGCAGCCGCGG\n"
+            "AACUCCGUGCCAGCAGCC 18 B-     1  509   22 66.7 60.0    GGCUGCUGGCACGGAGUU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80;120;120;120;120;160;160;160;240;240;,AACUCCGUGCCAGCAGCC\n";
+
+        TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(new_probeDesignSave_v1, expected);
+
+
+        const char *new_multiprobeInputSave =
+            "3#0#  521#GCAGCCGCGGUAAUACGG\n"
+            "3#0#  510#ACUCCGUGCCAGCAGCCG\n"
+            "3#0#  511#CUCCGUGCCAGCAGCCGC\n"
+            "3#0#  512#UCCGUGCCAGCAGCCGCG\n"
+            "3#0#  513#CCGUGCCAGCAGCCGCGG\n"
+            "3#0#  509#AACUCCGUGCCAGCAGCC\n";
+
+        TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(new_multiprobeInputSave, expected);
     }
-
-    const char *new_probeDesignSave_v1 =
-        "Probe design Parameters:,\n"
-        "Length of probe      18,\n"
-        "Temperature        [30.0 -100.0],\n"
-        "GC-Content         [50.0 -100.0],\n"
-        "E.Coli Position    [any],\n"
-        "Max Non Group Hits     0,\n"
-        "Min Group Hits        50%,\n"
-        "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species,\n"
-        "GCAGCCGCGGUAAUACGG 18 A=  4398  521   23 66.7 60.0    CCGUAUUACCGCGGCUGC |  0;  0;  0;  0;  0;  0;  0;  0; 35; 35; 35; 38; 74; 74; 74; 77;113;113;113;148;,GCAGCCGCGGUAAUACGG\n"
-        "ACUCCGUGCCAGCAGCCG 18 B=  3852  510   23 72.2 62.0    CGGCUGCUGGCACGGAGU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80; 80;120;120;120;200;200;200;200;201;,ACUCCGUGCCAGCAGCCG\n"
-        "CUCCGUGCCAGCAGCCGC 18 B+     4  511   23 77.8 64.0    GCGGCUGCUGGCACGGAG |  0;  0;  0;  0;  0; 40; 40; 40; 40; 80; 80; 80;160;160;160;160;201;201;201;201;,CUCCGUGCCAGCAGCCGC\n"
-        "UCCGUGCCAGCAGCCGCG 18 B+     7  512   23 77.8 64.0    CGCGGCUGCUGGCACGGA |  0;  0;  0;  0;  0; 40; 40; 40;120;120;120;120;160;160;161;201;201;201;202;202;,UCCGUGCCAGCAGCCGCG\n"
-        "CCGUGCCAGCAGCCGCGG 18 B+     9  513   23 83.3 66.0    CCGCGGCUGCUGGCACGG |  0;  0;  0;  0;  0; 80; 80; 80; 80;120;120;121;161;161;161;162;203;203;204;204;,CCGUGCCAGCAGCCGCGG\n"
-        "AACUCCGUGCCAGCAGCC 18 B-     1  509   22 66.7 60.0    GGCUGCUGGCACGGAGUU |  0;  0;  0;  0;  0; 40; 40; 40; 80; 80; 80;120;120;120;120;160;160;160;240;240;,AACUCCGUGCCAGCAGCC\n";
-
-    TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(new_probeDesignSave_v1, expected);
-
-
-    const char *new_multiprobeInputSave =
-        "3#0#  521#GCAGCCGCGGUAAUACGG\n"
-        "3#0#  510#ACUCCGUGCCAGCAGCCG\n"
-        "3#0#  511#CUCCGUGCCAGCAGCCGC\n"
-        "3#0#  512#UCCGUGCCAGCAGCCGCG\n"
-        "3#0#  513#CCGUGCCAGCAGCCGCGG\n"
-        "3#0#  509#AACUCCGUGCCAGCAGCC\n";
-
-    TEST_EXPECT_LOADS_INTO_MULTIPROBE_AS(new_multiprobeInputSave, expected);
 }
 
 static const char *recent_expected =
-    "3#0#   19#AAGUCGAGCGAUGA\n"
-    "3#0#   20#AGUCGAGCGAUGAA\n"
-    "3#0#   18#CAAGUCGAGCGAUG\n"
     "3#0#   82#CGAAAGGAAGAUUA\n"
+    "3#0#   82#CGAAAGGAAGAUUAA\n"
+    "3#0#   86#AGGAAGAUUAAUACC\n"
     "3#0#   87#GGAAGAUUAAUACC\n"
     "3#0#   21#GUCGAGCGAUGAAG\n"
+    "3#0#   20#AGUCGAGCGAUGAAG\n"
+    "3#0#   20#AGUCGAGCGAUGAA\n"
+    "3#0#   19#AAGUCGAGCGAUGAA\n"
+    "3#0#   18#CAAGUCGAGCGAUGA\n"
+    "3#0#   19#AAGUCGAGCGAUGA\n"
+    "3#0#   17#UCAAGUCGAGCGAUG\n"
+    "3#0#   18#CAAGUCGAGCGAUG\n"
+    "3#0#   16#AUCAAGUCGAGCGAU\n"
     "3#0#   17#UCAAGUCGAGCGAU\n"
     "3#0#   16#AUCAAGUCGAGCGA\n";
 
 static const char *recent_probeDesignSave =
-    "Probe design Parameters:,\n"
-    "Length of probe      14,\n"
+    "Probe design parameters:,\n"
+    "Length of probe    14-15,\n"
     "Temperature        [ 0.0 -400.0],\n"
-    "GC-Content         [30.0 -80.0],\n"
-    "E.Coli Position    [any],\n"
-    "Max Non Group Hits     0,\n"
-    "Min Group Hits       100%,\n"
-    "Target         le     apos ecol grps  G+C 4GC+2AT Probe sequence | Decrease T by n*.3C -> probe matches n non group species,\n"
-    "AAGUCGAGCGAUGA 14 A=    20   19    4 50.0 42.0    UCAUCGCUCGACUU |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,AAGUCGAGCGAUGA\n"
-    "AGUCGAGCGAUGAA 14 A+     1   20    4 50.0 42.0    UUCAUCGCUCGACU |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,AGUCGAGCGAUGAA\n"
-    "CAAGUCGAGCGAUG 14 A-     1   18    4 57.1 44.0    CAUCGCUCGACUUG |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,CAAGUCGAGCGAUG\n"
-    "CGAAAGGAAGAUUA 14 B=    94   82    4 35.7 38.0    UAAUCUUCCUUUCG |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,CGAAAGGAAGAUUA\n"
-    "GGAAGAUUAAUACC 14 B+     5   87    4 35.7 38.0    GGUAUUAAUCUUCC |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,GGAAGAUUAAUACC\n"
-    "GUCGAGCGAUGAAG 14 A+     2   21    4 57.1 44.0    CUUCAUCGCUCGAC |  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;  0;,GUCGAGCGAUGAAG\n"
-    "UCAAGUCGAGCGAU 14 A-     2   17    4 50.0 42.0    AUCGCUCGACUUGA |  0;  2;  2;  2;  2;  4;  4;  4;  4; 11; 13; 13; 13; 20; 22; 22; 22; 22; 31; 31;,UCAAGUCGAGCGAU\n"
-    "AUCAAGUCGAGCGA 14 A-     3   16    4 50.0 42.0    UCGCUCGACUUGAU |  0;  9;  9;  9;  9; 18; 18; 18; 18; 27; 27; 27; 27; 27; 36; 36; 36; 36; 45; 45;,AUCAAGUCGAGCGA";
+    "GC-content         [30.0 - 80.0],\n"
+    "E.Coli position    [any],\n"
+    "Max. nongroup hits 0,\n"
+    "Min. group hits    100% (max. rejected coverage: 75%),\n"
+    "Target          le apos ecol qual grps   G+C temp  Probe sequence | Decrease T by n*.3C -> probe matches n non group species,\n"
+    "CGAAAGGAAGAUUA  14 A=94   82   77    4  35.7 38.0  UAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -,CGAAAGGAAGAUUA\n"
+    "CGAAAGGAAGAUUAA 15 A+ 0   82   77    4  33.3 40.0 UUAAUCUUCCUUUCG | - - - - - - - - - - - - - - - - - - - -,CGAAAGGAAGAUUAA\n"
+    "AGGAAGAUUAAUACC 15 A+ 4   86   77    4  33.3 40.0 GGUAUUAAUCUUCCU | - - - - - - - - - - - - - - - - - - - -,AGGAAGAUUAAUACC\n"
+    "GGAAGAUUAAUACC  14 A+ 5   87   77    4  35.7 38.0  GGUAUUAAUCUUCC | - - - - - - - - - - - - - - - - - - - -,GGAAGAUUAAUACC\n"
+    "GUCGAGCGAUGAAG  14 B=22   21   77    4  57.1 44.0  CUUCAUCGCUCGAC | - - - - - - - - - - - - - - - - - - - 2,GUCGAGCGAUGAAG\n"
+    "AGUCGAGCGAUGAAG 15 B- 1   20   73    4  53.3 46.0 CUUCAUCGCUCGACU | - - - - - - - - - - - - - - - - - - 2 2,AGUCGAGCGAUGAAG\n"
+    "AGUCGAGCGAUGAA  14 B- 1   20   57    4  50.0 42.0  UUCAUCGCUCGACU | - - - - - - - - - - - - - - 2 2 2 2 2 2,AGUCGAGCGAUGAA\n"
+    "AAGUCGAGCGAUGAA 15 B- 2   19   53    4  46.7 44.0 UUCAUCGCUCGACUU | - - - - - - - - - - - - - 2 2 2 2 2 2 2,AAGUCGAGCGAUGAA\n"
+    "CAAGUCGAGCGAUGA 15 B- 3   18   41    4  53.3 46.0 UCAUCGCUCGACUUG | - - - - - - - - - - 2 2 2 2 2 2 2 2 2 2,CAAGUCGAGCGAUGA\n"
+    "AAGUCGAGCGAUGA  14 B- 2   19   41    4  50.0 42.0  UCAUCGCUCGACUU | - - - - - - - - - - 2 2 2 2 2 2 2 2 2 2,AAGUCGAGCGAUGA\n"
+    "UCAAGUCGAGCGAUG 15 B- 4   17   25    4  53.3 46.0 CAUCGCUCGACUUGA | - - - - - - 2 2 2 2 2 2 2 2 2 2 2 2 9 9,UCAAGUCGAGCGAUG\n"
+    "CAAGUCGAGCGAUG  14 B- 3   18   25    4  57.1 44.0  CAUCGCUCGACUUG | - - - - - - 2 2 2 2 2 2 2 2 2 2 2 2 2 2,CAAGUCGAGCGAUG\n"
+    "AUCAAGUCGAGCGAU 15 B- 5   16    5    4  46.7 44.0 AUCGCUCGACUUGAU | - 2 2 2 2 2 2 2 9 9 9 9 9 9 9 9 9 9 9 9,AUCAAGUCGAGCGAU\n"
+    "UCAAGUCGAGCGAU  14 B- 4   17    5    4  50.0 42.0  AUCGCUCGACUUGA | - 2 2 2 2 2 2 2 2 9 9 9 9 9 9 9 9 9 9 9,UCAAGUCGAGCGAU\n"
+    "AUCAAGUCGAGCGA  14 B- 5   16    5    4  50.0 42.0  UCGCUCGACUUGAU | - 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9,AUCAAGUCGAGCGA";
 
 void TEST_AFTER_SLOW_recent_probe_design_result() {
     // --------------------------------------------------------------------------------
@@ -687,7 +712,7 @@ void TEST_AFTER_SLOW_recent_probe_design_result() {
 void TEST_SLOW_design_probes_and_load_result() {
     TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
 
-    CommandOutput designed_probes("arb_probe serverid=-666 designprobelength=14 designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr designmintargets=100", true);
+    CommandOutput designed_probes("arb_probe serverid=-666 designprobelength=14 designmaxprobelength=15 designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr designmintargets=100", true);
     TEST_EXPECT_NO_ERROR(designed_probes.get_error());
 
     // Simulate result of designing probes in ARB_NT and saving the result to a file:

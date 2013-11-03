@@ -1047,6 +1047,18 @@ void TEST_signal_tests() {
     TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
     TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
 #endif
+
+    // following section is disabled since it would spam wanted warnings
+    // (enable it when changing any of these TEST_..-macros used here)
+#if 0
+    TEST_ASSERT_SEGFAULT__WANTED(dont_provokesegv);
+    TEST_ASSERT_SEGFAULT__UNWANTED(provokesegv);
+    TEST_ASSERT_SEGFAULT__UNWANTED(failassertion);
+
+    TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
+#endif
 }
 
 #define EXPECT_CONTENT(content) TEST_EXPECT_EQUAL(GBS_mempntr(strstr), content)

@@ -1028,7 +1028,7 @@ static GB_ERROR pars_check_size(AW_root *awr) {
     }
     else {
         unsigned long expected_memuse = (ali_len * tree_size * 4 / 1000);
-        if (expected_memuse > GB_get_physical_memory()) {
+        if (expected_memuse > GB_get_usable_memory()) {
             error  = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
                                        "(did you specify a filter?)",
                                        GBS_readable_size(expected_memuse, "b"));

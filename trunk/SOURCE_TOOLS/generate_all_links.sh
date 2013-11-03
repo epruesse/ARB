@@ -163,6 +163,7 @@ symlink_file ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
 symlink_file ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
 symlink_file ../TEMPLATES/attributes.h INCLUDE/attributes.h &&
 symlink_file ../TEMPLATES/bytestring.h INCLUDE/bytestring.h &&
+symlink_file ../TEMPLATES/cache.h INCLUDE/cache.h &&
 symlink_file ../TEMPLATES/ChecksumCollector.h INCLUDE/ChecksumCollector.h &&
 symlink_file ../TEMPLATES/command_output.h INCLUDE/command_output.h &&
 symlink_file ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&

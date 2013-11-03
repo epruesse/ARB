@@ -135,7 +135,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
     char     *sequence = 0;
     long int  length   = 0;
 
-    if ((get_estimated_memory(root)/1024.0) > GB_get_physical_memory()) {
+    if ((get_estimated_memory(root)/1024.0) > GB_get_usable_memory()) {
         if (aw_question(NULL, "ARB may crash due to memory problems.", "Continue, Abort") == 1) {
             return;
         }
@@ -186,7 +186,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
         }
 
         catch (string& s) {
-            error = GBS_global_string("%s", s.c_str());
+            error = GBS_static_string(s.c_str());
         }
         catch (...) {
             error = "Unknown error (maybe out of memory ? )";
