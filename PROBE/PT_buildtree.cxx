@@ -22,7 +22,6 @@
 #include <arb_progress.h>
 
 #include <unistd.h>
-#include <malloc.h>
 #include <ctype.h>
 
 // #define PTM_TRACE_MAX_MEM_USAGE

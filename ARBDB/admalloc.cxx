@@ -8,10 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#ifndef DARWIN
-#include <malloc.h>
-#endif
-
 #include <unistd.h>
 #include <climits>
 #include <set>
