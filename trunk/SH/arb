@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/bash -u
+
+# set -x
 
 # error message function
 err () {
@@ -32,7 +34,7 @@ get_arbhome() {
 # Add to the path variable named by $1 the component $2.  $3 must be
 # "append" or "prepend" to indicate where the component is added.
 addpath () {
-    eval value=\"\$$1\"
+    eval value=\"\$\{$1:-\}\"
     case "$value" in
 	*:$2:*|*:$2|$2:*|$2)
 	    result="$value"
@@ -118,23 +120,23 @@ if [ ! -d ${ARB_LOCAL_PTS} ] ; then
   mkdir ${ARB_LOCAL_PTS}
 fi
 
-if [ "X$ARBMACROHOME" = "X" ] ; then
+if [ -n ${ARBMACROHOME:-} ] ; then
   ARBMACROHOME="${ARB_PROPERTIES}/macros";
-  export ARBMACROHOME
 fi
 if [ ! -d ${ARBMACROHOME} ] ; then
   echo "Directory $ARBMACROHOME not found - creating ..."
   mkdir ${ARBMACROHOME}
 fi
+export ARBMACROHOME
 
-if [ "X$ARBMACRO" = "X" ] ; then
+if [ -n ${ARBMACRO:-} ] ; then
   ARBMACRO="$ARBHOME/lib/macros"
-  export ARBMACRO
 fi
 if [ ! -d ${ARBMACRO} ] ; then
   echo "Directory $ARBMACRO not found - creating ..."
   mkdir ${ARBMACRO}
 fi
+export ARBMACRO
 
 # set default command-tool used by ARB
 ARB_XTERM=${ARB_XTERM:-xterm -sl 1000 -sb -geometry 120x50}
