@@ -66,6 +66,16 @@ prepend () {
     addpath "$1" "$2" prepend
 }
 
+if [ -z ${HOME:-} ]; then
+    HOME=~
+fi
+export HOME
+
+if [ -z ${DISPLAY:-} ]; then
+    DISPLAY=:0
+fi
+export DISPLAY
+
 # get absolute path to directory where this script resides
 # (avoid use of readlink as it is missing on OSX)
 ARBHOME_OF_SCRIPT="$(get_arbhome)"
