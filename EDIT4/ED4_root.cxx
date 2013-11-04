@@ -454,7 +454,7 @@ static ARB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
     return NULL;
 }
 
-void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int * /* cl */, GB_CB_TYPE IF_ASSERTION_USED(gbtype)) // callback from database
+void ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE IF_ASSERTION_USED(gbtype)) // callback from database
 {
     e4_assert(gbtype==GB_CB_CHANGED);
     int new_length = GB_read_int(gb_alignment_len);
@@ -506,7 +506,7 @@ ED4_returncode ED4_root::init_alignment() {
     int alignment_length = GB_read_int(gb_alignment_len);
     MAXSEQUENCECHARACTERLENGTH = alignment_length;
 
-    GB_add_callback(gb_alignment_len, (GB_CB_TYPE)GB_CB_CHANGED, (GB_CB)ED4_alignment_length_changed, 0);
+    GB_add_callback(gb_alignment_len, GB_CB_CHANGED, makeDatabaseCallback(ED4_alignment_length_changed));
 
     aw_root->awar_string(AWAR_EDITOR_ALIGNMENT, alignment_name);
 

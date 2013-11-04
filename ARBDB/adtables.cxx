@@ -76,7 +76,7 @@ GB_ERROR GBT_install_table_link_follower(GBDATA *gb_main) {
     return 0;
 }
 
-static void g_bt_table_deleted(GBDATA */*gb_table*/, int */*clientdata*/, GB_CB_TYPE /*gbtype*/) {
+static void g_bt_table_deleted() {
     GB_MAIN_TYPE *Main = gb_get_main_during_cb();
     GBS_free_hash(Main->table_hash);
     Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
@@ -105,7 +105,7 @@ GBDATA *GBT_open_table(GBDATA *gb_table_root, const char *table_name, bool read_
 
     // now lets create the table
     gb_table = GB_create_container(gb_table_data, "table");
-    GB_add_callback(gb_table, GB_CB_DELETE, g_bt_table_deleted, 0);
+    GB_add_callback(gb_table, GB_CB_DELETE, makeDatabaseCallback(g_bt_table_deleted));
 
     gb_table_name = GB_create(gb_table, "name", GB_STRING);
     GB_write_string(gb_table_name, table_name);

@@ -263,7 +263,7 @@ sub parse_log($\@) {
   else {
     my $log_ptr = $log;
     $log_ptr =~ s/^\./UNIT_TESTER/;
-    print "Suppressing dispensable $log_ptr\n";
+    # print "Suppressing dispensable $log_ptr\n";
   }
 
   if (not $seenSummary) {

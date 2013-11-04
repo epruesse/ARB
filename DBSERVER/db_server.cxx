@@ -58,7 +58,7 @@ static bool command_triggered = false;
 
 static const char *savemode = "b";
 
-static void command_cb(GBDATA *, int*, GB_CB_TYPE ) {
+static void command_cb() {
     command_triggered = true;
 }
 
@@ -135,7 +135,7 @@ static GB_ERROR server_main_loop(GBDATA *gb_main) {
         GB_transaction ta(gb_main);
 
         GBDATA *cmd_entry = get_command_entry(gb_main);
-        error             = GB_add_callback(cmd_entry, GB_CB_CHANGED, command_cb, NULL);
+        error             = GB_add_callback(cmd_entry, GB_CB_CHANGED, makeDatabaseCallback(command_cb));
     }
 
     while (!error) {
@@ -323,7 +323,7 @@ inline bool server_is_down(const char *tcp) {
 }
 
 static int entry_changed_cb_called = 0;
-static void entry_changed_cb(GBDATA *, int*, GB_CB_TYPE) {
+static void entry_changed_cb() {
     entry_changed_cb_called++;
 }
 
@@ -430,7 +430,7 @@ void TEST_SLOW_dbserver() {
                         TEST_EXPECT_EQUAL(entry_changed_cb_called, 0);
                         {
                             GB_transaction ta(gb_entry1);
-                            error = GB_add_callback(gb_entry1, GB_CB_CHANGED, entry_changed_cb, NULL);
+                            error = GB_add_callback(gb_entry1, GB_CB_CHANGED, makeDatabaseCallback(entry_changed_cb));
                         }
                         TEST_EXPECT_EQUAL(entry_changed_cb_called, 0);
                         {

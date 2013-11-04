@@ -898,6 +898,7 @@ adsocket.o: $(ARBHOME)/INCLUDE/arb_core.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_cs.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_file.h
+adsocket.o: $(ARBHOME)/INCLUDE/arb_misc.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_pathlen.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_sleep.h
@@ -1126,6 +1127,8 @@ adtree.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adtune.o: gb_tune.h
 
+arbdb.o: ad_cb.h
+arbdb.o: ad_cb_prot.h
 arbdb.o: ad_prot.h
 arbdb.o: arbdb.h
 arbdb.o: arbdb_base.h

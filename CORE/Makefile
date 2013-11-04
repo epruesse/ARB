@@ -102,6 +102,7 @@ arb_handlers.o: arb_core.h
 arb_handlers.o: arb_handlers.h
 arb_handlers.o: arb_misc.h
 arb_handlers.o: arb_msg.h
+arb_handlers.o: $(ARBHOME)/INCLUDE/arb_algo.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/cxxforward.h

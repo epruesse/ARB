@@ -4,7 +4,6 @@
 #include <cstring>
 #include <cstdio>
 #include <memory.h>
-// #include <malloc.h>
 #include <iostream.h>
 #include "AP_buffer.hxx"
 #include "ap_main.hxx"

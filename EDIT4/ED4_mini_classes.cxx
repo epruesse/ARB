@@ -361,7 +361,7 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
     }
 }
 
-#if defined(ASSERTION_USED)
+#if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
 
 int ED4_bases_table::empty() const
 {

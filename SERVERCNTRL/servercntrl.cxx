@@ -165,22 +165,22 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
 }
 
 static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, const char *tcp_id, int magic_number, struct gl_struct *serverctrl, int wait) {
-    serverctrl->link = aisc_open(tcp_id, serverctrl->com, magic_number);
-    if (!serverctrl->link) { // no server running -> start one
-        GB_ERROR error = arb_start_server(arb_tcp_env, 0);
-        if (error) return error;
+    GB_ERROR error   = NULL;
+    serverctrl->link = aisc_open(tcp_id, serverctrl->com, magic_number, &error);
 
-        while (!serverctrl->link && wait) {
+    if (!error && !serverctrl->link) { // no server running -> start one
+        error = arb_start_server(arb_tcp_env, 0);
+        while (!error && !serverctrl->link && wait) {
             GB_sleep(1, SEC);
             wait--;
             if ((wait%10) == 0 && wait>0) {
                 printf("Waiting for server '%s' to come up (%i seconds left)\n", arb_tcp_env, wait);
             }
-            serverctrl->link  = aisc_open(tcp_id, serverctrl->com, magic_number);
+            serverctrl->link  = aisc_open(tcp_id, serverctrl->com, magic_number, &error);
         }
     }
 
-    return 0;
+    return error;
 }
 
 GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
@@ -279,7 +279,7 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env) {
     else {
         const char *server = strchr(tcp_id, 0)+1;
 
-        glservercntrl.link = aisc_open(tcp_id, glservercntrl.com, magic_number);
+        glservercntrl.link = aisc_open(tcp_id, glservercntrl.com, magic_number, &error);
         if (glservercntrl.link) {
             aisc_close(glservercntrl.link, glservercntrl.com);
             glservercntrl.link = 0;

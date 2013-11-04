@@ -25,11 +25,6 @@ class TypedDatabaseCallback {
     static DatabaseCallback MARKED_DELETED;
 
 public:
-    __ATTR__DEPRECATED_CALLBACK_LATER TypedDatabaseCallback(GB_CB func_, GB_CB_TYPE type_, int *clientdata_)
-        : dbcb(makeDatabaseCallback(func_, clientdata_)),
-          type(type_)
-    {}
-
     TypedDatabaseCallback(const DatabaseCallback& cb, GB_CB_TYPE type_)
         : dbcb(cb),
           type(type_)

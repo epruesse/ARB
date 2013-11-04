@@ -77,6 +77,7 @@ GBDATA *GB_open(const char *path, const char *opent);
 GB_ERROR GBT_check_arb_file(const char *name) __ATTR__USERESULT;
 
 /* ad_save_load.cxx */
+GB_CSTR GB_mapfile(GBDATA *gb_main);
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_create_directory(const char *path);
 GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype);
@@ -231,6 +232,7 @@ NOT4PERL gb_getenv_hook GB_install_getenv_hook(gb_getenv_hook hook);
 GB_CSTR GB_getenv(const char *env);
 bool GB_host_is_local(const char *hostname);
 GB_ULONG GB_get_physical_memory(void);
+GB_ULONG GB_get_usable_memory(void);
 GB_ERROR GB_xterm(void) __ATTR__USERESULT;
 GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
 GB_CSTR GB_append_suffix(const char *name, const char *suffix);

@@ -1028,7 +1028,7 @@ static GB_ERROR pars_check_size(AW_root *awr) {
     }
     else {
         unsigned long expected_memuse = (ali_len * tree_size * 4 / 1000);
-        if (expected_memuse > GB_get_physical_memory()) {
+        if (expected_memuse > GB_get_usable_memory()) {
             error  = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
                                        "(did you specify a filter?)",
                                        GBS_readable_size(expected_memuse, "b"));
@@ -1124,8 +1124,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     GB_transaction dummy(ntw->gb_main);
 
     GBDATA *gb_arb_presets = GB_search(ntw->gb_main, "arb_presets", GB_CREATE_CONTAINER);
-    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, (GB_CB)AWT_expose_cb, (int *)ntw);
-    // GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw)); // @@@ makeDatabaseCallback does not work (yet)
+    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw));
 
 #if defined(DEBUG)
     AWT_create_debug_menu(awm);

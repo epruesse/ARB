@@ -210,14 +210,16 @@ public:
                 const char *ipport = GBS_read_arb_tcp(server_id);
                 if (!ipport) err = GB_await_error();
                 else {
-                    link     = aisc_open(ipport, com, AISC_MAGIC_NUMBER);
+                    link     = aisc_open(ipport, com, AISC_MAGIC_NUMBER, &err);
                     linktime = time(0);
 
-                    if (init_local_com_names()) {
-                        err = GBS_global_string("Can't connect %s %s", server_id, ipport);
-                    }
-                    else {
-                        err = expectServerUsesField(add_field);
+                    if (!err) {
+                        if (init_local_com_names()) {
+                            err = GBS_global_string("Can't connect %s %s", server_id, ipport);
+                        }
+                        else {
+                            err = expectServerUsesField(add_field);
+                        }
                     }
                 }
             }

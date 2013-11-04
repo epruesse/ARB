@@ -175,13 +175,11 @@ MostLikelySeq::~MostLikelySeq() {
     unbind_from_species(true);
 }
 
-static void st_sequence_callback(GBDATA *, int *cl, GB_CB_TYPE) {
-    MostLikelySeq *seq = (MostLikelySeq *) cl;
+static void st_sequence_callback(GBDATA*, MostLikelySeq *seq) {
     seq->sequence_change();
 }
 
-static void st_sequence_del_callback(GBDATA *, int *cl, GB_CB_TYPE) {
-    MostLikelySeq *seq = (MostLikelySeq *) cl;
+static void st_sequence_del_callback(GBDATA*, MostLikelySeq *seq) {
     seq->unbind_from_species(false);
 }
 
@@ -192,8 +190,8 @@ GB_ERROR MostLikelySeq::bind_to_species(GBDATA *gb_species) {
         GBDATA *gb_seq = get_bound_species_data();
         st_assert(gb_seq);
 
-        error             = GB_add_callback(gb_seq, GB_CB_CHANGED, st_sequence_callback, (int *) this);
-        if (!error) error = GB_add_callback(gb_seq, GB_CB_DELETE, st_sequence_del_callback, (int *) this);
+        error             = GB_add_callback(gb_seq, GB_CB_CHANGED, makeDatabaseCallback(st_sequence_callback,     this));
+        if (!error) error = GB_add_callback(gb_seq, GB_CB_DELETE,  makeDatabaseCallback(st_sequence_del_callback, this));
     }
     return error;
 }
@@ -202,8 +200,8 @@ void MostLikelySeq::unbind_from_species(bool remove_callbacks) {
 
     if (gb_seq) {  
         if (remove_callbacks) {
-            GB_remove_callback(gb_seq, GB_CB_CHANGED, st_sequence_callback, (int *) this);
-            GB_remove_callback(gb_seq, GB_CB_DELETE, st_sequence_del_callback, (int *) this);
+            GB_remove_callback(gb_seq, GB_CB_CHANGED, makeDatabaseCallback(st_sequence_callback,     this));
+            GB_remove_callback(gb_seq, GB_CB_DELETE,  makeDatabaseCallback(st_sequence_del_callback, this));
         }
         AP_sequence::unbind_from_species();
     }
