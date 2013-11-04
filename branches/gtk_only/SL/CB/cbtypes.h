@@ -305,8 +305,8 @@ public:
     }
 
 #define CBTYPE_FVF_BUILDER_NP1(BUILDER,CB,RESULT,F1,F2,SIG,SIG01,P1)                    \
-    inline CB BUILDER(RESULT (*cb)(F1)) { return CB((SIG01)cb); }               \
-    inline CB BUILDER(RESULT (*cb)(F1,F2)) { return CB((SIG01)cb); }            \
+    inline CB BUILDER(RESULT (*cb)(F1)) { return CB((SIG01)cb); }                       \
+    inline CB BUILDER(RESULT (*cb)(F1,F2)) { return CB((SIG01)cb); }                    \
     CBTYPE_FVF_BUILDER_P1_F1F2(BUILDER,CB,RESULT,F1,F2,SIG,P1,P1);                      \
     CBTYPE_FVF_BUILDER_P1_F1F2(BUILDER,CB,RESULT,F1,F2,SIG,P1,CONST_PARAM_T(P1));       \
     CBTYPE_FVF_BUILDER_P1_F1(BUILDER,CB,RESULT,F1,SIG,P1,P1);                           \

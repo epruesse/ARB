@@ -27,6 +27,7 @@ bool GB_is_regularfile(const char *path);
 bool GB_is_link(const char *path);
 bool GB_is_executablefile(const char *path);
 bool GB_is_privatefile(const char *path, bool read_private);
+bool GB_is_writeablefile(const char *filename);
 bool GB_is_readablefile(const char *filename);
 bool GB_is_directory(const char *path);
 long GB_getuid_of_file(const char *path);

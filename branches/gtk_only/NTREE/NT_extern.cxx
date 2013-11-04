@@ -822,12 +822,11 @@ static AW_window *create_colorize_species_window(AW_root *aw_root) {
  * Updates marked counter and issues redraw on tree if #marked changes.
  * Called on any change of species_information container.
  */
-static void NT_update_marked_counter(GBDATA* /*species_info*/, int* cl_aww, GB_CB_TYPE /*cbt*/) {
-    AW_window* aww = (AW_window*) cl_aww;
-    long count = GBT_count_marked_species(GLOBAL.gb_main);
-    const char *buffer = count ? GBS_global_string("%li marked", count) : "";
-    AW_awar *counter = aww->get_root()->awar(AWAR_MARKED_SPECIES_COUNTER);
-    char *oldval = counter->read_string();
+static void NT_update_marked_counter(GBDATA*, AW_window* aww) {
+    long        count   = GBT_count_marked_species(GLOBAL.gb_main);
+    const char *buffer  = count ? GBS_global_string("%li marked", count) : "";
+    AW_awar    *counter = aww->get_root()->awar(AWAR_MARKED_SPECIES_COUNTER);
+    char       *oldval  = counter->read_string();
     if (strcmp(oldval, buffer)) {
         counter->write_string(buffer);
         aww->get_root()->awar(AWAR_TREE_REFRESH)->touch();
@@ -1085,8 +1084,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback(makeRootCallback(TREE_recompute_cb, ntw));
 
     GBDATA *gb_arb_presets = GB_search(GLOBAL.gb_main, "arb_presets", GB_CREATE_CONTAINER);
-    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, (GB_CB)AWT_expose_cb, (int *)ntw);
-    // GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw)); // @@@ makeDatabaseCallback does not work (yet)
+    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw));
 
     bool is_genome_db = GEN_is_genome_db(GLOBAL.gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
 
@@ -1728,8 +1726,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->create_button("selection_admin2", AWAR_MARKED_SPECIES_COUNTER);
     {
         GBDATA *gb_species_data = GBT_get_species_data(GLOBAL.gb_main);
-        GB_add_callback(gb_species_data, GB_CB_CHANGED, NT_update_marked_counter, (int*)awm);
-        NT_update_marked_counter(NULL, (int*)awm, GB_CB_NONE);
+        GB_add_callback(gb_species_data, GB_CB_CHANGED, makeDatabaseCallback(NT_update_marked_counter, static_cast<AW_window*>(awm)));
+        NT_update_marked_counter(NULL, awm);
     }
 
     // set height of top area:

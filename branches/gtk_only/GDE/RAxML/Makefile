@@ -86,6 +86,7 @@ leaveDropping.o: axml.h
 makenewzGenericSpecial.o: axml.h
 
 mem_alloc.o: axml.h
+mem_alloc.o: $(ARBHOME)/INCLUDE/malloc.h
 
 models.o: axml.h
 

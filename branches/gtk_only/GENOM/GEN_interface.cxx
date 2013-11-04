@@ -658,8 +658,8 @@ inline GB_ERROR update_location_from_GEN_position(LocationEditor *loced, const G
             LocationPtr loc = to_Location(gp);
             loced->loc_awar(GLE_READABLE)->write_string(loc->as_string().c_str());
         }
-        catch (const char *& err) { error = GBS_global_string("%s", err); }
-        catch (string& err) { error = GBS_global_string("%s", err.c_str()); }
+        catch (const char *& err) { error = GBS_static_string(err); }
+        catch (string& err) { error = GBS_static_string(err.c_str()); }
         catch (...) { gen_assert(0); }
     }
     return error;
@@ -723,8 +723,8 @@ static void GLE_update_from_location(AW_root *, AW_CL cl_loced) {
             LocationPtr loc = parseLocation(locstr);
             gp              = loc->create_GEN_position();
         }
-        catch (const char *& err) { error = GBS_global_string("%s", err); }
-        catch (string& err) { error = GBS_global_string("%s", err.c_str()); }
+        catch (const char *& err) { error = GBS_static_string(err); }
+        catch (string& err) { error = GBS_static_string(err.c_str()); }
         catch (...) { gen_assert(0); }
 
         if (!error) {

@@ -389,7 +389,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
             }
 
             if (error) {
-                error = GBS_global_string("%s", file.lineError(error).c_str());
+                error = GBS_static_string(file.lineError(error).c_str());
             }
             else {
                 db->graphic()->write_data_to_db(structure.c_str(), x_string);

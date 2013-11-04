@@ -782,7 +782,7 @@ static void add_to_history(AW_root *aw_root, const char *path) {
 static bool    inside_path_change = false;
 static GBDATA *gb_tracked_node    = NULL;
 
-static void selected_node_modified_cb(GBDATA *gb_node, int*, GB_CB_TYPE cb_type) {
+static void selected_node_modified_cb(GBDATA *gb_node, GB_CB_TYPE cb_type) {
     awt_assert(gb_node == gb_tracked_node);
 
     if (cb_type & GB_CB_DELETE) {
@@ -824,13 +824,13 @@ static void selected_node_modified_cb(GBDATA *gb_node, int*, GB_CB_TYPE cb_type)
 }
 static void untrack_node() {
     if (gb_tracked_node) {
-        GB_remove_callback(gb_tracked_node, GB_CB_ALL, selected_node_modified_cb, 0);
+        GB_remove_callback(gb_tracked_node, GB_CB_ALL, makeDatabaseCallback(selected_node_modified_cb));
         gb_tracked_node = NULL;
     }
 }
 static void track_node(GBDATA *gb_node) {
     untrack_node();
-    GB_ERROR error = GB_add_callback(gb_node, GB_CB_ALL, selected_node_modified_cb, 0);
+    GB_ERROR error = GB_add_callback(gb_node, GB_CB_ALL, makeDatabaseCallback(selected_node_modified_cb));
     if (error) {
         aw_message(error);
     }

@@ -848,7 +848,7 @@ struct NotifyCb {
 
 static void notify_cb(GBDATA *gb_message, NotifyCb *pending, GB_CB_TYPE cb_type) {
     if (cb_type != GB_CB_DELETE) {
-        GB_remove_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(notify_cb, pending));
+        GB_remove_callback(gb_message, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(notify_cb, pending));
     }
 
     if (cb_type == GB_CB_CHANGED) {
@@ -906,7 +906,7 @@ static int allocateNotificationID(GBDATA *gb_main, NotifyCb *pending) {
                                 GBDATA *gb_message = GB_searchOrCreate_string(gb_notification, "message", "");
 
                                 if (gb_message) {
-                                    error = GB_add_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), makeDatabaseCallback(notify_cb, pending));
+                                    error = GB_add_callback(gb_message, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(notify_cb, pending));
                                     if (!error) {
                                         id = newid; // success
                                     }

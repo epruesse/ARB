@@ -564,10 +564,8 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
 
     // Reset structure:
     if (gb_struct) {
-        GB_remove_callback(gb_struct,   GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
-        gb_struct = NULL;
-        GB_remove_callback(gb_struct_ref,   GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
-        gb_struct_ref = NULL;
+        GB_remove_callback(gb_struct,     GB_CB_ALL, makeDatabaseCallback(SEC_structure_changed_cb, this)); gb_struct     = NULL;
+        GB_remove_callback(gb_struct_ref, GB_CB_ALL, makeDatabaseCallback(SEC_structure_changed_cb, this)); gb_struct_ref = NULL;
     }
 
     request_update(SEC_UPDATE_RECOUNT);
@@ -677,8 +675,8 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     }
 
     // set structure-change-callbacks:
-    if (gb_struct)     GB_add_callback(gb_struct, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
-    if (gb_struct_ref) GB_add_callback(gb_struct_ref, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
+    if(gb_struct)     GB_add_callback(gb_struct,     GB_CB_ALL, makeDatabaseCallback(SEC_structure_changed_cb, this));
+    if(gb_struct_ref) GB_add_callback(gb_struct_ref, GB_CB_ALL, makeDatabaseCallback(SEC_structure_changed_cb, this));
 
     return err;
 }

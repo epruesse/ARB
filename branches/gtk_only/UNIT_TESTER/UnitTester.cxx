@@ -284,7 +284,7 @@ static bool flag_callback(arb_test::FlagAction action, const char *name) {
 
     switch (action) {
         case FLAG_RAISE:
-            flag.raise();
+            if (!flag.is_up()) flag.raise();
             break;
         case FLAG_IS_RAISED:
             result = flag.is_up();

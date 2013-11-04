@@ -164,6 +164,7 @@ symlink_file ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
 symlink_file ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
 symlink_file ../TEMPLATES/attributes.h INCLUDE/attributes.h &&
 symlink_file ../TEMPLATES/bytestring.h INCLUDE/bytestring.h &&
+symlink_file ../TEMPLATES/cache.h INCLUDE/cache.h &&
 symlink_file ../TEMPLATES/ChecksumCollector.h INCLUDE/ChecksumCollector.h &&
 symlink_file ../TEMPLATES/command_output.h INCLUDE/command_output.h &&
 symlink_file ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
@@ -171,6 +172,7 @@ symlink_file ../TEMPLATES/cxxforward.h INCLUDE/cxxforward.h &&
 symlink_file ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
 symlink_file ../TEMPLATES/dupstr.h INCLUDE/dupstr.h &&
 symlink_file ../TEMPLATES/gccver.h INCLUDE/gccver.h &&
+symlink_file ../TEMPLATES/malloc.h INCLUDE/malloc.h &&
 symlink_file ../TEMPLATES/mode_text.h INCLUDE/mode_text.h &&
 symlink_file ../TEMPLATES/output.h INCLUDE/output.h &&
 symlink_file ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
@@ -280,6 +282,7 @@ symlink_file ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
 symlink_file ../SL/CB/cb.h INCLUDE/cb.h &&
 symlink_file ../SL/CB/cb_base.h INCLUDE/cb_base.h &&
 symlink_file ../SL/CB/cbtypes.h INCLUDE/cbtypes.h &&
+symlink_file ../SL/CB/cb_base.h INCLUDE/cb_base.h &&
 symlink_file ../SL/CB/rootAsWin.h INCLUDE/rootAsWin.h &&
 symlink_file ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&

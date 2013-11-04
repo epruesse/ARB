@@ -125,9 +125,9 @@ void TEST_arbtest_strf() {
 void TEST_arbtest_readable() {
     using namespace arb_test;
 
-    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy('x')), "'x'");
-    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<unsigned char>('x'))), "'x'");
-    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<signed char>('x'))), "'x'");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy('x')), "'x' (=0x78)");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<unsigned char>('x'))), "'x' (=0x78)");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<signed char>('x'))), "'x' (=0x78)");
 
     TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(true)), "true");
     TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(false)), "false");

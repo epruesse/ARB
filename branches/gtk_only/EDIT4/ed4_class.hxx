@@ -826,6 +826,10 @@ public:
 // # define TEST_BASES_TABLE
 #endif
 
+#if defined(DEBUG) && !defined(DEVEL_RELEASE)
+# define TEST_CHAR_TABLE_INTEGRITY
+#endif
+
 #define SHORT_TABLE_ELEM_SIZE 1
 #define SHORT_TABLE_MAX_VALUE 0xff
 #define LONG_TABLE_ELEM_SIZE  4
@@ -917,16 +921,12 @@ public:
     void change_table_length(int new_length, int default_entry);
 
 
-#ifdef ASSERTION_USED
+#if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
     int empty() const;
-#endif // ASSERTION_USED
+#endif // TEST_CHAR_TABLE_INTEGRITY
 };
 
 typedef ED4_bases_table *ED4_bases_table_ptr;
-
-#if defined(DEBUG) && !defined(DEVEL_RELEASE)
-# define TEST_CHAR_TABLE_INTEGRITY // uncomment to remove tests for ED4_char_table
-#endif // DEBUG
 
 class ED4_char_table : virtual Noncopyable {
     ED4_bases_table_ptr *bases_table;
@@ -1023,8 +1023,8 @@ class ED4_species_pointer : virtual Noncopyable {
 
     GBDATA *species_pointer;    // points to database
 
-    void add_callback(int *clientdata);
-    void remove_callback(int *clientdata);
+    void addCallback(ED4_base *base);
+    void removeCallback(ED4_base *base);
 
 public:
 
@@ -1032,7 +1032,7 @@ public:
     ~ED4_species_pointer();
 
     GBDATA *Get() const { return species_pointer; } 
-    void Set(GBDATA *gbd, int *clientdata);
+    void Set(GBDATA *gbd, ED4_base *base);
     void notify_deleted() {
         species_pointer=0;
     }
@@ -1090,7 +1090,7 @@ public:
     // function for species_pointer
 
     GBDATA *get_species_pointer() const { return my_species_pointer.Get(); }
-    void set_species_pointer(GBDATA *gbd) { my_species_pointer.Set(gbd, (int*)(this)); }
+    void set_species_pointer(GBDATA *gbd) { my_species_pointer.Set(gbd, this); }
     int has_callback() const { return get_species_pointer()!=0; }
 
     // callbacks
@@ -2383,7 +2383,7 @@ void ED4_compression_changed_cb(AW_root *awr);
 // functions passed to external c-functions (i.e. as callbacks) have to be declared as 'extern "C"'
 
 extern "C" {
-    void    ED4_alignment_length_changed(GBDATA *gb_alignment_len, int *dummy, GB_CB_TYPE gbtype);
+    void ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE gbtype);
 }
 
 struct AlignDataAccess;

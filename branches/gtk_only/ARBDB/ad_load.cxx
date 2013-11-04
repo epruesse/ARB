@@ -687,7 +687,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                         gb_create_header_array(gbc_dest, index+1);
                         header = GB_DATA_LIST_HEADER(gbc_dest->d);
                     }
-                    
+
                     GBDATA *gb2 = GB_HEADER_LIST_GBD(header[index]);
                     if (gb2) {
                         gb_delete_entry(gb2);

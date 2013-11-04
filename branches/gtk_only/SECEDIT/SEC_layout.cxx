@@ -266,9 +266,9 @@ void SEC_loop::invalidate_sub_angles() {
 void SEC_region::invalidate_base_count() {
     delete [] abspos_array;
     abspos_array      = 0;
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     abspos_array_size = 0;
-#endif // DEBUG
+#endif // ASSERTION_USED
 
     baseCount = -1;
 }
@@ -281,9 +281,9 @@ void SEC_region::create_abspos_array(const int *static_array) {
         abspos_array = new int[baseCount];
         memcpy(abspos_array, static_array, baseCount*sizeof(*static_array));
     }
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     abspos_array_size = baseCount;
-#endif // DEBUG
+#endif // ASSERTION_USED
 }
 
 void SEC_region::count_bases(SEC_root *root) {

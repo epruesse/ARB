@@ -892,10 +892,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
                 gbd->flags2.update_in_server = 1;
             }
             else {
-                GB_CB_TYPE gbtype = GB_CB_CHANGED;
-                if (son_created) {
-                    gbtype = (GB_CB_TYPE)(GB_CB_SON_CREATED | GB_CB_CHANGED);
-                }
+                GB_CB_TYPE gbtype = son_created ? GB_CB_CHANGED_OR_SON_CREATED : GB_CB_CHANGED;
                 gbd->create_extended();
                 gbd->touch_update(Main->clock);
                 if (gbd->flags2.header_changed) {
@@ -903,7 +900,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
                 }
 
                 for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
-                    if (cb->spec.get_type() & (GB_CB_CHANGED|GB_CB_SON_CREATED)) {
+                    if (cb->spec.get_type() & GB_CB_CHANGED_OR_SON_CREATED) {
                         gb_add_changed_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(gbtype));
                     }
                 }

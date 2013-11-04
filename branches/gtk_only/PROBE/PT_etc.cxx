@@ -12,33 +12,16 @@
 
 #include <PT_server_prototypes.h>
 #include "pt_prototypes.h"
+
 #include <struct_man.h>
 #include <arb_strbuf.h>
 
-void set_table_for_PT_N_mis(int ignored_Nmismatches, int when_less_than_Nmismatches) {
-    // calculate table for PT_N mismatches
-    // 
-    // 'ignored_Nmismatches' specifies, how many N-mismatches will be accepted as
-    // matches, when overall number of N-mismatches is below 'when_less_than_Nmismatches'.
-    //
-    // above that limit, every N-mismatch counts as mismatch
-
-    if ((when_less_than_Nmismatches-1)>PT_POS_TREE_HEIGHT) when_less_than_Nmismatches = PT_POS_TREE_HEIGHT+1;
-    if (ignored_Nmismatches >= when_less_than_Nmismatches) ignored_Nmismatches = when_less_than_Nmismatches-1;
-
-    psg.w_N_mismatches[0] = 0;
-    int mm;
-    for (mm = 1; mm<when_less_than_Nmismatches; ++mm) {
-        psg.w_N_mismatches[mm] = mm>ignored_Nmismatches ? mm-ignored_Nmismatches : 0;
-    }
-    pt_assert(mm <= (PT_POS_TREE_HEIGHT+1));
-    for (; mm <= PT_POS_TREE_HEIGHT; ++mm) {
-        psg.w_N_mismatches[mm] = mm;
-    }
-}
-
 void pt_export_error(PT_local *locs, const char *error) {
     freedup(locs->ls_error, error);
+}
+void pt_export_error_if(PT_local *locs, ARB_ERROR& error) {
+    if (error) pt_export_error(locs, error.deliver());
+    else error.expect_no_error();
 }
 
 static const gene_struct *get_gene_struct_by_internal_gene_name(const char *gene_name) {
@@ -71,23 +54,23 @@ static const char *arb2internal_name(const char *name) {
     return found ? found->get_internal_gene_name() : 0;
 }
 
-const char *virt_name(PT_probematch *ml) 
+const char *virt_name(const PT_probematch *ml) 
 {
     // get the name with a virtual function
     if (gene_flag) {
-        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_name());
+        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_shortname());
         return gs ? gs->get_arb_species_name() : "<cantResolveName>";
     }
     else {
-        pt_assert(psg.data[ml->name].get_name());
-        return psg.data[ml->name].get_name();
+        pt_assert(psg.data[ml->name].get_shortname());
+        return psg.data[ml->name].get_shortname();
     }
 }
 
-const char *virt_fullname(PT_probematch * ml) 
+const char *virt_fullname(const PT_probematch * ml) 
 {
     if (gene_flag) {
-        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_name());
+        const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_shortname());
         return gs ? gs->get_arb_gene_name() : "<cantResolveGeneFullname>";
     }
     else {
@@ -136,7 +119,7 @@ static const char *get_list_part(const char *list, int& offset) {
 
 #undef MAX_LIST_PART_SIZE
 
-char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char*& error) {
+char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, ARB_ERROR& error) {
     /* read the name list separated by '#' and set the flag for the group members,
      + returns a list of names which have not been found
      */
@@ -146,7 +129,8 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
         psg.data[i].set_group_state(0); // Note: probes are designed for species with is_group == 1
     }
     locs->group_count = 0;
-    error             = 0;
+
+    error = 0;
 
     if (!names_list) {
         error = "Can't design probes for no species (species list is empty)";
@@ -216,46 +200,22 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
     return result;
 }
 
-bytestring *PT_unknown_names(PT_pdc *pdc) {
-    static bytestring un = { 0, 0 };
+bytestring *PT_unknown_names(const PT_pdc *pdc) {
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
-    delete un.data;
+    static bytestring unknown = { 0, 0 };
+    delete unknown.data;
 
-    const char *error;
-    un.data = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data, error);
-    if (un.data) {
-        un.size = strlen(un.data) + 1;
+    ARB_ERROR error;
+    unknown.data = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data, error);
+    if (unknown.data) {
+        unknown.size = strlen(unknown.data) + 1;
         pt_assert(!error);
     }
     else {
-        un.data = strdup("");
-        un.size = 1;
-        if (error) pt_export_error(locs, error);
+        unknown.data = strdup("");
+        unknown.size = 1;
     }
-    return &un;
+    pt_export_error_if(locs, error);
+    return &unknown;
 }
 
-void PT_init_base_string_counter(char *str, char initval, int size)
-{
-    memset(str, initval, size+1);
-    str[size] = 0;
-}
-
-void PT_inc_base_string_count(char *str, char initval, char maxval, int size)
-{
-    int i;
-    if (!size) {
-        str[0]=255;
-        return;
-    }
-    for (i=size-1; i>=0; i--) {
-        str[i]++;
-        if (str[i] >= maxval) {
-            str[i] = initval;
-            if (!i) str[i]=255; // end flag
-        }
-        else {
-            break;
-        }
-    }
-}

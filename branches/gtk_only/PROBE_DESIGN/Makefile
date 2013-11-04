@@ -43,6 +43,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_file.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_progress.h
+probe_design.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 probe_design.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -71,6 +72,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_element.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
@@ -107,6 +109,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/items.h
 probe_design.o: $(ARBHOME)/INCLUDE/iupac.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
+probe_design.o: $(ARBHOME)/INCLUDE/PT_server.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 probe_design.o: $(ARBHOME)/INCLUDE/smartptr.h
 probe_design.o: $(ARBHOME)/INCLUDE/static_assert.h
