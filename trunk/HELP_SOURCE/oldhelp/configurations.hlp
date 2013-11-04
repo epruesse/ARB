@@ -24,7 +24,8 @@ DESCRIPTION     This provides a general way to store and restore settings
 NOTES		To save stored settings permanently, use SAVE PROPERTIES!
 
                 Saving configurations allows you to share them with other users.
-                The configs are saved in ~/.arb_prop/cfgSave/
+                The configs are saved in directory pointed to by environmentvariable
+                ARBCONFIG (which defaults to ~/.arb_prop/cfgSave). See also LINK{arb_envar.hlp}.
 
 EXAMPLES	None
 

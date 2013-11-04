@@ -202,7 +202,7 @@ char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *f
 }
 
 char *GB_property_file(bool warn_when_not_found, const char *filename) {
-    // Search a file in '~/.arb_prop' or its default in '$ARBHOME/lib/arb_default'
+    // Search a file in '$ARB_PROP' or its default in '$ARBHOME/lib/arb_default'
     // Return NULL if neighter found
 
     char *result = nulldup(GB_existing_file(GB_path_in_arbprop(filename), warn_when_not_found));
