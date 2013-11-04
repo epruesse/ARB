@@ -59,6 +59,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/cb.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/cb_base.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -103,6 +104,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/cb.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/cb_base.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/downcast.h

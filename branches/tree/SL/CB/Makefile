@@ -31,6 +31,7 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 cb.o: cb.h
+cb.o: cb_base.h
 cb.o: cbtypes.h
 cb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 cb.o: $(ARBHOME)/INCLUDE/arb_core.h

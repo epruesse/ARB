@@ -58,6 +58,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/cb.h
+db_scanner.o: $(ARBHOME)/INCLUDE/cb_base.h
 db_scanner.o: $(ARBHOME)/INCLUDE/cbtypes.h
 db_scanner.o: $(ARBHOME)/INCLUDE/cxxforward.h
 db_scanner.o: $(ARBHOME)/INCLUDE/downcast.h

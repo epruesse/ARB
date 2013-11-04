@@ -237,7 +237,7 @@ namespace arb_test {
 
     inline char *val2readable(double d) { return StaticCode::strf("%f", d); }
 
-    inline char *val2readable(unsigned char c) { return c<32 ? StaticCode::strf(" ^%c", c+'A'-1) : StaticCode::strf("'%c'", c); }
+    inline char *val2readable(unsigned char c) { return c<32 ? StaticCode::strf(" ^%c (=0x%02x)", c+'A'-1, int(c)) : StaticCode::strf("'%c' (=0x%02x)", c, int(c)); }
     inline char *val2readable(const char *s) { return StaticCode::readable_string(s); }
 
 #ifdef TESTS_KNOW_STRING
@@ -1040,6 +1040,8 @@ namespace arb_test {
 
 #define TEST_EXPECT_ERROR_CONTAINS(call,part)         TEST_EXPECTATION        (reported_error_contains(call, part))
 #define TEST_EXPECT_ERROR_CONTAINS__BROKEN(call,part) TEST_EXPECTATION__BROKEN(reported_error_contains(call, part))
+#define TEST_EXPECT_ANY_ERROR(call)                   TEST_EXPECTATION        (reports_error(call))
+#define TEST_EXPECT_ANY_ERROR__BROKEN(call)           TEST_EXPECTATION__BROKEN(reports_error(call))
 #define TEST_EXPECT_NO_ERROR(call)                    TEST_EXPECTATION        (doesnt_report_error(call))
 #define TEST_EXPECT_NO_ERROR__BROKEN(call)            TEST_EXPECTATION__BROKEN(doesnt_report_error(call))
 
@@ -1144,7 +1146,7 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 # ifdef ASSERTION_USED
 
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, true))
-#  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FAILS_ASSERTION, false))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, false))
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
 #  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, true)) 
 #  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, false)) 
@@ -1233,6 +1235,7 @@ namespace arb_test {
 };
 
 #define TEST_COPY_FILE(src, dst) TEST_EXPECT_ZERO(system(GBS_global_string("cp '%s' '%s'", src, dst)))
+#define TEST_DUMP_FILE(src, dst) TEST_EXPECT(system(GBS_global_string("hexdump -C '%s' > '%s'", src, dst)) == 0)
 
 #define TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_EXPECT(arb_test::textfiles_have_difflines(f1,f2, diff))
 #define TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_EXPECT__BROKEN(arb_test::textfiles_have_difflines(f1,f2, diff))

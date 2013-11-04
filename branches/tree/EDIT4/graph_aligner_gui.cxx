@@ -162,7 +162,7 @@ AW_active sina_mask(AW_root *root) {
 }
 
 inline const char *stream2static(const std::stringstream& str) {
-    return GBS_global_string("%s", str.str().c_str());
+    return GBS_static_string(str.str().c_str());
 }
 
 static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {

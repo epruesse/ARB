@@ -21,8 +21,7 @@ using namespace std;
 // ----------------------
 //      ARB_tree_root
 
-static void tree_deleted_cbwrapper(GBDATA *gb_tree, int *cl_arb_tree_root, GB_CB_TYPE) {
-    ARB_tree_root *troot = (ARB_tree_root*)cl_arb_tree_root;
+static void tree_deleted_cbwrapper(GBDATA *gb_tree, ARB_tree_root *troot) {
     troot->tree_deleted_cb(gb_tree);
 }
 
@@ -56,7 +55,7 @@ ARB_tree_root::~ARB_tree_root() {
     delete nodeTemplate;
     delete seqTemplate;
 
-    if (gb_tree) GB_remove_callback(gb_tree, GB_CB_DELETE, tree_deleted_cbwrapper, (int*)this);
+    if (gb_tree) GB_remove_callback(gb_tree, GB_CB_DELETE, makeDatabaseCallback(tree_deleted_cbwrapper, this));
     free(tree_name);
 }
 
@@ -89,7 +88,7 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
         }
 
         if (gb_tree) {
-            GB_remove_callback(gb_tree, GB_CB_DELETE, tree_deleted_cbwrapper, (int*)this);
+            GB_remove_callback(gb_tree, GB_CB_DELETE, makeDatabaseCallback(tree_deleted_cbwrapper, this));
             gb_tree = NULL;
             freenull(tree_name);
         }
@@ -100,7 +99,7 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
             gb_tree             = GBT_find_tree(gb_main, name);
             if (!gb_tree) error = GB_await_error();
             else {
-                error = GB_add_callback(gb_tree, GB_CB_DELETE, tree_deleted_cbwrapper, (int*)this);
+                error = GB_add_callback(gb_tree, GB_CB_DELETE, makeDatabaseCallback(tree_deleted_cbwrapper, this));
                 if (!error) {
                     ARB_tree *arb_tree = nodeTemplate->dup();
                     arb_tree->move_gbt_info(gbt_tree);
@@ -135,9 +134,8 @@ GB_ERROR ARB_tree_root::saveToDB() {
     return error;
 }
 
-static void arb_tree_species_deleted_cb(GBDATA *gb_species, int *cl_ARB_tree, GB_CB_TYPE) {
+static void arb_tree_species_deleted_cb(GBDATA *gb_species, ARB_tree *arb_tree) {
     // called whenever a species (which is linked to tree) gets deleted
-    ARB_tree *arb_tree = (ARB_tree*)cl_ARB_tree;
     at_assert(arb_tree->gb_node == gb_species);
     if (arb_tree->gb_node == gb_species) {
         arb_tree->gb_node = NULL; // unlink from tree
@@ -325,7 +323,7 @@ GB_ERROR ARB_tree::add_delete_cb_rec(ARB_tree_node_del_cb cb) {
     GB_ERROR error = NULL;
     if (is_leaf) {
         if (gb_node) {
-            error = GB_add_callback(gb_node, GB_CB_DELETE, (GB_CB)cb, (int*)this);
+            error = GB_add_callback(gb_node, GB_CB_DELETE, makeDatabaseCallback(cb, this));
         }
     }
     else {
@@ -337,7 +335,7 @@ GB_ERROR ARB_tree::add_delete_cb_rec(ARB_tree_node_del_cb cb) {
 
 void ARB_tree::remove_delete_cb_rec(ARB_tree_node_del_cb cb) {
     if (is_leaf) {
-        if (gb_node) GB_remove_callback(gb_node, GB_CB_DELETE, (GB_CB)cb, (int*)this);
+        if (gb_node) GB_remove_callback(gb_node, GB_CB_DELETE, makeDatabaseCallback(cb, this));
     }
     else {
         leftson ->remove_delete_cb_rec(cb);

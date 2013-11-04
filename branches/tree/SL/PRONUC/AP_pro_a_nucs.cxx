@@ -373,7 +373,7 @@ AWT_distance_meter::~AWT_distance_meter() {
 
 static int current_user_code_nr = -1;                // always contain same value as AWAR_PROTEIN_TYPE (after calling AWT_default_protein_type once)
 
-static void user_code_nr_changed_cb(GBDATA *gb_awar, int *, GB_CB_TYPE) {
+static void user_code_nr_changed_cb(GBDATA *gb_awar) {
     // this callback keeps 'current_user_code_nr' synced with AWAR_PROTEIN_TYPE
     GBDATA         *gb_main = GB_get_root(gb_awar);
     GB_transaction  ta(gb_main);
@@ -446,8 +446,8 @@ int AWT_default_protein_type(GBDATA *gb_main) {
         {
             GB_transaction ta(gb_main);
             GBDATA *awar = GB_search(gb_main, AWAR_PROTEIN_TYPE, GB_INT);
-            GB_add_callback(awar, GB_CB_CHANGED, user_code_nr_changed_cb, 0); // bind a callback that traces AWAR_PROTEIN_TYPE
-            user_code_nr_changed_cb(awar, 0, GB_CB_CHANGED);
+            GB_add_callback(awar, GB_CB_CHANGED, makeDatabaseCallback(user_code_nr_changed_cb)); // bind a callback that traces AWAR_PROTEIN_TYPE
+            user_code_nr_changed_cb(awar);
         }
 
         pn_assert(current_user_code_nr != -1);

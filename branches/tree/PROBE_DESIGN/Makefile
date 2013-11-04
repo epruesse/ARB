@@ -42,6 +42,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_file.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_progress.h
+probe_design.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 probe_design.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -56,6 +57,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -70,6 +72,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/bytestring.h
 probe_design.o: $(ARBHOME)/INCLUDE/cb.h
+probe_design.o: $(ARBHOME)/INCLUDE/cb_base.h
 probe_design.o: $(ARBHOME)/INCLUDE/cbtypes.h
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
 probe_design.o: $(ARBHOME)/INCLUDE/client_types.h
@@ -81,6 +84,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/items.h
 probe_design.o: $(ARBHOME)/INCLUDE/iupac.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
+probe_design.o: $(ARBHOME)/INCLUDE/PT_server.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 probe_design.o: $(ARBHOME)/INCLUDE/smartptr.h
 probe_design.o: $(ARBHOME)/INCLUDE/static_assert.h
@@ -140,6 +144,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cb.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cb_base.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/downcast.h

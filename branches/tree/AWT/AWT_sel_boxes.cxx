@@ -379,7 +379,7 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const 
     awt_create_selection_list_on_tables_cb(0, cbs);
 
     gb_table_data = GB_search(gb_main, "table_data", GB_CREATE_CONTAINER);
-    GB_add_callback(gb_table_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_tables_cb, (int *)cbs);
+    GB_add_callback(gb_table_data, GB_CB_CHANGED, makeDatabaseCallback(awt_create_selection_list_on_tables_cb, cbs));
 
     GB_pop_transaction(gb_main);
 }
@@ -424,7 +424,7 @@ void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, 
 
     GBDATA  *gb_table = GBT_open_table(gb_main, table_name, true); // read only
     if (gb_table) {
-        GB_add_callback(gb_table, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_table_fields_cb, (int *)cbs);
+        GB_add_callback(gb_table, GB_CB_CHANGED, makeDatabaseCallback(awt_create_selection_list_on_table_fields_cb, cbs));
     }
     GB_pop_transaction(gb_main);
 }
@@ -541,7 +541,7 @@ void AWT_sai_selection::fill() {
     sel->update();
 }
 
-void awt_selection_list_on_sai_update_cb(GBDATA *, AWT_sai_selection *saisel) {
+void awt_selection_list_on_sai_update_cb(UNFIXED, AWT_sai_selection *saisel) {
     /* update the selection box defined by awt_create_selection_list_on_sai
      *
      * useful only when filterproc is defined
@@ -559,7 +559,7 @@ AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws) const {
     AWT_sai_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
 
     awt_selection_list_on_sai_update_cb(0, saisel);
-    GB_add_callback(gb_sai_data, GB_CB_CHANGED, (GB_CB)awt_selection_list_on_sai_update_cb, (int *)saisel);
+    GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_selection_list_on_sai_update_cb, saisel));
 
     return saisel;
 }

@@ -75,6 +75,7 @@ AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/cb.h
+AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/downcast.h

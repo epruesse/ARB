@@ -12,244 +12,325 @@
 #include <PT_server_prototypes.h>
 #include <struct_man.h>
 
+#include "pt_split.h"
 #include "probe_tree.h"
-#include "pt_prototypes.h"
 
 #include <arb_strbuf.h>
 #include <arb_defs.h>
 #include <arb_sort.h>
+#include <cctype>
+#include <map>
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_probematch *match)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
 
-static double ptnd_get_wmismatch(PT_local *locs, char *probe, int pos, char ref)
-{
-    int base       = probe[pos];
-    int complement = psg.complement[base];
-    int rowIdx     = (complement-(int)PT_A)*4;
-    int maxIdx     = rowIdx + base-(int)PT_A;
-    int newIdx     = rowIdx + ref-(int)PT_A;
+class MismatchWeights {
+    const PT_bond *bonds;
+    double weight[PT_BASES][PT_BASES];
 
-    pt_assert(maxIdx >= 0 && maxIdx < 16);
-    pt_assert(newIdx >= 0 && newIdx < 16);
+    double get_simple_wmismatch(char probe, char seq) {
+        pt_assert(is_std_base(probe));
+        pt_assert(is_std_base(seq));
 
-    double max_bind = locs->bond[maxIdx].val;
-    double new_bind = locs->bond[newIdx].val;
+        int complement = get_complement(probe);
 
-    return (max_bind - new_bind);
-}
+        int rowIdx = (complement-int(PT_A))*4;
+        int maxIdx = rowIdx + probe-(int)PT_A;
+        int newIdx = rowIdx + seq-(int)PT_A;
 
-inline bool max_number_of_hits_collected(PT_local* locs) {
-    return locs->pm_max_hits>0 && locs->ppm.cnt >= locs->pm_max_hits;
-}
+        pt_assert(maxIdx >= 0 && maxIdx < 16);
+        pt_assert(newIdx >= 0 && newIdx < 16);
 
-struct PT_store_match_in {
-    PT_local* ilocs;
+        double max_bind = bonds[maxIdx].val;
+        double new_bind = bonds[newIdx].val;
 
-    PT_store_match_in(PT_local* locs) : ilocs(locs) {}
-
-    int operator()(const DataLoc& matchLoc) {
-        // if chain is reached copy data in locs structure
-
-        int    mismatches   = psg.mismatches;
-        double wmismatches  = psg.wmismatches;
-        int    N_mismatches = psg.N_mismatches;
-
-        PT_local *locs = (PT_local *)ilocs;
-
-        char *probe = psg.probe;
-        if (probe) {
-            // @@@ code here is a duplicate of code in get_info_about_probe (PT_NT_LEAF-branch)
-            int pos    = matchLoc.rpos+psg.height;
-            int height = psg.height;
-            int base, ref;
-
-            while ((base=probe[height]) && (ref = psg.data[matchLoc.name].get_data()[pos])) {
-                if (ref == PT_N || base == PT_N) {
-                    // @@@ Warning: dupped code also counts PT_QU as mismatch!
-                    N_mismatches++;
-                }
-                else if (ref != base) {
-                    mismatches++;
-                    double h = ptnd_get_wmismatch(locs, probe, height, ref);
-                    wmismatches += psg.pos_to_weight[height]*h;
-                }
-                height++;
-                pos++;
-            }
-            while ((base = probe[height])) {
-                N_mismatches++;
-                height++;
-            }
-            pt_assert(N_mismatches <= PT_POS_TREE_HEIGHT);
-            if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
-                if (psg.w_N_mismatches[N_mismatches] + (int)(wmismatches+.5) > psg.deep) return 0;
-            }
-            else {
-                if (psg.w_N_mismatches[N_mismatches]+mismatches>psg.deep) return 0;
-            }
-        }
-
-        if (max_number_of_hits_collected(locs)) {
-            locs->matches_truncated = 1;
-            return 1;
-        }
-
-        // @@@ dupped code from read_names_and_pos (PT_NT_LEAF-branch)
-        PT_probematch *ml = create_PT_probematch();
-
-        ml->name         = matchLoc.name;
-        ml->b_pos        = matchLoc.apos;
-        ml->g_pos        = -1;
-        ml->rpos         = matchLoc.rpos;
-        ml->wmismatches  = wmismatches;
-        ml->mismatches   = mismatches;
-        ml->N_mismatches = N_mismatches;
-        ml->sequence     = psg.main_probe;
-        ml->reversed     = psg.reversed ? 1 : 0;
-            
-        aisc_link(&locs->ppm, ml);
-
-        return 0;
+        return (max_bind - new_bind);
     }
+
+    void init() {
+        for (int probe = PT_A; probe < PT_BASES; ++probe) {
+            double sum = 0.0;
+            for (int seq = PT_A; seq < PT_BASES; ++seq) {
+                sum += weight[probe][seq] = get_simple_wmismatch(probe, seq);
+            }
+            weight[probe][PT_N] = sum/4.0;
+        }
+        for (int seq = PT_N; seq < PT_BASES; ++seq) {
+            double sum = 0.0;
+            for (int probe = PT_A; probe < PT_BASES; ++probe) {
+                sum += weight[probe][seq];
+            }
+            weight[PT_N][seq] = sum/4.0;
+        }
+
+        for (int i = PT_N; i<PT_BASES; ++i) {
+            weight[PT_QU][i] = weight[PT_N][i];
+            weight[i][PT_QU] = weight[i][PT_N];
+        }
+        weight[PT_QU][PT_QU] = weight[PT_N][PT_N];
+    }
+
+public:
+    MismatchWeights(const PT_bond *bonds_) : bonds(bonds_) { init(); }
+    double get(int probe, int seq) const { return weight[probe][seq]; }
 };
 
-static int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
+
+class MatchRequest;
+class Mismatches {
+    MatchRequest& req;
+
+    int plain; // plain mismatch between 2 standard bases
+    int ambig; // mismatch with N or '.' involved
+
+    double weighted; // weighted mismatches
+
+public:
+
+    Mismatches(MatchRequest& req_) : req(req_), plain(0), ambig(0), weighted(0.0) {}
+    Mismatches(const Mismatches& other) : req(other.req), plain(other.plain), ambig(other.ambig), weighted(other.weighted) {}
+    DECLARE_ASSIGNMENT_OPERATOR(Mismatches);
+
+    inline void count_weighted(char probe, char seq, int height);
+    void        count_versus(const ReadableDataLoc& loc, const char *probe, int height);
+
+    inline bool accepted() const;
+
+    int get_plain() const { return plain; }
+    int get_ambig() const { return ambig; }
+
+    double get_weighted() const { return weighted; }
+
+    inline PT_local& get_PT_local() const;
+};
+
+
+class MatchRequest {
+    PT_local&       pt_local;
+    int             accepted_N_mismatches[PT_POS_TREE_HEIGHT+PT_POS_SECURITY+1];
+    MismatchWeights weights;
+
+    void init_accepted_N_mismatches(int ignored_Nmismatches, int when_less_than_Nmismatches);
+
+public:
+    explicit MatchRequest(PT_local& locs)
+        : pt_local(locs),
+          weights(locs.bond)
+    {
+        init_accepted_N_mismatches(pt_local.pm_nmatches_ignored, pt_local.pm_nmatches_limit);
+    }
+
+    PT_local& get_PT_local() const { return pt_local; }
+
+    bool hit_limit_reached() const {
+        bool reached = pt_local.pm_max_hits>0 && pt_local.ppm.cnt >= pt_local.pm_max_hits;
+        if (reached) pt_local.matches_truncated = 1;
+        return reached;
+    }
+
+    int accept_N_mismatches(int ambig) const { return accepted_N_mismatches[ambig]; }
+
+    bool add_hit(const DataLoc& at, const Mismatches& mismatch);
+    bool add_hits_for_children(POS_TREE2 *pt, const Mismatches& mismatch);
+    bool collect_hits_for(const char *probe, POS_TREE2 *pt, Mismatches& mismatch, int height);
+
+    int allowed_mismatches() const { return pt_local.pm_max; }
+    double get_mismatch_weight(char probe, char seq) const { return weights.get(probe, seq); }
+};
+
+
+
+void MatchRequest::init_accepted_N_mismatches(int ignored_Nmismatches, int when_less_than_Nmismatches) {
+    // calculate table for PT_N mismatches
+    //
+    // 'ignored_Nmismatches' specifies, how many N-mismatches will be accepted as
+    // matches, when overall number of N-mismatches is below 'when_less_than_Nmismatches'.
+    //
+    // above that limit, every N-mismatch counts as mismatch
+
+    if ((when_less_than_Nmismatches-1)>PT_POS_TREE_HEIGHT) when_less_than_Nmismatches = PT_POS_TREE_HEIGHT+1;
+    if (ignored_Nmismatches >= when_less_than_Nmismatches) ignored_Nmismatches = when_less_than_Nmismatches-1;
+
+    accepted_N_mismatches[0] = 0;
+    int mm;
+    for (mm = 1; mm<when_less_than_Nmismatches; ++mm) {
+        accepted_N_mismatches[mm] = mm>ignored_Nmismatches ? mm-ignored_Nmismatches : 0;
+    }
+    pt_assert(mm <= (PT_POS_TREE_HEIGHT+1));
+    for (; mm <= PT_POS_TREE_HEIGHT; ++mm) {
+        accepted_N_mismatches[mm] = mm;
+    }
+}
+
+inline void Mismatches::count_weighted(char probe, char seq, int height) {
+    bool is_ambig = is_ambig_base(probe) || is_ambig_base(seq);
+    if (is_ambig || probe != seq) {
+        if (is_ambig) ambig++; else plain++;
+        weighted += req.get_mismatch_weight(probe, seq) * psg.pos_to_weight[height];
+    }
+}
+
+inline bool Mismatches::accepted() const {
+    pt_assert(ambig <= PT_POS_TREE_HEIGHT);
+    if (get_PT_local().sort_by == PT_MATCH_TYPE_INTEGER) {
+        return (req.accept_N_mismatches(ambig)+plain) <= req.allowed_mismatches();
+    }
+    return weighted <= (req.allowed_mismatches()+0.5);
+}
+
+inline PT_local& Mismatches::get_PT_local() const {
+    return req.get_PT_local();
+}
+
+bool MatchRequest::add_hit(const DataLoc& at, const Mismatches& mismatch) {
+    PT_probematch *ml = create_PT_probematch();
+
+    ml->name  = at.get_name();
+    ml->b_pos = at.get_abs_pos();
+    ml->g_pos = -1;
+    ml->rpos  = at.get_rel_pos();
+
+    ml->mismatches   = mismatch.get_plain()  + accept_N_mismatches(mismatch.get_ambig());
+    ml->wmismatches  = mismatch.get_weighted();
+    ml->N_mismatches = mismatch.get_ambig();
+
+    ml->sequence = psg.main_probe;
+    ml->reversed = psg.reversed ? 1 : 0;
+
+    aisc_link(&get_PT_local().ppm, ml);
+
+    return hit_limit_reached();
+}
+
+bool MatchRequest::add_hits_for_children(POS_TREE2 *pt, const Mismatches& mismatch) {
     //! go down the tree to chains and leafs; copy names, positions and mismatches in locs structure
 
-    int error = 0;
-    if (pt) {
-        if (max_number_of_hits_collected(locs)) {
-            locs->matches_truncated = 1;
-            error                   = 1;
-        }
-        else if (PT_read_type(pt) == PT_NT_LEAF) {
-            DataLoc loc(pt);
+    pt_assert(pt && mismatch.accepted()); // invalid or superfluous call
+    pt_assert(!hit_limit_reached());
 
-            // @@@ dupped code from PT_store_match_in::operator()
-            PT_probematch *ml = create_PT_probematch();
+    bool enough = false;
+    switch (pt->get_type()) {
+        case PT2_LEAF:
+            enough = add_hit(DataLoc(pt), mismatch);
+            break;
 
-            ml->name         = loc.name;
-            ml->b_pos        = loc.apos;
-            ml->g_pos        = -1;
-            ml->rpos         = loc.rpos;
-            ml->mismatches   = psg.mismatches;
-            ml->wmismatches  = psg.wmismatches;
-            ml->N_mismatches = psg.N_mismatches;
-            ml->sequence     = psg.main_probe;
-            ml->reversed     = psg.reversed ? 1 : 0;
-
-            aisc_link(&locs->ppm, ml);
-        }
-        else if (PT_read_type(pt) == PT_NT_CHAIN) {
-            psg.probe = 0;
-            if (PT_forwhole_chain(pt, PT_store_match_in(locs))) {
-                error = 1;
+        case PT2_CHAIN: {
+            ChainIteratorStage2 entry(pt);
+            while (entry && !enough) {
+                enough = add_hit(DataLoc(entry.at()), mismatch);
+                ++entry;
             }
+            break;
         }
-        else {
-            for (int base = PT_QU; base < PT_B_MAX && !error; base++) {
-                error = read_names_and_pos(locs, PT_read_son(pt, (PT_BASES)base));
+        case PT2_NODE:
+            for (int base = PT_QU; base < PT_BASES && !enough; base++) {
+                POS_TREE2 *son  = PT_read_son(pt, (PT_base)base);
+                if (son) enough = add_hits_for_children(son, mismatch);
             }
-        }
+            break;
     }
-    return error;
+    return enough;
 }
 
-static int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height) {
+void Mismatches::count_versus(const ReadableDataLoc& loc, const char *probe, int height) {
+    int base;
+    while ((base = probe[height])) {
+        int ref = loc[height];
+        if (ref == PT_QU) break;
+
+        count_weighted(base, ref, height);
+        height++;
+    }
+
+    if (base != PT_QU) { // not end of probe
+        pt_assert(loc[height] == PT_QU); // at EOS
+        do {
+            count_weighted(base, PT_QU, height);
+            height++;
+        }
+        while ((base = probe[height]));
+    }
+}
+
+bool MatchRequest::collect_hits_for(const char *probe, POS_TREE2 *pt, Mismatches& mismatches, const int height) {
     //! search down the tree to find matching species for the given probe
 
-    if (!pt) return 0;
-    
-    pt_assert(N_mismatches <= PT_POS_TREE_HEIGHT);
-    if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
-        if (psg.w_N_mismatches[N_mismatches] + (int)(wmismatches + 0.5) > psg.deep) return 0;
+    pt_assert(pt && mismatches.accepted()); // invalid or superfluous call
+    pt_assert(!hit_limit_reached());
+
+    bool enough = false;
+    if (probe[height] == PT_QU) {
+        enough = add_hits_for_children(pt, mismatches);
     }
     else {
-        if (psg.w_N_mismatches[N_mismatches]+mismatches>psg.deep) return 0;
-    }
-
-    if (PT_read_type(pt) == PT_NT_NODE && probe[height]) {
-        for (int i=PT_N; i<PT_B_MAX; i++) {
-            POS_TREE *pthelp = PT_read_son(pt, (PT_BASES)i);
-            if (pthelp) {
-                int    newmis    = mismatches;
-                double newwmis   = wmismatches;
-                int    new_N_mis = N_mismatches;
-
-                int base = probe[height];
-                if (base == PT_N || i == PT_N) {
-                    new_N_mis++;
+        switch (pt->get_type()) {
+            case PT2_LEAF: {
+                ReadableDataLoc loc(pt);
+                mismatches.count_versus(loc, probe, height);
+                if (mismatches.accepted()) {
+                    enough = add_hit(loc, mismatches);
                 }
-                else if (i != base) {
-                    double h = ptnd_get_wmismatch(locs, probe, height, i);
-                    newwmis = wmismatches + psg.pos_to_weight[height] * h;
-                    newmis  = mismatches+1;
-                }
-                int error = get_info_about_probe(locs, probe, pthelp, newmis, newwmis, new_N_mis, height+1);
-                if (error) return error;
+                break;
             }
-        }
-        return 0;
-    }
+            case PT2_CHAIN: {
+                pt_assert(probe);
 
-    psg.mismatches   = mismatches;
-    psg.wmismatches  = wmismatches;
-    psg.N_mismatches = N_mismatches;
-
-    if (probe[height]) {
-        if (PT_read_type(pt) == PT_NT_LEAF) {
-            // @@@ code here is duplicate of code in PT_store_match_in::operator()
-
-            DataLoc loc(pt);
-            int pos  = loc.rpos + height;
-            int name = loc.name;
-
-            // @@@ recursive use of strlen with constant result (argh!)
-            if (pos + (int)(strlen(probe+height)) >= psg.data[name].get_size())       // end of sequence
-                return 0;
-
-            int base;
-            while ((base = probe[height])) {
-                int i = psg.data[name].get_data()[pos];
-                if (i == PT_N || base == PT_N || i == PT_QU || base == PT_QU) {
-                    psg.N_mismatches = psg.N_mismatches + 1;
+                ChainIteratorStage2 entry(pt);
+                while (entry && !enough) {
+                    Mismatches entry_mismatches(mismatches);
+                    DataLoc dloc(entry.at()); // @@@ EXPENSIVE_CONVERSION
+                    entry_mismatches.count_versus(ReadableDataLoc(dloc), probe, height); // @@@ EXPENSIVE_CONVERSION
+                    if (entry_mismatches.accepted()) {
+                        enough = add_hit(dloc, entry_mismatches);
+                    }
+                    ++entry;
                 }
-                else if (i != base) {
-                    psg.mismatches++;
-                    double h = ptnd_get_wmismatch(locs, probe, height, i);
-                    psg.wmismatches += psg.pos_to_weight[height] * h;
-                }
-                pos++;
-                height++;
+                break;
             }
-        }
-        else {                // chain
-            psg.probe = probe;
-            psg.height = height;
-            PT_forwhole_chain(pt, PT_store_match_in(locs)); // @@@ why ignore result
-            return 0;
-        }
-        pt_assert(psg.N_mismatches <= PT_POS_TREE_HEIGHT);
-        if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
-            if (psg.w_N_mismatches[psg.N_mismatches] + (int)(psg.wmismatches+.5) > psg.deep) return 0;
-        }
-        else {
-            if (psg.w_N_mismatches[psg.N_mismatches]+psg.mismatches>psg.deep) return 0;
+            case PT2_NODE:
+                for (int i=PT_QU; i<PT_BASES && !enough; i++) {
+                    POS_TREE2 *son = PT_read_son(pt, (PT_base)i);
+                    if (son) {
+                        Mismatches son_mismatches(mismatches);
+                        son_mismatches.count_weighted(probe[height], i, height);
+                        if (son_mismatches.accepted()) {
+                            if (i == PT_QU) {
+                                // @@@ calculation here is constant for a fixed probe (cache results)
+                                pt_assert(probe[height] != PT_QU);
+
+                                int son_height = height+1;
+                                while (1) {
+                                    int base = probe[son_height];
+                                    if (base == PT_QU) {
+                                        if (son_mismatches.accepted()) {
+                                            enough = add_hits_for_children(son, son_mismatches);
+                                        }
+                                        break;
+                                    }
+
+                                    son_mismatches.count_weighted(base, PT_QU, son_height);
+                                    if (!son_mismatches.accepted()) break;
+
+                                    ++son_height;
+                                }
+                            }
+                            else {
+                                enough = collect_hits_for(probe, son, son_mismatches, height+1);
+                            }
+                        }
+                    }
+                }
+                break;
         }
     }
-    return read_names_and_pos(locs, pt);
+
+    return enough;
 }
-
 
 static int pt_sort_compare_match(const void *PT_probematch_ptr1, const void *PT_probematch_ptr2, void *) {
     const PT_probematch *mach1 = (const PT_probematch*)PT_probematch_ptr1;
     const PT_probematch *mach2 = (const PT_probematch*)PT_probematch_ptr2;
 
-    if (psg.deep<0) {
-        if (mach1->dt > mach2->dt) return 1;
-        if (mach1->dt < mach2->dt) return -1;
-    }
     if (psg.sort_by != PT_MATCH_TYPE_INTEGER) {
         if (mach1->wmismatches > mach2->wmismatches) return 1;
         if (mach1->wmismatches < mach2->wmismatches) return -1;
@@ -296,39 +377,14 @@ static void pt_sort_match_list(PT_local * locs) {
         }
     }
 }
-char *reverse_probe(char *probe) {
+char *create_reversed_probe(char *probe, int len) {
     //! reverse order of bases in a probe
-
-    const int  probe_length = strlen(probe);
-    char      *rev_probe    = (char *)malloc(probe_length * sizeof(char)+1);
-    const int  end          = probe_length-1;
-
-    for (int i=0; i< probe_length; i++) {
-        rev_probe[end-i] = probe[i];
-    }
-
-    rev_probe[probe_length] = 0;
+    char *rev_probe = GB_strduplen(probe, len);
+    reverse_probe(rev_probe, len);
     return rev_probe;
 }
-int PT_complement(int base)
-{
-    switch (base) {
-        case PT_A:      return PT_T;
-        case PT_C:      return PT_G;
-        case PT_G:      return PT_C;
-        case PT_T:      return PT_A;
-        default:        return base;
-    }
-}
-void complement_probe(char *probe) {
-    //! build the complement of a probe
-    for (int i=0; probe[i]; i++) {
-        probe[i] = PT_complement(probe[i]);
-    }
-}
 
-static double calc_position_wmis(int pos, int seq_len, double y1, double y2)
-{
+static double calc_position_wmis(int pos, int seq_len, double y1, double y2) {
     return (double)(((double)(pos * (seq_len - 1 - pos)) / (double)((seq_len - 1) * (seq_len - 1)))* (double)(y2*4.0) + y1);
 }
 
@@ -348,7 +404,9 @@ static void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence) {
     psg.pos_to_weight[slen] = 0;
 }
 
-int probe_match(PT_local * locs, aisc_string probestring) {
+static std::map<PT_local*,Splits> splits_for_match_overlay; // initialized by probe-match, used by match-retrieval (one entry for each match-request); @@@ leaks.. 1 entry for each request
+
+int probe_match(PT_local *locs, aisc_string probestring) {
     //! find out where a given probe matches
 
     freedup(locs->pm_sequence, probestring);
@@ -368,56 +426,54 @@ int probe_match(PT_local * locs, aisc_string probestring) {
     }
 #endif // DEBUG
 
+    int probe_len = strlen(probestring);
+    if (probe_len<MIN_PROBE_LENGTH) {
+        pt_export_error(locs, GBS_global_string("Min. probe length is %i", MIN_PROBE_LENGTH));
+        return 0;
+    }
+
     {
-        int probe_len = strlen(probestring);
-        if ((probe_len - 2*locs->pm_max) < MIN_PROBE_LENGTH) {
-            if (probe_len >= MIN_PROBE_LENGTH) {
-                int max_pos_mismatches = (probe_len-MIN_PROBE_LENGTH)/2;
-                if (max_pos_mismatches>0) {
-                    if (max_pos_mismatches>1) {
-                        pt_export_error(locs, GBS_global_string("Max. %i mismatches are allowed for probes of length %i", max_pos_mismatches, probe_len));
-                    }
-                    else {
-                        pt_export_error(locs, GBS_global_string("Max. 1 mismatch is allowed for probes of length %i", probe_len));
-                    }
-                }
-                else {
-                    pt_export_error(locs, "No mismatches allowed for that short probes.");
-                }
-            }
-            else {
-                pt_export_error(locs, GBS_global_string("Min. probe length is %i", MIN_PROBE_LENGTH));
-            }
+        int max_poss_mismatches = probe_len/2;
+        pt_assert(max_poss_mismatches>0);
+        if (locs->pm_max > max_poss_mismatches) {
+            pt_export_error(locs, GBS_global_string("Max. %i mismatch%s are allowed for probes of length %i",
+                                                    max_poss_mismatches,
+                                                    max_poss_mismatches == 1 ? "" : "es",
+                                                    probe_len));
             return 0;
         }
     }
 
-    set_table_for_PT_N_mis(locs->pm_nmatches_ignored, locs->pm_nmatches_limit);
     if (locs->pm_complement) {
-        complement_probe(probestring);
+        complement_probe(probestring, probe_len);
     }
     psg.reversed = 0;
 
     freedup(locs->pm_sequence, probestring);
     psg.main_probe = locs->pm_sequence;
 
-    psg.deep = locs->pm_max;
     pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, probestring);
 
-    pt_assert(psg.deep >= 0); // deep < 0 was used till [8011] to trigger "new match" (feature unused)
-    get_info_about_probe(locs, probestring, psg.pt, 0, 0.0, 0, 0);
+    MatchRequest req(*locs);
+
+    pt_assert(req.allowed_mismatches() >= 0); // till [8011] value<0 was used to trigger "new match" (feature unused)
+    Mismatches mismatch(req);
+    req.collect_hits_for(probestring, psg.TREE_ROOT2(), mismatch, 0);
 
     if (locs->pm_reversed) {
         psg.reversed  = 1;
-        char *rev_pro = reverse_probe(probestring);
-        complement_probe(rev_pro);
+        char *rev_pro = create_reversed_probe(probestring, probe_len);
+        complement_probe(rev_pro, probe_len);
         freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
 
-        get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
+        Mismatches rev_mismatch(req);
+        req.collect_hits_for(rev_pro, psg.TREE_ROOT2(), rev_mismatch, 0);
         free(rev_pro);
     }
     pt_sort_match_list(locs);
+    splits_for_match_overlay[locs] = Splits(locs);
     free(probestring);
+
     return 0;
 }
 
@@ -445,7 +501,7 @@ inline void set_max(const char *str, int &curr_max) {
     }
 }
 
-static format_props detect_format_props(PT_local *locs, bool show_gpos) {
+static format_props detect_format_props(const PT_local *locs, bool show_gpos) {
     PT_probematch *ml = locs->pm; // probe matches
     format_props   format;
 
@@ -465,7 +521,7 @@ static format_props detect_format_props(PT_local *locs, bool show_gpos) {
         set_max(virt_fullname(ml), format.gene_or_full_width);
         set_max(GBS_global_string("%i", info2bio(ml->b_pos)), format.pos_width);
         if (show_gpos) set_max(GBS_global_string("%i", info2bio(ml->g_pos)), format.gpos_width);
-        if (format.show_ecoli) set_max(GBS_global_string("%li", PT_abs_2_rel(ml->b_pos+1)), format.ecoli_width);
+        if (format.show_ecoli) set_max(GBS_global_string("%li", PT_abs_2_ecoli_rel(ml->b_pos+1)), format.ecoli_width);
     }
 
     return format;
@@ -504,53 +560,85 @@ inline void cat_spaced_right(GBS_strstruct *memfile, const char *text, int width
 inline void cat_dashed_left (GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', true); }
 inline void cat_dashed_right(GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', false); }
 
-char *get_match_overlay(PT_probematch *ml) {
+char *get_match_overlay(const PT_probematch *ml) {
     int       pr_len = strlen(ml->sequence);
     PT_local *locs   = (PT_local *)ml->mh.parent->parent;
 
-    char *ref = (char *)calloc(sizeof(char), 21+pr_len);
-    memset(ref, '.', 10);
+    const int CONTEXT_SIZE = 9;
 
-    for (int pr_pos  = 8, al_pos = ml->rpos-1;
+    char *ref = (char *)calloc(sizeof(char), CONTEXT_SIZE+1+pr_len+1+CONTEXT_SIZE+1);
+    memset(ref, '.', CONTEXT_SIZE+1);
+
+    SmartCharPtr  seqPtr = psg.data[ml->name].get_dataPtr();
+    const char   *seq    = &*seqPtr;
+
+    const Splits& splits = splits_for_match_overlay[locs];
+
+    for (int pr_pos  = CONTEXT_SIZE-1, al_pos = ml->rpos-1;
          pr_pos     >= 0 && al_pos >= 0;
          pr_pos--, al_pos--)
     {
-        if (!psg.data[ml->name].get_data()[al_pos]) break;
-        ref[pr_pos] = psg.data[ml->name].get_data()[al_pos];
+        if (!seq[al_pos]) break;
+        ref[pr_pos] = base_2_readable(seq[al_pos]);
     }
-    ref[9] = '-';
+    ref[CONTEXT_SIZE] = '-';
 
     pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, ml->sequence);
 
-    for (int pr_pos = 0, al_pos = ml->rpos;
-         pr_pos < pr_len && al_pos < psg.data[ml->name].get_size();
-         pr_pos++, al_pos++)
+    bool display_right_context = true;
     {
-        int a = ml->sequence[pr_pos];
-        int b = psg.data[ml->name].get_data()[al_pos];
-        if (a == b) {
-            ref[pr_pos+10] = '=';
-        }
-        else {
-            ref[pr_pos+10] = b;
-            if (a >= PT_A && a <= PT_T && b >= PT_A && b<=PT_T) {
-                double h = ptnd_check_split(locs, ml->sequence, pr_pos, b);
-                if (h>=0.0) {
-                    ref[pr_pos+10] = " nacgu"[b];
+        char *pref = ref+CONTEXT_SIZE+1;
+
+        for (int pr_pos = 0, al_pos = ml->rpos;
+             pr_pos < pr_len && al_pos < psg.data[ml->name].get_size();
+             pr_pos++, al_pos++)
+        {
+            int ps = ml->sequence[pr_pos]; // probe sequence
+            int ts = seq[al_pos];          // target sequence (hit)
+            if (ps == ts) {
+                pref[pr_pos] = '=';
+            }
+            else {
+                if (ts) {
+                    int r = base_2_readable(ts);
+                    if (is_std_base(ps) && is_std_base(ts)) {
+                        double h = splits.check(ml->sequence[pr_pos], ts);
+                        if (h>=0.0) r = tolower(r);
+                    }
+                    pref[pr_pos] = r;
+                }
+                else {
+                    // end of sequence or missing data (dots inside sequence) reached
+                    // (rest of probe was accepted by N-matches)
+                    display_right_context = false;
+                    for (; pr_pos < pr_len; pr_pos++) {
+                        pref[pr_pos]  = '.';
+                    }
                 }
             }
+
         }
-
     }
 
-    for (int pr_pos = 0, al_pos = ml->rpos+pr_len;
-         pr_pos < 9 && al_pos < psg.data[ml->name].get_size();
-         pr_pos++, al_pos++)
     {
-        ref[pr_pos+11+pr_len] = psg.data[ml->name].get_data()[al_pos];
+        char *cref = ref+CONTEXT_SIZE+1+pr_len+1;
+        cref[-1]   = '-';
+
+        int al_size = psg.data[ml->name].get_size();
+        int al_pos  = ml->rpos+pr_len;
+
+        if (display_right_context) {
+            for (int pr_pos = 0;
+                 pr_pos < CONTEXT_SIZE && al_pos < al_size;
+                 pr_pos++, al_pos++)
+            {
+                cref[pr_pos] = base_2_readable(seq[al_pos]);
+            }
+        }
+        else {
+            if (al_pos < al_size) strcpy(cref, "<more>");
+        }
     }
-    ref[10+pr_len] = '-';
-    PT_base_2_string(ref);
 
     return ref;
 }
@@ -572,7 +660,7 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
         cat_spaced_right(memfile, GBS_global_string("%i", info2bio(ml->g_pos)), format.gpos_width);
     }
     if (format.show_ecoli) {
-        cat_spaced_right(memfile, GBS_global_string("%li", PT_abs_2_rel(ml->b_pos+1)), format.ecoli_width);
+        cat_spaced_right(memfile, GBS_global_string("%li", PT_abs_2_ecoli_rel(ml->b_pos+1)), format.ecoli_width);
     }
     cat_spaced_left(memfile, GBS_global_string("%i", ml->reversed), format.rev_width());
 
@@ -609,7 +697,7 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
 
         if (ml->N_mismatches >= 0) { //
             char *seq = strdup(ml->sequence);
-            PT_base_2_string(seq);
+            probe_2_readable(seq, strlen(ml->sequence)); // @@@ maybe wrong if match contains PT_QU (see [9070])
 
             GBS_strcat(memfile, "         '");
             GBS_strcat(memfile, seq);
@@ -635,7 +723,7 @@ static void gene_rel_2_abs(PT_probematch *ml) {
     GB_transaction ta(psg.gb_main);
 
     for (; ml; ml = ml->next) {
-        long gene_pos = psg.data[ml->name].get_abspos();
+        long gene_pos = psg.data[ml->name].get_geneabspos();
         if (gene_pos >= 0) {
             ml->g_pos  = ml->b_pos;
             ml->b_pos += gene_pos;
@@ -647,7 +735,7 @@ static void gene_rel_2_abs(PT_probematch *ml) {
     }
 }
 
-bytestring *match_string(PT_local *locs) {
+bytestring *match_string(const PT_local *locs) {
     /*! Create list of species where probe matches.
      *
      * header^1name^1info^1name^1info....^0
@@ -689,7 +777,7 @@ bytestring *match_string(PT_local *locs) {
 
 
 
-bytestring *MP_match_string(PT_local *locs) {
+bytestring *MP_match_string(const PT_local *locs) {
     /*! Create list of species where probe matches and #mismatches (for multiprobe)
      *
      * Format: header^1name^1#mismatch^1name^1#mismatch....^0
@@ -725,7 +813,7 @@ bytestring *MP_match_string(PT_local *locs) {
 }
 
 
-bytestring *MP_all_species_string(PT_local *) {
+bytestring *MP_all_species_string(const PT_local *) {
     /*! Create list of all species known to PT server
      *
      * Format: ^1name^1name....^0
@@ -744,7 +832,7 @@ bytestring *MP_all_species_string(PT_local *) {
 
     for (i = 0; i < psg.data_count; i++)
     {
-        GBS_strcat(memfile, psg.data[i].get_name());
+        GBS_strcat(memfile, psg.data[i].get_shortname());
         GBS_chrcat(memfile, (char)1);
     }
 
@@ -753,7 +841,81 @@ bytestring *MP_all_species_string(PT_local *) {
     return &bs;
 }
 
-int MP_count_all_species(PT_local *)
-{
+int MP_count_all_species(const PT_local *) {
     return psg.data_count;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+struct EnterStage2 {
+    EnterStage2() {
+        PT_init_psg();
+        psg.enter_stage(STAGE2);
+    }
+    ~EnterStage2() {
+        PT_exit_psg();
+    }
+};
+
+#define TEST_WEIGHTED_MISMATCH(probe,seq,expected) TEST_EXPECT_SIMILAR(weights.get(probe,seq), expected, EPS)
+
+void TEST_weighted_mismatches() {
+    EnterStage2 stage2;
+    PT_bond bonds[16] = {
+        { 0.0 }, { 0.0 }, { 0.5 }, { 1.1 },
+        { 0.0 }, { 0.0 }, { 1.5 }, { 0.0 },
+        { 0.5 }, { 1.5 }, { 0.4 }, { 0.9 },
+        { 1.1 }, { 0.0 }, { 0.9 }, { 0.0 },
+    };
+
+    MismatchWeights weights(bonds);
+
+    double EPS = 0.0001;
+
+    TEST_WEIGHTED_MISMATCH(PT_A, PT_A, 0.0);
+    TEST_WEIGHTED_MISMATCH(PT_A, PT_C, 1.1); // (T~A = 1.1) - (T~C = 0)
+    TEST_WEIGHTED_MISMATCH(PT_A, PT_G, 0.2); // (T~A = 1.1) - (T~G = 0.9)
+    TEST_WEIGHTED_MISMATCH(PT_A, PT_T, 1.1);
+
+    TEST_WEIGHTED_MISMATCH(PT_C, PT_A, 1.0);
+    TEST_WEIGHTED_MISMATCH(PT_C, PT_C, 0.0);
+    TEST_WEIGHTED_MISMATCH(PT_C, PT_G, 1.1);
+    TEST_WEIGHTED_MISMATCH(PT_C, PT_T, 0.6); // (G~C = 1.5) - (G~T = 0.9)
+
+    TEST_WEIGHTED_MISMATCH(PT_G, PT_A, 1.5);
+    TEST_WEIGHTED_MISMATCH(PT_G, PT_C, 1.5);
+    TEST_WEIGHTED_MISMATCH(PT_G, PT_G, 0.0);
+    TEST_WEIGHTED_MISMATCH(PT_G, PT_T, 1.5);
+
+    TEST_WEIGHTED_MISMATCH(PT_T, PT_A, 1.1);
+    TEST_WEIGHTED_MISMATCH(PT_T, PT_C, 1.1);
+    TEST_WEIGHTED_MISMATCH(PT_T, PT_G, 0.6);
+    TEST_WEIGHTED_MISMATCH(PT_T, PT_T, 0.0);
+
+
+    TEST_WEIGHTED_MISMATCH(PT_N, PT_A, 0.9);
+    TEST_WEIGHTED_MISMATCH(PT_N, PT_C, 0.925);
+    TEST_WEIGHTED_MISMATCH(PT_N, PT_G, 0.475);
+    TEST_WEIGHTED_MISMATCH(PT_N, PT_T, 0.8);
+
+    TEST_WEIGHTED_MISMATCH(PT_A, PT_N, 0.6);
+    TEST_WEIGHTED_MISMATCH(PT_C, PT_N, 0.675);
+    TEST_WEIGHTED_MISMATCH(PT_G, PT_N, 1.125);
+    TEST_WEIGHTED_MISMATCH(PT_T, PT_N, 0.7);
+
+    TEST_WEIGHTED_MISMATCH(PT_N,  PT_N,  0.775);
+    TEST_WEIGHTED_MISMATCH(PT_QU, PT_QU, 0.775);
+    TEST_WEIGHTED_MISMATCH(PT_QU, PT_N,  0.775);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
+
+
+

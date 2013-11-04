@@ -191,7 +191,6 @@ public:
     GBDATA *get_gbd() { return gbd; }
     GBDATA *get_gb_main() { return GB_get_root(gbd); }
 };
-void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *);
 
 
 #else

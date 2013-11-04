@@ -11,26 +11,25 @@
 
 #include "ptclean.h"
 #include <arbdbt.h>
+#include <arb_progress.h>
 #include <arb_diff.h>
 
 #define pt_assert(cond) arb_assert(cond)
 
-// using namespace std;
-
-class EntryTempMarker : virtual Noncopyable {
-    // marks all entries of DB as 'temp', that are of no use for PTSERVER
-    // (Note: 'temp' entries will not be saved)
+class EntryRemover : virtual Noncopyable {
+    // deletes all entries from DB, which are of no use for PTSERVER
 
     GBDATA         *gb_main;
     GB_transaction  ta;
     Servertype      type;
     char           *ali_name;
 
+    mutable arb_progress progress;
+
     enum Need {
         NONE,
         ALL,
         SOME_OF_ROOT,
-        // SOME_OF_PRESETS,
         SOME_OF_SPECIES_DATA,
         SOME_OF_EXTENDED_DATA,
         SOME_OF_SPECIES,
@@ -50,7 +49,10 @@ class EntryTempMarker : virtual Noncopyable {
                 break;
 
             case SOME_OF_SPECIES_DATA:
-                if (strcmp(keyname, "species") == 0) return SOME_OF_SPECIES;
+                if (strcmp(keyname, "species") == 0) {
+                    progress.inc();
+                    return SOME_OF_SPECIES;
+                }
                 break;
 
             case SOME_OF_EXTENDED_DATA:
@@ -84,51 +86,54 @@ class EntryTempMarker : virtual Noncopyable {
         return NONE;
     }
 
-    GB_ERROR mark_child(GBDATA *gb_entry, const char *keyname, Need from) {
+    GB_ERROR del_child(GBDATA *gb_entry, const char *keyname, Need from) {
         GB_ERROR error = 0;
         Need     need  = data_needed(gb_entry, keyname, from);
         switch (need) {
-            case NONE: error = GB_set_temporary(gb_entry); break;
-            case ALL:  pt_assert(!GB_is_temporary(gb_entry)); break;
-            default:   error = mark_subentries(gb_entry, need); break;
+            case NONE: error = GB_delete(gb_entry); break;
+            case ALL:  break;
+            default:   error = del_subentries(gb_entry, need); break;
         }
         return error;
     }
-    GB_ERROR mark_subentries(GBDATA *gb_father, Need from) {
+    GB_ERROR del_subentries(GBDATA *gb_father, Need from) {
         GB_ERROR error = 0;
         if (!GB_is_temporary(gb_father)) {
-            for (GBDATA *gb_child = GB_child(gb_father); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
+            GBDATA *gb_next_child = NULL;
+            for (GBDATA *gb_child = GB_child(gb_father); gb_child && !error; gb_child = gb_next_child) {
+                gb_next_child = GB_nextChild(gb_child);
                 const char *key = GB_read_key_pntr(gb_child);
-                error           = mark_child(gb_child, key, from);
+                error           = del_child(gb_child, key, from);
             }
         }
         return error;
     }
 
 public:
-    EntryTempMarker(Servertype type_, GBDATA *gb_main_)
+    EntryRemover(Servertype type_, GBDATA *gb_main_)
         : gb_main(gb_main_),
           ta(gb_main),
           type(type_),
-          ali_name(GBT_get_default_alignment(gb_main))
+          ali_name(GBT_get_default_alignment(gb_main)),
+          progress("Remove unused database entries", GBT_get_species_count(gb_main))
     {}
-    ~EntryTempMarker() { free(ali_name); }
+    ~EntryRemover() {
+        free(ali_name);
+        progress.done();
+    }
 
-    GB_ERROR mark_unwanted_entries() { return mark_subentries(gb_main, SOME_OF_ROOT); }
+    GB_ERROR del_unwanted_entries() { return del_subentries(gb_main, SOME_OF_ROOT); }
 };
 
 inline GB_ERROR clean_ptserver_database(GBDATA *gb_main, Servertype type) {
-    return EntryTempMarker(type, gb_main).mark_unwanted_entries();
+    return EntryRemover(type, gb_main).del_unwanted_entries();
 }
 
-GB_ERROR prepare_ptserver_database(GBDATA *gb_main, Servertype type) {
-    GB_ERROR error = GB_request_undo_type(gb_main, GB_UNDO_NONE);
+GB_ERROR cleanup_ptserver_database(GBDATA *gb_main, Servertype type) {
+    GB_ERROR error    = GB_request_undo_type(gb_main, GB_UNDO_NONE);
     if (!error) {
         GB_push_my_security(gb_main);
         error = clean_ptserver_database(gb_main, type);
-        if (!error) {
-            // @@@ calculate bp and checksums
-        }
         GB_pop_my_security(gb_main);
     }
     return error;
@@ -147,7 +152,7 @@ void TEST_SLOW_ptclean() {
     const char *saveas  = "TEST_pt_cleaned.arb";
 
     TEST_REJECT_NULL(gb_main);
-    TEST_EXPECT_NO_ERROR(prepare_ptserver_database(gb_main, PTSERVER));
+    TEST_EXPECT_NO_ERROR(cleanup_ptserver_database(gb_main, PTSERVER));
     TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, saveas, "a"));
     GB_close(gb_main);
 

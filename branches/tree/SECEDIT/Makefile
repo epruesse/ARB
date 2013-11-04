@@ -120,6 +120,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_db.o: $(ARBHOME)/INCLUDE/cb_base.h
 SEC_db.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_db.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_db.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -174,6 +175,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_graphic.o: $(ARBHOME)/INCLUDE/cb_base.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -308,6 +310,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 SEC_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -354,6 +357,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_paint.o: $(ARBHOME)/INCLUDE/cb_base.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -463,6 +467,7 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/cb.h
+SEC_toggle.o: $(ARBHOME)/INCLUDE/cb_base.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/downcast.h

@@ -2572,7 +2572,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 }
 
 GB_ERROR GB_optimize(GBDATA *gb_main) {
-    unsigned long maxKB          = GB_get_physical_memory();
+    unsigned long maxKB          = GB_get_usable_memory();
     long          maxMem;
     GB_ERROR      error          = 0;
     GB_UNDO_TYPE  prev_undo_type = GB_get_requested_undo_type(gb_main);

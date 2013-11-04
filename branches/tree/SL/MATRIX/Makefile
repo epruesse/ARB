@@ -54,6 +54,7 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/cb.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/downcast.h

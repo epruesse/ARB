@@ -15,7 +15,7 @@
 
 #include <client_types.h>
 
-aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic);
+aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic, GB_ERROR *error);
 int aisc_close(aisc_com *link, AISC_Object& object);
 int aisc_get(aisc_com *link, int o_type, const AISC_Object& object, ...) __ATTR__SENTINEL;
 long *aisc_debug_info(aisc_com *link, int o_type, const AISC_Object& object, int attribute);
