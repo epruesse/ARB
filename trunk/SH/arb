@@ -74,7 +74,7 @@ ARB_SCRIPT="$ARB_SH/arb"
 
 export ARB_SH ARB_SCRIPT ARBHOME_OF_SCRIPT
 
-if [ -n "$ARBHOME" -a "$ARBHOME" != "$ARBHOME_OF_SCRIPT" ]; then
+if [ -n "${ARBHOME:-}" -a "${ARBHOME:-}" != "$ARBHOME_OF_SCRIPT" ]; then
     echo "Ignoring set ARBHOME '$ARBHOME' (overridden by explicit call of '$0')"
 fi
 
@@ -148,7 +148,7 @@ export ARB_XCMD
 ARB_LIBRARY_PATH="${LD_LIBRARY_PATH}"
 export ARB_LIBRARY_PATH
 
-case "$1" in
+case "${1:-}" in
   help|-h|--help)
     arb_ntree --help
     echo ""
