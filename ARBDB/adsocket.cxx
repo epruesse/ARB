@@ -753,6 +753,12 @@ static GB_CSTR getenv_autodirectory(const char *envvar, const char *defaultDirec
     return dir;
 }
 
+GB_CSTR GB_getenvARB_PROP() {
+    static const char *ap = 0;
+    if (!ap) ap = getenv_autodirectory("ARB_PROP", GB_path_in_HOME(".arb_prop"));  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_PROP
+    return ap;
+}
+
 GB_CSTR GB_getenvARBMACROHOME() {
     static const char *amh = 0;
     if (!amh) amh = getenv_autodirectory("ARBMACROHOME", GB_path_in_arbprop("macros"));  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
@@ -833,16 +839,18 @@ GB_CSTR GB_getenv(const char *env) {
     if (strncmp(env, "ARB", 3) == 0) {
         // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp
 
+        if (strcmp(env, "ARBHOME")      == 0) return GB_getenvARBHOME();
+        if (strcmp(env, "ARB_PROP")     == 0) return GB_getenvARB_PROP();
         if (strcmp(env, "ARBCONFIG")    == 0) return GB_getenvARBCONFIG();
         if (strcmp(env, "ARBMACROHOME") == 0) return GB_getenvARBMACROHOME();
         if (strcmp(env, "ARBMACRO")     == 0) return GB_getenvARBMACRO();
-        if (strcmp(env, "ARBHOME")      == 0) return GB_getenvARBHOME();
+
         if (strcmp(env, "ARB_GS")       == 0) return GB_getenvARB_GS();
         if (strcmp(env, "ARB_PDFVIEW")  == 0) return GB_getenvARB_PDFVIEW();
         if (strcmp(env, "ARB_DOC")      == 0) return GB_getenvDOCPATH();
         if (strcmp(env, "ARB_TEXTEDIT") == 0) return GB_getenvARB_TEXTEDIT();
-        if (strcmp(env, "ARB_XTERM") == 0)    return GB_getenvARB_XTERM();
-        if (strcmp(env, "ARB_XCMD") == 0)     return GB_getenvARB_XCMD();
+        if (strcmp(env, "ARB_XTERM")    == 0) return GB_getenvARB_XTERM();
+        if (strcmp(env, "ARB_XCMD")     == 0) return GB_getenvARB_XCMD();
     }
     else {
         if (strcmp(env, "HOME") == 0) return GB_getenvHOME();
@@ -1248,8 +1256,11 @@ GB_CSTR GB_path_in_ARBHOME(const char *relative_path) {
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path) {
     return GB_path_in_ARBHOME("lib", relative_path);
 }
+GB_CSTR GB_path_in_HOME(const char *relative_path) {
+    return GB_unfold_path("HOME", relative_path);
+}
 GB_CSTR GB_path_in_arbprop(const char *relative_path) {
-    return GB_unfold_path("HOME", GB_concat_path(".arb_prop", relative_path));
+    return GB_unfold_path("ARB_PROP", relative_path);
 }
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right) {
     return GB_path_in_ARBLIB(GB_concat_path(relative_path_left, anypath_right));

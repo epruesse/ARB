@@ -85,7 +85,7 @@ private:
     std::string      mask_name;                     // filename of mask-file
     std::string      internal_mask_name;            // filename of mask-file (prefixed by 0( = local) or 1( = global))
     std::string      mask_id;                       // key generated from mask_name
-    bool             local_mask;                    // true if mask was found in "~/.arb_prop/inputMasks"
+    bool             local_mask;                    // true if mask was found in "$ARB_PROP/inputMasks"
     awt_item_type    itemtype;                      // what kind of item do we handle ?
 
     bool test_edit_enabled;                         // true -> the global awar AWAR_INPUT_MASKS_EDIT_ENABLE should be tested before writing to database

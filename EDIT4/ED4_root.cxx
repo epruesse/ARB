@@ -1910,7 +1910,7 @@ ED4_index ED4_root::pixel2pos(AW_pos click_x) {
 static char *detectProperties() {
     char *propname = NULL;
 
-    // check if edit4_?na.arb / edit4_ali_???.arb exist in .arb_props
+    // check if edit4_?na.arb / edit4_ali_???.arb exist in $ARB_PROP
     for (int mode = 0; !propname && mode <= 1; ++mode) { 
         const char *fullprop = GB_path_in_arbprop(ED4_propertyName(mode));
         if (GB_is_regularfile(fullprop)) {
