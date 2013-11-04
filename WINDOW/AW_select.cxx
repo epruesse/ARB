@@ -563,15 +563,28 @@ GB_HASH *AW_selection_list::to_hash(bool case_sens) {
 }
 
 char *AW_selection_list_entry::copy_string_for_display(const char *str) {
-    char *out = strdup(str);
-    char *p   = out;
-    int   ch;
+    size_t  len     = strlen(str);
+    bool    tooLong = len>MAX_DISPLAY_LENGTH;
+    char   *out;
+    if (tooLong) {
+        out = GB_strndup(str, MAX_DISPLAY_LENGTH);
+        { // add message about truncation
+            char   *truncated = GBS_global_string_copy(" <truncated - original contains %zu byte>", len);
+            size_t  tlen      = strlen(truncated);
+            aw_assert(MAX_DISPLAY_LENGTH>tlen);
+            memcpy(out+MAX_DISPLAY_LENGTH-tlen, truncated, tlen);
+        }
+        len = MAX_DISPLAY_LENGTH;
+    }
+    else {
+        out = GB_strduplen(str, len);
+    }
 
-    while ((ch=*(p++)) != 0) {
-        if (ch==',')
-            p[-1] = ';';
-        if (ch=='\n')
-            p[-1] = '#';
+    for (size_t i = 0; i<len; ++i) {
+        switch (out[i]) {
+            case ',':   out[i] = ';'; break;
+            case '\n':  out[i] = '#'; break;
+        }
     }
     return out;
 }
