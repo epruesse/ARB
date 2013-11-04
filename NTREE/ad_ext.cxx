@@ -142,12 +142,12 @@ static void delete_SAI_cb(AW_window *aww) {
     free(sai_name);
 }
 
-static void map_SAI_to_scanner(AW_root *aw_root, AW_CL cl_scanner) {
+static void map_SAI_to_scanner(AW_root *aw_root, DbScanner *scanner) {
     GB_transaction  ta(GLOBAL.gb_main);
     char           *sai_name = aw_root->awar(AWAR_SAI_NAME)->read_string();
     GBDATA         *gb_sai   = GBT_find_SAI(GLOBAL.gb_main, sai_name);
 
-    map_db_scanner((DbScanner*)cl_scanner, gb_sai, CHANGE_KEY_PATH);
+    map_db_scanner(scanner, gb_sai, CHANGE_KEY_PATH);
     free(sai_name);
 }
 
@@ -338,7 +338,7 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root)
         awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, AWAR_SAI_NAME);
 
         DbScanner *scanner = create_db_scanner(GLOBAL.gb_main, aws, "info", 0, 0, 0, DB_SCANNER, 0, 0, 0, SPECIES_get_selector());
-        aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(map_SAI_to_scanner, (AW_CL)scanner);
+        aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(makeRootCallback(map_SAI_to_scanner, scanner));
     }
     aws->show();
     return aws;
