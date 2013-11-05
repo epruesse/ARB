@@ -472,10 +472,16 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
                     pt_assert(dbstate == 0 || error);
                 }
 
-                if (!error) error = cleanup_ptserver_database(psg.gb_main, PTSERVER);
-                if (!error) error = PT_prepare_data(psg.gb_main);
+                {
+                    GB_push_my_security(psg.gb_main);
 
-                if (!error) error = set_DB_state(psg.gb_main, 1);
+                    if (!error) error = cleanup_ptserver_database(psg.gb_main, PTSERVER);
+                    if (!error) error = PT_prepare_data(psg.gb_main);
+
+                    if (!error) error = set_DB_state(psg.gb_main, 1);
+
+                    GB_pop_my_security(psg.gb_main);
+                }
 
                 if (!error) {
                     const char *mode = GB_supports_mapfile() ? "bfm" : "bf";
