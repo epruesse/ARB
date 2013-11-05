@@ -468,24 +468,30 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
 
                 if (!error) {
                     int dbstate = get_DB_state(psg.gb_main, error);
-                    if (!error && dbstate>0) error = "database was already prepared for ptserver";
-                    pt_assert(dbstate == 0 || error);
-                }
+                    if (!error && dbstate>0) {
+                        if (dbstate == 1) {
+                            fputs("Warning: database already has been prepared for ptserver\n", stdout);
+                        }
+                        else {
+                            error = GBS_global_string("unexpected dbstate='%i'", dbstate);
+                        }
+                    }
 
-                {
-                    GB_push_my_security(psg.gb_main);
+                    if (!error && dbstate == 0) {
+                        GB_push_my_security(psg.gb_main);
 
-                    if (!error) error = cleanup_ptserver_database(psg.gb_main, PTSERVER);
-                    if (!error) error = PT_prepare_data(psg.gb_main);
+                        if (!error) error = cleanup_ptserver_database(psg.gb_main, PTSERVER);
+                        if (!error) error = PT_prepare_data(psg.gb_main);
 
-                    if (!error) error = set_DB_state(psg.gb_main, 1);
+                        if (!error) error = set_DB_state(psg.gb_main, 1);
 
-                    GB_pop_my_security(psg.gb_main);
-                }
+                        GB_pop_my_security(psg.gb_main);
 
-                if (!error) {
-                    const char *mode = GB_supports_mapfile() ? "bfm" : "bf";
-                    error            = GB_save_as(psg.gb_main, params->db_server, mode);
+                        if (!error) {
+                            const char *mode = GB_supports_mapfile() ? "bfm" : "bf";
+                            error            = GB_save_as(psg.gb_main, params->db_server, mode);
+                        }
+                    }
                 }
             }
         }
