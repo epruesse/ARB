@@ -313,9 +313,7 @@ static void remap_edit_box(GBDATA *, DbScanner *cbs) {
 
 
 
-static void scanner_changed_cb(DbScanner *cbs, GB_CB_TYPE gbtype);
-static void scanner_changed_dcb(GBDATA*,    DbScanner *cbs, GB_CB_TYPE gbtype) { scanner_changed_cb(cbs, gbtype); }
-static void scanner_changed_wcb(AW_window*, DbScanner *cbs, GB_CB_TYPE gbtype) { scanner_changed_cb(cbs, gbtype); }
+static void scanner_changed_cb(UNFIXED, DbScanner *cbs, GB_CB_TYPE gbtype);
 
 DbScanner *create_db_scanner(GBDATA         *gb_main,
                              AW_window      *aws,
@@ -407,7 +405,7 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
 
     scanner_id++;
     GB_pop_transaction(gb_main);
-    aws->set_popup_callback(makeWindowCallback(scanner_changed_wcb, cbs, GB_CB_CHANGED));
+    aws->set_popup_callback(makeWindowCallback(scanner_changed_cb, cbs, GB_CB_CHANGED));
     return cbs;
 }
 
@@ -542,7 +540,7 @@ static void scan_list(GBDATA *, DbScanner *cbs) {
 #undef INFO_WIDTH
 }
 
-static void scanner_changed_cb(DbScanner *cbs, GB_CB_TYPE gbtype) { // called by DB-callback or WindowCallback
+static void scanner_changed_cb(UNFIXED, DbScanner *cbs, GB_CB_TYPE gbtype) { // called by DB-callback or WindowCallback
     cbs->may_be_an_error = true;
 
     if (gbtype == GB_CB_DELETE) {
@@ -581,7 +579,7 @@ static void scanner_changed_cb(DbScanner *cbs, GB_CB_TYPE gbtype) { // called by
 static void scanner_changed_dcb2(GBDATA*, DbScanner *cbs, GB_CB_TYPE gbtype) {
     cbs->awr->awar(cbs->awarname_current_item)->write_pointer(NULL);
     // unmap edit field
-    scanner_changed_cb(cbs, gbtype);
+    scanner_changed_cb(NULL, cbs, gbtype);
 }
 
 void map_db_scanner(DbScanner *scanner, GBDATA *gb_pntr, const char *key_path) {
@@ -590,7 +588,7 @@ void map_db_scanner(DbScanner *scanner, GBDATA *gb_pntr, const char *key_path) {
     GBDATA *gb_key_data = GB_search(scanner->gb_main, key_path, GB_CREATE_CONTAINER);
 
     if (scanner->gb_user) {
-        GB_remove_callback(scanner->gb_user, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(scanner_changed_dcb, scanner));
+        GB_remove_callback(scanner->gb_user, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(scanner_changed_cb, scanner));
     }
     if (scanner->scannermode == DB_VIEWER) {
         GB_remove_callback(gb_key_data, GB_CB_CHANGED, makeDatabaseCallback(scanner_changed_dcb2, scanner));
@@ -599,14 +597,14 @@ void map_db_scanner(DbScanner *scanner, GBDATA *gb_pntr, const char *key_path) {
     scanner->gb_user = gb_pntr;
 
     if (gb_pntr) {
-        GB_add_callback(gb_pntr, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(scanner_changed_dcb, scanner));
+        GB_add_callback(gb_pntr, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(scanner_changed_cb, scanner));
         if (scanner->scannermode == DB_VIEWER) {
             GB_add_callback(gb_key_data, GB_CB_CHANGED, makeDatabaseCallback(scanner_changed_dcb2, scanner));
         }
     }
 
     scanner->awr->awar(scanner->awarname_current_item)->write_pointer(NULL);
-    scanner_changed_cb(scanner, GB_CB_CHANGED);
+    scanner_changed_cb(NULL, scanner, GB_CB_CHANGED);
 }
 
 GBDATA *get_db_scanner_main(const DbScanner *scanner) {

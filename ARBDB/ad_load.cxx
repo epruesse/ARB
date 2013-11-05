@@ -1257,7 +1257,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
      * - 'w' write (w/o 'r' it overwrites existing database)
      * - 'c' create (if not found)
      * - 's'     read only ???
-     * - 'D' looks for default in $ARBHOME/lib/arb_default if file is not found in ~/.arb_prop
+     * - 'D' looks for default in $ARBHOME/lib/arb_default if file is not found in $ARB_PROP
      *       (only works combined with mode 'c')
      * - memory usage:
      *   - 't' small memory usage

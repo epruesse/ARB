@@ -638,7 +638,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
                                     char *dotted  = GBS_global_string_copy(format, GB_read_float(gbe));
                                     char *dot     = strchr(dotted, '.');
                                     if (dot) *dot = ',';
-                                    field_output  = GBS_global_string("%s", dotted);
+                                    field_output  = GBS_static_string(dotted);
                                     free(dotted);
                                 }
                                 else {
@@ -653,7 +653,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
 
                             default: {
                                 char *as_string = GB_read_as_string(gbe);
-                                field_output    = GBS_global_string("%s", as_string);
+                                field_output    = GBS_static_string(as_string);
                                 free(as_string);
                             }
                         }

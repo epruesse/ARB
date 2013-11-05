@@ -66,6 +66,16 @@ prepend () {
     addpath "$1" "$2" prepend
 }
 
+if [ -z ${HOME:-} ]; then
+    HOME=~
+fi
+export HOME
+
+if [ -z ${DISPLAY:-} ]; then
+    DISPLAY=:0
+fi
+export DISPLAY
+
 # get absolute path to directory where this script resides
 # (avoid use of readlink as it is missing on OSX)
 ARBHOME_OF_SCRIPT="$(get_arbhome)"
@@ -74,7 +84,7 @@ ARB_SCRIPT="$ARB_SH/arb"
 
 export ARB_SH ARB_SCRIPT ARBHOME_OF_SCRIPT
 
-if [ -n "$ARBHOME" -a "$ARBHOME" != "$ARBHOME_OF_SCRIPT" ]; then
+if [ -n "${ARBHOME:-}" -a "${ARBHOME:-}" != "$ARBHOME_OF_SCRIPT" ]; then
     echo "Ignoring set ARBHOME '$ARBHOME' (overridden by explicit call of '$0')"
 fi
 
@@ -108,11 +118,15 @@ fi
 
 ARB_PID="$$"; export ARB_PID
 
-ARB_PROPERTIES=${HOME}/.arb_prop
-if [ ! -d ${ARB_PROPERTIES} ] ; then
-  echo "Directory ${ARB_PROPERTIES} not found - creating ..."
-  mkdir ${ARB_PROPERTIES}
+if [ -z ${ARB_PROP:-} ]; then
+    ARB_PROP=${HOME}/.arb_prop
 fi
+echo "Using properties from $ARB_PROP"
+if [ ! -d ${ARB_PROP} ] ; then
+  echo "Directory ${ARB_PROP} not found - creating ..."
+  mkdir ${ARB_PROP}
+fi
+export ARB_PROP
 
 ARB_LOCAL_PTS=${HOME}/.arb_pts
 if [ ! -d ${ARB_LOCAL_PTS} ] ; then
@@ -120,8 +134,8 @@ if [ ! -d ${ARB_LOCAL_PTS} ] ; then
   mkdir ${ARB_LOCAL_PTS}
 fi
 
-if [ -n ${ARBMACROHOME:-} ] ; then
-  ARBMACROHOME="${ARB_PROPERTIES}/macros";
+if [ -z ${ARBMACROHOME:-} ] ; then
+  ARBMACROHOME="${ARB_PROP}/macros";
 fi
 if [ ! -d ${ARBMACROHOME} ] ; then
   echo "Directory $ARBMACROHOME not found - creating ..."
@@ -129,7 +143,7 @@ if [ ! -d ${ARBMACROHOME} ] ; then
 fi
 export ARBMACROHOME
 
-if [ -n ${ARBMACRO:-} ] ; then
+if [ -z ${ARBMACRO:-} ] ; then
   ARBMACRO="$ARBHOME/lib/macros"
 fi
 if [ ! -d ${ARBMACRO} ] ; then
@@ -148,7 +162,7 @@ export ARB_XCMD
 ARB_LIBRARY_PATH="${LD_LIBRARY_PATH}"
 export ARB_LIBRARY_PATH
 
-case "$1" in
+case "${1:-}" in
   help|-h|--help)
     arb_ntree --help
     echo ""

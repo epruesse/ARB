@@ -222,6 +222,7 @@ char *GB_executable(GB_CSTR exe_name);
 GB_CSTR GB_getenvUSER(void);
 GB_CSTR GB_getenvARBHOME(void);
 GB_CSTR GB_getenvARBMACRO(void);
+GB_CSTR GB_getenvARB_PROP(void);
 GB_CSTR GB_getenvARBMACROHOME(void);
 GB_CSTR GB_getenvARB_GS(void);
 GB_CSTR GB_getenvARB_PDFVIEW(void);
@@ -243,6 +244,7 @@ GB_CSTR GB_unfold_in_directory(const char *relative_directory, const char *path)
 GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path);
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path);
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path);
+GB_CSTR GB_path_in_HOME(const char *relative_path);
 GB_CSTR GB_path_in_arbprop(const char *relative_path);
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right);
 FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname);
