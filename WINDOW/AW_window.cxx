@@ -721,10 +721,12 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
     GtkWidget *scrolled_win = gtk_scrolled_window_new(NULL, NULL);
     gtk_container_add(GTK_CONTAINER(scrolled_win), tree);
 
-    // set size
-    int char_width, char_height;
-    prvt->get_font_size(char_width, char_height);
-    gtk_widget_set_size_request(scrolled_win, char_width * columns, char_height * rows);
+    if (!_at.to_position_exists) {
+        // set size
+        int char_width, char_height;
+        prvt->get_font_size(char_width, char_height);
+        gtk_widget_set_size_request(scrolled_win, char_width * columns, char_height * rows);
+    }
 
     AW_selection_list *slist = new AW_selection_list(awar);
     slist->bind_widget(tree);
