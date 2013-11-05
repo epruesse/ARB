@@ -154,10 +154,7 @@ inline GB_ERROR PT_prepare_species_sequence(GBDATA *gb_species, const char *alig
     data_missing = false;
 
     if (!gb_data) {
-        error = GBS_global_string("Species '%s' has no data in '%s'", GBT_read_name(gb_species), alignment_name);
         data_missing = true;
-
-        // @@@ delete all species w/o data in wanted alignment
     }
     else {
         const char *seq = GB_read_char_pntr(gb_data);
@@ -217,25 +214,28 @@ GB_ERROR PT_prepare_data(GBDATA *gb_main) {
 
         printf("Database contains %i species\n", icount);
         {
-            arb_progress progress("Preparing sequence data", icount);
-            for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
-                 gb_species && !error;
-                 gb_species = GBT_next_species(gb_species))
             {
-                bool no_data;
-                // @@@ directly pass-down missing-data-counter and do not report error in that case
-                error = PT_prepare_species_sequence(gb_species, ali_name, no_data, compressBuffer);
-                if (no_data) {
-                    data_missing++;
-                    error = NULL;
+                arb_progress progress("Preparing sequence data", icount);
+                for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
+                     gb_species && !error;
+                    )
+                {
+                    GBDATA *gb_next = GBT_next_species(gb_species);
+                    bool    no_data;
+
+                    error = PT_prepare_species_sequence(gb_species, ali_name, no_data, compressBuffer);
+                    if (no_data) {
+                        pt_assert(!error);
+                        data_missing++;
+                        error = GB_delete(gb_species);
+                    }
+                    progress.inc();
+                    gb_species = gb_next;
                 }
-                progress.inc();
+                if (error) progress.done();
             }
 
-            if (error) {
-                progress.done();
-            }
-            else {
+            if (!error) {
                 char   *master_data_name  = GBS_global_string_copy("%s/@master_data", GB_SYSTEM_FOLDER);
                 GBDATA *gb_master_data    = GB_search(gb_main, master_data_name, GB_FIND);
                 if (gb_master_data) error = GB_delete(gb_master_data);
