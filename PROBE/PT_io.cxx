@@ -232,7 +232,10 @@ GB_ERROR PT_prepare_data(GBDATA *gb_main) {
                 progress.inc();
             }
 
-            if (!error) {
+            if (error) {
+                progress.done();
+            }
+            else {
                 char   *master_data_name  = GBS_global_string_copy("%s/@master_data", GB_SYSTEM_FOLDER);
                 GBDATA *gb_master_data    = GB_search(gb_main, master_data_name, GB_FIND);
                 if (gb_master_data) error = GB_delete(gb_master_data);
