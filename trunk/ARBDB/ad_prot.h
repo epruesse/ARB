@@ -155,6 +155,7 @@ GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize);
 
 /* adlang1.cxx */
 NOT4PERL void GB_set_export_sequence_hook(gb_export_sequence_cb escb);
+void GB_set_ACISRT_trace(int enable);
 int GB_get_ACISRT_trace(void);
 
 /* adlink.cxx */
@@ -207,6 +208,7 @@ long GB_number_of_marked_subentries(GBDATA *gbd);
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring);
 GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over);
 GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring);
+char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDATA *gbd, const char *default_tree_name);
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name);
 
 /* adsocket.cxx */

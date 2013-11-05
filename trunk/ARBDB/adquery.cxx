@@ -14,6 +14,7 @@
 #include "gb_key.h"
 #include "gb_localdata.h"
 #include "gb_ta.h"
+#include <algorithm>
 
 #include <arb_strbuf.h>
 #include <arb_match.h>
@@ -691,8 +692,7 @@ GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring) {
 // ----------------------------
 //      Command interpreter
 
-void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, size_t table_size)
-{
+void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, size_t table_size) {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     if (!Main->command_hash) Main->command_hash = GBS_create_hash(table_size, GB_IGNORE_CASE);
 
@@ -716,8 +716,7 @@ static char *gbs_search_second_x(const char *str) {
     return NULL;
 }
 
-char *gbs_search_second_bracket(const char *source)
-{
+char *gbs_search_second_bracket(const char *source) {
     int c;
     int deep = 0;
     if (*source != '(') deep --;    // first bracket
@@ -779,12 +778,12 @@ static char *gbs_search_next_separator(const char *source, const char *seps) {
     return NULL;
 }
 
-static void dumpStreams(const char *name, int count, const GBL *args) {
+static void dumpStreams(const char *name, const GBL_streams& streams) {
+    int count = streams.size();
     printf("%s=%i\n", name, count);
     if (count > 0) {
-        int c;
-        for (c = 0; c<count; c++) {
-            printf("  %02i='%s'\n", c, args[c].str);
+        for (int c = 0; c<count; c++) {
+            printf("  %02i='%s'\n", c, streams.get(c));
         }
     }
 }
@@ -817,82 +816,13 @@ static const char *shortenLongString(const char *str, size_t wanted_len) {
     return result;
 }
 
-#if defined(WARN_TODO)
-#warning rewrite GB_command_interpreter (error+ressource handling)
-#endif
+char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDATA *gbd, const char *default_tree_name) {
+    int trace = GB_get_ACISRT_trace();
 
-char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
-    /* simple command interpreter returns NULL on error (which should be exported in that case)
-     * if first character is == ':' run string parser
-     * if first character is == '/' run regexpr
-     * else command interpreter
-     */
-    int           strmalloc = 0;
-    char         *buffer;
-    GB_ERROR      error;
-    int           i;
-    int           argcinput;
-    int           argcparam;
-    int           argcout;
-    char         *bracket;
-    GB_MAIN_TYPE *Main      = GB_MAIN(gb_main);
-
-    GBL morig[GBL_MAX_ARGUMENTS];
-    GBL min[GBL_MAX_ARGUMENTS];
-    GBL mout[GBL_MAX_ARGUMENTS];
-
-    GBL *orig  = & morig[0];
-    GBL *in    = & min[0];
-    GBL *out   = & mout[0];
-    int  trace = GB_get_ACISRT_trace();
-
-    if (!str) {
-        if (!gbd) {
-            GB_export_error("ACI: no input streams found");
-            return NULL;
-        }
-        str = GB_read_as_string(gbd);
-        strmalloc = 1;
-    }
-
-    if (trace) {
-        printf("GB_command_interpreter: str='%s'\n"
-               "                        command='%s'\n", str, commands);
-    }
-
-    if (!commands || !commands[0]) { // empty command -> do not modify string
-        if (!strmalloc) return strdup(str);
-        return (char *)str;
-    }
-
-    if (commands[0] == ':') { // ':' -> string parser
-        return GBS_string_eval(str, commands+1, gbd);
-    }
-
-    if (commands[0] == '/') { // regular expression
-        GB_ERROR  err    = 0;
-        char     *result = GBS_regreplace(str, commands, &err);
-
-        if (!result) {
-            if (strcmp(err, "Missing '/' between search and replace string") == 0) {
-                // if GBS_regreplace didn't find a third '/' -> silently use GBS_regmatch:
-                size_t matchlen;
-                err    = 0;
-                const char *matched = GBS_regmatch(str, commands, &matchlen, &err);
-
-                if (matched) result   = GB_strndup(matched, matchlen);
-                else if (!err) result = strdup("");
-            }
-
-            if (!result && err) result = GBS_global_string_copy("<Error: %s>", err);
-        }
-        return result;
-    }
-
-    // ********************** init *******************
-
+    GB_MAIN_TYPE *Main    = GB_MAIN(gb_main);
     gb_local->gbl.gb_main = gb_main;
-    buffer = strdup(commands);
+
+    char *buffer = strdup(commands);
 
     // ********************** remove all spaces and tabs *******************
     {
@@ -905,7 +835,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
             for (; (c = *s1); s1++) {
                 if (c=='\\') {
                     *(s2++) = c;
-                    if (!(c=*s1)) { break; }
+                    if (!(c=*++s1)) { break; }
                     *(s2++) = c;
                     continue;
                 }
@@ -914,6 +844,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                     const char *hp = gbs_search_second_x(s1+1);
                     if (!hp) {
                         GB_export_errorf("unbalanced '\"' in '%s'", commands);
+                        free(buffer);
                         return NULL;
                     }
                     while (s1 <= hp) *(s2++) = *(s1++);
@@ -926,22 +857,12 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         *s2 = 0;
     }
 
+    GBL_streams orig;
 
+    orig.insert(strdup(str));
 
-    memset((char *)orig, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
-    memset((char *)in, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
-    memset((char *)out, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
-
-    if (strmalloc) {
-        orig[0].str = (char *)str;
-    }
-    else {
-        orig[0].str = strdup(str);
-    }
-
-    argcinput = 1;
-    argcout   = 0;
-    error     = 0;
+    GB_ERROR error = NULL;
+    GBL_streams out;
     {
         char *s1, *s2;
         s1 = buffer;
@@ -960,19 +881,21 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                 separator = 0;
             }
             // collect the parameters
-            memset((char*)in, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
+            GBL_streams in;
             if (*s1 == '"') {           // copy "text" to out
                 char *end = gbs_search_second_x(s1+1);
                 if (!end) {
+                    UNCOVERED(); // seems unreachable (balancing is already ensured by gbs_search_next_separator)
                     error = "Missing second '\"'";
                     break;
                 }
                 *end = 0;
-                out[argcout++].str = strdup(s1+1);
+
+                out.insert(strdup(s1+1));
             }
             else {
-                argcparam = 0;
-                bracket = strchr(s1, '(');
+                char *bracket   = strchr(s1, '(');
+
                 if (bracket) {      // I got the parameter list
                     int slen;
                     *(bracket++) = 0;
@@ -1001,10 +924,9 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                                     p1[len2] = 0;
                                 }
                             }
-                            in[argcparam++].str = strdup(p1);
+                            in.insert(strdup(p1));
                         }
                     }
-                    if (error) break;
                 }
                 if (!error && (bracket || *s1)) {
                     char *p = s1;
@@ -1022,110 +944,68 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                         error = GBS_global_string("Unknown command '%s'", s1);
                     }
                     else {
-                        GBL_command_arguments args;
-                        args.gb_ref            = gbd;
-                        args.default_tree_name = default_tree_name;
-                        args.command           = s1;
-                        args.cinput            = argcinput;
-                        args.vinput            = orig;
-                        args.cparam            = argcparam;
-                        args.vparam            = in;
-                        args.coutput           = &argcout;
-                        args.voutput           = &out;
+                        GBL_command_arguments args(gbd, default_tree_name, orig, in, out);
+
+                        args.command = s1;
 
                         if (trace) {
                             printf("-----------------------\nExecution of command '%s':\n", args.command);
-                            dumpStreams("Arguments", args.cparam, args.vparam);
-                            dumpStreams("InputStreams", args.cinput, args.vinput);
+                            dumpStreams("Arguments", args.param);
+                            dumpStreams("InputStreams", args.input);
                         }
 
                         error = command(&args); // execute the command
 
-                        if (!error && trace) dumpStreams("OutputStreams", *args.coutput, *args.voutput);
+                        if (!error && trace) dumpStreams("OutputStreams", args.output);
 
                         if (error) {
-                            char *inputstreams = 0;
-                            char *paramlist    = 0;
-                            int   j;
+                            char *dup_error = strdup(error);
 
 #define MAX_PRINT_LEN 200
 
-                            for (j = 0; j<args.cparam; ++j) {
-                                const char *param       = args.vparam[j].str;
+                            char *paramlist = 0;
+                            for (int j = 0; j<args.param.size(); ++j) {
+                                const char *param       = args.param.get(j);
                                 const char *param_short = shortenLongString(param, MAX_PRINT_LEN);
 
                                 if (!paramlist) paramlist = strdup(param_short);
                                 else freeset(paramlist, GBS_global_string_copy("%s,%s", paramlist, param_short));
                             }
-                            for (j = 0; j<args.cinput; ++j) {
-                                const char *param       = args.vinput[j].str;
-                                const char *param_short = shortenLongString(param, MAX_PRINT_LEN);
+                            char *inputstreams = 0;
+                            for (int j = 0; j<args.input.size(); ++j) {
+                                const char *input       = args.input.get(j);
+                                const char *input_short = shortenLongString(input, MAX_PRINT_LEN);
 
-                                if (!inputstreams) inputstreams = strdup(param_short);
-                                else freeset(inputstreams, GBS_global_string_copy("%s;%s", inputstreams, param_short));
+                                if (!inputstreams) inputstreams = strdup(input_short);
+                                else freeset(inputstreams, GBS_global_string_copy("%s;%s", inputstreams, input_short));
                             }
 #undef MAX_PRINT_LEN
                             if (paramlist) {
-                                error = GBS_global_string("while applying '%s(%s)'\nto '%s':\n%s", s1, paramlist, inputstreams, error);
+                                error = GBS_global_string("while applying '%s(%s)'\nto '%s':\n%s", s1, paramlist, inputstreams, dup_error);
                             }
                             else {
-                                error = GBS_global_string("while applying '%s'\nto '%s':\n%s", s1, inputstreams, error);
+                                error = GBS_global_string("while applying '%s'\nto '%s':\n%s", s1, inputstreams, dup_error);
                             }
 
                             free(inputstreams);
                             free(paramlist);
+                            free(dup_error);
                         }
                     }
-                }
-
-                for (i=0; i<argcparam; i++) {   // free intermediate arguments
-                    if (in[i].str) free(in[i].str);
                 }
             }
 
             if (error) break;
 
-            if (separator == '|') {         // swap in and out in pipes
-                for (i=0; i<argcinput; i++) {
-                    if (orig[i].str)    free(orig[i].str);
-                }
-                memset((char*)orig, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
-
-                {
-                    GBL *h;
-                    h = out;            // swap orig and out
-                    out = orig;
-                    orig = h;
-                }
-
-                argcinput = argcout;
-                argcout = 0;
+            if (separator == '|') { // out -> in pipe; clear in
+                out.swap(orig);
+                out.erase();
             }
-
         }
-    }
-    for (i=0; i<argcinput; i++) {
-        if (orig[i].str) free(orig[i].str);
     }
 
     {
-        char *s1;
-        if (!argcout) {
-            s1 = strdup(""); // returned '<NULL>' in the past
-        }
-        else if (argcout == 1) {
-            s1 = out[0].str;
-        }
-        else {             // concatenate output strings
-            GBS_strstruct *strstruct = GBS_stropen(1000);
-            for (i=0; i<argcout; i++) {
-                if (out[i].str) {
-                    GBS_strcat(strstruct, out[i].str);
-                    free(out[i].str);
-                }
-            }
-            s1 = GBS_strclose(strstruct);
-        }
+        char *s1 = out.concatenated();
         free(buffer);
 
         if (!error) {
@@ -1140,10 +1020,527 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 }
 // --------------------------------------------------------------------------------
 
+char *GBL_streams::concatenated() const {
+    int count = size();
+    if (!count) return strdup("");
+    if (count == 1) return strdup(get(0));
+
+    GBS_strstruct *strstruct = GBS_stropen(1000);
+    for (int i=0; i<count; i++) {
+        const char *s = get(i);
+        if (s) GBS_strcat(strstruct, s);
+    }
+    return GBS_strclose(strstruct);
+}
+
+char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
+    /* simple command interpreter returns NULL on error (which should be exported in that case)
+     * if first character is == ':' run string parser
+     * if first character is == '/' run regexpr
+     * else run ACI
+     */
+
+    int trace = GB_get_ACISRT_trace();
+    SmartMallocPtr(char) heapstr;
+
+    if (!str) {
+        if (!gbd) {
+            GB_export_error("ACI: no input streams found");
+            return NULL;
+        }
+
+        if (GB_read_type(gbd) == GB_STRING) {
+            str = GB_read_char_pntr(gbd);
+        }
+        else {
+            char *asstr = GB_read_as_string(gbd);
+            if (!asstr) {
+                GB_export_error("Can't read this DB entry as string");
+                return NULL;
+            }
+
+            heapstr = asstr;
+            str     = &*heapstr;
+        }
+    }
+
+    if (trace) {
+        printf("GB_command_interpreter: str='%s'\n"
+               "                        command='%s'\n", str, commands);
+    }
+
+    if (!commands || !commands[0]) { // empty command -> do not modify string
+        return strdup(str);
+    }
+
+    if (commands[0] == ':') { // ':' -> string parser
+        return GBS_string_eval(str, commands+1, gbd);
+    }
+
+    if (commands[0] == '/') { // regular expression
+        GB_ERROR  err    = 0;
+        char     *result = GBS_regreplace(str, commands, &err);
+
+        if (!result) {
+            if (strcmp(err, "Missing '/' between search and replace string") == 0) {
+                // if GBS_regreplace didn't find a third '/' -> silently use GBS_regmatch:
+                size_t matchlen;
+                err    = 0;
+                const char *matched = GBS_regmatch(str, commands, &matchlen, &err);
+
+                if (matched) result   = GB_strndup(matched, matchlen);
+                else if (!err) result = strdup("");
+            }
+
+            if (!result && err) result = GBS_global_string_copy("<Error: %s>", err);
+        }
+        return result;
+    }
+
+    return GBS_apply_ACI(gb_main, commands, str, gbd, default_tree_name);
+}
+
+// --------------------------------------------------------------------------------
+
 #ifdef UNIT_TESTS
-#ifndef TEST_UNIT_H
 #include <test_unit.h>
+
+#define TEST_CI__INTERNAL(input,cmd,expected,TEST_RESULT) do {          \
+        char *result;                                                   \
+        TEST_EXPECT_RESULT__NOERROREXPORTED(result = GB_command_interpreter(gb_main, input, cmd, gb_data, NULL)); \
+        TEST_RESULT(result,expected);                                   \
+        free(result);                                                   \
+    } while(0)
+
+
+#define TEST_CI(input,cmd,expected)         do {                        \
+        TEST_CI__INTERNAL(input,cmd,expected,TEST_EXPECT_EQUAL);        \
+    } while(0)
+
+#define TEST_CI__BROKEN(input,cmd,expected) do {                        \
+        TEST_CI__INTERNAL(input,cmd,expected,TEST_EXPECT_EQUAL__BROKEN); \
+    } while(0)
+
+#define TEST_CI_NOOP(inandout,cmd)         TEST_CI__INTERNAL(inandout,cmd,inandout,TEST_EXPECT_EQUAL)
+#define TEST_CI_NOOP__BROKEN(inandout,cmd) TEST_CI__INTERNAL(inandout,cmd,inandout,TEST_EXPECT_EQUAL__BROKEN)
+
+#define TEST_CI_INVERSE(in,cmd,inv_cmd,out) do {        \
+        TEST_CI(in,  cmd,     out);                     \
+        TEST_CI(out, inv_cmd, in);                      \
+    } while(0)
+
+#define TEST_CI_ERROR_CONTAINS(input,cmd,errorpart_expected) \
+    TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_command_interpreter(gb_main, input, cmd, gb_data, NULL), errorpart_expected)
+
+#define ACI_SPLIT          "|split(\",\",0)"
+#define ACI_MERGE          "|merge(\",\")"
+#define WITH_SPLITTED(aci) ACI_SPLIT aci ACI_MERGE
+
+void TEST_GB_command_interpreter() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_nuc.arb", "rw"); // ../UNIT_TESTER/run/TEST_nuc.arb
+
+    GBT_set_default_alignment(gb_main, "ali_16s"); // for sequence ACI command (@@@ really needed ? )
+
+    int old_trace = GB_get_ACISRT_trace();
+#if 0
+    GB_set_ACISRT_trace(1); // used to detect coverage and for debugging purposes
 #endif
+    {
+        GB_transaction  ta(gb_main);
+        GBDATA         *gb_data = GBT_find_species(gb_main, "LcbReu40");
+
+        TEST_CI_NOOP("bla", "");
+
+        TEST_CI("bla", ":a=u", "blu"); // simple SRT
+
+        TEST_CI("bla",    "/a/u/",   "blu"); // simple regExp replace
+        TEST_CI("blabla", "/l.*b/",  "lab"); // simple regExp match
+        TEST_CI("blabla", "/b.b/",   "");    // simple regExp match (failing)
+
+        // escape / quote
+        TEST_CI_INVERSE("ac", "|quote",        "|unquote",          "\"ac\"");
+        TEST_CI_INVERSE("ac", "|escape",       "|unescape",         "ac");
+        TEST_CI_INVERSE("ac", "|escape|quote", "|unquote|unescape", "\"ac\"");
+        TEST_CI_INVERSE("ac", "|quote|escape", "|unescape|unquote", "\\\"ac\\\"");
+
+        TEST_CI_INVERSE("a\"b\\c", "|quote",        "|unquote",          "\"a\"b\\c\"");
+        TEST_CI_INVERSE("a\"b\\c", "|escape",       "|unescape",         "a\\\"b\\\\c");
+        TEST_CI_INVERSE("a\"b\\c", "|escape|quote", "|unquote|unescape", "\"a\\\"b\\\\c\"");
+        TEST_CI_INVERSE("a\"b\\c", "|quote|escape", "|unescape|unquote", "\\\"a\\\"b\\\\c\\\"");
+
+        TEST_CI_NOOP("ac", "|unquote");
+        TEST_CI_NOOP("\"ac", "|unquote");
+        TEST_CI_NOOP("ac\"", "|unquote");
+
+        TEST_CI("blabla", "|coUNT(ab)",         "4");   // simple ACI
+        TEST_CI("l",      "|\"b\";dd;\"a\"|dd", "bla"); // ACI with muliple streams
+        TEST_CI("bla",    "|count()",           "0");   // one empty parameter
+        TEST_CI("bla",    "|count(\"\")",       "0");   // empty parameter
+        TEST_CI("b a",    "|count(\" \")",      "1");   // space in quotes
+        TEST_CI("b\\a",   "|count(\\a)",        "2");   // count '\\' and 'a' (ok)
+        TEST_CI__BROKEN("b\\a",   "|count(\"\\a\")",    "1"); // should only count 'a' (which is escaped in param)
+        TEST_CI("b\\a",   "|count(\"\a\")",     "0");   // does not contain '\a'
+        TEST_CI("b\a",    "|count(\"\a\")",     "1");   // counts '\a'
+
+        // escaping (@@@ wrong behavior?)
+        TEST_CI("b\\a",   "|count(\\a)",         "2"); // i would expect '1' as result (the 'a'), but it counts '\\' and 'a'
+        TEST_CI("b\\a",   "|contains(\"\\\\\")", "0"); // searches for 2 backslashes, finds none
+        TEST_CI__BROKEN("b\\a",   "|contains(\"\")", "0"); // search for nothing, but reports 1 hit
+        TEST_CI__BROKEN("b\\a",   "|contains(\\)",       "1"); // searches for 1 backslash (ok), but reports two hits instead of one
+        TEST_CI__BROKEN("b\\\\a", "|contains(\"\\\\\")", "1"); // searches for 2 backslashes (ok), but reports two hits instead of one
+        TEST_CI_ERROR_CONTAINS("b\\a", "|contains(\"\\\")", "ARB ERROR: unbalanced '\"' in '|contains(\"\\\")'"); // raises error (should searches for 1 backslash)
+
+        // test binary ops
+        TEST_CI("", "\"5\";\"7\"|minus",            "-2");
+        TEST_CI("", "\"5\"|minus(\"7\")",           "-2");
+        TEST_CI("", "|minus(\"\"5\"\", \"\"7\"\")", "-2"); // @@@ syntax needed here 'minus(""5"", ""7"")' is broken - need to unescape correctly after parsing parameters!
+
+
+        TEST_CI_NOOP("ab,bcb,abac", WITH_SPLITTED(""));
+        TEST_CI     ("ab,bcb,abac", WITH_SPLITTED("|len"),                       "2,3,4");
+        TEST_CI     ("ab,bcb,abac", WITH_SPLITTED("|count(a)"),                  "1,0,2");
+        TEST_CI     ("ab,bcb,abac", WITH_SPLITTED("|minus(len,count(a))"),       "1,3,2");
+        TEST_CI     ("ab,bcb,abac", WITH_SPLITTED("|minus(\"\"5\"\",count(a))"), "4,5,3"); // @@@ escaping broken here as well
+
+        // test other recursive uses of GB_command_interpreter
+        TEST_CI("one",   "|dd;\"two\";dd|command(\"dd;\"_\";dd;\"-\"\")",                          "one_one-two_two-one_one-");
+        TEST_CI("",      "|sequence|command(\"/^([\\\\.-]*)[A-Z].*/\\\\1/\")|len",                 "9"); // count gaps at start of sequence
+        TEST_CI("one",   "|dd;dd|eval(\"\"up\";\"per\"|merge\")",                                  "ONEONE");
+        TEST_CI("1,2,3", WITH_SPLITTED("|select(\"\",  \"\"one\"\", \"\"two\"\", \"\"three\"\")"), "one,two,three");
+        TEST_CI_ERROR_CONTAINS("1,4", WITH_SPLITTED("|select(\"\",  \"\"one\"\", \"\"two\"\", \"\"three\"\")"), "Illegal param number '4' (allowed [0..3])");
+
+        // test define and do (@@@ SLOW)
+        TEST_CI("ignored", "define(d4, \"dd;dd;dd;dd\")",        "");
+        TEST_CI("ignored", "define(d16, \"do(d4)|do(d4)\")",     "");
+        TEST_CI("ignored", "define(d64, \"do(d4)|do(d16)\")",    "");
+        TEST_CI("ignored", "define(d4096, \"do(d64)|do(d64)\")", "");
+
+        TEST_CI("x",  "do(d4)",        "xxxx");
+        TEST_CI("xy", "do(d4)",        "xyxyxyxy");
+        TEST_CI("x",  "do(d16)",       "xxxxxxxxxxxxxxxx");
+        TEST_CI("x",  "do(d64)|len",   "64");
+        TEST_CI("xy", "do(d4)|len",    "8");
+        TEST_CI("xy", "do(d4)|len()",  "8");
+        TEST_CI("xy", "do(d4)|len(x)", "4");
+        TEST_CI("x",  "do(d4096)|len", "4096");
+
+        {
+            int prev_trace = GB_get_ACISRT_trace();
+            GB_set_ACISRT_trace(0); // do not trace here
+            // create 4096 streams:
+            TEST_CI("x",  "dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|dd;dd|streams", "4096");
+            GB_set_ACISRT_trace(prev_trace);
+        }
+
+        // other commands
+
+        // streams
+        TEST_CI("x", "dd;dd|streams",             "2");
+        TEST_CI("x", "dd;dd|dd;dd|streams",       "4");
+        TEST_CI("x", "dd;dd|dd;dd|dd;dd|streams", "8");
+        TEST_CI("x", "do(d4)|streams",            "1"); // stream is merged when do() returns
+
+        TEST_CI("", "ali_name", "ali_16s");  // ask for default-alignment name
+        TEST_CI("", "sequence_type", "rna"); // ask for sequence_type of default-alignment
+
+        // format
+        TEST_CI("acgt", "format", "          acgt");
+        TEST_CI("acgt", "format(firsttab=1)", " acgt");
+        TEST_CI("acgt", "format(firsttab=1, width=2)",
+                " ac\n"
+                "          gt");
+        TEST_CI("acgt", "format(firsttab=1,tab=1,width=2)",
+                " ac\n"
+                " gt");
+        TEST_CI("acgt", "format(firsttab=0,tab=0,width=2)",
+                "ac\n"
+                "gt");
+        TEST_CI("acgt", "format(firsttab=0,tab=0,width=1)",
+                "a\n"
+                "c\n"
+                "g\n"
+                "t");
+
+        TEST_CI_ERROR_CONTAINS("acgt", "format(gap=0)",   "Unknown Parameter 'gap=0' in command 'format'");
+        TEST_CI_ERROR_CONTAINS("acgt", "format(numleft)", "Unknown Parameter 'numleft' in command 'format'");
+
+        // format_sequence
+        TEST_CI("acgt", "format_sequence(firsttab=5,tab=5,width=1,numleft=1)",
+                "1    a\n"
+                "2    c\n"
+                "3    g\n"
+                "4    t");
+        TEST_CI("acgt", "format_sequence(firsttab=0,tab=0,width=2,gap=1)",
+                "a c\n"
+                "g t");
+        TEST_CI("acgt",     "format_sequence(firsttab=0,tab=0,width=4,gap=1)", "a c g t");
+        TEST_CI("acgt",     "format_sequence(firsttab=0,tab=0,width=4,gap=2)", "ac gt");
+        TEST_CI("acgtacgt", "format_sequence(firsttab=0,width=10,gap=4)",      "acgt acgt");
+        TEST_CI("acgtacgt", "format_sequence(firsttab=1,width=10,gap=4)",      " acgt acgt");
+
+        TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(nl=c)",     "Unknown Parameter 'nl=c' in command 'format_sequence'");
+        TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(forcenl=)", "Unknown Parameter 'forcenl=' in command 'format_sequence'");
+        // TEST_CI_ERROR_CONTAINS("acgt", "format(width=0)", "should_raise_some_error"); // @@@ crashes
+
+        // remove + keep
+        TEST_CI_NOOP("acgtacgt",         "remove(-.)");
+        TEST_CI     ("..acg--ta-cgt...", "remove(-.)", "acgtacgt");
+        TEST_CI     ("..acg--ta-cgt...", "remove(acgt)", "..---...");
+
+        TEST_CI_NOOP("acgtacgt",         "keep(acgt)");
+        TEST_CI     ("..acg--ta-cgt...", "keep(-.)", "..---...");
+        TEST_CI     ("..acg--ta-cgt...", "keep(acgt)", "acgtacgt");
+
+        // compare + icompare
+        TEST_CI("x,z,y,y,z,x,x,Z,y,Y,Z,x", WITH_SPLITTED("|compare"),  "-1,0,1,1,1,-1");
+        TEST_CI("x,z,y,y,z,x,x,Z,y,Y,Z,x", WITH_SPLITTED("|icompare"), "-1,0,1,-1,0,1");
+
+        TEST_CI("x,y,z", WITH_SPLITTED("|compare(\"y\")"), "-1,0,1");
+
+        // equals + iequals
+        TEST_CI("a,b,a,a,a,A", WITH_SPLITTED("|equals"),  "0,1,0");
+        TEST_CI("a,b,a,a,a,A", WITH_SPLITTED("|iequals"), "0,1,1");
+
+        // contains + icontains
+        TEST_CI("abc,bcd,BCD", WITH_SPLITTED("|contains(\"bc\")"),   "2,1,0");
+        TEST_CI("abc,bcd,BCD", WITH_SPLITTED("|icontains(\"bc\")"),  "2,1,1");
+        TEST_CI("abc,bcd,BCD", WITH_SPLITTED("|icontains(\"d\")"),   "0,3,3");
+
+        // partof + ipartof
+        TEST_CI("abc,BCD,def,deg", WITH_SPLITTED("|partof(\"abcdefg\")"),   "1,0,4,0");
+        TEST_CI("abc,BCD,def,deg", WITH_SPLITTED("|ipartof(\"abcdefg\")"),  "1,2,4,0");
+
+        // translate
+        TEST_CI("abcdefgh", "translate(abc,cba)",     "cbadefgh");
+        TEST_CI("abcdefgh", "translate(cba,abc)",     "cbadefgh");
+        TEST_CI("abcdefgh", "translate(hcba,abch,-)", "hcb----a");
+        TEST_CI("abcdefgh", "translate(aceg,aceg,-)", "a-c-e-g-");
+        TEST_CI("abbaabba", "translate(ab,ba,-)",     "baabbaab");
+        TEST_CI("abbaabba", "translate(a,x,-)",       "x--xx--x");
+        TEST_CI("abbaabba", "translate(,,-)",         "--------");
+
+        // echo
+        TEST_CI("", "echo", "");
+        TEST_CI("", "echo(x,y,z)", "xyz");
+        TEST_CI("", "echo(x;y,z)", "xyz"); // check ';' as param-separator
+        TEST_CI("", "echo(x;y;z)", "xyz");
+        TEST_CI("", "echo(x,y,z)|streams", "3");
+
+        // upper, lower + caps
+        TEST_CI("the QUICK brOwn Fox", "lower", "the quick brown fox");
+        TEST_CI("the QUICK brOwn Fox", "upper", "THE QUICK BROWN FOX");
+        TEST_CI("the QUICK brOwn FoX", "caps",  "The Quick Brown Fox");
+
+        // head, tail + mid/mid0
+        TEST_CI     ("1234567890", "head(3)", "123");
+        TEST_CI     ("1234567890", "head(9)", "123456789");
+        TEST_CI_NOOP("1234567890", "head(10)");
+        TEST_CI_NOOP("1234567890", "head(20)");
+
+        TEST_CI     ("1234567890", "tail(4)", "7890");
+        TEST_CI     ("1234567890", "tail(9)", "234567890");
+        TEST_CI_NOOP("1234567890", "tail(10)");
+        TEST_CI_NOOP("1234567890", "tail(20)");
+
+        TEST_CI("1234567890", "tail(0)", "");
+        TEST_CI("1234567890", "head(0)", "");
+        TEST_CI("1234567890", "tail(-2)", "");
+        TEST_CI("1234567890", "head(-2)", "");
+
+        TEST_CI("1234567890", "mid(3,5)", "345");
+        TEST_CI("1234567890", "mid(2,2)", "2");
+
+        TEST_CI("1234567890", "mid0(3,5)", "456");
+
+        TEST_CI("1234567890", "mid(9,20)", "90");
+        TEST_CI("1234567890", "mid(20,20)", "");
+
+        TEST_CI("1234567890", "tail(3)",     "890"); // example from ../HELP_SOURCE/oldhelp/commands.hlp@mid0
+        TEST_CI("1234567890", "mid(-2,0)",   "890");
+        TEST_CI("1234567890", "mid0(-3,-1)", "890");
+
+        // tab + pretab
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|tab(2)"),    "x ,xx,xxx");
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|tab(3)"),    "x  ,xx ,xxx");
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|tab(4)"),    "x   ,xx  ,xxx ");
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|pretab(2)"), " x,xx,xxx");
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|pretab(3)"), "  x, xx,xxx");
+        TEST_CI("x,xx,xxx", WITH_SPLITTED("|pretab(4)"), "   x,  xx, xxx");
+
+        // crop
+        TEST_CI("   x  x  ",         "crop(\" \")",     "x  x");
+        TEST_CI("\n \t  x  x \n \t", "crop(\"\t\n \")", "x  x");
+
+        // cut, drop, dropempty and dropzero
+        TEST_CI("one,two,three,four,five,six", WITH_SPLITTED("|cut(2,3,5)"),        "two,three,five");
+        TEST_CI("one,two,three,four,five,six", WITH_SPLITTED("|drop(2,3,5)"),       "one,four,six");
+
+        TEST_CI_ERROR_CONTAINS("a", "drop(2)", "Illegal stream number '2' (allowed [1..1])");
+        TEST_CI_ERROR_CONTAINS("a", "drop(0)", "Illegal stream number '0' (allowed [1..1])");
+        TEST_CI_ERROR_CONTAINS("a", "cut(2)",  "Illegal stream number '2' (allowed [1..1])");
+        TEST_CI_ERROR_CONTAINS("a", "cut(0)",  "Illegal stream number '0' (allowed [1..1])");
+
+        TEST_CI("one,two,three,four,five,six", WITH_SPLITTED("|dropempty|streams"), "6");
+        TEST_CI("one,two,,,five,six",          WITH_SPLITTED("|dropempty|streams"), "4");
+        TEST_CI(",,,,,",                       WITH_SPLITTED("|dropempty"),         "");
+        TEST_CI(",,,,,",                       WITH_SPLITTED("|dropempty|streams"), "0");
+
+        TEST_CI("1,0,0,2,3,0",                 WITH_SPLITTED("|dropzero"),          "1,2,3");
+        TEST_CI("0,0,0,0,0,0",                 WITH_SPLITTED("|dropzero"),          "");
+        TEST_CI("0,0,0,0,0,0",                 WITH_SPLITTED("|dropzero|streams"),  "0");
+
+        // swap
+        TEST_CI("1,2,3,four,five,six", WITH_SPLITTED("|swap"),                "1,2,3,four,six,five");
+        TEST_CI("1,2,3,four,five,six", WITH_SPLITTED("|swap(2,3)"),           "1,3,2,four,five,six");
+        TEST_CI("1,2,3,four,five,six", WITH_SPLITTED("|swap(2,3)|swap(4,3)"), "1,3,four,2,five,six");
+        TEST_CI_NOOP("1,2,3,four,five,six", WITH_SPLITTED("|swap(3,3)"));
+        TEST_CI_NOOP("1,2,3,four,five,six", WITH_SPLITTED("|swap(3,2)|swap(2,3)"));
+        TEST_CI_NOOP("1,2,3,four,five,six", WITH_SPLITTED("|swap(3,2)|swap(3,1)|swap(2,1)|swap(1,3)"));
+
+        TEST_CI_ERROR_CONTAINS("a",   "swap",                      "need at least two input streams");
+        TEST_CI_ERROR_CONTAINS("a,b", WITH_SPLITTED("|swap(2,3)"), "Illegal stream number '3' (allowed [1..2])");
+        TEST_CI_ERROR_CONTAINS("a,b", WITH_SPLITTED("|swap(3,2)"), "Illegal stream number '3' (allowed [1..2])");
+
+        // toback + tofront
+        TEST_CI     ("front,mid,back", WITH_SPLITTED("|toback(2)"),  "front,back,mid");
+        TEST_CI     ("front,mid,back", WITH_SPLITTED("|tofront(2)"), "mid,front,back");
+        TEST_CI_NOOP("front,mid,back", WITH_SPLITTED("|toback(3)"));
+        TEST_CI_NOOP("front,mid,back", WITH_SPLITTED("|tofront(1)"));
+        TEST_CI_NOOP("a",              WITH_SPLITTED("|tofront(1)"));
+        TEST_CI_NOOP("a",              WITH_SPLITTED("|toback(1)"));
+
+        TEST_CI_ERROR_CONTAINS("a,b", WITH_SPLITTED("|tofront(3)"), "Illegal stream number '3' (allowed [1..2])");
+        TEST_CI_ERROR_CONTAINS("a,b", WITH_SPLITTED("|toback(3)"),  "Illegal stream number '3' (allowed [1..2])");
+
+        // split (default)
+        TEST_CI("a\nb", "|split" ACI_MERGE, "a,b");
+
+        // extract_words + extract_sequence
+        TEST_CI("1,2,3,four,five,six", "extract_words(\"0123456789\",1)",                  "1 2 3");
+        TEST_CI("1,2,3,four,five,six", "extract_words(\"abcdefghijklmnopqrstuvwxyz\", 3)", "five four six");
+        TEST_CI("1,2,3,four,five,six", "extract_words(\"abcdefghijklmnopqrstuvwxyz\", 4)", "five four");
+        TEST_CI("1,2,3,four,five,six", "extract_words(\"abcdefghijklmnopqrstuvwxyz\", 5)", "");
+
+        TEST_CI     ("1,2,3,four,five,six",    "extract_sequence(\"acgtu\", 1.0)",   "");
+        TEST_CI     ("1,2,3,four,five,six",    "extract_sequence(\"acgtu\", 0.5)",   "");
+        TEST_CI     ("1,2,3,four,five,six",    "extract_sequence(\"acgtu\", 0.0)",   "four five six");
+        TEST_CI     ("..acg--ta-cgt...",       "extract_sequence(\"acgtu\", 1.0)",   "");
+        TEST_CI_NOOP("..acg--ta-cgt...",       "extract_sequence(\"acgtu-.\", 1.0)");
+        TEST_CI_NOOP("..acg--ta-ygt...",       "extract_sequence(\"acgtu-.\", 0.7)");
+        TEST_CI     ("70 ..acg--ta-cgt... 70", "extract_sequence(\"acgtu-.\", 1.0)", "..acg--ta-cgt...");
+
+        // checksum + gcgchecksum
+        TEST_CI("", "sequence|checksum",      "4C549A5F");
+        TEST_CI("", "sequence | gcgchecksum", "4308");
+
+        // SRT
+        TEST_CI("The quick brown fox", "srt(\"quick=lazy:brown fox=dog\")", "The lazy dog");
+        TEST_CI__BROKEN("The quick brown fox", "srt(quick=lazy:brown fox=dog)", "The lazy dog"); // @@@ parsing problem ?
+        TEST_CI("The quick brown fox", "srt(quick=lazy:brown fox=dog)", "The lazy brown fox"); // document current (unwanted behavior)
+        TEST_CI_ERROR_CONTAINS("x", "srt(x=y,z)", "SRT ERROR: no '=' found in command");
+
+        // REG
+        TEST_CI("stars*to*stripes", "/\\*/--/", "stars--to--stripes");
+
+        TEST_CI("sImILaRWIllBE,GonEEASIly", WITH_SPLITTED("|command(/[A-Z]//)"),   "small,only");
+        TEST_CI("sthBIGinside,FATnotCAP",   WITH_SPLITTED("|command(/([A-Z])+/)"), "BIG,FAT");
+
+        // calculator
+        TEST_CI("", "echo(9,3)|plus",     "12");
+        TEST_CI("", "echo(9,3)|minus",    "6");
+        TEST_CI("", "echo(9,3)|mult",     "27");
+        TEST_CI("", "echo(9,3)|div",      "3");
+        TEST_CI("", "echo(9,3)|rest",     "0");
+        TEST_CI("", "echo(9,3)|per_cent", "300");
+
+        TEST_CI("", "echo(1,2,3)|plus(1)" ACI_MERGE,     "2,3,4");
+        TEST_CI("", "echo(1,2,3)|minus(2)" ACI_MERGE,    "-1,0,1");
+        TEST_CI("", "echo(1,2,3)|mult(42)" ACI_MERGE,    "42,84,126");
+        TEST_CI("", "echo(1,2,3)|div(2)" ACI_MERGE,      "0,1,1");
+        TEST_CI("", "echo(1,2,3)|rest(2)" ACI_MERGE,     "1,0,1");
+        TEST_CI("", "echo(1,2,3)|per_cent(3)" ACI_MERGE, "33,66,100");
+
+        // readdb
+        TEST_CI("", "readdb(name)", "LcbReu40");
+        TEST_CI("", "readdb(acc)",  "X76328");
+
+        // taxonomy
+        TEST_CI("", "taxonomy(1)",           "No default tree");
+        TEST_CI("", "taxonomy(tree_nuc, 1)", "group1");
+        TEST_CI("", "taxonomy(tree_nuc, 5)", "top/lower-red/group1");
+        TEST_CI_ERROR_CONTAINS("", "taxonomy", "syntax: taxonomy([tree_name,]count)");
+
+        // diff, filter + change
+        TEST_CI("..acg--ta-cgt..." ","
+                "..acg--ta-cgt...", WITH_SPLITTED("|diff(pairwise=1)"),
+                "................");
+        TEST_CI("..acg--ta-cgt..." ","
+                "..cgt--ta-acg...", WITH_SPLITTED("|diff(pairwise=1,equal==)"),
+                "==cgt=====acg===");
+        TEST_CI("..acg--ta-cgt..." ","
+                "..cgt--ta-acg...", WITH_SPLITTED("|diff(pairwise=1,differ=X)"),
+                "..XXX.....XXX...");
+        TEST_CI("", "sequence|diff(species=LcbFruct)|checksum", "645E3107");
+
+        TEST_CI("..XXX.....XXX..." ","
+                "..acg--ta-cgt...", WITH_SPLITTED("|filter(pairwise=1,exclude=X)"),
+                "..--ta-...");
+        TEST_CI("..XXX.....XXX..." ","
+                "..acg--ta-cgt...", WITH_SPLITTED("|filter(pairwise=1,include=X)"),
+                "acgcgt");
+        TEST_CI("", "sequence|filter(species=LcbFruct,include=.-)", "-----------T----T-------G----------C-----T----T...");
+
+        TEST_CI("...XXX....XXX..." ","
+                "..acg--ta-cgt...", WITH_SPLITTED("|change(pairwise=1,include=X,to=C,change=100)"),
+                "..aCC--ta-CCC...");
+        TEST_CI("...XXXXXXXXX...." ","
+                "..acg--ta-cgt...", WITH_SPLITTED("|change(pairwise=1,include=X,to=-,change=100)"),
+                "..a---------t...");
+
+
+        // exec
+        TEST_CI("c,b,c,b,a,a", WITH_SPLITTED("|exec(\"(sort|uniq)\")|split|dropempty"),              "a,b,c");
+        TEST_CI("a,aba,cac",   WITH_SPLITTED("|exec(\"perl\",-pe,s/([bc])/$1$1/g)|split|dropempty"), "a,abba,ccacc");
+
+         // error cases
+        TEST_CI_ERROR_CONTAINS("", "nocmd",          "Unknown command 'nocmd'");
+        TEST_CI_ERROR_CONTAINS("", "|nocmd",         "Unknown command 'nocmd'");
+        TEST_CI_ERROR_CONTAINS("", "caps(x)",        "syntax: caps (no parameters)");
+        TEST_CI_ERROR_CONTAINS("", "trace",          "syntax: trace(0|1)");
+        TEST_CI_ERROR_CONTAINS("", "count",          "syntax: count(\"characters to count\")");
+        TEST_CI_ERROR_CONTAINS("", "count(a,b)",     "syntax: count(\"characters to count\")");
+        TEST_CI_ERROR_CONTAINS("", "len(a,b)",       "syntax: len[(\"characters not to count\")]");
+        TEST_CI_ERROR_CONTAINS("", "plus(a,b,c)",    "syntax: plus[(Expr1[,Expr2])]");
+        TEST_CI_ERROR_CONTAINS("", "count(a,b",      "Reason: Missing ')'");
+        TEST_CI_ERROR_CONTAINS("", "count(a,\"b)",   "unbalanced '\"' in 'count(a,\"b)'");
+        TEST_CI_ERROR_CONTAINS("", "count(a,\"b)\"", "Reason: Missing ')'");
+        TEST_CI_ERROR_CONTAINS("", "dd;dd|count",    "syntax: count(\"characters to count\")");
+        TEST_CI_ERROR_CONTAINS("", "|count(\"a\"x)", "Reason: Missing '\"'");
+        TEST_CI_ERROR_CONTAINS("", "|count(\"a)",    "unbalanced '\"' in '|count(\"a)'");
+
+        TEST_CI_ERROR_CONTAINS("", "translate(a)",       "syntax: translate(old,new[,other])");
+        TEST_CI_ERROR_CONTAINS("", "translate(a,b,c,d)", "syntax: translate(old,new[,other])");
+
+        TEST_CI_ERROR_CONTAINS(NULL, "whatever", "ARB ERROR: Can't read this DB entry as string"); // here gb_data is the species container
+
+        gb_data = GB_entry(gb_data, "full_name"); // execute ACI on 'full_name' from here on ------------------------------
+
+        TEST_CI(NULL, "", "Lactobacillus reuteri"); // noop
+        TEST_CI(NULL, "|len", "21");
+        TEST_CI(NULL, ":tobac=", "Lacillus reuteri");
+        TEST_CI(NULL, "/ba.*us/B/", "LactoB reuteri");
+
+        TEST_CI(NULL, "|taxonomy(1)", "No default tree");
+        TEST_CI_ERROR_CONTAINS(NULL, "|taxonomy(tree_nuc,2)", "Container has neither 'name' nor 'group_name' entry - can't detect container type");
+
+        gb_data = NULL;
+        TEST_CI_ERROR_CONTAINS(NULL, "", "no input streams found");
+    }
+
+    GB_set_ACISRT_trace(old_trace); // avoid side effect of TEST_GB_command_interpreter
+    GB_close(gb_main);
+}
 
 const char *GBT_get_name(GBDATA *gb_item); 
 
@@ -1415,6 +1812,5 @@ void TEST_DB_search() {
     TEST_EXPECT_NO_ERROR(db.error);
 }
 
-#endif // UNIT_TESTS
 
-// --------------------------------------------------------------------------------
+#endif // UNIT_TESTS
