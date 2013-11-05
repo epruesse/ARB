@@ -48,7 +48,7 @@ static void NDS_changed(AW_root *root, AW_CL refresh) {
     sprintf(buf, ED4_AWAR_NDS_WIDTH_TEMPLATE, toggle);
     NDS_width = root->awar(buf)->read_int();
 
-    if (refresh) { 
+    if (refresh) {
         ED4_request_relayout();
     }
 }
