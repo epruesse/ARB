@@ -109,6 +109,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_db.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -162,6 +163,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -297,6 +299,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -348,6 +351,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -462,6 +466,7 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_window.hxx
