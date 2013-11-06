@@ -1683,7 +1683,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type, AWT_canvas *ntw) {
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
     : AWT_graphic()
 {
-    line_filter          = AW_SCREEN|AW_CLICK|AW_CLICK_DRAG|AW_SIZE|AW_PRINTER;
+    line_filter          = AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_SIZE|AW_PRINTER;
     vert_line_filter     = AW_SCREEN|AW_PRINTER;
     group_bracket_filter = AW_SCREEN|AW_PRINTER|AW_CLICK|AW_SIZE_UNSCALED;
     text_filter          = AW_SCREEN|AW_CLICK|AW_PRINTER|AW_SIZE_UNSCALED;

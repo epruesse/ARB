@@ -578,7 +578,7 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
                     AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA,
                                                                           event.x, event.y, AWT_CATCH_LINE,
                                                                           AWT_CATCH_TEXT, 0);
-                    click_device->set_filter(AW_CLICK_DRAG);
+                    click_device->set_filter(AW_CLICK_DROP);
                     scr->init_device(click_device);
                     scr->gfx->show(click_device);
                     click_device->get_clicked_line(&scr->clicked_line);
