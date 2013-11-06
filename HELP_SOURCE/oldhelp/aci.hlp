@@ -16,18 +16,20 @@ OCCURRENCE	NDS
 		[ ARB_NT/Species/search/parse_fields ]
 
 DESCRIPTION	The command interpreter is a simple interpreter.
+
 		All commands take the data from the input streams,
 		modify it and write it to the output
-		(which may be the input of the next command). The first
-		input stream is normally the value of a database field
+		(which may be the input of the next command).
+
+                The first input stream often is the value of a database field
 		(see NDS for more information).
 
                      e.g. count("a") counts every 'a' in each input stream and
                      generates an output stream (== the sum of 'a') for every
                      input.
 
-		Many commands have command modifiers which are appended to
-		the command.
+		Many commands have parameters which are specified behind
+		the command in parenthesis.
 
 		Different commands can be separated by:
 
@@ -68,7 +70,28 @@ SECTION Example data flow
                  -> count("G") -->| -----> per_cent --> | --> "50" ---
 
 
+SECTION PARAMETERS
 
+        Several commands expect or accept additional parameters in
+        parenthesis (e.g. 'remove(aA)').
+
+        Multiple parameters have to be separated by ',' or ';'.
+
+        There are two distinct ways to specify such a parameter:
+        - unquoted
+
+          Unquoted parameters are taken as specified, but may not contain any of
+          the following characters: ',;"|)'
+
+        - quoted
+
+          Quoted parameters begin and end with a '"'. You can use any character,
+          but you need to escape '\' and '"' by preceeding a '\'.
+
+          Example: 'remove("\"")' will remove all double quotes from input.
+                   'remove("\\")' will remove all backslashes from input.
+
+        [@@@ behavior currently not strictly implemented]
 
 SECTION COMMANDLIST
 
@@ -125,14 +148,21 @@ SECTION COMMANDLIST
 		tail(n)			the last n characters
 		right(n)		the last n characters
 
+                                        the above functions return an empty string for n<=0
+
 		len			the length of the input
 
 		len("chr")		the length of the input excluding the
 					characters in 'chr'
 
-		mid(x,y)		the string from x to y
-					y < 0 means a position relative to the
-					end
+		mid(x,y)		the substring string from position x to y
+
+                                        Allowed positions are
+                                        - [1..N] for mid()
+                                        - [0..N-1] for mid0()
+
+					A position below that range is relative to the end of the string,
+                                        i.e. mid(-2,0) and mid0(-3,-1) are equiv to tail(3)
 
                 crop("str")             removes characters of 'str' from
                                         both ends of the input
@@ -188,11 +218,22 @@ SECTION COMMANDLIST
                                                    This character is deleted !
                         "forcenl=chrs" ("\n")      Force a newline at these characters.
 
+                    (see also format_sequence below)
+
 		extract_words("chars",val)
 
                     Search for all words (separated by ',' ';' ':' ' ' or 'tab') that
                     contain more characters of type chars than val, sort them
                     alphabetically and write them separated by ' ' to the output
+
+        ESCAPING AND QUOTING
+
+                 escape         escapes all occurrances of '\' and '"' by preceeding a '\'
+                 quote          quotes the input in '"'
+
+                 unescape       inverse of escape
+                 unquote        removes quotes (if present). otherwise return input
+
 
 	STRING COMPARISON
 
@@ -243,7 +284,7 @@ SECTION COMMANDLIST
                       is applied to each input stream together with the argument.
                       For each input stream one output stream is generated.
                     - has 2 arguments, it is applied to these. The arguments are interpreted as
-                      escaped ACI commands and are applied for each input stream. The results of
+                      ACI commands and are applied for each input stream. The results of
                       the commands are passed as arguments to the binary operator. For each input
                       stream one output stream is generated.
 
@@ -280,8 +321,8 @@ SECTION COMMANDLIST
 					of the sequence. If the field complement = 1 then the
 					result is the reverse-complement.
 
-	 	sequence_type 		the default sequence's type(rna/dna..)
-		sequence_name		the default sequence name(ali_16s,..)
+	 	sequence_type 		the sequence type of the selected alignment ('rna','dna',..)
+		ali_name		the name of the selected alignment (e.g. 'ali_16s')
 
                 Note: The commands above only work at the beginning of the ACI expression.
 
@@ -303,6 +344,8 @@ SECTION COMMANDLIST
 			tab=#        (10)       left indent (not first line)
 			numleft      (NO)       numbers on the left side
 			gap=#        (10)       insert a gap every # seq. characters.
+
+                    (see also 'format' above)
 
 		extract_sequence("chars",rel_len)
 
@@ -395,6 +438,7 @@ SECTION COMMANDLIST
 
                         Randomly modifies the content of columns selected
                         by the filter (see common options above).
+                        Only columns containing letters will be modified.
 
                         The options 'include=xyz' and 'exclude=xyz' work like
                         with 'filter()', but here they select the columns to modify - all other
@@ -423,50 +467,59 @@ SECTION COMMANDLIST
 
 	SPECIALS
 
-		exec(command,var1,...)
+		exec(command[,param1,param2,...])
 
-                    Execute external (unix) command
+                    Execute external (unix) command.
 
-                        WARNING !!!!!! You should not use this command for NDS !!!
+                    Given params will be single-quoted and passed to the command.
+
+                    All input streams will be concatenated and piped into the command.
+
+                    When the command itself is a pipe, put it in parenthesis (e.g. "(sort|uniq)").
+                    Note: This won't work together with params.
+
+                    The result is the output of the command.
+
+                    WARNING!!!
+
+                        You better not use this command for NDS,
                         because any slow command will disable all editing -> You never
                         can remove this command from the NDS. Even arb_panic will not
                         easily help you.
 
-		command(escapedCommand)
+		command(action)
 
-                        applies 'escapedCommand' to all input streams using
+                        applies 'action' to all input streams using
 
                                  - ACI,
                                  - SRT (if starts with ':') (see LINK{srt.hlp})
                                  - or as REG (if starts with '/') (see LINK{reg.hlp}).
 
-                        In escapedCommand you have to escape '\' and '"' by
-                        preceding a '\'. If you nest calls you have to use multiple escapes
-                        (e.g. inside an export filter - which is in fact an
+                        If you nest calls (i.e. if 'action' contains further calls to 'command') you have to apply
+                        escaping multiple times (e.g. inside an export filter - which is in fact an
                         SRT expression - you'll have to use double escapes).
 
-                eval(escapedCommand)
+                eval(exprEvalToAction)
 
-                        the 'escapedCommand' is evaluated (using an empty string as input)
-                        and the result is interpreted as command and gets applied to all
-                        input streams.
+                        the 'exprEvalToAction' is evaluated (using an empty string as input)
+                        and the result is interpreted as action and gets applied to all
+                        input streams (as in 'command' above).
 
                         Example: Said you have two numeric positions stored in database fields
                                  'pos1' and 'pos2' for each species. Then the following command
                                  extracts the sequence data from pos1 to pos2:
 
-                        sequence|eval(" \"mid(\";readdb(pos1);\";\";readdb(pos2);\")\" ")
+                                 'sequence|eval(" \"mid(\";readdb(pos1);\";\";readdb(pos2);\")\" ")'
 
                         How the example works:
 
-                                The argument to eval is the escaped version of the command
-                                 '"mid(" ; readdb(pos1) ; ";" ; readdb(pos2) ; ")"'.
-                                 If pos1 contains '10' and pos2 contains '20' that command
-                                 evaluates to 'mid(10;20)'.
+                            The argument is the escaped version of the
+                            command '"mid(" ; readdb(pos1) ; ";" ; readdb(pos2) ; ")"'.
 
-                                 The resulting ACI for the example species
-                                 is 'sequence|eval("mid(10;20)")' which is equivalent
-                                 to 'sequence|mid(10;20)'.
+                            If pos1 contains '10' and pos2 contains '20' that command will
+                            evaluate to 'mid(10;20)'.
+
+                            For these positions the executed ACI behaves like 'sequence|mid(10;20)'.
 
                 define(name,escapedCommand)
 
@@ -478,11 +531,12 @@ SECTION COMMANDLIST
 
                         applies a previously defined ACI-macro to all input streams (see 'define').
 
-                        'define' followed by 'do' works similar to 'command'.
+                        'define(a,action)' followed by 'do(a)' works similar to 'command(action)'.
+
                         See embl.eft for an example using define and 'do'
 
-                origin_organism(escapedCommand)
-                origin_gene(escapedCommand)
+                origin_organism(action)
+                origin_gene(action)
 
                         like command() but readdb() etc. reads all data from the
                         origin organism/gene of a gene-species (not from the gene-species itself).
