@@ -57,6 +57,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -134,6 +135,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_position.hxx

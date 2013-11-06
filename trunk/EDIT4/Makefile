@@ -1112,6 +1112,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_msg.hxx

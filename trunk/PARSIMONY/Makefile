@@ -79,6 +79,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -120,6 +121,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -161,6 +163,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -234,6 +237,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -311,6 +315,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx

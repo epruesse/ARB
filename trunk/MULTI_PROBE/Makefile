@@ -117,6 +117,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MP_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -199,6 +200,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_position.hxx

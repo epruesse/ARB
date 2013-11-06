@@ -259,6 +259,7 @@ AW_device.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_device_click.o: aw_base.hxx
 AW_device_click.o: aw_common.hxx
 AW_device_click.o: aw_device.hxx
+AW_device_click.o: aw_device_click.hxx
 AW_device_click.o: aw_position.hxx
 AW_device_click.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device_click.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -754,6 +755,7 @@ AW_window.o: aw_base.hxx
 AW_window.o: aw_common.hxx
 AW_window.o: aw_common_xm.hxx
 AW_window.o: aw_device.hxx
+AW_window.o: aw_device_click.hxx
 AW_window.o: aw_keysym.hxx
 AW_window.o: aw_msg.hxx
 AW_window.o: aw_nawar.hxx

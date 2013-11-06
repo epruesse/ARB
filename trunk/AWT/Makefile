@@ -112,6 +112,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_canio.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -146,6 +147,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_position.hxx
