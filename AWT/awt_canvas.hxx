@@ -7,6 +7,9 @@
 #ifndef AW_DEVICE_HXX
 #include <aw_device.hxx>
 #endif
+#ifndef AW_DEVICE_CLICK_HXX
+#include <aw_device_click.hxx>
+#endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif

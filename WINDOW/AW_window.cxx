@@ -20,6 +20,7 @@
 #include "aw_msg.hxx"
 #include "aw_root.hxx"
 #include "aw_xargs.hxx"
+#include "aw_device_click.hxx"
 
 #include <arbdbt.h>
 #include <arb_file.h>

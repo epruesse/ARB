@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include "aw_common.hxx"
+#include "aw_device_click.hxx"
 
 using namespace AW;
 
