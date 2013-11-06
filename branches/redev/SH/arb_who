@@ -1,0 +1,9 @@
+#!/bin/sh
+host=`uname -n`
+SED=${ARBHOME}/SH/arb_sed
+
+if test -f /usr/ucb/ps; then
+	/usr/ucb/ps auxw | grep arb_ | grep -v 'sh' | grep -v grep |grep -v '/bin/sh' | $SED -e "s/^/$host\:/g"
+else
+	ps auxw | grep arb_ | grep -v 'sh' | grep -v grep |grep -v '/bin/sh' | $SED -e "s/^/$host\:/g" 
+fi

@@ -1,0 +1,24 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	sp_info.hlp
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Show all Fields
+
+OCCURRENCE	ARB_NT/Species/Info/FIELDS/Show all fields
+
+DESCRIPTION	To display all fields and entries stored in the database, press
+		the 'Show all fields' button of the 'FIELDS' menu.
+
+NOTES		None	
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

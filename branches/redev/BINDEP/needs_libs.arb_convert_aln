@@ -1,0 +1,4 @@
+# libraries needed to link arb_convert_aln
+
+CONVERTALN/CONVERTALN.a
+
