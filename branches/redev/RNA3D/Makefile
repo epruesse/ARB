@@ -47,6 +47,7 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -87,6 +88,7 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -163,6 +165,7 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -200,6 +203,7 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -237,6 +241,7 @@ RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -277,6 +282,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_position.hxx

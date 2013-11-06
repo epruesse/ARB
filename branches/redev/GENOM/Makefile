@@ -181,6 +181,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -279,6 +280,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GEN_map.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_position.hxx
