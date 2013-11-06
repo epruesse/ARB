@@ -1665,7 +1665,7 @@ realperl: perltools
 		$(TIME) $(MAKE) -C PERL2ARB -r -f Makefile.main \
 			"AUTODEPENDS=1" \
 			"dflags=$(dflags)" \
-			"cross_cflags=$(cross_cflags) $(cppflags) $(dflags)" \
+			"cross_cflags=$(cross_cflags) $(cxxflags) $(dflags)" \
 			"cross_lflags=$(cross_lflags)" \
 			"COMPILER_VERSION=$(COMPILER_VERSION)" \
 			all && \

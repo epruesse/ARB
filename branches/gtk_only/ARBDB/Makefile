@@ -799,8 +799,10 @@ adperl.o: $(ARBHOME)/INCLUDE/smartptr.h
 adperl.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adquery.o: ad_prot.h
+adquery.o: ad_t_prot.h
 adquery.o: arbdb.h
 adquery.o: arbdb_base.h
+adquery.o: arbdbt.h
 adquery.o: gb_aci.h
 adquery.o: gb_comm.h
 adquery.o: gb_data.h
@@ -824,9 +826,11 @@ adquery.o: $(ARBHOME)/INCLUDE/arb_string.h
 adquery.o: $(ARBHOME)/INCLUDE/arbtools.h
 adquery.o: $(ARBHOME)/INCLUDE/attributes.h
 adquery.o: $(ARBHOME)/INCLUDE/cxxforward.h
+adquery.o: $(ARBHOME)/INCLUDE/downcast.h
 adquery.o: $(ARBHOME)/INCLUDE/dupstr.h
 adquery.o: $(ARBHOME)/INCLUDE/gccver.h
 adquery.o: $(ARBHOME)/INCLUDE/smartptr.h
+adquery.o: $(ARBHOME)/INCLUDE/static_assert.h
 adquery.o: $(ARBHOME)/INCLUDE/test_global.h
 adquery.o: $(ARBHOME)/INCLUDE/test_unit.h
 
