@@ -570,9 +570,6 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
                     run_command = false;
                     break;
 
-                case AWT_MODE_SWAP2:
-                    if (event.button == AW_BUTTON_RIGHT) break;
-                    // fall-through
                 case AWT_MODE_MOVE: {
                     scr->init_device(device);
                     AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
