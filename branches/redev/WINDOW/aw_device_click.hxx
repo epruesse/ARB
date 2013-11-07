@@ -20,7 +20,9 @@
 #define CLICKED_DRAWABLE
 #endif
 
-// @@@ FIXME: elements of the following classes should go private!
+
+
+// @@@ TODO: elements of the following classes should go private!
 
 class AW_clicked_element {
 public: // @@@ make private
@@ -117,11 +119,7 @@ public:
     AW_clicked_line opt_line; // @@@ make private
     AW_clicked_text opt_text;
 
-    AW_device_click(AW_common *common_)
-        : AW_simple_device(common_)
-    {
-        init_click(0, 0, AWT_NO_CATCH, AW_ALL_DEVICES);
-    }
+    AW_device_click(AW_common *common_);
 
     AW_DEVICE_TYPE type() OVERRIDE;
 
