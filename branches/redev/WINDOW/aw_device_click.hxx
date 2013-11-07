@@ -17,7 +17,7 @@
 #endif
 
 #if defined(DEBUG)
-// #define CLICKED_DRAWABLE
+#define CLICKED_DRAWABLE
 #endif
 
 // @@@ FIXME: elements of the following classes should go private!
