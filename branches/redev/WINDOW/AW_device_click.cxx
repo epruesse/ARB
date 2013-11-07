@@ -177,26 +177,29 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
 
             LineVector orientation = textArea.bigger_extent();
             LineVector clippedOrientation;
-            bool      visible = clip(orientation, clippedOrientation);
-            Position  mouse(mouse_x, mouse_y);
-            double   nearest_rel_pos;
-            Position nearest  = nearest_linepoint(mouse, clippedOrientation, nearest_rel_pos);
 
-            opt_text.textArea = rtransform(textArea);
-            opt_text.set_rel_pos(nearest_rel_pos);
+            bool visible = clip(orientation, clippedOrientation);
+            if (visible) {
+                Position mouse(mouse_x, mouse_y);
+                double   nearest_rel_pos;
+                Position nearest = nearest_linepoint(mouse, clippedOrientation, nearest_rel_pos);
 
-            opt_text.distance = max_distance_text;
-            opt_text.cursor   = position;
-            opt_text.exactHit = exact;
-            opt_text.exists   = true;
+                opt_text.textArea = rtransform(textArea);
+                opt_text.set_rel_pos(nearest_rel_pos);
 
-            if (click_cd) {
-                opt_text.client_data1 = click_cd->get_cd1();
-                opt_text.client_data2 = click_cd->get_cd2();
-            }
-            else {
-                opt_text.client_data1 = 0;
-                opt_text.client_data2 = 0;
+                opt_text.distance = max_distance_text;
+                opt_text.cursor   = position;
+                opt_text.exactHit = exact;
+                opt_text.exists   = true;
+
+                if (click_cd) {
+                    opt_text.client_data1 = click_cd->get_cd1();
+                    opt_text.client_data2 = click_cd->get_cd2();
+                }
+                else {
+                    opt_text.client_data1 = 0;
+                    opt_text.client_data2 = 0;
+                }
             }
         }
         drawflag = true;
