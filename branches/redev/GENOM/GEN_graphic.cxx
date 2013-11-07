@@ -89,30 +89,25 @@ void GEN_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_cli
     aw_message("INFO MESSAGE");
 }
 
-void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod /* key_modifier */, AW_key_code /* key_code */, char /* key_char */, AW_event_type type,
-                          AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct) {
-    AW_pos world_x;
-    AW_pos world_y;
-    device->rtransform(screen_x, screen_y, world_x, world_y);
-
-    if (type == AW_Mouse_Press) {
-        switch (cmd) {
+void GEN_graphic::handle_command(AW_device *, AWT_graphic_event& event) {
+    if (event.type() == AW_Mouse_Press) {
+        switch (event.cmd()) {
             case AWT_MODE_ZOOM: {
                 break;
             }
             case AWT_MODE_SELECT:
             case AWT_MODE_EDIT: {
-                if (button==AW_BUTTON_LEFT) {
-                    GEN_gene *gene = 0;
-                    if (ct) gene   = (GEN_gene*)ct->client_data1;
-                    if (cl) gene   = (GEN_gene*)cl->client_data1;
+                if (event.button()==AW_BUTTON_LEFT) {
+                    const AW_clicked_element *clicked = event.best_click();
+                    if (clicked) {
+                        GEN_gene *gene = (GEN_gene*)clicked->cd1();
+                        if (gene) {
+                            GB_transaction dummy(gb_main);
+                            aw_root->awar(AWAR_LOCAL_GENE_NAME(window_nr))->write_string(gene->Name().c_str());
 
-                    if (gene) {
-                        GB_transaction dummy(gb_main);
-                        aw_root->awar(AWAR_LOCAL_GENE_NAME(window_nr))->write_string(gene->Name().c_str());
-
-                        if (cmd == AWT_MODE_EDIT) {
-                            GEN_popup_gene_infowindow(aw_root, gb_main);
+                            if (event.cmd() == AWT_MODE_EDIT) {
+                                GEN_popup_gene_infowindow(aw_root, gb_main);
+                            }
                         }
                     }
                 }
@@ -399,4 +394,5 @@ void GEN_graphic::set_display_style(GEN_DisplayStyle type) {
     exports.zoom_mode = AWT_ZOOM_BOTH;
     want_zoom_reset   = true;
 }
+
 

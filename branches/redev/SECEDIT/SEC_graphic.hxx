@@ -41,6 +41,8 @@ class SEC_graphic : public AWT_graphic, virtual Noncopyable {
     SEC_update_request  update_requested;
     char               *load_error; // error occurred during load()
 
+    void update_structure() {}
+
 protected:
 
     // variables - tree compatibility
@@ -72,8 +74,7 @@ public:
 
     virtual void show(AW_device *device) OVERRIDE;
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
-    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char, AW_event_type type,
-             AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
+    void handle_command(AW_device *device, AWT_graphic_event& event) OVERRIDE;
 
     GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE; // load structure from DB
     GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE; // save structure to DB

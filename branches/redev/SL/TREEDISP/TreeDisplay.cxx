@@ -466,8 +466,8 @@ int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
 void AWT_graphic_tree::rot_show_line(AW_device *device) {
     double sx = (old_rot_cl.x0+old_rot_cl.x1)*.5;
     double sy = (old_rot_cl.y0+old_rot_cl.y1)*.5;
-    double x  = rot_cl.x0 * (1.0-rot_cl.nearest_rel_pos) + rot_cl.x1 * rot_cl.nearest_rel_pos;
-    double y  = rot_cl.y0 * (1.0-rot_cl.nearest_rel_pos) + rot_cl.y1 * rot_cl.nearest_rel_pos;
+    double x  = rot_cl.x0 * (1.0-rot_cl.get_rel_pos()) + rot_cl.x1 * rot_cl.get_rel_pos();
+    double y  = rot_cl.y0 * (1.0-rot_cl.get_rel_pos()) + rot_cl.y1 * rot_cl.get_rel_pos();
     device->line(drag_gc, sx, sy, x, y);
 }
 
@@ -690,20 +690,10 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
     return error;
 }
 
-/**
- * Called from AWT_graphic_tree::command() to handle AW_Event_Type=AW_Keyboard_Press.
- */
-void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_modifier, char key_char,
-                                   AW_pos /* x */, AW_pos /* y */, AW_clicked_line *cl, AW_clicked_text *ct)
+void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod /*key_modifier*/, char key_char,
+                                   AW_pos /* x */, AW_pos /* y */, const AW_clicked_line *cl, const AW_clicked_text *ct)
 {
-    bool update_timer = true;
-    bool calc_color   = true;
-    bool refresh      = true;
-    bool Save         = false;
-    bool resize       = false;
-    bool compute      = false;
-
-    if (key_modifier != AW_KEYMODE_NONE) return;
+    //! handles AW_Event_Type=AW_Keyboard_Press.
     if (key_char == 0) return;
 
 #if defined(DEBUG)
@@ -717,11 +707,13 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
     switch (key_char) {
         case 9: {     // Ctrl-i = invert all
             GBT_mark_all(gb_main, 2);
+            exports.structure_change = 1;
             break;
         }
         case 13: {     // Ctrl-m = mark/unmark all
             int mark   = GBT_first_marked_species(gb_main) == 0; // no species marked -> mark all
             GBT_mark_all(gb_main, mark);
+            exports.structure_change = 1;
             break;
         }
         default: {
@@ -730,7 +722,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
         }
     }
 
-    if (!global_key && tree_proto) {
+    if (!global_key) {
 
         AP_tree    *at   = 0;
         const char *what = 0;
@@ -760,24 +752,29 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
             // ------------------------------------
             //      commands in species list :
 
-            switch (key_char) {
-                case 'i':
-                case 'm': {     // i/m = mark/unmark species
-                    GB_write_flag(gb_species, 1-GB_read_flag(gb_species));
-                    break;
-                }
-                case 'I': {     // I = invert all but current
-                    int mark = GB_read_flag(gb_species);
-                    GBT_mark_all(gb_main, 2);
-                    GB_write_flag(gb_species, mark);
-                    break;
-                }
-                case 'M': {     // M = mark/unmark all but current
-                    int mark = GB_read_flag(gb_species);
-                    GB_write_flag(gb_species, 0); // unmark current
-                    GBT_mark_all(gb_main, GBT_first_marked_species(gb_main) == 0);
-                    GB_write_flag(gb_species, mark); // restore mark of current
-                    break;
+            if (gb_species) {
+                switch (key_char) {
+                    case 'i':
+                    case 'm': {     // i/m = mark/unmark species
+                        GB_write_flag(gb_species, 1-GB_read_flag(gb_species));
+                        exports.structure_change = 1;
+                        break;
+                    }
+                    case 'I': {     // I = invert all but current
+                        int mark = GB_read_flag(gb_species);
+                        GBT_mark_all(gb_main, 2);
+                        GB_write_flag(gb_species, mark);
+                        exports.structure_change = 1;
+                        break;
+                    }
+                    case 'M': {     // M = mark/unmark all but current
+                        int mark = GB_read_flag(gb_species);
+                        GB_write_flag(gb_species, 0); // unmark current
+                        GBT_mark_all(gb_main, GBT_first_marked_species(gb_main) == 0);
+                        GB_write_flag(gb_species, mark); // restore mark of current
+                        exports.structure_change = 1;
+                        break;
+                    }
                 }
             }
         }
@@ -794,19 +791,23 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
                 switch (key_char) {
                     case 'm': {     // m = mark/unmark (sub)tree
                         mark_species_in_tree(at, !tree_has_marks(at));
+                        exports.structure_change = 1;
                         break;
                     }
                     case 'M': {     // M = mark/unmark all but (sub)tree
                         mark_species_in_rest_of_tree(at, !rest_tree_has_marks(at));
+                        exports.structure_change = 1;
                         break;
                     }
 
                     case 'i': {     // i = invert (sub)tree
                         mark_species_in_tree(at, 2);
+                        exports.structure_change = 1;
                         break;
                     }
                     case 'I': {     // I = invert all but (sub)tree
                         mark_species_in_rest_of_tree(at, 2);
+                        exports.structure_change = 1;
                         break;
                     }
                     case 'c':
@@ -839,12 +840,8 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
                                 next_group_mode = state.next_collapse_mode();
                             }
 
-                            // int result =
                             group_tree(at, next_group_mode, 0);
-
-                            Save    = true;
-                            resize  = true;
-                            compute = true;
+                            exports.save    = true;
                         }
                         break;
                     }
@@ -866,47 +863,13 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
                             next_group_mode = state.next_collapse_mode();
                         }
 
-                        // int result =
                         group_rest_tree(at, next_group_mode, 0);
-
-                        Save    = true;
-                        resize  = true;
-                        compute = true;
-
-
+                        exports.save    = true;
                         break;
                     }
                 }
             }
         }
-    }
-
-    if (Save) {
-        update_timer = false;
-        exports.save = 1;
-    }
-
-    if (compute && get_root_node()) {
-        get_root_node()->compute_tree(gb_main);
-        resize     = true;
-        calc_color = false;
-    }
-
-    if (update_timer && tree_static) {
-        tree_static->update_timers(); // do not reload the tree
-    }
-
-    if (resize) {
-        exports.resize = 1;
-        refresh        = true;
-    }
-
-    if (calc_color && get_root_node()) {
-        get_root_node()->calc_color();
-        refresh = true;
-    }
-    if (refresh) {
-        exports.refresh = 1;
     }
 }
 
@@ -958,17 +921,19 @@ static bool command_on_GBDATA(GBDATA *gbd, AWT_COMMAND_MODE cmd, AW_event_type t
     return refresh;
 }
 
-/**
- * Handle input_events
- *
- * Overrides pure virtual in AWT_graphic, which in turn is called by the
- * input_event() handler registered by AWT_graphic.
- */
+void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& event) {
+    command(device, // @@@ inline this call 
+            event.cmd(), event.button(), event.key_modifier(), event.key_code(), event.key_char(),
+            event.type(), event.x(), event.y(), event.cl(), event.ct() // @@@ does not forward best click!
+        );
+}
+
 void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
-                               int button, AW_key_mod key_modifier, AW_key_code /* key_code */, char key_char,
+                               AW_MouseButton button, AW_key_mod key_modifier, AW_key_code /* key_code */, char key_char,
                                AW_event_type type, AW_pos x, AW_pos y,
-                               AW_clicked_line *cl, AW_clicked_text *ct)
+                               const AW_clicked_line *cl, const AW_clicked_text *ct)
 {
+    //! Handle input_events
     static int rot_drag_flag, bl_drag_flag;
 
     if (type == AW_Keyboard_Press) {
@@ -1214,7 +1179,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         switch (button) {
                             case AW_BUTTON_LEFT:
                                 error = source->cantMoveNextTo(dest);
-                                if (!error) source->moveNextTo(dest, cl->nearest_rel_pos);
+                                if (!error) source->moveNextTo(dest, cl->get_rel_pos());
                                 break;
 
                             case AW_BUTTON_RIGHT:
@@ -1228,11 +1193,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             aw_message(error);
                         }
                         else {
-                            this->exports.refresh = 1;
-                            this->exports.save    = 1;
-                            this->exports.resize  = 1;
+                            exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
-                            get_root_node()->compute_tree(gb_main);
                         }
                     }
                     break;
@@ -1311,10 +1273,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     break;
 
                 case AW_Mouse_Release:
-                    exports.refresh = 1;
-                    exports.save    = 1;
-                    rot_drag_flag   = 0;
-                    get_root_node()->compute_tree(gb_main);
+                    exports.structure_change = 1;
+                    rot_drag_flag            = 0;
                     break;
                 default:
                     break;
@@ -1391,8 +1351,10 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             exports.zoom_reset = 1;
                         }
                         break;
+
+                    case AW_BUTTON_MIDDLE: td_assert(0); break; // shall be handled by caller
                 }
-                get_root_node()->compute_tree(gb_main);
+                exports.structure_change = 1;
             }
             break;
 
@@ -1434,7 +1396,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         }
                         break;
                 }
-                get_root_node()->compute_tree(gb_main);
+                exports.structure_change = 1;
             }
             break;
 
@@ -1461,6 +1423,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                                     exports.save    = 1;
                                     exports.refresh = 1;
                                     break;
+
+                                case AW_BUTTON_MIDDLE: td_assert(0); break; // shall be handled by caller
                             }
                         }
                     }
@@ -1490,6 +1454,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             this->exports.save = 1;
                         }
                         break;
+
+                    case AW_BUTTON_MIDDLE: td_assert(0); break; // shall be handled by caller
                 }
             }
             break;
@@ -1516,21 +1482,14 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         }
                         if (at->name) {
                             at->gr.grouped  ^= 1;
-                            exports.refresh  = 1;
                             exports.save     = 1;
-                            exports.resize   = 1;
-                            get_root_node()->compute_tree(gb_main);
                         }
                         break;
                     case AW_BUTTON_RIGHT:
                         if (gb_tree) {
                             this->toggle_group(at);
                         }
-                        exports.refresh = 1;
-                        exports.save    = 1;
-                        exports.resize  = 1;
-                        get_root_node()->compute_tree(gb_main);
-
+                        exports.save = 1;
                         break;
                     default:
                         break;
@@ -1549,15 +1508,15 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             at->set_root();
                             exports.save       = 1;
                             exports.zoom_reset = 1;
-                            get_root_node()->compute_tree(gb_main);
                         }
                         break;
                     case AW_BUTTON_RIGHT:
                         DOWNCAST(AP_tree*, tree_static->find_innermost_edge().son())->set_root();
                         exports.save       = 1;
                         exports.zoom_reset = 1;
-                        get_root_node()->compute_tree(gb_main);
                         break;
+
+                    case AW_BUTTON_MIDDLE: td_assert(0); break; // shall be handled by caller
                 }
             } 
             break;
@@ -1571,13 +1530,15 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             case AW_BUTTON_LEFT:
                                 at->swap_featured_sons();
                                 exports.refresh = 1;
-                                exports.save = 1;
+                                exports.save    = 1;
                                 break;
                             case AW_BUTTON_RIGHT:
                                 at->rotate_subtree();
                                 exports.refresh = 1;
-                                exports.save = 1;
+                                exports.save    = 1;
                                 break;
+
+                            case AW_BUTTON_MIDDLE: td_assert(0); break; // shall be handled by caller
                         }
                     }
                 }
@@ -1598,6 +1559,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             case AW_BUTTON_RIGHT:
                                 mark_species_in_tree(at, 0);
                                 break;
+
+                            case AW_BUTTON_MIDDLE: td_assert(0); break; // shall be handled by caller
                         }
                     }
                     exports.refresh = 1;
@@ -2674,6 +2637,7 @@ void AWT_graphic_tree::show(AW_device *device) {
 void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
     aw_message("INFO MESSAGE");
 }
+
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
     AWT_graphic_tree *apdt    = new AWT_graphic_tree(root, gb_main, map_viewer_cb);

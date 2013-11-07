@@ -453,18 +453,23 @@ static void input_event(AW_window *aww, AWT_canvas *scr) {
         click_device->get_clicked_line(&scr->clicked_line);
         click_device->get_clicked_text(&scr->clicked_text);
 
-        scr->gfx->command(device, scr->mode,
-                                event.button, event.keymodifier, event.keycode, event.character,
-                                event.type, event.x,
-                                event.y, &scr->clicked_line,
-                                &scr->clicked_text);
-        if (scr->gfx->exports.save) {
+        AWT_graphic_event gevent(scr->mode, event, false, &scr->clicked_line, &scr->clicked_text);
+        scr->gfx->handle_command(device, gevent);
+
+        AWT_graphic_exports& exports = scr->gfx->exports;
+
+        if (exports.save) {
             // save it
             GB_ERROR error = scr->gfx->save(scr->gb_main, 0, 0, 0);
             if (error) {
                 aw_message(error);
                 scr->gfx->load(scr->gb_main, 0, 0, 0);
             }
+            exports.structure_change = 1;
+        }
+        if (exports.structure_change) {
+            scr->gfx->update_structure();
+            exports.resize = 1;
         }
         if (scr->gb_main) {
             scr->gfx->update(scr->gb_main);
@@ -578,7 +583,7 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
                     scr->gfx->show(click_device);
                     click_device->get_clicked_line(&scr->clicked_line);
                     click_device->get_clicked_text(&scr->clicked_text);
-                    run_command  = false;
+                    run_command  = true;
                     break;
                 }
                 default:
@@ -588,10 +593,10 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
 
         if (run_command) {
             scr->init_device(device);
-            scr->gfx->command(device, scr->mode,
-                                    event.button, event.keymodifier, event.keycode, event.character, AW_Mouse_Drag, event.x,
-                                    event.y, &scr->clicked_line,
-                                    &scr->clicked_text);
+
+            AWT_graphic_event gevent(scr->mode, event, true, &scr->clicked_line, &scr->clicked_text);
+            scr->gfx->handle_command(device, gevent);
+
             if (scr->gb_main) {
                 scr->gfx->update(scr->gb_main);
             }
@@ -713,9 +718,6 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
 {
     gfx->drag_gc   = drag_gc;
 
-    memset((char *)&clicked_line, 0, sizeof(clicked_line));
-    memset((char *)&clicked_text, 0, sizeof(clicked_text));
-
     AWT_resize_cb(NULL, this);
 
     aww->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(AWT_expose_cb, this));
@@ -726,17 +728,6 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
     aww->set_motion_callback(AW_MIDDLE_AREA, makeWindowCallback(motion_event, this));
     aww->set_horizontal_change_callback(makeWindowCallback(scroll_hor_cb, this));
     aww->set_vertical_change_callback(makeWindowCallback(scroll_vert_cb, this));
-}
-
-// --------------------
-//      AWT_graphic
-
-void AWT_graphic::command(AW_device *, AWT_COMMAND_MODE, int, AW_key_mod, AW_key_code, char,
-                          AW_event_type, AW_pos, AW_pos, AW_clicked_line *, AW_clicked_text *)
-{
-}
-
-void AWT_graphic::text(AW_device * /* device */, char * /* text */) {
 }
 
 // --------------------------

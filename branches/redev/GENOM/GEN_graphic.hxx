@@ -60,6 +60,8 @@ class GEN_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
 
     void delete_gen_root(AWT_canvas *scr);
 
+    void update_structure() {}
+
 protected:
 
     // variables - tree compatibility
@@ -81,8 +83,8 @@ public:
 
     virtual void show(AW_device *device) OVERRIDE;
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
-    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char, AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
 
+    void handle_command(AW_device *device, AWT_graphic_event& event) OVERRIDE;
     virtual int check_update(GBDATA *gbdummy) OVERRIDE;
 
     AW_root *get_aw_root() const { return aw_root; }

@@ -481,26 +481,22 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
     return error;
 }
 
-void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
-                          int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
-                          AW_event_type event, AW_pos screen_x, AW_pos screen_y,
-                          AW_clicked_line *cl, AW_clicked_text *ct)
-{
-    if (cmd != AWT_MODE_EDIT && cmd != AWT_MODE_STRETCH) sec_root->set_show_constraints(SEC_NO_TYPE);
+void SEC_graphic::handle_command(AW_device *device, AWT_graphic_event& event) {
+    if (event.cmd() != AWT_MODE_EDIT && event.cmd() != AWT_MODE_STRETCH) sec_root->set_show_constraints(SEC_NO_TYPE);
 
     GB_ERROR error = 0;
-    if (event == AW_Keyboard_Press || event == AW_Keyboard_Release) {
-        error = handleKey(event, key_modifier, key_code, key_char);
+    if (event.type() == AW_Keyboard_Press || event.type() == AW_Keyboard_Release) {
+        error = handleKey(event.type(), event.key_modifier(), event.key_code(), event.key_char());
     }
     else {
-        if (button != AW_BUTTON_MIDDLE && cmd != AWT_MODE_ZOOM) { // don't handle scroll + zoom
-            const AW_clicked_element *clicked = AW_getBestClick(cl, ct);
+        if (event.button() != AW_BUTTON_MIDDLE && event.cmd() != AWT_MODE_ZOOM) { // don't handle scroll + zoom
+            const AW_clicked_element *clicked = event.best_click();
             if (clicked) {
                 SEC_base *elem   = reinterpret_cast<SEC_base*>(clicked->cd1());
                 int       abspos = clicked->cd2();
 
-                Position world = device->rtransform(Position(screen_x, screen_y)); // current click position
-                error = handleMouse(device, event, button, cmd, world, elem, abspos);
+                Position world = device->rtransform(event.position());
+                error = handleMouse(device, event.type(), event.button(), event.cmd(), world, elem, abspos);
             }
         }
     }
