@@ -11,21 +11,28 @@
 
 using namespace AW;
 
+// ------------------------
+//      AW_device_click
+
 AW_device_click::AW_device_click(AW_common *common_)
         : AW_simple_device(common_) {
     init(0, 0, -1, -1, 0, AW_ALL_DEVICES);
 }
 
 void AW_device_click::init(AW_pos mousex, AW_pos mousey, AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos /*radi*/, AW_bitset filteri) {
-    mouse_x           = mousex;
-    mouse_y           = mousey;
-    filter            = filteri;
+    mouse_x = mousex;
+    mouse_y = mousey;
+
+    filter = filteri;
+
     max_distance_line = max_distance_linei*max_distance_linei;
     max_distance_text = max_distance_texti;
+
     memset((char *)&opt_line, 0, sizeof(opt_line));
     memset((char *)&opt_text, 0, sizeof(opt_text));
-    opt_line.exists   = false;
-    opt_text.exists   = false;
+
+    opt_line.exists = false;
+    opt_text.exists = false;
 }
 
 AW_DEVICE_TYPE AW_device_click::type() {
@@ -33,37 +40,38 @@ AW_DEVICE_TYPE AW_device_click::type() {
 }
 
 bool AW_device_click::line_impl(int /*gc*/, const AW::LineVector& Line, AW_bitset /*filteri*/) {
-    AW::LineVector transLine = transform(Line);
-    AW::LineVector clippedLine;
-    if (!clip(transLine, clippedLine)) return false;
+    LineVector transLine = transform(Line);
+    LineVector clippedLine;
+    bool       drawflag  = clip(transLine, clippedLine);
+    if (drawflag) {
+        Position mouse(mouse_x, mouse_y);
+        double   nearest_rel_pos;
+        Position nearest  = nearest_linepoint(mouse, clippedLine, nearest_rel_pos);
+        double   distance = Distance(mouse, nearest);
 
-    Position mouse(mouse_x, mouse_y);
-    double   nearest_rel_pos;
-    Position nearest  = nearest_linepoint(mouse, clippedLine, nearest_rel_pos);
-    double   distance = Distance(mouse, nearest);
-
-    if (distance < max_distance_line) {
-      max_distance_line = distance;
+        if (distance < max_distance_line) {
+            max_distance_line = distance;
             
-      opt_line.x0 = Line.xpos();
-      opt_line.y0 = Line.ypos();
-      opt_line.x1 = Line.head().xpos();
-      opt_line.y1 = Line.head().ypos();
+            opt_line.x0 = Line.xpos();
+            opt_line.y0 = Line.ypos();
+            opt_line.x1 = Line.head().xpos();
+            opt_line.y1 = Line.head().ypos();
 
-      opt_line.distance        = distance;
-      opt_line.nearest_rel_pos = nearest_rel_pos;
+            opt_line.distance        = distance;
+            opt_line.nearest_rel_pos = nearest_rel_pos;
 
-      if (click_cd) {
-          opt_line.client_data1 = click_cd->get_cd1();
-          opt_line.client_data2 = click_cd->get_cd2();
-      }
-      else {
-          opt_line.client_data1 = 0;
-          opt_line.client_data2 = 0;
-      }
-      opt_line.exists = true;
+            if (click_cd) {
+                opt_line.client_data1 = click_cd->get_cd1();
+                opt_line.client_data2 = click_cd->get_cd2();
+            }
+            else {
+                opt_line.client_data1 = 0;
+                opt_line.client_data2 = 0;
+            }
+            opt_line.exists = true;
+        }
     }
-    return true;
+    return drawflag;
 }
 
 
@@ -85,8 +93,8 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
     }
     else {
         if (Y0 < clipRect.t) return false;
-    } 
-    
+    }
+
     if (clipRect.b == get_common()->get_screen().b) {
         if (Y0 > clipRect.b) return false;
     }
@@ -111,16 +119,14 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
         best_y_dist = Y0 - mouse_y;
     }
 
-    
-
     // align text
     int len        = opt_strlen ? opt_strlen : strlen(str);
     int text_width = (int)get_string_size(gc, str, len);
 
-    X0        = AW::x_alignment(X0, text_width, alignment);
+    X0        = x_alignment(X0, text_width, alignment);
     AW_pos X1 = X0+text_width;
 
-    // check against left right clipping areas
+    // check against left/right clipping areas
     if (X1 < clipRect.l) return false;
     if (X0 > clipRect.r) return false;
 
@@ -135,12 +141,16 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
     if (!opt_text.exists || // first candidate
         (!opt_text.exactHit && exact) || // previous candidate was no exact hit
         (dist2center<opt_text.dist2center)) // distance to text-center is smaller
-      {
-        opt_text.textArea     = Rectangle(rtransform(LineVector(X0, Y0, X1, Y1)));
-        opt_text.alignment    = alignment;
-        opt_text.rotation     = 0;
-        opt_text.distance     = max_distance_text;
-        opt_text.dist2center  = dist2center;
+    {
+        opt_text.textArea    = Rectangle(rtransform(LineVector(X0, Y0, X1, Y1)));
+        opt_text.alignment   = alignment;
+        opt_text.rotation    = 0;
+        opt_text.dist2center = dist2center;
+
+        opt_text.distance = max_distance_text;
+        opt_text.exactHit = exact;
+        opt_text.exists   = true;
+
         if (click_cd) {
             opt_text.client_data1 = click_cd->get_cd1();
             opt_text.client_data2 = click_cd->get_cd2();
@@ -149,11 +159,7 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
             opt_text.client_data1 = 0;
             opt_text.client_data2 = 0;
         }
-        // opt_text.client_data1 = clientdata1;
-        // opt_text.client_data2 = clientdata2;
-        opt_text.exists       = true;
-        opt_text.exactHit     = exact;
-      }
+    }
     return true;
 }
 
@@ -166,8 +172,6 @@ void AW_device_click::get_clicked_line(AW_clicked_line *ptr) const {
 void AW_device_click::get_clicked_text(AW_clicked_text *ptr) const {
     *ptr = opt_text;
 }
-
-//void AW_device_click::get_clicked(AW_clicked_element *ptr, int *is_text) const 
 
 bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2) {
     // detect the nearest item next to 'click'
