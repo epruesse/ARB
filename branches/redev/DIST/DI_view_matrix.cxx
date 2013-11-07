@@ -236,7 +236,7 @@ static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
         dmatrix->handle_move(event);
     }
     else {
-        AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, 20, 20, 0);
+        AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
 
         click_device->set_filter(AW_CLICK);
         click_device->reset();
@@ -255,12 +255,12 @@ static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
             click_device->get_clicked_text(&clicked_text);
             click_device->get_clicked_line(&clicked_line);
 
-            AW_CL cd1, cd2;
-            if (AW_getBestClick(&clicked_line, &clicked_text, &cd1, &cd2)) {
-                ClickAction action = static_cast<ClickAction>(cd1);
+            const AW_clicked_element *clicked = AW_getBestClick(&clicked_line, &clicked_text);
+            if (clicked) {
+                ClickAction action = static_cast<ClickAction>(clicked->cd1());
 
                 if (action == CLICK_SELECT_SPECIES) {
-                    long       idx    = long(cd2);
+                    long       idx    = long(clicked->cd2());
                     DI_MATRIX *matrix = dmatrix->get_matrix();
                     if (idx >= matrix->nentries) {
                         aw_message(GBS_global_string("Illegal idx %li [allowed: 0-%li]", idx, matrix->nentries));
@@ -283,7 +283,7 @@ static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
                     }
 
                     if (awar_bound) {
-                        double val = double(cd2)/MINMAX_GRANULARITY;
+                        double val = double(clicked->cd2())/MINMAX_GRANULARITY;
                         awar_bound->write_float(val);
                     }
                 }

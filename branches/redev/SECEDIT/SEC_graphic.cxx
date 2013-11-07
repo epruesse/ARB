@@ -494,16 +494,10 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
     }
     else {
         if (button != AW_BUTTON_MIDDLE && cmd != AWT_MODE_ZOOM) { // don't handle scroll + zoom
-            AW_CL    cd1, cd2;
-
-            if (AW_getBestClick(cl, ct, &cd1, &cd2)) {
-                SEC_base *elem   = reinterpret_cast<SEC_base*>(cd1);
-                int       abspos = cd2;
-
-#if defined(DEBUG) && 0
-                if (cl->exists) device->line(SEC_GC_CURSOR, cl->x0, cl->y0, cl->x1, cl->y1, -1, 0, -1);
-                if (ct->exists) device->box(SEC_GC_CURSOR, false, ct->textArea, -1, 0, -1);
-#endif // DEBUG
+            const AW_clicked_element *clicked = AW_getBestClick(cl, ct);
+            if (clicked) {
+                SEC_base *elem   = reinterpret_cast<SEC_base*>(clicked->cd1());
+                int       abspos = clicked->cd2();
 
                 Position world = device->rtransform(Position(screen_x, screen_y)); // current click position
                 error = handleMouse(device, event, button, cmd, world, elem, abspos);
@@ -513,7 +507,6 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
     if (error) aw_message(error);
 }
-
 
 SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini)
     : update_requested(SEC_UPDATE_RELOAD),
@@ -813,4 +806,5 @@ void SEC_graphic::show(AW_device *device) {
 void SEC_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
     aw_message("INFO MESSAGE");
 }
+
 

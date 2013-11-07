@@ -180,8 +180,6 @@ public:
 
 #define EPS               0.0001 // div zero check
 #define CLIP_OVERLAP      15
-#define AWT_CATCH_LINE    5     // pixel
-#define AWT_CATCH_TEXT    5     // pixel
 #define AWT_ZOOM_OUT_STEP 40    // (pixel) rand um screen
 #define AWT_MIN_WIDTH     100   // Minimum center screen (= screen-offset)
 

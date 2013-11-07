@@ -442,7 +442,7 @@ static void input_event(AW_window *aww, AWT_canvas *scr) {
     }
 
     if (!event_handled) {
-        AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH_LINE, AWT_CATCH_TEXT, 0);
+        AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
         click_device->set_filter(AW_CLICK);
         device->set_filter(AW_SCREEN);
 
@@ -575,9 +575,7 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
                     // fall-through
                 case AWT_MODE_MOVE: {
                     scr->init_device(device);
-                    AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA,
-                                                                          event.x, event.y, AWT_CATCH_LINE,
-                                                                          AWT_CATCH_TEXT, 0);
+                    AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
                     click_device->set_filter(AW_CLICK_DROP);
                     scr->init_device(click_device);
                     scr->gfx->show(click_device);
