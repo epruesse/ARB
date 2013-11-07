@@ -79,9 +79,9 @@ void AW_window::help_text(const char *help_id) {
     _at->helptext_for_next_button   = strdup(help_id);
 }
 
-void AW_window::sens_mask(AW_active Mask) {
-    aw_assert(legal_mask(Mask));
-    _at->widget_mask = Mask;
+void AW_window::sens_mask(AW_active mask) {
+    aw_assert(legal_mask(mask));
+    _at->widget_mask = mask;
 }
 
 void AW_window::callback(const WindowCallback& cb) {
