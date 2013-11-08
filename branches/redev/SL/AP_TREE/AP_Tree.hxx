@@ -258,7 +258,7 @@ public:
 
     void swap_sons();
     void swap_featured_sons();
-    void rotate_subtree();
+    void rotate_subtree(); // flip whole subtree ( = recursive swap_sons())
 
     GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves
     virtual void moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
