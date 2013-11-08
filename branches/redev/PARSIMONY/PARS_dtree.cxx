@@ -283,9 +283,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AW_
                                     AW_event_type type, AW_pos x, AW_pos y,
                                     const AW_clicked_line *cl, const AW_clicked_text *ct)
 {
-    static int  bl_drag_flag;
-    AP_tree    *at;
-    bool        recalc_branch_lengths = false;
+    AP_tree *at;
 
     switch (cmd) {
 #ifdef NNI_MODES
