@@ -147,7 +147,7 @@ namespace AW {
 
         // length-modifying members:
 
-        Vector& operator *= (const double& factor)  { return set(x()*factor, y()*factor, len*std::abs(factor)); }
+        Vector& operator *= (const double& factor)  { return set(x()*factor, y()*factor, length()*std::abs(factor)); }
         Vector& operator /= (const double& divisor) { return operator *= (1.0/divisor); }
 
         Vector& operator += (const Vector& other)  { return set(x()+other.x(), y()+other.y()); }
