@@ -152,28 +152,25 @@ public:
 
 
 struct AP_tree_members {
-public:
-    // elements from struct a_tree_node
-
-    // struct arb_flags
+public: // @@@ make members private
     unsigned int grouped : 1;   // indicates a folded group
     unsigned int hidden : 1;    // not shown because a father is a folded group
     unsigned int has_marked_children : 1; // at least one child is marked
     unsigned int callback_exists : 1;
     unsigned int gc : 6;        // color
 
-    char left_linewidth;
+    char left_linewidth; // @@@ it's stupid to store linewidth IN FATHER (also wastes space)
     char right_linewidth;
-    // struct arb_data
-    int  leaf_sum;  // number of leaf children of this node
-    int  view_sum;  // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
-    float   tree_depth; // max length of path; for drawing triangles */
-    float   min_tree_depth; // min length of path; for drawing triangle
-    float   spread;
+    int leaf_sum;   // number of leaf children of this node
+    int view_sum;   // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
-    float   left_angle;
-    float   right_angle;
+    float tree_depth;     // max length of path; for drawing triangles
+    float min_tree_depth; // min length of path; for drawing triangle
+    float spread;
+
+    float left_angle;   // @@@ it's stupid to store angles IN FATHER (also wastes space)
+    float right_angle;
 
     void reset_spread() {
         spread = 0;
@@ -282,13 +279,13 @@ public:
 
     int get_linewidth() const {
         if (!father) return 0;
-        return is_leftson(father) ? gr.left_linewidth : gr.right_linewidth;
+        return is_leftson(father) ? get_father()->gr.left_linewidth : get_father()->gr.right_linewidth;
     }
     // cppcheck-suppress functionConst
     void set_linewidth(int width) {
         ap_assert(width >= 1 && width < 128);
         if (father) {
-            char& lw = is_leftson(father) ? gr.left_linewidth : gr.right_linewidth;
+            char& lw = is_leftson(father) ? get_father()->gr.left_linewidth : get_father()->gr.right_linewidth;
             lw       = width;
         }
     }

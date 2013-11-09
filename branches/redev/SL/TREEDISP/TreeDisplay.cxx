@@ -1407,24 +1407,23 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     if (at) {
                         AP_tree *at_fath = at->get_father();
                         if (at_fath) {
-                            char &linewidth = (at_fath->leftson == at)
-                                ? at_fath->gr.left_linewidth
-                                : at_fath->gr.right_linewidth;
-
+                            int linewidth = at->get_linewidth();
+                            int old       = linewidth;
                             switch (button) {
                                 case AW_BUTTON_LEFT:
-                                    linewidth       = (linewidth <= 1) ? 0 : linewidth-1;
-                                    exports.save    = 1;
-                                    exports.refresh = 1;
+                                    linewidth = (linewidth <= 1) ? 0 : linewidth-1;
                                     break;
-
                                 case AW_BUTTON_RIGHT:
                                     linewidth += 1;
-                                    exports.save    = 1;
-                                    exports.refresh = 1;
                                     break;
 
                                 case AW_BUTTON_MIDDLE: td_assert(0); break; // shall be handled by caller
+                            }
+
+                            if (linewidth != old) {
+                                at->set_linewidth(linewidth);
+                                exports.save    = 1;
+                                exports.refresh = 1;
                             }
                         }
                     }
