@@ -286,7 +286,6 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AW_
     AP_tree *at;
 
     switch (cmd) {
-#ifdef NNI_MODES
         case AWT_MODE_NNI:
             if (type==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
@@ -374,7 +373,6 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AW_
                 GB_begin_transaction(gb_main);
             }
             break;
-#endif // NNI_MODES
 
         default:
             AWT_graphic_tree::command(device, cmd, button, key_modifier, key_code, key_char, type, x, y, cl, ct);
