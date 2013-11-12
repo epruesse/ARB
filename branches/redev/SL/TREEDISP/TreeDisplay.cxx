@@ -30,6 +30,8 @@
   class AP_tree
 ****************************/
 
+#define AWAR_RULER_WIDTH "ruler/ruler_width"
+
 using namespace AW;
 
 AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw) {
@@ -1104,7 +1106,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                 break;
             case AWT_MODE_LINE:
                 if (type == AW_Mouse_Press) {
-                    sprintf(awar, "ruler/ruler_width");
+                    sprintf(awar, AWAR_RULER_WIDTH);
                     long i = *GBT_readOrCreate_int(gb_tree, awar,  0);
                     switch (button) {
                         case AW_BUTTON_LEFT:
@@ -2296,7 +2298,7 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
         sprintf(awar, "ruler/%s/text_y", tree_awar);
         ruler_text_y = *GBT_readOrCreate_float(gb_tree, awar, ruler_text_y);
 
-        sprintf(awar, "ruler/ruler_width");
+        sprintf(awar, AWAR_RULER_WIDTH);
         int ruler_width = *GBT_readOrCreate_int(gb_tree, awar, 0);
 
         device->set_line_attributes(gc, ruler_width+baselinewidth, AW_SOLID);
