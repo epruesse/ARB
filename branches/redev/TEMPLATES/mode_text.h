@@ -15,13 +15,18 @@
 
 #define MT_MODE(modeName) modeName " MODE"
 
-#define MT_LEFT(leftInfo)     "   LEFT: " leftInfo
-#define MT_RIGHT(rightInfo)   "   RIGHT: " rightInfo
-#define MT_MIDDLE(middleInfo) "   MIDDLE: " middleInfo
+#define MT_LEFT(leftInfo)     "  LEFT: " leftInfo
+#define MT_RIGHT(rightInfo)   "  RIGHT: " rightInfo
+#define MT_MIDDLE(middleInfo) "  MIDDLE: " middleInfo
+#define MT_KEYS(keyInfo)      "  (" keyInfo ")"
 
 #define MODE_TEXT_1BUTTON(modeName,leftInfo)                       MT_MODE(modeName) MT_LEFT(leftInfo)
 #define MODE_TEXT_2BUTTONS(modeName,leftInfo,rightInfo)            MT_MODE(modeName) MT_LEFT(leftInfo) MT_RIGHT(rightInfo)
 #define MODE_TEXT_3BUTTONS(modeName,leftInfo,middleInfo,rightInfo) MT_MODE(modeName) MT_LEFT(leftInfo) MT_MIDDLE(middleInfo) MT_RIGHT(rightInfo)
+
+#define MODE_TEXT_1BUTTON_KEYS(modeName,leftInfo,keyInfo)                       MT_MODE(modeName) MT_LEFT(leftInfo) MT_KEYS(keyInfo)
+#define MODE_TEXT_2BUTTONS_KEYS(modeName,leftInfo,rightInfo,keyInfo)            MT_MODE(modeName) MT_LEFT(leftInfo) MT_RIGHT(rightInfo) MT_KEYS(keyInfo)
+#define MODE_TEXT_3BUTTONS_KEYS(modeName,leftInfo,middleInfo,rightInfo,keyInfo) MT_MODE(modeName) MT_LEFT(leftInfo) MT_MIDDLE(middleInfo) MT_RIGHT(rightInfo) MT_KEYS(keyInfo)
 
 #define MODE_TEXT_STANDARD_ZOOMMODE() MODE_TEXT_2BUTTONS("ZOOM", "zoom in", "zoom out (click or drag)")
 
