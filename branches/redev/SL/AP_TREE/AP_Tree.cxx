@@ -1235,7 +1235,7 @@ void AP_tree::remove_bootstrap() {
 }
 void AP_tree::reset_branchlengths() {
     if (!is_leaf) {
-        leftlen = rightlen = 0.1;
+        leftlen = rightlen = DEFAULT_BRANCH_LENGTH;
 
         get_leftson()->reset_branchlengths();
         get_rightson()->reset_branchlengths();
@@ -1254,7 +1254,7 @@ void AP_tree::scale_branchlengths(double factor) {
 
 void AP_tree::bootstrap2branchlen() { // copy bootstraps to branchlengths
     if (is_leaf) {
-        set_branchlength(0.1);
+        set_branchlength(DEFAULT_BRANCH_LENGTH);
     }
     else {
         if (remark_branch && father) {

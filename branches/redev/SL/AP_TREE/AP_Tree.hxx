@@ -263,7 +263,7 @@ public:
     virtual void set_root();
 
     void remove_bootstrap();                        // remove bootstrap values from subtree
-    void reset_branchlengths();                     // reset branchlengths of subtree to 0.1
+    void reset_branchlengths();                     // reset branchlengths of subtree to DEFAULT_BRANCH_LENGTH
     void scale_branchlengths(double factor);
     void bootstrap2branchlen();                     // copy bootstraps to branchlengths
     void branchlen2bootstrap();                     // copy branchlengths to bootstraps

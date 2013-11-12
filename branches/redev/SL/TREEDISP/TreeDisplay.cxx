@@ -32,6 +32,8 @@
 
 #define AWAR_RULER_WIDTH "ruler/ruler_width"
 
+#define DEFAULT_RULER_LENGTH DEFAULT_BRANCH_LENGTH
+
 using namespace AW;
 
 AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw) {
@@ -1055,16 +1057,16 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (button==AW_BUTTON_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar, "ruler/size");
                             /*tree_awar =*/ show_ruler(device, this->drag_gc);
-                            double rulerSize = *GBT_readOrCreate_float(gb_tree, awar, 0.0);
-                            GBT_write_float(gb_tree, awar, discrete_ruler_length(rulerSize, 0.1));
+                            double rulerSize = *GBT_readOrCreate_float(gb_tree, awar, DEFAULT_RULER_LENGTH);
+                            GBT_write_float(gb_tree, awar, discrete_ruler_length(rulerSize, DEFAULT_RULER_LENGTH));
                             /*tree_awar =*/ show_ruler(device, this->drag_gc);
                         }
                         break;
                     case AW_Mouse_Drag: {
                         sprintf(awar, "ruler/size");
-                        h = *GBT_readOrCreate_float(gb_tree, awar, 0.0);
+                        h = *GBT_readOrCreate_float(gb_tree, awar, DEFAULT_RULER_LENGTH);
                         if (button == AW_BUTTON_RIGHT) {
-                            GBT_write_float(gb_tree, awar, discrete_ruler_length(h, 0.1));
+                            GBT_write_float(gb_tree, awar, discrete_ruler_length(h, DEFAULT_RULER_LENGTH));
                         }
                         /*tree_awar = */ show_ruler(device, this->drag_gc);
 
@@ -1078,7 +1080,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (h<0.01) h = 0.01;
 
                         if (button==AW_BUTTON_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
-                            double h_rounded = discrete_ruler_length(h, 0.1);
+                            double h_rounded = discrete_ruler_length(h, DEFAULT_RULER_LENGTH);
                             GBT_write_float(gb_tree, awar, h_rounded);
                             show_ruler(device, this->drag_gc);
                             GBT_write_float(gb_tree, awar, h);
@@ -1096,8 +1098,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         this->exports.refresh = 1;
                         if (button==AW_BUTTON_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar, "ruler/size");
-                            double rulerSize = *GBT_readOrCreate_float(gb_tree, awar, 0.0);
-                            GBT_write_float(gb_tree, awar, discrete_ruler_length(rulerSize, 0.1));
+                            double rulerSize = *GBT_readOrCreate_float(gb_tree, awar, DEFAULT_RULER_LENGTH);
+                            GBT_write_float(gb_tree, awar, discrete_ruler_length(rulerSize, DEFAULT_RULER_LENGTH));
                         }
                         break;
                     default:
@@ -2231,7 +2233,7 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
     GB_transaction dummy(gb_tree);
 
     sprintf(awar, "ruler/size");
-    float ruler_size = *GBT_readOrCreate_float(gb_tree, awar, 0.1);
+    float ruler_size = *GBT_readOrCreate_float(gb_tree, awar, DEFAULT_RULER_LENGTH);
     float ruler_x = 0.0;
     float ruler_y = 0.0;
     float ruler_text_x = 0.0;

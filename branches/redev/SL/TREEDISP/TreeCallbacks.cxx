@@ -473,7 +473,7 @@ void NT_remove_bootstrap(AW_window*, AW_CL cl_ntw, AW_CL) // delete all bootstra
     }
 }
 
-void NT_reset_branchlengths(AW_window*, AW_CL cl_ntw, AW_CL) // set all branchlengths to 0.1
+void NT_reset_branchlengths(AW_window*, AW_CL cl_ntw, AW_CL) // set all branchlengths to DEFAULT_BRANCH_LENGTH
 {
     AWT_canvas     *ntw = (AWT_canvas*)cl_ntw;
     GB_transaction  gb_dummy(ntw->gb_main);
