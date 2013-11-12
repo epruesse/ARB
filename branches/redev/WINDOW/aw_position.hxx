@@ -225,6 +225,23 @@ namespace AW {
     inline bool is_vertical(const Vector& v) { return nearlyZero(v.x()) && !nearlyZero(v.y()); }
     inline bool is_horizontal(const Vector& v) { return !nearlyZero(v.x()) && nearlyZero(v.y()); }
 
+    inline Vector orthogonal_projection(const Vector& projectee, const Vector& target) {
+        //! returns the orthogonal projection of 'projectee' onto 'target'
+        double tlen = target.length();
+        return target * (scalarProduct(projectee, target) / (tlen*tlen));
+    }
+    inline Vector normalized(const Vector& v) {
+        //! returns the normalized Vector of 'v', i.e. a Vector with same orientation, but length 1
+        return Vector(v).normalize();
+    }
+    inline bool are_parallel(const Vector& v1, const Vector& v2) {
+        //! returns true, if two vectors have the same orientation
+        Vector diff = normalized(v1)-normalized(v2);
+        return !diff.has_length();
+    }
+    //! returns true, if two vectors have opposite orientations
+    inline bool are_antiparallel(const Vector& v1, const Vector& v2) { return are_parallel(v1, -v2); }
+
     // -------------------------------------------------
     //      a positioned vector, representing a line
 
