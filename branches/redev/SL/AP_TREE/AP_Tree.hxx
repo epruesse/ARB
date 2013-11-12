@@ -279,14 +279,36 @@ public:
 
     int get_linewidth() const {
         if (!father) return 0;
-        return is_leftson(father) ? get_father()->gr.left_linewidth : get_father()->gr.right_linewidth;
+        const AP_tree_members& fgr = get_father()->gr;
+        return is_leftson(father) ? fgr.left_linewidth : fgr.right_linewidth;
     }
     // cppcheck-suppress functionConst
     void set_linewidth(int width) {
-        ap_assert(width >= 1 && width < 128);
+        ap_assert(width >= 0 && width < 128);
         if (father) {
-            char& lw = is_leftson(father) ? get_father()->gr.left_linewidth : get_father()->gr.right_linewidth;
+            AP_tree_members& fgr = get_father()->gr;
+            char& lw = is_leftson(father) ? fgr.left_linewidth : fgr.right_linewidth;
             lw       = width;
+        }
+    }
+
+    float get_angle() const {
+        if (!father) return 0;
+        const AP_tree_members& fgr = get_father()->gr;
+        return is_leftson(father) ? fgr.left_angle : fgr.right_angle;
+    }
+    void set_angle(double angle) {
+        if (father) {
+            AP_tree_members& fgr = get_father()->gr;
+            float& a = is_leftson(father) ? fgr.left_angle : fgr.right_angle;
+            a        = angle;
+
+            if (father->is_root_node()) {
+                // always set angle of other son at root-node
+                // @@@ works wrong if locigal-zoom is active
+                float& b = is_leftson(father) ? fgr.right_angle : fgr.left_angle;
+                b        = angle;
+            }
         }
     }
 
