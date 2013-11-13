@@ -941,17 +941,19 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     this->set_root();
     rootNode()->costs();
 
-    int             visited_subtrees = 0;
-    int     better_subtrees = 0;
+    int visited_subtrees = 0;
+    int better_subtrees  = 0;
     for (i = 0; i < 8; i++) {
         pars_ref[i] = i;
         pars[i] = -1;
 
         if (!pars_refpntr[i])   continue;
         if (pars_refpntr[i]->is_leaf) continue;
-
-        ap_assert(pars_refpntr[i]->kernighan != AP_NONE); // i think this condition was originally meant below. if you find a case where this occurs please examine whats going on!
-        // if (!pars_refpntr[i]->kernighan == AP_NONE) continue; // @@@ always false (never continues)
+        
+        // KL recursion was broken (see changeset [11010] for how)
+        // - IMO it should only descent into AP_NONE branches (see setters of 'kernighan'-flag)
+        // - quick test shows calculation is much faster and results seem to be better.
+        if (pars_refpntr[i]->kernighan != AP_NONE) continue;
 
         if (pars_refpntr[i]->gr.hidden) continue;
         if (pars_refpntr[i]->get_father()->gr.hidden) continue;
