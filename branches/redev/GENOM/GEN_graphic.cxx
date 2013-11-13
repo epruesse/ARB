@@ -39,9 +39,6 @@ GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_ins
 {
     exports.set_standard_default_padding();
 
-    rot_ct.exists = false;
-    rot_cl.exists = false;
-
     set_display_style(GEN_DisplayStyle(aw_root->awar(AWAR_GENMAP_DISPLAY_TYPE(window_nr))->read_int()));
 }
 

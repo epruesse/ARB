@@ -64,10 +64,6 @@ class GEN_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
 
 protected:
 
-    // variables - tree compatibility
-    AW_clicked_line rot_cl;
-    AW_clicked_text rot_ct;
-
     AW_device *disp_device;     // device for recursive functions
 
 public:

@@ -16,7 +16,7 @@ OCCURRENCE	ARB_NT <button in the left column>
 DESCRIPTION	The 'SWAP MODE' allows you to exchange the positions of adjacent
 		branches of the displayed tree.
 
-		Click on the ninth button in the left column of the 'ARB_NT'
+		Click on the eleventh button in the left column of the 'ARB_NT'
 		window to activate the 'SWAP MODE'. 
 
 		Swap branches:
@@ -26,7 +26,12 @@ DESCRIPTION	The 'SWAP MODE' allows you to exchange the positions of adjacent
 			(with respect to the indicated [open rectangle] root)
 			and click the left mouse button.
 
+                        The topology within the subtrees is not swapped.
 
+                Flip subtrees:
+
+                        Use the right mouse button, to flip the whole
+                        subtree.
 
 NOTES		Short descriptions of the 'MODE' and the functions assigned
 		to the mouse buttons are given in the fourth line of the
@@ -38,15 +43,11 @@ NOTES		Short descriptions of the 'MODE' and the functions assigned
 		The middle mouse button (placed anywhere within the tree
 		display area) can be used to move the whole tree.
 
-		Swapping adjacent subtrees, the topology within the subtrees
-		is not changed
-
 		The scale bar and its label can be moved by positioning the
 		cursor anywhere on the bar, keeping the left mouse button
 		pressed, moving the cursor to the desired position and
                 subsequently releasing the mouse button. The label of the bar
 		can be moved independently.
-
 
 EXAMPLES	None
 

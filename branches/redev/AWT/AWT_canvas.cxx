@@ -381,6 +381,10 @@ static bool handleZoomEvent(AWT_canvas *scr, AW_device *device, const AW_event& 
             AWT_expose_cb(NULL, scr);
         }
     }
+    else if (event.keycode == AW_KEY_ASCII && event.character == '0') { // reset zoom (as promised by MODE_TEXT_STANDARD_ZOOMMODE)
+        scr->zoom_reset_and_refresh();
+        handled = true;
+    }
     return handled;
 }
 
@@ -416,6 +420,29 @@ bool AWT_canvas::handleWheelEvent(AW_device *device, const AW_event& event) {
     return true;
 }
 
+void AWT_graphic::postevent_handler(GBDATA *gb_main) {
+    // handle AWT_graphic_exports
+
+    if (exports.save) {
+        GB_ERROR error = save(gb_main, 0, 0, 0);
+        if (error) {
+            aw_message(error);
+            load(gb_main, 0, 0, 0);
+        }
+        exports.structure_change = 1;
+    }
+    if (exports.structure_change) {
+        update_structure();
+        exports.resize = 1;
+    }
+    if (gb_main) update(gb_main);
+}
+
+void AWT_canvas::postevent_handler() {
+    gfx->postevent_handler(gb_main);
+    gfx->refresh_by_exports(this);
+}
+
 static void input_event(AW_window *aww, AWT_canvas *scr) {
     awt_assert(aww = scr->aww);
 
@@ -433,7 +460,10 @@ static void input_event(AW_window *aww, AWT_canvas *scr) {
 
     bool event_handled = false;
 
-    if (scr->mode == AWT_MODE_ZOOM) { // zoom mode is identical for all applications, so handle it here
+    if (event.button == AW_BUTTON_MIDDLE) {
+        event_handled = true; // only set zoom_drag_e.. below
+    }
+    else if (scr->mode == AWT_MODE_ZOOM) { // zoom mode is identical for all applications, so handle it here
         event_handled = handleZoomEvent(scr, device, event, ZOOM_SPEED_CLICK);
     }
 
@@ -456,25 +486,7 @@ static void input_event(AW_window *aww, AWT_canvas *scr) {
         AWT_graphic_event gevent(scr->mode, event, false, &scr->clicked_line, &scr->clicked_text);
         scr->gfx->handle_command(device, gevent);
 
-        AWT_graphic_exports& exports = scr->gfx->exports;
-
-        if (exports.save) {
-            // save it
-            GB_ERROR error = scr->gfx->save(scr->gb_main, 0, 0, 0);
-            if (error) {
-                aw_message(error);
-                scr->gfx->load(scr->gb_main, 0, 0, 0);
-            }
-            exports.structure_change = 1;
-        }
-        if (exports.structure_change) {
-            scr->gfx->update_structure();
-            exports.resize = 1;
-        }
-        if (scr->gb_main) {
-            scr->gfx->update(scr->gb_main);
-        }
-        scr->refresh_by_exports();
+        scr->postevent_handler();
     }
 
     scr->zoom_drag_ex = event.x;
@@ -596,14 +608,10 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
 
             AWT_graphic_event gevent(scr->mode, event, true, &scr->clicked_line, &scr->clicked_text);
             scr->gfx->handle_command(device, gevent);
-
-            if (scr->gb_main) {
-                scr->gfx->update(scr->gb_main);
-            }
         }
     }
 
-    scr->refresh_by_exports();
+    scr->postevent_handler();
     scr->pop_transaction();
 }
 

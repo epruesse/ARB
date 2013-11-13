@@ -150,6 +150,7 @@ public:
     ARB_edge find_innermost_edge();
 };
 
+#define DEFAULT_LINEWIDTH 0
 
 struct AP_tree_members {
 public: // @@@ make members private
@@ -173,15 +174,15 @@ public: // @@@ make members private
     float right_angle;
 
     void reset_spread() {
-        spread = 0;
+        spread = 1.0;
     }
     void reset_rotation() {
         left_angle  = 0;
         right_angle = 0;
     }
     void reset_linewidths() {
-        left_linewidth  = 0;
-        right_linewidth = 0;
+        left_linewidth  = DEFAULT_LINEWIDTH;
+        right_linewidth = DEFAULT_LINEWIDTH;
     }
     void reset_layout() {
         reset_spread();
@@ -283,6 +284,7 @@ public:
         return is_leftson(father) ? fgr.left_linewidth : fgr.right_linewidth;
     }
     // cppcheck-suppress functionConst
+    void set_linewidth_recursive(int width);
     void set_linewidth(int width) {
         ap_assert(width >= 0 && width < 128);
         if (father) {

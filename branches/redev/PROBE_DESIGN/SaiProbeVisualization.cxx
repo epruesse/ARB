@@ -79,8 +79,9 @@ SAI_graphic::SAI_graphic(AW_root *aw_rooti, GBDATA *gb_maini) {
 
 void SAI_graphic::handle_command(AW_device *, AWT_graphic_event& event) {
     if (event.type() == AW_Mouse_Press && event.button() != AW_BUTTON_MIDDLE) {
-        if (event.ct()->exists) {
-            int clicked_idx = (int)event.ct()->client_data1;
+        const AW_clicked_element *clicked = event.best_click();
+        if (clicked->is_text()) {
+            int         clicked_idx  = (int)clicked->cd1();
             const char *species_name = g_pbdata->probeSpecies[clicked_idx];
 
             aw_root->awar(AWAR_SPECIES_NAME)->write_string(species_name);

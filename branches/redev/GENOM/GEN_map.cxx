@@ -493,7 +493,7 @@ static void GEN_mode_event(AW_window *aws, GEN_map_window *win, AWT_COMMAND_MODE
         case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "click to select a gene"); break;
         case AWT_MODE_EDIT:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");         break;
 
-        case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE();
+        case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
 
         default: text = no_mode_text_defined(); break;
     }

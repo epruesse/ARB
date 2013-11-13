@@ -37,8 +37,10 @@ NOTES		Short descriptions of the 'MODE' and the functions assigned
 		to the mouse buttons are given in the fourth line of the
 		'ARB_NT' window.
 
-		To restore the initial scale of the display choose the 'Reset
-		Logical Zoom' item from the 'ETC' menu of the 'ARB_NT' window.
+		To reset the display to show the whole tree either
+                - choose the 'Logical Zoom' item from the 'Tree/Reset zoom' menu or
+                - left-click somewhere outside the tree or
+                - press the key '0' (zero) in the tree display.
 
 		The middle mouse button (placed anywhere within the tree
 		display area) can be used to move the whole tree.

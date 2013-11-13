@@ -516,10 +516,6 @@ SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini)
       last_saved(0)
 {
     exports.set_standard_default_padding();
-
-    rot_ct.exists     = false;
-    rot_cl.exists     = false;
-    old_rot_cl.exists = false;
 }
 
 SEC_graphic::~SEC_graphic() {

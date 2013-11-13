@@ -24,7 +24,7 @@ enum AWT_COMMAND_MODE {
     AWT_MODE_SELECT,
     AWT_MODE_MARK,
     AWT_MODE_GROUP,
-    AWT_MODE_ZOOM,          // no command
+    AWT_MODE_ZOOM,
     AWT_MODE_LZOOM,
     AWT_MODE_EDIT, // species info
     AWT_MODE_WWW,
@@ -82,7 +82,7 @@ class AWT_graphic_exports {
 public:
     unsigned int refresh : 1;          // 1 -> do a refresh
     unsigned int resize : 1;           // 1 -> size of graphic might have changed (implies refresh)
-    unsigned int structure_change : 1; // 1 -> call update_structure (implies resize)
+    unsigned int structure_change : 1; // 1 -> call update_structure (implies resize) // @@@ rename -> need_reload
     unsigned int zoom_reset : 1;       // 1 -> do a zoom-reset (implies resize)
     unsigned int save : 1;             // 1 -> save structure to DB (implies structure_change)
 
@@ -161,12 +161,7 @@ public:
 
     AW_event_type type() const { return M_type; }
 
-    AW_pos x() const __ATTR__DEPRECATED("use position()") { return mousepos.xpos(); }
-    AW_pos y() const __ATTR__DEPRECATED("use position()") { return mousepos.ypos(); }
     const AW::Position& position() const { return mousepos; } // screen-coordinates
-
-    const AW_clicked_line *cl() const __ATTR__DEPRECATED("use best_click()") { return M_cl; } 
-    const AW_clicked_text *ct() const __ATTR__DEPRECATED("use best_click()") { return M_ct; } 
     const AW_clicked_element *best_click() const { return AW_getBestClick(M_cl, M_ct); }
 };
 
@@ -174,6 +169,7 @@ class AWT_graphic {
     friend class AWT_canvas;
 
     void refresh_by_exports(AWT_canvas *scr);
+    void postevent_handler(GBDATA *gb_main);
 
 protected:
     int drag_gc;
@@ -292,8 +288,6 @@ public:
 
     void set_consider_text_for_zoom_reset(bool consider) { consider_text_for_size = consider; }
 
-    void refresh_by_exports() { gfx->refresh_by_exports(this); }
-
     void zoom(AW_device *device, bool zoomIn, const AW::Rectangle& wanted_part, const AW::Rectangle& current_part, int percent);
 
     void set_mode(AWT_COMMAND_MODE mo) { mode = mo; }
@@ -306,6 +300,8 @@ public:
     bool handleWheelEvent(AW_device *device, const AW_event& event);
 
     const char *get_gc_base_name() const { return gc_base_name; }
+
+    void postevent_handler();
 };
 
 inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {

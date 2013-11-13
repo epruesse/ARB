@@ -25,23 +25,46 @@
 // @@@ TODO: elements of the following classes should go private!
 
 class AW_clicked_element {
-public: // @@@ make private
     AW_CL client_data1;
     AW_CL client_data2;
-    bool  exists;           // true if a drawn element was clicked, else false
-    int   distance;         // distance in pixel to nearest line/text
+
+public: // @@@ make private
+
+    bool exists;            // true if a drawn element was clicked, else false
+    int  distance;          // distance in pixel to nearest line/text
 
     AW_pos nearest_rel_pos;        // 0 = at left(upper) small-side, 1 = at right(lower) small-side of textArea
 
 protected:
 
-    AW_clicked_element() : client_data1(0), client_data2(0), exists(false), distance(-1), nearest_rel_pos(0) {}
+    void init() {
+        client_data1    = 0;
+        client_data2    = 0;
+        exists          = false;
+        distance        = -1;
+        nearest_rel_pos = 0;
+    }
+
+    AW_clicked_element() { init(); }
     virtual ~AW_clicked_element() {}
+
+    virtual void clear() = 0;
 
 public:
 
     AW_CL cd1() const { return client_data1; }
     AW_CL cd2() const { return client_data2; }
+
+    void copy_cds(const AW_click_cd *click_cd) {
+        if (click_cd) {
+            client_data1 = click_cd->get_cd1();
+            client_data2 = click_cd->get_cd2();
+        }
+        else {
+            client_data1 = 0;
+            client_data2 = 0;
+        }
+    }
 
     virtual AW::Position get_attach_point() const = 0;
     virtual bool is_text() const                  = 0;
@@ -63,11 +86,18 @@ public:
 
 class AW_clicked_line : public AW_clicked_element {
 public:
-    AW_pos x0, y0, x1, y1;  // @@@ make this a LineVector and private
+    AW_pos x0, y0, x1, y1;  // @@@ make this a LineVector and private!
+private:
+    void init() {
+        x0 = 0; y0 = 0;
+        x1 = 0; y1 = 0;
+    }
+public:
 
-    AW_clicked_line() : x0(0), y0(0), x1(0), y1(0) {}
+    AW_clicked_line() { init(); }
+    void clear() OVERRIDE { AW_clicked_element::init(); init(); }
 
-    bool is_text() const { return false; }
+    bool is_text() const OVERRIDE { return false; }
     bool operator == (const AW_clicked_line& other) const { return nearlyEqual(get_line(), other.get_line()); }
 
     AW::Position get_attach_point() const OVERRIDE {
@@ -83,14 +113,22 @@ public:
 };
 
 class AW_clicked_text : public AW_clicked_element {
-public:
+public: // @@@ make members private
     AW::Rectangle textArea;     // world coordinates of text
     int           cursor;       // which letter was selected, from 0 to strlen-1 [or -1 if not 'exactHit']
     bool          exactHit;     // true -> real click inside text bounding-box (not only near text) (@@@ redundant: exactHit == (distance == 0))
+private:
+    void init() {
+        textArea = AW::Rectangle();
+        cursor   = -1;
+        exactHit = false;
+    }
+public:
 
-    AW_clicked_text() : cursor(-1), exactHit(false) {}
+    AW_clicked_text() { init(); }
+    void clear() OVERRIDE { AW_clicked_element::init(); init(); }
 
-    bool is_text() const { return true; }
+    bool is_text() const OVERRIDE { return true; }
     bool operator == (const AW_clicked_text& other) const { return nearlyEqual(textArea, other.textArea); }
 
     AW::Position get_attach_point() const OVERRIDE {

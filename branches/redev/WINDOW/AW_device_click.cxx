@@ -32,11 +32,8 @@ void AW_device_click::init_click(AW_pos mousex, AW_pos mousey, int max_distance,
     max_distance_line = max_distance;
     max_distance_text = max_distance;
 
-    memset((char *)&opt_line, 0, sizeof(opt_line));
-    memset((char *)&opt_text, 0, sizeof(opt_text));
-
-    opt_line.exists = false;
-    opt_text.exists = false;
+    opt_line.clear();
+    opt_text.clear();
 }
 
 AW_DEVICE_TYPE AW_device_click::type() {
@@ -66,14 +63,7 @@ bool AW_device_click::line_impl(int /*gc*/, const AW::LineVector& Line, AW_bitse
             opt_line.distance = distance;
             opt_line.set_rel_pos(nearest_rel_pos);
 
-            if (click_cd) {
-                opt_line.client_data1 = click_cd->get_cd1();
-                opt_line.client_data2 = click_cd->get_cd2();
-            }
-            else {
-                opt_line.client_data1 = 0;
-                opt_line.client_data2 = 0;
-            }
+            opt_line.copy_cds(click_cd);
             opt_line.exists = true;
         }
     }
@@ -194,16 +184,9 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
 
             opt_text.distance = max_distance_text;
             opt_text.exactHit = exact;
-            opt_text.exists   = true;
 
-            if (click_cd) {
-                opt_text.client_data1 = click_cd->get_cd1();
-                opt_text.client_data2 = click_cd->get_cd2();
-            }
-            else {
-                opt_text.client_data1 = 0;
-                opt_text.client_data2 = 0;
-            }
+            opt_text.copy_cds(click_cd);
+            opt_text.exists   = true;
         }
     }
     return true;

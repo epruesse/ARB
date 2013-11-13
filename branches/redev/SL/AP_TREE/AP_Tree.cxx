@@ -1861,6 +1861,13 @@ void AP_tree::reset_rotation() {
     }
 }
 
+void AP_tree::set_linewidth_recursive(int width) {
+    set_linewidth(width);
+    if (!is_leaf) {
+        get_leftson()->set_linewidth_recursive(width);
+        get_rightson()->set_linewidth_recursive(width);
+    }
+}
 void AP_tree::reset_linewidths() {
     if (!is_leaf) {
         gr.reset_linewidths();
@@ -1876,4 +1883,5 @@ void AP_tree::reset_layout() {
         get_rightson()->reset_rotation();
     }
 }
+
 

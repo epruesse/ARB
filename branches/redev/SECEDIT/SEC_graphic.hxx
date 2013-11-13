@@ -45,11 +45,6 @@ class SEC_graphic : public AWT_graphic, virtual Noncopyable {
 
 protected:
 
-    // variables - tree compatibility
-    AW_clicked_line rot_cl;
-    AW_clicked_text rot_ct;
-    AW_clicked_line old_rot_cl;
-
     AW_device *disp_device; // device for recursive functions
 
     GB_ERROR handleKey(AW_event_type event, AW_key_mod key_modifier, AW_key_code key_code, char key_char);

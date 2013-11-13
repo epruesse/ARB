@@ -273,31 +273,21 @@ void AWT_graphic_parsimony::show(AW_device *device) {
 }
 
 void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event& event) {
-    command(device, // @@@ inline this call 
-            event.cmd(), event.button(), event.key_modifier(), event.key_code(), event.key_char(),
-            event.type(), event.x(), event.y(), event.cl(), event.ct()
-        );
-}
+    ClickedTarget clicked(this, event.best_click());
 
-void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AW_MouseButton button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
-                                    AW_event_type type, AW_pos x, AW_pos y,
-                                    const AW_clicked_line *cl, const AW_clicked_text *ct)
-{
-    AP_tree *at;
+    switch (event.cmd()) {
+        // @@@ something is designed completely wrong here!
+        // why do all commands close TA and reopen when done?
 
-    switch (cmd) {
         case AWT_MODE_NNI:
-            if (type==AW_Mouse_Press) {
+            if (event.type()==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
-                switch (button) {
+                switch (event.button()) {
                     case AW_BUTTON_LEFT: {
-                        if (cl->exists) {
-                            arb_progress progress("NNI optimize subtree");
-
-                            at                = (AP_tree *)cl->client_data1;
-                            AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, at);
+                        if (clicked.node()) {
+                            arb_progress  progress("NNI optimize subtree");
+                            AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, clicked.node());
                             atn->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
-
                             exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
                         }
@@ -315,20 +305,20 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AW_
                         ASSERT_VALID_TREE(get_root_node());
                         break;
                     }
-                    case AW_BUTTON_MIDDLE: ap_assert(0); break; // shall be handled by caller
+
+                    default: break;
                 }
                 GB_begin_transaction(gb_main);
             }
             break;
         case AWT_MODE_KERNINGHAN:
-            if (type==AW_Mouse_Press) {
+            if (event.type()==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
-                switch (button) {
+                switch (event.button()) {
                     case AW_BUTTON_LEFT:
-                        if (cl->exists) {
-                            arb_progress progress("Kernighan-Lin optimize subtree");
-                            at = (AP_tree *)cl->client_data1;
-                            parsimony.kernighan_optimize_tree(at);
+                        if (clicked.node()) {
+                            arb_progress  progress("Kernighan-Lin optimize subtree");
+                            parsimony.kernighan_optimize_tree(clicked.node());
                             this->exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
                         }
@@ -340,22 +330,19 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AW_
                         ASSERT_VALID_TREE(get_root_node());
                         break;
                     }
-                    case AW_BUTTON_MIDDLE: ap_assert(0); break; // shall be handled by caller
+                    default: break;
                 }
                 GB_begin_transaction(gb_main);
             }
             break;
         case AWT_MODE_OPTIMIZE:
-            if (type==AW_Mouse_Press) {
+            if (event.type()==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
-                switch (button) {
+                switch (event.button()) {
                     case AW_BUTTON_LEFT:
-                        if (cl->exists) {
-                            arb_progress progress("Optimizing subtree");
-
-                            at = (AP_tree *)cl->client_data1;
-                            
-                            if (at) parsimony.optimize_tree(at, progress);
+                        if (clicked.node()) {
+                            arb_progress  progress("Optimizing subtree");
+                            parsimony.optimize_tree(clicked.node(), progress);
                             this->exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
                         }
@@ -368,14 +355,14 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, AW_
                         ASSERT_VALID_TREE(get_root_node());
                         break;
                     }
-                    case AW_BUTTON_MIDDLE: ap_assert(0); break; // shall be handled by caller
+                    default: break;
                 }
                 GB_begin_transaction(gb_main);
             }
             break;
 
         default:
-            AWT_graphic_tree::command(device, cmd, button, key_modifier, key_code, key_char, type, x, y, cl, ct);
+            AWT_graphic_tree::handle_command(device, event);
             break;
     }
 
