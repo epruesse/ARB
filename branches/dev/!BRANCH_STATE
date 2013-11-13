@@ -202,14 +202,15 @@ BRANCH->TRUNK
                 7848 ACI (avoid streamcopies)
                 7939 adlang DEBUG prints
 
-    not merged yet:
-
+    merged into branch 'redev' -> [11088:11101]
 
                 7912 clickDevice (Rectangle)
                 7914 clickDevice (fix click behavior)
                 7938 AWT_graphic
                 7942 clickDevice (draw,op==)
                 7943 clickDevice (fix tree keys, dragline)
+
+    not merged yet:
 
                 7967 insert_delete_format (_REF,progress,tests added)
                 7969 insert_delete_format (more tests,fixes)
