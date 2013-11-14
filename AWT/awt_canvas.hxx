@@ -24,7 +24,7 @@ enum AWT_COMMAND_MODE {
     AWT_MODE_SELECT,
     AWT_MODE_MARK,
     AWT_MODE_GROUP,
-    AWT_MODE_ZOOM,          // no command
+    AWT_MODE_ZOOM,
     AWT_MODE_LZOOM,
     AWT_MODE_EDIT, // species info
     AWT_MODE_WWW,
@@ -33,7 +33,6 @@ enum AWT_COMMAND_MODE {
     AWT_MODE_SPREAD,
     AWT_MODE_SWAP,
     AWT_MODE_LENGTH,
-    AWT_MODE_SWAP2,
     AWT_MODE_MOVE,
     AWT_MODE_SETROOT,
     AWT_MODE_RESET,
@@ -81,11 +80,12 @@ class AWT_graphic_exports {
     AW_borders padding;
 
 public:
-    unsigned int zoom_reset : 1;
-    unsigned int resize : 1;
-    unsigned int refresh : 1;
-    unsigned int save : 1;
-    unsigned int structure_change : 1; // maybe useless
+    unsigned int refresh : 1;          // 1 -> do a refresh
+    unsigned int resize : 1;           // 1 -> size of graphic might have changed (implies refresh)
+    unsigned int structure_change : 1; // 1 -> call update_structure (implies resize) // @@@ rename -> need_reload
+    unsigned int zoom_reset : 1;       // 1 -> do a zoom-reset (implies resize)
+    unsigned int save : 1;             // 1 -> save structure to DB (implies structure_change)
+
 
     AWT_zoom_mode zoom_mode;
     AWT_fit_mode  fit_mode;
@@ -125,10 +125,51 @@ public:
     }
 };
 
-class AWT_graphic { 
+class AWT_graphic_event : virtual Noncopyable {
+    AWT_COMMAND_MODE M_cmd;  // currently active mode
+
+    AW_MouseButton M_button;
+    AW_key_mod     M_key_modifier;
+    AW_key_code    M_key_code;
+    char           M_key_char;
+    AW_event_type  M_type;
+
+    AW::Position mousepos;
+
+    const AW_clicked_line *M_cl; // text and/or
+    const AW_clicked_text *M_ct; // line selected by current mouse position
+
+public:
+    AWT_graphic_event(AWT_COMMAND_MODE cmd_, const AW_event& event, bool is_drag, const AW_clicked_line  *cl_, const AW_clicked_text  *ct_)
+        : M_cmd(cmd_),
+          M_button(event.button),
+          M_key_modifier(event.keymodifier),
+          M_key_code(event.keycode),
+          M_key_char(event.character),
+          M_type(is_drag ? AW_Mouse_Drag : event.type),
+          mousepos(event.x, event.y),
+          M_cl(cl_),
+          M_ct(ct_)
+    {}
+
+    AWT_COMMAND_MODE cmd() const { return M_cmd; }
+    AW_MouseButton button() const { return M_button; }
+
+    AW_key_mod key_modifier() const { return M_key_modifier; }
+    AW_key_code key_code() const { return M_key_code; }
+    char key_char() const { return M_key_char; }
+
+    AW_event_type type() const { return M_type; }
+
+    const AW::Position& position() const { return mousepos; } // screen-coordinates
+    const AW_clicked_element *best_click() const { return AW_getBestClick(M_cl, M_ct); }
+};
+
+class AWT_graphic {
     friend class AWT_canvas;
 
     void refresh_by_exports(AWT_canvas *scr);
+    void postevent_handler(GBDATA *gb_main);
 
 protected:
     int drag_gc;
@@ -155,16 +196,12 @@ public:
     /* init gcs, if any gc is changed you may call AWT_expose_cb(NULL, scr); or AWT_resize_cb(NULL, scr); */
     virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) = 0;
 
-    // implemented interface (most are dummies doing nothing):
-    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd,
-                         int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
-                         AW_event_type type, AW_pos x, AW_pos y,
-                         AW_clicked_line *cl, AW_clicked_text *ct);
-    void text(AW_device *device, char *text);
-
+    virtual void handle_command(AW_device *device, AWT_graphic_event& event) = 0;
+    virtual void update_structure()                                          = 0; // called when exports.structure_change == 1
 };
 
 class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
+    void update_structure() {}
     // a partly implementation of AWT_graphic
 public:
     AWT_nonDB_graphic() {}
@@ -180,8 +217,6 @@ public:
 
 #define EPS               0.0001 // div zero check
 #define CLIP_OVERLAP      15
-#define AWT_CATCH_LINE    5     // pixel
-#define AWT_CATCH_TEXT    5     // pixel
 #define AWT_ZOOM_OUT_STEP 40    // (pixel) rand um screen
 #define AWT_MIN_WIDTH     100   // Minimum center screen (= screen-offset)
 
@@ -253,8 +288,6 @@ public:
 
     void set_consider_text_for_zoom_reset(bool consider) { consider_text_for_size = consider; }
 
-    void refresh_by_exports() { gfx->refresh_by_exports(this); }
-
     void zoom(AW_device *device, bool zoomIn, const AW::Rectangle& wanted_part, const AW::Rectangle& current_part, int percent);
 
     void set_mode(AWT_COMMAND_MODE mo) { mode = mo; }
@@ -267,6 +300,8 @@ public:
     bool handleWheelEvent(AW_device *device, const AW_event& event);
 
     const char *get_gc_base_name() const { return gc_base_name; }
+
+    void postevent_handler();
 };
 
 inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
