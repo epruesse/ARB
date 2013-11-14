@@ -16,12 +16,6 @@
 #include "aw_device.hxx"
 #endif
 
-#if defined(DEBUG)
-#define CLICKED_DRAWABLE
-#endif
-
-
-
 // @@@ TODO: elements of the following classes should go private!
 
 class AW_clicked_element {
@@ -79,9 +73,7 @@ public:
         return AW::LineVector(get_attach_point(), other.get_attach_point());
     }
 
-#if defined(CLICKED_DRAWABLE)
-    virtual int draw(AW_device *d, int gc) const = 0;
-#endif
+    virtual int indicate_selected(AW_device *d, int gc) const = 0;
 };
 
 class AW_clicked_line : public AW_clicked_element {
@@ -107,9 +99,7 @@ public:
     }
 
     AW::LineVector get_line() const { return AW::LineVector(x0, y0, x1, y1); }
-#if defined(CLICKED_DRAWABLE)
-    int draw(AW_device *d, int gc) const OVERRIDE;
-#endif
+    int indicate_selected(AW_device *d, int gc) const OVERRIDE;
 };
 
 class AW_clicked_text : public AW_clicked_element {
@@ -134,9 +124,7 @@ public:
     AW::Position get_attach_point() const OVERRIDE {
         return textArea.centroid(); // @@@ uses center atm - should attach to bounding box
     }
-#if defined(CLICKED_DRAWABLE)
-    int draw(AW_device *d, int gc) const OVERRIDE;
-#endif
+    int indicate_selected(AW_device *d, int gc) const OVERRIDE;
 };
 
 #define AWT_CATCH    30         // max-pixel distance to graphical element (to accept a click or command)

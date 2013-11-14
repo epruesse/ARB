@@ -238,12 +238,10 @@ const AW_clicked_element *AW_getBestClick(const AW_clicked_line *cl, const AW_cl
     return bestClick;
 }
 
-#if defined(CLICKED_DRAWABLE)
-int AW_clicked_line::draw(AW_device *d, int gc) const {
+int AW_clicked_line::indicate_selected(AW_device *d, int gc) const {
     return d->line(gc, x0, y0, x1, y1);
 }
-int AW_clicked_text::draw(AW_device *d, int gc) const {
+int AW_clicked_text::indicate_selected(AW_device *d, int gc) const {
     return d->box(gc, true, textArea);
 }
-#endif
 

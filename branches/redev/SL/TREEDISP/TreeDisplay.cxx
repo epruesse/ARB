@@ -972,8 +972,8 @@ public:
 
     void draw_drag_indicator(AW_device *device, int drag_gc) const {
         td_assert(valid_drag_device(device));
-        source_element()->draw(device, drag_gc);
-        if (Drag != Drop) dest_element()->draw(device, drag_gc);
+        source_element()->indicate_selected(device, drag_gc);
+        if (Drag != Drop) dest_element()->indicate_selected(device, drag_gc);
         device->line(drag_gc, source_element()->get_connecting_line(*dest_element()));
     }
 };
