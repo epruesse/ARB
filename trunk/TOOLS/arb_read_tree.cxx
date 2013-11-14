@@ -39,8 +39,8 @@ static void add_bootstrap(GBT_TREE *node, double hundred) {
     node->leftson->remark_branch  = GBS_global_string_copy("%2.0f%%", left_bs);
     node->rightson->remark_branch = GBS_global_string_copy("%2.0f%%", right_bs);
 
-    node->leftlen  = 0.1; // reset branchlengths
-    node->rightlen = 0.1;
+    node->leftlen  = DEFAULT_BRANCH_LENGTH; // reset branchlengths
+    node->rightlen = DEFAULT_BRANCH_LENGTH;
 
     add_bootstrap(node->leftson, hundred);
     add_bootstrap(node->rightson, hundred);

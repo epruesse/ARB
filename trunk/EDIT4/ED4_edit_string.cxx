@@ -450,7 +450,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
 
                 int n = nrepeat;
 
-                if (keymod == 0) {
+                if (keymod == AW_KEYMODE_NONE) {
                     while (n--) {
                         do {
                             seq_pos += direction;

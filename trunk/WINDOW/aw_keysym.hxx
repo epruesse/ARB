@@ -42,7 +42,6 @@ enum AW_key_code {
     AW_KEY_ASCII
 };
 
-
 enum AW_key_mod {
     AW_KEYMODE_NONE    = 0,
     AW_KEYMODE_SHIFT   = 2,
@@ -51,6 +50,16 @@ enum AW_key_mod {
     AW_KEYMODE_NUMLOCK = 16,
 };
 
+// define some inline functions to avoid comparing apples and oranges:
+inline bool operator==(AW_key_code, char);
+inline bool operator!=(AW_key_code, char);
+inline bool operator==(char, AW_key_code);
+inline bool operator!=(char, AW_key_code);
+
+inline bool operator==(AW_key_mod, char);
+inline bool operator!=(AW_key_mod, char);
+inline bool operator==(char, AW_key_mod);
+inline bool operator!=(char, AW_key_mod);
 
 #else
 #error aw_keysym.hxx included twice
