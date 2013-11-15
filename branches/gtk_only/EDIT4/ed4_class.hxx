@@ -768,7 +768,7 @@ public:
         return inSync;
     }
 
-    void check_valid_scrollbar_values() {}// e4_assert(scrollbars_and_scrolledRect_inSync()); }
+    void check_valid_scrollbar_values() { e4_assert(scrollbars_and_scrolledRect_inSync()); }
 
     bool shows_xpos(int x) const { return x >= coords.window_left_clip_point && x <= coords.window_right_clip_point; }
     bool partly_shows(int x1, int y1, int x2, int y2) const;
