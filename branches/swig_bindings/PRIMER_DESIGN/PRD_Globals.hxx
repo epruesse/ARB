@@ -25,8 +25,7 @@ typedef long int PRD_Sequence_Pos;
 // BaseInverter is used to invert bases while matching sequence
 // backwards vs. the primertrees
 //
-class BaseInverter {
-public:
+struct BaseInverter {
     char BASE[128];
 
     BaseInverter()
@@ -57,8 +56,7 @@ public:
 static BaseInverter INVERT;
 
 
-class ChildLookupTable {
-public:
+struct ChildLookupTable {
     int INDEX[128];
 
     ChildLookupTable ()

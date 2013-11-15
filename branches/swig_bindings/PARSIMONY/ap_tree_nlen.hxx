@@ -96,12 +96,12 @@ public:
     void insert(AP_tree_nlen *new_brother);
     void remove() OVERRIDE;
     void swap_assymetric(AP_TREE_SIDE mode) OVERRIDE;
-    void moveTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveTo to test if possible
+    void moveNextTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveNextTo to test if possible
     void set_root() OVERRIDE;
 
     // overload virtual methods from AP_tree:
     void insert(AP_tree *new_brother) OVERRIDE { insert(DOWNCAST(AP_tree_nlen*, new_brother)); }
-    void moveTo(AP_tree *node, AP_FLOAT rel_pos) OVERRIDE { moveTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
+    void moveNextTo(AP_tree *node, AP_FLOAT rel_pos) OVERRIDE { moveNextTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
 
     // tree optimization methods:
     void parsimony_rek(char *mutPerSite = NULL);

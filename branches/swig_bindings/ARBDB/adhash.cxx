@@ -150,7 +150,6 @@ static void calculate_primes_upto() {
         {
             size_t prime_count2 = 0;
             size_t last_prime   = 1;
-            size_t index;
             size_t printed      = 0;
 
             for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
@@ -171,7 +170,6 @@ static void calculate_primes_upto() {
             printf("static size_t sorted_primes[KNOWN_PRIMES] = {\n    ");
             printed = 4;
 
-            index = 0;
             for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
                 if (bit_value(eratosthenes, num) == 0) { // is a prime number
                     if (printed>128) {
@@ -552,7 +550,7 @@ static void GBS_erase_hash(GB_HASH *hs) {
 
 #if defined(DUMP_HASH_ENTRIES)
     for (size_t i = 0; i < hsize; i++) {
-        printf("hash[%li] =", i);
+        printf("hash[%zu] =", i);
         for (gbs_hash_entry *e = hs->entries[i]; e; e = e->next) {
             printf(" '%s'", e->key);
         }
@@ -980,8 +978,7 @@ static bool hashes_are_equal(GB_HASH *h1, GB_HASH *h2) {
     return equal;
 }
 
-class TestData : virtual Noncopyable {
-public:
+struct TestData : virtual Noncopyable {
     GB_HASH    *mind;
     GB_HASH    *ignore;
     GB_NUMHASH *num;
@@ -1147,7 +1144,9 @@ inline long key2val(long key, int pass) {
             val = key*17461;
             break;
         default :
+            val = LONG_MIN;
             TEST_EXPECT(0); // NEED_NO_COV
+            break;
     }
     return val;
 }

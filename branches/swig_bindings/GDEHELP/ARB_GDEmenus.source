@@ -59,6 +59,13 @@ menumeta:L
 #undef RAXML_DNA
 #include <raxml.genmenu>
 
+#define PHYML_DNA
+#include <phyml_20130708.genmenu>
+#undef PHYML_DNA
+#include <phyml_20130708.genmenu>
+
+#include <phyml.genmenu>
+
 #include <phylip_ml.genmenu>
 
 menu:Phylogeny (Other)

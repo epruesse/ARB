@@ -187,7 +187,7 @@ AW_window *MG_merge_names_cb(AW_root *awr) {
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"mg_names.hlp");
+        aws->callback(makeHelpCallback("mg_names.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("addid1");
@@ -207,12 +207,12 @@ AW_window *MG_merge_names_cb(AW_root *awr) {
 
         aws->at("match");
         aws->button_length(12);
-        aws->create_button("MATCH", AWAR_ADDID_MATCH, 0, "+");
+        aws->create_button(0, AWAR_ADDID_MATCH, 0, "+");
 
         aws->at("status");
         aws->button_length(25);
         aws->label("Status:");
-        aws->create_button("STATUS", AWAR_RENAME_STATUS, 0, "+");
+        aws->create_button(0, AWAR_RENAME_STATUS, 0, "+");
 
         aws->at("rename");
         aws->callback(rename_both_databases);
@@ -221,7 +221,7 @@ AW_window *MG_merge_names_cb(AW_root *awr) {
         aws->button_length(0);
         aws->shadow_width(1);
         aws->at("icon");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"mg_names.hlp");
+        aws->callback(makeHelpCallback("mg_names.hlp"));
         aws->create_button("HELP_MERGE", "#merge/icon.xpm");
     }
     return aws;

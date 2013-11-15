@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -17,7 +17,7 @@ CPP_OBJECTS = \
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -72,6 +72,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/cb.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
@@ -161,6 +162,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/cb.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
@@ -185,6 +187,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_main.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -195,6 +198,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/cb.h
+DI_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_main.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -212,6 +216,8 @@ DI_matr.o: di_matr.hxx
 DI_matr.o: di_protdist.hxx
 DI_matr.o: di_view_matrix.hxx
 DI_matr.o: dist.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/ad_cb.h
+DI_matr.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -253,6 +259,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/cb.h
+DI_matr.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_matr.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
@@ -359,6 +366,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -367,6 +375,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/cb.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/cbtypes.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -404,6 +413,7 @@ distanalyse.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/cb.h
+distanalyse.o: $(ARBHOME)/INCLUDE/cb_base.h
 distanalyse.o: $(ARBHOME)/INCLUDE/cbtypes.h
 distanalyse.o: $(ARBHOME)/INCLUDE/cxxforward.h
 distanalyse.o: $(ARBHOME)/INCLUDE/downcast.h

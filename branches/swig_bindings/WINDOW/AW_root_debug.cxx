@@ -289,15 +289,7 @@ size_t AW_root::callallcallbacks(int mode) {
                             }
 
                             if (cbs->contains(AW_POPUP)) {
-                                AW_window *awp = cbs->pop_up_window;
-                                if (awp) {
-                                    awp->force_expose();
-                                    process_pending_events();
-
-                                    fprintf(stderr, "Popping down window '%s'\n", awp->get_window_id());
-                                    awp->hide();
-                                    process_pending_events();
-                                }
+                                fputs("Popping down windows not supported atm\n", stderr);
                             }
                         }
                     }

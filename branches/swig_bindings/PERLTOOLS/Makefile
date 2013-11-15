@@ -14,10 +14,10 @@ BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
 all: $(BINARIES)
 
 %.o: %.cxx 
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 %.o: %.c
-	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 $(ARBHOME)/bin/%: %.o
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIB_ARBDB) $(EXECLIBS)
@@ -52,6 +52,7 @@ depend.init:
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_diff.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_str.h

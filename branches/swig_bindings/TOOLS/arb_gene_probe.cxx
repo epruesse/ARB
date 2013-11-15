@@ -35,7 +35,7 @@ static int splitted_gene_counter = 0;
 static int intergene_counter     = 0;
 
 struct nameOrder {
-    bool operator()(const char *name1, const char *name2) {
+    bool operator()(const char *name1, const char *name2) const {
         // Normally it is sufficient to have any order, as long as it is strict.
         // But for UNIT_TESTS we need a reproducable order, which does not
         // depend on memory layout of DB elements.
@@ -145,7 +145,6 @@ void GenePositionMap::announceGene(PositionPair gene)
 
             usedRanges.erase(found);
 
-            // cppcheck-suppress unreadVariable
             gene_length = combined_length;
             found       = usedRanges.find(gene); // search for further overlaps
         } while (found != usedRanges.end());

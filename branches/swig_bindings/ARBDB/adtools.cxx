@@ -15,6 +15,7 @@
 #include <arb_sleep.h>
 #include <arb_str.h>
 #include <arb_strarray.h>
+#include <ad_cb.h>
 
 #include <algorithm>
 #include "ad_remote.h"
@@ -170,7 +171,7 @@ void GBT_scan_db(StrArray& fieldNames, GBDATA *gbd, const char *datapath) {
 // --------------------------
 //      message injection
 
-static void new_gbt_message_created_cb(GBDATA *gb_pending_messages, int */*cd*/, GB_CB_TYPE /*cbt*/) {
+static void new_gbt_message_created_cb(GBDATA *gb_pending_messages) {
     static int avoid_deadlock = 0;
 
     if (!avoid_deadlock) {
@@ -202,7 +203,7 @@ void GBT_install_message_handler(GBDATA *gb_main) {
     GB_push_transaction(gb_main);
     gb_pending_messages = GB_search(gb_main, ERROR_CONTAINER_PATH, GB_CREATE_CONTAINER);
     gb_assert(gb_pending_messages);
-    GB_add_callback(gb_pending_messages, GB_CB_SON_CREATED, new_gbt_message_created_cb, 0);
+    GB_add_callback(gb_pending_messages, GB_CB_SON_CREATED, makeDatabaseCallback(new_gbt_message_created_cb));
     GB_pop_transaction(gb_main);
 
 #if defined(DEBUG) && 0
@@ -494,9 +495,8 @@ GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double con
 }
 
 
-static GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link) {
+static GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA */*gb_link*/, const char *link) {
     GBDATA *linktarget = GB_search(gb_main, "tmp/link/string", GB_STRING);
-    // GBUSE(gb_link);
     GB_write_string(linktarget, GBS_global_string("Link is '%s'", link));
     return GB_get_father(linktarget);
 }
@@ -846,12 +846,10 @@ struct NotifyCb {
     void           *client_data;
 };
 
-static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
+static void notify_cb(GBDATA *gb_message, NotifyCb *pending, GB_CB_TYPE cb_type) {
     if (cb_type != GB_CB_DELETE) {
-        GB_remove_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info);
+        GB_remove_callback(gb_message, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(notify_cb, pending));
     }
-
-    NotifyCb *pending = (NotifyCb*)cb_info;
 
     if (cb_type == GB_CB_CHANGED) {
         int         cb_done = 0;
@@ -876,7 +874,7 @@ static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
     free(pending);
 }
 
-static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
+static int allocateNotificationID(GBDATA *gb_main, NotifyCb *pending) {
     /* returns a unique notification ID
      * or 0 (use GB_get_error() in this case)
      */
@@ -908,7 +906,7 @@ static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
                                 GBDATA *gb_message = GB_searchOrCreate_string(gb_notification, "message", "");
 
                                 if (gb_message) {
-                                    error = GB_add_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info);
+                                    error = GB_add_callback(gb_message, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(notify_cb, pending));
                                     if (!error) {
                                         id = newid; // success
                                     }
@@ -950,7 +948,7 @@ char *GB_generate_notification(GBDATA *gb_main,
     pending->cb          = cb;
     pending->client_data = client_data;
 
-    id = allocateNotificationID(gb_main, (int*)pending);
+    id = allocateNotificationID(gb_main, pending);
     if (id) {
         arb_notify_call = GBS_global_string_copy("arb_notify %i \"%s\"", id, message);
     }

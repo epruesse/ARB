@@ -35,7 +35,7 @@ DESCRIPTION	In a standard RNA, base frequencies are not equally
 			a maximum variance 'maxvar', so we need a minimum
 			samples 'minsap'.
 
- 			- All sequence positions a clustered according to
+ 			- All sequence positions are clustered according to
 
 				- helical/non helical region
 				- variability
@@ -63,8 +63,8 @@ NOTES		To get parameters from a column statistic you first have
 
 WARNINGS	Problems may occur when
 
-			 1. independent parameter estimates is selected and
-			 2. your dataset is quit small (<100 Sequences) and
+			 1. 'independent parameter estimates' is selected and
+			 2. your dataset is quite small (<100 Sequences) and
 			 3. one sequence is bad or badly aligned
 
 		or

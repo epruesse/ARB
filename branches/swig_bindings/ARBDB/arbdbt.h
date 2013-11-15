@@ -4,11 +4,16 @@
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
 
 #define GBT_SPECIES_INDEX_SIZE       10000L
 #define GBT_SAI_INDEX_SIZE           1000L
 
 #define GB_GROUP_NAME_MAX 256
+
+#define DEFAULT_BRANCH_LENGTH 0.1
 
 #define GBT_TREE_ELEMENTS(type)                 \
     bool     is_leaf;                           \

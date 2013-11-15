@@ -115,6 +115,7 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'genmenu',
                                            'jar',
                                            'last_gcc',
+                                           'last_compiler',
                                            'list',
                                            'log',
                                            'o',
@@ -148,6 +149,7 @@ my @skipped_when_matches = (
                             qr/^arbsrc.*\.tgz$/o,
                             qr/^arbsrc\.lst$/o,
                             qr/^arbsrc\.lst\.tmp$/o,
+                            qr/^callgrind\./o,
                            );
 
 my @used_when_matchesFull = (
@@ -186,6 +188,7 @@ my @used_when_matchesFull = (
                              qr/\/UNIT_TESTER\/run\/.*\.input$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.out$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.tree$/o,
+                             qr/\/UNIT_TESTER\/run\/help\//o,
                              qr/\/UNIT_TESTER\/run\/impexp\/.*\.exported$/o,
                              qr/\/UNIT_TESTER\/valgrind\/arb_valgrind_logged$/o,
                              qr/^\.\/etc\//o,

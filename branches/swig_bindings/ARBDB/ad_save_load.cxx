@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 
 #include <arb_file.h>
+#include <arb_diff.h>
 
 #include "gb_key.h"
 #include "gb_map.h"
@@ -92,6 +93,11 @@ GB_CSTR gb_mapfile_name(GB_CSTR path) {
     strcpy(ext, ".ARM");
 
     return mapname;
+}
+
+GB_CSTR GB_mapfile(GBDATA *gb_main) {
+    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
+    return gb_mapfile_name(Main->path);
 }
 
 static GB_CSTR gb_overwriteName(GB_CSTR path) {
@@ -437,7 +443,7 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
             GB_PUT_OUT(c, out);
             c = gb->flags.security_read;
             GB_PUT_OUT(c, out);
-            fprintf(out, "%i\t", gb->flags2.last_updated);
+            fprintf(out, "%u\t", gb->flags2.last_updated);
         }
         else {
             putc('\t', out);
@@ -855,7 +861,9 @@ GB_ERROR GB_MAIN_TYPE::check_saveable(const char *new_path, const char *flags) c
     }
 
 #if (MEMORY_TEST==1)
-    if (!error && strchr(flags, 'm')) error = "Impossible to use mapfiles (ARBDB is MEMORY_TEST mode 1)";
+    if (!error && strchr(flags, 'm')) {
+        error = "It's impossible to save mapfiles (ARBDB is MEMORY_TEST mode 1)";
+    }
 #endif
 
     return error;

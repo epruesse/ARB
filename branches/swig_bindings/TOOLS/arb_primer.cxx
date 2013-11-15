@@ -33,8 +33,23 @@ struct arb_prm_struct : virtual Noncopyable {
     FILE           *out;
     char           *outname;
 
-    arb_prm_struct() {
-        memset(this, 0, sizeof(*this));
+    arb_prm_struct()
+        : al_len(0),
+          max_name(0),
+          gb_main(NULL),
+          source(NULL),
+          prmanz(0),
+          prmlen(0),
+          prmsmin(0),
+          data(NULL),
+          sp_count(0),
+          key_cnt(0),
+          one_key_cnt(0),
+          reduce(0),
+          out(NULL),
+          outname(NULL)
+    {
+        memset(buffer, 0, sizeof(buffer));
     }
     ~arb_prm_struct() {
         if (data) {

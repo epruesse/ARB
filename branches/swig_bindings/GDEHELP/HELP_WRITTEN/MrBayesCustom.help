@@ -1,4 +1,4 @@
-MrBayes
+MrBayes (custom)
 
 DESCRIPTION
         MrBayes is a program for Bayesian inference and model choice across
@@ -12,6 +12,7 @@ DESCRIPTION
 PARAMETERS
      
     MrBayes command file
+
         This option allows you to provide a custom MrBayes command file.
         A command file may contain any command that is normally issued
         inside the MrBayes shell, with the difference that each command line

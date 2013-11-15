@@ -13,8 +13,8 @@ case $OSNAME in
   Darwin)
     export PREFIX=/opt/local
     export PATH=$PATH:$PREFIX/sbin:$PREFIX/bin
-    export GCC=clang
-    export GPP=clang++
+    export CC=clang
+    export CXX=clang++
     export MACH=DARWIN
     ;;
   Linux)

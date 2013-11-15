@@ -51,20 +51,19 @@ enum {
     RNA3D_GC_MAX
 };
 
-class RNA3D_Graphics : public AWT_nonDB_graphic, virtual Noncopyable {
-public:
-
+struct RNA3D_Graphics : public AWT_nonDB_graphic, virtual Noncopyable {
     GBDATA     *gb_main;
     AW_root    *aw_root;
 
     RNA3D_Graphics(AW_root *aw_root, GBDATA *gb_main);
     virtual ~RNA3D_Graphics() OVERRIDE;
 
-    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr, AW_CL) OVERRIDE;
+    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
 
     void show(AW_device *device) OVERRIDE;
     void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
     void paint(AW_device *device);
+    void handle_command(AW_device *, AWT_graphic_event&) OVERRIDE {}
 };
 
 #else

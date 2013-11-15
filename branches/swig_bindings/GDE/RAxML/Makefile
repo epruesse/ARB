@@ -27,7 +27,7 @@ LDFLAGS = -lm
 # compile for ARB:
 else
 
-CC      = $(ACC)
+CC      = $(A_CC)
 TARGET 	= $(ARBHOME)/bin
 LDFLAGS = -lm
 CFLAGS  = $(cflags) $(CFLAGS_RAXML)
@@ -86,6 +86,7 @@ leaveDropping.o: axml.h
 makenewzGenericSpecial.o: axml.h
 
 mem_alloc.o: axml.h
+mem_alloc.o: $(ARBHOME)/INCLUDE/malloc.h
 
 models.o: axml.h
 

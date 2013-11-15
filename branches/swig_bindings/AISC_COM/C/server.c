@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-// #include <malloc.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -33,6 +32,7 @@
 #include <SigHandler.h>
 #include <arb_cs.h>
 #include <static_assert.h>
+#include "common.h"
 
 // AISC_MKPT_PROMOTE:#ifndef _STDIO_H
 // AISC_MKPT_PROMOTE:#include <stdio.h>
@@ -66,7 +66,7 @@ extern "C" {
 #endif
 
 struct pollfd;
-struct Hs_struct {
+struct Hs_struct : virtual Noncopyable {
     int            hso;
     Socinf        *soci;
     struct pollfd *fds;
@@ -75,6 +75,18 @@ struct Hs_struct {
     int            timeout;
     int            fork;
     char          *unix_name;
+
+    Hs_struct()
+        : hso(0),
+          soci(NULL),
+          fds(NULL),
+          nfds(0),
+          nsoc(0),
+          timeout(0),
+          fork(0),
+          unix_name(NULL)
+    {}
+    ~Hs_struct() { freenull(unix_name); }
 };
 
 struct aisc_bytes_list {
@@ -157,12 +169,12 @@ static const char *test_address_valid(void *address, long key)
     volatile long i       = 0;
     volatile int  trapped = sigsetjmp(return_after_segv, 1);
 
-    if (trapped == 0) { // normal execution
+    if (trapped == 0) {       // normal execution
         i = *(long *)address; // here a SIGSEGV may happen. Execution will continue in else-branch
     }
-    else {                      // return after SEGV
-        arb_assert(trapped == 666); // oops - SEGV did not occur in mem access above!
-        arb_assert(sigsegv_occurred); // oops - wrong handler installed ?
+    else {                             // return after SEGV
+        aisc_assert(trapped == 666);   // oops - SEGV did not occur in mem access above!
+        aisc_assert(sigsegv_occurred); // oops - wrong handler installed ?
     }
     // end of critical section
     // ----------------------------------------
@@ -195,8 +207,8 @@ __ATTR__NORETURN static void aisc_server_sigsegv(int sig) {
     // unexpected SEGV
 
     UNINSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, old_sigsegv_handler, "aisc_server_sigsegv");
-    old_sigsegv_handler(sig); //
-    arb_assert(0);            // oops - old handler returned
+    old_sigsegv_handler(sig);
+    aisc_assert(0); // oops - old handler returned
     abort();
 }
 
@@ -273,187 +285,39 @@ static const char *aisc_get_object_attribute(long i, long j)
     return aisc_attribute_names_list[i][j];
 }
 
-#if defined(WARN_TODO)
-#warning DRY client.c vs server.c (->clientserver.c).
-/* e.g. aisc_get_m_id and aisc_client_get_m_id
- * aisc_open_socket() / aisc_client_open_socket()
- * etc.
- */
-#endif
+Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
+    Hs_struct *hs = new Hs_struct;
+    if (hs) {
+        hs->timeout = timeout;
+        hs->fork    = fork;
 
-static const char *aisc_get_m_id(const char *path, char **m_name, int *id) {
-    // Warning: duplicated in client.c@aisc_client_get_m_id
-    if (!path) {
-        return "OPEN_ARB_DB_CLIENT ERROR: missing hostname:socketid";
-    }
-    if (!strcmp(path, ":")) {
-        path = (char *)getenv("SOCKET");
-        if (!path) return "environment socket not found";
-    }
-    
-    const char *p = strchr(path, ':');
-    if (path[0] == '*' || path[0] == ':') {     // UNIX MODE
-        char buffer[128];
-        if (!p) {
-            return "OPEN_ARB_DB_CLIENT ERROR: missing ':' in *:socketid";
-        }
-        if (p[1] == '~') {
-            sprintf(buffer, "%s%s", getenv("HOME"), p+2);
-            *m_name = (char *)strdup(buffer);
+        static int  so;
+        const char *err = aisc_server_open_socket(path, TCP_NODELAY, 0, &so, &hs->unix_name);
+
+        if (err) {
+            if (*err) printf("Error in open_aisc_server: %s\n", err);
+            shutdown(so, SHUT_RDWR);
+            close(so);
+            delete hs; hs = NULL;
         }
         else {
-            *m_name = (char *)strdup(p+1);
-        }
-        *id = -1;
-        return 0;
-    }
-    if (!p) {
-        return "OPEN_ARB_DB_CLIENT ERROR: missing ':' in netname:socketid";
-    }
+            // install signal handlers
+            fprintf(stderr, "Installing signal handler from open_aisc_server\n"); fflush(stderr);
+            old_sigsegv_handler = INSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, "open_aisc_server");
+            ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, aisc_server_sigpipe, "open_aisc_server"));
 
-    char *mn = (char *) calloc(sizeof(char), p - path + 1);
-    strncpy(mn, path, p - path);
-
-    if (strcmp(mn, "localhost") == 0) freedup(mn, arb_gethostname());
-    *m_name = mn;
-
-    int i = atoi(p + 1);
-    if ((i < 1024) || (i > 4096)) {
-        return "OPEN_ARB_DB_CLIENT ERROR: socketnumber not in [1024..4095]";
-    }
-    *id = i;
-    return 0;
-}
-
-
-static const char *aisc_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
-    struct in_addr  addr;       // union -> u_long
-    struct hostent *he;
-    const char     *err;
-    static int      socket_id;
-    char           *mach_name = NULL;
-    FILE           *test;
-
-    err = aisc_get_m_id(path, &mach_name, &socket_id);
-
-    // @@@ mem assigned to mach_name is leaked often
-    // @@@ refactor aisc_open_socket -> one exit point
-    // @@@ note that the code is nearly duplicated in client.c@aisc_client_open_socket
-    // @@@ a good place for DRYed code would be ../../CORE/arb_cs.cxx
-
-    if (err) {
-        return err;
-    }
-    if (socket_id >= 0) {       // UNIX
-        sockaddr_in so_ad;
-        memset((char *)&so_ad, 0, sizeof(sockaddr_in));
-        *psocket = socket(PF_INET, SOCK_STREAM, 0);
-        if (*psocket <= 0) {
-            return "CANNOT CREATE SOCKET";
-        }
-
-        arb_gethostbyname(mach_name, he, err);
-        if (err) return err;
-
-        // simply take first address
-        addr.s_addr = *(int *) (he->h_addr);
-        so_ad.sin_addr = addr;
-        so_ad.sin_family = AF_INET;
-        so_ad.sin_port = htons(socket_id);      // @@@ = pb_socket
-        if (do_connect) {
-            if (connect(*psocket, (struct sockaddr*)&so_ad, 16)) {
-                return "";
-            }
-        }
-        else {
-            static int one = 1;
-            setsockopt(*psocket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
-            if (bind(*psocket, (struct sockaddr*)&so_ad, 16)) {
-                return "Could not open socket on Server (1)";
-            }
-        }
-        if (delay == TCP_NODELAY) {
-            static int      optval;
-            optval = 1;
-            setsockopt(*psocket, IPPROTO_TCP, TCP_NODELAY, (char *)&optval, 4);
-        }
-        *unix_name = 0;
-    }
-    else {
-        struct sockaddr_un so_ad;
-        *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
-        if (*psocket <= 0) {
-            return "CANNOT CREATE SOCKET";
-        }
-        so_ad.sun_family = AF_UNIX;
-        strcpy(so_ad.sun_path, mach_name);
-        if (do_connect) {
-            if (connect(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
-                return "";
-            }
-        }
-        else {
-            static int one = 1;
-            test = fopen(mach_name, "r");
-            if (test) {
-                struct stat stt;
-                fclose(test);
-                if (!stat(path, &stt)) {
-                    if (S_ISREG(stt.st_mode)) {
-                        fprintf(stderr, "%X\n", stt.st_mode);
-                        return "Socket already exists as a file";
-                    }
-                }
-            }
-            if (unlink(mach_name)) {
-                ;
+            aisc_server_bytes_first = 0;
+            aisc_server_bytes_last  = 0;
+            // simply take first address
+            if (listen(so, MAX_QUEUE_LEN) < 0) {
+                printf("Error in open_aisc_server: could not listen (errno=%i)\n", errno);
+                delete hs; hs = NULL;
             }
             else {
-                printf("old socket found\n");
+                hs->hso = so;
             }
-            setsockopt(*psocket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
-            if (bind(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
-                return "Could not open socket on Server (2)";
-            }
-            if (chmod(mach_name, 0777)) return "Cannot change mode of socket";
         }
-
-        reassign(*unix_name, mach_name);
     }
-    free(mach_name);
-    return 0;
-}
-
-Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
-    Hs_struct *hs = (Hs_struct *)calloc(sizeof(Hs_struct), 1);
-    if (!hs) return 0;
-
-    hs->timeout = timeout;
-    hs->fork    = fork;
-    
-    static int  so;
-    const char *err = aisc_open_socket(path, TCP_NODELAY, 0, &so, &hs->unix_name);
-
-    if (err) {
-        if (*err) printf("Error in open_aisc_server: %s\n", err);
-        shutdown(so, SHUT_RDWR);
-        close(so);
-        return 0;
-    }
-
-    // install signal handlers
-    fprintf(stderr, "Installing signal handler from open_aisc_server\n"); fflush(stderr);
-    old_sigsegv_handler = INSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, "open_aisc_server");
-    ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, aisc_server_sigpipe, "open_aisc_server"));
-
-    aisc_server_bytes_first = 0;
-    aisc_server_bytes_last  = 0;
-    // simply take first address
-    if (listen(so, MAX_QUEUE_LEN) < 0) {
-        printf("Error in open_aisc_server: could not listen (errno=%i)\n", errno);
-        return NULL;
-    }
-    hs->hso = so;
     return hs;
 }
 
@@ -612,8 +476,7 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int) { // ha
 
 static int aisc_server_index = -1;
 
-static void aisc_talking_set_index(int *obj, int i) {
-    obj = obj;
+static void aisc_talking_set_index(int */*obj*/, int i) {
     aisc_server_index = i;
 }
 
@@ -727,11 +590,11 @@ static long aisc_talking_sets(long *in_buf, int size, long *out_buf, long *objec
                 AISC_DUMP(aisc_talking_sets, int, bsize);
 
                 if (bsize) {
-                    long *ptr;
-                    ptr = (long*)calloc(sizeof(char), bsize);
+                    long *ptr = (long*)calloc(sizeof(char), bsize);
                     blen = aisc_s_read(aisc_server_con, (char *)ptr, bsize);
                     if (bsize!=blen) {
                         aisc_server_error = "CONNECTION PROBLEMS IN BYTESTRING";
+                        free(ptr);
                     }
                     else {
                         bytestring bs;
@@ -857,7 +720,7 @@ static long aisc_talking_create(long *in_buf, int size, long *out_buf, int) { //
     }
 }
 
-static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_COPY
+static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int /*max_size*/) { // handles AISC_COPY
     aisc_server_error = NULL;
 
     int  in_pos      = 0;
@@ -907,7 +770,6 @@ static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_siz
         md.type = object_type;
         erg = function(father, object);
     }
-    max_size = max_size;
     if (aisc_server_error) {
         sprintf((char *) out_buf, "%s", aisc_server_error);
         return -((strlen(aisc_server_error) + 1) / sizeof(long) + 1);
@@ -975,29 +837,18 @@ static long aisc_talking_find(long *in_buf, int /*size*/, long *out_buf, int /*m
 
 extern int *aisc_main;
 
-static long aisc_talking_init(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_INIT
-    in_buf            = in_buf;
-    size              = size;
-    max_size          = max_size;
+static long aisc_talking_init(long */*in_buf*/, int /*size*/, long *out_buf, int /*max_size*/) { // handles AISC_INIT
     aisc_server_error = NULL;
     out_buf[0]        = (long)aisc_main;
     return 1;
 }
 
-static long aisc_fork_server(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_FORK_SERVER
-    pid_t pid;
-
-    in_buf   = in_buf;
-    size     = size;
-    out_buf  = out_buf;
-    max_size = max_size;
-    pid      = fork();
-
-    if (pid<0) return 0;                            // return OK because fork does not work
-    return pid;
+static long aisc_fork_server(long */*in_buf*/, int /*size*/, long */*out_buf*/, int /*max_size*/) { // handles AISC_FORK_SERVER
+    pid_t pid = fork();
+    return pid<0 ? 0 : pid; // return OK(=0) when fork does not work
 }
 
-static long aisc_talking_delete(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_DELETE
+static long aisc_talking_delete(long *in_buf, int /*size*/, long *out_buf, int /*max_size*/) { // handles AISC_DELETE
     int             in_pos, out_pos;
     long             object_type;
 
@@ -1032,14 +883,13 @@ static long aisc_talking_delete(long *in_buf, int size, long *out_buf, int max_s
         }
     }
     if (aisc_server_error) {
-        size = size; max_size = max_size;
         sprintf((char *) out_buf, "%s", aisc_server_error);
         return -((strlen(aisc_server_error) + 1) / sizeof(long) + 1);
     }
     return 0;
 }
 
-static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int max_size) { // handles AISC_DEBUG_INFO
+static long aisc_talking_debug_info(long *in_buf, int /*size*/, long *out_buf, int /*max_size*/) { // handles AISC_DEBUG_INFO
     int  in_pos, out_pos;
     long object_type, attribute;
 
@@ -1050,8 +900,6 @@ static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int m
     int   i;
     long *object;
 
-    size              = size;
-    max_size          = max_size;
     in_pos            = out_pos = 0;
     aisc_server_error = NULL;
 
@@ -1133,13 +981,13 @@ int aisc_broadcast(Hs_struct *hs, int message_type, const char *message)
         char *strStart = (char*)(out_buf+3);
         int   pad      = sizeL*sizeof(long)-(size+1);
 
-        arb_assert(pad >= 0);
+        aisc_assert(pad >= 0);
 
         memcpy(strStart, message, size+1);
         if (pad) memset(strStart+size+1, 0, pad); // avoid to send uninitialized bytes
     }
 
-    arb_assert(sizeL >= 1);
+    aisc_assert(sizeL >= 1);
 
     out_buf[0] = sizeL+1;
     out_buf[1] = AISC_CCOM_MESSAGE;
@@ -1344,7 +1192,7 @@ Hs_struct *aisc_accept_calls(Hs_struct *hs)
     return hs;
 }
 
-void aisc_server_shutdown(Hs_struct *hs) {
+void aisc_server_shutdown(Hs_struct*& hs) {
     Socinf *si;
 
     for (si=hs->soci; si; si=si->next) {
@@ -1354,6 +1202,7 @@ void aisc_server_shutdown(Hs_struct *hs) {
     shutdown(hs->hso, SHUT_RDWR);
     close(hs->hso);
     if (hs->unix_name) unlink(hs->unix_name);
+    delete hs; hs = NULL;
 }
 
 void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {

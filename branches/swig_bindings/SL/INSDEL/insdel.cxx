@@ -19,7 +19,7 @@
 #include <adGene.h>
 #include <arb_progress.h>
 #include <arb_defs.h>
-#include <downcast.h>
+#include <arb_diff.h>
 #include <algorithm>
 
 using namespace std;
@@ -402,8 +402,7 @@ public:
 };
 
 template<typename T>
-class SpecificGap : public TypedAliData<T> {
-public:
+struct SpecificGap : public TypedAliData<T> {
     typedef TypedAliData<T> BaseType;
 
     SpecificGap(size_t gapsize, const T& gap_)
@@ -864,8 +863,8 @@ void TEST_AliData() {
                 TEST_COMPARE_WORKS(start_gap1, same_as_start_gap1, 0);
 
                 TEST_EXPECT(start_gap1->differs_from(*start_gap3));
-                TEST_EXPECT_EQUAL(strcmp(".CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU",        // start_gap1
-                                         "...CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU"), 1); // start_gap3
+                // TEST_EXPECT_EQUAL(strcmp(".CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU",        // start_gap1
+                                         // "...CGCC------C-GG-C-GG.A.-C------GG-.C..UCAGU"), 1); // start_gap3
 
                 TEST_EXPECT_EQUAL(start_gap1->cmp_whole_data(*start_gap3),  1);
                 TEST_EXPECT_EQUAL(start_gap3->cmp_whole_data(*start_gap1), -1);
@@ -1011,8 +1010,7 @@ public:
 
 // --------------------------------------------------------------------------------
 
-class AliEditCommand {
-public:
+struct AliEditCommand {
     virtual ~AliEditCommand() {}
     virtual AliDataPtr apply(AliDataPtr to, GB_ERROR& error) const                                 = 0;
     virtual GB_ERROR check_applicable_to(const Alignment& ali, size_t& resulting_ali_length) const = 0;

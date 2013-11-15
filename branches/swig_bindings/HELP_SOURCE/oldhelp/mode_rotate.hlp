@@ -11,34 +11,23 @@ UP	mode.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		ROTATE MODE
 
-OCCURRENCE	ARB_NT <eighth button in the left column>
+OCCURRENCE	ARB_NT <ninth button in the left column>
 		F9 on the keyboard
 
 DESCRIPTION	The 'ROTATE MODE' allows you to rotate branches or subtrees
 		of the displayed tree.
 
-		Click on the <eighth button in the left column> of the
-			'ARB_NT' window or press the 'F9' key on the keyboard to
-			activate the 'ROTATE MODE'. In the latter case, the
-			cursor has to be placed within the tree display area.
+		Click on the <ninth button in the left column> of the
+                'ARB_NT' window or press the 'F9' key on the keyboard to
+                activate the 'ROTATE MODE'. In the latter case, the
+                cursor has to be placed within the tree display area.
 
-		Rotate terminal branch:
+                Simply click and drag a branch to rotate it.
 
-			Move the cursor to any position along the
-			branch, keep the left mouse button pressed while
-			moving the cursor, release the button to fix the
-			position of the branch.
+                To reset the rotation of all branches of a subtree,
+                press the key '0' (zero) while pointing to that subtree.
 
-		Rotate subtree:
-
-			Move the cursor to any position along the edge defining
-			the subtree and proceed as described above.
-
-			The subtree-defining branch is that located closest to
-			the indicated root (open square) of the whole tree
-			which is directly or indirectly connected to all branches of the
-			subtree.
-
+                See also LINK{mode_angle.hlp}.
 
 NOTES		Short descriptions of the 'MODE' and the functions assigned
 		to the mouse buttons are given in the fourth line of the

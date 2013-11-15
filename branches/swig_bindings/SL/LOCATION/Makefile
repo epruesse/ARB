@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -37,7 +37,7 @@ Location.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Location.o: $(ARBHOME)/INCLUDE/arb_core.h
 Location.o: $(ARBHOME)/INCLUDE/arb_error.h
 Location.o: $(ARBHOME)/INCLUDE/arb_msg.h
-Location.o: $(ARBHOME)/INCLUDE/arb_str.h
+Location.o: $(ARBHOME)/INCLUDE/arb_stdstr.h
 Location.o: $(ARBHOME)/INCLUDE/arb_string.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb_base.h

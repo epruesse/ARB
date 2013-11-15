@@ -77,6 +77,7 @@ GBDATA *GB_open(const char *path, const char *opent);
 GB_ERROR GBT_check_arb_file(const char *name) __ATTR__USERESULT;
 
 /* ad_save_load.cxx */
+GB_CSTR GB_mapfile(GBDATA *gb_main);
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_create_directory(const char *path);
 GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype);
@@ -99,7 +100,6 @@ bool GB_is_server(GBDATA *gbd);
 GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);
 GB_ERROR GB_tell_server_dont_wait(GBDATA *gbd);
 GB_ERROR GB_install_pid(int mode);
-const char *GB_date_string(void);
 
 /* adcompr.cxx */
 bool GB_is_dictionary_compressed(GBDATA *gbd);
@@ -111,9 +111,6 @@ char *GB_find_latest_file(const char *dir, const char *mask);
 char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename);
 char *GB_property_file(bool warn_when_not_found, const char *filename);
 void GBS_read_dir(StrArray& names, const char *dir, const char *mask);
-bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
-size_t GB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common);
-bool GB_test_files_equal(const char *file1, const char *file2);
 
 /* adhash.cxx */
 GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens);
@@ -158,6 +155,7 @@ GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize);
 
 /* adlang1.cxx */
 NOT4PERL void GB_set_export_sequence_hook(gb_export_sequence_cb escb);
+void GB_set_ACISRT_trace(int enable);
 int GB_get_ACISRT_trace(void);
 
 /* adlink.cxx */
@@ -175,12 +173,6 @@ bool GB_supports_mapfile(void);
 /* admatch.cxx */
 GBS_string_matcher *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag);
 void GBS_free_matcher(GBS_string_matcher *matcher);
-GBS_regex *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR *error);
-void GBS_free_regexpr(GBS_regex *toFree);
-const char *GBS_unwrap_regexpr(const char *regexpr_in_slashes, GB_CASE *case_flag, GB_ERROR *error);
-const char *GBS_regmatch_compiled(const char *str, GBS_regex *comreg, size_t *matchlen);
-const char *GBS_regmatch(const char *str, const char *regExpr, size_t *matchlen, GB_ERROR *error);
-char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error);
 GB_CSTR GBS_find_string(GB_CSTR cont, GB_CSTR substr, int match_mode);
 bool GBS_string_matches(const char *str, const char *search, GB_CASE case_sens);
 bool GBS_string_matches_regexp(const char *str, const GBS_string_matcher *expr);
@@ -216,6 +208,7 @@ long GB_number_of_marked_subentries(GBDATA *gbd);
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring);
 GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over);
 GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring);
+char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDATA *gbd, const char *default_tree_name);
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name);
 
 /* adsocket.cxx */
@@ -231,6 +224,7 @@ char *GB_executable(GB_CSTR exe_name);
 GB_CSTR GB_getenvUSER(void);
 GB_CSTR GB_getenvARBHOME(void);
 GB_CSTR GB_getenvARBMACRO(void);
+GB_CSTR GB_getenvARB_PROP(void);
 GB_CSTR GB_getenvARBMACROHOME(void);
 GB_CSTR GB_getenvARB_GS(void);
 GB_CSTR GB_getenvARB_PDFVIEW(void);
@@ -241,6 +235,7 @@ NOT4PERL gb_getenv_hook GB_install_getenv_hook(gb_getenv_hook hook);
 GB_CSTR GB_getenv(const char *env);
 bool GB_host_is_local(const char *hostname);
 GB_ULONG GB_get_physical_memory(void);
+GB_ULONG GB_get_usable_memory(void);
 GB_ERROR GB_xterm(void) __ATTR__USERESULT;
 GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
 GB_CSTR GB_append_suffix(const char *name, const char *suffix);
@@ -251,6 +246,7 @@ GB_CSTR GB_unfold_in_directory(const char *relative_directory, const char *path)
 GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path);
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path);
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path);
+GB_CSTR GB_path_in_HOME(const char *relative_path);
 GB_CSTR GB_path_in_arbprop(const char *relative_path);
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right);
 FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname);
@@ -282,6 +278,7 @@ char *GBS_fconvert_string(char *buffer);
 char *GBS_replace_tabs_by_spaces(const char *text);
 char *GBS_trim(const char *str);
 char *GBS_log_dated_action_to(const char *comment, const char *action);
+const char *GBS_funptr2readable(void *funptr, bool stripARBHOME);
 
 /* adsystem.cxx */
 DictData *GB_get_dictionary(GBDATA *gb_main, const char *key);
@@ -398,15 +395,9 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd);
 GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error);
 void GB_end_transaction_show_error(GBDATA *gbd, GB_ERROR error, void (*error_handler)(GB_ERROR));
 int GB_get_transaction_level(GBDATA *gbd);
-NOT4PERL bool GB_inside_callback(GBDATA *of_gbd, GB_CB_TYPE cbtype);
 GBDATA *GB_get_gb_main_during_cb(void);
 NOT4PERL const void *GB_read_old_value(void);
 long GB_read_old_size(void);
-char *GB_get_callback_info(GBDATA *gbd);
-GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata);
-void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata);
-void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func);
-GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata);
 int GB_nsons(GBDATA *gbd);
 void GB_disable_quicksave(GBDATA *gbd, const char *reason);
 GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize);

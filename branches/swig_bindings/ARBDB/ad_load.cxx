@@ -16,7 +16,6 @@
 #include <arbdbt.h>
 #include <arb_str.h>
 #include <arb_file.h>
-#include <static_assert.h>
 #include <arb_defs.h>
 
 #include "gb_key.h"
@@ -65,7 +64,6 @@ static int is_a_unused_reading_buffer(ReadingBuffer *rb) {
 #endif // CHECK_RELEASED_BUFFERS
 
 static ReadingBuffer *allocate_ReadingBuffer() {
-    // cppcheck-suppress mismatchSize
     ReadingBuffer *rb = (ReadingBuffer*)malloc(sizeof(*rb)+READING_BUFFER_SIZE);
     rb->data          = ((char*)rb)+sizeof(*rb);
     rb->next          = 0;
@@ -689,7 +687,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                         gb_create_header_array(gbc_dest, index+1);
                         header = GB_DATA_LIST_HEADER(gbc_dest->d);
                     }
-                    
+
                     GBDATA *gb2 = GB_HEADER_LIST_GBD(header[index]);
                     if (gb2) {
                         gb_delete_entry(gb2);
@@ -1076,7 +1074,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
                         map_fail_reason = "modification times of DB and fastload file differ (too much)";
                     }
                     else {
-                        fprintf(stderr, "(accepting modification time difference of %li seconds)\n", diff);
+                        fprintf(stderr, "(accepting modification time difference of %lu seconds)\n", diff);
                     }
                 }
 
@@ -1259,7 +1257,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
      * - 'w' write (w/o 'r' it overwrites existing database)
      * - 'c' create (if not found)
      * - 's'     read only ???
-     * - 'D' looks for default in $ARBHOME/lib/arb_default if file is not found in ~/.arb_prop
+     * - 'D' looks for default in $ARBHOME/lib/arb_default if file is not found in $ARB_PROP
      *       (only works combined with mode 'c')
      * - memory usage:
      *   - 't' small memory usage
@@ -1386,7 +1384,6 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
         else {
             int read_from_stdin = strcmp(path, "-") == 0;
 
-            // cppcheck-suppress variableScope (cannot change due to goto-bypass)
             GB_ULONG time_of_main_file = 0; long i;
 
             Main->mark_as_server();
@@ -1414,6 +1411,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                         }
                         else {
                             freeset(path, found_path);
+                            // cppcheck-suppress deallocuse (false positive; path is reassigned to non-NULL above)
                             input = fopen(path, "rb");
                         }
                     }
@@ -1666,7 +1664,7 @@ void TEST_io_number() {
         long lastPos = 0;
         for (size_t i = 0; i<ARRAY_ELEMS(DATA); ++i) {
             data& d = DATA[i];
-            TEST_ANNOTATE_ASSERT(GBS_global_string("val=0x%lx", d.val));
+            TEST_ANNOTATE(GBS_global_string("val=0x%lx", d.val));
             gb_put_number(d.val, out);
 
             long pos           = ftell(out);
@@ -1677,6 +1675,7 @@ void TEST_io_number() {
 
             lastPos = pos;
         }
+        TEST_ANNOTATE(NULL);
 
         fclose(out);
     }
@@ -1689,7 +1688,7 @@ void TEST_io_number() {
 
         for (size_t i = 0; i<ARRAY_ELEMS(DATA); ++i) {
             data& d = DATA[i];
-            TEST_ANNOTATE_ASSERT(GBS_global_string("val=0x%lx", d.val));
+            TEST_ANNOTATE(GBS_global_string("val=0x%lx", d.val));
 
             long val = gb_get_number(in);
             TEST_EXPECT_EQUAL(val, d.val);
@@ -1702,6 +1701,7 @@ void TEST_io_number() {
 
             lastPos = pos;
         }
+        TEST_ANNOTATE(NULL);
 
         fclose(in);
     }

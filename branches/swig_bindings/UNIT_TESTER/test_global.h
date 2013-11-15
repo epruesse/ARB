@@ -167,8 +167,8 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ANNOTATE_ASSERT(annotation) arb_test::test_data().annotate(annotation)
-#define RUNNING_TEST()                   arb_test::test_data().running_test
+#define TEST_ANNOTATE(annotation) arb_test::test_data().annotate(annotation)
+#define RUNNING_TEST()            arb_test::test_data().running_test
 
 // special assert for unit tests (additionally to SEGV it sets a global flag)
 #define test_assert(cond,backtrace)             \

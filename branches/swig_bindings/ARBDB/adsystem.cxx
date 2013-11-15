@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 
 #include <arbdbt.h>
+#include <ad_cb.h>
 
 #include "gb_key.h"
 #include "gb_dict.h"
@@ -89,9 +90,7 @@ static void delete_gb_dictionary(GB_DICTIONARY *dict) {
     free(dict);
 }
 
-static void gb_system_key_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type) {
-    GBQUARK q = (GBQUARK)(long) cl;
-
+static void gb_system_key_changed_cb(GBDATA *gbd, GBQUARK q, GB_CB_TYPE type) {
     if (type == GB_CB_DELETE) {
         GB_MAIN_TYPE *Main = gb_get_main_during_cb();
 
@@ -104,8 +103,7 @@ static void gb_system_key_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type) {
     }
 }
 
-static void gb_system_master_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type) {
-    GBQUARK q = (GBQUARK)(long) cl;
+static void gb_system_master_changed_cb(GBDATA *gbd, GBQUARK q, GB_CB_TYPE type) {
     if (type == GB_CB_DELETE) {
         GB_MAIN_TYPE *Main = gb_get_main_during_cb();
         Main->keys[q].gb_master_ali = 0;
@@ -147,7 +145,7 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
             GB_write_string(gb_name, key);
         }
 
-        GB_ensure_callback(gb_key, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), gb_system_key_changed_cb, (int *)q);
+        GB_ensure_callback(gb_key, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(gb_system_key_changed_cb, q));
 
         if (ks->dictionary) {
             delete_gb_dictionary(ks->dictionary);
@@ -164,8 +162,7 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
             sprintf(buffer, "%s/@master_data/@%s", GB_SYSTEM_FOLDER, key);
             ks->gb_master_ali = GB_search(gb_main, buffer, GB_FIND)->as_container();
             if (ks->gb_master_ali) {
-                GB_remove_callback(ks->gb_master_ali, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), gb_system_master_changed_cb, (int *)q);
-                GB_add_callback   (ks->gb_master_ali, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), gb_system_master_changed_cb, (int *)q);
+                GB_ensure_callback(ks->gb_master_ali, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(gb_system_master_changed_cb, q));
             }
         }
         GB_pop_my_security(gb_main);

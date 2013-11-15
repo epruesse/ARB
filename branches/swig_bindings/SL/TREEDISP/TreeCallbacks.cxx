@@ -14,6 +14,7 @@
 #include <aw_advice.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <mode_text.h>
 
 #include <cctype>
 
@@ -23,68 +24,35 @@ using namespace AW;
 // AISC_MKPT_PROMOTE:#include <TreeDisplay.hxx>
 // AISC_MKPT_PROMOTE:#endif
 
-void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
+void nt_mode_event(AW_window*, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
     const char *text;
 
     switch (mode) {
-        case AWT_MODE_SELECT:
-            text = "SELECT MODE    LEFT: select species and open/close group";
-            break;
-        case AWT_MODE_MARK:
-            text = "MARK MODE    LEFT: mark subtree   RIGHT: unmark subtree";
-            break;
-        case AWT_MODE_GROUP:
-            text = "GROUP MODE   LEFT: fold/unfold group  RIGHT: create/rename/destroy group";
-            break;
-        case AWT_MODE_ZOOM:
-            text = "ZOOM MODE    LEFT: press and drag to zoom   RIGHT: zoom out one step";
-            break;
-        case AWT_MODE_LZOOM:
-            text = "LOGICAL ZOOM MODE   LEFT: show subtree  RIGHT: go up one step";
-            break;
-        case AWT_MODE_EDIT:
-            text = "INFO MODE    LEFT: click for info";
-            break;
-        case AWT_MODE_WWW:
-            text = "CLICK NODE TO SEARCH WEB (See <PROPS/WWW...> also";
-            break;
-        case AWT_MODE_LINE:
-            text = "LINE MODE    LEFT: reduce linewidth  RIGHT: increase linewidth";
-            break;
-        case AWT_MODE_ROT:
-            text = "ROTATE MODE   LEFT: Select branch and drag to rotate";
-            break;
-        case AWT_MODE_SPREAD:
-            text = "SPREAD MODE   LEFT: decrease angles  RIGHT: increase angles";
-            break;
-        case AWT_MODE_SWAP:
-            text = "SWAP MODE    LEFT: swap branches";
-            break;
-        case AWT_MODE_LENGTH:
-            text = "BRANCH LENGTH MODE   LEFT: Drag branch/ruler to change length  RIGHT: use discrete lengths";
-            break;
-        case AWT_MODE_MOVE:
-            text = "MOVE MODE   LEFT: move subtree/ruler to new destination RIGHT: move group info only";
-            break;
-        case AWT_MODE_NNI:
-            text = "NEAREST NEIGHBOUR INTERCHANGE OPTIMIZER  L: select subtree R: whole tree";
-            break;
-        case AWT_MODE_KERNINGHAN:
-            text = "KERNIGHAN LIN OPTIMIZER   L: select subtree R: whole tree";
-            break;
-        case AWT_MODE_OPTIMIZE:
-            text = "NNI & KL OPTIMIZER   L: select subtree R: whole tree";
-            break;
-        case AWT_MODE_SETROOT:
-            text = "SET ROOT MODE   LEFT: set root  RIGHT: search optimal root";
-            break;
-        case AWT_MODE_RESET:
-            text = "RESET MODE   LEFT: reset rotation  MIDDLE: reset angles  RIGHT: reset linewidth";
-            break;
+        case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
 
-        default:
-            text="No help for this mode available";
-            break;
+        case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "select species or open/close group");                  break;
+        case AWT_MODE_EDIT:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");                                      break;
+        case AWT_MODE_WWW:    text = MODE_TEXT_1BUTTON("WEB",    "Launch node dependent URL (see <Properties/WWW...>)"); break;
+
+        case AWT_MODE_SWAP:       text = MODE_TEXT_2BUTTONS("SWAP",         "swap child branches",        "flip whole subtree");          break;
+        case AWT_MODE_MARK:       text = MODE_TEXT_2BUTTONS("MARK",         "mark subtree",               "unmark subtree");              break;
+        case AWT_MODE_GROUP:      text = MODE_TEXT_2BUTTONS("GROUP",        "fold/unfold group",          "create/rename/destroy group"); break;
+        case AWT_MODE_NNI:        text = MODE_TEXT_2BUTTONS("OPTI(NNI)",    "subtree",                    "whole tree");                  break;
+        case AWT_MODE_KERNINGHAN: text = MODE_TEXT_2BUTTONS("OPTI(KL)",     "subtree",                    "whole tree");                  break;
+        case AWT_MODE_OPTIMIZE:   text = MODE_TEXT_2BUTTONS("OPTI(NNI&KL)", "subtree",                    "whole tree");                  break;
+        case AWT_MODE_SETROOT:    text = MODE_TEXT_2BUTTONS("REROOT",       "set root to clicked branch", "search optimal root");         break;
+
+        case AWT_MODE_ROT:    text = MODE_TEXT_1BUTTON_KEYS("ROTATE", "drag branch to rotate",         KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_SPREAD: text = MODE_TEXT_1BUTTON_KEYS("SPREAD", "drag branch to spread subtree", KEYINFO_ABORT_AND_RESET); break;
+
+        case AWT_MODE_LENGTH: text = MODE_TEXT_2BUTTONS_KEYS("LENGTH",       "drag branch/ruler", "use discrete lengths", KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_LINE:   text = MODE_TEXT_2BUTTONS_KEYS("LINE",         "drag branch/ruler", "whole subtree",        KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_MOVE:   text = MODE_TEXT_2BUTTONS_KEYS("MOVE",         "drag branch/ruler", "move groupinfo only",  KEYINFO_ABORT);           break;
+        case AWT_MODE_LZOOM:  text = MODE_TEXT_2BUTTONS_KEYS("LOGICAL ZOOM", "show only subtree", "go up one step",       KEYINFO_RESET);           break;
+
+        case AWT_MODE_RESET: text = MODE_TEXT_3BUTTONS("RESET", "reset rotation", "reset angles", "reset linewidth"); break; // @@@ elim
+
+        default: text = no_mode_text_defined(); break;
     }
 
     td_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!
@@ -507,7 +475,7 @@ void NT_remove_bootstrap(AW_window*, AW_CL cl_ntw, AW_CL) // delete all bootstra
     }
 }
 
-void NT_reset_branchlengths(AW_window*, AW_CL cl_ntw, AW_CL) // set all branchlengths to 0.1
+void NT_reset_branchlengths(AW_window*, AW_CL cl_ntw, AW_CL) // set all branchlengths to DEFAULT_BRANCH_LENGTH
 {
     AWT_canvas     *ntw = (AWT_canvas*)cl_ntw;
     GB_transaction  gb_dummy(ntw->gb_main);
@@ -539,7 +507,7 @@ void NT_move_boot_branch(AW_window*, AW_CL cl_ntw, AW_CL cl_direction) // copy b
 
         char *adviceText = GBS_global_string_copy("Please note, that you just overwrote your existing %s.",
                                                   direction ? "bootstrap values" : "branchlengths");
-        AW_advice(adviceText, AW_ADVICE_TOGGLE|AW_ADVICE_HELP, 0, "tbl_boot2len.hlp");
+        AW_advice(adviceText, AW_ADVICE_TOGGLE_AND_HELP, 0, "tbl_boot2len.hlp");
         free(adviceText);
     }
 }
@@ -723,7 +691,7 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose) {
     free(tree_name);
     if (expose) {
         ntw->zoom_reset();
-        AWT_expose_cb(0, ntw, 0);
+        AWT_expose_cb(NULL, ntw);
     }
     GB_pop_transaction(ntw->gb_main);
 }
@@ -733,14 +701,14 @@ void TREE_recompute_cb(AW_root *, AWT_canvas *ntw) {
     td_assert(gt);
 
     gt->get_root_node()->compute_tree(ntw->gb_main);
-    AWT_expose_cb(ntw->aww, ntw, 0);
+    AWT_expose_cb(NULL, ntw);
 }
 
-void NT_reinit_treetype(AW_window *, AWT_canvas *ntw, AW_CL ) {
+void NT_reinit_treetype(AW_root*, AWT_canvas *ntw) {
     AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->gfx);
     td_assert(gt);
     gt->set_tree_type(gt->tree_sort, ntw);
-    AWT_resize_cb(ntw->aww, ntw, 0);
+    AWT_resize_cb(NULL, ntw);
 }
 
 void NT_remove_species_in_tree_from_hash(AP_tree *tree, GB_HASH *hash) {

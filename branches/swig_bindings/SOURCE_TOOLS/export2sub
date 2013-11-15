@@ -2,6 +2,7 @@
 #
 # --------------------------------------------------------------------------------
 # variables listed here are automatically exported to sub-makefiles
+# documentation for single variables can be found in ../SOURCE_TOOLS/parent_make.txt
 
 export ARBHOME
 
@@ -16,8 +17,10 @@ export MACH
 export DEBIAN
 export DARWIN
 
-export ACC ACCLIB AINCLUDES
-export CPP CPPLIB CPPINCLUDES
+export A_CC  CC_INCLUDES
+export A_CXX CXX_INCLUDES
+export cflags cxxflags shared_cflags
+
 export POST_COMPILE
 
 export LD_LIBRARY_PATH LIBPATH SYSLIBS
@@ -33,6 +36,7 @@ export MAKEDEPENDFLAGS MAKEDEPEND
 export SEP
 export NODIR
 
+export CORE_LIB
 export ARBDB_LIB
 export UNIT_TESTS
 export SHOWTODO

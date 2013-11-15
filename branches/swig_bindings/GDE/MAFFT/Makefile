@@ -1,5 +1,5 @@
 # MAFFT for ARB
-# by Arne Böckmann (2013)
+# by Arne Boeckmann (2013)
 
 PROG  = MAFFT
 
@@ -12,16 +12,26 @@ MAKEFLAGS=
 # ARBs standard target
 $(MAIN) : mafft.stamp
 
-clean :
+clean_core:
+	+cd mafft-7.055-with-extensions/core && make clean
+
+clean_extensions:
+	+cd mafft-7.055-with-extensions/extensions && make clean
+
+clean_here:
 	rm -rf $(ARBHOME)/lib/mafft
 	rm -f mafft.stamp
 	rm -f $(ARBHOME)/bin/mafft*
-	cd mafft-7.055-with-extensions/core && make clean
-	cd mafft-7.055-with-extensions/extensions && make clean
 
-mafft.stamp :
-	cd mafft-7.055-with-extensions/core && make && make install
-	cd mafft-7.055-with-extensions/extensions && make && make install
+clean: clean_core clean_extensions clean_here
+
+make_core:
+	+cd mafft-7.055-with-extensions/core && make && make install
+
+make_extensions:
+	+cd mafft-7.055-with-extensions/extensions && make && make install
+
+mafft.stamp: make_core make_extensions
 	touch mafft.stamp
 
-.PHONY : clean
+.PHONY : clean clean_core clean_extensions clean_here make_core make_extensions

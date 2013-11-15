@@ -1,5 +1,5 @@
 /* XPM */
-static char * edit_xpm[] = {
+static char * editor_xpm[] = {
 "44 24 6 1",
 " 	c None",
 ".	c #000000",

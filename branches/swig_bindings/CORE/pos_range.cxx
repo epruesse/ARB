@@ -94,7 +94,7 @@ void TEST_PosRange() {
 
     // test containment (see also TEST_range_containment below)
     for (int pos = -3; pos<12; ++pos) {
-        TEST_ANNOTATE_ASSERT(GBS_global_string("pos=%i", pos));
+        TEST_ANNOTATE(GBS_global_string("pos=%i", pos));
 
         TEST_REJECT(empty.contains(pos));
         TEST_EXPECT(correlated(whole.contains(pos),      pos >= 0));
@@ -102,6 +102,8 @@ void TEST_PosRange() {
         TEST_EXPECT(correlated(till9.contains(pos),      pos >= 0 && pos <= 9));
         TEST_EXPECT(correlated(seven2nine.contains(pos), pos >= 7 && pos <= 9));
     }
+    TEST_ANNOTATE(NULL);
+
     TEST_EXPECT(whole.contains(INT_MAX));
     TEST_EXPECT(from7.contains(INT_MAX));
     TEST_REJECT(empty.contains(INT_MAX));

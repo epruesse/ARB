@@ -10,7 +10,7 @@
 // ============================================================= //
 
 #include "RegExpr.hxx"
-#include <arbdbt.h>
+#include <arb_match.h>
 #include <regex.h>
 
 using namespace std;
@@ -69,10 +69,6 @@ void RegExpr::perform_match(const char *str, size_t offset) const {
         re_assert(matches[0].didMatch()); // complete match has to be found
     }
     free(possMatch);
-}
-
-void RegExpr::test() const {
-    compile();
 }
 
 const RegMatch *RegExpr::match(const std::string& versus, size_t offset) const {

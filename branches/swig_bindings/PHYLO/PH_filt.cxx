@@ -383,28 +383,29 @@ void PH_create_filter_variables(AW_root *aw_root, AW_default default_file)
     aw_root->awar_int("phyl/matrix/rest",  DONT_COUNT, default_file); // 'MNY....' in column
     aw_root->awar_int("phyl/matrix/lower", DONT_COUNT, default_file); // 'acgtu' in column
 
-    aw_root->awar("phyl/filter/startcol")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
-    aw_root->awar("phyl/filter/stopcol")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
-    aw_root->awar("phyl/filter/minhom")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
-    aw_root->awar("phyl/filter/maxhom")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
+    RootCallback display_status = makeRootCallback(display_status_cb);
+    aw_root->awar("phyl/filter/startcol")->add_callback(display_status);
+    aw_root->awar("phyl/filter/stopcol") ->add_callback(display_status);
+    aw_root->awar("phyl/filter/minhom")  ->add_callback(display_status);
+    aw_root->awar("phyl/filter/maxhom")  ->add_callback(display_status);
 
     {
-        RootCallback ec = makeRootCallback(expose_callb);
-        aw_root->awar("phyl/filter/startcol")->add_callback(ec);
-        aw_root->awar("phyl/filter/stopcol")->add_callback(ec);
-        aw_root->awar("phyl/filter/minhom")->add_callback(ec);
-        aw_root->awar("phyl/filter/maxhom")->add_callback(ec);
+        RootCallback expose = makeRootCallback(expose_cb);
+        aw_root->awar("phyl/filter/startcol")->add_callback(expose);
+        aw_root->awar("phyl/filter/stopcol")->add_callback(expose);
+        aw_root->awar("phyl/filter/minhom")->add_callback(expose);
+        aw_root->awar("phyl/filter/maxhom")->add_callback(expose);
     }
 
-    aw_root->awar("phyl/filter/point")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
-    aw_root->awar("phyl/filter/minus")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
-    aw_root->awar("phyl/filter/rest")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
-    aw_root->awar("phyl/filter/lower")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
+    aw_root->awar("phyl/filter/point")->add_callback(display_status);
+    aw_root->awar("phyl/filter/minus")->add_callback(display_status);
+    aw_root->awar("phyl/filter/rest") ->add_callback(display_status);
+    aw_root->awar("phyl/filter/lower")->add_callback(display_status);
 
-    aw_root->awar("phyl/matrix/point")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
-    aw_root->awar("phyl/matrix/minus")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
-    aw_root->awar("phyl/matrix/rest")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
-    aw_root->awar("phyl/matrix/lower")->add_callback((AW_RCB1)display_status, (AW_CL)aw_root);
+    aw_root->awar("phyl/matrix/point")->add_callback(display_status);
+    aw_root->awar("phyl/matrix/minus")->add_callback(display_status);
+    aw_root->awar("phyl/matrix/rest") ->add_callback(display_status);
+    aw_root->awar("phyl/matrix/lower")->add_callback(display_status);
 
 }
 

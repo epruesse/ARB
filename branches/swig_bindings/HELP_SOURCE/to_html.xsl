@@ -15,8 +15,6 @@
                >
 
   <!--  <xsl:output method="html" encoding="iso-8859-1" indent="no"/>-->
-  <!--<xsl:output method="html" indent="no"/>-->
-  <!--<xsl:output method="html" encoding="iso-8859-1" indent="yes"/>-->
   <xsl:output method="html" indent="no"/>
 
   <xsl:param name="myname"/>
@@ -129,9 +127,22 @@
     <HEAD>
       <META NAME="Author" CONTENT="{$author}"/>
       <meta http-equiv="expires" content="86400"/>
-      <!--<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>   this is added automatically   --> 
-      <!--<meta http-equiv="expires" content="86400"/>-->
       <TITLE>ARB help: <xsl:value-of select="$title"/></TITLE>
+      <style type="text/css">
+        <xsl:text>
+          div {
+          margin-left:+10pt;
+          padding-top:3pt;
+          padding-bottom:3pt;
+<!--uncomment for layout fixes--><!--border:1px solid #ffdddd;-->}
+          h3 {
+          font-weight:normal;
+          padding:0px;
+          padding-top:3pt;
+          margin:0px;
+<!--border:1px solid #00bbbb;-->}
+<!--h1 { border:1px solid #008800; }--><!--h2 { border:1px solid #0000ff; }--></xsl:text>
+      </style>
     </HEAD>
   </xsl:template>
 
@@ -186,13 +197,18 @@
   <!--     uplinks     -->
   <!-- =============== -->
 
-  <xsl:template match="UP" mode="uplinks"><LI><xsl:call-template name="link-to-document">
+  <xsl:template match="UP" mode="uplinks">
+    <LI>
+      <xsl:call-template name="link-to-document">
         <xsl:with-param name="doc" select="@dest"/>
         <xsl:with-param name="type" select="@type"/>
         <xsl:with-param name="missing" select="@missing"/>
-      </xsl:call-template></LI></xsl:template>
+      </xsl:call-template>
+    </LI>
+  </xsl:template>
 
   <xsl:template match="*" mode="uplinks">
+    <xsl:call-template name="error"><xsl:with-param name="text">Unwanted match in mode 'uplinks'</xsl:with-param></xsl:call-template>
   </xsl:template>
 
   <!-- ================ -->
@@ -210,6 +226,7 @@
   </xsl:template>
 
   <xsl:template match="*" mode="sublinks">
+    <xsl:call-template name="error"><xsl:with-param name="text">Unwanted match in mode 'sublinks'</xsl:with-param></xsl:call-template>
   </xsl:template>
 
   <!-- =================== -->
@@ -217,8 +234,31 @@
   <!-- =================== -->
 
   <xsl:template match="text()" mode="reflow">
-    <xsl:value-of select="."/>
+    <xsl:variable name="normaltext"><xsl:value-of select="normalize-space(.)"/></xsl:variable>
+    <xsl:choose>
+      <xsl:when test="string-length($normaltext)='0'"></xsl:when><!--skip whitespace-only text-nodes-->
+      <xsl:otherwise>
+        <xsl:variable name="first"><xsl:value-of select="normalize-space(substring(.,1,1))"/></xsl:variable>
+        <xsl:variable name="last"><xsl:value-of select="normalize-space(substring(.,string-length(.)))"/></xsl:variable>
+        <xsl:if test="string-length($first)='0'"><!--if text starts with whitespace ..-->
+          <xsl:variable name="prevtag"><xsl:copy-of select="name(preceding-sibling::*[1])"/></xsl:variable>
+          <xsl:if test="$prevtag='LINK'"><!--.. and preceding-sibling is a LINK -> keep one space-->
+            <xsl:text> </xsl:text>
+          </xsl:if>
+        </xsl:if>
+
+        <xsl:value-of select="$normaltext"/>
+
+        <xsl:if test="string-length($last)='0'"><!--if text ends with whitespace ..-->
+          <xsl:variable name="nexttag"><xsl:copy-of select="name(following-sibling::*[1])"/></xsl:variable>
+          <xsl:if test="$nexttag='LINK'"><!--.. and following-sibling is a LINK -> keep one space-->
+            <xsl:text> </xsl:text>
+          </xsl:if>
+        </xsl:if>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
+
   <xsl:template match="LINK" mode="reflow">
     <xsl:apply-templates select="." mode="link-recursion"/>
   </xsl:template>
@@ -292,7 +332,7 @@
   <xsl:template match="T" mode="condensed">
     <xsl:choose>
       <xsl:when test="@reflow='1'">
-        <xsl:apply-templates mode="reflow"/>
+          <xsl:apply-templates mode="reflow"/>
       </xsl:when>
       <xsl:otherwise>
         <PRE><FONT color="navy" size="-1"><xsl:apply-templates mode="preformatted"/></FONT></PRE>
@@ -307,8 +347,7 @@
   <xsl:template match="T">
     <xsl:choose>
       <xsl:when test="@reflow='1'">
-        <B><xsl:apply-templates mode="reflow"/></B>
-        <BR/>
+        <H3><xsl:apply-templates mode="reflow"/></H3>
       </xsl:when>
       <xsl:otherwise>
         <PRE><FONT color="navy" size="-1"><xsl:apply-templates mode="preformatted"/></FONT></PRE>
@@ -324,13 +363,32 @@
   </xsl:template>
 
   <xsl:template match="P">
-    <P style="margin-left:+10pt"><xsl:apply-templates mode="condensed"/></P>
+    <DIV><xsl:apply-templates mode="condensed"/></DIV>
   </xsl:template>
 
   <xsl:template match="ENUM">
-    <OL>
-      <xsl:apply-templates/>
-    </OL>
+    <xsl:variable name="enumval"><xsl:value-of select="ENTRY[1]/@enumerated"/></xsl:variable>
+    <xsl:variable name="type">
+      <xsl:choose>
+        <xsl:when test="$enumval='a'">a</xsl:when>
+        <xsl:when test="$enumval='A'">A</xsl:when>
+        <xsl:otherwise>1</xsl:otherwise><!--fallback to 1. 2. 3. ..-->
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:choose>
+      <xsl:when test="$type='1'">
+        <OL>
+          <xsl:apply-templates/>
+        </OL>
+      </xsl:when>
+      <xsl:otherwise>
+        <OL type="{$type}">
+          <xsl:apply-templates/>
+        </OL>
+      </xsl:otherwise>
+    </xsl:choose>
+
     <BR/>
   </xsl:template>
   <xsl:template match="LIST">
@@ -340,7 +398,7 @@
     <BR/>
   </xsl:template>
 
-  <xsl:template match="P" mode="top-level"><P><xsl:apply-templates/></P></xsl:template>
+  <xsl:template match="P" mode="top-level"><DIV><xsl:apply-templates/></DIV></xsl:template>
   <xsl:template match="T|ENUM|LIST" mode="top-level"><xsl:apply-templates select="."/></xsl:template>
 
   <xsl:template match="SECTION" mode="main">
@@ -355,7 +413,6 @@
                 <xsl:apply-templates mode="top-level"/>
               </TD>
             </TR>
-<!--            <TR><TD>&nbsp;</TD></TR>-->
             <TR><TD>&nbsp;</TD></TR>
           </TABLE>
         </TD>
@@ -414,12 +471,22 @@
         </TABLE>
         <TABLE border="{$tableBorder}" width="98%" align="center">
           <TR bgcolor="{$linkSectionsColor}">
+            <xsl:text>
+            </xsl:text>
             <TD valign="top" width="50%">Main topics:<BR/>
-              <UL><xsl:apply-templates mode="uplinks"/></UL>
+              <UL>
+                <xsl:apply-templates select="UP" mode="uplinks"/>
+              </UL>
             </TD>
+            <xsl:text>
+            </xsl:text>
             <TD valign="top">Related topics:<BR/>
-              <UL><xsl:apply-templates mode="sublinks"/></UL>
+              <UL>
+                <xsl:apply-templates select="SUB" mode="sublinks"/>
+              </UL>
             </TD>
+            <xsl:text>
+            </xsl:text>
           </TR>
           <TR>
             <TD colspan="2">
@@ -441,7 +508,7 @@
    <xsl:choose>
      <!-- tags-->
      <xsl:when test="string-length(name())>0">
-       <xsl:call-template name="error"><xsl:with-param name="text">Unbekannter TAG <xsl:value-of select="name()"/></xsl:with-param></xsl:call-template>
+       <xsl:call-template name="error"><xsl:with-param name="text">Unhandled TAG <xsl:value-of select="name()"/></xsl:with-param></xsl:call-template>
      </xsl:when>
      <!-- text() -->
      <xsl:otherwise>

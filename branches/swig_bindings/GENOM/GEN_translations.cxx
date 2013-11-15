@@ -23,7 +23,7 @@ using namespace std;
 //      remove redundant translations from genes
 
 #if defined(WARN_TODO)
-# warning add menu-entry to genome-NTREE ("Remove reproduceable translations")
+# warning add menu-entry to genome-NTREE ("Remove reproducible translations")
 #endif
 
 static char *translate_gene_sequence(GBDATA *gb_gene, GB_ERROR& error, int& translated_length, char *startCodon) {

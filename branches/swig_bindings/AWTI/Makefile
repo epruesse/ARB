@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = \
@@ -9,7 +9,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -59,8 +59,10 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/cb.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/cb_base.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/downcast.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/seqio.hxx
@@ -102,8 +104,10 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/cb.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/cb_base.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/downcast.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx

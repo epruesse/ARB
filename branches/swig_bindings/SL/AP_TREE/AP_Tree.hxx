@@ -87,8 +87,7 @@ enum AWT_REMOVE_TYPE { // bit flags
     // see ../../ARBDB/arbdbt.h@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
 };
 
-class AP_rates : virtual Noncopyable {
-public:
+struct AP_rates : virtual Noncopyable {
     AP_FLOAT  *rates;
     long       rate_len;
     AP_filter *filter;
@@ -151,47 +150,61 @@ public:
     ARB_edge find_innermost_edge();
 };
 
+#define DEFAULT_LINEWIDTH 0
 
 struct AP_tree_members {
-public:
-    // elements from struct a_tree_node
-
-    // struct arb_flags
+public: // @@@ make members private
     unsigned int grouped : 1;   // indicates a folded group
     unsigned int hidden : 1;    // not shown because a father is a folded group
     unsigned int has_marked_children : 1; // at least one child is marked
     unsigned int callback_exists : 1;
     unsigned int gc : 6;        // color
 
-    char left_linewidth;
+    char left_linewidth; // @@@ it's stupid to store linewidth IN FATHER (also wastes space)
     char right_linewidth;
-    // struct arb_data
-    int  leaf_sum;  // number of leaf children of this node
-    int  view_sum;  // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
-    float   tree_depth; // max length of path; for drawing triangles */
-    float   min_tree_depth; // min length of path; for drawing triangle
-    float   spread;
+    int leaf_sum;   // number of leaf children of this node
+    int view_sum;   // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
-    float   left_angle;
-    float   right_angle;
+    float tree_depth;     // max length of path; for drawing triangles
+    float min_tree_depth; // min length of path; for drawing triangle
+    float spread;
+
+    float left_angle;   // @@@ it's stupid to store angles IN FATHER (also wastes space)
+    float right_angle;
+
+    void reset_spread() {
+        spread = 1.0;
+    }
+    void reset_rotation() {
+        left_angle  = 0;
+        right_angle = 0;
+    }
+    void reset_linewidths() {
+        left_linewidth  = DEFAULT_LINEWIDTH;
+        right_linewidth = DEFAULT_LINEWIDTH;
+    }
+    void reset_layout() {
+        reset_spread();
+        reset_rotation();
+        reset_linewidths();
+    }
 
     void clear() {
+        reset_layout();
+
         grouped             = 0;
         hidden              = 0;
         has_marked_children = 0;
         callback_exists     = 0;
         gc                  = 0;
-        left_linewidth      = 0;
-        right_linewidth     = 0;
         leaf_sum            = 0;
         view_sum            = 0;
         tree_depth          = 0;
         min_tree_depth      = 0;
-        spread              = 0;
-        left_angle          = 0;
-        right_angle         = 0;
     }
+
+    void swap_son_layout();
 };
 
 struct AP_branch_members {
@@ -240,15 +253,18 @@ public:
     virtual void insert(AP_tree *new_brother);
     virtual void remove();                          // remove this+father (but do not delete)
     virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
-    void         swap_sons();                       // exchange sons
 
-    GB_ERROR     cantMoveTo(AP_tree *new_brother);  // use this to detect impossible moves
-    virtual void moveTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
+    void swap_sons();
+    void swap_featured_sons();
+    void rotate_subtree(); // flip whole subtree ( = recursive swap_sons())
+
+    GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves
+    virtual void moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
 
     virtual void set_root();
 
     void remove_bootstrap();                        // remove bootstrap values from subtree
-    void reset_branchlengths();                     // reset branchlengths of subtree to 0.1
+    void reset_branchlengths();                     // reset branchlengths of subtree to DEFAULT_BRANCH_LENGTH
     void scale_branchlengths(double factor);
     void bootstrap2branchlen();                     // copy bootstraps to branchlengths
     void branchlen2bootstrap();                     // copy branchlengths to bootstraps
@@ -264,14 +280,37 @@ public:
 
     int get_linewidth() const {
         if (!father) return 0;
-        return is_leftson(father) ? gr.left_linewidth : gr.right_linewidth;
+        const AP_tree_members& fgr = get_father()->gr;
+        return is_leftson(father) ? fgr.left_linewidth : fgr.right_linewidth;
     }
     // cppcheck-suppress functionConst
+    void set_linewidth_recursive(int width);
     void set_linewidth(int width) {
-        ap_assert(width >= 1 && width < 128);
+        ap_assert(width >= 0 && width < 128);
         if (father) {
-            char& lw = is_leftson(father) ? gr.left_linewidth : gr.right_linewidth;
+            AP_tree_members& fgr = get_father()->gr;
+            char& lw = is_leftson(father) ? fgr.left_linewidth : fgr.right_linewidth;
             lw       = width;
+        }
+    }
+
+    float get_angle() const {
+        if (!father) return 0;
+        const AP_tree_members& fgr = get_father()->gr;
+        return is_leftson(father) ? fgr.left_angle : fgr.right_angle;
+    }
+    void set_angle(double angle) {
+        if (father) {
+            AP_tree_members& fgr = get_father()->gr;
+            float& a = is_leftson(father) ? fgr.left_angle : fgr.right_angle;
+            a        = angle;
+
+            if (father->is_root_node()) {
+                // always set angle of other son at root-node
+                // @@@ works wrong if locigal-zoom is active
+                float& b = is_leftson(father) ? fgr.right_angle : fgr.left_angle;
+                b        = angle;
+            }
         }
     }
 
@@ -310,7 +349,8 @@ public:
 
     void reset_spread();
     void reset_rotation();
-    void reset_child_linewidths();
+    void reset_linewidths();
+    void reset_layout();
 
     bool hasName(const char *Name) const {
         return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0;

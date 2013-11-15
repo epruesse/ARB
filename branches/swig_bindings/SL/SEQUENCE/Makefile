@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .cxx .depend
 
@@ -15,10 +15,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -136,7 +136,9 @@ AP_sequence.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_sequence.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_sequence.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_sequence.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AP_sequence.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_sequence.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_sequence.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_sequence.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_sequence.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_sequence.o: $(ARBHOME)/INCLUDE/test_global.h

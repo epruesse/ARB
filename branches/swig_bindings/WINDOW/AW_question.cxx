@@ -142,7 +142,7 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
             while (ret) {
                 if (ret[0] == '^') {
                     if (helpfile && !help_button_done) {
-                        aw_msg->callback(AW_POPUP_HELP, (AW_CL)helpfile);
+                        aw_msg->callback(makeHelpCallback(helpfile));
                         aw_msg->create_button("HELP", "HELP", "H");
                         help_button_done = true;
                     }
@@ -150,10 +150,10 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
                     ++ret;
                 }
                 if (strcmp(ret, "EXIT") == 0) {
-                    aw_msg->callback(message_cb, -1);
+                    aw_msg->callback(makeWindowCallback(message_cb, -1));
                 }
                 else {
-                    aw_msg->callback(message_cb, (AW_CL)counter++);
+                    aw_msg->callback(makeWindowCallback(message_cb, counter++));
                 }
 
                 if (fixedSizeButtons) {
@@ -166,7 +166,7 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
             }
 
             if (helpfile && !help_button_done) { // if not done above
-                aw_msg->callback(AW_POPUP_HELP, (AW_CL)helpfile);
+                aw_msg->callback(makeHelpCallback(helpfile));
                 aw_msg->create_button("HELP", "HELP", "H");
                 help_button_done = true;
             }
@@ -258,7 +258,7 @@ void aw_popup_exit(const char *msg) {
     exit(EXIT_FAILURE);
 }
 
-void AW_reactivate_all_questions() {
+void AW_reactivate_all_questions(AW_window*) {
     GB_transaction  ta(AW_ROOT_DEFAULT);
     GBDATA         *gb_neverAskedAgain = GB_search(AW_ROOT_DEFAULT, "answers", GB_FIND);
     const char     *msg                = "No questions were disabled yet.";

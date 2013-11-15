@@ -26,8 +26,8 @@ STATIC_ASSERT(sizeof(int*) == sizeof(AW_CL)); // important for casted db-callbac
 //      compile time test of type inspection
 
 #define COMPILE_ASSERT_POINTER_TO(ISTYPE,POINTER)               \
-    STATIC_ASSERT(TypeT<POINTER>::IsPtrT &&                    \
-                   TypeT<CompountT<POINTER>::BaseT>::ISTYPE)
+    STATIC_ASSERT(TypeT<POINTER>::IsPtrT &&                     \
+                  TypeT<CompountT<POINTER>::BaseT>::ISTYPE)
 
 typedef int (*somefun)(const char *);
 int myfun(const char *) { return 0; }
@@ -179,50 +179,85 @@ static void wcb2(AW_window *w, char c, long long val) {
     tracef("wcb2(%c=%lli) [long long]\n", c, val);
 }
 
-static AW_window *wccb0(AW_root *r) {
+
+static void ucb0(UNFIXED) {
+    tracef("ucb0()\n");
+}
+static void ucb1(UNFIXED, const char *name) {
+    tracef("ucb1(%s)\n", name);
+}
+static void ucb2(UNFIXED, const char *name, int val) {
+    tracef("ucb2(%s=%i) [int]\n", name, val);
+}
+static void ucb2(UNFIXED, const char *name, long val) {
+    tracef("ucb2(%s=%li) [long]\n", name, val);
+}
+
+static AW_window *cwcb0(AW_root *r) {
     TEST_EXPECT(r == fake_root);
-    tracef("wccb0()\n");
+    tracef("cwcb0()\n");
     return fake_win;
 }
-static AW_window *wccb1(AW_root *r, int x) {
+static AW_window *cwcb1(AW_root *r, int x) {
     TEST_EXPECT(r == fake_root);
-    tracef("wccb1(%i)\n", x);
+    tracef("cwcb1(%i)\n", x);
     return fake_win;
 }
-static AW_window *wccb1(AW_root *r, const long *lp) {
+static AW_window *cwcb1(AW_root *r, const long *lp) {
     TEST_EXPECT(r == fake_root);
-    tracef("wccb1(%li) [long ptr]\n", *lp);
+    tracef("cwcb1(%li) [long ptr]\n", *lp);
     return fake_win;
 }
-static AW_window *wccb1(AW_root *r, const int *x) {
+static AW_window *cwcb1(AW_root *r, const int *x) {
     TEST_EXPECT(r == fake_root);
-    tracef("wccb1(%i) [const ptr]\n", *x);
+    tracef("cwcb1(%i) [const ptr]\n", *x);
     return fake_win;
 }
-static AW_window *wccb1(AW_root *r, int *x) {
+static AW_window *cwcb1(AW_root *r, int *x) {
     TEST_EXPECT(r == fake_root);
-    tracef("wccb1(%i) [mutable ptr]\n", *x);
+    tracef("cwcb1(%i) [mutable ptr]\n", *x);
     *x *= 2; // modify callback argument!
     return fake_win;
 }
-static AW_window *wccb1(AW_root *r, char* s) {
+static AW_window *cwcb1(AW_root *r, char* s) {
     TEST_EXPECT(r == fake_root);
-    tracef("wccb1(%s) [mutable]\n", s);
+    tracef("cwcb1(%s) [mutable]\n", s);
     return fake_win;
 }
-static AW_window *wccb1(AW_root *r, const char* s) {
+static AW_window *cwcb1(AW_root *r, const char* s) {
     TEST_EXPECT(r == fake_root);
-    tracef("wccb1(%s) [const]\n", s);
+    tracef("cwcb1(%s) [const]\n", s);
     return fake_win;
 }
-static AW_window *wccb2(AW_root *r, const char *s1, const char *s2) {
+static AW_window *cwcb2(AW_root *r, const char *s1, const char *s2) {
     TEST_EXPECT(r == fake_root);
-    tracef("wccb2(%s=%s) [const const]\n", s1, s2);
+    tracef("cwcb2(%s,%s) [const const]\n", s1, s2);
     return fake_win;
 }
-static AW_window *wccb2(AW_root *r, const char *s1, char *s2) {
+static AW_window *cwcb2(AW_root *r, const char *s1, char *s2) {
     TEST_EXPECT(r == fake_root);
-    tracef("wccb2(%s=%s) [const mutable]\n", s1, s2);
+    tracef("cwcb2(%s,%s) [const mutable]\n", s1, s2);
+    return fake_win;
+}
+
+static AW_window *cwcb3(AW_root *r, const char *s1, const char *s2) {
+    TEST_EXPECT(r == fake_root);
+    tracef("cwcb3(%s,%s) [const const]\n", s1, s2);
+    return fake_win;
+}
+static AW_window *cwcb3(AW_root *r, const char *s1, char *s2) {
+    TEST_EXPECT(r == fake_root);
+    tracef("cwcb3(%s,%s) [const mutable]\n", s1, s2);
+    return fake_win;
+}
+static AW_window *cwcb3(AW_root *r, char *s1, const char *s2) {
+    TEST_EXPECT(r == fake_root);
+    tracef("cwcb3(%s,%s) [mutable const]\n", s1, s2);
+    return fake_win;
+}
+static AW_window *cwcb3(AW_root *r, char *s1, char *s2) {
+    TEST_EXPECT(r == fake_root);
+    tracef("cwcb3(%s,%s) [mutable mutable]\n", s1, s2);
     return fake_win;
 }
 
@@ -246,9 +281,17 @@ static void dbcb1(GBDATA *gbd, const char *n, GB_CB_TYPE t) {
     tracef("dbcb1(%s) [const char]\n", n);
 }
 
+static void plaincb() {
+    tracef("plaincb()\n");
+}
+static AW_window *cwcb_plain() {
+    tracef("cwcb_plain()\n");
+    return fake_win;
+}
+
 inline void call(const RootCallback& rcb) { rcb(fake_root); }
 inline void call(const WindowCallback& wcb) { wcb(fake_win); }
-inline void call(const WindowCreatorCallback& wccb) { TEST_EXPECT(wccb(fake_root) == fake_win); }
+inline void call(const CreateWindowCallback& cwcb) { TEST_EXPECT(cwcb(fake_root) == fake_win); }
 inline void call(const DatabaseCallback& dbcb) { dbcb(fake_gbd, fake_gbtype); }
 
 #define TEST_CB(cb,expectedChecksum) do {                               \
@@ -274,49 +317,75 @@ static void deleteString(string *str) { delete str; }
 static void deleteString(string *str1, string *str2) { delete str1; delete str2; }
 
 void TEST_cbs() {
-    MISSING_TEST("please log");
+    // MISSING_TEST("please log");
     // for (int i = 0; i<100000; ++i)
     {
-        TEST_CB(makeRootCallback(rcb0),                0x17b8);
-        TEST_CB(makeRootCallback(rcb1,  "dispatched"), 0x5d9780);
-        TEST_CB(makeRootCallback(rcb2, "age",  46),    0x176c160);
-        TEST_CB(makeRootCallback(rcb2, "size", 178L),  0xbaf72ec);
+        TEST_CB_TRACE(makeRootCallback(plaincb),             "plaincb()\n");
+        TEST_CB_TRACE(makeRootCallback(rcb0),                "rcb0()\n");
+        TEST_CB_TRACE(makeRootCallback(rcb1,  "dispatched"), "rcb1(dispatched)\n");
+        TEST_CB_TRACE(makeRootCallback(rcb2, "age",  46),    "rcb2(age=46) [int]\n");
+        TEST_CB_TRACE(makeRootCallback(rcb2, "size", 178L),  "rcb2(size=178) [long]\n");
 
-        TEST_CB(makeWindowCallback(wcb0),               0x16f8);
-        TEST_CB(makeWindowCallback(wcb1, "dispatched"), 0x589780);
-        TEST_CB(makeWindowCallback(wcb2, "age",  46),   0x162c160);
-        TEST_CB(makeWindowCallback(wcb2, "size", 178L), 0xb0f72ec);
+        TEST_CB_TRACE(makeWindowCallback(plaincb),            "plaincb()\n");
+        TEST_CB_TRACE(makeWindowCallback(wcb0),               "wcb0()\n");
+        TEST_CB_TRACE(makeWindowCallback(wcb1, "dispatched"), "wcb1(dispatched)\n");
+        TEST_CB_TRACE(makeWindowCallback(wcb2, "age",  46),   "wcb2(age=46) [int]\n");
+        TEST_CB_TRACE(makeWindowCallback(wcb2, "size", 178L), "wcb2(size=178) [long]\n");
+
+        // declaring a cb with UNFIXED as fixed-argument allows to use callbacks as RootCallback AND as WindowCallback
+        // (when we use sigc++ in the future this should be changed to allowing functions w/o the UNFIXED-parameter)
+
+        TEST_CB_TRACE(makeRootCallback(ucb0),                "ucb0()\n");
+        TEST_CB_TRACE(makeRootCallback(ucb1,  "dispatched"), "ucb1(dispatched)\n");
+        TEST_CB_TRACE(makeRootCallback(ucb2, "age",  46),    "ucb2(age=46) [int]\n");
+        TEST_CB_TRACE(makeRootCallback(ucb2, "size", 178L),  "ucb2(size=178) [long]\n");
+
+        TEST_CB_TRACE(makeWindowCallback(ucb0),                "ucb0()\n");
+        TEST_CB_TRACE(makeWindowCallback(ucb1,  "dispatched"), "ucb1(dispatched)\n");
+        TEST_CB_TRACE(makeWindowCallback(ucb2, "age",  46),    "ucb2(age=46) [int]\n");
+        TEST_CB_TRACE(makeWindowCallback(ucb2, "size", 178L),  "ucb2(size=178) [long]\n");
 
 #if defined(ARB_64)
-        TEST_CB(makeWindowCallback(wcb2, 'l', 0xb09bbc04b09bbcLL),  0xc830c18e);
+        TEST_CB_TRACE(makeWindowCallback(wcb2, 'l', 49710827735915452LL),  "wcb2(l=49710827735915452) [long long]\n");
 #endif
 
-        TEST_CB(makeWindowCreatorCallback(wccb0),     0x2878);
-        TEST_CB(makeWindowCreatorCallback(wccb1, 77), 0xa19c);
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb_plain), "cwcb_plain()\n");
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb0),      "cwcb0()\n");
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, 77),  "cwcb1(77)\n");
 
-        TEST_CB(makeDatabaseCallback(dbcb012), 0x8778);
-        TEST_CB(makeDatabaseCallback(dbcb02), 0x87f0);                // call dbcb02 with fixed argument (i.e. with argument normally passed by ARBDB)
-        TEST_CB(makeDatabaseCallback(dbcb1, 77), 0x21a260);
-        TEST_CB(makeDatabaseCallback(dbcb1, freeCharp, strdup("test")), 0x428ac190);
+        // TEST_CB(makeDatabaseCallback(plaincb), 44760); // does not work (ambiguous due to 2 fixed arguments of DatabaseCallback)
+        TEST_CB_TRACE(makeDatabaseCallback(dbcb01),    "dbcb01()\n");
+        TEST_CB_TRACE(makeDatabaseCallback(dbcb012),   "dbcb012()\n");
+        TEST_CB_TRACE(makeDatabaseCallback(dbcb02),    "dbcb02(2)\n"); // call dbcb02 with fixed argument (i.e. with argument normally passed by ARBDB)
+        TEST_CB_TRACE(makeDatabaseCallback(dbcb1, 77), "dbcb1(77) [int]\n");
+
+        TEST_CB_TRACE(makeDatabaseCallback(dbcb1, freeCharp, strdup("test")), "dbcb1(test) [const char]\n");
 
         // callbacks with deallocator
 
         // TEST_CB(makeWindowCallback(wcb1, strdup("leak")), 0x163ac); // leaks
-        TEST_CB(makeWindowCallback(wcb1, freeCharp, strdup("leak")), 0x163ac);
+        TEST_CB_TRACE(makeWindowCallback(wcb1, freeCharp, strdup("leak")), "wcb1(leak)\n");
         // TEST_CB(makeWindowCallback(wcb1, freeCharp, "leak"), 0x163ac); // does not compile (can't call freeCharp with const char *)
-        TEST_CB(makeWindowCallback(wcb1, deleteString, new string("leak")), 0x2c7790c);
+        TEST_CB_TRACE(makeWindowCallback(wcb1, deleteString, new string("leak")), "wcb1(leak) [string]\n");
         // TEST_CB(makeWindowCallback(wcb2, strdup("hue"), strdup("hott")), 0xe09d7b1); // leaks
-        TEST_CB(makeWindowCallback(wcb2, freeCharp, strdup("hue"), strdup("hott")), 0xe09d7b1);
-        TEST_CB(makeWindowCallback(wcb2, deleteString, new string("hue"), new string("hott")), 0x2108df1a);
+        TEST_CB_TRACE(makeWindowCallback(wcb2, freeCharp, strdup("hue"), strdup("hott")), "wcb2(hue=hott) [const char/const char]\n");
+        TEST_CB_TRACE(makeWindowCallback(wcb2, deleteString, new string("hue"), new string("hott")), "wcb2(hue=hott) [string/string]\n");
 
         // test const vs non-const pointers:
         char       *mut = strdup("mut");
         const char *con = "con";
 
-        TEST_CB(makeWindowCreatorCallback(wccb2, con, con), 0x1507833d);  // exact match
-        TEST_CB(makeWindowCreatorCallback(wccb2, mut, con), 0x1467833d);  // fallback to const/const
-        TEST_CB(makeWindowCreatorCallback(wccb2, con, mut), 0x54460ad0); // exact match
-        TEST_CB(makeWindowCreatorCallback(wccb2, mut, mut), 0x1471833d);  // fallback to const const
+        // if only const/const and const/mutable exists -> shall always select as much mutable as possible
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb2, con, con), "cwcb2(con,con) [const const]\n");   // exact match
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb2, mut, con), "cwcb2(mut,con) [const const]\n");   // fallback to const/const
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb2, con, mut), "cwcb2(con,mut) [const mutable]\n"); // exact match
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb2, mut, mut), "cwcb2(mut,mut) [const mutable]\n"); // fallback to const/mutable
+
+        // if all const/nonconst combinations exist -> shall always pick exact match
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb3, con, con), "cwcb3(con,con) [const const]\n");     // exact match
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb3, mut, con), "cwcb3(mut,con) [mutable const]\n");   // exact match
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb3, con, mut), "cwcb3(con,mut) [const mutable]\n");   // exact match
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb3, mut, mut), "cwcb3(mut,mut) [mutable mutable]\n"); // exact match
 
         // test reference arguments
         int       imut = 17;
@@ -324,19 +393,19 @@ void TEST_cbs() {
 
         const long lcon = 775L;
 
-        TEST_CB(makeWindowCreatorCallback(wccb1, imut), 0xa1ac);
-        TEST_CB(makeWindowCreatorCallback(wccb1, icon), 0xa1a4);
-        TEST_CB(makeWindowCreatorCallback(wccb1, &lcon), 0xa188418);
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, imut),  "cwcb1(17)\n");
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, icon),  "cwcb1(23)\n");
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, &lcon), "cwcb1(775) [long ptr]\n");
 
-        TEST_CB(makeWindowCreatorCallback(wccb1, &icon), 0xa1b2158);
-        TEST_CB(makeWindowCreatorCallback(wccb1, &icon), 0xa1b2158);
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, &icon), "cwcb1(23) [const ptr]\n");
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, &icon), "cwcb1(23) [const ptr]\n");
 
-        TEST_CB(makeWindowCreatorCallback(wccb1, &imut), 0x286ec698); // modifies 'imut'
-        TEST_CB(makeWindowCreatorCallback(wccb1, &imut), 0x2869c698); // modifies 'imut'
-        TEST_CB(makeWindowCreatorCallback(wccb1, &imut), 0x286fc698); // modifies 'imut'
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, &imut), "cwcb1(17) [mutable ptr]\n"); // modifies 'imut'
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, &imut), "cwcb1(34) [mutable ptr]\n"); // modifies 'imut'
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, &imut), "cwcb1(68) [mutable ptr]\n"); // modifies 'imut'
 
-        TEST_CB(makeWindowCreatorCallback(wccb1, mut),  0x5169cc4);
-        TEST_CB(makeWindowCreatorCallback(wccb1, con),  0x145feb8);
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, mut),   "cwcb1(mut) [mutable]\n");
+        TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, con),   "cwcb1(con) [const]\n");
 
         free(mut);
     }

@@ -17,6 +17,7 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
+#include <ad_cb.h>
 
 #define gen_assert(bed) arb_assert(bed)
 
@@ -176,12 +177,11 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode) {
         }
     }
     *bp = 0;
-    return gen_nds_ms->buf;
+
+    return NDS_mask_nonprintable_chars(gen_nds_ms->buf);
 }
 
-
-
-void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, GB_CB NDS_changed_callback) {
+void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, const DatabaseCallback& NDS_changed_callback) {
     GB_ERROR  error          = GB_push_transaction(gb_main);
     GBDATA   *gb_arb_presets = GB_search(gb_main, "arb_presets", GB_CREATE_CONTAINER);
     GBDATA   *gb_viewkey     = 0;
@@ -205,7 +205,7 @@ void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, GB
             error = GB_await_error();
         }
         else {
-            GB_add_callback(gb_viewkey, GB_CB_CHANGED, NDS_changed_callback, 0);
+            GB_add_callback(gb_viewkey, GB_CB_CHANGED, NDS_changed_callback);
 
             const char *default_key = 0;
             switch (i) {
@@ -313,7 +313,7 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main)
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"props_nds.hlp");
+        aws->callback(makeHelpCallback("props_nds.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->button_length(13);
@@ -346,22 +346,26 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main)
             aws->button_length(0);
             aws->callback((AW_CB)GEN_create_select_nds_window, (AW_CL)strdup(buf), cgb_main);
             aws->get_at_position(&fieldselectx, &dummy);
-            aws->create_button("SELECT_NDS", "S");
+            sprintf(buf, "SELECT_NDS_%i", i);
+            aws->create_button(buf, "S");
 
             sprintf(buf, "tmp/gene_viewkey_%i/len1", i);
             aws->get_at_position(&columnx, &dummy);
             aws->create_input_field(buf, 4);
 
             sprintf(buf, "tmp/gene_viewkey_%i/pars", i);
+            const char *inputFieldAwarName = strdup(buf);
+
             aws->get_at_position(&srtx, &dummy);
 
             aws->button_length(0);
 
-            aws->callback(AWT_create_select_srtaci_window, (AW_CL)strdup(buf), 0);
-            aws->create_button("SELECT_SRTACI", "S", "S");
+            aws->callback(AWT_create_select_srtaci_window, AW_CL(inputFieldAwarName), 0);
+            sprintf(buf, "SELECT_SRTACI_%i", i);
+            aws->create_button(buf, "S", "S");
 
             aws->get_at_position(&srtux, &dummy);
-            aws->create_input_field(buf, 40);
+            aws->create_input_field(inputFieldAwarName, 40);
             aws->at_newline();
         }
         aws->at(showx, closey);

@@ -51,6 +51,7 @@ failed_to_clean:
 	@echo "[Note: removing flag-files now to avoid failure of next test-run]"
 	rm $(TEST_FLAG_DIR)/changing*.flag $(TEST_FLAG_DIR)/failed*.flag
 	@echo "$(TEST_BASE)/$(TEST_LOG_DIR):0: Hint: if no error is reported further below, you may also find the cause in these log-files"
+	@grep -Pin 'arb-backtrace|segv' $(TEST_BASE)/$(TEST_LOG_DIR)/*.log | grep -v 'GBK_install_SIGSEGV_handler'
 # do NOT fail here, otherwise reporter will get no chance to list failure-reason 
 
 cleanup_environment:

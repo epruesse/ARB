@@ -42,8 +42,6 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def);
 #define NT_ROOT_WIDTH     9
 #define NT_SELECTED_WIDTH 11
 
-#define PH_CLICK_SPREAD   0.10
-
 #define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree*, (ntw)->gfx)
 
 
@@ -96,6 +94,13 @@ struct DendroSubtreeLimits {
     }
 };
 
+struct AWT_command_data {
+    /*! any kind of data which has to be stored between different events (e.g. to support drag&drop)
+     * Purpose of this class is to allow to delete such data w/o knowing anything else.
+     */
+    virtual ~AWT_command_data() {}
+};
+
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
@@ -125,19 +130,18 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AWT_scaled_font_limits scaled_font;
     double                 scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
 
-    AW_pos          grey_level;
-    double          rot_orientation;
-    double          rot_spread;
-    AW_clicked_text rot_ct;
+    AW_pos grey_level;
 
     AW_device *disp_device; // device for recursive functions
 
-    AW_bitset line_filter, vert_line_filter, text_filter, mark_filter, group_bracket_filter;
+    AW_bitset line_filter, vert_line_filter, mark_filter, group_bracket_filter;
+    AW_bitset leaf_text_filter, group_text_filter, remark_text_filter, other_text_filter;
     AW_bitset ruler_filter, root_filter;
     int       treemode;
     bool      nds_show_all;
 
-    AD_map_viewer_cb map_viewer_cb;
+    AD_map_viewer_cb  map_viewer_cb;
+    AWT_command_data  *cmd_data;
 
     void scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag);
 
@@ -161,23 +165,30 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     void empty_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, false); }
     void diamond(int gc, const AW::Position& pos, int pixel_width);
 
-    const char *show_ruler(AW_device *device, int gc);
-    void        rot_show_triangle(AW_device *device);
+    const char *ruler_awar(const char *name);
 
     void set_line_attributes_for(AP_tree *at) const {
         disp_device->set_line_attributes(at->gr.gc, at->get_linewidth()+baselinewidth, AW_SOLID);
     }
 
     virtual void read_tree_settings();
+    void update_structure() { get_root_node()->compute_tree(tree_static->get_gb_main()); }
     void apply_zoom_settings_for_treetype(AWT_canvas *ntw);
     
+    int draw_branch_line(int gc, const AW::Position& root, const AW::Position& leaf) {
+        const AW_click_cd *old = disp_device->get_click_cd();
+        td_assert(old && old->get_cd1() && !old->get_cd2()); // cd1 should be the node
+
+        AW_click_cd branch(disp_device, old->get_cd1(), (AW_CL)"branch");
+        return disp_device->line(gc, root, leaf, line_filter);
+    }
+
 protected:
-
-    AW_clicked_line  old_rot_cl;
-    AW_clicked_line  rot_cl;
-    AP_tree         *rot_at;
-
-    void rot_show_line(AW_device *device);
+    void store_command_data(AWT_command_data *new_cmd_data) {
+        delete cmd_data;
+        cmd_data = new_cmd_data;
+    }
+    AWT_command_data *get_command_data() { return cmd_data; }
 
 public:
 
@@ -192,25 +203,22 @@ public:
     // *********** public section
 
     AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
-    virtual ~AWT_graphic_tree() OVERRIDE;
+    ~AWT_graphic_tree() OVERRIDE;
 
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
 
     void init(const AP_tree& tree_prototype, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
-    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL) OVERRIDE;
+    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
 
-    virtual void show(AW_device *device) OVERRIDE;
+    void show(AW_device *device) OVERRIDE;
     const AW::Position& get_cursor() const { return cursor; }
 
-    virtual void info(AW_device *device, AW_pos x, AW_pos y,
-                      AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
+    void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
 
-    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char, AW_event_type type,
-                         AW_pos x, AW_pos y,
-                         AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
-
-    void key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier, char key_char,
-                     AW_pos           x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
+private:
+    void handle_key(AW_device *device, AWT_graphic_event& event);
+public:
+    void handle_command(AW_device *device, AWT_graphic_event& event) OVERRIDE;
 
     void mark_species_in_tree(AP_tree *at, int mark);
     void mark_species_in_tree_that(AP_tree *at, int mark, int (*condition)(GBDATA*, void*), void *cd);
@@ -237,11 +245,98 @@ public:
     void     set_tree_type(AP_tree_sort type, AWT_canvas *ntw);
 
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
+    void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 
 #if defined(UNIT_TESTS)
     friend class fake_AWT_graphic_tree;
 #endif
+};
+
+class ClickedTarget {
+    /*! Represents any target corresponding to some (mouse-)position in the tree display.
+     *
+     * The target is e.g. used as target for keystrokes or mouse clicks.
+     *
+     * For AP_LIST_NDS, this only represents the species (w/o any tree information).
+     * For other tree display modes, this represents a specific tree node.
+     *
+     * The space outside the tree does represent the whole tree (aka the root-node).
+     * (the necessary distance to the tree-structure/-text is defined by AWT_CATCH)
+     */
+
+    AP_tree *tree_node;
+    GBDATA  *gb_species;
+    bool     ruler;
+    bool     branch;
+
+    const AW_clicked_element *elem;
+
+    void init() {
+        tree_node  = NULL;
+        gb_species = NULL;
+        ruler      = false;
+        branch     = false;
+    }
+
+    void identify(AWT_graphic_tree *agt) {
+        init();
+        if (elem && elem->exists) {
+            const char *what = (const char*)elem->cd2();
+
+            if (what) {
+                if (strcmp(what, "species") == 0) { // entry in NDS list
+                    gb_species = (GBDATA*)elem->cd1();
+                    td_assert(gb_species);
+                }
+                else if (strcmp(what, "ruler") == 0) {
+                    ruler = !elem->cd1();
+                }
+                else if (strcmp(what, "branch") == 0) {
+                    branch = true; // indicates that a line really IS the branch (opposed to other branch-related lines like e.g. group-brackets)
+                }
+                else {
+                    td_assert(0); // unknown element type
+                }
+            }
+
+            if (!(gb_species || ruler)) {
+                tree_node = (AP_tree*)elem->cd1();
+                td_assert(branch || !what);
+            }
+        }
+        else { // use whole tree if mouse does not point to a subtree
+            tree_node = agt ? agt->get_root_node() : NULL;
+        }
+        td_assert(implicated(branch, tree_node));
+    }
+
+public:
+
+    ClickedTarget(AWT_graphic_tree *agt, const AW_clicked_element *clicked) : elem(clicked) {
+        // uses root of tree as target, when a position outside of the tree is selected
+        // (e.g. used for key-commands)
+        identify(agt);
+    }
+    ClickedTarget(const AW_clicked_element *clicked) : elem(clicked) {
+        // accept only normal branches as targets
+        identify(NULL);
+    }
+
+    const AW_clicked_element *element() const { return elem; }
+    AP_tree *node() const { return tree_node; }
+    GBDATA *species() const { return gb_species; }
+
+    bool is_text() const { return elem && elem->is_text(); }
+    bool is_line() const { return elem && elem->is_line(); }
+    bool is_branch() const { return branch; }
+    bool is_ruler() const { return ruler; }
+
+    double get_rel_attach() const {
+        // return [0..1] according to exact position where element is dropped
+        if (is_line() && (is_branch() || ruler)) return elem->get_rel_pos();
+        return 0.5; // act like "drop on branch-center"
+    }
 };
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);

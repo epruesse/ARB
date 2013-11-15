@@ -70,48 +70,42 @@ template<> NO_FUNCTION_TYPE(void const volatile);
 //      compound types
 
 template<typename T>
-class CompountT { // primary template
-public:
+struct CompountT { // primary template
     enum { IsPtrT = 0, IsRefT = 0, IsArrayT = 0, IsFuncT = IsFunctionT<T>::Yes, IsPtrMemT = 0 };
     typedef T BaseT;
     typedef T BottomT;
     typedef CompountT<void> ClassT;
 };
 template<typename T>
-class CompountT<T*> { // specialization for pointers
-public:
+struct CompountT<T*> { // specialization for pointers
     enum { IsPtrT = 1, IsRefT = 0, IsArrayT = 0, IsFuncT = 0, IsPtrMemT = 0 };
     typedef T BaseT;
     typedef typename CompountT<T>::BottomT BottomT;
     typedef CompountT<void> ClassT;
 };
 template<typename T>
-class CompountT<T&> { // specialization for references
-public:
+struct CompountT<T&> { // specialization for references
     enum { IsPtrT = 0, IsRefT = 1, IsArrayT = 0, IsFuncT = 0, IsPtrMemT = 0 };
     typedef T BaseT;
     typedef typename CompountT<T>::BottomT BottomT;
     typedef CompountT<void> ClassT;
 };
 template<typename T, size_t N>
-class CompountT<T[N]> { // specialization for arrays
-public:
+struct CompountT<T[N]> { // specialization for arrays
     enum { IsPtrT = 0, IsRefT = 0, IsArrayT = 1, IsFuncT = 0, IsPtrMemT = 0 };
     typedef T BaseT;
     typedef typename CompountT<T>::BottomT BottomT;
     typedef CompountT<void> ClassT;
 };
 template<typename T>
-class CompountT<T[]> { // specialization for empty arrays
-public:
+struct CompountT<T[]> { // specialization for empty arrays
     enum { IsPtrT = 0, IsRefT = 0, IsArrayT = 1, IsFuncT = 0, IsPtrMemT = 0 };
     typedef T BaseT;
     typedef typename CompountT<T>::BottomT BottomT;
     typedef CompountT<void> ClassT;
 };
 template<typename T, typename C>
-class CompountT<T C::*> { // specialization for pointers to members
-public:
+struct CompountT<T C::*> { // specialization for pointers to members
     enum { IsPtrT = 0, IsRefT = 0, IsArrayT = 0, IsFuncT = 0, IsPtrMemT = 1 };
     typedef T BaseT;
     typedef typename CompountT<T>::BottomT BottomT;
@@ -119,24 +113,21 @@ public:
 };
 
 template<typename R>
-class CompountT<R()> { // specialization for functions ()
- public:
+struct CompountT<R()> { // specialization for functions ()
     enum { IsPtrT = 0, IsRefT = 0, IsArrayT = 0, IsFuncT = 1, IsPtrMemT = 0 };
     typedef R BaseT();
     typedef R BottomT();
     typedef CompountT<void> ClassT;
 };
 template<typename R, typename P1>
-class CompountT<R(P1)> { // specialization for functions (P1)
-public:
+struct CompountT<R(P1)> { // specialization for functions (P1)
     enum { IsPtrT = 0, IsRefT = 0, IsArrayT = 0, IsFuncT = 1, IsPtrMemT = 0 };
     typedef R BaseT(P1);
     typedef R BottomT(P1);
     typedef CompountT<void> ClassT;
 };
 template<typename R, typename P1>
-class CompountT<R(P1, ...)> { // specialization for functions (P1, ...)
-public:
+struct CompountT<R(P1, ...)> { // specialization for functions (P1, ...)
     enum { IsPtrT = 0, IsRefT = 0, IsArrayT = 0, IsFuncT = 1, IsPtrMemT = 0 };
     typedef R BaseT(P1);
     typedef R BottomT(P1);
@@ -172,8 +163,7 @@ char enum_check(long long);
 SizeOverOne enum_check(...); // catch all
 
 template<typename T>
-class IsEnumT {
-public:
+struct IsEnumT {
     enum {
         Yes = IsFundaT<T>::No    &&
         !CompountT<T>::IsPtrT    &&
@@ -188,8 +178,7 @@ public:
 //      class types
 
 template<typename T>
-class IsClassT {
-public:
+struct IsClassT {
     enum {
         Yes = IsFundaT<T>::No    &&
         IsEnumT<T>::No           &&
@@ -206,8 +195,7 @@ public:
 //      generic type check
 
 template<typename T>
-class TypeT {
-public:
+struct TypeT {
     enum {
         IsFundaT  = IsFundaT<T>::Yes,
         IsPtrT    = CompountT<T>::IsPtrT,
@@ -226,8 +214,7 @@ public:
 
 
 template<typename T>
-class TypeOp  { // primary template
-public:
+struct TypeOp  { // primary template
     typedef T         ArgT;
     typedef T         BareT;
     typedef T const   ConstT;
@@ -236,8 +223,7 @@ public:
     typedef T const & RefConstT;
 };
 template<typename T>
-class TypeOp<T const>  { // partial specialization for const types
-public:
+struct TypeOp<T const>  { // partial specialization for const types
     typedef T const   ArgT;
     typedef T         BareT;
     typedef T const   ConstT;
@@ -246,8 +232,7 @@ public:
     typedef T const & RefConstT;
 };
 template<typename T>
-class TypeOp<T&>  { // partial specialization for references
-public:
+struct TypeOp<T&>  { // partial specialization for references
     typedef T &                         ArgT;
     typedef typename TypeOp<T>::BareT   BareT;
     typedef T const                     ConstT;
@@ -256,8 +241,7 @@ public:
     typedef T const &                   RefConstT;
 };
 template<>
-class TypeOp<void>  { // full specialization for void
-public:
+struct TypeOp<void>  { // full specialization for void
     typedef void       ArgT;
     typedef void       BareT;
     typedef void const ConstT;

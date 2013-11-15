@@ -17,26 +17,47 @@
 #ifndef AISC_GEN_SERVER_INCLUDED
 #include <PT_server.h>
 #endif
+#ifndef PT_TOOLS_H
+#include "PT_tools.h"
+#endif
+#ifndef CACHE_H
+#include <cache.h>
+#endif
 
 #define PT_SERVER_MAGIC   0x32108765                // pt server identifier
-#define PT_SERVER_VERSION 2                         // version of pt server database (no versioning till 2009/05/13)
-
-#define pt_assert(bed) arb_assert(bed)
+#define PT_SERVER_VERSION 3                         // version of pt server database (no versioning till 2009/05/13)
 
 #if defined(DEBUG)
-// # define PTM_DEBUG
-// # define PTM_DUMP_PTREE
+// # define PTM_DEBUG_NODES
+# define PTM_DEBUG_STAGE_ASSERTIONS
+// # define PTM_DEBUG_VALIDATE_CHAINS
 #endif // DEBUG
+
+#define CALCULATE_STATS_ON_QUERY
+
+#if defined(PTM_DEBUG_STAGE_ASSERTIONS)
+#define pt_assert_stage(s) pt_assert(psg.get_stage() == (s))
+#else // !defined(PTM_DEBUG_STAGE_ASSERTIONS)
+#define pt_assert_stage(s) 
+#endif
+
+#if defined(PTM_DEBUG_VALIDATE_CHAINS)
+#define pt_assert_valid_chain_stage1(node) pt_assert(PT_chain_has_valid_entries<ChainIteratorStage1>(node))
+#else // !defined(PTM_DEBUG_VALIDATE_CHAINS)
+#define pt_assert_valid_chain_stage1(node) 
+#endif
 
 typedef unsigned long ULONG;
 typedef unsigned int  UINT;
 typedef unsigned char uchar;
 
-#define PT_CORE *(int *)0 = 0;
+#define PT_MAX_PARTITION_DEPTH 4
 
 #define PT_POS_TREE_HEIGHT 20
-#define PT_POS_SECURITY    10
-#define MIN_PROBE_LENGTH   6
+#define PT_MIN_TREE_HEIGHT PT_MAX_PARTITION_DEPTH
+
+#define PT_POS_SECURITY  10
+#define MIN_PROBE_LENGTH 2
 
 enum PT_MATCH_TYPE {
     PT_MATCH_TYPE_INTEGER           = 0,
@@ -51,7 +72,6 @@ enum PT_MATCH_TYPE {
 #define FINDANSWER   52                             // private msg type: find result answer
 
 extern int gene_flag;           // if 'gene_flag' == 1 -> we are a gene pt server
-extern ULONG physical_memory;
 struct Hs_struct;
 
 enum type_types {
@@ -60,117 +80,182 @@ enum type_types {
     t_float  = 2
 };
 
-enum PT_BASES {
+enum PT_base {
     PT_QU = 0,
     PT_N  = 1,
     PT_A,
     PT_C,
     PT_G,
     PT_T,
-    PT_B_MAX,
+    PT_BASES,
     PT_B_UNDEF,
 };
 
-inline char PT_base_2_char(PT_BASES base) {
-    static char table[] = "0NACGU";
-    return base<PT_B_MAX ? table[base] : (char)base;
+inline bool is_std_base(char b) { return b >= PT_A && b <= PT_T; }
+inline bool is_ambig_base(char b) { return b == PT_QU || b == PT_N; }
+inline bool is_valid_base(char b) { return b >= PT_QU && b < PT_BASES; }
+
+inline char base_2_readable(char base) {
+    static char table[] = ".NACGU";
+    return base<PT_BASES ? table[safeCharIndex(base)] : base;
 }
 
-inline void PT_base_2_string(char *id_string) {
-    //! get a string with readable bases from a string with PT_?
-    for (int i = 0; id_string[i]; ++i) {
-        id_string[i] = PT_base_2_char(PT_BASES(id_string[i]));
+inline char *probe_2_readable(char *id_string, int len) {
+    //! translate a string containing PT_base into readable characters.
+    // caution if 'id_string' contains PT_QU ( == zero == EOS).
+    // (see also: probe_compress_sequence)
+    for (int i = 0; i<len; ++i) {
+        id_string[i] = base_2_readable(id_string[i]);
     }
+    return id_string;
 }
 
+inline void reverse_probe(char *seq, int len) {
+    int i = 0;
+    int j = len-1;
 
-// -----------------
-//      POS TREE
+    while (i<j) std::swap(seq[i++], seq[j--]);
+}
 
-enum PT_NODE_TYPE {
-    PT_NT_LEAF        = 0,
-    PT_NT_CHAIN       = 1,
-    PT_NT_NODE        = 2,
-    PT_NT_SINGLE_NODE = 3,                          // stage 3
-    PT_NT_SAVED       = 3,                          // stage 1+2
-    PT_NT_UNDEF       = 4
-};
+struct POS_TREE1;
+struct POS_TREE2;
 
-struct POS_TREE {
-    uchar flags;
-    char  data;
-};
-
-struct PTM2 {
-    char *data_start;                               // points to start of data
-    int   stage1;
-    int   stage2;
-    int   stage3;
-    int   mode;
-};
-
-
+enum Stage { STAGE1, STAGE2 };
 
 // ---------------------
 //      Probe search
 
-class probe_input_data : virtual Noncopyable {      // every taxa's own data
+class probe_input_data : virtual Noncopyable { // every taxa's own data
+    int     size;       // @@@ misleading (contains 1 if no bases in sequence)
+    GBDATA *gb_species;
+    bool    group;      // probe_design: whether species is in group
 
-    char *data;       // sequence
-    long  checksum;   // checksum of sequence
-    int   size; // @@@ misleading (contains 1 if no bases in sequence)
+    typedef SmartArrayPtr(int) SmartIntPtr;
 
-    char   *name;
-    char   *fullname;
-    GBDATA *gbd;
+    mutable cache::CacheHandle<SmartCharPtr> seq;
+    mutable cache::CacheHandle<SmartIntPtr>  rel2abs;
 
-    bool group;           // probe_design: whether species is in group
+    static cache::Cache<SmartCharPtr> seq_cache;
+    static cache::Cache<SmartIntPtr>  rel2abs_cache;
 
-    // obsolete methods below @@@ remove them
-    GBDATA *get_gbdata() const { return gbd; }
-    void set_data(char *assign, int size_) { pt_assert(!data); data = assign; size = size_; }
-    void set_checksum(long cs) { checksum = cs; }
-    
+    SmartCharPtr loadSeq() const {
+        GB_transaction ta(gb_species);
+        GBDATA *gb_compr = GB_entry(gb_species, "compr");
+        return SmartCharPtr(GB_read_bytes(gb_compr));
+    }
+
 public:
 
     probe_input_data()
-        : data(0),
-          checksum(0), 
-          size(0), 
-          name(0), 
-          fullname(0), 
-          gbd(0), 
-          group(false) 
+        : size(0),
+          gb_species(0),
+          group(false)
     {}
     ~probe_input_data() {
-        free(data);
-        free(name);
-        free(fullname);
+        seq.release(seq_cache);
+        rel2abs.release(rel2abs_cache);
     }
 
-    GB_ERROR init(GBDATA *gbd_);
+    static void set_cache_sizes(size_t seq_cache_size, size_t abs_cache_size) {
+        seq_cache.resize(seq_cache_size);
+        rel2abs_cache.resize(abs_cache_size);
+    }
 
-    const char *get_data() const { return data; }
-    char *read_alignment(int *psize) const;
+    GB_ERROR init(GBDATA *gb_species_);
 
-    const char *get_name() const { return name; }
-    const char *get_fullname() const { return fullname; }
-    long get_checksum() const { return checksum; }
+    SmartCharPtr get_dataPtr() const {
+        if (!seq.is_cached()) seq.assign(loadSeq(), seq_cache);
+        return seq.access(seq_cache);
+    }
+
+    const char *get_shortname() const {
+        GB_transaction ta(gb_species);
+
+        GBDATA *gb_name = GB_entry(gb_species, "name");
+        pt_assert(gb_name);
+        return GB_read_char_pntr(gb_name);
+    }
+    const char *get_fullname() const {
+        GB_transaction ta(gb_species);
+
+        GBDATA *gb_full = GB_entry(gb_species, "full_name");
+        return gb_full ? GB_read_char_pntr(gb_full) : "";
+    }
+    long get_checksum() const { // @@@ change return-type -> uint32_t
+        GB_transaction ta(gb_species);
+        GBDATA *gb_cs = GB_entry(gb_species, "cs");
+        pt_assert(gb_cs);
+        uint32_t csum = uint32_t(GB_read_int(gb_cs));
+        return csum;
+    }
     int get_size() const { return size; }
+
+    bool valid_rel_pos(int rel_pos) const { // returns true if rel_pos is inside sequence
+        return rel_pos >= 0 && rel_pos<get_size();
+    }
 
     bool inside_group() const { return group; }
     bool outside_group() const { return !group; }
 
     void set_group_state(bool isGroupMember) { group = isGroupMember; }
 
-    long get_abspos() const {
+    long get_geneabspos() const {
         pt_assert(gene_flag); // only legal in gene-ptserver
-        GBDATA *gb_pos = GB_entry(get_gbdata(), "abspos");
+        GBDATA *gb_pos = GB_entry(gb_species, "abspos");
         if (gb_pos) return GB_read_int(gb_pos);
         return -1;
     }
 
-private:
+    void preload_rel2abs() const {
+        if (!rel2abs.is_cached()) {
+            GB_transaction ta(gb_species);
+
+            GBDATA *gb_baseoff = GB_entry(gb_species, "baseoff");
+            pt_assert(gb_baseoff);
+
+            const GB_CUINT4 *baseoff = GB_read_ints_pntr(gb_baseoff);
+
+            int *r2a = new int[size];
+
+            int abs = 0;
+            for (int rel = 0; rel<size; ++rel) {
+                abs      += baseoff[rel];
+                r2a[rel]  = abs;
+            }
+
+            rel2abs.assign(r2a, rel2abs_cache);
+        }
+    }
+    size_t get_abspos(size_t rel_pos) const {
+        pt_assert(rel2abs.is_cached()); // you need to call preload_rel2abs
+        return (&*rel2abs.access(rel2abs_cache))[rel_pos]; // @@@ brute-forced
+    }
+
+    size_t calc_relpos(int abs_pos) const { // expensive
+        preload_rel2abs();
+        SmartIntPtr  rel2abs_ptr = rel2abs.access(rel2abs_cache);
+        const int   *r2a     = &*rel2abs_ptr;
+
+        int l = 0;
+        int h = get_size()-1;
+
+        if (r2a[l] == abs_pos) return l;
+        if (r2a[h] == abs_pos) return h;
+
+        while (l<h) {
+            int m = (l+h)/2;
+            if (r2a[m]<abs_pos) {
+                l = m;
+            }
+            else if (r2a[m]>abs_pos) {
+                h = m;
+            }
+            else {
+                return m;
+            }
+        }
+        return l;
+    }
 };
 
 struct probe_statistic_struct {
@@ -233,11 +318,17 @@ public:
     int get_most_used() const { return pos; }
 };
 
-extern struct probe_struct_global {
+class probe_struct_global {
+    Stage stage;
+
+    union {
+        POS_TREE1 *p1;
+        POS_TREE2 *p2;
+    } pt;
+
+public:
     GB_shell *gb_shell;
     GBDATA   *gb_main;                              // ARBDB interface
-    GBDATA   *gb_species_data;
-    GBDATA   *gb_sai_data;
     char     *alignment_name;
     GB_HASH  *namehash;                             // name to int
 
@@ -250,40 +341,36 @@ extern struct probe_struct_global {
     int  max_size;                                  // maximum sequence len
     long char_count;                                // number of all 'acgtuACGTU'
 
-    int    mismatches;                              // chain handle in match
-    double wmismatches;
-    int    N_mismatches;
-    int    w_N_mismatches[PT_POS_TREE_HEIGHT+PT_POS_SECURITY+1];
-
     int reversed;                                   // tell the matcher whether probe is reversed
 
     double *pos_to_weight;                          // position to weight
-    char    complement[256];                        // complement
 
-    int deep;                                       // for probe matching
-    int height;
-    int length;
-    
     MostUsedPos abs_pos;
 
     int sort_by;
 
-    char *probe;                                    // probe design + chains
     char *main_probe;
 
     char      *server_name;                         // name of this server
     aisc_com  *link;
     T_PT_MAIN  main;
     Hs_struct *com_so;                              // the communication socket
-    POS_TREE  *pt;
-    PTM2      *ptmain;
 
     probe_statistic_struct stat;
 
+    bool big_db; // STAGE2 only (true -> uses 8 bit pointers)
+
     void setup();
     void cleanup();
-    
-} psg;
+
+    void enter_stage(Stage stage_);
+    Stage get_stage() const { return stage; }
+
+    POS_TREE1*& TREE_ROOT1() { pt_assert(stage == STAGE1); return pt.p1; }
+    POS_TREE2*& TREE_ROOT2() { pt_assert(stage == STAGE2); return pt.p2; }
+};
+
+extern probe_struct_global psg;
 
 class gene_struct {
     char       *gene_name;
@@ -351,15 +438,7 @@ typedef std::set<const gene_struct *, ltByArbName>      gene_struct_index_arb;
 extern gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb species+gene name
 extern gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 
-#define PT_base_string_counter_eof(str) (*(unsigned char *)(str) == 255)
-
-inline void fflush_all() { // @@@ will become a duplicate (when merging PT_tools.h later)
-    fflush(stderr); 
-    fflush(stdout); 
-} 
-
 #else
 #error probe.h included twice
 #endif
-
 

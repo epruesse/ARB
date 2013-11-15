@@ -79,44 +79,15 @@ void AW_window::help_text(const char *help_id) {
     _at->helptext_for_next_button   = strdup(help_id);
 }
 
-void AW_window::sens_mask(AW_active Mask) {
-    aw_assert(legal_mask(Mask));
-    _at->widget_mask = Mask;
+void AW_window::sens_mask(AW_active mask) {
+    aw_assert(legal_mask(mask));
+    _at->widget_mask = mask;
 }
 
-
-void AW_window::callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    _callback = new AW_cb(this, (AW_CB)f, cd1, cd2);
-}
-
-void AW_window::callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) {
-    _callback = new AW_cb(this, (AW_CB)f, cd1);
-}
-
-void AW_window::callback(void (*f)(AW_window*)) {
-    _callback = new AW_cb(this, (AW_CB)f);
-}
-void AW_window::callback(AW_cb * /* owner */ awcbs) {
-    _callback = awcbs;
-}
 void AW_window::callback(const WindowCallback& cb) {
     _callback = new AW_cb(this, cb);
 }
 
-void AW_window::d_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    _d_callback = new AW_cb(this, (AW_CB)f, cd1, cd2);
-}
-
-void AW_window::d_callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) {
-    _d_callback = new AW_cb(this, (AW_CB)f, cd1);
-}
-
-void AW_window::d_callback(void (*f)(AW_window*)) {
-    _d_callback = new AW_cb(this, (AW_CB)f);
-}
-void AW_window::d_callback(AW_cb * /* owner */ awcbs) {
-    _d_callback = awcbs;
-}
 void AW_window::d_callback(const WindowCallback& cb) {
     _d_callback = new AW_cb(this, cb);
 }

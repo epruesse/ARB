@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 proto:
 	../../AISC_MKPTPS/aisc_mkpt -P -w insdel.h insdel.cxx >insdel.h.tmp
@@ -41,6 +41,7 @@ insdel.o: $(ARBHOME)/INCLUDE/adGene.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_assert.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_core.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_defs.h
+insdel.o: $(ARBHOME)/INCLUDE/arb_diff.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_error.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_msg.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_progress.h

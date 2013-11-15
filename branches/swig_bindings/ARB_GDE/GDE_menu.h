@@ -35,6 +35,7 @@ struct GmenuItemArg {
     char       *method;         // commandline interpretation
     GargChoice *choice;         // choices
     // ARB BEGIN
+    AW_active     active_mask;  // expert/novice
 };
 
 enum TypeInfo {
@@ -67,10 +68,11 @@ struct GmenuItem {
     GmenuItemArg *arg;            // argument definitions
     char          meta;           // Meta character for function
     char          seqtype;        // A -> amino, N -> nucleotide, '-' -> no sequence, otherwise both
-    char         *help;           // commandline help
+    char         *help;           // associated helpfile ("agde_*.hlp")
     // ARB BEGIN
     struct Gmenu *parent_menu;
     AW_window    *aws;            // opened window
+    AW_active     active_mask;    // expert/novice
 };
 
 struct Gmenu {
@@ -79,6 +81,7 @@ struct Gmenu {
     GmenuItem *item;            // menu items
     // ARB BEGIN
     char       meta;            // Meta character for menu
+    AW_active     active_mask;    // expert/novice
 };
 
 typedef unsigned char uchar;

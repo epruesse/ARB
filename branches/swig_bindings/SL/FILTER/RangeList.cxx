@@ -63,7 +63,7 @@ RangeList build_RangeList_from_string(const char *SAI_data, const char *set_byte
 
 static const char *dump(const RangeList& rlist) {
     static GBS_strstruct buf;
-    buf.reset_pos();
+    buf.erase();
     for (RangeList::iterator i = rlist.begin(); i != rlist.end(); ++i) {
         buf.nprintf(40, "%i-%i,", i->start(), i->end());
     }
@@ -72,7 +72,7 @@ static const char *dump(const RangeList& rlist) {
 }
 static const char *dump_reverse(const RangeList& rlist) {
     static GBS_strstruct buf;
-    buf.reset_pos();
+    buf.erase();
     for (RangeList::reverse_iterator i = rlist.rbegin(); i != rlist.rend(); ++i) {
         buf.nprintf(40, "%i-%i,", i->start(), i->end());
     }

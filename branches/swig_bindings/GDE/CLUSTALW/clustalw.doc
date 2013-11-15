@@ -61,7 +61,8 @@ read.
 5. The clustal sequence alignment file format has been changed to allow
 sequence names longer than 10 characters. The maximum length allowed is set in
 clustalw.h by the statement:
-#define MAXNAMES	10
+
+        #define MAXNAMES	10
 
 For the fasta format, the name is taken as the first string after the '>'
 character, stopping at the first white space. (Previously, the first 10
@@ -98,8 +99,11 @@ default.
 
 12. The conservation line output in the clustal format alignment file has been
 changed. Three characters are now used:
-'*' indicates positions which have a single, fully conserved residue
-':' indicates that one of the following 'strong' groups is fully conserved:-
+
+        '*' indicates positions which have a single, fully conserved residue
+
+        ':' indicates that one of the following 'strong' groups is fully conserved:-
+
                  STA
                  NEQK
                  NHQK
@@ -110,7 +114,8 @@ changed. Three characters are now used:
                  HY
                  FYW
 
-'.' indicates that one of the following 'weaker' groups is fully conserved:-
+        '.' indicates that one of the following 'weaker' groups is fully conserved:-
+
                  CSA
                  ATV
                  SAG
@@ -144,7 +149,9 @@ line. Several versions can now be recognised:-
 
      clustalw input.aln -gapopen=8.0
 
-instead of  clustalw input.aln /gapopen=8.0
+instead of
+
+     clustalw input.aln /gapopen=8.0
 
 
                       ATTENTION SOFTWARE DEVELOPERS!!
@@ -166,7 +173,7 @@ sequences. In the past, all characters (upper or lower case) other than
 a,c,g,t or u were converted to N. Now the following characters are recognised 
 and retained in the alignment output: ABCDGHKMNRSTUVWXY (upper or lower case).
 
-5. A  Blank line inadvertently added in the version 1.6 header has been taken
+5. A Blank line inadvertently added in the version 1.6 header has been taken
 out again.
 
 
@@ -255,6 +262,7 @@ What's New (April 1995) in Version 1.5 (since version 1.3).
 have a nice beefy machine.  On a Power Mac or a Pentium box
 it is nice and fast.  Two precompiled versions are supplied for Macs
 (Power mac and old mac versions).
+
 Mac:       1500 residues by 100 sequences
 Power Mac  3000    "     "   "     "
 PC         1500    "     "   "     "
@@ -470,46 +478,46 @@ then DNA/RNA is assumed, protein otherwise.
 3) FILE OUTPUT 
 
 
-1) the alignments.
+        1) the alignments.
 
-In the multiple alignment and profile alignment menus, there is a menu
-item to control the output format(s).
+        In the multiple alignment and profile alignment menus, there is a menu
+        item to control the output format(s).
 
-The alignment output format can be set to any (or all) of:
-CLUSTAL  (a self explanatory blocked alignment)
-NBRF/PIR (same as input format but with "-" characters for gaps)
-MSF      (the main GCG package multiple alignment format)
-PHYLIP   (Joe Felsenstein's phylogeny inference package.  Gaps are set to
-         "-" characters.  For some programs (e.g. PROTPARS/DNAPARS) these 
-         should be changed to "?" characters for unknown residues.
-GDE      (Used by Steven Smith's GDE package)
+        The alignment output format can be set to any (or all) of:
+        CLUSTAL  (a self explanatory blocked alignment)
+        NBRF/PIR (same as input format but with "-" characters for gaps)
+        MSF      (the main GCG package multiple alignment format)
+        PHYLIP   (Joe Felsenstein's phylogeny inference package.  Gaps are set to
+                 "-" characters.  For some programs (e.g. PROTPARS/DNAPARS) these 
+                 should be changed to "?" characters for unknown residues.
+        GDE      (Used by Steven Smith's GDE package)
 
-You can also choose between having the sequences in the same order as in 
-the input file or writing them out in an order that more closely matches the 
-order used to carry out the multiple alignment.
-
-
-2) The trees.
-
-Believe it or not, we now use the New Hampshire (nested parentheses)
-format as default for our trees.  This format is compatible with e.g. the
-PHYLIP package.  If you want to view a tree, you can use the RETREE or 
-DRAWGRAM/DRAWTREE programs of PHYLIP.  This format is used for all our 
-trees, even the initial guide trees for deciding the order of multiple
-alignment.  The output trees from the phylogenetic tree menu can also be
-requested in our old verbose/cryptic format.  This may be more useful
-if, for example, you wish to see the bootstrap figures.  The bootstrap
-trees in the default New Hampshire format give the bootstrap figures
-as extra labels which can be viewed very easily using TREETOOL which is
-available as part of the GDE package.  TREETOOL is available from the
-RDP project by ftp from rdp.life.uiuc.edu.  
-
-The New Hampshire format is only useful if you have software to display or
-manipulate the trees.  The PHYLIP package is highly recommended if you intend
-to do much work with trees and includes programs for doing this.  If you do
-not have such software, request the trees in the older clustal format
-and see the documentation for Clustal V (clustalv.doc).  WE DO NOT PROVIDE
-ANY DIRECT MEANS FOR VIEWING TREES GRAPHICALLY.
+        You can also choose between having the sequences in the same order as in 
+        the input file or writing them out in an order that more closely matches the 
+        order used to carry out the multiple alignment.
+        
+        
+        2) The trees.
+        
+        Believe it or not, we now use the New Hampshire (nested parentheses)
+        format as default for our trees.  This format is compatible with e.g. the
+        PHYLIP package.  If you want to view a tree, you can use the RETREE or 
+        DRAWGRAM/DRAWTREE programs of PHYLIP.  This format is used for all our 
+        trees, even the initial guide trees for deciding the order of multiple
+        alignment.  The output trees from the phylogenetic tree menu can also be
+        requested in our old verbose/cryptic format.  This may be more useful
+        if, for example, you wish to see the bootstrap figures.  The bootstrap
+        trees in the default New Hampshire format give the bootstrap figures
+        as extra labels which can be viewed very easily using TREETOOL which is
+        available as part of the GDE package.  TREETOOL is available from the
+        RDP project by ftp from rdp.life.uiuc.edu.  
+        
+        The New Hampshire format is only useful if you have software to display or
+        manipulate the trees.  The PHYLIP package is highly recommended if you intend
+        to do much work with trees and includes programs for doing this.  If you do
+        not have such software, request the trees in the older clustal format
+        and see the documentation for Clustal V (clustalv.doc).  WE DO NOT PROVIDE
+        ANY DIRECT MEANS FOR VIEWING TREES GRAPHICALLY.
 
 -------------------------------------------------------------------------
 

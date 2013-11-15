@@ -89,11 +89,16 @@ static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
 
         for (int cset = 0; cset<SEQ_COLOR_SETS; ++cset) {
             awar_name         = GBS_global_string(AWAR_SEQ_NAME_TEMPLATE, cset, elem);
-            AW_awar *awar_col = awr->awar_string(awar_name, default_color(cset, elem))->add_callback(awt_awar_changed_cb, (AW_CL)asc);
+            AW_awar *awar_col = awr->awar_string(awar_name, default_color(cset, elem));
 
             if (strcmp(awar_col->read_char_pntr(), "=0") == 0) { // translate old->new default
                 awar_col->write_string("");
             }
+
+            // add callback AFTER writing to awar above to avoid recursion
+            // (the CB calls this function again, and seq_color_awars_created is set
+            // to true at the very end...
+            awar_col->add_callback(awt_awar_changed_cb, (AW_CL)asc);
         }
     }
 
@@ -116,7 +121,7 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc) {
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"sequence_colors.hlp");
+    aws->callback(makeHelpCallback("sequence_colors.hlp"));
     aws->create_button("HELP", "HELP");
     
     aws->at_newline();

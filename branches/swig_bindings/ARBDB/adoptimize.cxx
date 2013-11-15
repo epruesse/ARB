@@ -11,6 +11,9 @@
 #include <climits>
 #include <netinet/in.h>
 
+#include <arb_file.h>
+#include <arb_diff.h>
+
 #include <arbdbt.h>
 
 #include "gb_key.h"
@@ -2407,7 +2410,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
     if (!error) {
         O_gbdByKey *gbk = g_b_opti_createGbdByKey(Main);
-        int idx;
+        int         idx = -1;
 
         printf("Creating dictionaries..\n");
 
@@ -2433,7 +2436,6 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
         {
             GB_DICTIONARY *dict;
-            int            compression_mask;
             GB_CSTR        key_name = Main->keys[idx].key;
             GBDATA        *gb_main  = Main->gb_main();
 
@@ -2450,7 +2452,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
             GB_TYPES type = gbk[idx].gbds[0]->type();
 
             GB_begin_transaction(gb_main);
-            compression_mask = gb_get_compression_mask(Main, idx, type);
+            int compression_mask = gb_get_compression_mask(Main, idx, type);
             GB_commit_transaction(gb_main);
 
             if ((compression_mask & GB_COMPRESSION_DICTIONARY) == 0) continue; // compression with dictionary is not allowed
@@ -2570,7 +2572,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 }
 
 GB_ERROR GB_optimize(GBDATA *gb_main) {
-    unsigned long maxKB          = GB_get_physical_memory();
+    unsigned long maxKB          = GB_get_usable_memory();
     long          maxMem;
     GB_ERROR      error          = 0;
     GB_UNDO_TYPE  prev_undo_type = GB_get_requested_undo_type(gb_main);
@@ -2596,7 +2598,6 @@ GB_ERROR GB_optimize(GBDATA *gb_main) {
 #ifdef UNIT_TESTS
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
-#include <arb_file.h>
 #endif
 
 // #define TEST_AUTO_UPDATE // uncomment to auto-update binary result of DB optimization
@@ -2647,7 +2648,7 @@ void TEST_SLOW_optimize() {
         long nonopti_size   = GB_size_of_file(nonopti);
         long optimized_size = GB_size_of_file(optimized);
         TEST_EXPECT_LESS(optimized_size, nonopti_size);         // did file shrink?
-        TEST_EXPECT_EQUAL(optimized_size*100/nonopti_size, 73); // document compression ratio (in percent)
+        TEST_EXPECT_EQUAL(optimized_size*100/nonopti_size, 74); // document compression ratio (in percent)
 
         GB_close(gb_main);
     }

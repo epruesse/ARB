@@ -539,7 +539,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
                 ED4_selection_entry *sel_info   = list_elem->elem();
                 ED4_terminal        *sel_object = sel_info->object;
 
-                if ((sel_object==mi->object)) break;
+                if (sel_object==mi->object) break;
                 if (spec.static_prop & ED4_P_VERTICAL) x_off += sel_info->actual_width;
 
                 list_elem = list_elem->next();
@@ -1025,7 +1025,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
 
         // binary search to find first visible child
 
-        int first_visible_child = 0;
+        int first_visible_child = 0; //@@@FIXME: this variable is never again set
 
         {
             int l = 0;

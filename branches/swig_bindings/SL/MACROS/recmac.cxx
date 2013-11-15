@@ -10,12 +10,17 @@
 // ============================================================= //
 
 #include "recmac.hxx"
+
 #include <arbdbt.h>
+
 #include <arb_file.h>
 #include <arb_defs.h>
-#include <FileContent.h>
-#include <cctype>
+#include <arb_diff.h>
 #include <aw_msg.hxx>
+
+#include <FileContent.h>
+
+#include <cctype>
 
 void warn_unrecordable(const char *what) {
     aw_message(GBS_global_string("could not record %s", what));

@@ -11,11 +11,9 @@
 #include <unistd.h>
 
 #include <csignal>
-#include <ctime>
 #include <cerrno>
 
 #include <sys/socket.h>
-#include <sys/time.h>
 
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -1890,27 +1888,5 @@ GB_ERROR GB_install_pid(int mode) {
     }
 
     return error;
-}
-
-const char *GB_date_string() {
-    timeval  date;
-    tm      *p;
-
-    gettimeofday(&date, 0);
-
-#if defined(DARWIN)
-    struct timespec local;
-    TIMEVAL_TO_TIMESPEC(&date, &local); // not avail in time.h of Linux gcc 2.95.3
-    p = localtime(&local.tv_sec);
-#else
-    p = localtime(&date.tv_sec);
-#endif // DARWIN
-
-    char *readable = asctime(p); // points to a static buffer
-    char *cr       = strchr(readable, '\n');
-    gb_assert(cr);
-    cr[0]          = 0;         // cut of \n
-
-    return readable;
 }
 

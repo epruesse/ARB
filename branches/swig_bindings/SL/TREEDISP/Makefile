@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .cxx .hxx .depend
 
@@ -14,10 +14,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 proto:
 	../../AISC_MKPTPS/aisc_mkpt -P -w TreeCallbacks.hxx TreeCallbacks.cxx >TreeCallbacks.hxx.tmp
@@ -63,11 +63,13 @@ irstree_display.o: $(ARBHOME)/INCLUDE/attributes.h
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/cb.h
+irstree_display.o: $(ARBHOME)/INCLUDE/cb_base.h
 irstree_display.o: $(ARBHOME)/INCLUDE/cbtypes.h
 irstree_display.o: $(ARBHOME)/INCLUDE/cxxforward.h
 irstree_display.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -104,6 +106,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -111,11 +114,13 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/cb.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/cb_base.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/cbtypes.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/gccver.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/mode_text.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -131,6 +136,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_defs.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_diff.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -148,6 +154,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -158,6 +165,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cb.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/cb_base.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cbtypes.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/downcast.h

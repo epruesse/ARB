@@ -9,7 +9,7 @@ SUB     rename.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           Synchronize species IDs
+TITLE           Synchronize species IDs before merging
 
 DESCRIPTION     When merging two databases it is VERY IMPORTANT to use identical
                 IDs ('name') for identical species and different IDs for different species.

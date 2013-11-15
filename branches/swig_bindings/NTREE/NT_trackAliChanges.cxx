@@ -166,7 +166,7 @@ AW_window *NT_create_trackAliChanges_window(AW_root *root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"track_ali_changes.hlp");
+    aws->callback(makeHelpCallback("track_ali_changes.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("initials");

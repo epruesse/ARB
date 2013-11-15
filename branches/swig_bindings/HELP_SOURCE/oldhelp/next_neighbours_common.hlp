@@ -10,7 +10,7 @@ SUB	faligner.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
-#************* Title of helpfile !! and start of real helpfile @@@ ********
+#************* Title of helpfile !! and start of real helpfile ********
 TITLE		Nearest relative search
 
 OCCURRENCE      ARB_NT/Search/More search/Search Next Relatives of SELECTED Species in PT Server

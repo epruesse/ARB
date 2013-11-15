@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = \
@@ -11,7 +11,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -75,8 +75,10 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/cb.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/cb_base.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -87,6 +89,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/ttypes.h
 SQ_GroupData.o: SQ_GroupData.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/arb_core.h
+SQ_GroupData.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -120,8 +123,10 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/cb.h
+SQ_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 SQ_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SQ_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SQ_main.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_main.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_main.o: $(ARBHOME)/INCLUDE/smartptr.h

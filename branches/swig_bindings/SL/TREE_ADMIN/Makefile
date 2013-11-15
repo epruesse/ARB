@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -52,8 +52,10 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cb.h
+TreeAdmin.o: $(ARBHOME)/INCLUDE/cb_base.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cbtypes.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cxxforward.h
+TreeAdmin.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -8,10 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#ifndef DARWIN
-#include <malloc.h>
-#endif
-
 #include <unistd.h>
 #include <climits>
 #include <set>
@@ -82,8 +78,9 @@ struct gbb_data;
 
 struct gbb_freedata // part of gbb_data if it`s a free block
 {
+    // cppcheck-suppress unusedStructMember
     long      magic;
-    gbb_data *next;                                 // next unused memblock
+    gbb_data *next;  // next unused memblock
 };
 
 struct gbb_data {
@@ -337,7 +334,7 @@ void testMemblocks(const char *file, int line)
         {
             if (blk->size<cl->size)
             {
-                fprintf(stderr, "Illegal block (size=%li) in cluster %i (size=%li) (%s,%i)\n", blk->size, idx, cl->size, file, line);
+                fprintf(stderr, "Illegal block (size=%zu) in cluster %i (size=%zu) (%s,%i)\n", blk->size, idx, cl->size, file, line);
                 gb_assert(0);
             }
             blk = blk->content.next;

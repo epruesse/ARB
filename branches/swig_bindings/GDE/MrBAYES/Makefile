@@ -1,5 +1,5 @@
 # MrBayes Makefile for ARB
-# by Arne Böckmann (2013)
+# by Arne Boeckmann (2013)
 
 PROG  = MrBAYES
 FOLDER =$(ARBHOME)/GDE/MrBAYES/mrbayes_3.2.1
@@ -14,11 +14,10 @@ clean :
 
 
 mrbayes.stamp: 
-	cd $(FOLDER) && MAKEFLAGS= $(MAKE) mb
+	+cd $(FOLDER) && $(MAKE) mb
 	cp $(FOLDER)/mb $(ARBHOME)/bin/mb
 	touch mrbayes.stamp
 
-	
 
 .PHONY : clean
 

@@ -24,7 +24,14 @@
 
 // cppcheck-suppress noConstructor
 class AW_selection_list_entry : virtual Noncopyable {
-    char      *displayed;
+    static const size_t MAX_DISPLAY_LENGTH = 8192;
+    // 8192 -> no wrap-around in motif (gtk may handle different value)
+    // 100000 -> works in motif (no crash, but ugly because line wraps around - overwriting itself; also happens in gtk)
+    // setting it to 750000 crashes with "X Error BadLength" in motif (when a string with that length is displayed)
+
+    char *displayed;
+
+    static char *copy_string_for_display(const char *str);
 
 public:
     // @@@ make members private
@@ -41,12 +48,10 @@ public:
     {}
     ~AW_selection_list_entry() { free(displayed); }
 
-    static char *copy_string_for_display(const char *str);
-
     template<typename T>
     void set_value(T val) { value = AW_scalar(val); }
 
-    const char *get_displayed() const { return displayed; }
+    const char *get_displayed() const { return displayed; } // may differ from string passed to set_displayed() if the string was longer than MAX_DISPLAY_LENGTH
     void set_displayed(const char *displayed_) { freeset(displayed, copy_string_for_display(displayed_)); }
 };
 
@@ -191,7 +196,6 @@ public:
     GBDATA *get_gbd() { return gbd; }
     GBDATA *get_gb_main() { return GB_get_root(gbd); }
 };
-void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *);
 
 
 #else

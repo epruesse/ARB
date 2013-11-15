@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
@@ -6,7 +6,7 @@ CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -49,10 +49,12 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/bytestring.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cb.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cb_base.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client_types.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/downcast.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/pos_range.h
@@ -89,8 +91,10 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/cb.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/cb_base.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/downcast.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/gccver.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/smartptr.h

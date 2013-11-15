@@ -49,7 +49,7 @@ EXAMPLES	Include only positions which are occupied by a residue within
 
 		Include only non-base paired positions:
 
-			1. Select 'HELIX' from 	the 'Select a Filter' subwindow.
+			1. Select 'HELIX' from the 'Select a Filter' subwindow.
 
 			2. Type base pair symbols to the 'Exclude Column'
 				subwindow ([<>]).
@@ -60,7 +60,7 @@ EXAMPLES	Include only positions which are occupied by a residue within
 			1. Select the species and convert it to 'SAI'
 				(ARB_NT/Species/Info/SPECIES/Convert to SAI)
 
-			2. Select the new 'SAI' from 	the 'Select a Filter'
+			2. Select the new 'SAI' from the 'Select a Filter'
 				subwindow.
 
 			3. Type non-nucleotide and ambiguity symbols to the

@@ -1,4 +1,4 @@
 # libraries needed to link against SL/REGEXPR/REGEXPR.a
 
-lib/libARBDB.so
+lib/libCORE.so
 

@@ -77,12 +77,10 @@ void AW_xfig::calc_scaling(int font_width, int font_height) {
 
 AW_xfig::AW_xfig(int font_width, int font_height) {
     // creates the same as loading an empty xfig
-    memset(this, 0, sizeof(AW_xfig));
-    calc_scaling(font_width, font_height);
+    init(font_width, font_height);
 }
 
-AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
-{
+AW_xfig::AW_xfig(const char *filename, int font_width, int font_height) {
     /* Arguments:   xfig file, fontsize (>0: abort on error - normal usage!
      *                                   <0: returns NULL on error)
      *
@@ -90,9 +88,8 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
      *
      * Description: load xfig graphical data for construction of windows,
      */
-    if (!filename || !strlen(filename)) return;
-
-    memset(this, 0, sizeof(AW_xfig));
+    aw_assert(filename && filename[0]);
+    init(font_width, font_height);
 
     // ----------------
 
@@ -100,8 +97,6 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
     char     *ret;
     char     *buffer = (char *)calloc(sizeof(char), MAX_XFIG_LENGTH);
     FILE     *file   = 0;
-
-    calc_scaling(font_width, font_height);
 
     if (filename[0]=='/') { // absolute file ?
         strcpy(buffer, filename);

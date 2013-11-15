@@ -44,7 +44,7 @@ private:
     char *internal_maskname;    // starts with 0 for local mask and with 1 for global mask
     // followed by file name w/o path
     char *itemtypename;         // name of the itemtype
-    bool  local_mask;           // true if mask file was found in "~/.arb_prop/inputMasks"
+    bool  local_mask;           // true if mask file was found in "$ARB_PROP/inputMasks"
     bool  hidden;               // if true, mask is NOT shown in Menus
 
 public:

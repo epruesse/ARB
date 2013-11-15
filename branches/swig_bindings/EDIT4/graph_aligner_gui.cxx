@@ -162,7 +162,7 @@ AW_active sina_mask(AW_root *root) {
 }
 
 inline const char *stream2static(const std::stringstream& str) {
-    return GBS_global_string("%s", str.str().c_str());
+    return GBS_static_string(str.str().c_str());
 }
 
 static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
@@ -530,7 +530,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->button_length(12);
 
     aws->at(winx-closex+5, closey);
-    aws->callback(AW_POPUP_HELP, (AW_CL) "sina_main.hlp");
+    aws->callback(makeHelpCallback("sina_main.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at(winx-closex+5, starty);

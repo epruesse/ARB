@@ -18,8 +18,19 @@
 #ifndef DUPSTR_H
 #include <dupstr.h>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
 
 typedef const char *GB_ERROR; // memory managed by CORE
+
+struct GBS_regex;
+
+enum GB_CASE {
+    GB_IGNORE_CASE    = 0,
+    GB_MIND_CASE      = 1,
+    GB_CASE_UNDEFINED = 2
+};
 
 typedef void (*gb_error_handler_type)(const char *msg);
 typedef void (*gb_warning_func_type)(const char *msg);
@@ -36,7 +47,7 @@ void GBK_install_SIGSEGV_handler(bool dump_backtrace);
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
 
 void GBK_dump_backtrace(FILE *out, const char *message);
-void GBK_terminate(const char *error);
+void GBK_terminate(const char *error) __ATTR__NORETURN;
 
 GB_ERROR GBK_system(const char *system_command);
 

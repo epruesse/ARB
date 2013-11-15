@@ -14,8 +14,10 @@ OCCURRENCE	ARB_NT/Search/More search/Search for equal fields and mark duplicates
                 ARB_NT/Search/More search/Search for equal words between fields and mark duplicates
 
 DESCRIPTION     Searches groups of species containing
+
                          * the same value or
                          * identical words in values
+
                 in the field selected at 'Search field' of the first query.
 
                 All duplicated occurrences are added to the hitlist - first occurrence gets '1st' added,

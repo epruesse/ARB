@@ -806,7 +806,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"cluster_group.hlp");
+        aws->callback(makeHelpCallback("cluster_group.hlp"));
         aws->create_button("HELP", "HELP");
 
         aws->at_newline();
@@ -960,7 +960,7 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
         aws->create_button("CLOSE", "CLOSE");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"di_clusters.hlp");
+        aws->callback(makeHelpCallback("di_clusters.hlp"));
         aws->create_button("HELP", "HELP");
 
         aws->at("max_dist");
@@ -977,7 +977,7 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
 
         aws->button_length(20);
         aws->at("tree_name");
-        aws->create_button("TREE", AWAR_DIST_TREE_CURR_NAME);
+        aws->create_button(NULL, AWAR_DIST_TREE_CURR_NAME);
 
         // -------------------
         //      lower area

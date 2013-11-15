@@ -20,6 +20,7 @@
 #include <cctype>
 #include <unistd.h>
 #include <arb_str.h>
+#include <arb_diff.h>
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
@@ -36,8 +37,7 @@ using namespace std;
 
 // --------------------------------------------------------------------------------
 
-class Error {
-public:
+struct Error {
     virtual ~Error() {}
     virtual void print() const = 0;
 };

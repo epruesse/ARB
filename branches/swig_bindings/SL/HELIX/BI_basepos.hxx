@@ -103,8 +103,7 @@ public:
 
 
 
-class BI_ecoli_ref : public BasePosition {
-public: 
+struct BI_ecoli_ref : public BasePosition {
     BI_ecoli_ref() {}
 
     void init(const char *seq, int size) { initialize(seq, size); }

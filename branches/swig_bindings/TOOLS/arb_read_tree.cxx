@@ -39,8 +39,8 @@ static void add_bootstrap(GBT_TREE *node, double hundred) {
     node->leftson->remark_branch  = GBS_global_string_copy("%2.0f%%", left_bs);
     node->rightson->remark_branch = GBS_global_string_copy("%2.0f%%", right_bs);
 
-    node->leftlen  = 0.1; // reset branchlengths
-    node->rightlen = 0.1;
+    node->leftlen  = DEFAULT_BRANCH_LENGTH; // reset branchlengths
+    node->rightlen = DEFAULT_BRANCH_LENGTH;
 
     add_bootstrap(node->leftson, hundred);
     add_bootstrap(node->rightson, hundred);
@@ -213,15 +213,16 @@ int main(int argc, char **argv) {
 
             show_message(gb_msg_main, GBS_global_string("Reading tree from '%s' ..", param.treefilename));
             {
-                char *scaleWarning = 0;
+                char *warnings             = 0;
+                bool  allow_length_scaling = !param.consense && !param.scale;
 
-                tree = TREE_load(param.treefilename, sizeof(GBT_TREE), &comment_from_treefile, (param.consense||param.scale) ? 0 : 1, &scaleWarning);
-                if (!tree) error = GB_await_error();
-                else {
-                    if (scaleWarning) {
-                        show_message(gb_msg_main, scaleWarning);
-                        free(scaleWarning);
-                    }
+                tree = TREE_load(param.treefilename, sizeof(GBT_TREE), &comment_from_treefile, allow_length_scaling, &warnings);
+                if (!tree) {
+                    error = GB_await_error();
+                }
+                else if (warnings) {
+                    show_message(gb_msg_main, warnings);
+                    free(warnings);
                 }
             }
         }
@@ -270,7 +271,7 @@ int main(int argc, char **argv) {
 
                 char *cmt = GBS_strclose(buf);
 
-                error = GBT_write_tree_rem(gb_main, param.tree_name, cmt);
+                error = GBT_write_tree_remark(gb_main, param.tree_name, cmt);
 
                 free(cmt);
             }

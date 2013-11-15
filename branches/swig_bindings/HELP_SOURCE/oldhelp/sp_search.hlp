@@ -49,7 +49,9 @@ NOTES           see LINK{searching.hlp} for details about searching.
 
                 see LINK{search_duplicates.hlp}
 
-EXAMPLES	1. Search for a species called 'Pseudomonas tolaasii'
+EXAMPLES
+
+                1. Search for a species called 'Pseudomonas tolaasii'
 
 			Select:                    Search all species that match the query
 			Select search field:       'full_name'

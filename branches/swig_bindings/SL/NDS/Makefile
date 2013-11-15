@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -37,6 +37,7 @@ nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 nds.o: $(ARBHOME)/INCLUDE/arb_core.h
 nds.o: $(ARBHOME)/INCLUDE/arb_error.h
 nds.o: $(ARBHOME)/INCLUDE/arb_msg.h
+nds.o: $(ARBHOME)/INCLUDE/arb_msg_fwd.h
 nds.o: $(ARBHOME)/INCLUDE/arb_string.h
 nds.o: $(ARBHOME)/INCLUDE/arbdb.h
 nds.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -55,12 +56,15 @@ nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 nds.o: $(ARBHOME)/INCLUDE/cb.h
+nds.o: $(ARBHOME)/INCLUDE/cb_base.h
 nds.o: $(ARBHOME)/INCLUDE/cbtypes.h
 nds.o: $(ARBHOME)/INCLUDE/cxxforward.h
+nds.o: $(ARBHOME)/INCLUDE/downcast.h
 nds.o: $(ARBHOME)/INCLUDE/dupstr.h
 nds.o: $(ARBHOME)/INCLUDE/gccver.h
 nds.o: $(ARBHOME)/INCLUDE/items.h
 nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 nds.o: $(ARBHOME)/INCLUDE/static_assert.h
 nds.o: $(ARBHOME)/INCLUDE/test_global.h
+nds.o: $(ARBHOME)/INCLUDE/test_unit.h
 nds.o: $(ARBHOME)/INCLUDE/ttypes.h
