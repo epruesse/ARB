@@ -45,9 +45,6 @@ NOTES		Short descriptions of the 'MODE' and the functions assigned
                 subsequently releasing the mouse button. The label of the bar
 		can be moved independently.
 
-		The previous topology can be restored using the 'RESET MODE'
-		('RESET' button on the 'ARB_NT' window).
-
 EXAMPLES	None
 
 WARNINGS	None

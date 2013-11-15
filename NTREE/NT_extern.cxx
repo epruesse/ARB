@@ -1531,7 +1531,6 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->create_mode("length.xpm",  "mode_length.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LENGTH));
     awm->create_mode("move.xpm",    "mode_move.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
     awm->create_mode("setroot.xpm", "mode_set_root.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
-    awm->create_mode("reset.xpm",   "mode_reset.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_RESET));
 
     awm->set_info_area_height(250);
     awm->at(5, 2);
