@@ -65,7 +65,7 @@ void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) {
     if (windows.find(popup) == windows.end()) {
         windows[popup] = popup.first(AW_root::SINGLETON, popup.second);
     }
-    
+
     windows[popup]->activate();
 }
 
@@ -102,6 +102,11 @@ void AW_window::restore_at_size_and_attach(const AW_at_size *at_size){
 void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
     at_size->store(_at);
 }
+
+// ----------------------------------------------------------------------
+// force-diff-sync 1927391236 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
 void AW_window::get_window_size(int& width, int& height){
     width  = _at.max_x_size;
     height = _at.max_y_size;
@@ -826,6 +831,10 @@ void AW_window::update_toggle_field() {
 }
 // END TOGGLE FIELD STUFF
 
+// ----------------------------------------------------------------------
+// force-diff-sync 2939128467234 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
 void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize){
     aw_return_if_fail(xfig_data != NULL);  // forgot to call load_xfig ?
     
@@ -854,7 +863,7 @@ AW_device *AW_window::get_device(AW_area area){
     arb_assert(NULL != aram);
     return (AW_device *)aram->get_screen_device();
 }
-  
+
 void AW_window::get_event(AW_event *eventi) const {
     *eventi = event;
 }
@@ -913,6 +922,10 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
     act->bind(item, "activate");
 }
 
+// ----------------------------------------------------------------------
+// force-diff-sync 824638723647 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
 void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
     aw_return_if_fail(legal_mask(mask));
     aw_return_if_fail(prvt->menus.top());
@@ -962,6 +975,10 @@ void AW_window::get_font_size(int& width, int& height) {
   prvt->get_font_size(width, height);
 }
 
+// ----------------------------------------------------------------------
+// force-diff-sync 264782364273 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
 void AW_window::load_xfig(const char *file, bool resize /*= true*/){
     int width, height;
     prvt->get_font_size(width, height);
@@ -987,11 +1004,12 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
 }
 
 /**
- * Construct window-local id. 
+ * Construct window-local id.
  * Prefixes @param id with @member window_defaults_name + "/"
  */
 const char *AW_window::local_id(const char *id) const{
-    return GBS_global_string("%s/%s", window_defaults_name, id);
+    return GBS_global_string("%s/%s", window_defaults_name, id); // @@@ warning - very short lifetime, may cause undesired problems
+                                                                 // (motif version was valid until next call of local_id())
 }
 
 void AW_window::sep______________() {
@@ -1133,7 +1151,11 @@ void AW_window::calculate_scrollbars(){
                                    vstep_increment, vpage_increment);
 
 }
- 
+
+// ----------------------------------------------------------------------
+// force-diff-sync 82346723846 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
 static void _aw_window_recalc_scrollbar_cb(AW_root*, AW_window* aww) {
     aww->calculate_scrollbars();
 }
@@ -1199,10 +1221,7 @@ void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
     get_root()->awar(awar_name)->changed.connect(wcb, this);
 }
 
-
-
 // END SCROLLBAR STUFF
-
 
 
 void AW_window::set_window_size(int width, int height) {
@@ -1226,6 +1245,10 @@ void AW_window::shadow_width (int /*shadow_thickness*/) {
 void AW_window::button_height(int height) {
     _at.height_of_buttons = height>1 ? height : 0; 
 }
+
+// ----------------------------------------------------------------------
+// force-diff-sync 874687234237 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
 
 void AW_window::window_fit() {
     // let gtk do the sizing based on content
@@ -1426,6 +1449,10 @@ void AW_window::allow_delete_window(bool allow_close) {
     // => do nothing if clicked
     g_signal_connect(prvt->window, "delete-event", G_CALLBACK(noop_signal_handler), NULL);
 }
+
+// ----------------------------------------------------------------------
+// force-diff-sync 9268347253894 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
 
 bool AW_window::is_shown() const{
     return gtk_widget_get_visible(GTK_WIDGET(prvt->window));
